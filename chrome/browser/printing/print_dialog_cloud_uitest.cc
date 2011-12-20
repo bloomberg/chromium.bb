@@ -267,10 +267,10 @@ IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, DISABLED_DialogGrabbed) {
   // This goes back one step further for the Chrome OS case, to making
   // sure 'window.print()' gets to the right place.
   ASSERT_TRUE(browser()->GetSelectedTabContents());
-  ASSERT_TRUE(browser()->GetSelectedTabContents()->render_view_host());
+  ASSERT_TRUE(browser()->GetSelectedTabContents()->GetRenderViewHost());
 
   string16 window_print = ASCIIToUTF16("window.print()");
-  browser()->GetSelectedTabContents()->render_view_host()->
+  browser()->GetSelectedTabContents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), window_print);
 
   ui_test_utils::RunMessageLoop();

@@ -1327,7 +1327,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
   ASSERT_TRUE(contents);
   bool webui_responded = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      contents->render_view_host(),
+      contents->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(window.webui_responded_);",
       &webui_responded));
@@ -1348,7 +1348,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, BrowserCloseAfterDownload) {
   ASSERT_TRUE(contents);
   bool result = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      contents->render_view_host(),
+      contents->GetRenderViewHost(),
       L"",
       L"window.onunload = function() { var do_nothing = 0; }; "
       L"window.domAutomationController.send(true);",

@@ -60,7 +60,7 @@ class LoginHandlerWin : public LoginHandler,
 
     TabContents* tab = GetTabContentsForLogin();
     if (tab)
-      tab->render_view_host()->set_ignore_input_events(false);
+      tab->GetRenderViewHost()->set_ignore_input_events(false);
 
     // Reference is no longer valid.
     SetDialog(NULL);

@@ -323,7 +323,7 @@ void CloudPrintFlowHandler::Observe(
     if (url.host() == dialog_url.host() &&
         url.path() == dialog_url.path() &&
         url.scheme() == dialog_url.scheme()) {
-      RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
+      RenderViewHost* rvh = web_ui_->tab_contents()->GetRenderViewHost();
       if (rvh && rvh->delegate()) {
         WebPreferences webkit_prefs = rvh->delegate()->GetWebkitPrefs();
         webkit_prefs.allow_scripts_to_close_windows = true;
@@ -349,7 +349,7 @@ void CloudPrintFlowHandler::HandleShowDebugger(const ListValue* args) {
 
 void CloudPrintFlowHandler::ShowDebugger() {
   if (web_ui_) {
-    RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
+    RenderViewHost* rvh = web_ui_->tab_contents()->GetRenderViewHost();
     if (rvh)
       DevToolsWindow::OpenDevToolsWindow(rvh);
   }

@@ -28,9 +28,9 @@ void RestoreTabHelper::SetWindowID(const SessionID& id) {
 
   // Extension code in the renderer holds the ID of the window that hosts it.
   // Notify it that the window ID changed.
-  tab_->tab_contents()->render_view_host()->Send(
+  tab_->tab_contents()->GetRenderViewHost()->Send(
       new ExtensionMsg_UpdateBrowserWindowId(
-          tab_->tab_contents()->render_view_host()->routing_id(), id.id()));
+          tab_->tab_contents()->GetRenderViewHost()->routing_id(), id.id()));
 }
 
 void RestoreTabHelper::RenderViewCreated(RenderViewHost* render_view_host) {

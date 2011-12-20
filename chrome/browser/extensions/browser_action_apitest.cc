@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   TabContents* tab = browser()->GetSelectedTabContents();
   bool result = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), L"",
+      tab->GetRenderViewHost(), L"",
       L"setInterval(function(){"
       L"  if(document.body.bgColor == 'red'){"
       L"    window.domAutomationController.send(true)}}, 100)",

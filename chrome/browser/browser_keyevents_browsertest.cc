@@ -143,7 +143,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     ASSERT_LT(tab_index, browser()->tab_count());
     bool actual;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetTabContentsAt(tab_index)->render_view_host(),
+        browser()->GetTabContentsAt(tab_index)->GetRenderViewHost(),
         L"",
         base::StringPrintf(kSuppressEventJS, type, GetBoolString(!suppress)),
         &actual));
@@ -169,7 +169,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
   void GetResultLength(int tab_index, int* length) {
     ASSERT_LT(tab_index, browser()->tab_count());
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
-        browser()->GetTabContentsAt(tab_index)->render_view_host(),
+        browser()->GetTabContentsAt(tab_index)->GetRenderViewHost(),
         L"", kGetResultLengthJS, length));
   }
 
@@ -181,7 +181,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     for (int i = 0; i < actual_length; ++i) {
       std::string actual;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-          browser()->GetTabContentsAt(tab_index)->render_view_host(),
+          browser()->GetTabContentsAt(tab_index)->GetRenderViewHost(),
           L"", base::StringPrintf(kGetResultJS, i), &actual));
 
       // If more events were received than expected, then the additional events
@@ -197,7 +197,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     ASSERT_LT(tab_index, browser()->tab_count());
     std::string actual;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-        browser()->GetTabContentsAt(tab_index)->render_view_host(),
+        browser()->GetTabContentsAt(tab_index)->GetRenderViewHost(),
         L"", kGetFocusedElementJS, &actual));
     ASSERT_EQ(WideToUTF8(focused), actual);
   }
@@ -206,7 +206,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     ASSERT_LT(tab_index, browser()->tab_count());
     bool actual;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetTabContentsAt(tab_index)->render_view_host(),
+        browser()->GetTabContentsAt(tab_index)->GetRenderViewHost(),
         L"",
         base::StringPrintf(kSetFocusedElementJS, focused),
         &actual));
@@ -218,7 +218,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     ASSERT_LT(tab_index, browser()->tab_count());
     std::string actual;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-        browser()->GetTabContentsAt(tab_index)->render_view_host(),
+        browser()->GetTabContentsAt(tab_index)->GetRenderViewHost(),
         L"",
         base::StringPrintf(kGetTextBoxValueJS, id),
         &actual));
@@ -230,7 +230,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     ASSERT_LT(tab_index, browser()->tab_count());
     std::string actual;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-        browser()->GetTabContentsAt(tab_index)->render_view_host(),
+        browser()->GetTabContentsAt(tab_index)->GetRenderViewHost(),
         L"",
         base::StringPrintf(kSetTextBoxValueJS, id, value),
         &actual));
@@ -241,7 +241,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     ASSERT_LT(tab_index, browser()->tab_count());
     bool actual;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetTabContentsAt(tab_index)->render_view_host(),
+        browser()->GetTabContentsAt(tab_index)->GetRenderViewHost(),
         L"", base::StringPrintf(kStartTestJS, result_length), &actual));
     ASSERT_TRUE(actual);
   }
@@ -261,7 +261,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     // because the test finished message might be arrived before returning
     // from the SendKeyPressSync() method.
     TestFinishObserver finish_observer(
-        browser()->GetTabContentsAt(tab_index)->render_view_host());
+        browser()->GetTabContentsAt(tab_index)->GetRenderViewHost());
 
     ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
         browser(), test.key, test.ctrl, test.shift, test.alt, test.command));

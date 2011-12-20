@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(
   // And check that its styles were affected by the styles that just got loaded.
   bool styles_injected;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send("
       L"document.defaultView.getComputedStyle(document.body, null)."
       L"getPropertyValue('background-color') == 'rgb(255, 0, 0)')",

@@ -129,14 +129,14 @@ class AutofillTest : public InProcessBrowserTest {
                         const std::string& expected_value) {
     std::string value;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-        browser()->GetSelectedTabContents()->render_view_host(), L"",
+        browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
         L"window.domAutomationController.send("
         L"document.getElementById('" + field_name + L"').value);", &value));
     EXPECT_EQ(expected_value, value);
   }
 
   RenderViewHost* render_view_host() {
-    return browser()->GetSelectedTabContents()->render_view_host();
+    return browser()->GetSelectedTabContents()->GetRenderViewHost();
   }
 
   void SimulateURLFetch(bool success) {

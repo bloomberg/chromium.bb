@@ -652,7 +652,7 @@ void SavePackage::CheckFinish() {
                  final_names,
                  dir,
                  tab_contents()->GetRenderProcessHost()->GetID(),
-                 tab_contents()->render_view_host()->routing_id(),
+                 tab_contents()->GetRenderViewHost()->routing_id(),
                  id()));
 }
 

@@ -136,7 +136,7 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    inspected_rvh_ = GetInspectedTab()->render_view_host();
+    inspected_rvh_ = GetInspectedTab()->GetRenderViewHost();
     window_ = DevToolsWindow::OpenDevToolsWindow(inspected_rvh_);
     observer.Wait();
   }
@@ -438,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
   // Clear inspector settings to ensure that Elements will be
   // current panel when DevTools window is open.
   content::GetContentClient()->browser()->ClearInspectorSettings(
-      GetInspectedTab()->render_view_host());
+      GetInspectedTab()->GetRenderViewHost());
   RunTest("testScriptsTabIsPopulatedOnInspectedPageRefresh",
           kDebuggerTestPage);
 }

@@ -162,7 +162,7 @@ void DevToolsManagerImpl::OnCancelPendingNavigation(RenderViewHost* pending,
 
 void DevToolsManagerImpl::TabReplaced(TabContents* old_tab,
                                       TabContents* new_tab) {
-  RenderViewHost* old_rvh = old_tab->render_view_host();
+  RenderViewHost* old_rvh = old_tab->GetRenderViewHost();
   if (!DevToolsAgentHostRegistry::HasDevToolsAgentHost(old_rvh))
     return;
 
@@ -176,7 +176,7 @@ void DevToolsManagerImpl::TabReplaced(TabContents* old_tab,
     return;  // Didn't know about old_tab.
 
   client_host->TabReplaced(new_tab);
-  AttachClientHost(cookie, new_tab->render_view_host());
+  AttachClientHost(cookie, new_tab->GetRenderViewHost());
 }
 
 int DevToolsManagerImpl::DetachClientHost(RenderViewHost* from_rvh) {

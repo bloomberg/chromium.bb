@@ -252,7 +252,7 @@ TabContents::~TabContents() {
   // If we still have a window handle, destroy it. GetNativeView can return
   // NULL if this contents was part of a window that closed.
   if (GetNativeView()) {
-    RenderViewHost* host = render_view_host();
+    RenderViewHost* host = GetRenderViewHost();
     if (host && host->view())
       host->view()->WillWmDestroy();
   }
@@ -451,11 +451,12 @@ void TabContents::DidBecomeSelected() {
 
 void TabContents::WasHidden() {
   if (!capturing_contents()) {
-    // |render_view_host()| can be NULL if the user middle clicks a link to open
-    // a tab in then background, then closes the tab before selecting it.  This
-    // is because closing the tab calls TabContents::Destroy(), which removes
-    // the |render_view_host()|; then when we actually destroy the window,
-    // OnWindowPosChanged() notices and calls HideContents() (which calls us).
+    // |GetRenderViewHost()| can be NULL if the user middle clicks a link to
+    // open a tab in then background, then closes the tab before selecting it.
+    // This is because closing the tab calls TabContents::Destroy(), which
+    // removes the |GetRenderViewHost()|; then when we actually destroy the
+    // window, OnWindowPosChanged() notices and calls HideContents() (which
+    // calls us).
     RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
     if (rwhv)
       rwhv->WasHidden();
@@ -563,7 +564,7 @@ bool TabContents::NeedToFireBeforeUnload() {
   // TODO(creis): Should we fire even for interstitial pages?
   return notify_disconnection() &&
       !showing_interstitial_page() &&
-      !render_view_host()->SuddenTerminationAllowed();
+      !GetRenderViewHost()->SuddenTerminationAllowed();
 }
 
 // TODO(adriansc): Remove this method once refactoring changed all call sites.
@@ -620,7 +621,7 @@ bool TabContents::NavigateToEntry(
 
   // Tell DevTools agent that it is attached prior to the navigation.
   DevToolsManagerImpl::GetInstance()->OnNavigatingToPendingEntry(
-      render_view_host(),
+      GetRenderViewHost(),
       dest_render_view_host,
       entry.url());
 
@@ -663,7 +664,7 @@ void TabContents::SetHistoryLengthAndPrune(const SiteInstance* site_instance,
     NOTREACHED();
     return;
   }
-  RenderViewHost* rvh = render_view_host();
+  RenderViewHost* rvh = GetRenderViewHost();
   if (!rvh) {
     NOTREACHED();
     return;
@@ -735,7 +736,7 @@ void TabContents::FocusThroughTabTraversal(bool reverse) {
     render_manager_.interstitial_page()->FocusThroughTabTraversal(reverse);
     return;
   }
-  render_view_host()->SetInitialFocus(reverse);
+  GetRenderViewHost()->SetInitialFocus(reverse);
 }
 
 bool TabContents::FocusLocationBarByDefault() {
@@ -812,14 +813,14 @@ bool TabContents::IsActiveEntry(int32 page_id) {
 
 void TabContents::SetOverrideEncoding(const std::string& encoding) {
   set_encoding(encoding);
-  render_view_host()->Send(new ViewMsg_SetPageEncoding(
-      render_view_host()->routing_id(), encoding));
+  GetRenderViewHost()->Send(new ViewMsg_SetPageEncoding(
+      GetRenderViewHost()->routing_id(), encoding));
 }
 
 void TabContents::ResetOverrideEncoding() {
   reset_encoding();
-  render_view_host()->Send(new ViewMsg_ResetPageEncodingToDefault(
-      render_view_host()->routing_id()));
+  GetRenderViewHost()->Send(new ViewMsg_ResetPageEncodingToDefault(
+      GetRenderViewHost()->routing_id()));
 }
 
 void TabContents::OnCloseStarted() {
@@ -840,8 +841,8 @@ bool TabContents::ShouldAcceptDragAndDrop() const {
 }
 
 void TabContents::SystemDragEnded() {
-  if (render_view_host())
-    render_view_host()->DragSourceSystemDragEnded();
+  if (GetRenderViewHost())
+    GetRenderViewHost()->DragSourceSystemDragEnded();
   if (delegate_)
     delegate_->DragEnded();
 }
@@ -854,7 +855,7 @@ double TabContents::GetZoomLevel() const {
   double zoom_level;
   if (temporary_zoom_settings_) {
     zoom_level = zoom_map->GetTemporaryZoomLevel(
-        GetRenderProcessHost()->GetID(), render_view_host()->routing_id());
+        GetRenderProcessHost()->GetID(), GetRenderViewHost()->routing_id());
   } else {
     GURL url;
     NavigationEntry* active_entry = controller().GetActiveEntry();
@@ -923,12 +924,12 @@ void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                     const GURL& url) {
   bool is_error_page = (url.spec() == chrome::kUnreachableWebDataURL);
   GURL validated_url(url);
-  render_view_host()->FilterURL(ChildProcessSecurityPolicy::GetInstance(),
+  GetRenderViewHost()->FilterURL(ChildProcessSecurityPolicy::GetInstance(),
       GetRenderProcessHost()->GetID(), &validated_url);
 
   RenderViewHost* rvh =
       render_manager_.pending_render_view_host() ?
-          render_manager_.pending_render_view_host() : render_view_host();
+          render_manager_.pending_render_view_host() : GetRenderViewHost();
   // Notify observers about the start of the provisional load.
   FOR_EACH_OBSERVER(TabContentsObserver, observers_,
                     DidStartProvisionalLoadForFrame(frame_id, is_main_frame,
@@ -972,7 +973,7 @@ void TabContents::OnDidFailProvisionalLoadWithError(
             params.showing_repost_interstitial
           << ", frame_id: " << params.frame_id;
   GURL validated_url(params.url);
-  render_view_host()->FilterURL(ChildProcessSecurityPolicy::GetInstance(),
+  GetRenderViewHost()->FilterURL(ChildProcessSecurityPolicy::GetInstance(),
       GetRenderProcessHost()->GetID(), &validated_url);
 
   if (net::ERR_ABORTED == params.error_code) {
@@ -1011,7 +1012,7 @@ void TabContents::OnDidFailProvisionalLoadWithError(
     if (pending_entry)
       DidCancelLoading();
 
-    render_manager_.RendererAbortedProvisionalLoad(render_view_host());
+    render_manager_.RendererAbortedProvisionalLoad(GetRenderViewHost());
   }
 
   // Send out a notification that we failed a provisional load with an error.
@@ -1171,8 +1172,8 @@ void TabContents::OnFindReply(int request_id,
   // browser using IPC. In an effort to not spam the browser we have the
   // browser send an ACK for each FindReply message and have the renderer
   // queue up the latest status message while waiting for this ACK.
-  render_view_host()->Send(
-      new ViewMsg_FindReplyACK(render_view_host()->routing_id()));
+  GetRenderViewHost()->Send(
+      new ViewMsg_FindReplyACK(GetRenderViewHost()->routing_id()));
 }
 
 void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
@@ -1277,7 +1278,7 @@ void TabContents::DidNavigateMainFramePostCommit(
       // web_ui might be NULL if the URL refers to a non-existent extension.
       if (web_ui) {
         render_manager_.SetWebUIPostCommit(web_ui);
-        web_ui->RenderViewCreated(render_view_host());
+        web_ui->RenderViewCreated(GetRenderViewHost());
       }
     }
     opener_web_ui_type_ = WebUI::kNoWebUI;
@@ -1429,6 +1430,10 @@ void TabContents::SetDelegate(TabContentsDelegate* delegate) {
     delegate_->Attach(this);
 }
 
+RenderViewHost* TabContents::GetRenderViewHost() const {
+  return render_manager_.current_host();
+}
+
 RenderViewHostDelegate::View* TabContents::GetViewDelegate() {
   return view_.get();
 }
@@ -1478,7 +1483,7 @@ void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
 }
 
 void TabContents::RenderViewReady(RenderViewHost* rvh) {
-  if (rvh != render_view_host()) {
+  if (rvh != GetRenderViewHost()) {
     // Don't notify the world, since this came from a renderer in the
     // background.
     return;
@@ -1501,7 +1506,7 @@ void TabContents::RenderViewReady(RenderViewHost* rvh) {
 void TabContents::RenderViewGone(RenderViewHost* rvh,
                                  base::TerminationStatus status,
                                  int error_code) {
-  if (rvh != render_view_host()) {
+  if (rvh != GetRenderViewHost()) {
     // The pending page's RenderViewHost is gone.
     return;
   }
@@ -1591,7 +1596,7 @@ void TabContents::UpdateState(RenderViewHost* rvh,
                               const std::string& state) {
   // Ensure that this state update comes from either the active RVH or one of
   // the swapped out RVHs.  We don't expect to hear from any other RVHs.
-  DCHECK(rvh == render_view_host() || render_manager_.IsSwappedOut(rvh));
+  DCHECK(rvh == GetRenderViewHost() || render_manager_.IsSwappedOut(rvh));
 
   // We must be prepared to handle state updates for any page, these occur
   // when the user is scrolling and entering form data, as well as when we're
@@ -1619,7 +1624,7 @@ void TabContents::UpdateTitle(RenderViewHost* rvh,
   // getting useful data.
   SetNotWaitingForResponse();
 
-  DCHECK(rvh == render_view_host());
+  DCHECK(rvh == GetRenderViewHost());
   NavigationEntry* entry = controller_.GetEntryWithPageID(rvh->site_instance(),
                                                           page_id);
 
@@ -1667,12 +1672,12 @@ void TabContents::Close(RenderViewHost* rvh) {
   }
 
   // Ignore this if it comes from a RenderViewHost that we aren't showing.
-  if (delegate_ && rvh == render_view_host())
+  if (delegate_ && rvh == GetRenderViewHost())
     delegate_->CloseContents(this);
 }
 
 void TabContents::SwappedOut(RenderViewHost* rvh) {
-  if (delegate_ && rvh == render_view_host())
+  if (delegate_ && rvh == GetRenderViewHost())
     delegate_->SwappedOut(this);
 }
 
@@ -1855,7 +1860,7 @@ void TabContents::RunBeforeUnloadConfirm(const RenderViewHost* rvh,
       !delegate_ ||
       delegate_->ShouldSuppressDialogs();
   if (suppress_this_message) {
-    render_view_host()->JavaScriptDialogClosed(reply_msg, true, string16());
+    GetRenderViewHost()->JavaScriptDialogClosed(reply_msg, true, string16());
     return;
   }
 
@@ -1869,7 +1874,7 @@ void TabContents::RunBeforeUnloadConfirm(const RenderViewHost* rvh,
 WebPreferences TabContents::GetWebkitPrefs() {
   WebPreferences web_prefs =
       content::GetContentClient()->browser()->GetWebkitPrefs(
-          render_view_host());
+          GetRenderViewHost());
 
   // Force accelerated compositing and 2d canvas off for chrome:, about: and
   // chrome-devtools: pages (unless it's specifically allowed).
@@ -1904,7 +1909,7 @@ void TabContents::OnIgnoredUIEvent() {
 void TabContents::RendererUnresponsive(RenderViewHost* rvh,
                                        bool is_during_unload) {
   // Don't show hung renderer dialog for a swapped out RVH.
-  if (rvh != render_view_host())
+  if (rvh != GetRenderViewHost())
     return;
 
   // Ignore renderer unresponsive event if debugger is attached to the tab
@@ -1932,7 +1937,7 @@ void TabContents::RendererUnresponsive(RenderViewHost* rvh,
     return;
   }
 
-  if (!render_view_host() || !render_view_host()->IsRenderViewLive())
+  if (!GetRenderViewHost() || !GetRenderViewHost()->IsRenderViewLive())
     return;
 
   if (delegate_)
@@ -2051,9 +2056,7 @@ void TabContents::OnDialogClosed(IPC::Message* reply_msg,
     tab_close_start_time_ = base::TimeTicks();
   }
   is_showing_before_unload_dialog_ = false;
-  render_view_host()->JavaScriptDialogClosed(reply_msg,
-                                             success,
-                                             user_input);
+  GetRenderViewHost()->JavaScriptDialogClosed(reply_msg, success, user_input);
 }
 
 gfx::NativeWindow TabContents::GetDialogRootWindow() const {
@@ -2077,6 +2080,6 @@ void TabContents::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
 }
 
 bool TabContents::GotResponseToLockMouseRequest(bool allowed) {
-  return render_view_host() ?
-      render_view_host()->GotResponseToLockMouseRequest(allowed) : false;
+  return GetRenderViewHost() ?
+      GetRenderViewHost()->GotResponseToLockMouseRequest(allowed) : false;
 }

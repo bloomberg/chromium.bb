@@ -232,12 +232,12 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Scroll) {
   wheel_event.deltaY = -200;
   wheel_event.wheelTicksY = -2;
   TabContents* tab_contents = browser()->GetSelectedTabContents();
-  tab_contents->render_view_host()->ForwardWheelEvent(wheel_event);
+  tab_contents->GetRenderViewHost()->ForwardWheelEvent(wheel_event);
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
 
   int y_offset = 0;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
-      browser()->GetSelectedTabContents()->render_view_host(),
+      browser()->GetSelectedTabContents()->GetRenderViewHost(),
       std::wstring(),
       L"window.domAutomationController.send(plugin.pageYOffset())",
       &y_offset));
@@ -266,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
   objects[ui::Clipboard::CBF_TEXT] = params;
   clipboard.WriteObjects(objects);
 
-  browser()->GetSelectedTabContents()->render_view_host()->Copy();
+  browser()->GetSelectedTabContents()->GetRenderViewHost()->Copy();
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
 
   std::string text;
@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
       // and before creating a byte-range request loader.
       bool complete = false;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-          browser()->GetSelectedTabContents()->render_view_host(),
+          browser()->GetSelectedTabContents()->GetRenderViewHost(),
           std::wstring(),
           L"window.domAutomationController.send(plugin.documentLoadComplete())",
           &complete));
@@ -350,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_OnLoadAndReload) {
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContents()->controller()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      browser()->GetSelectedTabContents()->render_view_host(),
+      browser()->GetSelectedTabContents()->GetRenderViewHost(),
       std::wstring(),
       L"reloadPDF();"));
   observer.Wait();

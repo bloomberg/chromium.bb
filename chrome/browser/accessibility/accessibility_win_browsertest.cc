@@ -214,7 +214,7 @@ AccessibilityWinBrowserTest::GetRendererAccessible() {
 }
 
 void AccessibilityWinBrowserTest::ExecuteScript(wstring script) {
-  browser()->GetSelectedTabContents()->render_view_host()->
+  browser()->GetSelectedTabContents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(L"", script);
 }
 

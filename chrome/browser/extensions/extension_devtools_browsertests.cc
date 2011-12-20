@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, FLAKY_TimelineApi) {
   // Setting the events should have caused an ExtensionDevToolsBridge to be
   // registered for the tab's RenderViewHost.
   DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-      tab_contents->render_view_host());
+      tab_contents->GetRenderViewHost());
   DevToolsClientHost* devtools_client_host =
       devtools_manager->GetDevToolsClientHostFor(agent);
   ASSERT_TRUE(devtools_client_host);
@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, FLAKY_TimelineApi) {
   result = false;
   devtools_manager->UnregisterDevToolsClientHostFor(
       DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-          tab_contents->render_view_host()));
+          tab_contents->GetRenderViewHost()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testReceiveTabCloseEvent()", &result));
   EXPECT_TRUE(result);
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
   // to be registered for the tab's RenderViewHost.
   ASSERT_TRUE(devtools_manager->GetDevToolsClientHostFor(
       DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-          tab_contents->render_view_host())));
+          tab_contents->GetRenderViewHost())));
 
   // Register listeners from the second extension as well.
   std::wstring script = base::StringPrintf(L"registerListenersForTab(%d)",
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
   EXPECT_TRUE(result);
   ASSERT_TRUE(devtools_manager->GetDevToolsClientHostFor(
       DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-          tab_contents->render_view_host())));
+          tab_contents->GetRenderViewHost())));
 
   // Removing the listeners from the second extension should tear the bridge
   // down.
@@ -164,5 +164,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
   EXPECT_TRUE(result);
   ASSERT_FALSE(devtools_manager->GetDevToolsClientHostFor(
       DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-          tab_contents->render_view_host())));
+          tab_contents->GetRenderViewHost())));
 }

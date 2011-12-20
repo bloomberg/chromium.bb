@@ -66,7 +66,7 @@ bool ClipboardApiTest::ExecutePasteInSelectedTab(bool* result) {
 bool ClipboardApiTest::ExecuteScriptInSelectedTab(const std::wstring& script,
                                                   bool* result) {
   if (!ui_test_utils::ExecuteJavaScriptAndExtractBool(
-          browser()->GetSelectedTabContents()->render_view_host(),
+          browser()->GetSelectedTabContents()->GetRenderViewHost(),
           L"",
           script,
           result)) {

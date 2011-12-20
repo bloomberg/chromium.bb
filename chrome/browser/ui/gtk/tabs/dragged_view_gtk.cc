@@ -391,7 +391,7 @@ gboolean DraggedViewGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
 
   // Draw the render area.
   BackingStore* backing_store = drag_data_->GetSourceTabContents()->
-      render_view_host()->GetBackingStore(false);
+      GetRenderViewHost()->GetBackingStore(false);
   if (backing_store && !attached_) {
     // This leaves room for the border.
     static_cast<BackingStoreGtk*>(backing_store)->PaintToRect(

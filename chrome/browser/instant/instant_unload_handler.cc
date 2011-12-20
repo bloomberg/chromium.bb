@@ -85,7 +85,7 @@ void InstantUnloadHandler::RunUnloadListenersOrDestroy(TabContentsWrapper* tab,
   // TODO: decide if we really want false here. false is used for tab closes,
   // and is needed so that the tab correctly closes but it doesn't really match
   // what's logically happening.
-  tab->tab_contents()->render_view_host()->FirePageBeforeUnload(false);
+  tab->tab_contents()->GetRenderViewHost()->FirePageBeforeUnload(false);
 }
 
 void InstantUnloadHandler::Activate(TabContentsDelegateImpl* delegate) {

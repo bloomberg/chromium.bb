@@ -123,8 +123,8 @@ InterstitialPage::InterstitialPage(TabContents* tab,
       enabled_(true),
       action_taken_(NO_ACTION),
       render_view_host_(NULL),
-      original_child_id_(tab->render_view_host()->process()->GetID()),
-      original_rvh_id_(tab->render_view_host()->routing_id()),
+      original_child_id_(tab->GetRenderProcessHost()->GetID()),
+      original_rvh_id_(tab->GetRenderViewHost()->routing_id()),
       should_revert_tab_title_(false),
       tab_was_loading_(false),
       resource_dispatcher_host_notified_(false),
@@ -177,7 +177,7 @@ void InterstitialPage::Show() {
   // already been destroyed.
   notification_registrar_.Add(
       this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      content::Source<RenderWidgetHost>(tab_->render_view_host()));
+      content::Source<RenderWidgetHost>(tab_->GetRenderViewHost()));
 
   // Update the tab_to_interstitial_page_ map.
   iter = tab_to_interstitial_page_->find(tab_);
@@ -214,7 +214,7 @@ void InterstitialPage::Show() {
 }
 
 void InterstitialPage::Hide() {
-  RenderWidgetHostView* old_view = tab_->render_view_host()->view();
+  RenderWidgetHostView* old_view = tab_->GetRenderViewHost()->view();
   if (tab_->interstitial_page() == this && old_view && !old_view->IsShowing()) {
     // Show the original RVH since we're going away.  Note it might not exist if
     // the renderer crashed while the interstitial was showing.
@@ -227,8 +227,8 @@ void InterstitialPage::Hide() {
   // If the focus was on the interstitial, let's keep it to the page.
   // (Note that in unit-tests the RVH may not have a view).
   if (render_view_host_->view() && render_view_host_->view()->HasFocus() &&
-      tab_->render_view_host()->view()) {
-    tab_->render_view_host()->view()->Focus();
+      tab_->GetRenderViewHost()->view()) {
+    tab_->GetRenderViewHost()->view()->Focus();
   }
 
   render_view_host_->Shutdown();
@@ -336,7 +336,7 @@ void InterstitialPage::DidNavigate(
       content::Source<TabContents>(tab_),
       content::NotificationService::NoDetails());
 
-  RenderWidgetHostView* rwh_view = tab_->render_view_host()->view();
+  RenderWidgetHostView* rwh_view = tab_->GetRenderViewHost()->view();
 
   // The RenderViewHost may already have crashed before we even get here.
   if (rwh_view) {

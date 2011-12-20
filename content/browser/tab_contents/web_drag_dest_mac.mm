@@ -77,7 +77,7 @@ using WebKit::WebDragOperationsMask;
                               view:(NSView*)view {
   // Save off the RVH so we can tell if it changes during a drag. If it does,
   // we need to send a new enter message in draggingUpdated:.
-  currentRVH_ = tabContents_->render_view_host();
+  currentRVH_ = tabContents_->GetRenderViewHost();
 
   if ([self onlyAllowsNavigation]) {
     if ([[info draggingPasteboard] containsURLData])
@@ -100,7 +100,7 @@ using WebKit::WebDragOperationsMask;
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
   NSDragOperation mask = [info draggingSourceOperationMask];
-  tabContents_->render_view_host()->DragTargetDragEnter(data,
+  tabContents_->GetRenderViewHost()->DragTargetDragEnter(data,
       gfx::Point(viewPoint.x, viewPoint.y),
       gfx::Point(screenPoint.x, screenPoint.y),
       static_cast<WebDragOperationsMask>(mask));
@@ -113,7 +113,7 @@ using WebKit::WebDragOperationsMask;
 
 - (void)draggingExited:(id<NSDraggingInfo>)info {
   DCHECK(currentRVH_);
-  if (currentRVH_ != tabContents_->render_view_host())
+  if (currentRVH_ != tabContents_->GetRenderViewHost())
     return;
 
   // Nothing to do in the interstitial case.
@@ -121,13 +121,13 @@ using WebKit::WebDragOperationsMask;
   if (delegate_)
     delegate_->OnDragLeave();
 
-  tabContents_->render_view_host()->DragTargetDragLeave();
+  tabContents_->GetRenderViewHost()->DragTargetDragLeave();
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)info
                               view:(NSView*)view {
   DCHECK(currentRVH_);
-  if (currentRVH_ != tabContents_->render_view_host())
+  if (currentRVH_ != tabContents_->GetRenderViewHost())
     [self draggingEntered:info view:view];
 
   if ([self onlyAllowsNavigation]) {
@@ -142,7 +142,7 @@ using WebKit::WebDragOperationsMask;
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
   NSDragOperation mask = [info draggingSourceOperationMask];
-  tabContents_->render_view_host()->DragTargetDragOver(
+  tabContents_->GetRenderViewHost()->DragTargetDragOver(
       gfx::Point(viewPoint.x, viewPoint.y),
       gfx::Point(screenPoint.x, screenPoint.y),
       static_cast<WebDragOperationsMask>(mask));
@@ -155,7 +155,7 @@ using WebKit::WebDragOperationsMask;
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)info
                               view:(NSView*)view {
-  if (currentRVH_ != tabContents_->render_view_host())
+  if (currentRVH_ != tabContents_->GetRenderViewHost())
     [self draggingEntered:info view:view];
 
   // Check if we only allow navigation and navigate to a url on the pasteboard.
@@ -181,7 +181,7 @@ using WebKit::WebDragOperationsMask;
   NSPoint windowPoint = [info draggingLocation];
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
-  tabContents_->render_view_host()->DragTargetDrop(
+  tabContents_->GetRenderViewHost()->DragTargetDrop(
       gfx::Point(viewPoint.x, viewPoint.y),
       gfx::Point(screenPoint.x, screenPoint.y));
 

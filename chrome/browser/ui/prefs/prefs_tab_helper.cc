@@ -429,11 +429,11 @@ void PrefsTabHelper::UpdateWebPreferences() {
   WebPreferences prefs = rvhd->GetWebkitPrefs();
   prefs.javascript_enabled =
       per_tab_prefs_->GetBoolean(prefs::kWebKitJavascriptEnabled);
-  tab_contents()->render_view_host()->UpdateWebkitPreferences(prefs);
+  tab_contents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
 }
 
 void PrefsTabHelper::UpdateRendererPreferences() {
   renderer_preferences_util::UpdateFromSystemSettings(
       tab_contents()->GetMutableRendererPrefs(), wrapper_->profile());
-  tab_contents()->render_view_host()->SyncRendererPrefs();
+  tab_contents()->GetRenderViewHost()->SyncRendererPrefs();
 }

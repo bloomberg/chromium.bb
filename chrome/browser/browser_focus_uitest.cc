@@ -418,7 +418,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
   focused_browser->window()->Activate();
 
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      unfocused_browser->GetSelectedTabContents()->render_view_host(), L"",
+      unfocused_browser->GetSelectedTabContents()->GetRenderViewHost(), L"",
       L"stealFocus();"));
 
   // Make sure the first browser is still active.
@@ -437,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
   browser()->FocusLocationBar();
 
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
       L"stealFocus();"));
 
   // Make sure the location bar is still focused.
@@ -483,7 +483,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
       // Let's make sure the focus is on the expected element in the page.
       std::string actual;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-          browser()->GetSelectedTabContents()->render_view_host(),
+          browser()->GetSelectedTabContents()->GetRenderViewHost(),
           L"",
           L"window.domAutomationController.send(getFocusedElement());",
           &actual));
@@ -500,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
             browser(), ui::VKEY_TAB, false, false, false, false,
             content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
             content::NotificationSource(content::Source<RenderViewHost>(
-                browser()->GetSelectedTabContents()->render_view_host())),
+                browser()->GetSelectedTabContents()->GetRenderViewHost())),
             details));
       } else {
         // On the last tab key press, the focus returns to the browser.
@@ -543,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
             browser(), ui::VKEY_TAB, false, true, false, false,
             content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
             content::NotificationSource(content::Source<RenderViewHost>(
-                browser()->GetSelectedTabContents()->render_view_host())),
+                browser()->GetSelectedTabContents()->GetRenderViewHost())),
             details));
       } else {
         // On the last tab key press, the focus returns to the browser.
@@ -556,7 +556,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
       // Let's make sure the focus is on the expected element in the page.
       std::string actual;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-          browser()->GetSelectedTabContents()->render_view_host(),
+          browser()->GetSelectedTabContents()->GetRenderViewHost(),
           L"",
           L"window.domAutomationController.send(getFocusedElement());",
           &actual));
@@ -705,7 +705,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
 
   // Page should have focus.
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
-  EXPECT_TRUE(browser()->GetSelectedTabContents()->render_view_host()->view()->
+  EXPECT_TRUE(browser()->GetSelectedTabContents()->GetRenderViewHost()->view()->
       HasFocus());
 
   // Let's show an interstitial.

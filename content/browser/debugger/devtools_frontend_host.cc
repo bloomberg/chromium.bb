@@ -30,7 +30,7 @@ void DevToolsClientHost::SetupDevToolsFrontendClient(
 DevToolsFrontendHost::DevToolsFrontendHost(
     TabContents* tab_contents,
     DevToolsFrontendHostDelegate* delegate)
-    : RenderViewHostObserver(tab_contents->render_view_host()),
+    : RenderViewHostObserver(tab_contents->GetRenderViewHost()),
       tab_contents_(tab_contents),
       delegate_(delegate) {
 }
@@ -40,7 +40,7 @@ DevToolsFrontendHost::~DevToolsFrontendHost() {
 
 void DevToolsFrontendHost::DispatchOnInspectorFrontend(
     const std::string& message) {
-  RenderViewHost* target_host = tab_contents_->render_view_host();
+  RenderViewHost* target_host = tab_contents_->GetRenderViewHost();
   target_host->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
       target_host->routing_id(),
       message));

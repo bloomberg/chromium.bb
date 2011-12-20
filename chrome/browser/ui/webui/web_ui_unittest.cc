@@ -44,7 +44,7 @@ class WebUITest : public TabContentsWrapperTestHarness {
 
     // Now commit the load.
     static_cast<TestRenderViewHost*>(
-        contents->render_view_host())->SendNavigate(page_id, new_tab_url);
+        contents->GetRenderViewHost())->SendNavigate(page_id, new_tab_url);
 
     // The same flags should be set as before now that the load has committed.
     EXPECT_FALSE(wrapper->favicon_tab_helper()->ShouldDisplayFavicon());
@@ -72,7 +72,7 @@ class WebUITest : public TabContentsWrapperTestHarness {
           pending_render_view_host())->SendNavigate(page_id + 1, next_url);
     } else {
       static_cast<TestRenderViewHost*>(
-          contents->render_view_host())->SendNavigate(page_id + 1, next_url);
+          contents->GetRenderViewHost())->SendNavigate(page_id + 1, next_url);
     }
 
     // The state should now reflect a regular page.

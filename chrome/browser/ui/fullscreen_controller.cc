@@ -281,8 +281,8 @@ bool FullscreenController::HandleUserPressedEscape() {
 
 void FullscreenController::NotifyTabOfFullscreenExitIfNecessary() {
   if (fullscreened_tab_ &&
-      fullscreened_tab_->tab_contents()->render_view_host()) {
-    fullscreened_tab_->tab_contents()->render_view_host()->ExitFullscreen();
+      fullscreened_tab_->tab_contents()->GetRenderViewHost()) {
+    fullscreened_tab_->tab_contents()->GetRenderViewHost()->ExitFullscreen();
   } else {
     DCHECK_EQ(mouse_lock_state_, MOUSELOCK_NOT_REQUESTED);
   }

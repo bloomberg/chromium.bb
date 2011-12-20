@@ -142,7 +142,7 @@ void PrintViewManager::PrintPreviewDone() {
 void PrintViewManager::PreviewPrintingRequestCancelled() {
   if (!tab_contents())
     return;
-  RenderViewHost* rvh = tab_contents()->render_view_host();
+  RenderViewHost* rvh = tab_contents()->GetRenderViewHost();
   rvh->Send(new PrintMsg_PreviewPrintingRequestCancelled(rvh->routing_id()));
 }
 
@@ -265,8 +265,7 @@ void PrintViewManager::OnScriptedPrintPreview(bool source_is_modifiable,
   BrowserThread::CurrentlyOn(BrowserThread::UI);
   ScriptedPrintPreviewClosureMap& map =
       g_scripted_print_preview_closure_map.Get();
-  content::RenderProcessHost* rph =
-      tab_contents()->render_view_host()->process();
+  content::RenderProcessHost* rph = tab_contents()->GetRenderProcessHost();
 
   // This should always be 0 once we get modal window.print().
   if (map.count(rph) != 0) {
@@ -395,8 +394,8 @@ bool PrintViewManager::RenderAllMissingPagesNow() {
 
   // We can't print if there is no renderer.
   if (!tab_contents() ||
-      !tab_contents()->render_view_host() ||
-      !tab_contents()->render_view_host()->IsRenderViewLive()) {
+      !tab_contents()->GetRenderViewHost() ||
+      !tab_contents()->GetRenderViewHost()->IsRenderViewLive()) {
     return false;
   }
 
@@ -445,8 +444,8 @@ bool PrintViewManager::CreateNewPrintJob(PrintJobWorkerOwner* job) {
   DisconnectFromCurrentPrintJob();
 
   // We can't print if there is no renderer.
-  if (!tab_contents()->render_view_host() ||
-      !tab_contents()->render_view_host()->IsRenderViewLive()) {
+  if (!tab_contents()->GetRenderViewHost() ||
+      !tab_contents()->GetRenderViewHost()->IsRenderViewLive()) {
     return false;
   }
 
@@ -489,7 +488,7 @@ void PrintViewManager::DisconnectFromCurrentPrintJob() {
 void PrintViewManager::PrintingDone(bool success) {
   if (!print_job_.get() || !tab_contents())
     return;
-  RenderViewHost* rvh = tab_contents()->render_view_host();
+  RenderViewHost* rvh = tab_contents()->GetRenderViewHost();
   rvh->Send(new PrintMsg_PrintingDone(rvh->routing_id(), success));
 }
 

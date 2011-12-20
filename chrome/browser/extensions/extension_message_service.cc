@@ -194,9 +194,9 @@ void ExtensionMessageService::OpenChannelToTab(
   MessagePort receiver;
   if (ExtensionTabUtil::GetTabById(tab_id, profile, true,
                                    NULL, NULL, &contents, NULL)) {
-    receiver.sender = contents->tab_contents()->render_view_host();
+    receiver.sender = contents->tab_contents()->GetRenderViewHost();
     receiver.routing_id =
-        contents->tab_contents()->render_view_host()->routing_id();
+        contents->tab_contents()->GetRenderViewHost()->routing_id();
   }
 
   if (contents && contents->tab_contents()->controller().needs_reload()) {
@@ -298,8 +298,8 @@ int ExtensionMessageService::OpenSpecialChannelToTab(
   AllocatePortIdPair(&port1_id, &port2_id);
 
   MessagePort receiver(
-      target_tab_contents->render_view_host(),
-      target_tab_contents->render_view_host()->routing_id());
+      target_tab_contents->GetRenderViewHost(),
+      target_tab_contents->GetRenderViewHost()->routing_id());
   if (!OpenChannelImpl(source, "null", receiver, port2_id,
                        extension_id, extension_id, channel_name))
     return -1;

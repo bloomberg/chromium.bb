@@ -108,9 +108,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestNewTab) {
   mouse_event.x = 7;
   mouse_event.y = 7;
   mouse_event.clickCount = 1;
-  tab->render_view_host()->ForwardMouseEvent(mouse_event);
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
   mouse_event.type = WebKit::WebInputEvent::MouseUp;
-  tab->render_view_host()->ForwardMouseEvent(mouse_event);
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

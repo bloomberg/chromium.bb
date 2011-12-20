@@ -1414,7 +1414,7 @@ gboolean BrowserWindowGtk::OnConfigure(GtkWidget* widget,
 
   TabContentsWrapper* tab = GetDisplayedTab();
   if (tab) {
-    tab->tab_contents()->render_view_host()->NotifyMoveOrResizeStarted();
+    tab->tab_contents()->GetRenderViewHost()->NotifyMoveOrResizeStarted();
   }
 
   if (bounds_.size() != bounds.size())

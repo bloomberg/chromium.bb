@@ -537,7 +537,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::NotificationService::AllSources());
     RenderViewHost* render_view_host =
-        browser->GetSelectedTabContents()->render_view_host();
+        browser->GetSelectedTabContents()->GetRenderViewHost();
     render_view_host->ExecuteJavascriptInWebFrame(
         string16(),
         ASCIIToUTF16("ClickOpenLink()"));
@@ -569,7 +569,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     back_nav_observer.Wait();
     bool original_prerender_page = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser->GetSelectedTabContents()->render_view_host(), L"",
+        browser->GetSelectedTabContents()->GetRenderViewHost(), L"",
         L"window.domAutomationController.send(IsOriginalPrerenderPage())",
         &original_prerender_page));
     EXPECT_TRUE(original_prerender_page);
@@ -589,7 +589,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     back_nav_observer.Wait();
     bool js_result;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        tab->render_view_host(), L"",
+        tab->GetRenderViewHost(), L"",
         L"window.domAutomationController.send(DidBackToOriginalPagePass())",
         &js_result));
     EXPECT_TRUE(js_result);
@@ -787,7 +787,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
       bool display_test_result = false;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-          tab_contents->render_view_host(), L"",
+          tab_contents->GetRenderViewHost(), L"",
           L"window.domAutomationController.send(DidDisplayPass())",
           &display_test_result));
       EXPECT_TRUE(display_test_result);
@@ -803,7 +803,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(prerender_contents != NULL);
 
     RenderViewHost* render_view_host =
-        browser()->GetSelectedTabContents()->render_view_host();
+        browser()->GetSelectedTabContents()->GetRenderViewHost();
     render_view_host->ExecuteJavascriptInWebFrame(
         string16(),
         ASCIIToUTF16(javascript_function_name));
@@ -1881,7 +1881,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   DisableJavascriptCalls();
   TabContents* tab_contents = browser()->GetSelectedTabContents();
   DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-      tab_contents->render_view_host());
+      tab_contents->GetRenderViewHost());
   DevToolsManager* manager = DevToolsManager::GetInstance();
   FakeDevToolsClientHost client_host;
   manager->RegisterDevToolsClientHostFor(agent, &client_host);

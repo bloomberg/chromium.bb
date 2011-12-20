@@ -138,11 +138,11 @@ void OpenUsingReader(TabContentsWrapper* tab,
                      InfoBarDelegate* old_delegate,
                      InfoBarDelegate* new_delegate) {
   ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
-      tab->tab_contents()->render_view_host()->process()->GetID(),
-      tab->tab_contents()->render_view_host()->routing_id(),
+      tab->tab_contents()->GetRenderProcessHost()->GetID(),
+      tab->tab_contents()->GetRenderViewHost()->routing_id(),
       tab->tab_contents()->GetURL(),
       ASCIIToUTF16(PluginGroup::kAdobeReaderGroupName));
-  tab->tab_contents()->render_view_host()->ReloadFrame();
+  tab->tab_contents()->GetRenderViewHost()->ReloadFrame();
 
   if (new_delegate) {
     if (old_delegate) {
@@ -404,6 +404,6 @@ void PDFHasUnsupportedFeature(TabContentsWrapper* tab) {
 
   PluginService::GetInstance()->GetPluginGroups(
       base::Bind(&GotPluginGroupsCallback,
-          tab->tab_contents()->render_view_host()->process()->GetID(),
-          tab->tab_contents()->render_view_host()->routing_id()));
+          tab->tab_contents()->GetRenderProcessHost()->GetID(),
+          tab->tab_contents()->GetRenderViewHost()->routing_id()));
 }

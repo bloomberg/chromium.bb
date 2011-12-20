@@ -66,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Test clicking a rel=noreferrer + target=blank link.
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickNoRefTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Test clicking a target=blank link.
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Test clicking a rel=noreferrer link.
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickNoRefLink());",
       &success));
   EXPECT_TRUE(success);
@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
   // Renderer-initiated navigations should work.
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickNoRefLink());",
       &success));
   EXPECT_TRUE(success);
@@ -317,19 +317,19 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
   // Observe the newly created render_view_host to make sure it will not leak.
   RenderViewHostObserverArray rvh_observers;
   rvh_observers.AddObserverToRVH(browser()->GetSelectedTabContents()->
-      render_view_host());
+      GetRenderViewHost());
 
   GURL view_source_url(chrome::kViewSourceScheme + std::string(":") +
       navigated_url.spec());
   ui_test_utils::NavigateToURL(browser(), view_source_url);
   rvh_observers.AddObserverToRVH(browser()->GetSelectedTabContents()->
-      render_view_host());
+      GetRenderViewHost());
 
   // Now navigate to a different instance so that we swap out again.
   ui_test_utils::NavigateToURL(browser(),
                                https_server.GetURL("files/title2.html"));
   rvh_observers.AddObserverToRVH(browser()->GetSelectedTabContents()->
-      render_view_host());
+      GetRenderViewHost());
 
   // This used to leak a render view host.
   browser()->CloseTabContents(browser()->GetSelectedTabContents());

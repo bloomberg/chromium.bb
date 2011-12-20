@@ -35,7 +35,7 @@ WebDragSource::WebDragSource(gfx::NativeWindow source_wnd,
                              TabContents* tab_contents)
     : ui::DragSource(),
       source_wnd_(source_wnd),
-      render_view_host_(tab_contents->render_view_host()),
+      render_view_host_(tab_contents->GetRenderViewHost()),
       effect_(DROPEFFECT_NONE) {
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
                  content::Source<TabContents>(tab_contents));

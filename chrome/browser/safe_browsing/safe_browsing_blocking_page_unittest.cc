@@ -110,7 +110,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
 
   void Navigate(const char* url, int page_id) {
     contents()->TestDidNavigate(
-        contents()->render_view_host(), page_id, GURL(url),
+        contents()->GetRenderViewHost(), page_id, GURL(url),
         content::PAGE_TRANSITION_TYPED);
   }
 
@@ -181,7 +181,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
     resource->threat_type = SafeBrowsingService::URL_MALWARE;
     resource->render_process_host_id = contents()->GetRenderProcessHost()->
         GetID();
-    resource->render_view_id = contents()->render_view_host()->routing_id();
+    resource->render_view_id = contents()->GetRenderViewHost()->routing_id();
   }
 
   UserResponse user_response_;

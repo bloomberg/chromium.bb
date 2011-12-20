@@ -335,12 +335,12 @@ void TabContentsViewGtk::CreateNewWindow(
 void TabContentsViewGtk::CreateNewWidget(
     int route_id, WebKit::WebPopupType popup_type) {
   delegate_view_helper_.CreateNewWidget(route_id, popup_type,
-      tab_contents_->render_view_host()->process());
+      tab_contents_->GetRenderProcessHost());
 }
 
 void TabContentsViewGtk::CreateNewFullscreenWidget(int route_id) {
   delegate_view_helper_.CreateNewFullscreenWidget(
-      route_id, tab_contents_->render_view_host()->process());
+      route_id, tab_contents_->GetRenderProcessHost());
 }
 
 void TabContentsViewGtk::ShowCreatedWindow(int route_id,

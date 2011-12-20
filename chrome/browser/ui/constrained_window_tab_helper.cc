@@ -75,7 +75,7 @@ void ConstrainedWindowTabHelper::BlockTabContent(bool blocked) {
   }
 
   // RenderViewHost may be NULL during shutdown.
-  RenderViewHost* host = contents->render_view_host();
+  RenderViewHost* host = contents->GetRenderViewHost();
   if (host) {
     host->set_ignore_input_events(blocked);
     host->Send(

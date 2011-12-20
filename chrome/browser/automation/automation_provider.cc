@@ -583,7 +583,7 @@ void AutomationProvider::SendFindRequest(
   options.forward = forward;
   options.matchCase = match_case;
   options.findNext = find_next;
-  tab_contents->render_view_host()->Find(
+  tab_contents->GetRenderViewHost()->Find(
       FindInPageNotificationObserver::kFindInPageRequestId, search_string,
       options);
 }
@@ -806,7 +806,7 @@ RenderViewHost* AutomationProvider::GetViewForTab(int tab_handle) {
       return NULL;
     }
 
-    RenderViewHost* view_host = tab_contents->render_view_host();
+    RenderViewHost* view_host = tab_contents->GetRenderViewHost();
     return view_host;
   }
 

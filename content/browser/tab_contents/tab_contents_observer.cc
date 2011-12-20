@@ -150,19 +150,19 @@ bool TabContentsObserver::OnMessageReceived(const IPC::Message& message) {
 }
 
 bool TabContentsObserver::Send(IPC::Message* message) {
-  if (!tab_contents_ || !tab_contents_->render_view_host()) {
+  if (!tab_contents_ || !tab_contents_->GetRenderViewHost()) {
     delete message;
     return false;
   }
 
-  return tab_contents_->render_view_host()->Send(message);
+  return tab_contents_->GetRenderViewHost()->Send(message);
 }
 
 int TabContentsObserver::routing_id() const {
-  if (!tab_contents_ || !tab_contents_->render_view_host())
+  if (!tab_contents_ || !tab_contents_->GetRenderViewHost())
     return MSG_ROUTING_NONE;
 
-  return tab_contents_->render_view_host()->routing_id();
+  return tab_contents_->GetRenderViewHost()->routing_id();
 }
 
 void TabContentsObserver::TabContentsDestroyed() {

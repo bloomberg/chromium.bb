@@ -101,7 +101,7 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
                                  DWORD key_state,
                                  POINT cursor_position,
                                  DWORD effects) {
-  current_rvh_ = tab_contents_->render_view_host();
+  current_rvh_ = tab_contents_->GetRenderViewHost();
 
   if (!tab_)
     tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
@@ -124,7 +124,7 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
 
   POINT client_pt = cursor_position;
   ScreenToClient(GetHWND(), &client_pt);
-  tab_contents_->render_view_host()->DragTargetDragEnter(drop_data,
+  tab_contents_->GetRenderViewHost()->DragTargetDragEnter(drop_data,
       gfx::Point(client_pt.x, client_pt.y),
       gfx::Point(cursor_position.x, cursor_position.y),
       web_drag_utils_win::WinDragOpMaskToWebDragOpMask(effects));
@@ -150,7 +150,7 @@ DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
                                 POINT cursor_position,
                                 DWORD effects) {
   DCHECK(current_rvh_);
-  if (current_rvh_ != tab_contents_->render_view_host())
+  if (current_rvh_ != tab_contents_->GetRenderViewHost())
     OnDragEnter(data_object, key_state, cursor_position, effects);
 
   if (tab_contents_->showing_interstitial_page())
@@ -158,7 +158,7 @@ DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
 
   POINT client_pt = cursor_position;
   ScreenToClient(GetHWND(), &client_pt);
-  tab_contents_->render_view_host()->DragTargetDragOver(
+  tab_contents_->GetRenderViewHost()->DragTargetDragOver(
       gfx::Point(client_pt.x, client_pt.y),
       gfx::Point(cursor_position.x, cursor_position.y),
       web_drag_utils_win::WinDragOpMaskToWebDragOpMask(effects));
@@ -177,13 +177,13 @@ DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
 
 void WebDropTarget::OnDragLeave(IDataObject* data_object) {
   DCHECK(current_rvh_);
-  if (current_rvh_ != tab_contents_->render_view_host())
+  if (current_rvh_ != tab_contents_->GetRenderViewHost())
     return;
 
   if (tab_contents_->showing_interstitial_page()) {
     interstitial_drop_target_->OnDragLeave(data_object);
   } else {
-    tab_contents_->render_view_host()->DragTargetDragLeave();
+    tab_contents_->GetRenderViewHost()->DragTargetDragLeave();
   }
 
   if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()) {
@@ -201,7 +201,7 @@ DWORD WebDropTarget::OnDrop(IDataObject* data_object,
                             POINT cursor_position,
                             DWORD effect) {
   DCHECK(current_rvh_);
-  if (current_rvh_ != tab_contents_->render_view_host())
+  if (current_rvh_ != tab_contents_->GetRenderViewHost())
     OnDragEnter(data_object, key_state, cursor_position, effect);
 
   if (tab_contents_->showing_interstitial_page())
@@ -212,7 +212,7 @@ DWORD WebDropTarget::OnDrop(IDataObject* data_object,
 
   POINT client_pt = cursor_position;
   ScreenToClient(GetHWND(), &client_pt);
-  tab_contents_->render_view_host()->DragTargetDrop(
+  tab_contents_->GetRenderViewHost()->DragTargetDrop(
       gfx::Point(client_pt.x, client_pt.y),
       gfx::Point(cursor_position.x, cursor_position.y));
 

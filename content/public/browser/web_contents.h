@@ -12,6 +12,7 @@
 // TODO(jam): of course we will have to rename TabContentsDelgate,
 // TabContentsView etc to use WebContents.
 class TabContentsDelegate;
+class RenderViewHost;
 
 namespace base {
 class PropertyBag;
@@ -33,6 +34,9 @@ class WebContents {
   // Get/Set the delegate.
   virtual TabContentsDelegate* GetDelegate() = 0;
   virtual void SetDelegate(TabContentsDelegate* delegate) = 0;
+
+  // Gets the current RenderViewHost for this tab.
+  virtual RenderViewHost* GetRenderViewHost() const = 0;
 
 };
 

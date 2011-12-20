@@ -168,7 +168,7 @@ bool GetRenderViewFromJSONArgs(
     TabContents* tab = NULL;
     if (!GetTabFromJSONArgs(args, &tab, error))
       return false;
-    *rvh = tab->render_view_host();
+    *rvh = tab->GetRenderViewHost();
   }
   return true;
 }

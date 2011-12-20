@@ -18,7 +18,7 @@ BalloonViewHost::~BalloonViewHost() {
 }
 
 void BalloonViewHost::UpdateActualSize(const gfx::Size& new_size) {
-  RenderViewHost* host = tab_contents_->render_view_host();
+  RenderViewHost* host = tab_contents_->GetRenderViewHost();
   if (host) {
     RenderWidgetHostView* view = host->view();
     if (view)

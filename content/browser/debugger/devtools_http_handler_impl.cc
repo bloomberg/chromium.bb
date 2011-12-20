@@ -289,7 +289,7 @@ static PageList GeneratePageList(
       continue;
 
     DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-        tab_contents->render_view_host());
+        tab_contents->GetRenderViewHost());
     DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
         GetDevToolsClientHostFor(agent);
     PageInfo page_info;
@@ -362,7 +362,7 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
 
   DevToolsManager* manager = DevToolsManager::GetInstance();
   DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-      tab_contents->render_view_host());
+      tab_contents->GetRenderViewHost());
   if (manager->GetDevToolsClientHostFor(agent)) {
     Send500(connection_id, "Page with given id is being inspected: " + page_id);
     return;

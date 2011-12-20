@@ -54,14 +54,14 @@ void AlternateErrorPageTabObserver::Observe(int type,
                             const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_GOOGLE_URL_UPDATED:
-      UpdateAlternateErrorPageURL(tab_contents()->render_view_host());
+      UpdateAlternateErrorPageURL(tab_contents()->GetRenderViewHost());
       break;
     case chrome::NOTIFICATION_PREF_CHANGED: {
       std::string* pref_name = content::Details<std::string>(details).ptr();
       DCHECK(content::Source<PrefService>(source).ptr() ==
              wrapper_->profile()->GetPrefs());
       if (*pref_name == prefs::kAlternateErrorPagesEnabled) {
-        UpdateAlternateErrorPageURL(tab_contents()->render_view_host());
+        UpdateAlternateErrorPageURL(tab_contents()->GetRenderViewHost());
       } else {
         NOTREACHED() << "unexpected pref change notification" << *pref_name;
       }

@@ -684,7 +684,7 @@ content::NavigationType NavigationController::ClassifyNavigation(
       temp.append(",");
     }
     GURL url(temp);
-    tab_contents_->render_view_host()->Send(new ViewMsg_TempCrashWithData(url));
+    tab_contents_->GetRenderViewHost()->Send(new ViewMsg_TempCrashWithData(url));
     return content::NAVIGATION_TYPE_NAV_IGNORE;
 
 

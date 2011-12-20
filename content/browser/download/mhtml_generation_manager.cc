@@ -41,7 +41,7 @@ void MHTMLGenerationManager::GenerateMHTML(TabContents* tab_contents,
   Job job;
   job.file_path = file;
   job.process_id = tab_contents->GetRenderProcessHost()->GetID();
-  job.routing_id = tab_contents->render_view_host()->routing_id();
+  job.routing_id = tab_contents->GetRenderViewHost()->routing_id();
   job.callback = callback;
   id_to_job_[job_id] = job;
 

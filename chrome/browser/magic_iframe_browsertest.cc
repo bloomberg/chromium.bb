@@ -43,7 +43,7 @@ IN_PROC_BROWSER_TEST_F(MagicIframeBrowserTest, TransferIframeCloseWindow) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 3);
   std::string result;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(getLog())", &result));
   ASSERT_NE(result.find("DONE"), std::string::npos) << result;
 }

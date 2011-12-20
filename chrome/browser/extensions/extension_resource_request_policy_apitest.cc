@@ -47,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
       browser(), web_resource.ReplaceComponents(make_host_a_com));
   std::string result;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-    browser()->GetSelectedTabContents()->render_view_host(), L"",
+    browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
   EXPECT_EQ(result, "Loaded");
@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
           "non_existent_extension.html"));
   ui_test_utils::NavigateToURL(browser(), non_existent_extension);
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-    browser()->GetSelectedTabContents()->render_view_host(), L"",
+    browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
   EXPECT_EQ(result, "Image failed to load");
@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
   ui_test_utils::NavigateToURL(browser(),
       GURL(std::string("data:text/html;charset=utf-8,") + file_source));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Loaded");
@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
       browser(),
       GURL("chrome-extension://pbkkcbgdkliohhfaeefcijaghglkahja/index.html"));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Loaded");

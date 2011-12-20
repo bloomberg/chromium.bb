@@ -479,7 +479,7 @@ void SwizzleInit() {
          ++it) {
       if (TabContentsWrapper* contents = *it) {
         if (RenderViewHost* rvh =
-                contents->tab_contents()->render_view_host()) {
+                contents->tab_contents()->GetRenderViewHost()) {
           rvh->EnableRendererAccessibility();
         }
       }

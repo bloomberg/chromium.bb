@@ -30,7 +30,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest,
   ui_test_utils::NavigateToURL(browser(), empty_url);
 
   RenderViewHost* rvh =
-      browser()->GetSelectedTabContents()->render_view_host();
+      browser()->GetSelectedTabContents()->GetRenderViewHost();
 
   {
     Value* value = rvh->ExecuteJavascriptAndGetValue(string16(),

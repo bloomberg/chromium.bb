@@ -234,8 +234,8 @@ void HungRendererDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
     case GTK_RESPONSE_OK:
     case GTK_RESPONSE_DELETE_EVENT:
       // Start waiting again for responsiveness.
-      if (contents_ && contents_->render_view_host())
-        contents_->render_view_host()->RestartHangMonitorTimeout();
+      if (contents_ && contents_->GetRenderViewHost())
+        contents_->GetRenderViewHost()->RestartHangMonitorTimeout();
       break;
     default:
       NOTREACHED();

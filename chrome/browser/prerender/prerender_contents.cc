@@ -671,7 +671,7 @@ RenderViewHost* PrerenderContents::render_view_host_mutable() {
 const RenderViewHost* PrerenderContents::render_view_host() const {
   if (!prerender_contents_.get())
     return NULL;
-  return prerender_contents_->tab_contents()->render_view_host();
+  return prerender_contents_->tab_contents()->GetRenderViewHost();
 }
 
 void PrerenderContents::CommitHistory(TabContentsWrapper* tab) {

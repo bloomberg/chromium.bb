@@ -404,7 +404,7 @@ void TaskManagerHandler::EnableTaskManager(const ListValue* indexes) {
 }
 
 void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {
-  RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
+  RenderViewHost* rvh = web_ui_->tab_contents()->GetRenderViewHost();
   if (rvh && rvh->delegate()) {
     WebPreferences webkit_prefs = rvh->delegate()->GetWebkitPrefs();
     webkit_prefs.allow_scripts_to_close_windows = true;
@@ -419,7 +419,7 @@ void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {
 // TaskManagerHandler, private: -----------------------------------------------
 
 bool TaskManagerHandler::is_alive() {
-  return web_ui_->tab_contents()->render_view_host() != NULL;
+  return web_ui_->tab_contents()->GetRenderViewHost() != NULL;
 }
 
 void TaskManagerHandler::UpdateResourceGroupTable(int start, int length) {

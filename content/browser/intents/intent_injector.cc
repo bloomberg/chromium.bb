@@ -65,13 +65,13 @@ void IntentInjector::SendIntent() {
   if (source_intent_.get() == NULL ||
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableWebIntents) ||
-      tab_contents()->render_view_host() == NULL) {
+      tab_contents()->GetRenderViewHost() == NULL) {
     return;
   }
 
   // Send intent data through to renderer.
-  tab_contents()->render_view_host()->Send(new IntentsMsg_SetWebIntentData(
-      tab_contents()->render_view_host()->routing_id(),
+  tab_contents()->GetRenderViewHost()->Send(new IntentsMsg_SetWebIntentData(
+      tab_contents()->GetRenderViewHost()->routing_id(),
       *(source_intent_.get())));
   source_intent_.reset(NULL);
 }

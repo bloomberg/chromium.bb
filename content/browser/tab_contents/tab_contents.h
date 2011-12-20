@@ -106,9 +106,11 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   // Return the currently active RenderProcessHost and RenderViewHost. Each of
   // these may change over time.
   content::RenderProcessHost* GetRenderProcessHost() const;
-  RenderViewHost* render_view_host() const {
-    return render_manager_.current_host();
-  }
+
+
+
+
+
 
   WebUI* committed_web_ui() const {
     return render_manager_.web_ui();
@@ -478,6 +480,9 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   virtual base::PropertyBag* GetPropertyBag() OVERRIDE;
   virtual TabContentsDelegate* GetDelegate() OVERRIDE;
   virtual void SetDelegate(TabContentsDelegate* delegate) OVERRIDE;
+
+
+  virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
 
 
   // RenderViewHostDelegate ----------------------------------------------------

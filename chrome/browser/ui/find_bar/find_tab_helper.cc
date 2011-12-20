@@ -84,8 +84,8 @@ void FindTabHelper::StartFinding(string16 search_string,
   options.forward = forward_direction;
   options.matchCase = case_sensitive;
   options.findNext = find_next;
-  tab_contents()->render_view_host()->Find(current_find_request_id_,
-                                           find_text_, options);
+  tab_contents()->GetRenderViewHost()->Find(current_find_request_id_,
+                                            find_text_, options);
 }
 
 void FindTabHelper::StopFinding(
@@ -119,7 +119,7 @@ void FindTabHelper::StopFinding(
       NOTREACHED();
       action = content::STOP_FIND_ACTION_KEEP_SELECTION;
   }
-  tab_contents()->render_view_host()->StopFinding(action);
+  tab_contents()->GetRenderViewHost()->StopFinding(action);
 }
 
 void FindTabHelper::HandleFindReply(int request_id,

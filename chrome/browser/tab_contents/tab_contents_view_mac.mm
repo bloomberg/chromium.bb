@@ -279,7 +279,7 @@ void TabContentsViewMac::CreateNewWindow(
 void TabContentsViewMac::CreateNewWidget(
     int route_id, WebKit::WebPopupType popup_type) {
   RenderWidgetHostView* widget_view = delegate_view_helper_.CreateNewWidget(
-      route_id, popup_type, tab_contents_->render_view_host()->process());
+      route_id, popup_type, tab_contents_->GetRenderProcessHost());
 
   // A RenderWidgetHostViewMac has lifetime scoped to the view. We'll retain it
   // to allow it to survive the trip without being hosted.
@@ -291,7 +291,7 @@ void TabContentsViewMac::CreateNewWidget(
 void TabContentsViewMac::CreateNewFullscreenWidget(int route_id) {
   RenderWidgetHostView* widget_view =
       delegate_view_helper_.CreateNewFullscreenWidget(
-          route_id, tab_contents_->render_view_host()->process());
+          route_id, tab_contents_->GetRenderProcessHost());
 
   // A RenderWidgetHostViewMac has lifetime scoped to the view. We'll retain it
   // to allow it to survive the trip without being hosted.
@@ -363,7 +363,7 @@ void TabContentsViewMac::ShowPopupMenu(
     int selected_item,
     const std::vector<WebMenuItem>& items,
     bool right_aligned) {
-  PopupMenuHelper popup_menu_helper(tab_contents_->render_view_host());
+  PopupMenuHelper popup_menu_helper(tab_contents_->GetRenderViewHost());
   popup_menu_helper.ShowPopupMenu(bounds, item_height, item_font_size,
                                   selected_item, items, right_aligned);
 }
@@ -403,7 +403,7 @@ void TabContentsViewMac::RemoveOverlayView() {
 }
 
 void TabContentsViewMac::CloseTab() {
-  tab_contents_->Close(tab_contents_->render_view_host());
+  tab_contents_->Close(tab_contents_->GetRenderViewHost());
 }
 
 @implementation TabContentsViewCocoa
@@ -515,8 +515,8 @@ void TabContentsViewMac::CloseTab() {
 
 - (void)renderWidgetHostWasResized {
   TabContents* tabContents = [self tabContents];
-  if (tabContents && tabContents->render_view_host())
-    tabContents->render_view_host()->WasResized();
+  if (tabContents && tabContents->GetRenderViewHost())
+    tabContents->GetRenderViewHost()->WasResized();
 }
 
 // NSDraggingSource methods

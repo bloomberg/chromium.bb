@@ -292,7 +292,7 @@ void TabContentsViewViews::TakeFocus(bool reverse) {
 }
 
 void TabContentsViewViews::CloseTab() {
-  tab_contents_->Close(tab_contents_->render_view_host());
+  tab_contents_->Close(tab_contents_->GetRenderViewHost());
 }
 
 void TabContentsViewViews::CreateNewWindow(
@@ -305,12 +305,12 @@ void TabContentsViewViews::CreateNewWindow(
 void TabContentsViewViews::CreateNewWidget(
     int route_id, WebKit::WebPopupType popup_type) {
   delegate_view_helper_.CreateNewWidget(route_id, popup_type,
-      tab_contents_->render_view_host()->process());
+      tab_contents_->GetRenderProcessHost());
 }
 
 void TabContentsViewViews::CreateNewFullscreenWidget(int route_id) {
   delegate_view_helper_.CreateNewFullscreenWidget(
-      route_id, tab_contents_->render_view_host()->process());
+      route_id, tab_contents_->GetRenderProcessHost());
 }
 
 void TabContentsViewViews::ShowCreatedWindow(int route_id,

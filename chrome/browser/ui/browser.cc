@@ -702,7 +702,7 @@ TabContents* Browser::OpenApplicationWindow(
       browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_START_PAGE);
   TabContents* contents = wrapper->tab_contents();
   contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
-  contents->render_view_host()->SyncRendererPrefs();
+  contents->GetRenderViewHost()->SyncRendererPrefs();
   browser->window()->Show();
 
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
@@ -1944,7 +1944,7 @@ void Browser::Zoom(content::PageZoom zoom) {
     return;
 
   RenderViewHost* host =
-      GetSelectedTabContentsWrapper()->tab_contents()->render_view_host();
+      GetSelectedTabContentsWrapper()->tab_contents()->GetRenderViewHost();
   if (zoom == content::PAGE_ZOOM_RESET) {
     host->SetZoomLevel(0);
     content::RecordAction(UserMetricsAction("ZoomNormal"));
@@ -2082,7 +2082,7 @@ void Browser::ToggleDevToolsWindow(DevToolsToggleAction action) {
     content::RecordAction(UserMetricsAction("DevTools_ToggleWindow"));
 
   DevToolsWindow::ToggleDevToolsWindow(
-      GetSelectedTabContentsWrapper()->tab_contents()->render_view_host(),
+      GetSelectedTabContentsWrapper()->tab_contents()->GetRenderViewHost(),
       action);
 }
 
@@ -2501,7 +2501,7 @@ bool Browser::RunUnloadEventsHelper(TabContents* contents) {
     // them. Once they have fired, we'll get a message back saying whether
     // to proceed closing the page or not, which sends us back to this method
     // with the NeedToFireBeforeUnload bit cleared.
-    contents->render_view_host()->FirePageBeforeUnload(false);
+    contents->GetRenderViewHost()->FirePageBeforeUnload(false);
     return true;
   }
   return false;
@@ -2534,7 +2534,7 @@ void Browser::RunFileChooserHelper(
   // goes out of scope.
   scoped_refptr<FileSelectHelper> file_select_helper(
       new FileSelectHelper(profile));
-  file_select_helper->RunFileChooser(tab->render_view_host(), tab, params);
+  file_select_helper->RunFileChooser(tab->GetRenderViewHost(), tab, params);
 }
 
 // static
@@ -2542,10 +2542,8 @@ void Browser::EnumerateDirectoryHelper(TabContents* tab, int request_id,
                                        const FilePath& path) {
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
-  if (!policy->CanReadDirectory(tab->render_view_host()->process()->GetID(),
-                                path)) {
+  if (!policy->CanReadDirectory(tab->GetRenderProcessHost()->GetID(), path))
     return;
-  }
 
   Profile* profile =
       Profile::FromBrowserContext(tab->browser_context());
@@ -2555,7 +2553,7 @@ void Browser::EnumerateDirectoryHelper(TabContents* tab, int request_id,
   scoped_refptr<FileSelectHelper> file_select_helper(
       new FileSelectHelper(profile));
   file_select_helper->EnumerateDirectory(request_id,
-                                         tab->render_view_host(),
+                                         tab->GetRenderViewHost(),
                                          path);
 }
 
@@ -3497,7 +3495,7 @@ void Browser::AddNewContents(TabContents* source,
       return;
     }
 
-    new_contents->render_view_host()->DisassociateFromPopupCount();
+    new_contents->GetRenderViewHost()->DisassociateFromPopupCount();
   }
 
   browser::NavigateParams params(this, new_wrapper);
@@ -3655,7 +3653,7 @@ void Browser::ConvertContentsToApplication(TabContents* contents) {
   app_browser->tabstrip_model()->AppendTabContents(wrapper, true);
 
   contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
-  contents->render_view_host()->SyncRendererPrefs();
+  contents->GetRenderViewHost()->SyncRendererPrefs();
   app_browser->window()->Show();
 }
 
@@ -4909,8 +4907,8 @@ void Browser::ProcessPendingTabs() {
     TabContents* tab = *(tabs_needing_before_unload_fired_.begin());
     // Null check render_view_host here as this gets called on a PostTask and
     // the tab's render_view_host may have been nulled out.
-    if (tab->render_view_host()) {
-      tab->render_view_host()->FirePageBeforeUnload(false);
+    if (tab->GetRenderViewHost()) {
+      tab->GetRenderViewHost()->FirePageBeforeUnload(false);
     } else {
       ClearUnloadState(tab, true);
     }
@@ -4926,8 +4924,8 @@ void Browser::ProcessPendingTabs() {
     TabContents* tab = *(tabs_needing_unload_fired_.begin());
     // Null check render_view_host here as this gets called on a PostTask and
     // the tab's render_view_host may have been nulled out.
-    if (tab->render_view_host()) {
-      tab->render_view_host()->ClosePage();
+    if (tab->GetRenderViewHost()) {
+      tab->GetRenderViewHost()->ClosePage();
     } else {
       ClearUnloadState(tab, true);
     }
@@ -5317,7 +5315,7 @@ void Browser::ShowSyncSetup() {
 }
 
 void Browser::ToggleSpeechInput() {
-  GetSelectedTabContentsWrapper()->tab_contents()->render_view_host()->
+  GetSelectedTabContentsWrapper()->tab_contents()->GetRenderViewHost()->
       ToggleSpeechInput();
 }
 

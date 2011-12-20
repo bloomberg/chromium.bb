@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(WorkersUITest, MAYBE_SharedWorkersList) {
   std::string result;
   ASSERT_TRUE(
       ui_test_utils::ExecuteJavaScriptAndExtractString(
-          tab_contents->render_view_host(),
+          tab_contents->GetRenderViewHost(),
           L"",
           L"window.domAutomationController.send("
           L"'' + document.getElementsByTagName('td')[1].textContent);",

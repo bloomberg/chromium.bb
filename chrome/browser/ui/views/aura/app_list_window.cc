@@ -107,7 +107,7 @@ void AppListWindow::Init(const gfx::Rect& bounds) {
   background.allocPixels();
   background.eraseARGB(0x00, 0x00, 0x00, 0x00);
 
-  RenderViewHost* host = tab->render_view_host();
+  RenderViewHost* host = tab->GetRenderViewHost();
   host->view()->SetBackground(background);
 
   views::Widget::InitParams widget_params(

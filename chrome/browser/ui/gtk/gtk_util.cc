@@ -1174,7 +1174,7 @@ void DoCutCopyPaste(BrowserWindow* window,
 
   TabContents* current_tab = GetBrowserWindowSelectedTabContents(window);
   if (current_tab && widget == current_tab->GetContentNativeView()) {
-    (current_tab->render_view_host()->*method)();
+    (current_tab->GetRenderViewHost()->*method)();
   } else {
     guint id;
     if ((id = g_signal_lookup(signal, G_OBJECT_TYPE(widget))) != 0)

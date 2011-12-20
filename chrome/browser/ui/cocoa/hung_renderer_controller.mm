@@ -116,8 +116,8 @@ class TabContentsObserverBridge : public TabContentsObserver {
 }
 
 - (IBAction)wait:(id)sender {
-  if (hungContents_ && hungContents_->render_view_host())
-    hungContents_->render_view_host()->RestartHangMonitorTimeout();
+  if (hungContents_ && hungContents_->GetRenderViewHost())
+    hungContents_->GetRenderViewHost()->RestartHangMonitorTimeout();
   // Cannot call performClose:, because the close button is disabled.
   [self close];
 }

@@ -1108,7 +1108,7 @@ bool UpdateTabFunction::RunImpl() {
       params.in_main_world = true;
 
       RenderViewHost* render_view_host =
-          contents->tab_contents()->render_view_host();
+          contents->tab_contents()->GetRenderViewHost();
       render_view_host->Send(
           new ExtensionMsg_ExecuteCode(render_view_host->routing_id(),
                                        params));
@@ -1410,7 +1410,7 @@ bool RemoveTabsFunction::RunImpl() {
     // path should ensure that the tab is safely closed under such
     // circumstances, whereas |Browser::CloseTabContents()| does not.
     RenderViewHost* render_view_host =
-        contents->tab_contents()->render_view_host();
+        contents->tab_contents()->GetRenderViewHost();
     render_view_host->delegate()->Close(render_view_host);
   }
   return true;
@@ -1474,7 +1474,7 @@ bool CaptureVisibleTabFunction::RunImpl() {
   if (!GetExtension()->CanCaptureVisiblePage(tab_contents->GetURL(), &error_))
     return false;
 
-  RenderViewHost* render_view_host = tab_contents->render_view_host();
+  RenderViewHost* render_view_host = tab_contents->GetRenderViewHost();
 
   // If a backing store is cached for the tab we want to capture,
   // and it can be copied into a bitmap, then use it to generate the image.

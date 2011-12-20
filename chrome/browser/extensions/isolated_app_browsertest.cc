@@ -37,7 +37,7 @@ class IsolatedAppTest : public ExtensionBrowserTest {
     ExtensionService* service = profile->GetExtensionService();
     if (service) {
       installed_app = service->GetInstalledAppForRenderer(
-          contents->render_view_host()->process()->GetID());
+          contents->GetRenderProcessHost()->GetID());
     }
     return installed_app;
   }

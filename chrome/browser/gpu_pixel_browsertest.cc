@@ -273,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, DISABLED_WebGLTeapot) {
   gfx::Size container_size(500, 500);
   ResizeTabContainer(browser(), container_size);
   ASSERT_TRUE(ui_test_utils::TakeRenderWidgetSnapshot(
-      browser()->GetSelectedTabContents()->render_view_host(),
+      browser()->GetSelectedTabContents()->GetRenderViewHost(),
       container_size, &bitmap));
   ASSERT_TRUE(CompareImages(bitmap, ""));
 }

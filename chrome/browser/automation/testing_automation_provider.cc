@@ -1381,7 +1381,7 @@ void TestingAutomationProvider::ExecuteJavascript(
   new DomOperationMessageSender(this, reply_message, false);
   ExecuteJavascriptInRenderViewFrame(WideToUTF16Hack(frame_xpath),
                                      WideToUTF16Hack(script), reply_message,
-                                     tab_contents->render_view_host());
+                                     tab_contents->GetRenderViewHost());
 }
 
 void TestingAutomationProvider::GetConstrainedWindowCount(int handle,
@@ -1408,7 +1408,7 @@ void TestingAutomationProvider::HandleInspectElementRequest(
     DCHECK(!reply_message_);
     reply_message_ = reply_message;
 
-    DevToolsWindow::InspectElement(tab_contents->render_view_host(), x, y);
+    DevToolsWindow::InspectElement(tab_contents->GetRenderViewHost(), x, y);
   } else {
     AutomationMsg_InspectElement::WriteReplyParams(reply_message, -1);
     Send(reply_message);
@@ -4830,10 +4830,10 @@ void TestingAutomationProvider::SubmitAutofillForm(
   base::SStringPrintf(&set_automation_id,
                       "window.domAutomationController.setAutomationId(%d);",
                       reply_message->routing_id());
-  tab_contents->tab_contents()->render_view_host()->ExecuteJavascriptInWebFrame(
-      frame_xpath, UTF8ToUTF16(set_automation_id));
-  tab_contents->tab_contents()->render_view_host()->ExecuteJavascriptInWebFrame(
-      frame_xpath, javascript);
+  tab_contents->tab_contents()->GetRenderViewHost()->
+      ExecuteJavascriptInWebFrame(frame_xpath, UTF8ToUTF16(set_automation_id));
+  tab_contents->tab_contents()->GetRenderViewHost()->
+      ExecuteJavascriptInWebFrame(frame_xpath, javascript);
 }
 
 void TestingAutomationProvider::AutofillTriggerSuggestions(
@@ -4856,7 +4856,7 @@ void TestingAutomationProvider::AutofillTriggerSuggestions(
 
   new AutofillDisplayedObserver(
       chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS,
-      tab_contents->render_view_host(), this, reply_message);
+      tab_contents->GetRenderViewHost(), this, reply_message);
   SendWebKeyPressEventAsync(ui::VKEY_DOWN, tab_contents);
 }
 
@@ -4889,7 +4889,7 @@ void TestingAutomationProvider::AutofillHighlightSuggestion(
 
   new AutofillDisplayedObserver(
       chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-      tab_contents->render_view_host(), this, reply_message);
+      tab_contents->GetRenderViewHost(), this, reply_message);
   SendWebKeyPressEventAsync(key_code, tab_contents);
 }
 
@@ -4913,7 +4913,7 @@ void TestingAutomationProvider::AutofillAcceptSelection(
 
   new AutofillDisplayedObserver(
       chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-      tab_contents->render_view_host(), this, reply_message);
+      tab_contents->GetRenderViewHost(), this, reply_message);
   SendWebKeyPressEventAsync(ui::VKEY_RETURN, tab_contents);
 }
 
@@ -5647,12 +5647,12 @@ void TestingAutomationProvider::SendWebKeyPressEventAsync(
   NativeWebKeyboardEvent event_down;
   BuildSimpleWebKeyEvent(WebKit::WebInputEvent::RawKeyDown, key_code,
                          &event_down);
-  tab_contents->render_view_host()->ForwardKeyboardEvent(event_down);
+  tab_contents->GetRenderViewHost()->ForwardKeyboardEvent(event_down);
 
   // Create and send a corresponding "key up" event.
   NativeWebKeyboardEvent event_up;
   BuildSimpleWebKeyEvent(WebKit::WebInputEvent::KeyUp, key_code, &event_up);
-  tab_contents->render_view_host()->ForwardKeyboardEvent(event_up);
+  tab_contents->GetRenderViewHost()->ForwardKeyboardEvent(event_up);
 }
 
 void TestingAutomationProvider::SendWebkitKeyEvent(
@@ -6249,7 +6249,7 @@ void TestingAutomationProvider::CaptureEntirePageJSON(
     return;
   }
 
-  RenderViewHost* render_view = tab_contents->render_view_host();
+  RenderViewHost* render_view = tab_contents->GetRenderViewHost();
   if (render_view) {
     FilePath path(path_str);
     // This will delete itself when finished.
@@ -6622,7 +6622,7 @@ void TestingAutomationProvider::LoadBlockedPlugins(int tab_handle,
     TabContents* contents = nav->tab_contents();
     if (!contents)
       return;
-    RenderViewHost* host = contents->render_view_host();
+    RenderViewHost* host = contents->GetRenderViewHost();
     host->Send(new ChromeViewMsg_LoadBlockedPlugins(host->routing_id()));
     *success = true;
   }

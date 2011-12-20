@@ -68,7 +68,7 @@ void WebDragDestGtk::UpdateDragStatus(WebDragOperation operation) {
 }
 
 void WebDragDestGtk::DragLeave() {
-  tab_contents_->render_view_host()->DragTargetDragLeave();
+  tab_contents_->GetRenderViewHost()->DragTargetDragLeave();
 
   if (delegate())
     delegate()->OnDragLeave();
@@ -115,7 +115,7 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
                         time);
     }
   } else if (data_requests_ == 0) {
-    tab_contents_->render_view_host()->
+    tab_contents_->GetRenderViewHost()->
         DragTargetDragOver(
             ui::ClientPoint(widget_),
             ui::ScreenPoint(widget_),
@@ -218,7 +218,7 @@ void WebDragDestGtk::OnDragDataReceived(
   if (data_requests_ == 0) {
     // Tell the renderer about the drag.
     // |x| and |y| are seemingly arbitrary at this point.
-    tab_contents_->render_view_host()->
+    tab_contents_->GetRenderViewHost()->
         DragTargetDragEnter(*drop_data_.get(),
             ui::ClientPoint(widget_),
             ui::ScreenPoint(widget_),
@@ -252,7 +252,7 @@ gboolean WebDragDestGtk::OnDragDrop(GtkWidget* sender, GdkDragContext* context,
   // Cancel that drag leave!
   method_factory_.InvalidateWeakPtrs();
 
-  tab_contents_->render_view_host()->
+  tab_contents_->GetRenderViewHost()->
       DragTargetDrop(ui::ClientPoint(widget_), ui::ScreenPoint(widget_));
 
   if (delegate())

@@ -352,7 +352,7 @@ void KeyboardWidget::RenderViewGone(base::TerminationStatus status) {
 
 void KeyboardWidget::OnRequest(const ExtensionHostMsg_Request_Params& request) {
   extension_dispatcher_.Dispatch(request,
-      dom_view_->dom_contents()->tab_contents()->render_view_host());
+      dom_view_->dom_contents()->tab_contents()->GetRenderViewHost());
 }
 
 void KeyboardWidget::TextInputTypeChanged(ui::TextInputType type,

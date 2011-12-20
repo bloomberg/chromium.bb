@@ -273,7 +273,7 @@ void BalloonViewImpl::Layout() {
   html_contents_->view()->SetBounds(0, 0, size.width(), size.height());
   if (html_contents_->tab_contents()) {
     RenderWidgetHostView* view =
-        html_contents_->tab_contents()->render_view_host()->view();
+        html_contents_->tab_contents()->GetRenderViewHost()->view();
     if (view)
       view->SetSize(size);
   }
@@ -364,7 +364,7 @@ void BalloonViewImpl::DenyPermission() {
 
 gfx::NativeView BalloonViewImpl::GetParentNativeView() {
   RenderWidgetHostView* view =
-      html_contents_->tab_contents()->render_view_host()->view();
+      html_contents_->tab_contents()->GetRenderViewHost()->view();
   DCHECK(view);
   return view->GetNativeView();
 }

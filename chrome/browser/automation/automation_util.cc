@@ -161,7 +161,7 @@ net::URLRequestContextGetter* GetRequestContext(TabContents* contents) {
   // Since we may be on the UI thread don't call GetURLRequestContext().
   // Get the request context specific to the current TabContents and app.
   return contents->browser_context()->GetRequestContextForRenderProcess(
-      contents->render_view_host()->process()->GetID());
+      contents->GetRenderProcessHost()->GetID());
 }
 
 void GetCookies(const GURL& url,
@@ -488,7 +488,7 @@ bool GetRenderViewForId(
       TabContents* tab;
       if (!GetTabForId(id, &tab))
         return false;
-      *rvh = tab->render_view_host();
+      *rvh = tab->GetRenderViewHost();
       break;
     }
     case AutomationId::kTypeExtensionPopup:

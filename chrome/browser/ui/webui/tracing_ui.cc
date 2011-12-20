@@ -321,7 +321,7 @@ void TracingMessageHandler::LoadTraceFileComplete(std::string* file_contents) {
   std::string javascript = "tracingController.onLoadTraceFileComplete("
       + *file_contents + ");";
 
-  web_ui_->tab_contents()->render_view_host()->
+  web_ui_->tab_contents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(javascript));
 }
 
@@ -395,7 +395,7 @@ void TracingMessageHandler::OnTraceDataCollected(
   trace_buffer.Finish();
   output.Append(");");
 
-  web_ui_->tab_contents()->render_view_host()->
+  web_ui_->tab_contents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(output.json_output));
 }
 

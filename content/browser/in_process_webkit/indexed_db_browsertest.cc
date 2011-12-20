@@ -53,7 +53,7 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
     if (result != "pass") {
       std::string js_result;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-          the_browser->GetSelectedTabContents()->render_view_host(), L"",
+          the_browser->GetSelectedTabContents()->GetRenderViewHost(), L"",
           L"window.domAutomationController.send(getLog())", &js_result));
       FAIL() << "Failed: " << js_result;
     }

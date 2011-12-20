@@ -149,7 +149,7 @@ void InstantLoader::FrameLoadObserver::Observe(
       loader_->SendBoundsToPage(true);
       // TODO: support real cursor position.
       int text_length = static_cast<int>(text_.size());
-      RenderViewHost* host = tab_contents_->render_view_host();
+      RenderViewHost* host = tab_contents_->GetRenderViewHost();
       host->Send(new ChromeViewMsg_DetermineIfPageSupportsInstant(
           host->routing_id(), text_, verbatim_, text_length, text_length));
       break;
@@ -671,7 +671,7 @@ bool InstantLoader::Update(TabContentsWrapper* tab_contents,
       // TODO: support real cursor position.
       int text_length = static_cast<int>(user_text_.size());
       RenderViewHost* host =
-          preview_contents_->tab_contents()->render_view_host();
+          preview_contents_->tab_contents()->GetRenderViewHost();
       host->Send(new ChromeViewMsg_SearchBoxChange(
           host->routing_id(), user_text_, verbatim, text_length, text_length));
 
@@ -741,7 +741,7 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
 
   if (type != INSTANT_COMMIT_DESTROY && is_showing_instant()) {
     RenderViewHost* host =
-        preview_contents_->tab_contents()->render_view_host();
+        preview_contents_->tab_contents()->GetRenderViewHost();
     if (type == INSTANT_COMMIT_FOCUS_LOST) {
       host->Send(new ChromeViewMsg_SearchBoxCancel(host->routing_id()));
     } else {
@@ -967,7 +967,7 @@ void InstantLoader::SendBoundsToPage(bool force_if_waiting) {
       (force_if_waiting || !is_determining_if_page_supports_instant())) {
     last_omnibox_bounds_ = omnibox_bounds_;
     RenderViewHost* host =
-        preview_contents_->tab_contents()->render_view_host();
+        preview_contents_->tab_contents()->GetRenderViewHost();
     host->Send(new ChromeViewMsg_SearchBoxResize(
         host->routing_id(), GetOmniboxBoundsInTermsOfPreview()));
   }
@@ -1088,7 +1088,7 @@ void InstantLoader::LoadInstantURL(TabContentsWrapper* tab_contents,
     instant_url = GURL(cl->GetSwitchValueASCII(switches::kInstantURL));
   preview_contents_->tab_contents()->controller().LoadURL(
       instant_url, content::Referrer(), transition_type, std::string());
-  RenderViewHost* host = preview_contents_->tab_contents()->render_view_host();
+  RenderViewHost* host = preview_contents_->tab_contents()->GetRenderViewHost();
   preview_contents_->tab_contents()->HideContents();
 
   // If user_text is empty, this must be a preload of the search homepage. In

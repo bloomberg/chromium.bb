@@ -111,9 +111,9 @@ bool SavePasswordInfoBarDelegate::Cancel() {
 
 void PasswordManagerDelegateImpl::FillPasswordForm(
     const webkit::forms::PasswordFormFillData& form_data) {
-  tab_contents_->tab_contents()->render_view_host()->Send(
+  tab_contents_->tab_contents()->GetRenderViewHost()->Send(
       new AutofillMsg_FillPasswordForm(
-          tab_contents_->tab_contents()->render_view_host()->routing_id(),
+          tab_contents_->tab_contents()->GetRenderViewHost()->routing_id(),
           form_data));
 }
 

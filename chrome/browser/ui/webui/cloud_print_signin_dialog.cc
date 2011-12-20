@@ -82,7 +82,7 @@ void CloudPrintSigninFlowHandler::Observe(
         url.path() == dialog_url.path() &&
         url.scheme() == dialog_url.scheme()) {
       StoreDialogSize();
-      web_ui_->tab_contents()->render_view_host()->ClosePage();
+      web_ui_->tab_contents()->GetRenderViewHost()->ClosePage();
       static_cast<PrintPreviewUI*>(
           parent_tab_->web_ui())->OnReloadPrintersList();
     }

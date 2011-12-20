@@ -340,7 +340,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   }
 
   VLOG(1) << "Print preview request start";
-  RenderViewHost* rvh = initiator_tab->tab_contents()->render_view_host();
+  RenderViewHost* rvh = initiator_tab->tab_contents()->GetRenderViewHost();
   rvh->Send(new PrintMsg_PrintPreview(rvh->routing_id(), *settings));
 }
 
@@ -355,7 +355,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   TabContentsWrapper* initiator_tab = GetInitiatorTab();
   CHECK(initiator_tab);
 
-  RenderViewHost* init_rvh = initiator_tab->tab_contents()->render_view_host();
+  RenderViewHost* init_rvh = initiator_tab->tab_contents()->GetRenderViewHost();
   init_rvh->Send(new PrintMsg_ResetScriptedPrintCount(init_rvh->routing_id()));
 
   scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
@@ -421,7 +421,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     // The PDF being printed contains only the pages that the user selected,
     // so ignore the page range and print all pages.
     settings->Remove(printing::kSettingPageRange, NULL);
-    RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
+    RenderViewHost* rvh = web_ui_->tab_contents()->GetRenderViewHost();
     rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->routing_id(), *settings));
   }
   initiator_tab->print_view_manager()->PrintPreviewDone();

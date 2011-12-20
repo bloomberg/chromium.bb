@@ -317,7 +317,7 @@ TestTabContents* RenderViewHostTestHarness::contents() {
 }
 
 TestRenderViewHost* RenderViewHostTestHarness::rvh() {
-  return static_cast<TestRenderViewHost*>(contents()->render_view_host());
+  return static_cast<TestRenderViewHost*>(contents()->GetRenderViewHost());
 }
 
 TestRenderViewHost* RenderViewHostTestHarness::pending_rvh() {

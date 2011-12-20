@@ -99,15 +99,14 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
   virtual ~GeolocationPermissionContextTests();
 
   int process_id() {
-    return contents()->render_view_host()->process()->GetID();
+    return contents()->GetRenderProcessHost()->GetID();
   }
   int process_id_for_tab(int tab) {
-    return extra_tabs_[tab]->tab_contents()->render_view_host()->process()->
-        GetID();
+    return extra_tabs_[tab]->tab_contents()->GetRenderProcessHost()->GetID();
   }
-  int render_id() { return contents()->render_view_host()->routing_id(); }
+  int render_id() { return contents()->GetRenderViewHost()->routing_id(); }
   int render_id_for_tab(int tab) {
-    return extra_tabs_[tab]->tab_contents()->render_view_host()->routing_id();
+    return extra_tabs_[tab]->tab_contents()->GetRenderViewHost()->routing_id();
   }
   int bridge_id() const { return 42; }  // Not relevant at this level.
   InfoBarTabHelper* infobar_tab_helper() {
@@ -193,7 +192,7 @@ void GeolocationPermissionContextTests::CheckPermissionMessageSentForTab(
     int bridge_id,
     bool allowed) {
   CheckPermissionMessageSentInternal(static_cast<MockRenderProcessHost*>(
-      extra_tabs_[tab]->tab_contents()->render_view_host()->process()),
+      extra_tabs_[tab]->tab_contents()->GetRenderProcessHost()),
       bridge_id, allowed);
 }
 

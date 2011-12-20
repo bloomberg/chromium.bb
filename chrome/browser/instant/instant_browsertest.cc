@@ -138,7 +138,7 @@ class InstantTest : public InProcessBrowserTest {
   bool SetSuggestionsJavascriptArgument(const std::string& argument) {
     std::wstring script = UTF8ToWide(base::StringPrintf(
         "window.setSuggestionsArgument = %s;", argument.c_str()));
-    RenderViewHost* rvh = preview()->tab_contents()->render_view_host();
+    RenderViewHost* rvh = preview()->tab_contents()->GetRenderViewHost();
     return ui_test_utils::ExecuteJavaScript(rvh, std::wstring(), script);
   }
 
@@ -151,21 +151,21 @@ class InstantTest : public InProcessBrowserTest {
                                const std::string& script,
                                std::string* result) {
     return ui_test_utils::ExecuteJavaScriptAndExtractString(
-        tab->render_view_host(), std::wstring(), WrapScript(script), result);
+        tab->GetRenderViewHost(), std::wstring(), WrapScript(script), result);
   }
 
   bool GetIntFromJavascript(TabContents* tab,
                             const std::string& script,
                             int* result) {
     return ui_test_utils::ExecuteJavaScriptAndExtractInt(
-        tab->render_view_host(), std::wstring(), WrapScript(script), result);
+        tab->GetRenderViewHost(), std::wstring(), WrapScript(script), result);
   }
 
   bool GetBoolFromJavascript(TabContents* tab,
                              const std::string& script,
                              bool* result) {
     return ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        tab->render_view_host(), std::wstring(), WrapScript(script), result);
+        tab->GetRenderViewHost(), std::wstring(), WrapScript(script), result);
   }
 
   bool CheckVisibilityIs(TabContents* tab, bool visible) {
@@ -601,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(SearchToNonSearch)) {
   // Send onchange so that the page sends up suggestions. See the comments in
   // NonSearchToSearch for why this is needed.
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      preview()->tab_contents()->render_view_host(), std::wstring(),
+      preview()->tab_contents()->GetRenderViewHost(), std::wstring(),
       L"window.chrome.searchBox.onchange();"));
   ASSERT_TRUE(WaitForMessageToBeProcessedByRenderer());
 

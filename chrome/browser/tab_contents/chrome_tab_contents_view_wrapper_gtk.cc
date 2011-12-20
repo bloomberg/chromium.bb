@@ -105,7 +105,7 @@ void ChromeTabContentsViewWrapperGtk::ShowContextMenu(
   if (params.custom_context.render_widget_id !=
       webkit_glue::CustomContextMenuContext::kCurrentRenderWidget) {
     IPC::Channel::Listener* listener =
-        view_->tab_contents()->render_view_host()->process()->GetListenerByID(
+        view_->tab_contents()->GetRenderProcessHost()->GetListenerByID(
             params.custom_context.render_widget_id);
     if (!listener) {
       NOTREACHED();

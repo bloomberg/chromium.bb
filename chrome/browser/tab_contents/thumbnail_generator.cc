@@ -373,7 +373,7 @@ void ThumbnailGenerator::TabContentsDisconnected(TabContents* contents) {
   // same renderer as this TabContents and remove them so they don't
   // hang around.
   ThumbnailCallbackMap::iterator iterator = callback_map_.begin();
-  RenderWidgetHost* renderer = contents->render_view_host();
+  RenderWidgetHost* renderer = contents->GetRenderViewHost();
   while (iterator != callback_map_.end()) {
     if (iterator->second->renderer == renderer) {
       ThumbnailCallbackMap::iterator nuked = iterator;
@@ -458,7 +458,7 @@ void ThumbnailGenerator::UpdateThumbnailIfNecessary(
   const int options = ThumbnailGenerator::kClippedThumbnail;
   ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
   SkBitmap thumbnail = GetThumbnailForRendererWithOptions(
-      tab_contents->render_view_host(), options, &clip_result);
+      tab_contents->GetRenderViewHost(), options, &clip_result);
   // Failed to generate a thumbnail. Maybe the tab is in the background?
   if (thumbnail.isNull())
     return;
@@ -466,7 +466,7 @@ void ThumbnailGenerator::UpdateThumbnailIfNecessary(
   // Compute the thumbnail score.
   ThumbnailScore score;
   score.at_top =
-      (tab_contents->render_view_host()->last_scroll_offset().y() == 0);
+      (tab_contents->GetRenderViewHost()->last_scroll_offset().y() == 0);
   score.boring_score = ThumbnailGenerator::CalculateBoringScore(&thumbnail);
   score.good_clipping =
       (clip_result == ThumbnailGenerator::kTallerThanWide ||

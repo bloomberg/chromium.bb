@@ -139,7 +139,7 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
 
   // Attach to debugger and tell it we are ready.
   DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-      tab_contents_->render_view_host());
+      tab_contents_->GetRenderViewHost());
   DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(agent, this);
 }
 
@@ -278,7 +278,7 @@ bool DebuggerFunction::InitClientHost() {
   if (!InitTabContents())
     return false;
 
-  RenderViewHost* rvh = contents_->render_view_host();
+  RenderViewHost* rvh = contents_->GetRenderViewHost();
   client_host_ = AttachedClientHosts::GetInstance()->Lookup(rvh);
 
   if (!client_host_ ||
@@ -311,7 +311,7 @@ bool AttachDebuggerFunction::RunImpl() {
   }
 
   DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-      contents_->render_view_host());
+      contents_->GetRenderViewHost());
   DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
       GetDevToolsClientHostFor(agent);
 

@@ -598,7 +598,7 @@ void Panel::ConfigureAutoResize(TabContents* tab_contents) {
     return;
 
   // NULL might be returned if the tab has not been added.
-  RenderViewHost* render_view_host = tab_contents->render_view_host();
+  RenderViewHost* render_view_host = tab_contents->GetRenderViewHost();
   if (!render_view_host)
     return;
 

@@ -400,8 +400,8 @@ void AutomationProvider::OnRunUnloadHandlers(
 void AutomationProvider::OnSetZoomLevel(int handle, int zoom_level) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    if (tab->tab_contents() && tab->tab_contents()->render_view_host()) {
-      RenderViewHost* host = tab->tab_contents()->render_view_host();
+    if (tab->tab_contents() && tab->tab_contents()->GetRenderViewHost()) {
+      RenderViewHost* host = tab->tab_contents()->GetRenderViewHost();
       content::PageZoom zoom = static_cast<content::PageZoom>(zoom_level);
       host->Zoom(zoom);
     }

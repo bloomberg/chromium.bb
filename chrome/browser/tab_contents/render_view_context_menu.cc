@@ -659,7 +659,7 @@ void RenderViewContextMenu::UpdateMenuItem(int command_id,
 }
 
 RenderViewHost* RenderViewContextMenu::GetRenderViewHost() const {
-  return source_tab_contents_->render_view_host();
+  return source_tab_contents_->GetRenderViewHost();
 }
 
 Profile* RenderViewContextMenu::GetProfile() const {
@@ -1365,7 +1365,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       return observer->ExecuteCommand(id);
   }
 
-  RenderViewHost* rvh = source_tab_contents_->render_view_host();
+  RenderViewHost* rvh = source_tab_contents_->GetRenderViewHost();
 
   // Process custom actions range.
   if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
@@ -1789,7 +1789,7 @@ void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
   RenderWidgetHostView* view = source_tab_contents_->GetRenderWidgetHostView();
   if (view)
     view->ShowingContextMenu(false);
-  RenderViewHost* rvh = source_tab_contents_->render_view_host();
+  RenderViewHost* rvh = source_tab_contents_->GetRenderViewHost();
   if (rvh) {
     rvh->NotifyContextMenuClosed(params_.custom_context);
   }
@@ -1848,13 +1848,13 @@ void RenderViewContextMenu::OpenURL(
 }
 
 void RenderViewContextMenu::CopyImageAt(int x, int y) {
-  source_tab_contents_->render_view_host()->CopyImageAt(x, y);
+  source_tab_contents_->GetRenderViewHost()->CopyImageAt(x, y);
 }
 
 void RenderViewContextMenu::Inspect(int x, int y) {
   content::RecordAction(UserMetricsAction("DevTools_InspectElement"));
   DevToolsWindow::InspectElement(
-      source_tab_contents_->render_view_host(), x, y);
+      source_tab_contents_->GetRenderViewHost(), x, y);
 }
 
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
@@ -1867,6 +1867,6 @@ void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
 void RenderViewContextMenu::MediaPlayerActionAt(
     const gfx::Point& location,
     const WebMediaPlayerAction& action) {
-  source_tab_contents_->render_view_host()->
+  source_tab_contents_->GetRenderViewHost()->
       ExecuteMediaPlayerActionAtLocation(location, action);
 }

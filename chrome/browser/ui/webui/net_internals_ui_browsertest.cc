@@ -257,7 +257,7 @@ void NetInternalsTest::MessageHandler::AddCacheEntry(
 
 void NetInternalsTest::MessageHandler::NavigateToPrerender(
     const ListValue* list_value) {
-  RenderViewHost* host = browser()->GetTabContentsAt(1)->render_view_host();
+  RenderViewHost* host = browser()->GetTabContentsAt(1)->GetRenderViewHost();
   host->ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16("Click()"));
 }
 

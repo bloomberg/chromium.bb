@@ -106,7 +106,7 @@ bool BalloonHost::OnMessageReceived(const IPC::Message& message) {
 
 void BalloonHost::OnRequest(const ExtensionHostMsg_Request_Params& params) {
   extension_function_dispatcher_.Dispatch(params,
-                                          tab_contents_->render_view_host());
+                                          tab_contents_->GetRenderViewHost());
 }
 
 void BalloonHost::Init() {

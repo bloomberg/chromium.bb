@@ -26,7 +26,7 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, ChromeInternalLoadsNTP) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome-internal:"));
   bool empty_inner_html = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetTabContentsAt(0)->render_view_host(), L"",
+      browser()->GetTabContentsAt(0)->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.body.innerHTML == '')",
       &empty_inner_html));
   ASSERT_FALSE(empty_inner_html);

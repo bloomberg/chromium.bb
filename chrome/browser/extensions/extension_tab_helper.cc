@@ -169,7 +169,7 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
   ExtensionService* extension_service = profile->GetExtensionService();
   extensions::ProcessMap* process_map = extension_service->process_map();
   content::RenderProcessHost* process =
-      tab_contents_wrapper()->tab_contents()->render_view_host()->process();
+      tab_contents_wrapper()->tab_contents()->GetRenderProcessHost();
   const Extension* extension =
       extension_service->GetInstalledApp(requestor_url);
   bool allowed =
@@ -222,7 +222,7 @@ void ExtensionTabHelper::AppNotifyChannelSetupComplete(
 void ExtensionTabHelper::OnRequest(
     const ExtensionHostMsg_Request_Params& request) {
   extension_function_dispatcher_.Dispatch(request,
-                                          tab_contents()->render_view_host());
+                                          tab_contents()->GetRenderViewHost());
 }
 
 void ExtensionTabHelper::UpdateExtensionAppIcon(const Extension* extension) {

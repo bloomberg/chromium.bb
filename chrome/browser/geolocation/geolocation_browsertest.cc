@@ -56,7 +56,7 @@ class IFrameLoader : public content::NotificationObserver {
         "window.domAutomationController.send(addIFrame(%d, \"%s\"));",
         iframe_id,
         url.spec().c_str());
-    browser->GetSelectedTabContents()->render_view_host()->
+    browser->GetSelectedTabContents()->GetRenderViewHost()->
         ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(script));
     ui_test_utils::RunMessageLoop();
 
@@ -67,7 +67,7 @@ class IFrameLoader : public content::NotificationObserver {
         "window.domAutomationController.send(getIFrameSrc(%d))", iframe_id);
     std::string iframe_src;
     EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-        browser->GetSelectedTabContents()->render_view_host(),
+        browser->GetSelectedTabContents()->GetRenderViewHost(),
         L"", UTF8ToWide(script), &iframe_src));
     iframe_url_ = GURL(iframe_src);
   }
@@ -280,7 +280,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   void AddGeolocationWatch(bool wait_for_infobar) {
     GeolocationNotificationObserver notification_observer(wait_for_infobar);
     notification_observer.AddWatchAndWaitForNotification(
-        current_browser_->GetSelectedTabContents()->render_view_host(),
+        current_browser_->GetSelectedTabContents()->GetRenderViewHost(),
         iframe_xpath_);
     if (wait_for_infobar) {
       EXPECT_TRUE(notification_observer.infobar_);
@@ -351,7 +351,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
         "window.domAutomationController.send(%s)", function.c_str());
     std::string result;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-        tab_contents->render_view_host(),
+        tab_contents->GetRenderViewHost(),
         iframe_xpath_, UTF8ToWide(script), &result));
     EXPECT_EQ(expected, result);
   }
@@ -638,7 +638,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
       final_position.latitude, final_position.longitude);
   std::string js_result;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      current_browser_->GetSelectedTabContents()->render_view_host(),
+      current_browser_->GetSelectedTabContents()->GetRenderViewHost(),
       L"", UTF8ToWide(script), &js_result));
   EXPECT_EQ(js_result, "ok");
 
@@ -678,7 +678,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_TabDestroyed) {
       "window.domAutomationController.send(window.close());";
   bool result =
       ui_test_utils::ExecuteJavaScript(
-      current_browser_->GetSelectedTabContents()->render_view_host(),
+      current_browser_->GetSelectedTabContents()->GetRenderViewHost(),
       L"", UTF8ToWide(script));
   EXPECT_EQ(result, true);
 }

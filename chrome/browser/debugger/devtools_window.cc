@@ -73,10 +73,10 @@ TabContentsWrapper* DevToolsWindow::GetDevToolsContents(
     return NULL;
 
   if (!DevToolsAgentHostRegistry::HasDevToolsAgentHost(
-      inspected_tab->render_view_host()))
+      inspected_tab->GetRenderViewHost()))
     return NULL;
   DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-      inspected_tab->render_view_host());
+      inspected_tab->GetRenderViewHost());
   DevToolsManager* manager = DevToolsManager::GetInstance();
   DevToolsClientHost* client_host = manager->GetDevToolsClientHostFor(agent);
   DevToolsWindow* window = AsDevToolsWindow(client_host);
@@ -92,7 +92,7 @@ bool DevToolsWindow::IsDevToolsWindow(RenderViewHost* window_rvh) {
   DevToolsWindowList& instances = g_instances.Get();
   for (DevToolsWindowList::iterator it = instances.begin();
        it != instances.end(); ++it) {
-    if ((*it)->tab_contents_->tab_contents()->render_view_host() == window_rvh)
+    if ((*it)->tab_contents_->tab_contents()->GetRenderViewHost() == window_rvh)
       return true;
   }
   return false;
@@ -159,7 +159,7 @@ DevToolsWindow* DevToolsWindow::Create(
   // Create TabContents with devtools.
   TabContentsWrapper* tab_contents =
       Browser::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
-  tab_contents->tab_contents()->render_view_host()->AllowBindings(
+  tab_contents->tab_contents()->GetRenderViewHost()->AllowBindings(
       content::BINDINGS_POLICY_WEB_UI);
   tab_contents->tab_contents()->controller().LoadURL(
       GetDevToolsUrl(profile, docked, shared_worker_frontend),
@@ -330,7 +330,7 @@ void DevToolsWindow::RequestSetDocked(bool docked) {
 }
 
 RenderViewHost* DevToolsWindow::GetRenderViewHost() {
-  return tab_contents_->tab_contents()->render_view_host();
+  return tab_contents_->tab_contents()->GetRenderViewHost();
 }
 
 void DevToolsWindow::CreateDevToolsBrowser() {
@@ -399,7 +399,7 @@ bool DevToolsWindow::IsInspectedBrowserPopupOrPanel() {
 }
 
 void DevToolsWindow::UpdateFrontendAttachedState() {
-  tab_contents_->tab_contents()->render_view_host()->
+  tab_contents_->tab_contents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(
           string16(),
           docked_ ? ASCIIToUTF16("WebInspector.setAttachedWindow(true);")
@@ -451,7 +451,7 @@ void DevToolsWindow::CallClientFunction(const string16& function_name,
   base::JSONWriter::Write(&arg, false, &json);
   string16 javascript = function_name + char16('(') + UTF8ToUTF16(json) +
       ASCIIToUTF16(");");
-  tab_contents_->tab_contents()->render_view_host()->
+  tab_contents_->tab_contents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), javascript);
 }
 
@@ -489,13 +489,13 @@ void DevToolsWindow::DoAction() {
   // TODO: these messages should be pushed through the WebKit API instead.
   switch (action_on_load_) {
     case DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE:
-      tab_contents_->tab_contents()->render_view_host()->
+      tab_contents_->tab_contents()->GetRenderViewHost()->
           ExecuteJavascriptInWebFrame(
               string16(),
               ASCIIToUTF16("WebInspector.showConsole();"));
       break;
     case DEVTOOLS_TOGGLE_ACTION_INSPECT:
-      tab_contents_->tab_contents()->render_view_host()->
+      tab_contents_->tab_contents()->GetRenderViewHost()->
           ExecuteJavascriptInWebFrame(
               string16(),
               ASCIIToUTF16("WebInspector.toggleSearchingForNode();"));
@@ -548,7 +548,7 @@ void DevToolsWindow::UpdateTheme() {
       "WebInspector.setToolbarColors(\"%s\", \"%s\")",
       SkColorToRGBAString(color_toolbar).c_str(),
       SkColorToRGBAString(color_tab_text).c_str());
-  tab_contents_->tab_contents()->render_view_host()->
+  tab_contents_->tab_contents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(command));
 }
 

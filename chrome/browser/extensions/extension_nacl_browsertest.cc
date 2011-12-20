@@ -96,11 +96,11 @@ class NaClExtensionTest : public ExtensionBrowserTest {
     bool content_handler_plugin_created = false;
     TabContents* tab_contents = browser()->GetSelectedTabContents();
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        tab_contents->render_view_host(), L"",
+        tab_contents->GetRenderViewHost(), L"",
         L"window.domAutomationController.send(EmbeddedPluginCreated());",
         &embedded_plugin_created));
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        tab_contents->render_view_host(), L"",
+        tab_contents->GetRenderViewHost(), L"",
         L"window.domAutomationController.send(ContentHandlerPluginCreated());",
         &content_handler_plugin_created));
 

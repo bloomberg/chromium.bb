@@ -221,7 +221,7 @@ TaskManagerTabContentsResource::TaskManagerTabContentsResource(
     TabContentsWrapper* tab_contents)
     : TaskManagerRendererResource(
           tab_contents->tab_contents()->GetRenderProcessHost()->GetHandle(),
-          tab_contents->tab_contents()->render_view_host()),
+          tab_contents->tab_contents()->GetRenderViewHost()),
       tab_contents_(tab_contents),
       is_instant_preview_(false) {
   if (!prerender_icon_) {
@@ -544,7 +544,7 @@ TaskManagerBackgroundContentsResource::TaskManagerBackgroundContentsResource(
     : TaskManagerRendererResource(
           background_contents->tab_contents()->GetRenderProcessHost()->
               GetHandle(),
-          background_contents->tab_contents()->render_view_host()),
+          background_contents->tab_contents()->GetRenderViewHost()),
       background_contents_(background_contents),
       application_name_(application_name) {
   // Just use the same icon that other extension resources do.
@@ -612,8 +612,8 @@ TaskManagerBackgroundContentsResourceProvider::GetResource(
 
   for (Resources::iterator i = resources_.begin(); i != resources_.end(); i++) {
     TabContents* tab = i->first->tab_contents();
-    if (tab->render_view_host()->process()->GetID() == render_process_host_id
-        && tab->render_view_host()->routing_id() == routing_id) {
+    if (tab->GetRenderProcessHost()->GetID() == render_process_host_id
+        && tab->GetRenderViewHost()->routing_id() == routing_id) {
       return i->second;
     }
   }

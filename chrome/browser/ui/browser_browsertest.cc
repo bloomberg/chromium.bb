@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   EXPECT_EQ(0, browser()->active_index());
   TabContents* second_tab = browser()->GetTabContentsAt(1);
   ASSERT_TRUE(second_tab);
-  second_tab->render_view_host()->ExecuteJavascriptInWebFrame(
+  second_tab->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
       string16(),
       ASCIIToUTF16("alert('Activate!');"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
@@ -269,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
   EXPECT_FALSE(browser()->GetSelectedTabContents()->IsLoading());
 
   // Clear the beforeunload handler so the test can easily exit.
-  browser()->GetSelectedTabContents()->render_view_host()->
+  browser()->GetSelectedTabContents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(),
                                   ASCIIToUTF16("onbeforeunload=null;"));
 }
@@ -301,7 +301,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
   EXPECT_EQ(url.spec(), UTF16ToUTF8(browser()->toolbar_model()->GetText()));
 
   // Clear the beforeunload handler so the test can easily exit.
-  browser()->GetSelectedTabContents()->render_view_host()->
+  browser()->GetSelectedTabContents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(),
                                   ASCIIToUTF16("onbeforeunload=null;"));
 }
@@ -318,14 +318,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
 // Test for crbug.com/11647.  A page closed with window.close() should not have
 // two beforeunload dialogs shown.
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_SingleBeforeUnloadAfterWindowClose) {
-  browser()->GetSelectedTabContents()->render_view_host()->
+  browser()->GetSelectedTabContents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(),
                                   ASCIIToUTF16(kOpenNewBeforeUnloadPage));
 
   // Close the new window with JavaScript, which should show a single
   // beforeunload dialog.  Then show another alert, to make it easy to verify
   // that a second beforeunload dialog isn't shown.
-  browser()->GetTabContentsAt(0)->render_view_host()->
+  browser()->GetTabContentsAt(0)->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(),
                                   ASCIIToUTF16("w.close(); alert('bar');"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
@@ -357,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   // Start with an http URL.
   ui_test_utils::NavigateToURL(browser(), http_url);
   TabContents* oldtab = browser()->GetSelectedTabContents();
-  content::RenderProcessHost* process = oldtab->render_view_host()->process();
+  content::RenderProcessHost* process = oldtab->GetRenderProcessHost();
 
   // Now open a tab to a blank page, set its opener to null, and redirect it
   // cross-site.
@@ -373,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   ui_test_utils::WindowedNotificationObserver nav_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::NotificationService::AllSources());
-  oldtab->render_view_host()->
+  oldtab->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(redirect_popup));
 
   // Wait for popup window to appear and finish navigating.
@@ -389,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
 
   // Popup window should not be in the opener's process.
   content::RenderProcessHost* popup_process =
-      newtab->render_view_host()->process();
+      newtab->GetRenderProcessHost();
   EXPECT_NE(process, popup_process);
 
   // Now open a tab to a blank page, set its opener to null, and use a
@@ -407,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   ui_test_utils::WindowedNotificationObserver nav_observer2(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::NotificationService::AllSources());
-  oldtab->render_view_host()->
+  oldtab->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(refresh_popup));
 
   // Wait for popup window to appear and finish navigating.
@@ -423,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
 
   // This popup window should also not be in the opener's process.
   content::RenderProcessHost* popup_process2 =
-      newtab2->render_view_host()->process();
+      newtab2->GetRenderProcessHost();
   EXPECT_NE(process, popup_process2);
 }
 
@@ -445,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   // Start with an http URL.
   ui_test_utils::NavigateToURL(browser(), http_url);
   TabContents* oldtab = browser()->GetSelectedTabContents();
-  content::RenderProcessHost* process = oldtab->render_view_host()->process();
+  content::RenderProcessHost* process = oldtab->GetRenderProcessHost();
 
   // Now open a tab to a blank page, set its opener to null, and redirect it
   // cross-site.
@@ -460,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   ui_test_utils::WindowedNotificationObserver nav_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::NotificationService::AllSources());
-  oldtab->render_view_host()->
+  oldtab->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(dont_fork_popup));
 
   // Wait for popup window to appear and finish navigating.
@@ -476,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
 
   // Popup window should still be in the opener's process.
   content::RenderProcessHost* popup_process =
-      newtab->render_view_host()->process();
+      newtab->GetRenderProcessHost();
   EXPECT_EQ(process, popup_process);
 
   // Same thing if the current tab tries to navigate itself.
@@ -487,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   ui_test_utils::WindowedNotificationObserver nav_observer2(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::NotificationService::AllSources());
-  oldtab->render_view_host()->
+  oldtab->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(navigate_str));
   nav_observer2.Wait();
   ASSERT_TRUE(oldtab->controller().GetLastCommittedEntry());
@@ -495,8 +495,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
             oldtab->controller().GetLastCommittedEntry()->url().spec());
 
   // Original window should still be in the original process.
-  content::RenderProcessHost* new_process =
-      newtab->render_view_host()->process();
+  content::RenderProcessHost* new_process = newtab->GetRenderProcessHost();
   EXPECT_EQ(process, new_process);
 }
 

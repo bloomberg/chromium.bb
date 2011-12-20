@@ -478,7 +478,7 @@ void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
 DOMElementProxyRef GetActiveDOMDocument(Browser* browser) {
   JavaScriptExecutionController* executor =
       new InProcessJavaScriptExecutionController(
-          browser->GetSelectedTabContents()->render_view_host());
+          browser->GetSelectedTabContents()->GetRenderViewHost());
   int element_handle;
   executor->ExecuteJavaScriptAndGetReturn("document;", &element_handle);
   return executor->GetObjectProxy<DOMElementProxy>(element_handle);
@@ -560,7 +560,7 @@ AppModalDialog* WaitForAppModalDialog() {
 }
 
 void CrashTab(TabContents* tab) {
-  content::RenderProcessHost* rph = tab->render_view_host()->process();
+  content::RenderProcessHost* rph = tab->GetRenderProcessHost();
   base::KillProcess(rph->GetHandle(), 0, false);
   TestNotificationObserver observer;
   RegisterAndWait(&observer, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,

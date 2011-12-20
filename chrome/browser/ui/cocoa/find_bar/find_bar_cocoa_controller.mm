@@ -234,7 +234,7 @@ const float kRightEdgeOffset = 25;
     // cmd-up/down if we ever decide to include |moveToBeginningOfDocument:| in
     // the list above.
     RenderViewHost* render_view_host =
-        contents->tab_contents()->render_view_host();
+        contents->tab_contents()->GetRenderViewHost();
     render_view_host->ForwardKeyboardEvent(NativeWebKeyboardEvent(event));
     return YES;
   }

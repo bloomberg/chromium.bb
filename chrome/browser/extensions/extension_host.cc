@@ -141,7 +141,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   renderer_preferences_util::UpdateFromSystemSettings(
       host_contents_->GetMutableRendererPrefs(), profile_);
 
-  render_view_host_ = host_contents_->render_view_host();
+  render_view_host_ = host_contents_->GetRenderViewHost();
 
   // Listen for when an extension is unloaded from the same profile, as it may
   // be the same extension that this points to.
@@ -484,7 +484,7 @@ void ExtensionHost::RenderViewDeleted(RenderViewHost* render_view_host) {
   // RVH. There is sometimes a small gap between the pending RVH being deleted
   // and RenderViewCreated being called, so we update it here.
   if (render_view_host == render_view_host_)
-    render_view_host_ = host_contents_->render_view_host();
+    render_view_host_ = host_contents_->GetRenderViewHost();
 }
 
 content::JavaScriptDialogCreator* ExtensionHost::GetJavaScriptDialogCreator() {

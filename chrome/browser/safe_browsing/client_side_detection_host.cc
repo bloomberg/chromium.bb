@@ -204,7 +204,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // before it is.
     VLOG(1) << "Instruct renderer to start phishing detection for URL: "
             << params_.url;
-    RenderViewHost* rvh = tab_contents_->render_view_host();
+    RenderViewHost* rvh = tab_contents_->GetRenderViewHost();
     rvh->Send(new SafeBrowsingMsg_StartPhishingDetection(
         rvh->routing_id(), params_.url));
   }
@@ -343,7 +343,7 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
   if (tab_contents() &&
       tab_contents()->GetRenderProcessHost()->GetID() ==
           resource.render_process_host_id &&
-      tab_contents()->render_view_host()->routing_id() ==
+      tab_contents()->GetRenderViewHost()->routing_id() ==
           resource.render_view_id &&
       (resource.threat_type == SafeBrowsingService::URL_PHISHING ||
        resource.threat_type == SafeBrowsingService::URL_MALWARE) &&
@@ -422,7 +422,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
       resource.render_process_host_id =
           tab_contents()->GetRenderProcessHost()->GetID();
       resource.render_view_id =
-          tab_contents()->render_view_host()->routing_id();
+          tab_contents()->GetRenderViewHost()->routing_id();
       if (!sb_service_->IsWhitelisted(resource)) {
         // We need to stop any pending navigations, otherwise the interstital
         // might not get created properly.

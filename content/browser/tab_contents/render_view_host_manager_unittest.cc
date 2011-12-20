@@ -208,7 +208,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   dest_rvh2->OnSwapOutACK();
 
   EXPECT_EQ(active_rvh()->site_instance(),
-      contents2.render_view_host()->site_instance());
+      contents2.GetRenderViewHost()->site_instance());
 }
 
 // When there is an error with the specified page, renderer exits view-source
@@ -581,7 +581,7 @@ TEST_F(RenderViewHostManagerTest, PageDoesBackAndReload) {
   // deleted.
   contents()->NavigateAndCommit(kUrl1);
   contents()->NavigateAndCommit(kUrl2);
-  RenderViewHost* evil_rvh = contents()->render_view_host();
+  RenderViewHost* evil_rvh = contents()->GetRenderViewHost();
 
   // Now let's simulate the evil page calling history.back().
   contents()->OnGoToEntryAtOffset(-1);

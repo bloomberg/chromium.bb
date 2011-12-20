@@ -152,7 +152,7 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
         frame_name);
     if (contents) {
       pending_contents_[route_id] =
-          contents->tab_contents()->render_view_host();
+          contents->tab_contents()->GetRenderViewHost();
       return NULL;
     }
   }
@@ -180,10 +180,10 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
 
   // TODO(brettw) it seems bogus that we have to call this function on the
   // newly created object and give it one of its own member variables.
-  new_view->CreateViewForWidget(new_contents->render_view_host());
+  new_view->CreateViewForWidget(new_contents->GetRenderViewHost());
 
   // Save the created window associated with the route so we can show it later.
-  pending_contents_[route_id] = new_contents->render_view_host();
+  pending_contents_[route_id] = new_contents->GetRenderViewHost();
   return new_contents;
 }
 

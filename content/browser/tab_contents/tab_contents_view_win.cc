@@ -164,8 +164,8 @@ void TabContentsViewWin::CreateNewWindow(
 
   // Copy logic from RenderViewHostDelegateViewHelper.
   TabContentsView* new_view = tab->view();
-  new_view->CreateViewForWidget(tab->render_view_host());
-  pending_contents_[route_id] = tab->render_view_host();
+  new_view->CreateViewForWidget(tab->GetRenderViewHost());
+  pending_contents_[route_id] = tab->GetRenderViewHost();
 }
 
 void TabContentsViewWin::CreateNewWidget(int route_id,

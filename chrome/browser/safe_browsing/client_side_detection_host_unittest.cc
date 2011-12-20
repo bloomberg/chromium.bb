@@ -271,7 +271,7 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     resource.client = new BogusClient();
     resource.render_process_host_id = contents()->GetRenderProcessHost()->
         GetID();
-    resource.render_view_id = contents()->render_view_host()->routing_id();
+    resource.render_view_id = contents()->GetRenderViewHost()->routing_id();
     csd_host_->OnSafeBrowsingHit(resource);
     delete resource.client;
     ASSERT_TRUE(csd_host_->DidShowSBInterstitial());
@@ -416,7 +416,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
             resource.threat_type);
   EXPECT_EQ(contents()->GetRenderProcessHost()->GetID(),
             resource.render_process_host_id);
-  EXPECT_EQ(contents()->render_view_host()->routing_id(),
+  EXPECT_EQ(contents()->GetRenderViewHost()->routing_id(),
             resource.render_view_id);
 
   // Make sure the client object will be deleted.
@@ -508,7 +508,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
             resource.threat_type);
   EXPECT_EQ(contents()->GetRenderProcessHost()->GetID(),
             resource.render_process_host_id);
-  EXPECT_EQ(contents()->render_view_host()->routing_id(),
+  EXPECT_EQ(contents()->GetRenderViewHost()->routing_id(),
             resource.render_view_id);
 
   // Make sure the client object will be deleted.

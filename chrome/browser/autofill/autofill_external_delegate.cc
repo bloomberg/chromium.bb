@@ -26,7 +26,7 @@ AutofillExternalDelegate::AutofillExternalDelegate(
 
 void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int listIndex) {
   RenderViewHost* host =
-      tab_contents_wrapper_->tab_contents()->render_view_host();
+      tab_contents_wrapper_->tab_contents()->GetRenderViewHost();
   host->Send(new AutofillMsg_SelectAutofillSuggestionAtIndex(
                  host->routing_id(),
                  listIndex));

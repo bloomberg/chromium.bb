@@ -1569,7 +1569,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   // This pending navigation may have caused a different navigation to fail,
   // which causes the pending entry to be cleared.
   TestRenderViewHost* rvh =
-      static_cast<TestRenderViewHost*>(our_contents.render_view_host());
+      static_cast<TestRenderViewHost*>(our_contents.GetRenderViewHost());
   ViewHostMsg_DidFailProvisionalLoadWithError_Params fail_load_params;
   fail_load_params.frame_id = 1;
   fail_load_params.is_main_frame = true;

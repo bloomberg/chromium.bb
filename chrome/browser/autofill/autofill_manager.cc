@@ -648,7 +648,7 @@ void AutofillManager::OnShowAutofillDialog() {
 void AutofillManager::OnDidPreviewAutofillFormData() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-      content::Source<RenderViewHost>(tab_contents()->render_view_host()),
+      content::Source<RenderViewHost>(tab_contents()->GetRenderViewHost()),
       content::NotificationService::NoDetails());
 }
 
@@ -656,7 +656,7 @@ void AutofillManager::OnDidPreviewAutofillFormData() {
 void AutofillManager::OnDidFillAutofillFormData(const TimeTicks& timestamp) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-      content::Source<RenderViewHost>(tab_contents()->render_view_host()),
+      content::Source<RenderViewHost>(tab_contents()->GetRenderViewHost()),
       content::NotificationService::NoDetails());
 
   metric_logger_->LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL);
@@ -672,7 +672,7 @@ void AutofillManager::OnDidFillAutofillFormData(const TimeTicks& timestamp) {
 void AutofillManager::OnDidShowAutofillSuggestions(bool is_new_popup) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS,
-      content::Source<RenderViewHost>(tab_contents()->render_view_host()),
+      content::Source<RenderViewHost>(tab_contents()->GetRenderViewHost()),
       content::NotificationService::NoDetails());
 
   if (is_new_popup) {
@@ -719,7 +719,7 @@ void AutofillManager::SendAutofillTypePredictions(
            switches::kShowAutofillTypePredictions))
     return;
 
-  RenderViewHost* host = tab_contents()->render_view_host();
+  RenderViewHost* host = tab_contents()->GetRenderViewHost();
   if (!host)
     return;
 
@@ -832,7 +832,7 @@ bool AutofillManager::GetHost(const std::vector<AutofillProfile*>& profiles,
   if (profiles.empty() && credit_cards.empty())
     return false;
 
-  *host = tab_contents()->render_view_host();
+  *host = tab_contents()->GetRenderViewHost();
   if (!*host)
     return false;
 

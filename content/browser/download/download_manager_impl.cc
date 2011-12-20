@@ -776,7 +776,7 @@ void DownloadManagerImpl::DownloadUrlToFile(const GURL& url,
       base::Bind(&BeginDownload,
           URLParams(url, referrer), save_info, resource_dispatcher_host,
           RenderParams(tab_contents->GetRenderProcessHost()->GetID(),
-                       tab_contents->render_view_host()->routing_id()),
+                       tab_contents->GetRenderViewHost()->routing_id()),
           &tab_contents->browser_context()->GetResourceContext()));
 }
 

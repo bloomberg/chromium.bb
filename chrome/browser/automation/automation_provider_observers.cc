@@ -2501,7 +2501,7 @@ void GetAllNotificationsObserver::SendMessage() {
     BalloonView* view = (*balloon_iter)->view();
     note->SetInteger(
         "pid",
-        base::GetProcId(view->GetHost()->tab_contents()->render_view_host()->
+        base::GetProcId(view->GetHost()->tab_contents()->GetRenderViewHost()->
             process()-> GetHandle()));
     list->Append(note);
   }

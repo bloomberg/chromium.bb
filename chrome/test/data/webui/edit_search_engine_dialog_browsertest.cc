@@ -55,7 +55,7 @@ void EditSearchEngineDialogUITest::ShowSearchEngineDialog() {
   // Now we can get the WebUI object from the observer, and make some details
   // about our test available to the JavaScript.
   WebUI* webui = dialog_observer.GetWebUI();
-  webui->tab_contents()->render_view_host()->SetWebUIProperty(
+  webui->tab_contents()->GetRenderViewHost()->SetWebUIProperty(
       "expectedUrl", chrome::kChromeUIEditSearchEngineDialogURL);
 
   // Tell the test which WebUI instance we are dealing with and complete

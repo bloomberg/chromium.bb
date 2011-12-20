@@ -226,7 +226,7 @@ bool FocusedOnPage(TabContents* tab_contents, std::string* result)
 
 bool FocusedOnPage(TabContents* tab_contents, std::string* result) {
   return ui_test_utils::ExecuteJavaScriptAndExtractString(
-      tab_contents->render_view_host(),
+      tab_contents->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(getFocusedElement());",
       result);
@@ -271,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
 
   // Move the selection to link 1, after searching.
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      tab_contents->tab_contents()->render_view_host(),
+      tab_contents->tab_contents()->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(selectLink1());",
       &result));
@@ -345,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   // Move the selection to link 1, after searching.
   std::string result;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      tab->tab_contents()->render_view_host(),
+      tab->tab_contents()->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(selectLink1());",
       &result));

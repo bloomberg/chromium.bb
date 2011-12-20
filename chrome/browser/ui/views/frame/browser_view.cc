@@ -1669,7 +1669,7 @@ void BrowserView::OnWindowBeginUserBoundsChange() {
   TabContents* tab_contents = GetSelectedTabContents();
   if (!tab_contents)
     return;
-  tab_contents->render_view_host()->NotifyMoveOrResizeStarted();
+  tab_contents->GetRenderViewHost()->NotifyMoveOrResizeStarted();
 }
 
 void BrowserView::OnWidgetMove() {

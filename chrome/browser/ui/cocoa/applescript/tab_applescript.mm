@@ -244,7 +244,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesUndoScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = tabContents_->tab_contents()->render_view_host();
+  RenderViewHost* view = tabContents_->tab_contents()->GetRenderViewHost();
   if (!view) {
     NOTREACHED();
     return;
@@ -254,7 +254,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesRedoScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = tabContents_->tab_contents()->render_view_host();
+  RenderViewHost* view = tabContents_->tab_contents()->GetRenderViewHost();
   if (!view) {
     NOTREACHED();
     return;
@@ -264,7 +264,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesCutScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = tabContents_->tab_contents()->render_view_host();
+  RenderViewHost* view = tabContents_->tab_contents()->GetRenderViewHost();
   if (!view) {
     NOTREACHED();
     return;
@@ -274,7 +274,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesCopyScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = tabContents_->tab_contents()->render_view_host();
+  RenderViewHost* view = tabContents_->tab_contents()->GetRenderViewHost();
   if (!view) {
     NOTREACHED();
     return;
@@ -284,7 +284,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesPasteScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = tabContents_->tab_contents()->render_view_host();
+  RenderViewHost* view = tabContents_->tab_contents()->GetRenderViewHost();
   if (!view) {
     NOTREACHED();
     return;
@@ -294,7 +294,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesSelectAllScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = tabContents_->tab_contents()->render_view_host();
+  RenderViewHost* view = tabContents_->tab_contents()->GetRenderViewHost();
   if (!view) {
     NOTREACHED();
     return;
@@ -325,7 +325,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesStopScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = tabContents_->tab_contents()->render_view_host();
+  RenderViewHost* view = tabContents_->tab_contents()->GetRenderViewHost();
   if (!view) {
     // We tolerate Stop being called even before a view has been created.
     // So just log a warning instead of a NOTREACHED().
@@ -400,7 +400,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (id)handlesExecuteJavascriptScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = tabContents_->tab_contents()->render_view_host();
+  RenderViewHost* view = tabContents_->tab_contents()->GetRenderViewHost();
   if (!view) {
     NOTREACHED();
     return nil;

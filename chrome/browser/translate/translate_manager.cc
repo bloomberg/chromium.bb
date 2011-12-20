@@ -294,9 +294,8 @@ void TranslateManager::Observe(int type,
           base::Bind(
               &TranslateManager::InitiateTranslationPosted,
               weak_method_factory_.GetWeakPtr(),
-              controller->tab_contents()->render_view_host()->process()->
-                  GetID(),
-              controller->tab_contents()->render_view_host()->routing_id(),
+              controller->tab_contents()->GetRenderProcessHost()->GetID(),
+              controller->tab_contents()->GetRenderViewHost()->routing_id(),
               helper->language_state().original_language()));
       break;
     }
@@ -572,7 +571,7 @@ void TranslateManager::TranslatePage(TabContents* tab_contents,
 
   // The script is not available yet.  Queue that request and query for the
   // script.  Once it is downloaded we'll do the translate.
-  RenderViewHost* rvh = tab_contents->render_view_host();
+  RenderViewHost* rvh = tab_contents->GetRenderViewHost();
   PendingRequest request;
   request.render_process_id = rvh->process()->GetID();
   request.render_view_id = rvh->routing_id();
@@ -589,8 +588,8 @@ void TranslateManager::RevertTranslation(TabContents* tab_contents) {
     NOTREACHED();
     return;
   }
-  tab_contents->render_view_host()->Send(new ChromeViewMsg_RevertTranslation(
-      tab_contents->render_view_host()->routing_id(), entry->page_id()));
+  tab_contents->GetRenderViewHost()->Send(new ChromeViewMsg_RevertTranslation(
+      tab_contents->GetRenderViewHost()->routing_id(), entry->page_id()));
 
   TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
       tab_contents)->translate_tab_helper();
@@ -643,9 +642,9 @@ void TranslateManager::DoTranslatePage(TabContents* tab,
 
   wrapper->translate_tab_helper()->language_state().set_translation_pending(
       true);
-  tab->render_view_host()->Send(new ChromeViewMsg_TranslatePage(
-      tab->render_view_host()->routing_id(), entry->page_id(), translate_script,
-      source_lang, target_lang));
+  tab->GetRenderViewHost()->Send(new ChromeViewMsg_TranslatePage(
+      tab->GetRenderViewHost()->routing_id(), entry->page_id(),
+      translate_script, source_lang, target_lang));
 }
 
 void TranslateManager::PageTranslated(TabContents* tab,

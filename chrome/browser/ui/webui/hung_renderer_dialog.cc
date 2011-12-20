@@ -186,8 +186,8 @@ void HungRendererDialog::OnDialogClosed(const std::string& json_retval) {
     } else {
       // No indication from the user that it is ok to kill anything. Just wait.
       // Start waiting again for responsiveness.
-      if (contents_ && contents_->render_view_host())
-        contents_->render_view_host()->RestartHangMonitorTimeout();
+      if (contents_ && contents_->GetRenderViewHost())
+        contents_->GetRenderViewHost()->RestartHangMonitorTimeout();
     }
   }
   g_instance = NULL;

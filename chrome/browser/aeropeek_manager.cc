@@ -976,7 +976,8 @@ bool AeroPeekManager::GetTabThumbnail(int tab_id, SkBitmap* thumbnail) {
 
   ThumbnailGenerator* generator = g_browser_process->GetThumbnailGenerator();
   DCHECK(generator);
-  *thumbnail = generator->GetThumbnailForRenderer(contents->render_view_host());
+  *thumbnail = generator->GetThumbnailForRenderer(
+      contents->GetRenderViewHost());
 
   return true;
 }
@@ -990,7 +991,7 @@ bool AeroPeekManager::GetTabPreview(int tab_id, SkBitmap* preview) {
   if (!contents)
     return false;
 
-  RenderViewHost* render_view_host = contents->render_view_host();
+  RenderViewHost* render_view_host = contents->GetRenderViewHost();
   if (!render_view_host)
     return false;
 

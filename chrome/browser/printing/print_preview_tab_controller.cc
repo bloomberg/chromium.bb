@@ -41,8 +41,8 @@ namespace {
 void EnableInternalPDFPluginForTab(TabContentsWrapper* preview_tab) {
   // Always enable the internal PDF plugin for the print preview page.
   ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
-        preview_tab->tab_contents()->render_view_host()->process()->GetID(),
-        preview_tab->tab_contents()->render_view_host()->routing_id(),
+        preview_tab->tab_contents()->GetRenderProcessHost()->GetID(),
+        preview_tab->tab_contents()->GetRenderViewHost()->routing_id(),
         GURL(),
         ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName));
 }
@@ -243,11 +243,10 @@ void PrintPreviewTabController::OnRendererProcessClosed(
        iter != preview_tab_map_.end(); ++iter) {
     TabContentsWrapper* preview_tab = iter->first;
     TabContentsWrapper* initiator_tab = iter->second;
-    if (preview_tab->tab_contents()->render_view_host()->process() == rph) {
+    if (preview_tab->tab_contents()->GetRenderProcessHost() == rph) {
       closed_preview_tabs.push_back(preview_tab);
     } else if (initiator_tab &&
-               initiator_tab->tab_contents()->render_view_host()->process()
-                   == rph) {
+               initiator_tab->tab_contents()->GetRenderProcessHost() == rph) {
       closed_initiator_tabs.push_back(initiator_tab);
     }
   }
@@ -415,8 +414,7 @@ void PrintPreviewTabController::AddObservers(TabContentsWrapper* tab) {
 
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.
-  content::RenderProcessHost* rph =
-      tab->tab_contents()->render_view_host()->process();
+  content::RenderProcessHost* rph = tab->tab_contents()->GetRenderProcessHost();
   if (!registrar_.IsRegistered(this,
                                content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                                content::Source<content::RenderProcessHost>(
@@ -436,8 +434,7 @@ void PrintPreviewTabController::RemoveObservers(TabContentsWrapper* tab) {
 
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.
-  content::RenderProcessHost* rph =
-      tab->tab_contents()->render_view_host()->process();
+  content::RenderProcessHost* rph = tab->tab_contents()->GetRenderProcessHost();
   if (registrar_.IsRegistered(this,
                               content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                               content::Source<content::RenderProcessHost>(

@@ -61,7 +61,7 @@ bool ExtensionDevToolsBridge::RegisterAsDevToolsClientHost() {
                                    &contents, &tab_index)) {
     DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
     DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-        contents->tab_contents()->render_view_host());
+        contents->tab_contents()->GetRenderViewHost());
     if (devtools_manager->GetDevToolsClientHostFor(agent))
       return false;
 

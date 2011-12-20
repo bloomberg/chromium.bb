@@ -99,7 +99,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     static int page_id = 0;
     RenderViewHost* rvh = contents()->pending_rvh();
     if (!rvh) {
-      rvh = contents()->render_view_host();
+      rvh = contents()->GetRenderViewHost();
     }
     contents()->ProceedWithCrossSiteNavigation();
     contents()->TestDidNavigateWithReferrer(

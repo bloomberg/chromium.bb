@@ -33,14 +33,14 @@ void WebUITestHandler::PreloadJavaScript(const string16& js_text,
 }
 
 void WebUITestHandler::RunJavaScript(const string16& js_text) {
-  web_ui_->tab_contents()->render_view_host()->ExecuteJavascriptInWebFrame(
+  web_ui_->tab_contents()->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
       string16(), js_text);
 }
 
 bool WebUITestHandler::RunJavaScriptTestWithResult(const string16& js_text) {
   test_succeeded_ = false;
   run_test_succeeded_ = false;
-  RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
+  RenderViewHost* rvh = web_ui_->tab_contents()->GetRenderViewHost();
   content::NotificationRegistrar notification_registrar;
   notification_registrar.Add(
       this, content::NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,

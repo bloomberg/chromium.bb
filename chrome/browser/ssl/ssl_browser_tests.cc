@@ -101,7 +101,7 @@ class SSLUITest : public InProcessBrowserTest {
     while (base::Time::Now() < timeToQuit) {
       bool workerFinished = false;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-          tab->render_view_host(), std::wstring(),
+          tab->GetRenderViewHost(), std::wstring(),
           L"window.domAutomationController.send(IsWorkerFinished());",
           &workerFinished));
 
@@ -116,7 +116,7 @@ class SSLUITest : public InProcessBrowserTest {
 
     bool actuallyLoadedContent = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        tab->render_view_host(), std::wstring(),
+        tab->GetRenderViewHost(), std::wstring(),
         L"window.domAutomationController.send(IsContentLoaded());",
         &actuallyLoadedContent));
     EXPECT_EQ(expectLoaded, actuallyLoadedContent);
@@ -379,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoBackViaButton) {
   // Wait until we hear the load failure, and make sure we haven't swapped out
   // the previous page.  Prevents regression of http://crbug.com/82667.
   load_failed_observer.Wait();
-  EXPECT_FALSE(tab->render_view_host()->is_swapped_out());
+  EXPECT_FALSE(tab->GetRenderViewHost()->is_swapped_out());
 
   // We should be back at the original good page.
   EXPECT_FALSE(browser()->GetSelectedTabContents()->interstitial_page());
@@ -604,7 +604,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContents) {
 
   int img_width;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
-      tab->render_view_host(), std::wstring(),
+      tab->GetRenderViewHost(), std::wstring(),
       L"window.domAutomationController.send(ImageWidth());", &img_width));
   // In order to check that the image was not loaded, we check its width.
   // The actual image (Google logo) is 114 pixels wide, we assume the broken
@@ -613,7 +613,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContents) {
 
   bool js_result = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), std::wstring(),
+      tab->GetRenderViewHost(), std::wstring(),
       L"window.domAutomationController.send(IsFooSet());", &js_result));
   EXPECT_FALSE(js_result);
 }
@@ -638,7 +638,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentLoadedFromJS) {
   // Load the insecure image.
   bool js_result = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), std::wstring(), L"loadBadImage();", &js_result));
+      tab->GetRenderViewHost(), std::wstring(), L"loadBadImage();",
+      &js_result));
   EXPECT_TRUE(js_result);
 
   // We should now have insecure content.
@@ -1037,7 +1038,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->controller()));
     EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        tab->render_view_host(), std::wstring(),
+        tab->GetRenderViewHost(), std::wstring(),
         L"window.domAutomationController.send(clickLink('goodHTTPSLink'));",
         &success));
     ASSERT_TRUE(success);
@@ -1053,7 +1054,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->controller()));
     EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        tab->render_view_host(), std::wstring(),
+        tab->GetRenderViewHost(), std::wstring(),
         L"window.domAutomationController.send(clickLink('badHTTPSLink'));",
         &success));
     ASSERT_TRUE(success);
@@ -1069,7 +1070,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
   std::wstring is_evil_js(L"window.domAutomationController.send("
                           L"document.getElementById('evilDiv') != null);");
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), content_frame_xpath, is_evil_js,
+      tab->GetRenderViewHost(), content_frame_xpath, is_evil_js,
       &is_content_evil));
   EXPECT_FALSE(is_content_evil);
 
@@ -1089,7 +1090,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->controller()));
     EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        tab->render_view_host(), std::wstring(),
+        tab->GetRenderViewHost(), std::wstring(),
         L"window.domAutomationController.send(clickLink('HTTPLink'));",
         &success));
     ASSERT_TRUE(success);
@@ -1137,7 +1138,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestBadFrameNavigation) {
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->controller()));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), std::wstring(),
+      tab->GetRenderViewHost(), std::wstring(),
       L"window.domAutomationController.send(clickLink('goodHTTPSLink'));",
       &success));
   ASSERT_TRUE(success);
@@ -1174,7 +1175,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnauthenticatedFrameNavigation) {
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->controller()));
     EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        tab->render_view_host(), std::wstring(),
+        tab->GetRenderViewHost(), std::wstring(),
         L"window.domAutomationController.send(clickLink('goodHTTPSLink'));",
         &success));
     ASSERT_TRUE(success);
@@ -1191,7 +1192,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnauthenticatedFrameNavigation) {
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->controller()));
     EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        tab->render_view_host(), std::wstring(),
+        tab->GetRenderViewHost(), std::wstring(),
         L"window.domAutomationController.send(clickLink('badHTTPSLink'));",
         &success));
     ASSERT_TRUE(success);
@@ -1207,7 +1208,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnauthenticatedFrameNavigation) {
   std::wstring is_evil_js(L"window.domAutomationController.send("
                           L"document.getElementById('evilDiv') != null);");
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), content_frame_xpath, is_evil_js,
+      tab->GetRenderViewHost(), content_frame_xpath, is_evil_js,
       &is_content_evil));
   EXPECT_FALSE(is_content_evil);
 }

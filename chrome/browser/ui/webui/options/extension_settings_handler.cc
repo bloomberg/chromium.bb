@@ -617,7 +617,7 @@ void ExtensionSettingsHandler::Observe(
       break;
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED:
       deleting_rvh_ = content::Details<BackgroundContents>(details)->
-          tab_contents()->render_view_host();
+          tab_contents()->GetRenderViewHost();
       // Fall through.
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED:
     case chrome::NOTIFICATION_EXTENSION_HOST_CREATED:
@@ -646,7 +646,7 @@ const Extension* ExtensionSettingsHandler::GetExtension(const ListValue* args) {
 
 void ExtensionSettingsHandler::MaybeUpdateAfterNotification() {
   TabContents* contents = web_ui_->tab_contents();
-  if (!ignore_notifications_ && contents && contents->render_view_host())
+  if (!ignore_notifications_ && contents && contents->GetRenderViewHost())
     HandleRequestExtensionsData(NULL);
   deleting_rvh_ = NULL;
 }

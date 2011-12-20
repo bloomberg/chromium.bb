@@ -132,7 +132,7 @@ content::RenderProcessHost* HungPagesTableModel::GetRenderProcessHost() {
 
 RenderViewHost* HungPagesTableModel::GetRenderViewHost() {
   return tab_observers_.empty() ? NULL :
-      tab_observers_[0]->tab_contents()->render_view_host();
+      tab_observers_[0]->tab_contents()->GetRenderViewHost();
 }
 
 void HungPagesTableModel::InitForTabContents(TabContents* hung_contents) {

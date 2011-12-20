@@ -607,10 +607,10 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
   }
 
   // If the session storage namespaces don't match, cancel the prerender.
-  RenderViewHost* old_render_view_host = tab_contents->render_view_host();
+  RenderViewHost* old_render_view_host = tab_contents->GetRenderViewHost();
   RenderViewHost* new_render_view_host =
       prerender_contents->prerender_contents()->tab_contents()->
-          render_view_host();
+          GetRenderViewHost();
   DCHECK(old_render_view_host);
   DCHECK(new_render_view_host);
   if (old_render_view_host->session_storage_namespace() !=
@@ -694,7 +694,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
     // Schedule the delete to occur after the tab has run its unload handlers.
     on_close_tab_contents_deleters_.push_back(
         new OnCloseTabContentsDeleter(this, old_tab_contents));
-    old_tab_contents->tab_contents()->render_view_host()->
+    old_tab_contents->tab_contents()->GetRenderViewHost()->
         FirePageBeforeUnload(false);
   } else {
     // No unload handler to run, so delete asap.
@@ -913,7 +913,7 @@ bool PrerenderManager::IsOldRenderViewHost(
            old_tab_contents_list_.begin();
        it != old_tab_contents_list_.end();
        ++it) {
-    if ((*it)->tab_contents()->render_view_host() == render_view_host)
+    if ((*it)->tab_contents()->GetRenderViewHost() == render_view_host)
       return true;
   }
   return false;

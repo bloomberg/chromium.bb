@@ -309,7 +309,7 @@ TEST_F(TabContentsTest, SimpleNavigation) {
   // DidNavigate from the page
   contents()->TestDidNavigate(orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(orig_rvh, contents()->render_view_host());
+  EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
   EXPECT_EQ(instance1, orig_rvh->site_instance());
   // Controller's entry should now have the SiteInstance, or else we won't be
   // able to find it later.
@@ -344,7 +344,7 @@ TEST_F(TabContentsTest, CrossSiteBoundaries) {
   contents()->TestDidNavigate(orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
 
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(orig_rvh, contents()->render_view_host());
+  EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
 
   // Navigate to new site
   const GURL url2("http://www.yahoo.com");
@@ -366,7 +366,7 @@ TEST_F(TabContentsTest, CrossSiteBoundaries) {
   SiteInstance* instance2 = contents()->GetSiteInstance();
 
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(pending_rvh, contents()->render_view_host());
+  EXPECT_EQ(pending_rvh, contents()->GetRenderViewHost());
   EXPECT_NE(instance1, instance2);
   EXPECT_TRUE(contents()->pending_rvh() == NULL);
   // We keep the original RVH around, swapped out.
@@ -390,7 +390,7 @@ TEST_F(TabContentsTest, CrossSiteBoundaries) {
   contents()->TestDidNavigate(
       goback_rvh, 1, url2, content::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(goback_rvh, contents()->render_view_host());
+  EXPECT_EQ(goback_rvh, contents()->GetRenderViewHost());
   EXPECT_EQ(instance1, contents()->GetSiteInstance());
   // The pending RVH should now be swapped out, not deleted.
   EXPECT_TRUE(contents()->render_manager_for_testing()->
@@ -419,7 +419,7 @@ TEST_F(TabContentsTest, CrossSiteBoundariesAfterCrash) {
   contents()->TestDidNavigate(orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
 
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(orig_rvh, contents()->render_view_host());
+  EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
 
   // Crash the renderer.
   orig_rvh->set_render_view_created(false);
@@ -470,7 +470,7 @@ TEST_F(TabContentsTest, NavigateTwoTabsCrossSite) {
   // Need this page id to be 2 since the site instance is the same (which is the
   // scope of page IDs) and we want to consider this a new page.
   contents2.TestDidNavigate(
-      contents2.render_view_host(), 2, url, content::PAGE_TRANSITION_TYPED);
+      contents2.GetRenderViewHost(), 2, url, content::PAGE_TRANSITION_TYPED);
 
   // Navigate first tab to a new site
   const GURL url2a("http://www.yahoo.com");
@@ -490,7 +490,7 @@ TEST_F(TabContentsTest, NavigateTwoTabsCrossSite) {
                                  content::PAGE_TRANSITION_TYPED,
                                  std::string());
   TestRenderViewHost* rvh2 =
-      static_cast<TestRenderViewHost*>(contents2.render_view_host());
+      static_cast<TestRenderViewHost*>(contents2.GetRenderViewHost());
   rvh2->SendShouldCloseACK(true);
   TestRenderViewHost* pending_rvh_b = contents2.pending_rvh();
   EXPECT_TRUE(pending_rvh_b != NULL);
@@ -532,7 +532,7 @@ TEST_F(TabContentsTest, CrossSiteComparesAgainstCurrentPage) {
   // The first RVH in contents2 isn't live yet, so we shortcut the cross site
   // pending.
   TestRenderViewHost* rvh2 = static_cast<TestRenderViewHost*>(
-      contents2.render_view_host());
+      contents2.GetRenderViewHost());
   EXPECT_FALSE(contents2.cross_navigation_pending());
   contents2.TestDidNavigate(rvh2, 2, url2, content::PAGE_TRANSITION_TYPED);
   SiteInstance* instance2 = contents2.GetSiteInstance();
@@ -572,7 +572,7 @@ TEST_F(TabContentsTest, CrossSiteUnloadHandlers) {
       url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   contents()->TestDidNavigate(orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(orig_rvh, contents()->render_view_host());
+  EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
 
   // Navigate to new site, but simulate an onbeforeunload denial.
   const GURL url2("http://www.yahoo.com");
@@ -582,7 +582,7 @@ TEST_F(TabContentsTest, CrossSiteUnloadHandlers) {
   orig_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, false));
   EXPECT_FALSE(orig_rvh->is_waiting_for_beforeunload_ack());
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(orig_rvh, contents()->render_view_host());
+  EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
 
   // Navigate again, but simulate an onbeforeunload approval.
   controller().LoadURL(
@@ -622,7 +622,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationPreempted) {
       url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   contents()->TestDidNavigate(orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(orig_rvh, contents()->render_view_host());
+  EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
 
   // Navigate to new site, simulating an onbeforeunload approval.
   const GURL url2("http://www.yahoo.com");
@@ -657,7 +657,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   SiteInstance* instance1 = contents()->GetSiteInstance();
 
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(ntp_rvh, contents()->render_view_host());
+  EXPECT_EQ(ntp_rvh, contents()->GetRenderViewHost());
   EXPECT_EQ(url1, entry1->url());
   EXPECT_EQ(instance1, entry1->site_instance());
   EXPECT_TRUE(ntp_rvh->enabled_bindings() & content::BINDINGS_POLICY_WEB_UI);
@@ -680,7 +680,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   SiteInstance* instance2 = contents()->GetSiteInstance();
 
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(google_rvh, contents()->render_view_host());
+  EXPECT_EQ(google_rvh, contents()->GetRenderViewHost());
   EXPECT_NE(instance1, instance2);
   EXPECT_FALSE(contents()->pending_rvh());
   EXPECT_EQ(url2, entry2->url());
@@ -699,7 +699,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   SiteInstance* instance3 = contents()->GetSiteInstance();
 
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(google_rvh, contents()->render_view_host());
+  EXPECT_EQ(google_rvh, contents()->GetRenderViewHost());
   EXPECT_EQ(instance2, instance3);
   EXPECT_FALSE(contents()->pending_rvh());
   EXPECT_EQ(url3, entry3->url());
@@ -727,7 +727,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   // We should commit this page and forget about the second back.
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_FALSE(controller().pending_entry());
-  EXPECT_EQ(google_rvh, contents()->render_view_host());
+  EXPECT_EQ(google_rvh, contents()->GetRenderViewHost());
   EXPECT_EQ(url2, controller().GetLastCommittedEntry()->url());
 
   // We should not have corrupted the NTP entry.
@@ -749,7 +749,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationNotPreemptedByFrame) {
       url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   contents()->TestDidNavigate(orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(orig_rvh, contents()->render_view_host());
+  EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
 
   // Start navigating to new site.
   const GURL url2("http://www.yahoo.com");
@@ -796,14 +796,14 @@ TEST_F(TabContentsTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   // but it should act as if the beforeunload ack arrived.
   orig_rvh->SendNavigate(1, GURL("tabcontentstest://blah"));
   EXPECT_TRUE(contents()->cross_navigation_pending());
-  EXPECT_EQ(orig_rvh, contents()->render_view_host());
+  EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
   EXPECT_FALSE(orig_rvh->is_waiting_for_beforeunload_ack());
 
   // The pending navigation should be able to commit successfully.
   contents()->TestDidNavigate(
       pending_rvh, 1, url2, content::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(pending_rvh, contents()->render_view_host());
+  EXPECT_EQ(pending_rvh, contents()->GetRenderViewHost());
 }
 
 // Test that the original renderer cannot preempt a cross-site navigation once
@@ -821,7 +821,7 @@ TEST_F(TabContentsTest, CrossSiteCantPreemptAfterUnload) {
       url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   contents()->TestDidNavigate(orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(orig_rvh, contents()->render_view_host());
+  EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
 
   // Navigate to new site, simulating an onbeforeunload approval.
   const GURL url2("http://www.yahoo.com");
@@ -872,7 +872,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationCanceled) {
       url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   contents()->TestDidNavigate(orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(orig_rvh, contents()->render_view_host());
+  EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
 
   // Navigate to new site, simulating an onbeforeunload approval.
   const GURL url2("http://www.yahoo.com");
@@ -1707,7 +1707,7 @@ TEST_F(TabContentsTest, NoJSMessageOnInterstitials) {
   // attempting to show a JS message.
   IPC::Message* dummy_message = new IPC::Message;
   bool did_suppress_message = false;
-  contents()->RunJavaScriptMessage(contents()->render_view_host(),
+  contents()->RunJavaScriptMessage(contents()->GetRenderViewHost(),
       ASCIIToUTF16("This is an informative message"), ASCIIToUTF16("OK"),
       kGURL, ui::JAVASCRIPT_MESSAGE_TYPE_ALERT, dummy_message,
       &did_suppress_message);

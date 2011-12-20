@@ -187,7 +187,7 @@ bool ExternalTabContainer::Init(Profile* profile,
           handle_top_level_requests;
 
   if (!existing_contents) {
-    tab_contents_->tab_contents()->render_view_host()->AllowBindings(
+    tab_contents_->tab_contents()->GetRenderViewHost()->AllowBindings(
         content::BINDINGS_POLICY_EXTERNAL_HOST);
   }
 
@@ -240,7 +240,8 @@ bool ExternalTabContainer::Init(Profile* profile,
 void ExternalTabContainer::Uninitialize() {
   registrar_.RemoveAll();
   if (tab_contents_.get()) {
-    UnregisterRenderViewHost(tab_contents_->tab_contents()->render_view_host());
+    UnregisterRenderViewHost(
+        tab_contents_->tab_contents()->GetRenderViewHost());
 
     if (GetWidget()->GetRootView())
       GetWidget()->GetRootView()->RemoveAllChildViews(true);
@@ -479,7 +480,7 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
 }
 
 void ExternalTabContainer::TabContentsCreated(TabContents* new_contents) {
-  RenderViewHost* rvh = new_contents->render_view_host();
+  RenderViewHost* rvh = new_contents->GetRenderViewHost();
   DCHECK(rvh != NULL);
 
   // Register this render view as a pending render view, i.e. any network
@@ -1004,12 +1005,12 @@ bool ExternalTabContainer::AcceleratorPressed(
   DCHECK(iter != accelerator_table_.end());
 
   if (!tab_contents_.get() ||
-      !tab_contents_->tab_contents()->render_view_host()) {
+      !tab_contents_->tab_contents()->GetRenderViewHost()) {
     NOTREACHED();
     return false;
   }
 
-  RenderViewHost* host = tab_contents_->tab_contents()->render_view_host();
+  RenderViewHost* host = tab_contents_->tab_contents()->GetRenderViewHost();
   int command_id = iter->second;
   switch (command_id) {
     case IDC_ZOOM_PLUS:
@@ -1023,17 +1024,17 @@ bool ExternalTabContainer::AcceleratorPressed(
       break;
     case IDC_DEV_TOOLS:
       DevToolsWindow::ToggleDevToolsWindow(
-          tab_contents_->tab_contents()->render_view_host(),
+          tab_contents_->tab_contents()->GetRenderViewHost(),
           DEVTOOLS_TOGGLE_ACTION_NONE);
       break;
     case IDC_DEV_TOOLS_CONSOLE:
       DevToolsWindow::ToggleDevToolsWindow(
-          tab_contents_->tab_contents()->render_view_host(),
+          tab_contents_->tab_contents()->GetRenderViewHost(),
           DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
       break;
     case IDC_DEV_TOOLS_INSPECT:
       DevToolsWindow::ToggleDevToolsWindow(
-          tab_contents_->tab_contents()->render_view_host(),
+          tab_contents_->tab_contents()->GetRenderViewHost(),
           DEVTOOLS_TOGGLE_ACTION_INSPECT);
       break;
     default:
@@ -1104,7 +1105,7 @@ void ExternalTabContainer::LoadAccelerators() {
 
 void ExternalTabContainer::OnReinitialize() {
   if (load_requests_via_automation_) {
-    RenderViewHost* rvh = tab_contents_->tab_contents()->render_view_host();
+    RenderViewHost* rvh = tab_contents_->tab_contents()->GetRenderViewHost();
     if (rvh) {
       AutomationResourceMessageFilter::ResumePendingRenderView(
           rvh->process()->GetID(), rvh->routing_id(),

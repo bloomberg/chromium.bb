@@ -71,7 +71,7 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
     std::string script = StringPrintf("%s('%s')", test_function_name.c_str(),
         test_gallery_url_.c_str());
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetSelectedTabContents()->render_view_host(), L"",
+        browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
         UTF8ToWide(script), &result));
     EXPECT_TRUE(result);
   }
