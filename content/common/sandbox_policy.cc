@@ -294,17 +294,19 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
 // backend. Note that the GPU process is connected to the interactive
 // desktop.
 // TODO(cpu): Lock down the sandbox more if possible.
-// TODO(apatrick): Use D3D9Ex to render windowless.
 bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
 #if !defined(NACL_WIN64)  // We don't need this code on win nacl64.
   if (base::win::GetVersion() > base::win::VERSION_XP) {
-    policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                          sandbox::USER_LIMITED);
     if (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
         gfx::kGLImplementationDesktopName) {
+      policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
+                            sandbox::USER_LIMITED);
       policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
       policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
     } else {
+      policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
+                            sandbox::USER_RESTRICTED);
+
       // UI restrictions break when we access Windows from outside our job.
       // However, we don't want a proxy window in this process because it can
       // introduce deadlocks where the renderer blocks on the gpu, which in
