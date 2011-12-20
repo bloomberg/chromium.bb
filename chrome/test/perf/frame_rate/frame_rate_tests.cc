@@ -235,7 +235,7 @@ class FrameRateTest
 
     std::string mean_and_error = results["mean"] + "," + results["sigma"];
     perf_test::PrintResultMeanAndError(name, "", trace_name, mean_and_error,
-                                       "frames-per-second", true);
+                                       "milliseconds-per-frame", true);
   }
 };
 
