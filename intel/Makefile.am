@@ -36,23 +36,14 @@ libdrm_intel_la_LDFLAGS = -version-number 1:0:0 -no-undefined
 libdrm_intel_la_LIBADD = ../libdrm.la \
 	@PTHREADSTUBS_LIBS@ \
 	@PCIACCESS_LIBS@ \
-	@CLOCK_LIB@ \
-	libintel_decode.la
-
-
-noinst_LTLIBRARIES = libintel_decode.la
-
-libintel_decode_la_SOURCES = intel_decode.c
-libintel_decode_la_CFLAGS = \
-	-I$(top_srcdir) \
-	-I$(top_srcdir)/intel \
-	-std=c99
+	@CLOCK_LIB@
 
 libdrm_intel_la_SOURCES = \
 	intel_bufmgr.c \
 	intel_bufmgr_priv.h \
 	intel_bufmgr_fake.c \
 	intel_bufmgr_gem.c \
+	intel_decode.c \
 	intel_chipset.h \
 	mm.c \
 	mm.h
