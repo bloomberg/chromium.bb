@@ -22,6 +22,7 @@ namespace fileapi {
 
 class ExternalFileSystemMountPointProvider;
 class FileSystemFileUtil;
+class FileSystemMountPointProvider;
 class SandboxMountPointProvider;
 
 class FileSystemPathManager {
@@ -66,9 +67,9 @@ class FileSystemPathManager {
   // filesystem.
   bool IsAllowedScheme(const GURL& url) const;
 
-  // Returns the string for the given |type|.
+  // Returns the string representation of the given filesystem |type|.
   // Returns an empty string if the |type| is invalid.
-  static std::string GetFileSystemTypeString(fileapi::FileSystemType type);
+  static std::string GetFileSystemTypeString(FileSystemType type);
 
   // Checks if a given |name| contains any restricted names/chars in it.
   bool IsRestrictedFileName(FileSystemType type,
@@ -79,12 +80,19 @@ class FileSystemPathManager {
   bool IsAccessAllowed(const GURL& origin, FileSystemType type,
                        const FilePath& virtual_path);
 
+  // Returns the appropriate FileUtil instance for the given |type|.
+  // This may return NULL if it is given an invalid or unsupported filesystem
+  // type.
   FileSystemFileUtil* GetFileUtil(FileSystemType type) const;
 
+  // Returns a FileSystemMountPointProvider instance for sandboxed filesystem
+  // types (e.g. TEMPORARY or PERSISTENT).
   SandboxMountPointProvider* sandbox_provider() const {
     return sandbox_provider_.get();
   }
 
+  // Returns a FileSystemMountPointProvider instance for external filesystem
+  // type, which is used only by chromeos for now.
   ExternalFileSystemMountPointProvider* external_provider() const {
     return external_provider_.get();
   }
@@ -94,6 +102,12 @@ class FileSystemPathManager {
   }
 
  private:
+  // Returns the mount point provider instance for the given |type|.
+  // This may return NULL if it is given an invalid or unsupported filesystem
+  // type.
+  FileSystemMountPointProvider* GetMountPointProvider(
+      FileSystemType type) const;
+
   const bool is_incognito_;
   const bool allow_file_access_from_files_;
   scoped_ptr<SandboxMountPointProvider> sandbox_provider_;

@@ -58,45 +58,25 @@ FileSystemPathManager::~FileSystemPathManager() {}
 void FileSystemPathManager::ValidateFileSystemRootAndGetURL(
     const GURL& origin_url, fileapi::FileSystemType type, bool create,
     const GetRootPathCallback& callback) {
-  switch (type) {
-    case kFileSystemTypeTemporary:
-    case kFileSystemTypePersistent:
-      sandbox_provider_->ValidateFileSystemRootAndGetURL(
-          origin_url, type, create, callback);
-      break;
-    case kFileSystemTypeExternal:
-      if (external_provider_.get()) {
-        external_provider_->ValidateFileSystemRootAndGetURL(
-            origin_url, type, create, callback);
-      } else {
-        callback.Run(false, FilePath(), std::string());
-      }
-      break;
-    case kFileSystemTypeUnknown:
-    default:
-      NOTREACHED();
-      callback.Run(false, FilePath(), std::string());
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(type);
+  if (!mount_point_provider) {
+    callback.Run(false, FilePath(), std::string());
+    return;
   }
+  mount_point_provider->ValidateFileSystemRootAndGetURL(
+      origin_url, type, create, callback);
 }
 
 FilePath FileSystemPathManager::ValidateFileSystemRootAndGetPathOnFileThread(
     const GURL& origin_url, FileSystemType type, const FilePath& virtual_path,
     bool create) {
-  switch (type) {
-  case kFileSystemTypeTemporary:
-  case kFileSystemTypePersistent:
-    return sandbox_provider_->ValidateFileSystemRootAndGetPathOnFileThread(
-        origin_url, type, virtual_path, create);
-  case kFileSystemTypeExternal:
-    return external_provider_.get() ?
-        external_provider_->ValidateFileSystemRootAndGetPathOnFileThread(
-           origin_url, type, virtual_path, create) :
-        FilePath();
-  case kFileSystemTypeUnknown:
-  default:
-    NOTREACHED();
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(type);
+  if (!mount_point_provider)
     return FilePath();
-  }
+  return mount_point_provider->ValidateFileSystemRootAndGetPathOnFileThread(
+      origin_url, type, virtual_path, create);
 }
 
 bool FileSystemPathManager::IsAllowedScheme(const GURL& url) const {
@@ -122,56 +102,38 @@ std::string FileSystemPathManager::GetFileSystemTypeString(
 // Checks if a given |name| contains any restricted names/chars in it.
 bool FileSystemPathManager::IsRestrictedFileName(
     FileSystemType type, const FilePath& filename) {
-  switch (type) {
-  case kFileSystemTypeTemporary:
-  case kFileSystemTypePersistent:
-    return sandbox_provider_->IsRestrictedFileName(filename);
-  case kFileSystemTypeExternal:
-    return external_provider_.get() ?
-               external_provider_->IsRestrictedFileName(filename) : true;
-  case kFileSystemTypeUnknown:
-  default:
-    NOTREACHED();
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(type);
+  if (!mount_point_provider)
     return true;
-  }
+  return mount_point_provider->IsRestrictedFileName(filename);
 }
 
 // Checks if an origin has access to a particular filesystem type.
 bool FileSystemPathManager::IsAccessAllowed(
     const GURL& origin, FileSystemType type, const FilePath& virtual_path) {
-  switch (type) {
-    case kFileSystemTypeTemporary:
-    case kFileSystemTypePersistent:
-      if (!sandbox_provider_->IsAccessAllowed(origin, type, virtual_path))
-        return false;
-      break;
-    case kFileSystemTypeExternal:
-      if (!external_provider_.get() ||
-          !external_provider_->IsAccessAllowed(origin, type, virtual_path)) {
-        return false;
-      }
-      break;
-    case kFileSystemTypeUnknown:
-    default:
-      NOTREACHED();
-      return false;
-  }
-  return true;
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(type);
+  DCHECK(mount_point_provider);
+  return mount_point_provider->IsAccessAllowed(origin, type, virtual_path);
 }
 
 FileSystemFileUtil* FileSystemPathManager::GetFileUtil(
     FileSystemType type) const {
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(type);
+  DCHECK(mount_point_provider);
+  return mount_point_provider->GetFileUtil();
+}
+
+FileSystemMountPointProvider* FileSystemPathManager::GetMountPointProvider(
+    FileSystemType type) const {
   switch (type) {
     case kFileSystemTypeTemporary:
     case kFileSystemTypePersistent:
-      return sandbox_provider_->GetFileUtil();
+      return sandbox_provider();
     case kFileSystemTypeExternal:
-      if (external_provider_.get()) {
-        return external_provider_->GetFileUtil();
-      } else {
-        NOTREACHED();
-        return NULL;
-      }
+      return external_provider();
     case kFileSystemTypeUnknown:
     default:
       NOTREACHED();

@@ -15,8 +15,8 @@
 
 namespace fileapi {
 
-// An interface to provide local filesystem paths.
-
+// An interface to provide mount-point-specific path-related utilities
+// and specialized FileSystemFileUtil instance.
 class FileSystemMountPointProvider {
  public:
   virtual ~FileSystemMountPointProvider() {}
@@ -52,6 +52,7 @@ class FileSystemMountPointProvider {
   // permissions.
   virtual std::vector<FilePath> GetRootDirectories() const = 0;
 
+  // Returns the specialized FileSystemFileUtil for this mount point.
   virtual FileSystemFileUtil* GetFileUtil() = 0;
 };
 

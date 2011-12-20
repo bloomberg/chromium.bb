@@ -27,10 +27,11 @@ namespace fileapi {
 
 class ObfuscatedFileUtil;
 
-// An interface to construct or crack sandboxed filesystem paths.
-// Currently each sandboxed filesystem path looks like (soon will be changed):
-//   <profile_dir>/FileSystem/<origin_identifier>/<type>/chrome-<unique>/...
-// <type> is either one of "Temporary" or "Persistent".
+// An interface to construct or crack sandboxed filesystem paths for
+// TEMPORARY or PERSISTENT filesystems, which are placed under the user's
+// profile directory in a sandboxed way.
+// This interface also lets one enumerate and remove storage for the origins
+// that use the filesystem.
 class SandboxMountPointProvider
     : public FileSystemMountPointProvider,
       public FileSystemQuotaUtil {

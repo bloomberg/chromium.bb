@@ -21,18 +21,38 @@ extern const char kPersistentName[];
 extern const char kTemporaryName[];
 extern const char kExternalName[];
 
+// Cracks the given filesystem |url| and populates |origin_url|, |type|
+// and |file_path|.  Returns true if the given |url| is a valid filesystem
+// url and the routine could successfully crack it, returns false otherwise.
 // The file_path this returns will be using '/' as a path separator, no matter
 // what platform you're on.
-bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
+bool CrackFileSystemURL(const GURL& url,
+                        GURL* origin_url,
+                        FileSystemType* type,
                         FilePath* file_path);
 
+// Returns the root URI of the filesystem that can be specified by a pair of
+// |origin_url| and |type|.  The returned URI can be used as a root path
+// of the filesystem (e.g. <returned_URI> + "/relative/path" will compose
+// a path pointing to the entry "/relative/path" in the filesystem).
 GURL GetFileSystemRootURI(const GURL& origin_url, fileapi::FileSystemType type);
 
+// Converts FileSystemType |type| to/from the StorageType |storage_type| that
+// is used for the unified quota system.
+// (Basically this naively maps TEMPORARY storage type to TEMPORARY filesystem
+// type, PERSISTENT storage type to PERSISTENT filesystem type and vice versa.)
 FileSystemType QuotaStorageTypeToFileSystemType(
     quota::StorageType storage_type);
-
 quota::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type);
 
+// Returns the origin identifier string for the given |url| and vice versa.
+// The origin identifier string is a serialized form of a security origin
+// and can be used as a path name as it contains no "/" or other possibly
+// unsafe characters. (See WebKit's SecurityOrigin code for more details.)
+//
+// Example:
+//   "http://www.example.com:80/"'s identifier should look like:
+//   "http_www.example.host_80"
 std::string GetOriginIdentifierFromURL(const GURL& url);
 GURL GetOriginURLFromIdentifier(const std::string& origin_identifier);
 

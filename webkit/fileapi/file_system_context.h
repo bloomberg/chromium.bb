@@ -31,6 +31,7 @@ class SandboxMountPointProvider;
 struct DefaultContextDeleter;
 
 // This class keeps and provides a file system context for FileSystem API.
+// An instance of this class is created and owned by profile.
 class FileSystemContext
     : public base::RefCountedThreadSafe<FileSystemContext,
                                         DefaultContextDeleter> {
