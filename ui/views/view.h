@@ -669,9 +669,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Returns true if this view is capable of taking focus.
   bool focusable() const { return focusable_ && enabled_ && visible_; }
 
-  // Returns true if the view is focusable (IsFocusable) and visible in the root
-  // view. See also IsFocusable.
-  virtual bool IsFocusableInRootView() const;
+  // Returns true if this view is |focusable_|, |enabled_| and drawn.
+  virtual bool IsFocusable() const;
 
   // Return whether this view is focusable when the user requires full keyboard
   // access, even though it may not be normally focusable.

@@ -218,7 +218,7 @@ void TabContentsViewViews::RestoreFocus() {
     // If you hit this DCHECK, please report it to Jay (jcampan).
     DCHECK(focus_manager != NULL) << "No focus manager when restoring focus.";
 
-    if (last_focused_view->IsFocusableInRootView() && focus_manager &&
+    if (last_focused_view->IsFocusable() && focus_manager &&
         focus_manager->ContainsView(last_focused_view)) {
       last_focused_view->RequestFocus();
     } else {

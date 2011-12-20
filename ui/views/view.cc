@@ -894,7 +894,7 @@ void View::SetNextFocusableView(View* view) {
   next_focusable_view_ = view;
 }
 
-bool View::IsFocusableInRootView() const {
+bool View::IsFocusable() const {
   return focusable_ && enabled_ && IsDrawn();
 }
 
@@ -914,7 +914,7 @@ const FocusManager* View::GetFocusManager() const {
 
 void View::RequestFocus() {
   FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager && IsFocusableInRootView())
+  if (focus_manager && IsFocusable())
     focus_manager->SetFocusedView(this);
 }
 

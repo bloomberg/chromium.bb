@@ -36,7 +36,7 @@ class VIEWS_EXPORT FocusSearch {
   //           out, even if it's the same view.
   // - |accessibility_mode| should be true if full keyboard accessibility is
   //   needed and you  want to check IsAccessibilityFocusableInRootView(),
-  //   rather than IsFocusableInRootView().
+  //   rather than IsFocusable().
   FocusSearch(View* root, bool cycle, bool accessibility_mode);
   virtual ~FocusSearch() {}
 

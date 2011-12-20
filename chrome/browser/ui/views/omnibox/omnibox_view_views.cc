@@ -302,7 +302,7 @@ void OmniboxViewViews::SetLocationEntryFocusable(bool focusable) {
 }
 
 bool OmniboxViewViews::IsLocationEntryFocusableInRootView() const {
-  return textfield_->IsFocusableInRootView();
+  return textfield_->IsFocusable();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

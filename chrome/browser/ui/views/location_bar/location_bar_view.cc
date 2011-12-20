@@ -460,7 +460,7 @@ void LocationBarView::SetLocationEntryFocusable(bool focusable) {
 bool LocationBarView::IsLocationEntryFocusableInRootView() const {
   return views::Widget::IsPureViews() ?
       AsViews(location_entry_.get())->IsLocationEntryFocusableInRootView() :
-      views::View::IsFocusableInRootView();
+      views::View::IsFocusable();
 }
 
 gfx::Size LocationBarView::GetPreferredSize() {
