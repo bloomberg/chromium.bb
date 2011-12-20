@@ -12,11 +12,12 @@ TOOLCHAIN_CONFIGS = {}
 
 
 class ToolchainConfig(object):
-  def __init__(self, desc, commands, tools_needed, **extra):
+  def __init__(self, desc, commands, tools_needed, is_flaky=False, **extra):
     self._desc = desc,
     self._commands = commands
     self._tools_needed = tools_needed
     self._extra = extra
+    self._flaky = is_flaky
 
   def Append(self, tag, value):
     assert tag in self._extra
@@ -40,6 +41,9 @@ class ToolchainConfig(object):
 
   def GetPhases(self):
     return [a for (a, _) in self._commands]
+
+  def IsFlaky(self):
+    return self._flaky
 
 
 ######################################################################
@@ -233,6 +237,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0'] = ToolchainConfig(
     commands=COMMANDS_llvm_pnacl_arm,
     tools_needed=[PNACL_FRONTEND, PNACL_LD, EMU_SCRIPT, BOOTSTRAP_ARM,
                   SEL_LDR_ARM],
+    is_flaky = True,
     CC = PNACL_FRONTEND,
     LD = PNACL_LD + ' -arch arm',
     EMU = EMU_SCRIPT,
@@ -246,6 +251,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O3'] = ToolchainConfig(
     commands=COMMANDS_llvm_pnacl_arm,
     tools_needed=[PNACL_FRONTEND, PNACL_LD, EMU_SCRIPT, BOOTSTRAP_ARM,
                   SEL_LDR_ARM],
+    is_flaky = True,
     CC = PNACL_FRONTEND,
     LD = PNACL_LD  + ' -arch arm',
     EMU = EMU_SCRIPT,

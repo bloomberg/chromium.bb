@@ -192,6 +192,13 @@ def RunTest(args):
   Print('Running %d/%d: %s' %
         (num + 1, total, os.path.basename(test)))
   result = MakeExecutableCustom(config, test, extra_flags)
+
+  if result and config.IsFlaky():
+    # TODO(dschuff): deflake qemu or switch to hardware
+    # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2197
+    # try it again, and only fail on consecutive failures
+    Print('Retrying ' + os.path.basename(test))
+    result = MakeExecutableCustom(config, test, extra_flags)
   if result:
     Print('Failure %s: %s' % (result, test))
     ERRORS.put((result, test))
