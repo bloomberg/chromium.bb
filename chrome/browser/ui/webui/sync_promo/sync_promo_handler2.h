@@ -10,8 +10,6 @@
 
 class PrefService;
 
-namespace options2 {
-
 // The handler for JavaScript messages related to the "sync promo" page.
 class SyncPromoHandler2 : public SyncSetupHandler2 {
  public:
@@ -95,7 +93,5 @@ class SyncPromoHandler2 : public SyncSetupHandler2 {
 
   DISALLOW_COPY_AND_ASSIGN(SyncPromoHandler2);
 };
-
-}  // namespace options2
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SYNC_PROMO_SYNC_PROMO_HANDLER2_H_

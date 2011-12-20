@@ -66,8 +66,6 @@ static void RecordExperimentOutcomesOnSignIn() {
 
 }  // namespace
 
-namespace options2 {
-
 SyncPromoHandler2::SyncPromoHandler2(ProfileManager* profile_manager)
     : SyncSetupHandler2(profile_manager),
       window_already_closed_(false) {
@@ -292,5 +290,3 @@ void SyncPromoHandler2::RecordUserFlowAction(int action) {
   UMA_HISTOGRAM_ENUMERATION("SyncPromo.UserFlow", action,
                             SYNC_PROMO_BUCKET_BOUNDARY);
 }
-
-}  // namespace options2
