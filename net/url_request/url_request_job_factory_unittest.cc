@@ -4,7 +4,8 @@
 
 #include "net/url_request/url_request_job_factory.h"
 
-#include "base/task.h"
+#include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,14 +19,15 @@ class MockURLRequestJob : public URLRequestJob {
   MockURLRequestJob(URLRequest* request, const URLRequestStatus& status)
       : URLRequestJob(request),
         status_(status),
-        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
   virtual void Start() {
     // Start reading asynchronously so that all error reporting and data
     // callbacks happen as they would for network requests.
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        method_factory_.NewRunnableMethod(&MockURLRequestJob::StartAsync));
+        base::Bind(&MockURLRequestJob::StartAsync,
+                   weak_factory_.GetWeakPtr()));
   }
 
  private:
@@ -35,7 +37,7 @@ class MockURLRequestJob : public URLRequestJob {
   }
 
   URLRequestStatus status_;
-  ScopedRunnableMethodFactory<MockURLRequestJob> method_factory_;
+  base::WeakPtrFactory<MockURLRequestJob> weak_factory_;
 };
 
 class DummyProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
