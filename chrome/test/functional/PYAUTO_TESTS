@@ -300,6 +300,8 @@
       '-ntp.NTPTest.testLaunchAppFullScreen',
       # Content history broken in omnibox.  crosbug.com/14416
       '-omnibox.OmniboxTest.testContentHistory',
+      # crbug.com/91033
+      '-omnibox.OmniboxTest.testOmniboxSearchHistory',
       # crosbug.com/19760
       '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
