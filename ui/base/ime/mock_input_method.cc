@@ -58,6 +58,7 @@ TextInputClient* MockInputMethod::GetTextInputClient() const {
 
 void MockInputMethod::DispatchKeyEvent(const base::NativeEvent& native_event) {
 #if defined(USE_X11)
+  DCHECK(native_event);
   if (native_event->type == KeyRelease) {
     // On key release, just dispatch it.
     delegate_->DispatchKeyEventPostIME(native_event);
