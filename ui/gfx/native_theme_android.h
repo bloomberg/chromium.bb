@@ -27,7 +27,7 @@ class NativeThemeAndroid {
     TEXTFIELD,
     MENU_LIST,
     SLIDER_TRACK,
-    SLIDER_TNUMB,
+    SLIDER_THUMB,
     INNER_SPIN_BUTTON,
     PROGRESS_BAR,
   };

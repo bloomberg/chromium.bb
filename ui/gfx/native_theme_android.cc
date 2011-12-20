@@ -68,7 +68,7 @@ gfx::Size NativeThemeAndroid::GetPartSize(Part part) const {
     case CHECKBOX:
     case RADIO:
       return gfx::Size(kCheckboxAndRadioWidth, kCheckboxAndRadioHeight);
-    case SLIDER_TNUMB:
+    case SLIDER_THUMB:
       // These sizes match the sizes in Chromium Win.
       return gfx::Size(kSliderThumbWidth, kSliderThumbHeight);
     case INNER_SPIN_BUTTON:
@@ -113,7 +113,7 @@ void NativeThemeAndroid::Paint(SkCanvas* canvas,
     case SLIDER_TRACK:
       PaintSliderTrack(canvas, state, rect, extra.slider);
       break;
-    case SLIDER_TNUMB:
+    case SLIDER_THUMB:
       PaintSliderThumb(canvas, state, rect, extra.slider);
       break;
     case INNER_SPIN_BUTTON:
