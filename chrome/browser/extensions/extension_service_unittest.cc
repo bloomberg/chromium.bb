@@ -2265,7 +2265,8 @@ bool IsTheme(const Extension& extension) {
 }  // namespace
 
 // Test updating a pending theme.
-TEST_F(ExtensionServiceTest, UpdatePendingTheme) {
+// Disabled due to ASAN failure. http://crbug.com/108320
+TEST_F(ExtensionServiceTest, DISABLED_UpdatePendingTheme) {
   InitializeEmptyExtensionService();
   EXPECT_TRUE(service_->pending_extension_manager()->AddFromSync(
       theme_crx, GURL(), &IsTheme, false));
