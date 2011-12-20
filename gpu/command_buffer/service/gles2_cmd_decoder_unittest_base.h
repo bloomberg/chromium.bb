@@ -307,6 +307,7 @@ class GLES2DecoderTestBase : public testing::Test {
       GLenum target, GLint offset, GLsizei size, const void* data);
 
   void SetupVertexBuffer();
+  void SetupAllNeededVertexBuffers();
 
   void SetupIndexBuffer();
 

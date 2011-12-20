@@ -72,10 +72,6 @@ class FramebufferManager {
     void UnbindTexture(
         GLenum target, TextureManager::TextureInfo* texture);
 
-    void MarkAttachmentsAsCleared(
-      RenderbufferManager* renderbuffer_manager,
-      TextureManager* texture_manager);
-
     const Attachment* GetAttachment(GLenum attachment) const;
 
     bool IsDeleted() const {
@@ -114,11 +110,26 @@ class FramebufferManager {
 
     void MarkAsDeleted();
 
+    void MarkAttachmentsAsCleared(
+      RenderbufferManager* renderbuffer_manager,
+      TextureManager* texture_manager);
+
+    void MarkAsComplete(unsigned state_id) {
+      framebuffer_complete_state_count_id_ = state_id;
+    }
+
+    unsigned framebuffer_complete_state_count_id() const {
+      return framebuffer_complete_state_count_id_;
+    }
+
     // Service side framebuffer id.
     GLuint service_id_;
 
     // Whether this framebuffer has ever been bound.
     bool has_been_bound_;
+
+    // state count when this framebuffer was last checked for completeness.
+    unsigned framebuffer_complete_state_count_id_;
 
     // A map of attachments.
     typedef base::hash_map<GLenum, Attachment::Ref> AttachmentMap;
@@ -145,10 +156,29 @@ class FramebufferManager {
   // Gets a client id for a given service id.
   bool GetClientId(GLuint service_id, GLuint* client_id) const;
 
+  void MarkAttachmentsAsCleared(
+    FramebufferInfo* framebuffer,
+    RenderbufferManager* renderbuffer_manager,
+    TextureManager* texture_manager);
+
+  void MarkAsComplete(FramebufferInfo* framebuffer);
+
+  bool IsComplete(FramebufferInfo* framebuffer);
+
+  void IncFramebufferStateChangeCount() {
+    // make sure this is never 0.
+    framebuffer_state_change_count_ =
+        (framebuffer_state_change_count_ + 1) | 0x80000000U;
+  }
+
  private:
   // Info for each framebuffer in the system.
   typedef base::hash_map<GLuint, FramebufferInfo::Ref> FramebufferInfoMap;
   FramebufferInfoMap framebuffer_infos_;
+
+  // Incremented anytime anything changes that might effect framebuffer
+  // state.
+  unsigned framebuffer_state_change_count_;
 
   DISALLOW_COPY_AND_ASSIGN(FramebufferManager);
 };

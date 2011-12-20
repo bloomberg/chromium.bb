@@ -2458,6 +2458,10 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
     return true;
   }
 
+  if (framebuffer_manager()->IsComplete(framebuffer)) {
+    return true;
+  }
+
   GLenum completeness = framebuffer->IsPossiblyComplete();
   if (completeness != GL_FRAMEBUFFER_COMPLETE) {
     SetGLError(
@@ -2480,6 +2484,17 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
       }
       ClearUnclearedAttachments(target, framebuffer);
     }
+  }
+
+  if (!framebuffer_manager()->IsComplete(framebuffer)) {
+    if (glCheckFramebufferStatusEXT(target) != GL_FRAMEBUFFER_COMPLETE) {
+      SetGLError(
+          GL_INVALID_FRAMEBUFFER_OPERATION,
+          (std::string(func_name) +
+          " framebuffer incomplete (check)").c_str());
+      return false;
+    }
+    framebuffer_manager()->MarkAsComplete(framebuffer);
   }
 
   // NOTE: At this point we don't know if the framebuffer is complete but
@@ -3989,7 +4004,8 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
   glDisable(GL_SCISSOR_TEST);
   glClear(clear_bits);
 
-  info->MarkAttachmentsAsCleared(renderbuffer_manager(), texture_manager());
+  framebuffer_manager()->MarkAttachmentsAsCleared(
+      info, renderbuffer_manager(), texture_manager());
 
   RestoreClearState();
 
@@ -4195,6 +4211,9 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
   }
   GLenum error = PeekGLError();
   if (error == GL_NO_ERROR) {
+    // TODO(gman): If renderbuffers tracked which framebuffers they were
+    // attached to we could just mark those framebuffers as not complete.
+    framebuffer_manager()->IncFramebufferStateChangeCount();
     renderbuffer_manager()->SetInfo(
         renderbuffer, samples, internalformat, width, height);
   }
@@ -4237,6 +4256,9 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
   glRenderbufferStorageEXT(target, impl_format, width, height);
   GLenum error = PeekGLError();
   if (error == GL_NO_ERROR) {
+    // TODO(gman): If tetxures tracked which framebuffers they were attached to
+    // we could just mark those framebuffers as not complete.
+    framebuffer_manager()->IncFramebufferStateChangeCount();
     renderbuffer_manager()->SetInfo(
         renderbuffer, 0, internalformat, width, height);
   }
@@ -6218,6 +6240,14 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
                "glCompressedTexImage2D: texture is immutable");
     return error::kNoError;
   }
+
+  if (info->IsAttachedToFramebuffer()) {
+    state_dirty_ = true;
+    // TODO(gman): If textures tracked which framebuffers they were attached to
+    // we could just mark those framebuffers as not complete.
+    framebuffer_manager()->IncFramebufferStateChangeCount();
+  }
+
   scoped_array<int8> zero;
   if (!data) {
     zero.reset(new int8[image_size]);
@@ -6416,6 +6446,9 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
 
   if (info->IsAttachedToFramebuffer()) {
     state_dirty_ = true;
+    // TODO(gman): If textures tracked which framebuffers they were attached to
+    // we could just mark those framebuffers as not complete.
+    framebuffer_manager()->IncFramebufferStateChangeCount();
   }
 
   if (!teximage2d_faster_than_texsubimage2d_ && level_is_same) {
@@ -6604,6 +6637,9 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
 
   if (info->IsAttachedToFramebuffer()) {
     state_dirty_ = true;
+    // TODO(gman): If textures tracked which framebuffers they were attached to
+    // we could just mark those framebuffers as not complete.
+    framebuffer_manager()->IncFramebufferStateChangeCount();
   }
 
   // Clip to size to source dimensions

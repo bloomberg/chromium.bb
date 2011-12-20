@@ -158,7 +158,9 @@ class TextureAttachment
   DISALLOW_COPY_AND_ASSIGN(TextureAttachment);
 };
 
-FramebufferManager::FramebufferManager() {}
+FramebufferManager::FramebufferManager()
+    : framebuffer_state_change_count_(1) {
+}
 
 FramebufferManager::~FramebufferManager() {
   DCHECK(framebuffer_infos_.empty());
@@ -199,7 +201,8 @@ void FramebufferManager::CreateFramebufferInfo(
 
 FramebufferManager::FramebufferInfo::FramebufferInfo(GLuint service_id)
     : service_id_(service_id),
-      has_been_bound_(false) {
+      has_been_bound_(false),
+      framebuffer_complete_state_count_id_(0) {
 }
 
 FramebufferManager::FramebufferInfo::~FramebufferInfo() {}
@@ -358,6 +361,7 @@ void FramebufferManager::FramebufferInfo::AttachRenderbuffer(
   } else {
     attachments_.erase(attachment);
   }
+  framebuffer_complete_state_count_id_ = 0;
 }
 
 void FramebufferManager::FramebufferInfo::AttachTexture(
@@ -378,6 +382,7 @@ void FramebufferManager::FramebufferInfo::AttachTexture(
   } else {
     attachments_.erase(attachment);
   }
+  framebuffer_complete_state_count_id_ = 0;
 }
 
 const FramebufferManager::FramebufferInfo::Attachment*
@@ -401,6 +406,28 @@ bool FramebufferManager::GetClientId(
     }
   }
   return false;
+}
+
+void FramebufferManager::MarkAttachmentsAsCleared(
+    FramebufferManager::FramebufferInfo* framebuffer,
+    RenderbufferManager* renderbuffer_manager,
+    TextureManager* texture_manager) {
+  DCHECK(framebuffer);
+  framebuffer->MarkAttachmentsAsCleared(renderbuffer_manager, texture_manager);
+  MarkAsComplete(framebuffer);
+}
+
+void FramebufferManager::MarkAsComplete(
+    FramebufferManager::FramebufferInfo* framebuffer) {
+  DCHECK(framebuffer);
+  framebuffer->MarkAsComplete(framebuffer_state_change_count_);
+}
+
+bool FramebufferManager::IsComplete(
+    FramebufferManager::FramebufferInfo* framebuffer) {
+  DCHECK(framebuffer);
+  return framebuffer->framebuffer_complete_state_count_id() ==
+      framebuffer_state_change_count_;
 }
 
 }  // namespace gles2

@@ -161,6 +161,7 @@ TEST_F(FramebufferInfoTest, Basic) {
             info_->IsPossiblyComplete());
   EXPECT_TRUE(info_->IsCleared());
   EXPECT_EQ(static_cast<GLenum>(0), info_->GetColorAttachmentFormat());
+  EXPECT_FALSE(manager_.IsComplete(info_));
 }
 
 TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
@@ -250,7 +251,8 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_TRUE(info_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
 
   // check marking them as cleared.
-  info_->MarkAttachmentsAsCleared(&renderbuffer_manager_, &texture_manager_);
+  manager_.MarkAttachmentsAsCleared(
+      info_, &renderbuffer_manager_, &texture_manager_);
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
@@ -298,7 +300,8 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_TRUE(info_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
 
   // Clear it.
-  info_->MarkAttachmentsAsCleared(&renderbuffer_manager_, &texture_manager_);
+  manager_.MarkAttachmentsAsCleared(
+      info_, &renderbuffer_manager_, &texture_manager_);
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
   EXPECT_TRUE(info_->IsCleared());
 
@@ -563,6 +566,52 @@ TEST_F(FramebufferInfoTest, UnbindTexture) {
   // Check they were detached
   EXPECT_TRUE(info_->GetAttachment(GL_COLOR_ATTACHMENT0) == NULL);
   EXPECT_TRUE(info_->GetAttachment(GL_DEPTH_ATTACHMENT) == NULL);
+}
+
+TEST_F(FramebufferInfoTest, IsCompleteMarkAsComplete) {
+  const GLuint kRenderbufferClient1Id = 33;
+  const GLuint kRenderbufferService1Id = 333;
+  const GLuint kTextureClient2Id = 34;
+  const GLuint kTextureService2Id = 334;
+  const GLenum kTarget1 = GL_TEXTURE_2D;
+  const GLint kLevel1 = 0;
+
+  FeatureInfo feature_info;
+  renderbuffer_manager_.CreateRenderbufferInfo(
+      kRenderbufferClient1Id, kRenderbufferService1Id);
+  RenderbufferManager::RenderbufferInfo* rb_info1 =
+      renderbuffer_manager_.GetRenderbufferInfo(kRenderbufferClient1Id);
+  ASSERT_TRUE(rb_info1 != NULL);
+  texture_manager_.CreateTextureInfo(
+      &feature_info, kTextureClient2Id, kTextureService2Id);
+  TextureManager::TextureInfo* tex_info2 =
+      texture_manager_.GetTextureInfo(kTextureClient2Id);
+  ASSERT_TRUE(tex_info2 != NULL);
+
+  // Check MarkAsComlete marks as complete.
+  manager_.MarkAsComplete(info_);
+  EXPECT_TRUE(manager_.IsComplete(info_));
+
+  // Check at attaching marks as not complete.
+  info_->AttachTexture(GL_COLOR_ATTACHMENT0, tex_info2, kTarget1, kLevel1);
+  EXPECT_FALSE(manager_.IsComplete(info_));
+  manager_.MarkAsComplete(info_);
+  EXPECT_TRUE(manager_.IsComplete(info_));
+  info_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, rb_info1);
+  EXPECT_FALSE(manager_.IsComplete(info_));
+
+  // Check MarkAttachmentsAsCleared marks as complete.
+  manager_.MarkAttachmentsAsCleared(
+      info_, &renderbuffer_manager_, &texture_manager_);
+  EXPECT_TRUE(manager_.IsComplete(info_));
+
+  // Check Unbind marks as not complete.
+  info_->UnbindRenderbuffer(GL_RENDERBUFFER, rb_info1);
+  EXPECT_FALSE(manager_.IsComplete(info_));
+  manager_.MarkAsComplete(info_);
+  EXPECT_TRUE(manager_.IsComplete(info_));
+  info_->UnbindTexture(kTarget1, tex_info2);
+  EXPECT_FALSE(manager_.IsComplete(info_));
 }
 
 }  // namespace gles2

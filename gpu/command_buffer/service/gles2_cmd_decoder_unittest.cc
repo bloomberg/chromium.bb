@@ -56,6 +56,9 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderWithShaderTestBase {
   GLES2DecoderWithShaderTest()
       : GLES2DecoderWithShaderTestBase() {
   }
+
+  void CheckTextureChangesMarkFBOAsNotComplete(bool bound_fbo);
+  void CheckRenderbufferChangesMarkFBOAsNotComplete(bool bound_fbo);
 };
 
 class GLES2DecoderRGBBackbufferTest : public GLES2DecoderWithShaderTest {
@@ -1619,6 +1622,9 @@ void GLES2DecoderTest::CheckReadPixelsOutOfRange(
     DoFramebufferTexture2D(
         GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
         client_texture_id_, kServiceTextureId, 0, GL_NO_ERROR);
+    EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+        .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+        .RetiresOnSaturation();
   }
 
   ReadPixelsEmulator emu(
@@ -3130,6 +3136,9 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
   DoFramebufferTexture2D(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
       client_texture_id_, kServiceTextureId, 0, GL_NO_ERROR);
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
 
   // This time state needs to be set.
   SetupExpectationsForApplyingDirtyState(
@@ -5147,6 +5156,7 @@ TEST_F(GLES2DecoderTest,
 }
 
 TEST_F(GLES2DecoderWithShaderTest, DrawArraysClearsAfterTexImage2DNULL) {
+  SetupAllNeededVertexBuffers();
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   // Create an uncleared texture with 2 levels.
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
@@ -5160,7 +5170,6 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysClearsAfterTexImage2DNULL) {
   SetupClearTextureExpections(
       kServiceTextureId, kServiceTextureId, GL_TEXTURE_2D, GL_TEXTURE_2D,
       1, GL_RGBA, GL_UNSIGNED_BYTE, 1, 1);
-  AddExpectationsForSimulatedAttrib0(kNumVertices, 0);
   SetupExpectationsForApplyingDefaultDirtyState();
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -5169,9 +5178,17 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysClearsAfterTexImage2DNULL) {
   cmd.Init(GL_TRIANGLES, 0, kNumVertices);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // But not again
+  EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderWithShaderTest, DrawElementsClearsAfterTexImage2DNULL) {
+  SetupAllNeededVertexBuffers();
   SetupIndexBuffer();
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   // Create an uncleared texture with 2 levels.
@@ -5186,8 +5203,8 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsClearsAfterTexImage2DNULL) {
   SetupClearTextureExpections(
       kServiceTextureId, kServiceTextureId, GL_TEXTURE_2D, GL_TEXTURE_2D,
       1, GL_RGBA, GL_UNSIGNED_BYTE, 1, 1);
-  AddExpectationsForSimulatedAttrib0(kMaxValidIndex + 1, 0);
   SetupExpectationsForApplyingDefaultDirtyState();
+
   EXPECT_CALL(*gl_, DrawElements(GL_TRIANGLES, kValidIndexRangeCount,
                                  GL_UNSIGNED_SHORT,
                                  BufferOffset(kValidIndexRangeStart * 2)))
@@ -5198,12 +5215,22 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsClearsAfterTexImage2DNULL) {
            kValidIndexRangeStart * 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // But not again
+  EXPECT_CALL(*gl_, DrawElements(GL_TRIANGLES, kValidIndexRangeCount,
+                                 GL_UNSIGNED_SHORT,
+                                 BufferOffset(kValidIndexRangeStart * 2)))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderWithShaderTest, DrawClearsAfterTexImage2DNULLInFBO) {
   const GLuint kFBOClientTextureId = 4100;
   const GLuint kFBOServiceTextureId = 4101;
 
+  SetupAllNeededVertexBuffers();
   // Register a texture id.
   EXPECT_CALL(*gl_, GenTextures(_, _))
       .WillOnce(SetArgumentPointee<1>(kFBOServiceTextureId))
@@ -5231,7 +5258,6 @@ TEST_F(GLES2DecoderWithShaderTest, DrawClearsAfterTexImage2DNULLInFBO) {
       1.0f,                   // depth
       false);                 // scissor test
 
-  AddExpectationsForSimulatedAttrib0(kNumVertices, 0);
   SetupExpectationsForApplyingDirtyState(
       false,   // Framebuffer is RGB
       false,   // Framebuffer has depth
@@ -5247,6 +5273,13 @@ TEST_F(GLES2DecoderWithShaderTest, DrawClearsAfterTexImage2DNULLInFBO) {
       .RetiresOnSaturation();
   DrawArrays cmd;
   cmd.Init(GL_TRIANGLES, 0, kNumVertices);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // But not again.
+  EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -5698,6 +5731,202 @@ TEST_F(GLES2DecoderWithShaderTest, CopyTexImageWithInCompleteFBOFails) {
   EXPECT_EQ(GL_INVALID_FRAMEBUFFER_OPERATION, GetGLError());
 }
 
+void GLES2DecoderWithShaderTest::CheckRenderbufferChangesMarkFBOAsNotComplete(
+    bool bound_fbo) {
+  FramebufferManager* framebuffer_manager = group().framebuffer_manager();
+  SetupTexture();
+  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
+                    kServiceRenderbufferId);
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  DoRenderbufferStorage(
+      GL_RENDERBUFFER, GL_RGBA4, GL_RGBA, 1, 1, GL_NO_ERROR);
+  DoFramebufferRenderbuffer(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+      client_renderbuffer_id_, kServiceRenderbufferId, GL_NO_ERROR);
+
+
+  if (!bound_fbo) {
+    DoBindFramebuffer(GL_FRAMEBUFFER, 0, 0);
+  }
+
+  FramebufferManager::FramebufferInfo* framebuffer =
+      framebuffer_manager->GetFramebufferInfo(client_framebuffer_id_);
+  ASSERT_TRUE(framebuffer != NULL);
+  framebuffer_manager->MarkAsComplete(framebuffer);
+  EXPECT_TRUE(framebuffer_manager->IsComplete(framebuffer));
+
+  // Test that renderbufferStorage marks fbo as not complete.
+  DoRenderbufferStorage(
+      GL_RENDERBUFFER, GL_RGBA4, GL_RGBA, 1, 1, GL_NO_ERROR);
+  EXPECT_FALSE(framebuffer_manager->IsComplete(framebuffer));
+  framebuffer_manager->MarkAsComplete(framebuffer);
+  EXPECT_TRUE(framebuffer_manager->IsComplete(framebuffer));
+
+  // Test deleting renderbuffer marks fbo as not complete.
+  DoDeleteRenderbuffer(client_renderbuffer_id_, kServiceRenderbufferId);
+  if (bound_fbo) {
+    EXPECT_FALSE(framebuffer_manager->IsComplete(framebuffer));
+  } else {
+    EXPECT_TRUE(framebuffer_manager->IsComplete(framebuffer));
+  }
+}
+
+TEST_F(GLES2DecoderWithShaderTest,
+       RenderbufferChangesMarkFBOAsNotCompleteBoundFBO) {
+  CheckRenderbufferChangesMarkFBOAsNotComplete(true);
+}
+
+TEST_F(GLES2DecoderWithShaderTest,
+       RenderbufferChangesMarkFBOAsNotCompleteUnboundFBO) {
+  CheckRenderbufferChangesMarkFBOAsNotComplete(false);
+}
+
+void GLES2DecoderWithShaderTest::CheckTextureChangesMarkFBOAsNotComplete(
+    bool bound_fbo) {
+  FramebufferManager* framebuffer_manager = group().framebuffer_manager();
+  const GLuint kFBOClientTextureId = 4100;
+  const GLuint kFBOServiceTextureId = 4101;
+
+  // Register a texture id.
+  EXPECT_CALL(*gl_, GenTextures(_, _))
+      .WillOnce(SetArgumentPointee<1>(kFBOServiceTextureId))
+      .RetiresOnSaturation();
+  GenHelper<GenTexturesImmediate>(kFBOClientTextureId);
+
+  SetupTexture();
+
+  // Setup "render to" texture.
+  DoBindTexture(GL_TEXTURE_2D, kFBOClientTextureId, kFBOServiceTextureId);
+  DoTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
+  DoBindFramebuffer(
+      GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
+  DoFramebufferTexture2D(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+      kFBOClientTextureId, kFBOServiceTextureId, 0, GL_NO_ERROR);
+
+  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
+                    kServiceRenderbufferId);
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  DoRenderbufferStorage(
+      GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT,
+      1, 1, GL_NO_ERROR);
+  DoFramebufferRenderbuffer(
+      GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
+      client_renderbuffer_id_, kServiceRenderbufferId, GL_NO_ERROR);
+
+  if (!bound_fbo) {
+    DoBindFramebuffer(GL_FRAMEBUFFER, 0, 0);
+  }
+
+  FramebufferManager::FramebufferInfo* framebuffer =
+      framebuffer_manager->GetFramebufferInfo(client_framebuffer_id_);
+  ASSERT_TRUE(framebuffer != NULL);
+  framebuffer_manager->MarkAsComplete(framebuffer);
+  EXPECT_TRUE(framebuffer_manager->IsComplete(framebuffer));
+
+  // Test TexImage2D marks fbo as not complete.
+  DoTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, 0, 0);
+  EXPECT_FALSE(framebuffer_manager->IsComplete(framebuffer));
+  framebuffer_manager->MarkAsComplete(framebuffer);
+  EXPECT_TRUE(framebuffer_manager->IsComplete(framebuffer));
+
+  // Test CopyImage2D marks fbo as not complete.
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, CopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 1, 1, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  CopyTexImage2D cmd;
+  cmd.Init(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 1, 1, 0);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_FALSE(framebuffer_manager->IsComplete(framebuffer));
+
+  // Test deleting texture marks fbo as not complete.
+  framebuffer_manager->MarkAsComplete(framebuffer);
+  EXPECT_TRUE(framebuffer_manager->IsComplete(framebuffer));
+  DoDeleteTexture(kFBOClientTextureId, kFBOServiceTextureId);
+
+  if (bound_fbo) {
+    EXPECT_FALSE(framebuffer_manager->IsComplete(framebuffer));
+  } else {
+    EXPECT_TRUE(framebuffer_manager->IsComplete(framebuffer));
+  }
+}
+
+TEST_F(GLES2DecoderWithShaderTest, TextureChangesMarkFBOAsNotCompleteBoundFBO) {
+  CheckTextureChangesMarkFBOAsNotComplete(true);
+}
+
+TEST_F(GLES2DecoderWithShaderTest,
+       TextureChangesMarkFBOAsNotCompleteUnboundFBO) {
+  CheckTextureChangesMarkFBOAsNotComplete(false);
+}
+
+TEST_F(GLES2DecoderWithShaderTest,
+       DrawingWithFBOTwiceChecksForFBOCompleteOnce) {
+  const GLuint kFBOClientTextureId = 4100;
+  const GLuint kFBOServiceTextureId = 4101;
+
+  SetupAllNeededVertexBuffers();
+
+  // Register a texture id.
+  EXPECT_CALL(*gl_, GenTextures(_, _))
+      .WillOnce(SetArgumentPointee<1>(kFBOServiceTextureId))
+      .RetiresOnSaturation();
+  GenHelper<GenTexturesImmediate>(kFBOClientTextureId);
+
+  // Setup "render to" texture that is cleared.
+  DoBindTexture(GL_TEXTURE_2D, kFBOClientTextureId, kFBOServiceTextureId);
+  DoTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+      kSharedMemoryId, kSharedMemoryOffset);
+  DoBindFramebuffer(
+      GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
+  DoFramebufferTexture2D(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+      kFBOClientTextureId, kFBOServiceTextureId, 0, GL_NO_ERROR);
+
+  // Setup "render from" texture.
+  SetupTexture();
+
+  // Make sure we check for framebuffer complete.
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+
+  SetupExpectationsForApplyingDirtyState(
+      false,   // Framebuffer is RGB
+      false,   // Framebuffer has depth
+      false,   // Framebuffer has stencil
+      0x1111,  // color bits
+      false,   // depth mask
+      false,   // depth enabled
+      0,       // front stencil mask
+      0,       // back stencil mask
+      false);  // stencil enabled
+  EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawArrays cmd;
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // But not again.
+  EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
 
 // TODO(gman): Complete this test.
 // TEST_F(GLES2DecoderTest, CompressedTexImage2DGLError) {

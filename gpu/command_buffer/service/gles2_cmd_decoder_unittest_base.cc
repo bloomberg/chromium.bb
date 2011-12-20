@@ -1046,6 +1046,17 @@ void GLES2DecoderTestBase::SetupVertexBuffer() {
   DoBufferData(GL_ARRAY_BUFFER, kNumVertices * 2 * sizeof(f));
 }
 
+void GLES2DecoderTestBase::SetupAllNeededVertexBuffers() {
+  DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
+  DoBufferData(GL_ARRAY_BUFFER, kNumVertices * 16 * sizeof(float));
+  DoEnableVertexAttribArray(0);
+  DoEnableVertexAttribArray(1);
+  DoEnableVertexAttribArray(2);
+  DoVertexAttribPointer(0, 2, GL_FLOAT, 0, 0);
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+  DoVertexAttribPointer(2, 2, GL_FLOAT, 0, 0);
+}
+
 void GLES2DecoderTestBase::SetupIndexBuffer() {
   DoBindBuffer(GL_ELEMENT_ARRAY_BUFFER,
                client_element_buffer_id_,
