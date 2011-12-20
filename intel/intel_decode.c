@@ -281,10 +281,11 @@ decode_2d_br00(struct drm_intel_decode *ctx, const char *cmd)
 		  (ctx->data[0] >> 11) & 1);
 }
 
-static void decode_2d_br01(uint32_t *data, uint32_t count, uint32_t hw_offset)
+static void
+decode_2d_br01(struct drm_intel_decode *ctx)
 {
 	const char *format;
-	switch ((data[count] >> 24) & 0x3) {
+	switch ((ctx->data[1] >> 24) & 0x3) {
 	case 0:
 		format = "8";
 		break;
@@ -299,14 +300,15 @@ static void decode_2d_br01(uint32_t *data, uint32_t count, uint32_t hw_offset)
 		break;
 	}
 
-	instr_out(data, hw_offset, count, "format %s, pitch %d, rop 0x%02x, "
+	instr_out(ctx->data, ctx->hw_offset, 1,
+		  "format %s, pitch %d, rop 0x%02x, "
 		  "clipping %sabled, %s%s \n",
 		  format,
-		  (short)(data[count] & 0xffff),
-		  (data[count] >> 16) & 0xff,
-		  data[count] & (1 << 30) ? "en" : "dis",
-		  data[count] & (1 << 31) ? "solid pattern enabled, " : "",
-		  data[count] & (1 << 31) ?
+		  (short)(ctx->data[1] & 0xffff),
+		  (ctx->data[1] >> 16) & 0xff,
+		  ctx->data[1] & (1 << 30) ? "en" : "dis",
+		  ctx->data[1] & (1 << 31) ? "solid pattern enabled, " : "",
+		  ctx->data[1] & (1 << 31) ?
 		  "mono pattern transparency enabled, " : "");
 
 }
@@ -379,7 +381,7 @@ decode_2d(struct drm_intel_decode *ctx)
 		if (count < 8)
 			BUFFER_FAIL(count, len, "XY_SETUP_BLT");
 
-		decode_2d_br01(data, 1, hw_offset);
+		decode_2d_br01(ctx);
 		instr_out(data, hw_offset, 2, "cliprect (%d,%d)\n",
 			  data[2] & 0xffff, data[2] >> 16);
 		instr_out(data, hw_offset, 3, "cliprect (%d,%d)\n",
@@ -414,7 +416,7 @@ decode_2d(struct drm_intel_decode *ctx)
 		if (count < 9)
 			BUFFER_FAIL(count, len, "XY_SETUP_MONO_PATTERN_SL_BLT");
 
-		decode_2d_br01(data, 1, hw_offset);
+		decode_2d_br01(ctx);
 		instr_out(data, hw_offset, 2, "cliprect (%d,%d)\n",
 			  data[2] & 0xffff, data[2] >> 16);
 		instr_out(data, hw_offset, 3, "cliprect (%d,%d)\n",
@@ -435,7 +437,7 @@ decode_2d(struct drm_intel_decode *ctx)
 		if (count < 6)
 			BUFFER_FAIL(count, len, "XY_COLOR_BLT");
 
-		decode_2d_br01(data, 1, hw_offset);
+		decode_2d_br01(ctx);
 		instr_out(data, hw_offset, 2, "(%d,%d)\n",
 			  data[2] & 0xffff, data[2] >> 16);
 		instr_out(data, hw_offset, 3, "(%d,%d)\n",
@@ -452,7 +454,7 @@ decode_2d(struct drm_intel_decode *ctx)
 		if (count < 8)
 			BUFFER_FAIL(count, len, "XY_SRC_COPY_BLT");
 
-		decode_2d_br01(data, 1, hw_offset);
+		decode_2d_br01(ctx);
 		instr_out(data, hw_offset, 2, "dst (%d,%d)\n",
 			  data[2] & 0xffff, data[2] >> 16);
 		instr_out(data, hw_offset, 3, "dst (%d,%d)\n",
