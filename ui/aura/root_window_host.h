@@ -54,8 +54,13 @@ class RootWindowHost : public MessageLoop::Dispatcher {
   // Returns the location of the RootWindow on native screen.
   virtual gfx::Point GetLocationOnNativeScreen() const = 0;
 
-  // Sets the currently displayed cursor.
+  // Sets the currently displayed cursor. Shows the cursor by default.
+  // If you want to update hidden cursor, should call ShowCursor(false)
+  // after this function.
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
+
+  // Sets current cursor visibility to |show|.
+  virtual void ShowCursor(bool show) = 0;
 
   // Queries the mouse's current position relative to the host window.
   // The position is constrained within the host window.

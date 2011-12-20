@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
+#include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura_shell/aura_shell_export.h"
 
@@ -43,6 +44,11 @@ class AURA_SHELL_EXPORT RootWindowEventFilter : public aura::EventFilter {
   // Updates the cursor if the target provides a custom one, and provides
   // default resize cursors for window edges.
   void UpdateCursor(aura::Window* target, aura::MouseEvent* event);
+
+  // Sets the cursor invisible when the target receives touch press event.
+  void SetCursorVisible(aura::Window* target,
+                        aura::LocatedEvent* event,
+                        bool show);
 
   // Dispatches event to additional filters. Returns false or
   // ui::TOUCH_STATUS_UNKNOWN if event is consumed.

@@ -29,6 +29,7 @@ class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
+  virtual void ShowCursor(bool show) OVERRIDE;
   virtual gfx::Point QueryMouseLocation() OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
 

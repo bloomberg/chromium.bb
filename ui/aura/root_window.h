@@ -71,6 +71,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Shows the specified cursor.
   void SetCursor(gfx::NativeCursor cursor);
 
+  // Sets current cursor visibility to |show|.
+  void ShowCursor(bool show);
+
   // Shows the root window host and runs an event loop for it.
   void Run();
 

@@ -293,6 +293,7 @@ class RootWindowHostLinux : public RootWindowHost,
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor_type) OVERRIDE;
+  virtual void ShowCursor(bool show) OVERRIDE;
   virtual gfx::Point QueryMouseLocation() OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
 
@@ -316,6 +317,13 @@ class RootWindowHostLinux : public RootWindowHost,
   // Current Aura cursor.
   gfx::NativeCursor current_cursor_;
 
+  // The default cursor is showed after startup, and hidden when touch pressed.
+  // Once mouse moved, the cursor is immediately displayed.
+  bool is_cursor_visible_;
+
+  // The invisible cursor.
+  ::Cursor invisible_cursor_;
+
   // The bounds of |xwindow_|.
   gfx::Rect bounds_;
 
@@ -328,6 +336,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       current_cursor_(aura::kCursorNull),
+      is_cursor_visible_(true),
       bounds_(bounds) {
   xwindow_ = XCreateSimpleWindow(xdisplay_, x_root_window_,
                                  bounds.x(), bounds.y(),
@@ -349,6 +358,15 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
 
   base::MessagePumpX::SetDefaultDispatcher(this);
   MessageLoopForUI::current()->AddDestructionObserver(this);
+
+  // Initializes invisiable cursor.
+  char nodata[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+  XColor black;
+  black.red = black.green = black.blue = 0;
+  Pixmap blank = XCreateBitmapFromData(xdisplay_, xwindow_,
+                                       nodata, 8, 8);
+  invisible_cursor_ = XCreatePixmapCursor(xdisplay_, blank, blank,
+                                          &black, &black, 0, 0);
 }
 
 RootWindowHostLinux::~RootWindowHostLinux() {
@@ -356,6 +374,8 @@ RootWindowHostLinux::~RootWindowHostLinux() {
 
   // Clears XCursorCache.
   ui::GetXCursor(ui::kCursorClearXCursorCache);
+
+  XFreeCursor(xdisplay_, invisible_cursor_);
 
   MessageLoopForUI::current()->RemoveDestructionObserver(this);
   base::MessagePumpX::SetDefaultDispatcher(NULL);
@@ -573,6 +593,21 @@ void RootWindowHostLinux::SetCursor(gfx::NativeCursor cursor) {
   int cursor_shape = CursorShapeFromNative(cursor);
   ::Cursor xcursor = ui::GetXCursor(cursor_shape);
   XDefineCursor(xdisplay_, xwindow_, xcursor);
+}
+
+void RootWindowHostLinux::ShowCursor(bool show) {
+   if (show == is_cursor_visible_)
+     return;
+
+   is_cursor_visible_ = show;
+
+   if (show) {
+     int cursor_shape = CursorShapeFromNative(current_cursor_);
+     ::Cursor xcursor = ui::GetXCursor(cursor_shape);
+     XDefineCursor(xdisplay_, xwindow_, xcursor);
+   } else {
+     XDefineCursor(xdisplay_, xwindow_, invisible_cursor_);
+   }
 }
 
 gfx::Point RootWindowHostLinux::QueryMouseLocation() {

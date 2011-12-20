@@ -223,6 +223,10 @@ void RootWindowHostWin::SetCursor(gfx::NativeCursor native_cursor) {
   ::SetCursor(LoadCursor(NULL, cursor_id));
 }
 
+void RootWindowHostWin::ShowCursor(bool show) {
+  NOTIMPLEMENTED();
+}
+
 gfx::Point RootWindowHostWin::QueryMouseLocation() {
   POINT pt;
   GetCursorPos(&pt);

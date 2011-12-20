@@ -73,8 +73,12 @@ bool RootWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
                                                 aura::MouseEvent* event) {
   // We must always update the cursor, otherwise the cursor can get stuck if an
   // event filter registered with us consumes the event.
-  if (event->type() == ui::ET_MOUSE_MOVED)
+  if (event->type() == ui::ET_MOUSE_MOVED) {
+    // Shows the cursor when mouse moved.
+    SetCursorVisible(target, event, true);
+
     UpdateCursor(target, event);
+  }
 
   if (FilterMouseEvent(target, event))
     return true;
@@ -92,8 +96,12 @@ ui::TouchStatus RootWindowEventFilter::PreHandleTouchEvent(
   if (status != ui::TOUCH_STATUS_UNKNOWN)
     return status;
 
-  if (event->type() == ui::ET_TOUCH_PRESSED)
+  if (event->type() == ui::ET_TOUCH_PRESSED) {
+    // Hides the cursor when touch pressed.
+    SetCursorVisible(target, event, false);
+
     target->GetFocusManager()->SetFocusedWindow(target);
+  }
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
@@ -109,6 +117,12 @@ void RootWindowEventFilter::UpdateCursor(aura::Window* target,
     cursor = CursorForWindowComponent(window_component);
   }
   aura::RootWindow::GetInstance()->SetCursor(cursor);
+}
+
+void RootWindowEventFilter::SetCursorVisible(aura::Window* target,
+                                             aura::LocatedEvent* event,
+                                             bool show) {
+  aura::RootWindow::GetInstance()->ShowCursor(show);
 }
 
 bool RootWindowEventFilter::FilterKeyEvent(aura::Window* target,

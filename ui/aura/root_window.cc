@@ -111,6 +111,10 @@ void RootWindow::SetCursor(gfx::NativeCursor cursor) {
   host_->SetCursor(cursor);
 }
 
+void RootWindow::ShowCursor(bool show) {
+  host_->ShowCursor(show);
+}
+
 void RootWindow::Run() {
   ShowRootWindow();
   MessageLoopForUI::current()->Run();
