@@ -402,19 +402,24 @@ size_t ProfileInfoCache::GetAvatarIconIndexOfProfileAtIndex(size_t index)
 
 void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
                                                const string16& name) {
-  if (name == GetNameOfProfileAtIndex(index))
+  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  string16 current_name;
+  info->GetString(kNameKey, &current_name);
+  if (name == current_name)
     return;
 
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
-  string16 old_name = GetNameOfProfileAtIndex(index);
+  string16 old_display_name = GetNameOfProfileAtIndex(index);
   info->SetString(kNameKey, name);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
+  string16 new_display_name = GetNameOfProfileAtIndex(index);
   UpdateSortForProfileIndex(index);
 
-  FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
-                    observer_list_,
-                    OnProfileNameChanged(old_name, name));
+  if (old_display_name != new_display_name) {
+    FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
+                      observer_list_,
+                      OnProfileNameChanged(old_display_name, new_display_name));
+  }
 }
 
 void ProfileInfoCache::SetUserNameOfProfileAtIndex(size_t index,
@@ -464,11 +469,19 @@ void ProfileInfoCache::SetGAIANameOfProfileAtIndex(size_t index,
   if (name == GetGAIANameOfProfileAtIndex(index))
     return;
 
+  string16 old_display_name = GetNameOfProfileAtIndex(index);
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetString(kGAIANameKey, name);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
+  string16 new_display_name = GetNameOfProfileAtIndex(index);
   UpdateSortForProfileIndex(index);
+
+  if (old_display_name != new_display_name) {
+    FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
+                      observer_list_,
+                      OnProfileNameChanged(old_display_name, new_display_name));
+  }
 }
 
 void ProfileInfoCache::SetIsUsingGAIANameOfProfileAtIndex(size_t index,
@@ -476,19 +489,18 @@ void ProfileInfoCache::SetIsUsingGAIANameOfProfileAtIndex(size_t index,
   if (value == IsUsingGAIANameOfProfileAtIndex(index))
     return;
 
+  string16 old_display_name = GetNameOfProfileAtIndex(index);
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
-  string16 old_name;
-  info->GetString(kNameKey, &old_name);
   info->SetBoolean(kUseGAIANameKey, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
-  string16 new_name = GetGAIANameOfProfileAtIndex(index);
+  string16 new_display_name = GetNameOfProfileAtIndex(index);
   UpdateSortForProfileIndex(index);
 
-  if (value) {
+  if (old_display_name != new_display_name) {
     FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                       observer_list_,
-                      OnProfileNameChanged(old_name, new_name));
+                      OnProfileNameChanged(old_display_name, new_display_name));
   }
 }
 
@@ -538,6 +550,13 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
   info->SetString(kGAIAPictureFileNameKey, new_file_name);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
+
+  string16 name = GetNameOfProfileAtIndex(index);
+  const gfx::Image& avatar_image = GetAvatarIconOfProfileAtIndex(index);
+  FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
+                    observer_list_,
+                    OnProfileAvatarChanged(name, UTF8ToUTF16(key),
+                                           path, &avatar_image));
 }
 
 void ProfileInfoCache::SetIsUsingGAIAPictureOfProfileAtIndex(size_t index,
