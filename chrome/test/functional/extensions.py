@@ -23,6 +23,67 @@ import pyauto_functional # must be imported before pyauto
 import pyauto
 
 
+class ExtensionsPage(object):
+  """Access options in extensions page (chrome://settings/extensions)."""
+
+  _URL = 'chrome://settings/extensions'
+
+  def __init__(self, driver):
+    self._driver = driver
+    self._driver.get(ExtensionsPage._URL)
+
+  def CheckExtensionVisible(self, ext_id):
+    """Returns True if |ext_id| Enabled checkbox exists on page."""
+    return len(self._driver.find_elements_by_id('toggle-%s' % ext_id)) == 1
+
+  def SetEnabled(self, ext_id, enabled):
+    """Clicks on 'Enabled' checkbox for specified extension.
+
+    Args:
+      ext_id: Extension ID to be enabled or disabled.
+      enabled: Boolean indicating whether |ext_id| is to be enabled or disabled.
+    """
+    checkbox = self._driver.find_element_by_id('toggle-%s' % ext_id)
+    if checkbox != enabled:
+      checkbox.click()
+    # Reload page to ensure that the UI is recreated.
+    self._driver.get(ExtensionsPage._URL)
+
+  def SetAllowInIncognito(self, ext_id, allowed):
+    """Clicks on 'Allow in incognito' checkbox for specified extension.
+
+    Args:
+      ext_id: Extension ID to be enabled or disabled.
+      allowed: Boolean indicating whether |ext_id| is to be allowed or
+          disallowed in incognito.
+    """
+    checkbox = self._driver.find_element_by_xpath(
+        '//*[@id="%s"][@type="checkbox"]' % ext_id)
+    # Expand extension and click on 'Allow in incognito'.
+    if not checkbox.is_displayed():
+      self._driver.find_element_by_id('%s_zippy' % ext_id).click()
+    if checkbox.is_selected() != allowed:
+      checkbox.click()
+    # Reload page to ensure that the UI is recreated.
+    self._driver.get(ExtensionsPage._URL)
+
+  def SetAllowAccessFileURLs(self, ext_id, allowed):
+    """Clicks on 'Allow access to file URLs' checkbox for specified extension.
+
+    Args:
+      ext_id: Extension ID to be enabled or disabled.
+      allowed: Boolean indicating whether |ext_id| is to be allowed access to
+          file URLs.
+    """
+    checkbox = self._driver.find_element_by_xpath(
+        '(//*[@id="%s"][@type="checkbox"])[2]' % ext_id)
+    # Expand extension and click on 'Allow access to file URLs'.
+    if not checkbox.is_displayed():
+      self._driver.find_element_by_id('%s_zippy' % ext_id).click()
+    if checkbox.is_selected() != allowed:
+      checkbox.click()
+
+
 class ExtensionsTest(pyauto.PyUITest):
   """Test of extensions."""
 
@@ -32,7 +93,7 @@ class ExtensionsTest(pyauto.PyUITest):
     This method is not run automatically.
     """
     while True:
-      raw_input('Interact with the browser and hit <enter> to dump history.. ')
+      raw_input('Interact with the browser and hit <enter> to dump history.')
       print '*' * 20
       self.pprint(self.GetExtensionsInfo())
 
@@ -40,8 +101,10 @@ class ExtensionsTest(pyauto.PyUITest):
     return [extension['id'] for extension in self.GetExtensionsInfo()]
 
   def _ReturnCrashingExtensions(self, extensions, group_size, top_urls):
-    """Install the given extensions in groups of group_size and return the
-       group of extensions that crashes (if any).
+    """Returns the group of extensions that crashes (if any).
+
+    Install the given extensions in groups of group_size and return the
+    group of extensions that crashes (if any).
 
     Args:
       extensions: A list of extensions to install.
@@ -57,10 +120,10 @@ class ExtensionsTest(pyauto.PyUITest):
     orig_extension_ids = self._GetInstalledExtensionIds()
 
     while curr_extension < num_extensions:
-      logging.debug('New group of %d extensions.' % group_size)
+      logging.debug('New group of %d extensions.', group_size)
       group_end = curr_extension + group_size
       for extension in extensions[curr_extension:group_end]:
-        logging.debug('Installing extension: %s' % extension)
+        logging.debug('Installing extension: %s', extension)
         self.InstallExtension(extension)
 
       for url in top_urls:
@@ -68,7 +131,7 @@ class ExtensionsTest(pyauto.PyUITest):
 
       def _LogAndReturnCrashing():
         crashing_extensions = extensions[curr_extension:group_end]
-        logging.debug('Crashing extensions: %s' % crashing_extensions)
+        logging.debug('Crashing extensions: %s', crashing_extensions)
         return crashing_extensions
 
       # If the browser has crashed, return the extensions in the failing group.
@@ -98,15 +161,15 @@ class ExtensionsTest(pyauto.PyUITest):
     return None
 
   def ExtensionCrashes(self):
-    """Add top extensions; confirm browser stays up when visiting top urls"""
+    """Add top extensions; confirm browser stays up when visiting top urls."""
     # TODO: provide a way in pyauto to pass args to a test - take these as args
     extensions_dir = os.path.join(self.DataDir(), 'extensions-tool')
     urls_file = os.path.join(self.DataDir(), 'urls.txt')
 
-    assert os.path.exists(extensions_dir), \
-           'The dir "%s" must exist' % os.path.abspath(extensions_dir)
-    assert os.path.exists(urls_file), \
-           'The file "%s" must exist' % os.path.abspath(urls_file)
+    error_msg = 'The dir "%s" must exist' % os.path.abspath(extensions_dir)
+    assert os.path.exists(extensions_dir), error_msg
+    error_msg = 'The file "%s" must exist' % os.path.abspath(urls_file)
+    assert os.path.exists(urls_file), error_msg
 
     num_urls_to_visit = 100
     extensions_group_size = 20
@@ -117,13 +180,60 @@ class ExtensionsTest(pyauto.PyUITest):
     failed_extensions = glob.glob(os.path.join(extensions_dir, '*.crx'))
     group_size = extensions_group_size
 
-    while(group_size and failed_extensions):
+    while (group_size and failed_extensions):
       failed_extensions = self._ReturnCrashingExtensions(
           failed_extensions, group_size, top_urls)
       group_size = group_size // 2
 
     self.assertFalse(failed_extensions,
                      'Extension(s) in failing group: %s' % failed_extensions)
+
+  def _InstallExtensionCheckDefaults(self, crx_file):
+    """Installs extension at extensions/|crx_file| and checks default status.
+
+    Checks that the installed extension is enabled and not allowed in incognito.
+
+    Args:
+      crx_file: Relative path from self.DataDir()/extensions to .crx extension
+                to be installed.
+
+    Returns:
+      The extension ID.
+    """
+    crx_file_path = os.path.abspath(
+        os.path.join(self.DataDir(), 'extensions', crx_file))
+    ext_id = self.InstallExtension(crx_file_path)
+    extension = self._GetExtensionInfoById(self.GetExtensionsInfo(), ext_id)
+    self.assertTrue(extension['is_enabled'],
+                    msg='Extension was not enabled on installation')
+    self.assertFalse(extension['allowed_in_incognito'],
+                     msg='Extension was allowed in incognito on installation.')
+
+    return ext_id
+
+  def _ExtensionValue(self, ext_id, key):
+    """Returns the value of |key| for |ext_id|.
+
+    Args:
+      ext_id: The extension ID.
+      key: The key for which the extensions info value is required.
+
+    Returns:
+      The value of extensions info |key| for |ext_id|.
+    """
+    return self._GetExtensionInfoById(self.GetExtensionsInfo(), ext_id)[key]
+
+  def _FileAccess(self, ext_id):
+    """Returns the value of newAllowFileAccess for |ext_id|.
+
+    Args:
+      ext_id: The extension ID.
+
+    Returns:
+      The value of extensions settings newAllowFileAccess for |ext_id|.
+    """
+    extension_settings = self.GetPrefsInfo().Prefs()['extensions']['settings']
+    return extension_settings[ext_id]['newAllowFileAccess']
 
   def testGetExtensionPermissions(self):
     """Ensures we can retrieve the host/api permissions for an extension.
@@ -133,8 +243,9 @@ class ExtensionsTest(pyauto.PyUITest):
     """
     extensions_info = self.GetExtensionsInfo()
     bm_exts = [x for x in extensions_info if x['name'] == 'Bookmark Manager']
-    self.assertTrue(bm_exts, msg='Could not find info for the Bookmark '
-                                 'Manager extension.')
+    self.assertTrue(bm_exts,
+                    msg='Could not find info for the Bookmark Manager '
+                    'extension.')
     ext = bm_exts[0]
 
     permissions_host = ext['host_permissions']
@@ -152,14 +263,7 @@ class ExtensionsTest(pyauto.PyUITest):
 
   def testSetExtensionStates(self):
     """Test setting different extension states."""
-    crx_file_path = os.path.abspath(
-        os.path.join(self.DataDir(), 'extensions', 'google_talk.crx'))
-    ext_id = self.InstallExtension(crx_file_path)
-
-    # Verify extension is in default state.
-    extension = self._GetExtensionInfoById(self.GetExtensionsInfo(), ext_id)
-    self.assertTrue(extension['is_enabled'])
-    self.assertFalse(extension['allowed_in_incognito'])
+    ext_id = self._InstallExtensionCheckDefaults('google_talk.crx')
 
     # Disable the extension and verify.
     self.SetExtensionStateById(ext_id, enable=False, allow_in_incognito=False)
@@ -271,17 +375,92 @@ class ExtensionsTest(pyauto.PyUITest):
         self.GetBrowserInfo()['extension_views'])
 
   def testAdblockExtensionCrash(self):
-    """Test AdBlock extension successfully installed and enabled, and do not
-    cause browser crash.
-    """
-    crx_file_path = os.path.abspath(
-        os.path.join(self.DataDir(), 'extensions', 'adblock.crx'))
-    ext_id = self.InstallExtension(crx_file_path)
+    """Test AdBlock extension does not cause a browser crash."""
+    ext_id = self._InstallExtensionCheckDefaults('adblock.crx')
 
     self.RestartBrowser(clear_profile=False)
     extension = self._GetExtensionInfoById(self.GetExtensionsInfo(), ext_id)
     self.assertTrue(extension['is_enabled'])
     self.assertFalse(extension['allowed_in_incognito'])
+
+  def testDisableEnableExtension(self):
+    """Tests that an extension can be disabled and enabled with the UI."""
+    ext_id = self._InstallExtensionCheckDefaults('adblock.crx')
+
+    # Disable extension.
+    driver = self.NewWebDriver()
+    ext_page = ExtensionsPage(driver)
+    self.WaitUntil(ext_page.CheckExtensionVisible, args=[ext_id])
+    ext_page.SetEnabled(ext_id, False)
+    self.WaitUntil(self._ExtensionValue, args=[ext_id, 'is_enabled'],
+                   expect_retval=False)
+    self.assertFalse(self._ExtensionValue(ext_id, 'is_enabled'),
+                     msg='Extension did not get disabled.')
+
+    # Enable extension.
+    self.WaitUntil(ext_page.CheckExtensionVisible, args=[ext_id])
+    ext_page.SetEnabled(ext_id, True)
+    self.WaitUntil(self._ExtensionValue, args=[ext_id, 'is_enabled'],
+                   expect_retval=True)
+    self.assertTrue(self._ExtensionValue(ext_id, 'is_enabled'),
+                    msg='Extension did not get enabled.')
+
+  def testAllowIncognitoExtension(self):
+    """Tests allowing and disallowing an extension in incognito mode."""
+    ext_id = self._InstallExtensionCheckDefaults('adblock.crx')
+
+    # Allow in incognito.
+    driver = self.NewWebDriver()
+    ext_page = ExtensionsPage(driver)
+    self.WaitUntil(ext_page.CheckExtensionVisible, args=[ext_id])
+    ext_page.SetAllowInIncognito(ext_id, True)
+
+    # Check extension now allowed in incognito.
+    self.WaitUntil(self._ExtensionValue, args=[ext_id, 'allowed_in_incognito'],
+                   expect_retval=True)
+    self.assertTrue(self._ExtensionValue(ext_id, 'allowed_in_incognito'),
+                    msg='Extension did not get allowed in incognito.')
+
+    # Disallow in incognito.
+    self.WaitUntil(ext_page.CheckExtensionVisible, args=[ext_id])
+    ext_page.SetAllowInIncognito(ext_id, False)
+
+    # Check extension now disallowed in incognito.
+    self.WaitUntil(self._ExtensionValue, args=[ext_id, 'allowed_in_incognito'],
+                   expect_retval=False)
+    self.assertFalse(self._ExtensionValue(ext_id, 'allowed_in_incognito'),
+                     msg='Extension did not get disallowed in incognito.')
+
+  def testAllowAccessFileURLs(self):
+    """Tests disallowing and allowing and extension access to file URLs."""
+    ext_id = self._InstallExtensionCheckDefaults(os.path.join('permissions',
+                                                              'files'))
+
+    # Check extension allowed access to file URLs by default.
+    extension_settings = self.GetPrefsInfo().Prefs()['extensions']['settings']
+    self.assertTrue(extension_settings[ext_id]['newAllowFileAccess'],
+                    msg='Extension was not allowed access to file URLs on '
+                    'installation')
+
+    # Disallow access to file URLs.
+    driver = self.NewWebDriver()
+    ext_page = ExtensionsPage(driver)
+    self.WaitUntil(ext_page.CheckExtensionVisible, args=[ext_id])
+    ext_page.SetAllowAccessFileURLs(ext_id, False)
+
+    # Check that extension does not have access to file URLs.
+    self.WaitUntil(self._FileAccess, args=[ext_id], expect_retval=False)
+    self.assertFalse(self._FileAccess(ext_id),
+                     msg='Extension did not have access to file URLs denied.')
+
+    # Allow access to file URLs.
+    self.WaitUntil(ext_page.CheckExtensionVisible, args=[ext_id])
+    ext_page.SetAllowAccessFileURLs(ext_id, True)
+
+    # Check that extension now has access to file URLs.
+    self.WaitUntil(self._FileAccess, args=[ext_id], expect_retval=True)
+    self.assertTrue(self._FileAccess(ext_id),
+                    msg='Extension did not have access to file URLs granted.')
 
 
 if __name__ == '__main__':
