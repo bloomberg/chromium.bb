@@ -28,6 +28,23 @@
 #ifndef _INTEL_CHIPSET_H
 #define _INTEL_CHIPSET_H
 
+#define PCI_CHIP_ILD_G                  0x0042
+#define PCI_CHIP_ILM_G                  0x0046
+
+#define PCI_CHIP_SANDYBRIDGE_GT1	0x0102 /* desktop */
+#define PCI_CHIP_SANDYBRIDGE_GT2	0x0112
+#define PCI_CHIP_SANDYBRIDGE_GT2_PLUS	0x0122
+#define PCI_CHIP_SANDYBRIDGE_M_GT1	0x0106 /* mobile */
+#define PCI_CHIP_SANDYBRIDGE_M_GT2	0x0116
+#define PCI_CHIP_SANDYBRIDGE_M_GT2_PLUS	0x0126
+#define PCI_CHIP_SANDYBRIDGE_S		0x010A /* server */
+
+#define PCI_CHIP_IVYBRIDGE_GT1		0x0152 /* desktop */
+#define PCI_CHIP_IVYBRIDGE_GT2		0x0162
+#define PCI_CHIP_IVYBRIDGE_M_GT1	0x0156 /* mobile */
+#define PCI_CHIP_IVYBRIDGE_M_GT2	0x0166
+#define PCI_CHIP_IVYBRIDGE_S		0x015a /* server */
+
 #define IS_830(dev) (dev == 0x3577)
 #define IS_845(dev) (dev == 0x2562)
 #define IS_85X(dev) (dev == 0x3582)
@@ -86,6 +103,24 @@
 
 #define IS_GM45(dev) (dev == 0x2A42)
 
+
+#define IS_GEN5(dev)	(dev == PCI_CHIP_ILD_G || \
+			 dev == PCI_CHIP_ILM_G)
+
+#define IS_GEN6(dev)	(dev == PCI_CHIP_SANDYBRIDGE_GT1 || \
+			 dev == PCI_CHIP_SANDYBRIDGE_GT2 || \
+			 dev == PCI_CHIP_SANDYBRIDGE_GT2_PLUS || \
+			 dev == PCI_CHIP_SANDYBRIDGE_M_GT1 || \
+			 dev == PCI_CHIP_SANDYBRIDGE_M_GT2 || \
+			 dev == PCI_CHIP_SANDYBRIDGE_M_GT2_PLUS || \
+			 dev == PCI_CHIP_SANDYBRIDGE_S)
+
+#define IS_GEN7(dev)	(dev == PCI_CHIP_IVYBRIDGE_GT1 || \
+			 dev == PCI_CHIP_IVYBRIDGE_GT2 || \
+			 dev == PCI_CHIP_IVYBRIDGE_M_GT1 || \
+			 dev == PCI_CHIP_IVYBRIDGE_M_GT2 || \
+			 dev == PCI_CHIP_IVYBRIDGE_S)
+
 #define IS_G4X(dev) (dev == 0x2E02 || \
                      dev == 0x2E12 || \
                      dev == 0x2E22 || \
@@ -96,6 +131,7 @@
 #define IS_9XX(dev) (IS_GEN3(dev) ||				\
 		     IS_GEN4(dev) ||				\
 		     IS_GEN5(dev) ||				\
-		     IS_GEN6(dev))
+		     IS_GEN6(dev) ||				\
+		     IS_GEN7(dev))
 
 #endif /* _INTEL_CHIPSET_H */
