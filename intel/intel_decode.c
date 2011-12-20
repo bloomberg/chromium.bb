@@ -270,15 +270,15 @@ decode_mi(struct drm_intel_decode *ctx)
 }
 
 static void
-decode_2d_br00(uint32_t *data, uint32_t count, uint32_t hw_offset,
-	       const char *cmd)
+decode_2d_br00(struct drm_intel_decode *ctx, const char *cmd)
 {
-	instr_out(data, hw_offset, 0,
+	instr_out(ctx->data, ctx->hw_offset, 0,
 		  "%s (rgb %sabled, alpha %sabled, src tile %d, dst tile %d)\n",
 		  cmd,
-		  (data[count] & (1 << 20)) ? "en" : "dis",
-		  (data[count] & (1 << 21)) ? "en" : "dis",
-		  (data[count] >> 15) & 1, (data[count] >> 11) & 1);
+		  (ctx->data[0] & (1 << 20)) ? "en" : "dis",
+		  (ctx->data[0] & (1 << 21)) ? "en" : "dis",
+		  (ctx->data[0] >> 15) & 1,
+		  (ctx->data[0] >> 11) & 1);
 }
 
 static void decode_2d_br01(uint32_t *data, uint32_t count, uint32_t hw_offset)
@@ -371,7 +371,7 @@ decode_2d(struct drm_intel_decode *ctx)
 			  data[2] & 0xffff, data[2] >> 16);
 		return len;
 	case 0x01:
-		decode_2d_br00(data, 0, hw_offset, "XY_SETUP_BLT");
+		decode_2d_br00(ctx, "XY_SETUP_BLT");
 
 		len = (data[0] & 0x000000ff) + 2;
 		if (len != 8)
@@ -391,7 +391,7 @@ decode_2d(struct drm_intel_decode *ctx)
 		instr_out(data, hw_offset, 7, "color pattern offset\n");
 		return len;
 	case 0x03:
-		decode_2d_br00(data, 0, hw_offset, "XY_SETUP_CLIP_BLT");
+		decode_2d_br00(ctx, "XY_SETUP_CLIP_BLT");
 
 		len = (data[0] & 0x000000ff) + 2;
 		if (len != 3)
@@ -405,8 +405,7 @@ decode_2d(struct drm_intel_decode *ctx)
 			  data[2] & 0xffff, data[3] >> 16);
 		return len;
 	case 0x11:
-		decode_2d_br00(data, 0, hw_offset,
-			       "XY_SETUP_MONO_PATTERN_SL_BLT");
+		decode_2d_br00(ctx, "XY_SETUP_MONO_PATTERN_SL_BLT");
 
 		len = (data[0] & 0x000000ff) + 2;
 		if (len != 9)
@@ -428,7 +427,7 @@ decode_2d(struct drm_intel_decode *ctx)
 		instr_out(data, hw_offset, 8, "mono pattern dw1\n");
 		return len;
 	case 0x50:
-		decode_2d_br00(data, 0, hw_offset, "XY_COLOR_BLT");
+		decode_2d_br00(ctx, "XY_COLOR_BLT");
 
 		len = (data[0] & 0x000000ff) + 2;
 		if (len != 6)
@@ -445,7 +444,7 @@ decode_2d(struct drm_intel_decode *ctx)
 		instr_out(data, hw_offset, 5, "color\n");
 		return len;
 	case 0x53:
-		decode_2d_br00(data, 0, hw_offset, "XY_SRC_COPY_BLT");
+		decode_2d_br00(ctx, "XY_SRC_COPY_BLT");
 
 		len = (data[0] & 0x000000ff) + 2;
 		if (len != 8)
