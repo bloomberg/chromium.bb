@@ -507,7 +507,13 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareIframeDontProceed) {
 
   ui_test_utils::NavigateToURL(browser(), url);
 
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::Source<NavigationController>(
+          &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+              controller()));
   SendCommand("\"takeMeBack\"");    // Simulate the user clicking "back"
+  observer.Wait();
   AssertNoInterstitial(false);  // Assert the interstitial is gone
 
   EXPECT_EQ(GURL(chrome::kAboutBlankURL),    // Back to "about:blank"

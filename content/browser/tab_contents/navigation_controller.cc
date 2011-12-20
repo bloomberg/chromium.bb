@@ -359,13 +359,6 @@ void NavigationController::GoBack() {
     return;
   }
 
-  // If an interstitial page is showing, going back is equivalent to hiding the
-  // interstitial.
-  if (tab_contents_->interstitial_page()) {
-    tab_contents_->interstitial_page()->DontProceed();
-    return;
-  }
-
   // Base the navigation on where we are now...
   int current_index = GetCurrentEntryIndex();
 
@@ -383,14 +376,6 @@ void NavigationController::GoForward() {
   if (!CanGoForward()) {
     NOTREACHED();
     return;
-  }
-
-  // If an interstitial page is showing, the previous renderer is blocked and
-  // cannot make new requests.  Unblock (and disable) it to allow this
-  // navigation to succeed.  The interstitial will stay visible until the
-  // resulting DidNavigate.
-  if (tab_contents_->interstitial_page()) {
-    tab_contents_->interstitial_page()->CancelForNavigation();
   }
 
   bool transient = (transient_entry_index_ != -1);
@@ -430,21 +415,6 @@ void NavigationController::GoToIndex(int index) {
     }
   }
 
-  // If an interstitial page is showing, the previous renderer is blocked and
-  // cannot make new requests.
-  if (tab_contents_->interstitial_page()) {
-    if (index == GetCurrentEntryIndex() - 1) {
-      // Going back one entry is equivalent to hiding the interstitial.
-      tab_contents_->interstitial_page()->DontProceed();
-      return;
-    } else {
-      // Unblock the renderer (and disable the interstitial) to allow this
-      // navigation to succeed.  The interstitial will stay visible until the
-      // resulting DidNavigate.
-      tab_contents_->interstitial_page()->CancelForNavigation();
-    }
-  }
-
   DiscardNonCommittedEntries();
 
   pending_entry_index_ = index;
@@ -465,22 +435,11 @@ void NavigationController::GoToOffset(int offset) {
   GoToIndex(index);
 }
 
-void NavigationController::RemoveEntryAtIndex(int index,
-                                              const GURL& default_url) {
-  bool is_current = index == last_committed_entry_index_;
+void NavigationController::RemoveEntryAtIndex(int index) {
+  if (index == last_committed_entry_index_)
+    return;
+
   RemoveEntryAtIndexInternal(index);
-  if (is_current) {
-    // We removed the currently shown entry, so we have to load something else.
-    if (last_committed_entry_index_ != -1) {
-      pending_entry_index_ = last_committed_entry_index_;
-      NavigateToPendingEntry(NO_RELOAD);
-    } else {
-      // If there is nothing to show, show a default page.
-      LoadURL(default_url.is_empty() ? GURL("about:blank") : default_url,
-              content::Referrer(), content::PAGE_TRANSITION_START_PAGE,
-              std::string());
-    }
-  }
 }
 
 void NavigationController::UpdateVirtualURLToURL(
@@ -1074,13 +1033,12 @@ void NavigationController::PruneAllButActive() {
 
 void NavigationController::RemoveEntryAtIndexInternal(int index) {
   DCHECK(index < entry_count());
+  DCHECK(index != last_committed_entry_index_);
 
   DiscardNonCommittedEntries();
 
   entries_.erase(entries_.begin() + index);
-  if (last_committed_entry_index_ == index)
-    last_committed_entry_index_--;
-  else if (last_committed_entry_index_ > index)
+  if (last_committed_entry_index_ > index)
     last_committed_entry_index_--;
 }
 
@@ -1130,7 +1088,8 @@ void NavigationController::InsertOrReplaceEntry(NavigationEntry* entry,
   }
 
   if (entries_.size() >= max_entry_count()) {
-    RemoveEntryAtIndex(0, GURL());
+    DCHECK(last_committed_entry_index_ > 0);
+    RemoveEntryAtIndex(0);
     NotifyPrunedEntries(this, true, 1);
   }
 
@@ -1157,9 +1116,22 @@ void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
       (entries_[pending_entry_index_]->transition_type() &
           content::PAGE_TRANSITION_FORWARD_BACK)) {
     tab_contents_->Stop();
+
+    // If an interstitial page is showing, we want to close it to get back
+    // to what was showing before.
+    if (tab_contents_->interstitial_page())
+      tab_contents_->interstitial_page()->DontProceed();
+
     DiscardNonCommittedEntries();
     return;
   }
+
+  // If an interstitial page is showing, the previous renderer is blocked and
+  // cannot make new requests.  Unblock (and disable) it to allow this
+  // navigation to succeed.  The interstitial will stay visible until the
+  // resulting DidNavigate.
+  if (tab_contents_->interstitial_page())
+    tab_contents_->interstitial_page()->CancelForNavigation();
 
   // For session history navigations only the pending_entry_index_ is set.
   if (!pending_entry_) {

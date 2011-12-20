@@ -233,10 +233,9 @@ class CONTENT_EXPORT NavigationController {
   // Removing of entries -------------------------------------------------------
 
   // Removes the entry at the specified |index|.  This call dicards any pending
-  // and transient entries.  |default_url| is the URL that the navigation
-  // controller navigates to if there are no more entries after the removal.
-  // If |default_url| is empty, we default to "about:blank".
-  void RemoveEntryAtIndex(int index, const GURL& default_url);
+  // and transient entries.  If the index is the last committed index, this does
+  // nothing and returns false.
+  void RemoveEntryAtIndex(int index);
 
   // TabContents ---------------------------------------------------------------
 
@@ -421,7 +420,7 @@ class CONTENT_EXPORT NavigationController {
   // all entries after it. The new entry will become the active one.
   void InsertOrReplaceEntry(NavigationEntry* entry, bool replace);
 
-  // Removes the entry at |index|.
+  // Removes the entry at |index|, as long as it is not the current entry.
   void RemoveEntryAtIndexInternal(int index);
 
   // Discards the pending and transient entries.

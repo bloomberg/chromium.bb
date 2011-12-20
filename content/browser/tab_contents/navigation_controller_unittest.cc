@@ -1652,44 +1652,32 @@ TEST_F(NavigationControllerTest, RemoveEntry) {
       url5, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   rvh()->SendNavigate(4, url5);
 
-  // Remove the last entry.
-  controller().RemoveEntryAtIndex(
-      controller().entry_count() - 1, default_url);
+  // Try to remove the last entry.  Will fail because it is the current entry.
+  controller().RemoveEntryAtIndex(controller().entry_count() - 1);
+  EXPECT_EQ(5, controller().entry_count());
+  EXPECT_EQ(4, controller().last_committed_entry_index());
+
+  // Go back and remove the last entry.
+  controller().GoBack();
+  rvh()->SendNavigate(3, url4);
+  controller().RemoveEntryAtIndex(controller().entry_count() - 1);
   EXPECT_EQ(4, controller().entry_count());
   EXPECT_EQ(3, controller().last_committed_entry_index());
-  NavigationEntry* pending_entry = controller().pending_entry();
-  EXPECT_TRUE(pending_entry && pending_entry->url() == url4);
-
-  // Add a pending entry.
-  controller().LoadURL(pending_url, content::Referrer(),
-                       content::PAGE_TRANSITION_TYPED, std::string());
-  // Now remove the last entry.
-  controller().RemoveEntryAtIndex(
-      controller().entry_count() - 1, default_url);
-  // The pending entry should have been discarded and the last committed entry
-  // removed.
-  EXPECT_EQ(3, controller().entry_count());
-  EXPECT_EQ(2, controller().last_committed_entry_index());
-  pending_entry = controller().pending_entry();
-  EXPECT_TRUE(pending_entry && pending_entry->url() == url3);
+  EXPECT_FALSE(controller().pending_entry());
 
   // Remove an entry which is not the last committed one.
-  controller().RemoveEntryAtIndex(0, default_url);
-  EXPECT_EQ(2, controller().entry_count());
-  EXPECT_EQ(1, controller().last_committed_entry_index());
-  // No navigation should have been initiated since we did not remove the
-  // current entry.
+  controller().RemoveEntryAtIndex(0);
+  EXPECT_EQ(3, controller().entry_count());
+  EXPECT_EQ(2, controller().last_committed_entry_index());
   EXPECT_FALSE(controller().pending_entry());
 
   // Remove the 2 remaining entries.
-  controller().RemoveEntryAtIndex(1, default_url);
-  controller().RemoveEntryAtIndex(0, default_url);
+  controller().RemoveEntryAtIndex(1);
+  controller().RemoveEntryAtIndex(0);
 
-  // This should have created a pending default entry.
-  EXPECT_EQ(0, controller().entry_count());
-  EXPECT_EQ(-1, controller().last_committed_entry_index());
-  pending_entry = controller().pending_entry();
-  EXPECT_TRUE(pending_entry && pending_entry->url() == default_url);
+  // This should leave us with only the last committed entry.
+  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(0, controller().last_committed_entry_index());
 }
 
 // Tests the transient entry, making sure it goes away with all navigations.

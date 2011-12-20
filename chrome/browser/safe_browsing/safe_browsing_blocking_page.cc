@@ -457,8 +457,24 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   }
 
   if (command == kTakeMeBackCommand) {
-    DontProceed();
-    // We are deleted after this.
+    if (is_main_frame_load_blocked_) {
+      // If the load is blocked, we want to close the interstitial and discard
+      // the pending entry.
+      DontProceed();
+      // We are deleted after this.
+      return;
+    }
+
+    // Otherwise the offending entry has committed, and we need to go back or
+    // to a safe page.  We will close the interstitial when that page commits.
+    if (tab()->controller().CanGoBack()) {
+      tab()->controller().GoBack();
+    } else {
+      tab()->controller().LoadURL(GURL(chrome::kChromeUINewTabURL),
+                                  content::Referrer(),
+                                  content::PAGE_TRANSITION_START_PAGE,
+                                  std::string());
+    }
     return;
   }
 
@@ -580,10 +596,14 @@ void SafeBrowsingBlockingPage::DontProceed() {
 
   // We don't remove the navigation entry if the tab is being destroyed as this
   // would trigger a navigation that would cause trouble as the render view host
-  // for the tab has by then already been destroyed.
-  if (navigation_entry_index_to_remove_ != -1 && !tab()->is_being_destroyed()) {
-    tab()->controller().RemoveEntryAtIndex(navigation_entry_index_to_remove_,
-                                           GURL(chrome::kChromeUINewTabURL));
+  // for the tab has by then already been destroyed.  We also don't delete the
+  // current entry if it has been committed again, which is possible on a page
+  // that had a subresource warning.
+  int last_committed_index = tab()->controller().last_committed_entry_index();
+  if (navigation_entry_index_to_remove_ != -1 &&
+      navigation_entry_index_to_remove_ != last_committed_index &&
+      !tab()->is_being_destroyed()) {
+    tab()->controller().RemoveEntryAtIndex(navigation_entry_index_to_remove_);
     navigation_entry_index_to_remove_ = -1;
   }
   InterstitialPage::DontProceed();

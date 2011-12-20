@@ -114,15 +114,17 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
         content::PAGE_TRANSITION_TYPED);
   }
 
-  void GoBackCrossSite() {
+  void GoBack(bool is_cross_site) {
     NavigationEntry* entry = contents()->controller().GetEntryAtOffset(-1);
     ASSERT_TRUE(entry);
     contents()->controller().GoBack();
 
-    // The navigation should commit in the pending RVH.
-    contents()->TestDidNavigate(
-        contents()->pending_rvh(), entry->page_id(), GURL(entry->url()),
-        content::PAGE_TRANSITION_TYPED);
+    // The pending RVH should commit for cross-site navigations.
+    RenderViewHost* rvh = is_cross_site ?
+        contents()->pending_rvh() :
+        contents()->render_view_host();
+    contents()->TestDidNavigate(rvh, entry->page_id(), GURL(entry->url()),
+                                content::PAGE_TRANSITION_TYPED);
   }
 
   void ShowInterstitial(bool is_subresource, const char* url) {
@@ -154,6 +156,15 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
   static void DontProceedThroughInterstitial(
       SafeBrowsingBlockingPage* sb_interstitial) {
     sb_interstitial->DontProceed();
+    // DontProceed() posts a task to update the SafeBrowsingService::Client.
+    MessageLoop::current()->RunAllPending();
+  }
+
+  void DontProceedThroughSubresourceInterstitial(
+      SafeBrowsingBlockingPage* sb_interstitial) {
+    // CommandReceived(kTakeMeBackCommand) does a back navigation for
+    // subresource interstitials.
+    GoBack(false);
     // DontProceed() posts a task to update the SafeBrowsingService::Client.
     MessageLoop::current()->RunAllPending();
   }
@@ -262,7 +273,7 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
   ASSERT_TRUE(sb_interstitial);
 
   // Simulate the user clicking "don't proceed".
-  DontProceedThroughInterstitial(sb_interstitial);
+  DontProceedThroughSubresourceInterstitial(sb_interstitial);
   EXPECT_EQ(CANCEL, user_response());
   EXPECT_FALSE(GetSafeBrowsingBlockingPage());
 
@@ -333,7 +344,7 @@ TEST_F(SafeBrowsingBlockingPageTest,
   ASSERT_TRUE(sb_interstitial);
 
   // Simulate the user clicking "don't proceed".
-  DontProceedThroughInterstitial(sb_interstitial);
+  DontProceedThroughSubresourceInterstitial(sb_interstitial);
   EXPECT_EQ(CANCEL, user_response());
   EXPECT_FALSE(GetSafeBrowsingBlockingPage());
 
@@ -388,7 +399,7 @@ TEST_F(SafeBrowsingBlockingPageTest,
   ASSERT_TRUE(sb_interstitial);
 
   // Don't proceed through the 2nd interstitial.
-  DontProceedThroughInterstitial(sb_interstitial);
+  DontProceedThroughSubresourceInterstitial(sb_interstitial);
   EXPECT_EQ(CANCEL, user_response());
   EXPECT_FALSE(GetSafeBrowsingBlockingPage());
 
@@ -473,7 +484,7 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   // Proceed, then navigate back.
   ProceedThroughInterstitial(sb_interstitial);
   Navigate(kBadURL, 2);  // Commit the navigation.
-  GoBackCrossSite();
+  GoBack(true);
 
   // We are back on the good page.
   sb_interstitial = GetSafeBrowsingBlockingPage();
