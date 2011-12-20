@@ -201,9 +201,8 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {
   RunTest(url, EXPECT_NO_GPU_PROCESS);
 }
 
-// Test is flaky and timing out.  See crbug.com/99883
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest,
-                       DISABLED_CanOpenPopupAndRenderWithWebGLCanvas) {
+                       CanOpenPopupAndRenderWithWebGLCanvas) {
   ui_test_utils::DOMMessageQueue message_queue;
 
   ui_test_utils::NavigateToURL(
