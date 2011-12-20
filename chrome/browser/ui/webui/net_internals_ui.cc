@@ -333,6 +333,7 @@ class NetInternalsMessageHandler::IOThreadImpl
 #ifdef OS_WIN
   void OnGetServiceProviders(const ListValue* list);
 #endif
+  void OnGetHttpPipeliningStatus(const ListValue* list);
   void OnSetLogLevel(const ListValue* list);
 
   // ChromeNetLog::ThreadSafeObserver implementation:
@@ -537,6 +538,10 @@ void NetInternalsMessageHandler::RegisterMessages() {
                  &IOThreadImpl::OnGetServiceProviders, proxy_));
 #endif
 
+  web_ui_->RegisterMessageCallback(
+      "getHttpPipeliningStatus",
+      base::Bind(&IOThreadImpl::CallbackHelper,
+                 &IOThreadImpl::OnGetHttpPipeliningStatus, proxy_));
   web_ui_->RegisterMessageCallback(
       "setLogLevel",
       base::Bind(&IOThreadImpl::CallbackHelper,
@@ -1303,6 +1308,60 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
                         Value::CreateStringValue(error));
 }
 #endif
+
+void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpPipeliningStatus(
+    const ListValue* list) {
+  DictionaryValue* status_dict = new DictionaryValue();
+
+  status_dict->Set("pipelining_enabled",
+                   Value::CreateBooleanValue(
+                       net::HttpStreamFactory::http_pipelining_enabled()));
+
+  net::HttpNetworkSession* http_network_session =
+      GetHttpNetworkSession(context_getter_->GetURLRequestContext());
+  Value* pipelined_conneciton_info =
+      http_network_session->http_stream_factory()->PipelineInfoToValue();
+  status_dict->Set("pipelined_connection_info", pipelined_conneciton_info);
+
+  const net::HttpServerProperties& http_server_properties =
+      *context_getter_->GetURLRequestContext()->http_server_properties();
+
+  // TODO(simonjam): This call is slow.
+  const net::PipelineCapabilityMap pipeline_capability_map =
+      http_server_properties.GetPipelineCapabilityMap();
+
+  ListValue* known_hosts_list = new ListValue();
+  net::PipelineCapabilityMap::const_iterator it;
+  for (it = pipeline_capability_map.begin();
+       it != pipeline_capability_map.end(); ++it) {
+    DictionaryValue* host_dict = new DictionaryValue();
+    host_dict->SetString("host", it->first.ToString());
+    std::string capability;
+    switch (it->second) {
+      case net::PIPELINE_CAPABLE:
+        capability = "capable";
+        break;
+
+      case net::PIPELINE_PROBABLY_CAPABLE:
+        capability = "probably capable";
+        break;
+
+      case net::PIPELINE_INCAPABLE:
+        capability = "incapable";
+        break;
+
+      case net::PIPELINE_UNKNOWN:
+      default:
+        capability = "unknown";
+        break;
+    }
+    host_dict->SetString("capability", capability);
+    known_hosts_list->Append(host_dict);
+  }
+  status_dict->Set("pipelined_host_info", known_hosts_list);
+
+  SendJavascriptCommand("receivedHttpPipeliningStatus", status_dict);
+}
 
 void NetInternalsMessageHandler::IOThreadImpl::OnSetLogLevel(
     const ListValue* list) {

@@ -28,6 +28,7 @@ netInternalsTest.test('netInternalsExportImportDump', function() {
       dns: true,
       sockets: true,
       spdy: true,
+      httpPipeline: false,
       httpCache: true,
       httpThrottling: false,
       serviceProviders: cr.isWindows,

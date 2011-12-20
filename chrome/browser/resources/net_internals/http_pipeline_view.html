@@ -1,0 +1,23 @@
+<div id=http-pipeline-view-tab-content>
+  <h4>HTTP Pipelining Status</h4>
+  <ul>
+    <li>HTTP Pipelining Enabled: <span id=http-pipeline-view-enabled-span>????</span></li>
+  </ul>
+
+  <h4>HTTP Pipelined Connections</h4>
+    <!-- Only one of these two are shown -->
+    <span id=http-pipeline-view-connections-none-span>None</span>
+    <span id=http-pipeline-view-connections-link-span style="display: none;">
+      <a href="#events&q=type:HTTP_PIPELINED_CONNECTION%20is:active">View live HTTP pipelined connections</a>
+    </span>
+  <p>
+    <div id=http-pipeline-view-connections-div>
+    </div>
+  </p>
+
+  <h4>Known Hosts</h4>
+  <p>
+    <div id=http-pipeline-view-known-hosts-div>
+    </div>
+  </p>
+</div>

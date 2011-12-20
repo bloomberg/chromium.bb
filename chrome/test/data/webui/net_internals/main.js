@@ -27,6 +27,7 @@ netInternalsTest.test('netInternalsTourTabs', function() {
     dns: true,
     sockets: true,
     spdy: true,
+    httpPipeline: true,
     httpCache: true,
     httpThrottling: true,
     serviceProviders: cr.isWindows,

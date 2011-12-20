@@ -61,6 +61,9 @@ var BrowserBridge = (function() {
     this.pollableDataHelpers_.prerenderInfo =
         new PollableDataHelper('onPrerenderInfoChanged',
                                this.sendGetPrerenderInfo.bind(this));
+    this.pollableDataHelpers_.httpPipeliningStatus =
+        new PollableDataHelper('onHttpPipeliningStatusChanged',
+                               this.sendGetHttpPipeliningStatus.bind(this));
 
     // NetLog entries are all sent to the |SourceTracker|, which both tracks
     // them and manages its own observer list.
@@ -234,6 +237,10 @@ var BrowserBridge = (function() {
       this.send('importONCFile', [fileContent, passcode]);
     },
 
+    sendGetHttpPipeliningStatus: function() {
+      this.send('getHttpPipeliningStatus');
+    },
+
     //--------------------------------------------------------------------------
     // Messages received from the browser.
     //--------------------------------------------------------------------------
@@ -339,6 +346,11 @@ var BrowserBridge = (function() {
 
     receivedPrerenderInfo: function(prerenderInfo) {
       this.pollableDataHelpers_.prerenderInfo.update(prerenderInfo);
+    },
+
+    receivedHttpPipeliningStatus: function(httpPipeliningStatus) {
+      this.pollableDataHelpers_.httpPipeliningStatus.update(
+          httpPipeliningStatus);
     },
 
     //--------------------------------------------------------------------------
@@ -544,6 +556,17 @@ var BrowserBridge = (function() {
      */
     addPrerenderInfoObserver: function(observer, ignoreWhenUnchanged) {
       this.pollableDataHelpers_.prerenderInfo.addObserver(
+          observer, ignoreWhenUnchanged);
+    },
+
+    /**
+     * Adds a listener of HTTP pipelining status. |observer| will be called
+     * back when data is received, through:
+     *
+     *   observer.onHttpPipelineStatusChanged(httpPipeliningStatus)
+     */
+    addHttpPipeliningStatusObserver: function(observer, ignoreWhenUnchanged) {
+      this.pollableDataHelpers_.httpPipeliningStatus.addObserver(
           observer, ignoreWhenUnchanged);
     },
 

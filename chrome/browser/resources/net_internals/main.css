@@ -56,6 +56,7 @@ body {
 #http-throttling-view-tab-content,
 #logs-view-tab-content,
 #prerender-view-tab-content,
+#http-pipeline-view-tab-content,
 #chromeos-view-tab-content {
   overflow: auto;
   padding: 10px;

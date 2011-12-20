@@ -40,6 +40,7 @@
 <include src="logs_view.js"/>
 <include src="prerender_view.js"/>
 <include src="chromeos_view.js"/>
+<include src="http_pipeline_view.js"/>
 
 document.addEventListener('DOMContentLoaded', function() {
   MainView.getInstance();  // from main.js

@@ -400,7 +400,7 @@ class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserverImpl {
     DISALLOW_COPY_AND_ASSIGN(UDPSocketTracker);
   };
 
-  // Tracks the log entries for the last seen SOURCE_CERT_VERIFIER_JOB
+  // Tracks the log entries for the last seen SOURCE_CERT_VERIFIER_JOB.
   class CertVerifierJobTracker : public SourceTracker {
    public:
     static const size_t kMaxNumSources;
@@ -413,6 +413,21 @@ class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserverImpl {
                               SourceInfo* out_info) OVERRIDE;
 
     DISALLOW_COPY_AND_ASSIGN(CertVerifierJobTracker);
+  };
+
+  // Tracks the log entries for the last seen SOURCE_HTTP_PIPELINED_CONNECTION.
+  class HttpPipelinedConnectionTracker : public SourceTracker {
+   public:
+    static const size_t kMaxNumSources;
+    static const size_t kMaxGraveyardSize;
+
+    HttpPipelinedConnectionTracker();
+
+   private:
+    virtual Action DoAddEntry(const ChromeNetLog::Entry& entry,
+                              SourceInfo* out_info) OVERRIDE;
+
+    DISALLOW_COPY_AND_ASSIGN(HttpPipelinedConnectionTracker);
   };
 
   PassiveLogCollector();
@@ -459,6 +474,7 @@ class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserverImpl {
   AsyncHostResolverRequestTracker async_host_resolver_request_tracker_;
   UDPSocketTracker udp_socket_tracker_;
   CertVerifierJobTracker cert_verifier_job_tracker_;
+  HttpPipelinedConnectionTracker http_pipelined_connection_tracker_;
 
   // This array maps each NetLog::SourceType to one of the tracker instances
   // defined above. Use of this array avoid duplicating the list of trackers

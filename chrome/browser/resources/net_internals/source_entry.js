@@ -98,6 +98,10 @@ var SourceEntry = (function() {
           if (e.params.host)
             this.description_ = e.params.host + ' (' + e.params.proxy + ')';
           break;
+        case LogSourceType.HTTP_PIPELINED_CONNECTION:
+          if (e.params.host_and_port)
+            this.description_ = e.params.host_and_port;
+          break;
         case LogSourceType.SOCKET:
           // Use description of parent source, if any.
           if (e.params.source_dependency != undefined) {
