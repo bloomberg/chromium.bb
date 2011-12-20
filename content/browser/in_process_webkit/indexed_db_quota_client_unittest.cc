@@ -42,7 +42,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         usage_(0),
         weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         message_loop_(MessageLoop::TYPE_IO),
-        webkit_thread_(BrowserThread::WEBKIT, &message_loop_),
+        webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
     TestBrowserContext browser_context;
     idb_context_ = browser_context.GetWebKitContext()->indexed_db_context();
@@ -57,9 +57,10 @@ class IndexedDBQuotaClientTest : public testing::Test {
   }
 
   ~IndexedDBQuotaClientTest() {
-    // IndexedDBContext needs to be destructed on BrowserThread::WEBKIT, which
-    // is also a member variable of this class.  Cause IndexedDBContext's
-    // destruction now to ensure that it doesn't outlive BrowserThread::WEBKIT.
+    // IndexedDBContext needs to be destructed on
+    // BrowserThread::WEBKIT_DEPRECATED, which is also a member variable of this
+    // class.  Cause IndexedDBContext's destruction now to ensure that it
+    // doesn't outlive BrowserThread::WEBKIT_DEPRECATED.
     idb_context_ = NULL;
     MessageLoop::current()->RunAllPending();
   }

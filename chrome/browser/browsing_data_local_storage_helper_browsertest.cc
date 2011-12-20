@@ -124,7 +124,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {
       GetLocalStoragePathForTestingProfile().Append(FilePath(kTestFile0)));
   scoped_refptr<base::ThreadTestHelper> wait_for_webkit_thread(
       new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::WEBKIT)));
+          BrowserThread::GetMessageLoopProxyForThread(
+              BrowserThread::WEBKIT_DEPRECATED)));
   ASSERT_TRUE(wait_for_webkit_thread->Run());
   // Ensure the file has been deleted.
   file_util::FileEnumerator file_enumerator(

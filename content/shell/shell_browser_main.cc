@@ -66,7 +66,7 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 }
 
 void ShellBrowserMainParts::PreStopThread(BrowserThread::ID id) {
-  if (id == BrowserThread::WEBKIT) {
+  if (id == BrowserThread::WEBKIT_DEPRECATED) {
     resource_dispatcher_host_.reset();
   }
 }

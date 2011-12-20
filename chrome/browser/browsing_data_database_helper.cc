@@ -207,7 +207,7 @@ void CannedBrowsingDataDatabaseHelper::StartFetching(
   is_fetching_ = true;
   completion_callback_ = callback;
   BrowserThread::PostTask(
-      BrowserThread::WEBKIT, FROM_HERE,
+      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
       base::Bind(&CannedBrowsingDataDatabaseHelper::ConvertInfoInWebKitThread,
                  this));
 }

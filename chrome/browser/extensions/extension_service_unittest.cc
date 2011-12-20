@@ -387,7 +387,7 @@ ExtensionServiceTestBase::ExtensionServiceTestBase()
       expected_extensions_count_(0),
       ui_thread_(BrowserThread::UI, &loop_),
       db_thread_(BrowserThread::DB, &loop_),
-      webkit_thread_(BrowserThread::WEBKIT, &loop_),
+      webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &loop_),
       file_thread_(BrowserThread::FILE, &loop_),
       file_user_blocking_thread_(BrowserThread::FILE_USER_BLOCKING, &loop_),
       io_thread_(BrowserThread::IO, &loop_) {

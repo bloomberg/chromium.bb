@@ -21,7 +21,7 @@ class MockDOMStorageContext : public DOMStorageContext {
 
   virtual void PurgeMemory() {
     EXPECT_FALSE(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
     ++purge_count_;
   }
 
@@ -50,7 +50,8 @@ TEST(WebKitContextTest, PurgeMemory) {
   // Start up a WebKit thread for the WebKitContext to call the
   // DOMStorageContext on.
   MessageLoop message_loop(MessageLoop::TYPE_DEFAULT);
-  BrowserThreadImpl webkit_thread(BrowserThread::WEBKIT, &message_loop);
+  BrowserThreadImpl webkit_thread(BrowserThread::WEBKIT_DEPRECATED,
+                                  &message_loop);
 
   {
     // Create the contexts.

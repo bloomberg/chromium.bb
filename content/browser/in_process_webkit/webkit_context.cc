@@ -36,7 +36,7 @@ WebKitContext::~WebKitContext() {
       clear_local_state_on_exit_);
   DOMStorageContext* dom_storage_context = dom_storage_context_.release();
   if (!BrowserThread::DeleteSoon(
-          BrowserThread::WEBKIT, FROM_HERE, dom_storage_context)) {
+          BrowserThread::WEBKIT_DEPRECATED, FROM_HERE, dom_storage_context)) {
     // The WebKit thread wasn't created, and the task got deleted without
     // freeing the DOMStorageContext, so delete it manually.
     delete dom_storage_context;
@@ -47,9 +47,9 @@ WebKitContext::~WebKitContext() {
 }
 
 void WebKitContext::PurgeMemory() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED)) {
     BrowserThread::PostTask(
-        BrowserThread::WEBKIT, FROM_HERE,
+        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
         base::Bind(&WebKitContext::PurgeMemory, this));
     return;
   }
@@ -58,9 +58,9 @@ void WebKitContext::PurgeMemory() {
 }
 
 void WebKitContext::DeleteDataModifiedSince(const base::Time& cutoff) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED)) {
     BrowserThread::PostTask(
-        BrowserThread::WEBKIT, FROM_HERE,
+        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
         base::Bind(&WebKitContext::DeleteDataModifiedSince, this, cutoff));
     return;
   }
@@ -70,9 +70,9 @@ void WebKitContext::DeleteDataModifiedSince(const base::Time& cutoff) {
 
 void WebKitContext::DeleteSessionStorageNamespace(
     int64 session_storage_namespace_id) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED)) {
     BrowserThread::PostTask(
-        BrowserThread::WEBKIT, FROM_HERE,
+        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
         base::Bind(&WebKitContext::DeleteSessionStorageNamespace, this,
                    session_storage_namespace_id));
     return;
@@ -83,9 +83,9 @@ void WebKitContext::DeleteSessionStorageNamespace(
 }
 
 void WebKitContext::SaveSessionState() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED)) {
     BrowserThread::PostTask(
-        BrowserThread::WEBKIT, FROM_HERE,
+        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
         base::Bind(&WebKitContext::SaveSessionState, this));
     return;
   }

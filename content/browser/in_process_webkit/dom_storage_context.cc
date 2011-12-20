@@ -90,7 +90,7 @@ DOMStorageContext::~DOMStorageContext() {
 
   // Not being on the WEBKIT thread here means we are running in a unit test
   // where no clean up is needed.
-  if (BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED)) {
     ClearLocalState(data_path_.Append(kLocalStorageDirectory),
                     special_storage_policy_,
                     clear_local_state_on_exit_);
@@ -98,7 +98,7 @@ DOMStorageContext::~DOMStorageContext() {
 }
 
 int64 DOMStorageContext::AllocateStorageAreaId() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   return ++last_storage_area_id_;
 }
 
@@ -109,31 +109,31 @@ int64 DOMStorageContext::AllocateSessionStorageNamespaceId() {
 }
 
 int64 DOMStorageContext::CloneSessionStorage(int64 original_id) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   int64 clone_id = AllocateSessionStorageNamespaceId();
   BrowserThread::PostTask(
-      BrowserThread::WEBKIT, FROM_HERE,
+      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
       base::Bind(&DOMStorageContext::CompleteCloningSessionStorage, this,
                  original_id, clone_id));
   return clone_id;
 }
 
 void DOMStorageContext::RegisterStorageArea(DOMStorageArea* storage_area) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   int64 id = storage_area->id();
   DCHECK(!GetStorageArea(id));
   storage_area_map_[id] = storage_area;
 }
 
 void DOMStorageContext::UnregisterStorageArea(DOMStorageArea* storage_area) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   int64 id = storage_area->id();
   DCHECK(GetStorageArea(id));
   storage_area_map_.erase(id);
 }
 
 DOMStorageArea* DOMStorageContext::GetStorageArea(int64 id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   StorageAreaMap::iterator iter = storage_area_map_.find(id);
   if (iter == storage_area_map_.end())
     return NULL;
@@ -141,7 +141,7 @@ DOMStorageArea* DOMStorageContext::GetStorageArea(int64 id) {
 }
 
 void DOMStorageContext::DeleteSessionStorageNamespace(int64 namespace_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   StorageNamespaceMap::iterator iter =
       storage_namespace_map_.find(namespace_id);
   if (iter == storage_namespace_map_.end())
@@ -153,7 +153,7 @@ void DOMStorageContext::DeleteSessionStorageNamespace(int64 namespace_id) {
 
 DOMStorageNamespace* DOMStorageContext::GetStorageNamespace(
     int64 id, bool allocation_allowed) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   StorageNamespaceMap::iterator iter = storage_namespace_map_.find(id);
   if (iter != storage_namespace_map_.end())
     return iter->second;
@@ -220,7 +220,7 @@ void DOMStorageContext::DeleteDataModifiedSince(const base::Time& cutoff) {
 }
 
 void DOMStorageContext::DeleteLocalStorageFile(const FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
 
   // Make sure that we don't delete a database that's currently being accessed
   // by unloading all of the databases temporarily.
@@ -232,12 +232,12 @@ void DOMStorageContext::DeleteLocalStorageFile(const FilePath& file_path) {
 }
 
 void DOMStorageContext::DeleteLocalStorageForOrigin(const string16& origin_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   DeleteLocalStorageFile(GetLocalStorageFilePath(origin_id));
 }
 
 void DOMStorageContext::DeleteAllLocalStorageFiles() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
 
   // Make sure that we don't delete a database that's currently being accessed
   // by unloading all of the databases temporarily.
@@ -273,7 +273,7 @@ DOMStorageNamespace* DOMStorageContext::CreateSessionStorage(
 
 void DOMStorageContext::RegisterStorageNamespace(
     DOMStorageNamespace* storage_namespace) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   int64 id = storage_namespace->id();
   DCHECK(!GetStorageNamespace(id, false));
   storage_namespace_map_[id] = storage_namespace;
@@ -282,7 +282,7 @@ void DOMStorageContext::RegisterStorageNamespace(
 /* static */
 void DOMStorageContext::CompleteCloningSessionStorage(
     DOMStorageContext* context, int64 existing_id, int64 clone_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   DOMStorageNamespace* existing_namespace =
       context->GetStorageNamespace(existing_id, false);
   // If nothing exists, then there's nothing to clone.

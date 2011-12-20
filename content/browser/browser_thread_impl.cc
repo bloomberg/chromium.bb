@@ -19,7 +19,7 @@ namespace {
 static const char* g_browser_thread_names[BrowserThread::ID_COUNT] = {
   "",  // UI (name assembled in browser_main.cc).
   "Chrome_DBThread",  // DB
-  "Chrome_WebKitThread",  // WEBKIT
+  "Chrome_WebKitThread",  // WEBKIT_DEPRECATED
   "Chrome_FileThread",  // FILE
   "Chrome_FileUserBlockingThread",  // FILE_USER_BLOCKING
   "Chrome_ProcessLauncherThread",  // PROCESS_LAUNCHER

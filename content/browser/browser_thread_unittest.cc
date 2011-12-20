@@ -104,7 +104,7 @@ TEST_F(BrowserThreadTest, Release) {
 TEST_F(BrowserThreadTest, TaskToNonExistentThreadIsDeleted) {
   bool deleted = false;
   BrowserThread::PostTask(
-      BrowserThread::WEBKIT, FROM_HERE,
+      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
       new DummyTask(&deleted));
   EXPECT_TRUE(deleted);
 }
@@ -152,7 +152,8 @@ TEST_F(BrowserThreadTest, PostTaskAndReply) {
 TEST_F(BrowserThreadTest, TaskToNonExistentThreadIsDeletedViaMessageLoopProxy) {
   bool deleted = false;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::WEBKIT);
+      BrowserThread::GetMessageLoopProxyForThread(
+          BrowserThread::WEBKIT_DEPRECATED);
   message_loop_proxy->PostTask(FROM_HERE, new DummyTask(&deleted));
   EXPECT_TRUE(deleted);
 }

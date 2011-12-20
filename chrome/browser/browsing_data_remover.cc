@@ -231,7 +231,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
   if (remove_mask & REMOVE_LOCAL_STORAGE) {
     // Remove data such as local databases, STS state, etc. These only can
     // be removed if a WEBKIT thread exists, so check that first:
-    if (BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT)) {
+    if (BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
       // We assume the end time is now.
       profile_->GetWebKitContext()->DeleteDataModifiedSince(delete_begin_);
     }

@@ -271,7 +271,7 @@ void BrowserProcessImpl::PreStopThread(BrowserThread::ID thread_id) {
         resource_dispatcher_host()->save_file_manager()->Shutdown();
       }
       break;
-    case BrowserThread::WEBKIT:
+    case BrowserThread::WEBKIT_DEPRECATED:
       // Need to destroy ResourceDispatcherHost before PluginService
       // and SafeBrowsingService, since it caches a pointer to
       // it.

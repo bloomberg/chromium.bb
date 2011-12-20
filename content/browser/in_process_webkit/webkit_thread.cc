@@ -22,14 +22,15 @@ WebKitThread::~WebKitThread() {
   // MessageLoop::Current is sometimes NULL and other times valid and there's
   // no BrowserThread object.  Can't check that CurrentlyOn is not IO since
   // some unit tests set that BrowserThread for other checks.
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
 }
 
 void WebKitThread::Initialize() {
   DCHECK(!webkit_thread_.get());
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
-    // TODO(jorlow): We need a better story for single process mode.
+    // TODO(joth): As this cannot work in single process mode use of the
+    // webkit thread is deprecated; see http://crbug.com/106839.
     return;
   }
 
@@ -39,7 +40,7 @@ void WebKitThread::Initialize() {
 }
 
 WebKitThread::InternalWebKitThread::InternalWebKitThread()
-    : content::BrowserThreadImpl(BrowserThread::WEBKIT) {
+    : content::BrowserThreadImpl(BrowserThread::WEBKIT_DEPRECATED) {
 }
 
 WebKitThread::InternalWebKitThread::~InternalWebKitThread() {

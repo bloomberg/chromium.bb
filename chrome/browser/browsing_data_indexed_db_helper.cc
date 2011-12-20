@@ -79,7 +79,7 @@ void BrowsingDataIndexedDBHelperImpl::StartFetching(
   is_fetching_ = true;
   completion_callback_ = callback;
   BrowserThread::PostTask(
-      BrowserThread::WEBKIT, FROM_HERE,
+      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
       base::Bind(
           &BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread,
           this));
@@ -94,14 +94,14 @@ void BrowsingDataIndexedDBHelperImpl::DeleteIndexedDB(
     const GURL& origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
-      BrowserThread::WEBKIT, FROM_HERE,
+      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
       base::Bind(
           &BrowsingDataIndexedDBHelperImpl::DeleteIndexedDBInWebKitThread, this,
           origin));
 }
 
 void BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   std::vector<GURL> origins;
   indexed_db_context_->GetAllOrigins(&origins);
   for (std::vector<GURL>::const_iterator iter = origins.begin();
@@ -134,7 +134,7 @@ void BrowsingDataIndexedDBHelperImpl::NotifyInUIThread() {
 
 void BrowsingDataIndexedDBHelperImpl::DeleteIndexedDBInWebKitThread(
     const GURL& origin) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   indexed_db_context_->DeleteIndexedDBForOrigin(origin);
 }
 
@@ -213,7 +213,7 @@ void CannedBrowsingDataIndexedDBHelper::StartFetching(
   is_fetching_ = true;
   completion_callback_ = callback;
   BrowserThread::PostTask(
-      BrowserThread::WEBKIT, FROM_HERE,
+      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
       base::Bind(
           &CannedBrowsingDataIndexedDBHelper::ConvertPendingInfoInWebKitThread,
           this));

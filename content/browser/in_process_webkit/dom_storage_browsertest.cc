@@ -47,7 +47,8 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, ClearLocalState) {
   // Make sure we wait until the destructor has run.
   scoped_refptr<base::ThreadTestHelper> helper(
       new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::WEBKIT)));
+          BrowserThread::GetMessageLoopProxyForThread(
+              BrowserThread::WEBKIT_DEPRECATED)));
   ASSERT_TRUE(helper->Run());
 
   // Because we specified https for scheme to be skipped the second file

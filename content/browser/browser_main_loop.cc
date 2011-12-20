@@ -319,7 +319,7 @@ void BrowserMainLoop::RunMainMessageLoopParts(
       case BrowserThread::DB:
         thread_to_start = &db_thread_;
         break;
-      case BrowserThread::WEBKIT:
+      case BrowserThread::WEBKIT_DEPRECATED:
         // Special case as WebKitThread is a separate
         // type.  |thread_to_start| is not used in this case.
         break;
@@ -366,7 +366,7 @@ void BrowserMainLoop::RunMainMessageLoopParts(
     if (parts_.get())
       parts_->PreStartThread(id);
 
-    if (thread_id == BrowserThread::WEBKIT) {
+    if (thread_id == BrowserThread::WEBKIT_DEPRECATED) {
       webkit_thread_.reset(new WebKitThread);
       webkit_thread_->Initialize();
     } else if (thread_to_start) {
@@ -448,7 +448,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       case BrowserThread::DB:
         thread_to_stop = &db_thread_;
         break;
-      case BrowserThread::WEBKIT:
+      case BrowserThread::WEBKIT_DEPRECATED:
         // Special case as WebKitThread is a separate
         // type.  |thread_to_stop| is not used in this case.
         break;
@@ -484,7 +484,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     if (parts_.get())
       parts_->PreStopThread(id);
 
-    if (id == BrowserThread::WEBKIT) {
+    if (id == BrowserThread::WEBKIT_DEPRECATED) {
       webkit_thread_.reset();
     } else if (thread_to_stop) {
       thread_to_stop->reset();

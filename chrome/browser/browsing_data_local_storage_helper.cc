@@ -65,7 +65,7 @@ void BrowsingDataLocalStorageHelper::StartFetching(
   is_fetching_ = true;
   completion_callback_ = callback;
   BrowserThread::PostTask(
-      BrowserThread::WEBKIT, FROM_HERE,
+      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
       base::Bind(
           &BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread,
           this));
@@ -80,14 +80,14 @@ void BrowsingDataLocalStorageHelper::DeleteLocalStorageFile(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
-      BrowserThread::WEBKIT, FROM_HERE,
+      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
       base::Bind(
           &BrowsingDataLocalStorageHelper::DeleteLocalStorageFileInWebKitThread,
           this, file_path));
 }
 
 void BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   file_util::FileEnumerator file_enumerator(
       profile_->GetWebKitContext()->data_path().Append(
           DOMStorageContext::kLocalStorageDirectory),
@@ -138,7 +138,7 @@ void BrowsingDataLocalStorageHelper::NotifyInUIThread() {
 
 void BrowsingDataLocalStorageHelper::DeleteLocalStorageFileInWebKitThread(
     const FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   profile_->GetWebKitContext()->dom_storage_context()->DeleteLocalStorageFile(
       file_path);
 }
@@ -187,7 +187,7 @@ void CannedBrowsingDataLocalStorageHelper::StartFetching(
   is_fetching_ = true;
   completion_callback_ = callback;
   BrowserThread::PostTask(
-      BrowserThread::WEBKIT, FROM_HERE,
+      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
       base::Bind(&CannedBrowsingDataLocalStorageHelper::
           ConvertPendingInfoInWebKitThread, this));
 }

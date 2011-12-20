@@ -9,17 +9,17 @@ namespace content {
 
 TEST(WebKitThreadTest, DISABLED_ExposedInBrowserThread) {
   int* null = NULL;  // Help the template system out.
-  EXPECT_FALSE(BrowserThread::DeleteSoon(BrowserThread::WEBKIT,
+  EXPECT_FALSE(BrowserThread::DeleteSoon(BrowserThread::WEBKIT_DEPRECATED,
                                          FROM_HERE, null));
   {
     WebKitThread thread;
-    EXPECT_FALSE(BrowserThread::DeleteSoon(BrowserThread::WEBKIT,
+    EXPECT_FALSE(BrowserThread::DeleteSoon(BrowserThread::WEBKIT_DEPRECATED,
                                            FROM_HERE, null));
     thread.Initialize();
-    EXPECT_TRUE(BrowserThread::DeleteSoon(BrowserThread::WEBKIT,
+    EXPECT_TRUE(BrowserThread::DeleteSoon(BrowserThread::WEBKIT_DEPRECATED,
                                           FROM_HERE, null));
   }
-  EXPECT_FALSE(BrowserThread::DeleteSoon(BrowserThread::WEBKIT,
+  EXPECT_FALSE(BrowserThread::DeleteSoon(BrowserThread::WEBKIT_DEPRECATED,
                                          FROM_HERE, null));
 }
 

@@ -24,7 +24,7 @@ const GURL* DOMStorageMessageFilter::storage_event_url_ = NULL;
 DOMStorageMessageFilter::
 ScopedStorageEventContext::ScopedStorageEventContext(
     DOMStorageMessageFilter* dispatcher_message_filter, const GURL* url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   DCHECK(!storage_event_message_filter);
   DCHECK(!storage_event_url_);
   storage_event_message_filter = dispatcher_message_filter;
@@ -35,7 +35,7 @@ ScopedStorageEventContext::ScopedStorageEventContext(
 
 DOMStorageMessageFilter::
 ScopedStorageEventContext::~ScopedStorageEventContext() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   DCHECK(storage_event_message_filter);
   DCHECK(storage_event_url_);
   storage_event_message_filter = NULL;
@@ -63,7 +63,7 @@ void DOMStorageMessageFilter::OnChannelConnected(int32 peer_pid) {
 void DOMStorageMessageFilter::DispatchStorageEvent(const NullableString16& key,
     const NullableString16& old_value, const NullableString16& new_value,
     const string16& origin, const GURL& url, bool is_local_storage) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   DCHECK(is_local_storage);  // Only LocalStorage is implemented right now.
   DCHECK(storage_event_message_filter);
   DOMStorageMsg_Event_Params params;
@@ -107,13 +107,13 @@ void DOMStorageMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {
   if (IPC_MESSAGE_CLASS(message) == DOMStorageMsgStart)
-    *thread = BrowserThread::WEBKIT;
+    *thread = BrowserThread::WEBKIT_DEPRECATED;
 }
 
 void DOMStorageMessageFilter::OnStorageAreaId(int64 namespace_id,
                                               const string16& origin,
                                               int64* storage_area_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
 
   DOMStorageNamespace* storage_namespace =
       Context()->GetStorageNamespace(namespace_id, true);
@@ -127,7 +127,7 @@ void DOMStorageMessageFilter::OnStorageAreaId(int64 namespace_id,
 
 void DOMStorageMessageFilter::OnLength(int64 storage_area_id,
                                        unsigned* length) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
     *length = 0;
@@ -138,7 +138,7 @@ void DOMStorageMessageFilter::OnLength(int64 storage_area_id,
 
 void DOMStorageMessageFilter::OnKey(int64 storage_area_id, unsigned index,
                                     NullableString16* key) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
     *key = NullableString16(true);
@@ -150,7 +150,7 @@ void DOMStorageMessageFilter::OnKey(int64 storage_area_id, unsigned index,
 void DOMStorageMessageFilter::OnGetItem(int64 storage_area_id,
                                         const string16& key,
                                         NullableString16* value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
     *value = NullableString16(true);
@@ -163,7 +163,7 @@ void DOMStorageMessageFilter::OnSetItem(
     int64 storage_area_id, const string16& key,
     const string16& value, const GURL& url,
     WebKit::WebStorageArea::Result* result, NullableString16* old_value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
     *old_value = NullableString16(true);
@@ -178,7 +178,7 @@ void DOMStorageMessageFilter::OnSetItem(
 void DOMStorageMessageFilter::OnRemoveItem(
     int64 storage_area_id, const string16& key, const GURL& url,
     NullableString16* old_value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
     *old_value = NullableString16(true);
@@ -191,7 +191,7 @@ void DOMStorageMessageFilter::OnRemoveItem(
 
 void DOMStorageMessageFilter::OnClear(int64 storage_area_id, const GURL& url,
                                       bool* something_cleared) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
     *something_cleared = false;

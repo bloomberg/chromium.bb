@@ -171,7 +171,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearLocalState) {
   // Make sure we wait until the destructor has run.
   scoped_refptr<base::ThreadTestHelper> helper(
       new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::WEBKIT)));
+          BrowserThread::GetMessageLoopProxyForThread(
+              BrowserThread::WEBKIT_DEPRECATED)));
   ASSERT_TRUE(helper->Run());
 
   ASSERT_TRUE(file_util::DirectoryExists(protected_path));
@@ -218,7 +219,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearSessionOnlyDatabases) {
   // Make sure we wait until the destructor has run.
   scoped_refptr<base::ThreadTestHelper> helper(
       new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::WEBKIT)));
+          BrowserThread::GetMessageLoopProxyForThread(
+              BrowserThread::WEBKIT_DEPRECATED)));
   ASSERT_TRUE(helper->Run());
 
   EXPECT_TRUE(file_util::DirectoryExists(normal_path));
@@ -267,7 +269,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, SaveSessionState) {
   // Make sure we wait until the destructor has run.
   scoped_refptr<base::ThreadTestHelper> helper(
       new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::WEBKIT)));
+          BrowserThread::GetMessageLoopProxyForThread(
+              BrowserThread::WEBKIT_DEPRECATED)));
   ASSERT_TRUE(helper->Run());
 
   // No data was cleared because of SaveSessionState.

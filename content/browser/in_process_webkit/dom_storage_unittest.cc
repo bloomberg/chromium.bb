@@ -17,7 +17,7 @@ class DOMStorageTest : public testing::Test {
  public:
   DOMStorageTest()
       : message_loop_(MessageLoop::TYPE_IO),
-        webkit_thread_(BrowserThread::WEBKIT, &message_loop_) {
+        webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &message_loop_) {
   }
 
  protected:

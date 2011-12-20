@@ -1265,7 +1265,8 @@ void ProfileImpl::CreateQuotaManagerAndClients() {
   webkit_context_ = new WebKitContext(
         IsOffTheRecord(), GetPath(), GetExtensionSpecialStoragePolicy(),
         clear_local_state_on_exit_, quota_manager_->proxy(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::WEBKIT));
+        BrowserThread::GetMessageLoopProxyForThread(
+            BrowserThread::WEBKIT_DEPRECATED));
   appcache_service_ = new ChromeAppCacheService(quota_manager_->proxy());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

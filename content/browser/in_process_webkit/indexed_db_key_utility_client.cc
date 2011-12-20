@@ -196,7 +196,7 @@ KeyUtilityClientImpl::~KeyUtilityClientImpl() {
 }
 
 void KeyUtilityClientImpl::StartUtilityProcess() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   DCHECK(state_ == STATE_UNINITIALIZED);
 
   GetRDHAndStartUtilityProcess();
@@ -209,7 +209,7 @@ void KeyUtilityClientImpl::CreateIDBKeysFromSerializedValuesAndKeyPath(
     const std::vector<content::SerializedScriptValue>& values,
     const string16& key_path,
     std::vector<IndexedDBKey>* keys) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   if (state_ == STATE_SHUTDOWN) {
     keys->clear();
     return;
@@ -230,7 +230,7 @@ content::SerializedScriptValue
         const IndexedDBKey& key,
         const content::SerializedScriptValue& value,
         const string16& key_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   if (state_ == STATE_SHUTDOWN)
     return content::SerializedScriptValue();
 

@@ -248,7 +248,8 @@ void ShellBrowserContext::CreateQuotaManagerAndClients() {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   webkit_context_ = new WebKitContext(
       IsOffTheRecord(), GetPath(), NULL, false, quota_manager_->proxy(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::WEBKIT));
+      BrowserThread::GetMessageLoopProxyForThread(
+          BrowserThread::WEBKIT_DEPRECATED));
   appcache_service_ = new ChromeAppCacheService(quota_manager_->proxy());
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy;
   BrowserThread::PostTask(

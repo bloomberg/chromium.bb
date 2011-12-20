@@ -251,7 +251,7 @@ class ThreadWatcherTest : public ::testing::Test {
       : setup_complete_(&lock_),
         initialized_(false) {
     webkit_thread_.reset(new content::TestBrowserThread(
-        BrowserThread::WEBKIT));
+        BrowserThread::WEBKIT_DEPRECATED));
     io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
     watchdog_thread_.reset(new WatchDogThread());
     webkit_thread_->Start();
@@ -329,7 +329,7 @@ const TimeDelta ThreadWatcherTest::kUnresponsiveTime =
 const BrowserThread::ID ThreadWatcherTest::io_thread_id = BrowserThread::IO;
 const std::string ThreadWatcherTest::io_thread_name = "IO";
 const BrowserThread::ID ThreadWatcherTest::webkit_thread_id =
-    BrowserThread::WEBKIT;
+    BrowserThread::WEBKIT_DEPRECATED;
 const std::string ThreadWatcherTest::webkit_thread_name = "WEBKIT";
 const std::string ThreadWatcherTest::crash_on_hang_seconds = "24";
 const std::string ThreadWatcherTest::crash_on_hang_threads = "IO,UI";
