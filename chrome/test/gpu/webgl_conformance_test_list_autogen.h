@@ -9,6 +9,16 @@
 #ifndef CHROME_TEST_GPU_WEBGL_CONFORMANCE_TEST_LIST_AUTOGEN_H_
 #define CHROME_TEST_GPU_WEBGL_CONFORMANCE_TEST_LIST_AUTOGEN_H_
 
+#if (defined(OS_LINUX)) && !defined(NDEBUG)
+#define MAYBE_conformance_more_conformance_quickCheckAPI_B1 DISABLED_conformance_more_conformance_quickCheckAPI_B1
+#elif !defined(MAYBE_conformance_more_conformance_quickCheckAPI_B1)
+#define MAYBE_conformance_more_conformance_quickCheckAPI_B1 conformance_more_conformance_quickCheckAPI_B1
+#endif
+#if (defined(OS_LINUX)) && !defined(NDEBUG)
+#define MAYBE_conformance_more_conformance_quickCheckAPI_G_I DISABLED_conformance_more_conformance_quickCheckAPI_G_I
+#elif !defined(MAYBE_conformance_more_conformance_quickCheckAPI_G_I)
+#define MAYBE_conformance_more_conformance_quickCheckAPI_G_I conformance_more_conformance_quickCheckAPI_G_I
+#endif
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_conformance_more_functions_readPixelsBadArgs FAILS_conformance_more_functions_readPixelsBadArgs
 #elif !defined(MAYBE_conformance_more_functions_readPixelsBadArgs)
@@ -32,7 +42,7 @@ CONFORMANCE_TEST(conformance_more_conformance_methods,
   "conformance/more/conformance/methods.html");
 CONFORMANCE_TEST(conformance_more_conformance_quickCheckAPI_A,
   "conformance/more/conformance/quickCheckAPI-A.html");
-CONFORMANCE_TEST(conformance_more_conformance_quickCheckAPI_B1,
+CONFORMANCE_TEST(MAYBE_conformance_more_conformance_quickCheckAPI_B1,
   "conformance/more/conformance/quickCheckAPI-B1.html");
 CONFORMANCE_TEST(conformance_more_conformance_quickCheckAPI_B2,
   "conformance/more/conformance/quickCheckAPI-B2.html");
@@ -44,7 +54,7 @@ CONFORMANCE_TEST(conformance_more_conformance_quickCheckAPI_C,
   "conformance/more/conformance/quickCheckAPI-C.html");
 CONFORMANCE_TEST(conformance_more_conformance_quickCheckAPI_D_G,
   "conformance/more/conformance/quickCheckAPI-D_G.html");
-CONFORMANCE_TEST(conformance_more_conformance_quickCheckAPI_G_I,
+CONFORMANCE_TEST(MAYBE_conformance_more_conformance_quickCheckAPI_G_I,
   "conformance/more/conformance/quickCheckAPI-G_I.html");
 CONFORMANCE_TEST(conformance_more_conformance_quickCheckAPI_L_S,
   "conformance/more/conformance/quickCheckAPI-L_S.html");

@@ -20,6 +20,10 @@
 // TIMEOUT TESTS
 // -----------------------------------------------------------------------------
 
+// The following two tests TIMEOUT on GPU Linux Tests (dbg)(1), with ATI card.
+WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_B1 = TIMEOUT
+WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_G_I = TIMEOUT
+
 // -----------------------------------------------------------------------------
 // FAILING TESTS
 // -----------------------------------------------------------------------------
