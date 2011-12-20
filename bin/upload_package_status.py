@@ -7,8 +7,6 @@
 
 import optparse
 import os
-import pickle
-import re
 import sys
 
 import gdata.spreadsheet.service
@@ -62,7 +60,8 @@ class Uploader(object):
 
   def LoginDocsWithEmailPassword(self):
     """Set up and connect the Google Doc client using email/password."""
-    gd_client = gdata.spreadsheet.service.SpreadsheetsService()
+    gd_client = gdata_lib.RetrySpreadsheetsService()
+
     gd_client.source = self.SOURCE
     gd_client.email = self._creds.user
     gd_client.password = self._creds.password

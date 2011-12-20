@@ -207,7 +207,8 @@ class SpreadsheetComm(object):
 
   def _LoginWithUserPassword(self, user, password):
     """Set up and connect the Google Doc client using email/password."""
-    gd_client = gdata.spreadsheet.service.SpreadsheetsService()
+    gd_client = gdata_lib.RetrySpreadsheetsService()
+
     gd_client.source = 'Sync Package Status'
     gd_client.email = user
     gd_client.password = password
@@ -393,6 +394,11 @@ class Syncer(object):
           self._CreateRowIssue(rowIx, row, new_issue)
         elif not new_issue and old_issue_id:
           self._ClearRowIssue(rowIx, row)
+        else:
+          # Nothing to do for this package.
+          reason = 'already has issue' if old_issue_id else 'no upgrade needed'
+          oper.Notice('Nothing to do for row %d, package %r: %s.' %
+                      (rowIx, row[COL_PACKAGE], reason))
       except SyncError:
         errors.append('Error processing row %d, pkg: %r.  See above.' %
                       (rowIx, row[COL_PACKAGE]))

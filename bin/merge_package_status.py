@@ -24,7 +24,6 @@ COL_OVERLAY = utable.UpgradeTable.COL_OVERLAY
 ID_COLS = [COL_PACKAGE, COL_SLOT]
 
 oper = operation.Operation('merge_package_status')
-oper.verbose = True # Without verbose Info messages don't show up.
 
 # A bit of hard-coding with knowledge of how cros targets work.
 CHROMEOS_TARGET_ORDER = ['chromeos', 'chromeos-dev', 'chromeos-test']
@@ -154,10 +153,10 @@ def MergeTables(tables):
   # Merge each table one by one.
   csv_table = tables[0]
   if len(tables) > 1:
-    print "Merging tables into one."
+    oper.Notice('Merging tables into one.')
     for tmp_table in tables[1:]:
-      print("Merging '%s' and '%s'." %
-            (csv_table.GetName(), tmp_table.GetName()))
+      oper.Notice('Merging "%s" and "%s".' %
+                  (csv_table.GetName(), tmp_table.GetName()))
       csv_table.MergeTable(tmp_table, ID_COLS,
                            merge_rules=merge_rules, allow_new_columns=True)
 
@@ -172,7 +171,7 @@ def LoadAndMergeTables(args):
   """Load all csv files in |args| into one merged table.  Return table."""
   tables = []
   for arg in args:
-    print "Loading csv table from '%s'." % arg
+    oper.Notice('Loading csv table from "%s".' % arg)
     tables.append(LoadTable(arg))
 
   return MergeTables(tables)
@@ -180,16 +179,16 @@ def LoadAndMergeTables(args):
 # Used by upload_package_status.
 def FinalizeTable(csv_table):
   """Process the table to prepare it for upload to online spreadsheet."""
-  print "Processing final table to prepare it for upload."
+  oper.Notice('Processing final table to prepare it for upload.')
 
   col_ver = utable.UpgradeTable.COL_CURRENT_VER
   col_arm_ver = utable.UpgradeTable.GetColumnName(col_ver, 'arm')
   col_x86_ver = utable.UpgradeTable.GetColumnName(col_ver, 'x86')
 
   # Insert new columns
-  col_cros_target = "ChromeOS Root Target"
-  col_host_target = "Host Root Target"
-  col_cmp_arch = "Comparing arm vs x86 Versions"
+  col_cros_target = 'ChromeOS Root Target'
+  col_host_target = 'Host Root Target'
+  col_cmp_arch = 'Comparing arm vs x86 Versions'
   csv_table.AppendColumn(col_cros_target)
   csv_table.AppendColumn(col_host_target)
   csv_table.AppendColumn(col_cmp_arch)
@@ -202,7 +201,7 @@ def FinalizeTable(csv_table):
     matching_rows = csv_table.GetRowsByValue(id_values)
     if len(matching_rows) > 1:
       for mr in matching_rows:
-        mr[COL_PACKAGE] = mr[COL_PACKAGE] + ":" + mr[COL_SLOT]
+        mr[COL_PACKAGE] += ':' + mr[COL_SLOT]
 
     # Split target column into cros_target and host_target columns
     target_str = row.get(COL_TARGET, None)
@@ -220,22 +219,22 @@ def FinalizeTable(csv_table):
       row[col_host_target] = ' '.join(host_targets)
 
     # Compare x86 vs. arm version, add result to col_cmp_arch.
-    x86_ver = row.get(col_x86_ver, None)
-    arm_ver = row.get(col_arm_ver, None)
+    x86_ver = row.get(col_x86_ver)
+    arm_ver = row.get(col_arm_ver)
     if x86_ver and arm_ver:
       if x86_ver != arm_ver:
-        row[col_cmp_arch] = "different"
-      elif x86_ver:
-        row[col_cmp_arch] = "same"
+        row[col_cmp_arch] = 'different'
+      else:
+        row[col_cmp_arch] = 'same'
 
 def WriteTable(csv_table, outpath):
   """Write |csv_table| out to |outpath| as csv."""
   try:
     fh = open(outpath, 'w')
     csv_table.WriteCSV(fh)
-    print "Wrote merged table to '%s'" % outpath
+    oper.Notice('Wrote merged table to "%s"' % outpath)
   except IOError as ex:
-    print "Unable to open %s for write: %s" % (outpath, str(ex))
+    oper.Error('Unable to open %s for write: %s' % (outpath, ex))
     raise
 
 def main():
@@ -244,17 +243,17 @@ def main():
   parser = optparse.OptionParser(usage=usage)
   parser.add_option('--out', dest='outpath', type='string',
                     action='store', default=None,
-                    help="File to write merged results to")
+                    help='File to write merged results to')
 
   (options, args) = parser.parse_args()
 
   # Check required options
   if not options.outpath:
     parser.print_help()
-    oper.Die("The --out option is required.")
-  if len(args) < 1:
+    oper.Die('The --out option is required.')
+  if not args:
     parser.print_help()
-    oper.Die("At least one input_csv_file is required.")
+    oper.Die('At least one input_csv_file is required.')
 
   csv_table = LoadAndMergeTables(args)
 

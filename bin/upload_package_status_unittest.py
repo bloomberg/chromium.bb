@@ -8,9 +8,7 @@
 
 import exceptions
 import re
-import shutil
 import sys
-import tempfile
 import unittest
 
 import gdata.spreadsheet.service as gdata_ss
@@ -22,7 +20,7 @@ import chromite.lib.table as tablelib
 import merge_package_status as mps
 import upload_package_status as ups
 
-# pylint: disable=W0212,R0904,E1120
+# pylint: disable=W0212,R0904,E1120,E1101
 
 def _WriteCredsFile(tmpfile_path, email, password):
   with open(tmpfile_path, 'w') as tmpfile:
@@ -161,10 +159,9 @@ class UploaderTest(test_lib.MoxTestCase):
     self.mox.ReplayAll()
 
     # Verify
-    self._StartCapturingOutput()
-    loaded_table = ups.LoadTable(csv)
-    self.assertEquals(loaded_table, 'loaded_table')
-    self._StopCapturingOutput()
+    with self.OutputCapturer():
+      loaded_table = ups.LoadTable(csv)
+      self.assertEquals(loaded_table, 'loaded_table')
 
   def testLoginDocsWithEmailPassword(self):
     mocked_uploader = self._MockUploader()
@@ -221,10 +218,9 @@ class UploaderTest(test_lib.MoxTestCase):
     self.mox.ReplayAll()
 
     # Verify
-    self._StartCapturingOutput()
-    ups.Uploader.Upload(mocked_uploader, ss_key, ws_name)
-    self.mox.VerifyAll()
-    self._StopCapturingOutput()
+    with self.OutputCapturer():
+      ups.Uploader.Upload(mocked_uploader, ss_key, ws_name)
+      self.mox.VerifyAll()
 
   def testUploadChangedRows(self):
     mocked_gd_client = self._MockGdClient()
@@ -260,10 +256,9 @@ class UploaderTest(test_lib.MoxTestCase):
     self.mox.ReplayAll()
 
     # Verify
-    self._StartCapturingOutput()
-    ups.Uploader._UploadChangedRows(mocked_uploader)
-    self.mox.VerifyAll()
-    self._StopCapturingOutput()
+    with self.OutputCapturer():
+      ups.Uploader._UploadChangedRows(mocked_uploader)
+      self.mox.VerifyAll()
 
   def testDeleteOldRows(self):
     mocked_gd_client = self._MockGdClient()
@@ -289,10 +284,9 @@ class UploaderTest(test_lib.MoxTestCase):
     self.mox.ReplayAll()
 
     # Verify
-    self._StartCapturingOutput()
-    ups.Uploader._DeleteOldRows(mocked_uploader)
-    self.mox.VerifyAll()
-    self._StopCapturingOutput()
+    with self.OutputCapturer():
+      ups.Uploader._DeleteOldRows(mocked_uploader)
+      self.mox.VerifyAll()
 
 class MainTest(test_lib.MoxTestCase):
   """Test argument handling at the main method level."""
@@ -300,14 +294,6 @@ class MainTest(test_lib.MoxTestCase):
   def setUp(self):
     """Setup for all tests in this class."""
     mox.MoxTestBase.setUp(self)
-
-  def _AssertOutputEndsInError(self, stdout):
-    """Return True if |stdout| ends with an error message."""
-    lastline = [ln for ln in stdout.split('\n') if ln][-1]
-    self.assertTrue(self._IsErrorLine(lastline),
-                    msg="expected output to end in error line, but "
-                    "_IsErrorLine says this line is not an error:\n%s" %
-                    lastline)
 
   def _PrepareArgv(self, *args):
     """Prepare command line for calling upload_package_status.main"""
@@ -318,37 +304,29 @@ class MainTest(test_lib.MoxTestCase):
     """Test that --help is functioning"""
     self._PrepareArgv("--help")
 
-    # Capture stdout/stderr so it can be verified later
-    self._StartCapturingOutput()
-
-    # Running with --help should exit with code==0
-    try:
-      ups.main()
-    except exceptions.SystemExit, e:
-      self.assertEquals(e.args[0], 0)
+    with self.OutputCapturer() as output:
+      # Running with --help should exit with code==0
+      try:
+        ups.main()
+      except exceptions.SystemExit, e:
+        self.assertEquals(e.args[0], 0)
 
     # Verify that a message beginning with "Usage: " was printed
-    (stdout, _stderr) = self._RetrieveCapturedOutput()
-    self._StopCapturingOutput()
+    stdout = output.GetStdout()
     self.assertTrue(stdout.startswith("Usage: "))
 
   def testMissingCSV(self):
     """Test that running without a csv file argument exits with an error."""
     self._PrepareArgv("")
 
-    # Capture stdout/stderr so it can be verified later
-    self._StartCapturingOutput()
+    with self.OutputCapturer():
+      # Running without a package should exit with code!=0
+      try:
+        ups.main()
+      except exceptions.SystemExit, e:
+        self.assertNotEquals(e.args[0], 0)
 
-    # Running without a package should exit with code!=0
-    try:
-      ups.main()
-    except exceptions.SystemExit, e:
-      self.assertNotEquals(e.args[0], 0)
-
-    # Verify that output ends in an error message.
-    (stdout, _stderr) = self._RetrieveCapturedOutput()
-    self._StopCapturingOutput()
-    self._AssertOutputEndsInError(stdout)
+    self.AssertOutputEndsInError(check_stdout=True)
 
   def testMainEmailPassword(self):
     """Verify that running main with email/password follows flow."""

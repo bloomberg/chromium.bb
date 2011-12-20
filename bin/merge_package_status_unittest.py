@@ -168,11 +168,12 @@ class MergeTest(test_lib.TestCase):
     # Minor patch to main table for this test.
     self._table.GetRowByIndex(2)[self.COL_VER_arm] = '1.2.4'
 
-    path1 = self._CreateTmpCsvFile(self._table)
-    path2 = self._CreateTmpCsvFile(table_2)
+    with self.OutputCapturer():
+      path1 = self._CreateTmpCsvFile(self._table)
+      path2 = self._CreateTmpCsvFile(table_2)
 
-    combined_table1 = mps.MergeTables([self._table, table_2])
-    combined_table2 = mps.LoadAndMergeTables([path1, path2])
+      combined_table1 = mps.MergeTables([self._table, table_2])
+      combined_table2 = mps.LoadAndMergeTables([path1, path2])
 
     final_row0 = {mps.COL_PACKAGE: 'dev/bar',
                   mps.COL_SLOT: '0',
@@ -211,7 +212,8 @@ class MergeTest(test_lib.TestCase):
     self.assertEquals(3, self._table.GetNumRows())
     self.assertEquals(len(self.COLUMNS), self._table.GetNumColumns())
 
-    mps.FinalizeTable(self._table)
+    with self.OutputCapturer():
+      mps.FinalizeTable(self._table)
 
     self.assertEquals(3, self._table.GetNumRows())
     self.assertEquals(len(self.COLUMNS) + 3, self._table.GetNumColumns())
@@ -229,62 +231,53 @@ class MainTest(test_lib.MoxTestCase):
 
   def _PrepareArgv(self, *args):
     """Prepare command line for calling merge_package_status.main"""
-    sys.argv = [ re.sub("_unittest", "", sys.argv[0]) ]
+    sys.argv = [ re.sub('_unittest', '', sys.argv[0]) ]
     sys.argv.extend(args)
 
   def testHelp(self):
     """Test that --help is functioning"""
-    self._PrepareArgv("--help")
+    self._PrepareArgv('--help')
 
-    # Capture stdout/stderr so it can be verified later
-    self._StartCapturingOutput()
-
-    # Running with --help should exit with code==0
-    try:
-      mps.main()
-    except exceptions.SystemExit, e:
-      self.assertEquals(e.args[0], 0)
+    with self.OutputCapturer() as output:
+      # Running with --help should exit with code==0
+      try:
+        mps.main()
+      except exceptions.SystemExit, e:
+        self.assertEquals(e.args[0], 0)
 
     # Verify that a message beginning with "Usage: " was printed
-    (stdout, _stderr) = self._RetrieveCapturedOutput()
-    self._StopCapturingOutput()
-    self.assertTrue(stdout.startswith("Usage: "))
+    stdout = output.GetStdout()
+    self.assertTrue(stdout.startswith('Usage: '),
+                    msg='Expected output starting with "Usage: " but got:\n%s' %
+                    stdout)
 
   def testMissingOut(self):
     """Test that running without --out exits with an error."""
-    self._PrepareArgv("")
+    self._PrepareArgv('')
 
-    # Capture stdout/stderr so it can be verified later
-    self._StartCapturingOutput()
-
-    # Running without --out should exit with code!=0
-    try:
-      mps.main()
-    except exceptions.SystemExit, e:
-      self.assertNotEquals(e.args[0], 0)
+    with self.OutputCapturer():
+      # Running without --out should exit with code!=0
+      try:
+        mps.main()
+      except exceptions.SystemExit, e:
+        self.assertNotEquals(e.args[0], 0)
 
     # Verify that output ends in error.
-    (stdout, _stderr) = self._RetrieveCapturedOutput()
-    self._StopCapturingOutput()
-    self._AssertOutputEndsInError(stdout)
+    self.AssertOutputEndsInError()
 
   def testMissingPackage(self):
     """Test that running without a package argument exits with an error."""
-    self._PrepareArgv("--out=any-out")
+    self._PrepareArgv('--out=any-out')
 
-    # Capture stdout/stderr so it can be verified later
-    self._StartCapturingOutput()
-
-    # Running without a package should exit with code!=0
-    try:
-      mps.main()
-    except exceptions.SystemExit, e:
-      self.assertNotEquals(e.args[0], 0)
+    with self.OutputCapturer():
+      # Running without a package should exit with code!=0
+      try:
+        mps.main()
+      except exceptions.SystemExit, e:
+        self.assertNotEquals(e.args[0], 0)
 
     # Verify that output ends in error.
-    (stdout, _stderr) = self._RetrieveCapturedOutput()
-    self._StopCapturingOutput()
-    self._AssertOutputEndsInError(stdout)
+    self.AssertOutputEndsInError()
 
   def testMain(self):
     """Verify that running main method runs expected functons.
@@ -297,7 +290,7 @@ class MainTest(test_lib.MoxTestCase):
     mps.WriteTable(mox.Regex(r'csv_table'), 'any-out')
     self.mox.ReplayAll()
 
-    self._PrepareArgv("--out=any-out", "any-package")
+    self._PrepareArgv('--out=any-out', 'any-package')
     mps.main()
     self.mox.VerifyAll()
 

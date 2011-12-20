@@ -227,16 +227,16 @@ class SpreadsheetCommTest(mox.MoxTestBase):
 
   def testLoginWithUserPassword(self):
     mocked_scomm = self.mox.CreateMock(sps.SpreadsheetComm)
-    mocked_gdclient = self.mox.CreateMock(gd_service.SpreadsheetsService)
+    mocked_gdclient = self.mox.CreateMock(gdata_lib.RetrySpreadsheetsService)
 
-    self.mox.StubOutWithMock(gd_service.SpreadsheetsService, '__new__')
+    self.mox.StubOutWithMock(gdata_lib.RetrySpreadsheetsService, '__new__')
 
     user = 'dude'
     password = 'shhh'
 
     # Replay script
-    gd_service.SpreadsheetsService.__new__(
-      gd_service.SpreadsheetsService).AndReturn(mocked_gdclient)
+    gdata_lib.RetrySpreadsheetsService.__new__(
+        gdata_lib.RetrySpreadsheetsService).AndReturn(mocked_gdclient)
     mocked_gdclient.ProgrammaticLogin()
     self.mox.ReplayAll()
 
@@ -380,7 +380,7 @@ class SpreadsheetCommTest(mox.MoxTestBase):
     self.mox.VerifyAll()
 
 
-class SyncerTest(mox.MoxTestBase):
+class SyncerTest(test_lib.MoxTestCase):
 
   col_amd64 = utable.UpgradeTable.GetColumnName(utable.UpgradeTable.COL_STATE,
                                                 'amd64')
@@ -498,8 +498,9 @@ class SyncerTest(mox.MoxTestBase):
     self.mox.ReplayAll()
 
     # Verify
-    self.assertRaises(SystemExit, sps.Syncer.SetTeamFilter,
-                      mocked_syncer, teamarg)
+    with self.OutputCapturer():
+      self.assertRaises(SystemExit, sps.Syncer.SetTeamFilter,
+                        mocked_syncer, teamarg)
     self.mox.VerifyAll()
 
   def testSetOwnerFilter(self):
@@ -787,8 +788,9 @@ class SyncerTest(mox.MoxTestBase):
     self.mox.ReplayAll()
 
     # Verify
-    self.assertRaises(RuntimeError, sps.Syncer._GenIssueForRow,
-                      mocked_syncer, row)
+    with self.OutputCapturer():
+      self.assertRaises(RuntimeError, sps.Syncer._GenIssueForRow,
+                        mocked_syncer, row)
     self.mox.VerifyAll()
 
   def testGenIssueForRowNoUpgrade(self):
@@ -825,7 +827,8 @@ class SyncerTest(mox.MoxTestBase):
     self.mox.ReplayAll()
 
     # Verify
-    result = sps.Syncer._GetRowTrackerId(mocked_syncer, row)
+    with self.OutputCapturer():
+      result = sps.Syncer._GetRowTrackerId(mocked_syncer, row)
     self.mox.VerifyAll()
     self.assertEquals(321, result)
 
@@ -839,7 +842,8 @@ class SyncerTest(mox.MoxTestBase):
     self.mox.ReplayAll()
 
     # Verify
-    sps.Syncer._CreateRowIssue(mocked_syncer, 5, row, 'some_issue')
+    with self.OutputCapturer():
+      sps.Syncer._CreateRowIssue(mocked_syncer, 5, row, 'some_issue')
     self.mox.VerifyAll()
 
   def testCreateRowIssue(self):
@@ -865,7 +869,8 @@ class SyncerTest(mox.MoxTestBase):
     self.mox.ReplayAll()
 
     # Verify
-    sps.Syncer._CreateRowIssue(mocked_syncer, row_ix, row, issue)
+    with self.OutputCapturer():
+      sps.Syncer._CreateRowIssue(mocked_syncer, row_ix, row, issue)
     self.mox.VerifyAll()
 
   def testGenSSLinkToIssue(self):
@@ -896,7 +901,8 @@ class SyncerTest(mox.MoxTestBase):
     self.mox.ReplayAll()
 
     # Verify
-    sps.Syncer._ClearRowIssue(mocked_syncer, row_ix, row)
+    with self.OutputCapturer():
+      sps.Syncer._ClearRowIssue(mocked_syncer, row_ix, row)
     self.mox.VerifyAll()
 
   def testClearRowIssuePretend(self):
@@ -913,7 +919,8 @@ class SyncerTest(mox.MoxTestBase):
     self.mox.ReplayAll()
 
     # Verify
-    sps.Syncer._ClearRowIssue(mocked_syncer, row_ix, row)
+    with self.OutputCapturer():
+      sps.Syncer._ClearRowIssue(mocked_syncer, row_ix, row)
     self.mox.VerifyAll()
 
 
