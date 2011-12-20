@@ -22,7 +22,7 @@ WebPageScreen::WebPageScreen() {}
 WebPageScreen::~WebPageScreen() {}
 
 ///////////////////////////////////////////////////////////////////////////////
-// WebPageScreen, TabContentsDelegate implementation:
+// WebPageScreen, content::WebContentsDelegate implementation:
 
 bool WebPageScreen::ShouldAddNavigationToHistory(
     const history::HistoryAddPageArgs& add_page_args,

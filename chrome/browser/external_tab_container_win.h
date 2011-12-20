@@ -19,11 +19,11 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/views/widget/native_widget_win.h"
 
@@ -46,8 +46,8 @@ class ViewProp;
 // This class serves as the container window for an external tab.
 // An external tab is a Chrome tab that is meant to displayed in an
 // external process. This class provides the FocusManger needed by the
-// TabContents as well as an implementation of TabContentsDelegate.
-class ExternalTabContainer : public TabContentsDelegate,
+// TabContents as well as an implementation of content::WebContentsDelegate.
+class ExternalTabContainer : public content::WebContentsDelegate,
                              public TabContentsObserver,
                              public content::NotificationObserver,
                              public views::NativeWidgetWin,
@@ -118,7 +118,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   // hosts the given tab window.
   static ExternalTabContainer* GetContainerForTab(HWND tab_window);
 
-  // Overridden from TabContentsDelegate:
+  // Overridden from content::WebContentsDelegate:
 
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params) OVERRIDE;

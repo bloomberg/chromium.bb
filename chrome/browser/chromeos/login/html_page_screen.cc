@@ -62,7 +62,7 @@ void HTMLPageScreen::Refresh() {
   Profile* profile = ProfileManager::GetDefaultProfile();
   view()->InitDOM(profile,
                   SiteInstance::CreateSiteInstanceForURL(profile, url));
-  view()->SetTabContentsDelegate(this);
+  view()->SetWebContentsDelegate(this);
   view()->LoadURL(url);
 }
 

@@ -15,12 +15,15 @@
 #include "ui/views/view.h"
 
 class Profile;
-class TabContentsDelegate;
+
+namespace content {
+class WebContentsDelegate;
+}
 
 namespace views {
 class Label;
 class Throbber;
-}  // namespace views
+}
 
 namespace chromeos {
 
@@ -66,7 +69,7 @@ class WebPageDomView : public DOMView {
   WebPageDomView() : page_delegate_(NULL) {}
 
   // Set delegate that will be notified about tab contents changes.
-  void SetTabContentsDelegate(TabContentsDelegate* delegate);
+  void SetWebContentsDelegate(content::WebContentsDelegate* delegate);
 
   // Set delegate that will be notified about page events.
   void set_web_page_delegate(WebPageDelegate* delegate) {
@@ -98,11 +101,11 @@ class WebPageView : public views::View {
   void InitDOM(Profile* profile, SiteInstance* site_instance);
 
   // Loads the given URL into the page.
-  // You must have previously called Init() and SetTabContentsDelegate.
+  // You must have previously called Init() and SetWebContentsDelegate.
   void LoadURL(const GURL& url);
 
   // Sets delegate for tab contents changes.
-  void SetTabContentsDelegate(TabContentsDelegate* delegate);
+  void SetWebContentsDelegate(content::WebContentsDelegate* delegate);
 
   // Set delegate that will be notified about page events.
   void SetWebPageDelegate(WebPageDelegate* delegate);

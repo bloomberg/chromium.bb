@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -16,137 +16,137 @@
 #include "ui/gfx/rect.h"
 #include "webkit/glue/web_intent_data.h"
 
-using content::DownloadItem;
+namespace content {
 
-TabContentsDelegate::TabContentsDelegate() {
+WebContentsDelegate::WebContentsDelegate() {
 }
 
-TabContents* TabContentsDelegate::OpenURLFromTab(TabContents* source,
+TabContents* WebContentsDelegate::OpenURLFromTab(TabContents* source,
                                                  const OpenURLParams& params) {
   return NULL;
 }
 
-void TabContentsDelegate::NavigationStateChanged(const TabContents* source,
+void WebContentsDelegate::NavigationStateChanged(const TabContents* source,
                                                  unsigned changed_flags) {
 }
 
-void TabContentsDelegate::AddNavigationHeaders(const GURL& url,
+void WebContentsDelegate::AddNavigationHeaders(const GURL& url,
                                                std::string* headers) {
 }
 
-void TabContentsDelegate::AddNewContents(TabContents* source,
+void WebContentsDelegate::AddNewContents(TabContents* source,
                                          TabContents* new_contents,
                                          WindowOpenDisposition disposition,
                                          const gfx::Rect& initial_pos,
                                          bool user_gesture) {
 }
 
-void TabContentsDelegate::ActivateContents(TabContents* contents) {
+void WebContentsDelegate::ActivateContents(TabContents* contents) {
 }
 
-void TabContentsDelegate::DeactivateContents(TabContents* contents) {
+void WebContentsDelegate::DeactivateContents(TabContents* contents) {
 }
 
-void TabContentsDelegate::LoadingStateChanged(TabContents* source) {
+void WebContentsDelegate::LoadingStateChanged(TabContents* source) {
 }
 
-void TabContentsDelegate::LoadProgressChanged(double progress) {
+void WebContentsDelegate::LoadProgressChanged(double progress) {
 }
 
-void TabContentsDelegate::CloseContents(TabContents* source) {
+void WebContentsDelegate::CloseContents(TabContents* source) {
 }
 
-void TabContentsDelegate::SwappedOut(TabContents* source) {
+void WebContentsDelegate::SwappedOut(TabContents* source) {
 }
 
-void TabContentsDelegate::MoveContents(TabContents* source,
+void WebContentsDelegate::MoveContents(TabContents* source,
                                        const gfx::Rect& pos) {
 }
 
-void TabContentsDelegate::DetachContents(TabContents* source) {
+void WebContentsDelegate::DetachContents(TabContents* source) {
 }
 
-bool TabContentsDelegate::IsPopupOrPanel(const TabContents* source) const {
+bool WebContentsDelegate::IsPopupOrPanel(const TabContents* source) const {
   return false;
 }
 
-void TabContentsDelegate::UpdateTargetURL(TabContents* source,
+void WebContentsDelegate::UpdateTargetURL(TabContents* source,
                                           int32 page_id,
                                           const GURL& url) {
 }
 
-void TabContentsDelegate::ContentsMouseEvent(
+void WebContentsDelegate::ContentsMouseEvent(
     TabContents* source, const gfx::Point& location, bool motion) {
 }
 
-void TabContentsDelegate::ContentsZoomChange(bool zoom_in) { }
+void WebContentsDelegate::ContentsZoomChange(bool zoom_in) { }
 
-bool TabContentsDelegate::IsApplication() const { return false; }
+bool WebContentsDelegate::IsApplication() const { return false; }
 
-void TabContentsDelegate::ConvertContentsToApplication(TabContents* source) { }
+void WebContentsDelegate::ConvertContentsToApplication(TabContents* source) { }
 
-bool TabContentsDelegate::CanReloadContents(TabContents* source) const {
+bool WebContentsDelegate::CanReloadContents(TabContents* source) const {
   return true;
 }
 
-void TabContentsDelegate::WillRunBeforeUnloadConfirm() {
+void WebContentsDelegate::WillRunBeforeUnloadConfirm() {
 }
 
-bool TabContentsDelegate::ShouldSuppressDialogs() {
+bool WebContentsDelegate::ShouldSuppressDialogs() {
   return false;
 }
 
-void TabContentsDelegate::BeforeUnloadFired(TabContents* tab,
+void WebContentsDelegate::BeforeUnloadFired(TabContents* tab,
                                             bool proceed,
                                             bool* proceed_to_fire_unload) {
   *proceed_to_fire_unload = true;
 }
 
-void TabContentsDelegate::SetFocusToLocationBar(bool select_all) {}
+void WebContentsDelegate::SetFocusToLocationBar(bool select_all) {}
 
-bool TabContentsDelegate::ShouldFocusPageAfterCrash() {
+bool WebContentsDelegate::ShouldFocusPageAfterCrash() {
   return true;
 }
 
-void TabContentsDelegate::RenderWidgetShowing() {}
+void WebContentsDelegate::RenderWidgetShowing() {}
 
-bool TabContentsDelegate::TakeFocus(bool reverse) {
+bool WebContentsDelegate::TakeFocus(bool reverse) {
   return false;
 }
 
-void TabContentsDelegate::LostCapture() {
+void WebContentsDelegate::LostCapture() {
 }
 
-void TabContentsDelegate::TabContentsFocused(TabContents* tab_content) {
+void WebContentsDelegate::TabContentsFocused(TabContents* tab_content) {
 }
 
-int TabContentsDelegate::GetExtraRenderViewHeight() const {
+int WebContentsDelegate::GetExtraRenderViewHeight() const {
   return 0;
 }
 
-bool TabContentsDelegate::CanDownload(TabContents* source, int request_id) {
+bool WebContentsDelegate::CanDownload(TabContents* source, int request_id) {
   return true;
 }
 
-void TabContentsDelegate::OnStartDownload(TabContents* source,
+void WebContentsDelegate::OnStartDownload(TabContents* source,
                                           DownloadItem* download) {
 }
 
-bool TabContentsDelegate::HandleContextMenu(const ContextMenuParams& params) {
+bool WebContentsDelegate::HandleContextMenu(const ContextMenuParams& params) {
   return false;
 }
 
-bool TabContentsDelegate::ExecuteContextMenuCommand(int command) {
+bool WebContentsDelegate::ExecuteContextMenuCommand(int command) {
   return false;
 }
 
-void TabContentsDelegate::ShowPageInfo(content::BrowserContext* browser_context,
+void WebContentsDelegate::ShowPageInfo(content::BrowserContext* browser_context,
                                        const GURL& url,
                                        const NavigationEntry::SSLStatus& ssl,
                                        bool show_history) {
 }
 
-void TabContentsDelegate::ViewSourceForTab(TabContents* source,
+void WebContentsDelegate::ViewSourceForTab(TabContents* source,
                                            const GURL& page_url) {
   // Fall back implementation based entirely on the view-source scheme.
   // It suffers from http://crbug.com/523 and that is why browser overrides
@@ -158,7 +158,7 @@ void TabContentsDelegate::ViewSourceForTab(TabContents* source,
                                        content::PAGE_TRANSITION_LINK, false));
 }
 
-void TabContentsDelegate::ViewSourceForFrame(TabContents* source,
+void WebContentsDelegate::ViewSourceForFrame(TabContents* source,
                                              const GURL& frame_url,
                                              const std::string& content_state) {
   // Same as ViewSourceForTab, but for given subframe.
@@ -169,66 +169,66 @@ void TabContentsDelegate::ViewSourceForFrame(TabContents* source,
                                        content::PAGE_TRANSITION_LINK, false));
 }
 
-bool TabContentsDelegate::PreHandleKeyboardEvent(
+bool WebContentsDelegate::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {
   return false;
 }
 
-void TabContentsDelegate::HandleKeyboardEvent(
+void WebContentsDelegate::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
 }
 
-void TabContentsDelegate::HandleMouseDown() {
+void WebContentsDelegate::HandleMouseDown() {
 }
 
-void TabContentsDelegate::HandleMouseUp() {
+void WebContentsDelegate::HandleMouseUp() {
 }
 
-void TabContentsDelegate::HandleMouseActivate() {
+void WebContentsDelegate::HandleMouseActivate() {
 }
 
-void TabContentsDelegate::DragEnded() {
+void WebContentsDelegate::DragEnded() {
 }
 
-void TabContentsDelegate::ShowRepostFormWarningDialog(
+void WebContentsDelegate::ShowRepostFormWarningDialog(
     TabContents* tab_contents) {
 }
 
-bool TabContentsDelegate::OnGoToEntryOffset(int offset) {
+bool WebContentsDelegate::OnGoToEntryOffset(int offset) {
   return true;
 }
 
-bool TabContentsDelegate::ShouldAddNavigationToHistory(
+bool WebContentsDelegate::ShouldAddNavigationToHistory(
     const history::HistoryAddPageArgs& add_page_args,
     content::NavigationType navigation_type) {
   return true;
 }
 
-gfx::NativeWindow TabContentsDelegate::GetFrameNativeWindow() {
+gfx::NativeWindow WebContentsDelegate::GetFrameNativeWindow() {
   return NULL;
 }
 
-void TabContentsDelegate::TabContentsCreated(TabContents* new_contents) {
+void WebContentsDelegate::TabContentsCreated(TabContents* new_contents) {
 }
 
-void TabContentsDelegate::ContentRestrictionsChanged(TabContents* source) {
+void WebContentsDelegate::ContentRestrictionsChanged(TabContents* source) {
 }
 
-void TabContentsDelegate::RendererUnresponsive(TabContents* source) {
+void WebContentsDelegate::RendererUnresponsive(TabContents* source) {
 }
 
-void TabContentsDelegate::RendererResponsive(TabContents* source) {
+void WebContentsDelegate::RendererResponsive(TabContents* source) {
 }
 
-void TabContentsDelegate::WorkerCrashed(TabContents* source) {
+void WebContentsDelegate::WorkerCrashed(TabContents* source) {
 }
 
-void TabContentsDelegate::DidNavigateMainFramePostCommit(
+void WebContentsDelegate::DidNavigateMainFramePostCommit(
     TabContents* tab) {
 }
 
-void TabContentsDelegate::DidNavigateToPendingEntry(TabContents* tab) {
+void WebContentsDelegate::DidNavigateToPendingEntry(TabContents* tab) {
 }
 
 // A stubbed-out version of JavaScriptDialogCreator that doesn't do anything.
@@ -265,36 +265,36 @@ class JavaScriptDialogCreatorStub : public content::JavaScriptDialogCreator {
 };
 
 content::JavaScriptDialogCreator*
-TabContentsDelegate::GetJavaScriptDialogCreator() {
+WebContentsDelegate::GetJavaScriptDialogCreator() {
   return JavaScriptDialogCreatorStub::GetInstance();
 }
 
-void TabContentsDelegate::RunFileChooser(
+void WebContentsDelegate::RunFileChooser(
   TabContents* tab, const content::FileChooserParams& params) {
 }
 
-void TabContentsDelegate::EnumerateDirectory(TabContents* tab, int request_id,
+void WebContentsDelegate::EnumerateDirectory(TabContents* tab, int request_id,
                                              const FilePath& path) {
 }
 
-void TabContentsDelegate::ToggleFullscreenModeForTab(TabContents* tab,
+void WebContentsDelegate::ToggleFullscreenModeForTab(TabContents* tab,
                                                      bool enter_fullscreen) {
 }
 
-bool TabContentsDelegate::IsFullscreenForTab(const TabContents* tab) const {
+bool WebContentsDelegate::IsFullscreenForTab(const TabContents* tab) const {
   return false;
 }
 
-void TabContentsDelegate::JSOutOfMemory(TabContents* tab) {
+void WebContentsDelegate::JSOutOfMemory(TabContents* tab) {
 }
 
-void TabContentsDelegate::RegisterProtocolHandler(TabContents* tab,
+void WebContentsDelegate::RegisterProtocolHandler(TabContents* tab,
                                                   const std::string& protocol,
                                                   const GURL& url,
                                                   const string16& title) {
 }
 
-void TabContentsDelegate::RegisterIntentHandler(TabContents* tab,
+void WebContentsDelegate::RegisterIntentHandler(TabContents* tab,
                                                 const string16& action,
                                                 const string16& type,
                                                 const string16& href,
@@ -302,7 +302,7 @@ void TabContentsDelegate::RegisterIntentHandler(TabContents* tab,
                                                 const string16& disposition) {
 }
 
-void TabContentsDelegate::WebIntentDispatch(
+void WebContentsDelegate::WebIntentDispatch(
     TabContents* tab,
     content::IntentsHost* intents_host) {
   // The caller passes this method ownership of the |intents_host|, but this
@@ -310,7 +310,7 @@ void TabContentsDelegate::WebIntentDispatch(
   delete intents_host;
 }
 
-void TabContentsDelegate::FindReply(TabContents* tab,
+void WebContentsDelegate::FindReply(TabContents* tab,
                                     int request_id,
                                     int number_of_matches,
                                     const gfx::Rect& selection_rect,
@@ -318,24 +318,27 @@ void TabContentsDelegate::FindReply(TabContents* tab,
                                     bool final_update) {
 }
 
-void TabContentsDelegate::CrashedPlugin(TabContents* tab,
+void WebContentsDelegate::CrashedPlugin(TabContents* tab,
                                         const FilePath& plugin_path) {
 }
 
-void TabContentsDelegate::UpdatePreferredSize(TabContents* tab,
+void WebContentsDelegate::UpdatePreferredSize(TabContents* tab,
                                               const gfx::Size& pref_size) {
 }
 
-void TabContentsDelegate::WebUISend(TabContents* tab,
+void WebContentsDelegate::WebUISend(TabContents* tab,
                                     const GURL& source_url,
                                     const std::string& name,
                                     const base::ListValue& args) {
 }
 
-void TabContentsDelegate::RequestToLockMouse(TabContents* tab) {
+void WebContentsDelegate::RequestToLockMouse(TabContents* tab) {
 }
 
-TabContentsDelegate::~TabContentsDelegate() {
+void WebContentsDelegate::LostMouseLock() {
+}
+
+WebContentsDelegate::~WebContentsDelegate() {
   while (!attached_contents_.empty()) {
     TabContents* tab_contents = *attached_contents_.begin();
     tab_contents->SetDelegate(NULL);
@@ -343,19 +346,18 @@ TabContentsDelegate::~TabContentsDelegate() {
   DCHECK(attached_contents_.empty());
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CONTENTS_DELEGATE_DESTROYED,
-      content::Source<TabContentsDelegate>(this),
+      content::Source<WebContentsDelegate>(this),
       content::NotificationService::NoDetails());
 }
 
-void TabContentsDelegate::Attach(TabContents* tab_contents) {
+void WebContentsDelegate::Attach(TabContents* tab_contents) {
   DCHECK(attached_contents_.find(tab_contents) == attached_contents_.end());
   attached_contents_.insert(tab_contents);
 }
 
-void TabContentsDelegate::Detach(TabContents* tab_contents) {
+void WebContentsDelegate::Detach(TabContents* tab_contents) {
   DCHECK(attached_contents_.find(tab_contents) != attached_contents_.end());
   attached_contents_.erase(tab_contents);
 }
 
-void TabContentsDelegate::LostMouseLock() {
-}
+}  // namespace content

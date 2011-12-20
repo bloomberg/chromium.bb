@@ -7,16 +7,16 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 class Profile;
 
-// This class implements (and mostly ignores) most of TabContentsDelegate for
-// use in an HTML dialog.  Subclasses need only override a few methods instead
-// of the everything from TabContentsDelegate; this way, implementations on
-// all platforms behave consistently.
-
-class HtmlDialogTabContentsDelegate : public TabContentsDelegate {
+// This class implements (and mostly ignores) most of
+// content::WebContentsDelegate for use in an HTML dialog. Subclasses need only
+// override a few methods instead of the everything from
+// content::WebContentsDelegate; this way, implementations on all platforms
+// behave consistently.
+class HtmlDialogTabContentsDelegate : public content::WebContentsDelegate {
  public:
   // Profile must be non-NULL.
   explicit HtmlDialogTabContentsDelegate(Profile* profile);
@@ -31,7 +31,7 @@ class HtmlDialogTabContentsDelegate : public TabContentsDelegate {
   // calls to profile() return NULL.
   void Detach();
 
-  // TabContentsDelegate declarations.
+  // content::WebContentsDelegate declarations.
 
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params) OVERRIDE;

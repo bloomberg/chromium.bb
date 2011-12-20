@@ -343,7 +343,7 @@ ExternalTabContainer*
   return tab_container;
 }
 ////////////////////////////////////////////////////////////////////////////////
-// ExternalTabContainer, TabContentsDelegate implementation:
+// ExternalTabContainer, content::WebContentsDelegate implementation:
 
 TabContents* ExternalTabContainer::OpenURLFromTab(TabContents* source,
                                                   const OpenURLParams& params) {

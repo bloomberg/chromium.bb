@@ -105,7 +105,7 @@ void BlockedContentContainer::Clear() {
   blocked_contents_.clear();
 }
 
-// Overridden from TabContentsDelegate:
+// Overridden from content::WebContentsDelegate:
 
 TabContents* BlockedContentContainer::OpenURLFromTab(
     TabContents* source,

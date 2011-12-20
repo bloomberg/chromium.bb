@@ -17,9 +17,9 @@
 #include "base/timer.h"
 #include "chrome/browser/ui/gtk/tabs/drag_data.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "ui/base/x/x11_util.h"
 
 class DraggedViewGtk;
@@ -29,7 +29,7 @@ class TabStripModel;
 class TabContentsWrapper;
 
 class DraggedTabControllerGtk : public content::NotificationObserver,
-                                public TabContentsDelegate {
+                                public content::WebContentsDelegate {
  public:
   // |source_tabstrip| is the tabstrip where the tabs reside before any
   // dragging occurs. |source_tab| is the tab that is under the mouse pointer
@@ -84,7 +84,7 @@ class DraggedTabControllerGtk : public content::NotificationObserver,
 
   DraggedTabData InitDraggedTabData(TabGtk* tab);
 
-  // Overridden from TabContentsDelegate:
+  // Overridden from content::WebContentsDelegate:
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params) OVERRIDE;
   virtual void NavigationStateChanged(const TabContents* source,

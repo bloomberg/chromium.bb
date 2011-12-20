@@ -11,12 +11,11 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/title_updated_details.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/notification_details.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
 
 HistoryTabHelper::HistoryTabHelper(TabContents* tab_contents)

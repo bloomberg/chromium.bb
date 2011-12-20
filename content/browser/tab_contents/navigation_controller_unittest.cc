@@ -16,17 +16,17 @@
 //  #include "chrome/browser/sessions/session_service_factory.h"
 //  #include "chrome/browser/sessions/session_service_test_helper.h"
 //  #include "chrome/browser/sessions/session_types.h"
-#include "content/browser/site_instance.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
+#include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/test/test_browser_context.h"
 #include "content/test/test_notification_tracker.h"
 #include "net/base/net_util.h"
@@ -52,9 +52,9 @@ void RegisterForAllNavNotifications(TestNotificationTracker* tracker,
                      content::Source<NavigationController>(controller));
 }
 
-class TestTabContentsDelegate : public TabContentsDelegate {
+class TestWebContentsDelegate : public content::WebContentsDelegate {
  public:
-  explicit TestTabContentsDelegate() :
+  explicit TestWebContentsDelegate() :
       navigation_state_change_count_(0) {}
 
   int navigation_state_change_count() {
@@ -377,8 +377,8 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
   TestNotificationTracker notifications;
   RegisterForAllNavNotifications(&notifications, &controller());
 
-  // Set a TabContentsDelegate to listen for state changes.
-  scoped_ptr<TestTabContentsDelegate> delegate(new TestTabContentsDelegate());
+  // Set a WebContentsDelegate to listen for state changes.
+  scoped_ptr<TestWebContentsDelegate> delegate(new TestWebContentsDelegate());
   EXPECT_FALSE(contents()->GetDelegate());
   contents()->SetDelegate(delegate.get());
 
@@ -415,8 +415,8 @@ TEST_F(NavigationControllerTest, LoadURL_AbortCancelsPending) {
   TestNotificationTracker notifications;
   RegisterForAllNavNotifications(&notifications, &controller());
 
-  // Set a TabContentsDelegate to listen for state changes.
-  scoped_ptr<TestTabContentsDelegate> delegate(new TestTabContentsDelegate());
+  // Set a WebContentsDelegate to listen for state changes.
+  scoped_ptr<TestWebContentsDelegate> delegate(new TestWebContentsDelegate());
   EXPECT_FALSE(contents()->GetDelegate());
   contents()->SetDelegate(delegate.get());
 
@@ -463,8 +463,8 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
   TestNotificationTracker notifications;
   RegisterForAllNavNotifications(&notifications, &controller());
 
-  // Set a TabContentsDelegate to listen for state changes.
-  scoped_ptr<TestTabContentsDelegate> delegate(new TestTabContentsDelegate());
+  // Set a WebContentsDelegate to listen for state changes.
+  scoped_ptr<TestWebContentsDelegate> delegate(new TestWebContentsDelegate());
   EXPECT_FALSE(contents()->GetDelegate());
   contents()->SetDelegate(delegate.get());
 

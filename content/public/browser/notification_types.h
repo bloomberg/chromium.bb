@@ -204,8 +204,8 @@ enum NotificationType {
 
   // Tabs --------------------------------------------------------------------
 
-  // Sent when a tab is added to a TabContentsDelegate. The source is the
-  // TabContentsDelegate and the details is the added TabContents.
+  // Sent when a tab is added to a WebContentsDelegate. The source is the
+  // WebContentsDelegate and the details is the added TabContents.
   NOTIFICATION_TAB_ADDED,
 
   // This notification is sent after a tab has been appended to the tab_strip.
@@ -258,8 +258,8 @@ enum NotificationType {
   // Source<TabContents>.
   NOTIFICATION_TAB_CONTENTS_DESTROYED,
 
-  // This notification is sent when a TabContentsDelegate is being
-  // destroyed. The source is a Source<TabContentsDelegate>.
+  // This notification is sent when a WebContentsDelegate is being
+  // destroyed. The source is a Source<WebContentsDelegate>.
   // TODO(sky): Remove when we figure out http://crbug.com/107172.
   NOTIFICATION_TAB_CONTENTS_DELEGATE_DESTROYED,
 

@@ -65,7 +65,7 @@ class RenderViewHostDelegateViewHelper : public content::NotificationObserver {
   TabContents* GetCreatedWindow(int route_id);
 
   // These methods are meant to be called from TabContentsView implementations.
-  // They take care of notifying the TabContentsDelegate.
+  // They take care of notifying the WebContentsDelegate.
   TabContents* CreateNewWindowFromTabContents(
       TabContents* tab_contents,
       int route_id,

@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/tab_first_render_watcher.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -34,7 +34,7 @@ namespace chromeos {
 // DOMView.
 class WebUILoginView : public views::WidgetDelegateView,
                        public StatusAreaButton::Delegate,
-                       public TabContentsDelegate,
+                       public content::WebContentsDelegate,
                        public TabFirstRenderWatcher::Delegate {
  public:
   static const int kStatusAreaCornerPadding;
@@ -107,7 +107,7 @@ class WebUILoginView : public views::WidgetDelegateView,
   // Map type for the accelerator-to-identifier map.
   typedef std::map<ui::Accelerator, std::string> AccelMap;
 
-  // Overridden from TabContentsDelegate.
+  // Overridden from content::WebContentsDelegate.
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;

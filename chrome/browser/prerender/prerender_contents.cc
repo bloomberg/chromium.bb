@@ -28,9 +28,9 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "ui/gfx/rect.h"
 
 #if defined(OS_MACOSX)
@@ -85,7 +85,7 @@ PrerenderContents::PendingPrerenderData::PendingPrerenderData(
 // TabContentsDelegateImpl -----------------------------------------------------
 
 class PrerenderContents::TabContentsDelegateImpl
-    : public TabContentsDelegate {
+    : public content::WebContentsDelegate {
  public:
   explicit TabContentsDelegateImpl(PrerenderContents* prerender_contents) :
       prerender_contents_(prerender_contents) {
@@ -104,7 +104,7 @@ class PrerenderContents::TabContentsDelegateImpl
     return NULL;
   }
 
-  // TabContentsDelegate implementation:
+  // content::WebContentsDelegate implementation:
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
       content::NavigationType navigation_type) OVERRIDE {

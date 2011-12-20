@@ -206,7 +206,7 @@ bool HtmlDialogView::HandleContextMenu(const ContextMenuParams& params) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsDelegate implementation:
+// content::WebContentsDelegate implementation:
 
 void HtmlDialogView::MoveContents(TabContents* source, const gfx::Rect& pos) {
   // The contained web page wishes to resize itself. We let it do this because

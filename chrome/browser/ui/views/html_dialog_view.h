@@ -78,7 +78,7 @@ class HtmlDialogView
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
 
-  // Overridden from TabContentsDelegate:
+  // Overridden from content::WebContentsDelegate:
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) OVERRIDE;
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event)
       OVERRIDE;

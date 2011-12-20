@@ -87,8 +87,8 @@ void WizardWebPageViewTabContents::DocumentLoadedInFrame(
 ///////////////////////////////////////////////////////////////////////////////
 // WebPageDomView, public:
 
-void WebPageDomView::SetTabContentsDelegate(
-    TabContentsDelegate* delegate) {
+void WebPageDomView::SetWebContentsDelegate(
+    content::WebContentsDelegate* delegate) {
   dom_contents_->tab_contents()->SetDelegate(delegate);
 }
 
@@ -134,9 +134,9 @@ void WebPageView::LoadURL(const GURL& url) {
   dom_view()->LoadURL(url);
 }
 
-void WebPageView::SetTabContentsDelegate(
-    TabContentsDelegate* delegate) {
-  dom_view()->SetTabContentsDelegate(delegate);
+void WebPageView::SetWebContentsDelegate(
+    content::WebContentsDelegate* delegate) {
+  dom_view()->SetWebContentsDelegate(delegate);
 }
 
 void WebPageView::SetWebPageDelegate(WebPageDelegate* delegate) {

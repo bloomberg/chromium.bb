@@ -19,9 +19,9 @@
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/web_drag_dest_gtk.h"
 #include "content/browser/tab_contents/web_drag_source_gtk.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "ui/base/gtk/gtk_expanded_container.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -59,7 +59,7 @@ gboolean OnMouseScroll(GtkWidget* widget, GdkEventScroll* event,
     return FALSE;
   }
 
-  TabContentsDelegate* delegate = tab_contents->GetDelegate();
+  content::WebContentsDelegate* delegate = tab_contents->GetDelegate();
   if (!delegate)
     return FALSE;
 

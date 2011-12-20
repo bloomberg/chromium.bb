@@ -9,12 +9,12 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 // TabContentsDelegate implementation. This owns the TabContents supplied to the
 // constructor.
 class InstantUnloadHandler::TabContentsDelegateImpl
-    : public TabContentsDelegate {
+    : public content::WebContentsDelegate {
  public:
   TabContentsDelegateImpl(InstantUnloadHandler* handler,
                           TabContentsWrapper* tab_contents,
@@ -38,7 +38,7 @@ class InstantUnloadHandler::TabContentsDelegateImpl
   // See description above field.
   int index() const { return index_; }
 
-  // TabContentsDelegate overrides:
+  // content::WebContentsDelegate overrides:
   virtual void WillRunBeforeUnloadConfirm() {
     handler_->Activate(this);
   }

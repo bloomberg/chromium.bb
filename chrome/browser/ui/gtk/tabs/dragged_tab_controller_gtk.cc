@@ -153,7 +153,7 @@ DraggedTabData DraggedTabControllerGtk::InitDraggedTabData(TabGtk* tab) {
   // otherwise our dragged_contents() may be replaced and subsequently
   // collected/destroyed while the drag is in process, leading to
   // nasty crashes.
-  TabContentsDelegate* original_delegate =
+  content::WebContentsDelegate* original_delegate =
       contents->tab_contents()->GetDelegate();
   contents->tab_contents()->SetDelegate(this);
 
@@ -167,7 +167,7 @@ DraggedTabData DraggedTabControllerGtk::InitDraggedTabData(TabGtk* tab) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DraggedTabControllerGtk, TabContentsDelegate implementation:
+// DraggedTabControllerGtk, content::WebContentsDelegate implementation:
 
 TabContents* DraggedTabControllerGtk::OpenURLFromTab(
     TabContents* source,

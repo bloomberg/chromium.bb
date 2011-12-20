@@ -38,7 +38,6 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -46,6 +45,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "net/http/http_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -163,7 +163,7 @@ void InstantLoader::FrameLoadObserver::Observe(
 // TabContentsDelegateImpl -----------------------------------------------------
 
 class InstantLoader::TabContentsDelegateImpl
-    : public TabContentsDelegate,
+    : public content::WebContentsDelegate,
       public CoreTabHelperDelegate,
       public ConstrainedWindowTabHelperDelegate,
       public content::NotificationObserver,
@@ -199,7 +199,7 @@ class InstantLoader::TabContentsDelegateImpl
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // TabContentsDelegate:
+  // content::WebContentsDelegate:
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) OVERRIDE;
   virtual void AddNavigationHeaders(const GURL& url,

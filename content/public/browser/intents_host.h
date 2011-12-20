@@ -19,7 +19,7 @@ namespace content {
 // This class is the coordinator for dispatching web intents and seeing that
 // return messages are sent to the correct invoking context. The TabContents
 // for the invoking context will create one of these for each intent and hand
-// ownership to the client TabContentsDelegate code. The TabContentsDelegate
+// ownership to the client WebContentsDelegate code. The WebContentsDelegate
 // code can then read the intent data, create UI to pick the service, and
 // create a new context for that service. At that point, it should call
 // DispatchIntent, which will connect the object to the new context.

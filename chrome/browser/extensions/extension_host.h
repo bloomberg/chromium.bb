@@ -13,10 +13,10 @@
 #include "base/perftimer.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "content/browser/javascript_dialogs.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/view_type.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -41,7 +41,7 @@ class RenderProcessHost;
 // It handles setting up the renderer process, if needed, with special
 // privileges available to extensions.  It may have a view to be shown in the
 // browser UI, or it may be hidden.
-class ExtensionHost : public TabContentsDelegate,
+class ExtensionHost : public content::WebContentsDelegate,
                       public TabContentsObserver,
                       public ExtensionFunctionDispatcher::Delegate,
                       public content::NotificationObserver {
@@ -116,7 +116,7 @@ class ExtensionHost : public TabContentsDelegate,
   virtual void DocumentLoadedInFrame(int64 frame_id) OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
 
-  // TabContentsDelegate
+  // content::WebContentsDelegate
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params) OVERRIDE;
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,

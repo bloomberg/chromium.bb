@@ -80,7 +80,7 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
   virtual void Refresh() OVERRIDE;
   virtual RegistrationView* AllocateView() OVERRIDE;
 
-  // TabContentsDelegate implementation:
+  // content::WebContentsDelegate implementation:
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params) OVERRIDE;
 

@@ -38,7 +38,7 @@ class BalloonViewHost : public ::BalloonViewHost {
                                const MessageCallback& callback);
 
  private:
-  // TabContentsDelegate
+  // WebContentsDelegate
   virtual void WebUISend(TabContents* tab,
                          const GURL& source_url,
                          const std::string& name,

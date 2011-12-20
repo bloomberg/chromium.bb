@@ -26,8 +26,8 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "webkit/fileapi/file_system_types.h"
 
 using content::BrowserThread;

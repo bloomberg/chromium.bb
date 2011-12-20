@@ -16,14 +16,14 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 class TabContents;
 class TabContentsWrapper;
 
 // Takes ownership of TabContents that are unrequested popup windows.
 class BlockedContentContainer : public BlockedContentTabHelperDelegate,
-                                public TabContentsDelegate {
+                                public content::WebContentsDelegate {
  public:
   // Creates a container for a certain TabContents:
   explicit BlockedContentContainer(TabContentsWrapper* owner);
@@ -54,7 +54,7 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
   virtual TabContentsWrapper* GetConstrainingContentsWrapper(
       TabContentsWrapper* source) OVERRIDE;
 
-  // Overridden from TabContentsDelegate:
+  // Overridden from content::WebContentsDelegate:
 
   // Forwards OpenURLFromTab to our |owner_|.
   virtual TabContents* OpenURLFromTab(TabContents* source,

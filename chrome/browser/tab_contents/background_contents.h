@@ -9,17 +9,17 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class Profile;
 
 // This class consumes TabContents. It can host a renderer, but does not
 // have any visible display.
-class BackgroundContents : public TabContentsDelegate,
+class BackgroundContents : public content::WebContentsDelegate,
                            public TabContentsObserver,
                            public content::NotificationObserver {
  public:
@@ -45,7 +45,7 @@ class BackgroundContents : public TabContentsDelegate,
   TabContents* tab_contents() { return tab_contents_.get(); }
   virtual const GURL& GetURL() const;
 
-  // TabContentsDelegate implementation:
+  // content::WebContentsDelegate implementation:
   virtual void CloseContents(TabContents* source) OVERRIDE;
   virtual bool ShouldSuppressDialogs() OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(TabContents* tab) OVERRIDE;

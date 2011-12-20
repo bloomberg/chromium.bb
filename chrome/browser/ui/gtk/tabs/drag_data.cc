@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/gtk/tabs/tab_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 DraggedTabData::DraggedTabData()
     : tab_(NULL),
@@ -21,7 +21,7 @@ DraggedTabData::DraggedTabData()
 
 DraggedTabData::DraggedTabData(TabGtk* tab,
                                TabContentsWrapper* contents,
-                               TabContentsDelegate* original_delegate,
+                               content::WebContentsDelegate* original_delegate,
                                int source_model_index,
                                bool pinned,
                                bool mini)

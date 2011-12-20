@@ -6,15 +6,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class MockTabContentsDelegate : public TabContentsDelegate {
+class MockWebContentsDelegate : public content::WebContentsDelegate {
  public:
-  virtual ~MockTabContentsDelegate() {}
+  virtual ~MockWebContentsDelegate() {}
 
   virtual TabContents* OpenURLFromTab(TabContents* source,
                               const OpenURLParams& params) OVERRIDE {
@@ -52,7 +52,7 @@ class MockTabContentsDelegate : public TabContentsDelegate {
                                const GURL& url) {}
 };
 
-TEST(TabContentsDelegateTest, UnregisterInDestructor) {
+TEST(WebContentsDelegateTest, UnregisterInDestructor) {
   MessageLoop loop(MessageLoop::TYPE_UI);
   TestBrowserContext browser_context;
 
@@ -63,7 +63,7 @@ TEST(TabContentsDelegateTest, UnregisterInDestructor) {
   EXPECT_TRUE(contents_a->GetDelegate() == NULL);
   EXPECT_TRUE(contents_b->GetDelegate() == NULL);
 
-  scoped_ptr<MockTabContentsDelegate> delegate(new MockTabContentsDelegate());
+  scoped_ptr<MockWebContentsDelegate> delegate(new MockWebContentsDelegate());
 
   // Setting a delegate should work correctly.
   contents_a->SetDelegate(delegate.get());

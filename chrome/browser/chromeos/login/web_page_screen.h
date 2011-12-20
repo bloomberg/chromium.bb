@@ -10,12 +10,12 @@
 #include "base/compiler_specific.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 namespace chromeos {
 
 // Base class for wizard screen that holds web page.
-class WebPageScreen : public TabContentsDelegate {
+class WebPageScreen : public content::WebContentsDelegate {
  public:
   explicit WebPageScreen();
   virtual ~WebPageScreen();
@@ -24,7 +24,7 @@ class WebPageScreen : public TabContentsDelegate {
   virtual void CloseScreen(ScreenObserver::ExitCodes code) = 0;
 
  protected:
-  // TabContentsDelegate implementation:
+  // content::WebContentsDelegate implementation:
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
       content::NavigationType navigation_type) OVERRIDE;

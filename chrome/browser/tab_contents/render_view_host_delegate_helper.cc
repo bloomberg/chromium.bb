@@ -9,8 +9,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
-#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/character_encoding.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_webkit_preferences.h"
@@ -36,11 +36,11 @@
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/common/view_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/common/view_messages.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "net/base/network_change_notifier.h"
 
 namespace {

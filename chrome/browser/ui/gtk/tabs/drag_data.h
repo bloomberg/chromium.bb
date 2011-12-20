@@ -11,16 +11,19 @@
 #include "base/basictypes.h"
 
 class TabContents;
-class TabContentsDelegate;
 class TabContentsWrapper;
 class TabGtk;
+
+namespace content {
+class WebContentsDelegate;
+}
 
 struct DraggedTabData {
  public:
   DraggedTabData();
   DraggedTabData(TabGtk* tab,
                  TabContentsWrapper* contents,
-                 TabContentsDelegate* original_delegate,
+                 content::WebContentsDelegate* original_delegate,
                  int source_model_index,
                  bool pinned,
                  bool mini);
@@ -36,10 +39,10 @@ struct DraggedTabData {
   // The TabContents being dragged.
   TabContentsWrapper* contents_;
 
-  // The original TabContentsDelegate of |contents|, before it was detached
-  // from the browser window. We store this so that we can forward certain
-  // delegate notifications back to it if we can't handle them locally.
-  TabContentsDelegate* original_delegate_;
+  // The original content::WebContentsDelegate of |contents|, before it was
+  // detached from the browser window. We store this so that we can forward
+  // certain delegate notifications back to it if we can't handle them locally.
+  content::WebContentsDelegate* original_delegate_;
 
   // This is the index of |contents| in |source_tabstrip_| when the drag
   // began. This is used to restore the previous state if the drag is aborted.

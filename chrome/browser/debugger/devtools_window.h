@@ -11,11 +11,11 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_frontend_host_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 namespace IPC {
 class Message;
@@ -38,7 +38,7 @@ class DevToolsClientHost;
 }
 
 class DevToolsWindow : private content::NotificationObserver,
-                       private TabContentsDelegate,
+                       private content::WebContentsDelegate,
                        private content::DevToolsFrontendHostDelegate {
  public:
   static const char kDevToolsApp[];
@@ -97,7 +97,7 @@ class DevToolsWindow : private content::NotificationObserver,
   void AddDevToolsExtensionsToClient();
   void CallClientFunction(const string16& function_name,
                           const base::Value& arg);
-  // Overridden from TabContentsDelegate.
+  // Overridden from content::WebContentsDelegate.
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params) OVERRIDE;
   virtual void AddNewContents(TabContents* source,

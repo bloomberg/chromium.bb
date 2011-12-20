@@ -13,9 +13,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 class Balloon;
 class Browser;
@@ -25,7 +25,7 @@ namespace IPC {
 class Message;
 }
 
-class BalloonHost : public TabContentsDelegate,
+class BalloonHost : public content::WebContentsDelegate,
                     public TabContentsObserver,
                     public ExtensionFunctionDispatcher::Delegate {
  public:
@@ -58,7 +58,7 @@ class BalloonHost : public TabContentsDelegate,
   scoped_ptr<TabContents> tab_contents_;
 
  private:
-  // TabContentsDelegate implementation:
+  // content::WebContentsDelegate implementation:
   virtual void CloseContents(TabContents* source) OVERRIDE;
   virtual void HandleMouseDown() OVERRIDE;
   virtual void UpdatePreferredSize(TabContents* source,

@@ -41,13 +41,13 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 using content::BrowserThread;
 
@@ -101,7 +101,7 @@ bool NeedMatchCompleteDummyForFinalStatus(FinalStatus final_status) {
 }  // namespace
 
 class PrerenderManager::OnCloseTabContentsDeleter
-    : public TabContentsDelegate,
+    : public content::WebContentsDelegate,
       public base::SupportsWeakPtr<
           PrerenderManager::OnCloseTabContentsDeleter> {
  public:

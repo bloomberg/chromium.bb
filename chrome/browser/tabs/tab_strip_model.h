@@ -265,7 +265,7 @@ class TabStripModel : public content::NotificationObserver {
   // Returns the index of the specified TabContents wrapper given its raw
   // TabContents, or TabStripModel::kNoTab if the TabContents is not in this
   // TabStripModel.  Note: This is only needed in rare cases where the wrapper
-  // is not already present (such as implementing TabContentsDelegate methods,
+  // is not already present (such as implementing WebContentsDelegate methods,
   // which don't know about the wrapper.  Returns NULL if |contents| is not
   // associated with any wrapper in the model.
   int GetWrapperIndex(const TabContents* contents) const;

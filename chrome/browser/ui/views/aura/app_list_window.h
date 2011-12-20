@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_first_render_watcher.h"
 #include "chrome/browser/ui/webui/aura/app_list_ui_delegate.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -20,7 +20,7 @@ class Widget;
 }
 
 class AppListWindow : public views::WidgetDelegate,
-                      public TabContentsDelegate,
+                      public content::WebContentsDelegate,
                       public TabFirstRenderWatcher::Delegate,
                       public AppListUIDelegate {
  public:
@@ -37,7 +37,7 @@ class AppListWindow : public views::WidgetDelegate,
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
-  // TabContentsDelegate implementation:
+  // content::WebContentsDelegate implementation:
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;

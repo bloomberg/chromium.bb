@@ -48,7 +48,7 @@ class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
   virtual void CloseContents(TabContents* source) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
 
-  // Overridden from TabContentsDelegate:
+  // Overridden from content::WebContentsDelegate:
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
 

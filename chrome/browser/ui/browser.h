@@ -19,11 +19,11 @@
 #include "base/string16.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
-#include "chrome/browser/extensions/extension_tab_helper_delegate.h"
 #include "chrome/browser/event_disposition.h"
+#include "chrome/browser/extensions/extension_tab_helper_delegate.h"
 #include "chrome/browser/instant/instant_delegate.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
@@ -45,8 +45,8 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/tab_contents/page_navigator.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/page_zoom.h"
 #include "ui/base/ui_base_types.h"
@@ -74,7 +74,7 @@ class Point;
 }
 
 class Browser : public TabHandlerDelegate,
-                public TabContentsDelegate,
+                public content::WebContentsDelegate,
                 public CoreTabHelperDelegate,
                 public SearchEngineTabHelperDelegate,
                 public ConstrainedWindowTabHelperDelegate,
@@ -917,7 +917,7 @@ class Browser : public TabHandlerDelegate,
     BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN,
   };
 
-  // Overridden from TabContentsDelegate:
+  // Overridden from content::WebContentsDelegate:
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params) OVERRIDE;
   virtual void NavigationStateChanged(const TabContents* source,

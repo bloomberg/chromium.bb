@@ -3414,7 +3414,7 @@ void Browser::TabStripEmpty() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Browser, TabContentsDelegate implementation:
+// Browser, content::WebContentsDelegate implementation:
 
 TabContents* Browser::OpenURLFromTab(TabContents* source,
                                      const OpenURLParams& params) {

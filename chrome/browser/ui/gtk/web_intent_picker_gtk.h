@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
@@ -55,7 +55,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
   // This class is the policy delegate for the rendered page in the intents
   // inline disposition bubble.
   // TODO(gbillock): Move up to WebIntentPicker?
-  class InlineDispositionDelegate : public TabContentsDelegate {
+  class InlineDispositionDelegate : public content::WebContentsDelegate {
    public:
     InlineDispositionDelegate();
     virtual ~InlineDispositionDelegate();
@@ -104,7 +104,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
   // Widget for displaying the HTML in the inline disposition case.
   scoped_ptr<TabContentsContainerGtk> tab_contents_container_;
 
-  // TabContentsDelegate for the inline disposition dialog.
+  // content::WebContentsDelegate for the inline disposition dialog.
   scoped_ptr<InlineDispositionDelegate> inline_disposition_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerGtk);

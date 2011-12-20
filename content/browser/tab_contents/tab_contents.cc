@@ -31,7 +31,6 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/tab_contents/title_updated_details.h"
@@ -44,6 +43,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_restriction.h"
@@ -154,7 +154,7 @@ ViewMsg_Navigate_Type::Value GetNavigationType(
 
 void MakeNavigateParams(const NavigationEntry& entry,
                         const NavigationController& controller,
-                        TabContentsDelegate* delegate,
+                        content::WebContentsDelegate* delegate,
                         NavigationController::ReloadType reload_type,
                         ViewMsg_Navigate_Params* params) {
   params->page_id = entry.page_id();
@@ -1415,11 +1415,11 @@ base::PropertyBag* TabContents::GetPropertyBag() {
   return &property_bag_;
 }
 
-TabContentsDelegate* TabContents::GetDelegate() {
+content::WebContentsDelegate* TabContents::GetDelegate() {
   return delegate_;
 }
 
-void TabContents::SetDelegate(TabContentsDelegate* delegate) {
+void TabContents::SetDelegate(content::WebContentsDelegate* delegate) {
   // TODO(cbentzel): remove this debugging code?
   if (delegate == delegate_)
     return;

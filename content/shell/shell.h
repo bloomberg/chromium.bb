@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;
@@ -25,7 +25,7 @@ class BrowserContext;
 
 // This represents one window of the Content Shell, i.e. all the UI including
 // buttons and url bar, as well as the web content area.
-class Shell : public TabContentsDelegate {
+class Shell : public WebContentsDelegate {
  public:
   virtual ~Shell();
 
@@ -84,7 +84,7 @@ class Shell : public TabContentsDelegate {
 
   gfx::NativeView GetContentView();
 
-  // TabContentsDelegate
+  // content::WebContentsDelegate
   virtual void LoadingStateChanged(TabContents* source) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(TabContents* tab) OVERRIDE;
   virtual void UpdatePreferredSize(TabContents* source,

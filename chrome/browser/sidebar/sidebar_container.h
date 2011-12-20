@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 class SkBitmap;
 class TabContents;
@@ -23,7 +23,7 @@ class TabContents;
 //  Stores one particular sidebar state: sidebar's content, its content id,
 //  tab it is linked to, mini tab icon, title etc.
 //
-class SidebarContainer : public TabContentsDelegate,
+class SidebarContainer : public content::WebContentsDelegate,
                          private ImageLoadingTracker::Observer {
  public:
   // Interface to implement to listen for sidebar update notification.
@@ -90,7 +90,7 @@ class SidebarContainer : public TabContentsDelegate,
   void SetTitle(const string16& title);
 
  private:
-  // Overridden from TabContentsDelegate:
+  // Overridden from content::WebContentsDelegate:
   virtual content::JavaScriptDialogCreator*
       GetJavaScriptDialogCreator() OVERRIDE;
 

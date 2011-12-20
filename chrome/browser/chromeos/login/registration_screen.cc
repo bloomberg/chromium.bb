@@ -77,7 +77,7 @@ void RegistrationScreen::Refresh() {
   Profile* profile = ProfileManager::GetDefaultProfile();
   view()->InitDOM(profile,
                   SiteInstance::CreateSiteInstanceForURL(profile, url));
-  view()->SetTabContentsDelegate(this);
+  view()->SetWebContentsDelegate(this);
   view()->LoadURL(url);
 }
 
@@ -106,7 +106,7 @@ void RegistrationScreen::OnPageLoadFailed(const std::string& url) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// RegistrationScreen, TabContentsDelegate implementation:
+// RegistrationScreen, content::WebContentsDelegate implementation:
 
 TabContents* RegistrationScreen::OpenURLFromTab(TabContents* source,
                                                 const OpenURLParams& params) {

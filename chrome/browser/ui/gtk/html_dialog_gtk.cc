@@ -151,7 +151,7 @@ bool HtmlDialogGtk::ShouldShowDialogTitle() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsDelegate implementation:
+// content::WebContentsDelegate implementation:
 
 // A simplified version of BrowserWindowGtk::HandleKeyboardEvent().
 // We don't handle global keyboard shortcuts here, but that's fine since

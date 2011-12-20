@@ -14,10 +14,10 @@
 #include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "ui/gfx/rect.h"
 
 namespace views {
@@ -33,7 +33,7 @@ struct TabRendererData;
 // TabDragController implementation that creates a widget representing the
 // dragged tabs when detached (dragged out of the source window).
 class DefaultTabDragController : public TabDragController,
-                                 public TabContentsDelegate,
+                                 public content::WebContentsDelegate,
                                  public content::NotificationObserver,
                                  public MessageLoopForUI::Observer {
  public:
@@ -85,10 +85,11 @@ class DefaultTabDragController : public TabDragController,
     // The TabContentsWrapper being dragged.
     TabContentsWrapper* contents;
 
-    // The original TabContentsDelegate of |contents|, before it was detached
-    // from the browser window. We store this so that we can forward certain
-    // delegate notifications back to it if we can't handle them locally.
-    TabContentsDelegate* original_delegate;
+    // The original content::WebContentsDelegate of |contents|, before it was
+    // detached from the browser window. We store this so that we can forward
+    // certain delegate notifications back to it if we can't handle them
+    // locally.
+    content::WebContentsDelegate* original_delegate;
 
     // This is the index of the tab in |source_tabstrip_| when the drag
     // began. This is used to restore the previous state if the drag is aborted.
@@ -112,7 +113,7 @@ class DefaultTabDragController : public TabDragController,
   virtual void EndDrag(bool canceled) OVERRIDE;
   virtual bool GetStartedDrag() const OVERRIDE;
 
-  // Overridden from TabContentsDelegate:
+  // Overridden from content::WebContentsDelegate:
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params) OVERRIDE;
   virtual void NavigationStateChanged(const TabContents* source,

@@ -429,7 +429,7 @@ TabContents* DefaultTabDragController::OpenURLFromTab(TabContents* source,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// DefaultTabDragController, TabContentsDelegate implementation:
+// DefaultTabDragController, content::WebContentsDelegate implementation:
 
 void DefaultTabDragController::NavigationStateChanged(const TabContents* source,
                                                       unsigned changed_flags) {
@@ -479,8 +479,8 @@ void DefaultTabDragController::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_TAB_CONTENTS_DELEGATE_DESTROYED) {
-    TabContentsDelegate* delegate =
-        content::Source<TabContentsDelegate>(source).ptr();
+    content::WebContentsDelegate* delegate =
+        content::Source<content::WebContentsDelegate>(source).ptr();
     for (size_t i = 0; i < drag_data_.size(); ++i)
       CHECK_NE(delegate, drag_data_[i].original_delegate);
     return;

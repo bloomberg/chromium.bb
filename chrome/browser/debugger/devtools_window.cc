@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -685,5 +685,5 @@ content::JavaScriptDialogCreator* DevToolsWindow::GetJavaScriptDialogCreator() {
     return inspected_tab_->tab_contents()->GetDelegate()->
         GetJavaScriptDialogCreator();
   }
-  return TabContentsDelegate::GetJavaScriptDialogCreator();
+  return content::WebContentsDelegate::GetJavaScriptDialogCreator();
 }

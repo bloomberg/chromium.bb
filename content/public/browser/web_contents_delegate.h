@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_DELEGATE_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_DELEGATE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_DELEGATE_H_
+#define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_DELEGATE_H_
 #pragma once
 
 #include <set>
@@ -50,11 +50,13 @@ namespace webkit_glue {
 struct WebIntentData;
 }
 
+namespace content {
+
 // Objects implement this interface to get notified about changes in the
 // TabContents and to provide necessary functionality.
-class CONTENT_EXPORT TabContentsDelegate {
+class CONTENT_EXPORT WebContentsDelegate {
  public:
-  TabContentsDelegate();
+  WebContentsDelegate();
 
   // Opens a new URL inside the passed in TabContents (if source is 0 open
   // in the current front-most tab), unless |disposition| indicates the url
@@ -185,7 +187,7 @@ class CONTENT_EXPORT TabContentsDelegate {
   virtual void RenderWidgetShowing();
 
   // This is called when WebKit tells us that it is done tabbing through
-  // controls on the page. Provides a way for TabContentsDelegates to handle
+  // controls on the page. Provides a way for WebContentsDelegates to handle
   // this. Returns true if the delegate successfully handled it.
   virtual bool TakeFocus(bool reverse);
 
@@ -363,19 +365,21 @@ class CONTENT_EXPORT TabContentsDelegate {
   virtual void LostMouseLock();
 
  protected:
-  virtual ~TabContentsDelegate();
+  virtual ~WebContentsDelegate();
 
  private:
-  friend class TabContents;
+  friend class ::TabContents;
 
-  // Called when |this| becomes the TabContentsDelegate for |source|.
+  // Called when |this| becomes the WebContentsDelegate for |source|.
   void Attach(TabContents* source);
 
-  // Called when |this| is no longer the TabContentsDelegate for |source|.
+  // Called when |this| is no longer the WebContentsDelegate for |source|.
   void Detach(TabContents* source);
 
   // The TabContents that this is currently a delegate for.
   std::set<TabContents*> attached_contents_;
 };
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_DELEGATE_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_DELEGATE_H_

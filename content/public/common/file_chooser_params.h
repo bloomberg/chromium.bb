@@ -14,7 +14,7 @@
 
 namespace content {
 
-// Struct used by TabContentsDelegate.
+// Struct used by WebContentsDelegate.
 struct CONTENT_EXPORT FileChooserParams {
   FileChooserParams();
   ~FileChooserParams();

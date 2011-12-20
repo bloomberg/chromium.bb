@@ -41,13 +41,13 @@ class LoadNotificationDetails;
 class RenderViewHost;
 class SessionStorageNamespace;
 class SiteInstance;
-class TabContentsDelegate;
 class TabContentsObserver;
 class TabContentsView;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 
 namespace content {
 class DownloadItem;
+class WebContentsDelegate;
 }
 
 namespace webkit_glue {
@@ -60,7 +60,7 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
                                    public RenderViewHostManager::Delegate,
                                    public content::JavaScriptDialogDelegate {
  public:
-  // Flags passed to the TabContentsDelegate.NavigationStateChanged to tell it
+  // Flags passed to the WebContentsDelegate.NavigationStateChanged to tell it
   // what has changed. Combine them to update more than one thing.
   enum InvalidateTypes {
     INVALIDATE_URL             = 1 << 0,  // The URL has changed.
@@ -216,7 +216,7 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   bool is_being_destroyed() const { return is_being_destroyed_; }
 
   // Convenience method for notifying the delegate of a navigation state
-  // change. See TabContentsDelegate.
+  // change. See WebContentsDelegate.
   void NotifyNavigationStateChanged(unsigned changed_flags);
 
   // Invoked when the tab contents becomes selected. If you override, be sure
@@ -478,8 +478,8 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   // content::WebContents ------------------------------------------------------
   virtual const base::PropertyBag* GetPropertyBag() const OVERRIDE;
   virtual base::PropertyBag* GetPropertyBag() OVERRIDE;
-  virtual TabContentsDelegate* GetDelegate() OVERRIDE;
-  virtual void SetDelegate(TabContentsDelegate* delegate) OVERRIDE;
+  virtual content::WebContentsDelegate* GetDelegate() OVERRIDE;
+  virtual void SetDelegate(content::WebContentsDelegate* delegate) OVERRIDE;
 
 
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
@@ -764,7 +764,7 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
-  TabContentsDelegate* delegate_;
+  content::WebContentsDelegate* delegate_;
 
   // Handles the back/forward list and loading.
   NavigationController controller_;
