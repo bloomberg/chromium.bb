@@ -10,8 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
-#include "chrome/test/mini_installer_test/installer_test_util.h"
-
+#include "chrome_mini_installer.h"
 
 void BackUpProfile(bool chrome_frame) {
   if (base::GetProcessCount(L"chrome.exe", NULL) > 0) {
@@ -19,8 +18,9 @@ void BackUpProfile(bool chrome_frame) {
            "Please close Chrome and run the tests again.\n");
     exit(1);
   }
+  ChromeMiniInstaller installer(false, chrome_frame, "");
   FilePath path;
-  installer_test::GetChromeInstallDirectory(false /* system_level */, &path);
+  installer.GetInstallDirectory(&path);
   path = path.Append(mini_installer_constants::kChromeAppDir).DirName();
   FilePath backup_path = path;
   // Will hold User Data path that needs to be backed-up.
