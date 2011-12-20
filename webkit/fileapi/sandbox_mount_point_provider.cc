@@ -279,34 +279,6 @@ const FilePath::CharType
     SandboxMountPointProvider::kRenamedOldFileSystemDirectory[] =
         FILE_PATH_LITERAL("FS.old");
 
-SandboxMountPointProvider::SandboxMountPointProvider(
-    FileSystemPathManager* path_manager,
-    scoped_refptr<base::MessageLoopProxy> file_message_loop,
-    const FilePath& profile_path)
-    : FileSystemQuotaUtil(file_message_loop),
-      path_manager_(path_manager),
-      file_message_loop_(file_message_loop),
-      profile_path_(profile_path),
-      sandbox_file_util_(
-          new ObfuscatedFileUtil(
-              profile_path.Append(kNewFileSystemDirectory),
-              QuotaFileUtil::CreateDefault())) {
-}
-
-SandboxMountPointProvider::~SandboxMountPointProvider() {
-  if (!file_message_loop_->BelongsToCurrentThread())
-    file_message_loop_->ReleaseSoon(FROM_HERE, sandbox_file_util_.release());
-}
-
-bool SandboxMountPointProvider::IsAccessAllowed(const GURL& origin_url,
-                                                FileSystemType type,
-                                                const FilePath& unused) {
-  if (type != kFileSystemTypeTemporary && type != kFileSystemTypePersistent)
-    return false;
-  // We essentially depend on quota to do our access controls.
-  return path_manager_->IsAllowedScheme(origin_url);
-}
-
 class SandboxMountPointProvider::GetFileSystemRootPathTask
     : public base::RefCountedThreadSafe<
         SandboxMountPointProvider::GetFileSystemRootPathTask> {
@@ -387,53 +359,32 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
   FileSystemPathManager::GetRootPathCallback callback_;
 };
 
-FilePath SandboxMountPointProvider::old_base_path() const {
-  return profile_path_.Append(kOldFileSystemDirectory);
+SandboxMountPointProvider::SandboxMountPointProvider(
+    FileSystemPathManager* path_manager,
+    scoped_refptr<base::MessageLoopProxy> file_message_loop,
+    const FilePath& profile_path)
+    : FileSystemQuotaUtil(file_message_loop),
+      path_manager_(path_manager),
+      file_message_loop_(file_message_loop),
+      profile_path_(profile_path),
+      sandbox_file_util_(
+          new ObfuscatedFileUtil(
+              profile_path.Append(kNewFileSystemDirectory),
+              QuotaFileUtil::CreateDefault())) {
 }
 
-FilePath SandboxMountPointProvider::new_base_path() const {
-  return profile_path_.Append(kNewFileSystemDirectory);
+SandboxMountPointProvider::~SandboxMountPointProvider() {
+  if (!file_message_loop_->BelongsToCurrentThread())
+    file_message_loop_->ReleaseSoon(FROM_HERE, sandbox_file_util_.release());
 }
 
-FilePath SandboxMountPointProvider::renamed_old_base_path() const {
-  return profile_path_.Append(kRenamedOldFileSystemDirectory);
-}
-
-bool SandboxMountPointProvider::IsRestrictedFileName(const FilePath& filename)
-    const {
-  if (filename.value().empty())
+bool SandboxMountPointProvider::IsAccessAllowed(const GURL& origin_url,
+                                                FileSystemType type,
+                                                const FilePath& unused) {
+  if (type != kFileSystemTypeTemporary && type != kFileSystemTypePersistent)
     return false;
-
-  std::string filename_lower = StringToLowerASCII(
-      FilePathStringToASCII(filename.value()));
-
-  for (size_t i = 0; i < arraysize(kRestrictedNames); ++i) {
-    // Exact match.
-    if (filename_lower == kRestrictedNames[i])
-      return true;
-  }
-
-  for (size_t i = 0; i < arraysize(kRestrictedChars); ++i) {
-    if (filename.value().find(kRestrictedChars[i]) !=
-        FilePath::StringType::npos)
-      return true;
-  }
-
-  return false;
-}
-
-std::vector<FilePath> SandboxMountPointProvider::GetRootDirectories() const {
-  NOTREACHED();
-  // TODO(ericu): Implement this method and check for access permissions as
-  // fileBrowserPrivate extension API does. We currently have another mechanism,
-  // but we should switch over.  This may also need to call MigrateIfNeeded().
-  return  std::vector<FilePath>();
-}
-
-SandboxMountPointProvider::OriginEnumerator*
-SandboxMountPointProvider::CreateOriginEnumerator() const {
-  MigrateIfNeeded(sandbox_file_util_, old_base_path());
-  return new ObfuscatedOriginEnumerator(sandbox_file_util_.get());
+  // We essentially depend on quota to do our access controls.
+  return path_manager_->IsAllowedScheme(origin_url);
 }
 
 void SandboxMountPointProvider::ValidateFileSystemRootAndGetURL(
@@ -480,6 +431,59 @@ SandboxMountPointProvider::ValidateFileSystemRootAndGetPathOnFileThread(
 
   return sandbox_file_util_->GetDirectoryForOriginAndType(
       origin_url, type, create);
+}
+
+bool SandboxMountPointProvider::IsRestrictedFileName(const FilePath& filename)
+    const {
+  if (filename.value().empty())
+    return false;
+
+  std::string filename_lower = StringToLowerASCII(
+      FilePathStringToASCII(filename.value()));
+
+  for (size_t i = 0; i < arraysize(kRestrictedNames); ++i) {
+    // Exact match.
+    if (filename_lower == kRestrictedNames[i])
+      return true;
+  }
+
+  for (size_t i = 0; i < arraysize(kRestrictedChars); ++i) {
+    if (filename.value().find(kRestrictedChars[i]) !=
+        FilePath::StringType::npos)
+      return true;
+  }
+
+  return false;
+}
+
+std::vector<FilePath> SandboxMountPointProvider::GetRootDirectories() const {
+  NOTREACHED();
+  // TODO(ericu): Implement this method and check for access permissions as
+  // fileBrowserPrivate extension API does. We currently have another mechanism,
+  // but we should switch over.  This may also need to call MigrateIfNeeded().
+  return  std::vector<FilePath>();
+}
+
+FileSystemFileUtil* SandboxMountPointProvider::GetFileUtil() {
+  return sandbox_file_util_.get();
+}
+
+FilePath SandboxMountPointProvider::old_base_path() const {
+  return profile_path_.Append(kOldFileSystemDirectory);
+}
+
+FilePath SandboxMountPointProvider::new_base_path() const {
+  return profile_path_.Append(kNewFileSystemDirectory);
+}
+
+FilePath SandboxMountPointProvider::renamed_old_base_path() const {
+  return profile_path_.Append(kRenamedOldFileSystemDirectory);
+}
+
+SandboxMountPointProvider::OriginEnumerator*
+SandboxMountPointProvider::CreateOriginEnumerator() const {
+  MigrateIfNeeded(sandbox_file_util_, old_base_path());
+  return new ObfuscatedOriginEnumerator(sandbox_file_util_.get());
 }
 
 FilePath SandboxMountPointProvider::GetBaseDirectoryForOriginAndType(
@@ -638,10 +642,6 @@ void SandboxMountPointProvider::InvalidateUsageCache(
   FilePath usage_file_path = GetUsageCachePathForOriginAndType(
       origin_url, type);
   FileSystemUsageCache::IncrementDirty(usage_file_path);
-}
-
-FileSystemFileUtil* SandboxMountPointProvider::GetFileUtil() {
-  return sandbox_file_util_.get();
 }
 
 FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
