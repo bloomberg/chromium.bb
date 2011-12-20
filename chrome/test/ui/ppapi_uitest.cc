@@ -418,8 +418,7 @@ TEST_PPAPI_OUT_OF_PROCESS(Var)
 TEST_PPAPI_NACL_VIA_HTTP(Var)
 
 TEST_PPAPI_IN_PROCESS(VarDeprecated)
-// Disabled because it times out: http://crbug.com/89961
-// TEST_PPAPI_OUT_OF_PROCESS(VarDeprecated)
+TEST_PPAPI_OUT_OF_PROCESS(VarDeprecated)
 
 // Windows defines 'PostMessage', so we have to undef it.
 #ifdef PostMessage
