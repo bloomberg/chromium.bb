@@ -143,3 +143,6 @@ OutOfProcessPPAPITest.Audio_*
 
 # Started failing since r114924 http://crbug.com/108014
 OutOfProcessPPAPITest.InputEvent
+
+# Fails on valgrind bots http://crbug.com/96767
+OutOfProcessPPAPITest.FlashFullscreen
