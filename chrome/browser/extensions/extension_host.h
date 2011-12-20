@@ -117,6 +117,8 @@ class ExtensionHost : public TabContentsDelegate,
   virtual void DidStopLoading() OVERRIDE;
 
   // TabContentsDelegate
+  virtual TabContents* OpenURLFromTab(TabContents* source,
+                                      const OpenURLParams& params) OVERRIDE;
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event)

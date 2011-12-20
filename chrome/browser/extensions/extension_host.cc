@@ -398,6 +398,27 @@ void ExtensionHost::CloseContents(TabContents* contents) {
   }
 }
 
+TabContents* ExtensionHost::OpenURLFromTab(TabContents* source,
+                                           const OpenURLParams& params) {
+  // Whitelist the dispositions we will allow to be opened.
+  switch (params.disposition) {
+    case SINGLETON_TAB:
+    case NEW_FOREGROUND_TAB:
+    case NEW_BACKGROUND_TAB:
+    case NEW_POPUP:
+    case NEW_WINDOW:
+    case SAVE_TO_DISK:
+    case OFF_THE_RECORD: {
+      // Only allow these from hosts that are bound to a browser (e.g. popups).
+      // Otherwise they are not driven by a user gesture.
+      Browser* browser = GetBrowser();
+      return browser ? browser->OpenURL(params) : NULL;
+    }
+    default:
+      return NULL;
+  }
+}
+
 bool ExtensionHost::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                            bool* is_keyboard_shortcut) {
   if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_POPUP &&
@@ -480,60 +501,49 @@ void ExtensionHost::AddNewContents(TabContents* source,
                                    WindowOpenDisposition disposition,
                                    const gfx::Rect& initial_pos,
                                    bool user_gesture) {
-  // TODO(mpcomplete): is all this necessary? Maybe we can just call the
-  // brower's delegate, and fall back to browser::Navigate if browser is NULL.
-  TabContents* contents = new_contents;
-  if (!contents)
-    return;
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
-
-  if (disposition == NEW_POPUP) {
-    // Find a browser with a matching profile for creating a popup.
-    // (If none is found, NULL argument to NavigateParams is valid.)
-    Browser* browser = BrowserList::FindTabbedBrowser(
-        profile, false);  // Match incognito exactly.
-    TabContentsWrapper* wrapper = new TabContentsWrapper(contents);
-    browser::NavigateParams params(browser, wrapper);
-    if (!browser)
-      params.profile = profile;
-    // The extension_app_id parameter ends up as app_name in the Browser
-    // which causes the Browser to return true for is_app().  This affects
-    // among other things, whether the location bar gets displayed.
-    params.extension_app_id = extension_id_;
-    params.disposition = NEW_POPUP;
-    params.window_bounds = initial_pos;
-    params.window_action = browser::NavigateParams::SHOW_WINDOW;
-    params.user_gesture = user_gesture;
-    browser::Navigate(&params);
-    return;
-  }
-
   // First, if the creating extension view was associated with a tab contents,
   // use that tab content's delegate. We must be careful here that the
   // associated tab contents has the same profile as the new tab contents. In
   // the case of extensions in 'spanning' incognito mode, they can mismatch.
   // We don't want to end up putting a normal tab into an incognito window, or
   // vice versa.
-  TabContents* associated_contents = GetAssociatedTabContents();
-  if (associated_contents &&
-      associated_contents->browser_context() == contents->browser_context()) {
-    associated_contents->AddNewContents(
-        contents, disposition, initial_pos, user_gesture);
-    return;
+  // Note that we don't do this for popup windows, because we need to associate
+  // those with their extension_app_id.
+  if (disposition != NEW_POPUP) {
+    TabContents* associated_contents = GetAssociatedTabContents();
+    if (associated_contents &&
+        associated_contents->browser_context() ==
+            new_contents->browser_context()) {
+      associated_contents->AddNewContents(
+          new_contents, disposition, initial_pos, user_gesture);
+      return;
+    }
   }
 
-  // If there's no associated tab contents, or it doesn't have a matching
-  // profile, try finding an open window. Again, we must make sure to find a
-  // window with the correct profile.
+  // Find a browser with a profile that matches the new tab. If none is found,
+  // NULL argument to NavigateParams is valid.
+  Profile* profile =
+      Profile::FromBrowserContext(new_contents->browser_context());
   Browser* browser = BrowserList::FindTabbedBrowser(
       profile, false);  // Match incognito exactly.
+  TabContentsWrapper* wrapper = new TabContentsWrapper(new_contents);
+  browser::NavigateParams params(browser, wrapper);
 
-  // If there's no Browser open with the right profile, create a new one.
-  if (!browser) {
-    browser = Browser::Create(profile);
-    browser->window()->Show();
-  }
-  browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
+  // The extension_app_id parameter ends up as app_name in the Browser
+  // which causes the Browser to return true for is_app().  This affects
+  // among other things, whether the location bar gets displayed.
+  // TODO(mpcomplete): This seems wrong. What if the extension content is hosted
+  // in a tab?
+  if (disposition == NEW_POPUP)
+    params.extension_app_id = extension_id_;
+
+  if (!browser)
+    params.profile = profile;
+  params.disposition = disposition;
+  params.window_bounds = initial_pos;
+  params.window_action = browser::NavigateParams::SHOW_WINDOW;
+  params.user_gesture = user_gesture;
+  browser::Navigate(&params);
 }
 
 
