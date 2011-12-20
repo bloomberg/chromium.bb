@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/test/base/chrome_process_util.h"
+#include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/test_utils.h"
@@ -345,7 +346,7 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
     for (int i = 0; i < kNumCycles; ++i)
       base::StringAppendF(&times, "%.2f,", timings[i].InMillisecondsF());
 
-    PrintResultList(graph, "", trace, times, "ms", important);
+    perf_test::PrintResultList(graph, "", trace, times, "ms", important);
   }
 
   FilePath dir_app_;
@@ -524,18 +525,14 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
       ASSERT_TRUE(chrome_frame_memory_test_instance_ != NULL);
 
       if (chrome_browser_process_) {
-         chrome_frame_memory_test_instance_->PrintResult(
-             "vm_final_browser", "", trace_name + "_vm_b",
+         perf_test::PrintResult("vm_final_browser", "", trace_name + "_vm_b",
              virtual_size_ / 1024, "KB", false /* not important */);
-         chrome_frame_memory_test_instance_->PrintResult(
-             "ws_final_browser", "", trace_name + "_ws_b",
+         perf_test::PrintResult("ws_final_browser", "", trace_name + "_ws_b",
              working_set_size_ / 1024, "KB", false /* not important */);
       } else if (process_id_ == base::GetCurrentProcId()) {
-        chrome_frame_memory_test_instance_->PrintResult(
-            "vm_current_process", "", trace_name + "_vm_c",
+        perf_test::PrintResult("vm_current_process", "", trace_name + "_vm_c",
             virtual_size_ / 1024, "KB", false /* not important */);
-        chrome_frame_memory_test_instance_->PrintResult(
-            "ws_current_process", "", trace_name + "_ws_c",
+        perf_test::PrintResult("ws_current_process", "", trace_name + "_ws_c",
             working_set_size_ / 1024, "KB", false /* not important */);
       }
 
@@ -650,8 +647,8 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
     std::string trace_name(test_name);
     trace_name.append("_cc");
 
-    PrintResult("commit_charge", "", trace_name,
-                commit_size / 1024, "KB", true /* important */);
+    perf_test::PrintResult("commit_charge", "", trace_name,
+                           commit_size / 1024, "KB", true /* important */);
     printf("\n");
   }
 
@@ -705,12 +702,12 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
 
     printf("\n");
 
-    PrintResult("vm_final_total", "", trace_name + "_vm",
-                total_virtual_size / 1024, "KB",
-                false /* not important */);
-    PrintResult("ws_final_total", "", trace_name + "_ws",
-                total_working_set_size / 1024, "KB",
-                true /* important */);
+    perf_test::PrintResult("vm_final_total", "", trace_name + "_vm",
+                           total_virtual_size / 1024, "KB",
+                           false /* not important */);
+    perf_test::PrintResult("ws_final_total", "", trace_name + "_ws",
+                           total_working_set_size / 1024, "KB",
+                           true /* important */);
   }
 
   // Should never get called.

@@ -19,6 +19,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/base/chrome_process_util.h"
+#include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -202,8 +203,8 @@ class MemoryTest : public UIPerfTest {
     size_t stop_size = base::GetSystemCommitCharge();
     PrintIOPerfInfo(test_name);
     PrintMemoryUsageInfo(test_name);
-    PrintSystemCommitCharge(test_name, stop_size - start_size,
-                            true /* important */);
+    perf_test::PrintSystemCommitCharge(test_name, stop_size - start_size,
+                                       true /* important */);
   }
 
  private:

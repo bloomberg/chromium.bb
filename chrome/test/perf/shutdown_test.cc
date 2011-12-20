@@ -14,6 +14,7 @@
 #include "chrome/common/env_vars.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "net/base/net_util.h"
 
@@ -107,7 +108,7 @@ class ShutdownTest : public UIPerfTest {
     std::string times;
     for (int i = 0; i < numCycles; ++i)
       base::StringAppendF(&times, "%.2f,", timings[i].InMillisecondsF());
-    PrintResultList(graph, "", trace, times, "ms", important);
+    perf_test::PrintResultList(graph, "", trace, times, "ms", important);
   }
 };
 

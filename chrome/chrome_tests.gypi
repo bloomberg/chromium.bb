@@ -237,6 +237,8 @@
         'test/base/ui_test_utils_win.cc',
         'test/base/values_test_util.cc',
         'test/base/values_test_util.h',
+        'test/perf/perf_test.cc',
+        'test/perf/perf_test.h',
         # TODO:  these should live here but are currently used by
         # production code code in libbrowser (in chrome.gyp).
         #'../content/browser/net/url_request_mock_http_job.cc',

@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/javascript_test_util.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "googleurl/src/gurl.h"
@@ -112,7 +113,8 @@ class DromaeoTest : public UIPerfTest {
       for (size_t i = 0; i < test_name.length(); i++)
         if (!isalnum(test_name[i]))
           test_name[i] = '_';
-      PrintResult(test_name, "", trace_name, it->second, unit_name, important);
+      perf_test::PrintResult(test_name, "", trace_name, it->second, unit_name,
+                             important);
       important = false;  // All others are not overall scores.
     }
   }

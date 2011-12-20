@@ -21,6 +21,7 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/base/chrome_process_util.h"
 #include "chrome/test/base/test_switches.h"
+#include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -241,16 +242,16 @@ class PageCyclerTest : public UIPerfTest {
     if (!print_times_only_) {
       PrintMemoryUsageInfo(suffix);
       PrintIOPerfInfo(suffix);
-      PrintSystemCommitCharge(suffix, stop_size - start_size,
-                              false /* not important */);
+      perf_test::PrintSystemCommitCharge(suffix, stop_size - start_size,
+                                         false /* not important */);
     }
 
     std::string trace_name = "t" + std::string(suffix);
 
     printf("Pages: [%s]\n", base::SysWideToNativeMB(pages).c_str());
 
-    PrintResultList(graph, "", trace_name, timings, "ms",
-                    true /* important */);
+    perf_test::PrintResultList(graph, "", trace_name, timings, "ms",
+                               true /* important */);
   }
 
   void RunTest(const char* graph, const char* name, bool use_http) {

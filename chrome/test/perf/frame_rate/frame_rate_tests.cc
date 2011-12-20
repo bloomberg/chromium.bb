@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/javascript_test_util.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "net/base/net_util.h"
@@ -233,8 +234,8 @@ class FrameRateTest
                                                 results["sigmas"].c_str());
 
     std::string mean_and_error = results["mean"] + "," + results["sigma"];
-    PrintResultMeanAndError(name, "", trace_name, mean_and_error,
-                            "frames-per-second", true);
+    perf_test::PrintResultMeanAndError(name, "", trace_name, mean_and_error,
+                                       "frames-per-second", true);
   }
 };
 

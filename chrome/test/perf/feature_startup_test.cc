@@ -13,6 +13,7 @@
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
+#include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "net/base/net_util.h"
 #include "ui/gfx/rect.h"
@@ -37,7 +38,7 @@ class NewTabUIStartupTest : public UIPerfTest {
     std::string times;
     for (int i = 0; i < kNumCycles; ++i)
       base::StringAppendF(&times, "%.2f,", timings[i].InMillisecondsF());
-    PrintResultList("new_tab", "", label, times, "ms", important);
+    perf_test::PrintResultList("new_tab", "", label, times, "ms", important);
   }
 
   void InitProfile(UITestBase::ProfileType profile_type) {

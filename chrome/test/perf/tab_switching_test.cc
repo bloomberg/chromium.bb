@@ -18,6 +18,7 @@
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -67,7 +68,7 @@ class TabSwitchingUITest : public UIPerfTest {
       std::string times;
       for (int i = 0; i < kNumCycles; ++i)
         base::StringAppendF(&times, "%.2f,", timings[i].InMillisecondsF());
-      PrintResultList("times", "", label, times, "ms", important);
+      perf_test::PrintResultList("times", "", label, times, "ms", important);
   }
 
   void RunTabSwitchingUITest(const char* label, bool important) {

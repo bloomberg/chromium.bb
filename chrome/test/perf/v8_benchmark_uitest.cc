@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/javascript_test_util.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "googleurl/src/gurl.h"
@@ -107,11 +108,12 @@ class V8BenchmarkTest : public UIPerfTest {
     std::string trace_name = reference_ ? "score_ref" : "score";
     std::string unit_name = "score (bigger is better)";
 
-    PrintResult("score", "", trace_name, score, unit_name, true);
+    perf_test::PrintResult("score", "", trace_name, score, unit_name, true);
 
     ResultsMap::const_iterator it = results.begin();
     for (; it != results.end(); ++it)
-      PrintResult(it->first, "", trace_name, it->second, unit_name, false);
+      perf_test::PrintResult(it->first, "", trace_name, it->second, unit_name,
+                             false);
   }
 
   DISALLOW_COPY_AND_ASSIGN(V8BenchmarkTest);
