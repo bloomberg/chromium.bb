@@ -27,6 +27,8 @@ class View;
 class InputMethodBridge : public InputMethodBase,
                           public ui::TextInputClient {
  public:
+  // |this| object owns neither |delegate| nor |host|. Both |delegate| and
+  // |host| must outlive |this| object.
   InputMethodBridge(internal::InputMethodDelegate* delegate,
                     ui::InputMethod* host);
   virtual ~InputMethodBridge();
