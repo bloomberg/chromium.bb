@@ -8,11 +8,9 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -25,9 +23,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_trial.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
-#include "chrome/browser/ui/webui/user_selectable_sync_type.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/chromium_strings.h"
@@ -155,60 +151,6 @@ bool GetConfiguration(const std::string& json, SyncConfiguration* config) {
     }
   }
   return true;
-}
-
-bool HasConfigurationChanged(const SyncConfiguration& config,
-                             Profile* profile) {
-  CHECK(profile);
-
-  // This function must be updated every time a new sync datatype is added to
-  // the sync preferences page.
-  COMPILE_ASSERT(17 == syncable::MODEL_TYPE_COUNT,
-                 UpdateCustomConfigHistogram);
-
-  // If service is null or if this is a first time configuration, return true.
-  ProfileSyncService* service = profile->GetProfileSyncService();
-  if (!service || !service->HasSyncSetupCompleted())
-    return true;
-
-  if ((config.set_secondary_passphrase || config.set_gaia_passphrase) &&
-      !service->IsUsingSecondaryPassphrase())
-    return true;
-
-  if (config.encrypt_all != service->EncryptEverythingEnabled())
-    return true;
-
-  PrefService* pref_service = profile->GetPrefs();
-  CHECK(pref_service);
-
-  if (config.sync_everything !=
-      pref_service->GetBoolean(prefs::kSyncKeepEverythingSynced))
-    return true;
-
-  // Only check the data types that are explicitly listed on the sync
-  // preferences page.
-  const syncable::ModelTypeSet types = config.data_types;
-  if (((types.Has(syncable::BOOKMARKS)) !=
-       pref_service->GetBoolean(prefs::kSyncBookmarks)) ||
-      ((types.Has(syncable::PREFERENCES)) !=
-       pref_service->GetBoolean(prefs::kSyncPreferences)) ||
-      ((types.Has(syncable::THEMES)) !=
-       pref_service->GetBoolean(prefs::kSyncThemes)) ||
-      ((types.Has(syncable::PASSWORDS)) !=
-       pref_service->GetBoolean(prefs::kSyncPasswords)) ||
-      ((types.Has(syncable::AUTOFILL)) !=
-       pref_service->GetBoolean(prefs::kSyncAutofill)) ||
-      ((types.Has(syncable::EXTENSIONS)) !=
-       pref_service->GetBoolean(prefs::kSyncExtensions)) ||
-      ((types.Has(syncable::TYPED_URLS)) !=
-       pref_service->GetBoolean(prefs::kSyncTypedUrls)) ||
-      ((types.Has(syncable::SESSIONS)) !=
-       pref_service->GetBoolean(prefs::kSyncSessions)) ||
-      ((types.Has(syncable::APPS)) !=
-       pref_service->GetBoolean(prefs::kSyncApps)))
-    return true;
-
-  return false;
 }
 
 bool GetPassphrase(const std::string& json, std::string* passphrase) {
@@ -561,55 +503,6 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
     // This probably indicates a programming error.
     NOTREACHED();
     return;
-  }
-
-  // We do not do UMA logging during unit tests.
-  if (web_ui_) {
-    Profile* profile = Profile::FromWebUI(web_ui_);
-    if (HasConfigurationChanged(configuration, profile)) {
-      UMA_HISTOGRAM_BOOLEAN("Sync.SyncEverything",
-                            configuration.sync_everything);
-      if (!configuration.sync_everything) {
-        // Only log the data types that are explicitly listed on the sync
-        // preferences page.
-        const syncable::ModelTypeSet types = configuration.data_types;
-        if (types.Has(syncable::BOOKMARKS))
-          UMA_HISTOGRAM_ENUMERATION(
-              "Sync.CustomSync", BOOKMARKS, SELECTABLE_DATATYPE_COUNT + 1);
-        if (types.Has(syncable::PREFERENCES))
-          UMA_HISTOGRAM_ENUMERATION(
-              "Sync.CustomSync", PREFERENCES, SELECTABLE_DATATYPE_COUNT + 1);
-        if (types.Has(syncable::PASSWORDS))
-          UMA_HISTOGRAM_ENUMERATION(
-              "Sync.CustomSync", PASSWORDS, SELECTABLE_DATATYPE_COUNT + 1);
-        if (types.Has(syncable::AUTOFILL))
-          UMA_HISTOGRAM_ENUMERATION(
-              "Sync.CustomSync", AUTOFILL, SELECTABLE_DATATYPE_COUNT + 1);
-        if (types.Has(syncable::THEMES))
-          UMA_HISTOGRAM_ENUMERATION(
-              "Sync.CustomSync", THEMES, SELECTABLE_DATATYPE_COUNT + 1);
-        if (types.Has(syncable::TYPED_URLS))
-          UMA_HISTOGRAM_ENUMERATION(
-              "Sync.CustomSync", TYPED_URLS, SELECTABLE_DATATYPE_COUNT + 1);
-        if (types.Has(syncable::EXTENSIONS))
-          UMA_HISTOGRAM_ENUMERATION(
-              "Sync.CustomSync", EXTENSIONS, SELECTABLE_DATATYPE_COUNT + 1);
-        if (types.Has(syncable::SESSIONS))
-          UMA_HISTOGRAM_ENUMERATION(
-              "Sync.CustomSync", SESSIONS, SELECTABLE_DATATYPE_COUNT + 1);
-        if (types.Has(syncable::APPS))
-          UMA_HISTOGRAM_ENUMERATION(
-              "Sync.CustomSync", APPS, SELECTABLE_DATATYPE_COUNT + 1);
-        COMPILE_ASSERT(17 == syncable::MODEL_TYPE_COUNT,
-                       UpdateCustomConfigHistogram);
-        COMPILE_ASSERT(9 == SELECTABLE_DATATYPE_COUNT,
-                       UpdateCustomConfigHistogram);
-      }
-      UMA_HISTOGRAM_BOOLEAN("Sync.EncryptAllData", configuration.encrypt_all);
-      UMA_HISTOGRAM_BOOLEAN("Sync.CustomPassphrase",
-                            configuration.set_gaia_passphrase ||
-                            configuration.set_secondary_passphrase);
-    }
   }
 
   DCHECK(flow_);

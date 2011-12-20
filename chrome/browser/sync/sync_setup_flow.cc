@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow_handler.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/user_selectable_sync_type.h"
 #include "chrome/browser/sync/util/oauth.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
@@ -50,11 +51,149 @@ SyncSetupWizard::State GetStepForNonFatalError(ProfileSyncService* service) {
       error.state() == GoogleServiceAuthError::CAPTCHA_REQUIRED ||
       error.state() == GoogleServiceAuthError::ACCOUNT_DELETED ||
       error.state() == GoogleServiceAuthError::ACCOUNT_DISABLED ||
-      error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE)
+      error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
     return SyncSetupWizard::GetLoginState();
+  }
 
   NOTREACHED();
   return SyncSetupWizard::FATAL_ERROR;
+}
+
+bool HasConfigurationChanged(const SyncConfiguration& configuration,
+                             Profile* profile) {
+  CHECK(profile);
+
+  // This function must be updated every time a new sync datatype is added to
+  // the sync preferences page.
+  COMPILE_ASSERT(17 == syncable::MODEL_TYPE_COUNT,
+                 UpdateCustomConfigHistogram);
+
+  // If service is null or if this is a first time configuration, return true.
+  ProfileSyncService* service = profile->GetProfileSyncService();
+  if (!service || !service->HasSyncSetupCompleted())
+    return true;
+
+  if ((configuration.set_secondary_passphrase ||
+       configuration.set_gaia_passphrase) &&
+      !service->IsUsingSecondaryPassphrase()) {
+    return true;
+  }
+
+  if (configuration.encrypt_all != service->EncryptEverythingEnabled())
+    return true;
+
+  PrefService* pref_service = profile->GetPrefs();
+  CHECK(pref_service);
+
+  if (configuration.sync_everything !=
+      pref_service->GetBoolean(prefs::kSyncKeepEverythingSynced)) {
+    return true;
+  }
+
+  // Only check the data types that are explicitly listed on the sync
+  // preferences page.
+  const syncable::ModelTypeSet types = configuration.data_types;
+  if (((types.Has(syncable::BOOKMARKS)) !=
+       pref_service->GetBoolean(prefs::kSyncBookmarks)) ||
+      ((types.Has(syncable::PREFERENCES)) !=
+       pref_service->GetBoolean(prefs::kSyncPreferences)) ||
+      ((types.Has(syncable::THEMES)) !=
+       pref_service->GetBoolean(prefs::kSyncThemes)) ||
+      ((types.Has(syncable::PASSWORDS)) !=
+       pref_service->GetBoolean(prefs::kSyncPasswords)) ||
+      ((types.Has(syncable::AUTOFILL)) !=
+       pref_service->GetBoolean(prefs::kSyncAutofill)) ||
+      ((types.Has(syncable::EXTENSIONS)) !=
+       pref_service->GetBoolean(prefs::kSyncExtensions)) ||
+      ((types.Has(syncable::TYPED_URLS)) !=
+       pref_service->GetBoolean(prefs::kSyncTypedUrls)) ||
+      ((types.Has(syncable::SESSIONS)) !=
+       pref_service->GetBoolean(prefs::kSyncSessions)) ||
+      ((types.Has(syncable::APPS)) !=
+       pref_service->GetBoolean(prefs::kSyncApps))) {
+    return true;
+  }
+
+  return false;
+}
+
+void UpdateHistogram(const SyncConfiguration& configuration,
+                     const ProfileSyncService* service) {
+  if (!service)
+    return;
+  Profile* profile = service->profile();
+  if (HasConfigurationChanged(configuration, profile)) {
+    UMA_HISTOGRAM_BOOLEAN("Sync.SyncEverything",
+                          configuration.sync_everything);
+    if (!configuration.sync_everything) {
+      // Only log the data types that are explicitly listed on the sync
+      // preferences page.
+      const syncable::ModelTypeSet types = configuration.data_types;
+      if (types.Has(syncable::BOOKMARKS)) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Sync.CustomSync",
+            browser_sync::user_selectable_type::BOOKMARKS,
+            browser_sync::user_selectable_type::SELECTABLE_DATATYPE_COUNT + 1);
+      }
+      if (types.Has(syncable::PREFERENCES)) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Sync.CustomSync",
+            browser_sync::user_selectable_type::PREFERENCES,
+            browser_sync::user_selectable_type::SELECTABLE_DATATYPE_COUNT + 1);
+      }
+      if (types.Has(syncable::PASSWORDS)) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Sync.CustomSync",
+            browser_sync::user_selectable_type::PASSWORDS,
+            browser_sync::user_selectable_type::SELECTABLE_DATATYPE_COUNT + 1);
+      }
+      if (types.Has(syncable::AUTOFILL)) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Sync.CustomSync",
+            browser_sync::user_selectable_type::AUTOFILL,
+            browser_sync::user_selectable_type::SELECTABLE_DATATYPE_COUNT + 1);
+      }
+      if (types.Has(syncable::THEMES)) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Sync.CustomSync",
+            browser_sync::user_selectable_type::THEMES,
+            browser_sync::user_selectable_type::SELECTABLE_DATATYPE_COUNT + 1);
+      }
+      if (types.Has(syncable::TYPED_URLS)) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Sync.CustomSync",
+            browser_sync::user_selectable_type::TYPED_URLS,
+            browser_sync::user_selectable_type::SELECTABLE_DATATYPE_COUNT + 1);
+      }
+      if (types.Has(syncable::EXTENSIONS)) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Sync.CustomSync",
+            browser_sync::user_selectable_type::EXTENSIONS,
+            browser_sync::user_selectable_type::SELECTABLE_DATATYPE_COUNT + 1);
+      }
+      if (types.Has(syncable::SESSIONS)) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Sync.CustomSync",
+            browser_sync::user_selectable_type::SESSIONS,
+            browser_sync::user_selectable_type::SELECTABLE_DATATYPE_COUNT + 1);
+      }
+      if (types.Has(syncable::APPS)) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Sync.CustomSync",
+            browser_sync::user_selectable_type::APPS,
+            browser_sync::user_selectable_type::SELECTABLE_DATATYPE_COUNT + 1);
+      }
+      COMPILE_ASSERT(17 == syncable::MODEL_TYPE_COUNT,
+                     UpdateCustomConfigHistogram);
+      COMPILE_ASSERT(
+          9 == browser_sync::user_selectable_type::SELECTABLE_DATATYPE_COUNT,
+          UpdateCustomConfigHistogram);
+    }
+    UMA_HISTOGRAM_BOOLEAN("Sync.EncryptAllData", configuration.encrypt_all);
+    UMA_HISTOGRAM_BOOLEAN("Sync.CustomPassphrase",
+                          configuration.set_gaia_passphrase ||
+                          configuration.set_secondary_passphrase);
+  }
 }
 
 }  // namespace
@@ -278,6 +417,9 @@ void SyncSetupFlow::OnUserSubmittedOAuth(
 }
 
 void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
+  // Update sync histograms. This is a no-op if |configuration| has not changed.
+  UpdateHistogram(configuration, service_);
+
   // Go to the "loading..." screen.
   Advance(SyncSetupWizard::SETTING_UP);
 
