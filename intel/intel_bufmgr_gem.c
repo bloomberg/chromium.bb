@@ -284,7 +284,8 @@ drm_intel_gem_bo_tile_pitch(drm_intel_bufmgr_gem *bufmgr_gem,
 		return ALIGN(pitch, 64);
 
 	if (*tiling_mode == I915_TILING_X
-			|| (IS_915(bufmgr_gem) && *tiling_mode == I915_TILING_Y))
+			|| (IS_915(bufmgr_gem->pci_device)
+			    && *tiling_mode == I915_TILING_Y))
 		tile_width = 512;
 	else
 		tile_width = 128;
@@ -772,10 +773,11 @@ drm_intel_gem_bo_alloc_tiled(drm_intel_bufmgr *bufmgr, const char *name,
 		aligned_y = y;
 		height_alignment = 2;
 
-		if (IS_GEN2(bufmgr_gem) && tiling != I915_TILING_NONE)
+		if ((bufmgr_gem->gen == 2) && tiling != I915_TILING_NONE)
 			height_alignment = 16;
 		else if (tiling == I915_TILING_X
-			|| (IS_915(bufmgr_gem) && tiling == I915_TILING_Y))
+			|| (IS_915(bufmgr_gem->pci_device)
+			    && tiling == I915_TILING_Y))
 			height_alignment = 8;
 		else if (tiling == I915_TILING_Y)
 			height_alignment = 32;
@@ -2313,16 +2315,17 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 		fprintf(stderr, "param: %d, val: %d\n", gp.param, *gp.value);
 	}
 
-	if (IS_GEN2(bufmgr_gem))
+	if (IS_GEN2(bufmgr_gem->pci_device))
 		bufmgr_gem->gen = 2;
-	else if (IS_GEN3(bufmgr_gem))
+	else if (IS_GEN3(bufmgr_gem->pci_device))
 		bufmgr_gem->gen = 3;
-	else if (IS_GEN4(bufmgr_gem))
+	else if (IS_GEN4(bufmgr_gem->pci_device))
 		bufmgr_gem->gen = 4;
 	else
 		bufmgr_gem->gen = 6;
 
-	if (IS_GEN3(bufmgr_gem) && bufmgr_gem->gtt_size > 256*1024*1024) {
+	if (IS_GEN3(bufmgr_gem->pci_device) &&
+	    bufmgr_gem->gtt_size > 256*1024*1024) {
 		/* The unmappable part of gtt on gen 3 (i.e. above 256MB) can't
 		 * be used for tiled blits. To simplify the accounting, just
 		 * substract the unmappable part (fixed to 256MB on all known
