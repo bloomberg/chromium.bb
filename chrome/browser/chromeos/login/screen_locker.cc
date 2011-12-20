@@ -238,11 +238,8 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
   // MessageBubble.
 
   string16 msg = l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_AUTHENTICATING);
-  const std::string error_text = error.GetErrorString();
-  // TODO(ivankr): use a format string instead of concatenation.
-  if (!error_text.empty())
-    msg += ASCIIToUTF16("\n") + ASCIIToUTF16(error_text);
 
+  // TODO(ivankr): use a format string instead of concatenation.
   // Display a warning if Caps Lock is on.
   if (input_method::XKeyboard::CapsLockIsEnabled()) {
     msg += ASCIIToUTF16("\n") +
