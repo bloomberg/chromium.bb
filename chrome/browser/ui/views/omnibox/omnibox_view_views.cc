@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
-#include "grit/app_locale_settings.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -118,6 +117,7 @@ void ApplyURLStyle(views::Textfield* textfield,
                    SkColor color,
                    bool strike) {
   gfx::StyleRange style;
+  style.font = textfield->font();
   style.foreground = color;
   style.range = ui::Range(start, end);
   style.strike = strike;

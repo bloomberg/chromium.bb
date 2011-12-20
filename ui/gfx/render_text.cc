@@ -163,9 +163,11 @@ void SkiaTextRenderer::DrawDecorations(int x, int y, int width,
 
 
 StyleRange::StyleRange()
-    : foreground(SK_ColorBLACK),
+    : font(),
+      foreground(SK_ColorBLACK),
       strike(false),
-      underline(false) {
+      underline(false),
+      range() {
 }
 
 RenderText::~RenderText() {
@@ -207,16 +209,6 @@ void RenderText::SetText(const string16& text) {
   SetSelectionModel(SelectionModel(0, 0, SelectionModel::LEADING));
 
   UpdateLayout();
-}
-
-void RenderText::SetFontList(const FontList& font_list) {
-  font_list_ = font_list;
-  cached_bounds_and_offset_valid_ = false;
-  UpdateLayout();
-}
-
-const Font& RenderText::GetFont() const {
-  return font_list_.GetFonts()[0];
 }
 
 void RenderText::ToggleInsertMode() {
@@ -433,6 +425,10 @@ base::i18n::TextDirection RenderText::GetTextDirection() {
   return base::i18n::LEFT_TO_RIGHT;
 }
 
+int RenderText::GetStringWidth() {
+  return default_style_.font.GetStringWidth(text());
+}
+
 void RenderText::Draw(Canvas* canvas) {
   TRACE_EVENT0("gfx", "RenderText::Draw");
   {
@@ -446,6 +442,35 @@ void RenderText::Draw(Canvas* canvas) {
     DrawVisualText(canvas);
   }
   DrawCursor(canvas);
+}
+
+SelectionModel RenderText::FindCursorPosition(const Point& point) {
+  const Font& font = default_style_.font;
+  int left = 0;
+  int left_pos = 0;
+  int right = font.GetStringWidth(text());
+  int right_pos = text().length();
+
+  int x = point.x() - (display_rect_.x() + GetUpdatedDisplayOffset().x());
+  if (x <= left) return SelectionModel(left_pos);
+  if (x >= right) return SelectionModel(right_pos);
+  // binary searching the cursor position.
+  // TODO(oshima): use the center of character instead of edge.
+  // Binary search may not work for language like Arabic.
+  while (std::abs(right_pos - left_pos) > 1) {
+    int pivot_pos = left_pos + (right_pos - left_pos) / 2;
+    int pivot = font.GetStringWidth(text().substr(0, pivot_pos));
+    if (pivot < x) {
+      left = pivot;
+      left_pos = pivot_pos;
+    } else if (pivot == x) {
+      return SelectionModel(pivot_pos);
+    } else {
+      right = pivot;
+      right_pos = pivot_pos;
+    }
+  }
+  return SelectionModel(left_pos);
 }
 
 const Rect& RenderText::GetUpdatedCursorBounds() {
@@ -620,7 +645,7 @@ Point RenderText::ToViewPoint(const Point& point) {
 Point RenderText::GetOriginForSkiaDrawing() {
   Point origin(ToViewPoint(Point()));
   // TODO(msw): Establish a vertical baseline for strings of mixed font heights.
-  const Font& font = GetFont();
+  const Font& font = default_style().font;
   size_t height = font.GetHeight();
   // Center the text vertically in the display area.
   origin.Offset(0, (display_rect().height() - height) / 2);

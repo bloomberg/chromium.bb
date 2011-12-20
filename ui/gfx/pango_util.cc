@@ -169,12 +169,12 @@ void DrawTextOntoCairoSurface(cairo_t* cr,
 }
 
 // Pass a width greater than 0 to force wrapping and eliding.
-static void SetupPangoLayoutWithoutFont(
-    PangoLayout* layout,
-    const string16& text,
-    int width,
-    base::i18n::TextDirection text_direction,
-    int flags) {
+void SetupPangoLayout(PangoLayout* layout,
+                      const string16& text,
+                      const Font& font,
+                      int width,
+                      base::i18n::TextDirection text_direction,
+                      int flags) {
   cairo_font_options_t* cairo_font_options = GetCairoFontOptions();
   // This needs to be done early on; it has no effect when called just before
   // pango_cairo_show_layout().
@@ -221,6 +221,10 @@ static void SetupPangoLayoutWithoutFont(
                                        resolution);
   }
 
+  PangoFontDescription* desc = font.GetNativeFont();
+  pango_layout_set_font_description(layout, desc);
+  pango_font_description_free(desc);
+
   // Set text and accelerator character if needed.
   if (flags & Canvas::SHOW_PREFIX) {
     // Escape the text string to be used as markup.
@@ -248,34 +252,6 @@ static void SetupPangoLayoutWithoutFont(
 
     pango_layout_set_text(layout, utf8.data(), utf8.size());
   }
-}
-
-void SetupPangoLayout(PangoLayout* layout,
-                      const string16& text,
-                      const Font& font,
-                      int width,
-                      base::i18n::TextDirection text_direction,
-                      int flags) {
-  SetupPangoLayoutWithoutFont(layout, text, width, text_direction, flags);
-
-  PangoFontDescription* desc = font.GetNativeFont();
-  pango_layout_set_font_description(layout, desc);
-  pango_font_description_free(desc);
-}
-
-void SetupPangoLayoutWithFontDescription(
-    PangoLayout* layout,
-    const string16& text,
-    const std::string& font_description,
-    int width,
-    base::i18n::TextDirection text_direction,
-    int flags) {
-  SetupPangoLayoutWithoutFont(layout, text, width, text_direction, flags);
-
-  PangoFontDescription* desc = pango_font_description_from_string(
-      font_description.c_str());
-  pango_layout_set_font_description(layout, desc);
-  pango_font_description_free(desc);
 }
 
 void AdjustTextRectBasedOnLayout(PangoLayout* layout,
