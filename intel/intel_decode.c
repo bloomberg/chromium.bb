@@ -1269,6 +1269,8 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 
 				/* save vertex state for decode */
 				if (!IS_GEN2(devid)) {
+					int tex_num;
+
 					if (word == 2) {
 						saved_s2_set = 1;
 						saved_s2 = data[i];
@@ -1298,7 +1300,7 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 					case 2:
 						instr_out(data, hw_offset, i,
 							  "S2: texcoord formats: ");
-						for (int tex_num = 0;
+						for (tex_num = 0;
 						     tex_num < 8; tex_num++) {
 							switch ((data[i] >>
 								 tex_num *
@@ -2768,7 +2770,7 @@ decode_3d_965(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid
 {
 	uint32_t opcode;
 	unsigned int idx, len;
-	unsigned int i, sba_len;
+	unsigned int i, j, sba_len;
 	const char *desc1 = NULL;
 
 	struct {
@@ -3186,7 +3188,7 @@ decode_3d_965(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid
 			  *(float *)(&data[6]));
 		instr_out(data, hw_offset, 7, "Global Depth Offset Clamp %f\n",
 			  *(float *)(&data[7]));
-		int i, j;
+
 		for (i = 0, j = 0; i < 8; i++, j += 2)
 			instr_out(data, hw_offset, i + 8,
 				  "Attrib %d (Override %s%s%s%s, Const Source %d, Swizzle Select %d, "
