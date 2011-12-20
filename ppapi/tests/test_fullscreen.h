@@ -18,6 +18,8 @@ namespace pp {
 class InputEvent;
 }  // namespace pp
 
+struct ColorPremul { uint32_t A, R, G, B; };  // Use premultipled Alpha.
+
 class TestFullscreen : public TestCase {
  public:
   explicit TestFullscreen(TestingInstance* instance);
@@ -33,8 +35,11 @@ class TestFullscreen : public TestCase {
   std::string TestNormalToFullscreenToNormal();
 
   void SimulateUserGesture();
-
   void FailFullscreenTest(const std::string& error);
+  void FailNormalTest(const std::string& error);
+  void PassFullscreenTest();
+  void PassNormalTest();
+  bool PaintPlugin(pp::Size size, ColorPremul color);
 
   bool GotError();
   std::string Error();
@@ -48,8 +53,7 @@ class TestFullscreen : public TestCase {
   bool fullscreen_pending_;
   bool normal_pending_;
   bool saw_first_fullscreen_didchangeview;
-  pp::Graphics2D graphics2d_fullscreen_;
-  pp::Graphics2D graphics2d_normal_;
+  pp::Graphics2D graphics2d_;
   TestCompletionCallback set_fullscreen_true_callback_;
   TestCompletionCallback fullscreen_callback_;
   TestCompletionCallback normal_callback_;
