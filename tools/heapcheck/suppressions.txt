@@ -1751,16 +1751,3 @@
    fun:browser_sync::DataTypeManagerImpl::Stop
    fun:ProfileSyncService::Shutdown
 }
-{
-   bug_108015_a
-   Heapcheck:Leak
-   fun:base::internal::WeakReferenceOwner::GetRef
-   fun:base::WeakPtrFactory::GetWeakPtr
-   fun:fileapi::MemoryFileUtilAsyncFileStream::Write
-}
-{
-   bug_108015_b
-   Heapcheck:Leak
-   fun:fileapi::MemoryFileUtil::OpenVerifiedFile
-   fun:fileapi::MemoryFileUtil::DidCreateOrTruncateForOpen
-}

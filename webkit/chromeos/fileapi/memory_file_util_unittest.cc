@@ -21,7 +21,15 @@ namespace fileapi {
 // system, based on FileUtilAsync.
 class MemoryFileUtilTest : public testing::Test {
  public:
-  MemoryFileUtilTest() {
+  MemoryFileUtilTest() : max_request_id_(0) {
+  }
+
+  ~MemoryFileUtilTest() {
+    for (std::map<int, CallbackStatus>::iterator iter = status_map_.begin();
+         iter != status_map_.end();
+         ++iter) {
+      delete iter->second.file_stream;
+    }
   }
 
   void SetUp() {
@@ -42,6 +50,15 @@ class MemoryFileUtilTest : public testing::Test {
   };
 
   struct CallbackStatus {
+    CallbackStatus()
+        : type(CALLBACK_TYPE_ERROR),
+          result(base::PLATFORM_FILE_OK),
+          file_stream(NULL),
+          length(-1),
+          completed(false),
+          called_after_completed(false),
+          called(0) {}
+
     CallbackType type;
     base::PlatformFileError result;
     base::PlatformFileInfo file_info;
@@ -57,7 +74,6 @@ class MemoryFileUtilTest : public testing::Test {
   };
 
   FileUtilAsync::StatusCallback GetStatusCallback(int request_id) {
-    max_request_id_ = std::max(request_id, max_request_id_);
     return base::Bind(&MemoryFileUtilTest::StatusCallbackImpl,
                       base::Unretained(this),
                       request_id);
@@ -65,21 +81,18 @@ class MemoryFileUtilTest : public testing::Test {
 
   FileUtilAsync::GetFileInfoCallback GetGetFileInfoCallback(
       int request_id) {
-    max_request_id_ = std::max(request_id, max_request_id_);
     return base::Bind(&MemoryFileUtilTest::GetFileInfoCallback,
                       base::Unretained(this),
                       request_id);
   }
 
   FileUtilAsync::OpenCallback GetOpenCallback(int request_id) {
-    max_request_id_ = std::max(request_id, max_request_id_);
     return base::Bind(&MemoryFileUtilTest::OpenCallback,
                       base::Unretained(this),
                       request_id);
   }
 
   AsyncFileStream::ReadWriteCallback GetReadWriteCallback(int request_id) {
-    max_request_id_ = std::max(request_id, max_request_id_);
     return base::Bind(&MemoryFileUtilTest::ReadWriteCallbackImpl,
                       base::Unretained(this),
                       request_id);
@@ -87,9 +100,6 @@ class MemoryFileUtilTest : public testing::Test {
 
   FileUtilAsync::ReadDirectoryCallback GetReadDirectoryCallback(
       int request_id) {
-    if (request_id > max_request_id_) {
-      max_request_id_ = request_id;
-    }
     return base::Bind(&MemoryFileUtilTest::ReadDirectoryCallback,
                       base::Unretained(this),
                       request_id);
@@ -158,6 +168,7 @@ class MemoryFileUtilTest : public testing::Test {
   void OpenCallback(int request_id,
                     PlatformFileError result,
                     AsyncFileStream* file_stream) {
+    DCHECK(status_map_.find(request_id) == status_map_.end());
     CallbackStatus status;
     status.type = CALLBACK_TYPE_OPEN;
     status.result = result;
@@ -210,6 +221,7 @@ class MemoryFileUtilTest : public testing::Test {
     status.result = result;
     status_map_[request_id] = status;
     stream->Write(data, length, GetReadWriteCallback(GetNextRequestId()));
+    delete stream;
   }
 
   scoped_ptr<MemoryFileUtil> file_util_;
@@ -244,14 +256,15 @@ TEST_F(MemoryFileUtilTest, TestCreateGetFileInfo) {
   status = GetStatus(request_id2);
   ASSERT_EQ(base::PLATFORM_FILE_OK, status.result);
 
+  const int request_id3 = GetNextRequestId();
   file_util()->GetFileInfo(FilePath("/mnt/memory/test.txt"),
-                           GetGetFileInfoCallback(3));
+                           GetGetFileInfoCallback(request_id3));
   MessageLoop::current()->RunAllPending();
 
   base::Time end_create = base::Time::Now();
 
-  ASSERT_EQ(CALLBACK_TYPE_GET_FILE_INFO, GetStatusType(3));
-  status = GetStatus(3);
+  ASSERT_EQ(CALLBACK_TYPE_GET_FILE_INFO, GetStatusType(request_id3));
+  status = GetStatus(request_id3);
   ASSERT_EQ(base::PLATFORM_FILE_OK, status.result);
   ASSERT_EQ(0, status.file_info.size);
   ASSERT_FALSE(status.file_info.is_directory);
@@ -379,7 +392,7 @@ TEST_F(MemoryFileUtilTest, TestReadWrite) {
   ASSERT_EQ(base::PLATFORM_FILE_OK, status.result);
   ASSERT_EQ(base::PLATFORM_FILE_OK, status.result);
 
-  scoped_ptr<AsyncFileStream> read_file_stream(status.file_stream);
+  AsyncFileStream* read_file_stream = status.file_stream;
 
   // Read the whole file
   char buffer[1024];
@@ -422,7 +435,7 @@ TEST_F(MemoryFileUtilTest, TestReadWrite) {
   status = GetStatus(request_id11);
   ASSERT_EQ(base::PLATFORM_FILE_OK, status.result);
 
-  scoped_ptr<AsyncFileStream> write_file_stream2(status.file_stream);
+  AsyncFileStream* write_file_stream2 = status.file_stream;
 
   // Check that the size has not changed.
 

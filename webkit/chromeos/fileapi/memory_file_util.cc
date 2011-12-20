@@ -22,7 +22,7 @@ class MemoryFileUtilAsyncFileStream : public AsyncFileStream {
       : file_entry_(file_entry),
         flags_(flags),
         offset_(0),
-        weak_ptr_factory_(this) {
+        weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   }
 
   // AsyncFileStream override.
@@ -210,6 +210,7 @@ void MemoryFileUtil::Open(
           0,
           base::Bind(&MemoryFileUtil::OpenTruncatedFileOrCreate,
                      base::Unretained(this), file_path, flags, callback));
+      break;
 
     case base::PLATFORM_FILE_OPEN_TRUNCATED:
       Truncate(
