@@ -63,6 +63,7 @@ PanelStrip::PanelStrip(PanelManager* panel_manager)
 PanelStrip::~PanelStrip() {
   DCHECK(panels_.empty());
   DCHECK(panels_pending_to_remove_.empty());
+  DCHECK(panels_in_temporary_layout_.empty());
   DCHECK_EQ(0, minimized_panel_count_);
 }
 
@@ -150,7 +151,10 @@ void PanelStrip::AddPanel(Panel* panel) {
     panel->Initialize(gfx::Rect(x, y, width, height));
   }
 
-  panels_.push_back(panel);
+  if (panel->has_temporary_layout())
+    panels_in_temporary_layout_.insert(panel);
+  else
+    panels_.push_back(panel);
 }
 
 int PanelStrip::GetMaxPanelWidth() const {
@@ -171,6 +175,11 @@ int PanelStrip::GetRightMostAvailablePosition() const {
 }
 
 bool PanelStrip::Remove(Panel* panel) {
+  if (panel->has_temporary_layout()) {
+    panels_in_temporary_layout_.erase(panel);
+    return true;
+  }
+
   if (find(panels_.begin(), panels_.end(), panel) == panels_.end())
     return false;
 
@@ -658,21 +667,16 @@ void PanelStrip::Rearrange() {
 }
 
 void PanelStrip::DelayedMovePanelToOverflow(Panel* panel) {
-  // Make sure panel still exists in the strip.
-  // Search in reverse as new panels are at the end of the strip.
-  for (Panels::reverse_iterator iter = panels_.rbegin();
-       iter != panels_.rend(); ++iter) {
-    if (*iter == panel) {
+  if (panels_in_temporary_layout_.erase(panel)) {
       DCHECK(panel->has_temporary_layout());
       panel->SetExpansionState(Panel::IN_OVERFLOW);
-      break;
-    }
   }
 }
 
 void PanelStrip::RemoveAll() {
-  // This should not be called when we're in the process of dragging.
+  // This should only be called at the end of tests to clean up.
   DCHECK(dragging_panel_index_ == kInvalidPanelIndex);
+  DCHECK(panels_in_temporary_layout_.empty());
 
   // Make a copy of the iterator as closing panels can modify the vector.
   Panels panels_copy = panels_;

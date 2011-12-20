@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_PANELS_PANEL_STRIP_H_
 #pragma once
 
+#include <set>
 #include <vector>
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
@@ -67,9 +68,12 @@ class PanelStrip : public PanelMouseWatcherObserver {
   int GetBottomPositionForExpansionState(
       Panel::ExpansionState expansion_state) const;
 
+  // num_panels() and panels() only includes panels in the panel strip that
+  // do NOT have a temporary layout.
   int num_panels() const { return panels_.size(); }
-  bool is_dragging_panel() const;
   const Panels& panels() const { return panels_; }
+
+  bool is_dragging_panel() const;
   gfx::Rect display_area() const { return display_area_; }
 
   int GetMaxPanelWidth() const;
@@ -81,6 +85,12 @@ class PanelStrip : public PanelMouseWatcherObserver {
       AutoHidingDesktopBar::Visibility visibility);
 
   void OnFullScreenModeChanged(bool is_full_screen);
+
+#ifdef UNIT_TEST
+  int num_temporary_layout_panels() const {
+    return panels_in_temporary_layout_.size();
+  }
+#endif
 
  private:
   enum TitlebarAction {
@@ -139,6 +149,10 @@ class PanelStrip : public PanelMouseWatcherObserver {
   // Stores the panels that are pending to remove. We want to delay the removal
   // when we're in the process of the dragging.
   Panels panels_pending_to_remove_;
+
+  // Stores newly created panels that have a temporary layout until they
+  // are moved to overflow after a delay.
+  std::set<Panel*> panels_in_temporary_layout_;
 
   int minimized_panel_count_;
   bool are_titlebars_up_;

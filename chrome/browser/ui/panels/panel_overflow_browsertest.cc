@@ -173,11 +173,13 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 #define MAYBE_CreateOverflowPanels CreateOverflowPanels
 #define MAYBE_CreateMoreOverflowPanels CreateMoreOverflowPanels
 // http://crbug.com/107230
-#define MAYBE_CreatePanelOnDelayedOverflow FAILS_CreatePanelOnDelayedOverflow
+#define MAYBE_CreatePanelOnDelayedOverflow CreatePanelOnDelayedOverflow
 #define MAYBE_CloseOverflowPanels CloseOverflowPanels
 #define MAYBE_CloseNormalPanels CloseNormalPanels
+#define MAYBE_CloseWithDelayedOverflow CloseWithDelayedOverflow
 #define MAYBE_ActivateOverflowPanels ActivateOverflowPanels
 #define MAYBE_HoverOverOverflowArea HoverOverOverflowArea
+#define MAYBE_ResizePanel ResizePanel
 #else
 #define MAYBE_CheckPanelProperties DISABLED_CheckPanelProperties
 #define MAYBE_UpdateDraggableStatus DISABLED_UpdateDraggableStatus
@@ -186,8 +188,10 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 #define MAYBE_CreatePanelOnDelayedOverflow DISABLED_CreatePanelOnDelayedOverflow
 #define MAYBE_CloseOverflowPanels DISABLED_CloseOverflowPanels
 #define MAYBE_CloseNormalPanels DISABLED_CloseNormalPanels
+#define MAYBE_CloseWithDelayedOverflow DISABLED_CloseWithDelayedOverflow
 #define MAYBE_ActivateOverflowPanels DISABLED_ActivateOverflowPanels
 #define MAYBE_HoverOverOverflowArea DISABLED_HoverOverOverflowArea
+#define MAYBE_ResizePanel DISABLED_ResizePanel
 #endif
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CheckPanelProperties) {
@@ -302,7 +306,9 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
   CreatePanelParams params(
       "Panel2", gfx::Rect(0, 0, 255, 200), SHOW_AS_INACTIVE);
   params.wait_for_fully_created = false;
-  CreatePanelWithParams(params);
+  Panel* overflow_panel = CreatePanelWithParams(params);
+  EXPECT_EQ(Panel::EXPANDED, overflow_panel->expansion_state());
+  EXPECT_TRUE(overflow_panel->has_temporary_layout());
 
   // Create a small panel that could fit within the available space in the
   // panel strip.
@@ -312,6 +318,8 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
   EXPECT_EQ(Panel::EXPANDED, panel3->expansion_state());
   EXPECT_FALSE(panel3->has_temporary_layout());
 
+  WaitForExpansionStateChanged(overflow_panel, Panel::IN_OVERFLOW);
+  EXPECT_FALSE(overflow_panel->has_temporary_layout());
   PanelManager::GetInstance()->RemoveAll();
 }
 
@@ -534,6 +542,59 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CloseNormalPanels) {
   EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
 
   panel_manager->RemoveAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
+                       MAYBE_CloseWithDelayedOverflow) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  PanelStrip* panel_strip = panel_manager->panel_strip();
+
+  // Create 2 big panels.
+  Panel* panel0 = CreatePanelWithBounds("Panel0", gfx::Rect(0, 0, 260, 200));
+  Panel* panel1 = CreatePanelWithBounds("Panel1", gfx::Rect(0, 0, 260, 200));
+
+  // Create an overflow panel without waiting for it to be moved to overflow.
+  CreatePanelParams params(
+      "Panel2", gfx::Rect(0, 0, 255, 200), SHOW_AS_INACTIVE);
+  params.wait_for_fully_created = false;
+  Panel* overflow_panel = CreatePanelWithParams(params);
+  EXPECT_EQ(2, panel_strip->num_panels());
+  EXPECT_EQ(1, panel_strip->num_temporary_layout_panels());
+  EXPECT_TRUE(overflow_panel->has_temporary_layout());
+
+  // Close the overflow panel while it is still in temporary layout.
+  CloseWindowAndWait(overflow_panel->browser());
+  EXPECT_EQ(2, panel_strip->num_panels());
+  EXPECT_EQ(0, panel_strip->num_temporary_layout_panels());
+
+  // Create another overflow panel without waiting for it to move to overflow.
+  params.name = "Panel3";
+  overflow_panel = CreatePanelWithParams(params);
+  EXPECT_EQ(2, panel_strip->num_panels());
+  EXPECT_EQ(1, panel_strip->num_temporary_layout_panels());
+  EXPECT_TRUE(overflow_panel->has_temporary_layout());
+
+  // Close one of the non-overflow panels. Expect the delayed overflow
+  // panel will not be affected by the close.
+  // Hack. Pretend to close panel by removing it directly. Cannot use
+  // CloseWindowAndWait() here because it will allow the delayed overflow
+  // to complete.
+  panel_strip->Remove(panel1);
+  EXPECT_EQ(1, panel_strip->num_panels());
+  EXPECT_EQ(1, panel_strip->num_temporary_layout_panels());
+  EXPECT_TRUE(overflow_panel->has_temporary_layout());
+
+  // Make sure the overflow panel actually moves to overflow.
+  WaitForExpansionStateChanged(overflow_panel, Panel::IN_OVERFLOW);
+  EXPECT_EQ(0, panel_strip->num_temporary_layout_panels());
+
+  // Hack. Put the "falsely closed" panel back into the panel strip
+  // so we can properly close it to wrap up this test.
+  panel_strip->AddPanel(panel1);
+
+  panel0->Close();
+  panel1->Close();
+  overflow_panel->Close();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_ActivateOverflowPanels) {
@@ -765,4 +826,101 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_HoverOverOverflowArea) {
   EXPECT_EQ(0, panels[7]->GetBounds().width());
 
   panel_manager->RemoveAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_ResizePanel) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  panel_manager->enable_auto_sizing(true);
+  PanelStrip* panel_strip = panel_manager->panel_strip();
+  PanelOverflowStrip* overflow_strip = panel_manager->panel_overflow_strip();
+
+  // Create 4 panels that fit.
+  // normal: P1 (250), P2 (200), P3 (100), P4 (100)
+  // overflow: empty
+  Panel* panel1 = CreatePanelWithBounds("1", gfx::Rect(0, 0, 250, 200));
+  Panel* panel2 = CreatePanelWithBounds("2", gfx::Rect(0, 0, 200, 200));
+  Panel* panel3 = CreatePanelWithBounds("3", gfx::Rect(0, 0, 100, 200));
+  Panel* panel4 = CreatePanelWithBounds("4", gfx::Rect(0, 0, 100, 200));
+  EXPECT_EQ(4, panel_strip->num_panels());
+  EXPECT_EQ(0, overflow_strip->num_panels());
+
+  // Resize last panel so that it is too big to fit and overflows.
+  // normal: P1 (250), P2 (200), P3 (100)
+  // overflow: P4 (250)*
+  panel_manager->OnPreferredWindowSizeChanged(panel4, gfx::Size(250, 200));
+  EXPECT_EQ(3, panel_strip->num_panels());
+  EXPECT_EQ(1, overflow_strip->num_panels());
+  EXPECT_EQ(Panel::IN_OVERFLOW, panel4->expansion_state());
+
+  // Open another panel that will fit.
+  // normal: P1 (250), P2 (200), P3 (100), P5 (100)*
+  // overflow: P4 (250)
+  Panel* panel5 = CreatePanelWithBounds("5", gfx::Rect(0, 0, 100, 200));
+  EXPECT_EQ(4, panel_strip->num_panels());
+  EXPECT_EQ(1, overflow_strip->num_panels());
+  EXPECT_EQ(Panel::EXPANDED, panel5->expansion_state());
+  EXPECT_EQ(Panel::IN_OVERFLOW, panel4->expansion_state());  // no change
+
+  // Resize a panel from the middle of the strip so that it causes a
+  // panel to overflow.
+  // normal: P1 (250), P2 (200), P3 (250)*
+  // overflow: P5 (100), P4 (250)
+  panel_manager->OnPreferredWindowSizeChanged(panel3, gfx::Size(250, 200));
+  EXPECT_EQ(3, panel_strip->num_panels());
+  EXPECT_EQ(2, overflow_strip->num_panels());
+  EXPECT_EQ(Panel::IN_OVERFLOW, panel4->expansion_state());
+  EXPECT_EQ(Panel::IN_OVERFLOW, panel5->expansion_state());
+  const PanelOverflowStrip::Panels& overflow = overflow_strip->panels();
+  EXPECT_EQ(panel5, overflow[0]);  // new overflow panel is first
+  EXPECT_EQ(panel4, overflow[1]);
+
+  // Resize panel smaller so that panel from overflow can fit.
+  // normal: P1 (250), P2 (200), P3 (100)*, P5 (100)
+  // overflow: P4 (250)
+  panel_manager->OnPreferredWindowSizeChanged(panel3, gfx::Size(100, 200));
+  EXPECT_EQ(4, panel_strip->num_panels());
+  EXPECT_EQ(1, overflow_strip->num_panels());
+  EXPECT_EQ(Panel::EXPANDED, panel5->expansion_state());
+  EXPECT_EQ(Panel::IN_OVERFLOW, panel4->expansion_state());
+
+  // Resize smaller again but not small enough to fit overflow panel.
+  // normal: P1 (250), P2 (100)*, P3 (100), P5 (100)
+  // overflow: P4 (250)
+  panel_manager->OnPreferredWindowSizeChanged(panel2, gfx::Size(100, 200));
+  EXPECT_EQ(4, panel_strip->num_panels());
+  EXPECT_EQ(1, overflow_strip->num_panels());
+  EXPECT_EQ(Panel::IN_OVERFLOW, panel4->expansion_state());  // no change
+
+  // Resize overflow panel to make it fit.
+  // normal: P1 (250), P2 (100), P3 (100), P5 (100), P4 (100)*
+  // overflow: empty
+  panel_manager->OnPreferredWindowSizeChanged(panel4, gfx::Size(100, 200));
+  EXPECT_EQ(5, panel_strip->num_panels());
+  EXPECT_EQ(0, overflow_strip->num_panels());
+  EXPECT_EQ(Panel::EXPANDED, panel4->expansion_state());
+
+  // Resize a panel bigger, but not enough to cause overflow.
+  // normal: P1 (250), P2 (100), P3 (150)*, P5 (100), P4 (100)
+  // overflow: empty
+  panel_manager->OnPreferredWindowSizeChanged(panel3, gfx::Size(150, 200));
+  EXPECT_EQ(5, panel_strip->num_panels());
+  EXPECT_EQ(0, overflow_strip->num_panels());
+
+  // Resize a panel to bump more than one panel to overflow.
+  // normal: P1 (250), P2 (250)*, P3 (150)
+  // overflow: P5 (100), P4 (100)
+  panel_manager->OnPreferredWindowSizeChanged(panel2, gfx::Size(250, 200));
+  EXPECT_EQ(3, panel_strip->num_panels());
+  EXPECT_EQ(2, overflow_strip->num_panels());
+  EXPECT_EQ(Panel::IN_OVERFLOW, panel4->expansion_state());
+  EXPECT_EQ(Panel::IN_OVERFLOW, panel5->expansion_state());
+  const PanelOverflowStrip::Panels& overflow2 = overflow_strip->panels();
+  EXPECT_EQ(panel5, overflow2[0]);  // strip order is preserved
+  EXPECT_EQ(panel4, overflow2[1]);
+
+  panel1->Close();
+  panel2->Close();
+  panel3->Close();
+  panel4->Close();
+  panel5->Close();
 }
