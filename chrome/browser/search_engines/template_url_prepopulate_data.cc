@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
@@ -3551,11 +3552,12 @@ int GetSearchEngineLogo(const GURL& url_to_find) {
 }
 
 TemplateURL* FindPrepopulatedEngine(const std::string& search_url) {
-  for (size_t i = 0; i < arraysize(kAllEngines); ++i) {
-    if (search_url == ToUTF8(kAllEngines[i]->search_url))
-      return MakePrepopulateTemplateURLFromPrepopulateEngine(*kAllEngines[i]);
-  }
-  return NULL;
+  GURL search_origin(GetOriginForSearchURL(search_url));
+  // First check if it is a Google URL. User may have a custom search provider
+  // with a hard-coded Google domain instead of {google:baseURL}.
+  if (google_util::IsGoogleHomePageUrl((search_origin.spec())))
+    return MakePrepopulateTemplateURLFromPrepopulateEngine(google);
+  return GetEngineForOrigin(NULL, search_origin);
 }
 
 }  // namespace TemplateURLPrepopulateData

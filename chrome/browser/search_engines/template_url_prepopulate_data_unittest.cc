@@ -185,3 +185,47 @@ TEST_F(TemplateURLPrepopulateDataTest, GetSearchEngineLogo) {
             TemplateURLPrepopulateData::GetSearchEngineLogo(engine_no_logo));
 
 }
+
+TEST_F(TemplateURLPrepopulateDataTest, FindPrepopulatedEngine) {
+  // Google URLs in different forms.
+  std::string google_search_url =
+      "{google:baseURL}search?{google:RLZ}{google:acceptedSuggestion}"
+      "{google:originalQueryForSuggestion}{google:searchFieldtrialParameter}"
+      "{google:instantFieldTrialGroupParameter}"
+      "sourceid=chrome&ie={inputEncoding}&q={searchTerms}";
+  std::string custom_google_search_url1 =
+      "http://google.com/search?{google:RLZ}{google:acceptedSuggestion}"
+      "{google:originalQueryForSuggestion}{google:searchFieldtrialParameter}"
+      "{google:instantFieldTrialGroupParameter}"
+      "sourceid=chrome&ie={inputEncoding}&q={searchTerms}";
+  std::string custom_google_search_url2 =
+      "http://www.google.ru/search?{google:RLZ}{google:acceptedSuggestion}"
+      "{google:originalQueryForSuggestion}{google:searchFieldtrialParameter}"
+      "{google:instantFieldTrialGroupParameter}"
+      "sourceid=chrome&ie={inputEncoding}&q={searchTerms}";
+  // Google's prepopulated ID is 1:
+  EXPECT_EQ(1, TemplateURLPrepopulateData::FindPrepopulatedEngine(
+      google_search_url)->prepopulate_id());
+  EXPECT_EQ(1, TemplateURLPrepopulateData::FindPrepopulatedEngine(
+      custom_google_search_url1)->prepopulate_id());
+  EXPECT_EQ(1, TemplateURLPrepopulateData::FindPrepopulatedEngine(
+      custom_google_search_url2)->prepopulate_id());
+  // Non-Google URLs.
+  std::string yahoo_search_url =
+      "http://search.yahoo.com/search?"
+      "ei={inputEncoding}&fr=crmas&p={searchTerms}";
+  std::string custom_yahoo_search_url =
+      "http://search.yahoo.com/search?p={searchTerms}";
+  // Yahoo!'s prepopulated ID is 2:
+  EXPECT_EQ(2, TemplateURLPrepopulateData::FindPrepopulatedEngine(
+      yahoo_search_url)->prepopulate_id());
+  EXPECT_EQ(2, TemplateURLPrepopulateData::FindPrepopulatedEngine(
+      custom_yahoo_search_url)->prepopulate_id());
+  // Search URL for which no prepopulated search provider exists.
+  std::string example_search_url = "http://example.net/search?q={searchTerms}";
+  EXPECT_FALSE(TemplateURLPrepopulateData::FindPrepopulatedEngine(
+      example_search_url));
+  // Invalid search URL.
+  EXPECT_FALSE(TemplateURLPrepopulateData::FindPrepopulatedEngine(
+      "invalid:search:url"));
+}

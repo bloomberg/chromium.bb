@@ -46,9 +46,9 @@ TemplateURL* GetEngineForOrigin(PrefService* prefs, const GURL& url_to_find);
 // Returns search engine logo for URLs known to have a search engine logo.
 int GetSearchEngineLogo(const GURL& url_to_find);
 
-// Returns the prepopulated search provider whose search URL matches
-// |search_url| or NULL if none is found.  The caller is responsible for
-// deleting the returned TemplateURL.
+// Returns the prepopulated search provider whose search URL origin matches the
+// origin of |search_url| or NULL if none is found. The caller is responsible
+// for deleting the returned TemplateURL.
 TemplateURL* FindPrepopulatedEngine(const std::string& search_url);
 
 }  // namespace TemplateURLPrepopulateData
