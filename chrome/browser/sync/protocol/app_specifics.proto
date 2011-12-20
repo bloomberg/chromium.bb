@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -49,6 +49,14 @@ message AppSpecifics {
 
   // Notification settings.
   optional AppNotificationSettings notification_settings = 2; 
+
+  // This controls where on a page this application icon will appear.
+  optional string app_launch_ordinal = 3;
+
+  // This specifics which page the application icon will appear on in the NTP.
+  // This values only provide the order within the application pages, not within
+  // all of the panels in the NTP.
+  optional string page_ordinal = 4;
 }
 
 extend EntitySpecifics {

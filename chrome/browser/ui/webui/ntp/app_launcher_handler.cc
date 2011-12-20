@@ -668,10 +668,9 @@ void AppLauncherHandler::HandleReorderApps(const ListValue* args) {
   // Don't update the page; it already knows the apps have been reordered.
   AutoReset<bool> auto_reset(&ignore_changes_, true);
   extension_service_->extension_prefs()->SetAppDraggedByUser(dragged_app_id);
-  extension_service_->extension_prefs()->OnExtensionMoved(
-      dragged_app_id,
-      predecessor_to_moved_ext,
-      successor_to_moved_ext);
+  extension_service_->OnExtensionMoved(dragged_app_id,
+                                       predecessor_to_moved_ext,
+                                       successor_to_moved_ext);
 }
 
 void AppLauncherHandler::HandleSetPageIndex(const ListValue* args) {

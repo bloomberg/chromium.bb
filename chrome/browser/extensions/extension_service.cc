@@ -712,7 +712,9 @@ bool ExtensionService::UninstallExtension(
         IsExtensionEnabled(extension_id),
         IsIncognitoEnabled(extension_id),
         extension_prefs_->GetAppNotificationClientId(extension_id),
-        extension_prefs_->IsAppNotificationDisabled(extension_id));
+        extension_prefs_->IsAppNotificationDisabled(extension_id),
+        GetAppLaunchOrdinal(extension_id),
+        GetPageOrdinal(extension_id));
     sync_change = extension_sync_data.GetSyncChange(SyncChange::ACTION_DELETE);
   }
 
@@ -1236,7 +1238,9 @@ void ExtensionService::SyncExtensionChangeIfNeeded(const Extension& extension) {
         IsExtensionEnabled(extension.id()),
         IsIncognitoEnabled(extension.id()),
         extension_prefs_->GetAppNotificationClientId(extension.id()),
-        extension_prefs_->IsAppNotificationDisabled(extension.id()));
+        extension_prefs_->IsAppNotificationDisabled(extension.id()),
+        GetAppLaunchOrdinal(extension.id()),
+        GetPageOrdinal(extension.id()));
 
     SyncChangeList sync_change_list(1, extension_sync_data.GetSyncChange(
         sync_bundle->HasExtensionId(extension.id()) ?
@@ -1407,7 +1411,9 @@ void ExtensionService::GetSyncDataListHelper(
           IsExtensionEnabled(extension.id()),
           IsIncognitoEnabled(extension.id()),
           extension_prefs_->GetAppNotificationClientId(extension.id()),
-          extension_prefs_->IsAppNotificationDisabled(extension.id())));
+          extension_prefs_->IsAppNotificationDisabled(extension.id()),
+          GetAppLaunchOrdinal(extension.id()),
+          GetPageOrdinal(extension.id())));
     }
   }
 }
@@ -1593,6 +1599,54 @@ bool ExtensionService::CanLoadInIncognito(const Extension* extension) const {
   // incognito (and split mode should be set).
   return extension->incognito_split_mode() &&
          IsIncognitoEnabled(extension->id());
+}
+
+StringOrdinal ExtensionService::GetAppLaunchOrdinal(
+    const std::string& extension_id) const {
+  return extension_prefs_->GetAppLaunchOrdinal(extension_id);
+}
+
+void ExtensionService::SetAppLaunchOrdinal(
+    const std::string& extension_id,
+    const StringOrdinal& app_launch_index) {
+  const Extension* ext = GetExtensionById(extension_id, true);
+  DCHECK(ext->is_app());
+
+  extension_prefs_->SetAppLaunchOrdinal(extension_id, app_launch_index);
+
+  const Extension* extension = GetInstalledExtension(extension_id);
+  if (extension)
+    SyncExtensionChangeIfNeeded(*extension);
+}
+
+StringOrdinal ExtensionService::GetPageOrdinal(
+    const std::string& extension_id) const {
+  return extension_prefs_->GetPageOrdinal(extension_id);
+}
+
+void ExtensionService::SetPageOrdinal(const std::string& extension_id,
+                                      const StringOrdinal& page_ordinal) {
+  const Extension* ext = GetExtensionById(extension_id, true);
+  DCHECK(ext->is_app());
+
+  extension_prefs_->SetPageOrdinal(extension_id, page_ordinal);
+
+  const Extension* extension = GetInstalledExtension(extension_id);
+  if (extension)
+    SyncExtensionChangeIfNeeded(*extension);
+}
+
+void ExtensionService::OnExtensionMoved(
+    const std::string& moved_extension_id,
+    const std::string& predecessor_extension_id,
+    const std::string& successor_extension_id) {
+  extension_prefs_->OnExtensionMoved(moved_extension_id,
+                                     predecessor_extension_id,
+                                     successor_extension_id);
+
+  const Extension* extension = GetInstalledExtension(moved_extension_id);
+  if (extension)
+    SyncExtensionChangeIfNeeded(*extension);
 }
 
 bool ExtensionService::AllowFileAccess(const Extension* extension) {

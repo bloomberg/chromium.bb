@@ -3805,7 +3805,7 @@ TEST_F(ExtensionServiceTest, GetSyncDataFilter) {
   ASSERT_EQ(list.size(), 0U);
 }
 
-TEST_F(ExtensionServiceTest, GetSyncDataUserSettings) {
+TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
   InitializeEmptyExtensionService();
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
   const Extension* extension = service_->GetInstalledExtension(good_crx);
@@ -3848,6 +3848,85 @@ TEST_F(ExtensionServiceTest, GetSyncDataUserSettings) {
     ExtensionSyncData data(list[0]);
     EXPECT_TRUE(data.enabled());
     EXPECT_TRUE(data.incognito_enabled());
+  }
+}
+
+TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
+  InitializeEmptyExtensionService();
+  const Extension* app =
+      PackAndInstallCRX(data_dir_.AppendASCII("app"), INSTALL_NEW);
+  ASSERT_TRUE(app);
+  ASSERT_TRUE(app->is_app());
+
+  TestSyncProcessorStub processor;
+  service_->MergeDataAndStartSyncing(syncable::APPS, SyncDataList(),
+      &processor);
+
+  StringOrdinal initial_ordinal = StringOrdinal::CreateInitialOrdinal();
+  {
+    SyncDataList list = service_->GetAllSyncData(syncable::APPS);
+    ASSERT_EQ(list.size(), 1U);
+    ExtensionSyncData data(list[0]);
+    EXPECT_TRUE(initial_ordinal.Equal(data.app_launch_ordinal()));
+    EXPECT_TRUE(initial_ordinal.Equal(data.page_ordinal()));
+  }
+
+  service_->SetAppLaunchOrdinal(app->id(), initial_ordinal.CreateAfter());
+  {
+    SyncDataList list = service_->GetAllSyncData(syncable::APPS);
+    ASSERT_EQ(list.size(), 1U);
+    ExtensionSyncData data(list[0]);
+    EXPECT_TRUE(initial_ordinal.LessThan(data.app_launch_ordinal()));
+    EXPECT_TRUE(initial_ordinal.Equal(data.page_ordinal()));
+  }
+
+  service_->SetPageOrdinal(app->id(), initial_ordinal.CreateAfter());
+  {
+    SyncDataList list = service_->GetAllSyncData(syncable::APPS);
+    ASSERT_EQ(list.size(), 1U);
+    ExtensionSyncData data(list[0]);
+    EXPECT_TRUE(initial_ordinal.LessThan(data.app_launch_ordinal()));
+    EXPECT_TRUE(initial_ordinal.LessThan(data.page_ordinal()));
+  }
+}
+
+TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettingsOnExtensionMoved) {
+  InitializeEmptyExtensionService();
+  const size_t kAppCount = 3;
+  const Extension* apps[kAppCount];
+  apps[0] = PackAndInstallCRX(data_dir_.AppendASCII("app1"), INSTALL_NEW);
+  apps[1] = PackAndInstallCRX(data_dir_.AppendASCII("app2"), INSTALL_NEW);
+  apps[2] = PackAndInstallCRX(data_dir_.AppendASCII("app4"), INSTALL_NEW);
+  for (size_t i = 0; i < kAppCount; ++i) {
+    ASSERT_TRUE(apps[i]);
+    ASSERT_TRUE(apps[i]->is_app());
+  }
+
+  TestSyncProcessorStub processor;
+  service_->MergeDataAndStartSyncing(syncable::APPS, SyncDataList(),
+      &processor);
+
+  service_->OnExtensionMoved(apps[0]->id(), apps[1]->id(), apps[2]->id());
+  {
+    SyncDataList list = service_->GetAllSyncData(syncable::APPS);
+    ASSERT_EQ(list.size(), 3U);
+    ExtensionSyncData data[kAppCount];
+    for (size_t i = 0; i < kAppCount; ++i)
+      data[i] = ExtensionSyncData(list[i]);
+
+    // The sync data is not always in the same order our apps were installed in,
+    // so we do that sorting here so we can make sure the values are changed as
+    // expected.
+    StringOrdinal app_launch_ordinals[kAppCount];
+    for (size_t i = 0; i < kAppCount; ++i) {
+      for (size_t j = 0; j < kAppCount; ++j) {
+        if (apps[i]->id() == data[j].id())
+          app_launch_ordinals[i] = data[j].app_launch_ordinal();
+      }
+    }
+
+    EXPECT_TRUE(app_launch_ordinals[1].LessThan(app_launch_ordinals[0]));
+    EXPECT_TRUE(app_launch_ordinals[0].LessThan(app_launch_ordinals[2]));
   }
 }
 

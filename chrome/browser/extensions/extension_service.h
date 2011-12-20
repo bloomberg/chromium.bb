@@ -223,6 +223,25 @@ class ExtensionService
   virtual void SetAppNotificationDisabled(const std::string& extension_id,
       bool value);
 
+  // Getters and setters for the position of Apps in the NTP. The setters
+  // will trigger a sync if needed.
+  // The getters return invalid StringOridinals for non-app extensions and
+  // setting ordinals for non-apps is an error.
+  StringOrdinal GetAppLaunchOrdinal(const std::string& extension_id) const;
+  void SetAppLaunchOrdinal(const std::string& extension_id,
+                           const StringOrdinal& app_launch_ordinal);
+  StringOrdinal GetPageOrdinal(const std::string& extension_id) const;
+  void SetPageOrdinal(const std::string& extension_id,
+                      const StringOrdinal& page_ordinal);
+
+  // Updates the app launcher value for the moved extension so that it is now
+  // located after the given predecessor and before the successor. This will
+  // trigger a sync if needed. Empty strings are used to indicate no successor
+  // or predecessor.
+  void OnExtensionMoved(const std::string& moved_extension_id,
+                        const std::string& predecessor_extension_id,
+                        const std::string& successor_extension_id);
+
   // Returns true if the given extension can see events and data from another
   // sub-profile (incognito to original profile, or vice versa).
   bool CanCrossIncognito(const Extension* extension);

@@ -92,6 +92,11 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataToSyncDataForExtension) {
 TEST_F(ExtensionSyncDataTest, SyncDataToExtensionSyncDataForApp) {
   sync_pb::EntitySpecifics entity;
   sync_pb::AppSpecifics* app_specifics = entity.MutableExtension(sync_pb::app);
+  app_specifics->set_app_launch_ordinal(
+      StringOrdinal::CreateInitialOrdinal().ToString());
+  app_specifics->set_page_ordinal(
+      StringOrdinal::CreateInitialOrdinal().ToString());
+
   sync_pb::ExtensionSpecifics* extension_specifics =
       app_specifics->mutable_extension();
   extension_specifics->set_id(kValidId);
@@ -108,6 +113,10 @@ TEST_F(ExtensionSyncDataTest, SyncDataToExtensionSyncDataForApp) {
       SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
 
   ExtensionSyncData extension_sync_data(sync_data);
+  EXPECT_EQ(app_specifics->app_launch_ordinal(),
+            extension_sync_data.app_launch_ordinal().ToString());
+  EXPECT_EQ(app_specifics->page_ordinal(),
+            extension_sync_data.page_ordinal().ToString());
   EXPECT_EQ(extension_specifics->id(), extension_sync_data.id());
   EXPECT_EQ(extension_specifics->version(),
             extension_sync_data.version().GetString());
@@ -128,6 +137,11 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataToSyncDataForApp) {
   sync_pb::EntitySpecifics entity;
   sync_pb::AppSpecifics* input_specifics = entity.MutableExtension(
       sync_pb::app);
+  input_specifics->set_app_launch_ordinal(
+      StringOrdinal::CreateInitialOrdinal().ToString());
+  input_specifics->set_page_ordinal(
+      StringOrdinal::CreateInitialOrdinal().ToString());
+
   sync_pb::ExtensionSpecifics* input_extension =
       input_specifics->mutable_extension();
   input_extension->set_id(kValidId);
@@ -150,6 +164,35 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataToSyncDataForApp) {
       output_sync_data.GetSpecifics().GetExtension(sync_pb::app);
   EXPECT_EQ(input_specifics->SerializeAsString(),
             output_specifics.SerializeAsString());
+}
+
+// Ensures that invalid StringOrdinals don't break ExtensionSyncData.
+TEST_F(ExtensionSyncDataTest, ExtensionSyncDataInvalidOrdinal) {
+  sync_pb::EntitySpecifics entity;
+  sync_pb::AppSpecifics* app_specifics = entity.MutableExtension(sync_pb::app);
+  // Set the ordinals as invalid.
+  app_specifics->set_app_launch_ordinal("");
+  app_specifics->set_page_ordinal("");
+
+  sync_pb::ExtensionSpecifics* extension_specifics =
+      app_specifics->mutable_extension();
+  extension_specifics->set_id(kValidId);
+  extension_specifics->set_update_url(kValidUpdateUrl2);
+  extension_specifics->set_enabled(false);
+  extension_specifics->set_incognito_enabled(true);
+  extension_specifics->set_version(kVersion1);
+  extension_specifics->set_name(kName);
+  sync_pb::AppNotificationSettings* notif_settings =
+      app_specifics->mutable_notification_settings();
+  notif_settings->set_oauth_client_id(kOAuthClientId);
+  notif_settings->set_disabled(true);
+  SyncData sync_data =
+      SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
+
+  ExtensionSyncData extension_sync_data(sync_data);
+
+  // Try loading the synced data back out, there should be no problems.
+  extension_sync_data.PopulateAppSpecifics(app_specifics);
 }
 
 }  // namespace

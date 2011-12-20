@@ -115,10 +115,9 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // Updates the app launcher value for the moved extension so that it is now
   // located after the given predecessor and before the successor.
   // Empty strings are used to indicate no successor or predecessor.
-  void OnExtensionMoved(
-      const std::string& moved_extension_id,
-      const std::string& predecessor_extension_id,
-      const std::string& successor_extension_id);
+  void OnExtensionMoved(const std::string& moved_extension_id,
+                        const std::string& predecessor_extension_id,
+                        const std::string& successor_extension_id);
 
   // Called to change the extension's state when it is enabled/disabled.
   void SetExtensionState(const std::string& extension_id, Extension::State);
