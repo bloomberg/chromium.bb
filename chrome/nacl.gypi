@@ -18,8 +18,6 @@
           '<(INTERMEDIATE_DIR)',
         ],
         'defines': [
-          'NACL_BLOCK_SHIFT=5',
-          'NACL_BLOCK_SIZE=32',
           '<@(nacl_defines)',
         ],
         'sources': [
@@ -82,8 +80,6 @@
           ],
           'direct_dependent_settings': {
             'defines': [
-              'NACL_BLOCK_SHIFT=5',
-              'NACL_BLOCK_SIZE=32',
               '<@(nacl_defines)',
             ],
           },
@@ -122,8 +118,6 @@
               },
               'direct_dependent_settings': {
                 'defines': [
-                  'NACL_BLOCK_SHIFT=5',
-                  'NACL_BLOCK_SIZE=32',
                   '<@(nacl_defines)',
                 ],
               },
