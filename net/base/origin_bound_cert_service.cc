@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -114,7 +116,7 @@ class OriginBoundCertServiceWorker {
 
     return base::WorkerPool::PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &OriginBoundCertServiceWorker::Run),
+        base::Bind(&OriginBoundCertServiceWorker::Run, base::Unretained(this)),
         true /* task is slow */);
   }
 
@@ -181,8 +183,8 @@ class OriginBoundCertServiceWorker {
       canceled = canceled_;
       if (!canceled) {
         origin_loop_->PostTask(
-            FROM_HERE,
-            NewRunnableMethod(this, &OriginBoundCertServiceWorker::DoReply));
+            FROM_HERE, base::Bind(&OriginBoundCertServiceWorker::DoReply,
+                                  base::Unretained(this)));
       }
     }
     if (canceled)
@@ -487,5 +489,3 @@ int OriginBoundCertService::cert_count() {
 }
 
 }  // namespace net
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(net::OriginBoundCertServiceWorker);

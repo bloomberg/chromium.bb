@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -238,12 +238,13 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Must be called before creating a CookieMonster instance.
   static void EnableFileScheme();
 
-  // Flush the backing store (if any) to disk and post the given task when done.
+  // Flush the backing store (if any) to disk and post the given callback when
+  // done.
   // WARNING: THE CALLBACK WILL RUN ON A RANDOM THREAD. IT MUST BE THREAD SAFE.
   // It may be posted to the current thread, or it may run on the thread that
   // actually does the flushing. Your Task should generally post a notification
   // to the thread you actually want to be notified on.
-  void FlushStore(Task* completion_task);
+  void FlushStore(const base::Closure& callback);
 
   // CookieStore implementation.
 
@@ -990,8 +991,8 @@ class CookieMonster::PersistentCookieStore
   // must be deleted upon destruction.
   virtual void SetClearLocalStateOnExit(bool clear_local_state) = 0;
 
-  // Flush the store and post the given Task when complete.
-  virtual void Flush(Task* completion_task) = 0;
+  // Flushes the store and posts |callback| when complete.
+  virtual void Flush(const base::Closure& callback) = 0;
 
  protected:
   PersistentCookieStore() {}

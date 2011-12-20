@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
@@ -46,7 +47,7 @@ class NewMockPersistentCookieStore
                void(const CookieMonster::CanonicalCookie& cc));
   MOCK_METHOD1(DeleteCookie, void(const CookieMonster::CanonicalCookie& cc));
   MOCK_METHOD1(SetClearLocalStateOnExit, void(bool clear_local_state));
-  MOCK_METHOD1(Flush, void(Task* completion_task));
+  MOCK_METHOD1(Flush, void(const base::Closure& callback));
 };
 
 const int kTimeout = 1000;
@@ -508,7 +509,7 @@ class CookieMonsterTest : public testing::Test {
         url_google_secure_(kUrlGoogleSecure),
         url_google_foo_(kUrlGoogleFoo),
         url_google_bar_(kUrlGoogleBar),
-        message_loop_factory_(MessageLoop::current()) {}
+        weak_factory_(MessageLoop::current()) {}
 
   // Helper methods for the asynchronous Cookie Store API that call the
   // asynchronous method and then pump the loop until the callback is invoked,
@@ -691,13 +692,12 @@ class CookieMonsterTest : public testing::Test {
   }
 
   void RunFor(int ms) {
-    // Runs the test thread message loop for up to ms milliseconds.
+    // Runs the test thread message loop for up to |ms| milliseconds.
     MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        message_loop_factory_.NewRunnableMethod(&MessageLoop::Quit),
+        FROM_HERE, base::Bind(&MessageLoop::Quit, weak_factory_.GetWeakPtr()),
         ms);
     MessageLoop::current()->Run();
-    message_loop_factory_.RevokeAll();
+    weak_factory_.InvalidateWeakPtrs();
   }
 
   // Helper for DeleteAllForHost test; repopulates CM with same layout
@@ -890,7 +890,7 @@ class CookieMonsterTest : public testing::Test {
   GURL url_google_foo_;
   GURL url_google_bar_;
 
-  ScopedRunnableMethodFactory<MessageLoop> message_loop_factory_;
+  base::WeakPtrFactory<MessageLoop> weak_factory_;
 };
 
 // TODO(erikwright): Replace the other callbacks and synchronous helper methods
@@ -3028,12 +3028,10 @@ class FlushablePersistentStore : public CookieMonster::PersistentCookieStore {
   void DeleteCookie(const CookieMonster::CanonicalCookie&) {}
   void SetClearLocalStateOnExit(bool clear_local_state) {}
 
-  void Flush(Task* completion_callback) {
+  void Flush(const base::Closure& callback) {
     ++flush_count_;
-    if (completion_callback) {
-      completion_callback->Run();
-      delete completion_callback;
-    }
+    if (!callback.is_null())
+      callback.Run();
   }
 
   int flush_count() {
@@ -3074,14 +3072,14 @@ TEST_F(CookieMonsterTest, FlushStore) {
   ASSERT_EQ(0, counter->callback_count());
 
   // Before initialization, FlushStore() should just run the callback.
-  cm->FlushStore(NewRunnableMethod(counter.get(), &CallbackCounter::Callback));
+  cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter.get()));
   MessageLoop::current()->RunAllPending();
 
   ASSERT_EQ(0, store->flush_count());
   ASSERT_EQ(1, counter->callback_count());
 
   // NULL callback is safe.
-  cm->FlushStore(NULL);
+  cm->FlushStore(base::Closure());
   MessageLoop::current()->RunAllPending();
 
   ASSERT_EQ(0, store->flush_count());
@@ -3089,14 +3087,14 @@ TEST_F(CookieMonsterTest, FlushStore) {
 
   // After initialization, FlushStore() should delegate to the store.
   GetAllCookies(cm);  // Force init.
-  cm->FlushStore(NewRunnableMethod(counter.get(), &CallbackCounter::Callback));
+  cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter.get()));
   MessageLoop::current()->RunAllPending();
 
   ASSERT_EQ(1, store->flush_count());
   ASSERT_EQ(2, counter->callback_count());
 
   // NULL callback is still safe.
-  cm->FlushStore(NULL);
+  cm->FlushStore(base::Closure());
   MessageLoop::current()->RunAllPending();
 
   ASSERT_EQ(2, store->flush_count());
@@ -3105,12 +3103,12 @@ TEST_F(CookieMonsterTest, FlushStore) {
   // If there's no backing store, FlushStore() is always a safe no-op.
   cm = new CookieMonster(NULL, NULL);
   GetAllCookies(cm);  // Force init.
-  cm->FlushStore(NULL);
+  cm->FlushStore(base::Closure());
   MessageLoop::current()->RunAllPending();
 
   ASSERT_EQ(2, counter->callback_count());
 
-  cm->FlushStore(NewRunnableMethod(counter.get(), &CallbackCounter::Callback));
+  cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter.get()));
   MessageLoop::current()->RunAllPending();
 
   ASSERT_EQ(3, counter->callback_count());

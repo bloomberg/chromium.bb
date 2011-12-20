@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -87,7 +88,7 @@ class SQLitePersistentCookieStore::Backend
   void DeleteCookie(const net::CookieMonster::CanonicalCookie& cc);
 
   // Commit pending operations as soon as possible.
-  void Flush(Task* completion_task);
+  void Flush(const base::Closure& callback);
 
   // Commit any pending operations and close the database.  This must be called
   // before the object is destructed.
@@ -864,15 +865,16 @@ void SQLitePersistentCookieStore::Backend::Commit() {
                             succeeded ? 0 : 1, 2);
 }
 
-void SQLitePersistentCookieStore::Backend::Flush(Task* completion_task) {
+void SQLitePersistentCookieStore::Backend::Flush(
+    const base::Closure& callback) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::DB));
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE, base::Bind(&Backend::Commit, this));
-  if (completion_task) {
+  if (!callback.is_null()) {
     // We want the completion task to run immediately after Commit() returns.
     // Posting it from here means there is less chance of another task getting
     // onto the message queue first, than if we posted it from Commit() itself.
-    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, completion_task);
+    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, callback);
   }
 }
 
@@ -962,9 +964,9 @@ void SQLitePersistentCookieStore::SetClearLocalStateOnExit(
     backend_->SetClearLocalStateOnExit(clear_local_state);
 }
 
-void SQLitePersistentCookieStore::Flush(Task* completion_task) {
+void SQLitePersistentCookieStore::Flush(const base::Closure& callback) {
   if (backend_.get())
-    backend_->Flush(completion_task);
-  else if (completion_task)
-    MessageLoop::current()->PostTask(FROM_HERE, completion_task);
+    backend_->Flush(callback);
+  else if (!callback.is_null())
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
 }

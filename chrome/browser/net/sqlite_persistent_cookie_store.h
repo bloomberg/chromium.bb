@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/cookie_monster.h"
@@ -44,7 +45,7 @@ class SQLitePersistentCookieStore
 
   virtual void SetClearLocalStateOnExit(bool clear_local_state) OVERRIDE;
 
-  virtual void Flush(Task* completion_task) OVERRIDE;
+  virtual void Flush(const base::Closure& callback) OVERRIDE;
 
  private:
   class Backend;

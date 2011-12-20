@@ -75,9 +75,9 @@ void MockPersistentCookieStore::DeleteCookie(
       CookieStoreCommand(CookieStoreCommand::REMOVE, cookie));
 }
 
-void MockPersistentCookieStore::Flush(Task* completion_task) {
-  if (completion_task)
-    MessageLoop::current()->PostTask(FROM_HERE, completion_task);
+void MockPersistentCookieStore::Flush(const base::Closure& callback) {
+  if (!callback.is_null())
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 // No files are created so nothing to clear either
@@ -189,9 +189,9 @@ void MockSimplePersistentCookieStore::DeleteCookie(
   cookies_.erase(it);
 }
 
-void MockSimplePersistentCookieStore::Flush(Task* completion_task) {
-  if (completion_task)
-    MessageLoop::current()->PostTask(FROM_HERE, completion_task);
+void MockSimplePersistentCookieStore::Flush(const base::Closure& callback) {
+  if (!callback.is_null())
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 void MockSimplePersistentCookieStore::SetClearLocalStateOnExit(

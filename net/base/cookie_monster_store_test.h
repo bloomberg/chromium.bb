@@ -95,7 +95,7 @@ class MockPersistentCookieStore
   virtual void DeleteCookie(
       const CookieMonster::CanonicalCookie& cookie) OVERRIDE;
 
-  virtual void Flush(Task* completion_task) OVERRIDE;
+  virtual void Flush(const base::Closure& callback) OVERRIDE;
 
   // No files are created so nothing to clear either
   virtual void SetClearLocalStateOnExit(bool clear_local_state) OVERRIDE;
@@ -173,7 +173,7 @@ class MockSimplePersistentCookieStore
   virtual void DeleteCookie(
       const CookieMonster::CanonicalCookie& cookie) OVERRIDE;
 
-  virtual void Flush(Task* completion_task) OVERRIDE;
+  virtual void Flush(const base::Closure& callback) OVERRIDE;
 
   virtual void SetClearLocalStateOnExit(bool clear_local_state) OVERRIDE;
 
