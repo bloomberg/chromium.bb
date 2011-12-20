@@ -110,7 +110,7 @@ instr_out(uint32_t *data, uint32_t hw_offset, unsigned int index,
 }
 
 static int
-decode_mi(uint32_t *data, int count, uint32_t hw_offset, int *failures)
+decode_mi(uint32_t *data, uint32_t count, uint32_t hw_offset, int *failures)
 {
 	unsigned int opcode, len = -1;
 	char *post_sync_op = "";
@@ -118,8 +118,8 @@ decode_mi(uint32_t *data, int count, uint32_t hw_offset, int *failures)
 	struct {
 		uint32_t opcode;
 		int len_mask;
-		int min_len;
-		int max_len;
+		unsigned int min_len;
+		unsigned int max_len;
 		char *name;
 	} opcodes_mi[] = {
 		{ 0x08, 0, 1, 1, "MI_ARB_ON_OFF" },
@@ -235,10 +235,11 @@ decode_mi(uint32_t *data, int count, uint32_t hw_offset, int *failures)
 	for (opcode = 0; opcode < sizeof(opcodes_mi) / sizeof(opcodes_mi[0]);
 	     opcode++) {
 		if ((data[0] & 0x1f800000) >> 23 == opcodes_mi[opcode].opcode) {
+			unsigned int i;
 
 			instr_out(data, hw_offset, 0, "%s\n",
 				  opcodes_mi[opcode].name);
-			for (int i = 1; i < len; i++) {
+			for (i = 1; i < len; i++) {
 				if (i >= count)
 					BUFFER_FAIL(count, len,
 						    opcodes_mi[opcode].name);
@@ -255,7 +256,7 @@ decode_mi(uint32_t *data, int count, uint32_t hw_offset, int *failures)
 }
 
 static void
-decode_2d_br00(uint32_t *data, int count, uint32_t hw_offset, char *cmd)
+decode_2d_br00(uint32_t *data, uint32_t count, uint32_t hw_offset, char *cmd)
 {
 	instr_out(data, hw_offset, 0,
 		  "%s (rgb %sabled, alpha %sabled, src tile %d, dst tile %d)\n",
@@ -265,7 +266,7 @@ decode_2d_br00(uint32_t *data, int count, uint32_t hw_offset, char *cmd)
 		  (data[count] >> 15) & 1, (data[count] >> 11) & 1);
 }
 
-static void decode_2d_br01(uint32_t *data, int count, uint32_t hw_offset)
+static void decode_2d_br01(uint32_t *data, uint32_t count, uint32_t hw_offset)
 {
 	char *format;
 	switch ((data[count] >> 24) & 0x3) {
@@ -296,14 +297,14 @@ static void decode_2d_br01(uint32_t *data, int count, uint32_t hw_offset)
 }
 
 static int
-decode_2d(uint32_t *data, int count, uint32_t hw_offset, int *failures)
+decode_2d(uint32_t *data, uint32_t count, uint32_t hw_offset, int *failures)
 {
 	unsigned int opcode, len;
 
 	struct {
 		uint32_t opcode;
-		int min_len;
-		int max_len;
+		unsigned int min_len;
+		unsigned int max_len;
 		char *name;
 	} opcodes_2d[] = {
 		{ 0x40, 5, 5, "COLOR_BLT" },
@@ -482,7 +483,7 @@ decode_2d(uint32_t *data, int count, uint32_t hw_offset, int *failures)
 }
 
 static int
-decode_3d_1c(uint32_t *data, int count, uint32_t hw_offset, int *failures)
+decode_3d_1c(uint32_t *data, uint32_t count, uint32_t hw_offset, int *failures)
 {
 	uint32_t opcode;
 
@@ -1151,7 +1152,7 @@ static char *decode_sample_filter(uint32_t mode)
 }
 
 static int
-decode_3d_1d(uint32_t *data, int count,
+decode_3d_1d(uint32_t *data, uint32_t count,
 	     uint32_t hw_offset, uint32_t devid, int *failures)
 {
 	unsigned int len, i, c, idx, word, map, sampler, instr;
@@ -1161,8 +1162,8 @@ decode_3d_1d(uint32_t *data, int count,
 	struct {
 		uint32_t opcode;
 		int i830_only;
-		int min_len;
-		int max_len;
+		unsigned int min_len;
+		unsigned int max_len;
 		char *name;
 	} opcodes_3d_1d[] = {
 		{ 0x86, 0, 4, 4, "3DSTATE_CHROMA_KEY" },
@@ -2228,7 +2229,7 @@ decode_3d_1d(uint32_t *data, int count,
 }
 
 static int
-decode_3d_primitive(uint32_t *data, int count, uint32_t hw_offset,
+decode_3d_primitive(uint32_t *data, uint32_t count, uint32_t hw_offset,
 		    int *failures)
 {
 	char immediate = (data[0] & (1 << 23)) == 0;
@@ -2491,7 +2492,7 @@ out:
 }
 
 static int
-decode_3d(uint32_t *data, int count, uint32_t hw_offset, uint32_t devid,
+decode_3d(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid,
 	  int *failures)
 {
 	uint32_t opcode;
@@ -2499,8 +2500,8 @@ decode_3d(uint32_t *data, int count, uint32_t hw_offset, uint32_t devid,
 
 	struct {
 		uint32_t opcode;
-		int min_len;
-		int max_len;
+		unsigned int min_len;
+		unsigned int max_len;
 		char *name;
 	} opcodes_3d[] = {
 		{ 0x06, 1, 1, "3DSTATE_ANTI_ALIASING" },
@@ -2677,7 +2678,7 @@ static const char *get_965_prim_type(uint32_t data)
 }
 
 static int
-i965_decode_urb_fence(uint32_t *data, uint32_t hw_offset, int len, int count,
+i965_decode_urb_fence(uint32_t *data, uint32_t hw_offset, int len, uint32_t count,
 		      int *failures)
 {
 	uint32_t vs_fence, clip_fence, gs_fence, sf_fence, vfe_fence, cs_fence;
@@ -2753,18 +2754,18 @@ state_max_out(uint32_t *data, uint32_t hw_offset, unsigned int index,
 }
 
 static int
-decode_3d_965(uint32_t *data, int count, uint32_t hw_offset, uint32_t devid,
+decode_3d_965(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid,
 	      int *failures)
 {
 	uint32_t opcode;
 	unsigned int idx, len;
-	int i, sba_len;
+	unsigned int i, sba_len;
 	char *desc1 = NULL;
 
 	struct {
 		uint32_t opcode;
-		int min_len;
-		int max_len;
+		int unsigned min_len;
+		int unsigned max_len;
 		char *name;
 	} opcodes_3d[] = {
 		{ 0x6000, 3, 3, "URB_FENCE" },
@@ -3308,7 +3309,7 @@ decode_3d_965(uint32_t *data, int count, uint32_t hw_offset, uint32_t devid,
 
 	case 0x7a00:
 		if (IS_GEN6(devid) || IS_GEN7(devid)) {
-			int i;
+			unsigned int i;
 			len = (data[0] & 0xff) + 2;
 			if (len != 4 && len != 5)
 				fprintf(out, "Bad count in PIPE_CONTROL\n");
@@ -3462,7 +3463,7 @@ decode_3d_965(uint32_t *data, int count, uint32_t hw_offset, uint32_t devid,
 }
 
 static int
-decode_3d_i830(uint32_t *data, int count, uint32_t hw_offset, uint32_t devid,
+decode_3d_i830(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid,
 	       int *failures)
 {
 	unsigned int idx;
@@ -3470,8 +3471,8 @@ decode_3d_i830(uint32_t *data, int count, uint32_t hw_offset, uint32_t devid,
 
 	struct {
 		uint32_t opcode;
-		int min_len;
-		int max_len;
+		unsigned int min_len;
+		unsigned int max_len;
 		char *name;
 	} opcodes_3d[] = {
 		{ 0x02, 1, 1, "3DSTATE_MODES_3" },
@@ -3589,7 +3590,7 @@ void
 drm_intel_decode(struct drm_intel_decode *ctx)
 {
 	int ret;
-	int index = 0;
+	unsigned int index = 0;
 	int failures = 0;
 	uint32_t *data;
 	uint32_t count, hw_offset;
