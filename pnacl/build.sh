@@ -3372,6 +3372,11 @@ check-elf-abi() {
 #   fragile and needs to be updated when tools change
 verify-object-arm() {
   check-elf-abi $1 "elf32-littlearm"
+  # llvm-mc does not automatically insert these tags (unlike gnu-as).
+  # So we exclude llvm-mc generated object files for now
+  if [[ $1 == aeabi_read_tp.o || $1 == setjmp.o ]] ; then
+    return
+  fi
   arch_info="$("${PNACL_READELF}" -A "$1")"
   #TODO(robertm): some refactoring and cleanup needed
   if ! grep -q "Tag_FP_arch: VFPv2" <<< ${arch_info} ; then

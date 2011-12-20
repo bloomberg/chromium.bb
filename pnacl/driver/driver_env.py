@@ -136,8 +136,7 @@ INITIAL_ENV = {
   # LLVM_MC is llvm's replacement for bintutil's as
   'LLVM_MC'       : '${BASE_LLVM_BIN}/llvm-mc${EXEC_EXT}',
 
-  # c.f. http://code.google.com/p/nativeclient/issues/detail?id=1968
-  'AS_ARM'        : '${BINUTILS_BASE}as',
+  'AS_ARM'        : '${LLVM_MC}',
   'AS_X8632'      : '${LLVM_MC}',
   'AS_X8664'      : '${LLVM_MC}',
 

@@ -23,6 +23,10 @@ if env.Bit('nacl_glibc'):
 if env.Bit('use_sandboxed_translator'):
   Return()
 
+# Temporarily disable this test until the TC has been updated
+# BUG: http://code.google.com/p/nativeclient/issues/detail?id=1968
+if env.Bit('target_arm') and env.Bit('bitcode'):
+  Return()
 # ----------------------------------------------------------
 # Tests that require a NaCl module
 # ----------------------------------------------------------
@@ -43,13 +47,7 @@ def NewAsmEnv(env, defines, rodata_address, rwdata_address):
   # special handling can be eliminated
   if asm_env.Bit('bitcode'):
     asm_env.PNaClForceNative()
-    # NOTE: "PNACL_AS" controls small code adaptions needed for  the
-    # pnacl assembler but we do not use the pnacl assembler for ARM yet
-    # BUG: http://code.google.com/p/nativeclient/issues/detail?id=1968
-    if not env.Bit('target_arm'):
-      asm_env.Append(ASFLAGS='-DPNACL_AS=1')
-    # Windows uses CC for assembling
-    asm_env.Append(CFLAGS='-DPNACL_AS=1')
+    asm_env.Append(ASFLAGS='-DPNACL_AS=1')
   link_cmd = ('${LD} -e _start ${TEXT_START} ${RO_START} ${RW_START}' +
                 ' -o ${TARGET} ${SOURCES}')
 

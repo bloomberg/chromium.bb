@@ -21,10 +21,9 @@ EXTRA_ENV = {
   'DIAGNOSTIC'  : '0',
   'ASPP_FLAGS': '-DNACL_LINUX=1',
 
-  'AS_FLAGS_ARM'  : '-mfpu=vfp -march=armv7-a',
-  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=1968
-  # once we can use llvm's ARM assembler we should use these flags
-  #'AS_FLAGS_ARM'   : '-assemble -filetype=obj -arch=arm -triple=armv7a-nacl',
+  # maybe add the equivalent of -mfpu=vfp
+  'AS_FLAGS_ARM'   : '-assemble -filetype=obj -arch=arm -triple=armv7a-nacl' +
+                     ' -mcpu=cortex-a8',
   'AS_FLAGS_X8632' : '-assemble -filetype=obj -arch=x86 -triple=i686-nacl',
   'AS_FLAGS_X8664' : '-assemble -filetype=obj -arch=x86-64 -triple=x86_64-nacl',
 
