@@ -16,22 +16,11 @@
 #include "base/timer.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_request_handle.h"
-#include "content/browser/download/download_state_info.h"
-#include "content/browser/download/interrupt_reasons.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_item.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 
-class DownloadFileManager;
-class TabContents;
-
-struct DownloadCreateInfo;
-struct DownloadPersistentStoreInfo;
-
-namespace content {
-class BrowserContext;
-}
 
 // See download_item.h for usage.
 class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
@@ -70,7 +59,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
     virtual void MaybeCompleteDownload(DownloadItem* download) = 0;
 
     // For contextual issues like language and prefs.
-    virtual content::BrowserContext* BrowserContext() const = 0;
+    virtual content::BrowserContext* GetBrowserContext() const = 0;
 
     // Handle any delegate portions of a state change operation on the
     // DownloadItem.
@@ -193,7 +182,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual InterruptReason GetLastReason() const OVERRIDE;
   virtual DownloadPersistentStoreInfo GetPersistentStoreInfo() const OVERRIDE;
   virtual DownloadStateInfo GetStateInfo() const OVERRIDE;
-  virtual content::BrowserContext* BrowserContext() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual TabContents* GetTabContents() const OVERRIDE;
   virtual FilePath GetTargetFilePath() const OVERRIDE;
   virtual FilePath GetFileNameToReportUser() const OVERRIDE;

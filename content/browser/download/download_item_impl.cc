@@ -685,7 +685,7 @@ bool DownloadItemImpl::MatchesQuery(const string16& query) const {
   //   "/%E4%BD%A0%E5%A5%BD%E4%BD%A0%E5%A5%BD"
   std::string languages;
   languages = content::GetContentClient()->browser()->GetAcceptLangs(
-      BrowserContext());
+      GetBrowserContext());
   string16 url_formatted(net::FormatUrl(GetURL(), languages));
   if (base::i18n::StringSearchIgnoringCaseAndAccents(query, url_formatted))
     return true;
@@ -757,8 +757,8 @@ TabContents* DownloadItemImpl::GetTabContents() const {
   return NULL;
 }
 
-content::BrowserContext* DownloadItemImpl::BrowserContext() const {
-  return delegate_->BrowserContext();
+content::BrowserContext* DownloadItemImpl::GetBrowserContext() const {
+  return delegate_->GetBrowserContext();
 }
 
 FilePath DownloadItemImpl::GetTargetFilePath() const {

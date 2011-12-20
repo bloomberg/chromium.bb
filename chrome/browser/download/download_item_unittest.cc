@@ -31,7 +31,7 @@ class MockDelegate : public DownloadItemImpl::Delegate {
   MOCK_METHOD1(ShouldOpenDownload, bool(DownloadItem* download));
   MOCK_METHOD1(CheckForFileRemoval, void(DownloadItem* download));
   MOCK_METHOD1(MaybeCompleteDownload, void(DownloadItem* download));
-  MOCK_CONST_METHOD0(BrowserContext, content::BrowserContext*());
+  MOCK_CONST_METHOD0(GetBrowserContext, content::BrowserContext*());
   MOCK_METHOD1(DownloadCancelled, void(DownloadItem* download));
   MOCK_METHOD1(DownloadCompleted, void(DownloadItem* download));
   MOCK_METHOD1(DownloadOpened, void(DownloadItem* download));

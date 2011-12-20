@@ -182,7 +182,7 @@ class CONTENT_EXPORT DownloadManager
   // The number of in progress (including paused) downloads.
   virtual int InProgressCount() const = 0;
 
-  virtual content::BrowserContext* BrowserContext() const = 0;
+  virtual content::BrowserContext* GetBrowserContext() const = 0;
 
   virtual FilePath LastDownloadPath() = 0;
 

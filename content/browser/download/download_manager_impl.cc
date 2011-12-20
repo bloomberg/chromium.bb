@@ -333,7 +333,7 @@ void DownloadManagerImpl::RestartDownload(
   }
 }
 
-content::BrowserContext* DownloadManagerImpl::BrowserContext() const {
+content::BrowserContext* DownloadManagerImpl::GetBrowserContext() const {
   return browser_context_;
 }
 

@@ -74,7 +74,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void OnItemAddedToPersistentStore(int32 download_id,
                                             int64 db_handle) OVERRIDE;
   virtual int InProgressCount() const OVERRIDE;
-  virtual content::BrowserContext* BrowserContext() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual FilePath LastDownloadPath() OVERRIDE;
   virtual void CreateDownloadItem(
       DownloadCreateInfo* info,
@@ -98,7 +98,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       content::DownloadManagerDelegate* delegate) OVERRIDE;
 
   // Overridden from DownloadItemImpl::Delegate
-  // (Note that |BrowserContext| are present in both interfaces.)
+  // (Note that |GetBrowserContext| are present in both interfaces.)
   virtual bool ShouldOpenDownload(content::DownloadItem* item) OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(
       const FilePath& path) OVERRIDE;

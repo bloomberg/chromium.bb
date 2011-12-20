@@ -118,7 +118,7 @@ int MockDownloadManager::InProgressCount() const {
   return 1;
 }
 
-content::BrowserContext* MockDownloadManager::BrowserContext() const {
+content::BrowserContext* MockDownloadManager::GetBrowserContext() const {
   return NULL;
 }
 

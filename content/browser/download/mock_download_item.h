@@ -98,7 +98,7 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_CONST_METHOD0(GetLastReason, InterruptReason());
   MOCK_CONST_METHOD0(GetPersistentStoreInfo, DownloadPersistentStoreInfo());
   MOCK_CONST_METHOD0(GetStateInfo, DownloadStateInfo());
-  MOCK_CONST_METHOD0(BrowserContext, content::BrowserContext*());
+  MOCK_CONST_METHOD0(GetBrowserContext, content::BrowserContext*());
   MOCK_CONST_METHOD0(GetTabContents, TabContents*());
   MOCK_CONST_METHOD0(GetTargetFilePath, FilePath());
   MOCK_CONST_METHOD0(GetFileNameToReportUser, FilePath());

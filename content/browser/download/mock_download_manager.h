@@ -60,7 +60,7 @@ class MockDownloadManager : public content::DownloadManager {
   virtual void OnItemAddedToPersistentStore(int32 download_id,
                                             int64 db_handle) OVERRIDE;
   virtual int InProgressCount() const OVERRIDE;
-  virtual content::BrowserContext* BrowserContext() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual FilePath LastDownloadPath() OVERRIDE;
   virtual void CreateDownloadItem(
       DownloadCreateInfo* info,

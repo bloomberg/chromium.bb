@@ -72,7 +72,7 @@ void ShellDownloadManagerDelegate::GenerateFilename(
     DownloadStateInfo state,
     const FilePath& generated_name) {
   if (state.suggested_path.empty()) {
-    state.suggested_path = download_manager_->BrowserContext()->GetPath().
+    state.suggested_path = download_manager_->GetBrowserContext()->GetPath().
         Append(FILE_PATH_LITERAL("Downloads"));
     if (!file_util::PathExists(state.suggested_path))
       file_util::CreateDirectory(state.suggested_path);

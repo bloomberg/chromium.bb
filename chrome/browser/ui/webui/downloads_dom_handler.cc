@@ -127,7 +127,7 @@ DownloadsDOMHandler::DownloadsDOMHandler(DownloadManager* dlm)
       download_manager_(dlm),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // Create our fileicon data source.
-  Profile::FromBrowserContext(dlm->BrowserContext())->
+  Profile::FromBrowserContext(dlm->GetBrowserContext())->
       GetChromeURLDataManager()->AddDataSource(
 #if defined(OS_CHROMEOS)
       new FileIconSourceCros());
@@ -147,7 +147,7 @@ void DownloadsDOMHandler::Init() {
   download_manager_->AddObserver(this);
 
   Profile* profile =
-      Profile::FromBrowserContext(download_manager_->BrowserContext());
+      Profile::FromBrowserContext(download_manager_->GetBrowserContext());
   Profile* original_profile = profile->GetOriginalProfile();
   if (original_profile != profile) {
     original_download_manager_observer_.reset(
@@ -228,7 +228,7 @@ void DownloadsDOMHandler::ModelChanged() {
                                      &download_items_);
   // If we have a parent profile, let it add its downloads to the results.
   Profile* profile =
-      Profile::FromBrowserContext(download_manager_->BrowserContext());
+      Profile::FromBrowserContext(download_manager_->GetBrowserContext());
   if (profile->GetOriginalProfile() != profile) {
     DownloadServiceFactory::GetForProfile(
         profile->GetOriginalProfile())->GetDownloadManager()->SearchDownloads(
@@ -349,7 +349,7 @@ void DownloadsDOMHandler::HandleClearAll(const ListValue* args) {
   download_manager_->RemoveAllDownloads();
 
   Profile* profile =
-      Profile::FromBrowserContext(download_manager_->BrowserContext());
+      Profile::FromBrowserContext(download_manager_->GetBrowserContext());
   // If this is an incognito downloader, clear All should clear main download
   // manager as well.
   if (profile->GetOriginalProfile() != profile)
