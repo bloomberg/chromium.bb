@@ -358,28 +358,31 @@ jvalue CoerceJavaScriptStringToJavaValue(const NPVariant& variant,
 
 jvalue CoerceJavaScriptObjectToJavaValue(const NPVariant& variant,
                                          const JavaType& target_type) {
-  // We only handle Java objects. See
-  // http://jdk6.java.net/plugin2/liveconnect/#JS_JAVA_OBJECTS.
-  // TODO(steveblock): Handle arrays.
-  // TODO(steveblock): Handle JavaScript objects.
+  // This covers both JavaScript objects (including arrays) and Java objects.
+  // See http://jdk6.java.net/plugin2/liveconnect/#JS_OTHER_OBJECTS,
+  // http://jdk6.java.net/plugin2/liveconnect/#JS_ARRAY_VALUES and
+  // http://jdk6.java.net/plugin2/liveconnect/#JS_JAVA_OBJECTS
   DCHECK_EQ(NPVariantType_Object, variant.type);
 
-  // The only type of object we should encounter is a Java object, as
-  // other objects should have been converted to NULL in the renderer.
-  // See CreateNPVariantParam().
-  // TODO(steveblock): This will have to change once we support arrays and
-  // JavaScript objects.
   NPObject* object = NPVARIANT_TO_OBJECT(variant);
-  DCHECK_EQ(&JavaNPObject::kNPClass, object->_class);
+  bool is_java_object = &JavaNPObject::kNPClass == object->_class;
 
   jvalue result;
   switch (target_type.type) {
     case JavaType::TypeObject:
-      // LIVECONNECT_COMPLIANCE: Existing behavior is to pass all Java objects.
-      // Spec requires passing only Java objects which are
-      // assignment-compatibile.
-      result.l = AttachCurrentThread()->NewLocalRef(
-          JavaBoundObject::GetJavaObject(object));
+      if (is_java_object) {
+        // LIVECONNECT_COMPLIANCE: Existing behavior is to pass all Java
+        // objects. Spec requires passing only Java objects which are
+        // assignment-compatibile.
+        result.l = AttachCurrentThread()->NewLocalRef(
+            JavaBoundObject::GetJavaObject(object));
+      } else {
+        // LIVECONNECT_COMPLIANCE: Existing behavior is to pass null. Spec
+        // requires converting if the target type is
+        // netscape.javascript.JSObject, otherwise raising a JavaScript
+        // exception.
+        result.l = NULL;
+      }
       break;
     case JavaType::TypeString:
       // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to
@@ -405,9 +408,15 @@ jvalue CoerceJavaScriptObjectToJavaValue(const NPVariant& variant,
       result.z = JNI_FALSE;
       break;
     case JavaType::TypeArray:
-      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to NULL. Spec
-      // requires raising a JavaScript exception.
-      result.l = NULL;
+      if (is_java_object) {
+        // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to NULL. Spec
+        // requires raising a JavaScript exception.
+        result.l = NULL;
+      } else {
+        // TODO(steveblock): Handle converting JavaScript objects to Java
+        // arrays.
+        result.l = NULL;
+      }
       break;
     case JavaType::TypeVoid:
       // Conversion to void must never happen.

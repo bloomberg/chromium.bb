@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "content/common/java_bridge_messages.h"
 
 using base::WaitableEvent;
 
@@ -30,15 +31,16 @@ JavaBridgeChannelHost* JavaBridgeChannelHost::GetJavaBridgeChannelHost(
     int renderer_id,
     base::MessageLoopProxy* ipc_message_loop) {
   std::string channel_name(StringPrintf("r%d.javabridge", renderer_id));
-  // We don't use a shutdown event because the Java Bridge only sends messages
-  // from renderer to browser, so we'll never be waiting for a sync IPC to
-  // complete. So we use an event which is never signaled.
+  // There's no need for a shutdown event here. If the browser is terminated
+  // while the JavaBridgeChannelHost is blocked on a synchronous IPC call, the
+  // renderer's shutdown event will cause the underlying channel to shut down,
+  // thus terminating the IPC call.
   return static_cast<JavaBridgeChannelHost*>(NPChannelBase::GetChannel(
       channel_name,
       IPC::Channel::MODE_SERVER,
       ClassFactory,
       ipc_message_loop,
-      false,
+      true,
       dummy_event.Pointer()));
 }
 
@@ -66,8 +68,15 @@ bool JavaBridgeChannelHost::Init(base::MessageLoopProxy* ipc_message_loop,
   return true;
 }
 
-bool JavaBridgeChannelHost::Send(IPC::Message* msg) {
-  CHECK(!msg->is_sync() && msg->is_reply()) <<
-      "Java Bridge only sends messages from renderer to browser.";
-  return NPChannelBase::Send(msg);
+bool JavaBridgeChannelHost::OnControlMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(JavaBridgeChannelHost, message)
+    IPC_MESSAGE_HANDLER(JavaBridgeMsg_GenerateRouteID, OnGenerateRouteID)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void JavaBridgeChannelHost::OnGenerateRouteID(int* route_id) {
+  *route_id = GenerateRouteID();
 }

@@ -29,8 +29,9 @@ class JavaBoundObject {
 
   virtual ~JavaBoundObject();
 
-  // Gets the underlying JavaObject from a JavaBoundObject wrapped as an
-  // NPObject.
+  // Gets a global ref to the underlying JavaObject from a JavaBoundObject
+  // wrapped as an NPObject. Ownership of the global ref is retained by the
+  // JavaBoundObject: the caller must NOT release it.
   static jobject GetJavaObject(NPObject* object);
 
   // Methods to implement the NPObject callbacks.

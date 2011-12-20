@@ -26,7 +26,10 @@ class JavaBridgeChannelHost : public NPChannelBase {
   virtual bool Init(base::MessageLoopProxy* ipc_message_loop,
                     bool create_pipe_now,
                     base::WaitableEvent* shutdown_event) OVERRIDE;
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
+
+ protected:
+  // NPChannelBase override:
+  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
   JavaBridgeChannelHost() {}

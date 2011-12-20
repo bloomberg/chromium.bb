@@ -134,8 +134,10 @@ void JavaBridgeDispatcherHost::CreateObjectStub(NPObject* object,
 
   // NPObjectStub takes a ref to the NPObject. The lifetime of the NPObjectStub
   // is governed by that of the NPObjectProxy in the renderer, via the channel.
-  // We don't need the containing window or the page URL, as we don't do
-  // re-entrant sync IPC.
+  // Pass 0 for the containing window, as it's only used by plugins to pump the
+  // window message queue when a method on a renderer-side object causes a
+  // dialog to be displayed, and the Java Bridge does not need this
+  // functionality. The page URL is also not required.
   new NPObjectStub(object, channel_, route_id, 0, GURL());
   // The NPObjectStub takes a reference to the NPObject. Release the ref added
   // in CreateNPVariantParam().

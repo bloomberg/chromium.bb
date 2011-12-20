@@ -5,6 +5,7 @@
 #include "content/renderer/java/java_bridge_channel.h"
 
 #include "content/common/child_process.h"
+#include "content/common/java_bridge_messages.h"
 
 JavaBridgeChannel* JavaBridgeChannel::GetJavaBridgeChannel(
     const IPC::ChannelHandle& channel_handle,
@@ -19,11 +20,12 @@ JavaBridgeChannel* JavaBridgeChannel::GetJavaBridgeChannel(
 }
 
 int JavaBridgeChannel::GenerateRouteID() {
-  NOTREACHED() << "Java Bridge only creates object stubs in the browser.";
-  return -1;
-}
-
-bool JavaBridgeChannel::OnMessageReceived(const IPC::Message& msg) {
-  NOTREACHED() << "Java Bridge only sends messages from renderer to browser.";
-  return false;
+  // Use a control message as this going to the JavaBridgeChannelHost, not an
+  // injected object.
+  int route_id = MSG_ROUTING_NONE;
+  Send(new JavaBridgeMsg_GenerateRouteID(&route_id));
+  // This should never fail, as the JavaBridgeChannelHost should always outlive
+  // us.
+  DCHECK_NE(MSG_ROUTING_NONE, route_id);
+  return route_id;
 }

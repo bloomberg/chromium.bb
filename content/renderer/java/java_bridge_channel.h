@@ -19,9 +19,6 @@ class JavaBridgeChannel : public NPChannelBase {
   // NPChannelBase implementation:
   virtual int GenerateRouteID() OVERRIDE;
 
-  // NPChannelBase override:
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-
  private:
   JavaBridgeChannel() {}
 

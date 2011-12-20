@@ -74,8 +74,11 @@ void JavaBridgeDispatcher::OnAddNamedObject(
 
   EnsureChannelIsSetUp();
 
-  // This creates an NPObject, wrapped as an NPVariant. We don't need the
-  // containing window or the page URL, as we don't do re-entrant sync IPC.
+  // This creates an NPObject, wrapped as an NPVariant. Pass 0 for the for
+  // containing window, as this is only used by plugins to pump the window
+  // message queue when a method on a renderer-side object causes a dialog to
+  // be displayed, and the Java Bridge does not need this functionality. The
+  // page URL is also not required.
   NPVariant variant;
   bool created =
       CreateNPVariant(variant_param, channel_.get(), &variant, 0, GURL());
