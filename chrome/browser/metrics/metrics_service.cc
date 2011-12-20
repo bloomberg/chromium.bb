@@ -621,8 +621,7 @@ void MetricsService::RecordBreakpadHasDebugger(bool has_debugger) {
 void MetricsService::InitializeMetricsState() {
 #if defined(OS_POSIX)
   server_url_ = L"https://clients4.google.com/firefox/metrics/collect";
-  // TODO(rtenneti): Return the network stats server name.
-  network_stats_server_ = "";
+  network_stats_server_ = "chrome.googleechotest.com";
 #else
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   server_url_ = dist->GetStatsServerURL();

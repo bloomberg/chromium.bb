@@ -90,8 +90,7 @@ std::wstring ChromeFrameDistribution::GetStatsServerURL() {
 }
 
 std::string ChromeFrameDistribution::GetNetworkStatsServer() const {
-  // TODO(rtenneti): Return the network stats server name.
-  return "";
+  return "chrome.googleechotest.com";
 }
 
 std::wstring ChromeFrameDistribution::GetUninstallLinkName() {

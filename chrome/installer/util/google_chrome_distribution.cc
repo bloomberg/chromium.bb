@@ -461,8 +461,7 @@ std::wstring GoogleChromeDistribution::GetStatsServerURL() {
 }
 
 std::string GoogleChromeDistribution::GetNetworkStatsServer() const {
-  // TODO(rtenneti): Return the network stats server name.
-  return "";
+  return "chrome.googleechotest.com";
 }
 
 std::wstring GoogleChromeDistribution::GetDistributionData(HKEY root_key) {

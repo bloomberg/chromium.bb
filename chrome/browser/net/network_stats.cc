@@ -570,11 +570,10 @@ void CollectNetworkStats(const std::string& network_stats_server,
 
   ++number_of_tests_done;
 
-  // Use SPDY's UDP port per http://www.iana.org/assignments/port-numbers.
   // |network_stats_server| echo TCP and UDP servers listen on the following
   // ports.
-  uint32 kTCPTestingPort = 8081;
-  uint32 kUDPTestingPort = 6121;
+  uint32 kTCPTestingPort = 80;
+  uint32 kUDPTestingPort = 53;
 
   net::HostResolver* host_resolver = io_thread->globals()->host_resolver.get();
   DCHECK(host_resolver);
