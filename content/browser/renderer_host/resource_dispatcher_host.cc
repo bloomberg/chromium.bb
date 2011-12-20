@@ -71,6 +71,7 @@
 #include "net/base/upload_data.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_response_info.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -195,8 +196,9 @@ void PopulateResourceResponse(net::URLRequest* request,
   request->GetCharset(&response->charset);
   response->content_length = request->GetExpectedContentSize();
   request->GetMimeType(&response->mime_type);
-  response->was_fetched_via_spdy = request->was_fetched_via_spdy();
-  response->was_npn_negotiated = request->was_npn_negotiated();
+  net::HttpResponseInfo response_info = request->response_info();
+  response->was_fetched_via_spdy = response_info.was_fetched_via_spdy;
+  response->was_npn_negotiated = response_info.was_npn_negotiated;
   response->was_fetched_via_proxy = request->was_fetched_via_proxy();
   response->socket_address = request->GetSocketAddress();
   appcache::AppCacheInterceptor::GetExtraResponseInfo(
