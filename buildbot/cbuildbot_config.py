@@ -561,6 +561,7 @@ add_config('arm-tegra2_kaen-aura-private-bin', internal, arm, pfq,
   profile='aura',
   overlays='private',
   description='tegra2_kaen Aura PFQ',
+  important=False,
 )
 
 add_config('x86-zgb-private-bin', internal, pfq,
