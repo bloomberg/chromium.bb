@@ -13,6 +13,10 @@ import unittest
 import urllib2
 
 import cns
+import traffic_control
+
+# The local interface to test on.
+_INTERFACE = 'lo'
 
 
 class PortAllocatorTest(unittest.TestCase):
@@ -29,12 +33,28 @@ class PortAllocatorTest(unittest.TestCase):
 
     # TODO(dalecurtis): Mock out actual calls to shadi's port setup.
     self._pa = cns.PortAllocator(cns._DEFAULT_CNS_PORT_RANGE, self._EXPIRY_TIME)
+    self._MockTrafficControl()
 
   def tearDown(self):
-    self._pa.Cleanup(all_ports=True)
+    self._pa.Cleanup(_INTERFACE, all_ports=True)
     # Ensure ports are cleaned properly.
     self.assertEquals(self._pa._ports, {})
     time.time = self._old_time
+    self._RestoreTrafficControl()
+
+  def _MockTrafficControl(self):
+    self.old_CreateConstrainedPort = traffic_control.CreateConstrainedPort
+    self.old_DeleteConstrainedPort = traffic_control.DeleteConstrainedPort
+    self.old_TearDown = traffic_control.TearDown
+
+    traffic_control.CreateConstrainedPort = lambda config: True
+    traffic_control.DeleteConstrainedPort = lambda config: True
+    traffic_control.TearDown = lambda config: True
+
+  def _RestoreTrafficControl(self):
+    traffic_control.CreateConstrainedPort = self.old_CreateConstrainedPort
+    traffic_control.DeleteConstrainedPort = self.old_DeleteConstrainedPort
+    traffic_control.TearDown = self.old_TearDown
 
   def testPortAllocator(self):
     # Ensure Get() succeeds and returns the correct port.
@@ -94,11 +114,11 @@ class ConstrainedNetworkServerTest(unittest.TestCase):
                  cns._DEFAULT_SERVING_PORT)
 
   # Setting for latency testing.
-  _LATENCY_TEST_SECS = 5
+  _LATENCY_TEST_SECS = 1
 
   def _StartServer(self):
     """Starts the CNS, returns pid."""
-    cmd = ['python', 'cns.py']
+    cmd = ['python', 'cns.py', '--interface=%s' % _INTERFACE]
     process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
 
     # Wait for server to startup.
@@ -125,7 +145,7 @@ class ConstrainedNetworkServerTest(unittest.TestCase):
 
   def tearDown(self):
     os.unlink(self._file)
-    os.kill(self._server_pid, signal.SIGKILL)
+    os.kill(self._server_pid, signal.SIGTERM)
 
   def testServerServesFiles(self):
     now = time.time()
@@ -140,6 +160,9 @@ class ConstrainedNetworkServerTest(unittest.TestCase):
     self.assertTrue(time.time() - now < self._LATENCY_TEST_SECS)
 
   def testServerLatencyConstraint(self):
+    """Tests serving a file with a latency network constraint."""
+    # Abort if does not have root access.
+    self.assertEqual(os.geteuid(), 0, 'You need root access to run this test.')
     now = time.time()
 
     base_url = '%sf=%s' % (self._SERVER_URL, self._relative_fn)

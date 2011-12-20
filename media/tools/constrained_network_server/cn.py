@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -67,17 +66,15 @@ def _ParseArgs():
   parser.add_option('--server-port', type='int',
                     help='Port to forward traffic on --port to.')
   parser.add_option('--bandwidth', type='int',
-                    help=('Bandwidth of the network in kbps. Default: '
-                          '%defaultkbps.'))
+                    help='Bandwidth of the network in kbps.')
   parser.add_option('--latency', type='int',
                     help=('Latency (delay) added to each outgoing packet in '
-                          'ms. Default: %defaultms.'))
+                          'ms.'))
   parser.add_option('--loss', type='int',
-                    help=('Packet-loss percentage on outgoing packets. '
-                          'Default: %default%.'))
+                    help='Packet-loss percentage on outgoing packets. ')
   parser.add_option('--interface', type='string',
-                    help=('Interface to setup constraints on. Use lo for a '
-                          'local client. Default: %default.'))
+                    help=('Interface to setup constraints on. Use "lo" for a '
+                          'local client.'))
   parser.add_option('-v', '--verbose', action='store_true', dest='verbose',
                     default=False, help='Turn on verbose output.')
   options, args = parser.parse_args()

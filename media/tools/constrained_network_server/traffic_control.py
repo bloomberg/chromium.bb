@@ -259,13 +259,11 @@ def _GetFilterHandleId(interface, port):
   """
   command = ['tc', 'filter', 'list', 'dev', interface, 'parent', '1:']
   output = _Exec(command, msg='Error listing filters.')
-
   # Search for the filter handle ID associated with class ID '1:port'.
   handle_id_re = re.search(
-      '([0-9a-fA-F]{3}::[0-9a-fA-F]{3}).*(?=flowid 1:%x$)' % port, output)
+      '([0-9a-fA-F]{3}::[0-9a-fA-F]{3}).*(?=flowid 1:%x\s)' % port, output)
   if handle_id_re:
     return handle_id_re.group(1)
-
   raise TrafficControlError(('Could not find filter handle ID for class ID '
                              '1:%x.') % port)
 

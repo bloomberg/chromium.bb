@@ -18,6 +18,7 @@ import signal
 import sys
 import threading
 import time
+import traffic_control
 
 try:
   import cherrypy
@@ -91,13 +92,31 @@ class PortAllocator(object):
       for port in xrange(self._port_range[0], self._port_range[1]):
         if port in self._ports:
           continue
+        if self._SetupPort(port, **kwargs):
+          kwargs['port'] = port
+          self._ports[port] = {'last_update': time.time(), 'key': full_key,
+                               'config': kwargs}
+          return port
 
-        # TODO(dalecurtis): Integrate with shadi's scripts.
-        # We've found an open port so call the script and set it up.
-        #Port.Setup(port=port, **kwargs)
+  def _SetupPort(self, port, **kwargs):
+    """Setup network constraints on port using the requested parameters.
 
-        self._ports[port] = {'last_update': time.time(), 'key': full_key}
-        return port
+    Args:
+      port: The port number to setup network constraints on.
+      **kwargs: Network constraints to set up on the port.
+
+    Returns:
+      True if setting the network constraints on the port was successful, false
+      otherwise.
+    """
+    kwargs['port'] = port
+    try:
+      cherrypy.log('Setting up port %d' % port)
+      traffic_control.CreateConstrainedPort(kwargs)
+      return True
+    except traffic_control.TrafficControlError as e:
+      cherrypy.log('Error: %s\nOutput: %s', e.msg, e.error)
+      return False
 
   def _CleanupLocked(self, all_ports):
     """Internal cleanup method, expects lock to have already been acquired.
@@ -113,19 +132,28 @@ class PortAllocator(object):
       expired = now - status['last_update'] > self._expiry_time_secs
       if all_ports or expired:
         cherrypy.log('Cleaning up port %d' % port)
-
-        # TODO(dalecurtis): Integrate with shadi's scripts.
-        #Port.Delete(port=port)
-
+        self._DeletePort(port)
         del self._ports[port]
 
-  def Cleanup(self, all_ports=False):
+  def _DeletePort(self, port):
+    """Deletes network constraints on port.
+
+    Args:
+      port: The port number associated with the network constraints.
+    """
+    try:
+      traffic_control.DeleteConstrainedPort(self._ports[port]['config'])
+    except traffic_control.TrafficControlError as e:
+      cherrypy.log('Error: %s\nOutput: %s', e.msg, e.error)
+
+  def Cleanup(self, interface, all_ports=False):
     """Cleans up expired ports, or if all_ports=True, all allocated ports.
 
     By default, ports which haven't been used for self._expiry_time_secs are
     torn down. If all_ports=True then they are torn down regardless.
 
     Args:
+      interface: Interface the constrained network is setup on.
       all_ports: Should all ports be torn down regardless of expiration?
     """
     with self._port_lock:
@@ -179,14 +207,12 @@ class ConstrainedNetworkServer(object):
       return cherrypy.lib.static.serve_file(sanitized_path)
 
     # Validate inputs. isdigit() guarantees a natural number.
-    if bandwidth and not bandwidth.isdigit():
-      raise cherrypy.HTTPError(400, 'Invalid bandwidth constraint.')
-
-    if latency and not latency.isdigit():
-      raise cherrypy.HTTPError(400, 'Invalid latency constraint.')
-
-    if loss and not loss.isdigit() and not int(loss) <= 100:
-      raise cherrypy.HTTPError(400, 'Invalid loss constraint.')
+    bandwidth = self._ParseIntParameter(
+        bandwidth, 'Invalid bandwidth constraint.', lambda x: x > 0)
+    latency = self._ParseIntParameter(
+        latency, 'Invalid latency constraint.', lambda x: x >= 0)
+    loss = self._ParseIntParameter(
+        loss, 'Invalid loss constraint.', lambda x: x <= 100 and x >= 0)
 
     # Allocate a port using the given constraints. If a port with the requested
     # key is already allocated, it will be reused.
@@ -194,20 +220,45 @@ class ConstrainedNetworkServer(object):
     # TODO(dalecurtis): The key cherrypy.request.remote.ip might not be unique
     # if build slaves are sharing the same VM.
     constrained_port = self._port_allocator.Get(
-        cherrypy.request.remote.ip, bandwidth=bandwidth, latency=latency,
+        cherrypy.request.remote.ip, server_port=self._options.port,
+        interface=self._options.interface, bandwidth=bandwidth, latency=latency,
         loss=loss)
 
     if not constrained_port:
       raise cherrypy.HTTPError(503, 'Service unavailable. Out of ports.')
 
     # Build constrained URL. Only pass on the file parameter.
-    constrained_url = '%s?file=%s' % (
+    constrained_url = '%s?f=%s' % (
         cherrypy.url().replace(
             ':%d' % self._options.port, ':%d' % constrained_port),
         f)
 
     # Redirect request to the constrained port.
     cherrypy.lib.cptools.redirect(constrained_url, internal=False)
+
+  def _ParseIntParameter(self, param, msg, check):
+    """Returns integer value of param and verifies it satisfies the check.
+
+    Args:
+      param: Parameter name to check.
+      msg: Message in error if raised.
+      check: Check to verify the parameter value.
+
+    Returns:
+      None if param is None, integer value of param otherwise.
+
+    Raises:
+      cherrypy.HTTPError if param can not be converted to integer or if it does
+      not satisfy the check.
+    """
+    if param:
+      try:
+        int_value = int(param)
+        if check(int_value):
+          return int_value
+      except:
+        pass
+      raise cherrypy.HTTPError(400, msg)
 
 
 def ParseArgs():
@@ -267,7 +318,7 @@ def Main():
   finally:
     # Disable Ctrl-C handler to prevent interruption of cleanup.
     signal.signal(signal.SIGINT, lambda signal, frame: None)
-    pa.Cleanup(all_ports=True)
+    pa.Cleanup(options.interface, all_ports=True)
 
 
 if __name__ == '__main__':

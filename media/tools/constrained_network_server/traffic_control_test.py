@@ -24,7 +24,7 @@ class TrafficControlTests(unittest.TestCase):
   def setUp(self):
     """Setup a dummy interface."""
     # If we update to python version 2.7 or newer we can use setUpClass() or
-    # unittest.skipIf()
+    # unittest.skipIf().
     if os.getuid() != 0:
       sys.exit('You need root access to run these tests.')
 
@@ -64,7 +64,7 @@ class TrafficControlTests(unittest.TestCase):
 
     traffic_control._AddRootQdisc(config['interface'])
     output = traffic_control._Exec(command)
-    # Assert htb root is added
+    # Assert htb root is added.
     self.assertTrue(root_detail in output)
 
   def testConfigureClassAdd(self):
@@ -75,7 +75,7 @@ class TrafficControlTests(unittest.TestCase):
         'server_port': 33333,
         'bandwidth': 2000
     }
-    # Convert Kbps to Kbit
+    # Convert Kbps to Kbit.
     rate = config['bandwidth'] * 8
     class_detail = ('class htb 1:%x root prio 0 rate %dKbit ceil %dKbit' %
                     (config['port'], rate, rate))
@@ -91,15 +91,15 @@ class TrafficControlTests(unittest.TestCase):
     # Add class to root.
     traffic_control._ConfigureClass('add', config)
 
-    # Assert class is added
+    # Assert class is added.
     command = ['tc', 'class', 'ls', 'dev', config['interface']]
     output = traffic_control._Exec(command)
     self.assertTrue(class_detail in output)
 
-    # Delete class
+    # Delete class.
     traffic_control._ConfigureClass('del', config)
 
-    # Assert class is deleted
+    # Assert class is deleted.
     command = ['tc', 'class', 'ls', 'dev', config['interface']]
     output = traffic_control._Exec(command)
     self.assertFalse(class_detail in output)
@@ -129,14 +129,46 @@ class TrafficControlTests(unittest.TestCase):
     handle_id_re = re.search(qdisc_re_detail, output)
     self.assertEqual(handle_id_re, None)
 
-    # Add qdisc to class
+    # Add qdisc to class.
     traffic_control._AddSubQdisc(config)
 
-    # Assert qdisc is added
+    # Assert qdisc is added.
     command = ['tc', 'qdisc', 'ls', 'dev', config['interface']]
     output = traffic_control._Exec(command)
     handle_id_re = re.search(qdisc_re_detail, output)
     self.assertNotEqual(handle_id_re, None)
+
+  def testAddDeleteFilter(self):
+    config = {
+        'interface': self._INTERFACE,
+        'port': 12345,
+        'bandwidth': 2000
+    }
+    # Assert no filter exists.
+    command = ['tc', 'filter', 'list', 'dev', config['interface'], 'parent',
+               '1:0']
+    output = traffic_control._Exec(command)
+    self.assertEqual(output, '')
+
+    # Create the root and class to which the filter will be attached.
+    # Add root qdisc.
+    traffic_control._AddRootQdisc(config['interface'])
+
+    # Add class to root.
+    traffic_control._ConfigureClass('add', config)
+
+    # Add the filter.
+    traffic_control._AddFilter(config['interface'], config['port'])
+    handle_id = traffic_control._GetFilterHandleId(config['interface'],
+                                                   config['port'])
+    self.assertNotEqual(handle_id, None)
+
+    # Delete the filter.
+    # The output of tc filter list is not None because tc adds default filters.
+    traffic_control._DeleteFilter(config['interface'], config['port'])
+    self.assertRaises(traffic_control.TrafficControlError,
+                      traffic_control._GetFilterHandleId, config['interface'],
+                      config['port'])
 
 
 if __name__ == '__main__':

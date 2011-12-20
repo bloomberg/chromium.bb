@@ -6,7 +6,7 @@
   </head>
 
   <body>
-    <video/>
+    <video controls/>
   </body>
 
   <script type="text/javascript">
@@ -33,7 +33,7 @@
       playTime = new Date().getTime() - startTime;
       durMs = video.duration * 1000;
 
-      extra_play_percentage = Math.max(0, (playTime - durMs) / durMs)
+      extra_play_percentage = Math.max(0, (playTime - durMs) * 100 / durMs)
     }, false);
 
     // Called by the PyAuto controller to initiate testing.

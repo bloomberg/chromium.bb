@@ -55,9 +55,11 @@ _TEST_HTML_PATH = os.path.join(
 # Number of threads to use during testing.
 _TEST_THREADS = 3
 
-# File name of video to collect metrics for.
+# File name of video to collect metrics for and its duration (used for timeout).
 # TODO(dalecurtis): Should be set on the command line.
 _TEST_VIDEO = 'roller.webm'
+_TEST_VIDEO_DURATION_SEC = 28.53
+
 
 # Path to CNS executable relative to source root.
 _CNS_PATH = os.path.join(
@@ -107,10 +109,11 @@ class TestWorker(threading.Thread):
       tab = self._FindTabLocked(unique_url)
 
       if self._epp < 0:
-        self._epp = self._pyauto.GetDOMValue(
-            'extra_play_percentage', tab_index=tab)
+        self._epp = int(self._pyauto.GetDOMValue('extra_play_percentage',
+                                                 tab_index=tab))
       if self._ttp < 0:
-        self._ttp = self._pyauto.GetDOMValue('time_to_playback', tab_index=tab)
+        self._ttp = int(self._pyauto.GetDOMValue('time_to_playback',
+                                                 tab_index=tab))
     return self._epp >= 0 and self._ttp >= 0
 
   def run(self):
@@ -152,7 +155,8 @@ class TestWorker(threading.Thread):
       # here since pyauto.WaitUntil doesn't call into Chrome.
       self._epp = self._ttp = -1
       self._pyauto.WaitUntil(
-          self._HaveMetrics, args=[unique_url], retry_sleep=2)
+        self._HaveMetrics, args=[unique_url], retry_sleep=2,
+        timeout=_TEST_VIDEO_DURATION_SEC * 10)
 
       # Record results.
       # TODO(dalecurtis): Support reference builds.
@@ -179,6 +183,7 @@ class MediaConstrainedNetworkPerfTest(pyauto.PyUITest):
            '--interface', 'lo',
            '--www-root', os.path.join(
                self.DataDir(), 'pyauto_private', 'media')]
+
     process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
 
     # Wait for server to start up.
