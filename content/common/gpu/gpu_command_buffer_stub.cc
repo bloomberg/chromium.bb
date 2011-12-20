@@ -180,7 +180,7 @@ void GpuCommandBufferStub::OnInitialize(
 
   scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(),
                                          decoder_.get(),
-                                         NULL));
+                                         decoder_.get()));
 
   decoder_->set_engine(scheduler_.get());
 
