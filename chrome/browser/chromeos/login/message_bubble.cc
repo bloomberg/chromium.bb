@@ -48,9 +48,8 @@ MessageBubble::~MessageBubble() {
 void MessageBubble::Init() {
   using views::GridLayout;
 
-  views::View* control_view = new views::View();
-  GridLayout* layout = new GridLayout(control_view);
-  control_view->SetLayoutManager(layout);
+  GridLayout* layout = new GridLayout(this);
+  SetLayoutManager(layout);
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
                         GridLayout::USE_PREF, 0, 0);

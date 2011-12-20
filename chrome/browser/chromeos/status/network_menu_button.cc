@@ -369,7 +369,7 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
       cros->cellular_connected() && !cros->ethernet_connected() &&
       !cros->wifi_connected()) {
     std::string deal_text;
-    int carrier_deal_promo_pref = -1;
+    int carrier_deal_promo_pref = kNotificationCountPrefDefault;
     const MobileConfig::CarrierDeal* deal = NULL;
     const MobileConfig::Carrier* carrier = GetCarrier(cros);
     if (carrier)
@@ -408,16 +408,9 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
       return;
     }
 
-    // Add deal text if it's defined.
-    string16 notification_text;
-    string16 default_text =
-        l10n_util::GetStringUTF16(IDS_3G_NOTIFICATION_MESSAGE);
-    if (!deal_text.empty()) {
-      notification_text =
-          UTF8ToUTF16(deal_text) + UTF8ToUTF16("\n\n") + default_text;
-    } else {
-      notification_text = default_text;
-    }
+    string16 message = l10n_util::GetStringUTF16(IDS_3G_NOTIFICATION_MESSAGE);
+    if (!deal_text.empty())
+      message = UTF8ToUTF16(deal_text + "\n\n") + message;
 
     // Use deal URL if it's defined or general "Network Settings" URL.
     int link_message_id;
@@ -434,7 +427,7 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
         this,
         views::BubbleBorder::TOP_RIGHT,
         ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_NOTIFICATION_3G),
-        notification_text,
+        message,
         links);
     mobile_data_bubble_->set_link_listener(this);
     browser::CreateViewsBubbleAboveLockScreen(mobile_data_bubble_);
