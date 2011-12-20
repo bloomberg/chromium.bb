@@ -249,10 +249,6 @@
       'cpp/trusted/file_chooser_trusted.h',
       'cpp/trusted/file_io_trusted.cc',
       'cpp/trusted/file_io_trusted.h',
-
-      # Helper interfaces.
-      'cpp/helper/dev/websocket_api_dev.cc',
-      'cpp/helper/dev/websocket_api_dev.h',
     ],
     #
     # Common Testing source for trusted and untrusted (NaCl) pugins.
