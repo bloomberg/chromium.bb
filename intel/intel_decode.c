@@ -59,7 +59,7 @@ static float int_as_float(uint32_t intval)
 }
 
 static void
-instr_out(uint32_t * data, uint32_t hw_offset, unsigned int index,
+instr_out(uint32_t *data, uint32_t hw_offset, unsigned int index,
 	  char *fmt, ...)
 {
 	va_list va;
@@ -81,7 +81,7 @@ instr_out(uint32_t * data, uint32_t hw_offset, unsigned int index,
 }
 
 static int
-decode_mi(uint32_t * data, int count, uint32_t hw_offset, int *failures)
+decode_mi(uint32_t *data, int count, uint32_t hw_offset, int *failures)
 {
 	unsigned int opcode, len = -1;
 	char *post_sync_op = "";
@@ -93,28 +93,28 @@ decode_mi(uint32_t * data, int count, uint32_t hw_offset, int *failures)
 		int max_len;
 		char *name;
 	} opcodes_mi[] = {
-		{
-		0x08, 0, 1, 1, "MI_ARB_ON_OFF"}, {
-		0x0a, 0, 1, 1, "MI_BATCH_BUFFER_END"}, {
-		0x30, 0x3f, 3, 3, "MI_BATCH_BUFFER"}, {
-		0x31, 0x3f, 2, 2, "MI_BATCH_BUFFER_START"}, {
-		0x14, 0x3f, 3, 3, "MI_DISPLAY_BUFFER_INFO"}, {
-		0x04, 0, 1, 1, "MI_FLUSH"}, {
-		0x22, 0x1f, 3, 3, "MI_LOAD_REGISTER_IMM"}, {
-		0x13, 0x3f, 2, 2, "MI_LOAD_SCAN_LINES_EXCL"}, {
-		0x12, 0x3f, 2, 2, "MI_LOAD_SCAN_LINES_INCL"}, {
-		0x00, 0, 1, 1, "MI_NOOP"}, {
-		0x11, 0x3f, 2, 2, "MI_OVERLAY_FLIP"}, {
-		0x07, 0, 1, 1, "MI_REPORT_HEAD"}, {
-		0x18, 0x3f, 2, 2, "MI_SET_CONTEXT"}, {
-		0x20, 0x3f, 3, 4, "MI_STORE_DATA_IMM"}, {
-		0x21, 0x3f, 3, 4, "MI_STORE_DATA_INDEX"}, {
-		0x24, 0x3f, 3, 3, "MI_STORE_REGISTER_MEM"}, {
-		0x02, 0, 1, 1, "MI_USER_INTERRUPT"}, {
-		0x03, 0, 1, 1, "MI_WAIT_FOR_EVENT"}, {
-		0x16, 0x7f, 3, 3, "MI_SEMAPHORE_MBOX"}, {
-		0x26, 0x1f, 3, 4, "MI_FLUSH_DW"}, {
-	0x0b, 0, 1, 1, "MI_SUSPEND_FLUSH"},};
+		{ 0x08, 0, 1, 1, "MI_ARB_ON_OFF" },
+		{ 0x0a, 0, 1, 1, "MI_BATCH_BUFFER_END" },
+		{ 0x30, 0x3f, 3, 3, "MI_BATCH_BUFFER" },
+		{ 0x31, 0x3f, 2, 2, "MI_BATCH_BUFFER_START" },
+		{ 0x14, 0x3f, 3, 3, "MI_DISPLAY_BUFFER_INFO" },
+		{ 0x04, 0, 1, 1, "MI_FLUSH" },
+		{ 0x22, 0x1f, 3, 3, "MI_LOAD_REGISTER_IMM" },
+		{ 0x13, 0x3f, 2, 2, "MI_LOAD_SCAN_LINES_EXCL" },
+		{ 0x12, 0x3f, 2, 2, "MI_LOAD_SCAN_LINES_INCL" },
+		{ 0x00, 0, 1, 1, "MI_NOOP" },
+		{ 0x11, 0x3f, 2, 2, "MI_OVERLAY_FLIP" },
+		{ 0x07, 0, 1, 1, "MI_REPORT_HEAD" },
+		{ 0x18, 0x3f, 2, 2, "MI_SET_CONTEXT" },
+		{ 0x20, 0x3f, 3, 4, "MI_STORE_DATA_IMM" },
+		{ 0x21, 0x3f, 3, 4, "MI_STORE_DATA_INDEX" },
+		{ 0x24, 0x3f, 3, 3, "MI_STORE_REGISTER_MEM" },
+		{ 0x02, 0, 1, 1, "MI_USER_INTERRUPT" },
+		{ 0x03, 0, 1, 1, "MI_WAIT_FOR_EVENT" },
+		{ 0x16, 0x7f, 3, 3, "MI_SEMAPHORE_MBOX" },
+		{ 0x26, 0x1f, 3, 4, "MI_FLUSH_DW" },
+		{ 0x0b, 0, 1, 1, "MI_SUSPEND_FLUSH"},
+	};
 
 	/* check instruction length */
 	for (opcode = 0; opcode < sizeof(opcodes_mi) / sizeof(opcodes_mi[0]);
@@ -226,7 +226,7 @@ decode_mi(uint32_t * data, int count, uint32_t hw_offset, int *failures)
 }
 
 static void
-decode_2d_br00(uint32_t * data, int count, uint32_t hw_offset, char *cmd)
+decode_2d_br00(uint32_t *data, int count, uint32_t hw_offset, char *cmd)
 {
 	instr_out(data, hw_offset, 0,
 		  "%s (rgb %sabled, alpha %sabled, src tile %d, dst tile %d)\n",
@@ -236,7 +236,7 @@ decode_2d_br00(uint32_t * data, int count, uint32_t hw_offset, char *cmd)
 		  (data[count] >> 15) & 1, (data[count] >> 11) & 1);
 }
 
-static void decode_2d_br01(uint32_t * data, int count, uint32_t hw_offset)
+static void decode_2d_br01(uint32_t *data, int count, uint32_t hw_offset)
 {
 	char *format;
 	switch ((data[count] >> 24) & 0x3) {
@@ -267,7 +267,7 @@ static void decode_2d_br01(uint32_t * data, int count, uint32_t hw_offset)
 }
 
 static int
-decode_2d(uint32_t * data, int count, uint32_t hw_offset, int *failures)
+decode_2d(uint32_t *data, int count, uint32_t hw_offset, int *failures)
 {
 	unsigned int opcode, len;
 
@@ -277,32 +277,32 @@ decode_2d(uint32_t * data, int count, uint32_t hw_offset, int *failures)
 		int max_len;
 		char *name;
 	} opcodes_2d[] = {
-		{
-		0x40, 5, 5, "COLOR_BLT"}, {
-		0x43, 6, 6, "SRC_COPY_BLT"}, {
-		0x01, 8, 8, "XY_SETUP_BLT"}, {
-		0x11, 9, 9, "XY_SETUP_MONO_PATTERN_SL_BLT"}, {
-		0x03, 3, 3, "XY_SETUP_CLIP_BLT"}, {
-		0x24, 2, 2, "XY_PIXEL_BLT"}, {
-		0x25, 3, 3, "XY_SCANLINES_BLT"}, {
-		0x26, 4, 4, "Y_TEXT_BLT"}, {
-		0x31, 5, 134, "XY_TEXT_IMMEDIATE_BLT"}, {
-		0x50, 6, 6, "XY_COLOR_BLT"}, {
-		0x51, 6, 6, "XY_PAT_BLT"}, {
-		0x76, 8, 8, "XY_PAT_CHROMA_BLT"}, {
-		0x72, 7, 135, "XY_PAT_BLT_IMMEDIATE"}, {
-		0x77, 9, 137, "XY_PAT_CHROMA_BLT_IMMEDIATE"}, {
-		0x52, 9, 9, "XY_MONO_PAT_BLT"}, {
-		0x59, 7, 7, "XY_MONO_PAT_FIXED_BLT"}, {
-		0x53, 8, 8, "XY_SRC_COPY_BLT"}, {
-		0x54, 8, 8, "XY_MONO_SRC_COPY_BLT"}, {
-		0x71, 9, 137, "XY_MONO_SRC_COPY_IMMEDIATE_BLT"}, {
-		0x55, 9, 9, "XY_FULL_BLT"}, {
-		0x55, 9, 137, "XY_FULL_IMMEDIATE_PATTERN_BLT"}, {
-		0x56, 9, 9, "XY_FULL_MONO_SRC_BLT"}, {
-		0x75, 10, 138, "XY_FULL_MONO_SRC_IMMEDIATE_PATTERN_BLT"}, {
-		0x57, 12, 12, "XY_FULL_MONO_PATTERN_BLT"}, {
-	0x58, 12, 12, "XY_FULL_MONO_PATTERN_MONO_SRC_BLT"},};
+		{ 0x40, 5, 5, "COLOR_BLT" },
+		{ 0x43, 6, 6, "SRC_COPY_BLT" },
+		{ 0x01, 8, 8, "XY_SETUP_BLT" },
+		{ 0x11, 9, 9, "XY_SETUP_MONO_PATTERN_SL_BLT" },
+		{ 0x03, 3, 3, "XY_SETUP_CLIP_BLT" },
+		{ 0x24, 2, 2, "XY_PIXEL_BLT" },
+		{ 0x25, 3, 3, "XY_SCANLINES_BLT" },
+		{ 0x26, 4, 4, "Y_TEXT_BLT" },
+		{ 0x31, 5, 134, "XY_TEXT_IMMEDIATE_BLT" },
+		{ 0x50, 6, 6, "XY_COLOR_BLT" },
+		{ 0x51, 6, 6, "XY_PAT_BLT" },
+		{ 0x76, 8, 8, "XY_PAT_CHROMA_BLT" },
+		{ 0x72, 7, 135, "XY_PAT_BLT_IMMEDIATE" },
+		{ 0x77, 9, 137, "XY_PAT_CHROMA_BLT_IMMEDIATE" },
+		{ 0x52, 9, 9, "XY_MONO_PAT_BLT" },
+		{ 0x59, 7, 7, "XY_MONO_PAT_FIXED_BLT" },
+		{ 0x53, 8, 8, "XY_SRC_COPY_BLT" },
+		{ 0x54, 8, 8, "XY_MONO_SRC_COPY_BLT" },
+		{ 0x71, 9, 137, "XY_MONO_SRC_COPY_IMMEDIATE_BLT" },
+		{ 0x55, 9, 9, "XY_FULL_BLT" },
+		{ 0x55, 9, 137, "XY_FULL_IMMEDIATE_PATTERN_BLT" },
+		{ 0x56, 9, 9, "XY_FULL_MONO_SRC_BLT" },
+		{ 0x75, 10, 138, "XY_FULL_MONO_SRC_IMMEDIATE_PATTERN_BLT" },
+		{ 0x57, 12, 12, "XY_FULL_MONO_PATTERN_BLT" },
+		{ 0x58, 12, 12, "XY_FULL_MONO_PATTERN_MONO_SRC_BLT"},
+	};
 
 	switch ((data[0] & 0x1fc00000) >> 22) {
 	case 0x25:
@@ -453,7 +453,7 @@ decode_2d(uint32_t * data, int count, uint32_t hw_offset, int *failures)
 }
 
 static int
-decode_3d_1c(uint32_t * data, int count, uint32_t hw_offset, int *failures)
+decode_3d_1c(uint32_t *data, int count, uint32_t hw_offset, int *failures)
 {
 	uint32_t opcode;
 
@@ -487,7 +487,7 @@ decode_3d_1c(uint32_t * data, int count, uint32_t hw_offset, int *failures)
 
 /** Sets the string dstname to describe the destination of the PS instruction */
 static void
-i915_get_instruction_dst(uint32_t * data, int i, char *dstname, int do_mask)
+i915_get_instruction_dst(uint32_t *data, int i, char *dstname, int do_mask)
 {
 	uint32_t a0 = data[i];
 	int dst_nr = (a0 >> 14) & 0xf;
@@ -618,7 +618,7 @@ i915_get_instruction_src_name(uint32_t src_type, uint32_t src_nr, char *name)
 	}
 }
 
-static void i915_get_instruction_src0(uint32_t * data, int i, char *srcname)
+static void i915_get_instruction_src0(uint32_t *data, int i, char *srcname)
 {
 	uint32_t a0 = data[i];
 	uint32_t a1 = data[i + 1];
@@ -636,7 +636,7 @@ static void i915_get_instruction_src0(uint32_t * data, int i, char *srcname)
 		strcat(srcname, swizzle);
 }
 
-static void i915_get_instruction_src1(uint32_t * data, int i, char *srcname)
+static void i915_get_instruction_src1(uint32_t *data, int i, char *srcname)
 {
 	uint32_t a1 = data[i + 1];
 	uint32_t a2 = data[i + 2];
@@ -654,7 +654,7 @@ static void i915_get_instruction_src1(uint32_t * data, int i, char *srcname)
 		strcat(srcname, swizzle);
 }
 
-static void i915_get_instruction_src2(uint32_t * data, int i, char *srcname)
+static void i915_get_instruction_src2(uint32_t *data, int i, char *srcname)
 {
 	uint32_t a2 = data[i + 2];
 	int src_nr = (a2 >> 16) & 0x1f;
@@ -712,7 +712,7 @@ i915_get_instruction_addr(uint32_t src_type, uint32_t src_nr, char *name)
 }
 
 static void
-i915_decode_alu1(uint32_t * data, uint32_t hw_offset,
+i915_decode_alu1(uint32_t *data, uint32_t hw_offset,
 		 int i, char *instr_prefix, char *op_name)
 {
 	char dst[100], src0[100];
@@ -727,7 +727,7 @@ i915_decode_alu1(uint32_t * data, uint32_t hw_offset,
 }
 
 static void
-i915_decode_alu2(uint32_t * data, uint32_t hw_offset,
+i915_decode_alu2(uint32_t *data, uint32_t hw_offset,
 		 int i, char *instr_prefix, char *op_name)
 {
 	char dst[100], src0[100], src1[100];
@@ -743,7 +743,7 @@ i915_decode_alu2(uint32_t * data, uint32_t hw_offset,
 }
 
 static void
-i915_decode_alu3(uint32_t * data, uint32_t hw_offset,
+i915_decode_alu3(uint32_t *data, uint32_t hw_offset,
 		 int i, char *instr_prefix, char *op_name)
 {
 	char dst[100], src0[100], src1[100], src2[100];
@@ -760,7 +760,7 @@ i915_decode_alu3(uint32_t * data, uint32_t hw_offset,
 }
 
 static void
-i915_decode_tex(uint32_t * data, uint32_t hw_offset, int i, char *instr_prefix,
+i915_decode_tex(uint32_t *data, uint32_t hw_offset, int i, char *instr_prefix,
 		char *tex_name)
 {
 	uint32_t t0 = data[i];
@@ -781,7 +781,7 @@ i915_decode_tex(uint32_t * data, uint32_t hw_offset, int i, char *instr_prefix,
 }
 
 static void
-i915_decode_dcl(uint32_t * data, uint32_t hw_offset, int i, char *instr_prefix)
+i915_decode_dcl(uint32_t *data, uint32_t hw_offset, int i, char *instr_prefix)
 {
 	uint32_t d0 = data[i];
 	char *sampletype;
@@ -870,7 +870,7 @@ i915_decode_dcl(uint32_t * data, uint32_t hw_offset, int i, char *instr_prefix)
 }
 
 static void
-i915_decode_instruction(uint32_t * data, uint32_t hw_offset,
+i915_decode_instruction(uint32_t *data, uint32_t hw_offset,
 			int i, char *instr_prefix)
 {
 	switch ((data[i] >> 24) & 0x1f) {
@@ -1122,7 +1122,7 @@ static char *decode_sample_filter(uint32_t mode)
 }
 
 static int
-decode_3d_1d(uint32_t * data, int count,
+decode_3d_1d(uint32_t *data, int count,
 	     uint32_t hw_offset, uint32_t devid, int *failures)
 {
 	unsigned int len, i, c, idx, word, map, sampler, instr;
@@ -1136,32 +1136,33 @@ decode_3d_1d(uint32_t * data, int count,
 		int max_len;
 		char *name;
 	} opcodes_3d_1d[] = {
-		{
-		0x86, 0, 4, 4, "3DSTATE_CHROMA_KEY"}, {
-		0x88, 0, 2, 2, "3DSTATE_CONSTANT_BLEND_COLOR"}, {
-		0x99, 0, 2, 2, "3DSTATE_DEFAULT_DIFFUSE"}, {
-		0x9a, 0, 2, 2, "3DSTATE_DEFAULT_SPECULAR"}, {
-		0x98, 0, 2, 2, "3DSTATE_DEFAULT_Z"}, {
-		0x97, 0, 2, 2, "3DSTATE_DEPTH_OFFSET_SCALE"}, {
-		0x9d, 0, 65, 65, "3DSTATE_FILTER_COEFFICIENTS_4X4"}, {
-		0x9e, 0, 4, 4, "3DSTATE_MONO_FILTER"}, {
-		0x89, 0, 4, 4, "3DSTATE_FOG_MODE"}, {
-		0x8f, 0, 2, 16, "3DSTATE_MAP_PALLETE_LOAD_32"}, {
-		0x83, 0, 2, 2, "3DSTATE_SPAN_STIPPLE"}, {
-		0x8c, 1, 2, 2, "3DSTATE_MAP_COORD_TRANSFORM_I830"}, {
-		0x8b, 1, 2, 2, "3DSTATE_MAP_VERTEX_TRANSFORM_I830"}, {
-		0x8d, 1, 3, 3, "3DSTATE_W_STATE_I830"}, {
-		0x01, 1, 2, 2, "3DSTATE_COLOR_FACTOR_I830"}, {
-	0x02, 1, 2, 2, "3DSTATE_MAP_COORD_SETBIND_I830"},}, *opcode_3d_1d;
+		{ 0x86, 0, 4, 4, "3DSTATE_CHROMA_KEY" },
+		{ 0x88, 0, 2, 2, "3DSTATE_CONSTANT_BLEND_COLOR" },
+		{ 0x99, 0, 2, 2, "3DSTATE_DEFAULT_DIFFUSE" },
+		{ 0x9a, 0, 2, 2, "3DSTATE_DEFAULT_SPECULAR" },
+		{ 0x98, 0, 2, 2, "3DSTATE_DEFAULT_Z" },
+		{ 0x97, 0, 2, 2, "3DSTATE_DEPTH_OFFSET_SCALE" },
+		{ 0x9d, 0, 65, 65, "3DSTATE_FILTER_COEFFICIENTS_4X4" },
+		{ 0x9e, 0, 4, 4, "3DSTATE_MONO_FILTER" },
+		{ 0x89, 0, 4, 4, "3DSTATE_FOG_MODE" },
+		{ 0x8f, 0, 2, 16, "3DSTATE_MAP_PALLETE_LOAD_32" },
+		{ 0x83, 0, 2, 2, "3DSTATE_SPAN_STIPPLE" },
+		{ 0x8c, 1, 2, 2, "3DSTATE_MAP_COORD_TRANSFORM_I830" },
+		{ 0x8b, 1, 2, 2, "3DSTATE_MAP_VERTEX_TRANSFORM_I830" },
+		{ 0x8d, 1, 3, 3, "3DSTATE_W_STATE_I830" },
+		{ 0x01, 1, 2, 2, "3DSTATE_COLOR_FACTOR_I830" },
+		{ 0x02, 1, 2, 2, "3DSTATE_MAP_COORD_SETBIND_I830"},
+	}, *opcode_3d_1d;
 
 	opcode = (data[0] & 0x00ff0000) >> 16;
 
 	switch (opcode) {
 	case 0x07:
-		/* This instruction is unusual.  A 0 length means just 1 DWORD instead of
-		 * 2.  The 0 length is specified in one place to be unsupported, but
-		 * stated to be required in another, and 0 length LOAD_INDIRECTs appear
-		 * to cause no harm at least.
+		/* This instruction is unusual.  A 0 length means just
+		 * 1 DWORD instead of 2.  The 0 length is specified in
+		 * one place to be unsupported, but stated to be
+		 * required in another, and 0 length LOAD_INDIRECTs
+		 * appear to cause no harm at least.
 		 */
 		instr_out(data, hw_offset, 0, "3DSTATE_LOAD_INDIRECT\n");
 		len = (data[0] & 0x000000ff) + 1;
@@ -2198,7 +2199,7 @@ decode_3d_1d(uint32_t * data, int count,
 }
 
 static int
-decode_3d_primitive(uint32_t * data, int count, uint32_t hw_offset,
+decode_3d_primitive(uint32_t *data, int count, uint32_t hw_offset,
 		    int *failures)
 {
 	char immediate = (data[0] & (1 << 23)) == 0;
@@ -2396,7 +2397,9 @@ decode_3d_primitive(uint32_t * data, int count, uint32_t hw_offset,
 				  "3DPRIMITIVE random indirect %s (%d)\n",
 				  primtype, len);
 			if (len == 0) {
-				/* vertex indices continue until 0xffff is found */
+				/* vertex indices continue until 0xffff is
+				 * found
+				 */
 				for (i = 1; i < count; i++) {
 					if ((data[i] & 0xffff) == 0xffff) {
 						instr_out(data, hw_offset, i,
@@ -2459,7 +2462,7 @@ out:
 }
 
 static int
-decode_3d(uint32_t * data, int count, uint32_t hw_offset, uint32_t devid,
+decode_3d(uint32_t *data, int count, uint32_t hw_offset, uint32_t devid,
 	  int *failures)
 {
 	uint32_t opcode;
@@ -2471,16 +2474,16 @@ decode_3d(uint32_t * data, int count, uint32_t hw_offset, uint32_t devid,
 		int max_len;
 		char *name;
 	} opcodes_3d[] = {
-		{
-		0x06, 1, 1, "3DSTATE_ANTI_ALIASING"}, {
-		0x08, 1, 1, "3DSTATE_BACKFACE_STENCIL_OPS"}, {
-		0x09, 1, 1, "3DSTATE_BACKFACE_STENCIL_MASKS"}, {
-		0x16, 1, 1, "3DSTATE_COORD_SET_BINDINGS"}, {
-		0x15, 1, 1, "3DSTATE_FOG_COLOR"}, {
-		0x0b, 1, 1, "3DSTATE_INDEPENDENT_ALPHA_BLEND"}, {
-		0x0d, 1, 1, "3DSTATE_MODES_4"}, {
-		0x0c, 1, 1, "3DSTATE_MODES_5"}, {
-	0x07, 1, 1, "3DSTATE_RASTERIZATION_RULES"},}, *opcode_3d;
+		{ 0x06, 1, 1, "3DSTATE_ANTI_ALIASING" },
+		{ 0x08, 1, 1, "3DSTATE_BACKFACE_STENCIL_OPS" },
+		{ 0x09, 1, 1, "3DSTATE_BACKFACE_STENCIL_MASKS" },
+		{ 0x16, 1, 1, "3DSTATE_COORD_SET_BINDINGS" },
+		{ 0x15, 1, 1, "3DSTATE_FOG_COLOR" },
+		{ 0x0b, 1, 1, "3DSTATE_INDEPENDENT_ALPHA_BLEND" },
+		{ 0x0d, 1, 1, "3DSTATE_MODES_4" },
+		{ 0x0c, 1, 1, "3DSTATE_MODES_5" },
+		{ 0x07, 1, 1, "3DSTATE_RASTERIZATION_RULES"},
+	}, *opcode_3d;
 
 	opcode = (data[0] & 0x1f000000) >> 24;
 
@@ -2645,7 +2648,7 @@ static const char *get_965_prim_type(uint32_t data)
 }
 
 static int
-i965_decode_urb_fence(uint32_t * data, uint32_t hw_offset, int len, int count,
+i965_decode_urb_fence(uint32_t *data, uint32_t hw_offset, int len, int count,
 		      int *failures)
 {
 	uint32_t vs_fence, clip_fence, gs_fence, sf_fence, vfe_fence, cs_fence;
@@ -2688,7 +2691,7 @@ i965_decode_urb_fence(uint32_t * data, uint32_t hw_offset, int len, int count,
 }
 
 static void
-state_base_out(uint32_t * data, uint32_t hw_offset, unsigned int index,
+state_base_out(uint32_t *data, uint32_t hw_offset, unsigned int index,
 	       char *name)
 {
 	if (data[index] & 1) {
@@ -2702,7 +2705,7 @@ state_base_out(uint32_t * data, uint32_t hw_offset, unsigned int index,
 }
 
 static void
-state_max_out(uint32_t * data, uint32_t hw_offset, unsigned int index,
+state_max_out(uint32_t *data, uint32_t hw_offset, unsigned int index,
 	      char *name)
 {
 	if (data[index] & 1) {
@@ -2721,7 +2724,7 @@ state_max_out(uint32_t * data, uint32_t hw_offset, unsigned int index,
 }
 
 static int
-decode_3d_965(uint32_t * data, int count, uint32_t hw_offset, uint32_t devid,
+decode_3d_965(uint32_t *data, int count, uint32_t hw_offset, uint32_t devid,
 	      int *failures)
 {
 	uint32_t opcode;
@@ -2735,48 +2738,48 @@ decode_3d_965(uint32_t * data, int count, uint32_t hw_offset, uint32_t devid,
 		int max_len;
 		char *name;
 	} opcodes_3d[] = {
-		{
-		0x6000, 3, 3, "URB_FENCE"}, {
-		0x6001, 2, 2, "CS_URB_STATE"}, {
-		0x6002, 2, 2, "CONSTANT_BUFFER"}, {
-		0x6101, 6, 6, "STATE_BASE_ADDRESS"}, {
-		0x6102, 2, 2, "STATE_SIP"}, {
-		0x6104, 1, 1, "3DSTATE_PIPELINE_SELECT"}, {
-		0x680b, 1, 1, "3DSTATE_VF_STATISTICS"}, {
-		0x6904, 1, 1, "3DSTATE_PIPELINE_SELECT"}, {
-		0x7800, 7, 7, "3DSTATE_PIPELINED_POINTERS"}, {
-		0x7801, 6, 6, "3DSTATE_BINDING_TABLE_POINTERS"}, {
-		0x7808, 5, 257, "3DSTATE_VERTEX_BUFFERS"}, {
-		0x7809, 3, 256, "3DSTATE_VERTEX_ELEMENTS"}, {
-		0x780a, 3, 3, "3DSTATE_INDEX_BUFFER"}, {
-		0x780b, 1, 1, "3DSTATE_VF_STATISTICS"}, {
-		0x7900, 4, 4, "3DSTATE_DRAWING_RECTANGLE"}, {
-		0x7901, 5, 5, "3DSTATE_CONSTANT_COLOR"}, {
-		0x7905, 5, 7, "3DSTATE_DEPTH_BUFFER"}, {
-		0x7906, 2, 2, "3DSTATE_POLY_STIPPLE_OFFSET"}, {
-		0x7907, 33, 33, "3DSTATE_POLY_STIPPLE_PATTERN"}, {
-		0x7908, 3, 3, "3DSTATE_LINE_STIPPLE"}, {
-		0x7909, 2, 2, "3DSTATE_GLOBAL_DEPTH_OFFSET_CLAMP"}, {
-		0x7909, 2, 2, "3DSTATE_CLEAR_PARAMS"}, {
-		0x790a, 3, 3, "3DSTATE_AA_LINE_PARAMETERS"}, {
-		0x790b, 4, 4, "3DSTATE_GS_SVB_INDEX"}, {
-		0x790d, 3, 3, "3DSTATE_MULTISAMPLE"}, {
-		0x7910, 2, 2, "3DSTATE_CLEAR_PARAMS"}, {
-		0x7b00, 6, 6, "3DPRIMITIVE"}, {
-		0x7802, 4, 4, "3DSTATE_SAMPLER_STATE_POINTERS"}, {
-		0x7805, 3, 3, "3DSTATE_URB"}, {
-		0x780d, 4, 4, "3DSTATE_VIEWPORT_STATE_POINTERS"}, {
-		0x780e, 4, 4, "3DSTATE_CC_STATE_POINTERS"}, {
-		0x780f, 2, 2, "3DSTATE_SCISSOR_STATE_POINTERS"}, {
-		0x7810, 6, 6, "3DSTATE_VS_STATE"}, {
-		0x7811, 7, 7, "3DSTATE_GS_STATE"}, {
-		0x7812, 4, 4, "3DSTATE_CLIP_STATE"}, {
-		0x7813, 20, 20, "3DSTATE_SF_STATE"}, {
-		0x7814, 9, 9, "3DSTATE_WM_STATE"}, {
-		0x7815, 5, 5, "3DSTATE_CONSTANT_VS_STATE"}, {
-		0x7816, 5, 5, "3DSTATE_CONSTANT_GS_STATE"}, {
-		0x7817, 5, 5, "3DSTATE_CONSTANT_PS_STATE"}, {
-	0x7818, 2, 2, "3DSTATE_SAMPLE_MASK"},}, *opcode_3d;
+		{ 0x6000, 3, 3, "URB_FENCE" },
+		{ 0x6001, 2, 2, "CS_URB_STATE" },
+		{ 0x6002, 2, 2, "CONSTANT_BUFFER" },
+		{ 0x6101, 6, 6, "STATE_BASE_ADDRESS" },
+		{ 0x6102, 2, 2, "STATE_SIP" },
+		{ 0x6104, 1, 1, "3DSTATE_PIPELINE_SELECT" },
+		{ 0x680b, 1, 1, "3DSTATE_VF_STATISTICS" },
+		{ 0x6904, 1, 1, "3DSTATE_PIPELINE_SELECT" },
+		{ 0x7800, 7, 7, "3DSTATE_PIPELINED_POINTERS" },
+		{ 0x7801, 6, 6, "3DSTATE_BINDING_TABLE_POINTERS" },
+		{ 0x7808, 5, 257, "3DSTATE_VERTEX_BUFFERS" },
+		{ 0x7809, 3, 256, "3DSTATE_VERTEX_ELEMENTS" },
+		{ 0x780a, 3, 3, "3DSTATE_INDEX_BUFFER" },
+		{ 0x780b, 1, 1, "3DSTATE_VF_STATISTICS" },
+		{ 0x7900, 4, 4, "3DSTATE_DRAWING_RECTANGLE" },
+		{ 0x7901, 5, 5, "3DSTATE_CONSTANT_COLOR" },
+		{ 0x7905, 5, 7, "3DSTATE_DEPTH_BUFFER" },
+		{ 0x7906, 2, 2, "3DSTATE_POLY_STIPPLE_OFFSET" },
+		{ 0x7907, 33, 33, "3DSTATE_POLY_STIPPLE_PATTERN" },
+		{ 0x7908, 3, 3, "3DSTATE_LINE_STIPPLE" },
+		{ 0x7909, 2, 2, "3DSTATE_GLOBAL_DEPTH_OFFSET_CLAMP" },
+		{ 0x7909, 2, 2, "3DSTATE_CLEAR_PARAMS" },
+		{ 0x790a, 3, 3, "3DSTATE_AA_LINE_PARAMETERS" },
+		{ 0x790b, 4, 4, "3DSTATE_GS_SVB_INDEX" },
+		{ 0x790d, 3, 3, "3DSTATE_MULTISAMPLE" },
+		{ 0x7910, 2, 2, "3DSTATE_CLEAR_PARAMS" },
+		{ 0x7b00, 6, 6, "3DPRIMITIVE" },
+		{ 0x7802, 4, 4, "3DSTATE_SAMPLER_STATE_POINTERS" },
+		{ 0x7805, 3, 3, "3DSTATE_URB" },
+		{ 0x780d, 4, 4, "3DSTATE_VIEWPORT_STATE_POINTERS" },
+		{ 0x780e, 4, 4, "3DSTATE_CC_STATE_POINTERS" },
+		{ 0x780f, 2, 2, "3DSTATE_SCISSOR_STATE_POINTERS" },
+		{ 0x7810, 6, 6, "3DSTATE_VS_STATE" },
+		{ 0x7811, 7, 7, "3DSTATE_GS_STATE" },
+		{ 0x7812, 4, 4, "3DSTATE_CLIP_STATE" },
+		{ 0x7813, 20, 20, "3DSTATE_SF_STATE" },
+		{ 0x7814, 9, 9, "3DSTATE_WM_STATE" },
+		{ 0x7815, 5, 5, "3DSTATE_CONSTANT_VS_STATE" },
+		{ 0x7816, 5, 5, "3DSTATE_CONSTANT_GS_STATE" },
+		{ 0x7817, 5, 5, "3DSTATE_CONSTANT_PS_STATE" },
+		{ 0x7818, 2, 2, "3DSTATE_SAMPLE_MASK"},
+	}, *opcode_3d;
 
 	len = (data[0] & 0x0000ffff) + 2;
 
@@ -3430,7 +3433,7 @@ decode_3d_965(uint32_t * data, int count, uint32_t hw_offset, uint32_t devid,
 }
 
 static int
-decode_3d_i830(uint32_t * data, int count, uint32_t hw_offset, uint32_t devid,
+decode_3d_i830(uint32_t *data, int count, uint32_t hw_offset, uint32_t devid,
 	       int *failures)
 {
 	unsigned int idx;
@@ -3442,23 +3445,23 @@ decode_3d_i830(uint32_t * data, int count, uint32_t hw_offset, uint32_t devid,
 		int max_len;
 		char *name;
 	} opcodes_3d[] = {
-		{
-		0x02, 1, 1, "3DSTATE_MODES_3"}, {
-		0x03, 1, 1, "3DSTATE_ENABLES_1"}, {
-		0x04, 1, 1, "3DSTATE_ENABLES_2"}, {
-		0x05, 1, 1, "3DSTATE_VFT0"}, {
-		0x06, 1, 1, "3DSTATE_AA"}, {
-		0x07, 1, 1, "3DSTATE_RASTERIZATION_RULES"}, {
-		0x08, 1, 1, "3DSTATE_MODES_1"}, {
-		0x09, 1, 1, "3DSTATE_STENCIL_TEST"}, {
-		0x0a, 1, 1, "3DSTATE_VFT1"}, {
-		0x0b, 1, 1, "3DSTATE_INDPT_ALPHA_BLEND"}, {
-		0x0c, 1, 1, "3DSTATE_MODES_5"}, {
-		0x0d, 1, 1, "3DSTATE_MAP_BLEND_OP"}, {
-		0x0e, 1, 1, "3DSTATE_MAP_BLEND_ARG"}, {
-		0x0f, 1, 1, "3DSTATE_MODES_2"}, {
-		0x15, 1, 1, "3DSTATE_FOG_COLOR"}, {
-	0x16, 1, 1, "3DSTATE_MODES_4"},}, *opcode_3d;
+		{ 0x02, 1, 1, "3DSTATE_MODES_3" },
+		{ 0x03, 1, 1, "3DSTATE_ENABLES_1" },
+		{ 0x04, 1, 1, "3DSTATE_ENABLES_2" },
+		{ 0x05, 1, 1, "3DSTATE_VFT0" },
+		{ 0x06, 1, 1, "3DSTATE_AA" },
+		{ 0x07, 1, 1, "3DSTATE_RASTERIZATION_RULES" },
+		{ 0x08, 1, 1, "3DSTATE_MODES_1" },
+		{ 0x09, 1, 1, "3DSTATE_STENCIL_TEST" },
+		{ 0x0a, 1, 1, "3DSTATE_VFT1" },
+		{ 0x0b, 1, 1, "3DSTATE_INDPT_ALPHA_BLEND" },
+		{ 0x0c, 1, 1, "3DSTATE_MODES_5" },
+		{ 0x0d, 1, 1, "3DSTATE_MAP_BLEND_OP" },
+		{ 0x0e, 1, 1, "3DSTATE_MAP_BLEND_ARG" },
+		{ 0x0f, 1, 1, "3DSTATE_MODES_2" },
+		{ 0x15, 1, 1, "3DSTATE_FOG_COLOR" },
+		{ 0x16, 1, 1, "3DSTATE_MODES_4"},
+	}, *opcode_3d;
 
 	opcode = (data[0] & 0x1f000000) >> 24;
 
@@ -3510,7 +3513,7 @@ decode_3d_i830(uint32_t * data, int count, uint32_t hw_offset, uint32_t devid,
  * \param hw_offset hardware address for the buffer
  */
 int
-intel_decode(uint32_t * data, int count,
+intel_decode(uint32_t *data, int count,
 	     uint32_t hw_offset,
 	     uint32_t devid, uint32_t ignore_end_of_batchbuffer)
 {
@@ -3526,9 +3529,11 @@ intel_decode(uint32_t * data, int count,
 			ret = decode_mi(data + index, count - index,
 					hw_offset + index * 4, &failures);
 
-			/* If MI_BATCHBUFFER_END happened, then dump the rest of the
-			 * output in case we some day want it in debugging, but don't
-			 * decode it since it'll just confuse in the common case.
+			/* If MI_BATCHBUFFER_END happened, then dump
+			 * the rest of the output in case we some day
+			 * want it in debugging, but don't decode it
+			 * since it'll just confuse in the common
+			 * case.
 			 */
 			if (ret == -1) {
 				if (ignore_end_of_batchbuffer) {
