@@ -183,14 +183,17 @@ void SyncPromoHandler::Observe(int type,
 }
 
 void SyncPromoHandler::StepWizardForShowSetupUI() {
-  ProfileSyncService* service =
-      Profile::FromWebUI(web_ui_)->GetProfileSyncService();
-  service->get_wizard().Step(SyncSetupWizard::GetLoginState());
 }
 
 void SyncPromoHandler::ShowSetupUI() {
-  // We don't need to do anything here; The UI for the sync promo is already
-  // displayed.
+  // SyncSetupWizard::Step should be called in StepWizardForShowSetupUI above,
+  // but it causes the sync promo page to not set focus properly to the login
+  // email address. This happens because focus is lost between the call to
+  // StepWizardForShowSetupUI and ShowSetupUI.
+  // TODO(binji): Move this function back and fix the focus the right way.
+  ProfileSyncService* service =
+      Profile::FromWebUI(web_ui_)->GetProfileSyncService();
+  service->get_wizard().Step(SyncSetupWizard::GetLoginState());
 }
 
 void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
