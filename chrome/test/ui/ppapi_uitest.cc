@@ -505,13 +505,12 @@ TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileSystem)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileSystem)
 TEST_PPAPI_NACL_VIA_HTTP(FileSystem)
 
-// http://crbug.com/96767 and 104384 for aura.
-#if !defined(OS_MACOSX) && !defined(USE_AURA)
-#define MAYBE_FlashFullscreen FLAKY_FlashFullscreen
-#define MAYBE_FlashFullscreen FLAKY_FlashFullscreen
+// http://crbug.com/96767 and 104384 for aura:
+// reaches NOTIMPLEMENTED checks.
+#if defined(OS_MACOSX) || defined(USE_AURA)
+#define MAYBE_FlashFullscreen DISABLED_FlashFullscreen
 #else
-#define MAYBE_FlashFullscreen DISABLED_FlashFullscreen
-#define MAYBE_FlashFullscreen DISABLED_FlashFullscreen
+#define MAYBE_FlashFullscreen FlashFullscreen
 #endif
 
 TEST_F(PPAPITest, MAYBE_FlashFullscreen) {
