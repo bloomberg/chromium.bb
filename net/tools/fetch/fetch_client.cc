@@ -5,6 +5,8 @@
 #include "build/build_config.h"
 
 #include "base/at_exit.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
@@ -56,11 +58,7 @@ class Client {
  public:
   Client(net::HttpTransactionFactory* factory, const std::string& url) :
       url_(url),
-      buffer_(new net::IOBuffer(kBufferSize)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          connect_callback_(this, &Client::OnConnectComplete)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          read_callback_(this, &Client::OnReadComplete)) {
+      buffer_(new net::IOBuffer(kBufferSize)) {
     int rv = factory->CreateTransaction(&transaction_);
     DCHECK_EQ(net::OK, rv);
     buffer_->AddRef();
@@ -68,14 +66,18 @@ class Client {
     request_info_.url = url_;
     request_info_.method = "GET";
     int state = transaction_->Start(
-        &request_info_, &connect_callback_, net::BoundNetLog());
+        &request_info_,
+        base::Bind(&Client::OnConnectComplete, base::Unretained(this)),
+        net::BoundNetLog());
     DCHECK(state == net::ERR_IO_PENDING);
   };
 
  private:
   void OnConnectComplete(int result) {
     // Do work here.
-    int state = transaction_->Read(buffer_.get(), kBufferSize, &read_callback_);
+    int state = transaction_->Read(
+        buffer_.get(), kBufferSize,
+        base::Bind(&Client::OnReadComplete, base::Unretained(this)));
     if (state == net::ERR_IO_PENDING)
       return;  // IO has started.
     if (state < 0)
@@ -94,7 +96,9 @@ class Client {
     bytes_read.Add(result);
 
     // Issue a read for more data.
-    int state = transaction_->Read(buffer_.get(), kBufferSize, &read_callback_);
+    int state = transaction_->Read(
+        buffer_.get(), kBufferSize,
+        base::Bind(&Client::OnReadComplete, base::Unretained(this)));
     if (state == net::ERR_IO_PENDING)
       return;  // IO has started.
     if (state < 0)
@@ -114,8 +118,6 @@ class Client {
   net::HttpRequestInfo request_info_;
   scoped_ptr<net::HttpTransaction> transaction_;
   scoped_refptr<net::IOBuffer> buffer_;
-  net::OldCompletionCallbackImpl<Client> connect_callback_;
-  net::OldCompletionCallbackImpl<Client> read_callback_;
 };
 
 int main(int argc, char** argv) {
