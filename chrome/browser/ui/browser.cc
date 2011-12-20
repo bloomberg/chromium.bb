@@ -106,6 +106,7 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/fullscreen_controller.h"
 #include "chrome/browser/ui/global_error.h"
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
@@ -566,6 +567,12 @@ void Browser::InitBrowserWindow() {
   // Permanently dismiss ntp4 bubble for new users.
   if (FirstRun::IsChromeFirstRun())
     NewTabPageHandler::DismissIntroMessage(local_state);
+}
+
+void Browser::SetWindowForTesting(BrowserWindow* window) {
+  DCHECK(!window_);
+  window_ = window;
+  fullscreen_controller_ = new FullscreenController(window_, profile_, this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

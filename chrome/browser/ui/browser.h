@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
 #include "chrome/browser/ui/dialog_style.h"
-#include "chrome/browser/ui/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/select_file_dialog.h"
@@ -208,6 +207,11 @@ class Browser : public TabHandlerDelegate,
   // to show it.
   void InitBrowserWindow();
 
+  // Sets the BrowserWindow. This is intended for tests only.
+  // Use CreateBrowserWindow outside of testing, or the static convenience
+  // methods that create a BrowserWindow for you.
+  void SetWindowForTesting(BrowserWindow* window);
+
   // Accessors ////////////////////////////////////////////////////////////////
 
   Type type() const { return type_; }
@@ -218,17 +222,6 @@ class Browser : public TabHandlerDelegate,
   // Returns the InstantController or NULL if there is no InstantController for
   // this Browser.
   InstantController* instant() const { return instant_.get(); }
-
-#if defined(UNIT_TEST)
-  // Sets the BrowserWindow. This is intended for testing and generally not
-  // useful outside of testing. Use CreateBrowserWindow outside of testing, or
-  // the static convenience methods that create a BrowserWindow for you.
-  void set_window(BrowserWindow* window) {
-    DCHECK(!window_);
-    window_ = window;
-    fullscreen_controller_ = new FullscreenController(window_, profile_, this);
-  }
-#endif
 
   // |window()| will return NULL if called before |CreateBrowserWindow()|
   // is done.

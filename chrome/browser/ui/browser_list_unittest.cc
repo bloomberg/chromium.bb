@@ -53,9 +53,9 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyCount) {
   scoped_ptr<TestBrowserWindow> window3(new TestBrowserWindow(browser3.get()));
   scoped_ptr<TestBrowserWindow> window4(new TestBrowserWindow(browser4.get()));
 
-  browser2->set_window(window2.get());
-  browser3->set_window(window3.get());
-  browser4->set_window(window4.get());
+  browser2->SetWindowForTesting(window2.get());
+  browser3->SetWindowForTesting(window3.get());
+  browser4->SetWindowForTesting(window4.get());
 
   // Sanity checks.
   EXPECT_EQ(4U, BrowserList::size());
@@ -98,8 +98,8 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
   scoped_ptr<TestBrowserWindow> window2(new TestBrowserWindow(browser2.get()));
   scoped_ptr<TestBrowserWindow> window3(new TestBrowserWindow(browser3.get()));
 
-  browser2->set_window(window2.get());
-  browser3->set_window(window3.get());
+  browser2->SetWindowForTesting(window2.get());
+  browser3->SetWindowForTesting(window3.get());
 
   // Sanity checks.
   EXPECT_EQ(3U, BrowserList::size());
@@ -169,8 +169,8 @@ TEST_F(BrowserListTest, TabContentsIteratorBackgroundPrinting) {
   scoped_ptr<TestBrowserWindow> window2(new TestBrowserWindow(browser2.get()));
   scoped_ptr<TestBrowserWindow> window3(new TestBrowserWindow(browser3.get()));
 
-  browser2->set_window(window2.get());
-  browser3->set_window(window3.get());
+  browser2->SetWindowForTesting(window2.get());
+  browser3->SetWindowForTesting(window3.get());
 
   EXPECT_EQ(0U, CountAllTabs());
 

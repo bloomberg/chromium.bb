@@ -39,7 +39,7 @@ void BrowserWithTestWindowTest::SetUp() {
   profile_.reset(CreateProfile());
   browser_.reset(new Browser(Browser::TYPE_TABBED, profile()));
   window_.reset(new TestBrowserWindow(browser()));
-  browser_->set_window(window_.get());
+  browser_->SetWindowForTesting(window_.get());
 }
 
 BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {

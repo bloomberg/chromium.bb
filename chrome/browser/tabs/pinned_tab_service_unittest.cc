@@ -41,7 +41,7 @@ TEST_F(PinnedTabServiceTest, Popup) {
   scoped_ptr<Browser> popup(new Browser(Browser::TYPE_POPUP, profile()));
   scoped_ptr<TestBrowserWindow> popup_window(
       new TestBrowserWindow(popup.get()));
-  popup->set_window(popup_window.get());
+  popup->SetWindowForTesting(popup_window.get());
 
   // Close the browser. This should trigger saving the tabs.
   browser()->OnWindowClosing();

@@ -208,7 +208,7 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
     prefs->SetString(prefs::kGoogleServicesUsername, kTestUser);
 
     set_browser(new Browser(Browser::TYPE_TABBED, profile()));
-    browser()->set_window(window());
+    browser()->SetWindowForTesting(window());
     BrowserList::SetLastActive(browser());
     service_ = static_cast<ProfileSyncServiceForWizardTest*>(
         profile()->GetProfileSyncService());
