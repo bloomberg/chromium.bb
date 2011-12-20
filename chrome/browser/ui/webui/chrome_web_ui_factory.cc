@@ -223,7 +223,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(TabContents* tab_contents,
   if (url.host() == chrome::kChromeUISettingsHost)
     return &NewWebUI<OptionsUI>;
   if (url.host() == chrome::kChromeUISettingsFrameHost)
-    return &NewWebUI<Options2UI>;
+    return &NewWebUI<options2::OptionsUI>;
   if (url.host() == chrome::kChromeUISyncInternalsHost)
     return &NewWebUI<SyncInternalsUI>;
   if (url.host() == chrome::kChromeUITaskManagerHost)
@@ -470,7 +470,7 @@ RefCountedMemory* ChromeWebUIFactory::GetFaviconResourceBytes(
     return OptionsUI::GetFaviconResourceBytes();
 
   if (page_url.host() == chrome::kChromeUISettingsFrameHost)
-    return Options2UI::GetFaviconResourceBytes();
+    return options2::OptionsUI::GetFaviconResourceBytes();
 
   if (page_url.host() == chrome::kChromeUIPluginsHost)
     return PluginsUI::GetFaviconResourceBytes();

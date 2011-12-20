@@ -14,8 +14,10 @@
 class SyncSetupFlow;
 class ProfileManager;
 
+namespace options2 {
+
 class SyncSetupHandler2 : public GaiaOAuthConsumer,
-                          public OptionsPage2UIHandler,
+                          public OptionsPageUIHandler,
                           public SyncSetupFlowHandler {
  public:
   // Constructs a new SyncSetupHandler. |profile_manager| may be NULL.
@@ -113,5 +115,7 @@ class SyncSetupHandler2 : public GaiaOAuthConsumer,
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupHandler2);
 };
+
+}  // namespace options2
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SYNC_SETUP_HANDLER2_H_
