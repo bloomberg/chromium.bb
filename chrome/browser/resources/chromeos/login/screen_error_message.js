@@ -237,7 +237,8 @@ cr.define('login', function() {
   /**
    * Network state callback where we decide whether to schdule a retry.
    */
-  ErrorMessageScreen.maybeRetry = function(state, network, reason) {
+  ErrorMessageScreen.maybeRetry =
+      function(state, network, reason, lastNetworkType) {
     console.log('ErrorMessageScreen.maybeRetry, state=' + state +
                 ', network=' + network);
 
@@ -247,7 +248,7 @@ cr.define('login', function() {
 
     var currentScreen = Oobe.getInstance().currentScreen;
     if (MANAGED_SCREENS.indexOf(currentScreen.id) != -1) {
-      this.updateState(NET_STATE.PORTAL, network, reason);
+      this.updateState(NET_STATE.PORTAL, network, reason, lastNetworkType);
       // Schedules a retry.
       currentScreen.scheduleRetry();
     }
