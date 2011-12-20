@@ -91,6 +91,9 @@ Gallery.prototype.initDom_ = function(shareActions) {
 
   this.imageContainer_ = doc.createElement('div');
   this.imageContainer_.className = 'image-container';
+  this.imageContainer_.addEventListener('click', (function() {
+    this.filenameEdit_.blur();
+  }).bind(this));
   this.container_.appendChild(this.imageContainer_);
 
   this.toolbar_ = doc.createElement('div');
