@@ -383,13 +383,11 @@ void RenderWidget::OnUpdateRectAck() {
   DoDeferredUpdateAndSendInputAck();
 }
 
-bool RenderWidget::SupportsAsynchronousSwapBuffers()
-{
+bool RenderWidget::SupportsAsynchronousSwapBuffers() {
   return false;
 }
 
-void RenderWidget::OnSwapBuffersAborted()
-{
+void RenderWidget::OnSwapBuffersAborted() {
   TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersAborted");
   while (!updates_pending_swap_.empty()) {
     ViewHostMsg_UpdateRect* msg = updates_pending_swap_.front();
@@ -441,7 +439,7 @@ void RenderWidget::OnSwapBuffersComplete() {
 
   // If update reply is still pending, then defer the update until that reply
   // occurs.
-  if (update_reply_pending_){
+  if (update_reply_pending_) {
     TRACE_EVENT0("renderer", "EarlyOut_UpdateReplyPending");
     return;
   }
@@ -776,18 +774,19 @@ void RenderWidget::DoDeferredUpdate() {
 
   if (!last_do_deferred_update_time_.is_null()) {
     base::TimeDelta delay = frame_begin_ticks - last_do_deferred_update_time_;
-    if(is_accelerated_compositing_active_)
+    if (is_accelerated_compositing_active_) {
       UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.AccelDoDeferredUpdateDelay",
                                  delay,
                                  base::TimeDelta::FromMilliseconds(1),
                                  base::TimeDelta::FromMilliseconds(60),
                                  30);
-    else
+    } else {
       UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.SoftwareDoDeferredUpdateDelay",
                                  delay,
                                  base::TimeDelta::FromMilliseconds(1),
                                  base::TimeDelta::FromMilliseconds(60),
                                  30);
+    }
 
     // Calculate filtered time per frame:
     float frame_time_elapsed = static_cast<float>(delay.InSecondsF());
@@ -1051,9 +1050,9 @@ void RenderWidget::didCompleteSwapBuffers() {
 }
 
 void RenderWidget::scheduleComposite() {
-  if (WebWidgetHandlesCompositorScheduling())
+  if (WebWidgetHandlesCompositorScheduling()) {
     webwidget_->composite(false);
-  else {
+  } else {
     // TODO(nduca): replace with something a little less hacky.  The reason this
     // hack is still used is because the Invalidate-DoDeferredUpdate loop
     // contains a lot of host-renderer synchronization logic that is still
@@ -1236,11 +1235,13 @@ void RenderWidget::OnImeSetComposition(
 
 void RenderWidget::OnImeConfirmComposition(
     const string16& text, const ui::Range& replacement_range) {
-  if (webwidget_) {
-    handling_input_event_ = true;
-    webwidget_->confirmComposition(text);
-    handling_input_event_ = false;
-  }
+  if (!webwidget_)
+    return;
+
+  handling_input_event_ = true;
+  webwidget_->confirmComposition(text);
+  handling_input_event_ = false;
+
   // Send an updated IME range with just the caret range.
   ui::Range range(ui::Range::InvalidRange());
   size_t location, length;
