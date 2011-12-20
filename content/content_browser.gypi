@@ -66,7 +66,7 @@
     'public/browser/sensors.h',
     'public/browser/sensors_listener.h',
     'public/browser/user_metrics.h',
-    'public/browser/web_page.h',
+    'public/browser/web_contents.h',
     'browser/accessibility/browser_accessibility.cc',
     'browser/accessibility/browser_accessibility.h',
     'browser/accessibility/browser_accessibility_cocoa.h',

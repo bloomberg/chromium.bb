@@ -27,7 +27,7 @@
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/web_page.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "net/base/load_states.h"
 #include "ui/gfx/native_widget_types.h"
@@ -54,7 +54,7 @@ namespace webkit_glue {
 struct WebIntentData;
 }
 
-class CONTENT_EXPORT TabContents : public content::WebPage,
+class CONTENT_EXPORT TabContents : public content::WebContents,
                                    public PageNavigator,
                                    public RenderViewHostDelegate,
                                    public RenderViewHostManager::Delegate,
@@ -473,7 +473,7 @@ class CONTENT_EXPORT TabContents : public content::WebPage,
     return java_bridge_dispatcher_host_manager_.get();
   }
 
-  // content::WebPage ----------------------------------------------------------
+  // content::WebContents ------------------------------------------------------
   virtual const base::PropertyBag* GetPropertyBag() const OVERRIDE;
   virtual base::PropertyBag* GetPropertyBag() OVERRIDE;
   virtual TabContentsDelegate* GetDelegate() OVERRIDE;
