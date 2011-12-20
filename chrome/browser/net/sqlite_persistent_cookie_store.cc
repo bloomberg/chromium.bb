@@ -492,8 +492,6 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
     return false;
   }
 
-  db_->Preload();
-
   UMA_HISTOGRAM_CUSTOM_TIMES(
     "Cookie.TimeInitializeDB",
     base::Time::Now() - start,
