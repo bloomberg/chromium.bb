@@ -190,6 +190,18 @@ void drm_intel_bo_fake_disable_backing_store(drm_intel_bo *bo,
 void drm_intel_bufmgr_fake_contended_lock_take(drm_intel_bufmgr *bufmgr);
 void drm_intel_bufmgr_fake_evict_all(drm_intel_bufmgr *bufmgr);
 
+struct drm_intel_decode *drm_intel_decode_context_alloc(uint32_t devid);
+void drm_intel_decode_context_free(struct drm_intel_decode *ctx);
+void drm_intel_decode_set_batch_pointer(struct drm_intel_decode *ctx,
+					void *data, uint32_t hw_offset,
+					int count);
+void drm_intel_decode_set_dump_past_end(struct drm_intel_decode *ctx,
+					int dump_past_end);
+void drm_intel_decode_set_head_tail(struct drm_intel_decode *ctx,
+				    uint32_t head, uint32_t tail);
+void drm_intel_decode(struct drm_intel_decode *ctx);
+
+
 /** @{ Compatibility defines to keep old code building despite the symbol rename
  * from dri_* to drm_intel_*
  */

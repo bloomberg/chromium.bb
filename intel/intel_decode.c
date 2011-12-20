@@ -22,13 +22,42 @@
  */
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdarg.h>
 #include <string.h>
 
 #include "intel_decode.h"
 #include "intel_chipset.h"
-#include "intel_gpu_tools.h"
+#include "intel_bufmgr.h"
+
+/* Struct for tracking drm_intel_decode state. */
+struct drm_intel_decode {
+	/** PCI device ID. */
+	uint32_t devid;
+
+	/** GPU address of the start of the batchbuffer data. */
+	uint32_t hw_offset;
+	/** CPU Virtual address of the start of the batchbuffer data. */
+	uint32_t *data;
+	/** Number of DWORDs of batchbuffer data. */
+	uint32_t count;
+
+	/** @{
+	 * GPU head and tail pointers, which will be noted in the dump, or ~0.
+	 */
+	uint32_t head, tail;
+	/** @} */
+
+	/**
+	 * Whether to dump the dwords after MI_BATCHBUFFER_END.
+	 *
+	 * This sometimes provides clues in corrupted batchbuffers,
+	 * and is used by the intel-gpu-tools.
+	 */
+	bool dump_past_end;
+};
 
 static FILE *out;
 static uint32_t saved_s2 = 0, saved_s4 = 0;
@@ -3278,7 +3307,7 @@ decode_3d_965(uint32_t *data, int count, uint32_t hw_offset, uint32_t devid,
 		return len;
 
 	case 0x7a00:
-		if (intel_gen(devid) >= 6) {
+		if (IS_GEN6(devid) || IS_GEN7(devid)) {
 			int i;
 			len = (data[0] & 0xff) + 2;
 			if (len != 4 && len != 5)
@@ -3505,6 +3534,50 @@ decode_3d_i830(uint32_t *data, int count, uint32_t hw_offset, uint32_t devid,
 	return 1;
 }
 
+struct drm_intel_decode *
+drm_intel_decode_context_alloc(uint32_t devid)
+{
+	struct drm_intel_decode *ctx;
+
+	ctx = calloc(1, sizeof(struct drm_intel_decode));
+	if (!ctx)
+		return NULL;
+
+	ctx->devid = devid;
+
+	return ctx;
+}
+
+void
+drm_intel_decode_context_free(struct drm_intel_decode *ctx)
+{
+	free(ctx);
+}
+
+void
+drm_intel_decode_set_dump_past_end(struct drm_intel_decode *ctx,
+				   int dump_past_end)
+{
+	ctx->dump_past_end = !!dump_past_end;
+}
+
+void
+drm_intel_decode_set_batch_pointer(struct drm_intel_decode *ctx,
+				   void *data, uint32_t hw_offset, int count)
+{
+	ctx->data = data;
+	ctx->hw_offset = hw_offset;
+	ctx->count = count;
+}
+
+void
+drm_intel_decode_set_head_tail(struct drm_intel_decode *ctx,
+			       uint32_t head, uint32_t tail)
+{
+	ctx->head = head;
+	ctx->tail = tail;
+}
+
 /**
  * Decodes an i830-i915 batch buffer, writing the output to stdout.
  *
@@ -3512,14 +3585,28 @@ decode_3d_i830(uint32_t *data, int count, uint32_t hw_offset, uint32_t devid,
  * \param count number of DWORDs to decode in the batch buffer
  * \param hw_offset hardware address for the buffer
  */
-int
-intel_decode(uint32_t *data, int count,
-	     uint32_t hw_offset,
-	     uint32_t devid, uint32_t ignore_end_of_batchbuffer)
+void
+drm_intel_decode(struct drm_intel_decode *ctx)
 {
 	int ret;
 	int index = 0;
 	int failures = 0;
+	uint32_t *data;
+	uint32_t count, hw_offset;
+	uint32_t devid;
+
+	if (!ctx)
+		return;
+
+	data = ctx->data;
+	count = ctx->count;
+	hw_offset = ctx->hw_offset;
+	devid = ctx->devid;
+	head_offset = ctx->head;
+	tail_offset = ctx->tail;
+
+	saved_s2_set = 0;
+	saved_s4_set = 1;
 
 	out = stdout;
 
@@ -3536,7 +3623,7 @@ intel_decode(uint32_t *data, int count,
 			 * case.
 			 */
 			if (ret == -1) {
-				if (ignore_end_of_batchbuffer) {
+				if (ctx->dump_past_end) {
 					index++;
 				} else {
 					for (index = index + 1; index < count;
@@ -3553,7 +3640,7 @@ intel_decode(uint32_t *data, int count,
 					   hw_offset + index * 4, &failures);
 			break;
 		case 0x3:
-			if (IS_965(devid)) {
+			if (IS_9XX(devid) && !IS_GEN3(devid)) {
 				index +=
 				    decode_3d_965(data + index, count - index,
 						  hw_offset + index * 4, devid,
@@ -3577,18 +3664,4 @@ intel_decode(uint32_t *data, int count,
 		}
 		fflush(out);
 	}
-
-	return failures;
-}
-
-void intel_decode_context_reset(void)
-{
-	saved_s2_set = 0;
-	saved_s4_set = 1;
-}
-
-void intel_decode_context_set_head_tail(uint32_t head, uint32_t tail)
-{
-	head_offset = head;
-	tail_offset = tail;
 }

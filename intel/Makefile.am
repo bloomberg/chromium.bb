@@ -33,7 +33,20 @@ AM_CFLAGS = \
 libdrm_intel_la_LTLIBRARIES = libdrm_intel.la
 libdrm_intel_ladir = $(libdir)
 libdrm_intel_la_LDFLAGS = -version-number 1:0:0 -no-undefined
-libdrm_intel_la_LIBADD = ../libdrm.la @PTHREADSTUBS_LIBS@ @PCIACCESS_LIBS@ @CLOCK_LIB@
+libdrm_intel_la_LIBADD = ../libdrm.la \
+	@PTHREADSTUBS_LIBS@ \
+	@PCIACCESS_LIBS@ \
+	@CLOCK_LIB@ \
+	libintel_decode.la
+
+
+noinst_LTLIBRARIES = libintel_decode.la
+
+libintel_decode_la_SOURCES = intel_decode.c
+libintel_decode_la_CFLAGS = \
+	-I$(top_srcdir) \
+	-I$(top_srcdir)/intel \
+	-std=c99
 
 libdrm_intel_la_SOURCES = \
 	intel_bufmgr.c \
@@ -43,6 +56,8 @@ libdrm_intel_la_SOURCES = \
 	intel_chipset.h \
 	mm.c \
 	mm.h
+
+intel_bufmgr_gem_o_CFLAGS = $(AM_CFLAGS) -c99
 
 libdrm_intelincludedir = ${includedir}/libdrm
 libdrm_intelinclude_HEADERS = intel_bufmgr.h \
