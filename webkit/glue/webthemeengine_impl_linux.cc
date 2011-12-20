@@ -12,49 +12,46 @@
 using WebKit::WebCanvas;
 using WebKit::WebColor;
 using WebKit::WebRect;
+using WebKit::WebThemeEngine;
 
 namespace webkit_glue {
 
-static gfx::Rect WebRectToRect(const WebRect& rect) {
-  return gfx::Rect(rect.x, rect.y, rect.width, rect.height);
-}
-
 static gfx::NativeTheme::Part NativeThemePart(
-    WebKit::WebThemeEngine::Part part) {
+    WebThemeEngine::Part part) {
   switch (part) {
-    case WebKit::WebThemeEngine::PartScrollbarDownArrow:
+    case WebThemeEngine::PartScrollbarDownArrow:
       return gfx::NativeTheme::kScrollbarDownArrow;
-    case WebKit::WebThemeEngine::PartScrollbarLeftArrow:
+    case WebThemeEngine::PartScrollbarLeftArrow:
       return gfx::NativeTheme::kScrollbarLeftArrow;
-    case WebKit::WebThemeEngine::PartScrollbarRightArrow:
+    case WebThemeEngine::PartScrollbarRightArrow:
       return gfx::NativeTheme::kScrollbarRightArrow;
-    case WebKit::WebThemeEngine::PartScrollbarUpArrow:
+    case WebThemeEngine::PartScrollbarUpArrow:
       return gfx::NativeTheme::kScrollbarUpArrow;
-    case WebKit::WebThemeEngine::PartScrollbarHorizontalThumb:
+    case WebThemeEngine::PartScrollbarHorizontalThumb:
       return gfx::NativeTheme::kScrollbarHorizontalThumb;
-    case WebKit::WebThemeEngine::PartScrollbarVerticalThumb:
+    case WebThemeEngine::PartScrollbarVerticalThumb:
       return gfx::NativeTheme::kScrollbarVerticalThumb;
-    case WebKit::WebThemeEngine::PartScrollbarHorizontalTrack:
+    case WebThemeEngine::PartScrollbarHorizontalTrack:
       return gfx::NativeTheme::kScrollbarHorizontalTrack;
-    case WebKit::WebThemeEngine::PartScrollbarVerticalTrack:
+    case WebThemeEngine::PartScrollbarVerticalTrack:
       return gfx::NativeTheme::kScrollbarVerticalTrack;
-    case WebKit::WebThemeEngine::PartCheckbox:
+    case WebThemeEngine::PartCheckbox:
       return gfx::NativeTheme::kCheckbox;
-    case WebKit::WebThemeEngine::PartRadio:
+    case WebThemeEngine::PartRadio:
       return gfx::NativeTheme::kRadio;
-    case WebKit::WebThemeEngine::PartButton:
+    case WebThemeEngine::PartButton:
       return gfx::NativeTheme::kPushButton;
-    case WebKit::WebThemeEngine::PartTextField:
+    case WebThemeEngine::PartTextField:
       return gfx::NativeTheme::kTextField;
-    case WebKit::WebThemeEngine::PartMenuList:
+    case WebThemeEngine::PartMenuList:
       return gfx::NativeTheme::kMenuList;
-    case WebKit::WebThemeEngine::PartSliderTrack:
+    case WebThemeEngine::PartSliderTrack:
       return gfx::NativeTheme::kSliderTrack;
-    case WebKit::WebThemeEngine::PartSliderThumb:
+    case WebThemeEngine::PartSliderThumb:
       return gfx::NativeTheme::kSliderThumb;
-    case WebKit::WebThemeEngine::PartInnerSpinButton:
+    case WebThemeEngine::PartInnerSpinButton:
       return gfx::NativeTheme::kInnerSpinButton;
-    case WebKit::WebThemeEngine::PartProgressBar:
+    case WebThemeEngine::PartProgressBar:
       return gfx::NativeTheme::kProgressBar;
     default:
       return gfx::NativeTheme::kScrollbarDownArrow;
@@ -62,15 +59,15 @@ static gfx::NativeTheme::Part NativeThemePart(
 }
 
 static gfx::NativeTheme::State NativeThemeState(
-    WebKit::WebThemeEngine::State state) {
+    WebThemeEngine::State state) {
   switch (state) {
-    case WebKit::WebThemeEngine::StateDisabled:
+    case WebThemeEngine::StateDisabled:
       return gfx::NativeTheme::kDisabled;
-    case WebKit::WebThemeEngine::StateHover:
+    case WebThemeEngine::StateHover:
       return gfx::NativeTheme::kHovered;
-    case WebKit::WebThemeEngine::StateNormal:
+    case WebThemeEngine::StateNormal:
       return gfx::NativeTheme::kNormal;
-    case WebKit::WebThemeEngine::StatePressed:
+    case WebThemeEngine::StatePressed:
       return gfx::NativeTheme::kPressed;
     default:
       return gfx::NativeTheme::kDisabled;
@@ -78,13 +75,13 @@ static gfx::NativeTheme::State NativeThemeState(
 }
 
 static void GetNativeThemeExtraParams(
-    WebKit::WebThemeEngine::Part part,
-    WebKit::WebThemeEngine::State state,
-    const WebKit::WebThemeEngine::ExtraParams* extra_params,
+    WebThemeEngine::Part part,
+    WebThemeEngine::State state,
+    const WebThemeEngine::ExtraParams* extra_params,
     gfx::NativeTheme::ExtraParams* native_theme_extra_params) {
   switch (part) {
-    case WebKit::WebThemeEngine::PartScrollbarHorizontalTrack:
-    case WebKit::WebThemeEngine::PartScrollbarVerticalTrack:
+    case WebThemeEngine::PartScrollbarHorizontalTrack:
+    case WebThemeEngine::PartScrollbarVerticalTrack:
       native_theme_extra_params->scrollbar_track.track_x =
           extra_params->scrollbarTrack.trackX;
       native_theme_extra_params->scrollbar_track.track_y =
@@ -94,15 +91,15 @@ static void GetNativeThemeExtraParams(
       native_theme_extra_params->scrollbar_track.track_height =
           extra_params->scrollbarTrack.trackHeight;
       break;
-    case WebKit::WebThemeEngine::PartCheckbox:
+    case WebThemeEngine::PartCheckbox:
       native_theme_extra_params->button.checked = extra_params->button.checked;
       native_theme_extra_params->button.indeterminate =
           extra_params->button.indeterminate;
       break;
-    case WebKit::WebThemeEngine::PartRadio:
+    case WebThemeEngine::PartRadio:
       native_theme_extra_params->button.checked = extra_params->button.checked;
       break;
-    case WebKit::WebThemeEngine::PartButton:
+    case WebThemeEngine::PartButton:
       native_theme_extra_params->button.is_default =
           extra_params->button.isDefault;
       native_theme_extra_params->button.has_border =
@@ -110,7 +107,7 @@ static void GetNativeThemeExtraParams(
       native_theme_extra_params->button.background_color =
           extra_params->button.backgroundColor;
       break;
-    case WebKit::WebThemeEngine::PartTextField:
+    case WebThemeEngine::PartTextField:
       native_theme_extra_params->text_field.is_text_area =
           extra_params->textField.isTextArea;
       native_theme_extra_params->text_field.is_listbox =
@@ -118,7 +115,7 @@ static void GetNativeThemeExtraParams(
       native_theme_extra_params->text_field.background_color =
           extra_params->textField.backgroundColor;
       break;
-    case WebKit::WebThemeEngine::PartMenuList:
+    case WebThemeEngine::PartMenuList:
       native_theme_extra_params->menu_list.has_border =
           extra_params->menuList.hasBorder;
       native_theme_extra_params->menu_list.has_border_radius =
@@ -130,19 +127,19 @@ static void GetNativeThemeExtraParams(
       native_theme_extra_params->menu_list.background_color =
           extra_params->menuList.backgroundColor;
       break;
-    case WebKit::WebThemeEngine::PartSliderTrack:
-    case WebKit::WebThemeEngine::PartSliderThumb:
+    case WebThemeEngine::PartSliderTrack:
+    case WebThemeEngine::PartSliderThumb:
       native_theme_extra_params->slider.vertical =
           extra_params->slider.vertical;
       native_theme_extra_params->slider.in_drag = extra_params->slider.inDrag;
       break;
-    case WebKit::WebThemeEngine::PartInnerSpinButton:
+    case WebThemeEngine::PartInnerSpinButton:
       native_theme_extra_params->inner_spin.spin_up =
           extra_params->innerSpin.spinUp;
       native_theme_extra_params->inner_spin.read_only =
           extra_params->innerSpin.readOnly;
       break;
-    case WebKit::WebThemeEngine::PartProgressBar:
+    case WebThemeEngine::PartProgressBar:
       native_theme_extra_params->progress_bar.determinate =
           extra_params->progressBar.determinate;
       native_theme_extra_params->progress_bar.value_rect_x =
@@ -159,7 +156,7 @@ static void GetNativeThemeExtraParams(
   }
 }
 
-WebKit::WebSize WebThemeEngineImpl::getSize(WebKit::WebThemeEngine::Part part) {
+WebKit::WebSize WebThemeEngineImpl::getSize(WebThemeEngine::Part part) {
   gfx::NativeTheme::ExtraParams extra;
   return gfx::NativeTheme::instance()->GetPartSize(NativeThemePart(part),
                                                    gfx::NativeTheme::kNormal,
@@ -168,10 +165,10 @@ WebKit::WebSize WebThemeEngineImpl::getSize(WebKit::WebThemeEngine::Part part) {
 
 void WebThemeEngineImpl::paint(
     WebKit::WebCanvas* canvas,
-    WebKit::WebThemeEngine::Part part,
-    WebKit::WebThemeEngine::State state,
+    WebThemeEngine::Part part,
+    WebThemeEngine::State state,
     const WebKit::WebRect& rect,
-    const WebKit::WebThemeEngine::ExtraParams* extra_params) {
+    const WebThemeEngine::ExtraParams* extra_params) {
   gfx::NativeTheme::ExtraParams native_theme_extra_params;
   GetNativeThemeExtraParams(
       part, state, extra_params, &native_theme_extra_params);
@@ -179,7 +176,7 @@ void WebThemeEngineImpl::paint(
       canvas,
       NativeThemePart(part),
       NativeThemeState(state),
-      WebRectToRect(rect),
+      gfx::Rect(rect),
       native_theme_extra_params);
 }
 
