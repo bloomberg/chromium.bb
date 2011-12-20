@@ -89,10 +89,10 @@ static float int_as_float(uint32_t intval)
 
 static void
 instr_out(uint32_t *data, uint32_t hw_offset, unsigned int index,
-	  char *fmt, ...)
+	  const char *fmt, ...)
 {
 	va_list va;
-	char *parseinfo;
+	const char *parseinfo;
 	uint32_t offset = hw_offset + index * 4;
 
 	if (offset == head_offset)
@@ -113,14 +113,14 @@ static int
 decode_mi(uint32_t *data, uint32_t count, uint32_t hw_offset, int *failures)
 {
 	unsigned int opcode, len = -1;
-	char *post_sync_op = "";
+	const char *post_sync_op = "";
 
 	struct {
 		uint32_t opcode;
 		int len_mask;
 		unsigned int min_len;
 		unsigned int max_len;
-		char *name;
+		const char *name;
 	} opcodes_mi[] = {
 		{ 0x08, 0, 1, 1, "MI_ARB_ON_OFF" },
 		{ 0x0a, 0, 1, 1, "MI_BATCH_BUFFER_END" },
@@ -256,7 +256,8 @@ decode_mi(uint32_t *data, uint32_t count, uint32_t hw_offset, int *failures)
 }
 
 static void
-decode_2d_br00(uint32_t *data, uint32_t count, uint32_t hw_offset, char *cmd)
+decode_2d_br00(uint32_t *data, uint32_t count, uint32_t hw_offset,
+	       const char *cmd)
 {
 	instr_out(data, hw_offset, 0,
 		  "%s (rgb %sabled, alpha %sabled, src tile %d, dst tile %d)\n",
@@ -268,7 +269,7 @@ decode_2d_br00(uint32_t *data, uint32_t count, uint32_t hw_offset, char *cmd)
 
 static void decode_2d_br01(uint32_t *data, uint32_t count, uint32_t hw_offset)
 {
-	char *format;
+	const char *format;
 	switch ((data[count] >> 24) & 0x3) {
 	case 0:
 		format = "8";
@@ -305,7 +306,7 @@ decode_2d(uint32_t *data, uint32_t count, uint32_t hw_offset, int *failures)
 		uint32_t opcode;
 		unsigned int min_len;
 		unsigned int max_len;
-		char *name;
+		const char *name;
 	} opcodes_2d[] = {
 		{ 0x40, 5, 5, "COLOR_BLT" },
 		{ 0x43, 6, 6, "SRC_COPY_BLT" },
@@ -522,7 +523,7 @@ i915_get_instruction_dst(uint32_t *data, int i, char *dstname, int do_mask)
 	uint32_t a0 = data[i];
 	int dst_nr = (a0 >> 14) & 0xf;
 	char dstmask[8];
-	char *sat;
+	const char *sat;
 
 	if (do_mask) {
 		if (((a0 >> 10) & 0xf) == 0xf) {
@@ -578,7 +579,8 @@ i915_get_instruction_dst(uint32_t *data, int i, char *dstname, int do_mask)
 	}
 }
 
-static char *i915_get_channel_swizzle(uint32_t select)
+static const char *
+i915_get_channel_swizzle(uint32_t select)
 {
 	switch (select & 0x7) {
 	case 0:
@@ -653,10 +655,10 @@ static void i915_get_instruction_src0(uint32_t *data, int i, char *srcname)
 	uint32_t a0 = data[i];
 	uint32_t a1 = data[i + 1];
 	int src_nr = (a0 >> 2) & 0x1f;
-	char *swizzle_x = i915_get_channel_swizzle((a1 >> 28) & 0xf);
-	char *swizzle_y = i915_get_channel_swizzle((a1 >> 24) & 0xf);
-	char *swizzle_z = i915_get_channel_swizzle((a1 >> 20) & 0xf);
-	char *swizzle_w = i915_get_channel_swizzle((a1 >> 16) & 0xf);
+	const char *swizzle_x = i915_get_channel_swizzle((a1 >> 28) & 0xf);
+	const char *swizzle_y = i915_get_channel_swizzle((a1 >> 24) & 0xf);
+	const char *swizzle_z = i915_get_channel_swizzle((a1 >> 20) & 0xf);
+	const char *swizzle_w = i915_get_channel_swizzle((a1 >> 16) & 0xf);
 	char swizzle[100];
 
 	i915_get_instruction_src_name((a0 >> 7) & 0x7, src_nr, srcname);
@@ -671,10 +673,10 @@ static void i915_get_instruction_src1(uint32_t *data, int i, char *srcname)
 	uint32_t a1 = data[i + 1];
 	uint32_t a2 = data[i + 2];
 	int src_nr = (a1 >> 8) & 0x1f;
-	char *swizzle_x = i915_get_channel_swizzle((a1 >> 4) & 0xf);
-	char *swizzle_y = i915_get_channel_swizzle((a1 >> 0) & 0xf);
-	char *swizzle_z = i915_get_channel_swizzle((a2 >> 28) & 0xf);
-	char *swizzle_w = i915_get_channel_swizzle((a2 >> 24) & 0xf);
+	const char *swizzle_x = i915_get_channel_swizzle((a1 >> 4) & 0xf);
+	const char *swizzle_y = i915_get_channel_swizzle((a1 >> 0) & 0xf);
+	const char *swizzle_z = i915_get_channel_swizzle((a2 >> 28) & 0xf);
+	const char *swizzle_w = i915_get_channel_swizzle((a2 >> 24) & 0xf);
 	char swizzle[100];
 
 	i915_get_instruction_src_name((a1 >> 13) & 0x7, src_nr, srcname);
@@ -688,10 +690,10 @@ static void i915_get_instruction_src2(uint32_t *data, int i, char *srcname)
 {
 	uint32_t a2 = data[i + 2];
 	int src_nr = (a2 >> 16) & 0x1f;
-	char *swizzle_x = i915_get_channel_swizzle((a2 >> 12) & 0xf);
-	char *swizzle_y = i915_get_channel_swizzle((a2 >> 8) & 0xf);
-	char *swizzle_z = i915_get_channel_swizzle((a2 >> 4) & 0xf);
-	char *swizzle_w = i915_get_channel_swizzle((a2 >> 0) & 0xf);
+	const char *swizzle_x = i915_get_channel_swizzle((a2 >> 12) & 0xf);
+	const char *swizzle_y = i915_get_channel_swizzle((a2 >> 8) & 0xf);
+	const char *swizzle_z = i915_get_channel_swizzle((a2 >> 4) & 0xf);
+	const char *swizzle_w = i915_get_channel_swizzle((a2 >> 0) & 0xf);
 	char swizzle[100];
 
 	i915_get_instruction_src_name((a2 >> 21) & 0x7, src_nr, srcname);
@@ -743,7 +745,7 @@ i915_get_instruction_addr(uint32_t src_type, uint32_t src_nr, char *name)
 
 static void
 i915_decode_alu1(uint32_t *data, uint32_t hw_offset,
-		 int i, char *instr_prefix, char *op_name)
+		 int i, char *instr_prefix, const char *op_name)
 {
 	char dst[100], src0[100];
 
@@ -758,7 +760,7 @@ i915_decode_alu1(uint32_t *data, uint32_t hw_offset,
 
 static void
 i915_decode_alu2(uint32_t *data, uint32_t hw_offset,
-		 int i, char *instr_prefix, char *op_name)
+		 int i, char *instr_prefix, const char *op_name)
 {
 	char dst[100], src0[100], src1[100];
 
@@ -774,7 +776,7 @@ i915_decode_alu2(uint32_t *data, uint32_t hw_offset,
 
 static void
 i915_decode_alu3(uint32_t *data, uint32_t hw_offset,
-		 int i, char *instr_prefix, char *op_name)
+		 int i, char *instr_prefix, const char *op_name)
 {
 	char dst[100], src0[100], src1[100], src2[100];
 
@@ -790,8 +792,8 @@ i915_decode_alu3(uint32_t *data, uint32_t hw_offset,
 }
 
 static void
-i915_decode_tex(uint32_t *data, uint32_t hw_offset, int i, char *instr_prefix,
-		char *tex_name)
+i915_decode_tex(uint32_t *data, uint32_t hw_offset, int i,
+		const char *instr_prefix, const char *tex_name)
 {
 	uint32_t t0 = data[i];
 	uint32_t t1 = data[i + 1];
@@ -814,12 +816,12 @@ static void
 i915_decode_dcl(uint32_t *data, uint32_t hw_offset, int i, char *instr_prefix)
 {
 	uint32_t d0 = data[i];
-	char *sampletype;
+	const char *sampletype;
 	int dcl_nr = (d0 >> 14) & 0xf;
-	char *dcl_x = d0 & (1 << 10) ? "x" : "";
-	char *dcl_y = d0 & (1 << 11) ? "y" : "";
-	char *dcl_z = d0 & (1 << 12) ? "z" : "";
-	char *dcl_w = d0 & (1 << 13) ? "w" : "";
+	const char *dcl_x = d0 & (1 << 10) ? "x" : "";
+	const char *dcl_y = d0 & (1 << 11) ? "y" : "";
+	const char *dcl_z = d0 & (1 << 12) ? "z" : "";
+	const char *dcl_w = d0 & (1 << 13) ? "w" : "";
 	char dcl_mask[10];
 
 	switch ((d0 >> 19) & 0x3) {
@@ -989,7 +991,8 @@ i915_decode_instruction(uint32_t *data, uint32_t hw_offset,
 	}
 }
 
-static char *decode_compare_func(uint32_t op)
+static const char *
+decode_compare_func(uint32_t op)
 {
 	switch (op & 0x7) {
 	case 0:
@@ -1012,7 +1015,8 @@ static char *decode_compare_func(uint32_t op)
 	return "";
 }
 
-static char *decode_stencil_op(uint32_t op)
+static const char *
+decode_stencil_op(uint32_t op)
 {
 	switch (op & 0x7) {
 	case 0:
@@ -1035,7 +1039,8 @@ static char *decode_stencil_op(uint32_t op)
 	return "";
 }
 
-static char *decode_logic_op(uint32_t op)
+static const char *
+decode_logic_op(uint32_t op)
 {
 	switch (op & 0xf) {
 	case 0:
@@ -1074,7 +1079,8 @@ static char *decode_logic_op(uint32_t op)
 	return "";
 }
 
-static char *decode_blend_fact(uint32_t op)
+static const char *
+decode_blend_fact(uint32_t op)
 {
 	switch (op & 0xf) {
 	case 1:
@@ -1111,7 +1117,8 @@ static char *decode_blend_fact(uint32_t op)
 	return "";
 }
 
-static char *decode_tex_coord_mode(uint32_t mode)
+static const char *
+decode_tex_coord_mode(uint32_t mode)
 {
 	switch (mode & 0x7) {
 	case 0:
@@ -1130,7 +1137,8 @@ static char *decode_tex_coord_mode(uint32_t mode)
 	return "";
 }
 
-static char *decode_sample_filter(uint32_t mode)
+static const char *
+decode_sample_filter(uint32_t mode)
 {
 	switch (mode & 0x7) {
 	case 0:
@@ -1156,7 +1164,7 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 	     uint32_t hw_offset, uint32_t devid, int *failures)
 {
 	unsigned int len, i, c, idx, word, map, sampler, instr;
-	char *format, *zformat, *type;
+	const char *format, *zformat, *type;
 	uint32_t opcode;
 
 	struct {
@@ -1164,7 +1172,7 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 		int i830_only;
 		unsigned int min_len;
 		unsigned int max_len;
-		char *name;
+		const char *name;
 	} opcodes_3d_1d[] = {
 		{ 0x86, 0, 4, 4, "3DSTATE_CHROMA_KEY" },
 		{ 0x88, 0, 2, 2, "3DSTATE_CONSTANT_BLEND_COLOR" },
@@ -1338,8 +1346,8 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 						break;
 					case 4:
 						{
-							char *cullmode = "";
-							char *vfmt_xyzw = "";
+							const char *cullmode = "";
+							const char *vfmt_xyzw = "";
 							switch ((data[i] >> 13)
 								& 0x3) {
 							case 0:
@@ -1961,7 +1969,7 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 		for (sampler = 0; sampler <= 15; sampler++) {
 			if (data[1] & (1 << sampler)) {
 				uint32_t dword;
-				char *mip_filter = "";
+				const char *mip_filter = "";
 				if (i + 3 >= count)
 					BUFFER_FAIL(count, len,
 						    "3DSTATE_SAMPLER_STATE");
@@ -2234,7 +2242,7 @@ decode_3d_primitive(uint32_t *data, uint32_t count, uint32_t hw_offset,
 {
 	char immediate = (data[0] & (1 << 23)) == 0;
 	unsigned int len, i, j, ret;
-	char *primtype;
+	const char *primtype;
 	int original_s2 = saved_s2;
 	int original_s4 = saved_s4;
 
@@ -2502,7 +2510,7 @@ decode_3d(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid,
 		uint32_t opcode;
 		unsigned int min_len;
 		unsigned int max_len;
-		char *name;
+		const char *name;
 	} opcodes_3d[] = {
 		{ 0x06, 1, 1, "3DSTATE_ANTI_ALIASING" },
 		{ 0x08, 1, 1, "3DSTATE_BACKFACE_STENCIL_OPS" },
@@ -2722,7 +2730,7 @@ i965_decode_urb_fence(uint32_t *data, uint32_t hw_offset, int len, uint32_t coun
 
 static void
 state_base_out(uint32_t *data, uint32_t hw_offset, unsigned int index,
-	       char *name)
+	       const char *name)
 {
 	if (data[index] & 1) {
 		instr_out(data, hw_offset, index,
@@ -2736,7 +2744,7 @@ state_base_out(uint32_t *data, uint32_t hw_offset, unsigned int index,
 
 static void
 state_max_out(uint32_t *data, uint32_t hw_offset, unsigned int index,
-	      char *name)
+	      const char *name)
 {
 	if (data[index] & 1) {
 		if (data[index] == 1) {
@@ -2760,13 +2768,13 @@ decode_3d_965(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid
 	uint32_t opcode;
 	unsigned int idx, len;
 	unsigned int i, sba_len;
-	char *desc1 = NULL;
+	const char *desc1 = NULL;
 
 	struct {
 		uint32_t opcode;
 		int unsigned min_len;
 		int unsigned max_len;
-		char *name;
+		const char *name;
 	} opcodes_3d[] = {
 		{ 0x6000, 3, 3, "URB_FENCE" },
 		{ 0x6001, 2, 2, "CS_URB_STATE" },
@@ -3473,7 +3481,7 @@ decode_3d_i830(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devi
 		uint32_t opcode;
 		unsigned int min_len;
 		unsigned int max_len;
-		char *name;
+		const char *name;
 	} opcodes_3d[] = {
 		{ 0x02, 1, 1, "3DSTATE_MODES_3" },
 		{ 0x03, 1, 1, "3DSTATE_ENABLES_1" },
