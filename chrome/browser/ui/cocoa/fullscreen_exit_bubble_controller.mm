@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
@@ -45,6 +46,8 @@ const float kHideDuration = 0.7;
 // Sets |exitLabel_| based on |exitLabelPlaceholder_|,
 // sets |exitLabelPlaceholder_| to nil.
 - (void)initializeLabel;
+
+- (NSString*)getLabelText;
 
 - (void)hideSoon;
 
@@ -126,9 +129,7 @@ const float kHideDuration = 0.7;
 
 - (void)awakeFromNib {
   DCHECK([[self window] isKindOfClass:[InfoBubbleWindow class]]);
-  NSString* title = SysUTF16ToNSString(
-      fullscreen_bubble::GetLabelTextForType(bubbleType_, url_));
-  [messageLabel_ setStringValue:title];
+  [messageLabel_ setStringValue:[self getLabelText]];
   [self initializeLabel];
 }
 
@@ -144,9 +145,7 @@ const float kHideDuration = 0.7;
        bubbleType:(FullscreenExitBubbleType)bubbleType {
   bubbleType_ = bubbleType;
 
-  NSString* title = SysUTF16ToNSString(
-      fullscreen_bubble::GetLabelTextForType(bubbleType_, url_));
-  [messageLabel_ setStringValue:title];
+  [messageLabel_ setStringValue:[self getLabelText]];
 
   // Make sure the bubble is visible.
   [hideAnimation_.get() stopAnimation];
@@ -268,6 +267,11 @@ const float kHideDuration = 0.7;
   labelFrame.origin.x += NSWidth(labelFrame) - NSWidth(textFrame);
   labelFrame.size = textFrame.size;
   [exitLabel_ setFrame:labelFrame];
+}
+
+- (NSString*)getLabelText {
+  return SysUTF16ToNSString(fullscreen_bubble::GetLabelTextForType(
+          bubbleType_, url_, browser_->profile()->GetExtensionService()));
 }
 
 // This looks at the Main Menu and determines what the user has set as the

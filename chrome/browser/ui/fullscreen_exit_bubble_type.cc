@@ -5,15 +5,26 @@
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace fullscreen_bubble {
 
 string16 GetLabelTextForType(FullscreenExitBubbleType type,
-                             const GURL& url) {
-  string16 message_label_text;
+                             const GURL& url,
+                             ExtensionService* extension_service) {
   string16 host(UTF8ToUTF16(url.host()));
+  if (extension_service) {
+    const ExtensionSet* extensions = extension_service->extensions();
+    DCHECK(extensions);
+    const Extension* extension =
+        extensions->GetExtensionOrAppByURL(ExtensionURLInfo(url));
+    if (extension)
+      host = UTF8ToUTF16(extension->name());
+  }
   if (host.empty()) {
     switch (type) {
       case FEB_TYPE_FULLSCREEN_BUTTONS:

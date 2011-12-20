@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
@@ -119,7 +120,8 @@ void FullscreenExitBubble::Cancel() {
 }
 
 string16 FullscreenExitBubble::GetCurrentMessageText() const {
-  return fullscreen_bubble::GetLabelTextForType(bubble_type_, url_);
+  return fullscreen_bubble::GetLabelTextForType(
+      bubble_type_, url_, browser_->profile()->GetExtensionService());
 }
 
 string16 FullscreenExitBubble::GetCurrentDenyButtonText() const {

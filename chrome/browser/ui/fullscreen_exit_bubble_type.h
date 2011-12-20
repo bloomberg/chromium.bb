@@ -9,6 +9,8 @@
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 
+class ExtensionService;
+
 // Describes the contents of the fullscreen exit bubble.
 // For example, if the user already agreed to fullscreen mode and the
 // web page then requests mouse lock, "do you want to allow mouse lock"
@@ -31,8 +33,9 @@ enum FullscreenExitBubbleType {
 
 namespace fullscreen_bubble {
 
-string16 GetLabelTextForType(
-    FullscreenExitBubbleType type, const GURL& url);
+string16 GetLabelTextForType(FullscreenExitBubbleType type,
+                             const GURL& url,
+                             ExtensionService* extension_service);
 string16 GetDenyButtonTextForType(FullscreenExitBubbleType type);
 bool ShowButtonsForType(FullscreenExitBubbleType type);
 void PermissionRequestedByType(FullscreenExitBubbleType type,
