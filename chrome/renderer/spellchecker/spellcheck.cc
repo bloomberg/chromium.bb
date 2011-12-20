@@ -113,8 +113,13 @@ bool SpellCheck::SpellCheckWord(
   string16 word;
   int word_start;
   int word_length;
-  if (!text_iterator_.IsInitialized())
-    text_iterator_.Initialize(&character_attributes_, true);
+  if (!text_iterator_.IsInitialized() &&
+      !text_iterator_.Initialize(&character_attributes_, true)) {
+      // We failed to initialize text_iterator_, return as spelled correctly.
+      VLOG(1) << "Failed to initialize SpellcheckWordIterator";
+      return true;
+  }
+
   text_iterator_.SetText(in_word, in_word_len);
   while (text_iterator_.GetNextWord(&word, &word_start, &word_length)) {
     // Found a word (or a contraction) that the spellchecker can check the
@@ -295,8 +300,13 @@ void SpellCheck::FillSuggestionList(
 // returns a concatenated word which is not in the selected dictionary
 // (e.g. "in'n'out") but each word is valid.
 bool SpellCheck::IsValidContraction(const string16& contraction, int tag) {
-  if (!contraction_iterator_.IsInitialized())
-    contraction_iterator_.Initialize(&character_attributes_, false);
+  if (!contraction_iterator_.IsInitialized() &&
+      !contraction_iterator_.Initialize(&character_attributes_, false)) {
+    // We failed to initialize the word iterator, return as spelled correctly.
+    VLOG(1) << "Failed to initialize contraction_iterator_";
+    return true;
+  }
+
   contraction_iterator_.SetText(contraction.c_str(), contraction.length());
 
   string16 word;
