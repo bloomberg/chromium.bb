@@ -70,11 +70,23 @@ base::Value* CreateServerPortValue(
 net::ProxyServer CreateProxyServer(std::string host,
                                    uint16 port,
                                    net::ProxyServer::Scheme scheme) {
-  if (host.length() == 0 && port == 0)
+  if (host.empty() && port == 0)
     return net::ProxyServer();
-  if (port == 0)
-    port = net::ProxyServer::GetDefaultPortForScheme(scheme);
-  net::HostPortPair host_port_pair(host, port);
+  uint16 default_port = net::ProxyServer::GetDefaultPortForScheme(scheme);
+  net::HostPortPair host_port_pair;
+  // Check if host is a valid URL or a string of valid format <server>::<port>.
+  GURL url(host);
+  if (url.is_valid())  // See if host is URL.
+    host_port_pair = net::HostPortPair::FromURL(url);
+  if (host_port_pair.host().empty())  // See if host is <server>::<port>.
+    host_port_pair = net::HostPortPair::FromString(host);
+  if (host_port_pair.host().empty())  // Host is not URL or <server>::<port>.
+    host_port_pair = net::HostPortPair(host, port);
+  // Formal parameter port overrides what may have been specified in host.
+  if (port != 0 && port != default_port)
+    host_port_pair.set_port(port);
+  else if (host_port_pair.port() == 0)  // No port in host, use default.
+    host_port_pair.set_port(default_port);
   return net::ProxyServer(scheme, host_port_pair);
 }
 
