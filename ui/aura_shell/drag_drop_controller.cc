@@ -5,7 +5,6 @@
 #include "ui/aura_shell/drag_drop_controller.h"
 
 #include "base/message_loop.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"

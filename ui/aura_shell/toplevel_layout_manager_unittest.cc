@@ -58,10 +58,10 @@ class ToplevelLayoutManagerTest : public aura::test::AuraTestBase {
 TEST_F(ToplevelLayoutManagerTest, Maximize) {
   gfx::Rect bounds(100, 100, 200, 200);
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
-  window->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(window.get()),
             window->bounds());
-  window->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_EQ(bounds, window->bounds());
 }
 
@@ -69,10 +69,11 @@ TEST_F(ToplevelLayoutManagerTest, Maximize) {
 TEST_F(ToplevelLayoutManagerTest, Fullscreen) {
   gfx::Rect bounds(100, 100, 200, 200);
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
-  window->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  window->SetIntProperty(aura::client::kShowStateKey,
+                         ui::SHOW_STATE_FULLSCREEN);
   EXPECT_EQ(gfx::Screen::GetMonitorAreaNearestWindow(window.get()),
             window->bounds());
-  window->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_EQ(bounds, window->bounds());
 }
 

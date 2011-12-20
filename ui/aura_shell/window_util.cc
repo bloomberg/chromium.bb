@@ -16,7 +16,7 @@
 namespace aura_shell {
 
 bool IsWindowMaximized(aura::Window* window) {
-  return window->GetIntProperty(aura::kShowStateKey) ==
+  return window->GetIntProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_MAXIMIZED;
 }
 
@@ -41,10 +41,10 @@ aura::Window* GetActivatableWindow(aura::Window* window) {
 }
 
 void UpdateBoundsFromShowState(aura::Window* window) {
-  switch (window->GetIntProperty(aura::kShowStateKey)) {
+  switch (window->GetIntProperty(aura::client::kShowStateKey)) {
     case ui::SHOW_STATE_NORMAL: {
       const gfx::Rect* restore = GetRestoreBounds(window);
-      window->SetProperty(aura::kRestoreBoundsKey, NULL);
+      window->SetProperty(aura::client::kRestoreBoundsKey, NULL);
       if (restore)
         window->SetBounds(*restore);
       delete restore;

@@ -25,18 +25,18 @@ ShowStateController::~ShowStateController() {
 void ShowStateController::OnWindowPropertyChanged(aura::Window* window,
                                                   const char* name,
                                                   void* old) {
-  if (name != aura::kShowStateKey)
+  if (name != aura::client::kShowStateKey)
     return;
   if (window->GetIntProperty(name) == ui::SHOW_STATE_NORMAL) {
     // Restore the size of window first, then let Workspace layout the window.
     const gfx::Rect* restore = GetRestoreBounds(window);
-    window->SetProperty(aura::kRestoreBoundsKey, NULL);
+    window->SetProperty(aura::client::kRestoreBoundsKey, NULL);
     if (restore)
       window->SetBounds(*restore);
     delete restore;
   } else if (old == reinterpret_cast<void*>(ui::SHOW_STATE_NORMAL)) {
     // Store the restore bounds only if previous state is normal.
-    DCHECK(window->GetProperty(aura::kRestoreBoundsKey) == NULL);
+    DCHECK(window->GetProperty(aura::client::kRestoreBoundsKey) == NULL);
     SetRestoreBounds(window, window->GetTargetBounds());
   }
 

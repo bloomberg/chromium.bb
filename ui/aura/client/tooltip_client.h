@@ -14,6 +14,14 @@ namespace aura {
 class Window;
 namespace client {
 
+// A property key to store the tooltip client for the root window. The type of
+// the value is |aura::client::TooltipClient*|.
+AURA_EXPORT extern const char kRootWindowTooltipClientKey[];
+
+// A property key to store tooltip text for a window. The type of the value
+// is |string16*|.
+AURA_EXPORT extern const char kTooltipTextKey[];
+
 class AURA_EXPORT TooltipClient {
  public:
   // Informs the shell tooltip manager of change in tooltip for window |target|.

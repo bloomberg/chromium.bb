@@ -225,7 +225,8 @@ bool Workspace::ContainsFullscreenWindow() const {
        ++i) {
     aura::Window* w = *i;
     if (w->IsVisible() &&
-        w->GetIntProperty(aura::kShowStateKey) == ui::SHOW_STATE_FULLSCREEN)
+        w->GetIntProperty(aura::client::kShowStateKey) ==
+            ui::SHOW_STATE_FULLSCREEN)
       return true;
   }
   return false;

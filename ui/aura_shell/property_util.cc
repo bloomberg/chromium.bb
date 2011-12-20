@@ -13,7 +13,7 @@ namespace aura_shell {
 
 void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
   delete GetRestoreBounds(window);
-  window->SetProperty(aura::kRestoreBoundsKey, new gfx::Rect(bounds));
+  window->SetProperty(aura::client::kRestoreBoundsKey, new gfx::Rect(bounds));
 }
 
 void SetRestoreBoundsIfNotSet(aura::Window* window) {
@@ -23,12 +23,12 @@ void SetRestoreBoundsIfNotSet(aura::Window* window) {
 
 const gfx::Rect* GetRestoreBounds(aura::Window* window) {
   return reinterpret_cast<gfx::Rect*>(
-      window->GetProperty(aura::kRestoreBoundsKey));
+      window->GetProperty(aura::client::kRestoreBoundsKey));
 }
 
 void ClearRestoreBounds(aura::Window* window) {
   delete GetRestoreBounds(window);
-  window->SetProperty(aura::kRestoreBoundsKey, NULL);
+  window->SetProperty(aura::client::kRestoreBoundsKey, NULL);
 }
 
 }

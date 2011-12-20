@@ -10,7 +10,6 @@
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura/window_types.h"
 #include "ui/aura_shell/property_util.h"
 #include "ui/aura_shell/show_state_controller.h"
 #include "ui/aura_shell/window_util.h"
@@ -96,11 +95,13 @@ void DefaultContainerLayoutManager::OnWindowResized() {
 }
 
 void DefaultContainerLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-  if (child->type() != aura::WINDOW_TYPE_NORMAL || child->transient_parent())
+  if (child->type() != aura::client::WINDOW_TYPE_NORMAL ||
+      child->transient_parent()) {
     return;
+  }
 
-  if (!child->GetProperty(aura::kShowStateKey))
-    child->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  if (!child->GetProperty(aura::client::kShowStateKey))
+    child->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
 
   child->AddObserver(show_state_controller_.get());
 
@@ -144,7 +145,7 @@ void DefaultContainerLayoutManager::SetChildBounds(
   gfx::Rect adjusted_bounds = requested_bounds;
 
   // First, calculate the adjusted bounds.
-  if (child->type() != aura::WINDOW_TYPE_NORMAL ||
+  if (child->type() != aura::client::WINDOW_TYPE_NORMAL ||
       workspace_manager_->layout_in_progress() ||
       child->transient_parent()) {
     // Use the requested bounds as is.
@@ -163,7 +164,7 @@ void DefaultContainerLayoutManager::SetChildBounds(
   }
 
   ui::WindowShowState show_state = static_cast<ui::WindowShowState>(
-      child->GetIntProperty(aura::kShowStateKey));
+      child->GetIntProperty(aura::client::kShowStateKey));
 
   // Second, check if the window is either maximized or in fullscreen mode.
   if (show_state == ui::SHOW_STATE_MAXIMIZED ||

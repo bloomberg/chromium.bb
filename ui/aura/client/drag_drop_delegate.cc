@@ -4,11 +4,12 @@
 
 #include "ui/aura/client/drag_drop_delegate.h"
 
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 
 namespace aura {
 namespace client {
+
+const char kDragDropDelegateKey[] = "DragDropDelegate";
 
 void SetDragDropDelegate(Window* window, DragDropDelegate* delegate) {
   window->SetProperty(kDragDropDelegateKey, delegate);

@@ -6,7 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "ui/aura/client/activation_delegate.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -97,8 +96,9 @@ void ActivationController::ActivateWindow(aura::Window* window) {
 
   if (!window->Contains(window->GetFocusManager()->GetFocusedWindow()))
     window->GetFocusManager()->SetFocusedWindow(window);
-  aura::RootWindow::GetInstance()->SetProperty(aura::kRootWindowActiveWindow,
-                                               window);
+  aura::RootWindow::GetInstance()->SetProperty(
+      aura::client::kRootWindowActiveWindow,
+      window);
   // Invoke OnLostActive after we've changed the active window. That way if the
   // delegate queries for active state it doesn't think the window is still
   // active.
@@ -119,7 +119,7 @@ void ActivationController::DeactivateWindow(aura::Window* window) {
 aura::Window* ActivationController::GetActiveWindow() {
   return reinterpret_cast<aura::Window*>(
       aura::RootWindow::GetInstance()->GetProperty(
-          aura::kRootWindowActiveWindow));
+          aura::client::kRootWindowActiveWindow));
 }
 
 bool ActivationController::CanFocusWindow(aura::Window* window) const {
@@ -140,8 +140,9 @@ void ActivationController::OnWindowDestroyed(aura::Window* window) {
     // Clear the property before activating something else, since
     // ActivateWindow() will attempt to notify the window stored in this value
     // otherwise.
-    aura::RootWindow::GetInstance()->SetProperty(aura::kRootWindowActiveWindow,
-                                                 NULL);
+    aura::RootWindow::GetInstance()->SetProperty(
+        aura::client::kRootWindowActiveWindow,
+        NULL);
     ActivateWindow(GetTopmostWindowToActivate(window));
   }
   window->RemoveObserver(this);

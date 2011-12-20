@@ -13,6 +13,10 @@ class Event;
 class Window;
 namespace client {
 
+// A property key to store the activation delegate for a window. The type of the
+// value is |aura::ActivationDelegate*|.
+AURA_EXPORT extern const char kActivationDelegateKey[];
+
 // An interface implemented by an object that configures and responds to changes
 // to a window's activation state.
 class AURA_EXPORT ActivationDelegate {

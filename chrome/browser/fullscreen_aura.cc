@@ -13,7 +13,8 @@
 namespace {
 
 bool CheckIfFullscreenWindowExists(aura::Window* window) {
-  if (window->GetIntProperty(aura::kShowStateKey) == ui::SHOW_STATE_FULLSCREEN)
+  if (window->GetIntProperty(aura::client::kShowStateKey) ==
+      ui::SHOW_STATE_FULLSCREEN)
     return true;
   aura::Window::Windows children = window->children();
   for (aura::Window::Windows::const_iterator i = children.begin();

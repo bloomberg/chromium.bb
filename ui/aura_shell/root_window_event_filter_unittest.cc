@@ -5,7 +5,6 @@
 #include "ui/aura_shell/root_window_event_filter.h"
 
 #include "ui/aura/client/activation_delegate.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/cursor.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"

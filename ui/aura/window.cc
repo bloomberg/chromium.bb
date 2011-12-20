@@ -16,7 +16,6 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura/window_types.h"
 #include "ui/base/animation/multi_animation.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor.h"
@@ -37,7 +36,7 @@ Window* GetParentForWindow(Window* window, Window* suggested_parent) {
 }  // namespace
 
 Window::Window(WindowDelegate* delegate)
-    : type_(WINDOW_TYPE_UNKNOWN),
+    : type_(client::WINDOW_TYPE_UNKNOWN),
       delegate_(delegate),
       parent_(NULL),
       transient_parent_(NULL),
@@ -95,7 +94,7 @@ void Window::Init(ui::Layer::LayerType layer_type) {
   RootWindow::GetInstance()->WindowInitialized(this);
 }
 
-void Window::SetType(WindowType type) {
+void Window::SetType(client::WindowType type) {
   // Cannot change type after the window is initialized.
   DCHECK(!layer());
   type_ = type;

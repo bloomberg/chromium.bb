@@ -16,7 +16,7 @@
 #include "base/string16.h"
 #include "ui/base/events.h"
 #include "ui/aura/aura_export.h"
-#include "ui/aura/window_types.h"
+#include "ui/aura/client/window_types.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/layer_delegate.h"
@@ -57,8 +57,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // A type is used to identify a class of Windows and customize behavior such
   // as event handling and parenting.  This field should only be consumed by the
   // shell -- Aura itself shouldn't contain type-specific logic.
-  WindowType type() const { return type_; }
-  void SetType(WindowType type);
+  client::WindowType type() const { return type_; }
+  void SetType(client::WindowType type);
 
   int id() const { return id_; }
   void set_id(int id) { id_ = id; }
@@ -298,7 +298,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Updates the layer name with a name based on the window's name and id.
   void UpdateLayerName(const std::string& name);
 
-  WindowType type_;
+  client::WindowType type_;
 
   WindowDelegate* delegate_;
 

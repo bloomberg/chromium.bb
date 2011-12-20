@@ -4,11 +4,13 @@
 
 #include "ui/aura/client/tooltip_client.h"
 
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 
 namespace aura {
 namespace client {
+
+const char kRootWindowTooltipClientKey[] = "RootWindowTooltipClient";
+const char kTooltipTextKey[] = "TooltipText";
 
 void SetTooltipClient(TooltipClient* client) {
   RootWindow::GetInstance()->SetProperty(kRootWindowTooltipClientKey, client);

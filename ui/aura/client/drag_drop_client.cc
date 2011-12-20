@@ -4,11 +4,12 @@
 
 #include "ui/aura/client/drag_drop_client.h"
 
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 
 namespace aura {
 namespace client {
+
+const char kRootWindowDragDropClientKey[] = "RootWindowDragDropClient";
 
 void SetDragDropClient(DragDropClient* client) {
   RootWindow::GetInstance()->SetProperty(kRootWindowDragDropClientKey, client);

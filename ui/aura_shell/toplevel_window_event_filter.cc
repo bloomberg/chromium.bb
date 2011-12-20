@@ -126,7 +126,7 @@ bool IsBottomEdge(int window_component) {
 }
 
 void ToggleMaximizedState(aura::Window* window) {
-  window->SetIntProperty(aura::kShowStateKey,
+  window->SetIntProperty(aura::client::kShowStateKey,
                          IsWindowMaximized(window) ?
                              ui::SHOW_STATE_NORMAL : ui::SHOW_STATE_MAXIMIZED);
 }
@@ -208,8 +208,10 @@ bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
     return false;
 
   // Only a normal/default window can be moved/resized.
-  if (target->GetIntProperty(aura::kShowStateKey) != ui::SHOW_STATE_NORMAL &&
-      target->GetIntProperty(aura::kShowStateKey) != ui::SHOW_STATE_DEFAULT)
+  if (target->GetIntProperty(aura::client::kShowStateKey) !=
+          ui::SHOW_STATE_NORMAL &&
+      target->GetIntProperty(aura::client::kShowStateKey) !=
+          ui::SHOW_STATE_DEFAULT)
     return false;
 
   // Dragging a window moves the local coordinate frame, so do arithmetic

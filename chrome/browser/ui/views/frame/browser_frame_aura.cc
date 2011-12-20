@@ -12,9 +12,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/aura/aura_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/aura_shell/aura_shell_switches.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -165,7 +165,7 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
       browser_view_(browser_view),
       browser_frame_(browser_frame) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAuraTranslucentFrames)) {
+  if (command_line->HasSwitch(aura_shell::switches::kAuraTranslucentFrames)) {
     // Aura paints layers behind this view, so this must be a layer also.
     // TODO: see if we can avoid this, layers are expensive.
     browser_view_->SetPaintToLayer(true);

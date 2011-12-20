@@ -28,7 +28,7 @@ void ToplevelLayoutManager::OnWindowResized() {
 void ToplevelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   windows_.insert(child);
   child->AddObserver(this);
-  if (child->GetProperty(aura::kShowStateKey)) {
+  if (child->GetProperty(aura::client::kShowStateKey)) {
     UpdateBoundsFromShowState(child);
     UpdateShelfVisibility();
   }
@@ -61,7 +61,7 @@ void ToplevelLayoutManager::SetChildBounds(aura::Window* child,
 void ToplevelLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                     const char* name,
                                                     void* old) {
-  if (name == aura::kShowStateKey) {
+  if (name == aura::client::kShowStateKey) {
     UpdateBoundsFromShowState(window);
     UpdateShelfVisibility();
   }
@@ -73,7 +73,7 @@ void ToplevelLayoutManager::UpdateShelfVisibility() {
 
   bool has_fullscreen_window = false;
   for (Windows::const_iterator i = windows_.begin(); i != windows_.end(); ++i) {
-    if ((*i)->GetIntProperty(aura::kShowStateKey) ==
+    if ((*i)->GetIntProperty(aura::client::kShowStateKey) ==
         ui::SHOW_STATE_FULLSCREEN) {
       has_fullscreen_window = true;
       break;

@@ -20,7 +20,8 @@ aura::Window* GetContainer(int id) {
 }
 
 bool IsWindowModal(aura::Window* window) {
-  return window->transient_parent() && window->GetIntProperty(aura::kModalKey);
+  return window->transient_parent() &&
+      window->GetIntProperty(aura::client::kModalKey);
 }
 
 }  // namespace
@@ -44,13 +45,13 @@ StackingController::~StackingController() {
 
 aura::Window* StackingController::GetDefaultParent(aura::Window* window) {
   switch (window->type()) {
-    case aura::WINDOW_TYPE_NORMAL:
-    case aura::WINDOW_TYPE_POPUP:
+    case aura::client::WINDOW_TYPE_NORMAL:
+    case aura::client::WINDOW_TYPE_POPUP:
       if (IsWindowModal(window))
         return GetModalContainer(window);
       return always_on_top_controller_->GetContainer(window);
-    case aura::WINDOW_TYPE_MENU:
-    case aura::WINDOW_TYPE_TOOLTIP:
+    case aura::client::WINDOW_TYPE_MENU:
+    case aura::client::WINDOW_TYPE_TOOLTIP:
       return GetContainer(internal::kShellWindowId_MenusAndTooltipsContainer);
     default:
       NOTREACHED() << "Window " << window->id()

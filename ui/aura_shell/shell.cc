@@ -8,15 +8,12 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "ui/aura/aura_switches.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_types.h"
 #include "ui/aura_shell/activation_controller.h"
 #include "ui/aura_shell/app_list.h"
+#include "ui/aura_shell/aura_shell_switches.h"
 #include "ui/aura_shell/compact_layout_manager.h"
 #include "ui/aura_shell/compact_status_area_layout_manager.h"
 #include "ui/aura_shell/default_container_event_filter.h"
@@ -247,12 +244,12 @@ void Shell::InitLayoutManagers(aura::RootWindow* root_window) {
 
   internal::ShelfLayoutManager* shelf_layout_manager =
       new internal::ShelfLayoutManager(launcher_->widget(), status_widget);
-  GetContainer(aura_shell::internal::kShellWindowId_LauncherContainer)->
+  GetContainer(internal::kShellWindowId_LauncherContainer)->
       SetLayoutManager(shelf_layout_manager);
 
   internal::StatusAreaLayoutManager* status_area_layout_manager =
       new internal::StatusAreaLayoutManager(shelf_layout_manager);
-  GetContainer(aura_shell::internal::kShellWindowId_StatusContainer)->
+  GetContainer(internal::kShellWindowId_StatusContainer)->
       SetLayoutManager(status_area_layout_manager);
 
   // Workspace manager has its own layout managers.
@@ -271,7 +268,7 @@ void Shell::InitLayoutManagers(aura::RootWindow* root_window) {
 
 aura::Window* Shell::GetContainer(int container_id) {
   return const_cast<aura::Window*>(
-      const_cast<const aura_shell::Shell*>(this)->GetContainer(container_id));
+      const_cast<const Shell*>(this)->GetContainer(container_id));
 }
 
 const aura::Window* Shell::GetContainer(int container_id) const {

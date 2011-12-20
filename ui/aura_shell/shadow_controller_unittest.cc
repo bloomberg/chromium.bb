@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/shadow.h"
@@ -26,7 +25,7 @@ typedef aura_shell::test::AuraShellTestBase ShadowControllerTest;
 // Tests that various methods in Window update the Shadow object as expected.
 TEST_F(ShadowControllerTest, Shadow) {
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
-  window->SetType(aura::WINDOW_TYPE_NORMAL);
+  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::Layer::LAYER_HAS_TEXTURE);
   window->SetParent(NULL);
 
@@ -63,7 +62,7 @@ TEST_F(ShadowControllerTest, Shadow) {
 // Tests that the window's shadow's bounds are updated correctly.
 TEST_F(ShadowControllerTest, ShadowBounds) {
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
-  window->SetType(aura::WINDOW_TYPE_NORMAL);
+  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::Layer::LAYER_HAS_TEXTURE);
   window->SetParent(NULL);
   window->Show();

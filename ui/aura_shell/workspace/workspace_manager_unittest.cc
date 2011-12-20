@@ -550,13 +550,13 @@ TEST_F(WorkspaceTest, ContainsFullscreenWindow) {
 
   EXPECT_FALSE(ws->ContainsFullscreenWindow());
 
-  w1->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  w1->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   EXPECT_TRUE(ws->ContainsFullscreenWindow());
 
-  w1->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  w1->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_FALSE(ws->ContainsFullscreenWindow());
 
-  w2->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  w2->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   EXPECT_TRUE(ws->ContainsFullscreenWindow());
 
   w2->Hide();

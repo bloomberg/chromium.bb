@@ -12,6 +12,10 @@ namespace aura {
 class Window;
 namespace client {
 
+// A property key to store a client that handles window parenting. The type of
+// the value is |aura::client::StackingClient*|.
+AURA_EXPORT extern const char kRootWindowStackingClient[];
+
 // An interface implemented by an object that stacks windows.
 class AURA_EXPORT StackingClient {
  public:

@@ -4,11 +4,13 @@
 
 #include "ui/aura/client/activation_client.h"
 
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 
 namespace aura {
 namespace client {
+
+const char kRootWindowActivationClient[] = "RootWindowActivationClient";
+const char kRootWindowActiveWindow[] = "RootWindowActiveWindow";
 
 void SetActivationClient(ActivationClient* client) {
   RootWindow::GetInstance()->SetProperty(kRootWindowActivationClient, client);

@@ -19,7 +19,7 @@ namespace aura_shell {
 // Returns true if |window| is in the maximized state.
 AURA_SHELL_EXPORT bool IsWindowMaximized(aura::Window* window);
 
-// Convenience setters/getters for |aura::kRootWindowActiveWindow|.
+// Convenience setters/getters for |aura::client::kRootWindowActiveWindow|.
 AURA_SHELL_EXPORT void ActivateWindow(aura::Window* window);
 AURA_SHELL_EXPORT void DeactivateWindow(aura::Window* window);
 AURA_SHELL_EXPORT bool IsActiveWindow(aura::Window* window);

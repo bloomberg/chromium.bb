@@ -47,7 +47,7 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
 
   aura::Window* CreateTestWindowWithType(const gfx::Rect& bounds,
                                          aura::Window* parent,
-                                         aura::WindowType type) {
+                                         aura::client::WindowType type) {
     aura::Window* window = new aura::Window(NULL);
     window->SetType(type);
     window->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
@@ -61,7 +61,7 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
                                  aura::Window* parent) {
     return CreateTestWindowWithType(bounds,
                                     parent,
-                                    aura::WINDOW_TYPE_NORMAL);
+                                    aura::client::WINDOW_TYPE_NORMAL);
   }
 
   aura::Window* container() { return container_.get(); }
@@ -87,20 +87,21 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
 
 // Utility functions to set and get show state on |window|.
 void Maximize(aura::Window* window) {
-  window->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
 }
 
 void Fullscreen(aura::Window* window) {
-  window->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  window->SetIntProperty(aura::client::kShowStateKey,
+                         ui::SHOW_STATE_FULLSCREEN);
 }
 
 void Restore(aura::Window* window) {
-  window->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  window->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
 }
 
 ui::WindowShowState GetShowState(aura::Window* window) {
   return static_cast<ui::WindowShowState>(
-      window->GetIntProperty(aura::kShowStateKey));
+      window->GetIntProperty(aura::client::kShowStateKey));
 }
 
 }  // namespace
@@ -147,7 +148,7 @@ TEST_F(DefaultContainerLayoutManagerTest, Popup) {
   scoped_ptr<aura::Window> popup(
       CreateTestWindowWithType(gfx::Rect(0, -1000, 100, 100),
                                container(),
-                               aura::WINDOW_TYPE_POPUP));
+                               aura::client::WINDOW_TYPE_POPUP));
   // A popup window can be placed outside of draggable area.
   EXPECT_EQ("0,-1000 100x100", popup->bounds().ToString());
 
@@ -164,7 +165,7 @@ TEST_F(DefaultContainerLayoutManagerTest, Popup) {
 // manager.
 TEST_F(DefaultContainerLayoutManagerTest, IgnoreTransient) {
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
-  window->SetType(aura::WINDOW_TYPE_NORMAL);
+  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
   aura::RootWindow::GetInstance()->AddTransientChild(window.get());
   window->SetBounds(gfx::Rect(0, 0, 200, 200));
@@ -190,7 +191,7 @@ TEST_F(DefaultContainerLayoutManagerTest, Fullscreen) {
   Fullscreen(w.get());
   EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN, GetShowState(w.get()));
   EXPECT_EQ(fullscreen_bounds.ToString(), w->bounds().ToString());
-  w->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  w->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_EQ(ui::SHOW_STATE_NORMAL, GetShowState(w.get()));
   EXPECT_EQ(original_bounds.ToString(), w->bounds().ToString());
 

@@ -8,10 +8,9 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "ui/aura/aura_switches.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura_shell/aura_shell_switches.h"
 #include "ui/aura_shell/shadow.h"
 #include "ui/aura_shell/shadow_types.h"
 #include "ui/aura_shell/window_properties.h"
@@ -25,12 +24,12 @@ namespace {
 
 ShadowType GetShadowTypeFromWindowType(aura::Window* window) {
   switch (window->type()) {
-    case aura::WINDOW_TYPE_NORMAL:
+    case aura::client::WINDOW_TYPE_NORMAL:
       return CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAuraTranslucentFrames) ?
               SHADOW_TYPE_NONE : SHADOW_TYPE_RECTANGULAR;
-    case aura::WINDOW_TYPE_MENU:
-    case aura::WINDOW_TYPE_TOOLTIP:
+    case aura::client::WINDOW_TYPE_MENU:
+    case aura::client::WINDOW_TYPE_TOOLTIP:
       return SHADOW_TYPE_RECTANGULAR;
     default:
       break;

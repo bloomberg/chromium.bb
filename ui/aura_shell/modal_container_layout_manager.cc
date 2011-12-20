@@ -66,14 +66,14 @@ void ModalContainerLayoutManager::OnWindowResized() {
 void ModalContainerLayoutManager::OnWindowAddedToLayout(
     aura::Window* child) {
   child->AddObserver(this);
-  if (child->GetIntProperty(aura::kModalKey))
+  if (child->GetIntProperty(aura::client::kModalKey))
     AddModalWindow(child);
 }
 
 void ModalContainerLayoutManager::OnWillRemoveWindowFromLayout(
     aura::Window* child) {
   child->RemoveObserver(this);
-  if (child->GetIntProperty(aura::kModalKey))
+  if (child->GetIntProperty(aura::client::kModalKey))
     RemoveModalWindow(child);
 }
 
@@ -94,10 +94,10 @@ void ModalContainerLayoutManager::SetChildBounds(
 void ModalContainerLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                           const char* key,
                                                           void* old) {
-  if (key != aura::kModalKey)
+  if (key != aura::client::kModalKey)
     return;
 
-  if (window->GetIntProperty(aura::kModalKey)) {
+  if (window->GetIntProperty(aura::client::kModalKey)) {
     AddModalWindow(window);
   } else if (static_cast<int>(reinterpret_cast<intptr_t>(old))) {
     RemoveModalWindow(window);

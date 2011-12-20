@@ -25,7 +25,7 @@
 #include "ui/gfx/gl/gl_switches.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/aura_switches.h"
+#include "ui/aura_shell/aura_shell_switches.h"
 #endif
 
 using content::UserMetricsAction;
@@ -79,7 +79,8 @@ const Experiment::Choice kPrerenderFromOmniboxChoices[] = {
 const Experiment::Choice kAuraWindowModeChoices[] = {
   { IDS_FLAGS_AURA_WINDOW_MODE_NORMAL, "", "" },
   { IDS_FLAGS_AURA_WINDOW_MODE_COMPACT,
-      switches::kAuraWindowMode, switches::kAuraWindowModeCompact }
+      aura_shell::switches::kAuraWindowMode,
+      aura_shell::switches::kAuraWindowModeCompact }
 };
 #endif
 
@@ -460,14 +461,14 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_AURA_WORKSPACE_MANAGER_NAME,
     IDS_FLAGS_AURA_WORKSPACE_MANAGER_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kAuraWorkspaceManager)
+    SINGLE_VALUE_TYPE(aura_shell::switches::kAuraWorkspaceManager)
   },
   {
     "aura-translucent-frames",
     IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_NAME,
     IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kAuraTranslucentFrames)
+    SINGLE_VALUE_TYPE(aura_shell::switches::kAuraTranslucentFrames)
   },
 #endif  // defined(USE_AURA)
   {

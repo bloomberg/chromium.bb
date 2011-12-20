@@ -4,11 +4,12 @@
 
 #include "ui/aura/client/activation_delegate.h"
 
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 
 namespace aura {
 namespace client {
+
+const char kActivationDelegateKey[] = "ActivationDelegate";
 
 void SetActivationDelegate(Window* window, ActivationDelegate* delegate) {
   window->SetProperty(kActivationDelegateKey, delegate);

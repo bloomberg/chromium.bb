@@ -25,7 +25,7 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/aura_switches.h"
+#include "ui/aura_shell/aura_shell_switches.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,10 +66,10 @@ void BrowserFrame::InitBrowserFrame() {
   }
 #if defined(USE_AURA)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAuraTranslucentFrames))
+  if (command_line->HasSwitch(aura_shell::switches::kAuraTranslucentFrames))
     params.transparent = true;
   // Aura laptop mode fills the monitor with with its windows.
-  if (switches::IsAuraWindowModeCompact() &&
+  if (aura_shell::switches::IsAuraWindowModeCompact() &&
       browser_view_->IsBrowserTypeNormal()) {
     params.bounds = gfx::Screen::GetPrimaryMonitorBounds();
     params.show_state = ui::SHOW_STATE_MAXIMIZED;
@@ -81,7 +81,7 @@ void BrowserFrame::InitBrowserFrame() {
   // to appear active.
   bool disable_inactive_rendering = false;
 #if defined(USE_AURA)
-  disable_inactive_rendering = switches::IsAuraWindowModeCompact();
+  disable_inactive_rendering = aura_shell::switches::IsAuraWindowModeCompact();
 #elif defined(OS_CHROMEOS)
   disable_inactive_rendering = true;
 #endif
@@ -121,7 +121,7 @@ void BrowserFrame::TabStripDisplayModeChanged() {
 bool BrowserFrame::IsSingleWindowMode() const {
   bool single_window_mode = false;
 #if defined(USE_AURA)
-  single_window_mode = switches::IsAuraWindowModeCompact();
+  single_window_mode = aura_shell::switches::IsAuraWindowModeCompact();
 #elif defined(OS_CHROMEOS)
   single_window_mode =
       chromeos::system::runtime_environment::IsRunningOnChromeOS();

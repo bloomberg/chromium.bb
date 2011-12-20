@@ -4,11 +4,12 @@
 
 #include "ui/aura/client/stacking_client.h"
 
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 
 namespace aura {
 namespace client {
+
+const char kRootWindowStackingClient[] = "RootWindowStackingClient";
 
 void SetStackingClient(StackingClient* stacking_client) {
   RootWindow::GetInstance()->SetProperty(kRootWindowStackingClient,

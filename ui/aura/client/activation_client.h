@@ -12,6 +12,14 @@ namespace aura {
 class Window;
 namespace client {
 
+// A property key to store a client that handles window activation. The type of
+// the value is |aura::client::ActivationClient*|.
+AURA_EXPORT extern const char kRootWindowActivationClient[];
+
+// A property key to store what the client defines as the active window on the
+// RootWindow. The type of the value is |aura::Window*|.
+AURA_EXPORT extern const char kRootWindowActiveWindow[];
+
 // An interface implemented by an object that manages window activation.
 class AURA_EXPORT ActivationClient {
  public:

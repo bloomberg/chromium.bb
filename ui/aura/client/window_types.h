@@ -7,20 +7,25 @@
 #pragma once
 
 namespace aura {
+namespace client {
 
+// This isn't a property because it can't change after the window has been
+// initialized. It's in client because the Aura Client application derives
+// meaning from these values, not Aura itself.
 enum WindowType {
   WINDOW_TYPE_UNKNOWN = 0,
 
-  // Regular windows that should be laid out by the shell.
+  // Regular windows that should be laid out by the client.
   WINDOW_TYPE_NORMAL,
 
-  // Miscellaneous windows that should not be laid out by the shell.
+  // Miscellaneous windows that should not be laid out by the client.
   WINDOW_TYPE_POPUP,
 
   WINDOW_TYPE_MENU,
   WINDOW_TYPE_TOOLTIP,
 };
 
+}  // namespace client
 }  // namespace aura
 
 #endif  // UI_AURA_WINDOW_TYPES_H_

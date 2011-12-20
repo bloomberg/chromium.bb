@@ -4,7 +4,6 @@
 
 #include "ui/aura_shell/activation_controller.h"
 
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
@@ -139,7 +138,7 @@ TEST_F(ActivationControllerTest, ClickOnMenu) {
 
   // Creates a menu that covers the transient parent.
   scoped_ptr<aura::Window> menu(aura::test::CreateTestWindowWithDelegateAndType(
-      &wd, aura::WINDOW_TYPE_MENU, 2, gfx::Rect(100, 100), NULL));
+      &wd, aura::client::WINDOW_TYPE_MENU, 2, gfx::Rect(100, 100), NULL));
   ad2.SetWindow(menu.get());
   w1->AddTransientChild(menu.get());
 

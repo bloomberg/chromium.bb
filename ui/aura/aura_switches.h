@@ -12,15 +12,6 @@ namespace switches {
 
 // Please keep alphabetized.
 AURA_EXPORT extern const char kAuraHostWindowSize[];
-AURA_EXPORT extern const char kAuraNoShadows[];
-AURA_EXPORT extern const char kAuraTranslucentFrames[];
-AURA_EXPORT extern const char kAuraWindowMode[];
-AURA_EXPORT extern const char kAuraWindowModeCompact[];
-AURA_EXPORT extern const char kAuraWindowModeNormal[];
-AURA_EXPORT extern const char kAuraWorkspaceManager[];
-
-// Utilities for testing multi-valued switches.
-AURA_EXPORT bool IsAuraWindowModeCompact();
 
 }  // namespace switches
 

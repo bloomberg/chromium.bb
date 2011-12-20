@@ -6,7 +6,6 @@
 
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_types.h"
 
 namespace aura_shell {
 namespace internal {
@@ -41,8 +40,8 @@ void AlwaysOnTopController::SetContainers(aura::Window* default_container,
 
 aura::Window* AlwaysOnTopController::GetContainer(aura::Window* window) const {
   DCHECK(default_container_ && always_on_top_container_);
-  return !window->GetProperty(aura::kAlwaysOnTopKey) ? default_container_ :
-                                                       always_on_top_container_;
+  return !window->GetProperty(aura::client::kAlwaysOnTopKey) ?
+      default_container_ : always_on_top_container_;
 }
 
 void AlwaysOnTopController::OnWindowAdded(aura::Window* child) {
@@ -60,9 +59,9 @@ void AlwaysOnTopController::OnWillRemoveWindow(aura::Window* child) {
 void AlwaysOnTopController::OnWindowPropertyChanged(aura::Window* window,
                                                     const char* name,
                                                     void* old) {
-  if (name == aura::kAlwaysOnTopKey) {
-    DCHECK(window->type() == aura::WINDOW_TYPE_NORMAL ||
-           window->type() == aura::WINDOW_TYPE_POPUP);
+  if (name == aura::client::kAlwaysOnTopKey) {
+    DCHECK(window->type() == aura::client::WINDOW_TYPE_NORMAL ||
+           window->type() == aura::client::WINDOW_TYPE_POPUP);
     aura::Window* container = GetContainer(window);
     if (window->parent() != container)
       container->AddChild(window);

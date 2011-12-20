@@ -4,6 +4,7 @@
 
 #include "ui/aura_shell/workspace_controller.h"
 
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -58,7 +59,7 @@ void WorkspaceController::OnRootWindowResized(const gfx::Size& new_size) {
 void WorkspaceController::OnWindowPropertyChanged(aura::Window* window,
                                                   const char* key,
                                                   void* old) {
-  if (key == aura::kRootWindowActiveWindow) {
+  if (key == aura::client::kRootWindowActiveWindow) {
     // FindBy handles NULL.
     Workspace* workspace = workspace_manager_->FindBy(GetActiveWindow());
     if (workspace)

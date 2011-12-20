@@ -14,10 +14,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/tooltip_client.h"
+#include "ui/aura/client/window_types.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_types.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/canvas.h"
@@ -99,7 +99,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
 #endif
       skip_schedule_paint_(false) {
   host_->SetView(this);
-  window_->SetProperty(aura::kTooltipTextKey, &tooltip_);
+  window_->SetProperty(aura::client::kTooltipTextKey, &tooltip_);
   aura::client::SetActivationDelegate(window_, this);
 }
 
@@ -119,7 +119,7 @@ void RenderWidgetHostViewAura::InitAsPopup(
     const gfx::Rect& pos) {
   popup_parent_host_view_ =
       static_cast<RenderWidgetHostViewAura*>(parent_host_view);
-  window_->SetType(aura::WINDOW_TYPE_MENU);
+  window_->SetType(aura::client::WINDOW_TYPE_MENU);
   window_->Init(ui::Layer::LAYER_HAS_TEXTURE);
   window_->SetName("RenderWidgetHostViewAura");
 
@@ -138,10 +138,11 @@ void RenderWidgetHostViewAura::InitAsPopup(
 void RenderWidgetHostViewAura::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
   is_fullscreen_ = true;
-  window_->SetType(aura::WINDOW_TYPE_NORMAL);
+  window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window_->Init(ui::Layer::LAYER_HAS_TEXTURE);
   window_->SetName("RenderWidgetHostViewAura");
-  window_->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  window_->SetIntProperty(aura::client::kShowStateKey,
+                          ui::SHOW_STATE_FULLSCREEN);
   window_->SetParent(NULL);
   Show();
   Focus();

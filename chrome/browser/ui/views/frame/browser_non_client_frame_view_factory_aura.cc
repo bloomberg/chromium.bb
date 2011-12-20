@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 #include "chrome/browser/ui/views/frame/popup_non_client_frame_view.h"
-#include "ui/aura/aura_switches.h"
+#include "ui/aura_shell/aura_shell_switches.h"
 
 namespace browser {
 
@@ -21,7 +21,7 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
         frame, static_cast<PanelBrowserView*>(browser_view));
   }
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAuraTranslucentFrames))
+  if (command_line->HasSwitch(aura_shell::switches::kAuraTranslucentFrames))
     return new BrowserNonClientFrameViewAura(frame, browser_view);
   return new OpaqueBrowserFrameView(frame, browser_view);
 }

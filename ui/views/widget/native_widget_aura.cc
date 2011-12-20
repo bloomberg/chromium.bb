@@ -9,11 +9,11 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/client/window_types.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura/window_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/canvas.h"
@@ -41,22 +41,23 @@ namespace views {
 
 namespace {
 
-aura::WindowType GetAuraWindowTypeForWidgetType(Widget::InitParams::Type type) {
+aura::client::WindowType GetAuraWindowTypeForWidgetType(
+    Widget::InitParams::Type type) {
   switch (type) {
     case Widget::InitParams::TYPE_WINDOW:
-      return aura::WINDOW_TYPE_NORMAL;
+      return aura::client::WINDOW_TYPE_NORMAL;
     case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
     case Widget::InitParams::TYPE_CONTROL:
     case Widget::InitParams::TYPE_POPUP:
     case Widget::InitParams::TYPE_BUBBLE:
-      return aura::WINDOW_TYPE_POPUP;
+      return aura::client::WINDOW_TYPE_POPUP;
     case Widget::InitParams::TYPE_MENU:
-      return aura::WINDOW_TYPE_MENU;
+      return aura::client::WINDOW_TYPE_MENU;
     case Widget::InitParams::TYPE_TOOLTIP:
-      return aura::WINDOW_TYPE_TOOLTIP;
+      return aura::client::WINDOW_TYPE_TOOLTIP;
     default:
       NOTREACHED() << "Unhandled widget type " << type;
-      return aura::WINDOW_TYPE_UNKNOWN;
+      return aura::client::WINDOW_TYPE_UNKNOWN;
   }
 }
 
@@ -105,7 +106,7 @@ class NativeWidgetAura::ActiveWindowObserver : public aura::WindowObserver {
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const char* key,
                                        void* old) OVERRIDE {
-    if (key != aura::kRootWindowActiveWindow)
+    if (key != aura::client::kRootWindowActiveWindow)
       return;
     aura::Window* active =
         aura::client::GetActivationClient()->GetActiveWindow();
@@ -166,7 +167,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
       params.child ? Widget::InitParams::TYPE_CONTROL : params.type;
   window_->SetType(GetAuraWindowTypeForWidgetType(window_type));
   // TODO(jamescook): Should this use params.show_state instead?
-  window_->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  window_->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   window_->Init(params.create_texture_for_layer ?
                     ui::Layer::LAYER_HAS_TEXTURE :
                     ui::Layer::LAYER_HAS_NO_TEXTURE);
@@ -333,7 +334,7 @@ void NativeWidgetAura::GetWindowPlacement(
   // The interface specifies returning restored bounds, not current bounds.
   *bounds = GetRestoredBounds();
   *show_state = static_cast<ui::WindowShowState>(
-      window_->GetIntProperty(aura::kShowStateKey));
+      window_->GetIntProperty(aura::client::kShowStateKey));
 }
 
 void NativeWidgetAura::SetWindowTitle(const string16& title) {
@@ -361,7 +362,7 @@ void NativeWidgetAura::SetAccessibleState(ui::AccessibilityTypes::State state) {
 }
 
 void NativeWidgetAura::BecomeModal() {
-  window_->SetIntProperty(aura::kModalKey, 1);
+  window_->SetIntProperty(aura::client::kModalKey, 1);
 }
 
 gfx::Rect NativeWidgetAura::GetWindowScreenBounds() const {
@@ -375,7 +376,7 @@ gfx::Rect NativeWidgetAura::GetClientAreaScreenBounds() const {
 
 gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
   gfx::Rect* restore_bounds = reinterpret_cast<gfx::Rect*>(
-      window_->GetProperty(aura::kRestoreBoundsKey));
+      window_->GetProperty(aura::client::kRestoreBoundsKey));
   return restore_bounds ? *restore_bounds : window_->bounds();
 }
 
@@ -408,7 +409,7 @@ void NativeWidgetAura::Close() {
          ownership_ == Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
   if (window_) {
     Hide();
-    window_->SetIntProperty(aura::kModalKey, 0);
+    window_->SetIntProperty(aura::client::kModalKey, 0);
   }
 
   if (!close_widget_factory_.HasWeakPtrs()) {
@@ -440,7 +441,7 @@ void NativeWidgetAura::ShowMaximizedWithBounds(
 void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
   if (state == ui::SHOW_STATE_MAXIMIZED ||
       state == ui::SHOW_STATE_FULLSCREEN) {
-    window_->SetIntProperty(aura::kShowStateKey, state);
+    window_->SetIntProperty(aura::client::kShowStateKey, state);
   }
   window_->Show();
   if (can_activate_ && (state != ui::SHOW_STATE_INACTIVE ||
@@ -466,11 +467,12 @@ bool NativeWidgetAura::IsActive() const {
 }
 
 void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {
-  window_->SetIntProperty(aura::kAlwaysOnTopKey, on_top);
+  window_->SetIntProperty(aura::client::kAlwaysOnTopKey, on_top);
 }
 
 void NativeWidgetAura::Maximize() {
-  window_->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  window_->SetIntProperty(aura::client::kShowStateKey,
+                          ui::SHOW_STATE_MAXIMIZED);
 }
 
 void NativeWidgetAura::Minimize() {
@@ -479,27 +481,27 @@ void NativeWidgetAura::Minimize() {
 }
 
 bool NativeWidgetAura::IsMaximized() const {
-  return window_->GetIntProperty(aura::kShowStateKey) ==
+  return window_->GetIntProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_MAXIMIZED;
 }
 
 bool NativeWidgetAura::IsMinimized() const {
-  return window_->GetIntProperty(aura::kShowStateKey) ==
+  return window_->GetIntProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_MINIMIZED;
 }
 
 void NativeWidgetAura::Restore() {
-  window_->SetIntProperty(aura::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  window_->SetIntProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
 }
 
 void NativeWidgetAura::SetFullscreen(bool fullscreen) {
   window_->SetIntProperty(
-      aura::kShowStateKey,
+      aura::client::kShowStateKey,
       fullscreen ? ui::SHOW_STATE_FULLSCREEN : ui::SHOW_STATE_NORMAL);
 }
 
 bool NativeWidgetAura::IsFullscreen() const {
-  return window_->GetIntProperty(aura::kShowStateKey) ==
+  return window_->GetIntProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_FULLSCREEN;
 }
 

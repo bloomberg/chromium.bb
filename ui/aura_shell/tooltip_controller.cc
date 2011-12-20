@@ -10,8 +10,7 @@
 #include "base/location.h"
 #include "base/string_split.h"
 #include "base/time.h"
-#include "ui/aura/aura_switches.h"
-#include "ui/aura/client/aura_constants.h"
+#include "ui/aura_shell/aura_shell_switches.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/shell.h"
@@ -156,7 +155,8 @@ class TooltipController::Tooltip {
     int width = max_width + 2 * kTooltipHorizontalPadding;
     int height = label_.GetPreferredSize().height() +
         2 * kTooltipVerticalPadding;
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraNoShadows)) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kAuraNoShadows)) {
       width += 2 * kTooltipBorderWidth;
       height += 2 * kTooltipBorderWidth;
     }

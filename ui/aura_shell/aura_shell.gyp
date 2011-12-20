@@ -39,6 +39,8 @@
         'always_on_top_controller.h',
         'app_list.cc',
         'app_list.h',
+        'aura_shell_switches.cc',
+        'aura_shell_switches.h',
         'compact_layout_manager.cc',
         'compact_layout_manager.h',
         'compact_status_area_layout_manager.cc',

@@ -27,7 +27,7 @@ void CompactLayoutManager::OnWindowResized() {
 void CompactLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   windows_.insert(child);
   child->AddObserver(this);
-  if (child->GetProperty(aura::kShowStateKey))
+  if (child->GetProperty(aura::client::kShowStateKey))
     UpdateBoundsFromShowState(child);
 }
 
@@ -47,7 +47,7 @@ void CompactLayoutManager::SetChildBounds(
   gfx::Rect bounds = requested_bounds;
   // Avoid a janky resize on startup by ensuring the initial bounds fill the
   // screen.
-  if (child->GetIntProperty(aura::kShowStateKey) == ui::SHOW_STATE_MAXIMIZED)
+  if (IsWindowMaximized(child))
     bounds = gfx::Screen::GetPrimaryMonitorBounds();
   SetChildBoundsDirect(child, bounds);
 }
@@ -55,7 +55,7 @@ void CompactLayoutManager::SetChildBounds(
 void CompactLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                       const char* name,
                                                       void* old) {
-  if (name == aura::kShowStateKey)
+  if (name == aura::client::kShowStateKey)
     UpdateBoundsFromShowState(window);
 }
 
