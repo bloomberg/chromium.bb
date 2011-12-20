@@ -17,8 +17,8 @@ def main(argv):
     (opts, args) = getopt.getopt(argv[1:], 'a:p:o:')
 
     nacl_build_subarch = 0
-    output_file = sys.stdout
     nacl_path = os.getcwd()
+    output_filename = None
 
     for opt, val in opts:
       if opt == '-o':
@@ -45,7 +45,7 @@ def main(argv):
                           + 'either -a Win32 or -a x64' )
     # endif
 
-    if not output_filename:
+    if output_filename is None:
       raise getopt.error( 'No output file specified' )
     # endif
 
@@ -116,7 +116,7 @@ def main(argv):
 
   except getopt.error, e:
     print >>sys.stderr, str(e)
-    print >>sys.std4err, ['Usage: ',
+    print >>sys.stderr, ['Usage: ',
       argv[0],
       '-a {Win32|x64} -o output_file [-p native_client_path] input_file']
   # endtry
