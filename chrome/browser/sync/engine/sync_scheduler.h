@@ -255,11 +255,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
                        int64 delay_ms);
 
   // Helper to assemble a job and post a delayed task to sync.
-  void ScheduleSyncSessionJob(
-      const base::TimeDelta& delay,
-      SyncSessionJob::SyncSessionJobPurpose purpose,
-      sessions::SyncSession* session,
-      const tracked_objects::Location& from_here);
+  void ScheduleSyncSessionJob(const SyncSessionJob& job);
 
   // Invoke the Syncer to perform a sync.
   void DoSyncSessionJob(const SyncSessionJob& job);

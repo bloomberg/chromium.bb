@@ -476,6 +476,42 @@ TEST_F(SyncSchedulerTest, NudgeCoalescing) {
             r2.snapshots[0]->source.updates_source);
 }
 
+// Test that nudges are coalesced.
+TEST_F(SyncSchedulerTest, NudgeCoalescingWithDifferentTimings) {
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
+  SyncShareRecords r;
+  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
+                      WithArg<0>(RecordSyncShare(&r))));
+  syncable::ModelTypeSet types1(syncable::BOOKMARKS),
+      types2(syncable::AUTOFILL), types3;
+
+  // Create a huge time delay.
+  TimeDelta delay = TimeDelta::FromDays(1);
+
+  scheduler()->ScheduleNudge(
+      delay, NUDGE_SOURCE_UNKNOWN, types1, FROM_HERE);
+
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_UNKNOWN, types2, FROM_HERE);
+
+  TimeTicks min_time = TimeTicks::Now();
+  TimeTicks max_time = TimeTicks::Now() + delay;
+
+  RunLoop();
+
+  // Make sure the sync has happened.
+  ASSERT_EQ(1U, r.snapshots.size());
+  EXPECT_TRUE(CompareModelTypeSetToModelTypePayloadMap(
+      Union(types1, types2), r.snapshots[0]->source.types));
+
+  // Make sure the sync happened at the right time.
+  EXPECT_GE(r.times[0], min_time);
+  EXPECT_LE(r.times[0], max_time);
+}
+
 // Test nudge scheduling.
 TEST_F(SyncSchedulerTest, NudgeWithPayloads) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
