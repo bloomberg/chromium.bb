@@ -71,8 +71,13 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   // Returns true if we have enough data
   bool IsQueueFull();
 
-  // Returns the number of bytes left in |queue_|.
+  // Returns the number of bytes left in |queue_|, which may be larger than
+  // QueueCapacity() in the event that a read callback delivered more data than
+  // |queue_| was intending to hold.
   uint32 QueueSize();
+
+  // Returns the capacity of |queue_|.
+  uint32 QueueCapacity();
 
   // Increase the capacity of |queue_| if possible.
   void IncreaseQueueCapacity();

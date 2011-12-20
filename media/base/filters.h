@@ -164,18 +164,15 @@ class MEDIA_EXPORT AudioDecoder : public Filter {
   virtual void Initialize(DemuxerStream* stream, const base::Closure& callback,
                           const StatisticsCallback& stats_callback) = 0;
 
-  // Renderer provides an output buffer for Decoder to write to. These buffers
-  // will be recycled to renderer via the permanent callback.
+  // Request samples to be decoded and returned via the provided callback.
+  // Only one read may be in flight at any given time.
   //
-  // We could also pass empty pointer here to let decoder provide buffers pool.
-  virtual void ProduceAudioSamples(scoped_refptr<Buffer> buffer) = 0;
-
-  // Installs a permanent callback for passing decoded audio output.
-  typedef base::Callback<void(scoped_refptr<Buffer>)> ConsumeAudioSamplesCB;
-  void set_consume_audio_samples_callback(
-      const ConsumeAudioSamplesCB& callback) {
-    consume_audio_samples_callback_ = callback;
-  }
+  // Implementations guarantee that the callback will not be called from within
+  // this method.
+  //
+  // Sample buffers will be non-NULL yet may be end of stream buffers.
+  typedef base::Callback<void(scoped_refptr<Buffer>)> ReadCB;
+  virtual void Read(const ReadCB& callback) = 0;
 
   // Returns various information about the decoded audio format.
   virtual int bits_per_channel() = 0;
@@ -185,12 +182,6 @@ class MEDIA_EXPORT AudioDecoder : public Filter {
  protected:
   AudioDecoder();
   virtual ~AudioDecoder();
-
-  // Executes the permanent callback to pass off decoded audio.
-  void ConsumeAudioSamples(scoped_refptr<Buffer> buffer);
-
- private:
-  ConsumeAudioSamplesCB consume_audio_samples_callback_;
 };
 
 

@@ -168,18 +168,6 @@ TEST_F(AudioRendererImplTest, SetVolume) {
   WaitForIOThreadCompletion();
 }
 
-TEST_F(AudioRendererImplTest, Stop) {
-  // Execute Stop() codepath.
-  // Tasks will be posted internally on the IO thread.
-  renderer_->Stop(media::NewExpectedClosure());
-
-  WaitForIOThreadCompletion();
-
-  // It's possible that the upstream decoder replies right after being stopped.
-  scoped_refptr<media::Buffer> buffer(new media::DataBuffer(kSize));
-  renderer_->ConsumeAudioSamples(buffer);
-}
-
 TEST_F(AudioRendererImplTest, UpdateEarliestEndTime) {
   renderer_->SetPlaybackRate(1.0f);
   WaitForIOThreadCompletion();

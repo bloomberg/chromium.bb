@@ -283,6 +283,10 @@ uint32 AudioRendererAlgorithmBase::QueueSize() {
   return queue_.forward_bytes();
 }
 
+uint32 AudioRendererAlgorithmBase::QueueCapacity() {
+  return queue_.forward_capacity();
+}
+
 void AudioRendererAlgorithmBase::IncreaseQueueCapacity() {
   queue_.set_forward_capacity(
       std::min(2 * queue_.forward_capacity(), max_queue_capacity_));

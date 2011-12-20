@@ -14,13 +14,16 @@
 
 using ::testing::_;
 using ::testing::AnyNumber;
-using ::testing::InSequence;
 using ::testing::Invoke;
-using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::StrictMock;
 
 namespace media {
+
+// Constants for distinguishing between muted audio and playing audio when using
+// ConsumeBufferedData().
+static uint8 kMutedAudio = 0x00;
+static uint8 kPlayingAudio = 0x99;
 
 // Mocked subclass of AudioRendererBase for testing purposes.
 class MockAudioRendererBase : public AudioRendererBase {
@@ -36,15 +39,7 @@ class MockAudioRendererBase : public AudioRendererBase {
   MOCK_METHOD3(OnInitialize, bool(int, ChannelLayout, int));
   MOCK_METHOD0(OnStop, void());
 
-  // Used for verifying check points during tests.
-  MOCK_METHOD1(CheckPoint, void(int id));
-
  private:
-  FRIEND_TEST_ALL_PREFIXES(AudioRendererBaseTest, OneCompleteReadCycle);
-  FRIEND_TEST_ALL_PREFIXES(AudioRendererBaseTest, Underflow);
-  FRIEND_TEST_ALL_PREFIXES(AudioRendererBaseTest, Underflow_EndOfStream);
-  friend class AudioRendererBaseTest;
-
   DISALLOW_COPY_AND_ASSIGN(MockAudioRendererBase);
 };
 
@@ -53,13 +48,12 @@ class AudioRendererBaseTest : public ::testing::Test {
   // Give the decoder some non-garbage media properties.
   AudioRendererBaseTest()
       : renderer_(new MockAudioRendererBase()),
-        decoder_(new MockAudioDecoder()),
-        pending_reads_(0) {
+        decoder_(new MockAudioDecoder()) {
     renderer_->set_host(&host_);
 
-    // Queue all reads from the decoder.
-    EXPECT_CALL(*decoder_, ProduceAudioSamples(_))
-        .WillRepeatedly(Invoke(this, &AudioRendererBaseTest::EnqueueCallback));
+    // Queue all reads from the decoder by default.
+    ON_CALL(*decoder_, Read(_))
+        .WillByDefault(Invoke(this, &AudioRendererBaseTest::SaveReadCallback));
 
     // Set up audio properties.
     ON_CALL(*decoder_, bits_per_channel())
@@ -78,337 +72,253 @@ class AudioRendererBaseTest : public ::testing::Test {
   }
 
   virtual ~AudioRendererBaseTest() {
-    // Expect a call into the subclass.
     EXPECT_CALL(*renderer_, OnStop());
     renderer_->Stop(NewExpectedClosure());
   }
 
-  MOCK_METHOD0(OnUnderflow, void());
+  MOCK_METHOD1(OnSeekComplete, void(PipelineStatus));
+  FilterStatusCB NewSeekCB() {
+    return base::Bind(&AudioRendererBaseTest::OnSeekComplete,
+                      base::Unretained(this));
+  }
 
+  MOCK_METHOD0(OnUnderflow, void());
   base::Closure NewUnderflowClosure() {
     return base::Bind(&AudioRendererBaseTest::OnUnderflow,
                       base::Unretained(this));
   }
 
-  scoped_refptr<DataBuffer> CreateBuffer(int data_size, uint8 value) {
-    scoped_refptr<DataBuffer> buffer(new DataBuffer(data_size));
-    buffer->SetDataSize(data_size);
-    memset(buffer->GetWritableData(), value, buffer->GetDataSize());
-    return buffer;
+  void Initialize() {
+    EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
+        .WillOnce(Return(true));
+    renderer_->Initialize(
+        decoder_, NewExpectedClosure(), NewUnderflowClosure());
   }
 
-  void WriteUntilNoPendingReads(int data_size, uint8 value,
-                                uint32* bytes_buffered) {
-    while (pending_reads_ > 0) {
-      --pending_reads_;
-      *bytes_buffered += data_size;
-      decoder_->ConsumeAudioSamplesForTest(CreateBuffer(data_size, value));
+  void Preroll() {
+    // Seek to trigger prerolling.
+    EXPECT_CALL(*decoder_, Read(_));
+    renderer_->Seek(base::TimeDelta(), NewSeekCB());
+
+    // Fill entire buffer to complete prerolling.
+    EXPECT_CALL(*this, OnSeekComplete(PIPELINE_OK));
+    DeliverRemainingAudio();
+  }
+
+  void Play() {
+    renderer_->Play(NewExpectedClosure());
+    renderer_->SetPlaybackRate(1.0f);
+  }
+
+  // Delivers |size| bytes with value kPlayingAudio to |renderer_|.
+  //
+  // There must be a pending read callback.
+  void FulfillPendingRead(size_t size) {
+    CHECK(!read_cb_.is_null());
+    scoped_refptr<DataBuffer> buffer(new DataBuffer(size));
+    buffer->SetDataSize(size);
+    memset(buffer->GetWritableData(), kPlayingAudio, buffer->GetDataSize());
+
+    AudioDecoder::ReadCB read_cb;
+    std::swap(read_cb, read_cb_);
+    read_cb.Run(buffer);
+  }
+
+  // Delivers an end of stream buffer to |renderer_|.
+  //
+  // There must be a pending read callback.
+  void DeliverEndOfStream() {
+    FulfillPendingRead(0);
+  }
+
+  // Delivers bytes until |renderer_|'s internal buffer is full and no longer
+  // has pending reads.
+  void DeliverRemainingAudio() {
+    CHECK(!read_cb_.is_null());
+    FulfillPendingRead(bytes_remaining_in_buffer());
+    CHECK(read_cb_.is_null());
+  }
+
+  // Attempts to consume |size| bytes from |renderer_|'s internal buffer,
+  // returning true if all |size| bytes were consumed, false if less than
+  // |size| bytes were consumed.
+  //
+  // |muted| is optional and if passed will get set if the byte value of
+  // the consumed data is muted audio.
+  bool ConsumeBufferedData(uint32 size, bool* muted) {
+    scoped_array<uint8> buffer(new uint8[size]);
+    uint32 bytes_read = renderer_->FillBuffer(buffer.get(), size,
+                                              base::TimeDelta(), true);
+    if (bytes_read > 0 && muted) {
+      *muted = (buffer[0] == kMutedAudio);
     }
+    return (bytes_read == size);
   }
 
-  void ConsumeBufferedData(uint32 data_size, uint8 expected_value,
-                           uint32* bytes_buffered) {
-    DCHECK(bytes_buffered);
-    DCHECK_GT(*bytes_buffered, 0u);
+  uint32 bytes_buffered() {
+    return renderer_->algorithm_->QueueSize();
+  }
 
-    base::TimeDelta playback_delay(base::TimeDelta::FromSeconds(1));
-    scoped_array<uint8> buffer(new uint8[data_size]);
-    while (*bytes_buffered > 0) {
-      EXPECT_EQ(data_size, renderer_->FillBuffer(buffer.get(), data_size,
-                                                 playback_delay, false));
-      EXPECT_EQ(expected_value, buffer[0]);
-      *bytes_buffered -= data_size;
+  uint32 buffer_capacity() {
+    return renderer_->algorithm_->QueueCapacity();
+  }
+
+  uint32 bytes_remaining_in_buffer() {
+    // This can happen if too much data was delivered, in which case the buffer
+    // will accept the data but not increase capacity.
+    if (bytes_buffered() > buffer_capacity()) {
+      return 0;
     }
+    return buffer_capacity() - bytes_buffered();
   }
-
-  void ExpectUnderflow(uint32 data_size, int checkpoint_value) {
-    scoped_array<uint8> buffer(new uint8[data_size]);
-    base::TimeDelta playback_delay(base::TimeDelta::FromSeconds(1));
-
-    EXPECT_CALL(*this, OnUnderflow());
-    EXPECT_CALL(*renderer_, CheckPoint(checkpoint_value));
-    EXPECT_EQ(0u, renderer_->FillBuffer(buffer.get(), data_size, playback_delay,
-                                        false));
-    renderer_->CheckPoint(checkpoint_value);
-  }
-
-
- protected:
-  static const size_t kMaxQueueSize;
 
   // Fixture members.
   scoped_refptr<MockAudioRendererBase> renderer_;
   scoped_refptr<MockAudioDecoder> decoder_;
   StrictMock<MockFilterHost> host_;
-
-  // Number of asynchronous read requests sent to |decoder_|.
-  size_t pending_reads_;
+  AudioDecoder::ReadCB read_cb_;
 
  private:
-  void EnqueueCallback(scoped_refptr<Buffer> buffer) {
-    ++pending_reads_;
+  void SaveReadCallback(const AudioDecoder::ReadCB& callback) {
+    CHECK(read_cb_.is_null()) << "Overlapping reads are not permitted";
+    read_cb_ = callback;
   }
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererBaseTest);
 };
 
-const size_t AudioRendererBaseTest::kMaxQueueSize = 1u;
-
 TEST_F(AudioRendererBaseTest, Initialize_Failed) {
-  InSequence s;
-
-  // Our subclass will fail when asked to initialize.
   EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
       .WillOnce(Return(false));
-
-  // We expect to receive an error.
   EXPECT_CALL(host_, SetError(PIPELINE_ERROR_INITIALIZATION_FAILED));
-
-  // Initialize, we expect to have no reads.
   renderer_->Initialize(decoder_, NewExpectedClosure(), NewUnderflowClosure());
-  EXPECT_EQ(0u, pending_reads_);
+
+  // We should have no reads.
+  EXPECT_TRUE(read_cb_.is_null());
 }
 
 TEST_F(AudioRendererBaseTest, Initialize_Successful) {
-  InSequence s;
-
-  // Then our subclass will be asked to initialize.
   EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
       .WillOnce(Return(true));
-
-  // Initialize, we shouldn't have any reads.
   renderer_->Initialize(decoder_, NewExpectedClosure(), NewUnderflowClosure());
 
-  EXPECT_EQ(0u, pending_reads_);
-
-  // Now seek to trigger prerolling, verifying the callback hasn't been
-  // executed yet.
-  EXPECT_CALL(*renderer_, CheckPoint(0));
-  renderer_->Seek(base::TimeDelta(), NewExpectedStatusCB(PIPELINE_OK));
-  EXPECT_EQ(kMaxQueueSize, pending_reads_);
-  renderer_->CheckPoint(0);
-
-  // Now satisfy the read requests.  Our callback should be executed after
-  // exiting this loop.
-  while (pending_reads_) {
-    scoped_refptr<DataBuffer> buffer(new DataBuffer(1024));
-    buffer->SetDataSize(1024);
-    --pending_reads_;
-    decoder_->ConsumeAudioSamplesForTest(buffer);
-  }
+  // We should have no reads.
+  EXPECT_TRUE(read_cb_.is_null());
 }
 
-TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
-  InSequence s;
+TEST_F(AudioRendererBaseTest, Preroll) {
+  Initialize();
+  Preroll();
+}
 
-  // Then our subclass will be asked to initialize.
-  EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
-      .WillOnce(Return(true));
+TEST_F(AudioRendererBaseTest, Play) {
+  Initialize();
+  Preroll();
+  Play();
 
-  // Initialize, we shouldn't have any reads.
-  renderer_->Initialize(decoder_, NewExpectedClosure(), NewUnderflowClosure());
-  EXPECT_EQ(0u, pending_reads_);
+  // Drain internal buffer, we should have a pending read.
+  EXPECT_CALL(*decoder_, Read(_));
+  EXPECT_TRUE(ConsumeBufferedData(bytes_buffered(), NULL));
+}
 
-  // Now seek to trigger prerolling, verifying the callback hasn't been
-  // executed yet.
-  EXPECT_CALL(*renderer_, CheckPoint(0));
-  renderer_->Seek(base::TimeDelta(), NewExpectedStatusCB(PIPELINE_OK));
-  EXPECT_EQ(kMaxQueueSize, pending_reads_);
-  renderer_->CheckPoint(0);
+TEST_F(AudioRendererBaseTest, EndOfStream) {
+  Initialize();
+  Preroll();
+  Play();
 
-  // Now satisfy the read requests.  Our callback should be executed after
-  // exiting this loop.
-  const uint32 kDataSize = 1024;
-  uint32 bytes_buffered = 0;
+  // Drain internal buffer, we should have a pending read.
+  EXPECT_CALL(*decoder_, Read(_));
+  EXPECT_TRUE(ConsumeBufferedData(bytes_buffered(), NULL));
 
-  WriteUntilNoPendingReads(kDataSize, 1, &bytes_buffered);
-
-  // Then set the renderer to play state.
-  renderer_->Play(NewExpectedClosure());
-  renderer_->SetPlaybackRate(1.0f);
-  EXPECT_EQ(1.0f, renderer_->GetPlaybackRate());
-
-  // Then flush the data in the renderer by reading from it.
-  uint8 buffer[kDataSize];
-  for (size_t i = 0; i < kMaxQueueSize; ++i) {
-    EXPECT_EQ(kDataSize,
-              renderer_->FillBuffer(buffer, kDataSize,
-                                    base::TimeDelta(), true));
-    bytes_buffered -= kDataSize;
-  }
-
-  // Make sure the read request queue is full.
-  EXPECT_EQ(kMaxQueueSize, pending_reads_);
-
-  // Fulfill the read with an end-of-stream packet.
-  scoped_refptr<DataBuffer> last_buffer(new DataBuffer(0));
-  decoder_->ConsumeAudioSamplesForTest(last_buffer);
-  --pending_reads_;
-
-  // We shouldn't report ended until all data has been flushed out.
+  // Fulfill the read with an end-of-stream packet, we shouldn't report ended
+  // nor have a read until we drain the internal buffer.
+  DeliverEndOfStream();
   EXPECT_FALSE(renderer_->HasEnded());
 
-  // We should have one less read request in the queue.
-  EXPECT_EQ(kMaxQueueSize - 1, pending_reads_);
-
-  // Flush the entire internal buffer and verify NotifyEnded() isn't called
-  // right away.
-  EXPECT_CALL(*renderer_, CheckPoint(1));
-  EXPECT_EQ(0u, bytes_buffered % kDataSize);
-  while (bytes_buffered > 0) {
-    EXPECT_EQ(kDataSize,
-              renderer_->FillBuffer(buffer, kDataSize,
-                                    base::TimeDelta(), true));
-    bytes_buffered -= kDataSize;
-  }
-
-  // Although we've emptied the buffer, we don't consider ourselves ended until
-  // we request another buffer.  This way we know the last of the audio has
-  // played.
-  EXPECT_FALSE(renderer_->HasEnded());
-  renderer_->CheckPoint(1);
-
-  // Do an additional read to trigger NotifyEnded().
+  // Drain internal buffer, now we should report ended.
   EXPECT_CALL(host_, NotifyEnded());
-  EXPECT_EQ(0u, renderer_->FillBuffer(buffer, kDataSize,
-                                      base::TimeDelta(), true));
-
-  // We should now report ended.
+  EXPECT_TRUE(ConsumeBufferedData(bytes_buffered(), NULL));
   EXPECT_TRUE(renderer_->HasEnded());
-
-  // Further reads should return muted audio and not notify any more.
-  EXPECT_EQ(0u, renderer_->FillBuffer(buffer, kDataSize,
-                                      base::TimeDelta(), true));
 }
 
 TEST_F(AudioRendererBaseTest, Underflow) {
-  InSequence s;
+  Initialize();
+  Preroll();
+  Play();
 
-  base::TimeDelta playback_delay(base::TimeDelta::FromSeconds(1));
+  // Drain internal buffer, we should have a pending read.
+  EXPECT_CALL(*decoder_, Read(_));
+  EXPECT_TRUE(ConsumeBufferedData(bytes_buffered(), NULL));
 
-  // Then our subclass will be asked to initialize.
-  EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
-      .WillOnce(Return(true));
-
-  // Initialize, we shouldn't have any reads.
-  renderer_->Initialize(decoder_, NewExpectedClosure(), NewUnderflowClosure());
-  EXPECT_EQ(0u, pending_reads_);
-
-  // Now seek to trigger prerolling, verifying the callback hasn't been
-  // executed yet.
-  EXPECT_CALL(*renderer_, CheckPoint(0));
-  renderer_->Seek(base::TimeDelta(), NewExpectedStatusCB(PIPELINE_OK));
-  EXPECT_EQ(kMaxQueueSize, pending_reads_);
-  renderer_->CheckPoint(0);
-
-  // Now satisfy the read requests.  Our callback should be executed after
-  // exiting this loop.
-  const uint32 kDataSize = 1024;
-  uint32 bytes_buffered = 0;
-
-  WriteUntilNoPendingReads(kDataSize, 1, &bytes_buffered);
-
-  uint32 bytes_for_preroll = bytes_buffered;
-
-  // Then set the renderer to play state.
-  renderer_->Play(NewExpectedClosure());
-  renderer_->SetPlaybackRate(1.0f);
-  EXPECT_EQ(1.0f, renderer_->GetPlaybackRate());
-
-  // Consume all of the data passed into the renderer.
-  ConsumeBufferedData(kDataSize, 1, &bytes_buffered);
-
-  // Make sure there are read requests pending.
-  EXPECT_GT(pending_reads_, 0u);
-
-  // Verify the next FillBuffer() call triggers calls the underflow callback
-  // since the queue is empty.
-  ExpectUnderflow(kDataSize, 1);
-
-  // Verify that zeroed out buffers are being returned during the underflow.
-  uint32 zeros_to_read = 5 * kDataSize;
-  ConsumeBufferedData(kDataSize, 0, &zeros_to_read);
+  // Verify the next FillBuffer() call triggers the underflow callback
+  // since the decoder hasn't delivered any data after it was drained.
+  const size_t kDataSize = 1024;
+  EXPECT_CALL(*this, OnUnderflow());
+  EXPECT_FALSE(ConsumeBufferedData(kDataSize, NULL));
 
   renderer_->ResumeAfterUnderflow(false);
 
-  // Verify we are still getting zeroed out buffers since no new data has been
-  // pushed to the renderer.
-  zeros_to_read = 5 * kDataSize;
-  ConsumeBufferedData(kDataSize, 0, &zeros_to_read);
+  // Verify after resuming that we're still not getting data.
+  //
+  // NOTE: FillBuffer() satisfies the read but returns muted audio, which
+  // is crazy http://crbug.com/106600
+  bool muted = false;
+  EXPECT_EQ(0u, bytes_buffered());
+  EXPECT_TRUE(ConsumeBufferedData(kDataSize, &muted));
+  EXPECT_TRUE(muted);
 
-  // Satisfy all pending read requests.
-  WriteUntilNoPendingReads(kDataSize, 2, &bytes_buffered);
-
-  EXPECT_GE(bytes_buffered, bytes_for_preroll);
-
-  // Verify that we are now getting the new data.
-  ConsumeBufferedData(kDataSize, 2, &bytes_buffered);
+  // Deliver data, we should get non-muted audio.
+  DeliverRemainingAudio();
+  EXPECT_CALL(*decoder_, Read(_));
+  EXPECT_TRUE(ConsumeBufferedData(kDataSize, &muted));
+  EXPECT_FALSE(muted);
 }
 
-
 TEST_F(AudioRendererBaseTest, Underflow_EndOfStream) {
-  InSequence s;
+  Initialize();
+  Preroll();
+  Play();
 
-  base::TimeDelta playback_delay(base::TimeDelta::FromSeconds(1));
+  // Drain internal buffer, we should have a pending read.
+  EXPECT_CALL(*decoder_, Read(_));
+  EXPECT_TRUE(ConsumeBufferedData(bytes_buffered(), NULL));
 
-  // Then our subclass will be asked to initialize.
-  EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
-      .WillOnce(Return(true));
+  // Verify the next FillBuffer() call triggers the underflow callback
+  // since the decoder hasn't delivered any data after it was drained.
+  const size_t kDataSize = 1024;
+  EXPECT_CALL(*this, OnUnderflow());
+  EXPECT_FALSE(ConsumeBufferedData(kDataSize, NULL));
 
-  // Initialize, we shouldn't have any reads.
-  renderer_->Initialize(decoder_, NewExpectedClosure(), NewUnderflowClosure());
-  EXPECT_EQ(0u, pending_reads_);
+  // Deliver a little bit of data.
+  EXPECT_CALL(*decoder_, Read(_));
+  FulfillPendingRead(kDataSize);
 
-  // Now seek to trigger prerolling, verifying the callback hasn't been
-  // executed yet.
-  EXPECT_CALL(*renderer_, CheckPoint(0));
-  renderer_->Seek(base::TimeDelta(), NewExpectedStatusCB(PIPELINE_OK));
-  EXPECT_EQ(kMaxQueueSize, pending_reads_);
-  renderer_->CheckPoint(0);
+  // Verify we're getting muted audio during underflow.
+  //
+  // NOTE: FillBuffer() satisfies the read but returns muted audio, which
+  // is crazy http://crbug.com/106600
+  bool muted = false;
+  EXPECT_EQ(kDataSize, bytes_buffered());
+  EXPECT_TRUE(ConsumeBufferedData(kDataSize, &muted));
+  EXPECT_TRUE(muted);
 
-  // Now satisfy the read requests.  Our callback should be executed after
-  // exiting this loop.
-  const uint32 kDataSize = 1024;
-  uint32 bytes_buffered = 0;
+  // Now deliver end of stream, we should get our little bit of data back.
+  DeliverEndOfStream();
+  EXPECT_CALL(*decoder_, Read(_));
+  EXPECT_EQ(kDataSize, bytes_buffered());
+  EXPECT_TRUE(ConsumeBufferedData(kDataSize, &muted));
+  EXPECT_FALSE(muted);
 
-  WriteUntilNoPendingReads(kDataSize, 1, &bytes_buffered);
-
-  // Then set the renderer to play state.
-  renderer_->Play(NewExpectedClosure());
-  renderer_->SetPlaybackRate(1.0f);
-  EXPECT_EQ(1.0f, renderer_->GetPlaybackRate());
-
-  // Consume all of the data passed into the renderer.
-  ConsumeBufferedData(kDataSize, 1, &bytes_buffered);
-
-  // Make sure there are read requests pending.
-  EXPECT_GT(pending_reads_, 0u);
-
-  // Verify the next FillBuffer() call triggers calls the underflow callback
-  // since the queue is empty.
-  ExpectUnderflow(kDataSize, 1);
-
-  DCHECK_GE(pending_reads_, 2u);
-
-  // Write a buffer.
-  bytes_buffered += kDataSize;
-  --pending_reads_;
-  decoder_->ConsumeAudioSamplesForTest(CreateBuffer(kDataSize, 3));
-
-  // Verify we are getting zeroed out buffers since we haven't pushed enough
-  // data to satisfy preroll.
-  uint32 zeros_to_read = 5 * kDataSize;
-  ConsumeBufferedData(kDataSize, 0, &zeros_to_read);
-
-  // Send end of stream buffers for all pending reads.
-  while (pending_reads_ > 0) {
-    scoped_refptr<DataBuffer> buffer(new DataBuffer(0));
-    --pending_reads_;
-    decoder_->ConsumeAudioSamplesForTest(buffer);
-  }
-
-  // Verify that we are now getting the new data.
-  ConsumeBufferedData(kDataSize, 3, &bytes_buffered);
+  // Deliver another end of stream buffer and attempt to read to make sure
+  // we're truly at the end of stream.
+  //
+  // TODO(scherkus): fix AudioRendererBase and AudioRendererAlgorithmBase to
+  // stop reading after receiving an end of stream buffer. It should have also
+  // called NotifyEnded() http://crbug.com/106641
+  DeliverEndOfStream();
+  EXPECT_CALL(host_, NotifyEnded());
+  EXPECT_FALSE(ConsumeBufferedData(kDataSize, &muted));
+  EXPECT_FALSE(muted);
 }
 
 }  // namespace media

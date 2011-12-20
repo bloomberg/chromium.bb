@@ -57,9 +57,8 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   // this time, such as stopping any running threads.
   virtual void OnStop() = 0;
 
-  // Called when a AudioDecoder completes decoding and decrements
-  // |pending_reads_|.
-  virtual void ConsumeAudioSamples(scoped_refptr<Buffer> buffer_in);
+  // Callback from the audio decoder delivering decoded audio samples.
+  void DecodedAudioReady(scoped_refptr<Buffer> buffer);
 
   // Fills the given buffer with audio data by delegating to its |algorithm_|.
   // FillBuffer() also takes care of updating the clock. Returns the number of
@@ -92,6 +91,8 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   virtual float GetPlaybackRate();
 
  private:
+  friend class AudioRendererBaseTest;
+
   // Helper method that schedules an asynchronous read from the decoder and
   // increments |pending_reads_|.
   //
@@ -119,16 +120,12 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   };
   State state_;
 
+  // Keep track of our outstanding read to |decoder_|.
+  bool pending_read_;
+
   // Keeps track of whether we received and rendered the end of stream buffer.
   bool recieved_end_of_stream_;
   bool rendered_end_of_stream_;
-
-  // Keeps track of our pending reads.  We *must* have no pending reads before
-  // executing the pause callback, otherwise we breach the contract that all
-  // filters are idling.
-  //
-  // We use size_t since we compare against std::deque::size().
-  size_t pending_reads_;
 
   // Audio time at end of last call to FillBuffer().
   // TODO(ralphl): Update this value after seeking.
@@ -141,6 +138,8 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   base::Closure underflow_callback_;
 
   base::TimeDelta seek_timestamp_;
+
+  AudioDecoder::ReadCB read_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererBase);
 };
