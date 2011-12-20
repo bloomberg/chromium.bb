@@ -11,7 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "content/common/child_process.h"
 #include "content/common/child_process_messages.h"
-#include "content/common/indexed_db_key.h"
+#include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/utility_messages.h"
 #include "content/common/webkitplatformsupport_impl.h"
 #include "content/public/utility/content_utility_client.h"
@@ -161,4 +161,3 @@ void UtilityThreadImpl::OnLoadPlugins(
   ReleaseProcessIfNeeded();
 }
 #endif
-

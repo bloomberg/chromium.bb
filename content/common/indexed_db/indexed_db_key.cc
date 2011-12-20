@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/indexed_db_key.h"
+#include "content/common/indexed_db/indexed_db_key.h"
 
 #include "base/logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"

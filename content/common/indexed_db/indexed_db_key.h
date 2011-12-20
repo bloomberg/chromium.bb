@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_INDEXED_DB_KEY_H_
-#define CONTENT_COMMON_INDEXED_DB_KEY_H_
+#ifndef CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_H_
+#define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_H_
 #pragma once
 
 #include <vector>
@@ -42,4 +42,4 @@ class CONTENT_EXPORT IndexedDBKey {
   double number_;
 };
 
-#endif  // CONTENT_COMMON_INDEXED_DB_KEY_H_
+#endif  // CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_H_

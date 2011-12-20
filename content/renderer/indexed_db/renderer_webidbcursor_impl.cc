@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/renderer_webidbcursor_impl.h"
+#include "content/renderer/indexed_db/renderer_webidbcursor_impl.h"
 
-#include "content/common/indexed_db_messages.h"
-#include "content/renderer/indexed_db_dispatcher.h"
+#include "content/common/indexed_db/indexed_db_messages.h"
+#include "content/renderer/indexed_db/indexed_db_dispatcher.h"
 #include "content/renderer/render_thread_impl.h"
 
 using WebKit::WebExceptionCode;

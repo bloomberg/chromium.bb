@@ -11,7 +11,7 @@
 #include "content/browser/in_process_webkit/indexed_db_database_callbacks.h"
 #include "content/browser/in_process_webkit/indexed_db_transaction_callbacks.h"
 #include "content/browser/renderer_host/render_message_filter.h"
-#include "content/common/indexed_db_messages.h"
+#include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"

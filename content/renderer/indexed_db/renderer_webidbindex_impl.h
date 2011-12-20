@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDERER_WEBIDBINDEX_IMPL_H_
-#define CONTENT_RENDERER_RENDERER_WEBIDBINDEX_IMPL_H_
+#ifndef CONTENT_RENDERER_INDEXED_DB_RENDERER_WEBIDBINDEX_IMPL_H_
+#define CONTENT_RENDERER_INDEXED_DB_RENDERER_WEBIDBINDEX_IMPL_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -48,4 +48,4 @@ class RendererWebIDBIndexImpl : public WebKit::WebIDBIndex {
   int32 idb_index_id_;
 };
 
-#endif  // CONTENT_RENDERER_RENDERER_WEBIDBINDEX_IMPL_H_
+#endif  // CONTENT_RENDERER_INDEXED_DB_RENDERER_WEBIDBINDEX_IMPL_H_

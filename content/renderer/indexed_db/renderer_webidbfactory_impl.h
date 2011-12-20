@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDERER_WEBIDBFACTORY_IMPL_H_
-#define CONTENT_RENDERER_RENDERER_WEBIDBFACTORY_IMPL_H_
+#ifndef CONTENT_RENDERER_INDEXED_DB_RENDERER_WEBIDBFACTORY_IMPL_H_
+#define CONTENT_RENDERER_INDEXED_DB_RENDERER_WEBIDBFACTORY_IMPL_H_
 #pragma once
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
@@ -42,4 +42,4 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
       const WebKit::WebString& data_dir);
 };
 
-#endif  // CONTENT_RENDERER_RENDERER_WEBIDBFACTORY_IMPL_H_
+#endif  // CONTENT_RENDERER_INDEXED_DB_RENDERER_WEBIDBFACTORY_IMPL_H_

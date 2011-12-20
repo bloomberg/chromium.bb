@@ -8,8 +8,8 @@
 #include "base/lazy_instance.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/browser/utility_process_host.h"
-#include "content/common/indexed_db_key.h"
-#include "content/common/indexed_db_messages.h"
+#include "content/common/indexed_db/indexed_db_key.h"
+#include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/common/utility_messages.h"
 #include "content/public/common/serialized_script_value.h"
 

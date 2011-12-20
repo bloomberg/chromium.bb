@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/indexed_db_message_filter.h"
+#include "content/renderer/indexed_db/indexed_db_message_filter.h"
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "content/common/indexed_db_messages.h"
-#include "content/renderer/indexed_db_dispatcher.h"
+#include "content/common/indexed_db/indexed_db_messages.h"
+#include "content/renderer/indexed_db/indexed_db_dispatcher.h"
 #include "webkit/glue/worker_task_runner.h"
 
 using webkit_glue::WorkerTaskRunner;

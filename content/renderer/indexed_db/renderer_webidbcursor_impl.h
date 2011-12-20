@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDERER_WEBIDBCURSOR_IMPL_H_
-#define CONTENT_RENDERER_RENDERER_WEBIDBCURSOR_IMPL_H_
+#ifndef CONTENT_RENDERER_INDEXED_DB_RENDERER_WEBIDBCURSOR_IMPL_H_
+#define CONTENT_RENDERER_INDEXED_DB_RENDERER_WEBIDBCURSOR_IMPL_H_
 
 #include <deque>
 
 #include "base/basictypes.h"
-#include "content/common/indexed_db_key.h"
+#include "content/common/indexed_db/indexed_db_key.h"
 #include "content/public/common/serialized_script_value.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
@@ -72,4 +72,4 @@ class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
   enum { kMaxPrefetchAmount = 100 };
 };
 
-#endif  // CONTENT_RENDERER_RENDERER_WEBIDBCURSOR_IMPL_H_
+#endif  // CONTENT_RENDERER_INDEXED_DB_RENDERER_WEBIDBCURSOR_IMPL_H_

@@ -4,7 +4,7 @@
 
 #include "content/browser/in_process_webkit/indexed_db_callbacks.h"
 
-#include "content/common/indexed_db_messages.h"
+#include "content/common/indexed_db/indexed_db_messages.h"
 #include "webkit/quota/quota_manager.h"
 
 IndexedDBCallbacksBase::IndexedDBCallbacksBase(

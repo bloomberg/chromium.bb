@@ -5,7 +5,7 @@
 #include "content/browser/in_process_webkit/indexed_db_transaction_callbacks.h"
 
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
-#include "content/common/indexed_db_messages.h"
+#include "content/common/indexed_db/indexed_db_messages.h"
 
 IndexedDBTransactionCallbacks::IndexedDBTransactionCallbacks(
     IndexedDBDispatcherHost* dispatcher_host,
