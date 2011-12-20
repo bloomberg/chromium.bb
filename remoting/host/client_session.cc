@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/message_loop_proxy.h"
-#include "base/task.h"
 #include "remoting/host/capturer.h"
 #include "remoting/proto/event.pb.h"
 

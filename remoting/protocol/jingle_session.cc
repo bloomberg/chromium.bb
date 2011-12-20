@@ -41,7 +41,7 @@ JingleSession::JingleSession(
       closing_(false),
       cricket_session_(cricket_session),
       config_set_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   jid_ = cricket_session_->remote_name();
   cricket_session_->SignalState.connect(this, &JingleSession::OnSessionState);
   cricket_session_->SignalError.connect(this, &JingleSession::OnSessionError);
@@ -286,12 +286,15 @@ void JingleSession::OnInitiate() {
     // method.
     // TODO(sergeyu): Add set_incoming_only() in TransportChannelProxy.
     jingle_session_manager_->message_loop_->PostTask(
-        FROM_HERE, task_factory_.NewRunnableMethod(
-            &JingleSession::SetState, CONNECTING));
+        FROM_HERE,
+        base::Bind(&JingleSession::SetState,
+                   weak_factory_.GetWeakPtr(),
+                   CONNECTING));
   } else {
     jingle_session_manager_->message_loop_->PostTask(
-        FROM_HERE, task_factory_.NewRunnableMethod(
-            &JingleSession::AcceptConnection));
+        FROM_HERE,
+        base::Bind(&JingleSession::AcceptConnection,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 

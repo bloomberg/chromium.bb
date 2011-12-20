@@ -14,7 +14,6 @@
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task.h"
 #include "base/threading/thread.h"
 #include "media/base/media.h"
 #include "ppapi/cpp/completion_callback.h"

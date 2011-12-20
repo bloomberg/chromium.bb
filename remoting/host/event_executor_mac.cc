@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "remoting/host/capturer.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/message_decoder.h"

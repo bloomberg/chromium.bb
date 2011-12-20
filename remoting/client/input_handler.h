@@ -8,7 +8,6 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "base/task.h"
 #include "remoting/proto/event.pb.h"
 
 namespace remoting {

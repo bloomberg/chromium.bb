@@ -7,12 +7,12 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "base/sys_info.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/proto/control.pb.h"

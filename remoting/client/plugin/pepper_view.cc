@@ -48,7 +48,7 @@ PepperView::PepperView(ChromotingInstance* instance, ClientContext* context)
     flush_blocked_(false),
     is_static_fill_(false),
     static_fill_color_(0),
-    ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
+    ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 PepperView::~PepperView() {
@@ -61,7 +61,7 @@ bool PepperView::Initialize() {
 void PepperView::TearDown() {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
-  task_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void PepperView::Paint() {
@@ -178,8 +178,10 @@ void PepperView::BlankRect(pp::ImageData& image_data, const pp::Rect& rect) {
 }
 
 void PepperView::FlushGraphics(base::Time paint_start) {
-  scoped_ptr<Task> task(
-      task_factory_.NewRunnableMethod(&PepperView::OnPaintDone, paint_start));
+  scoped_ptr<base::Closure> task(
+      new base::Closure(
+          base::Bind(&PepperView::OnPaintDone, weak_factory_.GetWeakPtr(),
+                     paint_start)));
 
   // Flag needs to be set here in order to get a proper error code for Flush().
   // Otherwise Flush() will always return PP_OK_COMPLETIONPENDING and the error
@@ -188,7 +190,7 @@ void PepperView::FlushGraphics(base::Time paint_start) {
   // Note that we can also handle this by providing an actual callback which
   // takes the result code. Right now everything goes to the task that doesn't
   // result value.
-  pp::CompletionCallback pp_callback(&CompletionCallbackTaskAdapter,
+  pp::CompletionCallback pp_callback(&CompletionCallbackClosureAdapter,
                                      task.get(),
                                      PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
   int error = graphics2d_.Flush(pp_callback);

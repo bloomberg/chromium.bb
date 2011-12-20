@@ -25,7 +25,7 @@ FakeSignalStrategy::FakeSignalStrategy(const std::string& jid)
     : jid_(jid),
       peer_(NULL),
       last_id_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 
 }
 
@@ -85,8 +85,8 @@ std::string FakeSignalStrategy::GetNextId() {
 void FakeSignalStrategy::OnIncomingMessage(buzz::XmlElement* stanza) {
   pending_messages_.push(stanza);
   MessageLoop::current()->PostTask(
-      FROM_HERE, task_factory_.NewRunnableMethod(
-          &FakeSignalStrategy::DeliverIncomingMessages));
+      FROM_HERE, base::Bind(&FakeSignalStrategy::DeliverIncomingMessages,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void FakeSignalStrategy::DeliverIncomingMessages() {

@@ -9,7 +9,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
 
 namespace crypto {
 class RSAPrivateKey;

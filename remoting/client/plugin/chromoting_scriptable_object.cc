@@ -4,6 +4,7 @@
 
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 // TODO(wez): Remove this when crbug.com/86353 is complete.
@@ -44,8 +45,7 @@ const char kRoundTripLatencyAttribute[] = "roundTripLatency";
 ChromotingScriptableObject::ChromotingScriptableObject(
     ChromotingInstance* instance, base::MessageLoopProxy* plugin_message_loop)
     : instance_(instance),
-      plugin_message_loop_(plugin_message_loop),
-      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
+      plugin_message_loop_(plugin_message_loop) {
 }
 
 ChromotingScriptableObject::~ChromotingScriptableObject() {
@@ -283,8 +283,8 @@ void ChromotingScriptableObject::AttachXmppProxy(PepperXmppProxy* xmpp_proxy) {
 
 void ChromotingScriptableObject::SendIq(const std::string& message_xml) {
   plugin_message_loop_->PostTask(
-      FROM_HERE, task_factory_.NewRunnableMethod(
-          &ChromotingScriptableObject::DoSendIq, message_xml));
+      FROM_HERE, base::Bind(
+          &ChromotingScriptableObject::DoSendIq, AsWeakPtr(), message_xml));
 }
 
 void ChromotingScriptableObject::AddAttribute(const std::string& name,
@@ -302,15 +302,16 @@ void ChromotingScriptableObject::AddMethod(const std::string& name,
 void ChromotingScriptableObject::SignalConnectionInfoChange(int status,
                                                             int error) {
   plugin_message_loop_->PostTask(
-      FROM_HERE, task_factory_.NewRunnableMethod(
+      FROM_HERE, base::Bind(
           &ChromotingScriptableObject::DoSignalConnectionInfoChange,
-          status, error));
+          AsWeakPtr(), status, error));
 }
 
 void ChromotingScriptableObject::SignalDesktopSizeChange() {
   plugin_message_loop_->PostTask(
-      FROM_HERE, task_factory_.NewRunnableMethod(
-          &ChromotingScriptableObject::DoSignalDesktopSizeChange));
+      FROM_HERE, base::Bind(
+          &ChromotingScriptableObject::DoSignalDesktopSizeChange,
+          AsWeakPtr()));
 }
 
 void ChromotingScriptableObject::DoSignalConnectionInfoChange(int status,

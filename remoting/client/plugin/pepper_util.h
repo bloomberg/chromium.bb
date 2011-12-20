@@ -6,22 +6,18 @@
 #define REMOTING_CLIENT_PLUGIN_PLUGIN_UTIL_H_
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 
 #include "ppapi/cpp/completion_callback.h"
 
-class Task;
-
 namespace remoting {
 
-// Function for adapting a Chromium style Task into a
-// PP_CompletionCallback friendly function.  The Task object should be passed
-// as |user_data|.  This function will invoke Task::Run() on |user_data| when
-// called, and then delete |user_data|.
-void CompletionCallbackTaskAdapter(void* user_data, int32_t not_used);
-
-// Converts a Task* to a pp::CompletionCallback suitable for use with ppapi C++
-// APIs that require a pp::CompletionCallback.  Takes ownership of |task|.
-pp::CompletionCallback TaskToCompletionCallback(Task* task);
+// Function for adapting a Chromium base::Closure to a PP_CompletionCallback
+// friendly function.  The base::Closure object should be a dynamically
+// allocated copy of the result from base::Bind(). It should be passed as
+// |user_data|.  This function will invoke base::Closure::Run() on
+// |user_data| when called, and then delete |user_data|.
+void CompletionCallbackClosureAdapter(void* user_data, int32_t not_used);
 
 }  // namespace remoting
 

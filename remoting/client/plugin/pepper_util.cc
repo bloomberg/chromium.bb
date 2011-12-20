@@ -4,20 +4,16 @@
 
 #include "remoting/client/plugin/pepper_util.h"
 
-#include "base/task.h"
+#include "base/callback.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/cpp/module.h"
 
 namespace remoting {
 
-void CompletionCallbackTaskAdapter(void* user_data, int32_t not_used) {
-  Task* task = reinterpret_cast<Task*>(user_data);
-  task->Run();
-  delete task;
-}
-
-pp::CompletionCallback TaskToCompletionCallback(Task* task) {
-  return pp::CompletionCallback(&CompletionCallbackTaskAdapter, task);
+void CompletionCallbackClosureAdapter(void* user_data, int32_t not_used) {
+  base::Closure* closure = reinterpret_cast<base::Closure*>(user_data);
+  closure->Run();
+  delete closure;
 }
 
 }  // namespace remoting

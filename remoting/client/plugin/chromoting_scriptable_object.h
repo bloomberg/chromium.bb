@@ -102,7 +102,6 @@
 #include <string>
 #include <vector>
 
-#include "base/task.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/var.h"
@@ -235,7 +234,6 @@ class ChromotingScriptableObject
   ChromotingInstance* instance_;
 
   scoped_refptr<base::MessageLoopProxy> plugin_message_loop_;
-  ScopedRunnableMethodFactory<ChromotingScriptableObject> task_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingScriptableObject);
 };

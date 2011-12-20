@@ -14,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "remoting/proto/internal.pb.h"
 
 namespace remoting {

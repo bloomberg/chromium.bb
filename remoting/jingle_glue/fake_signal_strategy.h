@@ -8,7 +8,7 @@
 #include <queue>
 #include <string>
 
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/signal_strategy.h"
@@ -45,7 +45,7 @@ class FakeSignalStrategy : public SignalStrategy,
 
   std::queue<buzz::XmlElement*> pending_messages_;
 
-  ScopedRunnableMethodFactory<FakeSignalStrategy> task_factory_;
+  base::WeakPtrFactory<FakeSignalStrategy> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSignalStrategy);
 };

@@ -5,8 +5,8 @@
 #ifndef REMOTING_CLIENT_RECTANGLE_UPDATE_DECODER_H_
 #define REMOTING_CLIENT_RECTANGLE_UPDATE_DECODER_H_
 
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
 #include "media/base/video_frame.h"
 #include "remoting/base/decoder.h"
 

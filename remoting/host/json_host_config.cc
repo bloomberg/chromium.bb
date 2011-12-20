@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
-#include "base/task.h"
 #include "base/values.h"
 
 namespace remoting {

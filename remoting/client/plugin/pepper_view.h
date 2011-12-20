@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "media/base/video_frame.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/point.h"
@@ -103,7 +103,7 @@ class PepperView : public ChromotingView,
   bool is_static_fill_;
   uint32 static_fill_color_;
 
-  ScopedRunnableMethodFactory<PepperView> task_factory_;
+  base::WeakPtrFactory<PepperView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperView);
 };

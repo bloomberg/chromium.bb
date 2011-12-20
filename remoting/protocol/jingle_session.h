@@ -145,7 +145,7 @@ class JingleSession : public protocol::Session,
   // the object.
   std::string terminate_reason_;
 
-  ScopedRunnableMethodFactory<JingleSession> task_factory_;
+  base::WeakPtrFactory<JingleSession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleSession);
 };

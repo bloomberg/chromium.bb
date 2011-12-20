@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "remoting/base/base_mock_objects.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/proto/video.pb.h"
