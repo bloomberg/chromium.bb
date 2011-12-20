@@ -295,7 +295,7 @@ function updateControlsWithSelectedPrinterCapabilities() {
         'printerDefaultDuplexValue': copiesSettings.UNKNOWN_DUPLEX_MODE,
         'disableCopiesOption': true});
     if (cr.isChromeOS && selectedValue == PRINT_WITH_CLOUD_PRINT)
-      sendPrintDocumentRequest();
+      requestToPrintDocument();
   } else {
     // This message will call back to 'updateWithPrinterCapabilities'
     // function.
