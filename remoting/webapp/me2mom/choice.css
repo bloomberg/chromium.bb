@@ -145,14 +145,25 @@ label {
 }
 
 .information-box {
-  background-color: #f9e9be;
-  border: 1px solid #cacaca;
-  bottom: 8px;
-  color: black;
-  padding: 20px;
-  position: absolute;
+  background-color: #f9edbe;
+  border: 1px solid #f0c36d;
+  -webkit-border-radius: 2px;
+  -webkit-box-shadow: 0px 2px 4px rgba(0,0,0,0.2);
+  color: #222;
+  padding: 8px 16px;
   text-align: center;
-  width: 600px; /* body width - 2*padding */
+  font-size: 12px;
+}
+
+.information-box-centerer {
+  width: 100%;
+  bottom: 8px;
+  position: absolute;
+  display: -webkit-box;
+}
+
+.information-box-padding {
+  -webkit-box-flex: 1;
 }
 
 .message {

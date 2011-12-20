@@ -276,16 +276,18 @@ found in the LICENSE file.
                   i18n-content="CANCEL">
           </button>
         </div> <!-- waiting-footer -->
-
-        <div id="nat-box-container" hidden>
-          <div class="information-box"
-               i18n-content="WARNING_NAT_DISABLED"
-               data-ui-mode="host.waiting-for-code host.waiting-for-connection">
-          </div>
-        </div> <!-- nat-box-container -->
       </footer>
 
     </div> <!-- main -->
+
+    <div id="nat-box-container" class="information-box-centerer" hidden>
+      <div class="information-box-padding"></div>
+      <div class="information-box"
+           i18n-content="WARNING_NAT_DISABLED"
+           data-ui-mode="host.waiting-for-code host.waiting-for-connection">
+      </div>
+      <div class="information-box-padding"></div>
+    </div> <!-- nat-box-container -->
 
     <div id="session-mode" data-ui-mode="in-session client" hidden>
     </div> <!-- session-mode -->
