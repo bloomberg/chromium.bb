@@ -282,9 +282,16 @@ TEST_PPAPI_OUT_OF_PROCESS(Broker)
 TEST_PPAPI_IN_PROCESS(Core)
 TEST_PPAPI_OUT_OF_PROCESS(Core)
 
-TEST_PPAPI_IN_PROCESS(CursorControl)
-TEST_PPAPI_OUT_OF_PROCESS(CursorControl)
-TEST_PPAPI_NACL_VIA_HTTP(CursorControl)
+// Times out on Linux. http://crbug.com/108180
+#if defined(OS_LINUX)
+#define MAYBE_CursorControl DISABLED_CursorControl
+#else
+#define MAYBE_CursorControl CursorControl
+#endif
+
+TEST_PPAPI_IN_PROCESS(MAYBE_CursorControl)
+TEST_PPAPI_OUT_OF_PROCESS(MAYBE_CursorControl)
+TEST_PPAPI_NACL_VIA_HTTP(MAYBE_CursorControl)
 
 TEST_PPAPI_IN_PROCESS(InputEvent)
 TEST_PPAPI_OUT_OF_PROCESS(InputEvent)
@@ -505,9 +512,9 @@ TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileSystem)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileSystem)
 TEST_PPAPI_NACL_VIA_HTTP(FileSystem)
 
-// http://crbug.com/96767 and 104384 for aura:
-// reaches NOTIMPLEMENTED checks.
-#if defined(OS_MACOSX) || defined(USE_AURA)
+// http://crbug.com/96767 and 104384 for aura and 108180 for linux
+// reaches NOTIMPLEMENTED checks in some cases.
+#if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_LINUX)
 #define MAYBE_FlashFullscreen DISABLED_FlashFullscreen
 #else
 #define MAYBE_FlashFullscreen FlashFullscreen
