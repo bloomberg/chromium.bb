@@ -4,10 +4,7 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 */
 
-/* TODO(eroman): Split this file up, so the styles are defined close to where
-                 they are used. For instance, the proxy tab styles should
-                 either be part of proxy_view.html, or proxy_view.css. Only
-                 common styles should be declared here */
+/* Only common styles should be declared here. */
 
 * {
   box-sizing: border-box;
@@ -116,16 +113,4 @@ table.styledTable,
  */
 .warningText {
   color: red;
-}
-
-#status-view-for-capture {
-  background: red;
-  color: #eee;
-  padding: 4px;
-}
-
-#status-view-for-file {
-  background: #88c;
-  color: #eee;
-  padding: 4px;
 }

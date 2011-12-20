@@ -318,12 +318,17 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsObserverAssertFail) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// main.js
+// main.js (Also tests status_view.js)
 ////////////////////////////////////////////////////////////////////////////////
 
 // Checks tabs initialization and switching between tabs.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTourTabs) {
   EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsTourTabs"));
+}
+
+// Checks pressing the stop capturing button.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsStopCapturing) {
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsStopCapturing"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

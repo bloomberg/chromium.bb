@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Anonymous namespace
+(function() {
+
 /**
  * Checks visibility of tab handles against expectations, and navigates to all
  * tabs with visible handles, validating visibility of all other tabs as it
@@ -38,3 +41,17 @@ netInternalsTest.test('netInternalsTourTabs', function() {
 
   testDone();
 });
+
+netInternalsTest.test('netInternalsStopCapturing', function() {
+  expectFalse(g_browser.isDisabled());
+  netInternalsTest.expectStatusViewNodeVisible(StatusView.FOR_CAPTURE_ID);
+
+  $(StatusView.STOP_CAPTURING_BUTTON_ID).onclick();
+
+  expectTrue(g_browser.isDisabled());
+  netInternalsTest.expectStatusViewNodeVisible(StatusView.FOR_VIEW_ID);
+
+  testDone();
+});
+
+})();  // Anonymous namespace

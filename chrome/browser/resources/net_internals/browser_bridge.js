@@ -153,6 +153,11 @@ var BrowserBridge = (function() {
       this.send('clearBrowserCache');
     },
 
+    sendClearAllCache: function() {
+      this.sendClearHostResolverCache();
+      this.sendClearBrowserCache();
+    },
+
     sendStartConnectionTests: function(url) {
       this.send('startConnectionTests', [url]);
     },
@@ -344,6 +349,13 @@ var BrowserBridge = (function() {
     disable: function() {
       this.disabled_ = true;
       this.setPollInterval(0);
+    },
+
+    /**
+     * Returns true if the BrowserBridge has been disabled.
+     */
+    isDisabled: function() {
+      return this.disabled_;
     },
 
     /**

@@ -1,0 +1,33 @@
+<!--
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<!-- Status bar at top of screen.  We use a different status bar when in capture
+     mode vs view-only mode vs file mode. -->
+<div id=status-view>
+  <div id=status-view-for-capture>
+    <table id=status-view-for-capture-table><tr>
+      <td>
+        Recording network events...
+        <button id=status-view-stop-capturing>Stop capturing</button>
+      </td>
+      <td id=status-view-for-capture-mutating-buttons>
+        <button id=status-view-clear-events>Clear events</button>
+        <button id=status-view-clear-cache class=warningText>
+          Clear cache</button>
+        <button id=status-view-flush-sockets class=warningText>
+          Flush sockets</button>
+      </td>
+    </tr></table>
+  </div>
+
+  <div id=status-view-for-view style="display:none">
+    Logging halted
+  </div>
+
+  <div id=status-view-for-file style="display:none">
+    Displaying log file (<span id=status-view-dump-file-name></span>)
+  </div>
+</div>

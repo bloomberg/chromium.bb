@@ -96,9 +96,9 @@ var TimelineView = (function() {
 
     show: function(isVisible) {
       superClass.prototype.show.call(this, isVisible);
-      // If we're hidden or viewing a log file, make sure no interval is
-      // running.
-      if (!isVisible || MainView.isViewingLoadedLog()) {
+      // If we're hidden or not capturing events, we don't want to update the
+      // graph's range.
+      if (!isVisible || g_browser.isDisabled()) {
         this.setUpdateEndDateInterval_(0);
         return;
       }
@@ -123,7 +123,16 @@ var TimelineView = (function() {
       }
     },
 
+    /**
+     * Updates the end date of graph to be the current time, unless the
+     * BrowserBridge is disabled.
+     */
     updateEndDate_: function() {
+      // If we loaded a log file or capturing data was stopped, stop the timer.
+      if (g_browser.isDisabled()) {
+        this.setUpdateEndDateInterval_(0);
+        return;
+      }
       this.graphView_.updateEndDate();
     },
 

@@ -122,8 +122,8 @@ var MainView = (function() {
     // a high level status (i.e. if we are capturing events, or displaying a
     // log file). Below it we will position the main tabs and their content
     // area.
-    var statusView = new DivView(MainView.STATUS_VIEW_ID);
-    var verticalSplitView = new VerticalSplitView(statusView, this);
+    this.statusView_ = StatusView.getInstance(this);
+    var verticalSplitView = new VerticalSplitView(this.statusView_, this);
     var windowView = new WindowView(verticalSplitView);
 
     // Trigger initial layout.
@@ -139,10 +139,6 @@ var MainView = (function() {
   // IDs for special HTML elements in index.html
   MainView.CATEGORY_TAB_HANDLES_ID = 'category-tab-handles';
   MainView.SPLITTER_BOX_FOR_MAIN_TABS_ID = 'splitter-box-for-main-tabs';
-  MainView.STATUS_VIEW_ID = 'status-view';
-  MainView.STATUS_VIEW_FOR_CAPTURE_ID = 'status-view-for-capture';
-  MainView.STATUS_VIEW_FOR_FILE_ID = 'status-view-for-file';
-  MainView.STATUS_VIEW_DUMP_FILE_NAME_ID = 'status-view-dump-file-name';
 
   cr.addSingletonGetter(MainView);
 
@@ -176,21 +172,25 @@ var MainView = (function() {
     onLoadLogFile: function(fileName) {
       isViewingLoadedLog = true;
 
-      // Swap out the status bar to indicate we have loaded from a file.
-      setNodeDisplay($(MainView.STATUS_VIEW_FOR_CAPTURE_ID), false);
-      setNodeDisplay($(MainView.STATUS_VIEW_FOR_FILE_ID), true);
-
-      // Indicate which file is being displayed.
-      $(MainView.STATUS_VIEW_DUMP_FILE_NAME_ID).innerText = fileName;
-
-      document.styleSheets[0].insertRule('.hideOnLoadLog { display: none; }');
-
       g_browser.sourceTracker.setSecurityStripping(false);
-      g_browser.disable();
+      this.stopCapturing();
+      // Swap out the status bar to indicate we have loaded from a file.
+      this.statusView_.onSwitchMode(StatusView.FOR_FILE_ID, fileName);
     },
+
+    switchToViewOnlyMode: function() {
+      this.stopCapturing();
+      // Swap out the status bar to indicate we have loaded from a file.
+      this.statusView_.onSwitchMode(StatusView.FOR_VIEW_ID, '');
+    },
+
+    stopCapturing: function() {
+      g_browser.disable();
+      document.styleSheets[0].insertRule('.hideOnLoadLog { display: none; }');
+    }
   };
 
-  /*
+  /**
    * Takes the current hash in form of "#tab&param1=value1&param2=value2&...".
    * Puts the parameters in an object, and passes the resulting object to
    * |categoryTabSwitcher|.  Uses tab and |anchorMap| to find a tab ID,

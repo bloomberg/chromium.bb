@@ -1,0 +1,42 @@
+/*
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+
+/**
+ * Act like a table to allow for vertical centering.
+ */
+#status-view {
+  display: table;
+}
+
+#status-view-for-capture,
+#status-view-for-view,
+#status-view-for-file {
+  padding: 0px 6px;
+  white-space: nowrap;
+  color: #eee;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+#status-view-for-capture {
+  background: #f00;
+}
+
+#status-view-for-view {
+  background: #0a0;
+}
+
+#status-view-for-file {
+  background: #88c;
+}
+
+#status-view-for-capture-table {
+  width: 100%;
+}
+  
+#status-view-for-capture-mutating-buttons {
+  text-align: right;
+}

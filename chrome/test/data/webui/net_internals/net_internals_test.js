@@ -206,6 +206,10 @@ var netInternalsTest = (function() {
     return tab;
   }
 
+  function nodeIsVisible(node) {
+    return node.style.display != 'none';
+  }
+
   /**
    * Returns true if the specified tab's handle is visible, false otherwise.
    * Asserts if the handle can't be found.
@@ -214,7 +218,7 @@ var netInternalsTest = (function() {
    */
   function tabHandleIsVisible(tabId) {
     var tabHandleNode = getTab(tabId).getTabHandleNode();
-    return tabHandleNode.style.display != 'none';
+    return nodeIsVisible(tabHandleNode);
   }
 
   /**
@@ -551,10 +555,24 @@ var netInternalsTest = (function() {
     return CreateEndEvent(beginEvent.source, beginEvent.type, time, params);
   }
 
+  /**
+   * Checks that only the given status view node is visible.
+   * @param {string}: nodeId ID of the node that should be visible.
+   */
+  function expectStatusViewNodeVisible(nodeId) {
+    expectEquals(nodeId == StatusView.FOR_CAPTURE_ID,
+                 nodeIsVisible($(StatusView.FOR_CAPTURE_ID)));
+    expectEquals(nodeId == StatusView.FOR_VIEW_ID,
+                 nodeIsVisible($(StatusView.FOR_VIEW_ID)));
+    expectEquals(nodeId == StatusView.FOR_FILE_ID,
+                 nodeIsVisible($(StatusView.FOR_FILE_ID)));
+  }
+
   // Exported functions.
   return {
     test: test,
     checkStyledTableRows: checkStyledTableRows,
+    nodeIsVisible: nodeIsVisible,
     checkTabHandleVisibility: checkTabHandleVisibility,
     getStyledTableText: getStyledTableText,
     isDisplayed: isDisplayed,
@@ -569,7 +587,8 @@ var netInternalsTest = (function() {
     Event: Event,
     CreateBeginEvent: CreateBeginEvent,
     CreateEndEvent: CreateEndEvent,
-    CreateMatchingEndEvent: CreateMatchingEndEvent
+    CreateMatchingEndEvent: CreateMatchingEndEvent,
+    expectStatusViewNodeVisible: expectStatusViewNodeVisible
   };
 })();
 
