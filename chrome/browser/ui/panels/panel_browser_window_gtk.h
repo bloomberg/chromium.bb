@@ -19,7 +19,7 @@ class NativePanelTestingGtk;
 
 namespace ui {
 
-class SlideAnimation;
+class LinearAnimation;
 
 }
 
@@ -195,7 +195,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   base::Time disableMinimizeUntilTime_;
 
   // Used to animate the bounds change.
-  scoped_ptr<ui::SlideAnimation> bounds_animator_;
+  scoped_ptr<ui::LinearAnimation> bounds_animator_;
   gfx::Rect animation_start_bounds_;
 
   // This records the bounds set on the last animation progress notification.

@@ -23,7 +23,7 @@ namespace gfx {
 class Font;
 }
 namespace ui {
-class SlideAnimation;
+class LinearAnimation;
 }
 namespace views {
 class ImageButton;
@@ -200,7 +200,7 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   scoped_ptr<views::MenuRunner> settings_menu_runner_;
 
   // Used to animate the visibility change of settings button.
-  scoped_ptr<ui::SlideAnimation> settings_button_animator_;
+  scoped_ptr<ui::LinearAnimation> settings_button_animator_;
   gfx::Rect settings_button_full_bounds_;
   gfx::Rect settings_button_zero_bounds_;
   bool is_settings_button_visible_;

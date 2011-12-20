@@ -19,6 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/animation/linear_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -83,7 +84,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     return GetBrowserView(panel)->bounds_animator_.get();
   }
 
-  ui::SlideAnimation* GetSettingsButtonAnimator(Panel* panel) const {
+  ui::LinearAnimation* GetSettingsButtonAnimator(Panel* panel) const {
     return GetBrowserView(panel)->GetFrameView()->
         settings_button_animator_.get();
   }

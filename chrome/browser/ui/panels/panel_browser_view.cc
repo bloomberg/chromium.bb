@@ -137,7 +137,7 @@ void PanelBrowserView::SetBoundsInternal(const gfx::Rect& new_bounds,
 
   bounds_animator_.reset(new PanelSlideAnimation(
       this, panel(), animation_start_bounds_, new_bounds));
-  bounds_animator_->Show();
+  bounds_animator_->Start();
 }
 
 void PanelBrowserView::UpdateTitleBar() {

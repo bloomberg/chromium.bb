@@ -10,6 +10,7 @@
 namespace {
 
 // These values are experimental and subjective.
+const int kDefaultFramerateHz = 50;
 const int kSetBoundsAnimationMs = 180;
 const int kSetBoundsAnimationBigMinimizeMs = 1500;
 
@@ -19,7 +20,7 @@ PanelSlideAnimation::PanelSlideAnimation(ui::AnimationDelegate* target,
                                          Panel* panel,
                                          const gfx::Rect& initial_bounds,
                                          const gfx::Rect& final_bounds)
-    : ui::SlideAnimation(target),
+    : ui::LinearAnimation(kDefaultFramerateHz, target),
       panel_(panel),
       for_big_minimize_(false),
       animation_stop_to_show_titlebar_(0) {
@@ -38,15 +39,14 @@ PanelSlideAnimation::PanelSlideAnimation(ui::AnimationDelegate* target,
       duration = kSetBoundsAnimationBigMinimizeMs;
     }
   }
-  SetSlideDuration(PanelManager::AdjustTimeInterval(duration));
+  SetDuration(PanelManager::AdjustTimeInterval(duration));
 }
 
 PanelSlideAnimation::~PanelSlideAnimation() {
 }
 
 double PanelSlideAnimation::GetCurrentValue() const {
-  double progress = ui::SlideAnimation::GetCurrentValue();
-  return ComputeAnimationValue(progress,
+  return ComputeAnimationValue(ui::LinearAnimation::GetCurrentValue(),
                                for_big_minimize_,
                                animation_stop_to_show_titlebar_);
 }

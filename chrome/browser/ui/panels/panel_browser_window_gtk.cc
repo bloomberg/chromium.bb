@@ -434,7 +434,7 @@ void PanelBrowserWindowGtk::StartBoundsAnimation(
   bounds_animator_.reset(new PanelSlideAnimation(
       this, panel_.get(), from_bounds, to_bounds));
 
-  bounds_animator_->Show();
+  bounds_animator_->Start();
   last_animation_progressed_bounds_ = animation_start_bounds_;
 }
 

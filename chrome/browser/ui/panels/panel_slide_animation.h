@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_UI_PANELS_PANEL_SLIDE_ANIMATION_H_
 #pragma once
 
-#include "ui/base/animation/slide_animation.h"
+#include "ui/base/animation/linear_animation.h"
 
 namespace ui {
 class AnimationDelegate;
 }
 class Panel;
 
-class PanelSlideAnimation : public ui::SlideAnimation {
+class PanelSlideAnimation : public ui::LinearAnimation {
  public:
   PanelSlideAnimation(ui::AnimationDelegate* target,
                       Panel* panel,
@@ -26,6 +26,10 @@ class PanelSlideAnimation : public ui::SlideAnimation {
   static double ComputeAnimationValue(double progress,
                                       bool for_big_minimize,
                                       double animation_stop_to_show_titlebar);
+
+ protected:
+  virtual void AnimateToState(double state) OVERRIDE {}
+
  private:
   Panel* panel_;  // Weak, owns us.
   bool for_big_minimize_;

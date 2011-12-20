@@ -21,7 +21,7 @@
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/base/animation/slide_animation.h"
+#include "ui/base/animation/linear_animation.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -67,6 +67,9 @@ const int kSettingsButtonAndCloseButtonSpacing = 8;
 
 // This value is experimental and subjective.
 const int kUpdateSettingsVisibilityAnimationMs = 120;
+
+// This value is experimental and subjective.
+const int kSettingsButtonAnimationFrameRate = 50;
 
 // Colors used to draw active titlebar under default theme.
 const SkColor kActiveTitleTextDefaultColor = SK_ColorBLACK;
@@ -225,6 +228,17 @@ const SkPaint& GetAttentionBackgroundDefaultPaint() {
 }
 
 }  // namespace
+
+// Settings button animation.
+class SettingsButtonAnimation : public ui::LinearAnimation {
+ public:
+  SettingsButtonAnimation(int duration,
+                          int frame_rate,
+                          ui::AnimationDelegate* delegate)
+      : ui::LinearAnimation(duration, frame_rate, delegate) {}
+ protected:
+  virtual void AnimateToState(double state) OVERRIDE {}
+};
 
 // PanelBrowserFrameView::MouseWatcher -----------------------------------------
 
@@ -488,8 +502,10 @@ void PanelBrowserFrameView::Layout() {
 
   // Cancel the settings button animation if the layout of titlebar is being
   // updated.
-  if (settings_button_animator_.get() && settings_button_animator_->IsShowing())
-    settings_button_animator_->Reset();
+  if (settings_button_animator_.get() &&
+      settings_button_animator_->is_animating()) {
+    settings_button_animator_->Stop();
+  }
 
   // Layout the close button.
   int right = width();
@@ -842,17 +858,15 @@ void PanelBrowserFrameView::UpdateSettingsButtonVisibility(
   settings_button_->SetVisible(true);
 
   if (settings_button_animator_.get()) {
-    if (settings_button_animator_->IsShowing())
-      settings_button_animator_->Reset();
+    if (settings_button_animator_->is_animating())
+      settings_button_animator_->Stop();
   } else {
-    settings_button_animator_.reset(new ui::SlideAnimation(this));
-    settings_button_animator_->SetTweenType(ui::Tween::LINEAR);
-    settings_button_animator_->SetSlideDuration(
-        PanelManager::AdjustTimeInterval(
-            kUpdateSettingsVisibilityAnimationMs));
+    settings_button_animator_.reset(new SettingsButtonAnimation(
+        PanelManager::AdjustTimeInterval(kUpdateSettingsVisibilityAnimationMs),
+        kSettingsButtonAnimationFrameRate, this));
   }
 
-  settings_button_animator_->Show();
+  settings_button_animator_->Start();
 }
 
 bool PanelBrowserFrameView::EnsureSettingsMenuCreated() {
