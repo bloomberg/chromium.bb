@@ -10,3 +10,7 @@
 // The following two entries are VERY SUSPICIOUS!
 BUGCR107819 LINUX : http/tests/cache/history-only-cached-subresource-loads-max-age-https.html = MISSING
 BUGCR107819 LINUX : http/tests/cache/history-only-cached-subresource-loads.html = MISSING
+
+// Can be removed after r103270 rolls.
+BUGENNE : fast/repaint/table-cell-collapsed-border.html = IMAGE
+BUGENNE CPU-CG : css2.1/20110323/border-conflict-element-001d.htm = IMAGE
