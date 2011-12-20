@@ -89,9 +89,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_DontCreateIncognitoProfile) {
   ASSERT_FALSE(browser()->profile()->HasOffTheRecordProfile());
 }
 
-// Tests that the APIs in an incognito-enabled extension work properly.
-// Flaky - see crbug.com/77951.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_Incognito) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
