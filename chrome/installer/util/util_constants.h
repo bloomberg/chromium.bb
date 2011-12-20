@@ -123,7 +123,6 @@ COMPILE_ASSERT(CONFIGURE_AUTO_LAUNCH == 16,
 
 namespace switches {
 extern const char kAutoLaunchChrome[];
-extern const char kCeee[];
 extern const char kChrome[];
 extern const char kChromeFrame[];
 extern const char kChromeFrameQuickEnable[];

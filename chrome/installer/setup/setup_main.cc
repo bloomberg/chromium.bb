@@ -367,7 +367,7 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
         // We're being asked to install Chrome with Chrome Frame in ready-mode.
         // This is an optimistic operation: if a SxS install of Chrome Frame
         // is already present, don't touch it; if a multi-install of Chrome
-        // Frame is present, preserve its settings (ready-mode, CEEE).
+        // Frame is present, preserve its settings (ready-mode).
         if (cf_state != NULL) {
           installer_state->RemoveProduct(chrome_frame);
           chrome_frame = NULL;

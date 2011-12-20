@@ -470,20 +470,10 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
 
     InitializeAutomationSettings();
 
-    // To avoid http://code.google.com/p/chromium/issues/detail?id=63427,
-    // we always pass this flag needed by CEEE. It has no effect on
-    // normal CF operation.
-    //
-    // Extra arguments are passed on verbatim, so we add the -- prefix.
-    std::wstring chrome_extra_arguments(L"--");
-    chrome_extra_arguments.append(
-        ASCIIToWide(switches::kEnableExperimentalExtensionApis));
-
     url_fetcher_->set_frame_busting(!is_privileged());
     automation_client_->SetUrlFetcher(url_fetcher_.get());
-    if (!InitializeAutomation(profile_name, chrome_extra_arguments,
-                              IsIEInPrivate(), true, GURL(utf8_url),
-                              GURL(), false)) {
+    if (!InitializeAutomation(profile_name, IsIEInPrivate(), true,
+                              GURL(utf8_url), GURL(), false)) {
       DLOG(ERROR) << "Failed to navigate to url:" << utf8_url;
       return E_FAIL;
     }

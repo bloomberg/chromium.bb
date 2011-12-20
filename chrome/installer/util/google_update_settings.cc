@@ -123,14 +123,14 @@ EulaSearchResult HasEULASetting(HKEY root, const std::wstring& state_key,
 
 bool GetChromeChannelInternal(bool system_install,
                               bool add_multi_modifier,
-                              std::wstring* channel) {
+                              string16* channel) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   if (dist->GetChromeChannel(channel)) {
     return true;
   }
 
   HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  std::wstring reg_path = dist->GetStateKey();
+  string16 reg_path = dist->GetStateKey();
   RegKey key(root_key, reg_path.c_str(), KEY_READ);
 
   installer::ChannelInfo channel_info;
@@ -376,7 +376,7 @@ std::wstring GoogleUpdateSettings::GetChromeChannel(bool system_install) {
 }
 
 bool GoogleUpdateSettings::GetChromeChannelAndModifiers(bool system_install,
-                                                        std::wstring* channel) {
+                                                        string16* channel) {
   return GetChromeChannelInternal(system_install, true, channel);
 }
 

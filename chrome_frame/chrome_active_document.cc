@@ -1081,7 +1081,7 @@ bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
     // If no profile was given, then make use of the host process's name.
     if (profile.empty())
       profile = GetHostProcessName(false);
-    return InitializeAutomation(profile, L"", IsIEInPrivate(),
+    return InitializeAutomation(profile, IsIEInPrivate(),
                                 false, cf_url.gurl(), GURL(referrer),
                                 false);
   }

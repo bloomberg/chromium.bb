@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/logging_win.h"
 #include "base/path_service.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
@@ -253,14 +254,13 @@ HRESULT RefreshElevationPolicy() {
 HRESULT SetupRunOnce() {
   HRESULT result = E_FAIL;
 
-  std::wstring channel_name;
+  string16 channel_name;
   if (base::win::GetVersion() < base::win::VERSION_VISTA &&
       GoogleUpdateSettings::GetChromeChannelAndModifiers(true, &channel_name)) {
     std::transform(channel_name.begin(), channel_name.end(),
                    channel_name.begin(), tolower);
-    // Use this only for the dev channel and CEEE channels.
-    if (channel_name.find(L"dev") != std::wstring::npos ||
-        channel_name.find(L"ceee") != std::wstring::npos) {
+    // Use this only for the dev channel.
+    if (channel_name.find(L"dev") != string16::npos) {
       HKEY hive = HKEY_CURRENT_USER;
       if (IsSystemProcess()) {
         // For system installs, our updates will be running as SYSTEM which

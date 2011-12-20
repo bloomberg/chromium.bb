@@ -23,9 +23,6 @@ extern const char kAltFirstRunBubble[];
 // Boolean. Whether to instruct the installer to auto-launch chrome on computer
 // startup. The default (if not provided) is |false|.
 extern const char kAutoLaunchChrome[];
-// Boolean. CEEE features of Chrome Frame should be enabled as part of
-// the install.  Requires kChromeFrame to be specified as well.
-extern const char kCeee[];
 // Boolean. This is to be a Chrome install. (When using MultiInstall)
 extern const char kChrome[];
 // Boolean. This is to be a Chrome Frame install.

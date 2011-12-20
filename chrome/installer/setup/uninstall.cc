@@ -49,7 +49,7 @@ namespace {
 
 // Makes appropriate changes to the Google Update "ap" value in the registry.
 // Specifically, removes the flags associated with this product ("-chrome" or
-// "-chromeframe[-CEEE][-readymode]") from the "ap" values for all other
+// "-chromeframe[-readymode]") from the "ap" values for all other
 // installed products and for the multi-installer package.
 void ProcessGoogleUpdateItems(
     const installer::InstallationState& original_state,
@@ -698,7 +698,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   if (force_uninstall) {
     // Since --force-uninstall command line option is used, we are going to
     // do silent uninstall. Try to close all running Chrome instances.
-    // NOTE: We don't do this for Chrome Frame or CEEE.
+    // NOTE: We don't do this for Chrome Frame.
     if (is_chrome)
       CloseAllChromeProcesses();
   } else if (is_chrome) {

@@ -130,7 +130,7 @@ class GoogleUpdateSettingsTest: public testing::Test {
           const wchar_t* channel = expectations[j].channel;
 
           SetApField(install, ap.c_str());
-          std::wstring ret_channel;
+          string16 ret_channel;
 
           EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannelAndModifiers(
               is_system, &ret_channel));
@@ -189,7 +189,7 @@ class GoogleUpdateSettingsTest: public testing::Test {
 // whether per-system or per-user install.
 TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelAbsent) {
   // Per-system first.
-  std::wstring channel;
+  string16 channel;
   EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannelAndModifiers(true,
                                                                  &channel));
   EXPECT_STREQ(L"", channel.c_str());
@@ -203,7 +203,7 @@ TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelAbsent) {
 // Test an empty Ap key for system and user.
 TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelEmptySystem) {
   SetApField(SYSTEM_INSTALL, L"");
-  std::wstring channel;
+  string16 channel;
   EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannelAndModifiers(true,
                                                                  &channel));
   EXPECT_STREQ(L"", channel.c_str());
@@ -217,7 +217,7 @@ TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelEmptySystem) {
 TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelEmptyUser) {
   SetApField(USER_INSTALL, L"");
   // Per-system lookups still succeed and return empty string.
-  std::wstring channel;
+  string16 channel;
   EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannelAndModifiers(true,
                                                                  &channel));
   EXPECT_STREQ(L"", channel.c_str());

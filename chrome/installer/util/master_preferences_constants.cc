@@ -9,7 +9,6 @@ namespace master_preferences {
   const char kAltFirstRunBubble[] = "oem_bubble";
   const char kAltShortcutText[] = "alternate_shortcut_text";
   const char kAutoLaunchChrome[] = "auto_launch_chrome";
-  const char kCeee[] = "ceee";
   const char kChrome[] = "chrome";
   const char kChromeFrame[] = "chrome_frame";
   const char kChromeFrameReadyMode[] = "ready_mode";

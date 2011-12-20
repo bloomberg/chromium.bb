@@ -162,10 +162,6 @@ class MasterPreferences {
     return preferences_read_from_file_;
   }
 
-  bool install_ceee() const {
-    return ceee_;
-  }
-
   bool install_chrome() const {
     return chrome_;
   }
@@ -193,7 +189,6 @@ class MasterPreferences {
   scoped_ptr<base::DictionaryValue> master_dictionary_;
   base::DictionaryValue* distribution_;
   bool preferences_read_from_file_;
-  bool ceee_;
   bool chrome_;
   bool chrome_frame_;
   bool multi_install_;

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "chrome/installer/util/util_constants.h"
 
 class BrowserDistribution;
@@ -123,7 +124,7 @@ class GoogleUpdateSettings {
   // it is a multi-install product, in which case it will return "m",
   // "unknown-m", "dev-m", or "beta-m").
   static bool GetChromeChannelAndModifiers(bool system_install,
-                                           std::wstring* channel);
+                                           string16* channel);
 
   // This method changes the Google Update "ap" value to move the installation
   // on to or off of one of the recovery channels.

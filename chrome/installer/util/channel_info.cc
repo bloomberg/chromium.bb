@@ -14,7 +14,6 @@ namespace {
 
 const wchar_t kChannelBeta[] = L"beta";
 const wchar_t kChannelDev[] = L"dev";
-const wchar_t kModCeee[] = L"-CEEE";
 const wchar_t kModChrome[] = L"-chrome";
 const wchar_t kModChromeFrame[] = L"-chromeframe";
 const wchar_t kModMultiInstall[] = L"-multi";
@@ -33,7 +32,6 @@ const wchar_t* const kModifiers[] = {
   kModMultiInstall,
   kModChrome,
   kModChromeFrame,
-  kModCeee,
   kModReadyMode,
   kSfxMultiFail,
   kSfxFull
@@ -44,7 +42,6 @@ enum ModifierIndex {
   MOD_MULTI_INSTALL,
   MOD_CHROME,
   MOD_CHROME_FRAME,
-  MOD_CEEE,
   MOD_READY_MODE,
   SFX_MULTI_FAIL,
   SFX_FULL,
@@ -179,14 +176,6 @@ bool ChannelInfo::GetChannelName(std::wstring* channel_name) const {
   }
 
   return false;
-}
-
-bool ChannelInfo::IsCeee() const {
-  return HasModifier(MOD_CEEE, value_);
-}
-
-bool ChannelInfo::SetCeee(bool value) {
-  return SetModifier(MOD_CEEE, value, &value_);
 }
 
 bool ChannelInfo::IsChrome() const {

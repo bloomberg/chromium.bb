@@ -25,12 +25,6 @@ TEST(ChannelInfoTest, Channels) {
   ci.set_value(L"");
   EXPECT_TRUE(ci.GetChannelName(&channel));
   EXPECT_EQ(kChannelStable, channel);
-  ci.set_value(L"-CEEE");
-  EXPECT_TRUE(ci.GetChannelName(&channel));
-  EXPECT_EQ(kChannelStable, channel);
-  ci.set_value(L"-CEEE-multi");
-  EXPECT_TRUE(ci.GetChannelName(&channel));
-  EXPECT_EQ(kChannelStable, channel);
   ci.set_value(L"-full");
   EXPECT_TRUE(ci.GetChannelName(&channel));
   EXPECT_EQ(kChannelStable, channel);
@@ -57,38 +51,6 @@ TEST(ChannelInfoTest, Channels) {
 
   ci.set_value(L"fuzzy");
   EXPECT_FALSE(ci.GetChannelName(&channel));
-}
-
-TEST(ChannelInfoTest, CEEE) {
-  ChannelInfo ci;
-
-  ci.set_value(L"");
-  EXPECT_TRUE(ci.SetCeee(true));
-  EXPECT_TRUE(ci.IsCeee());
-  EXPECT_EQ(L"-CEEE", ci.value());
-  EXPECT_FALSE(ci.SetCeee(true));
-  EXPECT_TRUE(ci.IsCeee());
-  EXPECT_EQ(L"-CEEE", ci.value());
-  EXPECT_TRUE(ci.SetCeee(false));
-  EXPECT_FALSE(ci.IsCeee());
-  EXPECT_EQ(L"", ci.value());
-  EXPECT_FALSE(ci.SetCeee(false));
-  EXPECT_FALSE(ci.IsCeee());
-  EXPECT_EQ(L"", ci.value());
-
-  ci.set_value(L"2.0-beta");
-  EXPECT_TRUE(ci.SetCeee(true));
-  EXPECT_TRUE(ci.IsCeee());
-  EXPECT_EQ(L"2.0-beta-CEEE", ci.value());
-  EXPECT_FALSE(ci.SetCeee(true));
-  EXPECT_TRUE(ci.IsCeee());
-  EXPECT_EQ(L"2.0-beta-CEEE", ci.value());
-  EXPECT_TRUE(ci.SetCeee(false));
-  EXPECT_FALSE(ci.IsCeee());
-  EXPECT_EQ(L"2.0-beta", ci.value());
-  EXPECT_FALSE(ci.SetCeee(false));
-  EXPECT_FALSE(ci.IsCeee());
-  EXPECT_EQ(L"2.0-beta", ci.value());
 }
 
 TEST(ChannelInfoTest, FullInstall) {

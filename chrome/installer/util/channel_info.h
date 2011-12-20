@@ -44,13 +44,6 @@ class ChannelInfo {
   // determined.
   bool GetChannelName(std::wstring* channel_name) const;
 
-  // Returns true if the -CEEE modifier is present in the value.
-  bool IsCeee() const;
-
-  // Adds or removes the -CEEE modifier, returning true if the value is
-  // modified.
-  bool SetCeee(bool value);
-
   // Returns true if the -chrome modifier is present in the value.
   bool IsChrome() const;
 

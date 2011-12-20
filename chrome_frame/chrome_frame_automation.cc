@@ -298,10 +298,6 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
       command_line->AppendSwitchNative(switches::kLang, params->language());
 
     command_line_string = command_line->GetCommandLineString();
-    // If there are any extra arguments, append them to the command line.
-    if (!params->extra_arguments().empty()) {
-      command_line_string += L' ' + params->extra_arguments();
-    }
   }
 
   automation_server_launch_start_time_ = base::TimeTicks::Now();
@@ -670,7 +666,7 @@ bool ChromeFrameAutomationClient::InitiateNavigation(
       FilePath profile_path;
       chrome_launch_params_ = new ChromeFrameLaunchParams(parsed_url,
           referrer_gurl, profile_path, L"", SimpleResourceLoader::GetLanguage(),
-          L"", false, false, route_all_top_level_navigations_);
+          false, false, route_all_top_level_navigations_);
     } else {
       chrome_launch_params_->set_referrer(referrer_gurl);
       chrome_launch_params_->set_url(parsed_url);

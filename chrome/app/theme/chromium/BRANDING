@@ -2,5 +2,4 @@ COMPANY_FULLNAME=The Chromium Authors
 COMPANY_SHORTNAME=The Chromium Authors
 PRODUCT_FULLNAME=Chromium
 PRODUCT_SHORTNAME=Chromium
-CEEE_PRODUCT_FULLNAME=Chromium Extensions Execution Environment
 COPYRIGHT=Copyright (C) 2006-2010 The Chromium Authors. All Rights Reserved.

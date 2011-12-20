@@ -11,9 +11,6 @@ namespace switches {
 // Whether to set Chrome to launch at computer startup.
 const char kAutoLaunchChrome[] = "auto-launch-chrome";
 
-// Install CEEE.
-const char kCeee[] = "ceee";
-
 // Install Chrome.
 // Currently this is only required when used in combination with kMultiInstall.
 const char kChrome[] = "chrome";
@@ -98,7 +95,7 @@ const char kMakeChromeDefault[] = "make-chrome-default";
 const char kMsi[] = "msi";
 
 // Tells installer to install multiple products specified on the command line.
-// (e.g. Chrome Frame, CEEE, Chrome)
+// (e.g. Chrome Frame, Chrome)
 const char kMultiInstall[] = "multi-install";
 
 // Useful only when used with --update-setup-exe, otherwise ignored. It
