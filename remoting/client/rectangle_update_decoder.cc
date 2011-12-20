@@ -138,10 +138,20 @@ void RectangleUpdateDecoder::SetScaleRatios(double horizontal_ratio,
     return;
   }
 
+  // TODO(wez): Refresh the frame only if the ratio has changed.
+  if (frame_) {
+    SkIRect frame_rect = SkIRect::MakeWH(frame_->width(), frame_->height());
+    refresh_rects_.push_back(frame_rect);
+  }
+
   // TODO(hclam): If the scale ratio has changed we should reallocate a
   // VideoFrame of different size. However if the scale ratio is always
   // smaller than 1.0 we can use the same video frame.
   decoder_->SetScaleRatios(horizontal_ratio, vertical_ratio);
+
+  // TODO(wez): Defer refresh, so that resize, which will affect both scale
+  // factor and clip rect, doesn't lead to unnecessary refreshes.
+  DoRefresh();
 }
 
 void RectangleUpdateDecoder::UpdateClipRect(const SkIRect& new_clip_rect) {
@@ -155,41 +165,16 @@ void RectangleUpdateDecoder::UpdateClipRect(const SkIRect& new_clip_rect) {
   if (new_clip_rect == clip_rect_ || !decoder_.get())
     return;
 
-  // Find out the rectangles to show because of clip rect is updated.
-  if (new_clip_rect.fTop < clip_rect_.fTop) {
-    refresh_rects_.push_back(
-        SkIRect::MakeXYWH(new_clip_rect.fLeft,
-                          new_clip_rect.fTop,
-                          new_clip_rect.width(),
-                          clip_rect_.fTop - new_clip_rect.fTop));
-  }
-
-  if (new_clip_rect.fLeft < clip_rect_.fLeft) {
-    refresh_rects_.push_back(
-        SkIRect::MakeXYWH(new_clip_rect.fLeft,
-                          clip_rect_.fTop,
-                          clip_rect_.fLeft - new_clip_rect.fLeft,
-                          clip_rect_.height()));
-  }
-
-  if (new_clip_rect.fRight > clip_rect_.fRight) {
-    refresh_rects_.push_back(
-        SkIRect::MakeXYWH(clip_rect_.fRight,
-                          clip_rect_.fTop,
-                          new_clip_rect.fRight - clip_rect_.fRight,
-                          new_clip_rect.height()));
-  }
-
-  if (new_clip_rect.fBottom > clip_rect_.fBottom) {
-    refresh_rects_.push_back(
-        SkIRect::MakeXYWH(new_clip_rect.fLeft,
-                          clip_rect_.fBottom,
-                          new_clip_rect.width(),
-                          new_clip_rect.fBottom - clip_rect_.fBottom));
+  // TODO(wez): Only refresh newly-exposed portions of the frame.
+  if (frame_) {
+    SkIRect frame_rect = SkIRect::MakeWH(frame_->width(), frame_->height());
+    refresh_rects_.push_back(frame_rect);
   }
 
   clip_rect_ = new_clip_rect;
   decoder_->SetClipRect(new_clip_rect);
+
+  // TODO(wez): Defer refresh so that multiple events can be batched.
   DoRefresh();
 }
 

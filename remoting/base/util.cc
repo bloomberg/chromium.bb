@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/base/util.h"
+
+#include <math.h>
+
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
-#include "remoting/base/util.h"
 
 using media::VideoFrame;
 
@@ -150,12 +153,11 @@ SkIRect AlignRect(const SkIRect& rect) {
 SkIRect ScaleRect(const SkIRect& rect,
                   double horizontal_ratio,
                   double vertical_ratio) {
-  int x = rect.fLeft * horizontal_ratio;
-  int y = rect.fTop * vertical_ratio;
-  int w = rect.fRight * horizontal_ratio - x;
-  int h = rect.fBottom * vertical_ratio - y;
-
-  return SkIRect::MakeXYWH(x, y, w, h);
+  int left = floor(rect.left() * horizontal_ratio);
+  int top = floor(rect.top() * vertical_ratio);
+  int right = ceil(rect.right() * horizontal_ratio);
+  int bottom = ceil(rect.bottom() * vertical_ratio);
+  return SkIRect::MakeLTRB(left, top, right, bottom);
 }
 
 void CopyRect(const uint8* src_plane,
