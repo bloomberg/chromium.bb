@@ -67,6 +67,7 @@ WebKit::WebFrame* GetFrameForResource(const ::ppapi::Resource* resource) {
 
 PPB_Transport_Impl::PPB_Transport_Impl(PP_Instance instance)
     : Resource(instance),
+      type_(PP_TRANSPORTTYPE_DATAGRAM),
       started_(false),
       writable_(false) {
 }

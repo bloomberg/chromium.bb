@@ -29,7 +29,8 @@ SSLSocketAdapter::SSLSocketAdapter(AsyncSocket* socket)
       cert_verifier_(new net::CertVerifier()),
       ssl_state_(SSLSTATE_NONE),
       read_state_(IOSTATE_NONE),
-      write_state_(IOSTATE_NONE) {
+      write_state_(IOSTATE_NONE),
+      data_transferred_(0) {
   transport_socket_ = new TransportSocket(socket, this);
 }
 

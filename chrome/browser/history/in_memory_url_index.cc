@@ -115,14 +115,20 @@ int ScoreForValue(int value, const int* value_ranks) {
 InMemoryURLIndex::InMemoryURLIndex(const FilePath& history_dir)
     : history_dir_(history_dir),
       private_data_(new URLIndexPrivateData),
-      cached_at_shutdown_(false) {
+      cached_at_shutdown_(false),
+      pre_filter_item_count(0),
+      post_filter_item_count(0),
+      post_scoring_item_count(0) {
   InMemoryURLIndex::InitializeSchemeWhitelist(&scheme_whitelist_);
 }
 
 // Called only by unit tests.
 InMemoryURLIndex::InMemoryURLIndex()
     : private_data_(new URLIndexPrivateData),
-      cached_at_shutdown_(false) {
+      cached_at_shutdown_(false),
+      pre_filter_item_count(0),
+      post_filter_item_count(0),
+      post_scoring_item_count(0) {
   InMemoryURLIndex::InitializeSchemeWhitelist(&scheme_whitelist_);
 }
 

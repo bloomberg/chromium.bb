@@ -10,7 +10,8 @@
 #include "content/public/browser/notification_service.h"
 
 SnapshotTabHelper::SnapshotTabHelper(TabContentsWrapper* wrapper)
-    : TabContentsObserver(wrapper->tab_contents()) {
+    : TabContentsObserver(wrapper->tab_contents()),
+      wrapper_(wrapper) {
 }
 
 SnapshotTabHelper::~SnapshotTabHelper() {

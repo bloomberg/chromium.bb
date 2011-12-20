@@ -24,6 +24,8 @@ using thunk::PPB_FileRef_API;
 PPB_FileIO_Shared::CallbackEntry::CallbackEntry()
     : read_buffer(NULL),
       info(NULL) {
+  callback.func = NULL;
+  callback.user_data = NULL;
 }
 
 PPB_FileIO_Shared::CallbackEntry::CallbackEntry(const CallbackEntry& entry)

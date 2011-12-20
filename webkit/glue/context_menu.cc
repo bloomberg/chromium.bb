@@ -24,6 +24,7 @@ ContextMenuParams::ContextMenuParams()
       is_image_blocked(false),
       frame_id(0),
       media_flags(0),
+      speech_input_enabled(false),
       spellcheck_enabled(false),
       is_editable(false),
       edit_flags(0),

@@ -37,6 +37,7 @@ class BrowserPpp {
         ppp_messaging_interface_(NULL),
         ppp_input_event_interface_(NULL) {
     CHECK(main_channel_ != NULL);
+    upcall_thread_.tid = 0;
   }
 
   ~BrowserPpp() {}
