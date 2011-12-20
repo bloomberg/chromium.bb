@@ -15,11 +15,15 @@
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/cpp/dev/websocket_dev.h"
+#include "ppapi/cpp/helper/dev/websocket_api_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
+// These servers are provided by pywebsocket server side handlers in
+// LayoutTests/http/tests/websocket/tests/hybi/*_wsh.
+// pywebsocket server itself is launched in ppapi_ui_test.cc.
 const char kEchoServerURL[] =
     "ws://localhost:8880/websocket/tests/hybi/echo";
 
@@ -40,6 +44,119 @@ const char* const kInvalidURLs[] = {
 // The magic number 1000 means gracefull closure without any error.
 // See section 7.4.1. of RFC 6455.
 const uint16_t kCloseCodeNormalClosure = 1000U;
+
+namespace {
+
+struct WebSocketEvent {
+  enum EventType {
+    EVENT_OPEN,
+    EVENT_MESSAGE,
+    EVENT_ERROR,
+    EVENT_CLOSE
+  };
+
+  WebSocketEvent(EventType type,
+                 bool was_clean,
+                 uint16_t close_code,
+                 const pp::Var& var)
+      : event_type(type),
+        was_clean(was_clean),
+        close_code(close_code),
+        var(var) {}
+  EventType event_type;
+  bool was_clean;
+  uint16_t close_code;
+  pp::Var var;
+};
+
+class TestWebSocketAPI : public pp::helper::WebSocketAPI_Dev {
+ public:
+  explicit TestWebSocketAPI(pp::Instance* instance)
+      : pp::helper::WebSocketAPI_Dev(instance),
+        connected_(false),
+        received_(false),
+        closed_(false),
+        wait_for_connected_(false),
+        wait_for_received_(false),
+        wait_for_closed_(false),
+        instance_(instance->pp_instance()) {}
+
+  virtual void OnOpen() {
+    events_.push_back(
+        WebSocketEvent(WebSocketEvent::EVENT_OPEN, true, 0U, pp::Var()));
+    connected_ = true;
+    if (wait_for_connected_) {
+      GetTestingInterface()->QuitMessageLoop(instance_);
+      wait_for_connected_ = false;
+    }
+  }
+
+  virtual void OnMessage(const pp::Var &message) {
+    events_.push_back(
+        WebSocketEvent(WebSocketEvent::EVENT_MESSAGE, true, 0U, message));
+    received_ = true;
+    if (wait_for_received_) {
+      GetTestingInterface()->QuitMessageLoop(instance_);
+      wait_for_received_ = false;
+      received_ = false;
+    }
+  }
+
+  virtual void OnError() {
+    events_.push_back(
+        WebSocketEvent(WebSocketEvent::EVENT_ERROR, true, 0U, pp::Var()));
+  }
+
+  virtual void OnClose(
+      bool was_clean, uint16_t code, const pp::Var& reason) {
+    events_.push_back(
+        WebSocketEvent(WebSocketEvent::EVENT_CLOSE, was_clean, code, reason));
+    connected_ = true;
+    closed_ = true;
+    if (wait_for_connected_ || wait_for_closed_) {
+      GetTestingInterface()->QuitMessageLoop(instance_);
+      wait_for_connected_ = false;
+      wait_for_closed_ = false;
+    }
+  }
+
+  void WaitForConnected() {
+    if (!connected_) {
+      wait_for_connected_ = true;
+      GetTestingInterface()->RunMessageLoop(instance_);
+    }
+  }
+
+  void WaitForReceived() {
+    if (!received_) {
+      wait_for_received_ = true;
+      GetTestingInterface()->RunMessageLoop(instance_);
+    }
+  }
+
+  void WaitForClosed() {
+    if (!closed_) {
+      wait_for_closed_ = true;
+      GetTestingInterface()->RunMessageLoop(instance_);
+    }
+  }
+
+  const std::vector<WebSocketEvent>& GetSeenEvents() const {
+    return events_;
+  }
+
+ private:
+  std::vector<WebSocketEvent> events_;
+  bool connected_;
+  bool received_;
+  bool closed_;
+  bool wait_for_connected_;
+  bool wait_for_received_;
+  bool wait_for_closed_;
+  PP_Instance instance_;
+};
+
+}  // namespace
 
 REGISTER_TEST_CASE(WebSocket);
 
@@ -69,6 +186,15 @@ void TestWebSocket::RunTests(const std::string& filter) {
   RUN_TEST_WITH_REFERENCE_CHECK(TextSendReceive, filter);
 
   RUN_TEST_WITH_REFERENCE_CHECK(CcInterfaces, filter);
+
+  RUN_TEST_WITH_REFERENCE_CHECK(HelperInvalidConnect, filter);
+  RUN_TEST_WITH_REFERENCE_CHECK(HelperProtocols, filter);
+  RUN_TEST_WITH_REFERENCE_CHECK(HelperGetURL, filter);
+  RUN_TEST_WITH_REFERENCE_CHECK(HelperValidConnect, filter);
+  RUN_TEST_WITH_REFERENCE_CHECK(HelperInvalidClose, filter);
+  RUN_TEST_WITH_REFERENCE_CHECK(HelperValidClose, filter);
+  RUN_TEST_WITH_REFERENCE_CHECK(HelperGetProtocol, filter);
+  RUN_TEST_WITH_REFERENCE_CHECK(HelperTextSendReceive, filter);
 }
 
 PP_Var TestWebSocket::CreateVar(const char* string) {
@@ -423,8 +549,8 @@ std::string TestWebSocket::TestTextSendReceive() {
 // TODO(toyoshim): Add other function tests.
 
 std::string TestWebSocket::TestCcInterfaces() {
-  // C++ bindings is simple straightforward, then just verifies interfaces work
-  // as a interface bridge fine.
+  // The C++ bindings is simple straightforward. This just verifies that the
+  // bindings work fine as an interface bridge.
   pp::WebSocket_Dev ws(instance_);
 
   // Check uninitialized properties access.
@@ -439,8 +565,8 @@ std::string TestWebSocket::TestCcInterfaces() {
 
   // Check communication interfaces (connect, send, receive, and close).
   TestCompletionCallback connect_callback(instance_->pp_instance());
-  int32_t result = ws.Connect(pp::Var(std::string(kCloseServerURL)), NULL, 0U,
-      connect_callback);
+  int32_t result = ws.Connect(
+      pp::Var(std::string(kCloseServerURL)), NULL, 0U, connect_callback);
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   result = connect_callback.WaitForResult();
   ASSERT_EQ(PP_OK, result);
@@ -473,6 +599,242 @@ std::string TestWebSocket::TestCcInterfaces() {
   ASSERT_TRUE(AreEqual(ws.GetProtocol().pp_var(), ""));
   ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSED_DEV, ws.GetReadyState());
   ASSERT_TRUE(AreEqual(ws.GetURL().pp_var(), kCloseServerURL));
+
+  PASS();
+}
+
+std::string TestWebSocket::TestHelperInvalidConnect() {
+  const pp::Var protocols[] = { pp::Var() };
+
+  TestWebSocketAPI websocket(instance_);
+  int32_t result = websocket.Connect(pp::Var(), protocols, 1U);
+  ASSERT_EQ(PP_ERROR_BADARGUMENT, result);
+  ASSERT_EQ(0U, websocket.GetSeenEvents().size());
+
+  result = websocket.Connect(pp::Var(), protocols, 1U);
+  ASSERT_EQ(PP_ERROR_INPROGRESS, result);
+  ASSERT_EQ(0U, websocket.GetSeenEvents().size());
+
+  for (int i = 0; kInvalidURLs[i]; ++i) {
+    TestWebSocketAPI ws(instance_);
+    result = ws.Connect(pp::Var(std::string(kInvalidURLs[i])), protocols, 0U);
+    ASSERT_EQ(PP_ERROR_BADARGUMENT, result);
+    ASSERT_EQ(0U, ws.GetSeenEvents().size());
+  }
+
+  PASS();
+}
+
+std::string TestWebSocket::TestHelperProtocols() {
+  const pp::Var bad_protocols[] = {
+      pp::Var(std::string("x-test")), pp::Var(std::string("x-test")) };
+  const pp::Var good_protocols[] = {
+      pp::Var(std::string("x-test")), pp::Var(std::string("x-yatest")) };
+
+  {
+    TestWebSocketAPI websocket(instance_);
+    int32_t result = websocket.Connect(
+        pp::Var(std::string(kEchoServerURL)), bad_protocols, 2U);
+    ASSERT_EQ(PP_ERROR_BADARGUMENT, result);
+    ASSERT_EQ(0U, websocket.GetSeenEvents().size());
+  }
+
+  {
+    TestWebSocketAPI websocket(instance_);
+    int32_t result = websocket.Connect(
+        pp::Var(std::string(kEchoServerURL)), good_protocols, 2U);
+    ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+    websocket.WaitForConnected();
+    const std::vector<WebSocketEvent>& events = websocket.GetSeenEvents();
+    // Protocol arguments are valid, but this test run without a WebSocket
+    // server. As a result, OnError() and OnClose() are invoked because of
+    // a connection establishment failure.
+    ASSERT_EQ(2U, events.size());
+    ASSERT_EQ(WebSocketEvent::EVENT_ERROR, events[0].event_type);
+    ASSERT_EQ(WebSocketEvent::EVENT_CLOSE, events[1].event_type);
+    ASSERT_FALSE(events[1].was_clean);
+  }
+
+  PASS();
+}
+
+std::string TestWebSocket::TestHelperGetURL() {
+  const pp::Var protocols[] = { pp::Var() };
+
+  for (int i = 0; kInvalidURLs[i]; ++i) {
+    TestWebSocketAPI websocket(instance_);
+    int32_t result = websocket.Connect(
+        pp::Var(std::string(kInvalidURLs[i])), protocols, 0U);
+    ASSERT_EQ(PP_ERROR_BADARGUMENT, result);
+    pp::Var url = websocket.GetURL();
+    ASSERT_TRUE(AreEqual(url.pp_var(), kInvalidURLs[i]));
+    ASSERT_EQ(0U, websocket.GetSeenEvents().size());
+  }
+
+  PASS();
+}
+
+std::string TestWebSocket::TestHelperValidConnect() {
+  const pp::Var protocols[] = { pp::Var() };
+  TestWebSocketAPI websocket(instance_);
+  int32_t result = websocket.Connect(
+      pp::Var(std::string(kEchoServerURL)), protocols, 0U);
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  websocket.WaitForConnected();
+  const std::vector<WebSocketEvent>& events = websocket.GetSeenEvents();
+  ASSERT_EQ(1U, events.size());
+  ASSERT_EQ(WebSocketEvent::EVENT_OPEN, events[0].event_type);
+
+  PASS();
+}
+
+std::string TestWebSocket::TestHelperInvalidClose() {
+  const pp::Var reason = pp::Var(std::string("close for test"));
+
+  // Close before connect.
+  {
+    TestWebSocketAPI websocket(instance_);
+    int32_t result = websocket.Close(kCloseCodeNormalClosure, reason);
+    ASSERT_EQ(PP_ERROR_FAILED, result);
+    ASSERT_EQ(0U, websocket.GetSeenEvents().size());
+  }
+
+  // Close with bad arguments.
+  {
+    TestWebSocketAPI websocket(instance_);
+    int32_t result = websocket.Connect(pp::Var(std::string(kEchoServerURL)),
+        NULL, 0);
+    ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+    websocket.WaitForConnected();
+    result = websocket.Close(1U, reason);
+    ASSERT_EQ(PP_ERROR_NOACCESS, result);
+    const std::vector<WebSocketEvent>& events = websocket.GetSeenEvents();
+    ASSERT_EQ(1U, events.size());
+    ASSERT_EQ(WebSocketEvent::EVENT_OPEN, events[0].event_type);
+  }
+
+  PASS();
+}
+
+std::string TestWebSocket::TestHelperValidClose() {
+  std::string reason("close for test");
+  pp::Var url = pp::Var(std::string(kCloseServerURL));
+
+  // Close.
+  {
+    TestWebSocketAPI websocket(instance_);
+    int32_t result = websocket.Connect(url, NULL, 0U);
+    ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+    websocket.WaitForConnected();
+    result = websocket.Close(kCloseCodeNormalClosure, pp::Var(reason));
+    ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+    websocket.WaitForClosed();
+    const std::vector<WebSocketEvent>& events = websocket.GetSeenEvents();
+    ASSERT_EQ(2U, events.size());
+    ASSERT_EQ(WebSocketEvent::EVENT_OPEN, events[0].event_type);
+    ASSERT_EQ(WebSocketEvent::EVENT_CLOSE, events[1].event_type);
+    ASSERT_TRUE(events[1].was_clean);
+    ASSERT_EQ(kCloseCodeNormalClosure, events[1].close_code);
+    ASSERT_TRUE(AreEqual(events[1].var.pp_var(), reason.c_str()));
+  }
+
+  // Close in connecting.
+  // The ongoing connect failed with PP_ERROR_ABORTED, then the close is done
+  // successfully.
+  {
+    TestWebSocketAPI websocket(instance_);
+    int32_t result = websocket.Connect(url, NULL, 0U);
+    ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+    result = websocket.Close(kCloseCodeNormalClosure, pp::Var(reason));
+    ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+    websocket.WaitForClosed();
+    const std::vector<WebSocketEvent>& events = websocket.GetSeenEvents();
+    ASSERT_TRUE(events.size() == 2 || events.size() == 3);
+    int index = 0;
+    if (events.size() == 3)
+      ASSERT_EQ(WebSocketEvent::EVENT_OPEN, events[index++].event_type);
+    ASSERT_EQ(WebSocketEvent::EVENT_ERROR, events[index++].event_type);
+    ASSERT_EQ(WebSocketEvent::EVENT_CLOSE, events[index].event_type);
+    ASSERT_FALSE(events[index].was_clean);
+  }
+
+  // Close in closing.
+  // The first close will be done successfully, then the second one failed with
+  // with PP_ERROR_INPROGRESS immediately.
+  {
+    TestWebSocketAPI websocket(instance_);
+    int32_t result = websocket.Connect(url, NULL, 0U);
+    result = websocket.Close(kCloseCodeNormalClosure, pp::Var(reason));
+    ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+    result = websocket.Close(kCloseCodeNormalClosure, pp::Var(reason));
+    ASSERT_EQ(PP_ERROR_INPROGRESS, result);
+    websocket.WaitForClosed();
+    const std::vector<WebSocketEvent>& events = websocket.GetSeenEvents();
+    ASSERT_TRUE(events.size() == 2 || events.size() == 3)
+    int index = 0;
+    if (events.size() == 3)
+      ASSERT_EQ(WebSocketEvent::EVENT_OPEN, events[index++].event_type);
+    ASSERT_EQ(WebSocketEvent::EVENT_ERROR, events[index++].event_type);
+    ASSERT_EQ(WebSocketEvent::EVENT_CLOSE, events[index].event_type);
+    ASSERT_FALSE(events[index].was_clean);
+  }
+
+  PASS();
+}
+
+std::string TestWebSocket::TestHelperGetProtocol() {
+  const std::string protocol("x-chat");
+  const pp::Var protocols[] = { pp::Var(protocol) };
+  std::string url(kProtocolTestServerURL);
+  url += protocol;
+  TestWebSocketAPI websocket(instance_);
+  int32_t result = websocket.Connect(pp::Var(url), protocols, 1U);
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  websocket.WaitForReceived();
+  ASSERT_TRUE(AreEqual(websocket.GetProtocol().pp_var(), protocol.c_str()));
+  const std::vector<WebSocketEvent>& events = websocket.GetSeenEvents();
+  // The server to which this test connect returns the decided protocol as a
+  // text frame message. So the WebSocketEvent records EVENT_MESSAGE event
+  // after EVENT_OPEN event.
+  ASSERT_EQ(2U, events.size());
+  ASSERT_EQ(WebSocketEvent::EVENT_OPEN, events[0].event_type);
+  ASSERT_EQ(WebSocketEvent::EVENT_MESSAGE, events[1].event_type);
+  ASSERT_TRUE(AreEqual(events[1].var.pp_var(), protocol.c_str()));
+  ASSERT_TRUE(events[1].was_clean);
+
+  PASS();
+}
+
+std::string TestWebSocket::TestHelperTextSendReceive() {
+  const pp::Var protocols[] = { pp::Var() };
+  TestWebSocketAPI websocket(instance_);
+  int32_t result =
+      websocket.Connect(pp::Var(std::string(kEchoServerURL)), protocols, 0U);
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  websocket.WaitForConnected();
+
+  // Send 'hello pepper'.
+  std::string message1("hello pepper");
+  result = websocket.Send(pp::Var(std::string(message1)));
+  ASSERT_EQ(PP_OK, result);
+
+  // Receive echoed 'hello pepper'.
+  websocket.WaitForReceived();
+
+  // Send 'goodbye pepper'.
+  std::string message2("goodbye pepper");
+  result = websocket.Send(pp::Var(std::string(message2)));
+
+  // Receive echoed 'goodbye pepper'.
+  websocket.WaitForReceived();
+
+  const std::vector<WebSocketEvent>& events = websocket.GetSeenEvents();
+  ASSERT_EQ(3U, events.size());
+  ASSERT_EQ(WebSocketEvent::EVENT_OPEN, events[0].event_type);
+  ASSERT_EQ(WebSocketEvent::EVENT_MESSAGE, events[1].event_type);
+  ASSERT_TRUE(AreEqual(events[1].var.pp_var(), message1.c_str()));
+  ASSERT_EQ(WebSocketEvent::EVENT_MESSAGE, events[2].event_type);
+  ASSERT_TRUE(AreEqual(events[2].var.pp_var(), message2.c_str()));
 
   PASS();
 }
