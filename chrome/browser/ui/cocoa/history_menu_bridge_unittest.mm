@@ -118,27 +118,27 @@ class HistoryMenuBridgeTest : public CocoaProfileTest {
 // Edge case test for clearing until the end of a menu.
 TEST_F(HistoryMenuBridgeTest, ClearHistoryMenuUntilEnd) {
   NSMenu* menu = [[[NSMenu alloc] initWithTitle:@"history foo"] autorelease];
-  AddItemToMenu(menu, @"HEADER", NULL, HistoryMenuBridge::kMostVisitedTitle);
+  AddItemToMenu(menu, @"HEADER", NULL, HistoryMenuBridge::kVisitedTitle);
 
-  NSInteger tag = HistoryMenuBridge::kMostVisited;
+  NSInteger tag = HistoryMenuBridge::kVisited;
   AddItemToMenu(menu, @"alpha", @selector(openHistoryMenuItem:), tag);
   AddItemToMenu(menu, @"bravo", @selector(openHistoryMenuItem:), tag);
   AddItemToMenu(menu, @"charlie", @selector(openHistoryMenuItem:), tag);
   AddItemToMenu(menu, @"delta", @selector(openHistoryMenuItem:), tag);
 
-  ClearMenuSection(menu, HistoryMenuBridge::kMostVisited);
+  ClearMenuSection(menu, HistoryMenuBridge::kVisited);
 
   EXPECT_EQ(1, [menu numberOfItems]);
   EXPECT_NSEQ(@"HEADER",
-      [[menu itemWithTag:HistoryMenuBridge::kMostVisitedTitle] title]);
+      [[menu itemWithTag:HistoryMenuBridge::kVisitedTitle] title]);
 }
 
 // Skip menu items that are not hooked up to |-openHistoryMenuItem:|.
 TEST_F(HistoryMenuBridgeTest, ClearHistoryMenuSkipping) {
   NSMenu* menu = [[[NSMenu alloc] initWithTitle:@"history foo"] autorelease];
-  AddItemToMenu(menu, @"HEADER", NULL, HistoryMenuBridge::kMostVisitedTitle);
+  AddItemToMenu(menu, @"HEADER", NULL, HistoryMenuBridge::kVisitedTitle);
 
-  NSInteger tag = HistoryMenuBridge::kMostVisited;
+  NSInteger tag = HistoryMenuBridge::kVisited;
   AddItemToMenu(menu, @"alpha", @selector(openHistoryMenuItem:), tag);
   AddItemToMenu(menu, @"bravo", @selector(openHistoryMenuItem:), tag);
   AddItemToMenu(menu, @"TITLE", NULL, HistoryMenuBridge::kRecentlyClosedTitle);
@@ -148,7 +148,7 @@ TEST_F(HistoryMenuBridgeTest, ClearHistoryMenuSkipping) {
 
   EXPECT_EQ(2, [menu numberOfItems]);
   EXPECT_NSEQ(@"HEADER",
-      [[menu itemWithTag:HistoryMenuBridge::kMostVisitedTitle] title]);
+      [[menu itemWithTag:HistoryMenuBridge::kVisitedTitle] title]);
   EXPECT_NSEQ(@"TITLE",
       [[menu itemAtIndex:1] title]);
 }
@@ -156,13 +156,13 @@ TEST_F(HistoryMenuBridgeTest, ClearHistoryMenuSkipping) {
 // Edge case test for clearing an empty menu.
 TEST_F(HistoryMenuBridgeTest, ClearHistoryMenuEmpty) {
   NSMenu* menu = [[[NSMenu alloc] initWithTitle:@"history foo"] autorelease];
-  AddItemToMenu(menu, @"HEADER", NULL, HistoryMenuBridge::kMostVisited);
+  AddItemToMenu(menu, @"HEADER", NULL, HistoryMenuBridge::kVisited);
 
-  ClearMenuSection(menu, HistoryMenuBridge::kMostVisited);
+  ClearMenuSection(menu, HistoryMenuBridge::kVisited);
 
   EXPECT_EQ(1, [menu numberOfItems]);
   EXPECT_NSEQ(@"HEADER",
-      [[menu itemWithTag:HistoryMenuBridge::kMostVisited] title]);
+      [[menu itemWithTag:HistoryMenuBridge::kVisited] title]);
 }
 
 // Test that AddItemToMenu() properly adds HistoryItem objects as menus.

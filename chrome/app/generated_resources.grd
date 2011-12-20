@@ -11357,8 +11357,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_HISTORY_FORWARD_MAC" desc="The Mac menu item for forward in the history menu.">
           Forward
         </message>
-        <message name="IDS_HISTORY_VISITED_MAC" desc="The Mac menu item for the header of most visited items in the history menu.">
-          Most Visited
+        <message name="IDS_HISTORY_VISITED_MAC" desc="The Mac menu item for the header of visited items in the history menu.">
+          Recently Visited
         </message>
         <message name="IDS_HISTORY_CLOSED_MAC" desc="The Mac menu item for the header of recently closed items in the history menu.">
           Recently Closed

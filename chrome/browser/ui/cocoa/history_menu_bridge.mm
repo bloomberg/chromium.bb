@@ -41,11 +41,11 @@ const NSUInteger kMaximumMenuWidthInChars = 50;
 // When trimming, use this many chars from each side.
 const NSUInteger kMenuTrimSizeInChars = 25;
 
-// Number of days to consider when getting the number of most visited items.
-const int kMostVisitedScope = 90;
+// Number of days to consider when getting the number of visited items.
+const int kVisitedScope = 90;
 
-// The number of most visisted results to get.
-const int kMostVisitedCount = 9;
+// The number of visisted results to get.
+const int kVisitedCount = 15;
 
 // The number of recently closed items to get.
 const unsigned int kRecentlyClosedCount = 10;
@@ -265,7 +265,7 @@ void HistoryMenuBridge::TabRestoreServiceDestroyed(
 
 void HistoryMenuBridge::ResetMenu() {
   NSMenu* menu = HistoryMenu();
-  ClearMenuSection(menu, kMostVisited);
+  ClearMenuSection(menu, kVisited);
   ClearMenuSection(menu, kRecentlyClosed);
 }
 
@@ -384,36 +384,39 @@ void HistoryMenuBridge::CreateMenu() {
   need_recreate_ = false;
 
   DCHECK(history_service_);
-  history_service_->QuerySegmentUsageSince(
+
+  history::QueryOptions options;
+  options.max_count = kVisitedCount;
+  options.SetRecentDayRange(kVisitedScope);
+
+  history_service_->QueryHistory(
+      string16(),
+      options,
       &cancelable_request_consumer_,
-      base::Time::Now() - base::TimeDelta::FromDays(kMostVisitedScope),
-      kMostVisitedCount,
       base::Bind(&HistoryMenuBridge::OnVisitedHistoryResults,
                  base::Unretained(this)));
 }
 
 void HistoryMenuBridge::OnVisitedHistoryResults(
     CancelableRequestProvider::Handle handle,
-    std::vector<PageUsageData*>* results) {
+    history::QueryResults* results) {
   NSMenu* menu = HistoryMenu();
-  ClearMenuSection(menu, kMostVisited);
-  NSInteger top_item = [menu indexOfItemWithTag:kMostVisitedTitle] + 1;
+  ClearMenuSection(menu, kVisited);
+  NSInteger top_item = [menu indexOfItemWithTag:kVisitedTitle] + 1;
 
   size_t count = results->size();
   for (size_t i = 0; i < count; ++i) {
-    PageUsageData* history_item = (*results)[i];
+    const history::URLResult& result = (*results)[i];
 
-    HistoryItem* item = new HistoryItem();
-    item->title = history_item->GetTitle();
-    item->url = history_item->GetURL();
-    if (history_item->HasFavicon()) {
-      const SkBitmap* icon = history_item->GetFavicon();
-      item->icon.reset([gfx::SkBitmapToNSImage(*icon) retain]);
-    } else {
-      GetFaviconForHistoryItem(item);
-    }
+    HistoryItem* item = new HistoryItem;
+    item->title = result.title();
+    item->url = result.url();
+
+    // Need to explicitly get the favicon for each row.
+    GetFaviconForHistoryItem(item);
+
     // This will add |item| to the |menu_item_map_|, which takes ownership.
-    AddItemToMenu(item, HistoryMenu(), kMostVisited, top_item + i);
+    AddItemToMenu(item, HistoryMenu(), kVisited, top_item + i);
   }
 
   // We are already invalid by the time we finished, darn.

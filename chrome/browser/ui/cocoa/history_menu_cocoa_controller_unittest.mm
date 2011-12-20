@@ -36,8 +36,7 @@
 
 class HistoryMenuCocoaControllerTest : public CocoaProfileTest {
  public:
-
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
@@ -51,12 +50,12 @@ class HistoryMenuCocoaControllerTest : public CocoaProfileTest {
     HistoryMenuBridge::HistoryItem* item = new HistoryMenuBridge::HistoryItem();
     item->url = GURL("http://google.com");
     item->session_id = 0;
-    bridge_->AddItemToMenu(item, menu, HistoryMenuBridge::kMostVisited, 0);
+    bridge_->AddItemToMenu(item, menu, HistoryMenuBridge::kVisited, 0);
 
     item = new HistoryMenuBridge::HistoryItem();
     item->url = GURL("http://apple.com");
     item->session_id = 1;
-    bridge_->AddItemToMenu(item, menu, HistoryMenuBridge::kMostVisited, 1);
+    bridge_->AddItemToMenu(item, menu, HistoryMenuBridge::kVisited, 1);
   }
 
   std::map<NSMenuItem*, HistoryMenuBridge::HistoryItem*>& menu_item_map() {
@@ -72,7 +71,6 @@ class HistoryMenuCocoaControllerTest : public CocoaProfileTest {
 };
 
 TEST_F(HistoryMenuCocoaControllerTest, OpenURLForItem) {
-
   scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@"History"]);
   CreateItems(menu.get());
 
