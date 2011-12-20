@@ -783,7 +783,7 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       std::vector<int> indices = GetIndicesForCommand(context_index);
       for (size_t i = 0; i < indices.size(); ++i) {
         TabContentsWrapper* tab = GetTabContentsAt(indices[i]);
-        if (tab && tab->tab_contents()->delegate()->CanReloadContents(
+        if (tab && tab->tab_contents()->GetDelegate()->CanReloadContents(
                 tab->tab_contents())) {
           return true;
         }
@@ -844,7 +844,7 @@ void TabStripModel::ExecuteContextMenuCommand(
       std::vector<int> indices = GetIndicesForCommand(context_index);
       for (size_t i = 0; i < indices.size(); ++i) {
         TabContentsWrapper* tab = GetTabContentsAt(indices[i]);
-        if (tab && tab->tab_contents()->delegate()->CanReloadContents(
+        if (tab && tab->tab_contents()->GetDelegate()->CanReloadContents(
                 tab->tab_contents())) {
           tab->tab_contents()->controller().Reload(true);
         }

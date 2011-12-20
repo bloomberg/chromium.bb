@@ -346,7 +346,7 @@ void OmniboxViewViews::SaveStateToTab(TabContents* tab) {
   gfx::SelectionModel selection;
   textfield_->GetSelectionModel(&selection);
   GetStateAccessor()->SetProperty(
-      tab->property_bag(),
+      tab->GetPropertyBag(),
       AutocompleteEditState(model_state, ViewState(selection)));
 }
 
@@ -365,7 +365,7 @@ void OmniboxViewViews::Update(const TabContents* contents) {
   if (contents) {
     RevertAll();
     const AutocompleteEditState* state =
-        GetStateAccessor()->GetProperty(contents->property_bag());
+        GetStateAccessor()->GetProperty(contents->GetPropertyBag());
     if (state) {
       model_->RestoreState(state->model_state);
 

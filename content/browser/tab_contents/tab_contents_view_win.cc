@@ -226,13 +226,13 @@ void TabContentsViewWin::UpdateDragCursor(WebKit::WebDragOperation operation) {
 }
 
 void TabContentsViewWin::GotFocus() {
-  if (tab_contents_->delegate())
-    tab_contents_->delegate()->TabContentsFocused(tab_contents_);
+  if (tab_contents_->GetDelegate())
+    tab_contents_->GetDelegate()->TabContentsFocused(tab_contents_);
 }
 
 void TabContentsViewWin::TakeFocus(bool reverse) {
-  if (tab_contents_->delegate())
-    tab_contents_->delegate()->TakeFocus(reverse);
+  if (tab_contents_->GetDelegate())
+    tab_contents_->GetDelegate()->TakeFocus(reverse);
 }
 
 LRESULT TabContentsViewWin::OnWindowPosChanged(

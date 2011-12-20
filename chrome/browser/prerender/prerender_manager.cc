@@ -109,7 +109,7 @@ class PrerenderManager::OnCloseTabContentsDeleter
                             TabContentsWrapper* tab)
       : manager_(manager),
         tab_(tab) {
-    tab_->tab_contents()->set_delegate(this);
+    tab_->tab_contents()->SetDelegate(this);
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         base::Bind(&OnCloseTabContentsDeleter::ScheduleTabContentsForDeletion,
                    this->AsWeakPtr(), true), kDeleteWithExtremePrejudiceTimeMs);
@@ -133,7 +133,7 @@ class PrerenderManager::OnCloseTabContentsDeleter
   static const int kDeleteWithExtremePrejudiceTimeMs = 3000;
 
   void ScheduleTabContentsForDeletion(bool timeout) {
-    tab_->tab_contents()->set_delegate(NULL);
+    tab_->tab_contents()->SetDelegate(NULL);
     manager_->ScheduleDeleteOldTabContents(tab_.release(), this);
     UMA_HISTOGRAM_BOOLEAN("Prerender.TabContentsDeleterTimeout", timeout);
   }

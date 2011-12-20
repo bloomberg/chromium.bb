@@ -3719,7 +3719,7 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
   if (constrained != wrapper) {
     // Download in a constrained popup is shown in the tab that opened it.
     TabContents* constrained_tab = constrained->tab_contents();
-    constrained_tab->delegate()->OnStartDownload(constrained_tab, download);
+    constrained_tab->GetDelegate()->OnStartDownload(constrained_tab, download);
     return;
   }
 
@@ -5020,7 +5020,7 @@ Browser* Browser::GetOrCreateTabbedBrowser(Profile* profile) {
 
 void Browser::SetAsDelegate(TabContentsWrapper* tab, Browser* delegate) {
   // TabContents...
-  tab->tab_contents()->set_delegate(delegate);
+  tab->tab_contents()->SetDelegate(delegate);
 
   // ...and all the helpers.
   tab->blocked_content_tab_helper()->set_delegate(delegate);

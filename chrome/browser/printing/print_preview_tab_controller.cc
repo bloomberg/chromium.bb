@@ -303,7 +303,7 @@ void PrintPreviewTabController::OnNavEntryCommitted(
         SetInitiatorTabURLAndTitle(preview_tab);
 
         // Disabling the delegate will prevent all future navigation.
-        tab->tab_contents()->set_delegate(NULL);
+        tab->tab_contents()->SetDelegate(NULL);
         return;
       }
 

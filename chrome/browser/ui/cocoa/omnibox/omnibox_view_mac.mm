@@ -112,10 +112,10 @@ base::PropertyAccessor<OmniboxViewMacState>* GetStateAccessor() {
 // Accessors for storing and getting the state from the tab.
 void StoreStateToTab(TabContents* tab,
                      const OmniboxViewMacState& state) {
-  GetStateAccessor()->SetProperty(tab->property_bag(), state);
+  GetStateAccessor()->SetProperty(tab->GetPropertyBag(), state);
 }
 const OmniboxViewMacState* GetStateFromTab(const TabContents* tab) {
-  return GetStateAccessor()->GetProperty(tab->property_bag());
+  return GetStateAccessor()->GetProperty(tab->GetPropertyBag());
 }
 
 // Helper to make converting url_parse ranges to NSRange easier to

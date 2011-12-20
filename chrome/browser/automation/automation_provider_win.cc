@@ -285,21 +285,22 @@ void AutomationProvider::OnTabReposition(
 
 void AutomationProvider::OnForwardContextMenuCommandToChrome(int tab_handle,
                                                              int command) {
-  if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
-    if (!tab) {
-      NOTREACHED();
-      return;
-    }
+  if (!tab_tracker_->ContainsHandle(tab_handle))
+    return;
 
-    TabContents* tab_contents = tab->tab_contents();
-    if (!tab_contents || !tab_contents->delegate()) {
-      NOTREACHED();
-      return;
-    }
-
-    tab_contents->delegate()->ExecuteContextMenuCommand(command);
+  NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+  if (!tab) {
+    NOTREACHED();
+    return;
   }
+
+  TabContents* tab_contents = tab->tab_contents();
+  if (!tab_contents || !tab_contents->GetDelegate()) {
+    NOTREACHED();
+    return;
+  }
+
+  tab_contents->GetDelegate()->ExecuteContextMenuCommand(command);
 }
 
 void AutomationProvider::ConnectExternalTab(

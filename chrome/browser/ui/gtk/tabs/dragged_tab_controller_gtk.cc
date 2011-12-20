@@ -154,8 +154,8 @@ DraggedTabData DraggedTabControllerGtk::InitDraggedTabData(TabGtk* tab) {
   // collected/destroyed while the drag is in process, leading to
   // nasty crashes.
   TabContentsDelegate* original_delegate =
-      contents->tab_contents()->delegate();
-  contents->tab_contents()->set_delegate(this);
+      contents->tab_contents()->GetDelegate();
+  contents->tab_contents()->SetDelegate(this);
 
   DraggedTabData dragged_tab_data(tab, contents, original_delegate,
                                   source_model_index, pinned, mini);
@@ -228,8 +228,8 @@ void DraggedTabControllerGtk::Observe(
   for (size_t i = 0; i < drag_data_->size(); ++i) {
     if (drag_data_->get(i)->contents_->tab_contents() == destroyed_contents) {
       // One of the tabs we're dragging has been destroyed. Cancel the drag.
-      if (destroyed_contents->delegate() == this)
-        destroyed_contents->set_delegate(NULL);
+      if (destroyed_contents->GetDelegate() == this)
+        destroyed_contents->SetDelegate(NULL);
       drag_data_->get(i)->contents_ = NULL;
       drag_data_->get(i)->original_delegate_ = NULL;
       EndDragImpl(TAB_DESTROYED);
@@ -423,7 +423,7 @@ void DraggedTabControllerGtk::Attach(TabStripGtk* attached_tabstrip,
     // Remove ourselves as the delegate now that the dragged TabContents is
     // being inserted back into a Browser.
     for (size_t i = 0; i < drag_data_->size(); ++i) {
-      drag_data_->get(i)->contents_->tab_contents()->set_delegate(NULL);
+      drag_data_->get(i)->contents_->tab_contents()->SetDelegate(NULL);
       drag_data_->get(i)->original_delegate_ = NULL;
     }
 
@@ -487,7 +487,7 @@ void DraggedTabControllerGtk::Detach() {
 
   // Detaching resets the delegate, but we still want to be the delegate.
   for (size_t i = 0; i < drag_data_->size(); ++i)
-    drag_data_->get(i)->contents_->tab_contents()->set_delegate(this);
+    drag_data_->get(i)->contents_->tab_contents()->SetDelegate(this);
 
   attached_tabstrip_ = NULL;
 }
@@ -782,7 +782,7 @@ bool DraggedTabControllerGtk::CompleteDrag() {
 void DraggedTabControllerGtk::ResetDelegates() {
   for (size_t i = 0; i < drag_data_->size(); ++i) {
     if (drag_data_->get(i)->contents_ &&
-        drag_data_->get(i)->contents_->tab_contents()->delegate() == this) {
+        drag_data_->get(i)->contents_->tab_contents()->GetDelegate() == this) {
       drag_data_->get(i)->ResetDelegate();
     }
   }

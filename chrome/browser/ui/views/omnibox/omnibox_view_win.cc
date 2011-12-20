@@ -554,7 +554,7 @@ void OmniboxViewWin::SaveStateToTab(TabContents* tab) {
 
   CHARRANGE selection;
   GetSelection(selection);
-  GetStateAccessor()->SetProperty(tab->property_bag(),
+  GetStateAccessor()->SetProperty(tab->GetPropertyBag(),
       AutocompleteEditState(
           model_state,
           State(selection, saved_selection_for_focus_change_)));
@@ -587,7 +587,7 @@ void OmniboxViewWin::Update(const TabContents* tab_for_state_restoring) {
     RevertAll();
 
     const AutocompleteEditState* state = GetStateAccessor()->GetProperty(
-        tab_for_state_restoring->property_bag());
+        tab_for_state_restoring->GetPropertyBag());
     if (state) {
       model_->RestoreState(state->model_state);
 

@@ -264,18 +264,7 @@ TabContents::~TabContents() {
 
   FOR_EACH_OBSERVER(TabContentsObserver, observers_, TabContentsDestroyed());
 
-  set_delegate(NULL);
-}
-
-// TODO(cbentzel): Either remove the debugging code, or rename to SetDelegate.
-void TabContents::set_delegate(TabContentsDelegate* delegate) {
-  if (delegate == delegate_)
-    return;
-  if (delegate_)
-    delegate_->Detach(this);
-  delegate_ = delegate;
-  if (delegate_)
-    delegate_->Attach(this);
+  SetDelegate(NULL);
 }
 
 bool TabContents::OnMessageReceived(const IPC::Message& message) {
@@ -336,7 +325,7 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
 void TabContents::RunFileChooser(
     RenderViewHost* render_view_host,
     const content::FileChooserParams& params) {
-  delegate()->RunFileChooser(this, params);
+  delegate_->RunFileChooser(this, params);
 }
 
 content::RenderProcessHost* TabContents::GetRenderProcessHost() const {
@@ -758,21 +747,19 @@ bool TabContents::FocusLocationBarByDefault() {
 }
 
 void TabContents::SetFocusToLocationBar(bool select_all) {
-  if (delegate())
-    delegate()->SetFocusToLocationBar(select_all);
+  if (delegate_)
+    delegate_->SetFocusToLocationBar(select_all);
 }
 
 bool TabContents::CanDownload(int request_id) {
-  TabContentsDelegate* d = delegate();
-  if (d)
-    return d->CanDownload(this, request_id);
+  if (delegate_)
+    return delegate_->CanDownload(this, request_id);
   return true;
 }
 
 void TabContents::OnStartDownload(DownloadItem* download) {
-  TabContentsDelegate* d = delegate();
-  if (d)
-    d->OnStartDownload(this, download);
+  if (delegate_)
+    delegate_->OnStartDownload(this, download);
 }
 
 void TabContents::OnSavePage() {
@@ -842,7 +829,7 @@ bool TabContents::ShouldAcceptDragAndDrop() const {
 #if defined(OS_CHROMEOS)
   // ChromeOS panels (pop-ups) do not take drag-n-drop.
   // See http://crosbug.com/2413
-  if (delegate() && delegate()->IsPopupOrPanel(this))
+  if (delegate_ && delegate_->IsPopupOrPanel(this))
     return false;
   return true;
 #else
@@ -853,8 +840,8 @@ bool TabContents::ShouldAcceptDragAndDrop() const {
 void TabContents::SystemDragEnded() {
   if (render_view_host())
     render_view_host()->DragSourceSystemDragEnded();
-  if (delegate())
-    delegate()->DragEnded();
+  if (delegate_)
+    delegate_->DragEnded();
 }
 
 double TabContents::GetZoomLevel() const {
@@ -910,7 +897,7 @@ void TabContents::ViewFrameSource(const GURL& url,
 
 void TabContents::SetContentRestrictions(int restrictions) {
   content_restrictions_ = restrictions;
-  delegate()->ContentRestrictionsChanged(this);
+  delegate_->ContentRestrictionsChanged(this);
 }
 
 void TabContents::OnRegisterIntentService(const string16& action,
@@ -918,14 +905,14 @@ void TabContents::OnRegisterIntentService(const string16& action,
                                           const string16& href,
                                           const string16& title,
                                           const string16& disposition) {
-  delegate()->RegisterIntentHandler(
+  delegate_->RegisterIntentHandler(
       this, action, type, href, title, disposition);
 }
 
 void TabContents::OnWebIntentDispatch(const webkit_glue::WebIntentData& intent,
                                       int intent_id) {
   IntentsHostImpl* intents_host = new IntentsHostImpl(this, intent, intent_id);
-  delegate()->WebIntentDispatch(this, intents_host);
+  delegate_->WebIntentDispatch(this, intents_host);
 }
 
 void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
@@ -1156,17 +1143,17 @@ void TabContents::OnUpdateZoomLimits(int minimum_percent,
 
 void TabContents::OnEnumerateDirectory(int request_id,
                                        const FilePath& path) {
-  delegate()->EnumerateDirectory(this, request_id, path);
+  delegate_->EnumerateDirectory(this, request_id, path);
 }
 
 void TabContents::OnJSOutOfMemory() {
-  delegate()->JSOutOfMemory(this);
+  delegate_->JSOutOfMemory(this);
 }
 
 void TabContents::OnRegisterProtocolHandler(const std::string& protocol,
                                             const GURL& url,
                                             const string16& title) {
-  delegate()->RegisterProtocolHandler(this, protocol, url, title);
+  delegate_->RegisterProtocolHandler(this, protocol, url, title);
 }
 
 void TabContents::OnFindReply(int request_id,
@@ -1174,8 +1161,8 @@ void TabContents::OnFindReply(int request_id,
                               const gfx::Rect& selection_rect,
                               int active_match_ordinal,
                               bool final_update) {
-  delegate()->FindReply(this, request_id, number_of_matches, selection_rect,
-                        active_match_ordinal, final_update);
+  delegate_->FindReply(this, request_id, number_of_matches, selection_rect,
+                       active_match_ordinal, final_update);
   // Send a notification to the renderer that we are ready to receive more
   // results from the scoping effort of the Find operation. The FindInPage
   // scoping is asynchronous and periodically sends results back up to the
@@ -1187,7 +1174,7 @@ void TabContents::OnFindReply(int request_id,
 }
 
 void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
-  delegate()->CrashedPlugin(this, plugin_path);
+  delegate_->CrashedPlugin(this, plugin_path);
 }
 
 void TabContents::OnAppCacheAccessed(const GURL& manifest_url,
@@ -1417,6 +1404,29 @@ void TabContents::NotifyDisconnected() {
       content::NotificationService::NoDetails());
 }
 
+const base::PropertyBag* TabContents::GetPropertyBag() const {
+  return &property_bag_;
+}
+
+base::PropertyBag* TabContents::GetPropertyBag() {
+  return &property_bag_;
+}
+
+TabContentsDelegate* TabContents::GetDelegate() {
+  return delegate_;
+}
+
+void TabContents::SetDelegate(TabContentsDelegate* delegate) {
+  // TODO(cbentzel): remove this debugging code?
+  if (delegate == delegate_)
+    return;
+  if (delegate_)
+    delegate_->Detach(this);
+  delegate_ = delegate;
+  if (delegate_)
+    delegate_->Attach(this);
+}
+
 RenderViewHostDelegate::View* TabContents::GetViewDelegate() {
   return view_.get();
 }
@@ -1568,8 +1578,8 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
   // Run post-commit tasks.
   if (details.is_main_frame) {
     DidNavigateMainFramePostCommit(details, params);
-    if (delegate())
-      delegate()->DidNavigateMainFramePostCommit(this);
+    if (delegate_)
+      delegate_->DidNavigateMainFramePostCommit(this);
   }
   DidNavigateAnyFramePostCommit(rvh, details, params);
 }
@@ -1627,8 +1637,8 @@ void TabContents::UpdateEncoding(RenderViewHost* render_view_host,
 }
 
 void TabContents::UpdateTargetURL(int32 page_id, const GURL& url) {
-  if (delegate())
-    delegate()->UpdateTargetURL(this, page_id, url);
+  if (delegate_)
+    delegate_->UpdateTargetURL(this, page_id, url);
 }
 
 void TabContents::Close(RenderViewHost* rvh) {
@@ -1655,26 +1665,26 @@ void TabContents::Close(RenderViewHost* rvh) {
   }
 
   // Ignore this if it comes from a RenderViewHost that we aren't showing.
-  if (delegate() && rvh == render_view_host())
-    delegate()->CloseContents(this);
+  if (delegate_ && rvh == render_view_host())
+    delegate_->CloseContents(this);
 }
 
 void TabContents::SwappedOut(RenderViewHost* rvh) {
-  if (delegate() && rvh == render_view_host())
-    delegate()->SwappedOut(this);
+  if (delegate_ && rvh == render_view_host())
+    delegate_->SwappedOut(this);
 }
 
 void TabContents::RequestMove(const gfx::Rect& new_bounds) {
-  if (delegate() && delegate()->IsPopupOrPanel(this))
-    delegate()->MoveContents(this, new_bounds);
+  if (delegate_ && delegate_->IsPopupOrPanel(this))
+    delegate_->MoveContents(this, new_bounds);
 }
 
 void TabContents::DidStartLoading() {
   SetIsLoading(true, NULL);
 
-  if (delegate() && content_restrictions_) {
+  if (delegate_ && content_restrictions_) {
       content_restrictions_ = 0;
-      delegate()->ContentRestrictionsChanged(this);
+      delegate_->ContentRestrictionsChanged(this);
   }
 
   // Notify observers about navigation.
@@ -1712,8 +1722,8 @@ void TabContents::DidCancelLoading() {
 }
 
 void TabContents::DidChangeLoadProgress(double progress) {
-  if (delegate())
-    delegate()->LoadProgressChanged(progress);
+  if (delegate_)
+    delegate_->LoadProgressChanged(progress);
 }
 
 void TabContents::DocumentAvailableInMainFrame(
@@ -1835,8 +1845,8 @@ void TabContents::RunJavaScriptMessage(
 void TabContents::RunBeforeUnloadConfirm(const RenderViewHost* rvh,
                                          const string16& message,
                                          IPC::Message* reply_msg) {
-  if (delegate())
-    delegate()->WillRunBeforeUnloadConfirm();
+  if (delegate_)
+    delegate_->WillRunBeforeUnloadConfirm();
 
   bool suppress_this_message =
       rvh->is_swapped_out() ||
@@ -1923,13 +1933,13 @@ void TabContents::RendererUnresponsive(RenderViewHost* rvh,
   if (!render_view_host() || !render_view_host()->IsRenderViewLive())
     return;
 
-  if (delegate())
-    delegate()->RendererUnresponsive(this);
+  if (delegate_)
+    delegate_->RendererUnresponsive(this);
 }
 
 void TabContents::RendererResponsive(RenderViewHost* render_view_host) {
-  if (delegate())
-    delegate()->RendererResponsive(this);
+  if (delegate_)
+    delegate_->RendererResponsive(this);
 }
 
 void TabContents::LoadStateChanged(const GURL& url,
@@ -1949,15 +1959,15 @@ void TabContents::LoadStateChanged(const GURL& url,
 }
 
 void TabContents::WorkerCrashed() {
-  if (delegate())
-    delegate()->WorkerCrashed(this);
+  if (delegate_)
+    delegate_->WorkerCrashed(this);
 }
 
 void TabContents::BeforeUnloadFiredFromRenderManager(
     bool proceed,
     bool* proceed_to_fire_unload) {
-  if (delegate())
-    delegate()->BeforeUnloadFired(this, proceed, proceed_to_fire_unload);
+  if (delegate_)
+    delegate_->BeforeUnloadFired(this, proceed, proceed_to_fire_unload);
 }
 
 void TabContents::DidStartLoadingFromRenderManager(

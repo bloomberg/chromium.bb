@@ -71,7 +71,7 @@ void ConstrainedHtmlUI::OnDialogCloseMessage(const ListValue* args) {
 
 ConstrainedHtmlUIDelegate* ConstrainedHtmlUI::GetConstrainedDelegate() {
   ConstrainedHtmlUIDelegate** property =
-      GetPropertyAccessor().GetProperty(tab_contents()->property_bag());
+      GetPropertyAccessor().GetProperty(tab_contents()->GetPropertyBag());
   return property ? *property : NULL;
 }
 

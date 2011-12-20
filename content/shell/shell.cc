@@ -58,7 +58,7 @@ Shell* Shell::CreateNewWindow(content::BrowserContext* browser_context,
       routing_id,
       base_tab_contents,
       NULL));
-  shell->tab_contents_->set_delegate(shell);
+  shell->tab_contents_->SetDelegate(shell);
 
 #if defined(OS_WIN)
   TabContentsViewWin* view =

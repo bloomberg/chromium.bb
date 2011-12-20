@@ -36,8 +36,8 @@ namespace {
 // Called when the mouse leaves the widget. We notify our delegate.
 gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event,
                        TabContents* tab_contents) {
-  if (tab_contents->delegate())
-    tab_contents->delegate()->ContentsMouseEvent(
+  if (tab_contents->GetDelegate())
+    tab_contents->GetDelegate()->ContentsMouseEvent(
         tab_contents, gfx::Point(event->x_root, event->y_root), false);
   return FALSE;
 }
@@ -45,8 +45,8 @@ gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event,
 // Called when the mouse moves within the widget. We notify our delegate.
 gboolean OnMouseMove(GtkWidget* widget, GdkEventMotion* event,
                      TabContents* tab_contents) {
-  if (tab_contents->delegate())
-    tab_contents->delegate()->ContentsMouseEvent(
+  if (tab_contents->GetDelegate())
+    tab_contents->GetDelegate()->ContentsMouseEvent(
         tab_contents, gfx::Point(event->x_root, event->y_root), true);
   return FALSE;
 }
@@ -59,7 +59,7 @@ gboolean OnMouseScroll(GtkWidget* widget, GdkEventScroll* event,
     return FALSE;
   }
 
-  TabContentsDelegate* delegate = tab_contents->delegate();
+  TabContentsDelegate* delegate = tab_contents->GetDelegate();
   if (!delegate)
     return FALSE;
 
@@ -282,9 +282,9 @@ void TabContentsViewGtk::GotFocus() {
 // This is called when the renderer asks us to take focus back (i.e., it has
 // iterated past the last focusable element on the page).
 void TabContentsViewGtk::TakeFocus(bool reverse) {
-  if (!tab_contents_->delegate())
+  if (!tab_contents_->GetDelegate())
     return;
-  if (!tab_contents_->delegate()->TakeFocus(reverse)) {
+  if (!tab_contents_->GetDelegate()->TakeFocus(reverse)) {
     gtk_widget_child_focus(GTK_WIDGET(GetTopLevelNativeWindow()),
         reverse ? GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
   }
@@ -401,9 +401,9 @@ void TabContentsViewGtk::StartDragging(const WebDropData& drop_data,
 void TabContentsViewGtk::OnChildSizeRequest(GtkWidget* widget,
                                             GtkWidget* child,
                                             GtkRequisition* requisition) {
-  if (tab_contents_->delegate()) {
+  if (tab_contents_->GetDelegate()) {
     requisition->height +=
-        tab_contents_->delegate()->GetExtraRenderViewHeight();
+        tab_contents_->GetDelegate()->GetExtraRenderViewHeight();
   }
 }
 
@@ -412,8 +412,8 @@ void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
   int width = allocation->width;
   int height = allocation->height;
   // |delegate()| can be NULL here during browser teardown.
-  if (tab_contents_->delegate())
-    height += tab_contents_->delegate()->GetExtraRenderViewHeight();
+  if (tab_contents_->GetDelegate())
+    height += tab_contents_->GetDelegate()->GetExtraRenderViewHeight();
   gfx::Size size(width, height);
   requested_size_ = size;
 

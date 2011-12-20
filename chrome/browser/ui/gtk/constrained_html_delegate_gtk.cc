@@ -101,12 +101,12 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
   TabContents* tab_contents =
       new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
   tab_.reset(new TabContentsWrapper(tab_contents));
-  tab_contents->set_delegate(this);
+  tab_contents->SetDelegate(this);
 
   // Set |this| as a property on the tab contents so that the ConstrainedHtmlUI
   // can get a reference to |this|.
   ConstrainedHtmlUI::GetPropertyAccessor().SetProperty(
-      tab_contents->property_bag(), this);
+      tab_contents->GetPropertyBag(), this);
 
   tab_contents->controller().LoadURL(delegate->GetDialogContentURL(),
                                      content::Referrer(),

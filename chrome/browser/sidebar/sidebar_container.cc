@@ -33,7 +33,7 @@ SidebarContainer::SidebarContainer(TabContents* tab,
   sidebar_contents_.reset(
       new TabContents(Profile::FromBrowserContext(tab->browser_context()),
                       NULL, MSG_ROUTING_NONE, NULL, NULL));
-  sidebar_contents_->set_delegate(this);
+  sidebar_contents_->SetDelegate(this);
 }
 
 SidebarContainer::~SidebarContainer() {

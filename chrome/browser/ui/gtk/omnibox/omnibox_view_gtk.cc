@@ -466,7 +466,7 @@ void OmniboxViewGtk::SaveStateToTab(TabContents* tab) {
   // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
   AutocompleteEditModel::State model_state = model_->GetStateForTabSwitch();
   GetStateAccessor()->SetProperty(
-      tab->property_bag(),
+      tab->GetPropertyBag(),
       AutocompleteEditState(model_state, ViewState(GetSelection())));
 }
 
@@ -484,7 +484,7 @@ void OmniboxViewGtk::Update(const TabContents* contents) {
     selected_text_.clear();
     RevertAll();
     const AutocompleteEditState* state =
-        GetStateAccessor()->GetProperty(contents->property_bag());
+        GetStateAccessor()->GetProperty(contents->GetPropertyBag());
     if (state) {
       model_->RestoreState(state->model_state);
 

@@ -264,7 +264,7 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
         FindInspectedBrowserAndTabIndex(&inspected_browser,
                                         &inspected_tab_index)) {
       BrowserWindow* inspected_window = inspected_browser->window();
-      tab_contents_->tab_contents()->set_delegate(this);
+      tab_contents_->tab_contents()->SetDelegate(this);
       inspected_window->UpdateDevTools();
       tab_contents_->tab_contents()->view()->SetInitialFocus();
       inspected_window->Show();
@@ -558,7 +558,7 @@ void DevToolsWindow::AddNewContents(TabContents* source,
                                     const gfx::Rect& initial_pos,
                                     bool user_gesture) {
   if (inspected_tab_) {
-    inspected_tab_->tab_contents()->delegate()->AddNewContents(
+    inspected_tab_->tab_contents()->GetDelegate()->AddNewContents(
         source, new_contents, disposition, initial_pos, user_gesture);
   }
 }
@@ -681,8 +681,8 @@ void DevToolsWindow::SaveToFile(const std::string& suggested_file_name,
 }
 
 content::JavaScriptDialogCreator* DevToolsWindow::GetJavaScriptDialogCreator() {
-  if (inspected_tab_ && inspected_tab_->tab_contents()->delegate()) {
-    return inspected_tab_->tab_contents()->delegate()->
+  if (inspected_tab_ && inspected_tab_->tab_contents()->GetDelegate()) {
+    return inspected_tab_->tab_contents()->GetDelegate()->
         GetJavaScriptDialogCreator();
   }
   return TabContentsDelegate::GetJavaScriptDialogCreator();

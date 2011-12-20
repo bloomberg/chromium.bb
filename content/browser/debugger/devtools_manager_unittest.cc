@@ -181,9 +181,9 @@ TEST_F(DevToolsManagerTest, ForwardMessageToClient) {
 TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedTab) {
   TestRenderViewHost* inspected_rvh = rvh();
   inspected_rvh->set_render_view_created(true);
-  EXPECT_FALSE(contents()->delegate());
+  EXPECT_FALSE(contents()->GetDelegate());
   TestTabContentsDelegate delegate;
-  contents()->set_delegate(&delegate);
+  contents()->SetDelegate(&delegate);
 
   TestDevToolsClientHost client_host;
   DevToolsAgentHost* agent_host =
@@ -209,7 +209,7 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedTab) {
   MessageLoop::current()->Run();
   EXPECT_TRUE(delegate.renderer_unresponsive_received());
 
-  contents()->set_delegate(NULL);
+  contents()->SetDelegate(NULL);
 }
 
 TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {

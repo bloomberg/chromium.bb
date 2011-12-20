@@ -383,7 +383,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 
 - (void)handlesCloseScriptCommand:(NSScriptCommand*)command {
   TabContents* contents = tabContents_->tab_contents();
-  contents->delegate()->CloseContents(contents);
+  contents->GetDelegate()->CloseContents(contents);
 }
 
 - (void)handlesViewSourceScriptCommand:(NSScriptCommand*)command {

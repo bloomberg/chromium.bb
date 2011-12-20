@@ -465,13 +465,13 @@ void TabContentsViewMac::CloseTab() {
 
 - (void)mouseEvent:(NSEvent *)theEvent {
   TabContents* tabContents = [self tabContents];
-  if (tabContents && tabContents->delegate()) {
+  if (tabContents && tabContents->GetDelegate()) {
     NSPoint location = [NSEvent mouseLocation];
     if ([theEvent type] == NSMouseMoved)
-      tabContents->delegate()->ContentsMouseEvent(
+      tabContents->GetDelegate()->ContentsMouseEvent(
           tabContents, gfx::Point(location.x, location.y), true);
     if ([theEvent type] == NSMouseExited)
-      tabContents->delegate()->ContentsMouseEvent(
+      tabContents->GetDelegate()->ContentsMouseEvent(
           tabContents, gfx::Point(location.x, location.y), false);
   }
 }

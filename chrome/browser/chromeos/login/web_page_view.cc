@@ -89,7 +89,7 @@ void WizardWebPageViewTabContents::DocumentLoadedInFrame(
 
 void WebPageDomView::SetTabContentsDelegate(
     TabContentsDelegate* delegate) {
-  dom_contents_->tab_contents()->set_delegate(delegate);
+  dom_contents_->tab_contents()->SetDelegate(delegate);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

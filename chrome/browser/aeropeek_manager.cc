@@ -948,8 +948,8 @@ void AeroPeekManager::ActivateTab(int tab_id) {
   // We don't have to update thumbnails now since TabStrip will call
   // ActiveTabChanged() when it actually activates this tab.
   TabContents* contents = GetTabContents(tab_id);
-  if (contents && contents->delegate())
-    contents->delegate()->ActivateContents(contents);
+  if (contents && contents->GetDelegate())
+    contents->GetDelegate()->ActivateContents(contents);
 }
 
 void AeroPeekManager::CloseTab(int tab_id) {
@@ -957,8 +957,8 @@ void AeroPeekManager::CloseTab(int tab_id) {
   // TabStrip will call TabClosingAt() when it actually closes this tab. We
   // will delete the AeroPeekWindow object attached to this tab there.
   TabContents* contents = GetTabContents(tab_id);
-  if (contents && contents->delegate())
-    contents->delegate()->CloseContents(contents);
+  if (contents && contents->GetDelegate())
+    contents->GetDelegate()->CloseContents(contents);
 }
 
 void AeroPeekManager::GetContentInsets(gfx::Insets* insets) {

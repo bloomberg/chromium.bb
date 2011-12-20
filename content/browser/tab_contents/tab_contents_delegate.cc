@@ -336,7 +336,7 @@ void TabContentsDelegate::RequestToLockMouse(TabContents* tab) {
 TabContentsDelegate::~TabContentsDelegate() {
   while (!attached_contents_.empty()) {
     TabContents* tab_contents = *attached_contents_.begin();
-    tab_contents->set_delegate(NULL);
+    tab_contents->SetDelegate(NULL);
   }
   DCHECK(attached_contents_.empty());
   content::NotificationService::current()->Notify(

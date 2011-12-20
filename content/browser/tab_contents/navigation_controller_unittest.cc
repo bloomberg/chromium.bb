@@ -379,8 +379,8 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
 
   // Set a TabContentsDelegate to listen for state changes.
   scoped_ptr<TestTabContentsDelegate> delegate(new TestTabContentsDelegate());
-  EXPECT_FALSE(contents()->delegate());
-  contents()->set_delegate(delegate.get());
+  EXPECT_FALSE(contents()->GetDelegate());
+  contents()->SetDelegate(delegate.get());
 
   // Without any navigations, the renderer starts at about:blank.
   const GURL kExistingURL("about:blank");
@@ -407,7 +407,7 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
   EXPECT_EQ(-1, controller().last_committed_entry_index());
   EXPECT_EQ(2, delegate->navigation_state_change_count());
 
-  contents()->set_delegate(NULL);
+  contents()->SetDelegate(NULL);
 }
 
 // Tests that the pending entry state is correct after an abort.
@@ -417,8 +417,8 @@ TEST_F(NavigationControllerTest, LoadURL_AbortCancelsPending) {
 
   // Set a TabContentsDelegate to listen for state changes.
   scoped_ptr<TestTabContentsDelegate> delegate(new TestTabContentsDelegate());
-  EXPECT_FALSE(contents()->delegate());
-  contents()->set_delegate(delegate.get());
+  EXPECT_FALSE(contents()->GetDelegate());
+  contents()->SetDelegate(delegate.get());
 
   // Without any navigations, the renderer starts at about:blank.
   const GURL kExistingURL("about:blank");
@@ -454,7 +454,7 @@ TEST_F(NavigationControllerTest, LoadURL_AbortCancelsPending) {
   EXPECT_EQ(-1, controller().last_committed_entry_index());
   EXPECT_EQ(2, delegate->navigation_state_change_count());
 
-  contents()->set_delegate(NULL);
+  contents()->SetDelegate(NULL);
 }
 
 // Tests that the pending entry state is correct after a redirect and abort.
@@ -465,8 +465,8 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
 
   // Set a TabContentsDelegate to listen for state changes.
   scoped_ptr<TestTabContentsDelegate> delegate(new TestTabContentsDelegate());
-  EXPECT_FALSE(contents()->delegate());
-  contents()->set_delegate(delegate.get());
+  EXPECT_FALSE(contents()->GetDelegate());
+  contents()->SetDelegate(delegate.get());
 
   // Without any navigations, the renderer starts at about:blank.
   const GURL kExistingURL("about:blank");
@@ -515,7 +515,7 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
   EXPECT_EQ(-1, controller().last_committed_entry_index());
   EXPECT_EQ(2, delegate->navigation_state_change_count());
 
-  contents()->set_delegate(NULL);
+  contents()->SetDelegate(NULL);
 }
 
 TEST_F(NavigationControllerTest, Reload) {

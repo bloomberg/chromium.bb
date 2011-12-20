@@ -249,7 +249,7 @@ TabContents* WebIntentPickerGtk::SetInlineDisposition(const GURL& url) {
       browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_tab_contents_.reset(new TabContentsWrapper(tab_contents));
   inline_disposition_delegate_.reset(new InlineDispositionDelegate);
-  tab_contents->set_delegate(inline_disposition_delegate_.get());
+  tab_contents->SetDelegate(inline_disposition_delegate_.get());
   tab_contents_container_.reset(new TabContentsContainerGtk(NULL));
   tab_contents_container_->SetTab(inline_disposition_tab_contents_.get());
 

@@ -196,7 +196,7 @@ void NavigationController::ReloadInternal(bool check_for_repost,
 
     pending_reload_ = reload_type;
     tab_contents_->Activate();
-    tab_contents_->delegate()->ShowRepostFormWarningDialog(tab_contents_);
+    tab_contents_->GetDelegate()->ShowRepostFormWarningDialog(tab_contents_);
   } else {
     DiscardNonCommittedEntriesInternal();
 

@@ -293,8 +293,8 @@ CreateWebApplicationShortcutsDialogGtk::CreateWebApplicationShortcutsDialogGtk(
 }
 
 void CreateWebApplicationShortcutsDialogGtk::OnCreatedShortcut() {
-  if (tab_contents_->tab_contents()->delegate())
-    tab_contents_->tab_contents()->delegate()->ConvertContentsToApplication(
+  if (tab_contents_->tab_contents()->GetDelegate())
+    tab_contents_->tab_contents()->GetDelegate()->ConvertContentsToApplication(
         tab_contents_->tab_contents());
 }
 

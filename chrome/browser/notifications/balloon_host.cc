@@ -118,7 +118,7 @@ void BalloonHost::Init() {
       NULL,
       NULL));
   tab_contents_->set_view_type(chrome::VIEW_TYPE_NOTIFICATION);
-  tab_contents_->set_delegate(this);
+  tab_contents_->SetDelegate(this);
   Observe(tab_contents_.get());
 
   tab_contents_->controller().LoadURL(

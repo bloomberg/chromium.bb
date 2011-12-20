@@ -287,7 +287,7 @@ void PrerenderContents::StartPrerendering(
       starting_page_id_);
 
   tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
-  new_contents->set_delegate(tab_contents_delegate_.get());
+  new_contents->SetDelegate(tab_contents_delegate_.get());
 
   // Set the size of the prerender TabContents.
   prerender_contents_->tab_contents()->view()->SizeContents(tab_bounds.size());
@@ -650,7 +650,7 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
 }
 
 TabContentsWrapper* PrerenderContents::ReleasePrerenderContents() {
-  prerender_contents_->tab_contents()->set_delegate(NULL);
+  prerender_contents_->tab_contents()->SetDelegate(NULL);
   render_view_host_observer_.reset();
   TabContentsObserver::Observe(NULL);
   return prerender_contents_.release();

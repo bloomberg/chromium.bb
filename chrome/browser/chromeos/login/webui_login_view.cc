@@ -147,7 +147,7 @@ void WebUILoginView::Init(views::Widget* login_window) {
   webui_login_->SetVisible(true);
 
   TabContents* tab_contents = webui_login_->dom_contents()->tab_contents();
-  tab_contents->set_delegate(this);
+  tab_contents->SetDelegate(this);
 
   tab_watcher_.reset(new TabFirstRenderWatcher(tab_contents, this));
 }

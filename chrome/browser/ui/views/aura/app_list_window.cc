@@ -96,7 +96,7 @@ void AppListWindow::Init(const gfx::Rect& bounds) {
 
   TabContents* tab = contents_->dom_contents()->tab_contents();
   tab_watcher_.reset(new TabFirstRenderWatcher(tab, this));
-  tab->set_delegate(this);
+  tab->SetDelegate(this);
 
   contents_->LoadURL(GURL(chrome::kChromeUIAppListURL));
   static_cast<AppListUI*>(tab->web_ui())->set_delegate(this);

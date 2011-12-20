@@ -132,7 +132,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   host_contents_.reset(new TabContents(
       profile_, site_instance, MSG_ROUTING_NONE, NULL, NULL));
   TabContentsObserver::Observe(host_contents_.get());
-  host_contents_->set_delegate(this);
+  host_contents_->SetDelegate(this);
   host_contents_->set_view_type(host_type);
 
   // TODO(mpcomplete): This was lifted from PrefsTabHelper, but it might be

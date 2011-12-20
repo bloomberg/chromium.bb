@@ -27,6 +27,7 @@
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/web_page.h"
 #include "content/public/common/renderer_preferences.h"
 #include "net/base/load_states.h"
 #include "ui/gfx/native_widget_types.h"
@@ -50,9 +51,8 @@ namespace webkit_glue {
 struct WebIntentData;
 }
 
-// Describes what goes in the main content area of a tab. TabContents is
-// the only type of TabContents, and these should be merged together.
-class CONTENT_EXPORT TabContents : public PageNavigator,
+class CONTENT_EXPORT TabContents : public content::WebPage,
+                                   public PageNavigator,
                                    public RenderViewHostDelegate,
                                    public RenderViewHostManager::Delegate,
                                    public content::JavaScriptDialogDelegate {
@@ -83,15 +83,6 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   virtual ~TabContents();
 
   // Intrinsic tab state -------------------------------------------------------
-
-  // Returns the property bag for this tab contents, where callers can add
-  // extra data they may wish to associate with the tab. Returns a pointer
-  // rather than a reference since the PropertyAccessors expect this.
-  const base::PropertyBag* property_bag() const { return &property_bag_; }
-  base::PropertyBag* property_bag() { return &property_bag_; }
-
-  TabContentsDelegate* delegate() const { return delegate_; }
-  void set_delegate(TabContentsDelegate* delegate);
 
   // Gets the controller for this tab contents.
   NavigationController& controller() { return controller_; }
@@ -478,6 +469,13 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   JavaBridgeDispatcherHostManager* java_bridge_dispatcher_host_manager() const {
     return java_bridge_dispatcher_host_manager_.get();
   }
+
+  // content::WebPage ----------------------------------------------------------
+  virtual const base::PropertyBag* GetPropertyBag() const OVERRIDE;
+  virtual base::PropertyBag* GetPropertyBag() OVERRIDE;
+  virtual TabContentsDelegate* GetDelegate() OVERRIDE;
+  virtual void SetDelegate(TabContentsDelegate* delegate) OVERRIDE;
+
 
   // RenderViewHostDelegate ----------------------------------------------------
 

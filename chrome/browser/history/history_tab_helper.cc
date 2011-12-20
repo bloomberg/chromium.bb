@@ -99,8 +99,8 @@ void HistoryTabHelper::DidNavigateAnyFrame(
   // the TabContents' URL getter does.
   scoped_refptr<history::HistoryAddPageArgs> add_page_args(
       CreateHistoryAddPageArgs(tab_contents()->GetURL(), details, params));
-  if (!tab_contents()->delegate() ||
-      !tab_contents()->delegate()->ShouldAddNavigationToHistory(
+  if (!tab_contents()->GetDelegate() ||
+      !tab_contents()->GetDelegate()->ShouldAddNavigationToHistory(
           *add_page_args, details.type))
     return;
 

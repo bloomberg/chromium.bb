@@ -1054,8 +1054,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return source_tab_contents_->controller().CanGoForward();
 
     case IDC_RELOAD:
-      return source_tab_contents_->delegate() &&
-          source_tab_contents_->delegate()->CanReloadContents(
+      return source_tab_contents_->GetDelegate() &&
+          source_tab_contents_->GetDelegate()->CanReloadContents(
               source_tab_contents_);
 
     case IDC_VIEW_SOURCE:
@@ -1415,8 +1415,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           params_.link_url,
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
           params_.frame_id,
-          source_tab_contents_->delegate() &&
-              source_tab_contents_->delegate()->IsApplication() ?
+          source_tab_contents_->GetDelegate() &&
+              source_tab_contents_->GetDelegate()->IsApplication() ?
                   NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB,
           content::PAGE_TRANSITION_LINK);
       break;

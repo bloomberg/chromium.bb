@@ -56,7 +56,7 @@ void HtmlDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
   std::string dialog_args;
   std::vector<WebUIMessageHandler*> handlers;
   HtmlDialogUIDelegate** delegate = GetPropertyAccessor().GetProperty(
-      tab_contents()->property_bag());
+      tab_contents()->GetPropertyBag());
   if (delegate) {
     dialog_args = (*delegate)->GetDialogArgs();
     (*delegate)->GetWebUIMessageHandlers(&handlers);
@@ -80,7 +80,7 @@ void HtmlDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
 
 void HtmlDialogUI::OnDialogClosed(const ListValue* args) {
   HtmlDialogUIDelegate** delegate = GetPropertyAccessor().GetProperty(
-      tab_contents()->property_bag());
+      tab_contents()->GetPropertyBag());
   if (delegate) {
     std::string json_retval;
     if (args && !args->empty() && !args->GetString(0, &json_retval))

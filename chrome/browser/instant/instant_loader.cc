@@ -777,7 +777,7 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
               &preview_contents_->tab_contents()->controller()));
 #endif
     }
-    preview_contents_->tab_contents()->set_delegate(NULL);
+    preview_contents_->tab_contents()->SetDelegate(NULL);
     ready_ = false;
   }
   update_bounds_timer_.Stop();
@@ -987,7 +987,7 @@ void InstantLoader::ReplacePreviewContents(TabContentsWrapper* old_tc,
   // Cleanup the old preview contents.
   old_tc->constrained_window_tab_helper()->set_delegate(NULL);
   old_tc->core_tab_helper()->set_delegate(NULL);
-  old_tc->tab_contents()->set_delegate(NULL);
+  old_tc->tab_contents()->SetDelegate(NULL);
 
 #if defined(OS_MACOSX)
   registrar_.Remove(
@@ -1011,7 +1011,7 @@ void InstantLoader::ReplacePreviewContents(TabContentsWrapper* old_tc,
 }
 
 void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
-  preview_contents_->tab_contents()->set_delegate(
+  preview_contents_->tab_contents()->SetDelegate(
       preview_tab_contents_delegate_.get());
   preview_contents_->blocked_content_tab_helper()->SetAllContentsBlocked(true);
   preview_contents_->constrained_window_tab_helper()->set_delegate(

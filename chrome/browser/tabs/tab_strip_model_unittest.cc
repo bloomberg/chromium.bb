@@ -187,12 +187,12 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
 
   // Sets the id of the specified contents.
   void SetID(TabContents* contents, int id) {
-    GetIDAccessor()->SetProperty(contents->property_bag(), id);
+    GetIDAccessor()->SetProperty(contents->GetPropertyBag(), id);
   }
 
   // Returns the id of the specified contents.
   int GetID(TabContents* contents) {
-    return *GetIDAccessor()->GetProperty(contents->property_bag());
+    return *GetIDAccessor()->GetProperty(contents->GetPropertyBag());
   }
 
   // Returns the state of the given tab strip as a string. The state consists

@@ -269,8 +269,8 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
       params.frame_name);
 
   if (new_contents) {
-    if (tab_contents->delegate())
-      tab_contents->delegate()->TabContentsCreated(new_contents);
+    if (tab_contents->GetDelegate())
+      tab_contents->GetDelegate()->TabContentsCreated(new_contents);
 
     RetargetingDetails details;
     details.source_tab_contents = tab_contents;
@@ -309,8 +309,8 @@ TabContents* RenderViewHostDelegateViewHelper::ShowCreatedWindow(
 
 RenderWidgetHostView* RenderViewHostDelegateViewHelper::ShowCreatedWidget(
     TabContents* tab_contents, int route_id, const gfx::Rect& initial_pos) {
-  if (tab_contents->delegate())
-    tab_contents->delegate()->RenderWidgetShowing();
+  if (tab_contents->GetDelegate())
+    tab_contents->GetDelegate()->RenderWidgetShowing();
 
   RenderWidgetHostView* widget_host_view = GetCreatedWidget(route_id);
   widget_host_view->InitAsPopup(tab_contents->GetRenderWidgetHostView(),
@@ -322,8 +322,8 @@ RenderWidgetHostView* RenderViewHostDelegateViewHelper::ShowCreatedWidget(
 RenderWidgetHostView*
     RenderViewHostDelegateViewHelper::ShowCreatedFullscreenWidget(
         TabContents* tab_contents, int route_id) {
-  if (tab_contents->delegate())
-    tab_contents->delegate()->RenderWidgetShowing();
+  if (tab_contents->GetDelegate())
+    tab_contents->GetDelegate()->RenderWidgetShowing();
 
   RenderWidgetHostView* widget_host_view = GetCreatedWidget(route_id);
   widget_host_view->InitAsFullscreen(tab_contents->GetRenderWidgetHostView());

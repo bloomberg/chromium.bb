@@ -180,7 +180,7 @@ bool ExternalTabContainer::Init(Profile* profile,
   if (!infobars_enabled)
     tab_contents_->infobar_tab_helper()->set_infobars_enabled(false);
 
-  tab_contents_->tab_contents()->set_delegate(this);
+  tab_contents_->tab_contents()->SetDelegate(this);
 
   tab_contents_->tab_contents()->
       GetMutableRendererPrefs()->browser_handles_top_level_requests =

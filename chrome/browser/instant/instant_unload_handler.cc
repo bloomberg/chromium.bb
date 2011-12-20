@@ -22,7 +22,7 @@ class InstantUnloadHandler::TabContentsDelegateImpl
       : handler_(handler),
         tab_contents_(tab_contents),
         index_(index) {
-    tab_contents->tab_contents()->set_delegate(this);
+    tab_contents->tab_contents()->SetDelegate(this);
   }
 
   ~TabContentsDelegateImpl() {
@@ -31,7 +31,7 @@ class InstantUnloadHandler::TabContentsDelegateImpl
   // Releases ownership of the TabContentsWrapper to the caller.
   TabContentsWrapper* ReleaseTab() {
     TabContentsWrapper* tab = tab_contents_.release();
-    tab->tab_contents()->set_delegate(NULL);
+    tab->tab_contents()->SetDelegate(NULL);
     return tab;
   }
 

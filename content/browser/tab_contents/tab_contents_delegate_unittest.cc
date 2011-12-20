@@ -60,39 +60,39 @@ TEST(TabContentsDelegateTest, UnregisterInDestructor) {
       new TabContents(&browser_context, NULL, 0, NULL, NULL));
   scoped_ptr<TabContents> contents_b(
       new TabContents(&browser_context, NULL, 0, NULL, NULL));
-  EXPECT_TRUE(contents_a->delegate() == NULL);
-  EXPECT_TRUE(contents_b->delegate() == NULL);
+  EXPECT_TRUE(contents_a->GetDelegate() == NULL);
+  EXPECT_TRUE(contents_b->GetDelegate() == NULL);
 
   scoped_ptr<MockTabContentsDelegate> delegate(new MockTabContentsDelegate());
 
   // Setting a delegate should work correctly.
-  contents_a->set_delegate(delegate.get());
-  EXPECT_EQ(delegate.get(), contents_a->delegate());
-  EXPECT_TRUE(contents_b->delegate() == NULL);
+  contents_a->SetDelegate(delegate.get());
+  EXPECT_EQ(delegate.get(), contents_a->GetDelegate());
+  EXPECT_TRUE(contents_b->GetDelegate() == NULL);
 
   // A delegate can be a delegate to multiple TabContents.
-  contents_b->set_delegate(delegate.get());
-  EXPECT_EQ(delegate.get(), contents_a->delegate());
-  EXPECT_EQ(delegate.get(), contents_b->delegate());
+  contents_b->SetDelegate(delegate.get());
+  EXPECT_EQ(delegate.get(), contents_a->GetDelegate());
+  EXPECT_EQ(delegate.get(), contents_b->GetDelegate());
 
   // Setting the same delegate multiple times should work correctly.
-  contents_b->set_delegate(delegate.get());
-  EXPECT_EQ(delegate.get(), contents_a->delegate());
-  EXPECT_EQ(delegate.get(), contents_b->delegate());
+  contents_b->SetDelegate(delegate.get());
+  EXPECT_EQ(delegate.get(), contents_a->GetDelegate());
+  EXPECT_EQ(delegate.get(), contents_b->GetDelegate());
 
   // Setting delegate to NULL should work correctly.
-  contents_b->set_delegate(NULL);
-  EXPECT_EQ(delegate.get(), contents_a->delegate());
-  EXPECT_TRUE(contents_b->delegate() == NULL);
+  contents_b->SetDelegate(NULL);
+  EXPECT_EQ(delegate.get(), contents_a->GetDelegate());
+  EXPECT_TRUE(contents_b->GetDelegate() == NULL);
 
   // Destroying the delegate while it is still the delegate
   // for a TabContents should unregister it.
-  contents_b->set_delegate(delegate.get());
-  EXPECT_EQ(delegate.get(), contents_a->delegate());
-  EXPECT_EQ(delegate.get(), contents_b->delegate());
+  contents_b->SetDelegate(delegate.get());
+  EXPECT_EQ(delegate.get(), contents_a->GetDelegate());
+  EXPECT_EQ(delegate.get(), contents_b->GetDelegate());
   delegate.reset(NULL);
-  EXPECT_TRUE(contents_a->delegate() == NULL);
-  EXPECT_TRUE(contents_b->delegate() == NULL);
+  EXPECT_TRUE(contents_a->GetDelegate() == NULL);
+  EXPECT_TRUE(contents_b->GetDelegate() == NULL);
 
   // Destroy the tab contents and run the message loop to prevent leaks.
   contents_a.reset(NULL);

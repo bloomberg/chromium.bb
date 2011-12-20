@@ -66,7 +66,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
 
   // Stash this in the property bag so it can be retrieved without having to
   // go to a Browser.
-  property_accessor()->SetProperty(contents->property_bag(), this);
+  property_accessor()->SetProperty(contents->GetPropertyBag(), this);
 
   // Create the tab helpers.
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(contents));
@@ -157,7 +157,7 @@ TabContentsWrapper* TabContentsWrapper::Clone() {
 TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
     TabContents* contents) {
   TabContentsWrapper** wrapper =
-      property_accessor()->GetProperty(contents->property_bag());
+      property_accessor()->GetProperty(contents->GetPropertyBag());
 
   return wrapper ? *wrapper : NULL;
 }
@@ -166,7 +166,7 @@ TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
 const TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
     const TabContents* contents) {
   TabContentsWrapper* const* wrapper =
-      property_accessor()->GetProperty(contents->property_bag());
+      property_accessor()->GetProperty(contents->GetPropertyBag());
 
   return wrapper ? *wrapper : NULL;
 }

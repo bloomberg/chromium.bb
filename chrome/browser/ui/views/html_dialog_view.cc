@@ -250,12 +250,12 @@ void HtmlDialogView::InitDialog() {
   DOMView::Init(profile(), NULL);
 
   TabContents* tab_contents = dom_contents_->tab_contents();
-  tab_contents->set_delegate(this);
+  tab_contents->SetDelegate(this);
 
   // Set the delegate. This must be done before loading the page. See
   // the comment above HtmlDialogUI in its header file for why.
   HtmlDialogUI::GetPropertyAccessor().SetProperty(
-      tab_contents->property_bag(), this);
+      tab_contents->GetPropertyBag(), this);
   tab_watcher_.reset(new TabFirstRenderWatcher(tab_contents, this));
 
   DOMView::LoadURL(GetDialogContentURL());

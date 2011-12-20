@@ -275,13 +275,13 @@ void TabContentsViewViews::UpdateDragCursor(WebDragOperation operation) {
 }
 
 void TabContentsViewViews::GotFocus() {
-  if (tab_contents_->delegate())
-    tab_contents_->delegate()->TabContentsFocused(tab_contents_);
+  if (tab_contents_->GetDelegate())
+    tab_contents_->GetDelegate()->TabContentsFocused(tab_contents_);
 }
 
 void TabContentsViewViews::TakeFocus(bool reverse) {
-  if (tab_contents_->delegate() &&
-      !tab_contents_->delegate()->TakeFocus(reverse)) {
+  if (tab_contents_->GetDelegate() &&
+      !tab_contents_->GetDelegate()->TakeFocus(reverse)) {
     views::FocusManager* focus_manager = GetFocusManager();
 
     // We may not have a focus manager if the tab has been switched before this
@@ -333,8 +333,8 @@ void TabContentsViewViews::ShowCreatedFullscreenWidget(int route_id) {
 
 void TabContentsViewViews::ShowContextMenu(const ContextMenuParams& params) {
   // Allow delegates to handle the context menu operation first.
-  if (tab_contents_->delegate() &&
-      tab_contents_->delegate()->HandleContextMenu(params)) {
+  if (tab_contents_->GetDelegate() &&
+      tab_contents_->GetDelegate()->HandleContextMenu(params)) {
     return;
   }
 
@@ -394,21 +394,21 @@ void TabContentsViewViews::OnNativeTabContentsViewSized(const gfx::Size& size) {
 }
 
 void TabContentsViewViews::OnNativeTabContentsViewWheelZoom(bool zoom_in) {
-  if (tab_contents_->delegate())
-    tab_contents_->delegate()->ContentsZoomChange(zoom_in);
+  if (tab_contents_->GetDelegate())
+    tab_contents_->GetDelegate()->ContentsZoomChange(zoom_in);
 }
 
 void TabContentsViewViews::OnNativeTabContentsViewMouseDown() {
   // Make sure this TabContents is activated when it is clicked on.
-  if (tab_contents_->delegate())
-    tab_contents_->delegate()->ActivateContents(tab_contents_);
+  if (tab_contents_->GetDelegate())
+    tab_contents_->GetDelegate()->ActivateContents(tab_contents_);
 }
 
 void TabContentsViewViews::OnNativeTabContentsViewMouseMove(bool motion) {
   // Let our delegate know that the mouse moved (useful for resetting status
   // bubble state).
-  if (tab_contents_->delegate()) {
-    tab_contents_->delegate()->ContentsMouseEvent(
+  if (tab_contents_->GetDelegate()) {
+    tab_contents_->GetDelegate()->ContentsMouseEvent(
         tab_contents_, gfx::Screen::GetCursorScreenPoint(), motion);
   }
 }

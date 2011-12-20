@@ -385,8 +385,8 @@ void DefaultTabDragController::InitTabDragData(BaseTab* tab,
   // our dragged TabContents may be replaced and subsequently
   // collected/destroyed while the drag is in process, leading to nasty crashes.
   drag_data->original_delegate =
-      drag_data->contents->tab_contents()->delegate();
-  drag_data->contents->tab_contents()->set_delegate(this);
+      drag_data->contents->tab_contents()->GetDelegate();
+  drag_data->contents->tab_contents()->SetDelegate(this);
 }
 
 void DefaultTabDragController::Drag() {
@@ -490,8 +490,8 @@ void DefaultTabDragController::Observe(
   for (size_t i = 0; i < drag_data_.size(); ++i) {
     if (drag_data_[i].contents->tab_contents() == destroyed_contents) {
       // One of the tabs we're dragging has been destroyed. Cancel the drag.
-      if (destroyed_contents->delegate() == this)
-        destroyed_contents->set_delegate(NULL);
+      if (destroyed_contents->GetDelegate() == this)
+        destroyed_contents->SetDelegate(NULL);
       drag_data_[i].contents = NULL;
       drag_data_[i].original_delegate = NULL;
       EndDragImpl(TAB_DESTROYED);
@@ -836,7 +836,7 @@ void DefaultTabDragController::Attach(TabStrip* attached_tabstrip,
     // Remove ourselves as the delegate now that the dragged TabContents is
     // being inserted back into a Browser.
     for (size_t i = 0; i < drag_data_.size(); ++i) {
-      drag_data_[i].contents->tab_contents()->set_delegate(NULL);
+      drag_data_[i].contents->tab_contents()->SetDelegate(NULL);
       drag_data_[i].original_delegate = NULL;
     }
 
@@ -919,7 +919,7 @@ void DefaultTabDragController::Detach() {
     attached_model->DetachTabContentsAt(index);
 
     // Detaching resets the delegate, but we still want to be the delegate.
-    drag_data_[i].contents->tab_contents()->set_delegate(this);
+    drag_data_[i].contents->tab_contents()->SetDelegate(this);
 
     // Detaching may end up deleting the tab, drop references to it.
     drag_data_[i].attached_tab = NULL;
@@ -1268,8 +1268,8 @@ void DefaultTabDragController::CompleteDrag() {
 void DefaultTabDragController::ResetDelegates() {
   for (size_t i = 0; i < drag_data_.size(); ++i) {
     if (drag_data_[i].contents &&
-        drag_data_[i].contents->tab_contents()->delegate() == this) {
-      drag_data_[i].contents->tab_contents()->set_delegate(
+        drag_data_[i].contents->tab_contents()->GetDelegate() == this) {
+      drag_data_[i].contents->tab_contents()->SetDelegate(
           drag_data_[i].original_delegate);
     }
   }

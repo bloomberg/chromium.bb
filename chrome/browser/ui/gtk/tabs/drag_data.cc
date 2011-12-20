@@ -37,7 +37,7 @@ DraggedTabData::~DraggedTabData() {
 }
 
 void DraggedTabData::ResetDelegate() {
-  contents_->tab_contents()->set_delegate(original_delegate_);
+  contents_->tab_contents()->SetDelegate(original_delegate_);
 }
 
 DragData::DragData(std::vector<DraggedTabData> drag_data, int source_tab_index)

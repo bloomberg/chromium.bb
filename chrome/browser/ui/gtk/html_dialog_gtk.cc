@@ -172,12 +172,12 @@ void HtmlDialogGtk::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 gfx::NativeWindow HtmlDialogGtk::InitDialog() {
   tab_.reset(new TabContentsWrapper(
       new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
-  tab_->tab_contents()->set_delegate(this);
+  tab_->tab_contents()->SetDelegate(this);
 
   // This must be done before loading the page; see the comments in
   // HtmlDialogUI.
   HtmlDialogUI::GetPropertyAccessor().SetProperty(
-      tab_->tab_contents()->property_bag(), this);
+      tab_->tab_contents()->GetPropertyBag(), this);
 
   tab_->tab_contents()->controller().LoadURL(
       GetDialogContentURL(),
