@@ -190,8 +190,9 @@ class VIEWS_EXPORT TextfieldViewsModel {
   // if text has changed after cutting.
   bool Cut();
 
-  // Copies the currently selected text and puts it to clipboard.
-  void Copy();
+  // Copies the currently selected text and puts it to clipboard. Returns true
+  // if something was copied to the clipboard.
+  bool Copy();
 
   // Pastes text from the clipboard at current cursor position. Returns true
   // if text has changed after pasting.

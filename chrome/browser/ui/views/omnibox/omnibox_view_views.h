@@ -29,6 +29,10 @@ class AutocompletePopupView;
 class Profile;
 class TabContents;
 
+namespace ui {
+class OSExchangeData;
+}  // namespace ui
+
 // Views-implementation of OmniboxView. This is based on gtk implementation.
 // The following features are not yet supported.
 //
@@ -156,6 +160,8 @@ class OmniboxViewViews
                               const views::KeyEvent& key_event) OVERRIDE;
   virtual void OnBeforeUserAction(views::Textfield* sender) OVERRIDE;
   virtual void OnAfterUserAction(views::Textfield* sender) OVERRIDE;
+  virtual void OnAfterCutOrCopy() OVERRIDE;
+  virtual void OnWriteDragData(ui::OSExchangeData* data) OVERRIDE;
 
 #if defined(OS_CHROMEOS)
   // chromeos::input_method::InputMethodManager::CandidateWindowObserver:

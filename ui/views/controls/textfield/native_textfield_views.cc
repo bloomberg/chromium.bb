@@ -295,6 +295,9 @@ void NativeTextfieldViews::WriteDragDataForView(views::View* sender,
   DCHECK_NE(ui::DragDropTypes::DRAG_NONE,
             GetDragOperationsForView(sender, press_pt));
   data->SetString(GetSelectedText());
+  TextfieldController* controller = textfield_->GetController();
+  if (controller)
+    controller->OnWriteDragData(data);
 }
 
 int NativeTextfieldViews::GetDragOperationsForView(views::View* sender,
@@ -566,10 +569,10 @@ void NativeTextfieldViews::ExecuteCommand(int command_id) {
   switch (command_id) {
     case IDS_APP_CUT:
       if (editable)
-        text_changed = model_->Cut();
+        text_changed = Cut();
       break;
     case IDS_APP_COPY:
-      model_->Copy();
+      Copy();
       break;
     case IDS_APP_PASTE:
       if (editable)
@@ -843,11 +846,11 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
         break;
       case ui::VKEY_X:
         if (control && editable)
-          cursor_changed = text_changed = model_->Cut();
+          cursor_changed = text_changed = Cut();
         break;
       case ui::VKEY_C:
         if (control)
-          model_->Copy();
+          Copy();
         break;
       case ui::VKEY_V:
         if (control && editable)
@@ -1018,6 +1021,26 @@ void NativeTextfieldViews::OnAfterUserAction() {
   TextfieldController* controller = textfield_->GetController();
   if (controller)
     controller->OnAfterUserAction(textfield_);
+}
+
+bool NativeTextfieldViews::Cut() {
+  if (model_->Cut()) {
+    TextfieldController* controller = textfield_->GetController();
+    if (controller)
+      controller->OnAfterCutOrCopy();
+    return true;
+  }
+  return false;
+}
+
+bool NativeTextfieldViews::Copy() {
+  if (model_->Copy()) {
+    TextfieldController* controller = textfield_->GetController();
+    if (controller)
+      controller->OnAfterCutOrCopy();
+    return true;
+  }
+  return false;
 }
 
 bool NativeTextfieldViews::Paste() {

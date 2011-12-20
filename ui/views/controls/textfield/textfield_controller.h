@@ -8,6 +8,10 @@
 
 #include "base/string16.h"
 
+namespace ui {
+class OSExchangeData;
+}  // namespace ui
+
 namespace views {
 
 class KeyEvent;
@@ -36,6 +40,13 @@ class TextfieldController {
   // Called after performing a user action that may change the textfield.
   // It's currently only supported by Views implementation.
   virtual void OnAfterUserAction(Textfield* sender) {}
+
+  // Called after performing a Cut or Copy operation.
+  virtual void OnAfterCutOrCopy() {}
+
+  // Called after the textfield has written drag data to give the controller a
+  // chance to modify the drag data.
+  virtual void OnWriteDragData(ui::OSExchangeData* data) {}
 
  protected:
   virtual ~TextfieldController() {}

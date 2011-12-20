@@ -11,6 +11,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
@@ -22,7 +23,9 @@
 #include "net/base/escape.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -32,6 +35,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/events/event.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/views_delegate.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
@@ -672,6 +676,40 @@ void OmniboxViewViews::OnBeforeUserAction(views::Textfield* sender) {
 
 void OmniboxViewViews::OnAfterUserAction(views::Textfield* sender) {
   OnAfterPossibleChange();
+}
+
+void OmniboxViewViews::OnAfterCutOrCopy() {
+  ui::Range selection_range;
+  textfield_->GetSelectedRange(&selection_range);
+  ui::Clipboard* cb = views::ViewsDelegate::views_delegate->GetClipboard();
+  string16 selected_text;
+  cb->ReadText(ui::Clipboard::BUFFER_STANDARD, &selected_text);
+  const string16 text = textfield_->text();
+  GURL url;
+  bool write_url;
+  model_->AdjustTextForCopy(selection_range.start(), selected_text == text,
+      &selected_text, &url, &write_url);
+  ui::ScopedClipboardWriter scw(cb);
+  scw.WriteText(selected_text);
+  if (write_url) {
+    BookmarkNodeData data;
+    data.ReadFromTuple(url, text);
+    data.WriteToClipboard(NULL);
+  }
+}
+
+void OmniboxViewViews::OnWriteDragData(ui::OSExchangeData* data) {
+  ui::Range selection_range;
+  textfield_->GetSelectedRange(&selection_range);
+  string16 selected_text = textfield_->GetSelectedText();
+  const string16 text = textfield_->text();
+  GURL url;
+  bool write_url;
+  model_->AdjustTextForCopy(selection_range.start(), selected_text == text,
+      &selected_text, &url, &write_url);
+  data->SetString(selected_text);
+  if (write_url)
+    data->SetURL(url, selected_text);
 }
 
 #if defined(OS_CHROMEOS)

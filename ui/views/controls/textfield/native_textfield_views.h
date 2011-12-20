@@ -210,6 +210,12 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   // Convenience method to call TextfieldController::OnAfterUserAction();
   void OnAfterUserAction();
 
+  // Calls |model_->Cut()| and notifies TextfieldController on success.
+  bool Cut();
+
+  // Calls |model_->Copy()| and notifies TextfieldController on success.
+  bool Copy();
+
   // Calls |model_->Paste()| and calls TextfieldController::ContentsChanged()
   // explicitly if paste succeeded.
   bool Paste();

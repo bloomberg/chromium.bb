@@ -526,11 +526,13 @@ bool TextfieldViewsModel::Cut() {
   return false;
 }
 
-void TextfieldViewsModel::Copy() {
+bool TextfieldViewsModel::Copy() {
   if (!HasCompositionText() && HasSelection()) {
     ui::ScopedClipboardWriter(views::ViewsDelegate::views_delegate
         ->GetClipboard()).WriteText(GetSelectedText());
+    return true;
   }
+  return false;
 }
 
 bool TextfieldViewsModel::Paste() {
