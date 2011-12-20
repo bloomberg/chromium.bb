@@ -12,14 +12,17 @@
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 
-class DownloadItem;
 class SavePackage;
+
+namespace content {
+class DownloadItem;
+}
 
 // This class provides an interface for functions which have different behaviors
 // depending on the type of download.
 class BaseDownloadItemModel {
  public:
-  explicit BaseDownloadItemModel(DownloadItem* download)
+  explicit BaseDownloadItemModel(content::DownloadItem* download)
       : download_(download) { }
   virtual ~BaseDownloadItemModel() { }
 
@@ -29,10 +32,10 @@ class BaseDownloadItemModel {
   // Get the status text to display.
   virtual string16 GetStatusText() = 0;
 
-  DownloadItem* download() { return download_; }
+  content::DownloadItem* download() { return download_; }
 
  protected:
-  DownloadItem* download_;
+  content::DownloadItem* download_;
 };
 
 // This class is a model class for DownloadItemView. It provides functionality
@@ -40,7 +43,7 @@ class BaseDownloadItemModel {
 // status.
 class DownloadItemModel : public BaseDownloadItemModel {
  public:
-  explicit DownloadItemModel(DownloadItem* download);
+  explicit DownloadItemModel(content::DownloadItem* download);
   virtual ~DownloadItemModel() { }
 
   // Cancel the downloading.
@@ -58,7 +61,7 @@ class DownloadItemModel : public BaseDownloadItemModel {
 // status.
 class SavePageModel : public BaseDownloadItemModel {
  public:
-  SavePageModel(SavePackage* save, DownloadItem* download);
+  SavePageModel(SavePackage* save, content::DownloadItem* download);
   virtual ~SavePageModel() { }
 
   // Cancel the page saving.

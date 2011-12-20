@@ -29,6 +29,7 @@
 #include "ui/base/text/bytes_formatting.h"
 
 using content::BrowserThread;
+using content::DownloadItem;
 
 const char kPropertyDevicePath[] = "devicePath";
 const char kPropertyFilePath[] = "filePath";

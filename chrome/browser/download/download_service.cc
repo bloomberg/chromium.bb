@@ -13,6 +13,8 @@
 #include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_manager_impl.h"
 
+using content::DownloadManager;
+
 DownloadService::DownloadService(Profile* profile)
     : download_manager_created_(false),
       profile_(profile) {

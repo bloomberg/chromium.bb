@@ -18,11 +18,14 @@
 
 class CrxInstaller;
 class DownloadHistory;
-class DownloadItem;
-class DownloadManager;
 class DownloadPrefs;
 class Profile;
 struct DownloadStateInfo;
+
+namespace content {
+class DownloadItem;
+class DownloadManager;
+}
 
 #if defined(COMPILER_GCC)
 namespace __gnu_cxx {
@@ -45,30 +48,32 @@ class ChromeDownloadManagerDelegate
  public:
   explicit ChromeDownloadManagerDelegate(Profile* profile);
 
-  void SetDownloadManager(DownloadManager* dm);
+  void SetDownloadManager(content::DownloadManager* dm);
 
   // Returns true if the given item is for an extension download.
-  static bool IsExtensionDownload(const DownloadItem* item);
+  static bool IsExtensionDownload(const content::DownloadItem* item);
 
   virtual void Shutdown() OVERRIDE;
   virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;
   virtual void ChooseDownloadPath(TabContents* tab_contents,
                                   const FilePath& suggested_path,
                                   void* data) OVERRIDE;
-  virtual bool OverrideIntermediatePath(DownloadItem* item,
+  virtual bool OverrideIntermediatePath(content::DownloadItem* item,
                                         FilePath* intermediate_path) OVERRIDE;
   virtual TabContents* GetAlternativeTabContentsToNotifyForDownload() OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
-  virtual bool ShouldCompleteDownload(DownloadItem* item) OVERRIDE;
-  virtual bool ShouldOpenDownload(DownloadItem* item) OVERRIDE;
+  virtual bool ShouldCompleteDownload(content::DownloadItem* item) OVERRIDE;
+  virtual bool ShouldOpenDownload(content::DownloadItem* item) OVERRIDE;
   virtual bool GenerateFileHash() OVERRIDE;
-  virtual void OnResponseCompleted(DownloadItem* item) OVERRIDE;
-  virtual void AddItemToPersistentStore(DownloadItem* item) OVERRIDE;
-  virtual void UpdateItemInPersistentStore(DownloadItem* item) OVERRIDE;
+  virtual void OnResponseCompleted(content::DownloadItem* item) OVERRIDE;
+  virtual void AddItemToPersistentStore(content::DownloadItem* item) OVERRIDE;
+  virtual void UpdateItemInPersistentStore(
+      content::DownloadItem* item) OVERRIDE;
   virtual void UpdatePathForItemInPersistentStore(
-      DownloadItem* item,
+      content::DownloadItem* item,
       const FilePath& new_path) OVERRIDE;
-  virtual void RemoveItemFromPersistentStore(DownloadItem* item) OVERRIDE;
+  virtual void RemoveItemFromPersistentStore(
+      content::DownloadItem* item) OVERRIDE;
   virtual void RemoveItemsFromPersistentStoreBetween(
       const base::Time remove_begin,
       const base::Time remove_end) OVERRIDE;
@@ -89,7 +94,7 @@ class ChromeDownloadManagerDelegate
 
   // So that test classes that inherit from this for override purposes
   // can call back into the DownloadManager.
-  scoped_refptr<DownloadManager> download_manager_;
+  scoped_refptr<content::DownloadManager> download_manager_;
 
  private:
   friend class base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>;
@@ -134,7 +139,7 @@ class ChromeDownloadManagerDelegate
   // Various factors are considered, such as the type of the file, whether a
   // user action initiated the download, and whether the user has explicitly
   // marked the file type as "auto open".
-  bool IsDangerousFile(const DownloadItem& download,
+  bool IsDangerousFile(const content::DownloadItem& download,
                        const DownloadStateInfo& state,
                        bool visited_referrer_before);
 

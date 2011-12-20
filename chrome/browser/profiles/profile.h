@@ -184,7 +184,7 @@ class Profile : public content::BrowserContext {
 
   virtual FilePath GetPath() = 0;
   virtual SSLHostState* GetSSLHostState() = 0;
-  virtual DownloadManager* GetDownloadManager() = 0;
+  virtual content::DownloadManager* GetDownloadManager() = 0;
   virtual net::URLRequestContextGetter* GetRequestContext() = 0;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) = 0;

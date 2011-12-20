@@ -31,16 +31,19 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/download/download_file.h"
-#include "content/browser/download/download_item.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/download_file.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
+using content::DownloadFile;
+using content::DownloadItem;
+using content::DownloadManager;
 using safe_browsing::DownloadProtectionService;
 
 namespace {

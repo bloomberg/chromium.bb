@@ -29,13 +29,13 @@
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_id_factory.h"
-#include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/download/mock_download_file.h"
 #include "content/browser/download/mock_download_manager.h"
+#include "content/public/browser/download_item.h"
 #include "content/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
 #include "net/base/io_buffer.h"
@@ -56,6 +56,11 @@
 #define MAYBE_DownloadRemoveTest DownloadRemoveTest
 #endif
 
+using content::BrowserThread;
+using content::DownloadFile;
+using content::DownloadItem;
+using content::DownloadManager;
+
 namespace {
 
 class MockDownloadFileFactory
@@ -75,12 +80,6 @@ DownloadFile* MockDownloadFileFactory::CreateFile(
   NOTREACHED();
   return NULL;
 }
-
-}  // namespace
-
-using content::BrowserThread;
-
-namespace {
 
 DownloadId::Domain kValidIdDomain = "valid DownloadId::Domain";
 
@@ -387,7 +386,7 @@ const struct {
 
 // This is an observer that records what download IDs have opened a select
 // file dialog.
-class SelectFileObserver : public DownloadManager::Observer {
+class SelectFileObserver : public content::DownloadManager::Observer {
  public:
   explicit SelectFileObserver(DownloadManager* download_manager)
       : download_manager_(download_manager) {

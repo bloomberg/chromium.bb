@@ -29,8 +29,8 @@
 #include "chrome/browser/ui/webui/fileicon_source.h"
 #include "chrome/browser/ui/webui/fileicon_source_chromeos.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/download/download_item.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/gfx/image/image.h"
@@ -44,6 +44,8 @@
 #endif
 
 using content::BrowserThread;
+using content::DownloadItem;
+using content::DownloadManager;
 using content::UserMetricsAction;
 
 namespace {
@@ -86,7 +88,7 @@ void CountDownloadsDOMEvents(DownloadsDOMEvent event) {
 }  // namespace
 
 class DownloadsDOMHandler::OriginalDownloadManagerObserver
-    : public DownloadManager::Observer {
+    : public content::DownloadManager::Observer {
  public:
   explicit OriginalDownloadManagerObserver(
       DownloadManager::Observer* observer,
@@ -192,7 +194,7 @@ void DownloadsDOMHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void DownloadsDOMHandler::OnDownloadUpdated(DownloadItem* download) {
+void DownloadsDOMHandler::OnDownloadUpdated(content::DownloadItem* download) {
   // Get the id for the download. Our downloads are sorted latest to first,
   // and the id is the index into that list. We should be careful of sync
   // errors between the UI and the download_items_ list (we may wish to use

@@ -21,8 +21,8 @@
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/ui_localizer.h"
-#include "content/browser/download/download_item.h"
 #include "content/browser/download/download_state_info.h"
+#include "content/public/browser/download_item.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -30,6 +30,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/image/image.h"
+
+using content::DownloadItem;
 
 namespace {
 

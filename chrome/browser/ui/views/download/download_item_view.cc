@@ -82,6 +82,8 @@ static const int kDisabledOnOpenDuration = 3000;
 // light-on-dark themes.
 static const double kDownloadItemLuminanceMod = 0.8;
 
+using content::DownloadItem;
+
 DownloadItemView::DownloadItemView(DownloadItem* download,
     DownloadShelfView* parent,
     BaseDownloadItemModel* model)
@@ -251,7 +253,7 @@ void DownloadItemView::OnExtractIconComplete(IconManager::Handle handle,
 
 // Update the progress graphic on the icon and our text status label
 // to reflect our current bytes downloaded, time remaining.
-void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
+void DownloadItemView::OnDownloadUpdated(content::DownloadItem* download) {
   DCHECK(download == download_);
 
   if (IsShowingWarningDialog() &&
@@ -314,7 +316,7 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
   parent()->SchedulePaint();
 }
 
-void DownloadItemView::OnDownloadOpened(DownloadItem* download) {
+void DownloadItemView::OnDownloadOpened(content::DownloadItem* download) {
   disabled_while_opening_ = true;
   SetEnabled(false);
   MessageLoop::current()->PostDelayedTask(

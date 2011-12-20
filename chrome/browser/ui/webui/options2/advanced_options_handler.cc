@@ -28,9 +28,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
@@ -46,6 +46,7 @@
 #include "chrome/browser/ui/webui/options2/advanced_options_utils.h"
 #endif
 
+using content::DownloadManager;
 using content::UserMetricsAction;
 
 AdvancedOptionsHandler::AdvancedOptionsHandler() {

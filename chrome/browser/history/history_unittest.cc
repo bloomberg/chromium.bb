@@ -46,8 +46,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
-#include "content/browser/download/download_item.h"
 #include "content/browser/download/download_persistent_store_info.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "sql/connection.h"
@@ -58,6 +58,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using content::DownloadItem;
 
 namespace history {
 class HistoryTest;

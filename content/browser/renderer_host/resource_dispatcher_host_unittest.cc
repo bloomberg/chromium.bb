@@ -37,6 +37,7 @@
 using content::BrowserThread;
 using content::BrowserThreadImpl;
 using content::ChildProcessHostImpl;
+using content::DownloadManager;
 
 // TODO(eroman): Write unit tests for SafeBrowsing that exercise
 //               SafeBrowsingResourceHandler.

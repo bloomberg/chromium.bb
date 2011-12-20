@@ -79,7 +79,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/download/download_item.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/ssl/ssl_manager.h"
@@ -87,6 +86,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_item.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
@@ -101,9 +101,10 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
-using content::BrowserThread;
 using WebKit::WebFindOptions;
 using base::Time;
+using content::BrowserThread;
+using content::DownloadItem;
 
 namespace {
 

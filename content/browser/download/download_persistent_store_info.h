@@ -16,7 +16,9 @@
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 
+namespace content {
 class DownloadItem;
+}
 
 // Contains the information that is stored in the download system's persistent
 // store (or refers to it).  Managed by the DownloadItem.  When used to create a

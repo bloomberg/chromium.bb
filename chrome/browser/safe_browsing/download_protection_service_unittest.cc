@@ -20,7 +20,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/signature_util.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
-#include "content/browser/download/download_item.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"

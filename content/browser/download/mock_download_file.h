@@ -11,15 +11,15 @@
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_id.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_request_handle.h"
+#include "content/public/browser/download_file.h"
+#include "content/public/browser/download_manager.h"
 #include "net/base/net_errors.h"
 
 struct DownloadCreateInfo;
 
-class MockDownloadFile : virtual public DownloadFile {
+class MockDownloadFile : virtual public content::DownloadFile {
  public:
   // Class to extract statistics from the usage of |MockDownloadFile|.
   class StatisticsRecorder {
@@ -57,7 +57,7 @@ class MockDownloadFile : virtual public DownloadFile {
 
   MockDownloadFile(const DownloadCreateInfo* info,
                    const DownloadRequestHandle& request_handle,
-                   DownloadManager* download_manager,
+                   content::DownloadManager* download_manager,
                    StatisticsRecorder* recorder);
   virtual ~MockDownloadFile();
 
@@ -77,7 +77,7 @@ class MockDownloadFile : virtual public DownloadFile {
   virtual bool GetSha256Hash(std::string* hash) OVERRIDE;
   virtual void CancelDownloadRequest() OVERRIDE;
   virtual int Id() const OVERRIDE;
-  virtual DownloadManager* GetDownloadManager() OVERRIDE;
+  virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
   virtual const DownloadId& GlobalId() const OVERRIDE;
   virtual std::string DebugString() const OVERRIDE;
 
@@ -95,7 +95,7 @@ class MockDownloadFile : virtual public DownloadFile {
   DownloadRequestHandle request_handle_;
 
   // DownloadManager this download belongs to.
-  scoped_refptr<DownloadManager> download_manager_;
+  scoped_refptr<content::DownloadManager> download_manager_;
 
   // Records usage statistics.  Not owned by this class (survives destruction).
   StatisticsRecorder* recorder_;

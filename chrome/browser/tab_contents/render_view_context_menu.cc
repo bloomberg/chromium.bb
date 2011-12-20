@@ -60,7 +60,6 @@
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -69,6 +68,7 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_restriction.h"
@@ -86,6 +86,7 @@
 #include "chrome/browser/extensions/file_manager_util.h"
 #endif
 
+using content::DownloadManager;
 using content::UserMetricsAction;
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;

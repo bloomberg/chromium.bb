@@ -27,8 +27,8 @@
 #include "base/timer.h"
 #include "chrome/browser/icon_manager.h"
 #include "content/browser/cancelable_request.h"
-#include "content/browser/download/download_item.h"
-#include "content/browser/download/download_manager.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/button.h"
@@ -55,10 +55,10 @@ class TextButton;
 
 class DownloadItemView : public views::ButtonListener,
                          public views::View,
-                         public DownloadItem::Observer,
+                         public content::DownloadItem::Observer,
                          public ui::AnimationDelegate {
  public:
-  DownloadItemView(DownloadItem* download,
+  DownloadItemView(content::DownloadItem* download,
                    DownloadShelfView* parent,
                    BaseDownloadItemModel* model);
   virtual ~DownloadItemView();
@@ -72,11 +72,11 @@ class DownloadItemView : public views::ButtonListener,
   void OnExtractIconComplete(IconManager::Handle handle, gfx::Image* icon);
 
   // Returns the DownloadItem model object belonging to this item.
-  DownloadItem* download() const { return download_; }
+  content::DownloadItem* download() const { return download_; }
 
   // DownloadObserver method
-  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
@@ -211,7 +211,7 @@ class DownloadItemView : public views::ButtonListener,
   const SkBitmap* warning_icon_;
 
   // The model we query for display information
-  DownloadItem* download_;
+  content::DownloadItem* download_;
 
   // Our parent view that owns us.
   DownloadShelfView* parent_;

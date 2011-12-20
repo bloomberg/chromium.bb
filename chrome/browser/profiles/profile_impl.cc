@@ -144,6 +144,7 @@
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
+using content::DownloadManager;
 using content::UserMetricsAction;
 
 namespace {

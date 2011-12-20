@@ -18,9 +18,11 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/browser/download/download_item.h"
+#include "content/public/browser/download_item.h"
 #include "googleurl/src/gurl.h"
 #include "unicode/regex.h"
+
+using content::DownloadItem;
 
 namespace {
 

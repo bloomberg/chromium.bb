@@ -14,8 +14,11 @@
 #include "ui/base/gtk/gtk_signal.h"
 
 class BookmarkNode;
-class DownloadItem;
 class Profile;
+
+namespace content {
+class DownloadItem;
+}
 
 namespace gfx {
 class Image;
@@ -62,22 +65,22 @@ class DownloadItemDrag : public CustomDrag {
   // DownloadItemDrag object is created.
   // It is safe to call this multiple times with different values of |icon|.
   static void SetSource(GtkWidget* widget,
-                        DownloadItem* item,
+                        content::DownloadItem* item,
                         gfx::Image* icon);
 
   // Creates a new DownloadItemDrag, the lifetime of which is tied to the
   // system drag.
-  static void BeginDrag(const DownloadItem* item, gfx::Image* icon);
+  static void BeginDrag(const content::DownloadItem* item, gfx::Image* icon);
 
  private:
-  DownloadItemDrag(const DownloadItem* item, gfx::Image* icon);
+  DownloadItemDrag(const content::DownloadItem* item, gfx::Image* icon);
   virtual ~DownloadItemDrag();
 
   virtual void OnDragDataGet(GtkWidget* widget, GdkDragContext* context,
                              GtkSelectionData* selection_data,
                              guint target_type, guint time) OVERRIDE;
 
-  const DownloadItem* download_item_;
+  const content::DownloadItem* download_item_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemDrag);
 };

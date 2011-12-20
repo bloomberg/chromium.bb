@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/download/download_item.h"
-#include "content/browser/download/download_manager.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 
 // Construction of this class defines a system state, based on some number
 // of downloads being seen in a particular state + other events that
@@ -25,8 +25,8 @@
 // just use a scoped_refptr<> to keep it around, but that may cause
 // timeouts on waiting if a DownloadManager::Shutdown() occurs which
 // cancels our in-progress downloads.)
-class DownloadTestObserver : public DownloadManager::Observer,
-                             public DownloadItem::Observer {
+class DownloadTestObserver : public content::DownloadManager::Observer,
+                             public content::DownloadItem::Observer {
  public:
   // Action an observer should take if a dangerous download is encountered.
   enum DangerousDownloadAction {
@@ -43,11 +43,12 @@ class DownloadTestObserver : public DownloadManager::Observer,
 
   // TODO(rdsmith): Consider rewriting the interface to take a list of events
   // to treat as completion events.
-  DownloadTestObserver(DownloadManager* download_manager,
-                       size_t wait_count,
-                       DownloadItem::DownloadState download_finished_state,
-                       bool finish_on_select_file,
-                       DangerousDownloadAction dangerous_download_action);
+  DownloadTestObserver(
+      content::DownloadManager* download_manager,
+      size_t wait_count,
+      content::DownloadItem::DownloadState download_finished_state,
+      bool finish_on_select_file,
+      DangerousDownloadAction dangerous_download_action);
 
   virtual ~DownloadTestObserver();
 
@@ -60,11 +61,11 @@ class DownloadTestObserver : public DownloadManager::Observer,
   // Return true if everything's happened that we're configured for.
   bool IsFinished() const;
 
-  // DownloadItem::Observer
-  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE {}
+  // content::DownloadItem::Observer
+  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
 
-  // DownloadManager::Observer
+  // content::DownloadManager::Observer
   virtual void ModelChanged() OVERRIDE;
 
   virtual void SelectFileDialogDisplayed(int32 id) OVERRIDE;
@@ -72,18 +73,18 @@ class DownloadTestObserver : public DownloadManager::Observer,
   size_t NumDangerousDownloadsSeen() const;
 
  private:
-  typedef std::set<DownloadItem*> DownloadSet;
+  typedef std::set<content::DownloadItem*> DownloadSet;
 
   // Called when we know that a download item is in a final state.
   // Note that this is not the same as it first transitioning in to the
   // final state; multiple notifications may occur once the item is in
   // that state.  So we keep our own track of transitions into final.
-  void DownloadInFinalState(DownloadItem* download);
+  void DownloadInFinalState(content::DownloadItem* download);
 
   void SignalIfFinished();
 
   // The observed download manager.
-  scoped_refptr<DownloadManager> download_manager_;
+  scoped_refptr<content::DownloadManager> download_manager_;
 
   // The set of DownloadItem's that have transitioned to their finished state
   // since construction of this object.  When the size of this array
@@ -113,7 +114,7 @@ class DownloadTestObserver : public DownloadManager::Observer,
   bool waiting_;
 
   // The state on which to consider the DownloadItem finished.
-  DownloadItem::DownloadState download_finished_state_;
+  content::DownloadItem::DownloadState download_finished_state_;
 
   // True if we should transition the DownloadTestObserver to finished if
   // the select file dialog comes up.
@@ -139,11 +140,12 @@ class DownloadTestObserver : public DownloadManager::Observer,
 // This almost certainly means that a Download cancel has propagated through
 // the system.
 class DownloadTestFlushObserver
-    : public DownloadManager::Observer,
-      public DownloadItem::Observer,
+    : public content::DownloadManager::Observer,
+      public content::DownloadItem::Observer,
       public base::RefCountedThreadSafe<DownloadTestFlushObserver> {
  public:
-  explicit DownloadTestFlushObserver(DownloadManager* download_manager);
+  explicit DownloadTestFlushObserver(
+      content::DownloadManager* download_manager);
 
   void WaitForFlush();
 
@@ -151,8 +153,8 @@ class DownloadTestFlushObserver
   virtual void ModelChanged() OVERRIDE;
 
   // DownloadItem observer methods.
-  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE {}
+  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
 
  protected:
   friend class base::RefCountedThreadSafe<DownloadTestFlushObserver>;
@@ -160,7 +162,7 @@ class DownloadTestFlushObserver
   virtual ~DownloadTestFlushObserver();
 
  private:
-  typedef std::set<DownloadItem*> DownloadSet;
+  typedef std::set<content::DownloadItem*> DownloadSet;
 
   // If we're waiting for that flush point, check the number
   // of downloads in the IN_PROGRESS state and take appropriate
@@ -171,7 +173,7 @@ class DownloadTestFlushObserver
 
   void PingIOThread(int cycle);
 
-  DownloadManager* download_manager_;
+  content::DownloadManager* download_manager_;
   DownloadSet downloads_observed_;
   bool waiting_for_zero_inprogress_;
 

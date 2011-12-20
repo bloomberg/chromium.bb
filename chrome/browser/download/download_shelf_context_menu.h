@@ -13,7 +13,10 @@
 #include "ui/base/models/simple_menu_model.h"
 
 class BaseDownloadItemModel;
+
+namespace content {
 class DownloadItem;
+}
 
 // This class is responsible for the download shelf context menu. Platform
 // specific subclasses are responsible for creating and running the menu.
@@ -33,8 +36,8 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate {
 
   virtual ~DownloadShelfContextMenu();
 
-  DownloadItem* download_item() const { return download_item_; }
-  void set_download_item(DownloadItem* item) { download_item_ = item; }
+  content::DownloadItem* download_item() const { return download_item_; }
+  void set_download_item(content::DownloadItem* item) { download_item_ = item; }
 
  protected:
   explicit DownloadShelfContextMenu(BaseDownloadItemModel* download_model);
@@ -68,7 +71,7 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate {
   BaseDownloadItemModel* download_model_;
 
   // Information source.
-  DownloadItem* download_item_;
+  content::DownloadItem* download_item_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadShelfContextMenu);
 };

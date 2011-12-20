@@ -4,7 +4,7 @@
 
 #include "content/browser/download/download_state_info.h"
 
-#include "content/browser/download/download_item.h"
+#include "content/public/browser/download_item.h"
 
 DownloadStateInfo::DownloadStateInfo()
     : path_uniquifier(0),

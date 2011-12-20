@@ -46,8 +46,8 @@
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/cancelable_request.h"
-#include "content/browser/download/download_item.h"
-#include "content/browser/download/download_manager.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
@@ -1081,7 +1081,7 @@ class AutomationProviderBookmarkModelObserver : public BookmarkModelObserver {
 // Allows the automation provider to wait until the download has been updated
 // or opened.
 class AutomationProviderDownloadUpdatedObserver
-    : public DownloadItem::Observer {
+    : public content::DownloadItem::Observer {
  public:
   AutomationProviderDownloadUpdatedObserver(
       AutomationProvider* provider,
@@ -1089,8 +1089,8 @@ class AutomationProviderDownloadUpdatedObserver
       bool wait_for_open);
   virtual ~AutomationProviderDownloadUpdatedObserver();
 
-  virtual void OnDownloadUpdated(DownloadItem* download);
-  virtual void OnDownloadOpened(DownloadItem* download);
+  virtual void OnDownloadUpdated(content::DownloadItem* download);
+  virtual void OnDownloadOpened(content::DownloadItem* download);
 
  private:
   base::WeakPtr<AutomationProvider> provider_;
@@ -1103,12 +1103,12 @@ class AutomationProviderDownloadUpdatedObserver
 // Allows the automation provider to wait until the download model has changed
 // (because a new download has been added or removed).
 class AutomationProviderDownloadModelChangedObserver
-    : public DownloadManager::Observer {
+    : public content::DownloadManager::Observer {
  public:
   AutomationProviderDownloadModelChangedObserver(
       AutomationProvider* provider,
       IPC::Message* reply_message,
-      DownloadManager* download_manager);
+      content::DownloadManager* download_manager);
   virtual ~AutomationProviderDownloadModelChangedObserver();
 
   virtual void ModelChanged();
@@ -1116,20 +1116,20 @@ class AutomationProviderDownloadModelChangedObserver
  private:
   base::WeakPtr<AutomationProvider> provider_;
   scoped_ptr<IPC::Message> reply_message_;
-  DownloadManager* download_manager_;
+  content::DownloadManager* download_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadModelChangedObserver);
 };
 
 // Observes when all pending downloads have completed.
 class AllDownloadsCompleteObserver
-    : public DownloadManager::Observer,
-      public DownloadItem::Observer {
+    : public content::DownloadManager::Observer,
+      public content::DownloadItem::Observer {
  public:
   AllDownloadsCompleteObserver(
       AutomationProvider* provider,
       IPC::Message* reply_message,
-      DownloadManager* download_manager,
+      content::DownloadManager* download_manager,
       ListValue* pre_download_ids);
   virtual ~AllDownloadsCompleteObserver();
 
@@ -1137,17 +1137,17 @@ class AllDownloadsCompleteObserver
   virtual void ModelChanged();
 
   // DownloadItem::Observer.
-  virtual void OnDownloadUpdated(DownloadItem* download);
-  virtual void OnDownloadOpened(DownloadItem* download) {}
+  virtual void OnDownloadUpdated(content::DownloadItem* download);
+  virtual void OnDownloadOpened(content::DownloadItem* download) {}
 
  private:
   void ReplyIfNecessary();
 
   base::WeakPtr<AutomationProvider> provider_;
   scoped_ptr<IPC::Message> reply_message_;
-  DownloadManager* download_manager_;
+  content::DownloadManager* download_manager_;
   std::set<int> pre_download_ids_;
-  std::set<DownloadItem*> pending_downloads_;
+  std::set<content::DownloadItem*> pending_downloads_;
 
   DISALLOW_COPY_AND_ASSIGN(AllDownloadsCompleteObserver);
 };
@@ -1316,7 +1316,7 @@ class OmniboxAcceptNotificationObserver : public content::NotificationObserver {
 // Allows the automation provider to wait for a save package notification.
 class SavePackageNotificationObserver : public content::NotificationObserver {
  public:
-  SavePackageNotificationObserver(DownloadManager* download_manager,
+  SavePackageNotificationObserver(content::DownloadManager* download_manager,
                                   AutomationProvider* automation,
                                   IPC::Message* reply_message);
   virtual ~SavePackageNotificationObserver();

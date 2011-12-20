@@ -6,24 +6,28 @@
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_IMPL_H_
 #pragma once
 
-#include "content/browser/download/download_file.h"
+#include "content/public/browser/download_file.h"
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/download/base_file.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/common/content_export.h"
 
 struct DownloadCreateInfo;
-class DownloadManager;
 
-class CONTENT_EXPORT DownloadFileImpl : virtual public DownloadFile {
+namespace content {
+class DownloadManager;
+}
+
+class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
  public:
   // Takes ownership of the object pointed to by |request_handle|.
   DownloadFileImpl(const DownloadCreateInfo* info,
                    DownloadRequestHandleInterface* request_handle,
-                   DownloadManager* download_manager);
+                   content::DownloadManager* download_manager);
   virtual ~DownloadFileImpl();
 
   // DownloadFile functions.
@@ -42,7 +46,7 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public DownloadFile {
   virtual bool GetSha256Hash(std::string* hash) OVERRIDE;
   virtual void CancelDownloadRequest() OVERRIDE;
   virtual int Id() const OVERRIDE;
-  virtual DownloadManager* GetDownloadManager() OVERRIDE;
+  virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
   virtual const DownloadId& GlobalId() const OVERRIDE;
   virtual std::string DebugString() const OVERRIDE;
 
@@ -59,7 +63,7 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public DownloadFile {
   scoped_ptr<DownloadRequestHandleInterface> request_handle_;
 
   // DownloadManager this download belongs to.
-  scoped_refptr<DownloadManager> download_manager_;
+  scoped_refptr<content::DownloadManager> download_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileImpl);
 };

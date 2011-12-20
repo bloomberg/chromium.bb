@@ -8,18 +8,18 @@
 #include <string>
 #include <vector>
 
-#include "content/browser/download/download_item.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_persistent_store_info.h"
+#include "content/public/browser/download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class MockDownloadItem : public DownloadItem {
+class MockDownloadItem : public content::DownloadItem {
  public:
   MockDownloadItem();
   virtual ~MockDownloadItem();
-  MOCK_METHOD1(AddObserver, void(DownloadItem::Observer*));
-  MOCK_METHOD1(RemoveObserver, void(DownloadItem::Observer*));
+  MOCK_METHOD1(AddObserver, void(content::DownloadItem::Observer*));
+  MOCK_METHOD1(RemoveObserver, void(content::DownloadItem::Observer*));
   MOCK_METHOD0(UpdateObservers, void());
   MOCK_METHOD0(CanShowInFolder, bool());
   MOCK_METHOD0(CanOpenDownload, bool());
@@ -76,7 +76,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetEndTime, base::Time());
   MOCK_METHOD1(SetDbHandle, void(int64));
   MOCK_CONST_METHOD0(GetDbHandle, int64());
-  MOCK_METHOD0(GetDownloadManager, DownloadManager*());
+  MOCK_METHOD0(GetDownloadManager, content::DownloadManager*());
   MOCK_CONST_METHOD0(IsPaused, bool());
   MOCK_CONST_METHOD0(GetOpenWhenComplete, bool());
   MOCK_METHOD1(SetOpenWhenComplete, void(bool));

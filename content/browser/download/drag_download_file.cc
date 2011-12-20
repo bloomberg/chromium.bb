@@ -7,15 +7,17 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "content/browser/download/download_item.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_item.h"
 #include "net/base/file_stream.h"
 
 using content::BrowserThread;
+using content::DownloadItem;
+using content::DownloadManager;
 
 DragDownloadFile::DragDownloadFile(
     const FilePath& file_name_or_path,
@@ -182,7 +184,7 @@ void DragDownloadFile::ModelChanged() {
   }
 }
 
-void DragDownloadFile::OnDownloadUpdated(DownloadItem* download) {
+void DragDownloadFile::OnDownloadUpdated(content::DownloadItem* download) {
   AssertCurrentlyOnUIThread();
   if (download->IsCancelled() ||
       (download->GetState() == DownloadItem::REMOVING)) {

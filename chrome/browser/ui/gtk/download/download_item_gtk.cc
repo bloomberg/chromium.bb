@@ -23,8 +23,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/download/download_item.h"
-#include "content/browser/download/download_manager.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -90,6 +89,8 @@ NineBox* DownloadItemGtk::menu_nine_box_prelight_ = NULL;
 NineBox* DownloadItemGtk::menu_nine_box_active_ = NULL;
 
 NineBox* DownloadItemGtk::dangerous_nine_box_ = NULL;
+
+using content::DownloadItem;
 
 DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
                                  BaseDownloadItemModel* download_model)

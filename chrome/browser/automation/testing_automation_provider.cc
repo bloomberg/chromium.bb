@@ -150,6 +150,8 @@ using automation::ErrorCode;
 using automation_util::SendErrorIfModalDialogActive;
 using content::BrowserThread;
 using content::ChildProcessHost;
+using content::DownloadItem;
+using content::DownloadManager;
 
 namespace {
 

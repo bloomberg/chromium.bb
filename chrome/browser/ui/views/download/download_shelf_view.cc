@@ -15,10 +15,10 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/download/download_item_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "content/browser/download/download_item.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -68,6 +68,8 @@ static const int kShelfAnimationDurationMs = 120;
 // button. Delay the time so that the user has a chance to quickly close the
 // other app and return to chrome with the download shelf still open.
 static const int kNotifyOnExitTimeMS = 5000;
+
+using content::DownloadItem;
 
 namespace {
 

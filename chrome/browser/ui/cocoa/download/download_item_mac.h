@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/icon_manager.h"
 #include "content/browser/cancelable_request.h"
-#include "content/browser/download/download_item.h"
-#include "content/browser/download/download_manager.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 
 class BaseDownloadItemModel;
 @class DownloadItemController;
@@ -26,7 +26,7 @@ class Image;
 // model. The owning object (DownloadItemController) must explicitly call
 // |LoadIcon| if it wants to display the icon associated with this download.
 
-class DownloadItemMac : DownloadItem::Observer {
+class DownloadItemMac : content::DownloadItem::Observer {
  public:
   // DownloadItemMac takes ownership of |download_model|.
   DownloadItemMac(BaseDownloadItemModel* download_model,
@@ -36,8 +36,8 @@ class DownloadItemMac : DownloadItem::Observer {
   virtual ~DownloadItemMac();
 
   // DownloadItem::Observer implementation
-  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
 
   BaseDownloadItemModel* download_model() { return download_model_.get(); }
 

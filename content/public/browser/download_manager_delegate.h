@@ -10,12 +10,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 
-class DownloadItem;
 class FilePath;
 class TabContents;
 class SavePackage;
 
 namespace content {
+
+class DownloadItem;
 
 // Browser's download manager: manages all downloads and destination view.
 class DownloadManagerDelegate {

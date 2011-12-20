@@ -23,7 +23,7 @@ class TestBrowserContext : public content::BrowserContext {
   virtual FilePath GetPath() OVERRIDE;
   virtual bool IsOffTheRecord() OVERRIDE;
   virtual SSLHostState* GetSSLHostState() OVERRIDE;
-  virtual DownloadManager* GetDownloadManager() OVERRIDE;
+  virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;

@@ -18,8 +18,8 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/download/download_item.h"
 #include "content/browser/download/download_stats.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -61,6 +61,8 @@ const int kAutoCloseDelayMs = 300;
 const int kShelfAuraSize = 40;
 
 }  // namespace
+
+using content::DownloadItem;
 
 DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
     : browser_(browser),

@@ -8,8 +8,10 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/history/history_marshaling.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/browser/download/download_item.h"
 #include "content/browser/download/download_persistent_store_info.h"
+#include "content/public/browser/download_item.h"
+
+using content::DownloadItem;
 
 DownloadHistory::DownloadHistory(Profile* profile)
     : profile_(profile),

@@ -958,7 +958,7 @@ class Browser : public TabHandlerDelegate,
   virtual void RenderWidgetShowing() OVERRIDE;
   virtual int GetExtraRenderViewHeight() const OVERRIDE;
   virtual void OnStartDownload(TabContents* source,
-                               DownloadItem* download) OVERRIDE;
+                              content::DownloadItem* download) OVERRIDE;
   virtual void ShowPageInfo(content::BrowserContext* browser_context,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,

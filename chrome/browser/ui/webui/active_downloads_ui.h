@@ -16,19 +16,23 @@
 
 class ActiveDownloadsHandler;
 class Browser;
-class DownloadItem;
 class Profile;
+
+namespace content {
+class DownloadItem;
+}
 
 class ActiveDownloadsUI : public HtmlDialogUI {
  public:
   explicit ActiveDownloadsUI(TabContents* contents);
 
-  static bool ShouldShowPopup(Profile* profile, DownloadItem* download);
+  static bool ShouldShowPopup(Profile* profile,
+                              content::DownloadItem* download);
   static Browser* OpenPopup(Profile* profile);
   static Browser* GetPopup();
 
   // For testing.
-  typedef std::vector<DownloadItem*> DownloadList;
+  typedef std::vector<content::DownloadItem*> DownloadList;
   const DownloadList& GetDownloads() const;
 
  private:

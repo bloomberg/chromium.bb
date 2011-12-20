@@ -87,6 +87,8 @@
 #include "ui/gfx/rect.h"
 
 using content::BrowserThread;
+using content::DownloadItem;
+using content::DownloadManager;
 
 // Holds onto start and stop timestamps for a particular tab
 class InitialLoadObserver::TabTime {
@@ -1636,7 +1638,8 @@ void AllDownloadsCompleteObserver::ModelChanged() {
   ReplyIfNecessary();
 }
 
-void AllDownloadsCompleteObserver::OnDownloadUpdated(DownloadItem* download) {
+void AllDownloadsCompleteObserver::OnDownloadUpdated(
+    content::DownloadItem* download) {
   // If the current download's status has changed to a final state (not state
   // "in progress"), remove it from the pending list.
   if (download->GetState() != DownloadItem::IN_PROGRESS) {

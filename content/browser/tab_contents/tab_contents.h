@@ -37,7 +37,6 @@
 #include "base/win/scoped_handle.h"
 #endif
 
-class DownloadItem;
 class LoadNotificationDetails;
 class RenderViewHost;
 class SessionStorageNamespace;
@@ -46,6 +45,10 @@ class TabContentsDelegate;
 class TabContentsObserver;
 class TabContentsView;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
+
+namespace content {
+class DownloadItem;
+}
 
 namespace webkit_glue {
 struct WebIntentData;
@@ -329,7 +332,7 @@ class CONTENT_EXPORT TabContents : public content::WebPage,
   bool CanDownload(int request_id);
 
   // Notifies the delegate that a download started.
-  void OnStartDownload(DownloadItem* download);
+  void OnStartDownload(content::DownloadItem* download);
 
   // Interstitials -------------------------------------------------------------
 

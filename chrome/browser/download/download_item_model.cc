@@ -10,14 +10,15 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/common/time_format.h"
-#include "content/browser/download/download_item.h"
 #include "content/browser/download/save_package.h"
+#include "content/public/browser/download_item.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
 using base::TimeDelta;
+using content::DownloadItem;
 
 // -----------------------------------------------------------------------------
 // DownloadItemModel

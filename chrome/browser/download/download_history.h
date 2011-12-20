@@ -13,11 +13,14 @@
 #include "chrome/browser/history/history.h"
 #include "content/browser/cancelable_request.h"
 
-class DownloadItem;
 class Profile;
 
 namespace base {
 class Time;
+}
+
+namespace content {
+class DownloadItem;
 }
 
 // Interacts with the HistoryService on behalf of the download subsystem.
@@ -43,18 +46,18 @@ class DownloadHistory {
                                   const VisitedBeforeDoneCallback& callback);
 
   // Adds a new entry for a download to the history database.
-  void AddEntry(DownloadItem* download_item,
+  void AddEntry(content::DownloadItem* download_item,
                 const HistoryService::DownloadCreateCallback& callback);
 
   // Updates the history entry for |download_item|.
-  void UpdateEntry(DownloadItem* download_item);
+  void UpdateEntry(content::DownloadItem* download_item);
 
   // Updates the download path for |download_item| to |new_path|.
-  void UpdateDownloadPath(DownloadItem* download_item,
+  void UpdateDownloadPath(content::DownloadItem* download_item,
                           const FilePath& new_path);
 
   // Removes |download_item| from the history database.
-  void RemoveEntry(DownloadItem* download_item);
+  void RemoveEntry(content::DownloadItem* download_item);
 
   // Removes download-related history entries in the given time range.
   void RemoveEntriesBetween(const base::Time remove_begin,

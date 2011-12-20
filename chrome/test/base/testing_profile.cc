@@ -68,6 +68,7 @@
 
 using base::Time;
 using content::BrowserThread;
+using content::DownloadManager;
 using testing::NiceMock;
 using testing::Return;
 

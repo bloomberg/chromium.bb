@@ -10,12 +10,15 @@
 class BaseDownloadItemModel;
 @class ChromeUILocalizer;
 @class DownloadItemCell;
-class DownloadItem;
 @class DownloadItemButton;
 class DownloadItemMac;
 class DownloadShelfContextMenuMac;
 @class DownloadShelfController;
 @class GTMWidthBasedTweaker;
+
+namespace content {
+class DownloadItem;
+}
 
 // A controller class that manages one download item.
 
@@ -87,7 +90,7 @@ class DownloadShelfContextMenuMac;
 - (NSSize)preferredSize;
 
 // Returns the DownloadItem model object belonging to this item.
-- (DownloadItem*)download;
+- (content::DownloadItem*)download;
 
 // Updates the tooltip with the download's path.
 - (void)updateToolTip;

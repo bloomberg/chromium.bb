@@ -56,14 +56,14 @@
 #include "ui/gfx/native_widget_types.h"
 
 struct DownloadCreateInfo;
-class DownloadFile;
-class DownloadManager;
 class DownloadRequestHandle;
 class FilePath;
 class ResourceDispatcherHost;
 
 namespace content {
 class DownloadBuffer;
+class DownloadFile;
+class DownloadManager;
 }
 
 // Manages all in progress downloads.
@@ -74,10 +74,10 @@ class CONTENT_EXPORT DownloadFileManager
    public:
     virtual ~DownloadFileFactory() {}
 
-    virtual DownloadFile* CreateFile(
+    virtual content::DownloadFile* CreateFile(
         DownloadCreateInfo* info,
         const DownloadRequestHandle& request_handle,
-        DownloadManager* download_manager) = 0;
+        content::DownloadManager* download_manager) = 0;
   };
 
   // Takes ownership of the factory.
@@ -115,7 +115,7 @@ class CONTENT_EXPORT DownloadFileManager
   void CompleteDownload(DownloadId id);
 
   // Called on FILE thread by DownloadManager at the beginning of its shutdown.
-  void OnDownloadManagerShutdown(DownloadManager* manager);
+  void OnDownloadManagerShutdown(content::DownloadManager* manager);
 
   // The DownloadManager in the UI thread has provided an intermediate
   // .crdownload name for the download specified by |id|.
@@ -155,11 +155,11 @@ class CONTENT_EXPORT DownloadFileManager
   // process.
   void CreateDownloadFile(DownloadCreateInfo* info,
                           const DownloadRequestHandle& request_handle,
-                          DownloadManager* download_manager,
+                          content::DownloadManager* download_manager,
                           bool hash_needed);
 
   // Called only on the download thread.
-  DownloadFile* GetDownloadFile(DownloadId global_id);
+  content::DownloadFile* GetDownloadFile(DownloadId global_id);
 
   // Called only from RenameInProgressDownloadFile and
   // RenameCompletingDownloadFile on the FILE thread.
@@ -170,7 +170,7 @@ class CONTENT_EXPORT DownloadFileManager
   // it from the maps.
   void EraseDownload(DownloadId global_id);
 
-  typedef base::hash_map<DownloadId, DownloadFile*> DownloadFileMap;
+  typedef base::hash_map<DownloadId, content::DownloadFile*> DownloadFileMap;
 
   // A map of all in progress downloads.  It owns the download files.
   DownloadFileMap downloads_;

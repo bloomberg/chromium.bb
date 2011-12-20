@@ -10,10 +10,11 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/download_manager_delegate.h"
 
-class DownloadManager;
 struct DownloadStateInfo;
 
 namespace content {
+
+class DownloadManager;
 
 class ShellDownloadManagerDelegate
     : public DownloadManagerDelegate,

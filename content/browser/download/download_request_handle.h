@@ -11,9 +11,12 @@
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 
-class DownloadManager;
 class ResourceDispatcherHost;
 class TabContents;
+
+namespace content {
+class DownloadManager;
+}
 
 // A handle used by the download system for operations on the URLRequest
 // or objects conditional on it (e.g. TabContents).
@@ -27,7 +30,7 @@ class CONTENT_EXPORT DownloadRequestHandleInterface {
 
   // These functions must be called on the UI thread.
   virtual TabContents* GetTabContents() const = 0;
-  virtual DownloadManager* GetDownloadManager() const = 0;
+  virtual content::DownloadManager* GetDownloadManager() const = 0;
 
   // Pause or resume the matching URL request.
   virtual void PauseRequest() const = 0;
@@ -61,7 +64,7 @@ class CONTENT_EXPORT DownloadRequestHandle
 
   // Implement DownloadRequestHandleInterface interface.
   virtual TabContents* GetTabContents() const OVERRIDE;
-  virtual DownloadManager* GetDownloadManager() const OVERRIDE;
+  virtual content::DownloadManager* GetDownloadManager() const OVERRIDE;
   virtual void PauseRequest() const OVERRIDE;
   virtual void ResumeRequest() const OVERRIDE;
   virtual void CancelRequest() const OVERRIDE;

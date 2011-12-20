@@ -41,9 +41,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_data_remover.h"
 #include "content/public/browser/user_metrics.h"
@@ -58,6 +58,7 @@
 #include "webkit/quota/quota_types.h"
 
 using content::BrowserThread;
+using content::DownloadManager;
 using content::UserMetricsAction;
 
 // Done so that we can use PostTask on BrowsingDataRemovers and not have

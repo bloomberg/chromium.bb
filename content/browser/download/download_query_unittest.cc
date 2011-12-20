@@ -22,6 +22,7 @@ using ::testing::ReturnRef;
 using ::testing::_;
 using base::Time;
 using base::Value;
+using content::DownloadItem;
 typedef DownloadQuery::DownloadVector DownloadVector;
 
 namespace {

@@ -15,7 +15,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/icon_manager.h"
-#include "content/browser/download/download_item.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -37,7 +37,7 @@ namespace ui {
 class SlideAnimation;
 }
 
-class DownloadItemGtk : public DownloadItem::Observer,
+class DownloadItemGtk : public content::DownloadItem::Observer,
                         public ui::AnimationDelegate,
                         public content::NotificationObserver {
  public:
@@ -49,8 +49,8 @@ class DownloadItemGtk : public DownloadItem::Observer,
   virtual ~DownloadItemGtk();
 
   // DownloadItem::Observer implementation.
-  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE { }
+  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE { }
 
   // ui::AnimationDelegate implementation.
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
@@ -68,7 +68,7 @@ class DownloadItemGtk : public DownloadItem::Observer,
                                gfx::Image* image);
 
   // Returns the DownloadItem model object belonging to this item.
-  DownloadItem* get_download();
+  content::DownloadItem* get_download();
 
  private:
   friend class DownloadShelfContextMenuGtk;

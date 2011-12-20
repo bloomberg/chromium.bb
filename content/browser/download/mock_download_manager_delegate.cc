@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include "content/browser/download/mock_download_manager_delegate.h"
-#include "content/browser/download/download_item.h"
-#include "content/browser/download/download_manager.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
+
+using content::DownloadItem;
+using content::DownloadManager;
 
 MockDownloadManagerDelegate::MockDownloadManagerDelegate() {
 }

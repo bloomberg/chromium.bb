@@ -15,7 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/debugger/devtools_manager_impl.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
@@ -42,6 +41,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/bindings_policy.h"
@@ -109,6 +109,8 @@
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
 using content::DevToolsManagerImpl;
+using content::DownloadItem;
+using content::DownloadManager;
 using content::UserMetricsAction;
 
 namespace {

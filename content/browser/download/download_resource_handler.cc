@@ -14,7 +14,6 @@
 #include "content/browser/download/download_buffer.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
-#include "content/browser/download/download_item.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/interrupt_reasons.h"
@@ -22,6 +21,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -29,6 +29,7 @@
 #include "net/url_request/url_request_context.h"
 
 using content::BrowserThread;
+using content::DownloadItem;
 
 DownloadResourceHandler::DownloadResourceHandler(
     ResourceDispatcherHost* rdh,

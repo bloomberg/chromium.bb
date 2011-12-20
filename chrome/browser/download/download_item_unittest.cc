@@ -19,6 +19,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::DownloadItem;
+using content::DownloadManager;
 
 DownloadId::Domain kValidDownloadItemIdDomain = "valid DownloadId::Domain";
 
@@ -51,16 +53,18 @@ class MockRequestHandle : public DownloadRequestHandleInterface {
 
 class DownloadItemTest : public testing::Test {
  public:
-  class MockObserver : public DownloadItem::Observer {
+  class MockObserver : public content::DownloadItem::Observer {
    public:
     explicit MockObserver(DownloadItem* item) : item_(item), updated_(false) {
       item_->AddObserver(this);
     }
     ~MockObserver() { item_->RemoveObserver(this); }
 
-    virtual void OnDownloadUpdated(DownloadItem* download) { updated_ = true; }
+    virtual void OnDownloadUpdated(content::DownloadItem* download) {
+      updated_ = true;
+    }
 
-    virtual void OnDownloadOpened(DownloadItem* download) { }
+    virtual void OnDownloadOpened(content::DownloadItem* download) { }
 
     bool CheckUpdated() {
       bool was_updated = updated_;
@@ -284,7 +288,7 @@ TEST_F(DownloadItemTest, NotificationAfterTogglePause) {
 static char external_data_test_string[] = "External data test";
 static int destructor_called = 0;
 
-class TestExternalData : public DownloadItem::ExternalData {
+class TestExternalData : public content::DownloadItem::ExternalData {
  public:
   int value;
   virtual ~TestExternalData() {

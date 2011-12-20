@@ -7,23 +7,23 @@
 #pragma once
 
 #include "chrome/browser/ui/select_file_dialog.h"
-#include "content/browser/download/download_manager.h"
+#include "content/public/browser/download_manager.h"
 
 class FilePath;
 class TabContents;
 
 // Handles showing a dialog to the user to ask for the filename for a download.
-class DownloadFilePicker : public DownloadManager::Observer,
+class DownloadFilePicker : public content::DownloadManager::Observer,
                            public SelectFileDialog::Listener {
  public:
-  DownloadFilePicker(DownloadManager* download_manager,
+  DownloadFilePicker(content::DownloadManager* download_manager,
                      TabContents* tab_contents,
                      const FilePath& suggested_path,
                      void* params);
   virtual ~DownloadFilePicker();
 
  private:
-  // DownloadManager::Observer implementation.
+  // content::DownloadManager::Observer implementation.
   virtual void ModelChanged() OVERRIDE;
   virtual void ManagerGoingDown() OVERRIDE;
 
@@ -33,7 +33,7 @@ class DownloadFilePicker : public DownloadManager::Observer,
                             void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
-  DownloadManager* download_manager_;
+  content::DownloadManager* download_manager_;
 
   // For managing select file dialogs.
   scoped_refptr<SelectFileDialog> select_file_dialog_;

@@ -20,10 +20,12 @@
 #include "ui/views/view.h"
 #endif
 
-class DownloadItem;
-
 namespace base {
 class DictionaryValue;
+}
+
+namespace content {
+class DownloadItem;
 }
 
 namespace gfx {
@@ -44,7 +46,7 @@ bool DownloadPathIsDangerous(const FilePath& download_path);
 // Generate a filename based on the response from the server.  Similar
 // in operation to net::GenerateFileName(), but uses a localized
 // default name.
-void GenerateFileNameFromRequest(const DownloadItem& download_item,
+void GenerateFileNameFromRequest(const content::DownloadItem& download_item,
                                  FilePath* generated_name);
 
 // Download progress animations ------------------------------------------------
@@ -127,7 +129,7 @@ void PaintDownloadInterrupted(gfx::Canvas* canvas,
 // Helper function for download views to use when acting as a drag source for a
 // DownloadItem. If |icon| is NULL, no image will be accompany the drag. |view|
 // is only required for Mac OS X, elsewhere it can be NULL.
-void DragDownload(const DownloadItem* download,
+void DragDownload(const content::DownloadItem* download,
                   gfx::Image* icon,
                   gfx::NativeView view);
 
@@ -135,10 +137,11 @@ void DragDownload(const DownloadItem* download,
 
 // Creates a representation of a download in a format that the downloads
 // HTML page can understand.
-base::DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id);
+base::DictionaryValue* CreateDownloadItemValue(content::DownloadItem* download,
+                                               int id);
 
 // Get the localized status text for an in-progress download.
-string16 GetProgressStatusText(DownloadItem* download);
+string16 GetProgressStatusText(content::DownloadItem* download);
 
 // Update the application icon to indicate overall download progress.
 // |download_count| is the number of downloads currently in progress. If

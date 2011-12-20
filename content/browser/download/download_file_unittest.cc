@@ -10,17 +10,19 @@
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_id_factory.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/mock_download_manager.h"
 #include "content/browser/download/mock_download_manager_delegate.h"
+#include "content/public/browser/download_manager.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 using content::BrowserThreadImpl;
+using content::DownloadFile;
+using content::DownloadManager;
 
 DownloadId::Domain kValidIdDomain = "valid DownloadId::Domain";
 

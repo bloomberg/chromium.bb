@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_FILE_H_
+#define CONTENT_PUBLIC_BROWSER_DOWNLOAD_FILE_H_
 #pragma once
 
 #include <string>
 
 #include "base/basictypes.h"
-#include "content/browser/download/base_file.h"
+#include "base/file_path.h"
 #include "content/browser/download/download_id.h"
 #include "content/common/content_export.h"
 #include "net/base/net_errors.h"
+
+namespace content {
 
 class DownloadManager;
 
@@ -89,4 +91,6 @@ class CONTENT_EXPORT DownloadFile {
       const FilePath::StringType& suffix);
 };
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_DOWNLOAD_FILE_H_

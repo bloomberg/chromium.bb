@@ -14,8 +14,8 @@
 // Use AddObserver() / RemoveObserver() on the appropriate download object to
 // receive state updates.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_H_
+#ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_ITEM_H_
+#define CONTENT_PUBLIC_BROWSER_DOWNLOAD_ITEM_H_
 #pragma once
 
 #include <map>
@@ -27,20 +27,21 @@
 
 class DownloadId;
 class DownloadFileManager;
-class DownloadManager;
 class FilePath;
 class GURL;
 class TabContents;
 struct DownloadCreateInfo;
 struct DownloadPersistentStoreInfo;
+
 namespace base {
 class Time;
 class TimeDelta;
 }
 
 namespace content {
+
 class BrowserContext;
-}
+class DownloadManager;
 
 // One DownloadItem per download. This is the model class that stores all the
 // state for a download. Multiple views, such as a tab's download shelf and the
@@ -108,7 +109,7 @@ class CONTENT_EXPORT DownloadItem {
     virtual ~ExternalData() {};
   };
 
-  virtual ~DownloadItem();
+  virtual ~DownloadItem() {}
 
   virtual void AddObserver(DownloadItem::Observer* observer) = 0;
   virtual void RemoveObserver(DownloadItem::Observer* observer) = 0;
@@ -290,7 +291,7 @@ class CONTENT_EXPORT DownloadItem {
   virtual InterruptReason GetLastReason() const = 0;
   virtual DownloadPersistentStoreInfo GetPersistentStoreInfo() const = 0;
   virtual DownloadStateInfo GetStateInfo() const = 0;
-  virtual content::BrowserContext* BrowserContext() const = 0;
+  virtual BrowserContext* BrowserContext() const = 0;
   virtual TabContents* GetTabContents() const = 0;
 
   // Returns the final target file path for the download.
@@ -336,4 +337,6 @@ class CONTENT_EXPORT DownloadItem {
   virtual void MockDownloadOpenForTesting() = 0;
 };
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_DOWNLOAD_ITEM_H_

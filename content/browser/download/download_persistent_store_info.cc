@@ -4,7 +4,7 @@
 
 #include "content/browser/download/download_persistent_store_info.h"
 
-#include "content/browser/download/download_item.h"
+#include "content/public/browser/download_item.h"
 
 DownloadPersistentStoreInfo::DownloadPersistentStoreInfo()
     : received_bytes(0),

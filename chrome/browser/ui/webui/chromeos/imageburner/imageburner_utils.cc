@@ -14,6 +14,8 @@
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+using content::DownloadItem;
+using content::DownloadManager;
 
 namespace imageburner {
 

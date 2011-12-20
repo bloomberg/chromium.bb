@@ -6,13 +6,15 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
-#include "content/browser/download/download_item.h"
+#include "content/public/browser/download_item.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
+
+using content::DownloadItem;
 
 namespace {
 

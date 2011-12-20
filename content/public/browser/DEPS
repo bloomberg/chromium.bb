@@ -1,4 +1,8 @@
 include_rules = [
   "+content/browser/notification_service_impl.h",
   "+content/browser/renderer_host/render_view_host.h",
+  # TODO(jam): remove
+  "+content/browser/download/download_id.h",
+  "+content/browser/download/download_state_info.h",
+  "+content/browser/download/interrupt_reasons.h",
 ]

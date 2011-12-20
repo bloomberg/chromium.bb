@@ -20,8 +20,11 @@
 #include "base/memory/ref_counted.h"
 #include "googleurl/src/gurl.h"
 
-class DownloadItem;
 class SafeBrowsingService;
+
+namespace content {
+class DownloadItem;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -50,7 +53,7 @@ class DownloadProtectionService {
     ~DownloadInfo();
     std::string DebugString() const;
     // Creates a DownloadInfo from a DownloadItem object.
-    static DownloadInfo FromDownloadItem(const DownloadItem& item);
+    static DownloadInfo FromDownloadItem(const content::DownloadItem& item);
   };
 
   enum DownloadCheckResult {
@@ -151,9 +154,6 @@ class DownloadProtectionService {
   // Called by a CheckClientDownloadRequest instance when it finishes, to
   // remove it from |download_requests_|.
   void RequestFinished(CheckClientDownloadRequest* request);
-
-  static void FillDownloadInfo(const DownloadItem& item,
-                               DownloadInfo* download_info);
 
   // Given a certificate and its immediate issuer certificate, generates the
   // list of strings that need to be checked against the download whitelist to

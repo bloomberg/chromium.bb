@@ -13,6 +13,8 @@
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+using content::DownloadItem;
+using content::DownloadManager;
 
 // These functions take scoped_refptr's to DownloadManager because they
 // are posted to message queues, and hence may execute arbitrarily after
@@ -80,7 +82,7 @@ bool DownloadTestObserver::IsFinished() const {
   return (finish_on_select_file_ && select_file_dialog_seen_);
 }
 
-void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
+void DownloadTestObserver::OnDownloadUpdated(content::DownloadItem* download) {
   // The REMOVING state indicates that the download is being destroyed.
   // Stop observing.  Do not do anything with it, as it is about to be gone.
   if (download->GetState() == DownloadItem::REMOVING) {
@@ -213,7 +215,8 @@ void DownloadTestFlushObserver::ModelChanged() {
   CheckDownloadsInProgress(true);
 }
 
-void DownloadTestFlushObserver::OnDownloadUpdated(DownloadItem* download) {
+void DownloadTestFlushObserver::OnDownloadUpdated(
+    content::DownloadItem* download) {
   // The REMOVING state indicates that the download is being destroyed.
   // Stop observing.  Do not do anything with it, as it is about to be gone.
   if (download->GetState() == DownloadItem::REMOVING) {

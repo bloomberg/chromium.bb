@@ -20,7 +20,6 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item_impl.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/download/save_file.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/download/save_item.h"
@@ -34,6 +33,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/io_buffer.h"
@@ -44,6 +44,7 @@
 
 using base::Time;
 using content::BrowserThread;
+using content::DownloadItem;
 using WebKit::WebPageSerializerClient;
 
 namespace {
@@ -1274,7 +1275,7 @@ void SavePackage::StopObservation() {
   download_manager_ = NULL;
 }
 
-void SavePackage::OnDownloadUpdated(DownloadItem* download) {
+void SavePackage::OnDownloadUpdated(content::DownloadItem* download) {
   DCHECK(download_);
   DCHECK(download_ == download);
   DCHECK(download_manager_);

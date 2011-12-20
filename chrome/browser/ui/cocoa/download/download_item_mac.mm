@@ -9,8 +9,10 @@
 #include "chrome/browser/download/download_item_model.h"
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
 #include "chrome/browser/ui/cocoa/download/download_util_mac.h"
-#include "content/browser/download/download_item.h"
+#include "content/public/browser/download_item.h"
 #include "ui/gfx/image/image.h"
+
+using content::DownloadItem;
 
 // DownloadItemMac -------------------------------------------------------------
 
@@ -25,7 +27,7 @@ DownloadItemMac::~DownloadItemMac() {
   icon_consumer_.CancelAllRequests();
 }
 
-void DownloadItemMac::OnDownloadUpdated(DownloadItem* download) {
+void DownloadItemMac::OnDownloadUpdated(content::DownloadItem* download) {
   DCHECK_EQ(download, download_model_->download());
 
   if ([item_controller_ isDangerousMode] &&
@@ -65,7 +67,7 @@ void DownloadItemMac::OnDownloadUpdated(DownloadItem* download) {
   }
 }
 
-void DownloadItemMac::OnDownloadOpened(DownloadItem* download) {
+void DownloadItemMac::OnDownloadOpened(content::DownloadItem* download) {
   DCHECK_EQ(download, download_model_->download());
   [item_controller_ downloadWasOpened];
 }

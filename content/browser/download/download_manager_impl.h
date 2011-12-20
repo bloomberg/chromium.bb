@@ -7,7 +7,7 @@
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_IMPL_H_
 #pragma once
 
-#include "content/browser/download/download_manager.h"
+#include "content/public/browser/download_manager.h"
 
 #include <map>
 #include <set>
@@ -26,7 +26,7 @@ class DownloadIdFactory;
 class DownloadStatusUpdater;
 
 class CONTENT_EXPORT DownloadManagerImpl
-    : public DownloadManager,
+    : public content::DownloadManager,
       public DownloadItemImpl::Delegate,
       public DownloadStatusUpdaterDelegate {
  public:
@@ -34,7 +34,7 @@ class CONTENT_EXPORT DownloadManagerImpl
                       DownloadIdFactory* id_factory,
                       DownloadStatusUpdater* status_updater);
 
-  // DownloadManager functions.
+  // content::DownloadManager functions.
   virtual void Shutdown() OVERRIDE;
   virtual void GetTemporaryDownloads(const FilePath& dir_path,
                                      DownloadVector* result) OVERRIDE;
@@ -79,35 +79,42 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void CreateDownloadItem(
       DownloadCreateInfo* info,
       const DownloadRequestHandle& request_handle) OVERRIDE;
-  virtual DownloadItem* CreateSavePackageDownloadItem(
+  virtual content::DownloadItem* CreateSavePackageDownloadItem(
       const FilePath& main_file_path,
       const GURL& page_url,
       bool is_otr,
-      DownloadItem::Observer* observer) OVERRIDE;
+      content::DownloadItem::Observer* observer) OVERRIDE;
   virtual void ClearLastDownloadPath() OVERRIDE;
   virtual void FileSelected(const FilePath& path, void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
   virtual void RestartDownload(int32 download_id) OVERRIDE;
   virtual void CheckForHistoryFilesRemoval() OVERRIDE;
-  virtual DownloadItem* GetDownloadItem(int id) OVERRIDE;
-  virtual void SavePageDownloadFinished(DownloadItem* download) OVERRIDE;
-  virtual DownloadItem* GetActiveDownloadItem(int id) OVERRIDE;
+  virtual content::DownloadItem* GetDownloadItem(int id) OVERRIDE;
+  virtual void SavePageDownloadFinished(
+      content::DownloadItem* download) OVERRIDE;
+  virtual content::DownloadItem* GetActiveDownloadItem(int id) OVERRIDE;
   virtual content::DownloadManagerDelegate* delegate() const OVERRIDE;
   virtual void SetDownloadManagerDelegate(
       content::DownloadManagerDelegate* delegate) OVERRIDE;
 
   // Overridden from DownloadItemImpl::Delegate
   // (Note that |BrowserContext| are present in both interfaces.)
-  virtual bool ShouldOpenDownload(DownloadItem* item) OVERRIDE;
+  virtual bool ShouldOpenDownload(content::DownloadItem* item) OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(
       const FilePath& path) OVERRIDE;
-  virtual void CheckForFileRemoval(DownloadItem* download_item) OVERRIDE;
-  virtual void MaybeCompleteDownload(DownloadItem* download) OVERRIDE;
-  virtual void DownloadCancelled(DownloadItem* download) OVERRIDE;
-  virtual void DownloadCompleted(DownloadItem* download) OVERRIDE;
-  virtual void DownloadOpened(DownloadItem* download) OVERRIDE;
-  virtual void DownloadRemoved(DownloadItem* download) OVERRIDE;
-  virtual void AssertStateConsistent(DownloadItem* download) const OVERRIDE;
+  virtual void CheckForFileRemoval(
+      content::DownloadItem* download_item) OVERRIDE;
+  virtual void MaybeCompleteDownload(
+      content::DownloadItem* download) OVERRIDE;
+  virtual void DownloadCancelled(
+      content::DownloadItem* download) OVERRIDE;
+  virtual void DownloadCompleted(
+      content::DownloadItem* download) OVERRIDE;
+  virtual void DownloadOpened(
+      content::DownloadItem* download) OVERRIDE;
+  virtual void DownloadRemoved(content::DownloadItem* download) OVERRIDE;
+  virtual void AssertStateConsistent(
+      content::DownloadItem* download) const OVERRIDE;
 
   // Overridden from DownloadStatusUpdaterDelegate:
   virtual bool IsDownloadProgressKnown() const OVERRIDE;
@@ -116,8 +123,8 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual int64 GetTotalDownloadBytes() const OVERRIDE;
 
  private:
-  typedef std::set<DownloadItem*> DownloadSet;
-  typedef base::hash_map<int64, DownloadItem*> DownloadMap;
+  typedef std::set<content::DownloadItem*> DownloadSet;
+  typedef base::hash_map<int64, content::DownloadItem*> DownloadMap;
 
   // For testing.
   friend class DownloadManagerTest;
@@ -134,10 +141,10 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Determine if the download is ready for completion, i.e. has had
   // all data saved, and completed the filename determination and
   // history insertion.
-  bool IsDownloadReadyForCompletion(DownloadItem* download);
+  bool IsDownloadReadyForCompletion(content::DownloadItem* download);
 
   // Show the download in the browser.
-  void ShowDownloadInBrowser(DownloadItem* download);
+  void ShowDownloadInBrowser(content::DownloadItem* download);
 
   // Get next download id from factory.
   DownloadId GetNextId();
@@ -153,17 +160,17 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Called back after a target path for the file to be downloaded to has been
   // determined, either automatically based on the suggested file name, or by
   // the user in a Save As dialog box.
-  virtual void ContinueDownloadWithPath(DownloadItem* download,
+  virtual void ContinueDownloadWithPath(content::DownloadItem* download,
                                         const FilePath& chosen_file) OVERRIDE;
 
   // Retrieves the download from the |download_id|.
   // Returns NULL if the download is not active.
-  virtual DownloadItem* GetActiveDownload(int32 download_id) OVERRIDE;
+  virtual content::DownloadItem* GetActiveDownload(int32 download_id) OVERRIDE;
 
   // Removes |download| from the active and in progress maps.
   // Called when the download is cancelled or has an error.
   // Does nothing if the download is not in the history DB.
-  void RemoveFromActiveList(DownloadItem* download);
+  void RemoveFromActiveList(content::DownloadItem* download);
 
   // Updates the delegate about the overall download progress.
   void UpdateDownloadProgress();
@@ -176,7 +183,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   void AssertContainersConsistent() const;
 
   // Add a DownloadItem to history_downloads_.
-  void AddDownloadItemToHistory(DownloadItem* item, int64 db_handle);
+  void AddDownloadItemToHistory(content::DownloadItem* item, int64 db_handle);
 
   // Remove from internal maps.
   int RemoveDownloadItems(const DownloadVector& pending_deletes);

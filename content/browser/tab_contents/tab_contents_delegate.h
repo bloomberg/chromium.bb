@@ -17,7 +17,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class DownloadItem;
 class FilePath;
 class GURL;
 class TabContents;
@@ -31,9 +30,10 @@ class ListValue;
 
 namespace content {
 class BrowserContext;
-struct FileChooserParams;
+class DownloadItem;
 class IntentsHost;
 class JavaScriptDialogCreator;
+struct FileChooserParams;
 }
 
 namespace gfx {
@@ -199,7 +199,8 @@ class CONTENT_EXPORT TabContentsDelegate {
   virtual bool CanDownload(TabContents* source, int request_id);
 
   // Notifies the delegate that a download is starting.
-  virtual void OnStartDownload(TabContents* source, DownloadItem* download);
+  virtual void OnStartDownload(TabContents* source,
+                               content::DownloadItem* download);
 
   // Return much extra vertical space should be allotted to the
   // render view widget during various animations (e.g. infobar closing).

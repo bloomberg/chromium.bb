@@ -11,11 +11,11 @@
 #include "base/file_path.h"
 #include "chrome/browser/prefs/pref_member.h"
 
-class DownloadManager;
 class PrefService;
 
 namespace content {
 class BrowserContext;
+class DownloadManager;
 }
 
 // Stores all download-related preferences.
@@ -28,7 +28,8 @@ class DownloadPrefs {
 
   // Returns the DownloadPrefs corresponding to the given DownloadManager
   // or BrowserContext.
-  static DownloadPrefs* FromDownloadManager(DownloadManager* download_manager);
+  static DownloadPrefs* FromDownloadManager(
+      content::DownloadManager* download_manager);
   static DownloadPrefs* FromBrowserContext(
       content::BrowserContext* browser_context);
 

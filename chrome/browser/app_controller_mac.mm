@@ -61,9 +61,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
@@ -75,6 +75,7 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using content::BrowserThread;
+using content::DownloadManager;
 using content::UserMetricsAction;
 
 // 10.6 adds a public API for the Spotlight-backed search menu item in the Help

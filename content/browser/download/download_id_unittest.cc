@@ -17,6 +17,7 @@
 
 using content::BrowserThread;
 using content::BrowserThreadImpl;
+using content::DownloadManager;
 
 class DownloadIdTest : public testing::Test {
  public:

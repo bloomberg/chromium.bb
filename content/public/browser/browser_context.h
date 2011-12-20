@@ -26,7 +26,6 @@ class DatabaseTracker;
 
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
-class DownloadManager;
 class FilePath;
 class GeolocationPermissionContext;
 class SpeechInputPreferences;
@@ -36,6 +35,7 @@ class WebKitContext;
 
 namespace content {
 
+class DownloadManager;
 class ResourceContext;
 
 // This class holds the context needed for a browsing session.
@@ -57,7 +57,7 @@ class BrowserContext {
   virtual SSLHostState* GetSSLHostState() = 0;
 
   // Returns the DownloadManager associated with this context.
-  virtual DownloadManager* GetDownloadManager() = 0;
+  virtual content::DownloadManager* GetDownloadManager() = 0;
 
   // Returns the request context information associated with this context.  Call
   // this only on the UI thread, since it can send notifications that should

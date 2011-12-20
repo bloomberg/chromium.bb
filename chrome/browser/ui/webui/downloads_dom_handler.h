@@ -10,9 +10,9 @@
 
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/download/download_item.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 
 namespace base {
 class ListValue;
@@ -21,10 +21,10 @@ class ListValue;
 // The handler for Javascript messages related to the "downloads" view,
 // also observes changes to the download manager.
 class DownloadsDOMHandler : public WebUIMessageHandler,
-                            public DownloadManager::Observer,
-                            public DownloadItem::Observer {
+                            public content::DownloadManager::Observer,
+                            public content::DownloadItem::Observer {
  public:
-  explicit DownloadsDOMHandler(DownloadManager* dlm);
+  explicit DownloadsDOMHandler(content::DownloadManager* dlm);
   virtual ~DownloadsDOMHandler();
 
   void Init();
@@ -33,8 +33,8 @@ class DownloadsDOMHandler : public WebUIMessageHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   // DownloadItem::Observer interface
-  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE { }
+  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE { }
 
   // DownloadManager::Observer interface
   virtual void ModelChanged() OVERRIDE;
@@ -86,16 +86,16 @@ class DownloadsDOMHandler : public WebUIMessageHandler,
   void ClearDownloadItems();
 
   // Return the download that corresponds to a given id.
-  DownloadItem* GetDownloadById(int id);
+  content::DownloadItem* GetDownloadById(int id);
 
   // Return the download that is referred to in a given value.
-  DownloadItem* GetDownloadByValue(const base::ListValue* args);
+  content::DownloadItem* GetDownloadByValue(const base::ListValue* args);
 
   // Current search text.
   std::wstring search_text_;
 
   // Our model
-  DownloadManager* download_manager_;
+  content::DownloadManager* download_manager_;
 
   // The downloads webui for an off-the-record window also shows downloads from
   // the parent profile.
@@ -108,7 +108,7 @@ class DownloadsDOMHandler : public WebUIMessageHandler,
   // Note that when a download item is removed, the entry in the vector becomes
   // null.  This should only be a transient state, as a ModelChanged()
   // notification should follow close on the heels of such a change.
-  typedef std::vector<DownloadItem*> OrderedDownloads;
+  typedef std::vector<content::DownloadItem*> OrderedDownloads;
   OrderedDownloads download_items_;
 
   base::ScopedCallbackFactory<DownloadsDOMHandler> callback_factory_;

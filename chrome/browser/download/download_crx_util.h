@@ -12,9 +12,12 @@
 #include "base/basictypes.h"
 
 class CrxInstaller;
-class DownloadItem;
 class ExtensionInstallUI;
 class Profile;
+
+namespace content {
+class DownloadItem;
+}
 
 namespace download_crx_util {
 
@@ -31,7 +34,7 @@ void SetMockInstallUIForTesting(ExtensionInstallUI* mock_ui);
 // the installation.
 scoped_refptr<CrxInstaller> OpenChromeExtension(
     Profile* profile,
-    const DownloadItem& download_item);
+    const content::DownloadItem& download_item);
 
 }  // namespace download_crx_util
 

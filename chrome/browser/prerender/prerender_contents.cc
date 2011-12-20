@@ -37,6 +37,8 @@
 #include "content/browser/mach_broker_mac.h"
 #endif
 
+using content::DownloadItem;
+
 namespace prerender {
 
 namespace {

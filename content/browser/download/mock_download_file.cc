@@ -7,6 +7,8 @@
 #include "content/browser/download/download_create_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::DownloadManager;
+
 MockDownloadFile::StatisticsRecorder::StatisticsRecorder() {
 }
 

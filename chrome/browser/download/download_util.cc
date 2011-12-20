@@ -32,15 +32,15 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/time_format.h"
 #include "content/browser/download/download_create_info.h"
-#include "content/browser/download/download_file.h"
-#include "content/browser/download/download_item.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_state_info.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_file.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -82,6 +82,9 @@
 // TODO(phajdan.jr): Find some standard location for this, maintaining
 // the same value on all platforms.
 static const double PI = 3.141592653589793;
+
+using content::DownloadFile;
+using content::DownloadItem;
 
 namespace {
 

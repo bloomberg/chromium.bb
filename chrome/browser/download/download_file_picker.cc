@@ -12,6 +12,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::DownloadManager;
+
 DownloadFilePicker::DownloadFilePicker(
     DownloadManager* download_manager,
     TabContents* tab_contents,

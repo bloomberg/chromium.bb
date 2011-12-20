@@ -18,9 +18,9 @@
 #include "chrome/browser/chromeos/disks/disk_mount_manager.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_utils.h"
-#include "content/browser/download/download_item.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 #include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
@@ -78,8 +78,8 @@ class WebUIHandler
       public chromeos::disks::DiskMountManager::Observer,
       public chromeos::BurnLibrary::Observer,
       public chromeos::NetworkLibrary::NetworkManagerObserver,
-      public DownloadItem::Observer,
-      public DownloadManager::Observer,
+      public content::DownloadItem::Observer,
+      public content::DownloadManager::Observer,
       public Downloader::Listener,
       public StateMachine::Observer,
       public WebUIHandlerTaskProxy::Delegate,
@@ -115,8 +115,8 @@ class WebUIHandler
   virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj) OVERRIDE;
 
   // DownloadItem::Observer interface.
-  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
 
   // DownloadManager::Observer interface.
   virtual void ModelChanged() OVERRIDE;
@@ -203,8 +203,8 @@ class WebUIHandler
   GURL image_download_url_;
   std::string image_file_name_;
   TabContents* tab_contents_;
-  DownloadManager* download_manager_;
-  DownloadItem*  active_download_item_;
+  content::DownloadManager* download_manager_;
+  content::DownloadItem*  active_download_item_;
   BurnManager* burn_manager_;
   StateMachine* state_machine_;
   bool observing_burn_lib_;

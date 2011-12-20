@@ -18,7 +18,6 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/download/download_create_info.h"
-#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_persistent_store_info.h"
@@ -28,9 +27,13 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/download_file.h"
 #include "net/base/net_util.h"
 
 using content::BrowserThread;
+using content::DownloadFile;
+using content::DownloadItem;
+using content::DownloadManager;
 
 // A DownloadItem normally goes through the following states:
 //      * Created (when download starts)
@@ -116,6 +119,19 @@ class NullDownloadRequestHandle : public DownloadRequestHandleInterface {
 };
 
 }  // namespace
+
+namespace content {
+
+// Our download table ID starts at 1, so we use 0 to represent a download that
+// has started, but has not yet had its data persisted in the table. We use fake
+// database handles in incognito mode starting at -1 and progressively getting
+// more negative.
+// static
+const int DownloadItem::kUninitializedHandle = 0;
+
+const char DownloadItem::kEmptyFileHash[] = "";
+
+}
 
 // Infrastructure in DownloadItemImpl::Delegate to assert invariant that
 // delegate always outlives all attached DownloadItemImpls.

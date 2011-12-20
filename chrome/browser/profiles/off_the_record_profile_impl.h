@@ -65,7 +65,7 @@ class OffTheRecordProfileImpl : public Profile,
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
   virtual TemplateURLFetcher* GetTemplateURLFetcher() OVERRIDE;
-  virtual DownloadManager* GetDownloadManager() OVERRIDE;
+  virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
   virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;

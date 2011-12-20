@@ -197,7 +197,7 @@ class TestingProfile : public Profile {
   virtual TemplateURLFetcher* GetTemplateURLFetcher() OVERRIDE;
   virtual history::TopSites* GetTopSites() OVERRIDE;
   virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
-  virtual DownloadManager* GetDownloadManager() OVERRIDE;
+  virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
   virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
   virtual void SetQuotaManager(quota::QuotaManager* manager);
   virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;

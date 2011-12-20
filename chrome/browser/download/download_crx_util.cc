@@ -10,10 +10,11 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/download/download_item.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_service.h"
 
 using content::BrowserThread;
+using content::DownloadItem;
 
 namespace download_crx_util {
 

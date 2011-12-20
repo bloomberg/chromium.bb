@@ -16,6 +16,8 @@
 #include "ui/gfx/rect.h"
 #include "webkit/glue/web_intent_data.h"
 
+using content::DownloadItem;
+
 TabContentsDelegate::TabContentsDelegate() {
 }
 

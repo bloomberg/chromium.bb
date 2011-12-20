@@ -34,9 +34,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/show_desktop_notification_params.h"
 #include "content/public/common/url_constants.h"
@@ -45,6 +45,8 @@
 #include "ui/gfx/screen.h"
 
 using content::BrowserThread;
+using content::DownloadItem;
+using content::DownloadManager;
 
 class PanelBrowserTest : public BasePanelBrowserTest {
  public:
@@ -1586,7 +1588,7 @@ class PanelDownloadTest : public PanelBrowserTest {
   ScopedTempDir downloads_directory_;
 };
 
-class DownloadObserver : public DownloadManager::Observer {
+class DownloadObserver : public content::DownloadManager::Observer {
  public:
   explicit DownloadObserver(Profile* profile)
       : download_manager_(

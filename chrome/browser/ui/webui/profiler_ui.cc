@@ -21,6 +21,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/trace_controller.h"
+#include "content/public/browser/browser_thread.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 

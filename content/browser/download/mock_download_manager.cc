@@ -7,6 +7,8 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_item_impl.h"
 
+using content::DownloadItem;
+
 MockDownloadManager::MockDownloadManager(
     content::DownloadManagerDelegate* delegate,
     DownloadIdFactory* id_factory,

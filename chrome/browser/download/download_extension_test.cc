@@ -15,9 +15,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/net/url_request_slow_download_job.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_manager.h"
+
+using content::DownloadItem;
+using content::DownloadManager;
 
 class DownloadExtensionTest : public InProcessBrowserTest {
  protected:

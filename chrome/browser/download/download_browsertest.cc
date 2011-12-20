@@ -41,18 +41,20 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/download/download_file_manager.h"
-#include "content/browser/download/download_item.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/net/url_request_slow_download_job.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/common/page_transition_types.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::DownloadItem;
+using content::DownloadManager;
 
 namespace {
 
@@ -253,7 +255,7 @@ static DownloadManager* DownloadManagerForBrowser(Browser* browser) {
 
 // While an object of this class exists, it will mock out download
 // opening for all downloads created on the specified download manager.
-class MockDownloadOpeningObserver : public DownloadManager::Observer {
+class MockDownloadOpeningObserver : public content::DownloadManager::Observer {
  public:
   explicit MockDownloadOpeningObserver(DownloadManager* manager)
       : download_manager_(manager) {

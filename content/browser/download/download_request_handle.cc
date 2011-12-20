@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+using content::DownloadManager;
 
 // IO Thread indirections to resource dispatcher host.
 // Provided as targets for PostTask from within this object

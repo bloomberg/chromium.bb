@@ -38,22 +38,12 @@
 #include "ui/views/events/event.h"
 #endif  // defined(OS_WIN) && !defined(USE_AURA)
 
-class TabContents;
-struct AutomationMsg_Find_Params;
-struct Reposition_Params;
-struct ExternalTabSettings;
-
-namespace IPC {
-class ChannelProxy;
-}
-
 class AutomationBrowserTracker;
 class AutomationExtensionTracker;
 class AutomationResourceMessageFilter;
 class AutomationTabTracker;
 class AutomationWindowTracker;
 class Browser;
-class DownloadItem;
 class Extension;
 class ExtensionTestResultNotificationObserver;
 class ExternalTabContainer;
@@ -66,9 +56,20 @@ class NavigationControllerRestoredObserver;
 class Profile;
 class RenderViewHost;
 class TabContents;
+struct AutomationMsg_Find_Params;
+struct Reposition_Params;
+struct ExternalTabSettings;
+
+namespace IPC {
+class ChannelProxy;
+}
 
 namespace base {
 class DictionaryValue;
+}
+
+namespace content {
+class DownloadItem;
 }
 
 namespace gfx {
@@ -154,7 +155,7 @@ class AutomationProvider
   // Get the DictionaryValue equivalent for a download item. Caller owns the
   // DictionaryValue.
   base::DictionaryValue* GetDictionaryFromDownloadItem(
-      const DownloadItem* download);
+      const content::DownloadItem* download);
 
  protected:
   friend struct content::BrowserThread::DeleteOnThread<

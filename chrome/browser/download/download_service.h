@@ -15,9 +15,12 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 
 class ChromeDownloadManagerDelegate;
-class DownloadManager;
 class Profile;
 class DownloadIdFactory;
+
+namespace content {
+class DownloadManager;
+}
 
 // Owning class for DownloadManager (content) and
 // ChromeDownloadManagerDelegate (chrome)
@@ -29,12 +32,13 @@ class DownloadService : public ProfileKeyedService {
   DownloadIdFactory* GetDownloadIdFactory() const;
 
   // Register a callback to be called whenever the DownloadManager is created.
-  typedef base::Callback<void(DownloadManager*)> OnManagerCreatedCallback;
+  typedef base::Callback<void(content::DownloadManager*)>
+      OnManagerCreatedCallback;
   void OnManagerCreated(const OnManagerCreatedCallback& cb);
 
   // Get the download manager.  Creates the download manager if
   // it does not already exist.
-  DownloadManager* GetDownloadManager();
+  content::DownloadManager* GetDownloadManager();
 
   // Has a download manager been created?  (By calling above function.)
   bool HasCreatedDownloadManager();
@@ -68,7 +72,7 @@ class DownloadService : public ProfileKeyedService {
   // ChromeDownloadManagerDelegate may be the target of callbacks from
   // the history service/DB thread and must be kept alive for those
   // callbacks.
-  scoped_refptr<DownloadManager> manager_;
+  scoped_refptr<content::DownloadManager> manager_;
   scoped_refptr<ChromeDownloadManagerDelegate> manager_delegate_;
 
   std::vector<OnManagerCreatedCallback> on_manager_created_callbacks_;

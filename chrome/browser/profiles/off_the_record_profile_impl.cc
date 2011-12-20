@@ -66,6 +66,7 @@
 #endif
 
 using content::BrowserThread;
+using content::DownloadManager;
 
 namespace {
 

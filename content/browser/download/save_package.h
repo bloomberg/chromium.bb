@@ -18,9 +18,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/download_item.h"
 #include "googleurl/src/gurl.h"
 
 class GURL;
@@ -29,6 +29,10 @@ class SaveItem;
 class SavePackage;
 class TabContents;
 struct SaveFileCreateInfo;
+
+namespace content {
+class DownloadManager;
+}
 
 // The SavePackage object manages the process of saving a page as only-html or
 // complete-html and providing the information for displaying saving status.
@@ -45,7 +49,7 @@ struct SaveFileCreateInfo;
 class CONTENT_EXPORT SavePackage
     : public base::RefCountedThreadSafe<SavePackage>,
       public TabContentsObserver,
-      public DownloadItem::Observer,
+      public content::DownloadItem::Observer,
       public base::SupportsWeakPtr<SavePackage> {
  public:
   enum SavePackageType {
@@ -156,8 +160,8 @@ class CONTENT_EXPORT SavePackage
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // DownloadItem::Observer implementation.
-  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE {}
+  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
 
   // Update the download history of this item upon completion.
   void FinalizeDownloadEntry();
@@ -272,8 +276,8 @@ class CONTENT_EXPORT SavePackage
   SaveFileManager* file_manager_;
 
   // DownloadManager owns the DownloadItem and handles history and UI.
-  DownloadManager* download_manager_;
-  DownloadItem* download_;
+  content::DownloadManager* download_manager_;
+  content::DownloadItem* download_;
 
   // The URL of the page the user wants to save.
   GURL page_url_;

@@ -11,9 +11,9 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/download_manager.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

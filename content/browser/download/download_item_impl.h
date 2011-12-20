@@ -14,12 +14,12 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "content/browser/download/download_item.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_state_info.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/download_item.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 
@@ -34,7 +34,7 @@ class BrowserContext;
 }
 
 // See download_item.h for usage.
-class CONTENT_EXPORT DownloadItemImpl : public DownloadItem {
+class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
  public:
   // Delegate is defined in DownloadItemImpl (rather than DownloadItem)
   // as it's relevant to the class implementation (class methods need to

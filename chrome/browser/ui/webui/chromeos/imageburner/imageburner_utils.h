@@ -17,9 +17,9 @@
 #include "base/observer_list.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "content/browser/download/download_item.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/file_stream.h"
 #include "ui/base/dragdrop/download_file_interface.h"
@@ -208,8 +208,8 @@ class StateMachine {
 };
 
 class BurnManager
-    : public DownloadManager::Observer,
-      public DownloadItem::Observer,
+    : public content::DownloadManager::Observer,
+      public content::DownloadItem::Observer,
       public Downloader::Listener {
  public:
 
@@ -223,11 +223,11 @@ class BurnManager
   // Returns the singleton instance.
   static BurnManager* GetInstance();
 
-  // DownloadItem::Observer interface.
-  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE {}
+  // content::DownloadItem::Observer interface.
+  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
 
-  // DownloadManager::Observer interface.
+  // content::DownloadManager::Observer interface.
   virtual void ModelChanged() OVERRIDE;
 
   // Downloader::Listener interface.
@@ -291,9 +291,9 @@ class BurnManager
   FilePath config_file_path_;
   FilePath final_zip_file_path_;
 
-  DownloadManager* download_manager_;
+  content::DownloadManager* download_manager_;
   bool download_item_observer_added_;
-  DownloadItem*  active_download_item_;
+  content::DownloadItem*  active_download_item_;
 
   ConfigFile config_file_;
   GURL config_file_url_;

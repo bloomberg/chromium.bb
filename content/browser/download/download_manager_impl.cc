@@ -36,6 +36,7 @@
 #include "content/public/browser/render_process_host.h"
 
 using content::BrowserThread;
+using content::DownloadItem;
 
 namespace {
 

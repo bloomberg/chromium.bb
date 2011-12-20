@@ -21,17 +21,18 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/browser/download/download_file.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_file.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 
 using content::BrowserThread;
+using content::DownloadFile;
 
 namespace {
 

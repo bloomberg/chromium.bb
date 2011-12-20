@@ -9,32 +9,36 @@
 #include "base/compiler_specific.h"
 #include "content/public/browser/download_manager_delegate.h"
 
+namespace content {
 class DownloadManager;
+}
 
 class MockDownloadManagerDelegate : public content::DownloadManagerDelegate {
  public:
   MockDownloadManagerDelegate();
   virtual ~MockDownloadManagerDelegate();
-  void SetDownloadManager(DownloadManager* dm);
+  void SetDownloadManager(content::DownloadManager* dm);
   virtual void Shutdown() OVERRIDE;
   virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;
   virtual void ChooseDownloadPath(TabContents* tab_contents,
                                   const FilePath& suggested_path,
                                   void* data) OVERRIDE;
-  virtual bool OverrideIntermediatePath(DownloadItem* item,
+  virtual bool OverrideIntermediatePath(content::DownloadItem* item,
                                         FilePath* intermediate_path) OVERRIDE;
   virtual TabContents* GetAlternativeTabContentsToNotifyForDownload() OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
-  virtual bool ShouldCompleteDownload(DownloadItem* item) OVERRIDE;
-  virtual bool ShouldOpenDownload(DownloadItem* item) OVERRIDE;
+  virtual bool ShouldCompleteDownload(content::DownloadItem* item) OVERRIDE;
+  virtual bool ShouldOpenDownload(content::DownloadItem* item) OVERRIDE;
   virtual bool GenerateFileHash() OVERRIDE;
-  virtual void OnResponseCompleted(DownloadItem* item) OVERRIDE;
-  virtual void AddItemToPersistentStore(DownloadItem* item) OVERRIDE;
-  virtual void UpdateItemInPersistentStore(DownloadItem* item) OVERRIDE;
+  virtual void OnResponseCompleted(content::DownloadItem* item) OVERRIDE;
+  virtual void AddItemToPersistentStore(content::DownloadItem* item) OVERRIDE;
+  virtual void UpdateItemInPersistentStore(
+      content::DownloadItem* item) OVERRIDE;
   virtual void UpdatePathForItemInPersistentStore(
-      DownloadItem* item,
+      content::DownloadItem* item,
       const FilePath& new_path) OVERRIDE;
-  virtual void RemoveItemFromPersistentStore(DownloadItem* item) OVERRIDE;
+  virtual void RemoveItemFromPersistentStore(
+      content::DownloadItem* item) OVERRIDE;
   virtual void RemoveItemsFromPersistentStoreBetween(
       const base::Time remove_begin,
       const base::Time remove_end) OVERRIDE;
@@ -47,7 +51,7 @@ class MockDownloadManagerDelegate : public content::DownloadManagerDelegate {
   virtual void DownloadProgressUpdated() OVERRIDE;
 
  private:
-  scoped_refptr<DownloadManager> download_manager_;
+  scoped_refptr<content::DownloadManager> download_manager_;
 };
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_MANAGER_DELEGATE_H_

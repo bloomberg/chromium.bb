@@ -24,8 +24,8 @@
 // DownloadManager is constructed, we query the history service for the state of
 // all persisted downloads.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_H_
+#ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_MANAGER_H_
+#define CONTENT_PUBLIC_BROWSER_DOWNLOAD_MANAGER_H_
 #pragma once
 
 #include <string>
@@ -36,12 +36,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
 #include "content/browser/download/download_id.h"
-#include "content/browser/download/download_item.h"
 #include "content/browser/download/interrupt_reasons.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 
 class DownloadFileManager;
+class DownloadManagerTest;
 class DownloadRequestHandle;
 class GURL;
 class TabContents;
@@ -51,7 +52,6 @@ struct DownloadSaveInfo;
 namespace content {
 class BrowserContext;
 class DownloadManagerDelegate;
-}
 
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManager
@@ -251,7 +251,7 @@ class CONTENT_EXPORT DownloadManager
 
  private:
   // For testing.
-  friend class DownloadManagerTest;
+  friend class ::DownloadManagerTest;
 
   friend class base::RefCountedThreadSafe<
       DownloadManager, content::BrowserThread::DeleteOnUIThread>;
@@ -260,4 +260,6 @@ class CONTENT_EXPORT DownloadManager
   friend class DeleteTask<DownloadManager>;
 };
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_DOWNLOAD_MANAGER_H_

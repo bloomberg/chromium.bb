@@ -14,9 +14,9 @@
 #include "base/memory/singleton.h"
 #include "base/string16.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "content/browser/download/download_item.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_state_info.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 
 class ResourceDispatcherHost;
 
@@ -267,7 +267,8 @@ class DownloadsDragFunction : public AsyncDownloadsFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsDragFunction);
 };
 
-class ExtensionDownloadsEventRouter : public DownloadManager::Observer {
+class ExtensionDownloadsEventRouter
+    : public content::DownloadManager::Observer {
  public:
   explicit ExtensionDownloadsEventRouter(Profile* profile);
   virtual ~ExtensionDownloadsEventRouter();
@@ -276,13 +277,13 @@ class ExtensionDownloadsEventRouter : public DownloadManager::Observer {
   virtual void ManagerGoingDown() OVERRIDE;
 
  private:
-  void Init(DownloadManager* manager);
+  void Init(content::DownloadManager* manager);
   void DispatchEvent(const char* event_name, base::Value* json_arg);
-  typedef base::hash_map<int, DownloadItem*> ItemMap;
+  typedef base::hash_map<int, content::DownloadItem*> ItemMap;
   typedef std::set<int> DownloadIdSet;
 
   Profile* profile_;
-  DownloadManager* manager_;
+  content::DownloadManager* manager_;
   DownloadIdSet downloads_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDownloadsEventRouter);

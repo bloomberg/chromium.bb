@@ -11,11 +11,11 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
-#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_handler.h"
+#include "content/public/browser/download_file.h"
 
 class DownloadFileManager;
 class ResourceDispatcherHost;

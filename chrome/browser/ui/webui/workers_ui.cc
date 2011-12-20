@@ -21,6 +21,7 @@
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/browser/worker_host/worker_service.h"
 #include "content/browser/worker_host/worker_service_observer.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"
 #include "grit/generated_resources.h"
 #include "grit/workers_resources.h"
