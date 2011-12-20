@@ -127,6 +127,15 @@ cr.define('cr.ui', function() {
     autoExpands_: false,
 
     /**
+     * Whether or not the rows on list have various heights. If true, all the
+     * rows have the same fixed height. Otherwise, each row resizes its height
+     * to accommodate all contents.
+     * @type {boolean}
+     * @private
+     */
+    fixedHeight_: true,
+
+    /**
      * Whether or not the list view has a blank space below the last row.
      * @type {boolean}
      * @private
@@ -386,6 +395,10 @@ cr.define('cr.ui', function() {
      * @return {number} The height of the item.
      */
     getItemHeightByIndex_: function(index) {
+      // If |this.fixedHeight_| is true, all the rows have same default height.
+      if (this.fixedHeight_)
+        return this.getDefaultItemHeight_();
+
       if (this.cachedItemSizes_[index])
         return this.cachedItemSizes_[index].height;
 
