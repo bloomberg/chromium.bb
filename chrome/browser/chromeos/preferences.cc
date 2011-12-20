@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/system/screen_locker_settings.h"
-#include "chrome/browser/chromeos/system/touchpad_settings.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"

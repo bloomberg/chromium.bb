@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/chromeos/system/touchpad_settings.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
