@@ -146,8 +146,8 @@ std::string GeolocationExceptionToString(
 // Ownership of the pointer is passed to the caller.
 DictionaryValue* GetExceptionForPage(
     const ContentSettingsPattern& pattern,
-    ContentSetting setting,
-    std::string provider_name) {
+    const ContentSetting& setting,
+    const std::string& provider_name) {
   DictionaryValue* exception = new DictionaryValue();
   exception->SetString(kDisplayPattern, pattern.ToString());
   exception->SetString(kSetting, ContentSettingToString(setting));
