@@ -216,12 +216,13 @@ class MemoryFileUtilTest : public testing::Test {
                          int length,
                          PlatformFileError result,
                          AsyncFileStream* stream) {
+    DCHECK(status_map_.find(request_id) == status_map_.end());
     CallbackStatus status;
     status.type = CALLBACK_TYPE_OPEN;
     status.result = result;
+    status.file_stream = stream;
     status_map_[request_id] = status;
     stream->Write(data, length, GetReadWriteCallback(GetNextRequestId()));
-    delete stream;
   }
 
   scoped_ptr<MemoryFileUtil> file_util_;
