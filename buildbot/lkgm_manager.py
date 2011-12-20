@@ -264,6 +264,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         version_to_use = self.latest_unprocessed
       else:
         logging.info('Found nothing new to build, trying again later.')
+        logging.info('If this is a PFQ, then you should have forced the master'
+                     ', which runs cbuildbot_master')
 
       return version_to_use
 
