@@ -127,3 +127,16 @@ body {
 .terminated-reload-link {
   -webkit-margin-end: 2em;
 }
+
+/* Trash */
+
+.trash {
+  -webkit-transition: opacity 200ms;
+  height: 22px;
+  opacity: 0.8;
+  vertical-align: middle;
+}
+
+.extension-list-item:not(:hover) .trash:not(:focus) {
+  opacity: 0;
+}

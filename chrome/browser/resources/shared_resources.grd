@@ -58,6 +58,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/images/spinner.svg" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_THROBBER"
                file="shared/images/throbber.svg" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_TRASH2"
+               file="shared/images/trash2.png" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR"
                file="shared/js/cr.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_COMMAND_LINE"

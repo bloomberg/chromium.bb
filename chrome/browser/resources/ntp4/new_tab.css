@@ -251,6 +251,7 @@ html[dir='rtl'] .login-status-icon {
   opacity: 0;
   right: 0;
   top: 50px;
+  width: auto;
 }
 
 html[dir='rtl'] #trash {
@@ -269,15 +270,12 @@ html[dir='rtl'] #trash {
   opacity: 1;
 }
 
-#trash > span {
-  display: inline-block;
-}
-
-#trash > span:not([class]) {
+#trash > .trash-text {
   -webkit-padding-end: 7px;
   -webkit-padding-start: 30px;
   border: 1px dashed #7f7f7f;
   border-radius: 4px;
+  display: inline-block;
   font-size: 84%;
   padding-bottom: 9px;
   padding-top: 10px;
@@ -285,40 +283,9 @@ html[dir='rtl'] #trash {
   top: 7px;
 }
 
-#trash > .can,
-#trash > .lid {
-  background: url('images/trash.png') 0 0 no-repeat;
-  position: absolute;
-}
-
-#trash > .lid {
-  -webkit-transition: -webkit-transform 200ms;
-  -webkit-transform-origin: -7% 100%;
-  height: 6px;
-  left: 10px;
-  top: 18px;
-  width: 14px;
-}
-
-html[dir='rtl'] #trash > .lid {
-  -webkit-transform-origin: 107% 100%;
-  left: auto;
-  /* NOTE: Intentionally different than LTR value. */
-  right: 9px;
-}
-
+#trash > .lid,
 #trash > .can {
-  background-position: -1px -4px;
-  border-radius: 0 0 2px 2px;
-  height: 12px;
-  left: 11px;
-  top: 22px;
-  width: 11px;
-}
-
-html[dir='rtl'] #trash > .can {
-  left: auto;
-  right: 11px;
+  top: 18px;
 }
 
 #footer.showing-trash-mode #trash.drag-target .lid {

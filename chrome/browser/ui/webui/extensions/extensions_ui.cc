@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/options/extension_settings_handler.h"
+#include "chrome/browser/ui/webui/shared_resources_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/browser_resources.h"
@@ -31,6 +32,8 @@ ExtensionsUI::ExtensionsUI(TabContents* contents) : ChromeWebUI(contents) {
   Profile* profile = Profile::FromBrowserContext(contents->browser_context());
   ChromeWebUIDataSource* source = CreateExtensionsHTMLSource();
   profile->GetChromeURLDataManager()->AddDataSource(source);
+  profile->GetChromeURLDataManager()->AddDataSource(
+      new SharedResourcesDataSource());
 
   ExtensionSettingsHandler* handler = new ExtensionSettingsHandler();
   handler->GetLocalizedValues(source->localized_strings());

@@ -89,9 +89,9 @@ cr.define('options', function() {
       * @private
       */
      createNode_: function(extension) {
-      var template = document.querySelector('#extension-item-template');
+      var template = $('template-collection').querySelector(
+          '.extension-list-item-wrapper');
       var node = template.cloneNode(true);
-      node.hidden = false;
       node.id = extension.id;
 
       if (!extension.enabled)
@@ -181,10 +181,12 @@ cr.define('options', function() {
       }
 
       // 'Remove' button.
-      var button = node.querySelector('.remove-button');
-      button.addEventListener('click', function(e) {
+      var trashTemplate = $('template-collection').querySelector('.trash');
+      var trash = trashTemplate.cloneNode(true);
+      trash.addEventListener('click', function(e) {
         chrome.send('extensionSettingsUninstall', [extension.id]);
       });
+      node.querySelector('.enable-controls').appendChild(trash);
 
       this.appendChild(node);
     },
