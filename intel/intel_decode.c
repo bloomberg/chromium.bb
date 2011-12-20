@@ -122,10 +122,13 @@ instr_out(uint32_t *data, uint32_t hw_offset, unsigned int index,
 }
 
 static int
-decode_mi(uint32_t *data, uint32_t count, uint32_t hw_offset)
+decode_mi(struct drm_intel_decode *ctx)
 {
 	unsigned int opcode, len = -1;
 	const char *post_sync_op = "";
+	uint32_t *data = ctx->data;
+	uint32_t hw_offset = ctx->hw_offset;
+	uint32_t count = ctx->count;
 
 	struct {
 		uint32_t opcode;
@@ -309,9 +312,12 @@ static void decode_2d_br01(uint32_t *data, uint32_t count, uint32_t hw_offset)
 }
 
 static int
-decode_2d(uint32_t *data, uint32_t count, uint32_t hw_offset)
+decode_2d(struct drm_intel_decode *ctx)
 {
 	unsigned int opcode, len;
+	uint32_t *data = ctx->data;
+	uint32_t hw_offset = ctx->hw_offset;
+	uint32_t count = ctx->count;
 
 	struct {
 		uint32_t opcode;
@@ -494,8 +500,10 @@ decode_2d(uint32_t *data, uint32_t count, uint32_t hw_offset)
 }
 
 static int
-decode_3d_1c(uint32_t *data, uint32_t count, uint32_t hw_offset)
+decode_3d_1c(struct drm_intel_decode *ctx)
 {
+	uint32_t *data = ctx->data;
+	uint32_t hw_offset = ctx->hw_offset;
 	uint32_t opcode;
 
 	opcode = (data[0] & 0x00f80000) >> 19;
@@ -1171,11 +1179,15 @@ decode_sample_filter(uint32_t mode)
 }
 
 static int
-decode_3d_1d(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid)
+decode_3d_1d(struct drm_intel_decode *ctx)
 {
 	unsigned int len, i, c, idx, word, map, sampler, instr;
 	const char *format, *zformat, *type;
 	uint32_t opcode;
+	uint32_t hw_offset = ctx->hw_offset;
+	uint32_t *data = ctx->data;
+	uint32_t count = ctx->count;
+	uint32_t devid = ctx->devid;
 
 	struct {
 		uint32_t opcode;
@@ -2237,8 +2249,11 @@ decode_3d_1d(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid)
 }
 
 static int
-decode_3d_primitive(uint32_t *data, uint32_t count, uint32_t hw_offset)
+decode_3d_primitive(struct drm_intel_decode *ctx)
 {
+	uint32_t *data = ctx->data;
+	uint32_t hw_offset = ctx->hw_offset;
+	uint32_t count = ctx->count;
 	char immediate = (data[0] & (1 << 23)) == 0;
 	unsigned int len, i, j, ret;
 	const char *primtype;
@@ -2498,10 +2513,13 @@ out:
 }
 
 static int
-decode_3d(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid)
+decode_3d(struct drm_intel_decode *ctx)
 {
 	uint32_t opcode;
 	unsigned int idx;
+	uint32_t *data = ctx->data;
+	uint32_t hw_offset = ctx->hw_offset;
+	uint32_t count = ctx->count;
 
 	struct {
 		uint32_t opcode;
@@ -2524,11 +2542,11 @@ decode_3d(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid)
 
 	switch (opcode) {
 	case 0x1f:
-		return decode_3d_primitive(data, count, hw_offset);
+		return decode_3d_primitive(ctx);
 	case 0x1d:
-		return decode_3d_1d(data, count, hw_offset, devid);
+		return decode_3d_1d(ctx);
 	case 0x1c:
-		return decode_3d_1c(data, count, hw_offset);
+		return decode_3d_1c(ctx);
 	}
 
 	for (idx = 0; idx < ARRAY_SIZE(opcodes_3d); idx++) {
@@ -2758,13 +2776,16 @@ state_max_out(uint32_t *data, uint32_t hw_offset, unsigned int index,
 }
 
 static int
-decode_3d_965(uint32_t *data, uint32_t count, uint32_t hw_offset,
-	      uint32_t devid)
+decode_3d_965(struct drm_intel_decode *ctx)
 {
 	uint32_t opcode;
 	unsigned int idx, len;
 	unsigned int i, j, sba_len;
 	const char *desc1 = NULL;
+	uint32_t *data = ctx->data;
+	uint32_t hw_offset = ctx->hw_offset;
+	uint32_t count = ctx->count;
+	uint32_t devid = ctx->devid;
 
 	struct {
 		uint32_t opcode;
@@ -3466,11 +3487,13 @@ decode_3d_965(uint32_t *data, uint32_t count, uint32_t hw_offset,
 }
 
 static int
-decode_3d_i830(uint32_t *data, uint32_t count, uint32_t hw_offset,
-	       uint32_t devid)
+decode_3d_i830(struct drm_intel_decode *ctx)
 {
 	unsigned int idx;
 	uint32_t opcode;
+	uint32_t *data = ctx->data;
+	uint32_t hw_offset = ctx->hw_offset;
+	uint32_t count = ctx->count;
 
 	struct {
 		uint32_t opcode;
@@ -3500,11 +3523,11 @@ decode_3d_i830(uint32_t *data, uint32_t count, uint32_t hw_offset,
 
 	switch (opcode) {
 	case 0x1f:
-		return decode_3d_primitive(data, count, hw_offset);
+		return decode_3d_primitive(ctx);
 	case 0x1d:
-		return decode_3d_1d(data, count, hw_offset, devid);
+		return decode_3d_1d(ctx);
 	case 0x1c:
-		return decode_3d_1c(data, count, hw_offset);
+		return decode_3d_1c(ctx);
 	}
 
 	for (idx = 0; idx < ARRAY_SIZE(opcodes_3d); idx++) {
@@ -3623,8 +3646,7 @@ drm_intel_decode(struct drm_intel_decode *ctx)
 
 		switch ((ctx->data[index] & 0xe0000000) >> 29) {
 		case 0x0:
-			ret = decode_mi(ctx->data, ctx->count,
-					ctx->hw_offset);
+			ret = decode_mi(ctx);
 
 			/* If MI_BATCHBUFFER_END happened, then dump
 			 * the rest of the output in case we some day
@@ -3647,21 +3669,17 @@ drm_intel_decode(struct drm_intel_decode *ctx)
 				index += ret;
 			break;
 		case 0x2:
-			index += decode_2d(ctx->data, ctx->count,
-					   ctx->hw_offset);
+			index += decode_2d(ctx);
 			break;
 		case 0x3:
 			if (IS_9XX(devid) && !IS_GEN3(devid)) {
 				index +=
-				    decode_3d_965(ctx->data, ctx->count,
-						  ctx->hw_offset, devid);
+				    decode_3d_965(ctx);
 			} else if (IS_GEN3(devid)) {
-				index += decode_3d(ctx->data, ctx->count,
-						   ctx->hw_offset, devid);
+				index += decode_3d(ctx);
 			} else {
 				index +=
-				    decode_3d_i830(ctx->data, ctx->count,
-						   ctx->hw_offset, devid);
+				    decode_3d_i830(ctx);
 			}
 			break;
 		default:
