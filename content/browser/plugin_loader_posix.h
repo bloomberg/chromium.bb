@@ -87,7 +87,7 @@ class CONTENT_EXPORT PluginLoaderPosix : public UtilityProcessHost::Client,
 
   // Runs all the registered callbacks on each's target loop if the condition
   // for ending the load process is done (i.e. the |next_load_index_| is outside
-  // the ranage of the |canonical_list_|).
+  // the range of the |canonical_list_|).
   bool MaybeRunPendingCallbacks();
 
   // The process host for which this is a client.

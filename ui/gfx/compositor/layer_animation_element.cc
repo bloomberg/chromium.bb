@@ -113,6 +113,7 @@ class OpacityTransition : public LayerAnimationElement {
  public:
   OpacityTransition(float target, base::TimeDelta duration)
       : LayerAnimationElement(GetProperties(), duration),
+        start_(0.0f),
         target_(target) {
   }
   virtual ~OpacityTransition() {}

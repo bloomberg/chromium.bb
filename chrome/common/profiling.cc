@@ -59,7 +59,7 @@ void FlushProfilingData(base::Thread* thread) {
 
 class ProfilingThreadControl {
  public:
-  ProfilingThreadControl() {}
+  ProfilingThreadControl() : thread_(NULL) {}
 
   void Start() {
     base::AutoLock locked(lock_);

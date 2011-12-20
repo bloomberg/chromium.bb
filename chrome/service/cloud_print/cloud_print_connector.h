@@ -121,6 +121,7 @@ class CloudPrintConnector
   void InitJobHandlerForPrinter(DictionaryValue* printer_data);
 
   enum PendingTaskType {
+    PENDING_PRINTERS_NONE,
     PENDING_PRINTERS_AVAILABLE,
     PENDING_PRINTER_REGISTER,
     PENDING_PRINTER_DELETE
@@ -133,7 +134,7 @@ class CloudPrintConnector
     std::string printer_id;  // For pending delete.
     printing::PrinterBasicInfo printer_info;  // For pending registration.
 
-    PendingTask() {}
+    PendingTask() : type(PENDING_PRINTERS_NONE) {}
     ~PendingTask() {}
   };
 

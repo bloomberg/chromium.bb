@@ -41,6 +41,7 @@ bool GpuProcessLogMessageHandler(int severity,
 GpuChildThread::GpuChildThread(bool dead_on_arrival)
     : dead_on_arrival_(dead_on_arrival) {
 #if defined(OS_WIN)
+  target_services_ = NULL;
   collecting_dx_diagnostics_ = false;
 #endif
 }

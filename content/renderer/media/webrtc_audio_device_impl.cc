@@ -29,6 +29,7 @@ WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
       last_error_(AudioDeviceModule::kAdmErrNone),
       last_process_time_(base::TimeTicks::Now()),
       session_id_(0),
+      bytes_per_sample_(0),
       initialized_(false),
       playing_(false),
       recording_(false) {

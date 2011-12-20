@@ -22,7 +22,9 @@ ContentSettingPatternSource::ContentSettingPatternSource(
       source(source),
       incognito(incognito) {}
 
-ContentSettingPatternSource::ContentSettingPatternSource() {}
+ContentSettingPatternSource::ContentSettingPatternSource()
+    : setting(CONTENT_SETTING_DEFAULT), incognito(false) {
+}
 
 RendererContentSettingRules::RendererContentSettingRules() {}
 

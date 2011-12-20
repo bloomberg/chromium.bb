@@ -96,6 +96,8 @@ TextRun::TextRun()
     preceding_run_widths(0),
     glyph_count(0),
     script_cache(NULL) {
+  memset(&script_analysis, 0, sizeof(script_analysis));
+  memset(&abc_widths, 0, sizeof(abc_widths));
 }
 
 TextRun::~TextRun() {

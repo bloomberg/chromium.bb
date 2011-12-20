@@ -187,7 +187,11 @@ void ExtensionTtsPlatformImplWin::OnSpeechEvent() {
 }
 
 ExtensionTtsPlatformImplWin::ExtensionTtsPlatformImplWin()
-  : speech_synthesizer_(NULL) {
+  : speech_synthesizer_(NULL),
+    utterance_id_(0),
+    prefix_len_(0),
+    stream_number_(0),
+    char_position_(0) {
   CoCreateInstance(
       CLSID_SpVoice,
       NULL,

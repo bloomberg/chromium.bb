@@ -90,9 +90,6 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
   // document is detached).
   unsigned long long document_id_;
 
-  // ID of our parent's appcache host, only valid for dedicated workers.
-  int parent_appcache_host_id_;
-
   // Stores messages that were sent before the StartWorkerContext message.
   std::vector<IPC::Message*> queued_messages_;
 

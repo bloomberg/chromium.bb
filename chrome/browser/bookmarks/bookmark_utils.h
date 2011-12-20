@@ -241,6 +241,7 @@ extern int num_urls_before_prompting;
 
 // This enum is used for the Bookmarks.LaunchLocation histogram.
 enum BookmarkLaunchLocation {
+  LAUNCH_NONE,
   LAUNCH_ATTACHED_BAR = 0,
   LAUNCH_DETACHED_BAR,
   // These two are kind of sub-categories of the bookmark bar. Generally

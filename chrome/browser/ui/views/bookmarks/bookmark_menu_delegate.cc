@@ -45,7 +45,8 @@ BookmarkMenuDelegate::BookmarkMenuDelegate(Profile* profile,
       parent_menu_item_(NULL),
       next_menu_id_(first_menu_id),
       real_delegate_(NULL),
-      is_mutating_model_(false) {
+      is_mutating_model_(false),
+      location_(bookmark_utils::LAUNCH_NONE){
 }
 
 BookmarkMenuDelegate::~BookmarkMenuDelegate() {

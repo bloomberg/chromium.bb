@@ -23,6 +23,8 @@ RectangleUpdateDecoder::RectangleUpdateDecoder(MessageLoop* message_loop,
                                                FrameConsumer* consumer)
     : message_loop_(message_loop),
       consumer_(consumer),
+      initial_screen_size_(SkISize::Make(0, 0)),
+      clip_rect_(SkIRect::MakeEmpty()),
       frame_is_new_(false),
       frame_is_consuming_(false) {
 }

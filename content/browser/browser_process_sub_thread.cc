@@ -14,7 +14,9 @@
 namespace content {
 
 BrowserProcessSubThread::BrowserProcessSubThread(BrowserThread::ID identifier)
-    : BrowserThreadImpl(identifier) {}
+    : BrowserThreadImpl(identifier),
+      notification_service_(NULL) {
+}
 
 BrowserProcessSubThread::~BrowserProcessSubThread() {
   Stop();

@@ -502,6 +502,7 @@ RenderText::RenderText()
       cursor_bounds_(),
       cursor_visible_(false),
       insert_mode_(true),
+      focused_(false),
       composition_range_(ui::Range::InvalidRange()),
       style_ranges_(),
       default_style_(),

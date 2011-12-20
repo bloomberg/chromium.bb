@@ -30,6 +30,7 @@ DecoderRowBased* DecoderRowBased::CreateVerbatimDecoder() {
 DecoderRowBased::DecoderRowBased(Decompressor* decompressor,
                                  VideoPacketFormat::Encoding encoding)
     : state_(kUninitialized),
+      clip_(SkIRect::MakeEmpty()),
       decompressor_(decompressor),
       encoding_(encoding),
       row_pos_(0),

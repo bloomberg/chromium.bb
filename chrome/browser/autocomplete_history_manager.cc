@@ -239,7 +239,8 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
       profile_(profile),
       web_data_service_(wds),
       pending_query_handle_(0),
-      query_id_(0) {
+      query_id_(0),
+      external_delegate_(NULL) {
   autofill_enabled_.Init(
       prefs::kAutofillEnabled, profile_->GetPrefs(), NULL);
 }

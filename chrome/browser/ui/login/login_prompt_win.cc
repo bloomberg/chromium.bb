@@ -34,13 +34,14 @@ class LoginHandlerWin : public LoginHandler,
                         public views::DialogDelegate {
  public:
   LoginHandlerWin(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
-      : LoginHandler(auth_info, request) {
+      : LoginHandler(auth_info, request),
+        login_view_(NULL) {
   }
 
   // LoginModelObserver implementation.
   virtual void OnAutofillDataAvailable(const string16& username,
                                        const string16& password) OVERRIDE {
-    // Nothing to do here since LoginView takes care of autofil for win.
+    // Nothing to do here since LoginView takes care of autofill for win.
   }
 
   // views::DialogDelegate methods:

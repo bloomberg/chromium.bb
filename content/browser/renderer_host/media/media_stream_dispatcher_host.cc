@@ -14,7 +14,7 @@ using content::BrowserThread;
 namespace media_stream {
 
 struct MediaStreamDispatcherHost::StreamRequest {
-  StreamRequest() {}
+  StreamRequest() : render_view_id(0), page_request_id(0) {}
   StreamRequest(int render_view_id, int page_request_id)
       : render_view_id(render_view_id),
         page_request_id(page_request_id ) {

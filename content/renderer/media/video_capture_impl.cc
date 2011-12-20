@@ -56,6 +56,7 @@ VideoCaptureImpl::VideoCaptureImpl(
       state_(video_capture::kStopped) {
   DCHECK(filter);
   memset(&current_params_, 0, sizeof(current_params_));
+  memset(&device_info_, 0, sizeof(device_info_));
   current_params_.session_id = id;
 }
 

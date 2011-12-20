@@ -94,7 +94,10 @@ static void SELinuxTransitionToTypeOrDie(const char* type) {
 class Zygote {
  public:
   Zygote(int sandbox_flags, content::ZygoteForkDelegate* helper)
-      : sandbox_flags_(sandbox_flags), helper_(helper) {
+      : sandbox_flags_(sandbox_flags),
+        helper_(helper),
+        initial_uma_sample_(0),
+        initial_uma_boundary_value_(0) {
     if (helper_)
       helper_->InitialUMA(&initial_uma_name_,
                           &initial_uma_sample_,

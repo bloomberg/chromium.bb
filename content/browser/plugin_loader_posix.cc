@@ -17,7 +17,8 @@ using content::BrowserThread;
 using content::ChildProcessHost;
 
 PluginLoaderPosix::PluginLoaderPosix()
-    : next_load_index_(0) {
+    : process_host_(NULL),
+      next_load_index_(0) {
 }
 
 void PluginLoaderPosix::LoadPlugins(
