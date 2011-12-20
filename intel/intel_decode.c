@@ -89,6 +89,10 @@ static float int_as_float(uint32_t intval)
 
 static void
 instr_out(uint32_t *data, uint32_t hw_offset, unsigned int index,
+	  const char *fmt, ...) __attribute__((format(__printf__, 4, 5)));
+
+static void
+instr_out(uint32_t *data, uint32_t hw_offset, unsigned int index,
 	  const char *fmt, ...)
 {
 	va_list va;
