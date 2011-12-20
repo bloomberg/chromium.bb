@@ -32,8 +32,8 @@ podrow {
   border: 1px solid #ccc;
   border-radius: 2px;
   height: 160px;
+  margin-bottom: 10px;
   padding: 4px;
-  margin-bottom: 18px;
   width: 160px;
 }
 
@@ -76,6 +76,7 @@ podrow {
   color: #565656;
   font-weight: bold;
   font-size: 15px;
+  margin: 4px 0;
   overflow: hidden;
   text-align: center;
   text-overflow: ellipsis;
@@ -128,14 +129,14 @@ podrow {
 .pod .enter-guest-button,
 .pod .signin-button {
   box-sizing: border-box;
-  height: 24px;
-  width: 94px;
+  height: 26px;
   left: 46px;
   opacity: 0;
   padding: 0;
   position: absolute;
   top: 193px;
   visibility: hidden;
+  width: 94px;
 }
 
 .pod.focused .enter-guest-button,
