@@ -45,7 +45,7 @@ NSEvent* MouseEventAtPoint(NSPoint point, NSEventType type,
                             pressure:1.0];
 }
 
-NSEvent* MakeMouseEvent(NSEventType type, NSUInteger modifiers) {
+NSEvent* MouseEventWithType(NSEventType type, NSUInteger modifiers) {
   return MouseEventAtPoint(NSMakePoint(0, 0), type, modifiers);
 }
 
@@ -95,6 +95,43 @@ NSEvent* KeyEventWithCharacter(unichar c) {
        charactersIgnoringModifiers:chars
                          isARepeat:NO
                            keyCode:0];
+}
+
+NSEvent* KeyEventWithType(NSEventType event_type, NSUInteger modifiers) {
+  return [NSEvent keyEventWithType:event_type
+                          location:NSZeroPoint
+                     modifierFlags:modifiers
+                         timestamp:0
+                      windowNumber:0
+                           context:nil
+                        characters:@"x"
+                  charactersIgnoringModifiers:@"x"
+                         isARepeat:NO
+                           keyCode:0x78];
+}
+
+NSEvent* EnterExitEventWithType(NSEventType event_type) {
+  return [NSEvent enterExitEventWithType:event_type
+                                location:NSZeroPoint
+                           modifierFlags:0
+                               timestamp:0
+                            windowNumber:0
+                                 context:nil
+                             eventNumber:0
+                          trackingNumber:0
+                                userData:NULL];
+}
+
+NSEvent* OtherEventWithType(NSEventType event_type) {
+  return [NSEvent otherEventWithType:event_type
+                            location:NSZeroPoint
+                       modifierFlags:0
+                           timestamp:0
+                        windowNumber:0
+                             context:nil
+                             subtype:0
+                               data1:0
+                               data2:0];
 }
 
 }  // namespace cocoa_test_event_utils

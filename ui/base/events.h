@@ -80,7 +80,10 @@ UI_EXPORT EventType EventTypeFromNative(const base::NativeEvent& native_event);
 // Get the EventFlags from a native event.
 UI_EXPORT int EventFlagsFromNative(const base::NativeEvent& native_event);
 
-// Get the location from a native event.
+// Get the location from a native event.  The coordinate system of the resultant
+// |Point| has the origin at top-left of the "root window".  The nature of
+// this "root window" and how it maps to platform-specific drawing surfaces is
+// defined in ui/aura/root_window.* and ui/aura/root_window_host*.
 UI_EXPORT gfx::Point EventLocationFromNative(
     const base::NativeEvent& native_event);
 

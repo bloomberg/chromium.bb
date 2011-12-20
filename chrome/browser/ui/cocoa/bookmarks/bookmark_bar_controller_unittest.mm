@@ -986,7 +986,7 @@ TEST_F(BookmarkBarControllerTest, MiddleClick) {
   EXPECT_TRUE(first);
 
   [first otherMouseUp:
-      cocoa_test_event_utils::MakeMouseEvent(NSOtherMouseUp, 0)];
+      cocoa_test_event_utils::MouseEventWithType(NSOtherMouseUp, 0)];
   EXPECT_EQ(noOpenBar()->urls_.size(), 1U);
 }
 
@@ -1303,7 +1303,8 @@ TEST_F(BookmarkBarControllerTest, TestFolders) {
   EXPECT_EQ([[bar_ buttons] count], 2U);
 
   // First confirm mouseEntered does nothing if "menus" aren't active.
-  NSEvent* event = cocoa_test_event_utils::MakeMouseEvent(NSOtherMouseUp, 0);
+  NSEvent* event =
+      cocoa_test_event_utils::MouseEventWithType(NSOtherMouseUp, 0);
   [bar_ mouseEnteredButton:[[bar_ buttons] objectAtIndex:0] event:event];
   EXPECT_FALSE([bar_ folderController]);
 
@@ -1441,7 +1442,7 @@ TEST_F(BookmarkBarControllerTest, OffTheSideFolder) {
 }
 
 TEST_F(BookmarkBarControllerTest, EventToExitCheck) {
-  NSEvent* event = cocoa_test_event_utils::MakeMouseEvent(NSMouseMoved, 0);
+  NSEvent* event = cocoa_test_event_utils::MouseEventWithType(NSMouseMoved, 0);
   EXPECT_FALSE([bar_ isEventAnExitEvent:event]);
 
   BookmarkBarFolderWindow* folderWindow = [[[BookmarkBarFolderWindow alloc]

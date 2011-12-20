@@ -24,12 +24,17 @@ namespace ui {
 // |characterIgnoringModifiers|.
 // -1 will be returned if the keycode can't be converted.
 // This function is mainly for simulating keyboard events in unit tests.
-// See third_party/WebKit/Source/WebKit/chromium/src/mac/WebInputEventFactory.mm for
-// reverse conversion.
+// See |KeyboardCodeFromNSEvent| for reverse conversion.
 UI_EXPORT int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
                                           NSUInteger flags,
                                           unichar* character,
                                           unichar* characterIgnoringModifiers);
+
+// This implementation cribbed from:
+//   third_party/WebKit/Source/WebKit/chromium/src/mac/WebInputEventFactory.mm
+// Converts |event| into a |KeyboardCode|.  The mapping is not direct as the Mac
+// has a different notion of key codes.
+UI_EXPORT KeyboardCode KeyboardCodeFromNSEvent(NSEvent* event);
 
 } // namespace ui
 
