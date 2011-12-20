@@ -291,7 +291,7 @@ class CONTENT_EXPORT DownloadItem {
   virtual InterruptReason GetLastReason() const = 0;
   virtual DownloadPersistentStoreInfo GetPersistentStoreInfo() const = 0;
   virtual DownloadStateInfo GetStateInfo() const = 0;
-  virtual BrowserContext* BrowserContext() const = 0;
+  virtual content::BrowserContext* BrowserContext() const = 0;
   virtual TabContents* GetTabContents() const = 0;
 
   // Returns the final target file path for the download.
