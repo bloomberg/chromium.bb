@@ -312,7 +312,7 @@ AppsPromo::UserGroup AppsPromo::GetCurrentUserGroup() const {
 
 AppsPromoLogoFetcher::AppsPromoLogoFetcher(
     Profile* profile,
-    AppsPromo::PromoData promo_data)
+    const AppsPromo::PromoData& promo_data)
     : profile_(profile),
       promo_data_(promo_data) {
   if (SupportsLogoURL()) {

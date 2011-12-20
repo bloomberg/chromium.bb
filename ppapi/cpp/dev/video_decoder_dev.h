@@ -37,7 +37,7 @@ class VideoDecoder_Dev : public Resource {
                  CompletionCallback callback);
   void ReusePictureBuffer(int32_t picture_buffer_id);
   int32_t Flush(CompletionCallback callback);
-  int32_t Reset(CompletionCallback callback);
+  int32_t Reset(const CompletionCallback& callback);
 
  private:
   // Disallow copy-construction to ensure Destroy() is called exactly once.

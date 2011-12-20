@@ -146,7 +146,7 @@ class AppsPromo {
 class AppsPromoLogoFetcher : public content::URLFetcherDelegate {
  public:
   AppsPromoLogoFetcher(Profile* profile,
-                       AppsPromo::PromoData promo_data);
+                       const AppsPromo::PromoData& promo_data);
   virtual ~AppsPromoLogoFetcher();
 
   virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;

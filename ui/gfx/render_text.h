@@ -117,7 +117,7 @@ class UI_EXPORT RenderText {
   void set_focused(bool focused) { focused_ = focused; }
 
   const StyleRange& default_style() const { return default_style_; }
-  void set_default_style(StyleRange style) { default_style_ = style; }
+  void set_default_style(const StyleRange& style) { default_style_ = style; }
 
   const Rect& display_rect() const { return display_rect_; }
   void SetDisplayRect(const Rect& r);

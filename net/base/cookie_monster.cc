@@ -828,7 +828,7 @@ class CookieMonster::GetCookiesWithOptionsTask
     : public CookieMonster::CookieMonsterTask {
  public:
   GetCookiesWithOptionsTask(CookieMonster* cookie_monster,
-                            GURL url,
+                            const GURL& url,
                             const CookieOptions& options,
                             const CookieMonster::GetCookiesCallback& callback)
       : CookieMonsterTask(cookie_monster),
@@ -895,7 +895,7 @@ class CookieMonster::DeleteCookieTask
     : public CookieMonster::CookieMonsterTask {
  public:
   DeleteCookieTask(CookieMonster* cookie_monster,
-                   GURL url,
+                   const GURL& url,
                    const std::string& cookie_name,
                    const base::Closure& callback)
       : CookieMonsterTask(cookie_monster),

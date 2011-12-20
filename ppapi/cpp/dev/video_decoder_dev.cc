@@ -69,7 +69,7 @@ int32_t VideoDecoder_Dev::Flush(CompletionCallback callback) {
       pp_resource(), callback.pp_completion_callback());
 }
 
-int32_t VideoDecoder_Dev::Reset(CompletionCallback callback) {
+int32_t VideoDecoder_Dev::Reset(const CompletionCallback& callback) {
   if (!has_interface<PPB_VideoDecoder_Dev>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_VideoDecoder_Dev>()->Reset(
