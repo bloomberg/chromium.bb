@@ -14345,10 +14345,10 @@ Battery full
         Can't access network library
       </message>
       <message name="IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT" desc="A hint text for the login and lock screens about layout switching">
-        Hit Shift-Alt to switch keyboard layout
+        Hit Shift-Alt to switch keyboard layout.
       </message>
       <message name="IDS_LOGIN_ERROR_CAPS_LOCK_HINT" desc="A hint text for the login and lock screens that Caps Lock is on">
-        Caps Lock is on
+        Caps Lock is on.
       </message>
       <message name="IDS_LOGIN_ERROR_CAPTIVE_PORTAL" desc="An error message shown when we suggest that user may be behind the captive portal.">
         Before signing in, please enter as Guest to activate the network <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph>
