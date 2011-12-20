@@ -12061,7 +12061,7 @@ changed since last sign in
         Fast
       </message>
       <message name="IDS_OPTIONS_SETTINGS_PRIMARY_MOUSE_RIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to set the primary mouse button to the right button.">
-        Make right button primary
+        Enable left-handed mode
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISABLE">
         Disable bluetooth
