@@ -457,6 +457,9 @@ cr.define('ntp4', function() {
       this.style.left = x + 'px';
       this.style.right = x + 'px';
       this.style.top = y + 'px';
+
+      if (this.currentBubbleShowing_)
+        this.currentBubbleShowing_.resizeAndReposition();
     },
 
     /**
@@ -645,6 +648,14 @@ cr.define('ntp4', function() {
       this.classList.add('apps-page');
 
       this.addEventListener('cardselected', this.onCardSelected_);
+      // Add event listeners for two events, so we can temporarily suppress
+      // the app notification bubbles when the app card slides in and out of
+      // view.
+      this.addEventListener('carddeselected', this.onCardDeselected_);
+      this.addEventListener('cardSelectionCompleted',
+                            this.onCardSelectionCompleted_);
+
+      this.content_.addEventListener('scroll', this.onScroll_.bind(this));
     },
 
     /**
@@ -675,7 +686,54 @@ cr.define('ntp4', function() {
       var apps = this.querySelectorAll('.app.icon-loading');
       for (var i = 0; i < apps.length; i++) {
         apps[i].loadIcon();
+        if (apps[i].currentBubbleShowing_)
+          apps[i].currentBubbleShowing_.suppressed = false;
       }
+    },
+
+    /**
+     * Handler for the 'cardSelectionCompleted' event, fired when the app card
+     * is done transitioning into view (and all the apps have repositioned).
+     * @private
+     */
+    onCardSelectionCompleted_: function(e) {
+      for (var i = 0; i < this.tileElements_.length; i++) {
+        var app = this.tileElements_[i].firstChild;
+        assert(app instanceof App);
+        if (app.currentBubbleShowing_)
+          app.currentBubbleShowing_.suppressed = false;
+      }
+    },
+
+    /**
+     * Handler for the 'carddeselected' event, fired when the user switches
+     * to another 'card' than the App 'card' on the NTP (|this| gets
+     * deselected).
+     * @private
+     */
+    onCardDeselected_: function(e) {
+      for (var i = 0; i < this.tileElements_.length; i++) {
+        var app = this.tileElements_[i].firstChild;
+        assert(app instanceof App);
+        if (app.currentBubbleShowing_)
+          app.currentBubbleShowing_.suppressed = true;
+      }
+    },
+
+    /**
+     * A handler for when the apps page is scrolled (then we need to reposition
+     * the bubbles.
+     * @private
+     */
+    onScroll_: function(e) {
+      if (!this.selected)
+        return;
+      for (var i = 0; i < this.tileElements_.length; i++) {
+        var app = this.tileElements_[i].firstChild;
+        assert(app instanceof App);
+        if (app.currentBubbleShowing_)
+          app.currentBubbleShowing_.resizeAndReposition();
+        }
     },
 
     /** @inheritdoc */

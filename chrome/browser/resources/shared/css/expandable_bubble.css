@@ -13,6 +13,7 @@
 
 .expandable-bubble-contents {
   color: black;
+  font-size: 12px;
   left: 1px;
   line-height: 150%;
   padding: 6px 3px 5px 6px;
@@ -36,10 +37,11 @@
 }
 
 .expandable-bubble-title {
+  font-size: 12px;
+  overflow: hidden;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
-  overflow: hidden;
 }
 
 .expandable-bubble[expanded] > .expandable-bubble-contents > .expandable-bubble-title {

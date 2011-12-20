@@ -131,6 +131,8 @@ cr.define('cr.ui', function() {
       this.scrollClearTimeout_ = null;
       this.frame_.addEventListener('mousewheel',
                                    this.onMouseWheel_.bind(this));
+      this.container_.addEventListener(
+          'webkitTransitionEnd', this.onAnimationTransitioned_.bind(this));
 
       // Also support touch events in case a touch screen happens to be
       // available.  Ideally we would support touch events whenever they
@@ -294,6 +296,17 @@ cr.define('cr.ui', function() {
     clearMouseWheelScroll_: function() {
       this.mouseWheelScrollAmount_ = 0;
       this.mouseWheelCardSelected_ = false;
+    },
+
+    /**
+     * A handler for the animations ending their transition.
+     * @private
+     */
+    onAnimationTransitioned_: function(event) {
+      if (event.target.id == 'page-list') {
+        cr.dispatchSimpleEvent(this.currentCardValue, 'cardSelectionCompleted',
+                               true, true);
+      }
     },
 
     /**

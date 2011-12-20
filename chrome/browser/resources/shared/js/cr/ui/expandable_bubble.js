@@ -35,6 +35,7 @@ cr.define('cr.ui', function() {
           '<div class="expandable-bubble-arrow"></div>';
 
       this.hidden = true;
+      this.bubbleSuppressed = false;
       this.handleCloseEvent = this.hide;
     },
 
@@ -69,7 +70,7 @@ cr.define('cr.ui', function() {
       this.anchorNode_ = node;
 
       if (!this.hidden)
-        this.resizeAndReposition_();
+        this.resizeAndReposition();
     },
 
     /**
@@ -82,19 +83,35 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Temporarily suppresses the bubble from view (and toggles it back).
+     * 'Suppressed' and 'hidden' are two bubble states that both indicate that
+     * the bubble should not be visible, but when you 'un-suppress' a bubble,
+     * only a suppressed bubble becomes visible. This can be handy, for example,
+     * if the user switches away from the app card (then we need to know which
+     * bubbles to show (only the suppressed ones, not the hidden ones). Hiding
+     * and un-hiding a bubble overrides the suppressed state (a bubble cannot
+     * be suppressed but not hidden).
+     */
+    set suppressed(suppress) {
+      if (suppress) {
+        // If the bubble is already hidden, then we don't need to suppress it.
+        if (this.hidden)
+          return;
+
+        this.hidden = true;
+      } else if (this.bubbleSuppressed) {
+        this.hidden = false;
+      }
+      this.bubbleSuppressed = suppress;
+      this.resizeAndReposition(this);
+    },
+
+    /**
      * Updates the position of the bubble.
      * @private
      */
     reposition_: function() {
       var clientRect = this.anchorNode_.getBoundingClientRect();
-      if (clientRect.width <= 0) {
-        // When the page loads initially, the icons for the apps haven't loaded
-        // yet so the width of the anchor is 0. We then make sure we don't draw
-        // at 0,0 by drawing off-screen instead. We'll get another chance to
-        // reposition when the icons have loaded.
-        this.style.top = "-999px";
-        return;
-      }
 
       this.style.left = this.style.right = clientRect.left + 'px';
 
@@ -108,7 +125,7 @@ cr.define('cr.ui', function() {
      * Resizes the bubble and then repositions it.
      * @private
      */
-    resizeAndReposition_: function() {
+    resizeAndReposition: function() {
       var clientRect = this.anchorNode_.getBoundingClientRect();
       var width = clientRect.width;
 
@@ -149,7 +166,7 @@ cr.define('cr.ui', function() {
       this.querySelector('.expandable-bubble-main').hidden = false;
       this.querySelector('.expandable-bubble-close').hidden = false;
       this.expanded = true;
-      this.resizeAndReposition_();
+      this.resizeAndReposition();
     },
 
     /**
@@ -161,7 +178,7 @@ cr.define('cr.ui', function() {
       this.querySelector('.expandable-bubble-main').hidden = true;
       this.querySelector('.expandable-bubble-close').hidden = true;
       this.expanded = false;
-      this.resizeAndReposition_();
+      this.resizeAndReposition();
     },
 
     /**
@@ -193,13 +210,13 @@ cr.define('cr.ui', function() {
 
       document.body.appendChild(this);
       this.hidden = false;
-      this.resizeAndReposition_();
+      this.resizeAndReposition();
 
       this.eventTracker_ = new EventTracker;
       this.eventTracker_.add(window,
-                             'load', this.resizeAndReposition_.bind(this));
+                             'load', this.resizeAndReposition.bind(this));
       this.eventTracker_.add(window,
-                             'resize', this.resizeAndReposition_.bind(this));
+                             'resize', this.resizeAndReposition.bind(this));
       this.eventTracker_.add(this, 'click', this.onNotificationClick_);
 
       var doc = this.ownerDocument;
@@ -212,6 +229,7 @@ cr.define('cr.ui', function() {
      */
     hide: function() {
       this.hidden = true;
+      this.bubbleSuppressed = false;
       this.eventTracker_.removeAll();
       this.parentNode.removeChild(this);
     },
