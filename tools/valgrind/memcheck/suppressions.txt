@@ -5197,6 +5197,23 @@
    fun:dlsym
    fun:_ZN4base14PlatformThread7SetNameEPKc
 }
+{
+   bug_108146a
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN5ppapi5proxy26PPP_Instance_Private_Proxy22OnMsgGetInstanceObjectEiNS0_24SerializedVarReturnValueE
+}
+{
+   bug_108146b
+   Memcheck:Param
+   write(buf)
+   obj:/lib/tls/i686/cmov/libpthread-2.11.1.so
+   fun:_ZN3IPC7Channel11ChannelImpl4SendEPNS_7MessageE
+   fun:_ZN3IPC7Channel4SendEPNS_7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context13OnSendMessageEPNS_7MessageE
+   fun:_ZN3IPC18SendCallbackHelper4SendEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
