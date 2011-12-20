@@ -360,13 +360,13 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
 
 void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
   // Render the inactive tab background. We'll use this for clipping.
-  gfx::CanvasSkia background_canvas(width(), height(), false);
+  gfx::CanvasSkia background_canvas(size(), false);
   PaintInactiveTabBackground(&background_canvas);
 
   SkBitmap background_image = background_canvas.ExtractBitmap();
 
   // Draw a radial gradient to hover_canvas.
-  gfx::CanvasSkia hover_canvas(width(), height(), false);
+  gfx::CanvasSkia hover_canvas(size(), false);
   int radius = kMiniTitleChangeGradientRadius;
   int x0 = width() + radius - kMiniTitleChangeInitialXOffset;
   int x1 = radius;
@@ -442,7 +442,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   // We need a CanvasSkia object to be able to extract the bitmap from.
   // We draw everything to this canvas and then output it to the canvas
   // parameter in addition to using it to mask the hover glow if needed.
-  gfx::CanvasSkia background_canvas(width(), height(), false);
+  gfx::CanvasSkia background_canvas(size(), false);
 
   // Draw left edge.  Don't draw over the toolbar, as we're not the foreground
   // tab.

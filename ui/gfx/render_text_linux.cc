@@ -238,7 +238,7 @@ void RenderTextLinux::UpdateLayout() {
 
 void RenderTextLinux::EnsureLayout() {
   if (layout_ == NULL) {
-    CanvasSkia canvas(display_rect().width(), display_rect().height(), false);
+    CanvasSkia canvas(display_rect().size(), false);
     skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
     cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
 

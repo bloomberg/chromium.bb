@@ -805,7 +805,7 @@ HWND TableView::CreateNativeControl(HWND parent_container) {
     // We create 2 phony images because we are going to switch images at every
     // refresh in order to force a refresh of the icon area (somehow the clip
     // rect does not include the icon).
-    gfx::CanvasSkia canvas(kImageSize, kImageSize, false);
+    gfx::CanvasSkia canvas(gfx::Size(kImageSize, kImageSize), false);
     // Make the background completely transparent.
     canvas.sk_canvas()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
     {
@@ -1152,7 +1152,7 @@ void TableView::PaintAltText() {
   HDC dc = GetDC(GetNativeControlHWND());
   gfx::Font font = GetAltTextFont();
   gfx::Rect bounds = GetAltTextBounds();
-  gfx::CanvasSkia canvas(bounds.width(), bounds.height(), false);
+  gfx::CanvasSkia canvas(bounds.size(), false);
   // Pad by 1 for halo.
   canvas.DrawStringWithHalo(alt_text_, font, SK_ColorDKGRAY, SK_ColorWHITE, 1,
                             1, bounds.width() - 2, bounds.height() - 2,
@@ -1236,8 +1236,9 @@ LRESULT TableView::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
             client_rect.top += content_offset_;
             // Make sure the region need to paint is visible.
             if (IntersectRect(&intersection, &icon_rect, &client_rect)) {
-              gfx::CanvasSkia canvas(icon_rect.right - icon_rect.left,
-                                     icon_rect.bottom - icon_rect.top, false);
+              gfx::CanvasSkia canvas(
+                  gfx::Size(icon_rect.right - icon_rect.left,
+                            icon_rect.bottom - icon_rect.top), false);
 
               // It seems the state in nmcd.uItemState is not correct.
               // We'll retrieve it explicitly.

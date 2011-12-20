@@ -537,7 +537,8 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   const void* bitmap_bits = reinterpret_cast<const char*>(bitmap)
       + bitmap->bmiHeader.biSize + color_table_length * sizeof(RGBQUAD);
 
-  gfx::CanvasSkia canvas(bitmap->bmiHeader.biWidth, bitmap->bmiHeader.biHeight,
+  gfx::CanvasSkia canvas(gfx::Size(bitmap->bmiHeader.biWidth,
+                                   bitmap->bmiHeader.biHeight),
                          false);
   {
     skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());

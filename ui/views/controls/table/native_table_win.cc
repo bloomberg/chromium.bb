@@ -393,7 +393,7 @@ void NativeTableWin::CreateNativeControl() {
     // We create 2 phony images because we are going to switch images at every
     // refresh in order to force a refresh of the icon area (somehow the clip
     // rect does not include the icon).
-    gfx::CanvasSkia canvas(kImageSize, kImageSize, false);
+    gfx::CanvasSkia canvas(gfx::Size(kImageSize, kImageSize), false);
     // Make the background completely transparent.
     canvas.sk_canvas()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
     {
@@ -513,8 +513,9 @@ LRESULT NativeTableWin::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
             client_rect.top += content_offset_;
             // Make sure the region need to paint is visible.
             if (IntersectRect(&intersection, &icon_rect, &client_rect)) {
-              gfx::CanvasSkia canvas(icon_rect.right - icon_rect.left,
-                                     icon_rect.bottom - icon_rect.top, false);
+              gfx::CanvasSkia canvas(
+                  gfx::Size(icon_rect.right - icon_rect.left,
+                            icon_rect.bottom - icon_rect.top), false);
 
               // It seems the state in nmcd.uItemState is not correct.
               // We'll retrieve it explicitly.

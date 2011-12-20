@@ -11,6 +11,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/size.h"
 
 namespace badge_util {
 
@@ -84,7 +85,7 @@ SkBitmap DrawBadgeIconOverlay(const SkBitmap& icon,
 
   // Render the badge bitmap and overlay into a canvas.
   scoped_ptr<gfx::CanvasSkia> canvas(
-      new gfx::CanvasSkia(badge_width, icon.height(), false));
+      new gfx::CanvasSkia(gfx::Size(badge_width, icon.height()), false));
   canvas->DrawBitmapInt(icon, 0, 0);
 
   // Draw the text overlay centered horizontally and vertically. Skia expects

@@ -698,7 +698,7 @@ HIMAGELIST TreeView::CreateImageList() {
       // IDR_FOLDER_CLOSED if they aren't already.
       if (model_images[i].width() != width ||
           model_images[i].height() != height) {
-        gfx::CanvasSkia canvas(width, height, false);
+        gfx::CanvasSkia canvas(gfx::Size(width, height), false);
         // Make the background completely transparent.
         canvas.sk_canvas()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
 

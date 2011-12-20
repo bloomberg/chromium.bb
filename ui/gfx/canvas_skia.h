@@ -48,7 +48,7 @@ class UI_EXPORT CanvasSkia : public Canvas {
   // canvas.
   CanvasSkia();
 
-  CanvasSkia(int width, int height, bool is_opaque);
+  CanvasSkia(const gfx::Size& size, bool is_opaque);
   explicit CanvasSkia(SkCanvas* canvas);
 
   virtual ~CanvasSkia();

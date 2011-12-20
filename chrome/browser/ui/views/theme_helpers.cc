@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/size.h"
 
 void GetRebarGradientColors(int width, int x1, int x2,
                             SkColor* c1, SkColor* c2) {
@@ -22,7 +23,7 @@ void GetRebarGradientColors(int width, int x1, int x2,
   // those so calling code can use them to create gradient brushes for use in
   // rendering in other directions.
 
-  gfx::CanvasSkia canvas(width, 1, true);
+  gfx::CanvasSkia canvas(gfx::Size(width, 1), true);
 
   // Render the Rebar gradient into the DIB
   CTheme theme;

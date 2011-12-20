@@ -534,7 +534,7 @@ void AutocompletePopupContentsView::OnPaint(gfx::Canvas* canvas) {
   // Instead, we paint all our children into a second canvas and use that as a
   // shader to fill a path representing the round-rect clipping region. This
   // yields a nice anti-aliased edge.
-  gfx::CanvasSkia contents_canvas(width(), height(), true);
+  gfx::CanvasSkia contents_canvas(size(), true);
   PaintResultViews(&contents_canvas);
 
   // We want the contents background to be slightly transparent so we can see

@@ -2252,10 +2252,8 @@ void NativeWidgetWin::ClientAreaSizeChanged() {
   if (compositor_.get())
     compositor_->WidgetSizeChanged(s);
   delegate_->OnNativeWidgetSizeChanged(s);
-  if (use_layered_buffer_) {
-    layered_window_contents_.reset(
-        new gfx::CanvasSkia(s.width(), s.height(), false));
-  }
+  if (use_layered_buffer_)
+    layered_window_contents_.reset(new gfx::CanvasSkia(s, false));
 }
 
 void NativeWidgetWin::ResetWindowRegion(bool force) {

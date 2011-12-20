@@ -59,7 +59,7 @@ gfx::NativeCursor UsernameView::GetCursor(const views::MouseEvent& event) {
 
 void UsernameView::PaintUsername(const gfx::Rect& bounds) {
   margin_width_ = bounds.height() * kMarginRatio;
-  gfx::CanvasSkia canvas(bounds.width(), bounds.height(), false);
+  gfx::CanvasSkia canvas(bounds.size(), false);
   // Draw transparent background.
   canvas.sk_canvas()->drawColor(0);
 

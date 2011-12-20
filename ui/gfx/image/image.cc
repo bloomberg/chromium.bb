@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/size.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include <gdk-pixbuf/gdk-pixbuf.h>
@@ -33,8 +34,8 @@ bool NSImageToSkBitmaps(NSImage* image, std::vector<const SkBitmap*>* bitmaps);
 
 #if defined(TOOLKIT_USES_GTK)
 const SkBitmap* GdkPixbufToSkBitmap(GdkPixbuf* pixbuf) {
-  gfx::CanvasSkia canvas(gdk_pixbuf_get_width(pixbuf),
-                         gdk_pixbuf_get_height(pixbuf),
+  gfx::CanvasSkia canvas(gfx::Size(gdk_pixbuf_get_width(pixbuf),
+                                   gdk_pixbuf_get_height(pixbuf)),
                          /*is_opaque=*/false);
   canvas.DrawGdkPixbuf(pixbuf, 0, 0);
   return new SkBitmap(canvas.ExtractBitmap());

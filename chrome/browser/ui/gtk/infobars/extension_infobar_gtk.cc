@@ -81,8 +81,8 @@ void ExtensionInfoBarGtk::OnImageLoaded(
   // The margin between the extension icon and the drop-down arrow bitmap.
   static const int kDropArrowLeftMargin = 3;
   scoped_ptr<gfx::CanvasSkia> canvas(new gfx::CanvasSkia(
-      image_size + kDropArrowLeftMargin + drop_image->width(),
-      image_size,
+      gfx::Size(image_size + kDropArrowLeftMargin + drop_image->width(),
+                image_size),
       false));
   canvas->DrawBitmapInt(*icon, 0, 0, icon->width(), icon->height(), 0, 0,
                         image_size, image_size, false);

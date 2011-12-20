@@ -10,6 +10,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/size.h"
 
 namespace {
 
@@ -29,7 +30,8 @@ const SkColor kIndicatorStroke = SkColorSetRGB(0, 0, 0);
 
 SkBitmap* CreateRadioButtonImage(bool selected) {
   // + 2 (1px on each side) to cover rounding error.
-  gfx::CanvasSkia canvas(kIndicatorSize + 2, kIndicatorSize + 2, false);
+  gfx::CanvasSkia canvas(gfx::Size(kIndicatorSize + 2, kIndicatorSize + 2),
+                         false);
   canvas.Translate(gfx::Point(1, 1));
 
   SkPoint gradient_points[3];
@@ -88,7 +90,7 @@ SkBitmap* GetRtlSubmenuArrowImage() {
   if (!kRtlArrow) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     SkBitmap* r = rb.GetBitmapNamed(IDR_MENU_ARROW);
-    gfx::CanvasSkia canvas(r->width(), r->height(), false);
+    gfx::CanvasSkia canvas(gfx::Size(r->width(), r->height()), false);
     canvas.Scale(-1, 1);
     canvas.DrawBitmapInt(*r, - r->width(), 0);
     kRtlArrow = new SkBitmap(canvas.ExtractBitmap());

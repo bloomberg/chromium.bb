@@ -103,8 +103,8 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
     const int image_size = Extension::EXTENSION_ICON_BITTY;
     scoped_ptr<gfx::CanvasSkia> canvas(
         new gfx::CanvasSkia(
-            image_size + kDropArrowLeftMarginPx + drop_image->width(),
-            image_size, false));
+            gfx::Size(image_size + kDropArrowLeftMarginPx + drop_image->width(),
+                      image_size), false));
     canvas->DrawBitmapInt(*icon,
                           0, 0, icon->width(), icon->height(),
                           0, 0, image_size, image_size,

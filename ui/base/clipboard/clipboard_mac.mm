@@ -316,7 +316,7 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   int width = [image size].width;
   int height = [image size].height;
 
-  gfx::CanvasSkia canvas(width, height, false);
+  gfx::CanvasSkia canvas(gfx::Size(width, height), false);
   {
     skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
     CGContextRef gc = scoped_platform_paint.GetPlatformSurface();

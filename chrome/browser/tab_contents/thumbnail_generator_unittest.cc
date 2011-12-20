@@ -210,7 +210,7 @@ TEST_F(ThumbnailGeneratorSimpleTest, CalculateBoringScore_Empty) {
 TEST_F(ThumbnailGeneratorSimpleTest, CalculateBoringScore_SingleColor) {
   const SkColor kBlack = SkColorSetRGB(0, 0, 0);
   const gfx::Size kSize(20, 10);
-  gfx::CanvasSkia canvas(kSize.width(), kSize.height(), true);
+  gfx::CanvasSkia canvas(kSize, true);
   // Fill all pixesl in black.
   canvas.FillRect(kBlack, gfx::Rect(gfx::Point(), kSize));
 
@@ -225,7 +225,7 @@ TEST_F(ThumbnailGeneratorSimpleTest, CalculateBoringScore_TwoColors) {
   const SkColor kWhite = SkColorSetRGB(0xFF, 0xFF, 0xFF);
   const gfx::Size kSize(20, 10);
 
-  gfx::CanvasSkia canvas(kSize.width(), kSize.height(), true);
+  gfx::CanvasSkia canvas(kSize, true);
   // Fill all pixesl in black.
   canvas.FillRect(kBlack, gfx::Rect(gfx::Point(), kSize));
   // Fill the left half pixels in white.
@@ -241,7 +241,7 @@ TEST_F(ThumbnailGeneratorSimpleTest, CalculateBoringScore_TwoColors) {
 
 TEST_F(ThumbnailGeneratorSimpleTest, GetClippedBitmap_TallerThanWide) {
   // The input bitmap is vertically long.
-  gfx::CanvasSkia canvas(40, 90, true);
+  gfx::CanvasSkia canvas(gfx::Size(40, 90), true);
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
 
@@ -258,7 +258,7 @@ TEST_F(ThumbnailGeneratorSimpleTest, GetClippedBitmap_TallerThanWide) {
 
 TEST_F(ThumbnailGeneratorSimpleTest, GetClippedBitmap_WiderThanTall) {
   // The input bitmap is horizontally long.
-  gfx::CanvasSkia canvas(90, 40, true);
+  gfx::CanvasSkia canvas(gfx::Size(90, 40), true);
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
 
@@ -275,7 +275,7 @@ TEST_F(ThumbnailGeneratorSimpleTest, GetClippedBitmap_WiderThanTall) {
 
 TEST_F(ThumbnailGeneratorSimpleTest, GetClippedBitmap_NotClipped) {
   // The input bitmap is square.
-  gfx::CanvasSkia canvas(40, 40, true);
+  gfx::CanvasSkia canvas(gfx::Size(40, 40), true);
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
 
@@ -292,7 +292,7 @@ TEST_F(ThumbnailGeneratorSimpleTest, GetClippedBitmap_NotClipped) {
 
 TEST_F(ThumbnailGeneratorSimpleTest, GetClippedBitmap_NonSquareOutput) {
   // The input bitmap is square.
-  gfx::CanvasSkia canvas(40, 40, true);
+  gfx::CanvasSkia canvas(gfx::Size(40, 40), true);
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
 

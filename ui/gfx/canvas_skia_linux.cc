@@ -117,9 +117,9 @@ void DrawStringContext::Draw(const SkColor& text_color) {
 
 void DrawStringContext::DrawWithHalo(const SkColor& text_color,
                                      const SkColor& halo_color) {
-  gfx::CanvasSkia text_canvas(bounds_.width() + 2, bounds_.height() + 2, false);
-  text_canvas.FillRect(static_cast<SkColor>(0),
-      gfx::Rect(0, 0, bounds_.width() + 2, bounds_.height() + 2));
+  gfx::Size size(bounds_.width() + 2, bounds_.height() + 2);
+  gfx::CanvasSkia text_canvas(size, false);
+  text_canvas.FillRect(static_cast<SkColor>(0), gfx::Rect(gfx::Point(), size));
 
   {
     skia::ScopedPlatformPaint scoped_platform_paint(text_canvas.sk_canvas());

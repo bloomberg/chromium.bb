@@ -278,7 +278,7 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
 
   // Draw the chrome app menu icon onto the canvas.
   scoped_ptr<gfx::CanvasSkia> canvas(
-      new gfx::CanvasSkia(icon.width(), icon.height(), false));
+      new gfx::CanvasSkia(gfx::Size(icon.width(), icon.height()), false));
   canvas->DrawBitmapInt(icon, 0, 0);
 
   SkBitmap badge;
