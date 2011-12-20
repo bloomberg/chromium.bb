@@ -81,7 +81,6 @@ static uint32_t tail_offset = 0xffffffff;	/* undefined */
 #define BUFFER_FAIL(_count, _len, _name) do {			\
     fprintf(out, "Buffer size too small in %s (%d < %d)\n",	\
 	    (_name), (_count), (_len));				\
-    (*failures)++;						\
     return count;						\
 } while (0)
 
@@ -123,7 +122,7 @@ instr_out(uint32_t *data, uint32_t hw_offset, unsigned int index,
 }
 
 static int
-decode_mi(uint32_t *data, uint32_t count, uint32_t hw_offset, int *failures)
+decode_mi(uint32_t *data, uint32_t count, uint32_t hw_offset)
 {
 	unsigned int opcode, len = -1;
 	const char *post_sync_op = "";
@@ -264,7 +263,6 @@ decode_mi(uint32_t *data, uint32_t count, uint32_t hw_offset, int *failures)
 	}
 
 	instr_out(data, hw_offset, 0, "MI UNKNOWN\n");
-	(*failures)++;
 	return 1;
 }
 
@@ -311,7 +309,7 @@ static void decode_2d_br01(uint32_t *data, uint32_t count, uint32_t hw_offset)
 }
 
 static int
-decode_2d(uint32_t *data, uint32_t count, uint32_t hw_offset, int *failures)
+decode_2d(uint32_t *data, uint32_t count, uint32_t hw_offset)
 {
 	unsigned int opcode, len;
 
@@ -492,12 +490,11 @@ decode_2d(uint32_t *data, uint32_t count, uint32_t hw_offset, int *failures)
 	}
 
 	instr_out(data, hw_offset, 0, "2D UNKNOWN\n");
-	(*failures)++;
 	return 1;
 }
 
 static int
-decode_3d_1c(uint32_t *data, uint32_t count, uint32_t hw_offset, int *failures)
+decode_3d_1c(uint32_t *data, uint32_t count, uint32_t hw_offset)
 {
 	uint32_t opcode;
 
@@ -525,7 +522,6 @@ decode_3d_1c(uint32_t *data, uint32_t count, uint32_t hw_offset, int *failures)
 
 	instr_out(data, hw_offset, 0, "3D UNKNOWN: 3d_1c opcode = 0x%x\n",
 		  opcode);
-	(*failures)++;
 	return 1;
 }
 
@@ -1175,8 +1171,7 @@ decode_sample_filter(uint32_t mode)
 }
 
 static int
-decode_3d_1d(uint32_t *data, uint32_t count,
-	     uint32_t hw_offset, uint32_t devid, int *failures)
+decode_3d_1d(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid)
 {
 	unsigned int len, i, c, idx, word, map, sampler, instr;
 	const char *format, *zformat, *type;
@@ -1263,7 +1258,6 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 		}
 		if (len != i) {
 			fprintf(out, "Bad count in 3DSTATE_LOAD_INDIRECT\n");
-			(*failures)++;
 			return len;
 		}
 		return len;
@@ -1658,7 +1652,6 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 		if (len != i) {
 			fprintf(out,
 				"Bad count in 3DSTATE_LOAD_STATE_IMMEDIATE_1\n");
-			(*failures)++;
 		}
 		return len;
 	case 0x03:
@@ -1713,7 +1706,6 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 		if (len != i) {
 			fprintf(out,
 				"Bad count in 3DSTATE_LOAD_STATE_IMMEDIATE_2\n");
-			(*failures)++;
 		}
 		return len;
 	case 0x00:
@@ -1919,7 +1911,6 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 		}
 		if (len != i) {
 			fprintf(out, "Bad count in 3DSTATE_MAP_STATE\n");
-			(*failures)++;
 			return len;
 		}
 		return len;
@@ -1951,7 +1942,6 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 		if (len != i) {
 			fprintf(out,
 				"Bad count in 3DSTATE_PIXEL_SHADER_CONSTANTS\n");
-			(*failures)++;
 		}
 		return len;
 	case 0x05:
@@ -1960,7 +1950,6 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 		if ((len - 1) % 3 != 0 || len > 370) {
 			fprintf(out,
 				"Bad count in 3DSTATE_PIXEL_SHADER_PROGRAM\n");
-			(*failures)++;
 		}
 		i = 1;
 		for (instr = 0; instr < (len - 1) / 3; instr++) {
@@ -2043,7 +2032,6 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 		}
 		if (len != i) {
 			fprintf(out, "Bad count in 3DSTATE_SAMPLER_STATE\n");
-			(*failures)++;
 		}
 		return len;
 	case 0x85:
@@ -2229,7 +2217,6 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 				    len > opcode_3d_1d->max_len) {
 					fprintf(out, "Bad count in %s\n",
 						opcode_3d_1d->name);
-					(*failures)++;
 				}
 			}
 
@@ -2246,13 +2233,11 @@ decode_3d_1d(uint32_t *data, uint32_t count,
 
 	instr_out(data, hw_offset, 0, "3D UNKNOWN: 3d_1d opcode = 0x%x\n",
 		  opcode);
-	(*failures)++;
 	return 1;
 }
 
 static int
-decode_3d_primitive(uint32_t *data, uint32_t count, uint32_t hw_offset,
-		    int *failures)
+decode_3d_primitive(uint32_t *data, uint32_t count, uint32_t hw_offset)
 {
 	char immediate = (data[0] & (1 << 23)) == 0;
 	unsigned int len, i, j, ret;
@@ -2473,7 +2458,6 @@ decode_3d_primitive(uint32_t *data, uint32_t count, uint32_t hw_offset,
 				}
 				fprintf(out,
 					"3DPRIMITIVE: no terminator found in index buffer\n");
-				(*failures)++;
 				ret = count;
 				goto out;
 			} else {
@@ -2514,8 +2498,7 @@ out:
 }
 
 static int
-decode_3d(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid,
-	  int *failures)
+decode_3d(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid)
 {
 	uint32_t opcode;
 	unsigned int idx;
@@ -2541,11 +2524,11 @@ decode_3d(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid,
 
 	switch (opcode) {
 	case 0x1f:
-		return decode_3d_primitive(data, count, hw_offset, failures);
+		return decode_3d_primitive(data, count, hw_offset);
 	case 0x1d:
-		return decode_3d_1d(data, count, hw_offset, devid, failures);
+		return decode_3d_1d(data, count, hw_offset, devid);
 	case 0x1c:
-		return decode_3d_1c(data, count, hw_offset, failures);
+		return decode_3d_1c(data, count, hw_offset);
 	}
 
 	for (idx = 0; idx < ARRAY_SIZE(opcodes_3d); idx++) {
@@ -2574,7 +2557,6 @@ decode_3d(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid,
 	}
 
 	instr_out(data, hw_offset, 0, "3D UNKNOWN: 3d opcode = 0x%x\n", opcode);
-	(*failures)++;
 	return 1;
 }
 
@@ -2700,8 +2682,8 @@ static const char *get_965_prim_type(uint32_t data)
 }
 
 static int
-i965_decode_urb_fence(uint32_t *data, uint32_t hw_offset, int len, uint32_t count,
-		      int *failures)
+i965_decode_urb_fence(uint32_t *data, uint32_t hw_offset, int len,
+		      uint32_t count)
 {
 	uint32_t vs_fence, clip_fence, gs_fence, sf_fence, vfe_fence, cs_fence;
 
@@ -2776,8 +2758,8 @@ state_max_out(uint32_t *data, uint32_t hw_offset, unsigned int index,
 }
 
 static int
-decode_3d_965(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid,
-	      int *failures)
+decode_3d_965(uint32_t *data, uint32_t count, uint32_t hw_offset,
+	      uint32_t devid)
 {
 	uint32_t opcode;
 	unsigned int idx, len;
@@ -2839,8 +2821,7 @@ decode_3d_965(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid
 	switch (opcode) {
 	case 0x6000:
 		len = (data[0] & 0x000000ff) + 2;
-		return i965_decode_urb_fence(data, hw_offset, len, count,
-					     failures);
+		return i965_decode_urb_fence(data, hw_offset, len, count);
 	case 0x6001:
 		instr_out(data, hw_offset, 0, "CS_URB_STATE\n");
 		instr_out(data, hw_offset, 1,
@@ -3481,13 +3462,12 @@ decode_3d_965(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid
 
 	instr_out(data, hw_offset, 0, "3D UNKNOWN: 3d_965 opcode = 0x%x\n",
 		  opcode);
-	(*failures)++;
 	return 1;
 }
 
 static int
-decode_3d_i830(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devid,
-	       int *failures)
+decode_3d_i830(uint32_t *data, uint32_t count, uint32_t hw_offset,
+	       uint32_t devid)
 {
 	unsigned int idx;
 	uint32_t opcode;
@@ -3520,11 +3500,11 @@ decode_3d_i830(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devi
 
 	switch (opcode) {
 	case 0x1f:
-		return decode_3d_primitive(data, count, hw_offset, failures);
+		return decode_3d_primitive(data, count, hw_offset);
 	case 0x1d:
-		return decode_3d_1d(data, count, hw_offset, devid, failures);
+		return decode_3d_1d(data, count, hw_offset, devid);
 	case 0x1c:
-		return decode_3d_1c(data, count, hw_offset, failures);
+		return decode_3d_1c(data, count, hw_offset);
 	}
 
 	for (idx = 0; idx < ARRAY_SIZE(opcodes_3d); idx++) {
@@ -3554,7 +3534,6 @@ decode_3d_i830(uint32_t *data, uint32_t count, uint32_t hw_offset, uint32_t devi
 
 	instr_out(data, hw_offset, 0, "3D UNKNOWN: 3d_i830 opcode = 0x%x\n",
 		  opcode);
-	(*failures)++;
 	return 1;
 }
 
@@ -3622,7 +3601,6 @@ drm_intel_decode(struct drm_intel_decode *ctx)
 {
 	int ret;
 	unsigned int index = 0;
-	int failures = 0;
 	uint32_t devid;
 
 	if (!ctx)
@@ -3646,7 +3624,7 @@ drm_intel_decode(struct drm_intel_decode *ctx)
 		switch ((ctx->data[index] & 0xe0000000) >> 29) {
 		case 0x0:
 			ret = decode_mi(ctx->data, ctx->count,
-					ctx->hw_offset, &failures);
+					ctx->hw_offset);
 
 			/* If MI_BATCHBUFFER_END happened, then dump
 			 * the rest of the output in case we some day
@@ -3670,29 +3648,25 @@ drm_intel_decode(struct drm_intel_decode *ctx)
 			break;
 		case 0x2:
 			index += decode_2d(ctx->data, ctx->count,
-					   ctx->hw_offset, &failures);
+					   ctx->hw_offset);
 			break;
 		case 0x3:
 			if (IS_9XX(devid) && !IS_GEN3(devid)) {
 				index +=
 				    decode_3d_965(ctx->data, ctx->count,
-						  ctx->hw_offset, devid,
-						  &failures);
+						  ctx->hw_offset, devid);
 			} else if (IS_GEN3(devid)) {
 				index += decode_3d(ctx->data, ctx->count,
-						   ctx->hw_offset,
-						   devid, &failures);
+						   ctx->hw_offset, devid);
 			} else {
 				index +=
 				    decode_3d_i830(ctx->data, ctx->count,
-						   ctx->hw_offset, devid,
-						   &failures);
+						   ctx->hw_offset, devid);
 			}
 			break;
 		default:
 			instr_out(ctx->data, ctx->hw_offset, index,
 				  "UNKNOWN\n");
-			failures++;
 			index++;
 			break;
 		}
