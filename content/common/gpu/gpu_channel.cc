@@ -264,16 +264,19 @@ void GpuChannel::HandleMessage() {
       // or has more work to do, synthesize an IPC message to flush the command
       // buffer that became unscheduled.
       GpuCommandBufferStub* stub = stubs_.Lookup(message->routing_id());
-      if (!stub->IsScheduled() || stub->HasMoreWork()) {
-        deferred_messages_.push_front(new GpuCommandBufferMsg_Rescheduled(
-            stub->route_id()));
-      }
-      if (stub->HasMoreWork() && !handle_messages_scheduled_) {
-        MessageLoop::current()->PostDelayedTask(
-            FROM_HERE,
-            base::Bind(&GpuChannel::HandleMessage, weak_factory_.GetWeakPtr()),
-            kHandleMoreWorkPeriod);
-        handle_messages_scheduled_ = true;
+      if (stub) {
+        if (!stub->IsScheduled() || stub->HasMoreWork()) {
+          deferred_messages_.push_front(new GpuCommandBufferMsg_Rescheduled(
+              stub->route_id()));
+        }
+        if (stub->HasMoreWork() && !handle_messages_scheduled_) {
+          MessageLoop::current()->PostDelayedTask(
+              FROM_HERE,
+              base::Bind(&GpuChannel::HandleMessage,
+                         weak_factory_.GetWeakPtr()),
+              kHandleMoreWorkPeriod);
+          handle_messages_scheduled_ = true;
+        }
       }
     }
   }
