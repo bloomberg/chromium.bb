@@ -200,6 +200,15 @@ PluginProxyTestHarness::PluginDelegateMock::GetGloballySeenInstanceIDSet() {
   return &instance_id_set_;
 }
 
+uint32 PluginProxyTestHarness::PluginDelegateMock::Register(
+    PluginDispatcher* plugin_dispatcher) {
+  return 0;
+}
+
+void PluginProxyTestHarness::PluginDelegateMock::Unregister(
+    uint32 plugin_dispatcher_id) {
+}
+
 ppapi::WebKitForwarding*
 PluginProxyTestHarness::PluginDelegateMock::GetWebKitForwarding() {
   NOTREACHED();
@@ -217,13 +226,8 @@ bool PluginProxyTestHarness::PluginDelegateMock::SendToBrowser(
   return false;
 }
 
-uint32 PluginProxyTestHarness::PluginDelegateMock::Register(
-    PluginDispatcher* plugin_dispatcher) {
-  return 0;
-}
-
-void PluginProxyTestHarness::PluginDelegateMock::Unregister(
-    uint32 plugin_dispatcher_id) {
+void PluginProxyTestHarness::PluginDelegateMock::PreCacheFont(
+    const void* logfontw) {
 }
 
 // PluginProxyTest -------------------------------------------------------------

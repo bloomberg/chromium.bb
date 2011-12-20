@@ -11,7 +11,9 @@ namespace proxy {
 
 PluginGlobals* PluginGlobals::plugin_globals_ = NULL;
 
-PluginGlobals::PluginGlobals() : ppapi::PpapiGlobals() {
+PluginGlobals::PluginGlobals()
+    : ppapi::PpapiGlobals(),
+      plugin_proxy_delegate_(NULL) {
   DCHECK(!plugin_globals_);
   plugin_globals_ = this;
 }

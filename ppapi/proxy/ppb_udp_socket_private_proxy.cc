@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_globals.h"
+#include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/private/udp_socket_private_impl.h"
@@ -73,7 +75,7 @@ void UDPSocket::SendClose() {
 }
 
 void UDPSocket::SendToBrowser(IPC::Message* msg) {
-  PluginDispatcher::GetForResource(this)->SendToBrowser(msg);
+  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(msg);
 }
 
 }  // namespace
@@ -95,9 +97,10 @@ PP_Resource PPB_UDPSocket_Private_Proxy::CreateProxyResource(
     return 0;
 
   uint32 socket_id = 0;
-  dispatcher->SendToBrowser(new PpapiHostMsg_PPBUDPSocket_Create(
-      API_ID_PPB_UDPSOCKET_PRIVATE, dispatcher->plugin_dispatcher_id(),
-      &socket_id));
+  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+      new PpapiHostMsg_PPBUDPSocket_Create(
+          API_ID_PPB_UDPSOCKET_PRIVATE, dispatcher->plugin_dispatcher_id(),
+          &socket_id));
   if (socket_id == 0)
     return 0;
 

@@ -244,8 +244,8 @@ PP_Var GetCommandLineArgs(PP_Module pp_module) {
   return StringVar::StringToPPVar(args);
 }
 
-void PreLoadFontInWindows(const void* logfontw) {
-  // TODO(brettw) implement this.
+void PreLoadFontWin(const void* logfontw) {
+  // Not implemented in-process.
 }
 
 const PPB_Flash_11 ppb_flash_11 = {
@@ -268,7 +268,7 @@ const PPB_Flash ppb_flash_12 = {
   &QuitMessageLoop,
   &GetLocalTimeZoneOffset,
   &GetCommandLineArgs,
-  &PreLoadFontInWindows
+  &PreLoadFontWin
 };
 
 }  // namespace

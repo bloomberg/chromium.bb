@@ -14,6 +14,8 @@
 namespace ppapi {
 namespace proxy {
 
+class PluginProxyDelegate;
+
 class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
  public:
   PluginGlobals();
@@ -39,9 +41,18 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
     return &plugin_var_tracker_;
   }
 
+  // The embedder should call set_proxy_delegate during startup.
+  PluginProxyDelegate* plugin_proxy_delegate() {
+    return plugin_proxy_delegate_;
+  }
+  void set_plugin_proxy_delegate(PluginProxyDelegate* d) {
+    plugin_proxy_delegate_ = d;
+  }
+
  private:
   static PluginGlobals* plugin_globals_;
 
+  PluginProxyDelegate* plugin_proxy_delegate_;
   PluginResourceTracker plugin_resource_tracker_;
   PluginVarTracker plugin_var_tracker_;
 

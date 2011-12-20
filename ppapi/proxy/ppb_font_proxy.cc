@@ -8,6 +8,8 @@
 #include "base/debug/trace_event.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_globals.h"
+#include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
@@ -61,7 +63,7 @@ PP_Var PPB_Font_Proxy::GetFontFamilies(PP_Instance instance) {
   // Assume the font families don't change, so we can cache the result globally.
   CR_DEFINE_STATIC_LOCAL(std::string, families, ());
   if (families.empty()) {
-    dispatcher->SendToBrowser(
+    PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
         new PpapiHostMsg_PPBFont_GetFontFamilies(&families));
   }
 
@@ -85,7 +87,8 @@ Font::Font(const HostResource& resource,
   PluginDispatcher* dispatcher = PluginDispatcher::GetForResource(this);
   if (!dispatcher)
     return;
-  WebKitForwarding* forwarding = dispatcher->GetWebKitForwarding();
+  WebKitForwarding* forwarding =
+      PluginGlobals::Get()->plugin_proxy_delegate()->GetWebKitForwarding();
 
   RunOnWebKitThread(true,
                     base::Bind(&WebKitForwarding::CreateFontForwarding,
@@ -214,7 +217,8 @@ int32_t Font::PixelOffsetForCharacter(const PP_TextRun_Dev* text,
 }
 
 void Font::RunOnWebKitThread(bool blocking, const base::Closure& task) {
-  PluginDispatcher::GetForResource(this)->PostToWebKitThread(FROM_HERE, task);
+  PluginGlobals::Get()->plugin_proxy_delegate()->PostToWebKitThread(
+      FROM_HERE, task);
   if (blocking)
     webkit_event_.Wait();
 }

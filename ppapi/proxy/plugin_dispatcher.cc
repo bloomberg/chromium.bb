@@ -193,20 +193,6 @@ InstanceData* PluginDispatcher::GetInstanceData(PP_Instance instance) {
   return (it == instance_map_.end()) ? NULL : &it->second;
 }
 
-void PluginDispatcher::PostToWebKitThread(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
-  return plugin_delegate_->PostToWebKitThread(from_here, task);
-}
-
-bool PluginDispatcher::SendToBrowser(IPC::Message* msg) {
-  return plugin_delegate_->SendToBrowser(msg);
-}
-
-WebKitForwarding* PluginDispatcher::GetWebKitForwarding() {
-  return plugin_delegate_->GetWebKitForwarding();
-}
-
 FunctionGroupBase* PluginDispatcher::GetFunctionAPI(ApiID id) {
   return GetInterfaceProxy(id);
 }

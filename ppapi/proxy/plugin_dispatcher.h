@@ -50,20 +50,6 @@ class PPAPI_PROXY_EXPORT PluginDispatcher : public Dispatcher {
     // DEREFERENCE ONLY ON THE I/O THREAD.
     virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet() = 0;
 
-    // Returns the WebKit forwarding object used to make calls into WebKit.
-    // Necessary only on the plugin side.
-    virtual WebKitForwarding* GetWebKitForwarding() = 0;
-
-    // Posts the given task to the WebKit thread associated with this plugin
-    // process. The WebKit thread should be lazily created if it does not
-    // exist yet.
-    virtual void PostToWebKitThread(const tracked_objects::Location& from_here,
-                                    const base::Closure& task) = 0;
-
-    // Sends the given message to the browser. Identical semantics to
-    // IPC::Message::Sender interface.
-    virtual bool SendToBrowser(IPC::Message* msg) = 0;
-
     // Registers the plugin dispatcher and returns an ID.
     // Plugin dispatcher IDs will be used to dispatch messages from the browser.
     // Each call to Register() has to be matched with a call to Unregister().
@@ -119,16 +105,6 @@ class PPAPI_PROXY_EXPORT PluginDispatcher : public Dispatcher {
   // Gets the data for an existing instance, or NULL if the instance id doesn't
   // correspond to a known instance.
   InstanceData* GetInstanceData(PP_Instance instance);
-
-  // Posts the given task to the WebKit thread.
-  void PostToWebKitThread(const tracked_objects::Location& from_here,
-                          const base::Closure& task);
-
-  // Calls the PluginDelegate.SendToBrowser function.
-  bool SendToBrowser(IPC::Message* msg);
-
-  // Returns the WebKitForwarding object used to forward events to WebKit.
-  WebKitForwarding* GetWebKitForwarding();
 
   // Returns the Preferences.
   const Preferences& preferences() const { return preferences_; }

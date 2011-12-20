@@ -14,6 +14,8 @@
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_globals.h"
+#include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/proxy_module.h"
 #include "ppapi/proxy/serialized_var.h"
@@ -183,8 +185,8 @@ PP_Var GetCommandLineArgs(PP_Module /*pp_module*/) {
   return StringVar::StringToPPVar(args);
 }
 
-void PreLoadFontInWindows(const void* logfontw) {
-  // TODO(brettw) implement this.
+void PreLoadFontWin(const void* logfontw) {
+  PluginGlobals::Get()->plugin_proxy_delegate()->PreCacheFont(logfontw);
 }
 
 const PPB_Flash_11 flash_interface_11 = {
@@ -207,7 +209,7 @@ const PPB_Flash flash_interface_12 = {
   &QuitMessageLoop,
   &GetLocalTimeZoneOffset,
   &GetCommandLineArgs,
-  &PreLoadFontInWindows
+  &PreLoadFontWin
 };
 
 }  // namespace

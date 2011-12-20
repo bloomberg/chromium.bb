@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "content/common/child_process.h"
+#include "content/common/child_process_messages.h"
 #include "content/ppapi_plugin/broker_process_dispatcher.h"
 #include "content/ppapi_plugin/plugin_process_dispatcher.h"
 #include "content/ppapi_plugin/ppapi_webkit_thread.h"
@@ -21,6 +22,7 @@
 #include "ppapi/c/dev/ppp_network_state_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp.h"
+#include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/interface_list.h"
 #include "webkit/plugins/ppapi/webkit_forwarding_impl.h"
@@ -47,9 +49,12 @@ PpapiThread::PpapiThread(bool is_broker)
       local_pp_module_(
           base::RandInt(0, std::numeric_limits<PP_Module>::max())),
       next_plugin_dispatcher_id_(1) {
+  ppapi::proxy::PluginGlobals::Get()->set_plugin_proxy_delegate(this);
 }
 
 PpapiThread::~PpapiThread() {
+  ppapi::proxy::PluginGlobals::Get()->set_plugin_proxy_delegate(NULL);
+
   if (!library_.is_valid())
     return;
 
@@ -121,6 +126,13 @@ void PpapiThread::PostToWebKitThread(const tracked_objects::Location& from_here,
 
 bool PpapiThread::SendToBrowser(IPC::Message* msg) {
   return Send(msg);
+}
+
+void PpapiThread::PreCacheFont(const void* logfontw) {
+#if defined(OS_WIN)
+  Send(new ChildProcessHostMsg_PreCacheFont(
+      *static_cast<const LOGFONTW*>(logfontw)));
+#endif
 }
 
 uint32 PpapiThread::Register(ppapi::proxy::PluginDispatcher* plugin_dispatcher) {

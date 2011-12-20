@@ -14,6 +14,7 @@
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
+#include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -95,7 +96,8 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
                                        bool is_client);
   virtual void TearDownHarness();
 
-  class PluginDelegateMock : public PluginDispatcher::PluginDelegate {
+  class PluginDelegateMock : public PluginDispatcher::PluginDelegate,
+                             public PluginProxyDelegate {
    public:
     PluginDelegateMock() : ipc_message_loop_(NULL), shutdown_event_() {}
     virtual ~PluginDelegateMock() {}
@@ -107,17 +109,20 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
     }
 
     // ProxyChannel::Delegate implementation.
-    virtual base::MessageLoopProxy* GetIPCMessageLoop();
-    virtual base::WaitableEvent* GetShutdownEvent();
+    virtual base::MessageLoopProxy* GetIPCMessageLoop() OVERRIDE;
+    virtual base::WaitableEvent* GetShutdownEvent() OVERRIDE;
 
     // PluginDispatcher::PluginDelegate implementation.
-    virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet();
-    virtual ppapi::WebKitForwarding* GetWebKitForwarding();
+    virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet() OVERRIDE;
+    virtual uint32 Register(PluginDispatcher* plugin_dispatcher) OVERRIDE;
+    virtual void Unregister(uint32 plugin_dispatcher_id) OVERRIDE;
+
+    // PluginPepperDelegate implementation.
+    virtual ppapi::WebKitForwarding* GetWebKitForwarding() OVERRIDE;
     virtual void PostToWebKitThread(const tracked_objects::Location& from_here,
-                                    const base::Closure& task);
-    virtual bool SendToBrowser(IPC::Message* msg);
-    virtual uint32 Register(PluginDispatcher* plugin_dispatcher);
-    virtual void Unregister(uint32 plugin_dispatcher_id);
+                                    const base::Closure& task) OVERRIDE;
+    virtual bool SendToBrowser(IPC::Message* msg) OVERRIDE;
+    virtual void PreCacheFont(const void* logfontw) OVERRIDE;
 
    private:
     base::MessageLoopProxy* ipc_message_loop_;  // Weak

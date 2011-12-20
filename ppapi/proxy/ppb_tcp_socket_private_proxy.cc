@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_globals.h"
+#include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
@@ -86,7 +88,7 @@ void TCPSocket::SendDisconnect() {
 }
 
 void TCPSocket::SendToBrowser(IPC::Message* msg) {
-  PluginDispatcher::GetForResource(this)->SendToBrowser(msg);
+  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(msg);
 }
 
 }  // namespace
@@ -108,9 +110,10 @@ PP_Resource PPB_TCPSocket_Private_Proxy::CreateProxyResource(
     return 0;
 
   uint32 socket_id = 0;
-  dispatcher->SendToBrowser(new PpapiHostMsg_PPBTCPSocket_Create(
-      API_ID_PPB_TCPSOCKET_PRIVATE, dispatcher->plugin_dispatcher_id(),
-      &socket_id));
+  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+      new PpapiHostMsg_PPBTCPSocket_Create(
+          API_ID_PPB_TCPSOCKET_PRIVATE, dispatcher->plugin_dispatcher_id(),
+          &socket_id));
   if (socket_id == 0)
     return 0;
   return (new TCPSocket(HostResource::MakeInstanceOnly(instance),
