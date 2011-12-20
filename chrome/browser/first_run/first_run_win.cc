@@ -321,8 +321,7 @@ bool FirstRun::ImportSettings(Profile* profile,
                               int importer_type,
                               int items_to_import,
                               const FilePath& import_bookmarks_path,
-                              bool skip_first_run_ui,
-                              HWND parent_window) {
+                              bool skip_first_run_ui) {
   const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
   CommandLine import_cmd(cmdline.GetProgram());
 
@@ -378,10 +377,10 @@ bool FirstRun::ImportSettings(Profile* profile,
       importer_list->GetSourceProfileAt(0).importer_type,
       items_to_import,
       FilePath(),
-      false,
-      NULL);
+      false);
 }
 
+#if !defined(USE_AURA)
 int FirstRun::ImportFromBrowser(Profile* profile,
                                 const CommandLine& cmdline) {
   std::string import_info = cmdline.GetSwitchValueASCII(switches::kImport);
@@ -420,3 +419,4 @@ int FirstRun::ImportFromBrowser(Profile* profile,
   importer_observer.RunLoop();
   return importer_observer.import_result();
 }
+#endif  // !defined(USE_AURA)

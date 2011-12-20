@@ -139,10 +139,8 @@ int FirstRun::ImportNow(Profile* profile, const CommandLine& cmdline) {
     return_code = ImportFromFile(profile, cmdline);
   }
   if (cmdline.HasSwitch(switches::kImport)) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
     return_code = ImportFromBrowser(profile, cmdline);
-#else
-    NOTIMPLEMENTED();
 #endif
   }
   return return_code;
@@ -349,7 +347,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
           importer_list->GetSourceProfileAt(0).importer_type,
           out_prefs->do_import_items,
           FilePath::FromWStringHack(UTF8ToWide(import_bookmarks_path)),
-          true, NULL)) {
+          true)) {
       LOG(WARNING) << "silent import failed";
     }
   }
@@ -540,6 +538,7 @@ void FirstRun::AutoImport(
     bool randomize_search_engine_experiment,
     bool make_chrome_default,
     ProcessSingleton* process_singleton) {
+#if !defined(USE_AURA)
   // We need to avoid dispatching new tabs when we are importing because
   // that will lead to data corruption or a crash. Because there is no UI for
   // the import process, we pass NULL as the window to bring to the foreground
@@ -648,6 +647,7 @@ void FirstRun::AutoImport(
 
   process_singleton->Unlock();
   FirstRun::CreateSentinel();
+#endif
 }
 
 #if defined(OS_LINUX)

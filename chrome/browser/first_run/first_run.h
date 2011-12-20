@@ -186,12 +186,13 @@ class FirstRun {
                              int importer_type,
                              int items_to_import,
                              const FilePath& import_path,
-                             bool skip_first_run_ui,
-                             gfx::NativeView parent_window);
+                             bool skip_first_run_ui);
 
+#if !defined(USE_AURA)
   // Import browser items in this process. The browser and the items to
   // import are encoded in the command line.
   static int ImportFromBrowser(Profile* profile, const CommandLine& cmdline);
+#endif
 
 #else
   static bool ImportBookmarks(const FilePath& import_bookmarks_path);
