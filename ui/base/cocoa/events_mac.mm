@@ -87,19 +87,19 @@ int EventFlagsFromNative(const base::NativeEvent& native_event) {
   if (type == NSLeftMouseDown ||
       type == NSLeftMouseUp ||
       type == NSLeftMouseDragged) {
-    event_flags = event_flags | EF_LEFT_BUTTON_DOWN;
+    event_flags = event_flags | EF_LEFT_MOUSE_BUTTON;
   }
 
   if (type == NSRightMouseDown ||
       type == NSRightMouseUp ||
       type == NSRightMouseDragged) {
-    event_flags = event_flags | EF_RIGHT_BUTTON_DOWN;
+    event_flags = event_flags | EF_RIGHT_MOUSE_BUTTON;
   }
 
   if (type == NSOtherMouseDown ||
       type == NSOtherMouseUp ||
       type == NSOtherMouseDragged) {
-    event_flags = event_flags | EF_MIDDLE_BUTTON_DOWN;
+    event_flags = event_flags | EF_MIDDLE_MOUSE_BUTTON;
   }
 
   return event_flags;

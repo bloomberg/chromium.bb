@@ -206,7 +206,9 @@ TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
   ui::OSExchangeData data;
   data.SetString(UTF8ToUTF16("I am being dragged"));
 
-  aura::MouseEvent event1(ui::ET_MOUSE_PRESSED, point, ui::EF_LEFT_BUTTON_DOWN);
+  aura::MouseEvent event1(ui::ET_MOUSE_PRESSED,
+                          point,
+                          ui::EF_LEFT_MOUSE_BUTTON);
   aura::RootWindow::GetInstance()->DispatchMouseEvent(&event1);
 
   int num_drags = 17;
@@ -218,8 +220,9 @@ TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
     if (i > 0)
       UpdateDragData(&data);
     point.Offset(0, 1);
-    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, point,
-        ui::EF_LEFT_BUTTON_DOWN);
+    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
+                                point,
+                                ui::EF_LEFT_MOUSE_BUTTON);
     aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
   }
 
@@ -253,7 +256,9 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsSingleWidgetTest) {
   ui::OSExchangeData data;
   data.SetString(UTF8ToUTF16("I am being dragged"));
 
-  aura::MouseEvent event1(ui::ET_MOUSE_PRESSED, point, ui::EF_LEFT_BUTTON_DOWN);
+  aura::MouseEvent event1(ui::ET_MOUSE_PRESSED,
+                          point,
+                          ui::EF_LEFT_MOUSE_BUTTON);
   aura::RootWindow::GetInstance()->DispatchMouseEvent(&event1);
 
   int num_drags = drag_view1->width();
@@ -265,8 +270,9 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsSingleWidgetTest) {
     if (i > 0)
       UpdateDragData(&data);
     point.Offset(1, 0);
-    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, point,
-        ui::EF_LEFT_BUTTON_DOWN);
+    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
+                                point,
+                                ui::EF_LEFT_MOUSE_BUTTON);
     aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
   }
 
@@ -314,7 +320,9 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
   ui::OSExchangeData data;
   data.SetString(UTF8ToUTF16("I am being dragged"));
 
-  aura::MouseEvent event1(ui::ET_MOUSE_PRESSED, point, ui::EF_LEFT_BUTTON_DOWN);
+  aura::MouseEvent event1(ui::ET_MOUSE_PRESSED,
+                          point,
+                          ui::EF_LEFT_MOUSE_BUTTON);
   aura::RootWindow::GetInstance()->DispatchMouseEvent(&event1);
 
   int num_drags = drag_view1->width();
@@ -326,8 +334,9 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
     if (i > 0)
       UpdateDragData(&data);
     point.Offset(1, 0);
-    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, point,
-        ui::EF_LEFT_BUTTON_DOWN);
+    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
+                                point,
+                                ui::EF_LEFT_MOUSE_BUTTON);
     aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
   }
 
@@ -368,7 +377,9 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
   ui::OSExchangeData data;
   data.SetString(UTF8ToUTF16("I am being dragged"));
 
-  aura::MouseEvent event1(ui::ET_MOUSE_PRESSED, point, ui::EF_LEFT_BUTTON_DOWN);
+  aura::MouseEvent event1(ui::ET_MOUSE_PRESSED,
+                          point,
+                          ui::EF_LEFT_MOUSE_BUTTON);
   aura::RootWindow::GetInstance()->DispatchMouseEvent(&event1);
 
   int num_drags_1 = 17;
@@ -380,8 +391,9 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
     if (i > 0)
       UpdateDragData(&data);
     point.Offset(0, 1);
-    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, point,
-        ui::EF_LEFT_BUTTON_DOWN);
+    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
+                                point,
+                                ui::EF_LEFT_MOUSE_BUTTON);
     aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
   }
 
@@ -391,8 +403,9 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
   for (int i = 0; i < num_drags_2; ++i) {
     UpdateDragData(&data);
     point.Offset(0, 1);
-    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, point,
-        ui::EF_LEFT_BUTTON_DOWN);
+    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
+                                point,
+                                ui::EF_LEFT_MOUSE_BUTTON);
     aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
   }
 

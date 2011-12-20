@@ -14,8 +14,8 @@ namespace views {
 
 MenuModelAdapter::MenuModelAdapter(ui::MenuModel* menu_model)
     : menu_model_(menu_model),
-      triggerable_event_flags_(ui::EF_LEFT_BUTTON_DOWN |
-                               ui::EF_RIGHT_BUTTON_DOWN) {
+      triggerable_event_flags_(ui::EF_LEFT_MOUSE_BUTTON |
+                               ui::EF_RIGHT_MOUSE_BUTTON) {
   DCHECK(menu_model);
 }
 

@@ -44,13 +44,13 @@ TEST(EventsXTest, ButtonEvents) {
 
   InitButtonEvent(&event, true, location, 1, 0);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(&event));
-  EXPECT_EQ(ui::EF_LEFT_BUTTON_DOWN, ui::EventFlagsFromNative(&event));
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, ui::EventFlagsFromNative(&event));
   EXPECT_EQ(location, ui::EventLocationFromNative(&event));
   EXPECT_TRUE(ui::IsMouseEvent(&event));
 
   InitButtonEvent(&event, true, location, 2, Button1Mask | ShiftMask);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(&event));
-  EXPECT_EQ(ui::EF_LEFT_BUTTON_DOWN | ui::EF_MIDDLE_BUTTON_DOWN |
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON |
                 ui::EF_SHIFT_DOWN,
             ui::EventFlagsFromNative(&event));
   EXPECT_EQ(location, ui::EventLocationFromNative(&event));
@@ -58,7 +58,7 @@ TEST(EventsXTest, ButtonEvents) {
 
   InitButtonEvent(&event, false, location, 3, 0);
   EXPECT_EQ(ui::ET_MOUSE_RELEASED, ui::EventTypeFromNative(&event));
-  EXPECT_EQ(ui::EF_RIGHT_BUTTON_DOWN, ui::EventFlagsFromNative(&event));
+  EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, ui::EventFlagsFromNative(&event));
   EXPECT_EQ(location, ui::EventLocationFromNative(&event));
   EXPECT_TRUE(ui::IsMouseEvent(&event));
 

@@ -134,17 +134,17 @@ TEST_F(EventsMacTest, EventFlagsFromNative) {
   // Left mouse flags.
   native_event = MouseEventWithType(NSLeftMouseDown, 0);
   flags = ui::EventFlagsFromNative(native_event);
-  EXPECT_EQ(ui::EF_LEFT_BUTTON_DOWN, flags);
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, flags);
 
   // Right mouse flags.
   native_event = MouseEventWithType(NSRightMouseDown, 0);
   flags = ui::EventFlagsFromNative(native_event);
-  EXPECT_EQ(ui::EF_RIGHT_BUTTON_DOWN, flags);
+  EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, flags);
 
   // Center mouse flags.
   native_event = MouseEventWithType(NSOtherMouseDown, 0);
   flags = ui::EventFlagsFromNative(native_event);
-  EXPECT_EQ(ui::EF_MIDDLE_BUTTON_DOWN, flags);
+  EXPECT_EQ(ui::EF_MIDDLE_MOUSE_BUTTON, flags);
 }
 
 TEST_F(EventsMacTest, EventLocationFromNative) {

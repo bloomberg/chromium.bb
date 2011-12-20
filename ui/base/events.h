@@ -40,15 +40,15 @@ enum EventType {
 
 // Event flags currently supported
 enum EventFlags {
-  EF_CAPS_LOCK_DOWN     = 1 << 0,
-  EF_SHIFT_DOWN         = 1 << 1,
-  EF_CONTROL_DOWN       = 1 << 2,
-  EF_ALT_DOWN           = 1 << 3,
-  EF_LEFT_BUTTON_DOWN   = 1 << 4,
-  EF_MIDDLE_BUTTON_DOWN = 1 << 5,
-  EF_RIGHT_BUTTON_DOWN  = 1 << 6,
-  EF_COMMAND_DOWN       = 1 << 7,  // Only useful on OSX
-  EF_EXTENDED           = 1 << 8,  // Windows extended key (see WM_KEYDOWN doc)
+  EF_CAPS_LOCK_DOWN      = 1 << 0,
+  EF_SHIFT_DOWN          = 1 << 1,
+  EF_CONTROL_DOWN        = 1 << 2,
+  EF_ALT_DOWN            = 1 << 3,
+  EF_LEFT_MOUSE_BUTTON   = 1 << 4,
+  EF_MIDDLE_MOUSE_BUTTON = 1 << 5,
+  EF_RIGHT_MOUSE_BUTTON  = 1 << 6,
+  EF_COMMAND_DOWN        = 1 << 7,  // Only useful on OSX
+  EF_EXTENDED            = 1 << 8,  // Windows extended key (see WM_KEYDOWN doc)
 };
 
 // Flags specific to mouse events

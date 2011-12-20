@@ -128,14 +128,14 @@ MouseEvent::MouseEvent(const TouchEvent& touch)
   // MouseEvent from the native event for a TouchEvent, so the flags are
   // explicitly updated as well. The button is approximated from the touchpoint
   // identity.
-  int new_flags = flags() & ~(ui::EF_LEFT_BUTTON_DOWN |
-                              ui::EF_RIGHT_BUTTON_DOWN |
-                              ui::EF_MIDDLE_BUTTON_DOWN);
-  int button = ui::EF_LEFT_BUTTON_DOWN;
+  int new_flags = flags() & ~(ui::EF_LEFT_MOUSE_BUTTON |
+                              ui::EF_RIGHT_MOUSE_BUTTON |
+                              ui::EF_MIDDLE_MOUSE_BUTTON);
+  int button = ui::EF_LEFT_MOUSE_BUTTON;
   if (touch.identity() == 1)
-    button = ui::EF_RIGHT_BUTTON_DOWN;
+    button = ui::EF_RIGHT_MOUSE_BUTTON;
   else if (touch.identity() == 2)
-    button = ui::EF_MIDDLE_BUTTON_DOWN;
+    button = ui::EF_MIDDLE_MOUSE_BUTTON;
   set_flags(new_flags | button);
 }
 

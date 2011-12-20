@@ -111,7 +111,7 @@ TEST_F(HistoryTester, ConsiderRedirectAfterGestureAsUserInitiated) {
   ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_CONTAINER, &tab_view_bounds,
                                     true));
   ASSERT_TRUE(window->SimulateOSClick(tab_view_bounds.CenterPoint(),
-                                      ui::EF_LEFT_BUTTON_DOWN));
+                                      ui::EF_LEFT_MOUSE_BUTTON));
 
   NavigateToURL(GURL("javascript:redirectToPage12()"));
   WaitForFinish("History_Length_Test_12", "1", url, kTestCompleteCookie,

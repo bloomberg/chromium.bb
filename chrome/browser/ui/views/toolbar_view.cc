@@ -137,8 +137,8 @@ void ToolbarView::Init() {
   forward_menu_model_.reset(new BackForwardMenuModel(
       browser_, BackForwardMenuModel::FORWARD_MENU));
   back_ = new views::ButtonDropDown(this, back_menu_model_.get());
-  back_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
-                                     ui::EF_MIDDLE_BUTTON_DOWN);
+  back_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
+                                     ui::EF_MIDDLE_MOUSE_BUTTON);
   back_->set_tag(IDC_BACK);
   back_->SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
                            views::ImageButton::ALIGN_TOP);
@@ -147,8 +147,8 @@ void ToolbarView::Init() {
   back_->set_id(VIEW_ID_BACK_BUTTON);
 
   forward_ = new views::ButtonDropDown(this, forward_menu_model_.get());
-  forward_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
-                                        ui::EF_MIDDLE_BUTTON_DOWN);
+  forward_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
+                                        ui::EF_MIDDLE_MOUSE_BUTTON);
   forward_->set_tag(IDC_FORWARD);
   forward_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_FORWARD));
   forward_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FORWARD));
@@ -160,16 +160,16 @@ void ToolbarView::Init() {
           LocationBarView::POPUP : LocationBarView::NORMAL);
 
   reload_ = new ReloadButton(location_bar_, browser_);
-  reload_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
-                                       ui::EF_MIDDLE_BUTTON_DOWN);
+  reload_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
+                                       ui::EF_MIDDLE_MOUSE_BUTTON);
   reload_->set_tag(IDC_RELOAD);
   reload_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_RELOAD));
   reload_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
   reload_->set_id(VIEW_ID_RELOAD_BUTTON);
 
   home_ = new views::ImageButton(this);
-  home_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
-                                     ui::EF_MIDDLE_BUTTON_DOWN);
+  home_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
+                                     ui::EF_MIDDLE_MOUSE_BUTTON);
   home_->set_tag(IDC_HOME);
   home_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_HOME));
   home_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_HOME));

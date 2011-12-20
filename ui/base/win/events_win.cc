@@ -126,9 +126,9 @@ int MouseStateFlagsFromNative(const base::NativeEvent& native_event) {
     win_flags |= GET_KEYSTATE_WPARAM(native_event.wParam);
 
   int flags = 0;
-  flags |= (win_flags & MK_LBUTTON) ? ui::EF_LEFT_BUTTON_DOWN : 0;
-  flags |= (win_flags & MK_MBUTTON) ? ui::EF_MIDDLE_BUTTON_DOWN : 0;
-  flags |= (win_flags & MK_RBUTTON) ? ui::EF_RIGHT_BUTTON_DOWN : 0;
+  flags |= (win_flags & MK_LBUTTON) ? ui::EF_LEFT_MOUSE_BUTTON : 0;
+  flags |= (win_flags & MK_MBUTTON) ? ui::EF_MIDDLE_MOUSE_BUTTON : 0;
+  flags |= (win_flags & MK_RBUTTON) ? ui::EF_RIGHT_MOUSE_BUTTON : 0;
   flags |= IsDoubleClickMouseEvent(native_event) ? ui::EF_IS_DOUBLE_CLICK: 0;
   flags |= IsNonClientMouseEvent(native_event) ? ui::EF_IS_NON_CLIENT : 0;
   return flags;

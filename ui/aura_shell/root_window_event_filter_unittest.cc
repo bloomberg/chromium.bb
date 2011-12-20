@@ -95,8 +95,9 @@ TEST_F(RootWindowEventFilterTest, Focus) {
   // Click on a sub-window (w121) to focus it.
   gfx::Point click_point = w121->bounds().CenterPoint();
   aura::Window::ConvertPointToWindow(w121->parent(), root_window, &click_point);
-  aura::MouseEvent mouse(ui::ET_MOUSE_PRESSED, click_point,
-                         ui::EF_LEFT_BUTTON_DOWN);
+  aura::MouseEvent mouse(ui::ET_MOUSE_PRESSED,
+                         click_point,
+                         ui::EF_LEFT_MOUSE_BUTTON);
   root_window->DispatchMouseEvent(&mouse);
   aura::internal::FocusManager* focus_manager = w121->GetFocusManager();
   EXPECT_EQ(w121.get(), focus_manager->GetFocusedWindow());
@@ -358,19 +359,19 @@ TEST_F(RootWindowEventFilterTest, TransformActivate) {
   transform.TransformPoint(miss_point);
   aura::MouseEvent mouseev1(ui::ET_MOUSE_PRESSED,
                             miss_point,
-                            ui::EF_LEFT_BUTTON_DOWN);
+                            ui::EF_LEFT_MOUSE_BUTTON);
   root_window->DispatchMouseEvent(&mouseev1);
   EXPECT_FALSE(w1->GetFocusManager()->GetFocusedWindow());
   aura::MouseEvent mouseup(ui::ET_MOUSE_RELEASED,
                            miss_point,
-                           ui::EF_LEFT_BUTTON_DOWN);
+                           ui::EF_LEFT_MOUSE_BUTTON);
   root_window->DispatchMouseEvent(&mouseup);
 
   gfx::Point hit_point(5, 15);
   transform.TransformPoint(hit_point);
   aura::MouseEvent mouseev2(ui::ET_MOUSE_PRESSED,
                             hit_point,
-                            ui::EF_LEFT_BUTTON_DOWN);
+                            ui::EF_LEFT_MOUSE_BUTTON);
   root_window->DispatchMouseEvent(&mouseev2);
   EXPECT_TRUE(IsActiveWindow(w1.get()));
   EXPECT_EQ(w1.get(), w1->GetFocusManager()->GetFocusedWindow());

@@ -546,7 +546,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
   // contents of the folder.
   if (!part.is_scroll() && part.menu &&
       !(part.menu->HasSubmenu() &&
-        (event.flags() == ui::EF_LEFT_BUTTON_DOWN))) {
+        (event.flags() == ui::EF_LEFT_MOUSE_BUTTON))) {
     if (active_mouse_view_) {
       SendMouseReleaseToActiveView(source, event);
       return;

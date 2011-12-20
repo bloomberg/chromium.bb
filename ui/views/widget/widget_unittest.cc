@@ -194,14 +194,14 @@ TEST_F(WidgetTest, DISABLED_GrabUngrab) {
   RunPendingMessages();
 
   // Click on child1
-  MouseEvent pressed(ui::ET_MOUSE_PRESSED, 45, 45, ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent pressed(ui::ET_MOUSE_PRESSED, 45, 45, ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(pressed);
 
   EXPECT_TRUE(WidgetHasMouseCapture(toplevel));
   EXPECT_TRUE(WidgetHasMouseCapture(child1));
   EXPECT_FALSE(WidgetHasMouseCapture(child2));
 
-  MouseEvent released(ui::ET_MOUSE_RELEASED, 45, 45, ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent released(ui::ET_MOUSE_RELEASED, 45, 45, ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(released);
 
   EXPECT_FALSE(WidgetHasMouseCapture(toplevel));
@@ -211,13 +211,14 @@ TEST_F(WidgetTest, DISABLED_GrabUngrab) {
   RunPendingMessages();
 
   // Click on child2
-  MouseEvent pressed2(ui::ET_MOUSE_PRESSED, 315, 45, ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent pressed2(ui::ET_MOUSE_PRESSED, 315, 45, ui::EF_LEFT_MOUSE_BUTTON);
   EXPECT_TRUE(toplevel->OnMouseEvent(pressed2));
   EXPECT_TRUE(WidgetHasMouseCapture(toplevel));
   EXPECT_TRUE(WidgetHasMouseCapture(child2));
   EXPECT_FALSE(WidgetHasMouseCapture(child1));
 
-  MouseEvent released2(ui::ET_MOUSE_RELEASED, 315, 45, ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent released2(ui::ET_MOUSE_RELEASED, 315, 45,
+                       ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(released2);
   EXPECT_FALSE(WidgetHasMouseCapture(toplevel));
   EXPECT_FALSE(WidgetHasMouseCapture(child1));

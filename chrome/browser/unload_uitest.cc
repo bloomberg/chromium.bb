@@ -232,7 +232,7 @@ TEST_F(UnloadTest, MAYBE_CrossSiteInfiniteUnloadAsyncInputEvent) {
   gfx::Rect bounds;
   ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_0, &bounds, false));
   ASSERT_TRUE(browser->SimulateDrag(bounds.CenterPoint(), bounds.CenterPoint(),
-                                    ui::EF_LEFT_BUTTON_DOWN, false));
+                                    ui::EF_LEFT_MOUSE_BUTTON, false));
 
   // The title should update before the timeout in CheckTitle.
   CheckTitle(L"Title Of Awesomeness");
@@ -465,7 +465,7 @@ TEST_F(UnloadTest, MAYBE_BrowserCloseTabWhenOtherTabHasListener) {
   // Simulate a click to force user_gesture to true; if we don't, the resulting
   // popup will be constrained, which isn't what we want to test.
   ASSERT_TRUE(window->SimulateOSClick(tab_view_bounds.CenterPoint(),
-                                      ui::EF_LEFT_BUTTON_DOWN));
+                                      ui::EF_LEFT_MOUSE_BUTTON));
   ASSERT_TRUE(browser->WaitForTabCountToBecome(2));
 
   CheckTitle(L"popup");

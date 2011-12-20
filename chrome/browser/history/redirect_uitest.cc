@@ -170,7 +170,7 @@ TEST_F(RedirectTest, MAYBE_ClientCancelled) {
   ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_CONTAINER, &tab_view_bounds,
                                     true));
   ASSERT_TRUE(window->SimulateOSClick(tab_view_bounds.CenterPoint(),
-                                      ui::EF_LEFT_BUTTON_DOWN));
+                                      ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_TRUE(tab_proxy->WaitForNavigation(last_nav_time));
 
   std::vector<GURL> redirects;

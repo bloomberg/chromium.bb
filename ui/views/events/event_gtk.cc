@@ -42,9 +42,9 @@ int GetFlagsFromGdkState(unsigned int state) {
   flags |= (state & GDK_CONTROL_MASK) ? ui::EF_CONTROL_DOWN : 0;
   flags |= (state & GDK_SHIFT_MASK) ? ui::EF_SHIFT_DOWN : 0;
   flags |= (state & GDK_MOD1_MASK) ? ui::EF_ALT_DOWN : 0;
-  flags |= (state & GDK_BUTTON1_MASK) ? ui::EF_LEFT_BUTTON_DOWN : 0;
-  flags |= (state & GDK_BUTTON2_MASK) ? ui::EF_MIDDLE_BUTTON_DOWN : 0;
-  flags |= (state & GDK_BUTTON3_MASK) ? ui::EF_RIGHT_BUTTON_DOWN : 0;
+  flags |= (state & GDK_BUTTON1_MASK) ? ui::EF_LEFT_MOUSE_BUTTON : 0;
+  flags |= (state & GDK_BUTTON2_MASK) ? ui::EF_MIDDLE_MOUSE_BUTTON : 0;
+  flags |= (state & GDK_BUTTON3_MASK) ? ui::EF_RIGHT_MOUSE_BUTTON : 0;
   return flags;
 }
 
@@ -98,11 +98,11 @@ int EventFlagsFromNative(GdkEvent* gdk_event) {
       gdk_event->type == GDK_BUTTON_RELEASE) {
     switch (gdk_event->button.button) {
       case 1:
-        return flags | ui::EF_LEFT_BUTTON_DOWN;
+        return flags | ui::EF_LEFT_MOUSE_BUTTON;
       case 2:
-        return flags | ui::EF_MIDDLE_BUTTON_DOWN;
+        return flags | ui::EF_MIDDLE_MOUSE_BUTTON;
       case 3:
-        return flags | ui::EF_RIGHT_BUTTON_DOWN;
+        return flags | ui::EF_RIGHT_MOUSE_BUTTON;
     }
   }
   return flags;

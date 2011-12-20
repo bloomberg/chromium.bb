@@ -141,7 +141,7 @@ bool AutomatedUITestBase::DragTabOut() {
   end.set_x(start.x());
   end.set_y(start.y() + 3 * urlbar_bounds.height());
 
-  if (!browser->SimulateDrag(start, end, ui::EF_LEFT_BUTTON_DOWN, false)) {
+  if (!browser->SimulateDrag(start, end, ui::EF_LEFT_MOUSE_BUTTON, false)) {
     LogWarningMessage("failed_to_simulate_drag");
     return false;
   }
@@ -209,7 +209,7 @@ bool AutomatedUITestBase::DragActiveTab(bool drag_right) {
   }
 
   if (!browser->SimulateDrag(dragged_tab_point, destination_point,
-                             ui::EF_LEFT_BUTTON_DOWN, false)) {
+                             ui::EF_LEFT_MOUSE_BUTTON, false)) {
     LogWarningMessage("failed_to_simulate_drag");
     return false;
   }

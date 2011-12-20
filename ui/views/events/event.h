@@ -194,30 +194,30 @@ class VIEWS_EXPORT MouseEvent : public LocatedEvent {
 
   // Conveniences to quickly test what button is down
   bool IsOnlyLeftMouseButton() const {
-    return (flags() & ui::EF_LEFT_BUTTON_DOWN) &&
-      !(flags() & (ui::EF_MIDDLE_BUTTON_DOWN | ui::EF_RIGHT_BUTTON_DOWN));
+    return (flags() & ui::EF_LEFT_MOUSE_BUTTON) &&
+      !(flags() & (ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON));
   }
 
   bool IsLeftMouseButton() const {
-    return (flags() & ui::EF_LEFT_BUTTON_DOWN) != 0;
+    return (flags() & ui::EF_LEFT_MOUSE_BUTTON) != 0;
   }
 
   bool IsOnlyMiddleMouseButton() const {
-    return (flags() & ui::EF_MIDDLE_BUTTON_DOWN) &&
-      !(flags() & (ui::EF_LEFT_BUTTON_DOWN | ui::EF_RIGHT_BUTTON_DOWN));
+    return (flags() & ui::EF_MIDDLE_MOUSE_BUTTON) &&
+      !(flags() & (ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON));
   }
 
   bool IsMiddleMouseButton() const {
-    return (flags() & ui::EF_MIDDLE_BUTTON_DOWN) != 0;
+    return (flags() & ui::EF_MIDDLE_MOUSE_BUTTON) != 0;
   }
 
   bool IsOnlyRightMouseButton() const {
-    return (flags() & ui::EF_RIGHT_BUTTON_DOWN) &&
-      !(flags() & (ui::EF_LEFT_BUTTON_DOWN | ui::EF_MIDDLE_BUTTON_DOWN));
+    return (flags() & ui::EF_RIGHT_MOUSE_BUTTON) &&
+      !(flags() & (ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON));
   }
 
   bool IsRightMouseButton() const {
-    return (flags() & ui::EF_RIGHT_BUTTON_DOWN) != 0;
+    return (flags() & ui::EF_RIGHT_MOUSE_BUTTON) != 0;
   }
 
  protected:

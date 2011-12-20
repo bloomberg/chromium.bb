@@ -51,9 +51,9 @@ int EventFlagsFromNSEventWithModifiers(NSEvent* event, NSUInteger modifiers) {
   flags |= (modifiers & NSControlKeyMask) ? ui::EF_CONTROL_DOWN : 0;
   flags |= (modifiers & NSAlternateKeyMask) ? ui::EF_ALT_DOWN : 0;
   flags |= (modifiers & NSCommandKeyMask) ? ui::EF_COMMAND_DOWN : 0;
-  flags |= isLeftButtonEvent(event) ? ui::EF_LEFT_BUTTON_DOWN : 0;
-  flags |= isRightButtonEvent(event) ? ui::EF_RIGHT_BUTTON_DOWN : 0;
-  flags |= isMiddleButtonEvent(event) ? ui::EF_MIDDLE_BUTTON_DOWN : 0;
+  flags |= isLeftButtonEvent(event) ? ui::EF_LEFT_MOUSE_BUTTON : 0;
+  flags |= isRightButtonEvent(event) ? ui::EF_RIGHT_MOUSE_BUTTON : 0;
+  flags |= isMiddleButtonEvent(event) ? ui::EF_MIDDLE_MOUSE_BUTTON : 0;
   return flags;
 }
 

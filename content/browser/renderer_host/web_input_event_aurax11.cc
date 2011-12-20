@@ -68,11 +68,11 @@ int EventFlagsToWebEventModifiers(int flags) {
   if (flags & ui::EF_ALT_DOWN)
     modifiers |= WebKit::WebInputEvent::AltKey;
   // TODO(beng): MetaKey/META_MASK
-  if (flags & ui::EF_LEFT_BUTTON_DOWN)
+  if (flags & ui::EF_LEFT_MOUSE_BUTTON)
     modifiers |= WebKit::WebInputEvent::LeftButtonDown;
-  if (flags & ui::EF_MIDDLE_BUTTON_DOWN)
+  if (flags & ui::EF_MIDDLE_MOUSE_BUTTON)
     modifiers |= WebKit::WebInputEvent::MiddleButtonDown;
-  if (flags & ui::EF_RIGHT_BUTTON_DOWN)
+  if (flags & ui::EF_RIGHT_MOUSE_BUTTON)
     modifiers |= WebKit::WebInputEvent::RightButtonDown;
   if (flags & ui::EF_CAPS_LOCK_DOWN)
     modifiers |= WebKit::WebInputEvent::CapsLockOn;
@@ -216,11 +216,11 @@ WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(aura::MouseEvent* event) {
   webkit_event.timeStampSeconds = event->time_stamp().ToDoubleT();
 
   webkit_event.button = WebKit::WebMouseEvent::ButtonNone;
-  if (event->flags() & ui::EF_LEFT_BUTTON_DOWN)
+  if (event->flags() & ui::EF_LEFT_MOUSE_BUTTON)
     webkit_event.button = WebKit::WebMouseEvent::ButtonLeft;
-  if (event->flags() & ui::EF_MIDDLE_BUTTON_DOWN)
+  if (event->flags() & ui::EF_MIDDLE_MOUSE_BUTTON)
     webkit_event.button = WebKit::WebMouseEvent::ButtonMiddle;
-  if (event->flags() & ui::EF_RIGHT_BUTTON_DOWN)
+  if (event->flags() & ui::EF_RIGHT_MOUSE_BUTTON)
     webkit_event.button = WebKit::WebMouseEvent::ButtonRight;
 
   switch (event->type()) {

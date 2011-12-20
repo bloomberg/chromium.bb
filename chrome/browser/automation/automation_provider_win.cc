@@ -96,17 +96,17 @@ void AutomationProvider::WindowSimulateDrag(
       wparam_flags |= MK_SHIFT;
     if (flags & ui::EF_CONTROL_DOWN)
       wparam_flags |= MK_CONTROL;
-    if (flags & ui::EF_LEFT_BUTTON_DOWN) {
+    if (flags & ui::EF_LEFT_MOUSE_BUTTON) {
       wparam_flags |= MK_LBUTTON;
       down_message = WM_LBUTTONDOWN;
       up_message = WM_LBUTTONUP;
     }
-    if (flags & ui::EF_MIDDLE_BUTTON_DOWN) {
+    if (flags & ui::EF_MIDDLE_MOUSE_BUTTON) {
       wparam_flags |= MK_MBUTTON;
       down_message = WM_MBUTTONDOWN;
       up_message = WM_MBUTTONUP;
     }
-    if (flags & ui::EF_RIGHT_BUTTON_DOWN) {
+    if (flags & ui::EF_RIGHT_MOUSE_BUTTON) {
       wparam_flags |= MK_RBUTTON;
       down_message = WM_LBUTTONDOWN;
       up_message = WM_LBUTTONUP;

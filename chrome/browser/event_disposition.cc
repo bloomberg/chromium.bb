@@ -10,7 +10,7 @@ namespace browser {
 
 WindowOpenDisposition DispositionFromEventFlags(int event_flags) {
   return disposition_utils::DispositionFromClick(
-      (event_flags & ui::EF_MIDDLE_BUTTON_DOWN) != 0,
+      (event_flags & ui::EF_MIDDLE_MOUSE_BUTTON) != 0,
       (event_flags & ui::EF_ALT_DOWN) != 0,
       (event_flags & ui::EF_CONTROL_DOWN) != 0,
       (event_flags & ui::EF_COMMAND_DOWN) != 0,

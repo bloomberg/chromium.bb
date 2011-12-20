@@ -82,7 +82,7 @@ class AutorepeatButton : public ImageButton {
 #endif
     views::MouseEvent event(ui::ET_MOUSE_RELEASED,
                             cursor_point.x(), cursor_point.y(),
-                            ui::EF_LEFT_BUTTON_DOWN);
+                            ui::EF_LEFT_MOUSE_BUTTON);
     Button::NotifyClick(event);
   }
 

@@ -199,7 +199,7 @@ TEST_F(AutomationProxyVisibleTest, MAYBE_WindowGetViewBounds) {
     start.y = bounds.y() + bounds.height() / 2;
     end.x = start.x + 2 * bounds.width() / 3;
     end.y = start.y;
-    ASSERT_TRUE(browser->SimulateDrag(start, end, ui::EF_LEFT_BUTTON_DOWN));
+    ASSERT_TRUE(browser->SimulateDrag(start, end, ui::EF_LEFT_MOUSE_BUTTON));
 
     // Check to see that the drag event successfully swapped the two tabs.
     tab1 = browser->GetTab(0);

@@ -41,9 +41,9 @@ int EventFlagsFromIBusState(guint32 state) {
          (state & IBUS_CONTROL_MASK ? ui::EF_CONTROL_DOWN : 0) |
          (state & IBUS_SHIFT_MASK ? ui::EF_SHIFT_DOWN : 0) |
          (state & IBUS_MOD1_MASK ? ui::EF_ALT_DOWN : 0) |
-         (state & IBUS_BUTTON1_MASK ? ui::EF_LEFT_BUTTON_DOWN : 0) |
-         (state & IBUS_BUTTON2_MASK ? ui::EF_MIDDLE_BUTTON_DOWN : 0) |
-         (state & IBUS_BUTTON3_MASK ? ui::EF_RIGHT_BUTTON_DOWN : 0);
+         (state & IBUS_BUTTON1_MASK ? ui::EF_LEFT_MOUSE_BUTTON : 0) |
+         (state & IBUS_BUTTON2_MASK ? ui::EF_MIDDLE_MOUSE_BUTTON : 0) |
+         (state & IBUS_BUTTON3_MASK ? ui::EF_RIGHT_MOUSE_BUTTON : 0);
 }
 
 // Converts X flags to ibus key state flags.

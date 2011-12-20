@@ -48,9 +48,9 @@ int EventFlagsFromIBusState(guint32 state) {
          (state & IBUS_CONTROL_MASK ? ui::EF_CONTROL_DOWN : 0) |
          (state & IBUS_SHIFT_MASK ? ui::EF_SHIFT_DOWN : 0) |
          (state & IBUS_MOD1_MASK ? ui::EF_ALT_DOWN : 0) |
-         (state & IBUS_BUTTON1_MASK ? ui::EF_LEFT_BUTTON_DOWN : 0) |
-         (state & IBUS_BUTTON2_MASK ? ui::EF_MIDDLE_BUTTON_DOWN : 0) |
-         (state & IBUS_BUTTON3_MASK ? ui::EF_RIGHT_BUTTON_DOWN : 0);
+         (state & IBUS_BUTTON1_MASK ? ui::EF_LEFT_MOUSE_BUTTON : 0) |
+         (state & IBUS_BUTTON2_MASK ? ui::EF_MIDDLE_MOUSE_BUTTON : 0) |
+         (state & IBUS_BUTTON3_MASK ? ui::EF_RIGHT_MOUSE_BUTTON : 0);
 }
 
 // Converts event flags to ibus key state flags.
@@ -59,9 +59,9 @@ guint32 IBusStateFromEventFlags(int flags) {
          (flags & ui::EF_CONTROL_DOWN ? IBUS_CONTROL_MASK : 0) |
          (flags & ui::EF_SHIFT_DOWN ? IBUS_SHIFT_MASK : 0) |
          (flags & ui::EF_ALT_DOWN ? IBUS_MOD1_MASK : 0) |
-         (flags & ui::EF_LEFT_BUTTON_DOWN ? IBUS_BUTTON1_MASK : 0) |
-         (flags & ui::EF_MIDDLE_BUTTON_DOWN ? IBUS_BUTTON2_MASK : 0) |
-         (flags & ui::EF_RIGHT_BUTTON_DOWN ? IBUS_BUTTON3_MASK : 0);
+         (flags & ui::EF_LEFT_MOUSE_BUTTON ? IBUS_BUTTON1_MASK : 0) |
+         (flags & ui::EF_MIDDLE_MOUSE_BUTTON ? IBUS_BUTTON2_MASK : 0) |
+         (flags & ui::EF_RIGHT_MOUSE_BUTTON ? IBUS_BUTTON3_MASK : 0);
 }
 
 void IBusKeyEventFromViewsKeyEvent(const views::KeyEvent& key,

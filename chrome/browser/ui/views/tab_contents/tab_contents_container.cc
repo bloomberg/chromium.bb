@@ -105,9 +105,9 @@ void TabContentsContainer::GetAccessibleState(ui::AccessibleViewState* state) {
 #if defined(HAVE_XINPUT2)
 bool TabContentsContainer::OnMousePressed(const views::MouseEvent& event) {
   DCHECK(tab_contents_);
-  if (event.flags() & (ui::EF_LEFT_BUTTON_DOWN |
-                       ui::EF_RIGHT_BUTTON_DOWN |
-                       ui::EF_MIDDLE_BUTTON_DOWN)) {
+  if (event.flags() & (ui::EF_LEFT_MOUSE_BUTTON |
+                       ui::EF_RIGHT_MOUSE_BUTTON |
+                       ui::EF_MIDDLE_MOUSE_BUTTON)) {
     return false;
   }
   // It is necessary to look at the native event to determine what special

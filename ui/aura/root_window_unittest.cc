@@ -75,7 +75,7 @@ TEST_F(RootWindowTest, DispatchMouseEvent) {
 
   // Send a mouse event to window1.
   gfx::Point point(101, 201);
-  MouseEvent event1(ui::ET_MOUSE_PRESSED, point, ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent event1(ui::ET_MOUSE_PRESSED, point, ui::EF_LEFT_MOUSE_BUTTON);
   RootWindow::GetInstance()->DispatchMouseEvent(&event1);
 
   // Event was tested for non-client area for the target window.
@@ -105,7 +105,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
   event.reset(new MouseEvent(
       ui::ET_MOUSE_PRESSED,
       location,
-      ui::EF_LEFT_BUTTON_DOWN));
+      ui::EF_LEFT_MOUSE_BUTTON));
   root_window->DispatchMouseEvent(event.get());
   EXPECT_TRUE(root_window->IsMouseButtonDown());
 
@@ -113,7 +113,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
   event.reset(new MouseEvent(
       ui::ET_MOUSE_PRESSED,
       location,
-      ui::EF_LEFT_BUTTON_DOWN | ui::EF_RIGHT_BUTTON_DOWN));
+      ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON));
   root_window->DispatchMouseEvent(event.get());
   EXPECT_TRUE(root_window->IsMouseButtonDown());
 
@@ -121,7 +121,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
   event.reset(new MouseEvent(
       ui::ET_MOUSE_RELEASED,
       location,
-      ui::EF_RIGHT_BUTTON_DOWN));
+      ui::EF_RIGHT_MOUSE_BUTTON));
   root_window->DispatchMouseEvent(event.get());
   EXPECT_TRUE(root_window->IsMouseButtonDown());
 
@@ -137,7 +137,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
   event.reset(new MouseEvent(
       ui::ET_MOUSE_PRESSED,
       location,
-      ui::EF_MIDDLE_BUTTON_DOWN));
+      ui::EF_MIDDLE_MOUSE_BUTTON));
   root_window->DispatchMouseEvent(event.get());
   EXPECT_TRUE(root_window->IsMouseButtonDown());
 }

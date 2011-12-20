@@ -45,11 +45,11 @@ int GetEventFlagsFromState(unsigned int state) {
   if (state & LockMask)
     flags |= ui::EF_CAPS_LOCK_DOWN;
   if (state & Button1Mask)
-    flags |= ui::EF_LEFT_BUTTON_DOWN;
+    flags |= ui::EF_LEFT_MOUSE_BUTTON;
   if (state & Button2Mask)
-    flags |= ui::EF_MIDDLE_BUTTON_DOWN;
+    flags |= ui::EF_MIDDLE_MOUSE_BUTTON;
   if (state & Button3Mask)
-    flags |= ui::EF_RIGHT_BUTTON_DOWN;
+    flags |= ui::EF_RIGHT_MOUSE_BUTTON;
 
   return flags;
 }
@@ -59,11 +59,11 @@ int GetButtonEventFlagsFromNativeEvent(const base::NativeEvent& native_event) {
   int flags = 0;
   switch (native_event->button.button) {
     case ui::LEFT_BUTTON:
-      return flags | ui::EF_LEFT_BUTTON_DOWN;
+      return flags | ui::EF_LEFT_MOUSE_BUTTON;
     case ui::MIDDLE_BUTTON:
-      return flags | ui::EF_MIDDLE_BUTTON_DOWN;
+      return flags | ui::EF_MIDDLE_MOUSE_BUTTON;
     case ui::RIGHT_BUTTON:
-      return flags | ui::EF_RIGHT_BUTTON_DOWN;
+      return flags | ui::EF_RIGHT_MOUSE_BUTTON;
   }
   return flags;
 }

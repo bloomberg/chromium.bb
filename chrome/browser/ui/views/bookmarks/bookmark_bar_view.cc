@@ -207,8 +207,8 @@ class BookmarkFolderButton : public views::MenuButton {
   virtual bool IsTriggerableEvent(const views::MouseEvent& e) OVERRIDE {
     // Left clicks should show the menu contents and right clicks should show
     // the context menu. They should not trigger the opening of underlying urls.
-    if (e.flags() == ui::EF_LEFT_BUTTON_DOWN ||
-        e.flags() == ui::EF_RIGHT_BUTTON_DOWN)
+    if (e.flags() == ui::EF_LEFT_MOUSE_BUTTON ||
+        e.flags() == ui::EF_RIGHT_MOUSE_BUTTON)
       return false;
 
     WindowOpenDisposition disposition(

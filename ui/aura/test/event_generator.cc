@@ -38,16 +38,16 @@ EventGenerator::~EventGenerator() {
 }
 
 void EventGenerator::PressLeftButton() {
-  if ((flags_ & ui::EF_LEFT_BUTTON_DOWN) == 0) {
-    flags_ |= ui::EF_LEFT_BUTTON_DOWN;
+  if ((flags_ & ui::EF_LEFT_MOUSE_BUTTON) == 0) {
+    flags_ |= ui::EF_LEFT_MOUSE_BUTTON;
     MouseEvent mouseev(ui::ET_MOUSE_PRESSED, current_location_, flags_);
     Dispatch(mouseev);
   }
 }
 
 void EventGenerator::ReleaseLeftButton() {
-  if (flags_ & ui::EF_LEFT_BUTTON_DOWN) {
-    flags_ ^= ui::EF_LEFT_BUTTON_DOWN;
+  if (flags_ & ui::EF_LEFT_MOUSE_BUTTON) {
+    flags_ ^= ui::EF_LEFT_MOUSE_BUTTON;
     MouseEvent mouseev(ui::ET_MOUSE_RELEASED, current_location_, 0);
     Dispatch(mouseev);
   }
@@ -66,7 +66,7 @@ void EventGenerator::DoubleClickLeftButton() {
 }
 
 void EventGenerator::MoveMouseTo(const gfx::Point& point) {
-  if (flags_ & ui::EF_LEFT_BUTTON_DOWN ) {
+  if (flags_ & ui::EF_LEFT_MOUSE_BUTTON ) {
     MouseEvent middle(
         ui::ET_MOUSE_DRAGGED, current_location_.Middle(point), flags_);
     Dispatch(middle);

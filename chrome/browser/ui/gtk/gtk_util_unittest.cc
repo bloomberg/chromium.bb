@@ -23,9 +23,9 @@ static const int flags[] = {
   ui::EF_CONTROL_DOWN,
   ui::EF_SHIFT_DOWN,
   ui::EF_ALT_DOWN,
-  ui::EF_LEFT_BUTTON_DOWN,
-  ui::EF_MIDDLE_BUTTON_DOWN,
-  ui::EF_RIGHT_BUTTON_DOWN
+  ui::EF_LEFT_MOUSE_BUTTON,
+  ui::EF_MIDDLE_MOUSE_BUTTON,
+  ui::EF_RIGHT_MOUSE_BUTTON
 };
 
 TEST(GTKUtilTest, TestEventFlagsFromGdkState) {

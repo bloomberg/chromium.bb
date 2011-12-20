@@ -253,7 +253,7 @@ CustomButton::CustomButton(ButtonListener* listener)
       state_(BS_NORMAL),
       animate_on_state_change_(true),
       is_throbbing_(false),
-      triggerable_event_flags_(ui::EF_LEFT_BUTTON_DOWN),
+      triggerable_event_flags_(ui::EF_LEFT_MOUSE_BUTTON),
       request_focus_on_press_(true) {
   hover_animation_.reset(new ui::ThrobAnimation(this));
   hover_animation_->SetSlideDuration(kHoverFadeDurationMs);

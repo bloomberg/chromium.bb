@@ -344,7 +344,7 @@ TEST_F(ViewTest, MouseEvent) {
   MouseEvent pressed(ui::ET_MOUSE_PRESSED,
                      110,
                      120,
-                     ui::EF_LEFT_BUTTON_DOWN);
+                     ui::EF_LEFT_MOUSE_BUTTON);
   root->OnMousePressed(pressed);
   EXPECT_EQ(v2->last_mouse_event_type_, ui::ET_MOUSE_PRESSED);
   EXPECT_EQ(v2->location_.x(), 10);
@@ -358,7 +358,7 @@ TEST_F(ViewTest, MouseEvent) {
   MouseEvent dragged(ui::ET_MOUSE_DRAGGED,
                      50,
                      40,
-                     ui::EF_LEFT_BUTTON_DOWN);
+                     ui::EF_LEFT_MOUSE_BUTTON);
   root->OnMouseDragged(dragged);
   EXPECT_EQ(v2->last_mouse_event_type_, ui::ET_MOUSE_DRAGGED);
   EXPECT_EQ(v2->location_.x(), -50);
@@ -1485,9 +1485,9 @@ class ButtonDropDownTest : public ViewTest {
 // Ensure that regular clicks on the drop down button still work. (i.e. - the
 // click events are processed and the listener gets the click)
 TEST_F(ButtonDropDownTest, RegularClickTest) {
-  MouseEvent press_event(ui::ET_MOUSE_PRESSED, 1, 1, ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent press_event(ui::ET_MOUSE_PRESSED, 1, 1, ui::EF_LEFT_MOUSE_BUTTON);
   MouseEvent release_event(ui::ET_MOUSE_RELEASED, 1, 1,
-                           ui::EF_LEFT_BUTTON_DOWN);
+                           ui::EF_LEFT_MOUSE_BUTTON);
   button_as_view_->OnMousePressed(press_event);
   button_as_view_->OnMouseReleased(release_event);
   EXPECT_EQ(test_dialog_->last_pressed_button_, test_dialog_->button_drop_);
@@ -1745,7 +1745,7 @@ TEST_F(ViewTest, TransformEvent) {
 
   MouseEvent pressed(ui::ET_MOUSE_PRESSED,
                      110, 210,
-                     ui::EF_LEFT_BUTTON_DOWN);
+                     ui::EF_LEFT_MOUSE_BUTTON);
   root->OnMousePressed(pressed);
   EXPECT_EQ(0, v1->last_mouse_event_type_);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, v2->last_mouse_event_type_);
@@ -1769,7 +1769,7 @@ TEST_F(ViewTest, TransformEvent) {
 
   MouseEvent p2(ui::ET_MOUSE_PRESSED,
                 110, 320,
-                ui::EF_LEFT_BUTTON_DOWN);
+                ui::EF_LEFT_MOUSE_BUTTON);
   root->OnMousePressed(p2);
   EXPECT_EQ(0, v1->last_mouse_event_type_);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, v2->last_mouse_event_type_);
@@ -1804,7 +1804,7 @@ TEST_F(ViewTest, TransformEvent) {
 
   MouseEvent p3(ui::ET_MOUSE_PRESSED,
                 112, 110,
-                ui::EF_LEFT_BUTTON_DOWN);
+                ui::EF_LEFT_MOUSE_BUTTON);
   root->OnMousePressed(p3);
 
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, v3->last_mouse_event_type_);
@@ -1840,7 +1840,7 @@ TEST_F(ViewTest, TransformEvent) {
 
   MouseEvent p4(ui::ET_MOUSE_PRESSED,
                 124, 125,
-                ui::EF_LEFT_BUTTON_DOWN);
+                ui::EF_LEFT_MOUSE_BUTTON);
   root->OnMousePressed(p4);
 
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, v3->last_mouse_event_type_);

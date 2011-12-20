@@ -122,9 +122,9 @@ void RootWindow::Draw() {
 
 bool RootWindow::DispatchMouseEvent(MouseEvent* event) {
   static const int kMouseButtonFlagMask =
-      ui::EF_LEFT_BUTTON_DOWN |
-      ui::EF_MIDDLE_BUTTON_DOWN |
-      ui::EF_RIGHT_BUTTON_DOWN;
+      ui::EF_LEFT_MOUSE_BUTTON |
+      ui::EF_MIDDLE_MOUSE_BUTTON |
+      ui::EF_RIGHT_MOUSE_BUTTON;
 
   event->UpdateForTransform(layer()->transform());
 
