@@ -86,20 +86,17 @@ PP_Bool DrawGlyphs(PP_Instance,
                                  static_cast<SkTypeface::Style>(style));
   if (!typeface)
     return PP_FALSE;
+  SkAutoUnref aur(typeface);
 
   // Set up the canvas.
   SkCanvas* canvas = image_resource->mapped_canvas();
-  canvas->save();
+  SkAutoCanvasRestore acr(canvas, true);
 
   // Clip is applied in pixels before the transform.
   SkRect clip_rect = { clip->point.x, clip->point.y,
                        clip->point.x + clip->size.width,
                        clip->point.y + clip->size.height };
   canvas->clipRect(clip_rect);
-
-  // -- Do not return early below this. The canvas needs restoring and the
-  // typeface will leak if it's not assigned to the paint (it's refcounted and
-  // the refcount is currently 0).
 
   // Convert & set the matrix.
   SkMatrix matrix;
@@ -143,7 +140,6 @@ PP_Bool DrawGlyphs(PP_Instance,
 
   canvas->drawPosText(glyph_indices, glyph_count * 2, sk_positions, paint);
 
-  canvas->restore();
   return PP_TRUE;
 }
 
