@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/public/browser/notification_registrar.h"
 
 namespace chromeos {
 
@@ -288,8 +287,6 @@ class ProxyConfigServiceImpl
 
   // Track changes in UseSharedProxies user preference.
   BooleanPrefMember use_shared_proxies_;
-
-  content::NotificationRegistrar registrar_;
 
   // Callbacks for notification when network to be viewed has been changed from
   // the UI.

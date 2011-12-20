@@ -357,11 +357,6 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* pref_service)
       active_config_state_(ProxyPrefs::CONFIG_UNSET),
       pointer_factory_(this) {
 
-  // Register for notification when user logs in, so that we can activate the
-  // new proxy config.
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-                 content::NotificationService::AllSources());
-
   // Register for notifications of UseSharedProxies user preference.
   if (pref_service->FindPreference(prefs::kUseSharedProxies))
     use_shared_proxies_.Init(prefs::kUseSharedProxies, pref_service, this);
@@ -575,17 +570,6 @@ void ProxyConfigServiceImpl::Observe(
     }
     return;
   }
-  if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
-    VLOG(1) << this << ": login user changed";
-    // If active network is the same, its proxy config and/or UseSharedProxies
-    // pref for this user could be different from that in login screen;
-    // determine effective config and activate it if different.
-    const Network* active_network =
-        CrosLibrary::Get()->GetNetworkLibrary()->active_network();
-    if (active_network && active_network_ == active_network->service_path())
-      DetermineEffectiveConfig(active_network, true);
-    return;
-  }
   PrefProxyConfigTrackerImpl::Observe(type, source, details);
 }
 
@@ -613,9 +597,16 @@ void ProxyConfigServiceImpl::OnActiveNetworkChanged(NetworkLibrary* network_lib,
                     << (new_network.empty() ? "empty" :
                         (active_network->name().empty() ?
                          new_network : active_network->name()));
-    // If last proxy update to network stack wasn't completed, do it now.
-    if (active_network && update_pending())
+    // Even though network is the same, its proxy config (e.g. if private
+    // version of network replaces the shared version after login), or
+    // use-shared-proxies setting (e.g. after login) may have changed,
+    // so re-determine effective proxy config, and activate if different.
+    if (active_network) {
+      VLOG(1) << this << ": profile=" << active_network->profile_type()
+                      << "," << active_network->profile_path()
+                      << ", proxy=" << active_network->proxy_config();
       DetermineEffectiveConfig(active_network, true);
+    }
     return;
   }
 
@@ -634,7 +625,8 @@ void ProxyConfigServiceImpl::OnActiveNetworkChanged(NetworkLibrary* network_lib,
   VLOG(1) << this << ": new active network: path="
                   << active_network->service_path()
                   << ", name=" << active_network->name()
-                  << ", profile=" << active_network->profile_path()
+                  << ", profile=" << active_network->profile_type()
+                  << "," << active_network->profile_path()
                   << ", proxy=" << active_network->proxy_config();
 
   // Register observer for new network.
@@ -800,7 +792,7 @@ void ProxyConfigServiceImpl::FetchProxyPolicy() {
     return;
   }
 
-  VLOG(1) << "Retrieved proxy setting from device, value=["
+  VLOG(1) << this << ": Retrieved proxy setting from device, value=["
           << policy_value << "]";
   ProxyConfig device_config;
   if (!device_config.DeserializeForDevice(policy_value) ||
