@@ -42,7 +42,7 @@ const int kShortcutIconSize = 48;
 // Creates the argument to pass to the Windows executable that launches Chrome
 // with the profile in |profile_base_dir|.
 // For example: --profile-directory="Profile 2"
-string16 CreateProfileShortcutSwitch(string16 profile_base_dir) {
+string16 CreateProfileShortcutSwitch(const string16& profile_base_dir) {
   string16 profile_directory = base::StringPrintf(L"--%ls=\"%ls\"",
       ASCIIToUTF16(switches::kProfileDirectory).c_str(),
       profile_base_dir.c_str());
