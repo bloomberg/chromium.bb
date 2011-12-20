@@ -412,7 +412,9 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // Callback to handle mount event signals.
-  void OnMountEvent(MountEventType event, std::string device_path) {
+  void OnMountEvent(MountEventType event, const std::string& device_path_arg) {
+    // Take a copy of the argument so we can modify it below.
+    std::string device_path = device_path_arg;
     DiskMountManagerEventType type = MOUNT_DEVICE_ADDED;
     switch (event) {
       case DISK_ADDED: {

@@ -321,8 +321,7 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
     phase_ = PHASE_HANDSHAKE;
     net::CompletionCallback cb;
     if (callback) {
-      cb = base::Bind(&net::OldCompletionCallback::Run<int>,
-                      base::Unretained(callback));
+      cb = base::Bind(&net::OldCompletionCallbackAdapter, callback);
     }
     pending_reqs_.push_front(PendingReq(
         PendingReq::TYPE_READ_METADATA, fill_handshake_buf_.get(),

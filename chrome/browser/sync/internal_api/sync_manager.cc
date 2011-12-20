@@ -376,7 +376,7 @@ class SyncManager::SyncInternal
   typedef std::map<syncable::ModelType, NotificationInfo> NotificationInfoMap;
   typedef JsArgList
       (SyncManager::SyncInternal::*UnboundJsMessageHandler)(const JsArgList&);
-  typedef base::Callback<JsArgList(JsArgList)> JsMessageHandler;
+  typedef base::Callback<JsArgList(const JsArgList&)> JsMessageHandler;
   typedef std::map<std::string, JsMessageHandler> JsMessageHandlerMap;
 
   // Helper to call OnAuthError when no authentication credentials are

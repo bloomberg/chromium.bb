@@ -15,7 +15,7 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/process_proxy/process_proxy.h"
 
-typedef base::Callback<void(pid_t, std::string, std::string)>
+typedef base::Callback<void(pid_t, const std::string&, const std::string&)>
       ProcessOutputCallbackWithPid;
 
 // Keeps track of all created ProcessProxies. It is created lazily and should
@@ -71,4 +71,3 @@ class ProcessProxyRegistry {
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_REGISTRY_H_
-

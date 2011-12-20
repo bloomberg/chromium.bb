@@ -21,7 +21,7 @@ enum ProcessOutputType {
   PROCESS_OUTPUT_TYPE_ERR
 };
 
-typedef base::Callback<void(ProcessOutputType, std::string)>
+typedef base::Callback<void(ProcessOutputType, const std::string&)>
       ProcessOutputCallback;
 
 // This class should live on its own thread because running class makes

@@ -96,7 +96,7 @@ bool ProcessProxy::StartWatchingOnThread(base::Thread* watch_thread,
 }
 
 void ProcessProxy::OnProcessOutput(ProcessOutputType type,
-                               const std::string& output) {
+                                   const std::string& output) {
   // We have to check if callback is set on FILE thread..
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE)) {
     content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,

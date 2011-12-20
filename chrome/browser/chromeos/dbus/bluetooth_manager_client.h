@@ -45,7 +45,8 @@ class BluetoothManagerClient {
   // The DefaultAdapterCallback receives two arguments:
   // std::string adapter - the unique identifier of the default adapter
   // bool success - whether or not the request succeeded
-  typedef base::Callback<void(std::string, bool)> DefaultAdapterCallback;
+  typedef base::Callback<void(const std::string&, bool)>
+      DefaultAdapterCallback;
 
   // Retrieves the dbus object path for the default adapter.
   // The default adapter is the preferred local bluetooth interface when a
