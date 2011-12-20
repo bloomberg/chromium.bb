@@ -122,7 +122,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
     // The pending RVH should commit for cross-site navigations.
     RenderViewHost* rvh = is_cross_site ?
         contents()->pending_rvh() :
-        contents()->render_view_host();
+        contents()->GetRenderViewHost();
     contents()->TestDidNavigate(rvh, entry->page_id(), GURL(entry->url()),
                                 content::PAGE_TRANSITION_TYPED);
   }
