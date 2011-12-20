@@ -74,6 +74,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 + (CGFloat)appTabWidth { return 66; }
 
 - (TabView*)tabView {
+  DCHECK([[self view] isKindOfClass:[TabView class]]);
   return static_cast<TabView*>([self view]);
 }
 
@@ -211,7 +212,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 }
 
 - (NSString*)toolTip {
-  return [[self view] toolTip];
+  return [[self tabView] toolTipText];
 }
 
 // Return a rough approximation of the number of icons we could fit in the

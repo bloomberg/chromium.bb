@@ -12,10 +12,13 @@
 
 namespace {
 
+const float kTabWidth = 50;
+const float kTabHeight = 30;
+
 class TabViewTest : public CocoaTest {
  public:
   TabViewTest() {
-    NSRect frame = NSMakeRect(0, 0, 50, 30);
+    NSRect frame = NSMakeRect(0, 0, kTabWidth, kTabHeight);
     scoped_nsobject<TabView> view([[TabView alloc] initWithFrame:frame]);
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];
@@ -55,6 +58,18 @@ TEST_F(TabViewTest, Glow) {
   [view_ startAlert];
   [view_ cancelAlert];
   [view_ cancelAlert];
+}
+
+// Test that clicks outside of the visible boundaries are ignored.
+TEST_F(TabViewTest, ClickOnlyInVisibleBounds) {
+  NSPoint bottomLeftCorner = NSMakePoint(0, 0);
+  EXPECT_TRUE([view_ hitTest:bottomLeftCorner]);
+
+  NSPoint topLeftCorner = NSMakePoint(0, kTabHeight);
+  EXPECT_FALSE([view_ hitTest:topLeftCorner]);
+
+  NSPoint middle = NSMakePoint(kTabWidth / 2, kTabHeight / 2);
+  EXPECT_TRUE([view_ hitTest:middle]);
 }
 
 }  // namespace

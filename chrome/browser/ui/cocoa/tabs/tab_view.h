@@ -65,6 +65,9 @@ enum AlertState {
   NSPoint mouseDownPoint_;
 
   NSCellStateValue state_;
+
+  // The tool tip text for this tab view.
+  scoped_nsobject<NSString> toolTipText_;
 }
 
 @property(assign, nonatomic) NSCellStateValue state;
@@ -77,6 +80,10 @@ enum AlertState {
 // clicks inside it from sending messages.
 @property(assign, nonatomic, getter=isClosing) BOOL closing;
 
+
+// Returns the inset multiplier used to compute the inset of the top of the tab.
++ (CGFloat)insetMultiplier;
+
 // Enables/Disables tracking regions for the tab.
 - (void)setTrackingEnabled:(BOOL)enabled;
 
@@ -87,6 +94,9 @@ enum AlertState {
 // Stop showing the "alert" glow; this won't immediately wipe out any glow, but
 // will make it fade away.
 - (void)cancelAlert;
+
+// Returns the tool tip text for this tab view.
+- (NSString*)toolTipText;
 
 @end
 

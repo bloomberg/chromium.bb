@@ -60,6 +60,10 @@ const CGFloat kRapidCloseDist = 2.5;
 @synthesize alertAlpha = alertAlpha_;
 @synthesize closing = closing_;
 
++ (CGFloat)insetMultiplier {
+  return kInsetMultiplier;
+}
+
 - (id)initWithFrame:(NSRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
@@ -131,17 +135,12 @@ const CGFloat kRapidCloseDist = 2.5;
 // view or our child close button.
 - (NSView*)hitTest:(NSPoint)aPoint {
   NSPoint viewPoint = [self convertPoint:aPoint fromView:[self superview]];
-  NSRect frame = [self frame];
+  NSRect rect = [self bounds];
+  NSBezierPath* path = [self bezierPathForRect:rect];
 
-  // Reduce the width of the hit rect slightly to remove the overlap
-  // between adjacent tabs.  The drawing code in TabCell has the top
-  // corners of the tab inset by height*2/3, so we inset by half of
-  // that here.  This doesn't completely eliminate the overlap, but it
-  // works well enough.
-  NSRect hitRect = NSInsetRect(frame, frame.size.height / 3.0f, 0);
   if (![closeButton_ isHidden])
     if (NSPointInRect(viewPoint, [closeButton_ frame])) return closeButton_;
-  if (NSPointInRect(aPoint, hitRect)) return self;
+  if ([path containsPoint:viewPoint]) return self;
   return nil;
 }
 
@@ -404,6 +403,18 @@ const CGFloat kRapidCloseDist = 2.5;
     [highlightColor set];
     NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
   }
+}
+
+// Override this to catch the text so that we can choose when to display it.
+- (void)setToolTip:(NSString*)string {
+  toolTipText_.reset([string retain]);
+}
+
+- (NSString*)toolTipText {
+  if (!toolTipText_.get()) {
+    return @"";
+  }
+  return toolTipText_.get();
 }
 
 - (void)viewDidMoveToWindow {
