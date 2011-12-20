@@ -664,6 +664,7 @@ fade_output(struct wlsc_output *output,
 	surface.height = output->current->height;
 	surface.texture = GL_NONE;
 	surface.transform = NULL;
+	surface.alpha = compositor->current_alpha;
 
 	if (tint <= 1.0)
 		surface.visual = WLSC_PREMUL_ARGB_VISUAL;
