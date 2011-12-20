@@ -4,6 +4,8 @@
 
 #include "content/browser/resolve_proxy_msg_helper.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "content/common/view_messages.h"
 #include "net/base/net_errors.h"
@@ -12,16 +14,12 @@
 
 ResolveProxyMsgHelper::ResolveProxyMsgHelper(
     net::URLRequestContextGetter* getter)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-          this, &ResolveProxyMsgHelper::OnResolveProxyCompleted)),
-      context_getter_(getter),
+    : context_getter_(getter),
       proxy_service_(NULL) {
 }
 
 ResolveProxyMsgHelper::ResolveProxyMsgHelper(net::ProxyService* proxy_service)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-          this, &ResolveProxyMsgHelper::OnResolveProxyCompleted)),
-      proxy_service_(proxy_service) {
+    : proxy_service_(proxy_service) {
 }
 
 bool ResolveProxyMsgHelper::OnMessageReceived(const IPC::Message& message,
@@ -73,7 +71,10 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
 
   // Start the request.
   int result = proxy_service_->ResolveProxy(
-      req.url, &proxy_info_, &callback_, &req.pac_req, net::BoundNetLog());
+      req.url, &proxy_info_,
+      base::Bind(&ResolveProxyMsgHelper::OnResolveProxyCompleted,
+                 base::Unretained(this)),
+      &req.pac_req, net::BoundNetLog());
 
   // Completed synchronously.
   if (result != net::ERR_IO_PENDING)

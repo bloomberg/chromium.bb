@@ -70,8 +70,7 @@ class CONTENT_EXPORT ResolveProxyMsgHelper
      net::ProxyService::PacRequest* pac_req;
   };
 
-  // Members for the current outstanding proxy request.
-  net::OldCompletionCallbackImpl<ResolveProxyMsgHelper> callback_;
+  // Info about the current outstanding proxy request.
   net::ProxyInfo proxy_info_;
 
   // FIFO queue of pending requests. The first entry is always the current one.
