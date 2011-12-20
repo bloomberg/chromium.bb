@@ -44,6 +44,7 @@ ChromeWebUIDataSource* CreateFlagsUIHTMLSource() {
                              IDS_FLAGS_NO_EXPERIMENTS_AVAILABLE);
   source->AddLocalizedString("flagsWarningHeader", IDS_FLAGS_WARNING_HEADER);
   source->AddLocalizedString("flagsBlurb", IDS_FLAGS_WARNING_TEXT);
+  source->AddLocalizedString("flagsNotSupported", IDS_FLAGS_NOT_AVAILABLE);
 #if defined(OS_CHROMEOS)
   int ids = IDS_PRODUCT_OS_NAME;
 #else

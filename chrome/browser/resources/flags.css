@@ -100,13 +100,16 @@ div.content {
   -webkit-padding-end: 5px;
 }
 
-/* Disabled experiments display grey text on a grey background.  The title,
-   however, should remain completely legible. */
+/* Disabled and unsupported experiments display grey text on a grey background.
+   The title, however, should remain legible. */
+
+.experiment-unsupported > td,
 .experiment-disabled > td {
   background: #F0F0F0;
   color: #A0A0A0;
 }
 
+.experiment-unsupported .experiment-name,
 .experiment-disabled .experiment-name {
   color: #000;
 }

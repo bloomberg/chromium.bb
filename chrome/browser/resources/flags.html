@@ -46,16 +46,19 @@
         <table width="100%" cellpadding="2" cellspacing="0">
         <!-- TODO(mkwst): This doesn't work exactly as expected for multivalue
                           experiments.  See http://crbug.com/73730 -->
-        <tr jsvalues="class:enabled ? 'experiment-enabled' : 'experiment-disabled'">
+        <tr jsvalues="class: supported ?
+                      (enabled ? 'experiment-enabled' : 'experiment-disabled') :
+                      'experiment-unsupported'">
         <td valign="top">
           <div class="experiment-text">
             <div>
               <span class="experiment-name"
                     jscontent="name">NAME</span>
+              <span jscontent="supported_platforms.join(', ')"></span>
               <div>
                 <span jsvalues=".innerHTML:description">
               </div>
-              <div jsdisplay="choices && choices.length > 0">
+              <div jsdisplay="supported && choices && choices.length > 0">
                 <select
                   class="experiment-select"
                   jsvalues=".internal_name:internal_name;.disabled:!enabled">
@@ -68,6 +71,7 @@
             </div>
           </div>
           <div class="experiment-actions">
+            <div jsdisplay="!supported" i18n-content="flagsNotSupported"></div>
 	    <!-- If enabled isn't set (i.e. in multi_type options),
 		 then both jsdisplay tests fail, and we get no
 		 rendering from this section. -->
@@ -75,14 +79,14 @@
               <a 
                 class="experiment-disable-link"
                 jsvalues=".internal_name:internal_name"
-                jsdisplay="enabled"
+                jsdisplay="supported && enabled"
                 href="#"
                 i18n-content="disable"
                 >DISABLE</a>
               <a
                 class="experiment-enable-link"
                 jsvalues=".internal_name:internal_name"
-                jsdisplay="!enabled"
+                jsdisplay="supported && !enabled"
                 href="#"
                 i18n-content="enable"
                 >ENABLE</a>

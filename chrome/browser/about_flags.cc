@@ -44,6 +44,23 @@ namespace {
 
 const unsigned kOsAll = kOsMac | kOsWin | kOsLinux | kOsCrOS;
 
+// Adds a |StringValue| to |list| for each platform where |bitmask| indicates
+// whether the experiment is available on that platform.
+void AddOsStrings(unsigned bitmask, ListValue* list) {
+  struct {
+    unsigned bit;
+    const char* const name;
+  } kBitsToOs[] = {
+    {kOsMac, "Mac"},
+    {kOsWin, "Windows"},
+    {kOsLinux, "Linux"},
+    {kOsCrOS, "Chrome OS"},
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kBitsToOs); ++i)
+    if (bitmask & kBitsToOs[i].bit)
+      list->Append(new StringValue(kBitsToOs[i].name));
+}
+
 // Names for former Chrome OS Labs experiments, shared with prefs migration
 // code.
 const char kMediaPlayerExperimentName[] = "media-player";
@@ -671,8 +688,6 @@ ListValue* GetFlagsExperimentsData(PrefService* prefs) {
   ListValue* experiments_data = new ListValue();
   for (size_t i = 0; i < num_experiments; ++i) {
     const Experiment& experiment = experiments[i];
-    if (!(experiment.supported_platforms & current_platform))
-      continue;
 
     DictionaryValue* data = new DictionaryValue();
     data->SetString("internal_name", experiment.internal_name);
@@ -681,6 +696,12 @@ ListValue* GetFlagsExperimentsData(PrefService* prefs) {
     data->SetString("description",
                     l10n_util::GetStringUTF16(
                         experiment.visible_description_id));
+    bool supported = !!(experiment.supported_platforms & current_platform);
+    data->SetBoolean("supported", supported);
+
+    ListValue* supported_platforms = new ListValue();
+    AddOsStrings(experiment.supported_platforms, supported_platforms);
+    data->Set("supported_platforms", supported_platforms);
 
     switch (experiment.type) {
       case Experiment::SINGLE_VALUE:

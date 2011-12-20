@@ -223,7 +223,7 @@ TEST_F(AboutFlagsTest, PersistAndPrune) {
   // Experiment 3 should show still be persisted in preferences though.
   scoped_ptr<ListValue> switch_prefs(GetFlagsExperimentsData(&prefs_));
   ASSERT_TRUE(switch_prefs.get());
-  EXPECT_EQ(arraysize(kExperiments) - 1, switch_prefs->GetSize());
+  EXPECT_EQ(arraysize(kExperiments), switch_prefs->GetSize());
 }
 
 // Tests that switches which should have values get them in the command
@@ -273,7 +273,7 @@ TEST_F(AboutFlagsTest, CheckValues) {
   // And it should persist
   scoped_ptr<ListValue> switch_prefs(GetFlagsExperimentsData(&prefs_));
   ASSERT_TRUE(switch_prefs.get());
-  EXPECT_EQ(arraysize(kExperiments) - 1, switch_prefs->GetSize());
+  EXPECT_EQ(arraysize(kExperiments), switch_prefs->GetSize());
 }
 
 // Tests multi-value type experiments.

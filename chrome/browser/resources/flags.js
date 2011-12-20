@@ -21,7 +21,12 @@ var flagsExperimentsDataFormat = {
           'description': 'description',
           'selected': true
         }
-      ]
+      ],
+      'supported': true,
+      'supported_platforms' : [
+        'Mac',
+        'Linux'
+      ],
     }
   ],
   'needsRestart': false
