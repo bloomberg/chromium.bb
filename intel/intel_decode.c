@@ -39,12 +39,19 @@ struct drm_intel_decode {
 	/** PCI device ID. */
 	uint32_t devid;
 
-	/** GPU address of the start of the batchbuffer data. */
+	/** GPU address of the start of the current packet. */
 	uint32_t hw_offset;
-	/** CPU Virtual address of the start of the batchbuffer data. */
+	/** CPU virtual address of the start of the current packet. */
 	uint32_t *data;
-	/** Number of DWORDs of batchbuffer data. */
+	/** DWORDs of remaining batchbuffer data starting from the packet. */
 	uint32_t count;
+
+	/** GPU address of the start of the batchbuffer data. */
+	uint32_t base_hw_offset;
+	/** CPU Virtual address of the start of the batchbuffer data. */
+	uint32_t *base_data;
+	/** Number of DWORDs of batchbuffer data. */
+	uint32_t base_count;
 
 	/** @{
 	 * GPU head and tail pointers, which will be noted in the dump, or ~0.
@@ -3583,9 +3590,9 @@ void
 drm_intel_decode_set_batch_pointer(struct drm_intel_decode *ctx,
 				   void *data, uint32_t hw_offset, int count)
 {
-	ctx->data = data;
-	ctx->hw_offset = hw_offset;
-	ctx->count = count;
+	ctx->base_data = data;
+	ctx->base_hw_offset = hw_offset;
+	ctx->base_count = count;
 }
 
 void
@@ -3616,16 +3623,15 @@ drm_intel_decode(struct drm_intel_decode *ctx)
 	int ret;
 	unsigned int index = 0;
 	int failures = 0;
-	uint32_t *data;
-	uint32_t count, hw_offset;
 	uint32_t devid;
 
 	if (!ctx)
 		return;
 
-	data = ctx->data;
-	count = ctx->count;
-	hw_offset = ctx->hw_offset;
+	ctx->data = ctx->base_data;
+	ctx->hw_offset = ctx->base_hw_offset;
+	ctx->count = ctx->base_count;
+
 	devid = ctx->devid;
 	head_offset = ctx->head;
 	tail_offset = ctx->tail;
@@ -3634,11 +3640,13 @@ drm_intel_decode(struct drm_intel_decode *ctx)
 	saved_s2_set = 0;
 	saved_s4_set = 1;
 
-	while (index < count) {
-		switch ((data[index] & 0xe0000000) >> 29) {
+	while (ctx->count > 0) {
+		index = 0;
+
+		switch ((ctx->data[index] & 0xe0000000) >> 29) {
 		case 0x0:
-			ret = decode_mi(data + index, count - index,
-					hw_offset + index * 4, &failures);
+			ret = decode_mi(ctx->data, ctx->count,
+					ctx->hw_offset, &failures);
 
 			/* If MI_BATCHBUFFER_END happened, then dump
 			 * the rest of the output in case we some day
@@ -3650,9 +3658,10 @@ drm_intel_decode(struct drm_intel_decode *ctx)
 				if (ctx->dump_past_end) {
 					index++;
 				} else {
-					for (index = index + 1; index < count;
+					for (index = index + 1; index < ctx->count;
 					     index++) {
-						instr_out(data, hw_offset,
+						instr_out(ctx->data,
+							  ctx->hw_offset,
 							  index, "\n");
 					}
 				}
@@ -3660,32 +3669,40 @@ drm_intel_decode(struct drm_intel_decode *ctx)
 				index += ret;
 			break;
 		case 0x2:
-			index += decode_2d(data + index, count - index,
-					   hw_offset + index * 4, &failures);
+			index += decode_2d(ctx->data, ctx->count,
+					   ctx->hw_offset, &failures);
 			break;
 		case 0x3:
 			if (IS_9XX(devid) && !IS_GEN3(devid)) {
 				index +=
-				    decode_3d_965(data + index, count - index,
-						  hw_offset + index * 4, devid,
+				    decode_3d_965(ctx->data, ctx->count,
+						  ctx->hw_offset, devid,
 						  &failures);
 			} else if (IS_GEN3(devid)) {
-				index += decode_3d(data + index, count - index,
-						   hw_offset + index * 4,
+				index += decode_3d(ctx->data, ctx->count,
+						   ctx->hw_offset,
 						   devid, &failures);
 			} else {
 				index +=
-				    decode_3d_i830(data + index, count - index,
-						   hw_offset + index * 4, devid,
+				    decode_3d_i830(ctx->data, ctx->count,
+						   ctx->hw_offset, devid,
 						   &failures);
 			}
 			break;
 		default:
-			instr_out(data, hw_offset, index, "UNKNOWN\n");
+			instr_out(ctx->data, ctx->hw_offset, index,
+				  "UNKNOWN\n");
 			failures++;
 			index++;
 			break;
 		}
 		fflush(out);
+
+		if (ctx->count < index)
+			break;
+
+		ctx->count -= index;
+		ctx->data += index;
+		ctx->hw_offset += 4 * index;
 	}
 }
