@@ -1002,6 +1002,7 @@ std::string AboutVersionStaticContent(const std::string& query) {
 
 std::string AboutVersionStrings(DictionaryValue* localized_strings,
                                 Profile* profile) {
+  DCHECK(profile);
   localized_strings->SetString("title",
       l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_TITLE));
   chrome::VersionInfo version_info;
@@ -1031,10 +1032,12 @@ std::string AboutVersionStrings(DictionaryValue* localized_strings,
   string16 flash_version =
       l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLED_PLUGIN);
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
-  for (size_t i = 0; i < info_array.size(); ++i) {
-    if (plugin_prefs->IsPluginEnabled(info_array[i])) {
-      flash_version = info_array[i].version;
-      break;
+  if (plugin_prefs) {
+    for (size_t i = 0; i < info_array.size(); ++i) {
+      if (plugin_prefs->IsPluginEnabled(info_array[i])) {
+        flash_version = info_array[i].version;
+        break;
+      }
     }
   }
   localized_strings->SetString("flash_plugin", "Flash");
