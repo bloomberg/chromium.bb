@@ -1043,6 +1043,7 @@ decode_stencil_op(uint32_t op)
 	return "";
 }
 
+#if 0
 static const char *
 decode_logic_op(uint32_t op)
 {
@@ -1082,6 +1083,7 @@ decode_logic_op(uint32_t op)
 	}
 	return "";
 }
+#endif
 
 static const char *
 decode_blend_fact(uint32_t op)
