@@ -284,6 +284,8 @@ class GLES2Implementation {
   void FreeEverything();
 
  private:
+  friend class ClientSideBufferHelper;
+
   // Used to track whether an extension is available
   enum ExtensionStatus {
       kAvailableExtensionStatus,
@@ -465,11 +467,15 @@ class GLES2Implementation {
   bool DeleteProgramHelper(GLuint program);
   bool DeleteShaderHelper(GLuint shader);
 
+  void BufferDataHelper(
+      GLenum target, GLsizeiptr size, const void* data, GLenum usage);
+  void BufferSubDataHelper(
+      GLenum target, GLintptr offset, GLsizeiptr size, const void* data);
+
   // Helper for GetVertexAttrib
   bool GetVertexAttribHelper(GLuint index, GLenum pname, uint32* param);
 
-  // Asks the service for the max index in an element array buffer.
-  GLsizei GetMaxIndexInElementArrayBuffer(
+  GLuint GetMaxValueInBufferCHROMIUMHelper(
       GLuint buffer_id, GLsizei count, GLenum type, GLuint offset);
 
   bool CopyRectToBufferFlipped(
@@ -496,6 +502,7 @@ class GLES2Implementation {
   bool GetTexParameterivHelper(GLenum target, GLenum pname, GLint* params);
   const GLubyte* GetStringHelper(GLenum name);
 
+  bool IsExtensionAvailable(const char* ext);
 
   GLES2Util util_;
   GLES2CmdHelper* helper_;

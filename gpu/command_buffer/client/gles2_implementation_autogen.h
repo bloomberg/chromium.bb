@@ -1358,18 +1358,7 @@ void TexStorage2DEXT(
 void SwapBuffers();
 
 GLuint GetMaxValueInBufferCHROMIUM(
-    GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << this << "] glGetMaxValueInBufferCHROMIUM(" << buffer_id << ", " << count << ", " << GLES2Util::GetStringGetMaxIndexType(type) << ", " << offset << ")");  // NOLINT
-  typedef GetMaxValueInBufferCHROMIUM::Result Result;
-  Result* result = GetResultAs<Result*>();
-  *result = 0;
-  helper_->GetMaxValueInBufferCHROMIUM(
-      buffer_id, count, type, offset, GetResultShmId(), GetResultShmOffset());
-  WaitForCmd();
-  GPU_CLIENT_LOG("returned " << *result);
-  return *result;
-}
+    GLuint buffer_id, GLsizei count, GLenum type, GLuint offset);
 
 void GenSharedIdsCHROMIUM(
     GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids);

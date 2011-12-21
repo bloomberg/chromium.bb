@@ -436,7 +436,7 @@ class ClientSideBufferHelper {
     gl_helper->BindBuffer(GL_ARRAY_BUFFER, array_buffer_id_);
     array_buffer_offset_ = 0;
     if (total_size > array_buffer_size_) {
-      gl->BufferData(GL_ARRAY_BUFFER, total_size, NULL, GL_DYNAMIC_DRAW);
+      gl->BufferDataHelper(GL_ARRAY_BUFFER, total_size, NULL, GL_DYNAMIC_DRAW);
       array_buffer_size_ = total_size;
     }
     for (GLuint ii = 0; ii < max_vertex_attribs_; ++ii) {
@@ -449,7 +449,7 @@ class ClientSideBufferHelper {
             info.stride() : static_cast<GLsizei>(bytes_per_element);
         GLsizei bytes_collected = CollectData(
             info.pointer(), bytes_per_element, real_stride, num_elements);
-        gl->BufferSubData(
+        gl->BufferSubDataHelper(
             GL_ARRAY_BUFFER, array_buffer_offset_, bytes_collected,
             collection_buffer_.get());
         gl_helper->VertexAttribPointer(
@@ -474,10 +474,11 @@ class ClientSideBufferHelper {
     GLsizei bytes_needed = bytes_per_element * count;
     if (bytes_needed > element_array_buffer_size_) {
       element_array_buffer_size_ = bytes_needed;
-      gl->BufferData(GL_ELEMENT_ARRAY_BUFFER, bytes_needed, NULL,
-                     GL_DYNAMIC_DRAW);
+      gl->BufferDataHelper(
+          GL_ELEMENT_ARRAY_BUFFER, bytes_needed, NULL, GL_DYNAMIC_DRAW);
     }
-    gl->BufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, bytes_needed, indices);
+    gl->BufferSubDataHelper(
+        GL_ELEMENT_ARRAY_BUFFER, 0, bytes_needed, indices);
     GLsizei max_index = -1;
     switch (type) {
       case GL_UNSIGNED_BYTE: {
@@ -745,10 +746,9 @@ void GLES2Implementation::WaitForCmd() {
   helper_->CommandBufferHelper::Finish();
 }
 
-namespace {
-bool IsExtensionAvailable(GLES2Implementation* gles2, const char ext[]) {
-  const char* extensions = reinterpret_cast<const char*>(
-      gles2->GetString(GL_EXTENSIONS));
+bool GLES2Implementation::IsExtensionAvailable(const char* ext) {
+  const char* extensions =
+      reinterpret_cast<const char*>(GetStringHelper(GL_EXTENSIONS));
   int length = strlen(ext);
   while (true) {
     int n = strcspn(extensions, " ");
@@ -758,9 +758,8 @@ bool IsExtensionAvailable(GLES2Implementation* gles2, const char ext[]) {
     if ('\0' == extensions[n]) {
       return false;
     }
-    extensions += n+1;
+    extensions += n + 1;
   }
-}
 }
 
 bool GLES2Implementation::IsAnglePackReverseRowOrderAvailable() {
@@ -770,7 +769,7 @@ bool GLES2Implementation::IsAnglePackReverseRowOrderAvailable() {
     case kUnavailableExtensionStatus:
       return false;
     default:
-      if (IsExtensionAvailable(this, "GL_ANGLE_pack_reverse_row_order")) {
+      if (IsExtensionAvailable("GL_ANGLE_pack_reverse_row_order")) {
           angle_pack_reverse_row_order_status = kAvailableExtensionStatus;
           return true;
       } else {
@@ -1018,6 +1017,30 @@ bool GLES2Implementation::GetIntegervHelper(GLenum pname, GLint* params) {
   return GetHelper(pname, params);
 }
 
+GLuint GLES2Implementation::GetMaxValueInBufferCHROMIUMHelper(
+    GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) {
+  typedef GetMaxValueInBufferCHROMIUM::Result Result;
+  Result* result = GetResultAs<Result*>();
+  *result = 0;
+  helper_->GetMaxValueInBufferCHROMIUM(
+      buffer_id, count, type, offset, GetResultShmId(), GetResultShmOffset());
+  WaitForCmd();
+  return *result;
+}
+
+GLuint GLES2Implementation::GetMaxValueInBufferCHROMIUM(
+    GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] glGetMaxValueInBufferCHROMIUM("
+                 << buffer_id << ", " << count << ", "
+                 << GLES2Util::GetStringGetMaxIndexType(type)
+                 << ", " << offset << ")");
+  GLuint result = GetMaxValueInBufferCHROMIUMHelper(
+      buffer_id, count, type, offset);
+  GPU_CLIENT_LOG("returned " << result);
+  return result;
+}
+
 void GLES2Implementation::DrawElements(
     GLenum mode, GLsizei count, GLenum type, const void* indices) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
@@ -1050,7 +1073,7 @@ void GLES2Implementation::DrawElements(
     // changes the contents of any of the buffers. The service will still
     // validate the indices. We just need to know how much to copy across.
     if (have_client_side) {
-      num_elements = GetMaxValueInBufferCHROMIUM(
+      num_elements = GetMaxValueInBufferCHROMIUMHelper(
           bound_element_array_buffer_id_, count, type, ToGLuint(indices)) + 1;
     }
   }
@@ -1482,14 +1505,8 @@ void GLES2Implementation::ShaderSource(
   helper_->SetBucketSize(kResultBucketId, 0);
 }
 
-void GLES2Implementation::BufferData(
+void GLES2Implementation::BufferDataHelper(
     GLenum target, GLsizeiptr size, const void* data, GLenum usage) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << this << "] glBufferData("
-      << GLES2Util::GetStringBufferTarget(target) << ", "
-      << size << ", "
-      << static_cast<const void*>(data) << ", "
-      << GLES2Util::GetStringBufferUsage(usage) << ")");
   AlignedRingBuffer* transfer_buffer = transfer_buffer_.GetBuffer();
   GLsizeiptr max_size = transfer_buffer->GetLargestFreeOrPendingSize();
   if (size > max_size || !data) {
@@ -1511,13 +1528,19 @@ void GLES2Implementation::BufferData(
   transfer_buffer->FreePendingToken(buffer, helper_->InsertToken());
 }
 
-void GLES2Implementation::BufferSubData(
-    GLenum target, GLintptr offset, GLsizeiptr size, const void* data) {
+void GLES2Implementation::BufferData(
+    GLenum target, GLsizeiptr size, const void* data, GLenum usage) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << this << "] glBufferSubData("
+  GPU_CLIENT_LOG("[" << this << "] glBufferData("
       << GLES2Util::GetStringBufferTarget(target) << ", "
-      << offset << ", " << size << ", "
-      << static_cast<const void*>(data) << ")");
+      << size << ", "
+      << static_cast<const void*>(data) << ", "
+      << GLES2Util::GetStringBufferUsage(usage) << ")");
+  BufferDataHelper(target, size, data, usage);
+}
+
+void GLES2Implementation::BufferSubDataHelper(
+    GLenum target, GLintptr offset, GLsizeiptr size, const void* data) {
   if (size == 0) {
     return;
   }
@@ -1542,6 +1565,16 @@ void GLES2Implementation::BufferSubData(
     source += part_size;
     size -= part_size;
   }
+}
+
+void GLES2Implementation::BufferSubData(
+    GLenum target, GLintptr offset, GLsizeiptr size, const void* data) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] glBufferSubData("
+      << GLES2Util::GetStringBufferTarget(target) << ", "
+      << offset << ", " << size << ", "
+      << static_cast<const void*>(data) << ")");
+  BufferSubDataHelper(target, offset, size, data);
 }
 
 void GLES2Implementation::CompressedTexImage2D(

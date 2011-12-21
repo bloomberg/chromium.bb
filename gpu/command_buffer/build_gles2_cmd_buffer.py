@@ -1403,6 +1403,7 @@ _FUNCTION_INFO = {
     'client_test': False,
     'extension': True,
     'chromium': True,
+    'impl_func': False,
   },
   'GetMultipleIntegervCHROMIUM': {
     'type': 'Custom',

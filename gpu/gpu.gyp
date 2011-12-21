@@ -100,6 +100,27 @@
       'type': 'static_library',
       'defines': [
         'GLES2_SUPPORT_CLIENT_SIDE_ARRAYS=1',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        'gles2_cmd_helper',
+      ],
+      'all_dependent_settings': {
+        'include_dirs': [
+          # For GLES2/gl2.h
+          '<(DEPTH)/third_party/khronos',
+        ],
+      },
+      'sources': [
+        '<@(gles2_implementation_source_files)',
+      ],
+    },
+    {
+      # Library emulates GLES2 using command_buffers.
+      'target_name': 'gles2_implementation_client_side_arrays_no_check',
+      'type': 'static_library',
+      'defines': [
+        'GLES2_SUPPORT_CLIENT_SIDE_ARRAYS=1',
         'GLES2_CONFORMANCE_TESTS=1',
       ],
       'dependencies': [
@@ -138,7 +159,7 @@
         'GLES2_CONFORMANCE_TESTS=1',
       ],
       'dependencies': [
-        'gles2_implementation_client_side_arrays',
+        'gles2_implementation_client_side_arrays_no_check',
       ],
       'sources': [
         '<@(gles2_c_lib_source_files)',
