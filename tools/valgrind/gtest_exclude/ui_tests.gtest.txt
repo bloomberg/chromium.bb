@@ -107,7 +107,7 @@ OutOfProcessPPAPITest.CursorControl
 OutOfProcessPPAPITest.PostMessage*
 
 # NaCl ui_tests fail on buildbots http://crbug.com/104517
-PPAPINaClTest.*
+PPAPINaClTest*
 
 # Flakily times out, http://crbug.com/92527
 NamedInterfaceTest.BasicNamedInterface
