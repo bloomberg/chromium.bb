@@ -372,6 +372,12 @@ class ExtensionPermissionSet
   // Gets the API permissions in this set as a set of strings.
   std::set<std::string> GetAPIsAsStrings() const;
 
+  // Returns whether this namespace has any functions which the extension has
+  // permission to use.  For example, even though the extension may not have
+  // the "tabs" permission, "tabs.create" requires no permissions so
+  // HasAnyAPIPermission("tabs") will return true.
+  bool HasAnyAccessToAPI(const std::string& api_name) const;
+
   // Gets a list of the distinct hosts for displaying to the user.
   // NOTE: do not use this for comparing permissions, since this disgards some
   // information.

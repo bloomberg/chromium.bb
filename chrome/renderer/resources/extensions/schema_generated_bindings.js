@@ -32,6 +32,15 @@ var chrome = chrome || {};
   if (!chrome)
     chrome = {};
 
+  function apiExists(path) {
+    var resolved = chrome;
+    path.split(".").forEach(function(next) {
+      if (resolved)
+        resolved = resolved[next];
+    });
+    return !!resolved;
+  }
+
   function forEach(dict, f) {
     for (key in dict) {
       if (dict.hasOwnProperty(key))
@@ -406,12 +415,8 @@ var chrome = chrome || {};
     StorageNamespace.prototype = new CustomBindingsObject();
     customBindings['StorageNamespace'] = StorageNamespace;
   }
+
   function setupInputEvents() {
-    if (chrome.experimental.input == undefined ||
-        chrome.experimental.input.ime == undefined) {
-      // The IME api is not available, don't set up the event.
-      return;
-    }
     chrome.experimental.input.ime.onKeyEvent.dispatch =
         function(engineID, keyData) {
       var args = Array.prototype.slice.call(arguments);
@@ -443,7 +448,6 @@ var chrome = chrome || {};
   // Page action events send (pageActionId, {tabId, tabUrl}).
   function setupPageActionEvents(extensionId) {
     var pageActions = GetCurrentPageActions(extensionId);
-
     var oldStyleEventName = "pageActions";
     // TODO(EXTENSIONS_DEPRECATED): only one page action
     for (var i = 0; i < pageActions.length; ++i) {
@@ -554,59 +558,49 @@ var chrome = chrome || {};
     };
   }
 
+  function setupTtsEngineEvents() {
+    chrome.ttsEngine.onSpeak.dispatch = function(text, options, requestId) {
+      var sendTtsEvent = function(event) {
+        chrome.ttsEngine.sendTtsEvent(requestId, event);
+      };
+      chrome.Event.prototype.dispatch.apply(
+          this, [text, options, sendTtsEvent]);
+    };
+  }
+
   function setupTtsEvents() {
     chromeHidden.tts = {};
     chromeHidden.tts.handlers = {};
-    chrome.ttsEngine.onSpeak.dispatch =
-        function(text, options, requestId) {
-          var sendTtsEvent = function(event) {
-            chrome.ttsEngine.sendTtsEvent(requestId, event);
-          };
-          chrome.Event.prototype.dispatch.apply(
-              this, [text, options, sendTtsEvent]);
-        };
-    try {
-      chrome.tts.onEvent.addListener(
-          function(event) {
-            var eventHandler = chromeHidden.tts.handlers[event.srcId];
-            if (eventHandler) {
-              eventHandler({
-                             type: event.type,
-                             charIndex: event.charIndex,
-                             errorMessage: event.errorMessage
-                           });
-              if (event.isFinalEvent) {
-                delete chromeHidden.tts.handlers[event.srcId];
-              }
-            }
-          });
-      } catch (e) {
-        // This extension doesn't have permission to access TTS, so we
-        // can safely ignore this.
+    chrome.tts.onEvent.addListener(function(event) {
+      var eventHandler = chromeHidden.tts.handlers[event.srcId];
+      if (eventHandler) {
+        eventHandler({
+                       type: event.type,
+                       charIndex: event.charIndex,
+                       errorMessage: event.errorMessage
+                     });
+        if (event.isFinalEvent) {
+          delete chromeHidden.tts.handlers[event.srcId];
+        }
       }
+    });
   }
 
   function setupSocketEvents() {
     chromeHidden.socket = {};
     chromeHidden.socket.handlers = {};
-    try {
-      chrome.experimental.socket.onEvent.addListener(
-          function(event) {
-            var eventHandler = chromeHidden.socket.handlers[event.srcId];
-            if (eventHandler) {
-              eventHandler({
-               type: event.type,
-                      resultCode: event.resultCode,
-                      });
-              if (event.isFinalEvent) {
-                delete chromeHidden.socket.handlers[event.srcId];
-              }
-            }
-          });
-    } catch (e) {
-      // This extension doesn't have permission to access socket, so we can
-      // safely ignore this.
-    }
+    chrome.experimental.socket.onEvent.addListener(function(event) {
+      var eventHandler = chromeHidden.socket.handlers[event.srcId];
+      if (eventHandler) {
+        eventHandler({
+           type: event.type,
+           resultCode: event.resultCode,
+        });
+        if (event.isFinalEvent) {
+          delete chromeHidden.socket.handlers[event.srcId];
+        }
+      }
+    });
   }
 
   // Get the platform from navigator.appVersion.
@@ -629,15 +623,25 @@ var chrome = chrome || {};
 
   chromeHidden.onLoad.addListener(function(extensionId, isExtensionProcess,
                                            isIncognitoProcess) {
-    // Setup the ChromeSetting class so we can use it to construct
-    // ChromeSetting objects from the API definition.
-    setupChromeSetting();
+    var apiDefinitions = GetExtensionAPIDefinition();
 
-    // Ditto ContentSetting.
-    setupContentSetting();
+    // Setup custom classes so we can use them to construct $ref'd objects from
+    // the API definition.
+    apiDefinitions.forEach(function(apiDef) {
+      switch (apiDef.namespace) {
+        case "types":
+          setupChromeSetting();
+          break;
 
-    // Ditto StorageNamespace.
-    setupStorageNamespace();
+        case "contentSettings":
+          setupContentSetting();
+          break;
+
+        case "experimental.storage":
+          setupStorageNamespace();
+          break;
+      }
+    });
 
     // Stores the name and definition of each API function, with methods to
     // modify their behaviour (such as a custom way to handle requests to the
@@ -683,7 +687,6 @@ var chrome = chrome || {};
     // TODO(rafaelw): Handle synchronous functions.
     // TODO(rafaelw): Consider providing some convenient override points
     //   for api functions that wish to insert themselves into the call.
-    var apiDefinitions = GetExtensionAPIDefinition();
     var platform = getPlatform();
 
     apiDefinitions.forEach(function(apiDef) {
@@ -805,6 +808,8 @@ var chrome = chrome || {};
                 value = value === "true";
               } else if (property["$ref"]) {
                 var constructor = customBindings[property["$ref"]];
+                if (!constructor)
+                  throw new Error("No custom binding for " + property["$ref"]);
                 var args = value;
                 // For an object property, |value| is an array of constructor
                 // arguments, but we want to pass the arguments directly
@@ -844,8 +849,10 @@ var chrome = chrome || {};
     // TOOD(mihaip): remove this alias once the webstore stops calling
     // beginInstallWithManifest2.
     // See http://crbug.com/100242
-    chrome.webstorePrivate.beginInstallWithManifest2 =
-        chrome.webstorePrivate.beginInstallWithManifest3;
+    if (apiExists("webstorePrivate")) {
+      chrome.webstorePrivate.beginInstallWithManifest2 =
+          chrome.webstorePrivate.beginInstallWithManifest3;
+    }
 
     apiFunctions.setHandleRequest("tabs.connect", function(tabId, connectInfo) {
       var name = "";
@@ -1219,39 +1226,23 @@ var chrome = chrome || {};
       return id;
     });
 
-    if (chrome.test) {
+    if (apiExists("test")) {
       chrome.test.getApiDefinitions = GetExtensionAPIDefinition;
     }
 
-    setupHiddenContextMenuEvent(extensionId);
-    setupInputEvents();
-    setupOmniboxEvents();
-    setupPageActionEvents(extensionId);
-    setupSocketEvents();
-    setupTtsEvents();
+    if (apiExists("contextMenus"))
+      setupHiddenContextMenuEvent(extensionId);
+    if (apiExists("experimental.input.ime"))
+      setupInputEvents();
+    if (apiExists("omnibox"))
+      setupOmniboxEvents();
+    if (apiExists("pageActions"))
+      setupPageActionEvents(extensionId);
+    if (apiExists("experimental.socket"))
+      setupSocketEvents();
+    if (apiExists("ttsEngine"))
+      setupTtsEngineEvents();
+    if (apiExists("tts"))
+      setupTtsEvents();
   });
-
-  // TODO(kalman): these should all be unnecessary steps if we design the
-  // APIFunctions class correctly.
-
-  if (!chrome.experimental)
-    chrome.experimental = {};
-
-  if (!chrome.experimental.accessibility)
-    chrome.experimental.accessibility = {};
-
-  if (!chrome.experimental.speechInput)
-    chrome.experimental.speechInput = {};
-
-  if (!chrome.experimental.socket)
-    chrome.experimental.socket = {};
-
-  if (!chrome.tts)
-    chrome.tts = {};
-
-  if (!chrome.ttsEngine)
-    chrome.ttsEngine = {};
-
-  if (!chrome.experimental.downloads)
-    chrome.experimental.downloads = {};
 })();

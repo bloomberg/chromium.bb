@@ -4,16 +4,7 @@
 
 chrome.test.runTests([
   function readCookies() {
-    try {
-      chrome.cookies.get({url: document.location.href, name: 'a'}, function() {
-      });
-    } catch (e) {
-      chrome.test.assertTrue(e.message.indexOf(
-          "You do not have permission to use 'cookies.get'.") == 0);
-      chrome.test.succeed();
-      return;
-    }
-
-    chrome.test.fail();
+    chrome.test.assertEq(undefined, chrome.cookies);
+    chrome.test.succeed();
   }
 ]);

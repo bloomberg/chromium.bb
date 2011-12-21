@@ -127,6 +127,9 @@ chrome.test.getConfig(function(config) {
     // We should be able to request the tabs API since it's in the granted
     // permissions list (see permissions_apitest.cc).
     function requestTabs() {
+      // chrome.windows is a optional permission, so the API definition should
+      // exist but its use disallowed.
+      assertTrue(!!chrome.windows);
       try {
         chrome.windows.getAll({populate: true}, function() {
           chrome.test.fail("Should not have tabs API permission.");

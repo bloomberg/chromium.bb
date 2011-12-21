@@ -176,8 +176,11 @@ class ExtensionImpl : public ChromeV8Extension {
   ~ExtensionImpl() {
     // TODO(aa): It seems that v8 never deletes us, so this doesn't get called.
     // Leaving this in here in case v8's implementation ever changes.
-    if (!extension_api_.IsEmpty())
-      extension_api_.Dispose();
+    for (CachedSchemaMap::iterator it = schemas_.begin(); it != schemas_.end();
+        ++it) {
+      if (!it->second.IsEmpty())
+        it->second.Dispose();
+    }
   }
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
@@ -226,26 +229,61 @@ class ExtensionImpl : public ChromeV8Extension {
   }
 
  private:
+  static v8::Handle<v8::Value> GetV8SchemaForAPI(
+      ExtensionImpl* self,
+      v8::Handle<v8::Context> context,
+      const std::string& api_name) {
+    CachedSchemaMap::iterator maybe_api = self->schemas_.find(api_name);
+    if (maybe_api != self->schemas_.end())
+      return maybe_api->second;
+
+    scoped_ptr<V8ValueConverter> v8_value_converter(V8ValueConverter::create());
+    const base::DictionaryValue* schema =
+        ExtensionAPI::GetInstance()->GetSchema(api_name);
+    CHECK(schema) << api_name;
+
+    self->schemas_[api_name] =
+        v8::Persistent<v8::Object>::New(v8::Handle<v8::Object>::Cast(
+            v8_value_converter->ToV8Value(schema, context)));
+    CHECK(!self->schemas_[api_name].IsEmpty());
+
+    return self->schemas_[api_name];
+  }
+
   static v8::Handle<v8::Value> GetExtensionAPIDefinition(
       const v8::Arguments& args) {
     ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
-    if (!self->extension_api_.IsEmpty())
-      return self->extension_api_;
+    ExtensionDispatcher* dispatcher = self->extension_dispatcher_;
+
+    ChromeV8Context* v8_context = dispatcher->v8_context_set().GetCurrent();
+    CHECK(v8_context);
+    std::string extension_id = v8_context->extension_id();
+    const ::Extension* extension = NULL;
+    if (!extension_id.empty())
+      extension = dispatcher->extensions()->GetByID(extension_id);
+
+    ExtensionAPI::SchemaMap schemas;
+    if (!extension) {
+      LOG(WARNING) << "Extension " << extension_id << " not found";
+      ExtensionAPI::GetInstance()->GetDefaultSchemas(&schemas);
+    } else {
+      ExtensionAPI::GetInstance()->GetSchemasForExtension(*extension, &schemas);
+    }
 
     v8::Persistent<v8::Context> context(v8::Context::New());
     v8::Context::Scope context_scope(context);
-
-    scoped_ptr<V8ValueConverter> v8_value_converter(V8ValueConverter::create());
-    self->extension_api_ = v8::Persistent<v8::Array>::New(
-        v8::Handle<v8::Array>::Cast(
-            v8_value_converter->ToV8Value(
-                ExtensionAPI::GetInstance()->value(), context)));
-    CHECK(!self->extension_api_.IsEmpty());
+    v8::Handle<v8::Array> api(v8::Array::New(schemas.size()));
+    size_t api_index = 0;
+    for (ExtensionAPI::SchemaMap::iterator it = schemas.begin();
+        it != schemas.end(); ++it) {
+      api->Set(api_index, GetV8SchemaForAPI(self, context, it->first));
+      ++api_index;
+    }
 
     // The persistent extension_api_ will keep the context alive.
     context.Dispose();
 
-    return self->extension_api_;
+    return api;
   }
 
   static v8::Handle<v8::Value> GetExtensionViews(const v8::Arguments& args) {
@@ -645,10 +683,11 @@ class ExtensionImpl : public ChromeV8Extension {
     return v8::Integer::New(renderview->GetRoutingId());
   }
 
-  // Cached JS Array representation of the extensions API JSON. We store this
-  // so that we don't have to parse it over and over again for every context
-  // that uses it.
-  v8::Persistent<v8::Array> extension_api_;
+  // Cached JS Array representation of each namespace in extension_api.json.
+  // We store this so that we don't have to parse it over and over again for
+  // every context that uses it.
+  typedef std::map<std::string, v8::Persistent<v8::Object> > CachedSchemaMap;
+  CachedSchemaMap schemas_;
 };
 
 }  // namespace

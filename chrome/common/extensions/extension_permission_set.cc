@@ -90,6 +90,17 @@ void AddPatternsAndRemovePaths(const URLPatternSet& set, URLPatternSet* out) {
   }
 }
 
+// Strips out the API name from a function or event name.
+// Functions will be of the form api_name.function
+// Events will be of the form api_name/id or api_name.optional.stuff
+std::string GetPermissionName(const std::string& function_name) {
+  size_t separator = function_name.find_first_of("./");
+  if (separator != std::string::npos)
+    return function_name.substr(0, separator);
+  else
+    return function_name;
+}
+
 }  // namespace
 
 //
@@ -554,6 +565,19 @@ std::set<std::string> ExtensionPermissionSet::GetAPIsAsStrings() const {
   return apis_str;
 }
 
+bool ExtensionPermissionSet::HasAnyAccessToAPI(
+    const std::string& api_name) const {
+  if (HasAccessToFunction(api_name))
+    return true;
+
+  for (size_t i = 0; i < kNumNonPermissionFunctionNames; ++i) {
+    if (api_name == GetPermissionName(kNonPermissionFunctionNames[i]))
+      return true;
+  }
+
+  return false;
+}
+
 std::set<std::string>
     ExtensionPermissionSet::GetDistinctHostsForDisplay() const {
   return GetDistinctHosts(effective_hosts_, true, true);
@@ -616,20 +640,12 @@ bool ExtensionPermissionSet::HasAccessToFunction(
   // like GrantsAccess(function_name) to ExtensionAPIPermission. A "default"
   // permission can then handle the modules and functions that everyone can
   // access.
-  std::string permission_name = function_name;
-
   for (size_t i = 0; i < kNumNonPermissionFunctionNames; ++i) {
-    if (permission_name == kNonPermissionFunctionNames[i])
+    if (function_name == kNonPermissionFunctionNames[i])
       return true;
   }
 
-  // See if this is a function or event name first and strip out the package.
-  // Functions will be of the form package.function
-  // Events will be of the form package/id or package.optional.stuff
-  size_t separator = function_name.find_first_of("./");
-  if (separator != std::string::npos)
-    permission_name = function_name.substr(0, separator);
-
+  std::string permission_name = GetPermissionName(function_name);
   ExtensionAPIPermission* permission =
       ExtensionPermissionsInfo::GetInstance()->GetByName(permission_name);
   if (permission && apis_.count(permission->id()))

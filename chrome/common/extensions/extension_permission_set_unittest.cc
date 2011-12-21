@@ -735,6 +735,38 @@ TEST(ExtensionPermissionSetTest, DefaultFunctionAccess) {
   }
 }
 
+// Tests the default permissions (empty API permission set).
+TEST(ExtensionPermissionSetTest, DefaultAnyAPIAccess) {
+  const struct {
+    const char* api_name;
+    bool expect_success;
+  } kTests[] = {
+    // Negative test.
+    { "non_existing_permission", false },
+    // Test default module/package permission.
+    { "browserAction",  true },
+    { "devtools",       true },
+    { "extension",      true },
+    { "i18n",           true },
+    { "pageAction",     true },
+    { "pageActions",    true },
+    { "test",           true },
+    // Some negative tests.
+    { "bookmarks",      false },
+    { "cookies",        false },
+    { "history",        false },
+    // Negative APIs that have positive individual functions.
+    { "management",     true},
+    { "tabs",           true},
+  };
+
+  scoped_refptr<ExtensionPermissionSet> empty = new ExtensionPermissionSet();
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
+    EXPECT_EQ(kTests[i].expect_success,
+              empty->HasAnyAccessToAPI(kTests[i].api_name));
+  }
+}
+
 TEST(ExtensionPermissionSetTest, GetWarningMessages_ManyHosts) {
   scoped_refptr<Extension> extension;
 
