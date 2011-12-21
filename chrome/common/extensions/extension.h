@@ -13,6 +13,7 @@
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/hash_tables.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -321,6 +322,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   GURL GetResourceURL(const std::string& relative_path) const {
     return GetResourceURL(url(), relative_path);
   }
+
+  // Returns true if the specified resource is web accessible.
+  bool IsResourceWebAccessible(const std::string& relative_path) const;
+
+  // Returns true when 'web_accessible_resources' are defined for the extension.
+  bool HasWebAccessibleResources() const;
 
   // Returns an extension resource object. |relative_path| should be UTF8
   // encoded.
@@ -791,6 +798,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Optional list of input components and associated properties.
   std::vector<InputComponentInfo> input_components_;
+
+  // Optional list of web accessible extension resources.
+  base::hash_set<std::string> web_accessible_resources_;
 
   // Optional URL to a master page of which a single instance should be always
   // loaded in the background.

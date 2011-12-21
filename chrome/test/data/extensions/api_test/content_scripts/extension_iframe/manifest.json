@@ -10,5 +10,9 @@
       "matches": ["http://*/*"],
       "js": ["script.js"]
     }
+  ],
+  "web_accessible_resources": [
+    "iframe.html",
+    "iframe.js"
   ]
 }

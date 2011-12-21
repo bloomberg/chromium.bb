@@ -82,6 +82,7 @@ extern const char kDisableCustomProtocolOSCheck[];
 extern const char kDisableDefaultApps[];
 extern const char kDisableDhcpWpad[];
 extern const char kDisableExtensionsFileAccessCheck[];
+extern const char kDisableExtensionsResourceWhitelist[];
 extern const char kDisableExtensions[];
 extern const char kDisableFlashSandbox[];
 extern const char kDisableHistoryQuickProvider[];

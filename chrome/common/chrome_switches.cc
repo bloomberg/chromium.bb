@@ -273,6 +273,10 @@ const char kDisableExtensions[]             = "disable-extensions";
 const char kDisableExtensionsFileAccessCheck[] =
     "disable-extensions-file-access-check";
 
+// Disable mandatory enforcement of web_accessible_resources in extensions.
+const char kDisableExtensionsResourceWhitelist[] =
+    "disable-extensions-resource-whitelist";
+
 // Disables the sandbox for the built-in flash player.
 const char kDisableFlashSandbox[]           = "disable-flash-sandbox";
 

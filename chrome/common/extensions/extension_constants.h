@@ -114,6 +114,7 @@ namespace extension_manifest_keys {
   extern const char kType[];
   extern const char kUpdateURL[];
   extern const char kVersion[];
+  extern const char kWebAccessibleResources[];
   extern const char kWebURLs[];
 }  // namespace extension_manifest_keys
 
@@ -260,6 +261,8 @@ namespace extension_manifest_errors {
   extern const char kInvalidUpdateURL[];
   extern const char kInvalidURLPatternError[];
   extern const char kInvalidVersion[];
+  extern const char kInvalidWebAccessibleResourcesList[];
+  extern const char kInvalidWebAccessibleResource[];
   extern const char kInvalidWebURL[];
   extern const char kInvalidWebURLs[];
   extern const char kInvalidZipHash[];

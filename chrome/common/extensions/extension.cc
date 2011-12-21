@@ -376,6 +376,27 @@ GURL Extension::GetResourceURL(const GURL& extension_url,
   return ret_val;
 }
 
+bool Extension::IsResourceWebAccessible(const std::string& relative_path)
+    const {
+  // For old manifest versions which do not specify web_accessible_resources
+  // we always allow resource loads.
+  if (manifest_version() < 2 && !HasWebAccessibleResources())
+    return true;
+
+  if (web_accessible_resources_.find(relative_path) !=
+      web_accessible_resources_.end())
+    return true;
+
+  return false;
+}
+
+bool Extension::HasWebAccessibleResources() const {
+  if (web_accessible_resources_.size())
+    return true;
+
+  return false;
+}
+
 bool Extension::GenerateId(const std::string& input, std::string* output) {
   DCHECK(output);
   uint8 hash[Extension::kIdSize];
@@ -1829,6 +1850,26 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
         script.set_match_all_frames(true);  // Greasemonkey matches all frames.
       }
       content_scripts_.push_back(script);
+    }
+  }
+
+  // Initialize web accessible resources (optional).
+  if (manifest->HasKey(keys::kWebAccessibleResources)) {
+    ListValue* list_value;
+    if (!manifest->GetList(keys::kWebAccessibleResources, &list_value)) {
+      *error = ASCIIToUTF16(errors::kInvalidWebAccessibleResourcesList);
+      return false;
+    }
+    for (size_t i = 0; i < list_value->GetSize(); ++i) {
+      std::string relative_path;
+      if (!list_value->GetString(i, &relative_path)) {
+        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidWebAccessibleResource, base::IntToString(i));
+        return false;
+      }
+      if (relative_path[0] != '/')
+        relative_path = '/' + relative_path;
+      web_accessible_resources_.insert(relative_path);
     }
   }
 

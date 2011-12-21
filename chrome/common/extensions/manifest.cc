@@ -59,6 +59,7 @@ struct Restrictions {
     map[keys::kRequirements] = all_but_themes;
     map[keys::kConvertedFromUserScript] = all_but_themes;
     map[keys::kNaClModules] = all_but_themes;
+    map[keys::kWebAccessibleResources] = all_but_themes;
 
     // Everything except themes and platform apps.
     map[keys::kPlugins] = all_but_themes - Manifest::kTypePlatformApp;

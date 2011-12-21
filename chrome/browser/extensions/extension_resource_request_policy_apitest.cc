@@ -122,3 +122,46 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, MAYBE_Video) {
       "extension_resource_request_policy/extension2",
       "video.html"));
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
+                       WebAccessibleResources) {
+  std::string result;
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(LoadExtension(test_data_dir_
+      .AppendASCII("extension_resource_request_policy")
+      .AppendASCII("web_accessible")));
+
+  GURL accessible_resource(
+      test_server()->GetURL(
+          "files/extensions/api_test/extension_resource_request_policy/"
+          "web_accessible/accessible_resource.html"));
+  ui_test_utils::NavigateToURL(browser(), accessible_resource);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+    browser()->GetSelectedTabContents()->render_view_host(), L"",
+      L"window.domAutomationController.send(document.title)",
+    &result));
+  EXPECT_EQ("Loaded", result);
+
+  GURL nonaccessible_resource(
+      test_server()->GetURL(
+          "files/extensions/api_test/extension_resource_request_policy/"
+          "web_accessible/nonaccessible_resource.html"));
+  ui_test_utils::NavigateToURL(browser(), nonaccessible_resource);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+    browser()->GetSelectedTabContents()->render_view_host(), L"",
+      L"window.domAutomationController.send(document.title)",
+    &result));
+  EXPECT_EQ("Image failed to load", result);
+
+  GURL nonexistent_resource(
+      test_server()->GetURL(
+          "files/extensions/api_test/extension_resource_request_policy/"
+          "web_accessible/nonexistent_resource.html"));
+  ui_test_utils::NavigateToURL(browser(), nonexistent_resource);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+    browser()->GetSelectedTabContents()->render_view_host(), L"",
+      L"window.domAutomationController.send(document.title)",
+    &result));
+  EXPECT_EQ("Image failed to load", result);
+}
+

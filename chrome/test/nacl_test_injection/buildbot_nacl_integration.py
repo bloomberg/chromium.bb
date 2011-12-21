@@ -45,6 +45,10 @@ def Main(args):
     # TODO(bsy): http://code.google.com/p/nativeclient/issues/detail?id=2509
     tests_to_disable.append('run_pm_redir_stderr_bg_1000000_chrome_browser_test')
     tests_to_disable.append('run_pm_redir_stderr_fg_0_chrome_browser_test')
+    # TODO(cdn): Reenable once we can pass
+    # --disable-extensions-resource-whitelist to chrome for this test.
+    # http://code.google.com/p/nativeclient/issues/detail?id=108131
+    tests_to_disable.append('run_ppapi_extension_mime_handler_browser_test')
 
 
     # TODO(ncbray) why did these tests flake?

@@ -55,7 +55,8 @@ const char* kNotThemeKeys[] = {
   keys::kIncognito,
   keys::kInputComponents,
   keys::kTtsEngine,
-  keys::kIntents
+  keys::kIntents,
+  keys::kWebAccessibleResources
 };
 
 // Keys that are not accessible by hosted apps.

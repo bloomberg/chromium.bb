@@ -844,6 +844,40 @@ TEST_F(ExtensionManifestTest, PortsInPermissions) {
   LoadAndExpectSuccess("ports_in_permissions.json");
 }
 
+TEST_F(ExtensionManifestTest, WebAccessibleResources) {
+  // Manifest version 2 with web accessible resources specified.
+  scoped_refptr<Extension> extension1(
+      LoadAndExpectSuccess("web_accessible_resources_1.json"));
+
+  // Manifest version 2 with no web accessible resources.
+  scoped_refptr<Extension> extension2(
+      LoadAndExpectSuccess("web_accessible_resources_2.json"));
+
+  // Default manifest version with web accessible resources specified.
+  scoped_refptr<Extension> extension3(
+      LoadAndExpectSuccess("web_accessible_resources_3.json"));
+
+  // Default manifest version with no web accessible resources.
+  scoped_refptr<Extension> extension4(
+      LoadAndExpectSuccess("web_accessible_resources_4.json"));
+
+  EXPECT_TRUE(extension1->HasWebAccessibleResources());
+  EXPECT_FALSE(extension2->HasWebAccessibleResources());
+  EXPECT_TRUE(extension3->HasWebAccessibleResources());
+  EXPECT_FALSE(extension4->HasWebAccessibleResources());
+
+  EXPECT_TRUE(extension1->IsResourceWebAccessible("/test"));
+  EXPECT_FALSE(extension1->IsResourceWebAccessible("/none"));
+
+  EXPECT_FALSE(extension2->IsResourceWebAccessible("/test"));
+
+  EXPECT_TRUE(extension3->IsResourceWebAccessible("/test"));
+  EXPECT_FALSE(extension3->IsResourceWebAccessible("/none"));
+
+  EXPECT_TRUE(extension4->IsResourceWebAccessible("/test"));
+  EXPECT_TRUE(extension4->IsResourceWebAccessible("/none"));
+}
+
 TEST_F(ExtensionManifestTest, IsolatedApps) {
   // Requires --enable-experimental-extension-apis
   LoadAndExpectError("isolated_app_valid.json",
