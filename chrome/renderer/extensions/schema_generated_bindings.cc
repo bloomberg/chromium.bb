@@ -318,6 +318,7 @@ class ExtensionImpl : public ChromeV8Extension {
     std::string path(*v8::String::Utf8Value(args[1]));
 
     WebFrame* webframe = WebFrame::frameForCurrentContext();
+    DCHECK(webframe);
     return webframe->createFileSystem(WebKit::WebFileSystem::TypeExternal,
             WebKit::WebString::fromUTF8(name.c_str()),
             WebKit::WebString::fromUTF8(path.c_str()));
