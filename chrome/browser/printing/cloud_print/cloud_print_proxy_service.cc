@@ -30,9 +30,6 @@
 
 using content::BrowserThread;
 
-// TODO(sanjeevr): Localize the product name?
-const char kCloudPrintProductName[] = "Google Cloud Print";
-
 class CloudPrintProxyService::TokenExpiredNotificationDelegate
     : public NotificationDelegate {
  public:
@@ -122,9 +119,9 @@ bool CloudPrintProxyService::ShowTokenExpiredNotification() {
   // TODO(sanjeevr): Get icon for this notification.
   GURL icon_url;
 
-  string16 title = UTF8ToUTF16(kCloudPrintProductName);
+  string16 title = l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT);
   string16 message =
-      l10n_util::GetStringUTF16(IDS_CLOUD_PRINT_TOKEN_EXPIRED_MESSAGE);
+      l10n_util::GetStringFUTF16(IDS_CLOUD_PRINT_TOKEN_EXPIRED_MESSAGE, title);
   string16 content_url = DesktopNotificationService::CreateDataUrl(
       icon_url, title, message, WebKit::WebTextDirectionDefault);
   token_expired_delegate_ = new TokenExpiredNotificationDelegate(this);

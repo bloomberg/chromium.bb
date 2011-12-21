@@ -54,7 +54,9 @@ void CloudPrintSetupSource::StartDataRequest(const std::string& path_raw,
 
   std::string response;
   if (path_raw == kCloudPrintSetupPath) {
-    AddString(dict, "header", IDS_CLOUD_PRINT_SETUP_HEADER);
+    dict->SetString("header",
+        l10n_util::GetStringFUTF16(IDS_CLOUD_PRINT_SETUP_HEADER,
+        l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
     AddString(dict, "explain", IDS_CLOUD_PRINT_SETUP_EXPLAIN);
     AddString(dict, "anywhereheader", IDS_CLOUD_PRINT_SETUP_ANYWHERE_HEADER);
     AddString(dict, "anywhereexplain", IDS_CLOUD_PRINT_SETUP_ANYWHERE_EXPLAIN);

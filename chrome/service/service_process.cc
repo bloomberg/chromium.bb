@@ -95,7 +95,8 @@ void PrepareRestartOnCrashEnviroment(
   string16 dlg_strings(l10n_util::GetStringUTF16(IDS_CRASH_RECOVERY_TITLE));
   dlg_strings.push_back('|');
   string16 adjusted_string(
-      l10n_util::GetStringUTF16(IDS_SERVICE_CRASH_RECOVERY_CONTENT));
+      l10n_util::GetStringFUTF16(IDS_SERVICE_CRASH_RECOVERY_CONTENT,
+      l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
   base::i18n::AdjustStringForLocaleDirection(&adjusted_string);
   dlg_strings.append(adjusted_string);
   dlg_strings.push_back('|');

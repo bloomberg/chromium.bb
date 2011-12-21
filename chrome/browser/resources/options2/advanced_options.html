@@ -185,22 +185,22 @@
       </div>
     </section>
 <if expr="not pp_ifdef('chromeos')">
-    <section id="cloud-print-proxy-section">
+    <section id="cloud-print-connector-section">
       <h3 i18n-content="advancedSectionTitleCloudPrint"></h3>
       <div>
-        <div id="cloudPrintProxyLabel"
-             i18n-content="cloudPrintProxyDisabledLabel"></div>
+        <div id="cloudPrintConnectorLabel"
+             i18n-content="cloudPrintConnectorDisabledLabel"></div>
         <div class="section-group">
-          <button id="cloudPrintProxySetupButton"
-                  i18n-content="cloudPrintProxyDisabledButton"></button>
-          <button id="cloudPrintProxyManageButton"
-                  i18n-content="cloudPrintProxyEnabledManageButton"></button>
+          <button id="cloudPrintConnectorSetupButton"
+                  i18n-content="cloudPrintConnectorDisabledButton"></button>
+          <button id="cloudPrintManageButton"
+                  i18n-content="cloudPrintConnectorEnabledManageButton"></button>
         </div>
       </div>
     </section>
 </if>
 <if expr="pp_ifdef('chromeos')">
-  <section id="cloud-print-proxy-section">
+  <section id="cloud-print-connector-section">
     <h3 i18n-content="advancedSectionTitleCloudPrint"></h3>
     <div>
       <div>
@@ -211,7 +211,7 @@
             i18n-values="href:cloudPrintLearnMoreURL"></a>
       </div>
       <div class="section-group">
-        <button id="cloudPrintProxyManageButton"
+        <button id="cloudPrintManageButton"
                 i18n-content="cloudPrintChromeosOptionButton"></button>
       </div>
     </div>

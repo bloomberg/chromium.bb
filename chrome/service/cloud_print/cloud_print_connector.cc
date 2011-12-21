@@ -168,7 +168,8 @@ CloudPrintConnector::HandlePrinterListResponse(
   if (!result.succeeded()) {
     std::string message = result.message();
     if (message.empty())
-      message = l10n_util::GetStringUTF8(IDS_CLOUD_PRINT_ENUM_FAILED);
+      message = l10n_util::GetStringFUTF8(IDS_CLOUD_PRINT_ENUM_FAILED,
+          l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT));
     // There was a failure enumerating printers. Send a message to the server.
     ReportUserMessage(kEnumPrintersFailedMessageId, message);
   }
@@ -483,7 +484,8 @@ void CloudPrintConnector::OnReceivePrinterCaps(
     string16 printer_name_utf16 = UTF8ToUTF16(printer_name);
     std::string status_message = l10n_util::GetStringFUTF8(
         IDS_CLOUD_PRINT_REGISTER_PRINTER_FAILED,
-        printer_name_utf16);
+        printer_name_utf16,
+        l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT));
     ReportUserMessage(kGetPrinterCapsFailedMessageId, status_message);
 
     ContinuePendingTaskProcessing();  // Skip this printer registration.

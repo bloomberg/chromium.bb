@@ -183,7 +183,8 @@ void CloudPrintSetupFlow::OnCloseContents(TabContents* source,
 }
 
 string16 CloudPrintSetupFlow::GetDialogTitle() const {
-  return l10n_util::GetStringUTF16(IDS_CLOUD_PRINT_SETUP_DIALOG_TITLE);
+  return l10n_util::GetStringFUTF16(IDS_CLOUD_PRINT_SETUP_DIALOG_TITLE,
+      l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT));
 }
 
 bool CloudPrintSetupFlow::IsDialogModal() const {

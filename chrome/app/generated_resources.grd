@@ -4716,11 +4716,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_XSS_AUDITOR_DESCRIPTION" desc="Description of the 'XSS Auditor' lab.">
         Enables WebKit's XSS Auditor (cross-site scripting protection). This feature aims to protect you from certain attacks of malicious websites. It improves your security, but it might not be compatible with all websites.
       </message>
-      <message name="IDS_FLAGS_CLOUD_PRINT_PROXY_NAME" desc="Title of the Cloud Print Proxy lab">
-        Cloud Print Proxy
+      <message name="IDS_FLAGS_CLOUD_PRINT_CONNECTOR_NAME" desc="Title of the Cloud Print Connector lab">
+        Cloud Print Connector
       </message>
-      <message name="IDS_FLAGS_CLOUD_PRINT_PROXY_DESCRIPTION" desc="Description of the Cloud Print Proxy lab">
-        Enables a background service that connects the <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> service to any printers installed on this computer. Once this lab is enabled, you can turn <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> on by logging in with your Google account in the Options/Preferences in the Under the Hood section.
+      <message name="IDS_FLAGS_CLOUD_PRINT_CONNECTOR_DESCRIPTION" desc="Description of the Cloud Print Connector lab">
+        Enables a background service that connects the Google Cloud Print service to any printers installed on this computer. Once this lab is enabled, you can turn the Google Cloud Print Connector on by logging in with your Google account in the Options/Preferences in the Under the Hood section.
       </message>
       <message name="IDS_FLAGS_CRXLESS_WEB_APPS_NAME" desc="Title of the CRX-less web apps lab">
         CRX-less Web Apps
@@ -6433,19 +6433,19 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
 
       <!-- Cloud Print proxy strings -->
       <message name="IDS_CLOUD_PRINT_CHROMEOS_OPTION_LABEL" desc="Label for the cloud print section of the Chrome OS advanced options dialog.">
-        Set up or manage printers in <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
+        Set up or manage printers in <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>
       </message>
       <message name="IDS_CLOUD_PRINT_CHROMEOS_OPTION_BUTTON" desc="Text on a button to go to the cloud print home page from the Chrome OS advanced options dialog.">
-        Open <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
+        Open <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>
       </message>
       <message name="IDS_CLOUD_PRINT_SETUP_DIALOG_TITLE" desc="Title of the cloud print setup dialog.">
-        Set up <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
+        Set up <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>
       </message>
       <message name="IDS_CLOUD_PRINT_SETUP_HEADER" desc="Intro line of the cloud print setup dialog.">
-        Access and share your printers online with <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
+        Access and share your printers online with <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>
       </message>
       <message name="IDS_CLOUD_PRINT_SETUP_EXPLAIN" desc="Explanation of the cloud print setup dialog.">
-        <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> is built on the idea that printing can be more intuitive, accessible, and useful. Using <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> you can make your printers available to you from any <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> enabled web or mobile app.
+        <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> is built on the idea that printing can be more intuitive, accessible, and useful. Using <ph name="CLOUD_PRINT_NAME">&lt;span jscontent="googleCloudPrint"&gt;&lt;/span&gt;<ex>Google Cloud Print</ex></ph> you can make your printers available to you from any <ph name="CLOUD_PRINT_NAME">&lt;span jscontent="googleCloudPrint"&gt;&lt;/span&gt;<ex>Google Cloud Print</ex></ph> enabled web or mobile app.
       </message>
       <message name="IDS_CLOUD_PRINT_SETUP_ANYWHERE_HEADER" desc="Intro line about printing from anywhere.">
         Print from anywhere
@@ -6466,22 +6466,22 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Share and control access to your printers with any Google account.
       </message>
       <message name="IDS_CLOUD_PRINT_SETUP_DONE" desc="Message on completed set up of cloud print.">
-        You have successfully enabled <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>!  <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has registered the printers on this machine with &lt;b&gt;<ph name="EMAIL_ADDRESSES">$2<ex>foo@example.com</ex></ph>&lt;/b&gt;.  You can now print to your printers from any <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> enabled web or mobile app!
+        <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> has registered the printers on this machine with &lt;b&gt;<ph name="EMAIL_ADDRESSES">$2<ex>foo@example.com</ex></ph>&lt;/b&gt;.  You can now print to your printers from any <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> enabled web or mobile app!
       </message>
       <message name="IDS_CLOUD_PRINT_SETUP_TEST_PAGE" desc="Label on button for printing a test page.">
         Print a Test Page
       </message>
       <message name="IDS_CLOUD_PRINT_REGISTER_PRINTER_FAILED" desc="Status message to be sent to the server when we failed to retrieve information about a printer to register.">
-        An error occurred while retrieving printer capabilities for printer <ph name="PRINTER_NAME">$1<ex>HP Laserjet 7900</ex></ph>. This printer could not be registered with <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>.
+        An error occurred while retrieving printer capabilities for printer <ph name="PRINTER_NAME">$1<ex>HP Laserjet 7900</ex></ph>. This printer could not be registered with <ph name="CLOUD_PRINT_NAME">$2<ex>Google Cloud Print</ex></ph>.
       </message>
       <message name="IDS_CLOUD_PRINT_XPS_UNAVAILABLE" desc="Status message to be sent to the Cloud Print server when the XPS framework is missing.">
-        The <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> connector requires that the Microsoft XML Paper Specification Essentials Pack be installed.
+        The <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> connector requires that the Microsoft XML Paper Specification Essentials Pack be installed.
       </message>
       <message name="IDS_CLOUD_PRINT_ENUM_FAILED" desc="Status message to be sent to the Cloud Print server when enumerating printers failed.">
-        There was a problem listing printers. Some of your printers may not have registered successfully with <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>.
+        There was a problem listing printers. Some of your printers may not have registered successfully with <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>.
       </message>
       <message name="IDS_SERVICE_CRASH_RECOVERY_CONTENT" desc="Text content telling the user the service process has crashed.">
-        The <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> connector process has crashed. Restart?
+        The <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> connector process has crashed. Restart?
       </message>
 
       <!-- Print Preview -->
@@ -6577,11 +6577,11 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
       <message name="IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT"
           desc="Option shown in printer drop-down list to allow the user to print using cloud print. Cloud print dialog will open when this option is selected and the user clicks print.">
-        Print with <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
+        Print with <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>
       </message>
       <message name="IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT_WAIT"
           desc="Message shown in the print preview page after choosing cloud print before the dialog displays">
-        Loading <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
+        Loading <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>
       </message>
       <message name="IDS_PRINT_PREVIEW_SUMMARY_FORMAT_LONG" desc="Print summary, explaining to the user how many pages will be printed.">
         Total: <ph name="NUMBER_OF_SHEETS">$1<ex>10</ex></ph> <ph name="SHEETS_LABEL">$2<ex>sheets of paper</ex></ph> (<ph name="NUMBER_OF_PAGES">$3<ex>4</ex></ph> <ph name="PAGE_OR_PAGES_LABEL">$4<ex>Pages</ex></ph>)
@@ -6609,7 +6609,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Print using system dialog... <ph name="SHORTCUT_KEY">$1<ex>(Shift+Ctrl+P)</ex></ph>
       </message>
       <message name="IDS_PRINT_PREVIEW_CLOUD_DIALOG_OPTION" desc="Option allowing the user to access advanced printer settings using the cloud print dialog instead of printing through the print preview mechanism.">
-        Print using <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> dialog... <ph name="SHORTCUT_KEY">$1<ex>(Shift+Ctrl+P)</ex></ph>
+        Print using <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> dialog... <ph name="SHORTCUT_KEY">$2<ex>(Shift+Ctrl+P)</ex></ph>
       </message>
       <message name="IDS_PRINT_PREVIEW_PAGE_RANGE_INSTRUCTION" desc="Instruction shown when the user enters an invalid page range.">
         Invalid page range, use <ph name="EXAMPLE_PAGE_RANGE">$1<ex>e.g. 1-5, 8, 11-13</ex></ph>
@@ -8661,23 +8661,26 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Your network proxy settings are being managed by an extension.
       </message>
 
-      <message name="IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_LABEL" desc="The label of the cloud print setup button when it hasn't been set up yet.">
-        <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> lets you access this computer's printers from anywhere. Sign in to enable.
+      <message name="IDS_GOOGLE_CLOUD_PRINT" desc="The name of the Google Cloud Print product.">
+        Google Cloud Print
       </message>
-      <message name="IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_BUTTON" desc="The label of the cloud proxy configure button when it hasn't been set up yet.">
-        Sign in to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
+      <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL" desc="The label of the cloud print setup button when it hasn't been set up yet.">
+        <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> lets you access this computer's printers from anywhere. Click to enable.
       </message>
-      <message name="IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_LABEL" desc="The label of the cloud print setup button when it has been set up.">
-        You have registered your printers with <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> using the account <ph name="EMAIL">$1<ex>foo@bar.com</ex></ph>
+      <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON" desc="The label of the cloud connector configure button when it hasn't been set up yet.">
+        Enable <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> Connector
       </message>
-      <message name="IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_BUTTON" desc="The label of the cloud proxy configure button when it has been set up.">
-        Disable <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
+      <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_LABEL" desc="The label of the cloud print setup button when it has been set up.">
+        You have registered your printers with <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> using the account <ph name="EMAIL">$2<ex>foo@bar.com</ex></ph>
       </message>
-      <message name="IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_MANAGE_BUTTON" desc="The label of the link item for the cloud print management URL.">
+      <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_BUTTON" desc="The label of the cloud print connector configure button when it has been set up.">
+        Disable <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> Connector
+      </message>
+      <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_MANAGE_BUTTON" desc="The label of the link item for the cloud print management URL.">
         Manage Print Settings...
       </message>
-      <message name="IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLING_BUTTON" desc="The label of the cloud proxy configure button while it is being set up.">
-        Signing in...
+      <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLING_BUTTON" desc="The label of the cloud connector configure button while it is being set up.">
+        Enabling...
       </message>
       <message name="IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Enable phishing and malware protection' checkbox">
         Enable phishing and malware protection
@@ -9771,9 +9774,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE">
         Translate
-      </message>
-      <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_CLOUD_PRINT">
-        <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
       </message>
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_BACKGROUND">
         Background Apps
@@ -14529,7 +14529,7 @@ Battery full
 
     <!-- Cloud Print Strings -->
     <message name="IDS_CLOUD_PRINT_TOKEN_EXPIRED_MESSAGE" desc="The message to display when the cloud print token has expired.">
-      The credentials used to share your printers to  <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> have expired. Please click here to re-enter your username and password.
+      The credentials used to share your printers to  <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> have expired. Please click here to re-enter your username and password.
     </message>
 
     <!-- Strings for the new-style OAuth-based enterprise enrollment page -->

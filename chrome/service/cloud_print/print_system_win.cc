@@ -729,8 +729,9 @@ PrintSystemWin::PrintSystemWin() {
 
 PrintSystem::PrintSystemResult PrintSystemWin::Init() {
   if (!printing::XPSModule::Init()) {
-    std::string message = l10n_util::GetStringUTF8(
-        IDS_CLOUD_PRINT_XPS_UNAVAILABLE);
+    std::string message = l10n_util::GetStringFUTF8(
+        IDS_CLOUD_PRINT_XPS_UNAVAILABLE,
+        l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT));
     return PrintSystemResult(false, message);
   }
   return PrintSystemResult(true, std::string());

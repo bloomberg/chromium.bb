@@ -101,6 +101,7 @@ void PrintPreviewDataSource::Init(bool is_dummy) {
 #if defined(OS_CHROMEOS)
   AddString("cloudPrintDialogOption", l10n_util::GetStringFUTF16(
       IDS_PRINT_PREVIEW_CLOUD_DIALOG_OPTION,
+      l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT),
       shortcut_text));
   AddLocalizedString("printWithCloudPrint",
                      IDS_PRINT_PREVIEW_MORE_PRINTERS);
@@ -108,20 +109,22 @@ void PrintPreviewDataSource::Init(bool is_dummy) {
   AddString("systemDialogOption", l10n_util::GetStringFUTF16(
       IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION,
       shortcut_text));
-  AddLocalizedString("printWithCloudPrint",
-                     IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT);
+  AddString("printWithCloudPrint", l10n_util::GetStringFUTF16(
+      IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT,
+      l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
 #endif
 #if defined(OS_MACOSX)
   AddLocalizedString("openPdfInPreviewOption",
                      IDS_PRINT_PREVIEW_OPEN_PDF_IN_PREVIEW_APP);
 #endif
+  AddString("printWithCloudPrintWait", l10n_util::GetStringFUTF16(
+      IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT_WAIT,
+      l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
   AddLocalizedString("pageRangeInstruction",
                      IDS_PRINT_PREVIEW_PAGE_RANGE_INSTRUCTION);
   AddLocalizedString("copiesInstruction", IDS_PRINT_PREVIEW_COPIES_INSTRUCTION);
   AddLocalizedString("signIn", IDS_PRINT_PREVIEW_SIGN_IN);
   AddLocalizedString("managePrinters", IDS_PRINT_PREVIEW_MANAGE_PRINTERS);
-  AddLocalizedString("printWithCloudPrintWait",
-                     IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT_WAIT);
   AddLocalizedString("incrementTitle", IDS_PRINT_PREVIEW_INCREMENT_TITLE);
   AddLocalizedString("decrementTitle", IDS_PRINT_PREVIEW_DECREMENT_TITLE);
   AddLocalizedString("printPagesLabel", IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL);

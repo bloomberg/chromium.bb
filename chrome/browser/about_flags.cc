@@ -137,8 +137,8 @@ const Experiment kExperiments[] = {
   },
   {
     "cloud-print-proxy",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_CLOUD_PRINT_PROXY_NAME,
-    IDS_FLAGS_CLOUD_PRINT_PROXY_DESCRIPTION,
+    IDS_FLAGS_CLOUD_PRINT_CONNECTOR_NAME,
+    IDS_FLAGS_CLOUD_PRINT_CONNECTOR_DESCRIPTION,
     // For a Chrome build, we know we have a PDF plug-in on Windows, so it's
     // fully enabled.
     // Otherwise, where we know Windows could be working if a viable PDF

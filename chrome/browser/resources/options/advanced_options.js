@@ -114,19 +114,19 @@ var OptionsPage = options.OptionsPage;
       // 'cloudPrintProxyEnabled' is true for Chrome branded builds on
       // certain platforms, or could be enabled by a lab.
       if (!cr.isChromeOS) {
-        $('cloudPrintProxySetupButton').onclick = function(event) {
-          if ($('cloudPrintProxyManageButton').style.display == 'none') {
+        $('cloudPrintConnectorSetupButton').onclick = function(event) {
+          if ($('cloudPrintManageButton').style.display == 'none') {
             // Disable the button, set it's text to the intermediate state.
-            $('cloudPrintProxySetupButton').textContent =
-              localStrings.getString('cloudPrintProxyEnablingButton');
-            $('cloudPrintProxySetupButton').disabled = true;
+            $('cloudPrintConnectorSetupButton').textContent =
+              localStrings.getString('cloudPrintConnectorEnablingButton');
+            $('cloudPrintConnectorSetupButton').disabled = true;
             chrome.send('showCloudPrintSetupDialog');
           } else {
-            chrome.send('disableCloudPrintProxy');
+            chrome.send('disableCloudPrintConnector');
           }
         };
       }
-      $('cloudPrintProxyManageButton').onclick = function(event) {
+      $('cloudPrintManageButton').onclick = function(event) {
         chrome.send('showCloudPrintManagePage');
       };
 
@@ -233,28 +233,28 @@ var OptionsPage = options.OptionsPage;
   };
 
   // Set the Cloud Print proxy UI to enabled, disabled, or processing.
-  AdvancedOptions.SetupCloudPrintProxySection = function(
+  AdvancedOptions.SetupCloudPrintConnectorSection = function(
         disabled, label, allowed) {
     if (!cr.isChromeOS) {
-      $('cloudPrintProxyLabel').textContent = label;
+      $('cloudPrintConnectorLabel').textContent = label;
       if (disabled || !allowed) {
-        $('cloudPrintProxySetupButton').textContent =
-          localStrings.getString('cloudPrintProxyDisabledButton');
-        $('cloudPrintProxyManageButton').style.display = 'none';
+        $('cloudPrintConnectorSetupButton').textContent =
+          localStrings.getString('cloudPrintConnectorDisabledButton');
+        $('cloudPrintManageButton').style.display = 'none';
       } else {
-        $('cloudPrintProxySetupButton').textContent =
-          localStrings.getString('cloudPrintProxyEnabledButton');
-        $('cloudPrintProxyManageButton').style.display = 'inline';
+        $('cloudPrintConnectorSetupButton').textContent =
+          localStrings.getString('cloudPrintConnectorEnabledButton');
+        $('cloudPrintManageButton').style.display = 'inline';
       }
-      $('cloudPrintProxySetupButton').disabled = !allowed;
+      $('cloudPrintConnectorSetupButton').disabled = !allowed;
     }
   };
 
-  AdvancedOptions.RemoveCloudPrintProxySection = function() {
+  AdvancedOptions.RemoveCloudPrintConnectorSection = function() {
     if (!cr.isChromeOS) {
-      var proxySectionElm = $('cloud-print-proxy-section');
-      if (proxySectionElm)
-        proxySectionElm.parentNode.removeChild(proxySectionElm);
+      var connectorSectionElm = $('cloud-print-connector-section');
+      if (connectorSectionElm)
+        connectorSectionElm.parentNode.removeChild(connectorSectionElm);
     }
   };
 

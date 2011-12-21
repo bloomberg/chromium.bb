@@ -101,6 +101,9 @@ class AdvancedOptionsHandler
   // tab pointed at the management URL.
   void ShowCloudPrintManagePage(const ListValue* args);
 
+  // Register localized strings used by Cloud Print
+  void RegisterCloudPrintStrings(DictionaryValue* localized_strings);
+
 #if !defined(OS_CHROMEOS)
   // Callback for the Sign in to Cloud Print button. This will start
   // the authentication process.
@@ -108,19 +111,18 @@ class AdvancedOptionsHandler
 
   // Callback for the Disable Cloud Print button. This will sign out
   // of cloud print.
-  void HandleDisableCloudPrintProxy(const ListValue* args);
+  void HandleDisableCloudPrintConnector(const ListValue* args);
 
   // Pings the service to send us it's current notion of the enabled state.
   void RefreshCloudPrintStatusFromService();
 
-  // Setup the enabled or disabled state of the cloud print proxy
+  // Setup the enabled or disabled state of the cloud print connector
   // management UI.
-  void SetupCloudPrintProxySection();
+  void SetupCloudPrintConnectorSection();
 
-  // Remove cloud print proxy section if cloud print proxy management UI is
-  // disabled.
-  void RemoveCloudPrintProxySection();
-
+  // Remove cloud print connector section if cloud print connector management
+  //  UI is disabled.
+  void RemoveCloudPrintConnectorSection();
 #endif
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
@@ -157,9 +159,9 @@ class AdvancedOptionsHandler
 
 #if !defined(OS_CHROMEOS)
   BooleanPrefMember enable_metrics_recording_;
-  StringPrefMember cloud_print_proxy_email_;
-  BooleanPrefMember cloud_print_proxy_enabled_;
-  bool cloud_print_proxy_ui_enabled_;
+  StringPrefMember cloud_print_connector_email_;
+  BooleanPrefMember cloud_print_connector_enabled_;
+  bool cloud_print_connector_ui_enabled_;
   scoped_ptr<CloudPrintSetupHandler> cloud_print_setup_handler_;
 #endif
 
