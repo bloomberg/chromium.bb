@@ -198,6 +198,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kShowFPSCounter)
   },
   {
+    "accelerated-filters",
+    IDS_FLAGS_ACCELERATED_FILTERS,
+    IDS_FLAGS_ACCELERATED_FILTERS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableAcceleratedFilters)
+  },
+  {
     "disable-gpu-vsync",
     IDS_FLAGS_DISABLE_GPU_VSYNC_NAME,
     IDS_FLAGS_DISABLE_GPU_VSYNC_DESCRIPTION,
