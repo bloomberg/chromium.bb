@@ -49,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, Reload) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-              GetController()));
+              controller()));
   browser()->Reload(CURRENT_TAB);
   observer.Wait();
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, LoadInNewTab) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-              GetController()));
+              controller()));
   browser()->Reload(CURRENT_TAB);
   observer.Wait();
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),

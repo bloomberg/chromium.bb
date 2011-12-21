@@ -347,9 +347,9 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
           resource.render_view_id &&
       (resource.threat_type == SafeBrowsingService::URL_PHISHING ||
        resource.threat_type == SafeBrowsingService::URL_MALWARE) &&
-      tab_contents()->GetController().GetActiveEntry()) {
+      tab_contents()->controller().GetActiveEntry()) {
     unsafe_unique_page_id_ =
-        tab_contents()->GetController().GetActiveEntry()->unique_id();
+        tab_contents()->controller().GetActiveEntry()->unique_id();
     // We also keep the resource around in order to be able to send the
     // malicious URL to the server.
     unsafe_resource_.reset(new SafeBrowsingService::UnsafeResource(resource));
@@ -426,7 +426,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
       if (!sb_service_->IsWhitelisted(resource)) {
         // We need to stop any pending navigations, otherwise the interstital
         // might not get created properly.
-        tab_contents()->GetController().DiscardNonCommittedEntries();
+        tab_contents()->controller().DiscardNonCommittedEntries();
         resource.client = new CsdClient();  // Will delete itself
         sb_service_->DoDisplayBlockingPage(resource);
       }
@@ -474,7 +474,7 @@ bool ClientSideDetectionHost::DidShowSBInterstitial() {
     return false;
   }
   const NavigationEntry* nav_entry =
-      tab_contents()->GetController().GetActiveEntry();
+      tab_contents()->controller().GetActiveEntry();
   return (nav_entry && nav_entry->unique_id() == unsafe_unique_page_id_);
 }
 

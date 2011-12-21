@@ -299,7 +299,7 @@ void CloudPrintFlowHandler::RegisterMessages() {
   // Register for appropriate notifications, and re-direct the URL
   // to the real server URL, now that we've gotten an HTML dialog
   // going.
-  NavigationController* controller = &web_ui_->tab_contents()->GetController();
+  NavigationController* controller = &web_ui_->tab_contents()->controller();
   NavigationEntry* pending_entry = controller->pending_entry();
   if (pending_entry) {
     Profile* profile = Profile::FromWebUI(web_ui_);

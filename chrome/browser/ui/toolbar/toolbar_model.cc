@@ -169,5 +169,5 @@ NavigationController* ToolbarModel::GetNavigationController() const {
   // toolbar during window creation (i.e. before any tabs have been added
   // to the window).
   TabContents* current_tab = browser_->GetSelectedTabContents();
-  return current_tab ? &current_tab->GetController() : NULL;
+  return current_tab ? &current_tab->controller() : NULL;
 }

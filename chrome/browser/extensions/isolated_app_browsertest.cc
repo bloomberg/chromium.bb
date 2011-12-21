@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-              GetController()));
+              controller()));
   browser()->Reload(CURRENT_TAB);
   observer.Wait();
   EXPECT_TRUE(HasCookie(tab1, "app1=3"));

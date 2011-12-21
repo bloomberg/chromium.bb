@@ -170,7 +170,7 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   if (existing_contents) {
     tab_contents_.reset(existing_contents);
-    tab_contents_->tab_contents()->GetController().set_browser_context(profile);
+    tab_contents_->tab_contents()->controller().set_browser_context(profile);
   } else {
     TabContents* new_contents = new TabContents(profile, NULL, MSG_ROUTING_NONE,
                                                 NULL, NULL);
@@ -192,7 +192,7 @@ bool ExternalTabContainer::Init(Profile* profile,
   }
 
   NavigationController* controller =
-      &tab_contents_->tab_contents()->GetController();
+      &tab_contents_->tab_contents()->controller();
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
@@ -249,7 +249,7 @@ void ExternalTabContainer::Uninitialize() {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED,
         content::Source<NavigationController>(
-            &tab_contents_->tab_contents()->GetController()),
+            &tab_contents_->tab_contents()->controller()),
         content::Details<ExternalTabContainer>(this));
 
     tab_contents_.reset(NULL);
@@ -826,7 +826,7 @@ void ExternalTabContainer::Observe(int type,
         if (InitNavigationInfo(&navigation_info, commit->type,
                 commit->previous_entry_index -
                 tab_contents_->tab_contents()->
-                    GetController().last_committed_entry_index()))
+                    controller().last_committed_entry_index()))
           automation_->Send(new AutomationMsg_DidNavigate(tab_handle_,
                                                           navigation_info));
       }
@@ -948,7 +948,7 @@ bool ExternalTabContainer::InitNavigationInfo(NavigationInfo* nav_info,
                                               int relative_offset) {
   DCHECK(nav_info);
   NavigationEntry* entry =
-      tab_contents_->tab_contents()->GetController().GetActiveEntry();
+      tab_contents_->tab_contents()->controller().GetActiveEntry();
   // If this is very early in the game then we may not have an entry.
   if (!entry)
     return false;
@@ -956,7 +956,7 @@ bool ExternalTabContainer::InitNavigationInfo(NavigationInfo* nav_info,
   nav_info->navigation_type = nav_type;
   nav_info->relative_offset = relative_offset;
   nav_info->navigation_index =
-      tab_contents_->tab_contents()->GetController().GetCurrentEntryIndex();
+      tab_contents_->tab_contents()->controller().GetCurrentEntryIndex();
   nav_info->url = entry->url();
   nav_info->referrer = entry->referrer().url;
   nav_info->title =  UTF16ToWideHack(entry->title());
@@ -1052,7 +1052,7 @@ void ExternalTabContainer::Navigate(const GURL& url, const GURL& referrer) {
 
   TRACE_EVENT_BEGIN_ETW("ExternalTabContainer::Navigate", 0, url.spec());
 
-  tab_contents_->tab_contents()->GetController().LoadURL(
+  tab_contents_->tab_contents()->controller().LoadURL(
       url, content::Referrer(referrer, WebKit::WebReferrerPolicyDefault),
       content::PAGE_TRANSITION_START_PAGE, std::string());
 }

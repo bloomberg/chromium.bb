@@ -423,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareProceed) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-              GetController()));
+              controller()));
   SendCommand("\"proceed\"");    // Simulate the user clicking "proceed"
   observer.Wait();
   AssertNoInterstitial(true);    // Assert the interstitial is gone.
@@ -452,7 +452,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingProceed) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-              GetController()));
+              controller()));
   SendCommand("\"proceed\"");   // Simulate the user clicking "proceed".
   observer.Wait();
   AssertNoInterstitial(true);    // Assert the interstitial is gone
@@ -469,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingReportError) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-              GetController()));
+              controller()));
   SendCommand("\"reportError\"");   // Simulate the user clicking "report error"
   observer.Wait();
   AssertNoInterstitial(false);    // Assert the interstitial is gone
@@ -490,7 +490,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-              GetController()));
+              controller()));
   SendCommand("\"learnMore\"");   // Simulate the user clicking "learn more"
   observer.Wait();
   AssertNoInterstitial(false);    // Assert the interstitial is gone
@@ -511,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareIframeDontProceed) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-              GetController()));
+              controller()));
   SendCommand("\"takeMeBack\"");    // Simulate the user clicking "back"
   observer.Wait();
   AssertNoInterstitial(false);  // Assert the interstitial is gone

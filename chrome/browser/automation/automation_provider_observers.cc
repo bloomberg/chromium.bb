@@ -392,7 +392,7 @@ void TabStripNotificationObserver::Observe(
   if (type == notification_) {
     if (type == content::NOTIFICATION_TAB_PARENTED) {
       ObserveTab(&(content::Source<TabContentsWrapper>(source).ptr()->
-                     tab_contents()->GetController()));
+                     tab_contents()->controller()));
     } else {
       ObserveTab(content::Source<NavigationController>(source).ptr());
     }
@@ -1079,7 +1079,7 @@ bool ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
     case IDC_FORWARD:
     case IDC_RELOAD: {
       new NavigationNotificationObserver(
-          &browser->GetSelectedTabContents()->GetController(),
+          &browser->GetSelectedTabContents()->controller(),
           automation, reply_message, 1, false, false);
       break;
     }
@@ -2751,7 +2751,7 @@ void NewTabObserver::Observe(int type,
   DCHECK_EQ(content::NOTIFICATION_TAB_PARENTED, type);
   NavigationController* controller =
       &(content::Source<TabContentsWrapper>(source).ptr()->
-          tab_contents()->GetController());
+          tab_contents()->controller());
   if (automation_) {
     // TODO(phajdan.jr): Clean up this hack. We write the correct return type
     // here, but don't send the message. NavigationNotificationObserver

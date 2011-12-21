@@ -712,7 +712,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
 
   ui_test_utils::WindowedNotificationObserver wait_for_tab_closed(
       content::NOTIFICATION_TAB_CLOSED, content::Source<NavigationController>(
-          &browser()->GetTabContentsAt(1)->GetController()));
+          &browser()->GetTabContentsAt(1)->controller()));
 
   // Press Ctrl/Cmd+W, which will close the tab.
 #if defined(OS_MACOSX)

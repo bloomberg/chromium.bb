@@ -52,7 +52,7 @@ TabContents* DOMView::CreateTabContents(Profile* profile,
 
 void DOMView::LoadURL(const GURL& url) {
   DCHECK(initialized_);
-  dom_contents_->tab_contents()->GetController().LoadURL(
+  dom_contents_->tab_contents()->controller().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_START_PAGE,
       std::string());
 }

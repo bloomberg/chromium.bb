@@ -268,7 +268,7 @@ class NavEntryCommittedObserver : public content::NotificationObserver {
   explicit NavEntryCommittedObserver(TabContents* tab_contents) {
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    content::Source<NavigationController>(
-                      &tab_contents->GetController()));
+                      &tab_contents->controller()));
   }
 
   virtual void Observe(int type,
@@ -305,7 +305,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     params.media_flags = 0;
     params.spellcheck_enabled = false;
     params.is_editable = false;
-    params.page_url = tab_contents->GetController().GetActiveEntry()->url();
+    params.page_url = tab_contents->controller().GetActiveEntry()->url();
 #if defined(OS_MACOSX)
     params.writing_direction_default = 0;
     params.writing_direction_left_to_right = 0;
@@ -708,9 +708,9 @@ TEST_F(TranslateManagerTest, ReloadFromLocationBar) {
   // Create a pending navigation and simulate a page load.  That should be the
   // equivalent of typing the URL again in the location bar.
   NavEntryCommittedObserver nav_observer(contents());
-  contents()->GetController().LoadURL(url, content::Referrer(),
-                                      content::PAGE_TRANSITION_TYPED,
-                                      std::string());
+  contents()->controller().LoadURL(url, content::Referrer(),
+                                   content::PAGE_TRANSITION_TYPED,
+                                   std::string());
   rvh()->SendNavigate(0, url);
 
   // Test that we are really getting a same page navigation, the test would be

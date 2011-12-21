@@ -49,7 +49,7 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() {
   // is very similar, but for non-first loads, we want to use the committed
   // entry. This is so the bookmarks bar disappears at the same time the page
   // does.
-  if (tab_contents()->GetController().GetLastCommittedEntry()) {
+  if (tab_contents()->controller().GetLastCommittedEntry()) {
     // Not the first load, always use the committed Web UI.
     return CanShowBookmarkBar(tab_contents()->committed_web_ui());
   }

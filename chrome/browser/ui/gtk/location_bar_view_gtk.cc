@@ -1044,7 +1044,7 @@ gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
     if (event->x == 0 && event->y == 0)
       return FALSE;
 
-    NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
+    NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
     if (!nav_entry) {
       NOTREACHED();
       return FALSE;

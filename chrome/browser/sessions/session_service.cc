@@ -560,7 +560,7 @@ void SessionService::Observe(int type,
         TabNavigationPathPrunedFromBack(
             tab->restore_tab_helper()->window_id(),
             tab->restore_tab_helper()->session_id(),
-            tab->tab_contents()->GetController().entry_count());
+            tab->tab_contents()->controller().entry_count());
       }
       RecordSessionUpdateHistogramData(content::NOTIFICATION_NAV_LIST_PRUNED,
           &last_updated_nav_list_pruned_time_);
@@ -590,7 +590,7 @@ void SessionService::Observe(int type,
       if (!tab || tab->profile() != profile())
         return;
       int current_entry_index =
-          tab->tab_contents()->GetController().GetCurrentEntryIndex();
+          tab->tab_contents()->controller().GetCurrentEntryIndex();
       SetSelectedNavigationIndex(tab->restore_tab_helper()->window_id(),
                                  tab->restore_tab_helper()->session_id(),
                                  current_entry_index);
@@ -598,7 +598,7 @@ void SessionService::Observe(int type,
           tab->restore_tab_helper()->window_id(),
           tab->restore_tab_helper()->session_id(),
           current_entry_index,
-          *tab->tab_contents()->GetController().GetEntryAtIndex(
+          *tab->tab_contents()->controller().GetEntryAtIndex(
               current_entry_index));
       content::Details<content::LoadCommittedDetails> changed(details);
       if (changed->type == content::NAVIGATION_TYPE_NEW_PAGE ||
@@ -1114,14 +1114,14 @@ void SessionService::BuildCommandsForTab(
   const SessionID& session_id(tab->restore_tab_helper()->session_id());
   commands->push_back(CreateSetTabWindowCommand(window_id, session_id));
   const int current_index =
-      tab->tab_contents()->GetController().GetCurrentEntryIndex();
+      tab->tab_contents()->controller().GetCurrentEntryIndex();
   const int min_index = std::max(0,
                                  current_index - max_persist_navigation_count);
   const int max_index =
       std::min(current_index + max_persist_navigation_count,
-               tab->tab_contents()->GetController().entry_count());
+               tab->tab_contents()->controller().entry_count());
   const int pending_index =
-      tab->tab_contents()->GetController().pending_entry_index();
+      tab->tab_contents()->controller().pending_entry_index();
   if (tab_to_available_range) {
     (*tab_to_available_range)[session_id.id()] =
         std::pair<int, int>(min_index, max_index);
@@ -1139,8 +1139,8 @@ void SessionService::BuildCommandsForTab(
   }
   for (int i = min_index; i < max_index; ++i) {
     const NavigationEntry* entry = (i == pending_index) ?
-        tab->tab_contents()->GetController().pending_entry() :
-        tab->tab_contents()->GetController().GetEntryAtIndex(i);
+        tab->tab_contents()->controller().pending_entry() :
+        tab->tab_contents()->controller().GetEntryAtIndex(i);
     DCHECK(entry);
     if (ShouldTrackEntry(entry->virtual_url())) {
       commands->push_back(

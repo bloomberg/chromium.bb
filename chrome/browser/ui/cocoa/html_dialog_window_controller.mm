@@ -298,11 +298,11 @@ void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
   HtmlDialogUI::GetPropertyAccessor().SetProperty(
       contentsWrapper_->tab_contents()->GetPropertyBag(), delegate_.get());
 
-  contentsWrapper_->tab_contents()->GetController().LoadURL(
-      delegate_->GetDialogContentURL(),
-      content::Referrer(),
-      content::PAGE_TRANSITION_START_PAGE,
-      std::string());
+  contentsWrapper_->tab_contents()->controller().LoadURL(
+                                      delegate_->GetDialogContentURL(),
+                                      content::Referrer(),
+                                      content::PAGE_TRANSITION_START_PAGE,
+                                      std::string());
 
   // TODO(akalin): add accelerator for ESC to close the dialog box.
   //

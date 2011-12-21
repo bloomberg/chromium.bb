@@ -404,7 +404,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
       ui_test_utils::WindowedNotificationObserver observer(
           content::NOTIFICATION_LOAD_STOP,
           content::Source<NavigationController>(
-              &client_contents->GetController()));
+              &client_contents->controller()));
       observer.Wait();
     }
   }
@@ -510,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestReattachAfterCrash) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-              GetController()));
+              controller()));
   browser()->Reload(CURRENT_TAB);
   observer.Wait();
 

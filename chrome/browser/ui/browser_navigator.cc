@@ -247,19 +247,19 @@ void LoadURLInContents(TabContents* target_contents,
                        browser::NavigateParams* params,
                        const std::string& extra_headers) {
   if (params->transferred_global_request_id != GlobalRequestID()) {
-    target_contents->GetController().TransferURL(
+    target_contents->controller().TransferURL(
         url,
         params->referrer,
         params->transition, extra_headers,
         params->transferred_global_request_id,
         params->is_renderer_initiated);
   } else if (params->is_renderer_initiated) {
-    target_contents->GetController().LoadURLFromRenderer(
+    target_contents->controller().LoadURLFromRenderer(
         url,
         params->referrer,
         params->transition,  extra_headers);
   } else {
-    target_contents->GetController().LoadURL(
+    target_contents->controller().LoadURL(
         url,
         params->referrer,
         params->transition,  extra_headers);
@@ -569,7 +569,7 @@ void Navigate(NavigateParams* params) {
     TabContents* target = params->browser->GetTabContentsAt(singleton_index);
 
     if (target->is_crashed()) {
-      target->GetController().Reload(true);
+      target->controller().Reload(true);
     } else if (params->path_behavior == NavigateParams::IGNORE_AND_NAVIGATE &&
         target->GetURL() != params->url) {
       InitializeExtraHeaders(params, NULL, &extra_headers);

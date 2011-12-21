@@ -133,10 +133,10 @@ bool TabContentsContainer::OnMousePressed(const views::MouseEvent& event) {
   }
   switch (button) {
     case 8:
-      tab_contents_->GetController().GoBack();
+      tab_contents_->controller().GoBack();
       return true;
     case 9:
-      tab_contents_->GetController().GoForward();
+      tab_contents_->controller().GoForward();
       return true;
   }
 
@@ -163,7 +163,7 @@ void TabContentsContainer::AddObservers() {
   registrar_.Add(
       this,
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      content::Source<NavigationController>(&tab_contents_->GetController()));
+      content::Source<NavigationController>(&tab_contents_->controller()));
 
   registrar_.Add(
       this,

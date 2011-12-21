@@ -80,8 +80,7 @@ void BlockedContentTabHelper::AddPopup(TabContentsWrapper* new_contents,
   // entry is the page to be loaded as we navigate away from the unloading
   // page.  For this reason, we can't use GetURL() to get the opener URL,
   // because it returns the active entry.
-  NavigationEntry* entry =
-      tab_contents()->GetController().GetLastCommittedEntry();
+  NavigationEntry* entry = tab_contents()->controller().GetLastCommittedEntry();
   GURL creator = entry ? entry->virtual_url() : GURL::EmptyGURL();
   Profile* profile =
       Profile::FromBrowserContext(tab_contents()->browser_context());

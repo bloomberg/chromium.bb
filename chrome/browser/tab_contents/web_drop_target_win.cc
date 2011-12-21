@@ -229,7 +229,7 @@ DWORD WebDropTarget::OnDrop(IDataObject* data_object,
 
   // Focus the target browser.
   Browser* browser = Browser::GetBrowserForController(
-      &tab_contents_->GetController(), NULL);
+      &tab_contents_->controller(), NULL);
   if (browser)
     browser->window()->Show();
 

@@ -399,6 +399,6 @@ TranslateInfoBarDelegate*
 
 std::string TranslateInfoBarDelegate::GetPageHost() {
   NavigationEntry* entry =
-      owner()->tab_contents()->GetController().GetActiveEntry();
+      owner()->tab_contents()->controller().GetActiveEntry();
   return entry ? entry->url().HostNoBrackets() : std::string();
 }

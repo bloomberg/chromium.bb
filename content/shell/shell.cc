@@ -74,7 +74,7 @@ Shell* Shell::CreateNewWindow(content::BrowserContext* browser_context,
 }
 
 void Shell::LoadURL(const GURL& url) {
-  tab_contents_->GetController().LoadURL(
+  tab_contents_->controller().LoadURL(
       url,
       content::Referrer(),
       content::PAGE_TRANSITION_TYPED,
@@ -83,12 +83,12 @@ void Shell::LoadURL(const GURL& url) {
 }
 
 void Shell::GoBackOrForward(int offset) {
-  tab_contents_->GetController().GoToOffset(offset);
+  tab_contents_->controller().GoToOffset(offset);
   tab_contents_->Focus();
 }
 
 void Shell::Reload() {
-  tab_contents_->GetController().Reload(false);
+  tab_contents_->controller().Reload(false);
   tab_contents_->Focus();
 }
 
@@ -98,8 +98,8 @@ void Shell::Stop() {
 }
 
 void Shell::UpdateNavigationControls() {
-  int current_index = tab_contents_->GetController().GetCurrentEntryIndex();
-  int max_index = tab_contents_->GetController().entry_count() - 1;
+  int current_index = tab_contents_->controller().GetCurrentEntryIndex();
+  int max_index = tab_contents_->controller().entry_count() - 1;
 
   PlatformEnableUIControl(BACK_BUTTON, current_index > 0);
   PlatformEnableUIControl(FORWARD_BUTTON, current_index < max_index);

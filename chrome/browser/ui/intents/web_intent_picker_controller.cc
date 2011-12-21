@@ -116,7 +116,7 @@ WebIntentPickerController::WebIntentPickerController(
           picker_(NULL),
           pending_async_count_(0),
           service_tab_(NULL) {
-  NavigationController* controller = &wrapper->tab_contents()->GetController();
+  NavigationController* controller = &wrapper->tab_contents()->controller();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                  content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
@@ -213,7 +213,7 @@ void WebIntentPickerController::OnSendReturnMessage() {
   if (service_tab_) {
     int index = TabStripModel::kNoTab;
     Browser* browser = Browser::GetBrowserForController(
-        &service_tab_->GetController(), &index);
+        &service_tab_->controller(), &index);
     if (browser) {
       browser->tabstrip_model()->CloseTabContentsAt(
           index, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);

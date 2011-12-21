@@ -55,8 +55,7 @@ void InfoBarTabHelper::AddInfoBar(InfoBarDelegate* delegate) {
   if (infobars_.size() == 1) {
     registrar_.Add(
         this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::Source<NavigationController>(
-            &tab_contents()->GetController()));
+        content::Source<NavigationController>(&tab_contents()->controller()));
   }
 }
 
@@ -119,10 +118,8 @@ void InfoBarTabHelper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
   infobars_.erase(infobars_.begin() + i);
   // Remove ourselves as an observer if we are tracking no more InfoBars.
   if (infobars_.empty()) {
-    registrar_.Remove(
-        this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::Source<NavigationController>(
-            &tab_contents()->GetController()));
+    registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<NavigationController>(&tab_contents()->controller()));
   }
 }
 
@@ -179,7 +176,7 @@ void InfoBarTabHelper::Observe(int type,
                                const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      DCHECK(&tab_contents()->GetController() ==
+      DCHECK(&tab_contents()->controller() ==
              content::Source<NavigationController>(source).ptr());
 
       content::LoadCommittedDetails& committed_details =

@@ -312,7 +312,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
                         initiator_tab->tab_contents()->GetTitle());
     std::string url;
     NavigationEntry* entry =
-        initiator_tab->tab_contents()->GetController().GetActiveEntry();
+        initiator_tab->tab_contents()->controller().GetActiveEntry();
     if (entry)
       url = entry->virtual_url().spec();
     settings->SetString(printing::kSettingHeaderFooterURL, url);

@@ -48,13 +48,13 @@ void TestHtmlDialogObserver::Observe(
       // navigate in this method, ensuring that this is not a race condition.
       registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                      content::Source<NavigationController>(
-                         &web_ui_->tab_contents()->GetController()));
+                         &web_ui_->tab_contents()->controller()));
       break;
     case content::NOTIFICATION_LOAD_STOP:
       DCHECK(web_ui_);
       registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP,
                         content::Source<NavigationController>(
-                            &web_ui_->tab_contents()->GetController()));
+                            &web_ui_->tab_contents()->controller()));
       done_ = true;
       // If the message loop is running stop it.
       if (running_) {

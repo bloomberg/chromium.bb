@@ -252,10 +252,10 @@ void TabLoader::Observe(int type,
       TabContents* tab_contents = content::Source<TabContents>(source).ptr();
       if (!got_first_paint_) {
         RenderWidgetHost* render_widget_host =
-            GetRenderWidgetHost(&tab_contents->GetController());
+            GetRenderWidgetHost(&tab_contents->controller());
         render_widget_hosts_loading_.erase(render_widget_host);
       }
-      HandleTabClosedOrLoaded(&tab_contents->GetController());
+      HandleTabClosedOrLoaded(&tab_contents->controller());
       break;
     }
     case content::NOTIFICATION_LOAD_STOP: {
@@ -468,7 +468,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
       RestoreTabsToBrowser(*(*i), browser, selected_tab_index);
       ShowBrowser(browser, initial_tab_count, selected_tab_index);
       tab_loader_->TabIsLoading(
-          &browser->GetSelectedTabContents()->GetController());
+          &browser->GetSelectedTabContents()->controller());
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
     }
 
@@ -661,7 +661,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
         active_tab = NULL;
       }
       tab_loader_->TabIsLoading(
-          &browser->GetSelectedTabContents()->GetController());
+          &browser->GetSelectedTabContents()->controller());
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
     }
 
@@ -730,7 +730,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                 true,
                                 NULL);
     if (schedule_load)
-      tab_loader_->ScheduleLoad(&tab_contents->GetController());
+      tab_loader_->ScheduleLoad(&tab_contents->controller());
   }
 
   Browser* CreateRestoredBrowser(Browser::Type type,

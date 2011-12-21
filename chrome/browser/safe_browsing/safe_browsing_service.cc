@@ -1054,7 +1054,7 @@ void SafeBrowsingService::DoDisplayBlockingPage(
       CanReportStats()) {
     GURL page_url = tab_contents->GetURL();
     GURL referrer_url;
-    NavigationEntry* entry = tab_contents->GetController().GetActiveEntry();
+    NavigationEntry* entry = tab_contents->controller().GetActiveEntry();
     if (entry)
       referrer_url = entry->referrer().url;
 

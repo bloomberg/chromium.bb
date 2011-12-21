@@ -62,7 +62,7 @@ RecentlyClosedTabsHandler::~RecentlyClosedTabsHandler() {
 void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
   TabRestoreServiceDelegate* delegate =
       TabRestoreServiceDelegate::FindDelegateForController(
-      &web_ui_->tab_contents()->GetController(), NULL);
+      &web_ui_->tab_contents()->controller(), NULL);
   if (!delegate || !tab_restore_service_)
     return;
 

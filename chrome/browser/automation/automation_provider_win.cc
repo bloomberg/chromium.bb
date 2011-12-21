@@ -207,7 +207,7 @@ bool AutomationProvider::AddExternalTab(ExternalTabContainer* external_tab) {
 
   TabContents* tab_contents = external_tab->tab_contents();
   if (tab_contents) {
-    int tab_handle = tab_tracker_->Add(&tab_contents->GetController());
+    int tab_handle = tab_tracker_->Add(&tab_contents->controller());
     external_tab->SetTabHandle(tab_handle);
     return true;
   }

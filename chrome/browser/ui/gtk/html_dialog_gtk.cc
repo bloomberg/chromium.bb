@@ -179,7 +179,7 @@ gfx::NativeWindow HtmlDialogGtk::InitDialog() {
   HtmlDialogUI::GetPropertyAccessor().SetProperty(
       tab_->tab_contents()->GetPropertyBag(), this);
 
-  tab_->tab_contents()->GetController().LoadURL(
+  tab_->tab_contents()->controller().LoadURL(
       GetDialogContentURL(),
       content::Referrer(),
       content::PAGE_TRANSITION_START_PAGE,

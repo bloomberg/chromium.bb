@@ -66,7 +66,7 @@ void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
   params.tabstrip_index = 0;
   params.disposition = NEW_FOREGROUND_TAB;
   browser::Navigate(&params);
-  CommitPendingLoad(&params.target_contents->tab_contents()->GetController());
+  CommitPendingLoad(&params.target_contents->tab_contents()->controller());
 }
 
 void BrowserWithTestWindowTest::CommitPendingLoad(
@@ -121,7 +121,7 @@ void BrowserWithTestWindowTest::NavigateAndCommit(
 }
 
 void BrowserWithTestWindowTest::NavigateAndCommitActiveTab(const GURL& url) {
-  NavigateAndCommit(&browser()->GetSelectedTabContents()->GetController(), url);
+  NavigateAndCommit(&browser()->GetSelectedTabContents()->controller(), url);
 }
 
 void BrowserWithTestWindowTest::DestroyBrowser() {

@@ -82,12 +82,12 @@ bool TestTabContents::CreateRenderViewForRenderManager(
 TabContents* TestTabContents::Clone() {
   TabContents* tc = new TestTabContents(
       browser_context(), SiteInstance::CreateSiteInstance(browser_context()));
-  tc->GetController().CopyStateFrom(controller_);
+  tc->controller().CopyStateFrom(controller_);
   return tc;
 }
 
 void TestTabContents::NavigateAndCommit(const GURL& url) {
-  GetController().LoadURL(
+  controller().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
   GURL loaded_url(url);
   bool reverse_on_redirect = false;
@@ -109,7 +109,7 @@ void TestTabContents::CommitPendingNavigation() {
   if (!rvh)
     rvh = static_cast<TestRenderViewHost*>(old_rvh);
 
-  const NavigationEntry* entry = GetController().pending_entry();
+  const NavigationEntry* entry = controller().pending_entry();
   DCHECK(entry);
   int page_id = entry->page_id();
   if (page_id == -1) {

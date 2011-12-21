@@ -473,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-                GetController()));
+                controller()));
     browser()->Reload(CURRENT_TAB);
     observer.Wait();
   }

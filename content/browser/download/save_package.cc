@@ -224,7 +224,7 @@ GURL SavePackage::GetUrlToBeSaved() {
   // rather than the displayed one (returned by GetURL) which may be
   // different (like having "view-source:" on the front).
   NavigationEntry* active_entry =
-      tab_contents()->GetController().GetActiveEntry();
+      tab_contents()->controller().GetActiveEntry();
   return active_entry->url();
 }
 

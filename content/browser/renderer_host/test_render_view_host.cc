@@ -309,7 +309,7 @@ RenderViewHostTestHarness::~RenderViewHostTestHarness() {
 }
 
 NavigationController& RenderViewHostTestHarness::controller() {
-  return contents()->GetController();
+  return contents()->controller();
 }
 
 TestTabContents* RenderViewHostTestHarness::contents() {

@@ -33,7 +33,7 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
   // TODO(rafaelw): Implement correct session storage.
   tab_contents_.reset(new TabContents(
       profile_, site_instance, routing_id, NULL, NULL));
-  tab_contents_->SetViewType(chrome::VIEW_TYPE_BACKGROUND_CONTENTS);
+  tab_contents_->set_view_type(chrome::VIEW_TYPE_BACKGROUND_CONTENTS);
   tab_contents_->SetDelegate(this);
   TabContentsObserver::Observe(tab_contents_.get());
 

@@ -9,7 +9,6 @@
 #include "base/string16.h"
 #include "content/common/content_export.h"
 
-class NavigationController;
 class RenderViewHost;
 class RenderWidgetHostView;
 // TODO(jam): of course we will have to rename TabContentsView etc to use
@@ -23,6 +22,8 @@ class PropertyBag;
 namespace content {
 
 class RenderProcessHost;
+// TODO(jam): of course we will have to rename TabContentsView etc to use
+// WebPage.
 class WebContentsDelegate;
 
 // Describes what goes in the main content area of a tab.
@@ -39,17 +40,6 @@ class WebContents {
   // Gets/Sets the delegate.
   virtual WebContentsDelegate* GetDelegate() = 0;
   virtual void SetDelegate(WebContentsDelegate* delegate) = 0;
-
-  // Gets the controller for this tab contents.
-  virtual NavigationController& GetController() = 0;
-  virtual const NavigationController& GetController() const = 0;
-
-  // Allows overriding the type of this tab.
-  virtual void SetViewType(content::ViewType type) = 0;
-
-  // Return the currently active RenderProcessHost and RenderViewHost. Each of
-  // these may change over time.
-  virtual RenderProcessHost* GetRenderProcessHost() const = 0;
 
   // Gets the current RenderViewHost for this tab.
   virtual RenderViewHost* GetRenderViewHost() const = 0;

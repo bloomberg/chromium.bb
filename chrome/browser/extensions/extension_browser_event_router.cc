@@ -142,9 +142,8 @@ void ExtensionBrowserEventRouter::RegisterForBrowserNotifications(
 
 void ExtensionBrowserEventRouter::RegisterForTabNotifications(
     TabContents* contents) {
-  registrar_.Add(
-      this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(&contents->GetController()));
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+                 content::Source<NavigationController>(&contents->controller()));
 
   // Observing TAB_CONTENTS_DESTROYED is necessary because it's
   // possible for tabs to be created, detached and then destroyed without
@@ -157,7 +156,7 @@ void ExtensionBrowserEventRouter::RegisterForTabNotifications(
 void ExtensionBrowserEventRouter::UnregisterForTabNotifications(
     TabContents* contents) {
   registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(&contents->GetController()));
+      content::Source<NavigationController>(&contents->controller()));
   registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
       content::Source<TabContents>(contents));
 }
@@ -542,7 +541,7 @@ void ExtensionBrowserEventRouter::Observe(
     // Tab was destroyed after being detached (without being re-attached).
     TabContents* contents = content::Source<TabContents>(source).ptr();
     registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::Source<NavigationController>(&contents->GetController()));
+        content::Source<NavigationController>(&contents->controller()));
     registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
         content::Source<TabContents>(contents));
   } else if (type == chrome::NOTIFICATION_BROWSER_WINDOW_READY) {

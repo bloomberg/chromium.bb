@@ -108,10 +108,10 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
   ConstrainedHtmlUI::GetPropertyAccessor().SetProperty(
       tab_contents->GetPropertyBag(), this);
 
-  tab_contents->GetController().LoadURL(delegate->GetDialogContentURL(),
-                                        content::Referrer(),
-                                        content::PAGE_TRANSITION_START_PAGE,
-                                        std::string());
+  tab_contents->controller().LoadURL(delegate->GetDialogContentURL(),
+                                     content::Referrer(),
+                                     content::PAGE_TRANSITION_START_PAGE,
+                                     std::string());
   tab_contents_container_.SetTab(tab_.get());
 
   gfx::Size dialog_size;

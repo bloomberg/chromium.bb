@@ -49,8 +49,8 @@ bool AutofillFeedbackInfoBarDelegate::LinkClicked(
 #endif
 
   browser::ShowHtmlBugReportView(
-      Browser::GetBrowserForController(
-          &owner()->tab_contents()->GetController(), NULL),
+      Browser::GetBrowserForController(&owner()->tab_contents()->controller(),
+                                       NULL),
       feedback_message_,
       issue_type);
   return true;

@@ -46,7 +46,7 @@ class IFrameLoader : public content::NotificationObserver {
       : navigation_completed_(false),
         javascript_completed_(false) {
     NavigationController* controller =
-        &browser->GetSelectedTabContents()->GetController();
+        &browser->GetSelectedTabContents()->controller();
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                    content::Source<NavigationController>(controller));
     registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
@@ -324,7 +324,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
       ui_test_utils::WindowedNotificationObserver observer(
           content::NOTIFICATION_LOAD_STOP,
           content::Source<NavigationController>(
-              &tab_contents_wrapper->tab_contents()->GetController()));
+              &tab_contents_wrapper->tab_contents()->controller()));
       if (allowed)
         infobar_->AsConfirmInfoBarDelegate()->Accept();
       else
@@ -507,7 +507,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &current_browser_->GetSelectedTabContents()->GetController()));
+          &current_browser_->GetSelectedTabContents()->controller()));
   NotifyGeoposition(fresh_position);
   observer.Wait();
   CheckGeoposition(fresh_position);
@@ -544,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &current_browser_->GetSelectedTabContents()->GetController()));
+          &current_browser_->GetSelectedTabContents()->controller()));
   NotifyGeoposition(cached_position);
   observer.Wait();
   CheckGeoposition(cached_position);
@@ -652,7 +652,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &current_browser_->GetSelectedTabContents()->GetController()));
+          &current_browser_->GetSelectedTabContents()->controller()));
   NotifyGeoposition(final_position);
   observer.Wait();
   CheckGeoposition(final_position);

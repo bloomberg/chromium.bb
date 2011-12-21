@@ -584,9 +584,9 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_EQ(0, tabstrip.GetIndexOfTabContents(contents2));
     EXPECT_EQ(1, tabstrip.GetIndexOfTabContents(contents1));
     EXPECT_EQ(0, tabstrip.GetIndexOfController(
-                     &contents2->tab_contents()->GetController()));
+                     &contents2->tab_contents()->controller()));
     EXPECT_EQ(1, tabstrip.GetIndexOfController(
-                     &contents1->tab_contents()->GetController()));
+                     &contents1->tab_contents()->controller()));
   }
 
   // Test UpdateTabContentsStateAt
@@ -639,8 +639,7 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
   // background with opener_contents set as their opener.
 
   TabContentsWrapper* opener_contents = CreateTabContents();
-  NavigationController* opener =
-      &opener_contents->tab_contents()->GetController();
+  NavigationController* opener = &opener_contents->tab_contents()->controller();
   tabstrip.AppendTabContents(opener_contents, true);
   TabContentsWrapper* contents1 = CreateTabContents();
   TabContentsWrapper* contents2 = CreateTabContents();
@@ -678,7 +677,7 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
 
   // For a tab that has opened no other tabs, the return value should always be
   // -1...
-  NavigationController* o1 = &contents1->tab_contents()->GetController();
+  NavigationController* o1 = &contents1->tab_contents()->controller();
   EXPECT_EQ(-1, tabstrip.GetIndexOfNextTabContentsOpenedBy(o1, 3, false));
   EXPECT_EQ(-1, tabstrip.GetIndexOfLastTabContentsOpenedBy(o1, 3));
 
@@ -791,8 +790,7 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
   EXPECT_TRUE(tabstrip.empty());
 
   TabContentsWrapper* opener_contents = CreateTabContents();
-  NavigationController* opener =
-      &opener_contents->tab_contents()->GetController();
+  NavigationController* opener = &opener_contents->tab_contents()->controller();
   tabstrip.AppendTabContents(opener_contents, true);
 
   // Open some other random unrelated tab in the background to monkey with our

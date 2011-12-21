@@ -1049,10 +1049,10 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
   switch (id) {
     case IDC_BACK:
-      return source_tab_contents_->GetController().CanGoBack();
+      return source_tab_contents_->controller().CanGoBack();
 
     case IDC_FORWARD:
-      return source_tab_contents_->GetController().CanGoForward();
+      return source_tab_contents_->controller().CanGoForward();
 
     case IDC_RELOAD:
       return source_tab_contents_->GetDelegate() &&
@@ -1061,13 +1061,13 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_VIEW_SOURCE:
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:
-      return source_tab_contents_->GetController().CanViewSource();
+      return source_tab_contents_->controller().CanViewSource();
 
     case IDC_CONTENT_CONTEXT_INSPECTELEMENT:
       return IsDevCommandEnabled(id);
 
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO:
-      return source_tab_contents_->GetController().GetActiveEntry() != NULL;
+      return source_tab_contents_->controller().GetActiveEntry() != NULL;
 
     case IDC_CONTENT_CONTEXT_TRANSLATE: {
       TabContentsWrapper* tab_contents_wrapper =
@@ -1193,7 +1193,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       // rather than the display one (returned by GetURL) which may be
       // different (like having "view-source:" on the front).
       NavigationEntry* active_entry =
-          source_tab_contents_->GetController().GetActiveEntry();
+          source_tab_contents_->controller().GetActiveEntry();
       return SavePackage::IsSavableURL(
           (active_entry) ? active_entry->url() : GURL());
     }
@@ -1521,11 +1521,11 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_BACK:
-      source_tab_contents_->GetController().GoBack();
+      source_tab_contents_->controller().GoBack();
       break;
 
     case IDC_FORWARD:
-      source_tab_contents_->GetController().GoForward();
+      source_tab_contents_->controller().GoForward();
       break;
 
     case IDC_SAVE_PAGE:
@@ -1535,7 +1535,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_RELOAD:
       // Prevent the modal "Resubmit form post" dialog from appearing in the
       // context of an external context menu.
-      source_tab_contents_->GetController().Reload(!external_);
+      source_tab_contents_->controller().Reload(!external_);
       break;
 
     case IDC_PRINT:
@@ -1564,7 +1564,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO: {
       NavigationEntry* nav_entry =
-          source_tab_contents_->GetController().GetActiveEntry();
+          source_tab_contents_->controller().GetActiveEntry();
       source_tab_contents_->ShowPageInfo(nav_entry->url(), nav_entry->ssl(),
                                          true);
       break;

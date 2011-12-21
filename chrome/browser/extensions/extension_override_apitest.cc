@@ -47,8 +47,8 @@ class ExtensionOverrideTest : public ExtensionApiTest {
   void NavigateToKeyboard() {
     ui_test_utils::NavigateToURL(browser(), GURL("chrome://keyboard/"));
     TabContents* tab = browser()->GetSelectedTabContents();
-    ASSERT_TRUE(tab->GetController().GetActiveEntry());
-    EXPECT_TRUE(tab->GetController().GetActiveEntry()->url().
+    ASSERT_TRUE(tab->controller().GetActiveEntry());
+    EXPECT_TRUE(tab->controller().GetActiveEntry()->url().
                 SchemeIs(chrome::kExtensionScheme));
   }
 #endif
@@ -62,8 +62,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideNewtab) {
     // will call chrome.test.notifyPass() .
     ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab/"));
     TabContents* tab = browser()->GetSelectedTabContents();
-    ASSERT_TRUE(tab->GetController().GetActiveEntry());
-    EXPECT_TRUE(tab->GetController().GetActiveEntry()->url().
+    ASSERT_TRUE(tab->controller().GetActiveEntry());
+    EXPECT_TRUE(tab->controller().GetActiveEntry()->url().
                 SchemeIs(chrome::kExtensionScheme));
 
     ASSERT_TRUE(catcher.GetNextResult());
@@ -89,8 +89,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, MAYBE_OverrideNewtabIncognito) {
   Browser* otr_browser = BrowserList::FindTabbedBrowser(
       browser()->profile()->GetOffTheRecordProfile(), false);
   TabContents* tab = otr_browser->GetSelectedTabContents();
-  ASSERT_TRUE(tab->GetController().GetActiveEntry());
-  EXPECT_FALSE(tab->GetController().GetActiveEntry()->url().
+  ASSERT_TRUE(tab->controller().GetActiveEntry());
+  EXPECT_FALSE(tab->controller().GetActiveEntry()->url().
                SchemeIs(chrome::kExtensionScheme));
 }
 

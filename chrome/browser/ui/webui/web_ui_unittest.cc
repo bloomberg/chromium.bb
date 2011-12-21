@@ -26,7 +26,7 @@ class WebUITest : public TabContentsWrapperTestHarness {
   // values. This must be increasing for the life of the tests.
   static void DoNavigationTest(TabContentsWrapper* wrapper, int page_id) {
     TabContents* contents = wrapper->tab_contents();
-    NavigationController* controller = &contents->GetController();
+    NavigationController* controller = &contents->controller();
 
     // Start a pending load.
     GURL new_tab_url(chrome::kChromeUINewTabURL);
@@ -169,7 +169,7 @@ TEST_F(WebUITest, FocusOnNavigate) {
   TabContentsForFocusTest* tc = new TabContentsForFocusTest(
       contents()->browser_context(),
       SiteInstance::CreateSiteInstance(contents()->browser_context()));
-  tc->GetController().CopyStateFrom(controller());
+  tc->controller().CopyStateFrom(controller());
   SetContents(tc);
   int page_id = 200;
 

@@ -195,7 +195,7 @@ DownloadRequestLimiter::~DownloadRequestLimiter() {
 
 DownloadRequestLimiter::DownloadStatus
     DownloadRequestLimiter::GetDownloadStatus(TabContents* tab) {
-  TabDownloadState* state = GetDownloadState(&tab->GetController(), NULL, false);
+  TabDownloadState* state = GetDownloadState(&tab->controller(), NULL, false);
   return state ? state->download_status() : ALLOW_ONE_DOWNLOAD;
 }
 
@@ -213,8 +213,7 @@ void DownloadRequestLimiter::CanDownloadOnIOThread(int render_process_host_id,
 }
 
 void DownloadRequestLimiter::OnUserGesture(TabContents* tab) {
-  TabDownloadState* state =
-      GetDownloadState(&tab->GetController(), NULL, false);
+  TabDownloadState* state = GetDownloadState(&tab->controller(), NULL, false);
   if (!state)
     return;
 
@@ -287,8 +286,8 @@ void DownloadRequestLimiter::CanDownloadImpl(
   }
 
   TabDownloadState* state = GetDownloadState(
-      &effective_wrapper->tab_contents()->GetController(),
-      &originating_tab->tab_contents()->GetController(), true);
+      &effective_wrapper->tab_contents()->controller(),
+      &originating_tab->tab_contents()->controller(), true);
   switch (state->download_status()) {
     case ALLOW_ALL_DOWNLOADS:
       if (state->download_count() && !(state->download_count() %

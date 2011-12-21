@@ -464,9 +464,9 @@ TEST_F(TabContentsTest, NavigateTwoTabsCrossSite) {
   // Open a new tab with the same SiteInstance, navigated to the same site.
   TestTabContents contents2(browser_context_.get(), instance1);
   contents2.transition_cross_site = true;
-  contents2.GetController().LoadURL(url, content::Referrer(),
-                                    content::PAGE_TRANSITION_TYPED,
-                                    std::string());
+  contents2.controller().LoadURL(url, content::Referrer(),
+                                 content::PAGE_TRANSITION_TYPED,
+                                 std::string());
   // Need this page id to be 2 since the site instance is the same (which is the
   // scope of page IDs) and we want to consider this a new page.
   contents2.TestDidNavigate(
@@ -486,9 +486,9 @@ TEST_F(TabContentsTest, NavigateTwoTabsCrossSite) {
 
   // Navigate second tab to the same site as the first tab
   const GURL url2b("http://mail.yahoo.com");
-  contents2.GetController().LoadURL(url2b, content::Referrer(),
-                                    content::PAGE_TRANSITION_TYPED,
-                                    std::string());
+  contents2.controller().LoadURL(url2b, content::Referrer(),
+                                 content::PAGE_TRANSITION_TYPED,
+                                 std::string());
   TestRenderViewHost* rvh2 =
       static_cast<TestRenderViewHost*>(contents2.GetRenderViewHost());
   rvh2->SendShouldCloseACK(true);
@@ -526,9 +526,9 @@ TEST_F(TabContentsTest, CrossSiteComparesAgainstCurrentPage) {
   TestTabContents contents2(browser_context_.get(), instance1);
   contents2.transition_cross_site = true;
   const GURL url2("http://www.yahoo.com");
-  contents2.GetController().LoadURL(url2, content::Referrer(),
-                                    content::PAGE_TRANSITION_TYPED,
-                                    std::string());
+  contents2.controller().LoadURL(url2, content::Referrer(),
+                                 content::PAGE_TRANSITION_TYPED,
+                                 std::string());
   // The first RVH in contents2 isn't live yet, so we shortcut the cross site
   // pending.
   TestRenderViewHost* rvh2 = static_cast<TestRenderViewHost*>(
@@ -1640,7 +1640,7 @@ TEST_F(TabContentsTest, NewInterstitialDoesNotCancelPendingEntry) {
   const GURL kGURL(kUrl);
 
   // Start a navigation to a page
-  contents()->GetController().LoadURL(
+  contents()->controller().LoadURL(
       kGURL, content::Referrer(), content::PAGE_TRANSITION_TYPED,
       std::string());
 
@@ -1656,7 +1656,7 @@ TEST_F(TabContentsTest, NewInterstitialDoesNotCancelPendingEntry) {
 
   // Initiate a new navigation from the browser that also triggers an
   // interstitial.
-  contents()->GetController().LoadURL(
+  contents()->controller().LoadURL(
       kGURL, content::Referrer(), content::PAGE_TRANSITION_TYPED,
       std::string());
   TestInterstitialPage::InterstitialState state2 =
@@ -1669,7 +1669,7 @@ TEST_F(TabContentsTest, NewInterstitialDoesNotCancelPendingEntry) {
   interstitial2->TestDidNavigate(1, kGURL);
 
   // Make sure we still have an entry.
-  NavigationEntry* entry = contents()->GetController().pending_entry();
+  NavigationEntry* entry = contents()->controller().pending_entry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(kUrl, entry->url().spec());
 
@@ -1687,7 +1687,7 @@ TEST_F(TabContentsTest, NoJSMessageOnInterstitials) {
   const GURL kGURL(kUrl);
 
   // Start a navigation to a page
-  contents()->GetController().LoadURL(
+  contents()->controller().LoadURL(
       kGURL, content::Referrer(), content::PAGE_TRANSITION_TYPED,
       std::string());
   // DidNavigate from the page
@@ -1742,7 +1742,7 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneSourceInterstitial) {
   // Create another NavigationController.
   GURL url3("http://foo2");
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
-  NavigationController& other_controller = other_contents->GetController();
+  NavigationController& other_controller = other_contents->controller();
   other_contents->NavigateAndCommit(url3);
   other_contents->ExpectSetHistoryLengthAndPrune(
       other_controller.GetEntryAtIndex(0)->site_instance(), 1,
@@ -1768,7 +1768,7 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneTargetInterstitial) {
 
   // Create another NavigationController.
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
-  NavigationController& other_controller = other_contents->GetController();
+  NavigationController& other_controller = other_contents->controller();
 
   // Navigate it to url2.
   GURL url2("http://foo2");

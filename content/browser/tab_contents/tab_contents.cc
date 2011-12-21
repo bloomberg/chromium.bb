@@ -330,18 +330,6 @@ void TabContents::RunFileChooser(
   delegate_->RunFileChooser(this, params);
 }
 
-NavigationController& TabContents::GetController() {
-  return controller_;
-}
-
-const NavigationController& TabContents::GetController() const {
-  return controller_;
-}
-
-void TabContents::SetViewType(content::ViewType type) {
-  view_type_ = type;
-}
-
 content::RenderProcessHost* TabContents::GetRenderProcessHost() const {
   if (render_manager_.current_host())
     return render_manager_.current_host()->process();
@@ -703,7 +691,7 @@ TabContents* TabContents::Clone() {
       browser_context(),
       SiteInstance::CreateSiteInstance(browser_context()),
       MSG_ROUTING_NONE, this, NULL);
-  tc->GetController().CopyStateFrom(controller_);
+  tc->controller().CopyStateFrom(controller_);
   return tc;
 }
 
@@ -870,7 +858,7 @@ double TabContents::GetZoomLevel() const {
         GetRenderProcessHost()->GetID(), GetRenderViewHost()->routing_id());
   } else {
     GURL url;
-    NavigationEntry* active_entry = GetController().GetActiveEntry();
+    NavigationEntry* active_entry = controller().GetActiveEntry();
     // Since zoom map is updated using rewritten URL, use rewritten URL
     // to get the zoom level.
     url = active_entry ? active_entry->url() : GURL::EmptyGURL();
@@ -895,7 +883,7 @@ void TabContents::ViewSource() {
   if (!delegate_)
     return;
 
-  NavigationEntry* active_entry = GetController().GetActiveEntry();
+  NavigationEntry* active_entry = controller().GetActiveEntry();
   if (!active_entry)
     return;
 
@@ -1080,7 +1068,7 @@ void TabContents::OnDidLoadResourceFromMemoryCache(
 void TabContents::OnDidDisplayInsecureContent() {
   content::RecordAction(UserMetricsAction("SSL.DisplayedInsecureContent"));
   displayed_insecure_content_ = true;
-  SSLManager::NotifySSLInternalStateChanged(&GetController());
+  SSLManager::NotifySSLInternalStateChanged(&controller());
 }
 
 void TabContents::OnDidRunInsecureContent(
@@ -1094,7 +1082,7 @@ void TabContents::OnDidRunInsecureContent(
   }
   controller_.ssl_manager()->DidRunInsecureContent(security_origin);
   displayed_insecure_content_ = true;
-  SSLManager::NotifySSLInternalStateChanged(&GetController());
+  SSLManager::NotifySSLInternalStateChanged(&controller());
 }
 
 void TabContents::OnDocumentLoadedInFrame(int64 frame_id) {
@@ -2024,7 +2012,7 @@ void TabContents::NotifySwappedFromRenderManager() {
 }
 
 NavigationController& TabContents::GetControllerForRenderManager() {
-  return GetController();
+  return controller();
 }
 
 WebUI* TabContents::CreateWebUIForRenderManager(const GURL& url) {

@@ -400,7 +400,7 @@ void TranslateManager::OnURLFetchComplete(const content::URLFetcher* source) {
         // The tab went away while we were retrieving the script.
         continue;
       }
-      NavigationEntry* entry = tab->GetController().GetActiveEntry();
+      NavigationEntry* entry = tab->controller().GetActiveEntry();
       if (!entry || entry->page_id() != request.page_id) {
         // We navigated away from the page the translation was triggered on.
         continue;
@@ -466,7 +466,7 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableTranslate))
     return;
 
-  NavigationEntry* entry = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry = tab->controller().GetActiveEntry();
   if (!entry) {
     // This can happen for popups created with window.open("").
     return;
@@ -551,7 +551,7 @@ void TranslateManager::InitiateTranslationPosted(
 void TranslateManager::TranslatePage(TabContents* tab_contents,
                                      const std::string& source_lang,
                                      const std::string& target_lang) {
-  NavigationEntry* entry = tab_contents->GetController().GetActiveEntry();
+  NavigationEntry* entry = tab_contents->controller().GetActiveEntry();
   if (!entry) {
     NOTREACHED();
     return;
@@ -583,7 +583,7 @@ void TranslateManager::TranslatePage(TabContents* tab_contents,
 }
 
 void TranslateManager::RevertTranslation(TabContents* tab_contents) {
-  NavigationEntry* entry = tab_contents->GetController().GetActiveEntry();
+  NavigationEntry* entry = tab_contents->controller().GetActiveEntry();
   if (!entry) {
     NOTREACHED();
     return;
@@ -599,7 +599,7 @@ void TranslateManager::RevertTranslation(TabContents* tab_contents) {
 
 void TranslateManager::ReportLanguageDetectionError(TabContents* tab_contents) {
   UMA_HISTOGRAM_COUNTS("Translate.ReportLanguageDetectionError", 1);
-  GURL page_url = tab_contents->GetController().GetActiveEntry()->url();
+  GURL page_url = tab_contents->controller().GetActiveEntry()->url();
   // Report option should be disabled for secure URLs.
   DCHECK(!page_url.SchemeIsSecure());
   std::string report_error_url(kReportLanguageDetectionErrorURL);
@@ -629,7 +629,7 @@ void TranslateManager::DoTranslatePage(TabContents* tab,
                                        const std::string& translate_script,
                                        const std::string& source_lang,
                                        const std::string& target_lang) {
-  NavigationEntry* entry = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry = tab->controller().GetActiveEntry();
   if (!entry) {
     NOTREACHED();
     return;

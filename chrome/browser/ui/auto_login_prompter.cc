@@ -227,7 +227,7 @@ AutoLoginPrompter::AutoLoginPrompter(
       args_(args) {
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(
-                    &tab_contents_->GetController()));
+                    &tab_contents_->controller()));
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                  content::Source<TabContents>(tab_contents_));
 }
@@ -333,7 +333,7 @@ void AutoLoginPrompter::Observe(int type,
       InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
       Profile* profile = wrapper->profile();
       infobar_helper->AddInfoBar(new AutoLoginInfoBarDelegate(
-          infobar_helper, &tab_contents_->GetController(),
+          infobar_helper, &tab_contents_->controller(),
           profile->GetTokenService(), profile->GetPrefs(),
           username_, args_));
     }

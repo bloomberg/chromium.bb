@@ -199,7 +199,7 @@ void ExtensionMessageService::OpenChannelToTab(
         contents->tab_contents()->GetRenderViewHost()->routing_id();
   }
 
-  if (contents && contents->tab_contents()->GetController().needs_reload()) {
+  if (contents && contents->tab_contents()->controller().needs_reload()) {
     // The tab isn't loaded yet. Don't attempt to connect. Treat this as a
     // disconnect.
     DispatchOnDisconnect(MessagePort(source, MSG_ROUTING_CONTROL),
@@ -287,7 +287,7 @@ int ExtensionMessageService::OpenSpecialChannelToTab(
     TabContents* target_tab_contents, IPC::Message::Sender* source) {
   DCHECK(target_tab_contents);
 
-  if (target_tab_contents->GetController().needs_reload()) {
+  if (target_tab_contents->controller().needs_reload()) {
     // The tab isn't loaded yet. Don't attempt to connect.
     return -1;
   }

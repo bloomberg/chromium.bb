@@ -1485,7 +1485,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   entries.push_back(entry);
   TabContents our_contents(
       browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL);
-  NavigationController& our_controller = our_contents.GetController();
+  NavigationController& our_controller = our_contents.controller();
   our_controller.Restore(0, true, &entries);
   ASSERT_EQ(0u, entries.size());
 
@@ -1545,7 +1545,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   entries.push_back(entry);
   TabContents our_contents(
       browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL);
-  NavigationController& our_controller = our_contents.GetController();
+  NavigationController& our_controller = our_contents.controller();
   our_controller.Restore(0, true, &entries);
   ASSERT_EQ(0u, entries.size());
 
@@ -1916,11 +1916,11 @@ TEST_F(NavigationControllerTest, CloneAndGoBack) {
 
   scoped_ptr<TabContents> clone(controller().tab_contents()->Clone());
 
-  ASSERT_EQ(2, clone->GetController().entry_count());
-  EXPECT_TRUE(clone->GetController().needs_reload());
-  clone->GetController().GoBack();
+  ASSERT_EQ(2, clone->controller().entry_count());
+  EXPECT_TRUE(clone->controller().needs_reload());
+  clone->controller().GoBack();
   // Navigating back should have triggered needs_reload_ to go false.
-  EXPECT_FALSE(clone->GetController().needs_reload());
+  EXPECT_FALSE(clone->controller().needs_reload());
 }
 
 // Make sure that cloning a tabcontents doesn't copy interstitials.
@@ -1938,7 +1938,7 @@ TEST_F(NavigationControllerTest, CloneOmitsInterstitials) {
 
   scoped_ptr<TabContents> clone(controller().tab_contents()->Clone());
 
-  ASSERT_EQ(2, clone->GetController().entry_count());
+  ASSERT_EQ(2, clone->controller().entry_count());
 }
 
 // Tests a subframe navigation while a toplevel navigation is pending.
@@ -1987,7 +1987,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   NavigateAndCommit(url2);
 
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
-  NavigationController& other_controller = other_contents->GetController();
+  NavigationController& other_controller = other_contents->controller();
   other_contents->NavigateAndCommit(url3);
   other_contents->ExpectSetHistoryLengthAndPrune(
       other_controller.GetEntryAtIndex(0)->site_instance(), 2,
@@ -2017,7 +2017,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
   controller().GoBack();
 
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
-  NavigationController& other_controller = other_contents->GetController();
+  NavigationController& other_controller = other_contents->controller();
   other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);
   other_controller.CopyStateFromAndPrune(&controller());
 
@@ -2042,7 +2042,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   controller().GoBack();
 
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
-  NavigationController& other_controller = other_contents->GetController();
+  NavigationController& other_controller = other_contents->controller();
   other_controller.LoadURL(
       url3, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);

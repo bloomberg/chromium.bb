@@ -76,7 +76,7 @@ void SadTabView::LinkClicked(views::Link* source, int event_flags) {
         false /* is renderer initiated */));
   } else if (source == feedback_link_) {
     browser::ShowHtmlBugReportView(
-        Browser::GetBrowserForController(&tab_contents_->GetController(), NULL),
+        Browser::GetBrowserForController(&tab_contents_->controller(), NULL),
         l10n_util::GetStringUTF8(IDS_KILLED_TAB_FEEDBACK_MESSAGE),
         userfeedback::ChromeOsData_ChromeOsCategory_CRASH);
   }
@@ -86,7 +86,7 @@ void SadTabView::ButtonPressed(views::Button* source,
                                const views::Event& event) {
   DCHECK(tab_contents_);
   DCHECK(source == reload_button_);
-  tab_contents_->GetController().Reload(true);
+  tab_contents_->controller().Reload(true);
 }
 
 void SadTabView::Layout() {
