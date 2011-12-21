@@ -306,6 +306,10 @@
       # Downloads panel stays even after declining a download.
       # crosbug.com/14728
       '-downloads.DownloadsTest.testDeclineDangerousDownload',
+      # crosbug.com/19556
+      '-extensions.ExtensionsTest.testAllowAccessFileURLs',
+      '-extensions.ExtensionsTest.testAllowIncognitoExtension',
+      '-extensions.ExtensionsTest.testDisableEnableExtension',
       # Need internal data dirs in autotest package. crosbug.com/6855
       '-find_in_page.FindMatchTests.testSearchInPDF',
       # Plugin crash infobar does not show up for file:/// flash urls
