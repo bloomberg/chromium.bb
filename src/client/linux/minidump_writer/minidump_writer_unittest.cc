@@ -42,6 +42,7 @@
 #include "client/linux/minidump_writer/minidump_writer.h"
 #include "common/linux/eintr_wrapper.h"
 #include "common/linux/file_id.h"
+#include "common/linux/safe_readlink.h"
 #include "common/tests/auto_tempdir.h"
 #include "google_breakpad/processor/minidump.h"
 
@@ -287,8 +288,8 @@ TEST(MinidumpWriterTest, DeletedBinary) {
 
   // Locate helper binary next to the current binary.
   char self_path[PATH_MAX];
-  if (readlink("/proc/self/exe", self_path, sizeof(self_path) - 1) == -1) {
-    FAIL() << "readlink failed: " << strerror(errno);
+  if (!SafeReadLink("/proc/self/exe", self_path)) {
+    FAIL() << "readlink failed";
     exit(1);
   }
   string helper_path(self_path);

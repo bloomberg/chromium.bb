@@ -33,12 +33,14 @@
 #include <stdlib.h>
 
 #include "common/linux/file_id.h"
+#include "common/linux/safe_readlink.h"
 #include "common/linux/synth_elf.h"
 #include "common/test_assembler.h"
 #include "common/tests/auto_tempdir.h"
 #include "breakpad_googletest_includes.h"
 
 using namespace google_breakpad;
+using google_breakpad::SafeReadLink;
 using google_breakpad::synth_elf::BuildIDNote;
 using google_breakpad::synth_elf::ELF;
 using google_breakpad::test_assembler::kLittleEndian;
@@ -61,9 +63,7 @@ TEST(FileIDStripTest, StripSelf) {
   // FileID::ElfFileIdentifier, then make a copy of this binary,
   // strip it, and ensure that the result is the same.
   char exe_name[PATH_MAX];
-  ssize_t len = readlink("/proc/self/exe", exe_name, PATH_MAX - 1);
-  ASSERT_NE(len, -1);
-  exe_name[len] = '\0';
+  ASSERT_TRUE(SafeReadLink("/proc/self/exe", exe_name));
 
   // copy our binary to a temp file, and strip it
   AutoTempDir temp_dir;

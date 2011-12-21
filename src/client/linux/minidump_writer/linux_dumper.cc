@@ -57,6 +57,7 @@
 #include "common/linux/file_id.h"
 #include "common/linux/linux_libc_support.h"
 #include "common/linux/memory_mapped_file.h"
+#include "common/linux/safe_readlink.h"
 #include "third_party/lss/linux_syscall_support.h"
 
 static const char kMappedFileUnsafePrefix[] = "/dev/";
@@ -536,10 +537,8 @@ bool LinuxDumper::HandleDeletedFileInMapping(char* path) const {
   char exe_link[NAME_MAX];
   char new_path[NAME_MAX];
   BuildProcPath(exe_link, pid_, "exe");
-  ssize_t new_path_len = sys_readlink(exe_link, new_path, NAME_MAX);
-  if (new_path_len <= 0 || new_path_len == NAME_MAX)
+  if (!SafeReadLink(exe_link, new_path))
     return false;
-  new_path[new_path_len] = '\0';
   if (my_strcmp(path, new_path) != 0)
     return false;
 
