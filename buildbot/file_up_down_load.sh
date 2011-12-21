@@ -153,7 +153,7 @@ DownloadArmBinariesForHWBots() {
   tarball=$2
   curl -L \
      ${URL_PREFIX}/${BASE_BETWEEN_BOTS}/${name}/build.tgz \
-     -o $3
+     -o ${tarball}
 }
 
 ######################################################################
@@ -172,7 +172,7 @@ DownloadArmBinariesForHWBotsTry() {
   tarball=$2
   curl -L \
      ${URL_PREFIX}/${BASE_BETWEEN_BOTS_TRY}/${name}/build.tgz \
-     -o $2
+     -o ${tarball}
 }
 
 ######################################################################
