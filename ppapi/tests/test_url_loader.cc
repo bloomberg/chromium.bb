@@ -247,23 +247,18 @@ int32_t TestURLLoader::PrepareFileForPost(
 
 std::string TestURLLoader::GetReachableAbsoluteURL(
     const std::string& file_name) {
-  // Request the test page and scrape the absolute URL that the server returns
-  // as part of the response. Using the test page allows us to test redirected
-  // and cross-origin requests since we have a mock headers file.
-  pp::URLRequestInfo request(instance_);
-  request.SetURL(file_name);
-  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-
-  pp::URLLoader loader(*instance_);
-  int32_t rv = loader.Open(request, callback);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  ASSERT_EQ(rv, PP_OK);
-
-  pp::URLResponseInfo response_info(loader.GetResponseInfo());
-  ASSERT_FALSE(response_info.is_null());
-  ASSERT_EQ(response_info.GetStatusCode(), 200);
-  return response_info.GetURL().AsString();
+  // Get the absolute page URL and replace the test case file name
+  // with the given one.
+  pp::Var document_url(
+      pp::Var::PassRef(),
+      testing_interface_->GetDocumentURL(instance_->pp_instance(),
+                                         NULL));
+  std::string url(document_url.AsString());
+  std::string old_name("test_case.html");
+  size_t index = url.find(old_name);
+  ASSERT_NE(index, std::string::npos);
+  url.replace(index, old_name.length(), file_name);
+  return url;
 }
 
 std::string TestURLLoader::GetReachableCrossOriginURL(

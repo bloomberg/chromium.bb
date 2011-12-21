@@ -115,13 +115,18 @@ void PpbTestingRpcServer::PPB_Testing_GetDocumentURL(
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
-  if (*components_bytes != sizeof(struct PP_URLComponents_Dev))
-    return;
+  PP_URLComponents_Dev* pp_url_components = NULL;
+  if (*components_bytes != 0) {
+    if (*components_bytes != sizeof(struct PP_URLComponents_Dev))
+      return;
+    pp_url_components =
+        reinterpret_cast<struct PP_URLComponents_Dev*>(components);
+  }
   if (*url_bytes != ppapi_proxy::kMaxVarSize)
     return;
 
   struct PP_Var pp_url = PPBTestingInterface()->GetDocumentURL(
-      instance, reinterpret_cast<struct PP_URLComponents_Dev*>(components));
+      instance, pp_url_components);
 
   if (!ppapi_proxy::SerializeTo(&pp_url, url, url_bytes))
     return;

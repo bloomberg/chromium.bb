@@ -121,7 +121,8 @@ struct PP_Var GetDocumentURL(PP_Instance instance,
               "instance=%"NACL_PRIu32"\n", instance);
 
   NaClSrpcChannel* channel = GetMainSrpcChannel();
-  nacl_abi_size_t components_size = kPPURLComponentsDevBytes;
+  nacl_abi_size_t components_size =
+      (components != NULL) ? kPPURLComponentsDevBytes : 0;
   nacl_abi_size_t url_size = kMaxVarSize;
   nacl::scoped_array<char> url_bytes(new (std::nothrow) char[url_size]);
   if (url_bytes.get() == NULL)
