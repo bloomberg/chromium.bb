@@ -3354,7 +3354,7 @@
    ...
    fun:_ZN6chrome26ChromeContentBrowserClient24RenderProcessHostCreatedEPN7content17RenderProcessHostE
    fun:_ZN21RenderProcessHostImpl4InitEb
-   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
+   fun:_ZN14RenderViewHost16CreateRenderView*
    fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
    fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
    ...
