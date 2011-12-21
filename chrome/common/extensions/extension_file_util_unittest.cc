@@ -276,6 +276,10 @@ static scoped_refptr<Extension> LoadExtensionManifest(
   return extension;
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/108279
+#define ValidateThemeUTF8 DISABLED_ValidateThemeUTF8
+#endif
 TEST(ExtensionFileUtil, ValidateThemeUTF8) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
