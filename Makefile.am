@@ -255,7 +255,8 @@ check_PROGRAMS += \
 
 if !DISABLE_TOOLS
 check_PROGRAMS += \
-	src/common/dumper_unittest
+	src/common/dumper_unittest \
+	src/tools/linux/md2core/minidump_2_core_unittest
 endif
 endif LINUX_HOST
 
@@ -399,6 +400,19 @@ src_common_dumper_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
 endif
+
+src_tools_linux_md2core_minidump_2_core_unittest_SOURCES = \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc \
+	src/tools/linux/md2core/minidump_memory_range_unittest.cc
+src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS = \
+	-I$(top_srcdir)/src \
+	-I$(top_srcdir)/src/testing/include \
+	-I$(top_srcdir)/src/testing/gtest/include \
+	-I$(top_srcdir)/src/testing/gtest \
+	-I$(top_srcdir)/src/testing
+
 endif LINUX_HOST
 
 if !DISABLE_PROCESSOR

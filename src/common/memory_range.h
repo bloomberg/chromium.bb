@@ -45,12 +45,6 @@ namespace google_breakpad {
 // access of a subrange of the memory. Its implemementation does not
 // allocate memory or call into libc functions, and is thus safer to use
 // in a crashed environment.
-//
-// TODO(benchan): This class is largely based on the MMappedRange class
-// in tools/linux/md2core/minidump-2-core.cc, but generalized for use in
-// other code. Provide a variant of MemoryRange with methods for handling
-// Minidump data structures in order to replace MMappedRange in
-// minidump-2-core.cc.
 class MemoryRange {
  public:
   MemoryRange() : data_(NULL), length_(0) {}

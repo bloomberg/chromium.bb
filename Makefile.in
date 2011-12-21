@@ -114,7 +114,8 @@ check_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
 @LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest
 
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_9 = \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dumper_unittest
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dumper_unittest \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump_2_core_unittest
 
 @DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__append_10 = \
 @DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@	src/processor/stackwalker_selftest
@@ -377,7 +378,8 @@ src_third_party_libdisasm_libdisasm_a_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/synth_minidump_unittest$(EXEEXT)
 @LINUX_HOST_TRUE@am__EXEEXT_5 = src/client/linux/linux_client_unittest$(EXEEXT)
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__EXEEXT_6 = src/common/dumper_unittest$(EXEEXT)
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__EXEEXT_6 = src/common/dumper_unittest$(EXEEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump_2_core_unittest$(EXEEXT)
 @DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__EXEEXT_7 = src/processor/stackwalker_selftest$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am__src_client_linux_linux_client_unittest_SOURCES_DIST =  \
@@ -924,6 +926,17 @@ am__src_tools_linux_md2core_minidump_2_core_SOURCES_DIST =  \
 src_tools_linux_md2core_minidump_2_core_OBJECTS =  \
 	$(am_src_tools_linux_md2core_minidump_2_core_OBJECTS)
 src_tools_linux_md2core_minidump_2_core_LDADD = $(LDADD)
+am__src_tools_linux_md2core_minidump_2_core_unittest_SOURCES_DIST =  \
+	src/testing/gtest/src/gtest-all.cc \
+	src/testing/gtest/src/gtest_main.cc \
+	src/testing/src/gmock-all.cc \
+	src/tools/linux/md2core/minidump_memory_range_unittest.cc
+@LINUX_HOST_TRUE@am_src_tools_linux_md2core_minidump_2_core_unittest_OBJECTS = src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/testing/src/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.$(OBJEXT)
+src_tools_linux_md2core_minidump_2_core_unittest_OBJECTS = $(am_src_tools_linux_md2core_minidump_2_core_unittest_OBJECTS)
+src_tools_linux_md2core_minidump_2_core_unittest_LDADD = $(LDADD)
 am__src_tools_linux_symupload_minidump_upload_SOURCES_DIST =  \
 	src/common/linux/http_upload.cc \
 	src/tools/linux/symupload/minidump_upload.cc
@@ -995,6 +1008,7 @@ SOURCES = $(src_client_linux_libbreakpad_client_a_SOURCES) \
 	$(src_processor_synth_minidump_unittest_SOURCES) \
 	$(src_tools_linux_dump_syms_dump_syms_SOURCES) \
 	$(src_tools_linux_md2core_minidump_2_core_SOURCES) \
+	$(src_tools_linux_md2core_minidump_2_core_unittest_SOURCES) \
 	$(src_tools_linux_symupload_minidump_upload_SOURCES) \
 	$(src_tools_linux_symupload_sym_upload_SOURCES)
 DIST_SOURCES =  \
@@ -1032,6 +1046,7 @@ DIST_SOURCES =  \
 	$(am__src_processor_synth_minidump_unittest_SOURCES_DIST) \
 	$(am__src_tools_linux_dump_syms_dump_syms_SOURCES_DIST) \
 	$(am__src_tools_linux_md2core_minidump_2_core_SOURCES_DIST) \
+	$(am__src_tools_linux_md2core_minidump_2_core_unittest_SOURCES_DIST) \
 	$(am__src_tools_linux_symupload_minidump_upload_SOURCES_DIST) \
 	$(am__src_tools_linux_symupload_sym_upload_SOURCES_DIST)
 DATA = $(dist_doc_DATA)
@@ -1433,6 +1448,19 @@ TESTS_ENVIRONMENT =
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/gtest/include \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/gtest \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing
+
+@LINUX_HOST_TRUE@src_tools_linux_md2core_minidump_2_core_unittest_SOURCES = \
+@LINUX_HOST_TRUE@	src/testing/gtest/src/gtest-all.cc \
+@LINUX_HOST_TRUE@	src/testing/gtest/src/gtest_main.cc \
+@LINUX_HOST_TRUE@	src/testing/src/gmock-all.cc \
+@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump_memory_range_unittest.cc
+
+@LINUX_HOST_TRUE@src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS = \
+@LINUX_HOST_TRUE@	-I$(top_srcdir)/src \
+@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/include \
+@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/gtest/include \
+@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/gtest \
+@LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing
 
 @DISABLE_PROCESSOR_FALSE@src_processor_address_map_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/address_map_unittest.cc
@@ -2897,6 +2925,21 @@ src/tools/linux/md2core/minidump-2-core.$(OBJEXT):  \
 src/tools/linux/md2core/minidump-2-core$(EXEEXT): $(src_tools_linux_md2core_minidump_2_core_OBJECTS) $(src_tools_linux_md2core_minidump_2_core_DEPENDENCIES) src/tools/linux/md2core/$(am__dirstamp)
 	@rm -f src/tools/linux/md2core/minidump-2-core$(EXEEXT)
 	$(CXXLINK) $(src_tools_linux_md2core_minidump_2_core_OBJECTS) $(src_tools_linux_md2core_minidump_2_core_LDADD) $(LIBS)
+src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.$(OBJEXT):  \
+	src/testing/gtest/src/$(am__dirstamp) \
+	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.$(OBJEXT):  \
+	src/testing/gtest/src/$(am__dirstamp) \
+	src/testing/gtest/src/$(DEPDIR)/$(am__dirstamp)
+src/testing/src/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.$(OBJEXT):  \
+	src/testing/src/$(am__dirstamp) \
+	src/testing/src/$(DEPDIR)/$(am__dirstamp)
+src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.$(OBJEXT):  \
+	src/tools/linux/md2core/$(am__dirstamp) \
+	src/tools/linux/md2core/$(DEPDIR)/$(am__dirstamp)
+src/tools/linux/md2core/minidump_2_core_unittest$(EXEEXT): $(src_tools_linux_md2core_minidump_2_core_unittest_OBJECTS) $(src_tools_linux_md2core_minidump_2_core_unittest_DEPENDENCIES) src/tools/linux/md2core/$(am__dirstamp)
+	@rm -f src/tools/linux/md2core/minidump_2_core_unittest$(EXEEXT)
+	$(CXXLINK) $(src_tools_linux_md2core_minidump_2_core_unittest_OBJECTS) $(src_tools_linux_md2core_minidump_2_core_unittest_LDADD) $(LIBS)
 src/common/linux/http_upload.$(OBJEXT):  \
 	src/common/linux/$(am__dirstamp) \
 	src/common/linux/$(DEPDIR)/$(am__dirstamp)
@@ -3082,6 +3125,8 @@ mostlyclean-compile:
 	-rm -f src/testing/gtest/src/src_processor_static_range_map_unittest-gtest-all.$(OBJEXT)
 	-rm -f src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest-all.$(OBJEXT)
 	-rm -f src/testing/gtest/src/src_processor_synth_minidump_unittest-gtest_main.$(OBJEXT)
+	-rm -f src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.$(OBJEXT)
+	-rm -f src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.$(OBJEXT)
 	-rm -f src/testing/src/src_client_linux_linux_client_unittest-gmock-all.$(OBJEXT)
 	-rm -f src/testing/src/src_common_dumper_unittest-gmock-all.$(OBJEXT)
 	-rm -f src/testing/src/src_common_test_assembler_unittest-gmock-all.$(OBJEXT)
@@ -3102,6 +3147,7 @@ mostlyclean-compile:
 	-rm -f src/testing/src/src_processor_static_map_unittest-gmock-all.$(OBJEXT)
 	-rm -f src/testing/src/src_processor_static_range_map_unittest-gmock-all.$(OBJEXT)
 	-rm -f src/testing/src/src_processor_synth_minidump_unittest-gmock-all.$(OBJEXT)
+	-rm -f src/testing/src/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.$(OBJEXT)
 	-rm -f src/third_party/libdisasm/ia32_implicit.$(OBJEXT)
 	-rm -f src/third_party/libdisasm/ia32_insn.$(OBJEXT)
 	-rm -f src/third_party/libdisasm/ia32_invariant.$(OBJEXT)
@@ -3118,6 +3164,7 @@ mostlyclean-compile:
 	-rm -f src/third_party/libdisasm/x86_operand_list.$(OBJEXT)
 	-rm -f src/tools/linux/dump_syms/dump_syms.$(OBJEXT)
 	-rm -f src/tools/linux/md2core/minidump-2-core.$(OBJEXT)
+	-rm -f src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.$(OBJEXT)
 	-rm -f src/tools/linux/symupload/minidump_upload.$(OBJEXT)
 	-rm -f src/tools/linux/symupload/sym_upload.$(OBJEXT)
 
@@ -3285,6 +3332,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_static_range_map_unittest-gtest-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gtest-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gtest_main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_common_dumper_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_common_test_assembler_unittest-gmock-all.Po@am__quote@
@@ -3305,6 +3354,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_static_map_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_static_range_map_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gmock-all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_implicit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_insn.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_invariant.Po@am__quote@
@@ -3321,6 +3371,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/x86_operand_list.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/tools/linux/dump_syms/$(DEPDIR)/dump_syms.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/tools/linux/md2core/$(DEPDIR)/minidump-2-core.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/tools/linux/md2core/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/tools/linux/symupload/$(DEPDIR)/minidump_upload.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/tools/linux/symupload/$(DEPDIR)/sym_upload.Po@am__quote@
 
@@ -5077,6 +5128,62 @@ src/processor/src_processor_synth_minidump_unittest-synth_minidump.obj: src/proc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/synth_minidump.cc' object='src/processor/src_processor_synth_minidump_unittest-synth_minidump.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_synth_minidump_unittest-synth_minidump.obj `if test -f 'src/processor/synth_minidump.cc'; then $(CYGPATH_W) 'src/processor/synth_minidump.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/synth_minidump.cc'; fi`
+
+src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.o: src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.Tpo -c -o src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest-all.cc' object='src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.o `test -f 'src/testing/gtest/src/gtest-all.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest-all.cc
+
+src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.obj: src/testing/gtest/src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.Tpo -c -o src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.Tpo src/testing/gtest/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest-all.cc' object='src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest-all.obj `if test -f 'src/testing/gtest/src/gtest-all.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest-all.cc'; fi`
+
+src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.o: src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.o -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.Tpo -c -o src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.o `test -f 'src/testing/gtest/src/gtest_main.cc' || echo '$(srcdir)/'`src/testing/gtest/src/gtest_main.cc
+
+src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.obj: src/testing/gtest/src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.obj -MD -MP -MF src/testing/gtest/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.Tpo -c -o src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/gtest/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.Tpo src/testing/gtest/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/gtest/src/gtest_main.cc' object='src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/gtest/src/src_tools_linux_md2core_minidump_2_core_unittest-gtest_main.obj `if test -f 'src/testing/gtest/src/gtest_main.cc'; then $(CYGPATH_W) 'src/testing/gtest/src/gtest_main.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/gtest/src/gtest_main.cc'; fi`
+
+src/testing/src/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.o: src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.o -MD -MP -MF src/testing/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.Tpo -c -o src/testing/src/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/src/gmock-all.cc' object='src/testing/src/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.o `test -f 'src/testing/src/gmock-all.cc' || echo '$(srcdir)/'`src/testing/src/gmock-all.cc
+
+src/testing/src/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.obj: src/testing/src/gmock-all.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/testing/src/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.obj -MD -MP -MF src/testing/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.Tpo -c -o src/testing/src/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/testing/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.Tpo src/testing/src/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/testing/src/gmock-all.cc' object='src/testing/src/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/testing/src/src_tools_linux_md2core_minidump_2_core_unittest-gmock-all.obj `if test -f 'src/testing/src/gmock-all.cc'; then $(CYGPATH_W) 'src/testing/src/gmock-all.cc'; else $(CYGPATH_W) '$(srcdir)/src/testing/src/gmock-all.cc'; fi`
+
+src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.o: src/tools/linux/md2core/minidump_memory_range_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.o -MD -MP -MF src/tools/linux/md2core/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.Tpo -c -o src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.o `test -f 'src/tools/linux/md2core/minidump_memory_range_unittest.cc' || echo '$(srcdir)/'`src/tools/linux/md2core/minidump_memory_range_unittest.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/tools/linux/md2core/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.Tpo src/tools/linux/md2core/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/tools/linux/md2core/minidump_memory_range_unittest.cc' object='src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.o `test -f 'src/tools/linux/md2core/minidump_memory_range_unittest.cc' || echo '$(srcdir)/'`src/tools/linux/md2core/minidump_memory_range_unittest.cc
+
+src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.obj: src/tools/linux/md2core/minidump_memory_range_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.obj -MD -MP -MF src/tools/linux/md2core/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.Tpo -c -o src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.obj `if test -f 'src/tools/linux/md2core/minidump_memory_range_unittest.cc'; then $(CYGPATH_W) 'src/tools/linux/md2core/minidump_memory_range_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/tools/linux/md2core/minidump_memory_range_unittest.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/tools/linux/md2core/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.Tpo src/tools/linux/md2core/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/tools/linux/md2core/minidump_memory_range_unittest.cc' object='src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/tools/linux/md2core/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.obj `if test -f 'src/tools/linux/md2core/minidump_memory_range_unittest.cc'; then $(CYGPATH_W) 'src/tools/linux/md2core/minidump_memory_range_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/tools/linux/md2core/minidump_memory_range_unittest.cc'; fi`
 install-dist_docDATA: $(dist_doc_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(docdir)" || $(MKDIR_P) "$(DESTDIR)$(docdir)"
