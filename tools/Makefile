@@ -344,7 +344,7 @@ BUILD/stamp-$(CROSSARCH)-binutils: | SRC/binutils BUILD
 	    --prefix=$(PREFIX) \
 	    --target=$(CROSSARCH) \
 	    --with-sysroot=$(PREFIX)/$(CROSSARCH) \
-	    --disable-werror
+	    --disable-werror --enable-deterministic-archives
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 	touch $@
