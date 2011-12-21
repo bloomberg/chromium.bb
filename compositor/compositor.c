@@ -1070,23 +1070,31 @@ wlsc_surface_transform(struct wlsc_surface *surface,
 	*sy = y - surface->y;
 }
 
+static struct wlsc_surface *
+wlsc_compositor_pick_surface(struct wlsc_compositor *compositor,
+			     int32_t x, int32_t y, int32_t *sx, int32_t *sy)
+{
+	struct wlsc_surface *surface;
+
+	wl_list_for_each(surface, &compositor->surface_list, link) {
+		if (surface->surface.resource.client == NULL)
+			continue;
+		wlsc_surface_transform(surface, x, y, sx, sy);
+		if (0 <= *sx && *sx < surface->width &&
+		    0 <= *sy && *sy < surface->height)
+			return surface;
+	}
+
+	return NULL;
+}
+
 WL_EXPORT struct wlsc_surface *
 pick_surface(struct wl_input_device *device, int32_t *sx, int32_t *sy)
 {
 	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
-	struct wlsc_compositor *ec = wd->compositor;
-	struct wlsc_surface *es;
 
-	wl_list_for_each(es, &ec->surface_list, link) {
-		if (es->surface.resource.client == NULL)
-			continue;
-		wlsc_surface_transform(es, device->x, device->y, sx, sy);
-		if (0 <= *sx && *sx < es->width &&
-		    0 <= *sy && *sy < es->height)
-			return es;
-	}
-
-	return NULL;
+	return wlsc_compositor_pick_surface(wd->compositor,
+					    device->x, device->y, sx, sy);
 }
 
 
