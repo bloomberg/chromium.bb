@@ -475,8 +475,13 @@ class TestGypNinja(TestGypBase):
     return self.workpath(*result)
 
   def up_to_date(self, gyp_file, target=None, **kw):
-    kw['stdout'] = "ninja: no work to do.\n"
-    return self.build(gyp_file, target, **kw)
+    result = self.build(gyp_file, target, **kw)
+    if not result:
+      stdout = self.stdout()
+      if 'ninja: no work to do' not in stdout:
+        self.report_not_up_to_date()
+        self.fail_test()
+    return result
 
 
 class TestGypMSVS(TestGypBase):
@@ -575,7 +580,7 @@ class TestGypMSVS(TestGypBase):
     'C:\PROGRAM FILES (X86)\MICROSOFT VISUAL STUDIO 10.0\VC\BIN\1033\CLUI.DLL'
     was modified at 02/21/2011 17:03:30, which is newer than '' which was
     modified at 01/01/0001 00:00:00.
-    
+
     The workaround is to specify a workdir when instantiating the test, e.g.
     test = TestGyp.TestGyp(workdir='workarea')
     """

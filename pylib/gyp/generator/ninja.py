@@ -709,7 +709,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
   # TODO: compute cc/cxx/ld/etc. by command-line arguments and system tests.
   master_ninja.variable('cc', os.environ.get('CC', 'gcc'))
   master_ninja.variable('cxx', os.environ.get('CXX', 'g++'))
-  if flavor != 'mac':
+  # TODO(bradnelson): remove NOGOLD when this is resolved:
+  #     http://code.google.com/p/chromium/issues/detail?id=108251
+  if flavor != 'mac' and not os.environ.get('NOGOLD'):
     master_ninja.variable('ld', '$cxx -Wl,--threads -Wl,--thread-count=4')
   else:
     # TODO(jeremya/thakis): flock
