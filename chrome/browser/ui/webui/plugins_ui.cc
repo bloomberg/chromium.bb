@@ -270,8 +270,10 @@ void PluginsDOMHandler::PluginsLoaded(const std::vector<PluginGroup>& groups) {
   // Construct DictionaryValues to return to the UI
   ListValue* plugin_groups_data = new ListValue();
   for (size_t i = 0; i < groups.size(); ++i) {
-    ListValue* plugin_files = new ListValue();
     const PluginGroup& group = groups[i];
+    if (group.IsEmpty())
+      continue;
+    ListValue* plugin_files = new ListValue();
     string16 group_name = group.GetGroupName();
     bool group_enabled = false;
     bool all_plugins_enabled_by_policy = true;
