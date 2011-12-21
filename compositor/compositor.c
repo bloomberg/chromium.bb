@@ -1437,17 +1437,103 @@ notify_keyboard_focus(struct wl_input_device *device,
 	}
 }
 
+/* TODO: share this function with wayland-server.c */
+static struct wl_resource *
+find_resource_for_surface(struct wl_list *list, struct wl_surface *surface)
+{
+        struct wl_resource *r;
+
+        if (!surface)
+                return NULL;
+
+        wl_list_for_each(r, list, link) {
+                if (r->client == surface->resource.client)
+                        return r;
+        }
+
+        return NULL;
+}
+
+static void
+touch_set_focus(struct wlsc_input_device *device,
+		struct wl_surface *surface, uint32_t time)
+{
+	struct wl_input_device *input_device = &device->input_device;
+	struct wl_resource *resource;
+
+	if (device->touch_focus == surface)
+		return;
+
+	resource = find_resource_for_surface(&input_device->resource_list,
+					     surface);
+	if (!resource) {
+		fprintf(stderr, "couldn't find resource\n");
+		return;
+	}
+
+	device->touch_focus = surface;
+	device->touch_focus_resource = resource;
+}
+
 /**
  * notify_touch - emulates button touches and notifies surfaces accordingly.
  *
  * It assumes always the correct cycle sequence until it gets here: touch_down
  * → touch_update → ... → touch_update → touch_end. The driver is responsible
  * for sending along such order.
+ *
  */
 WL_EXPORT void
 notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
              int x, int y, int touch_type)
 {
+	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
+	struct wlsc_compositor *ec = wd->compositor;
+	struct wlsc_surface *es;
+	int32_t sx, sy;
+
+	switch (touch_type) {
+	case WL_INPUT_DEVICE_TOUCH_DOWN:
+		wlsc_compositor_idle_inhibit(ec);
+
+		wd->num_tp++;
+
+		/* the first finger down picks the surface, and all further go
+		 * to that surface for the remainder of the touch session i.e.
+		 * until all touch points are up again. */
+		if (wd->num_tp == 1) {
+			es = wlsc_compositor_pick_surface(ec, x, y, &sx, &sy);
+			touch_set_focus(wd, &es->surface, time);
+		} else {
+			es = (struct wlsc_surface *) wd->touch_focus;
+			wlsc_surface_transform(es, x, y, &sx, &sy);
+		}
+		if (wd->touch_focus_resource)
+			wl_resource_post_event(wd->touch_focus_resource,
+					       touch_type, time,
+					       wd->touch_focus,
+					       touch_id, sx, sy);
+		break;
+	case WL_INPUT_DEVICE_TOUCH_MOTION:
+		es = (struct wlsc_surface *) wd->touch_focus;
+		wlsc_surface_transform(es, x, y, &sx, &sy);
+		if (wd->touch_focus_resource)
+			wl_resource_post_event(wd->touch_focus_resource,
+					touch_type, time, touch_id, sx, sy);
+		break;
+	case WL_INPUT_DEVICE_TOUCH_UP:
+		wlsc_compositor_idle_release(ec);
+		wd->num_tp--;
+
+		if (wd->num_tp == 0) {
+			wd->touch_focus = NULL;
+			wd->touch_focus_resource = NULL;
+		}
+		if (wd->touch_focus_resource)
+			wl_resource_post_event(wd->touch_focus_resource,
+					touch_type, time, touch_id);
+		break;
+	}
 }
 
 static void
@@ -1536,6 +1622,7 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 	device->hotspot_x = 16;
 	device->hotspot_y = 16;
 	device->modifier_state = 0;
+	device->num_tp = 0;
 
 	device->input_device.implicit_grab.interface = &implicit_grab_interface;
 

@@ -114,6 +114,10 @@ struct wlsc_input_device {
 	struct wlsc_data_source *selection_data_source;
 	struct wl_listener selection_data_source_listener;
 	struct wl_grab grab;
+
+	uint32_t num_tp;
+	struct wl_surface *touch_focus;
+	struct wl_resource *touch_focus_resource;
 };
 
 enum wlsc_visual {
