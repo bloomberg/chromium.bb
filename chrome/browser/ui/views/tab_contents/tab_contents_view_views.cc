@@ -261,7 +261,8 @@ void TabContentsViewViews::InstallOverlayView(gfx::NativeView view) {
   DCHECK(!overlaid_view_);
   views::Widget::ReparentNativeView(view, GetNativeView());
   overlaid_view_ = views::Widget::GetWidgetForNativeView(view);
-  overlaid_view_->SetBounds(gfx::Rect(GetClientAreaScreenBounds().size()));
+  if (overlaid_view_)
+    overlaid_view_->SetBounds(gfx::Rect(GetClientAreaScreenBounds().size()));
 }
 
 void TabContentsViewViews::RemoveOverlayView() {
