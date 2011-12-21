@@ -24,6 +24,7 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace {
+
 // The frame border is only visible in restored mode and is hardcoded to 1 px on
 // each side regardless of the system window border size.
 const int kFrameBorderThickness = 1;
@@ -46,7 +47,11 @@ const int kIconTitleSpacing = 4;
 const int kTitleCloseButtonSpacing = 5;
 // There is a 4 px gap between the close button and the frame border.
 const int kCloseButtonFrameBorderSpacing = 4;
-}
+
+const SkColor kFrameColorAppPanel = SK_ColorWHITE;
+const SkColor kFrameColorAppPanelInactive = SK_ColorWHITE;
+
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // AppPanelBrowserFrameView, public:
@@ -319,10 +324,10 @@ void AppPanelBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   SkColor frame_color;
   if (ShouldPaintAsActive()) {
     theme_frame = rb.GetBitmapNamed(IDR_FRAME_APP_PANEL);
-    frame_color = ResourceBundle::frame_color_app_panel;
+    frame_color = kFrameColorAppPanel;
   } else {
-    theme_frame = rb.GetBitmapNamed(IDR_FRAME_APP_PANEL);  // TODO
-    frame_color = ResourceBundle::frame_color_app_panel_inactive;
+    theme_frame = rb.GetBitmapNamed(IDR_FRAME_APP_PANEL);
+    frame_color = kFrameColorAppPanelInactive;
   }
 
   // Fill with the frame color first so we have a constant background for

@@ -196,10 +196,6 @@ class UI_EXPORT ResourceBundle {
   static const SkColor frame_color_inactive;
 
   // TODO(beng): These browser-specific concepts should move to ThemeProvider.
-  static const SkColor frame_color_app_panel;
-  static const SkColor frame_color_app_panel_inactive;
-  static const SkColor frame_color_incognito;
-  static const SkColor frame_color_incognito_inactive;
   static const SkColor toolbar_color;
   static const SkColor toolbar_separator_color;
 

@@ -56,20 +56,12 @@ const SkColor ResourceBundle::frame_color =
 const SkColor ResourceBundle::frame_color_inactive =
      SkColorSetRGB(161, 182, 228);
 #endif
-const SkColor ResourceBundle::frame_color_app_panel =
-     SK_ColorWHITE;
-const SkColor ResourceBundle::frame_color_app_panel_inactive =
-     SK_ColorWHITE;
-const SkColor ResourceBundle::frame_color_incognito =
-     SkColorSetRGB(83, 106, 139);
-const SkColor ResourceBundle::frame_color_incognito_inactive =
-     SkColorSetRGB(126, 139, 156);
 const SkColor ResourceBundle::toolbar_color =
      SkColorSetRGB(210, 225, 246);
 const SkColor ResourceBundle::toolbar_separator_color =
      SkColorSetRGB(182, 186, 192);
 
-/* static */
+// static
 std::string ResourceBundle::InitSharedInstance(
     const std::string& pref_locale) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
@@ -79,7 +71,7 @@ std::string ResourceBundle::InitSharedInstance(
   return g_shared_instance_->LoadLocaleResources(pref_locale);
 }
 
-/* static */
+// static
 void ResourceBundle::InitSharedInstanceForTest(const FilePath& path) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
   g_shared_instance_ = new ResourceBundle();
@@ -87,7 +79,7 @@ void ResourceBundle::InitSharedInstanceForTest(const FilePath& path) {
   g_shared_instance_->LoadTestResources(path);
 }
 
-/* static */
+// static
 DataPack* ResourceBundle::LoadResourcesDataPak(const FilePath& path) {
   DataPack* datapack = new DataPack;
   bool success = datapack->Load(path);
@@ -98,7 +90,7 @@ DataPack* ResourceBundle::LoadResourcesDataPak(const FilePath& path) {
   return datapack;
 }
 
-/* static */
+// static
 std::string ResourceBundle::ReloadSharedInstance(
     const std::string& pref_locale) {
   DCHECK(g_shared_instance_ != NULL) << "ResourceBundle not initialized";
@@ -107,13 +99,13 @@ std::string ResourceBundle::ReloadSharedInstance(
   return g_shared_instance_->LoadLocaleResources(pref_locale);
 }
 
-/* static */
+// static
 void ResourceBundle::AddDataPackToSharedInstance(const FilePath& path) {
   DCHECK(g_shared_instance_ != NULL) << "ResourceBundle not initialized";
   g_shared_instance_->data_packs_.push_back(new LoadedDataPack(path));
 }
 
-/* static */
+// static
 void ResourceBundle::CleanupSharedInstance() {
   if (g_shared_instance_) {
     delete g_shared_instance_;
@@ -121,25 +113,25 @@ void ResourceBundle::CleanupSharedInstance() {
   }
 }
 
-/* static */
+// static
 bool ResourceBundle::HasSharedInstance() {
   return g_shared_instance_ != NULL;
 }
 
-/* static */
+// static
 ResourceBundle& ResourceBundle::GetSharedInstance() {
   // Must call InitSharedInstance before this function.
   CHECK(g_shared_instance_ != NULL);
   return *g_shared_instance_;
 }
 
-/* static */
+// static
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
   return !GetLocaleFilePath(locale).empty();
 }
 
 #if !defined(OS_MACOSX)
-/* static */
+// static
 FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
   FilePath locale_file_path;
   PathService::Get(ui::DIR_LOCALES, &locale_file_path);
@@ -361,7 +353,7 @@ void ResourceBundle::LoadFontsIfNecessary() {
   }
 }
 
-/* static */
+// static
 SkBitmap* ResourceBundle::LoadBitmap(DataHandle data_handle, int resource_id) {
   scoped_refptr<RefCountedMemory> memory(
       LoadResourceBytes(data_handle, resource_id));

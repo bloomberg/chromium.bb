@@ -51,6 +51,7 @@
 #endif
 
 namespace {
+
 // The frame border is only visible in restored mode and is hardcoded to 4 px on
 // each side regardless of the system window border size.
 const int kFrameBorderThickness = 4;
@@ -103,6 +104,9 @@ const int kNewTabCaptionMaximizedSpacing = 16;
 // is no avatar icon.
 const int kTabStripIndent = 1;
 
+const SkColor kFrameColorIncognito = SkColorSetRGB(83, 106, 139);
+const SkColor kFrameColorIncognitoInactive = SkColorSetRGB(126, 139, 156);
+
 // Converts |bounds| from |src|'s coordinate system to |dst|, and checks if
 // |pt| is contained within.
 bool ConvertedContainsCheck(gfx::Rect bounds, const views::View* src,
@@ -114,7 +118,8 @@ bool ConvertedContainsCheck(gfx::Rect bounds, const views::View* src,
   bounds.set_origin(origin);
   return bounds.Contains(pt);
 }
-}
+
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, public:
@@ -874,12 +879,10 @@ SkColor OpaqueBrowserFrameView::GetFrameColor() const {
   }
   // Never theme app and popup windows.
   if (ShouldPaintAsActive()) {
-    return is_incognito ?
-        ResourceBundle::frame_color_incognito : ResourceBundle::frame_color;
+    return is_incognito ? kFrameColorIncognito : ResourceBundle::frame_color;
   }
-  return is_incognito ?
-      ResourceBundle::frame_color_incognito_inactive :
-      ResourceBundle::frame_color_inactive;
+  return is_incognito ? kFrameColorIncognitoInactive
+                      : ResourceBundle::frame_color_inactive;
 }
 
 SkBitmap* OpaqueBrowserFrameView::GetFrameBitmap() const {
