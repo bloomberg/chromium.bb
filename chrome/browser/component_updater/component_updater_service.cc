@@ -41,8 +41,10 @@ using content::BrowserThread;
 namespace {
 // Extends an omaha compatible update check url |query| string. Does
 // not mutate the string if it would be longer than |limit| chars.
-bool AddQueryString(std::string id, std::string version,
-                    size_t limit, std::string* query) {
+bool AddQueryString(const std::string& id,
+                    const std::string& version,
+                    size_t limit,
+                    std::string* query) {
   std::string additional =
       base::StringPrintf("id=%s&v=%s&uc", id.c_str(), version.c_str());
   additional = "x=" + net::EscapeQueryParamValue(additional, true);
