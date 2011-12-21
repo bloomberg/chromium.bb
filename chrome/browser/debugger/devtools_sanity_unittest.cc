@@ -439,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 
 // Tests that a content script is in the scripts list.
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       TestDevToolsExtensionAPI) {
+                       DISABLED_TestDevToolsExtensionAPI) {
   LoadExtension("devtools_extension");
   RunTest("waitForTestResultsInConsole", "");
 }
