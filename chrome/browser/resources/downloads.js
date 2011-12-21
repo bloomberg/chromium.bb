@@ -19,8 +19,8 @@ function showInlineBlock(node, isShow) {
 
 /**
  * Creates an element of a specified type with a specified class name.
- * @param {String} type The node type.
- * @param {String} className The class name to use.
+ * @param {string} type The node type.
+ * @param {string} className The class name to use.
  */
 function createElementWithClassName(type, className) {
   var elm = document.createElement(type);
@@ -30,8 +30,8 @@ function createElementWithClassName(type, className) {
 
 /**
  * Creates a link with a specified onclick handler and content
- * @param {String} onclick The onclick handler
- * @param {String} value The link text
+ * @param {function()} onclick The onclick handler
+ * @param {string} value The link text
  */
 function createLink(onclick, value) {
   var link = document.createElement('a');
@@ -44,8 +44,8 @@ function createLink(onclick, value) {
 
 /**
  * Creates a button with a specified onclick handler and content
- * @param {String} onclick The onclick handler
- * @param {String} value The button text
+ * @param {function()} onclick The onclick handler
+ * @param {string} value The button text
  */
 function createButton(onclick, value) {
   var button = document.createElement('input');
@@ -69,6 +69,10 @@ function Downloads() {
   // Keep track of the dates of the newest and oldest downloads so that we
   // know where to insert them.
   this.newestTime_ = -1;
+
+  // Icon load request queue.
+  this.iconLoadQueue = [];
+  this.isIconLoading = false;
 }
 
 /**
@@ -97,7 +101,7 @@ Downloads.prototype.updated = function(download) {
 
 /**
  * Set our display search text.
- * @param {String} searchText The string we're searching for.
+ * @param {string} searchText The string we're searching for.
  */
 Downloads.prototype.setSearchText = function(searchText) {
   this.searchText_ = searchText;
@@ -145,7 +149,7 @@ Downloads.prototype.updateDateDisplay_ = function() {
 
 /**
  * Remove a download.
- * @param {Number} id The id of the download to remove.
+ * @param {number} id The id of the download to remove.
  */
 Downloads.prototype.remove = function(id) {
   this.node_.removeChild(this.downloads_[id].node);
@@ -161,6 +165,37 @@ Downloads.prototype.clear = function() {
     this.downloads_[id].clear();
     this.remove(id);
   }
+}
+
+/**
+ * Schedule icon load.
+ * @param {HTMLImageElement} elem Image element that should contain the icon.
+ * @param {string} iconURL URL to the icon.
+ */
+Downloads.prototype.scheduleIconLoad = function(elem, iconURL) {
+  var self = this;
+
+  // Sends request to the next icon in the queue and schedules
+  // call to itself when the icon is loaded.
+  function loadNext() {
+    if (self.iconLoadQueue.length == 0) {
+      self.isIconLoading = false;
+    } else {
+      self.isIconLoading = true;
+      var request = self.iconLoadQueue.pop();
+      request.element.onabort = request.element.onerror =
+          request.element.onload = loadNext;
+      request.element.src = request.url;
+    }
+  }
+
+  // Create new request
+  var loadRequest = {element: elem, url: iconURL};
+  this.iconLoadQueue.push(loadRequest);
+
+  // Start loading if none scheduled yet
+  if (!this.isIconLoading)
+    loadNext();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -356,7 +391,8 @@ Download.prototype.update = function(download) {
     this.danger_.style.display = 'block';
     this.safe_.style.display = 'none';
   } else {
-    this.nodeImg_.src = 'chrome://fileicon/' + this.filePath_;
+    this.scheduleIconLoad(this.nodeImg_,
+                          'chrome://fileicon/' + this.filePath_);
 
     if (this.state_ == Download.States.COMPLETE &&
         !this.fileExternallyRemoved_) {
@@ -455,7 +491,7 @@ Download.prototype.clear = function() {
 }
 
 /**
- * @return {String} User-visible status update text.
+ * @return {string} User-visible status update text.
  */
 Download.prototype.getStatusText_ = function() {
   switch (this.state_) {
