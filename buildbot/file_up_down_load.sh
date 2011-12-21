@@ -144,7 +144,7 @@ ShowRecentArmUntrustedToolchains() {
 UploadArmBinariesForHWBots() {
   name=$1
   tarball=$2
-  Upload ${tarball} ${BASE_BETWEEN_BOTS}/${name}/build.tgz
+  Upload ${tarball} gs://${BASE_BETWEEN_BOTS}/${name}/build.tgz
 }
 
 
@@ -163,7 +163,7 @@ DownloadArmBinariesForHWBots() {
 UploadArmBinariesForHWBotsTry() {
   name=$1
   tarball=$2
-  Upload ${tarball} ${BASE_BETWEEN_BOTS_TRY}/${name}/build.tgz
+  Upload ${tarball} gs://${BASE_BETWEEN_BOTS_TRY}/${name}/build.tgz
 }
 
 
