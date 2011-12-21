@@ -128,7 +128,7 @@ ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
     : ChromeWebUI(tab_contents),
       url_(url) {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents->browser_context());
+      Profile::FromBrowserContext(tab_contents->GetBrowserContext());
   ExtensionService* service = profile->GetExtensionService();
   const Extension* extension =
       service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(url));
@@ -342,7 +342,7 @@ void ExtensionWebUI::UnregisterAndReplaceOverride(const std::string& page,
     for (TabContentsIterator iterator; !iterator.done(); ++iterator) {
       TabContents* tab = (*iterator)->tab_contents();
       Profile* tab_profile =
-          Profile::FromBrowserContext(tab->browser_context());
+          Profile::FromBrowserContext(tab->GetBrowserContext());
       if (tab_profile != profile)
         continue;
 

@@ -93,7 +93,7 @@ DownloadsUI::DownloadsUI(TabContents* contents) : ChromeWebUI(contents) {
   handler->Init();
 
   // Set up the chrome://downloads/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateDownloadsUIHTMLSource());
 }

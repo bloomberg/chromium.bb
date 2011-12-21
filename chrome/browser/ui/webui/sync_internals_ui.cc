@@ -76,7 +76,7 @@ SyncInternalsUI::SyncInternalsUI(TabContents* contents)
     : ChromeWebUI(contents),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // TODO(akalin): Fix.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateSyncInternalsHTMLSource());
   ProfileSyncService* sync_service = GetProfileSyncService(profile);

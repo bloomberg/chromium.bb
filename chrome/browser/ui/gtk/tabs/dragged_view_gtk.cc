@@ -66,7 +66,7 @@ DraggedViewGtk::DraggedViewGtk(DragData* drag_data,
   std::vector<TabContents*> data_sources(drag_data_->GetDraggedTabsContents());
   for (size_t i = 0; i < data_sources.size(); i++) {
     renderers_.push_back(new TabRendererGtk(GtkThemeService::GetFrom(
-        Profile::FromBrowserContext(data_sources[i]->browser_context()))));
+        Profile::FromBrowserContext(data_sources[i]->GetBrowserContext()))));
   }
 
   for (size_t i = 0; i < drag_data_->size(); i++) {

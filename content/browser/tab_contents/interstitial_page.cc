@@ -417,7 +417,7 @@ void InterstitialPage::HandleKeyboardEvent(
 
 RenderViewHost* InterstitialPage::CreateRenderViewHost() {
   RenderViewHost* render_view_host = new RenderViewHost(
-      SiteInstance::CreateSiteInstance(tab()->browser_context()),
+      SiteInstance::CreateSiteInstance(tab()->GetBrowserContext()),
       this, MSG_ROUTING_NONE, kInvalidSessionStorageNamespaceId);
   return render_view_host;
 }

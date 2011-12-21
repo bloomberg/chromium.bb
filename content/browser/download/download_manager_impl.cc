@@ -777,7 +777,7 @@ void DownloadManagerImpl::DownloadUrlToFile(const GURL& url,
           URLParams(url, referrer), save_info, resource_dispatcher_host,
           RenderParams(tab_contents->GetRenderProcessHost()->GetID(),
                        tab_contents->GetRenderViewHost()->routing_id()),
-          &tab_contents->browser_context()->GetResourceContext()));
+          &tab_contents->GetBrowserContext()->GetResourceContext()));
 }
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {

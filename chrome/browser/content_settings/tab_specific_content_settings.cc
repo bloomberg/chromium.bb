@@ -50,7 +50,7 @@ bool TabSpecificContentSettings::LocalSharedObjectsContainer::empty() const {
 
 TabSpecificContentSettings::TabSpecificContentSettings(TabContents* tab)
     : TabContentsObserver(tab),
-      profile_(Profile::FromBrowserContext(tab->browser_context())),
+      profile_(Profile::FromBrowserContext(tab->GetBrowserContext())),
       allowed_local_shared_objects_(profile_),
       blocked_local_shared_objects_(profile_),
       geolocation_settings_state_(profile_),
@@ -474,7 +474,7 @@ void TabSpecificContentSettings::Observe(
       // Currently this should be matched by the |primary_pattern|.
       settings_details.ptr()->primary_pattern().Matches(entry_url)) {
     Profile* profile =
-        Profile::FromBrowserContext(tab_contents()->browser_context());
+        Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
     RendererContentSettingRules rules;
     GetRendererContentSettingRules(profile->GetHostContentSettingsMap(),
                                    &rules);

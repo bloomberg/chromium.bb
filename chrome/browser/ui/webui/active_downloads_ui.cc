@@ -369,7 +369,7 @@ ActiveDownloadsUI::ActiveDownloadsUI(TabContents* contents)
   handler_->Init();
 
   // Set up the chrome://active-downloads/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateActiveDownloadsUIHTMLSource());
 }

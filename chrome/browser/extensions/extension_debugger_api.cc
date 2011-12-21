@@ -133,7 +133,7 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
 
   // Detach from debugger when extension unloads.
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents_->browser_context());
+      Profile::FromBrowserContext(tab_contents_->GetBrowserContext());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile));
 
@@ -157,7 +157,7 @@ bool ExtensionDevToolsClientHost::MatchesContentsAndExtensionId(
 void ExtensionDevToolsClientHost::InspectedTabClosing() {
   // Tell extension that this client host has been detached.
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents_->browser_context());
+      Profile::FromBrowserContext(tab_contents_->GetBrowserContext());
   if (profile != NULL && profile->GetExtensionEventRouter()) {
     ListValue args;
     args.Append(CreateDebuggeeId(tab_id_));
@@ -209,7 +209,7 @@ void ExtensionDevToolsClientHost::Observe(
 void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
     const std::string& message) {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents_->browser_context());
+      Profile::FromBrowserContext(tab_contents_->GetBrowserContext());
   if (profile == NULL || !profile->GetExtensionEventRouter())
     return;
 

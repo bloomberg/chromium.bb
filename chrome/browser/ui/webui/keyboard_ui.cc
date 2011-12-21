@@ -19,7 +19,7 @@
 KeyboardUI::KeyboardUI(TabContents* contents)
     : ChromeWebUI(contents) {
   KeyboardHTMLSource* html_source = new KeyboardHTMLSource();
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 

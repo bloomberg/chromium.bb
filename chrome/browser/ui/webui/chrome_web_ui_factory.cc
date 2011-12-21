@@ -387,7 +387,7 @@ WebUI* ChromeWebUIFactory::CreateWebUIForURL(
     TabContents* tab_contents,
     const GURL& url) const {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents->browser_context());
+      Profile::FromBrowserContext(tab_contents->GetBrowserContext());
   WebUIFactoryFunction function = GetWebUIFactoryFunction(tab_contents,
                                                           profile, url);
   if (!function)

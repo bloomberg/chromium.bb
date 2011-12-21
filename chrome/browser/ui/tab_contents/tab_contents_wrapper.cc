@@ -172,7 +172,7 @@ const TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
 }
 
 Profile* TabContentsWrapper::profile() const {
-  return Profile::FromBrowserContext(tab_contents()->browser_context());
+  return Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

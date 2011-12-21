@@ -339,7 +339,7 @@ TabContents* ShellContentBrowserClient::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
   Shell* shell = Shell::CreateNewWindow(
-      tab_contents_view->tab_contents()->browser_context(),
+      tab_contents_view->tab_contents()->GetBrowserContext(),
       GURL(),
       tab_contents_view->tab_contents()->GetSiteInstance(),
       route_id,

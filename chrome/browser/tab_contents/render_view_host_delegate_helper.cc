@@ -261,7 +261,7 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
     const ViewHostMsg_CreateWindow_Params& params) {
   TabContents* new_contents = CreateNewWindow(
       route_id,
-      Profile::FromBrowserContext(tab_contents->browser_context()),
+      Profile::FromBrowserContext(tab_contents->GetBrowserContext()),
       tab_contents->GetSiteInstance(),
       tab_contents->GetWebUITypeForCurrentState(),
       tab_contents,
@@ -281,7 +281,7 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_RETARGETING,
         content::Source<Profile>(
-            Profile::FromBrowserContext(tab_contents->browser_context())),
+            Profile::FromBrowserContext(tab_contents->GetBrowserContext())),
         content::Details<RetargetingDetails>(&details));
   } else {
     content::NotificationService::current()->Notify(

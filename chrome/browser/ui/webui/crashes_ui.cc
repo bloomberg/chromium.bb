@@ -163,7 +163,7 @@ CrashesUI::CrashesUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new CrashesDOMHandler())->Attach(this));
 
   // Set up the chrome://crashes/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateCrashesUIHTMLSource());
 }

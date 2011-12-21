@@ -287,7 +287,7 @@ void KeyboardOverlayHandler::GetLabelMap(const ListValue* args) {
 
 KeyboardOverlayUI::KeyboardOverlayUI(TabContents* contents)
     : HtmlDialogUI(contents) {
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   KeyboardOverlayHandler* handler = new KeyboardOverlayHandler(profile);
   AddMessageHandler((handler)->Attach(this));
 

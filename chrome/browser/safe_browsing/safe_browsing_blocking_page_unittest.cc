@@ -193,7 +193,8 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
 // Tests showing a blocking page for a malware page and not proceeding.
 TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
   // Enable malware details.
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Start a load.
@@ -226,7 +227,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
 // Tests showing a blocking page for a malware page and then proceeding.
 TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
   // Enable malware reports.
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Start a load.
@@ -257,7 +259,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
 // and not proceeding.
 TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
   // Enable malware reports.
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Navigate somewhere.
@@ -291,7 +294,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
 // and proceeding.
 TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceProceed) {
   // Enable malware reports.
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Navigate somewhere.
@@ -323,7 +327,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceProceed) {
 TEST_F(SafeBrowsingBlockingPageTest,
        PageWithMultipleMalwareResourceDontProceed) {
   // Enable malware reports.
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Navigate somewhere.
@@ -363,7 +368,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
 TEST_F(SafeBrowsingBlockingPageTest,
        PageWithMultipleMalwareResourceProceedThenDontProceed) {
   // Enable malware reports.
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Navigate somewhere.
@@ -418,7 +424,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
 // subresources and proceeding through the multiple interstitials.
 TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
   // Enable malware reports.
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Navigate somewhere else.
@@ -468,7 +475,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
 // controller entries are OK.  http://crbug.com/17627
 TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   // Enable malware reports.
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Navigate somewhere.
@@ -515,7 +523,8 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
 // cause problems. http://crbug.com/30079
 TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
   // Enable malware reports.
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Start a load.
@@ -549,7 +558,8 @@ TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
 // Tests showing a blocking page for a malware page with reports disabled.
 TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
   // Disable malware reports.
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, false);
 
   // Start a load.
@@ -581,7 +591,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
 // Test setting the malware report preferance
 TEST_F(SafeBrowsingBlockingPageTest, MalwareReports) {
   // Disable malware reports.
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, false);
 
   // Start a load.

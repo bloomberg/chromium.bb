@@ -22,6 +22,7 @@ class PropertyBag;
 
 namespace content {
 
+class BrowserContext;
 class RenderProcessHost;
 class WebContentsDelegate;
 
@@ -43,6 +44,10 @@ class WebContents {
   // Gets the controller for this tab contents.
   virtual NavigationController& GetController() = 0;
   virtual const NavigationController& GetController() const = 0;
+
+  // Returns the user browser context associated with this WebContents (via the
+  // NavigationController).
+  virtual content::BrowserContext* GetBrowserContext() const = 0;
 
   // Allows overriding the type of this tab.
   virtual void SetViewType(content::ViewType type) = 0;

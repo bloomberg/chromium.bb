@@ -33,7 +33,8 @@ class IsolatedAppTest : public ExtensionBrowserTest {
 
   const Extension* GetInstalledApp(TabContents* contents) {
     const Extension* installed_app = NULL;
-    Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+    Profile* profile =
+        Profile::FromBrowserContext(contents->GetBrowserContext());
     ExtensionService* service = profile->GetExtensionService();
     if (service) {
       installed_app = service->GetInstalledAppForRenderer(

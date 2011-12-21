@@ -22,7 +22,7 @@
 
 FaviconTabHelper::FaviconTabHelper(TabContents* tab_contents)
     : TabContentsObserver(tab_contents),
-      profile_(Profile::FromBrowserContext(tab_contents->browser_context())) {
+      profile_(Profile::FromBrowserContext(tab_contents->GetBrowserContext())) {
   favicon_handler_.reset(new FaviconHandler(profile_, this,
                                             FaviconHandler::FAVICON));
   if (chrome::kEnableTouchIcon)

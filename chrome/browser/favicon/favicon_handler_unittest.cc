@@ -312,7 +312,8 @@ TEST_F(FaviconHandlerTest, GetFaviconFromHistory) {
   const GURL icon_url("http://www.google.com/favicon");
 
   TestFaviconHandlerDelegate delegate(contents());
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   TestFaviconHandler helper(page_url, profile,
                             &delegate, FaviconHandler::FAVICON);
 
@@ -360,7 +361,8 @@ TEST_F(FaviconHandlerTest, DownloadFavicon) {
   const GURL icon_url("http://www.google.com/favicon");
 
   TestFaviconHandlerDelegate delegate(contents());
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   TestFaviconHandler helper(page_url, profile,
                             &delegate, FaviconHandler::FAVICON);
 
@@ -427,7 +429,8 @@ TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
   TestFaviconHandlerDelegate delegate(contents());
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   TestFaviconHandler helper(page_url, profile,
                             &delegate, FaviconHandler::FAVICON);
 
@@ -515,7 +518,8 @@ TEST_F(FaviconHandlerTest, UpdateFavicon) {
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
   TestFaviconHandlerDelegate delegate(contents());
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   TestFaviconHandler helper(page_url, profile,
                             &delegate, FaviconHandler::FAVICON);
 
@@ -589,7 +593,8 @@ TEST_F(FaviconHandlerTest, Download2ndFaviconURLCandidate) {
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
   TestFaviconHandlerDelegate delegate(contents());
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   TestFaviconHandler helper(page_url, profile,
                             &delegate, FaviconHandler::TOUCH);
 
@@ -706,7 +711,8 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
   TestFaviconHandlerDelegate delegate(contents());
-  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
   TestFaviconHandler helper(page_url, profile,
                             &delegate, FaviconHandler::TOUCH);
 

@@ -112,7 +112,7 @@ SyncPromoUI::SyncPromoUI(TabContents* contents) : ChromeWebUI(contents) {
   handler->Attach(this);
 
   // Set up the chrome://theme/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   ThemeSource* theme = new ThemeSource(profile);
   profile->GetChromeURLDataManager()->AddDataSource(theme);
 

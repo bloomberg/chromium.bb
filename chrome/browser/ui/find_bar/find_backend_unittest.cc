@@ -29,7 +29,7 @@ class FindBackendTest : public TabContentsWrapperTestHarness {
 namespace {
 
 string16 FindPrepopulateText(TabContents* contents) {
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   return FindBarState::GetLastPrepopulateText(profile);
 }
 

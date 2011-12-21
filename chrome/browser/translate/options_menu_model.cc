@@ -38,7 +38,7 @@ OptionsMenuModel::OptionsMenuModel(
   // Populate the menu.
   // Incognito mode does not get any preferences related items.
   if (!translate_delegate->owner()->tab_contents()->
-      browser_context()->IsOffTheRecord()) {
+      GetBrowserContext()->IsOffTheRecord()) {
     AddCheckItem(IDC_TRANSLATE_OPTIONS_ALWAYS,
         l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS_ALWAYS,
             original_language, target_language));

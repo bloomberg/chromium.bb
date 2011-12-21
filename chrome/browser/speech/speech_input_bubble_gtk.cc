@@ -110,7 +110,7 @@ void SpeechInputBubbleGtk::OnTryAgainClicked(GtkWidget* widget) {
 
 void SpeechInputBubbleGtk::OnMicSettingsClicked(GtkWidget* widget) {
   speech_input::SpeechInputManager::ShowAudioInputSettingsFromUI(
-      &tab_contents()->browser_context()->GetResourceContext());
+      &tab_contents()->GetBrowserContext()->GetResourceContext());
   Hide();
 }
 
@@ -137,7 +137,7 @@ void SpeechInputBubbleGtk::Show() {
                      kBubbleControlVerticalSpacing);
 
   Profile* profile = Profile::FromBrowserContext(
-      tab_contents()->browser_context());
+      tab_contents()->GetBrowserContext());
 
   // TODO(tommi): The audio_manager property can only be accessed from the
   // IO thread, so we can't call CanShowAudioInputSettings directly here if

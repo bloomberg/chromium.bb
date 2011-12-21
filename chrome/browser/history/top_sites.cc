@@ -848,7 +848,7 @@ void TopSites::Observe(int type,
     NavigationController* controller =
         content::Source<NavigationController>(source).ptr();
     Profile* profile = Profile::FromBrowserContext(
-        controller->tab_contents()->browser_context());
+        controller->tab_contents()->GetBrowserContext());
     if (profile == profile_ && !IsFull()) {
       content::LoadCommittedDetails* load_details =
           content::Details<content::LoadCommittedDetails>(details).ptr();

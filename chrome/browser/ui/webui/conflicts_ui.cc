@@ -161,7 +161,7 @@ ConflictsUI::ConflictsUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new ConflictsDOMHandler())->Attach(this));
 
   // Set up the about:conflicts source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateConflictsUIHTMLSource());
 }

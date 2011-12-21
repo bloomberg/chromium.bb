@@ -508,8 +508,8 @@ void ExtensionHost::AddNewContents(TabContents* source,
   if (disposition != NEW_POPUP) {
     TabContents* associated_contents = GetAssociatedTabContents();
     if (associated_contents &&
-        associated_contents->browser_context() ==
-            new_contents->browser_context()) {
+        associated_contents->GetBrowserContext() ==
+            new_contents->GetBrowserContext()) {
       associated_contents->AddNewContents(
           new_contents, disposition, initial_pos, user_gesture);
       return;
@@ -519,7 +519,7 @@ void ExtensionHost::AddNewContents(TabContents* source,
   // Find a browser with a profile that matches the new tab. If none is found,
   // NULL argument to NavigateParams is valid.
   Profile* profile =
-      Profile::FromBrowserContext(new_contents->browser_context());
+      Profile::FromBrowserContext(new_contents->GetBrowserContext());
   Browser* browser = BrowserList::FindTabbedBrowser(
       profile, false);  // Match incognito exactly.
   TabContentsWrapper* wrapper = new TabContentsWrapper(new_contents);

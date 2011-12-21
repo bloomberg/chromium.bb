@@ -419,6 +419,6 @@ TracingUI::TracingUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new TracingMessageHandler())->Attach(this));
 
   // Set up the chrome://tracing/ source.
-  Profile::FromBrowserContext(contents->browser_context())->
+  Profile::FromBrowserContext(contents->GetBrowserContext())->
       GetChromeURLDataManager()->AddDataSource(CreateTracingHTMLSource());
 }

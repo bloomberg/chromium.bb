@@ -247,6 +247,6 @@ GpuInternalsUI::GpuInternalsUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new GpuMessageHandler())->Attach(this));
 
   // Set up the chrome://gpu-internals/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(CreateGpuHTMLSource());
 }

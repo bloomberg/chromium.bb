@@ -2530,7 +2530,7 @@ Browser* Browser::GetBrowserForController(
 void Browser::RunFileChooserHelper(
     TabContents* tab, const content::FileChooserParams& params) {
   Profile* profile =
-      Profile::FromBrowserContext(tab->browser_context());
+      Profile::FromBrowserContext(tab->GetBrowserContext());
   // FileSelectHelper adds a reference to itself and only releases it after
   // sending the result message. It won't be destroyed when this reference
   // goes out of scope.
@@ -2548,7 +2548,7 @@ void Browser::EnumerateDirectoryHelper(TabContents* tab, int request_id,
     return;
 
   Profile* profile =
-      Profile::FromBrowserContext(tab->browser_context());
+      Profile::FromBrowserContext(tab->GetBrowserContext());
   // FileSelectHelper adds a reference to itself and only releases it after
   // sending the result message. It won't be destroyed when this reference
   // goes out of scope.

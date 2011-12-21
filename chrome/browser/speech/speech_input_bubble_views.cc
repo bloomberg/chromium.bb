@@ -212,7 +212,7 @@ void SpeechInputBubbleView::ButtonPressed(views::Button* source,
 void SpeechInputBubbleView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK_EQ(source, mic_settings_);
   speech_input::SpeechInputManager::ShowAudioInputSettingsFromUI(
-      &tab_contents_->browser_context()->GetResourceContext());
+      &tab_contents_->GetBrowserContext()->GetResourceContext());
 }
 
 gfx::Size SpeechInputBubbleView::GetPreferredSize() {
@@ -342,7 +342,7 @@ void SpeechInputBubbleImpl::Show() {
 
   // Anchor to the location icon view, in case |element_rect| is offscreen.
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->browser_context());
+      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
   Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   views::View* icon = browser_view->GetLocationBarView() ?

@@ -211,7 +211,7 @@ ChooseMobileNetworkUI::ChooseMobileNetworkUI(TabContents* contents)
   ChooseMobileNetworkHandler* handler = new ChooseMobileNetworkHandler();
   AddMessageHandler((handler)->Attach(this));
   // Set up the "chrome://choose-mobile-network" source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateChooseMobileNetworkUIHTMLSource());
 }

@@ -81,7 +81,8 @@ bool TestTabContents::CreateRenderViewForRenderManager(
 
 TabContents* TestTabContents::Clone() {
   TabContents* tc = new TestTabContents(
-      browser_context(), SiteInstance::CreateSiteInstance(browser_context()));
+      GetBrowserContext(),
+      SiteInstance::CreateSiteInstance(GetBrowserContext()));
   tc->GetController().CopyStateFrom(controller_);
   return tc;
 }
@@ -92,7 +93,7 @@ void TestTabContents::NavigateAndCommit(const GURL& url) {
   GURL loaded_url(url);
   bool reverse_on_redirect = false;
   BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
-      &loaded_url, browser_context(), &reverse_on_redirect);
+      &loaded_url, GetBrowserContext(), &reverse_on_redirect);
 
   // LoadURL created a navigation entry, now simulate the RenderView sending
   // a notification that it actually navigated.

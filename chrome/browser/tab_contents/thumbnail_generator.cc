@@ -449,7 +449,7 @@ void ThumbnailGenerator::UpdateThumbnailIfNecessary(
     TabContents* tab_contents) {
   const GURL& url = tab_contents->GetURL();
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents->browser_context());
+      Profile::FromBrowserContext(tab_contents->GetBrowserContext());
   history::TopSites* top_sites = profile->GetTopSites();
   // Skip if we don't need to update the thumbnail.
   if (!ShouldUpdateThumbnail(profile, top_sites, url))

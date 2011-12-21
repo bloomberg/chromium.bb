@@ -18,7 +18,7 @@ ChromeInterstitialPage::ChromeInterstitialPage(TabContents* tab,
                                                bool new_navigation,
                                                const GURL& url)
     : InterstitialPage(tab, new_navigation, url) {
-  Profile* profile = Profile::FromBrowserContext(tab->browser_context());
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   content::RendererPreferences prefs;
   renderer_preferences_util::UpdateFromSystemSettings(&prefs, profile);
   set_renderer_preferences(prefs);

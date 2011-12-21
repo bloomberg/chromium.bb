@@ -404,7 +404,7 @@ void KeyboardWidget::TextInputTypeChanged(ui::TextInputType type,
 
   Profile* profile =
       Profile::FromBrowserContext(
-          dom_view_->dom_contents()->tab_contents()->browser_context());
+          dom_view_->dom_contents()->tab_contents()->GetBrowserContext());
   profile->GetExtensionEventRouter()->DispatchEventToRenderers(
       kOnTextInputTypeChanged, json_args, NULL, GURL());
 

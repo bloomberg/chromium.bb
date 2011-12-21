@@ -455,7 +455,7 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   virtual void SetDelegate(content::WebContentsDelegate* delegate) OVERRIDE;
   virtual NavigationController& GetController() OVERRIDE;
   virtual const NavigationController& GetController() const OVERRIDE;
-  // TODO(jam): browser_context getters go here
+  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual void SetViewType(content::ViewType type) OVERRIDE;
   virtual content::RenderProcessHost* GetRenderProcessHost() const OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;

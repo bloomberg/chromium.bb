@@ -29,7 +29,7 @@ ChromeWebUI::~ChromeWebUI() {
 }
 
 Profile* ChromeWebUI::GetProfile() const {
-  return Profile::FromBrowserContext(tab_contents()->browser_context());
+  return Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
 }
 
 bool ChromeWebUI::CanShowBookmarkBar() const {

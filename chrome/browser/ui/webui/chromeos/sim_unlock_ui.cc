@@ -681,7 +681,7 @@ SimUnlockUI::SimUnlockUI(TabContents* contents) : ChromeWebUI(contents) {
   SimUnlockUIHTMLSource* html_source = new SimUnlockUIHTMLSource();
 
   // Set up the chrome://sim-unlock/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 

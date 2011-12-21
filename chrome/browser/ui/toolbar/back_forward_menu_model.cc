@@ -91,7 +91,7 @@ string16 BackForwardMenuModel::GetLabelAt(int index) const {
   // super long.
   NavigationEntry* entry = GetNavigationEntry(index);
   Profile* profile =
-      Profile::FromBrowserContext(GetTabContents()->browser_context());
+      Profile::FromBrowserContext(GetTabContents()->GetBrowserContext());
   string16 menu_text(entry->GetTitleForDisplay(
       profile->GetPrefs()->GetString(prefs::kAcceptLanguages)));
   menu_text =

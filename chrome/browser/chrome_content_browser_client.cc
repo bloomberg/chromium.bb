@@ -896,7 +896,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
   }
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(tab->browser_context()));
+          Profile::FromBrowserContext(tab->GetBrowserContext()));
   if (prerender_manager && prerender_manager->IsTabContentsPrerendering(tab)) {
     if (prerender_manager->prerender_tracker()->TryCancel(
             handler->render_process_host_id(),
@@ -929,7 +929,7 @@ void ChromeContentBrowserClient::SelectClientCertificate(
   DCHECK(requesting_url.is_valid()) << "Invalid URL string: https://"
                                     << cert_request_info->host_and_port;
 
-  Profile* profile = Profile::FromBrowserContext(tab->browser_context());
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   DCHECK(profile);
   scoped_ptr<Value> filter(
       profile->GetHostContentSettingsMap()->GetWebsiteSetting(

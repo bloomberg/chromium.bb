@@ -85,6 +85,6 @@ TaskManagerUI::TaskManagerUI(TabContents* contents) : ChromeWebUI(contents) {
 
   // Set up the chrome://taskmanager/ source.
   ChromeWebUIDataSource* html_source = CreateTaskManagerUIHTMLSource();
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }

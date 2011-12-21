@@ -67,7 +67,7 @@ void ExtensionTabHelper::SetExtensionAppById(
     return;
 
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->browser_context());
+      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
   ExtensionService* extension_service = profile->GetExtensionService();
   if (!extension_service || !extension_service->is_ready())
     return;
@@ -92,7 +92,7 @@ void ExtensionTabHelper::DidNavigateMainFrame(
     return;
 
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->browser_context());
+      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
   ExtensionService* service = profile->GetExtensionService();
   if (!service)
     return;
@@ -165,7 +165,7 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
 
   // Check for permission first.
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->browser_context());
+      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
   ExtensionService* extension_service = profile->GetExtensionService();
   extensions::ProcessMap* process_map = extension_service->process_map();
   content::RenderProcessHost* process =
@@ -208,7 +208,7 @@ void ExtensionTabHelper::AppNotifyChannelSetupComplete(
   // If the setup was successful, record that fact in ExtensionService.
   if (!channel_id.empty() && error.empty()) {
     Profile* profile =
-        Profile::FromBrowserContext(tab_contents()->browser_context());
+        Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
     ExtensionService* service = profile->GetExtensionService();
     if (service->GetExtensionById(setup->extension_id(), true))
       service->SetAppNotificationSetupDone(setup->extension_id(),

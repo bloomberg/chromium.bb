@@ -89,9 +89,9 @@ Profile* Profile::FromWebUI(WebUI* web_ui) {
   // TODO(dhollowa): Crash diagnosis http://crbug.com/97802
   CHECK(web_ui);
   CHECK(web_ui->tab_contents());
-  CHECK(web_ui->tab_contents()->browser_context());
+  CHECK(web_ui->tab_contents()->GetBrowserContext());
 
-  return FromBrowserContext(web_ui->tab_contents()->browser_context());
+  return FromBrowserContext(web_ui->tab_contents()->GetBrowserContext());
 }
 
 TestingProfile* Profile::AsTestingProfile() {

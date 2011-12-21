@@ -456,7 +456,7 @@ TranslateManager::TranslateManager()
 
 void TranslateManager::InitiateTranslation(TabContents* tab,
                                            const std::string& page_lang) {
-  Profile* profile = Profile::FromBrowserContext(tab->browser_context());
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   PrefService* prefs = profile->GetOriginalProfile()->GetPrefs();
   if (!prefs->GetBoolean(prefs::kEnableTranslate))
     return;
@@ -500,7 +500,7 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   // feature; the user will get an infobar, so they can control whether the
   // page's text is sent to the translate server.
   std::string auto_target_lang;
-  if (!tab->browser_context()->IsOffTheRecord() &&
+  if (!tab->GetBrowserContext()->IsOffTheRecord() &&
       TranslatePrefs::ShouldAutoTranslate(prefs, language_code,
           &auto_target_lang)) {
     // We need to confirm that the saved target language is still supported.
@@ -615,7 +615,7 @@ void TranslateManager::ReportLanguageDetectionError(TabContents* tab_contents) {
       GetLanguageCode(g_browser_process->GetApplicationLocale());
   // Open that URL in a new tab so that the user can tell us more.
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents->browser_context());
+      Profile::FromBrowserContext(tab_contents->GetBrowserContext());
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
     NOTREACHED();
@@ -681,7 +681,7 @@ void TranslateManager::PageTranslated(TabContents* tab,
 
 bool TranslateManager::IsAcceptLanguage(TabContents* tab,
                                         const std::string& language) {
-  Profile* profile = Profile::FromBrowserContext(tab->browser_context());
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   profile = profile->GetOriginalProfile();
   PrefService* pref_service = profile->GetPrefs();
   PrefServiceLanguagesMap::const_iterator iter =

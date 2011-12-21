@@ -109,7 +109,7 @@ NewTabUI::NewTabUI(TabContents* contents)
   InitializeCSSCaches();
   NewTabHTMLSource* html_source =
       new NewTabHTMLSource(GetProfile()->GetOriginalProfile());
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 
   // Listen for theme installation.

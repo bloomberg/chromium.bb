@@ -155,7 +155,7 @@ ProfilerUI::ProfilerUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new ProfilerMessageHandler())->Attach(this));
 
   // Set up the chrome://profiler/ source.
-  Profile::FromBrowserContext(contents->browser_context())->
+  Profile::FromBrowserContext(contents->GetBrowserContext())->
       GetChromeURLDataManager()->AddDataSource(CreateProfilerHTMLSource());
 }
 

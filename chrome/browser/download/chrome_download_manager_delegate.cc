@@ -279,7 +279,7 @@ void ChromeDownloadManagerDelegate::GetSaveDir(TabContents* tab_contents,
                                                FilePath* website_save_dir,
                                                FilePath* download_save_dir) {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents->browser_context());
+      Profile::FromBrowserContext(tab_contents->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
 
   // Check whether the preference has the preferred directory for saving file.

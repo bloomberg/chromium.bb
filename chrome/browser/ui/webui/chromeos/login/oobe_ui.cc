@@ -148,7 +148,7 @@ OobeUI::OobeUI(TabContents* contents)
   DictionaryValue* localized_strings = new DictionaryValue();
   GetLocalizedStrings(localized_strings);
 
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   // Set up the chrome://theme/ source, for Chrome logo.
   ThemeSource* theme = new ThemeSource(profile);
   profile->GetChromeURLDataManager()->AddDataSource(theme);

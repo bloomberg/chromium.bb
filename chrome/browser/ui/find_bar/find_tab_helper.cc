@@ -39,7 +39,7 @@ void FindTabHelper::StartFinding(string16 search_string,
   // shortcut so unless we have something to search for we return early.
   if (search_string.empty() && find_text_.empty()) {
     Profile* profile =
-        Profile::FromBrowserContext(tab_contents()->browser_context());
+        Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
     string16 last_search_prepopulate_text =
         FindBarState::GetLastPrepopulateText(profile);
 
@@ -76,7 +76,7 @@ void FindTabHelper::StartFinding(string16 search_string,
 
   // Keep track of what the last search was across the tabs.
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->browser_context());
+      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
   FindBarState* find_bar_state = profile->GetFindBarState();
   find_bar_state->set_last_prepopulate_text(find_text_);
 

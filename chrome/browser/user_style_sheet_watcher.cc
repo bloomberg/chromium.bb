@@ -176,7 +176,7 @@ void UserStyleSheetWatcher::Observe(int type,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(type == content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB);
   if (profile_->IsSameProfile(Profile::FromBrowserContext(
-          content::Source<TabContents>(source)->browser_context()))) {
+          content::Source<TabContents>(source)->GetBrowserContext()))) {
     loader_->NotifyLoaded();
     registrar_.RemoveAll();
   }

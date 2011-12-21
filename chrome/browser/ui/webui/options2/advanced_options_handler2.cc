@@ -391,7 +391,7 @@ void AdvancedOptionsHandler::OnCloudPrintSetupClosed() {
 void AdvancedOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
   DownloadManager* manager =
-      web_ui_->tab_contents()->browser_context()->GetDownloadManager();
+      web_ui_->tab_contents()->GetBrowserContext()->GetDownloadManager();
   if (manager)
     DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
 }
@@ -619,7 +619,7 @@ void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
   // Set the enabled state for the AutoOpenFileTypesResetToDefault button.
   // We enable the button if the user has any auto-open file types registered.
   DownloadManager* manager =
-      web_ui_->tab_contents()->browser_context()->GetDownloadManager();
+      web_ui_->tab_contents()->GetBrowserContext()->GetDownloadManager();
   bool disabled = !(manager &&
       DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenUsed());
   base::FundamentalValue value(disabled);

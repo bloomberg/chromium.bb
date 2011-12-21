@@ -59,7 +59,7 @@ void SearchEngineTabHelper::OnPageHasOSDD(
   // Make sure page_id is the current page and other basic checks.
   DCHECK(doc_url.is_valid());
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->browser_context());
+      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
   if (!tab_contents()->IsActiveEntry(page_id))
     return;
   if (!profile->GetTemplateURLFetcher())
@@ -132,7 +132,7 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
     return;
 
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->browser_context());
+      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
   if (profile->IsOffTheRecord())
     return;
 

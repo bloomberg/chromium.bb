@@ -125,7 +125,7 @@ AppListUI::AppListUI(TabContents* contents)
     AddMessageHandler((new AppLauncherHandler(service))->Attach(this));
 
   // Set up the source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
   profile->GetChromeURLDataManager()->AddDataSource(
       CreateAppListUIHTMLSource(prefs));

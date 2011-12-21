@@ -234,7 +234,7 @@ PolicyUI::PolicyUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new PolicyUIHandler)->Attach(this));
 
   // Set up the chrome://policy/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(CreatePolicyUIHTMLSource());
 }
 

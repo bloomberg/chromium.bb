@@ -167,8 +167,8 @@ class TabContentsForFocusTest : public TestTabContents {
 TEST_F(WebUITest, FocusOnNavigate) {
   // Setup.  |tc| will be used to track when we try to focus the location bar.
   TabContentsForFocusTest* tc = new TabContentsForFocusTest(
-      contents()->browser_context(),
-      SiteInstance::CreateSiteInstance(contents()->browser_context()));
+      contents()->GetBrowserContext(),
+      SiteInstance::CreateSiteInstance(contents()->GetBrowserContext()));
   tc->GetController().CopyStateFrom(controller());
   SetContents(tc);
   int page_id = 200;

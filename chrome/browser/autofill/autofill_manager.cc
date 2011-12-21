@@ -331,7 +331,7 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
   if (!IsAutofillEnabled())
     return false;
 
-  if (tab_contents()->browser_context()->IsOffTheRecord())
+  if (tab_contents()->GetBrowserContext()->IsOffTheRecord())
     return false;
 
   // Don't save data that was submitted through JavaScript.
@@ -640,7 +640,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
 
 void AutofillManager::OnShowAutofillDialog() {
   Browser* browser = BrowserList::GetLastActiveWithProfile(
-      Profile::FromBrowserContext(tab_contents()->browser_context()));
+      Profile::FromBrowserContext(tab_contents()->GetBrowserContext()));
   if (browser)
     browser->ShowOptionsTab(chrome::kAutofillSubPage);
 }
@@ -709,7 +709,7 @@ void AutofillManager::OnDidEndTextFieldEditing() {
 
 bool AutofillManager::IsAutofillEnabled() const {
   Profile* profile = Profile::FromBrowserContext(
-      const_cast<AutofillManager*>(this)->tab_contents()->browser_context());
+      const_cast<AutofillManager*>(this)->tab_contents()->GetBrowserContext());
   return profile->GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
 }
 

@@ -185,7 +185,7 @@ void TabFinder::TabDestroyed(TabContentsObserverImpl* observer) {
 
 void TabFinder::CancelRequestsFor(TabContents* tab_contents) {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents->browser_context());
+      Profile::FromBrowserContext(tab_contents->GetBrowserContext());
   if (profile->IsOffTheRecord())
     return;
 
@@ -203,7 +203,7 @@ void TabFinder::CancelRequestsFor(TabContents* tab_contents) {
 }
 
 void TabFinder::FetchRedirectStart(TabContents* tab) {
-  Profile* profile = Profile::FromBrowserContext(tab->browser_context());
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   if (profile->IsOffTheRecord())
     return;
 

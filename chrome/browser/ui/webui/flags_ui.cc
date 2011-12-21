@@ -159,7 +159,7 @@ FlagsUI::FlagsUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new FlagsDOMHandler())->Attach(this));
 
   // Set up the about:flags source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(CreateFlagsUIHTMLSource());
 }
 

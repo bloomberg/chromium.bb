@@ -164,7 +164,8 @@ void SessionChangeProcessor::Observe(
       ExtensionTabHelper* extension_tab_helper =
           content::Source<ExtensionTabHelper>(source).ptr();
       if (!extension_tab_helper ||
-          extension_tab_helper->tab_contents()->browser_context() != profile_) {
+          extension_tab_helper->tab_contents()->GetBrowserContext() !=
+              profile_) {
         return;
       }
       if (extension_tab_helper->extension_app()) {

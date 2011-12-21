@@ -59,7 +59,7 @@ BookmarksUI::BookmarksUI(TabContents* contents) : ChromeWebUI(contents) {
   BookmarksUIHTMLSource* html_source = new BookmarksUIHTMLSource();
 
   // Set up the chrome://bookmarks/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 

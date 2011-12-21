@@ -101,7 +101,7 @@ BookmarkTabHelper::BookmarkDrag*
 
 void BookmarkTabHelper::UpdateStarredStateForCurrentURL() {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->browser_context());
+      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
   BookmarkModel* model = profile->GetBookmarkModel();
   const bool old_state = is_starred_;
   is_starred_ = (model && model->IsBookmarked(tab_contents()->GetURL()));

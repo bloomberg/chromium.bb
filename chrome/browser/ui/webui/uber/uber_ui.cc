@@ -30,7 +30,7 @@ ChromeWebUIDataSource* CreateUberHTMLSource() {
 }  // namespace
 
 UberUI::UberUI(TabContents* contents) : ChromeWebUI(contents) {
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(CreateUberHTMLSource());
 
   RegisterSubpage(chrome::kChromeUISettingsFrameURL);

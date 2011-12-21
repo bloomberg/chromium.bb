@@ -147,7 +147,7 @@ void HistoryTabHelper::OnThumbnail(const GURL& url,
                                    const ThumbnailScore& score,
                                    const SkBitmap& bitmap) {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->browser_context());
+      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
   if (profile->IsOffTheRecord())
     return;
 
@@ -161,7 +161,7 @@ void HistoryTabHelper::OnThumbnail(const GURL& url,
 
 HistoryService* HistoryTabHelper::GetHistoryService() {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->browser_context());
+      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
   if (profile->IsOffTheRecord())
     return NULL;
 

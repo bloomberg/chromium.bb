@@ -180,6 +180,6 @@ SystemInfoUI::SystemInfoUI(TabContents* contents) : ChromeWebUI(contents) {
   SystemInfoUIHTMLSource* html_source = new SystemInfoUIHTMLSource();
 
   // Set up the chrome://system/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }

@@ -1371,7 +1371,7 @@ MobileSetupUI::MobileSetupUI(TabContents* contents) : ChromeWebUI(contents) {
       new MobileSetupUIHTMLSource(service_path);
 
   // Set up the chrome://mobilesetup/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 

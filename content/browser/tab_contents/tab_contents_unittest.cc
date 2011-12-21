@@ -164,7 +164,7 @@ class TestInterstitialPage : public InterstitialPage {
  protected:
   virtual RenderViewHost* CreateRenderViewHost() {
     return new TestRenderViewHost(
-        SiteInstance::CreateSiteInstance(tab()->browser_context()),
+        SiteInstance::CreateSiteInstance(tab()->GetBrowserContext()),
         this, MSG_ROUTING_NONE);
   }
 

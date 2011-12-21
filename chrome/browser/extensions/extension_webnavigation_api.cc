@@ -85,7 +85,7 @@ void DispatchOnBeforeNavigate(TabContents* tab_contents,
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(tab_contents->browser_context(),
+  DispatchEvent(tab_contents->GetBrowserContext(),
                 keys::kOnBeforeNavigate,
                 json_args);
 }
@@ -122,7 +122,7 @@ void DispatchOnCommitted(const char* event_name,
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(tab_contents->browser_context(), event_name, json_args);
+  DispatchEvent(tab_contents->GetBrowserContext(), event_name, json_args);
 }
 
 // Constructs and dispatches an onDOMContentLoaded event.
@@ -141,7 +141,7 @@ void DispatchOnDOMContentLoaded(TabContents* tab_contents,
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(tab_contents->browser_context(),
+  DispatchEvent(tab_contents->GetBrowserContext(),
                 keys::kOnDOMContentLoaded,
                 json_args);
 }
@@ -162,7 +162,8 @@ void DispatchOnCompleted(TabContents* tab_contents,
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(tab_contents->browser_context(), keys::kOnCompleted, json_args);
+  DispatchEvent(tab_contents->GetBrowserContext(),
+                keys::kOnCompleted, json_args);
 }
 
 // Constructs and dispatches an onCreatedNavigationTarget event.
@@ -177,7 +178,7 @@ void DispatchOnCreatedNavigationTarget(
   // path is exercised by ExtensionApiTest.WebNavigationRequestOpenTab.
   DCHECK(ExtensionTabUtil::GetTabById(
       ExtensionTabUtil::GetTabId(target_tab_contents),
-      Profile::FromBrowserContext(target_tab_contents->browser_context()),
+      Profile::FromBrowserContext(target_tab_contents->GetBrowserContext()),
       false, NULL, NULL, NULL, NULL));
 
   ListValue args;
@@ -216,7 +217,7 @@ void DispatchOnErrorOccurred(TabContents* tab_contents,
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(tab_contents->browser_context(),
+  DispatchEvent(tab_contents->GetBrowserContext(),
                 keys::kOnErrorOccurred,
                 json_args);
 }
@@ -440,7 +441,7 @@ void ExtensionWebNavigationEventRouter::Retargeting(
   } else {
     DispatchOnCreatedNavigationTarget(
         details->source_tab_contents,
-        details->target_tab_contents->browser_context(),
+        details->target_tab_contents->GetBrowserContext(),
         details->source_frame_id,
         frame_navigation_state.IsMainFrame(details->source_frame_id),
         details->target_tab_contents,
@@ -456,7 +457,7 @@ void ExtensionWebNavigationEventRouter::TabAdded(TabContents* tab_contents) {
 
   DispatchOnCreatedNavigationTarget(
       iter->second.source_tab_contents,
-      iter->second.target_tab_contents->browser_context(),
+      iter->second.target_tab_contents->GetBrowserContext(),
       iter->second.source_frame_id,
       iter->second.source_frame_is_main_frame,
       iter->second.target_tab_contents,
@@ -618,7 +619,7 @@ void ExtensionWebNavigationTabObserver::DidOpenRequestedURL(
 
   DispatchOnCreatedNavigationTarget(
       tab_contents(),
-      new_contents->browser_context(),
+      new_contents->GetBrowserContext(),
       source_frame_id,
       navigation_state_.IsMainFrame(source_frame_id),
       new_contents,

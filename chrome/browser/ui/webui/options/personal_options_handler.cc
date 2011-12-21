@@ -410,7 +410,7 @@ void PersonalOptionsHandler::SendProfilesInfo() {
       g_browser_process->profile_manager()->GetProfileInfoCache();
   ListValue profile_info_list;
   FilePath current_profile_path =
-      web_ui_->tab_contents()->browser_context()->GetPath();
+      web_ui_->tab_contents()->GetBrowserContext()->GetPath();
   for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i) {
     DictionaryValue* profile_value = new DictionaryValue();
     FilePath profile_path = cache.GetPathOfProfileAtIndex(i);

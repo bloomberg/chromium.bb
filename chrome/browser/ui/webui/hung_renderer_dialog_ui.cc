@@ -34,7 +34,7 @@ HungRendererDialogUI::HungRendererDialogUI(TabContents* contents)
   // Set default resource.
   source->set_default_resource(IDR_HUNG_RENDERER_DIALOG_HTML);
 
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(source);
 
   // Set up the chrome://theme/ source.

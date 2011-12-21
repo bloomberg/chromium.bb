@@ -331,7 +331,7 @@ void TabRendererGtk::UpdateData(TabContents* contents,
 
   if (!loading_only) {
     data_.title = contents->GetTitle();
-    data_.incognito = contents->browser_context()->IsOffTheRecord();
+    data_.incognito = contents->GetBrowserContext()->IsOffTheRecord();
     data_.crashed = contents->is_crashed();
 
     SkBitmap* app_icon =

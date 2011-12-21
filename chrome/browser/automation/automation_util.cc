@@ -160,7 +160,7 @@ Browser* GetBrowserForTab(TabContents* tab) {
 net::URLRequestContextGetter* GetRequestContext(TabContents* contents) {
   // Since we may be on the UI thread don't call GetURLRequestContext().
   // Get the request context specific to the current TabContents and app.
-  return contents->browser_context()->GetRequestContextForRenderProcess(
+  return contents->GetBrowserContext()->GetRequestContextForRenderProcess(
       contents->GetRenderProcessHost()->GetID());
 }
 

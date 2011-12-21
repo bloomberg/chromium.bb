@@ -25,7 +25,7 @@ InputWindowDialogUI::InputWindowDialogUI(TabContents* contents)
   // Set default resource.
   source->set_default_resource(IDR_INPUT_WINDOW_DIALOG_HTML);
 
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(source);
 }
 

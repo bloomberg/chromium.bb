@@ -308,6 +308,6 @@ RegisterPageUI::RegisterPageUI(TabContents* contents) : ChromeWebUI(contents) {
   RegisterPageUIHTMLSource* html_source = new RegisterPageUIHTMLSource();
 
   // Set up the chrome://register/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }

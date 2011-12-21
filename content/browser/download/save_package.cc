@@ -251,7 +251,7 @@ void SavePackage::InternalInit() {
   file_manager_ = rdh->save_file_manager();
   DCHECK(file_manager_);
 
-  download_manager_ = tab_contents()->browser_context()->GetDownloadManager();
+  download_manager_ = tab_contents()->GetBrowserContext()->GetDownloadManager();
   DCHECK(download_manager_);
 }
 
@@ -263,7 +263,8 @@ bool SavePackage::Init() {
   wait_state_ = START_PROCESS;
 
   // Initialize the request context and resource dispatcher.
-  content::BrowserContext* browser_context = tab_contents()->browser_context();
+  content::BrowserContext* browser_context =
+      tab_contents()->GetBrowserContext();
   if (!browser_context) {
     NOTREACHED();
     return false;
@@ -804,7 +805,7 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
                            save_item->save_source(),
                            save_item->full_path(),
                            tab_contents()->
-                               browser_context()->GetResourceContext(),
+                               GetBrowserContext()->GetResourceContext(),
                            this);
   } while (process_all_remaining_items && waiting_item_queue_.size());
 }
@@ -1159,7 +1160,7 @@ void SavePackage::GetSaveInfo() {
   std::string mime_type = tab_contents()->contents_mime_type();
   std::string accept_languages =
       content::GetContentClient()->browser()->GetAcceptLangs(
-          tab_contents()->browser_context());
+          tab_contents()->GetBrowserContext());
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,

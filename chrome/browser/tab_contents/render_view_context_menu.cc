@@ -233,7 +233,7 @@ RenderViewContextMenu::RenderViewContextMenu(
     const ContextMenuParams& params)
     : params_(params),
       source_tab_contents_(tab_contents),
-      profile_(Profile::FromBrowserContext(tab_contents->browser_context())),
+      profile_(Profile::FromBrowserContext(tab_contents->GetBrowserContext())),
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
       external_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(speech_input_submenu_model_(this)),
@@ -1842,7 +1842,7 @@ void RenderViewContextMenu::OpenURL(
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_RETARGETING,
         content::Source<Profile>(Profile::FromBrowserContext(
-            source_tab_contents_->browser_context())),
+            source_tab_contents_->GetBrowserContext())),
         content::Details<RetargetingDetails>(&details));
   }
 }

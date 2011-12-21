@@ -292,7 +292,7 @@ void AutoLoginPrompter::ShowInfoBarUIThread(const std::string& account,
 
   // If auto-login is turned off, then simply return.
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents->browser_context());
+      Profile::FromBrowserContext(tab_contents->GetBrowserContext());
   if (!profile->GetPrefs()->GetBoolean(prefs::kAutologinEnabled))
     return;
 

@@ -101,7 +101,7 @@ void DevToolsUI::RegisterDevToolsDataSource(Profile* profile) {
 
 DevToolsUI::DevToolsUI(TabContents* contents) : ChromeWebUI(contents) {
   DevToolsDataSource* data_source = new DevToolsDataSource();
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(data_source);
 }
 

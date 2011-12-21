@@ -202,7 +202,7 @@ LRESULT CALLBACK Shell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
       switch (id) {
         case IDM_NEW_WINDOW:
           CreateNewWindow(
-              shell->tab_contents()->browser_context(),
+              shell->tab_contents()->GetBrowserContext(),
               GURL(), NULL, MSG_ROUTING_NONE, NULL);
           break;
         case IDM_CLOSE_WINDOW:

@@ -173,7 +173,7 @@ void WebstoreInlineInstaller::BeginInstall() {
   webstore_data_url_fetcher_.reset(content::URLFetcher::Create(
       webstore_data_url, content::URLFetcher::GET, this));
   Profile* profile = Profile::FromBrowserContext(
-      tab_contents()->browser_context());
+      tab_contents()->GetBrowserContext());
   webstore_data_url_fetcher_->SetRequestContext(
       profile->GetRequestContext());
   // Use the requesting page as the referrer both since that is more correct
@@ -319,7 +319,7 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
       manifest,
       "", // We don't have any icon data.
       icon_url,
-      Profile::FromBrowserContext(tab_contents()->browser_context())->
+      Profile::FromBrowserContext(tab_contents()->GetBrowserContext())->
           GetRequestContext());
   // The helper will call us back via OnWebstoreParseSucces or
   // OnWebstoreParseFailure.
@@ -346,7 +346,7 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
   icon_ = icon;
 
   Profile* profile = Profile::FromBrowserContext(
-      tab_contents()->browser_context());
+      tab_contents()->GetBrowserContext());
 
   ExtensionInstallUI::Prompt prompt(ExtensionInstallUI::INLINE_INSTALL_PROMPT);
   prompt.SetInlineInstallWebstoreData(localized_user_count_,
@@ -391,7 +391,7 @@ void WebstoreInlineInstaller::InstallUIProceed() {
   CrxInstaller::SetWhitelistEntry(id_, entry);
 
   Profile* profile = Profile::FromBrowserContext(
-      tab_contents()->browser_context());
+      tab_contents()->GetBrowserContext());
 
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       profile, this, &(tab_contents()->GetController()), id_,

@@ -380,7 +380,7 @@ PluginsUI::PluginsUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new PluginsDOMHandler())->Attach(this));
 
   // Set up the chrome://plugins/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(
       CreatePluginsUIHTMLSource());
 }

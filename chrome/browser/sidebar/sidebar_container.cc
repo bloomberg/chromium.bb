@@ -31,7 +31,7 @@ SidebarContainer::SidebarContainer(TabContents* tab,
       use_default_icon_(true) {
   // Create TabContents for sidebar.
   sidebar_contents_.reset(
-      new TabContents(Profile::FromBrowserContext(tab->browser_context()),
+      new TabContents(Profile::FromBrowserContext(tab->GetBrowserContext()),
                       NULL, MSG_ROUTING_NONE, NULL, NULL));
   sidebar_contents_->SetDelegate(this);
 }
@@ -123,7 +123,7 @@ void SidebarContainer::OnImageLoaded(SkBitmap* image,
 
 const Extension* SidebarContainer::GetExtension() const {
   Profile* profile =
-      Profile::FromBrowserContext(sidebar_contents_->browser_context());
+      Profile::FromBrowserContext(sidebar_contents_->GetBrowserContext());
   ExtensionService* service = profile->GetExtensionService();
   if (!service)
     return NULL;

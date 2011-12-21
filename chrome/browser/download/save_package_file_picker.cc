@@ -156,7 +156,7 @@ void SavePackageFilePicker::FileSelected(const FilePath& path,
     TabContents* tab_contents = save_package_->tab_contents();
     SavePackage::SavePackageType save_type = kIndexToSaveType[index];
     Profile* profile =
-        Profile::FromBrowserContext(tab_contents->browser_context());
+        Profile::FromBrowserContext(tab_contents->GetBrowserContext());
     PrefService* prefs = profile->GetPrefs();
     if (select_file_dialog_ &&
         select_file_dialog_->HasMultipleFileTypeChoices())
@@ -171,7 +171,7 @@ void SavePackageFilePicker::FileSelected(const FilePath& path,
 #endif
     // If user change the default saving directory, we will remember it just
     // like IE and FireFox.
-    if (!tab_contents->browser_context()->IsOffTheRecord() &&
+    if (!tab_contents->GetBrowserContext()->IsOffTheRecord() &&
         save_file_path.GetValue() != path_string) {
       save_file_path.SetValue(path_string);
     }

@@ -272,7 +272,7 @@ OptionsUI::OptionsUI(TabContents* contents)
       new OptionsUIHTMLSource(localized_strings);
 
   // Set up the chrome://settings/ source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 
   // Set up the chrome://theme/ source.

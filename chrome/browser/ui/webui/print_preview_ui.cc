@@ -82,7 +82,7 @@ PrintPreviewUI::PrintPreviewUI(TabContents* contents)
   is_dummy_ = (!controller || !controller->is_creating_print_preview_tab());
 
   // Set up the chrome://print/ data source.
-  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(
       new PrintPreviewDataSource(is_dummy_));
   if (is_dummy_)

@@ -244,7 +244,7 @@ void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
 
 PrerenderManager* PrerenderTabHelper::MaybeGetPrerenderManager() const {
   return PrerenderManagerFactory::GetForProfile(
-      Profile::FromBrowserContext(tab_contents()->browser_context()));
+      Profile::FromBrowserContext(tab_contents()->GetBrowserContext()));
 }
 
 bool PrerenderTabHelper::MaybeUsePrerenderedPage(const GURL& url,

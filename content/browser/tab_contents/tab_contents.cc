@@ -338,6 +338,10 @@ const NavigationController& TabContents::GetController() const {
   return controller_;
 }
 
+content::BrowserContext* TabContents::GetBrowserContext() const {
+  return controller_.browser_context();
+}
+
 void TabContents::SetViewType(content::ViewType type) {
   view_type_ = type;
 }
@@ -361,7 +365,7 @@ const string16& TabContents::GetTitle() const {
   NavigationEntry* entry = controller_.GetTransientEntry();
   std::string accept_languages =
       content::GetContentClient()->browser()->GetAcceptLangs(
-          this->browser_context());
+          GetBrowserContext());
   if (entry) {
     return entry->GetTitleForDisplay(accept_languages);
   }
@@ -623,7 +627,7 @@ bool TabContents::NavigateToEntry(
   // Double check that here.
   int enabled_bindings = dest_render_view_host->enabled_bindings();
   bool is_allowed_in_web_ui_renderer = content::GetContentClient()->
-      browser()->GetWebUIFactory()->IsURLAcceptableForWebUI(browser_context(),
+      browser()->GetWebUIFactory()->IsURLAcceptableForWebUI(GetBrowserContext(),
                                                             entry.url());
 #if defined(OS_CHROMEOS)
   is_allowed_in_web_ui_renderer |= entry.url().SchemeIs(chrome::kDataScheme);
@@ -700,8 +704,8 @@ TabContents* TabContents::Clone() {
   // with the old one. This can be changed in the future if we need it to share
   // processes for some reason.
   TabContents* tc = new TabContents(
-      browser_context(),
-      SiteInstance::CreateSiteInstance(browser_context()),
+      GetBrowserContext(),
+      SiteInstance::CreateSiteInstance(GetBrowserContext()),
       MSG_ROUTING_NONE, this, NULL);
   tc->GetController().CopyStateFrom(controller_);
   return tc;
@@ -713,7 +717,7 @@ void TabContents::ShowPageInfo(const GURL& url,
   if (!delegate_)
     return;
 
-  delegate_->ShowPageInfo(browser_context(), url, ssl, show_history);
+  delegate_->ShowPageInfo(GetBrowserContext(), url, ssl, show_history);
 }
 
 void TabContents::AddNewContents(TabContents* new_contents,
@@ -780,7 +784,7 @@ void TabContents::OnStartDownload(DownloadItem* download) {
 void TabContents::OnSavePage() {
   // If we can not save the page, try to download it.
   if (!SavePackage::IsSavableContents(contents_mime_type())) {
-    DownloadManager* dlm = browser_context()->GetDownloadManager();
+    DownloadManager* dlm = GetBrowserContext()->GetDownloadManager();
     const GURL& current_page_url = GetURL();
     if (dlm && current_page_url.is_valid()) {
       dlm->DownloadUrl(current_page_url, GURL(), "", this);
@@ -812,7 +816,7 @@ bool TabContents::SavePage(const FilePath& main_file, const FilePath& dir_path,
 }
 
 void TabContents::OnSaveURL(const GURL& url) {
-  DownloadManager* dlm = browser_context()->GetDownloadManager();
+  DownloadManager* dlm = GetBrowserContext()->GetDownloadManager();
   dlm->DownloadUrl(url, GetURL(), "", this);
 }
 
@@ -860,7 +864,7 @@ void TabContents::SystemDragEnded() {
 }
 
 double TabContents::GetZoomLevel() const {
-  HostZoomMap* zoom_map = browser_context()->GetHostZoomMap();
+  HostZoomMap* zoom_map = GetBrowserContext()->GetHostZoomMap();
   if (!zoom_map)
     return 0;
 
@@ -1274,7 +1278,7 @@ WebUI* TabContents::GetWebUIForCurrentState() {
 }
 
 WebUI::TypeID TabContents::GetWebUITypeForCurrentState() {
-  return content::WebUIFactory::Get()->GetWebUIType(browser_context(),
+  return content::WebUIFactory::Get()->GetWebUIType(GetBrowserContext(),
                                                     GetURL());
 }
 
@@ -1847,7 +1851,7 @@ void TabContents::RunJavaScriptMessage(
       title = net::FormatUrl(
           frame_url.GetOrigin(),
           content::GetContentClient()->browser()->GetAcceptLangs(
-              this->browser_context()));
+              GetBrowserContext()));
     }
 
     dialog_creator_ = delegate_->GetJavaScriptDialogCreator();
@@ -1979,7 +1983,7 @@ void TabContents::LoadStateChanged(const GURL& url,
   upload_size_ = upload_size;
   load_state_host_ = net::IDNToUnicode(url.host(),
       content::GetContentClient()->browser()->GetAcceptLangs(
-          this->browser_context()));
+          GetBrowserContext()));
   if (load_state_.state == net::LOAD_STATE_READING_RESPONSE)
     SetNotWaitingForResponse();
   if (IsLoading())

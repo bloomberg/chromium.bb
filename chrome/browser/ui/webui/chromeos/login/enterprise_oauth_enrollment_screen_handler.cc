@@ -308,7 +308,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleCompleteLogin(
   }
 
   Profile* profile =
-      Profile::FromBrowserContext(web_ui_->tab_contents()->browser_context());
+      Profile::FromBrowserContext(web_ui_->tab_contents()->GetBrowserContext());
   oauth_fetcher_.reset(
       new GaiaOAuthFetcher(this,
                            profile->GetRequestContext(),
@@ -353,7 +353,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::ResetAuth() {
     return;
 
   Profile* profile =
-      Profile::FromBrowserContext(web_ui_->tab_contents()->browser_context());
+      Profile::FromBrowserContext(web_ui_->tab_contents()->GetBrowserContext());
   browsing_data_remover_ =
       new BrowsingDataRemover(profile,
                               BrowsingDataRemover::EVERYTHING,
@@ -364,7 +364,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::ResetAuth() {
 
 void EnterpriseOAuthEnrollmentScreenHandler::RevokeTokens() {
   Profile* profile =
-      Profile::FromBrowserContext(web_ui_->tab_contents()->browser_context());
+      Profile::FromBrowserContext(web_ui_->tab_contents()->GetBrowserContext());
 
   if (!access_token_.empty()) {
     new TokenRevoker(access_token_, access_token_secret_, profile);

@@ -112,7 +112,7 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
       pending_query_handle_(0),
       query_id_(0),
       external_delegate_(NULL) {
-  profile_ = Profile::FromBrowserContext(tab_contents->browser_context());
+  profile_ = Profile::FromBrowserContext(tab_contents->GetBrowserContext());
   // May be NULL in unit tests.
   web_data_service_ = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
   autofill_enabled_.Init(prefs::kAutofillEnabled, profile_->GetPrefs(), NULL);

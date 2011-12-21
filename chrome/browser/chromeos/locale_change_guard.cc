@@ -87,7 +87,8 @@ void LocaleChangeGuard::Observe(int type,
   }
   switch (type) {
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
-      if (profile_ == content::Source<TabContents>(source)->browser_context()) {
+      if (profile_ ==
+          content::Source<TabContents>(source)->GetBrowserContext()) {
         // We need to perform locale change check only once, so unsubscribe.
         registrar_.Remove(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
                           content::NotificationService::AllSources());

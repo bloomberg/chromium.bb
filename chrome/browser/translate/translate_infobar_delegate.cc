@@ -111,7 +111,7 @@ void TranslateInfoBarDelegate::SetTargetLanguage(size_t language_index) {
 
 void TranslateInfoBarDelegate::Translate() {
   const std::string& original_language_code = GetOriginalLanguageCode();
-  if (!owner()->tab_contents()->browser_context()->IsOffTheRecord()) {
+  if (!owner()->tab_contents()->GetBrowserContext()->IsOffTheRecord()) {
     prefs_.ResetTranslationDeniedCount(original_language_code);
     prefs_.IncrementTranslationAcceptedCount(original_language_code);
   }
@@ -133,7 +133,7 @@ void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
 
 void TranslateInfoBarDelegate::TranslationDeclined() {
   const std::string& original_language_code = GetOriginalLanguageCode();
-  if (!owner()->tab_contents()->browser_context()->IsOffTheRecord()) {
+  if (!owner()->tab_contents()->GetBrowserContext()->IsOffTheRecord()) {
     prefs_.ResetTranslationAcceptedCount(original_language_code);
     prefs_.IncrementTranslationDeniedCount(original_language_code);
   }
@@ -270,13 +270,13 @@ bool TranslateInfoBarDelegate::ShouldShowMessageInfoBarButton() {
 
 bool TranslateInfoBarDelegate::ShouldShowNeverTranslateButton() {
   DCHECK_EQ(BEFORE_TRANSLATE, type_);
-  return !owner()->tab_contents()->browser_context()->IsOffTheRecord() &&
+  return !owner()->tab_contents()->GetBrowserContext()->IsOffTheRecord() &&
       (prefs_.GetTranslationDeniedCount(GetOriginalLanguageCode()) >= 3);
 }
 
 bool TranslateInfoBarDelegate::ShouldShowAlwaysTranslateButton() {
   DCHECK_EQ(BEFORE_TRANSLATE, type_);
-  return !owner()->tab_contents()->browser_context()->IsOffTheRecord() &&
+  return !owner()->tab_contents()->GetBrowserContext()->IsOffTheRecord() &&
       (prefs_.GetTranslationAcceptedCount(GetOriginalLanguageCode()) >= 3);
 }
 
