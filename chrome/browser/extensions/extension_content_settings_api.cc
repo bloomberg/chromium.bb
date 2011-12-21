@@ -20,10 +20,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_error_utils.h"
-#include "content/browser/plugin_service.h"
+#include "content/public/browser/plugin_service.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
 using content::BrowserThread;
+using content::PluginService;
 
 namespace helpers = extension_content_settings_helpers;
 namespace keys = extension_content_settings_api_constants;

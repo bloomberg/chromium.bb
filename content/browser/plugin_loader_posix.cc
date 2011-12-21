@@ -68,11 +68,11 @@ void PluginLoaderPosix::GetPluginsToLoad() {
   next_load_index_ = 0;
 
   canonical_list_.clear();
-  PluginService::GetInstance()->plugin_list()->GetPluginPathsToLoad(
+  PluginService::GetInstance()->GetPluginList()->GetPluginPathsToLoad(
       &canonical_list_);
 
   internal_plugins_.clear();
-  PluginService::GetInstance()->plugin_list()->GetInternalPlugins(
+  PluginService::GetInstance()->GetPluginList()->GetInternalPlugins(
       &internal_plugins_);
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -152,7 +152,7 @@ bool PluginLoaderPosix::MaybeRunPendingCallbacks() {
   if (next_load_index_ < canonical_list_.size())
     return false;
 
-  PluginService::GetInstance()->plugin_list()->SetPlugins(loaded_plugins_);
+  PluginService::GetInstance()->GetPluginList()->SetPlugins(loaded_plugins_);
   for (std::vector<PendingCallback>::iterator it = callbacks_.begin();
        it != callbacks_.end();
        ++it) {

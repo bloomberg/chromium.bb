@@ -6,13 +6,17 @@
 
 #include "base/file_path.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/browser/plugin_service.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_message.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
+#include "webkit/plugins/webplugininfo.h"
+
+using content::PluginService;
 
 namespace drag_util {
 

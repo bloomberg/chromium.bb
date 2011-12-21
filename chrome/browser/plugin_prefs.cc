@@ -28,14 +28,15 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/plugin_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/plugin_service.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using content::BrowserThread;
+using content::PluginService;
 
 namespace {
 
@@ -472,7 +473,7 @@ void PluginPrefs::SetPolicyEnforcedPluginPatterns(
 webkit::npapi::PluginList* PluginPrefs::GetPluginList() {
   if (plugin_list_)
     return plugin_list_;
-  return PluginService::GetInstance()->plugin_list();
+  return PluginService::GetInstance()->GetPluginList();
 }
 
 void PluginPrefs::GetPreferencesDataOnFileThread() {

@@ -107,7 +107,7 @@ class GViewRequestInterceptorTest : public testing::Test {
     ChromePluginServiceFilter* filter =
         ChromePluginServiceFilter::GetInstance();
     filter->RegisterResourceContext(plugin_prefs_, resource_context);
-    PluginService::GetInstance()->set_filter(filter);
+    PluginService::GetInstance()->SetFilter(filter);
 
     ASSERT_TRUE(PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path_));
 
@@ -127,7 +127,7 @@ class GViewRequestInterceptorTest : public testing::Test {
     ChromePluginServiceFilter* filter =
         ChromePluginServiceFilter::GetInstance();
     filter->UnregisterResourceContext(resource_context);
-    PluginService::GetInstance()->set_filter(NULL);
+    PluginService::GetInstance()->SetFilter(NULL);
   }
 
   void RegisterPDFPlugin() {

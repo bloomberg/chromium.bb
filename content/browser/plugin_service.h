@@ -10,11 +10,8 @@
 #pragma once
 
 #include <set>
-#include <string>
-#include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/waitable_event_watcher.h"
@@ -24,6 +21,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/plugin_service.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
 
@@ -58,42 +56,57 @@ class PluginList;
 }
 }
 
-// This must be created on the main thread but it's only called on the IO/file
-// thread. This is an asynchronous wrapper around the PluginList interface for
-// querying plugin information. This must be used instead of that to avoid
-// doing expensive disk operations on the IO/UI threads.
 class CONTENT_EXPORT PluginService
-    : public base::WaitableEventWatcher::Delegate,
+    : public content::PluginService,
+      public base::WaitableEventWatcher::Delegate,
       public content::NotificationObserver {
  public:
-  struct OverriddenPlugin {
-    int render_process_id;
-    int render_view_id;
-    GURL url;  // If empty, the override applies to all urls in render_view.
-    webkit::WebPluginInfo plugin;
-  };
-
-  typedef base::Callback<void(const std::vector<webkit::WebPluginInfo>&)>
-      GetPluginsCallback;
-  typedef base::Callback<void(const std::vector<webkit::npapi::PluginGroup>&)>
-      GetPluginGroupsCallback;
-
   // Returns the PluginService singleton.
   static PluginService* GetInstance();
 
-  // Must be called on the instance to finish initialization.
-  void Init();
-
-  // Starts watching for changes in the list of installed plug-ins.
-  void StartWatchingPlugins();
+  // content::PluginService implementation:
+  virtual void Init() OVERRIDE;
+  virtual void StartWatchingPlugins() OVERRIDE;
+  virtual PluginProcessHost* FindNpapiPluginProcess(
+      const FilePath& plugin_path) OVERRIDE;
+  virtual bool GetPluginInfoArray(
+      const GURL& url,
+      const std::string& mime_type,
+      bool allow_wildcard,
+      std::vector<webkit::WebPluginInfo>* info,
+      std::vector<std::string>* actual_mime_types) OVERRIDE;
+  virtual bool GetPluginInfo(int render_process_id,
+                             int render_view_id,
+                             const content::ResourceContext& context,
+                             const GURL& url,
+                             const GURL& page_url,
+                             const std::string& mime_type,
+                             bool allow_wildcard,
+                             bool* is_stale,
+                             webkit::WebPluginInfo* info,
+                             std::string* actual_mime_type) OVERRIDE;
+  virtual bool GetPluginInfoByPath(const FilePath& plugin_path,
+                                   webkit::WebPluginInfo* info) OVERRIDE;
+  virtual void GetPlugins(const GetPluginsCallback& callback) OVERRIDE;
+  virtual void GetPluginGroups(
+      const GetPluginGroupsCallback& callback) OVERRIDE;
+  virtual content::PepperPluginInfo* GetRegisteredPpapiPluginInfo(
+      const FilePath& plugin_path) OVERRIDE;
+  virtual void SetFilter(content::PluginServiceFilter* filter) OVERRIDE;
+  virtual content::PluginServiceFilter* GetFilter() OVERRIDE;
+  virtual void RefreshPlugins() OVERRIDE;
+  virtual void AddExtraPluginPath(const FilePath& path) OVERRIDE;
+  virtual void RemoveExtraPluginPath(const FilePath& path) OVERRIDE;
+  virtual void UnregisterInternalPlugin(const FilePath& path) OVERRIDE;
+  virtual void RegisterInternalPlugin(
+      const webkit::WebPluginInfo& info) OVERRIDE;
+  virtual string16 GetPluginGroupName(const std::string& plugin_name) OVERRIDE;
+  virtual webkit::npapi::PluginList* GetPluginList() OVERRIDE;
 
   // Gets the browser's UI locale.
   const std::string& GetUILocale();
 
-  // Returns the plugin process host corresponding to the plugin process that
-  // has been started by this service. Returns NULL if no process has been
-  // started.
-  PluginProcessHost* FindNpapiPluginProcess(const FilePath& plugin_path);
+  // Like FindNpapiPluginProcess but for Pepper.
   PpapiPluginProcessHost* FindPpapiPluginProcess(const FilePath& plugin_path);
   PpapiPluginProcessHost* FindPpapiBrokerProcess(const FilePath& broker_path);
 
@@ -125,77 +138,6 @@ class CONTENT_EXPORT PluginService
 
   // Cancels opening a channel to a NPAPI plugin.
   void CancelOpenChannelToNpapiPlugin(PluginProcessHost::Client* client);
-
-  // Gets the plugin in the list of plugins that matches the given url and mime
-  // type. Returns true if the data is frome a stale plugin list, false if it
-  // is up to date. This can be called from any thread.
-  bool GetPluginInfoArray(const GURL& url,
-                          const std::string& mime_type,
-                          bool allow_wildcard,
-                          std::vector<webkit::WebPluginInfo>* info,
-                          std::vector<std::string>* actual_mime_types);
-
-  // Gets plugin info for an individual plugin and filters the plugins using
-  // the |context| and renderer IDs. This will report whether the data is stale
-  // via |is_stale| and returns whether or not the plugin can be found.
-  bool GetPluginInfo(int render_process_id,
-                     int render_view_id,
-                     const content::ResourceContext& context,
-                     const GURL& url,
-                     const GURL& page_url,
-                     const std::string& mime_type,
-                     bool allow_wildcard,
-                     bool* is_stale,
-                     webkit::WebPluginInfo* info,
-                     std::string* actual_mime_type);
-
-  // Get plugin info by plugin path (including disabled plugins). Returns true
-  // if the plugin is found and WebPluginInfo has been filled in |info|. This
-  // will use cached data in the plugin list.
-  bool GetPluginInfoByPath(const FilePath& plugin_path,
-                           webkit::WebPluginInfo* info);
-
-  // Asynchronously loads plugins if necessary and then calls back to the
-  // provided function on the calling MessageLoop on completion.
-  void GetPlugins(const GetPluginsCallback& callback);
-
-  // Asynchronously loads the list of plugin groups if necessary and then calls
-  // back to the provided function on the calling MessageLoop on completion.
-  void GetPluginGroups(const GetPluginGroupsCallback& callback);
-
-  // Returns information about a pepper plugin if it exists, otherwise NULL.
-  // The caller does not own the pointer, and it's not guaranteed to live past
-  // the call stack.
-  content::PepperPluginInfo* GetRegisteredPpapiPluginInfo(
-      const FilePath& plugin_path);
-
-  // Tells all the renderer processes associated with the given browser context
-  // to throw away their cache of the plugin list, and optionally also reload
-  // all the pages with plugins. If |browser_context| is NULL, purges the cache
-  // in all renderers.
-  // NOTE: can only be called on the UI thread.
-  static void PurgePluginListCache(content::BrowserContext* browser_context,
-                                   bool reload_pages);
-
-  void set_filter(content::PluginServiceFilter* filter) {
-    filter_ = filter;
-  }
-  content::PluginServiceFilter* filter() { return filter_; }
-
-  // The following functions are wrappers around webkit::npapi::PluginList.
-  // These must be used instead of those in order to ensure that we have a
-  // single global list in the component build and so that we don't
-  // accidentally load plugins in the wrong process or thread. Refer to
-  // PluginList for further documentation of these functions.
-  void RefreshPlugins();
-  void AddExtraPluginPath(const FilePath& path);
-  void RemoveExtraPluginPath(const FilePath& path);
-  void UnregisterInternalPlugin(const FilePath& path);
-  void RegisterInternalPlugin(const webkit::WebPluginInfo& info);
-  string16 GetPluginGroupName(const std::string& plugin_name);
-
-  // TODO(dpranke): This should be private.
-  webkit::npapi::PluginList* plugin_list() { return plugin_list_; }
 
   void SetPluginListForTesting(webkit::npapi::PluginList* plugin_list);
 

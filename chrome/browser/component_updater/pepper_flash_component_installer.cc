@@ -22,14 +22,15 @@
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "content/browser/plugin_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 
 using content::BrowserThread;
+using content::PluginService;
 
 namespace {
 

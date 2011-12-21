@@ -9,15 +9,17 @@
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/public/browser/plugin_service.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_redirect_job.h"
 #include "webkit/plugins/webplugininfo.h"
+
+using content::PluginService;
 
 namespace chromeos {
 

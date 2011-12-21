@@ -177,8 +177,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/load_notification_details.h"
-#include "content/browser/plugin_service.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_fetcher.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -196,6 +196,7 @@
 
 using base::Time;
 using content::BrowserThread;
+using content::PluginService;
 
 // Check to see that we're being called on only one thread.
 static bool IsSingleThreaded();

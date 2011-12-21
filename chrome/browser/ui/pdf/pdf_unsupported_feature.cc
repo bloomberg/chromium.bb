@@ -20,9 +20,9 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -32,6 +32,7 @@
 #include "ui/gfx/image/image.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
+using content::PluginService;
 using content::UserMetricsAction;
 using webkit::npapi::PluginGroup;
 using webkit::WebPluginInfo;

@@ -29,9 +29,9 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/plugin_service.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/plugin_service.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -40,6 +40,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
+using content::PluginService;
 using webkit::npapi::PluginGroup;
 using webkit::WebPluginInfo;
 

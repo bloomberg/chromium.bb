@@ -18,10 +18,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
-#include "content/browser/plugin_service.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/plugin_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/radio_button.h"
@@ -48,6 +48,8 @@ const int kMaxContentsWidth = 500;
 // When we have multiline labels, we should set a minimum width lest we get very
 // narrow bubbles with lots of line-wrapping.
 const int kMinMultiLineContentsWidth = 250;
+
+using content::PluginService;
 
 class ContentSettingBubbleContents::Favicon : public views::ImageView {
  public:

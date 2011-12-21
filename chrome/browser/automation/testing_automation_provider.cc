@@ -115,11 +115,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/common_param_traits.h"
@@ -152,6 +152,7 @@ using content::BrowserThread;
 using content::ChildProcessHost;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::PluginService;
 
 namespace {
 

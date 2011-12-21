@@ -56,6 +56,7 @@
     'public/browser/notification_source.h',
     'public/browser/notification_types.h',
     'public/browser/plugin_data_remover.h',
+    'public/browser/plugin_service.h',
     'public/browser/profiler_controller.h',
     'public/browser/profiler_subscriber.h',
     'public/browser/render_process_host.h',

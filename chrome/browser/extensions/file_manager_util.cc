@@ -19,8 +19,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/plugin_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -28,12 +28,14 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/media/media_player.h"
 #endif
 
 using content::BrowserThread;
+using content::PluginService;
 using content::UserMetricsAction;
 
 #define FILEBROWSER_DOMAIN "hhaomjibdihmijegdhdafkllkbggdgoj"

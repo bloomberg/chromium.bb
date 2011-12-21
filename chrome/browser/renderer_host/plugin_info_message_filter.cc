@@ -14,9 +14,9 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/plugin_service.h"
 #include "content/browser/plugin_service_filter.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/plugin_service.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -26,6 +26,8 @@
 #include "chrome/common/attrition_experiments.h"
 #include "chrome/installer/util/google_update_settings.h"
 #endif
+
+using content::PluginService;
 
 namespace {
 
@@ -217,7 +219,8 @@ bool PluginInfoMessageFilter::FindEnabledPlugin(
     matching_plugins.pop_back();
   }
 
-  content::PluginServiceFilter* filter = PluginService::GetInstance()->filter();
+  content::PluginServiceFilter* filter =
+      PluginService::GetInstance()->GetFilter();
   bool allowed = false;
   for (size_t i = 0; i < matching_plugins.size(); ++i) {
     if (!filter || filter->ShouldUsePlugin(render_process_id_,

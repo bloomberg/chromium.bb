@@ -75,10 +75,10 @@
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/net/browser_online_state_observer.h"
-#include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_fetcher.h"
 #include "media/audio/audio_manager.h"
@@ -120,6 +120,7 @@ static const int kEndSessionTimeoutSeconds = 10;
 #endif
 
 using content::BrowserThread;
+using content::PluginService;
 
 BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
     : created_resource_dispatcher_host_(false),
@@ -749,7 +750,7 @@ void BrowserProcessImpl::CreateIOThreadState() {
   // inexpensive and does not invoke the io_thread() accessor.
   PluginService* plugin_service = PluginService::GetInstance();
   plugin_service->Init();
-  plugin_service->set_filter(ChromePluginServiceFilter::GetInstance());
+  plugin_service->SetFilter(ChromePluginServiceFilter::GetInstance());
   plugin_service->StartWatchingPlugins();
 
   // Register the internal Flash if available.

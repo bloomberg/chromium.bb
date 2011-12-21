@@ -91,12 +91,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/plugin_process_host.h"
-#include "content/browser/plugin_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "googleurl/src/gurl.h"
@@ -125,6 +125,7 @@ using base::Time;
 using content::BrowserThread;
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
+using content::PluginService;
 
 namespace errors = extension_manifest_errors;
 

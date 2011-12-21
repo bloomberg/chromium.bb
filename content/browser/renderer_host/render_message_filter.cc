@@ -571,7 +571,8 @@ void RenderMessageFilter::GetPluginsCallback(
     IPC::Message* reply_msg,
     const std::vector<webkit::WebPluginInfo>& all_plugins) {
   // Filter the plugin list.
-  content::PluginServiceFilter* filter = PluginService::GetInstance()->filter();
+  content::PluginServiceFilter* filter =
+      PluginService::GetInstance()->GetFilter();
   std::vector<webkit::WebPluginInfo> plugins;
 
   int child_process_id = -1;

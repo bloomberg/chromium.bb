@@ -143,7 +143,6 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/host_zoom_map.h"
-#include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/interstitial_page.h"
@@ -157,6 +156,7 @@
 #include "content/public/browser/intents_host.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/content_switches.h"
@@ -175,6 +175,7 @@
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/window_open_disposition.h"
+#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/autofill/autofill_ie_toolbar_import_win.h"
@@ -206,6 +207,7 @@
 #endif
 
 using base::TimeDelta;
+using content::PluginService;
 using content::UserMetricsAction;
 
 ///////////////////////////////////////////////////////////////////////////////

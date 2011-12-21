@@ -27,8 +27,8 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/gpu/gpu_data_manager.h"
-#include "content/browser/plugin_service.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -42,6 +42,7 @@
 #include "base/win/windows_version.h"
 #endif
 
+using content::PluginService;
 using content::UserMetricsAction;
 
 namespace {
