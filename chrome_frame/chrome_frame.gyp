@@ -812,6 +812,7 @@
         'chrome_frame_plugin.h',
         'chrome_launcher_utils.cc',
         'chrome_launcher_utils.h',
+        'custom_sync_call_context.cc',
         'custom_sync_call_context.h',
         'external_tab.h',
         'external_tab.cc',

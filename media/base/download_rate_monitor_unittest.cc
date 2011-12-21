@@ -4,6 +4,8 @@
 
 #include "media/base/download_rate_monitor.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

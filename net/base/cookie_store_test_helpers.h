@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/callback_forward.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

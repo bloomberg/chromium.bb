@@ -8,7 +8,7 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
-#include "base/bind.h"
+#include "base/callback.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/gl/gl_context.h"

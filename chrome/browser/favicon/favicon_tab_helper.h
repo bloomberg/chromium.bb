@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/bind.h"
+#include "base/callback.h"
 #include "chrome/browser/favicon/favicon_handler_delegate.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/common/favicon_url.h"

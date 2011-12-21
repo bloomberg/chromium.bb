@@ -7,7 +7,6 @@
 
 #include <deque>
 
-#include "base/bind.h"
 #include "base/callback.h"
 #include "base/time.h"
 #include "media/base/media_export.h"

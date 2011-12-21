@@ -9,7 +9,6 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/favicon/favicon_service.h"

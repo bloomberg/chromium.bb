@@ -6,6 +6,7 @@
 
 #include <sstream>
 
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
 

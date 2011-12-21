@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/string16.h"
 #include "base/values.h"
@@ -56,11 +55,7 @@ class WebUIHandlerTaskProxy
 
   // WebUIHandlerTaskProxy is created on the UI thread, so in some cases,
   // we need to post back to the UI thread for destruction.
-  void DeleteOnUIThread() {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&WebUIHandlerTaskProxy::DoNothing, this));
-  }
+  void DeleteOnUIThread();
 
   void DoNothing() {}
 

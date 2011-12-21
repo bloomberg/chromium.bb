@@ -193,7 +193,7 @@ class DeviceDataProviderImplBase : public DeviceDataProviderImplBaseHack {
   // Calls DeviceDataUpdateAvailable() on all registered listeners.
   typedef std::set<ListenerInterface*> ListenersSet;
   void NotifyListeners() {
-    // Always make the nitofy callback via a posted task, se we can unwind
+    // Always make the notify callback via a posted task, so we can unwind
     // callstack here and make callback without causing client re-entrancy.
     client_loop_->PostTask(FROM_HERE, base::Bind(
         &DeviceDataProviderImplBase<DataType>::NotifyListenersInClientLoop,

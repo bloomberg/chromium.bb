@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_NET_SQLITE_ORIGIN_BOUND_CERT_STORE_H_
 #pragma once
 
-#include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/default_origin_bound_cert_store.h"

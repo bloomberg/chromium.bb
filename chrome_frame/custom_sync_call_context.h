@@ -7,15 +7,11 @@
 
 #include <vector>
 
-#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome_frame/sync_msg_reply_dispatcher.h"
 #include "chrome_frame/chrome_frame_automation.h"
 #include "ipc/ipc_sync_message.h"
-
-// TODO(ananta)
-// Move the implementations of these classes to the source file.
 
 // Class that maintains contextual information for the create and connect
 // external tab operations.
@@ -23,19 +19,10 @@ class CreateExternalTabContext
     : public SyncMessageReplyDispatcher::SyncMessageCallContext {
  public:
   typedef Tuple4<HWND, HWND, int, int> output_type;
-  explicit CreateExternalTabContext(ChromeFrameAutomationClient* client)
-      : client_(client) {
-  }
+  explicit CreateExternalTabContext(ChromeFrameAutomationClient* client);
 
   void Completed(HWND chrome_window, HWND tab_window, int tab_handle,
-                 int session_id) {
-    AutomationLaunchResult launch_result =
-        client_->CreateExternalTabComplete(chrome_window, tab_window,
-                                           tab_handle, session_id);
-    client_->PostTask(
-        FROM_HERE, base::Bind(&ChromeFrameAutomationClient::InitializeComplete,
-                              client_.get(), launch_result));
-  }
+                 int session_id);
 
  private:
   scoped_refptr<ChromeFrameAutomationClient> client_;
@@ -46,14 +33,11 @@ class CreateExternalTabContext
 class BeginNavigateContext
     : public SyncMessageReplyDispatcher::SyncMessageCallContext {
  public:
-  explicit BeginNavigateContext(ChromeFrameAutomationClient* client)
-      : client_(client) {}
+  explicit BeginNavigateContext(ChromeFrameAutomationClient* client);
 
   typedef Tuple1<AutomationMsg_NavigationResponseValues> output_type;
 
-  void Completed(AutomationMsg_NavigationResponseValues response) {
-    client_->BeginNavigateCompleted(response);
-  }
+  void Completed(AutomationMsg_NavigationResponseValues response);
 
  private:
   scoped_refptr<ChromeFrameAutomationClient> client_;
@@ -65,19 +49,9 @@ class UnloadContext
     : public SyncMessageReplyDispatcher::SyncMessageCallContext {
  public:
   typedef Tuple1<bool> output_type;
-  UnloadContext(base::WaitableEvent* unload_done, bool* should_unload)
-      : should_unload_(should_unload),
-        unload_done_(unload_done) {
-  }
+  UnloadContext(base::WaitableEvent* unload_done, bool* should_unload);
 
-  void Completed(bool should_unload) {
-    *should_unload_ = should_unload;
-    unload_done_->Signal();
-    should_unload_ = NULL;
-    unload_done_ = NULL;
-    // This object will be destroyed after this. Cannot access any members
-    // on returning from this function.
-  }
+  void Completed(bool should_unload);
 
  private:
   base::WaitableEvent* unload_done_;

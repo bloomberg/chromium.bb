@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -22,7 +22,7 @@ class Task;
 namespace net {
 
 // This class is the system for storing and retrieving origin bound certs.
-// Modelled after the CookieMonster class, it has an in-memory cert store,
+// Modeled after the CookieMonster class, it has an in-memory cert store,
 // and synchronizes origin bound certs to an optional permanent storage that
 // implements the PersistentStore interface. The use case is described in
 // http://balfanz.github.com/tls-obc-spec/draft-balfanz-tls-obc-00.html

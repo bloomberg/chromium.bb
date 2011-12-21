@@ -4,6 +4,7 @@
 
 #include "net/base/cookie_store_test_helpers.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 
 namespace net {

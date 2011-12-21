@@ -115,6 +115,12 @@ WebUIHandlerTaskProxy::WebUIHandlerTaskProxy(Delegate* delegate) {
 WebUIHandlerTaskProxy::~WebUIHandlerTaskProxy() {
 }
 
+void WebUIHandlerTaskProxy::DeleteOnUIThread() {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&WebUIHandlerTaskProxy::DoNothing, this));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // WebUIHandler

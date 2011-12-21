@@ -4,6 +4,8 @@
 
 #include "remoting/base/scoped_thread_proxy.h"
 
+#include "base/bind.h"
+
 namespace remoting {
 
 class ScopedThreadProxy::Core : public base::RefCountedThreadSafe<Core> {

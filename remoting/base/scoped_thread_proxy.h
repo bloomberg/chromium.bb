@@ -5,7 +5,7 @@
 #ifndef REMOTING_BASE_SCOPED_THREAD_PROXY_H_
 #define REMOTING_BASE_SCOPED_THREAD_PROXY_H_
 
-#include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/message_loop_proxy.h"
 
 namespace remoting {
