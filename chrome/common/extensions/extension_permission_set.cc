@@ -36,31 +36,19 @@ bool RcdBetterThan(std::string a, std::string b) {
   return false;
 }
 
-// Names of API modules that do not require a permission.
-const char kBrowserActionModuleName[] = "browserAction";
-const char kDevToolsModuleName[] = "devtools";
-const char kExtensionModuleName[] = "extension";
-const char kI18NModuleName[] = "i18n";
-const char kOmniboxModuleName[] = "omnibox";
-const char kPageActionModuleName[] = "pageAction";
-const char kPageActionsModuleName[] = "pageActions";
-const char kPermissionsModuleName[] = "permissions";
-const char kTestModuleName[] = "test";
-const char kTypesModuleName[] = "types";
-
-// Names of modules that can be used without listing it in the permissions
-// section of the manifest.
+// Names of API modules that can be used without listing it in the
+// permissions section of the manifest.
 const char* kNonPermissionModuleNames[] = {
-  kBrowserActionModuleName,
-  kDevToolsModuleName,
-  kExtensionModuleName,
-  kI18NModuleName,
-  kOmniboxModuleName,
-  kPageActionModuleName,
-  kPageActionsModuleName,
-  kPermissionsModuleName,
-  kTestModuleName,
-  kTypesModuleName
+  "browserAction",
+  "devtools",
+  "extension",
+  "i18n",
+  "omnibox",
+  "pageAction",
+  "pageActions",
+  "permissions",
+  "test",
+  "types"
 };
 const size_t kNumNonPermissionModuleNames =
     arraysize(kNonPermissionModuleNames);
