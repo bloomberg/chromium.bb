@@ -7,11 +7,10 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
-#include "ui/aura/window_observer.h"
 #include "ui/views/widget/native_widget_aura.h"
 
-class BrowserFrame;
 class BrowserView;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -21,8 +20,7 @@ class BrowserView;
 //  frame for the Chrome browser window.
 //
 class BrowserFrameAura : public views::NativeWidgetAura,
-                         public NativeBrowserFrame,
-                         public aura::WindowObserver {
+                         public NativeBrowserFrame {
  public:
   BrowserFrameAura(BrowserFrame* browser_frame, BrowserView* browser_view);
   virtual ~BrowserFrameAura();
@@ -31,18 +29,12 @@ class BrowserFrameAura : public views::NativeWidgetAura,
 
  protected:
   // Overridden from views::NativeWidgetAura:
-  virtual void OnWindowDestroying() OVERRIDE;
 
   // Overridden from NativeBrowserFrame:
   virtual views::NativeWidget* AsNativeWidget() OVERRIDE;
   virtual const views::NativeWidget* AsNativeWidget() const OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
   virtual void TabStripDisplayModeChanged() OVERRIDE;
-
-  // Overridden from aura::WindowObserver:
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const char* key,
-                                       void* old) OVERRIDE;
 
  private:
   // The BrowserView is our ClientView. This is a pointer to it.
