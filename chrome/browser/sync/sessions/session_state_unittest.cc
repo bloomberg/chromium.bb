@@ -46,7 +46,6 @@ TEST_F(SessionStateTest, SyncerStatusToValue) {
   SyncerStatus status;
   status.invalid_store = true;
   status.syncer_stuck = false;
-  status.sync_in_progress = true;
   status.num_successful_commits = 5;
   status.num_successful_bookmark_commits = 10;
   status.num_updates_downloaded_total = 100;
@@ -55,10 +54,9 @@ TEST_F(SessionStateTest, SyncerStatusToValue) {
   status.num_server_overwrites = 18;
 
   scoped_ptr<DictionaryValue> value(status.ToValue());
-  EXPECT_EQ(9u, value->size());
+  EXPECT_EQ(8u, value->size());
   ExpectDictBooleanValue(status.invalid_store, *value, "invalidStore");
   ExpectDictBooleanValue(status.syncer_stuck, *value, "syncerStuck");
-  ExpectDictBooleanValue(status.sync_in_progress, *value, "syncInProgress");
   ExpectDictIntegerValue(status.num_successful_commits,
                          *value, "numSuccessfulCommits");
   ExpectDictIntegerValue(status.num_successful_bookmark_commits,

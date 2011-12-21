@@ -80,12 +80,13 @@ enum VerifyCommitResult {
 struct SyncEngineEvent {
   enum EventCause {
     ////////////////////////////////////////////////////////////////
+    // Sent on entry of Syncer state machine
+    SYNC_CYCLE_BEGIN,
+
     // SyncerCommand generated events.
     STATUS_CHANGED,
 
     // We have reached the SYNCER_END state in the main sync loop.
-    // Check the SyncerSession for information like whether we need to continue
-    // syncing (SyncerSession::HasMoreToSync).
     SYNC_CYCLE_ENDED,
 
     ////////////////////////////////////////////////////////////////

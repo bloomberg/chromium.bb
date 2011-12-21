@@ -6,7 +6,6 @@
 
 #include "chrome/browser/sync/engine/cleanup_disabled_types_command.h"
 
-#include "chrome/browser/sync/engine/syncer_end_command.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/model_type_test_util.h"
 #include "chrome/browser/sync/test/engine/syncer_command_test.h"
@@ -29,11 +28,6 @@ class CleanupDisabledTypesCommandTest : public MockDirectorySyncerCommandTest {
     mutable_routing_info()->clear();
     (*mutable_routing_info())[syncable::BOOKMARKS] = GROUP_PASSIVE;
     MockDirectorySyncerCommandTest::SetUp();
-  }
-
-  // Overridden to allow SyncerEndCommand Execute to work.
-  virtual bool IsSyncingCurrentlySilenced() {
-    return false;
   }
 };
 

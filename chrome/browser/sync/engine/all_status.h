@@ -24,6 +24,17 @@ class ScopedStatusLock;
 struct AuthWatcherEvent;
 struct ServerConnectionEvent;
 
+// TODO(rlarocque):
+// Most of this data ends up on the about:sync page.  But the page is only
+// 'pinged' to update itself at the end of a sync cycle.  A user could refresh
+// manually, but unless their timing is excellent it's unlikely that a user will
+// see any state in mid-sync cycle.  We have no plans to change this.
+//
+// What we do intend to do is improve the UI so that changes following a sync
+// cycle are more visible.  Without such a change, the status summary for a
+// healthy syncer will constantly display as "READY" and never provide any
+// indication of a sync cycle being performed.  See crbug.com/108100.
+
 class AllStatus : public SyncEngineEventListener {
   friend class ScopedStatusLock;
  public:

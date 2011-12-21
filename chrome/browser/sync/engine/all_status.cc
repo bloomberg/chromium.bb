@@ -32,7 +32,6 @@ sync_api::SyncManager::Status AllStatus::CreateBlankStatus() const {
   // whose values accumulate (e.g. lifetime counters like updates_received)
   // are not to be cleared here.
   sync_api::SyncManager::Status status = status_;
-  status.syncing = true;
   status.unsynced_count = 0;
   status.conflicting_count = 0;
   status.initial_sync_ended = false;
@@ -53,9 +52,12 @@ sync_api::SyncManager::Status AllStatus::CalcSyncing(
   // But this is only used for status, so it is better to have visibility.
   status.conflicting_count += snapshot->num_conflicting_updates;
 
-  status.syncing |= snapshot->syncer_status.sync_in_progress;
-  status.syncing =
-      snapshot->has_more_to_sync && snapshot->is_silenced;
+  if (event.what_happened == SyncEngineEvent::SYNC_CYCLE_BEGIN) {
+    status.syncing = true;
+  } else if (event.what_happened == SyncEngineEvent::SYNC_CYCLE_ENDED) {
+    status.syncing = false;
+  }
+
   status.initial_sync_ended |= snapshot->is_share_usable;
   status.syncer_stuck |= snapshot->syncer_status.syncer_stuck;
 
@@ -105,7 +107,7 @@ void AllStatus::CalcStatusChanges() {
   if (online) {
     if (status_.syncer_stuck)
       status_.summary = sync_api::SyncManager::Status::CONFLICT;
-    else if (unsynced_changes || status_.syncing)
+    else if (status_.syncing)
       status_.summary = sync_api::SyncManager::Status::SYNCING;
     else
       status_.summary = sync_api::SyncManager::Status::READY;
@@ -121,8 +123,9 @@ void AllStatus::CalcStatusChanges() {
 void AllStatus::OnSyncEngineEvent(const SyncEngineEvent& event) {
   ScopedStatusLock lock(this);
   switch (event.what_happened) {
-    case SyncEngineEvent::SYNC_CYCLE_ENDED:
+    case SyncEngineEvent::SYNC_CYCLE_BEGIN:
     case SyncEngineEvent::STATUS_CHANGED:
+    case SyncEngineEvent::SYNC_CYCLE_ENDED:
       status_ = CalcSyncing(event);
       break;
     case SyncEngineEvent::STOP_SYNCING_PERMANENTLY:

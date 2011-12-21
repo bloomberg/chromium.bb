@@ -235,7 +235,7 @@ class StatusController {
   void reset_conflicts_resolved();
   void set_items_committed();
 
-  void SetSyncInProgressAndUpdateStartTime(bool sync_in_progress);
+  void UpdateStartTime();
 
   void set_debug_info_sent();
 

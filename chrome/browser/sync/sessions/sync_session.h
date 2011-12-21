@@ -105,6 +105,9 @@ class SyncSession {
   // Builds a thread-safe and read-only copy of the current session state.
   SyncSessionSnapshot TakeSnapshot() const;
 
+  // Builds and sends a snapshot to the session context's listeners.
+  void SendEventNotification(SyncEngineEvent::EventCause cause);
+
   // Returns true if this session contains data that should go through the sync
   // engine again.
   bool HasMoreToSync() const;

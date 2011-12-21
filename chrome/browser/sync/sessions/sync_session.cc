@@ -168,6 +168,15 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       status_controller_->sync_start_time());
 }
 
+void SyncSession::SendEventNotification(SyncEngineEvent::EventCause cause) {
+  SyncEngineEvent event(cause);
+  const SyncSessionSnapshot& snapshot = TakeSnapshot();
+  event.snapshot = &snapshot;
+
+  DVLOG(1) << "Sending event with snapshot: " << snapshot.ToString();
+  context()->NotifyListeners(event);
+}
+
 SyncSourceInfo SyncSession::TestAndSetSource() {
   SyncSourceInfo old_source = source_;
   source_ = SyncSourceInfo(

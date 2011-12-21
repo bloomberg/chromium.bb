@@ -408,8 +408,6 @@
         'browser/sync/engine/syncer.h',
         'browser/sync/engine/syncer_command.cc',
         'browser/sync/engine/syncer_command.h',
-        'browser/sync/engine/syncer_end_command.cc',
-        'browser/sync/engine/syncer_end_command.h',
         'browser/sync/engine/syncer_proto_util.cc',
         'browser/sync/engine/syncer_proto_util.h',
         'browser/sync/engine/sync_scheduler.cc',

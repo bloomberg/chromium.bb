@@ -155,8 +155,8 @@ class SyncerTest : public testing::Test,
     DVLOG(1) << "HandleSyncEngineEvent in unittest " << event.what_happened;
     // we only test for entry-specific events, not status changed ones.
     switch (event.what_happened) {
+      case SyncEngineEvent::SYNC_CYCLE_BEGIN: // Fall through.
       case SyncEngineEvent::STATUS_CHANGED:
-        // fall through
       case SyncEngineEvent::SYNC_CYCLE_ENDED:
         return;
       default:

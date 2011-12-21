@@ -67,7 +67,6 @@ struct SyncerStatus {
   bool invalid_store;
   // True iff we're stuck.
   bool syncer_stuck;
-  bool sync_in_progress;
   int num_successful_commits;
   // This is needed for monitoring extensions activity.
   int num_successful_bookmark_commits;
