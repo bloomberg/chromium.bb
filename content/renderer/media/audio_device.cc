@@ -287,10 +287,7 @@ void AudioDevice::Run() {
   audio_thread_->SetThreadPriority(base::kThreadPriority_RealtimeAudio);
 
   base::SharedMemory shared_memory(shared_memory_handle_, false);
-  shared_memory.Map(memory_length_);
-  // Allow the client to pre-populate the buffer.
-  FireRenderCallback(reinterpret_cast<int16*>(shared_memory.memory()));
-
+  shared_memory.Map(media::TotalSharedMemorySizeInBytes(memory_length_));
   base::SyncSocket socket(socket_handle_);
 
   int pending_data;
@@ -301,23 +298,34 @@ void AudioDevice::Run() {
       socket.Receive(&pending_data, sizeof(pending_data))) {
     if (pending_data == media::AudioOutputController::kPauseMark) {
       memset(shared_memory.memory(), 0, memory_length_);
+      media::SetActualDataSizeInBytes(&shared_memory, memory_length_, 0);
       continue;
     } else if (pending_data < 0) {
       break;
     }
+
     // Convert the number of pending bytes in the render buffer
     // into milliseconds.
     audio_delay_milliseconds_ = pending_data / bytes_per_ms;
-    FireRenderCallback(reinterpret_cast<int16*>(shared_memory.memory()));
+    size_t num_frames = FireRenderCallback(
+        reinterpret_cast<int16*>(shared_memory.memory()));
+
+    // Let the host know we are done.
+    media::SetActualDataSizeInBytes(&shared_memory,
+                                    memory_length_,
+                                    num_frames * channels_ * sizeof(int16));
   }
 }
 
-void AudioDevice::FireRenderCallback(int16* data) {
+size_t AudioDevice::FireRenderCallback(int16* data) {
   TRACE_EVENT0("audio", "AudioDevice::FireRenderCallback");
 
+  size_t num_frames = 0;
   if (callback_) {
     // Update the audio-delay measurement then ask client to render audio.
-    callback_->Render(audio_data_, buffer_size_, audio_delay_milliseconds_);
+    num_frames = callback_->Render(audio_data_,
+                                   buffer_size_,
+                                   audio_delay_milliseconds_);
 
     // Interleave, scale, and clip to int16.
     // TODO(crogers): avoid converting to integer here, and pass the data
@@ -327,6 +335,7 @@ void AudioDevice::FireRenderCallback(int16* data) {
                                   data,
                                   buffer_size_);
   }
+  return num_frames;
 }
 
 void AudioDevice::ShutDownAudioThread() {

@@ -75,9 +75,9 @@ class CONTENT_EXPORT AudioRendererImpl
   void DoSeek();
 
   // AudioDevice::RenderCallback implementation.
-  virtual void Render(const std::vector<float*>& audio_data,
-                      size_t number_of_frames,
-                      size_t audio_delay_milliseconds) OVERRIDE;
+  virtual size_t Render(const std::vector<float*>& audio_data,
+                        size_t number_of_frames,
+                        size_t audio_delay_milliseconds) OVERRIDE;
 
   // Accessors used by tests.
   base::Time earliest_end_time() const {

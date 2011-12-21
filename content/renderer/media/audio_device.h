@@ -81,9 +81,13 @@ class CONTENT_EXPORT AudioDevice
  public:
   class CONTENT_EXPORT RenderCallback {
    public:
-    virtual void Render(const std::vector<float*>& audio_data,
-                        size_t number_of_frames,
-                        size_t audio_delay_milliseconds) = 0;
+    // Fills entire buffer of length |number_of_frames| but returns actual
+    // number of frames it got from its source (|number_of_frames| in case of
+    // continuous stream). That actual number of frames is passed to host
+    // together with PCM audio data and host is free to use or ignore it.
+    virtual size_t Render(const std::vector<float*>& audio_data,
+                          size_t number_of_frames,
+                          size_t audio_delay_milliseconds) = 0;
    protected:
     virtual ~RenderCallback() {}
   };
@@ -159,10 +163,13 @@ class CONTENT_EXPORT AudioDevice
 
   void Send(IPC::Message* message);
 
-  // Method called on the audio thread (+ one call on the IO thread) ----------
-  // Calls the client's callback for rendering audio. There will also be one
-  // initial call on the IO thread before the audio thread has been created.
-  void FireRenderCallback(int16* data);
+  // Method called on the audio thread ----------------------------------------
+  // Calls the client's callback for rendering audio.
+  // Returns actual number of filled frames that callback returned. This length
+  // is passed to host at the end of the shared memory (i.e. buffer). In case of
+  // continuous stream host just ignores it and assumes buffer is always filled
+  // to its capacity.
+  size_t FireRenderCallback(int16* data);
 
   // DelegateSimpleThread::Delegate implementation.
   virtual void Run() OVERRIDE;

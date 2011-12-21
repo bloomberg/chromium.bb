@@ -27,9 +27,9 @@ class RendererWebAudioDeviceImpl : public WebKit::WebAudioDevice,
   virtual double sampleRate();
 
   // AudioDevice::RenderCallback implementation.
-  virtual void Render(const std::vector<float*>& audio_data,
-                      size_t number_of_frames,
-                      size_t audio_delay_milliseconds) OVERRIDE;
+  virtual size_t Render(const std::vector<float*>& audio_data,
+                        size_t number_of_frames,
+                        size_t audio_delay_milliseconds) OVERRIDE;
 
  private:
   scoped_refptr<AudioDevice> audio_device_;

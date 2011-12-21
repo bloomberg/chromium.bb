@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_WEBRTC_AUDIO_DEVICE_IMPL_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -111,9 +112,9 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   static bool ImplementsThreadSafeReferenceCounting() { return true; }
 
   // AudioDevice::RenderCallback implementation.
-  virtual void Render(const std::vector<float*>& audio_data,
-                      size_t number_of_frames,
-                      size_t audio_delay_milliseconds) OVERRIDE;
+  virtual size_t Render(const std::vector<float*>& audio_data,
+                        size_t number_of_frames,
+                        size_t audio_delay_milliseconds) OVERRIDE;
 
   // AudioInputDevice::CaptureCallback implementation.
   virtual void Capture(const std::vector<float*>& audio_data,

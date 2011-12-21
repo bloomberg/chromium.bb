@@ -36,9 +36,9 @@ double RendererWebAudioDeviceImpl::sampleRate() {
   return 44100.0;
 }
 
-void RendererWebAudioDeviceImpl::Render(const std::vector<float*>& audio_data,
-                                size_t number_of_frames,
-                                size_t audio_delay_milliseconds) {
+size_t RendererWebAudioDeviceImpl::Render(const std::vector<float*>& audio_data,
+                                          size_t number_of_frames,
+                                          size_t audio_delay_milliseconds) {
   // Make the client callback to get rendered audio.
   DCHECK(client_callback_);
   if (client_callback_) {
@@ -49,4 +49,5 @@ void RendererWebAudioDeviceImpl::Render(const std::vector<float*>& audio_data,
 
     client_callback_->render(web_audio_data, number_of_frames);
   }
+  return number_of_frames;
 }

@@ -192,14 +192,14 @@ void AudioRendererImpl::DoSeek() {
   audio_device_->Pause(true);
 }
 
-void AudioRendererImpl::Render(const std::vector<float*>& audio_data,
-                               size_t number_of_frames,
-                               size_t audio_delay_milliseconds) {
+size_t AudioRendererImpl::Render(const std::vector<float*>& audio_data,
+                                 size_t number_of_frames,
+                                 size_t audio_delay_milliseconds) {
   if (stopped_ || GetPlaybackRate() == 0.0f) {
     // Output silence if stopped.
     for (size_t i = 0; i < audio_data.size(); ++i)
       memset(audio_data[i], 0, sizeof(float) * number_of_frames);
-    return;
+    return 0;
   }
 
   // Adjust the playback delay.
@@ -225,6 +225,7 @@ void AudioRendererImpl::Render(const std::vector<float*>& audio_data,
                              request_delay,
                              time_now >= earliest_end_time_);
   DCHECK_LE(filled, buf_size);
+  UpdateEarliestEndTime(filled, request_delay, time_now);
 
   uint32 filled_frames = filled / bytes_per_frame;
 
@@ -241,7 +242,10 @@ void AudioRendererImpl::Render(const std::vector<float*>& audio_data,
     // If FillBuffer() didn't give us enough data then zero out the remainder.
     if (filled_frames < number_of_frames) {
       int frames_to_zero = number_of_frames - filled_frames;
-      memset(audio_data[channel_index], 0, sizeof(float) * frames_to_zero);
+      memset(audio_data[channel_index] + filled_frames,
+             0,
+             sizeof(float) * frames_to_zero);
     }
   }
+  return filled_frames;
 }

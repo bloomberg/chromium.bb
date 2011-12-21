@@ -60,7 +60,7 @@ int32_t WebRtcAudioDeviceImpl::Release() {
   return ret;
 }
 
-void WebRtcAudioDeviceImpl::Render(
+size_t WebRtcAudioDeviceImpl::Render(
     const std::vector<float*>& audio_data,
     size_t number_of_frames,
     size_t audio_delay_milliseconds) {
@@ -115,6 +115,7 @@ void WebRtcAudioDeviceImpl::Render(
         bytes_per_sample_,
         number_of_frames);
   }
+  return number_of_frames;
 }
 
 void WebRtcAudioDeviceImpl::Capture(
