@@ -641,6 +641,9 @@ FileManager.prototype = {
         (this.dialogType_ == FileManager.DialogType.FULL_PAGE ||
          this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE);
 
+    this.table_.list.startBatchUpdates();
+    this.grid_.startBatchUpdates();
+
     this.initFileList_();
     this.initDialogs_();
 
@@ -684,6 +687,10 @@ FileManager.prototype = {
     this.refocus();
 
     this.createMetadataProvider_();
+
+    this.table_.list.endBatchUpdates();
+    this.grid_.endBatchUpdates();
+
     metrics.recordInterval('Load.DOM');
     metrics.recordInterval('Load.Total');
   };
@@ -734,6 +741,11 @@ FileManager.prototype = {
     this.okButton_ = this.dialogDom_.querySelector('.ok');
     this.cancelButton_ = this.dialogDom_.querySelector('.cancel');
     this.deleteButton_ = this.dialogDom_.querySelector('.delete-button');
+    this.table_ = this.dialogDom_.querySelector('.detail-table');
+    this.grid_ = this.dialogDom_.querySelector('.thumbnail-grid');
+
+    cr.ui.Table.decorate(this.table_);
+    cr.ui.Grid.decorate(this.grid_);
 
     this.downloadsWarning_ =
         this.dialogDom_.querySelector('.downloads-warning');
@@ -826,8 +838,6 @@ FileManager.prototype = {
     this.initRootsList_();
 
     this.setListType(FileManager.ListType.DETAIL);
-
-    this.onResize_();
 
     this.textSearchState_ = {text: '', date: new Date()};
   };
@@ -1033,7 +1043,7 @@ FileManager.prototype = {
     if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE)
       this.filenameInput_.focus();
     else
-      this.document_.querySelector('[tabindex="0"]').focus();
+      this.currentList_.focus();
   };
 
   FileManager.prototype.showButter = function(message, opt_options) {
@@ -1212,6 +1222,9 @@ FileManager.prototype = {
     if (type && type == this.listType_)
       return;
 
+    this.table_.list.startBatchUpdates();
+    this.grid_.startBatchUpdates();
+
     // TODO(dzvorygin): style.display and dataModel setting order shouldn't
     // cause any UI bugs. Currently, the only right way is first to set display
     // style and only then set dataModel.
@@ -1244,15 +1257,15 @@ FileManager.prototype = {
 
     this.listType_ = type;
     this.onResize_();
+
+    this.table_.list.endBatchUpdates();
+    this.grid_.endBatchUpdates();
   };
 
   /**
    * Initialize the file thumbnail grid.
    */
   FileManager.prototype.initGrid_ = function() {
-    this.grid_ = this.dialogDom_.querySelector('.thumbnail-grid');
-    cr.ui.Grid.decorate(this.grid_);
-
     var self = this;
     this.grid_.itemConstructor = GridItem.bind(null, this);
 
@@ -1292,9 +1305,6 @@ FileManager.prototype = {
       columns[0].headerRenderFunction =
           this.renderNameColumnHeader_.bind(this, columns[0].name);
     }
-
-    this.table_ = this.dialogDom_.querySelector('.detail-table');
-    cr.ui.Table.decorate(this.table_);
 
     this.table_.selectionModel = new this.selectionModelClass_();
     this.table_.columnModel = new cr.ui.table.TableColumnModel(columns);
@@ -1420,8 +1430,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.requestResize_ = function(timeout) {
-    var self = this;
-    setTimeout(function() { self.onResize_() }, timeout || 0);
+    setTimeout(this.onResize_.bind(this), timeout || 0);
   };
 
   /**
@@ -1434,13 +1443,15 @@ FileManager.prototype = {
                                       this.table_.header_.clientHeight) + 'px';
 
     if (this.listType_ == FileManager.ListType.THUMBNAIL) {
-      var self = this;
+      var g = this.grid_;
+      g.startBatchUpdates();
       setTimeout(function() {
-          self.grid_.columns = 0;
-          self.grid_.redraw();
+        g.columns = 0;
+        g.redraw();
+        g.endBatchUpdates();
       }, 0);
     } else {
-      this.currentList_.redraw();
+      this.table_.redraw();
     }
 
     this.rootsList_.style.height =
