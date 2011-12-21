@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "web_accessible/accessible_resource.html"));
   ui_test_utils::NavigateToURL(browser(), accessible_resource);
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-    browser()->GetSelectedTabContents()->render_view_host(), L"",
+    browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
   EXPECT_EQ("Loaded", result);
@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "web_accessible/nonaccessible_resource.html"));
   ui_test_utils::NavigateToURL(browser(), nonaccessible_resource);
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-    browser()->GetSelectedTabContents()->render_view_host(), L"",
+    browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
   EXPECT_EQ("Image failed to load", result);
@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "web_accessible/nonexistent_resource.html"));
   ui_test_utils::NavigateToURL(browser(), nonexistent_resource);
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-    browser()->GetSelectedTabContents()->render_view_host(), L"",
+    browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
   EXPECT_EQ("Image failed to load", result);
