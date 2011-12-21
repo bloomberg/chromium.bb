@@ -6,7 +6,12 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_NATIVE_BROWSER_FRAME_H_
 #pragma once
 
+class BrowserFrame;
 class BrowserView;
+
+namespace views {
+class NativeWidget;
+}
 
 class NativeBrowserFrame {
  public:
