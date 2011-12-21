@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
@@ -264,8 +263,8 @@ bool NaClProcessHost::LaunchSelLdr() {
   if (exe_path.empty())
     return false;
 
-  scoped_ptr<CommandLine> cmd_line(new CommandLine(exe_path));
-  nacl::CopyNaClCommandLineArguments(cmd_line.get());
+  CommandLine* cmd_line = new CommandLine(exe_path);
+  nacl::CopyNaClCommandLineArguments(cmd_line);
 
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kNaClLoaderProcess);
@@ -282,12 +281,12 @@ bool NaClProcessHost::LaunchSelLdr() {
     return NaClBrokerService::GetInstance()->LaunchLoader(
         this, ASCIIToWide(channel_id));
   } else {
-    BrowserChildProcessHost::Launch(FilePath(), cmd_line.get());
+    BrowserChildProcessHost::Launch(FilePath(), cmd_line);
   }
 #elif defined(OS_POSIX)
   BrowserChildProcessHost::Launch(nacl_loader_prefix.empty(),  // use_zygote
                                   base::environment_vector(),
-                                  cmd_line.get());
+                                  cmd_line);
 #endif
 
   return true;
