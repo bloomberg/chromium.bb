@@ -55,13 +55,12 @@ Upload() {
 }
 
 
-UploadToolchain() {
+UploadArmToolchain() {
   rev=$1
   name=$2
   tarball=$3
 
   Upload ${tarball} gs://${BASE_ARM_TOOLCHAIN}/${rev}/${name}
-  Upload ${tarball} gs://${BASE_ARM_TOOLCHAIN}/latest/${name}
 }
 
 ######################################################################
@@ -72,7 +71,7 @@ UploadArmTrustedToolchain() {
   rev=$1
   tarball=$2
 
-  UploadToolchain ${rev} naclsdk_linux_arm-trusted.tgz ${tarball}
+  UploadArmToolchain ${rev} naclsdk_linux_arm-trusted.tgz ${tarball}
 }
 
 DownloadArmTrustedToolchain() {
@@ -113,7 +112,7 @@ UploadArmUntrustedToolchains() {
   local label=$2
   local tarball=$3
 
-  UploadToolchain ${rev} naclsdk_${label}.tgz ${tarball}
+  UploadArmToolchain ${rev} naclsdk_${label}.tgz ${tarball}
 }
 
 DownloadArmUntrustedToolchains() {
@@ -143,21 +142,17 @@ ShowRecentArmUntrustedToolchains() {
 ######################################################################
 
 UploadArmBinariesForHWBots() {
-  rev=$1
-  name=$2
-  tarball=$3
-
-  Upload ${tarball}  ${BASE_BETWEEN_BOTS}/${name}/${rev}/build.tgz
+  name=$1
+  tarball=$2
+  Upload ${tarball} ${BASE_BETWEEN_BOTS}/${name}/build.tgz
 }
 
 
 DownloadArmBinariesForHWBots() {
-  rev=$1
-  name=$2
-  tarball=$3
-
+  name=$1
+  tarball=$2
   curl -L \
-     ${URL_PREFIX}/${BASE_BETWEEN_BOTS}/${name}/${rev}/build.tgz \
+     ${URL_PREFIX}/${BASE_BETWEEN_BOTS}/${name}/build.tgz \
      -o $3
 }
 
@@ -166,20 +161,17 @@ DownloadArmBinariesForHWBots() {
 ######################################################################
 
 UploadArmBinariesForHWBotsTry() {
-  rev=$1
-  name=$2
-  tarball=$3
-
-  Download ${tarball} ${BASE_BETWEEN_BOTS_TRY}/${name}/${rev}/build.tgz
+  name=$1
+  tarball=$2
+  Upload ${tarball} ${BASE_BETWEEN_BOTS_TRY}/${name}/build.tgz
 }
 
 
 DownloadArmBinariesForHWBotsTry() {
-  rev=$1
-  name=$2
-  tarball=$3
+  name=$1
+  tarball=$2
   curl -L \
-     ${URL_PREFIX}/${BASE_BETWEEN_BOTS_TRY}/${name}/${rev}/build.tgz \
+     ${URL_PREFIX}/${BASE_BETWEEN_BOTS_TRY}/${name}/build.tgz \
      -o $2
 }
 

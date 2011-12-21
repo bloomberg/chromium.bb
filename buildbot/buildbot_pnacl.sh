@@ -13,6 +13,7 @@ FAIL_FAST=${FAIL_FAST:-true}
 RETCODE=0
 
 readonly SCONS_COMMON="./scons --verbose bitcode=1"
+readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 
 # extract the relavant scons flags for reporting
 relevant() {
@@ -53,23 +54,11 @@ install-lkgr-toolchains() {
   gclient runhooks --force
 }
 
-# copy data to well known archive server
-push-data-to-archive-server() {
-  buildbot/gsutil.sh -h Cache-Control:no-cache cp -a public-read \
-    $1 \
-    gs://$2
-}
-
-# copy data from well known archive server
-pull-data-from-archive-server() {
-  curl -L \
-     http://commondatastorage.googleapis.com/$1\
-     -o $2
-}
-
 # Tar up the executables which are shipped to the arm HW bots
 archive-for-hw-bots() {
-  local target=$1
+  local name=$1
+  local try=$2
+
   echo "@@@BUILD_STEP tar_generated_binaries@@@"
   # clean out a bunch of files that are not needed
   find scons-out/ \
@@ -79,15 +68,24 @@ archive-for-hw-bots() {
   tar cvfz arm.tgz scons-out/
 
   echo "@@@BUILD_STEP archive_binaries@@@"
-  push-data-to-archive-server arm.tgz ${target}
+  if [[ ${try} == "try" ]] ; then
+    ${UP_DOWN_LOAD} UploadArmBinariesForHWBotsTry ${name} arm.tgz
+  else
+    ${UP_DOWN_LOAD} UploadArmBinariesForHWBots ${name} arm.tgz
+  fi
 }
 
 # Untar archived executables for HW bots
 unarchive-for-hw-bots() {
-  local source=$1
+  local name=$1
+  local try=$2
 
   echo "@@@BUILD_STEP fetch_binaries@@@"
-  pull-data-from-archive-server ${source} arm.tgz
+  if [[ ${try} == "try" ]] ; then
+    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBotsTry ${name} arm.tgz
+  else
+    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBots ${name} arm.tgz
+  fi
 
   echo "@@@BUILD_STEP untar_binaries@@@"
   rm -rf scons-out/
@@ -252,15 +250,12 @@ mode-buildbot-x8664() {
   browser-tests "x86-64" "--mode=opt-host,nacl -k"
 }
 
-# These names were originally botnames
-# TOOD(robertm): describe what needs to done when those change
-# Thunk them to allow non-bots to run without specifying BUILDBOT_GOT_REVISION.
 NAME_ARM_UPLOAD() {
-  echo "${BUILDBOT_BUILDERNAME}/${BUILDBOT_GOT_REVISION}"
+  echo -n "${BUILDBOT_BUILDERNAME}/${BUILDBOT_GOT_REVISION}"
 }
 
 NAME_ARM_DOWNLOAD() {
-  echo "${BUILDBOT_TRIGGERED_BY_BUILDERNAME}/${BUILDBOT_GOT_REVISION}"
+  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDERNAME}/${BUILDBOT_GOT_REVISION}"
 }
 
 NAME_ARM_TRY_UPLOAD() {
@@ -293,20 +288,17 @@ mode-buildbot-arm() {
 
 mode-buildbot-arm-dbg() {
   mode-buildbot-arm "--mode=dbg-host,nacl"
-  archive-for-hw-bots \
-      nativeclient-archive2/between_builders/$(NAME_ARM_UPLOAD)/build.tgz
+  archive-for-hw-bots $(NAME_ARM_UPLOAD) regular
 }
 
 mode-buildbot-arm-opt() {
   mode-buildbot-arm "--mode=opt-host,nacl"
-  archive-for-hw-bots \
-      nativeclient-archive2/between_builders/$(NAME_ARM_UPLOAD)/build.tgz
+  archive-for-hw-bots $(NAME_ARM_UPLOAD) regular
 }
 
 mode-buildbot-arm-try() {
   mode-buildbot-arm "--mode=opt-host,nacl"
-  archive-for-hw-bots \
-      nativeclient-trybot/between_builders/$(NAME_ARM_TRY_UPLOAD)/build.tgz
+  archive-for-hw-bots $(NAME_ARM_TRY_UPLOAD) try
 }
 
 mode-buildbot-arm-hw() {
@@ -321,20 +313,17 @@ mode-buildbot-arm-hw() {
 # NOTE: the hw bots are too slow to build stuff on so we just
 #       use pre-built executables
 mode-buildbot-arm-hw-dbg() {
-  unarchive-for-hw-bots \
-      nativeclient-archive2/between_builders/$(NAME_ARM_DOWNLOAD)/build.tgz
+  unarchive-for-hw-bots $(NAME_ARM_DOWNLOAD)  regular
   mode-buildbot-arm-hw "--mode=dbg-host,nacl"
 }
 
 mode-buildbot-arm-hw-opt() {
-  unarchive-for-hw-bots \
-      nativeclient-archive2/between_builders/$(NAME_ARM_DOWNLOAD)/build.tgz
+  unarchive-for-hw-bots $(NAME_ARM_DOWNLOAD)  regular
   mode-buildbot-arm-hw "--mode=opt-host,nacl"
 }
 
 mode-buildbot-arm-hw-try() {
-  unarchive-for-hw-bots \
-      nativeclient-trybot/between_builders/$(NAME_ARM_TRY_DOWNLOAD)/build.tgz
+  unarchive-for-hw-bots $(NAME_ARM_TRY_DOWNLOAD)  try
   mode-buildbot-arm-hw "--mode=opt-host,nacl"
 }
 

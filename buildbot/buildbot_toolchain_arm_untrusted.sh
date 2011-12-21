@@ -11,6 +11,8 @@ set -e
 # This can cause problems with pwd and bash. This line fixes it.
 cd -P .
 
+readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
+
 # Script assumed to be run in native_client/
 if [[ $(pwd) != */native_client ]]; then
   echo 'ERROR: must be run in native_client/ directory!'
@@ -107,6 +109,7 @@ set -x
 RETCODE=0
 
 upload-cros-tarballs(){
+  ## TODO(jasonwkim): convert this to using  UP_DOWN_LOAD script
   ## Runs only if completely successful on real buildbots only
   ## CrOS only cares about 64bit x86-64 as host platform
   ## so we only upload if we are botting for x86-64-newlib
@@ -159,11 +162,8 @@ cd ../..
 
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   echo @@@BUILD_STEP archive_build@@@
-  gsutil=buildbot/gsutil.sh
-  GS_BASE=gs://nativeclient-archive2/toolchain
-  ${gsutil} -h Cache-Control:no-cache cp -a public-read \
-      pnacl-toolchain.tgz \
-      ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_${TOOLCHAIN_LABEL}.tgz
+  ${UP_DOWN_LOAD} UploadArmUntrustedToolchains ${BUILDBOT_GOT_REVISION} \
+    ${TOOLCHAIN_LABEL} pnacl-toolchain.tgz
 fi
 
 if ${BUILD_32BIT_PLUGIN}; then
