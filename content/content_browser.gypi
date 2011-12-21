@@ -107,8 +107,6 @@
     'browser/browser_url_handler.h',
     'browser/browsing_instance.cc',
     'browser/browsing_instance.h',
-    'browser/cancelable_request.cc',
-    'browser/cancelable_request.h',
     'browser/cert_store.cc',
     'browser/cert_store.h',
     'browser/child_process_launcher.cc',

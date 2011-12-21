@@ -345,6 +345,8 @@
         'browser/bug_report_data.h',
         'browser/bug_report_util.cc',
         'browser/bug_report_util.h',
+        'browser/cancelable_request.cc',
+        'browser/cancelable_request.h',
         'browser/certificate_manager_model.cc',
         'browser/certificate_manager_model.h',
         'browser/certificate_viewer.cc',

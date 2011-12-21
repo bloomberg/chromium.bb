@@ -12,4 +12,9 @@ include_rules = [
 
   # ONLY USED BY TESTS
   "+chrome/browser/ui/browser.h",
+
+  # Temporary until the content/browser/cancelable_request.h redirect
+  # header is removed.
+  # TODO(joi): Remove ASAP.
+  "+chrome/browser/cancelable_request.h",
 ]

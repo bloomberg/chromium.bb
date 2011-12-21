@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/cancelable_request.h"
+#include "chrome/browser/cancelable_request.h"
 
 CancelableRequestProvider::CancelableRequestProvider()
     : next_handle_(1) {
