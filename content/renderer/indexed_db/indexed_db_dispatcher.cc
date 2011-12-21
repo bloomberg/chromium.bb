@@ -624,6 +624,7 @@ void IndexedDBDispatcher::OnSuccessCursorPrefetch(
   cursor->SetPrefetchData(keys, primary_keys, values);
 
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
+  DCHECK(callbacks);
   cursor->CachedContinue(callbacks);
   pending_callbacks_.Remove(response_id);
 }
@@ -631,6 +632,7 @@ void IndexedDBDispatcher::OnSuccessCursorPrefetch(
 void IndexedDBDispatcher::OnBlocked(int32 thread_id, int32 response_id) {
   DCHECK_EQ(thread_id, CurrentWorkerId());
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
+  DCHECK(callbacks);
   callbacks->onBlocked();
 }
 
