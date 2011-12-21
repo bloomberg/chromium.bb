@@ -188,43 +188,48 @@ TEST_F(TemplateURLPrepopulateDataTest, GetSearchEngineLogo) {
 
 TEST_F(TemplateURLPrepopulateDataTest, FindPrepopulatedEngine) {
   // Google URLs in different forms.
-  std::string google_search_url =
-      "{google:baseURL}search?{google:RLZ}{google:acceptedSuggestion}"
-      "{google:originalQueryForSuggestion}{google:searchFieldtrialParameter}"
-      "{google:instantFieldTrialGroupParameter}"
-      "sourceid=chrome&ie={inputEncoding}&q={searchTerms}";
-  std::string custom_google_search_url1 =
-      "http://google.com/search?{google:RLZ}{google:acceptedSuggestion}"
-      "{google:originalQueryForSuggestion}{google:searchFieldtrialParameter}"
-      "{google:instantFieldTrialGroupParameter}"
-      "sourceid=chrome&ie={inputEncoding}&q={searchTerms}";
-  std::string custom_google_search_url2 =
-      "http://www.google.ru/search?{google:RLZ}{google:acceptedSuggestion}"
-      "{google:originalQueryForSuggestion}{google:searchFieldtrialParameter}"
-      "{google:instantFieldTrialGroupParameter}"
-      "sourceid=chrome&ie={inputEncoding}&q={searchTerms}";
-  // Google's prepopulated ID is 1:
-  EXPECT_EQ(1, TemplateURLPrepopulateData::FindPrepopulatedEngine(
-      google_search_url)->prepopulate_id());
-  EXPECT_EQ(1, TemplateURLPrepopulateData::FindPrepopulatedEngine(
-      custom_google_search_url1)->prepopulate_id());
-  EXPECT_EQ(1, TemplateURLPrepopulateData::FindPrepopulatedEngine(
-      custom_google_search_url2)->prepopulate_id());
+  const char* kGoogleURLs[] = {
+    // Original with google:baseURL:
+    "{google:baseURL}search?{google:RLZ}{google:acceptedSuggestion}"
+    "{google:originalQueryForSuggestion}{google:searchFieldtrialParameter}"
+    "{google:instantFieldTrialGroupParameter}"
+    "sourceid=chrome&ie={inputEncoding}&q={searchTerms}",
+    // Custom with google.com:
+    "http://google.com/search?{google:RLZ}{google:acceptedSuggestion}"
+    "{google:originalQueryForSuggestion}{google:searchFieldtrialParameter}"
+    "{google:instantFieldTrialGroupParameter}"
+    "sourceid=chrome&ie={inputEncoding}&q={searchTerms}",
+    // Custom with a country TLD:
+    "http://www.google.ru/search?{google:RLZ}{google:acceptedSuggestion}"
+    "{google:originalQueryForSuggestion}{google:searchFieldtrialParameter}"
+    "{google:instantFieldTrialGroupParameter}"
+    "sourceid=chrome&ie={inputEncoding}&q={searchTerms}"
+  };
+  scoped_ptr<TemplateURL> t_url;
+  for (size_t i = 0; i < arraysize(kGoogleURLs); ++i) {
+    t_url.reset(
+        TemplateURLPrepopulateData::FindPrepopulatedEngine(kGoogleURLs[i]));
+    ASSERT_TRUE(t_url.get());
+    // Google's prepopulated ID is 1.
+    EXPECT_EQ(1, t_url->prepopulate_id());
+  }
   // Non-Google URLs.
-  std::string yahoo_search_url =
+  const char* kYahooURLs[] = {
       "http://search.yahoo.com/search?"
-      "ei={inputEncoding}&fr=crmas&p={searchTerms}";
-  std::string custom_yahoo_search_url =
-      "http://search.yahoo.com/search?p={searchTerms}";
-  // Yahoo!'s prepopulated ID is 2:
-  EXPECT_EQ(2, TemplateURLPrepopulateData::FindPrepopulatedEngine(
-      yahoo_search_url)->prepopulate_id());
-  EXPECT_EQ(2, TemplateURLPrepopulateData::FindPrepopulatedEngine(
-      custom_yahoo_search_url)->prepopulate_id());
+      "ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "http://search.yahoo.com/search?p={searchTerms}"
+  };
+  for (size_t i = 0; i < arraysize(kYahooURLs); ++i) {
+    t_url.reset(
+        TemplateURLPrepopulateData::FindPrepopulatedEngine(kYahooURLs[i]));
+    ASSERT_TRUE(t_url.get());
+    // Yahoo!'s prepopulated ID is 2.
+    EXPECT_EQ(2, t_url->prepopulate_id());
+  }
   // Search URL for which no prepopulated search provider exists.
-  std::string example_search_url = "http://example.net/search?q={searchTerms}";
+  std::string kExampleSearchURL = "http://example.net/search?q={searchTerms}";
   EXPECT_FALSE(TemplateURLPrepopulateData::FindPrepopulatedEngine(
-      example_search_url));
+      kExampleSearchURL));
   // Invalid search URL.
   EXPECT_FALSE(TemplateURLPrepopulateData::FindPrepopulatedEngine(
       "invalid:search:url"));
