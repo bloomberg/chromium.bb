@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <nacl/nacl_srpc.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,42 +31,62 @@
  *  and descriptors and checks the return values.
  */
 
-#define kShortMessageBytes    (IMC_USER_BYTES_MAX / 2)
-#define kLongMessageBytes     (4 * IMC_USER_BYTES_MAX)
 #define kIovEntryCount        (4 * IMC_IOVEC_MAX)
-#define kIovChunkSize         (kLongMessageBytes / kIovEntryCount)
 #define kDescCount            (4 * IMC_USER_DESC_MAX)
 
-#define ARRAY_SIZE(a)  (sizeof a / sizeof a[0])
+#define ARRAY_SIZE(a)         (sizeof a / sizeof a[0])
 
-int gTestArray[kLongMessageBytes / sizeof(int)];
+#define MAX(a, b)             (((a) > (b)) ? (a) : (b))
+#define MIN(a, b)             (((a) < (b)) ? (a) : (b))
 
-int gShortBuf[kShortMessageBytes / sizeof(int)];
-int gLongBuf[kLongMessageBytes / sizeof(int)];
+/* The largest message to be tested. */
+size_t g_max_message_size;
+/* The size of a fragment. */
+size_t g_fragment_bytes;
+/* The size of the neighborhood around k * g_fragment_bytes to consider. */
+size_t g_message_delta;
+
+/* An array filled with 0, 1, 2, ... for sending and comparison. */
+int32_t *gTestArray;
+
+/* An array used for recieving messages smaller than a fragment. */
+int32_t *gShortBuf;
+/* The length of the messages smaller than a fragment. */
+size_t g_short_message_length;
+
+/* An array used for recieving messages larger than a fragment. */
+int32_t *gLongBuf;
+/* The length of the messages larger than a fragment. */
+size_t g_long_message_length;
+/*
+ * The size of an IOV chunk for a long message. Long messages will be
+ * uniformly chunked.
+ */
+size_t g_long_message_iov_chunk_size;
 
 
 void SendShortMessage(struct NaClSrpcMessageChannel* channel) {
-  static struct NaClImcMsgHdr header;
-  static struct NaClImcMsgIoVec iovec[1];
-  static int descs[1] = { 1 };
+  struct NaClImcMsgHdr header;
+  struct NaClImcMsgIoVec iovec[1];
+  int descs[1] = { 1 };
 
   /* One iov entry, short enough to pass in one fragment. */
   header.iov_length = ARRAY_SIZE(iovec);
   header.iov = iovec;
   iovec[0].base = (void*) gTestArray;
-  iovec[0].length = kShortMessageBytes;
+  iovec[0].length = g_short_message_length;
   /* One descriptor, just for good measure. */
   header.desc_length = ARRAY_SIZE(descs);
   header.descv = descs;
   /* Check that the entire message was sent. */
-  assert(NaClSrpcMessageChannelSend(channel, &header) == kShortMessageBytes);
+  assert(NaClSrpcMessageChannelSend(channel, &header) ==
+         g_short_message_length);
 }
 
 void ReceiveShortMessage(struct NaClSrpcMessageChannel* channel) {
   struct NaClImcMsgHdr header;
   struct NaClImcMsgIoVec iovec[1];
   int descs[IMC_USER_DESC_MAX];
-  size_t i;
 
   /*
    * One iov entry pointing to a buffer large enough to read the expected
@@ -74,25 +95,25 @@ void ReceiveShortMessage(struct NaClSrpcMessageChannel* channel) {
   header.iov_length = ARRAY_SIZE(iovec);
   header.iov = iovec;
   iovec[0].base = (void*) gShortBuf;
-  iovec[0].length = kShortMessageBytes;
+  iovec[0].length = g_short_message_length;
   /* Accept some descriptors. */
   header.desc_length = ARRAY_SIZE(descs);
   header.descv = descs;
   /* Clear the receive buffer. */
-  memset(gShortBuf, 0, sizeof gShortBuf);
+  memset(gShortBuf, 0, g_short_message_length);
   /* Check that all of it was received. */
-  assert(NaClSrpcMessageChannelReceive(channel, &header) == kShortMessageBytes);
+  assert(NaClSrpcMessageChannelReceive(channel, &header) ==
+         g_short_message_length);
   /* Check that the data bytes are as expected. */
-  for (i = 0; i < header.iov[0].length / sizeof(int); ++i) {
-    assert(gShortBuf[i] == i);
-  }
+  assert(memcmp(header.iov[0].base, gTestArray, header.iov[0].length) == 0);
   /* Check that one descriptor was received and that it had the right value. */
   assert(header.desc_length == 1);
   assert(descs[0] == 1);
   assert(header.flags == 0);
 }
 
-void PeekShortMessage(struct NaClSrpcMessageChannel* channel) {
+void PeekShortMessage(struct NaClSrpcMessageChannel* channel,
+                      int expected_flags) {
   struct NaClImcMsgHdr header;
   struct NaClImcMsgIoVec iovec[1];
   int descs[IMC_USER_DESC_MAX];
@@ -105,45 +126,46 @@ void PeekShortMessage(struct NaClSrpcMessageChannel* channel) {
   header.iov_length = ARRAY_SIZE(iovec);
   header.iov = iovec;
   iovec[0].base = (void*) gShortBuf;
-  iovec[0].length = kShortMessageBytes;
+  iovec[0].length = g_short_message_length;
   /* Accept some descriptors. */
   header.desc_length = ARRAY_SIZE(descs);
   header.descv = descs;
   /* Clear the receive buffer. */
-  memset(gShortBuf, 0, sizeof gShortBuf);
+  memset(gShortBuf, 0, g_short_message_length);
   /* Check that all of it was received. */
-  assert(NaClSrpcMessageChannelPeek(channel, &header) == kShortMessageBytes);
+  assert(NaClSrpcMessageChannelPeek(channel, &header) ==
+         g_short_message_length);
   /* Check that the data bytes are as expected. */
-  for (i = 0; i < header.iov[0].length / sizeof(int); ++i) {
+  for (i = 0; i < header.iov[0].length / sizeof(int32_t); ++i) {
     assert(gShortBuf[i] == i);
   }
   /* Check that one descriptor was received and that it had the right value. */
   assert(header.desc_length == 1);
   assert(descs[0] == 1);
-  assert(header.flags == 0);
+  assert(header.flags == expected_flags);
 }
 
 void SendLongMessage(struct NaClSrpcMessageChannel* channel) {
-  static struct NaClImcMsgHdr header;
-  static struct NaClImcMsgIoVec iovec[1];
-  static int descs[1] = { 1 };
+  struct NaClImcMsgHdr header;
+  struct NaClImcMsgIoVec iovec[1];
+  int descs[1] = { 1 };
 
+  assert(g_long_message_length <= g_max_message_size);
   /* One iov entry, with enough bytes to require fragmentation. */
   header.iov_length = ARRAY_SIZE(iovec);
   header.iov = iovec;
   iovec[0].base = (void*) gTestArray;
-  iovec[0].length = kLongMessageBytes;
+  iovec[0].length = g_long_message_length;
   /* One descriptor. */
   header.desc_length = ARRAY_SIZE(descs);
   header.descv = descs;
-  assert(NaClSrpcMessageChannelSend(channel, &header) == kLongMessageBytes);
+  assert(NaClSrpcMessageChannelSend(channel, &header) == g_long_message_length);
 }
 
 void ReceiveLongMessage(struct NaClSrpcMessageChannel* channel) {
   struct NaClImcMsgHdr header;
   struct NaClImcMsgIoVec iovec[1];
   int descs[IMC_USER_DESC_MAX];
-  size_t i;
 
   /*
    * One iov entry pointing to a buffer large enough to read the expected
@@ -152,18 +174,63 @@ void ReceiveLongMessage(struct NaClSrpcMessageChannel* channel) {
   header.iov_length = ARRAY_SIZE(iovec);
   header.iov = iovec;
   iovec[0].base = gLongBuf;
-  iovec[0].length = kLongMessageBytes;
+  iovec[0].length = g_long_message_length;
   /* Accept some descriptors. */
   header.desc_length = ARRAY_SIZE(descs);
   header.descv = descs;
   /* Clear the receive buffer. */
-  memset(gLongBuf, 0, sizeof gLongBuf);
+  memset(gLongBuf, 0, g_long_message_length);
   /* Check that all of it was received. */
-  assert(NaClSrpcMessageChannelReceive(channel, &header) == kLongMessageBytes);
+  assert(NaClSrpcMessageChannelReceive(channel, &header) ==
+         g_long_message_length);
   /* Check that the data bytes are as expected. */
-  for (i = 0; i < header.iov[0].length / sizeof(int); ++i) {
-    assert(gLongBuf[i] == i);
-  }
+  assert(memcmp(header.iov[0].base, gTestArray, header.iov[0].length) == 0);
+  /* Check that one descriptor was received and that it had the right value. */
+  assert(header.desc_length == 1);
+  assert(descs[0] == 1);
+  assert(header.flags == 0);
+}
+
+void SendMessageOfLength(struct NaClSrpcMessageChannel* channel,
+                         size_t message_bytes) {
+  struct NaClImcMsgHdr header;
+  struct NaClImcMsgIoVec iovec[1];
+  int descs[1] = { 1 };
+
+  /* One iov entry, with the given number of bytes. */
+  header.iov_length = ARRAY_SIZE(iovec);
+  header.iov = iovec;
+  iovec[0].base = (void*) gTestArray;
+  iovec[0].length = message_bytes;
+  /* One descriptor. */
+  header.desc_length = ARRAY_SIZE(descs);
+  header.descv = descs;
+  assert(NaClSrpcMessageChannelSend(channel, &header) == message_bytes);
+}
+
+void ReceiveMessageOfLength(struct NaClSrpcMessageChannel* channel,
+                            size_t message_bytes) {
+  struct NaClImcMsgHdr header;
+  struct NaClImcMsgIoVec iovec[1];
+  int descs[IMC_USER_DESC_MAX];
+
+  /*
+   * One iov entry pointing to a buffer large enough to read the expected
+   * result.
+   */
+  header.iov_length = ARRAY_SIZE(iovec);
+  header.iov = iovec;
+  iovec[0].base = gLongBuf;
+  iovec[0].length = message_bytes;
+  /* Accept some descriptors. */
+  header.desc_length = ARRAY_SIZE(descs);
+  header.descv = descs;
+  /* Clear the receive buffer. */
+  memset(gLongBuf, 0, g_long_message_length);
+  /* Check that all of it was received. */
+  assert(NaClSrpcMessageChannelReceive(channel, &header) == message_bytes);
+  /* Check that the data bytes are as expected. */
+  assert(memcmp(header.iov[0].base, gTestArray, header.iov[0].length) == 0);
   /* Check that one descriptor was received and that it had the right value. */
   assert(header.desc_length == 1);
   assert(descs[0] == 1);
@@ -174,7 +241,6 @@ void ReceiveShorterMessage(struct NaClSrpcMessageChannel* channel) {
   struct NaClImcMsgHdr header;
   struct NaClImcMsgIoVec iovec[1];
   int descs[IMC_USER_DESC_MAX];
-  size_t i;
 
   /*
    * One iov entry pointing to a buffer large enough to read the expected
@@ -183,19 +249,17 @@ void ReceiveShorterMessage(struct NaClSrpcMessageChannel* channel) {
   header.iov_length = ARRAY_SIZE(iovec);
   header.iov = iovec;
   iovec[0].base = gLongBuf;
-  iovec[0].length = kLongMessageBytes / 2;
+  iovec[0].length = g_long_message_length / 2;
   /* Accept some descriptors. */
   header.desc_length = ARRAY_SIZE(descs);
   header.descv = descs;
   /* Clear the receive buffer. */
-  memset(gLongBuf, 0, sizeof gLongBuf);
+  memset(gLongBuf, 0, g_long_message_length);
   /* Check that all of it was received. */
   assert(NaClSrpcMessageChannelReceive(channel, &header) ==
-         kLongMessageBytes / 2);
+         g_long_message_length / 2);
   /* Check that the data bytes are as expected. */
-  for (i = 0; i < header.iov[0].length / sizeof(int); ++i) {
-    assert(gLongBuf[i] == i);
-  }
+  assert(memcmp(header.iov[0].base, gTestArray, header.iov[0].length) == 0);
   /* Check that one descriptor was received and that it had the right value. */
   assert(header.desc_length == 1);
   assert(descs[0] == 1);
@@ -203,58 +267,62 @@ void ReceiveShorterMessage(struct NaClSrpcMessageChannel* channel) {
 }
 
 void SendLotsOfIovs(struct NaClSrpcMessageChannel* channel) {
-  static struct NaClImcMsgHdr header;
-  static struct NaClImcMsgIoVec iovec[kIovEntryCount];
-  static int descs[1] = { 1 };
+  struct NaClImcMsgHdr header;
+  struct NaClImcMsgIoVec iovec[kIovEntryCount];
+  int descs[1] = { 1 };
   size_t i;
 
   /*
-   * kIovEntryCount iov entries, each of kIovChunkSize.
+   * kIovEntryCount iov entries, each of g_long_message_iov_chunk_size.
    * The total data payload fills gTestArray.
    */
   header.iov_length = ARRAY_SIZE(iovec);
   header.iov = iovec;
   for(i = 0; i < kIovEntryCount; ++i) {
-    iovec[i].base = (void*) ((char*) gTestArray + i * kIovChunkSize);
-    iovec[i].length = kIovChunkSize;
+    iovec[i].base =
+        (void*) ((char*) gTestArray + i * g_long_message_iov_chunk_size);
+    iovec[i].length = g_long_message_iov_chunk_size;
   }
   /* And one descriptor. */
   header.desc_length = ARRAY_SIZE(descs);
   header.descv = descs;
   /* Make sure that the entire message was sent. */
-  assert(NaClSrpcMessageChannelSend(channel, &header) == kLongMessageBytes);
+  assert(NaClSrpcMessageChannelSend(channel, &header) == g_long_message_length);
 }
 
 void ReceiveLotsOfIovs(struct NaClSrpcMessageChannel* channel) {
-  static struct NaClImcMsgHdr header;
-  static struct NaClImcMsgIoVec iovec[kIovEntryCount];
-  static int descs[IMC_USER_DESC_MAX];
+  struct NaClImcMsgHdr header;
+  struct NaClImcMsgIoVec iovec[kIovEntryCount];
+  int descs[IMC_USER_DESC_MAX];
+  char *buf_chunk;
+  char *test_chunk;
   size_t i;
-  size_t j;
 
   /*
-   * kIovEntryCount iov entries, each of kIovChunkSize.
+   * kIovEntryCount iov entries, each of g_long_message_iov_chunk_size.
    * The total data payload fills gLongBuf.
    */
   header.iov_length = ARRAY_SIZE(iovec);
   header.iov = iovec;
+  buf_chunk = (char *) gLongBuf;
   for(i = 0; i < kIovEntryCount; ++i) {
-    iovec[i].base = (void*) ((char*) gLongBuf + i * kIovChunkSize);
-    iovec[i].length = kIovChunkSize;
+    iovec[i].base = buf_chunk;
+    iovec[i].length = g_long_message_iov_chunk_size;
+    buf_chunk += iovec[i].length;
   }
   /* Accept some descriptors. */
   header.desc_length = ARRAY_SIZE(descs);
   header.descv = descs;
   /* Clear the receive buffer. */
-  memset(gLongBuf, 0, sizeof gLongBuf);
+  memset(gLongBuf, 0, g_long_message_length);
   /* Check that all of it was received. */
-  assert(NaClSrpcMessageChannelReceive(channel, &header) == kLongMessageBytes);
+  assert(NaClSrpcMessageChannelReceive(channel, &header) ==
+         g_long_message_length);
   /* Check that the data bytes are as expected. */
+  test_chunk = (char *) gTestArray;
   for(i = 0; i < kIovEntryCount; ++i) {
-    for (j = 0; j < header.iov[0].length / sizeof(int); ++j) {
-      size_t index = i * kIovChunkSize / sizeof(int) + j;
-      assert(gLongBuf[index] == gTestArray[index]);
-    }
+    assert(memcmp(header.iov[i].base, test_chunk, header.iov[i].length) == 0);
+    test_chunk += header.iov[i].length;
   }
   /* Check that one descriptor was received and that it had the right value. */
   assert(header.desc_length == 1);
@@ -263,7 +331,7 @@ void ReceiveLotsOfIovs(struct NaClSrpcMessageChannel* channel) {
 }
 
 void SendLotsOfDescs(struct NaClSrpcMessageChannel* channel) {
-  static struct NaClImcMsgHdr header;
+  struct NaClImcMsgHdr header;
 
   /* No iov entries. */
   header.iov_length = 0;
@@ -276,8 +344,8 @@ void SendLotsOfDescs(struct NaClSrpcMessageChannel* channel) {
 }
 
 void ReceiveLotsOfDescs(struct NaClSrpcMessageChannel* channel) {
-  static struct NaClImcMsgHdr header;
-  static int descs[4 * kDescCount];
+  struct NaClImcMsgHdr header;
+  int descs[4 * kDescCount];
   int i;
 
   /* No iov entries. */
@@ -302,8 +370,8 @@ void ReceiveLotsOfDescs(struct NaClSrpcMessageChannel* channel) {
 }
 
 void ReceiveFewerDescs(struct NaClSrpcMessageChannel* channel) {
-  static struct NaClImcMsgHdr header;
-  static int descs[kDescCount / 2];
+  struct NaClImcMsgHdr header;
+  int descs[kDescCount / 2];
   int i;
 
   /* No iov entries. */
@@ -337,22 +405,79 @@ struct MessageList {
 struct MessageList* head = NULL;
 struct MessageList** tail = &head;
 
-int main(int argc, char* argv[]) {
+void InitArrays(size_t large_array_size) {
+  /* Round up to a multiple of sizeof(int32_t). */
+  size_t long_size =
+      (large_array_size + sizeof(int32_t) - 1) & ~(sizeof(int32_t) - 1);
+  size_t short_size =
+      ((large_array_size / 2) + sizeof(int32_t) - 1) & ~(sizeof(int32_t) - 1);
   int i;
-  struct NaClSrpcMessageChannel* channel;
-  for (i = 0; i < ARRAY_SIZE(gTestArray); ++i) {
+  /*
+   * An array filled with monotonically increasing values.  Used to check
+   * payload sanity.
+   */
+  gTestArray = (int32_t *) malloc(long_size);
+  assert(gTestArray != NULL);
+  for (i = 0; i < long_size / sizeof(int32_t); ++i) {
     gTestArray[i] = i;
   }
+  /* Large buffer used for receiving messages. */
+  gLongBuf = (int32_t *) malloc(long_size);
+  assert(gLongBuf != NULL);
+  /* Small buffer used for receiving messages. */
+  gShortBuf = (int32_t *) malloc(short_size);
+  assert(gShortBuf != NULL);
+}
+
+int main(int argc, char* argv[]) {
+  size_t msg_len;
+  size_t fragments;
+  size_t max_fragment_count;
+  struct NaClSrpcMessageChannel* channel;
+
+  if (argc < 4) {
+    fprintf(stderr, "usage: srpc_message max_msg_sz frag_sz delta\n");
+    return 1;
+  }
+  g_max_message_size = atoi(argv[1]);
+  g_fragment_bytes = atoi(argv[2]);
+  g_message_delta = atoi(argv[3]);
+
+  g_short_message_length = g_fragment_bytes / 2;
+  g_long_message_length = 4 * g_fragment_bytes;
+  g_long_message_iov_chunk_size = g_long_message_length / kIovEntryCount;
+
   assert(NaClSrpcModuleInit());
   channel = NaClSrpcMessageChannelNew(1);
   assert(channel != NULL);
+
+  /* Setup */
+  InitArrays(g_max_message_size + g_message_delta + sizeof(int32_t));
+  /*
+   * Test values within g_message_delta of n * g_max_fragment_count on
+   * either side.  Tests for header sizes and boundary cases.
+   * If g_max_message_size == g_message_delta / 2, this will cover all
+   * values from 0 to g_max_message_size.
+   */
+  max_fragment_count = g_max_message_size / g_fragment_bytes;
+  for (fragments = 0; fragments <= max_fragment_count; ++fragments) {
+    size_t lower =
+        MAX((fragments * g_fragment_bytes) - g_message_delta, 0);
+    size_t upper =
+        MIN((fragments * g_fragment_bytes) + g_message_delta,
+            g_max_message_size);
+    for (msg_len = lower; msg_len < upper; ++msg_len) {
+      SendMessageOfLength(channel, msg_len);
+      ReceiveMessageOfLength(channel, msg_len);
+    }
+  }
   /* Test send/receive of message that fits in one message. */
   SendShortMessage(channel);
-  PeekShortMessage(channel);
+  PeekShortMessage(channel, 0);
   ReceiveShortMessage(channel);
   /* Test send/receive of message that requires multiple messages. */
   SendLongMessage(channel);
-  PeekShortMessage(channel);
+  PeekShortMessage(channel, RECVMSG_DATA_TRUNCATED);
   ReceiveLongMessage(channel);
   /* Test that fragmentation sets data truncated flag. */
   SendLongMessage(channel);
@@ -445,7 +570,7 @@ int imc_recvmsg(int desc, struct NaClImcMsgHdr* header, int flags) {
   }
   /*
    * If the caller requested fewer bytes than the message provided, set
-   * a flags.
+   * flags.
    */
   if (offset < elt->buf_len) {
     header->flags = RECVMSG_DATA_TRUNCATED;

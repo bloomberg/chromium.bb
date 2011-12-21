@@ -80,7 +80,7 @@ void NaClSrpcFormatArg(int detail_level,
 /*
  * Maximum sendmsg buffer size.
  */
-extern nacl_abi_size_t kNaClSrpcMaxImcSendmsgSize;
+extern nacl_abi_size_t NaClSrpcMaxImcSendmsgSize;
 
 
 EXTERN_C_END

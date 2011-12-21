@@ -7,15 +7,15 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 
-nacl_abi_size_t kNaClSrpcMaxImcSendmsgSize = 0;
+nacl_abi_size_t NaClSrpcMaxImcSendmsgSize = 0;
 
 int NaClSrpcModuleInit() {
 #ifdef __native_client__
   /* TODO(sehr): add call to sysconf. */
-  kNaClSrpcMaxImcSendmsgSize = 1 << 16;
+  NaClSrpcMaxImcSendmsgSize = 1 << 16;
 #else
   /* TODO(sehr): add call to trusted API. */
-  kNaClSrpcMaxImcSendmsgSize = 1 << 16;
+  NaClSrpcMaxImcSendmsgSize = 1 << 16;
 #endif  /* __native_client__ */
   return NaClSrpcLogInit();
 }
