@@ -33,11 +33,18 @@ namespace {
 static const char kRedirectLoopLearnMoreUrl[] =
     "https://www.google.com/support/chrome/bin/answer.py?answer=95626";
 static const char kWeakDHKeyLearnMoreUrl[] =
-    "http://sites.google.com/a/chromium.org/dev/err_ssl_weak_server_ephemeral_dh_key";
+    "http://sites.google.com/a/chromium.org/dev/"
+    "err_ssl_weak_server_ephemeral_dh_key";
 static const char kESETLearnMoreUrl[] =
     "http://kb.eset.com/esetkb/index?page=content&id=SOLN2588";
 static const char kKasperskyLearnMoreUrl[] =
-    "http://support.kaspersky.com/kav2012/settings/options?print=true&qid=208284701";
+    "http://support.kaspersky.com/kav2012/settings/options"
+    "?print=true&qid=208284701";
+#if defined(OS_CHROMEOS)
+static const char kAppWarningLearnMoreUrl[] =
+    "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html"
+    "?answer=1721911";
+#endif  // defined(OS_CHROMEOS)
 
 enum NAV_SUGGESTIONS {
   SUGGEST_NONE     = 0,
@@ -705,4 +712,14 @@ void LocalizedError::GetAppErrorStrings(
   error_strings->SetString("name", app->name());
   error_strings->SetString("msg",
       l10n_util::GetStringUTF16(IDS_ERRORPAGES_APP_WARNING));
+
+#if defined(OS_CHROMEOS)
+  GURL learn_more_url(kAppWarningLearnMoreUrl);
+  DictionaryValue* suggest_learn_more = new DictionaryValue();
+  suggest_learn_more->SetString("msg",
+                                l10n_util::GetStringUTF16(
+                                    IDS_ERRORPAGES_SUGGESTION_LEARNMORE));
+  suggest_learn_more->SetString("learnMoreUrl", learn_more_url.spec());
+  error_strings->Set("suggestionsLearnMore", suggest_learn_more);
+#endif  // defined(OS_CHROMEOS)
 }
