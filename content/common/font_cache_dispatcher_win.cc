@@ -21,7 +21,7 @@ class FontCache {
     return Singleton<FontCache>::get();
   }
 
-  void PreCacheFont(LOGFONT font, FontCacheDispatcher* dispatcher) {
+  void PreCacheFont(const LOGFONT& font, FontCacheDispatcher* dispatcher) {
     typedef std::map<string16, FontCache::CacheElement> FontNameToElement;
 
     base::AutoLock lock(mutex_);
