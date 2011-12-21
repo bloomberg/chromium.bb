@@ -643,7 +643,7 @@ class SandboxIPCProcess  {
 
   const int lifeline_fd_;
   const int browser_socket_;
-  FontConfigDirect* const font_config_;
+  scoped_ptr<FontConfigDirect> font_config_;
   std::vector<std::string> sandbox_cmd_;
   scoped_ptr<content::WebKitPlatformSupportImpl> webkit_platform_support_;
 };

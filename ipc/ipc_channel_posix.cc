@@ -170,6 +170,8 @@ bool CreateServerUnixDomainSocket(const std::string& pipe_name,
   FilePath path(pipe_name);
   FilePath dir_path = path.DirName();
   if (!file_util::CreateDirectory(dir_path)) {
+    if (HANDLE_EINTR(close(fd)) < 0)
+      PLOG(ERROR) << "close " << pipe_name;
     return false;
   }
 

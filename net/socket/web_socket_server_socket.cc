@@ -731,13 +731,13 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
       }
 
       operator net::DrainableIOBuffer*() {
-        return new net::DrainableIOBuffer(io_buf_, bytes_written_);
+        return new net::DrainableIOBuffer(io_buf_.release(), bytes_written_);
       }
 
       bool is_ok() { return is_ok_; }
 
      private:
-      net::IOBuffer* io_buf_;
+      scoped_refptr<net::IOBuffer> io_buf_;
       size_t bytes_written_;
       bool is_ok_;
     } buffer;

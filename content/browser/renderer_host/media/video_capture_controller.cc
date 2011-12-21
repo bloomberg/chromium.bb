@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
@@ -393,12 +394,12 @@ void VideoCaptureController::DoFrameInfoOnIOThread(
   {
     base::AutoLock lock(lock_);
     for (size_t i = 1; i <= kNoOfDIBS; ++i) {
-      base::SharedMemory* shared_memory = new base::SharedMemory();
+      scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
       if (!shared_memory->CreateAndMapAnonymous(needed_size)) {
         frames_created = false;
         break;
       }
-      SharedDIB* dib = new SharedDIB(shared_memory);
+      SharedDIB* dib = new SharedDIB(shared_memory.release());
       owned_dibs_.insert(std::make_pair(i, dib));
     }
   }

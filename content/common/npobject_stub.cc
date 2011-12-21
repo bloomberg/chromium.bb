@@ -149,6 +149,7 @@ void NPObjectStub::OnInvoke(bool is_default,
       NPObjectMsg_Invoke::WriteReplyParams(reply_msg, result_param,
                                            return_value);
       channel_->Send(reply_msg);
+      delete[] args_var;
       return;
     }
   }
@@ -345,6 +346,7 @@ void NPObjectStub::OnConstruct(const std::vector<NPVariant_Param>& args,
       NPObjectMsg_Invoke::WriteReplyParams(reply_msg, result_param,
                                            return_value);
       channel_->Send(reply_msg);
+      delete[] args_var;
       return;
     }
   }

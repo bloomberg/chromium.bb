@@ -100,8 +100,12 @@ int GetDirectoryWriteTimeInHours(const wchar_t* path) {
   if (INVALID_HANDLE_VALUE == file)
     return -1;
   FILETIME time;
-  if (!::GetFileTime(file, NULL, NULL, &time))
+  if (!::GetFileTime(file, NULL, NULL, &time)) {
+    ::CloseHandle(file);
     return -1;
+  }
+
+  ::CloseHandle(file);
   return FileTimeToHours(time);
 }
 

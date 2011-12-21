@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
@@ -900,7 +901,8 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   HistogramEnumerateOsArch(GetSandboxISA());
   init_time_ = NaClGetTimeOfDayMicroseconds();
 
-  BrowserInterface* browser_interface = new(std::nothrow) BrowserInterface;
+  scoped_ptr<BrowserInterface> browser_interface(
+      new(std::nothrow) BrowserInterface);
   if (browser_interface == NULL) {
     return false;
   }
@@ -919,7 +921,7 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
                  static_cast<const void*>(url_util_)));
 
   bool status = Plugin::Init(
-      browser_interface,
+      browser_interface.release(),
       static_cast<int>(argc),
       // TODO(polina): Can we change the args on our end to be const to
       // avoid these ugly casts?
