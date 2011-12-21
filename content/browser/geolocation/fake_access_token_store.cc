@@ -4,30 +4,42 @@
 
 #include "content/browser/geolocation/fake_access_token_store.h"
 
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/logging.h"
+#include "base/message_loop_proxy.h"
+
+using base::MessageLoopProxy;
 using testing::_;
 using testing::Invoke;
 
-FakeAccessTokenStore::FakeAccessTokenStore() {
-  ON_CALL(*this, DoLoadAccessTokens(_))
+FakeAccessTokenStore::FakeAccessTokenStore()
+    : originating_message_loop_(NULL) {
+  ON_CALL(*this, LoadAccessTokens(_))
       .WillByDefault(Invoke(this,
-                            &FakeAccessTokenStore::DefaultDoLoadAccessTokens));
+                            &FakeAccessTokenStore::DefaultLoadAccessTokens));
   ON_CALL(*this, SaveAccessToken(_, _))
       .WillByDefault(Invoke(this,
                             &FakeAccessTokenStore::DefaultSaveAccessToken));
 }
 
 void FakeAccessTokenStore::NotifyDelegateTokensLoaded() {
-  CHECK(request_ != NULL);
+  DCHECK(originating_message_loop_);
+  if (!originating_message_loop_->BelongsToCurrentThread()) {
+    originating_message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&FakeAccessTokenStore::NotifyDelegateTokensLoaded, this));
+    return;
+  }
+
   net::URLRequestContextGetter* context_getter = NULL;
-  request_->ForwardResult(access_token_set_, context_getter);
-  request_ = NULL;
+  callback_.Run(access_token_set_, context_getter);
 }
 
-void FakeAccessTokenStore::DefaultDoLoadAccessTokens(
-    scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request) {
-  DCHECK(request_ == NULL)
-      << "Fake token store currently only allows one request at a time";
-  request_ = request;
+void FakeAccessTokenStore::DefaultLoadAccessTokens(
+    const LoadAccessTokensCallbackType& callback) {
+  originating_message_loop_ = MessageLoopProxy::current();
+  callback_ = callback;
 }
 
 void FakeAccessTokenStore::DefaultSaveAccessToken(
