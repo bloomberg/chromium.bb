@@ -356,7 +356,7 @@ void ScriptableHandle::SetProperty(const pp::Var& name,
          args,
          exception);
   std::string exception_string("NULL");
-  if (exception != NULL) {
+  if (!exception->is_undefined()) {
     exception_string = exception->DebugString();
   }
   PLUGIN_PRINTF(("ScriptableHandle::SetProperty (exception=%s)\n",
@@ -406,7 +406,7 @@ pp::Var ScriptableHandle::Call(const pp::Var& name,
   PLUGIN_PRINTF(("ScriptableHandle::Call (name=%s, %"NACL_PRIuS
                  " args)\n", name.DebugString().c_str(), args.size()));
   if (plugin_ == NULL) {
-    pp::Var();
+    return pp::Var();
   }
   if (name.is_undefined())  // invoke default
     return pp::Var();
