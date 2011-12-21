@@ -45,7 +45,7 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/public/browser/intents_host.h"
+#include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/bindings_policy.h"
@@ -737,10 +737,10 @@ void ExternalTabContainer::RegisterIntentHandler(TabContents* tab,
 
 void ExternalTabContainer::WebIntentDispatch(
     TabContents* tab,
-    content::IntentsHost* intents_host) {
+    content::WebIntentsDispatcher* intents_dispatcher) {
   // TODO(binji) How do we want to display the WebIntentPicker bubble if there
   // is no BrowserWindow?
-  delete intents_host;
+  delete intents_dispatcher;
 }
 
 void ExternalTabContainer::FindReply(TabContents* tab,

@@ -21,7 +21,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "content/browser/intents/intent_injector.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/public/browser/intents_host.h"
+#include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "webkit/glue/web_intent_service_data.h"
@@ -126,10 +126,10 @@ WebIntentPickerController::WebIntentPickerController(
 WebIntentPickerController::~WebIntentPickerController() {
 }
 
-void WebIntentPickerController::SetIntentsHost(
-    content::IntentsHost* intents_host) {
-  intents_host_.reset(intents_host);
-  intents_host_->RegisterReplyNotification(
+void WebIntentPickerController::SetIntentsDispatcher(
+    content::WebIntentsDispatcher* intents_dispatcher) {
+  intents_dispatcher_.reset(intents_dispatcher);
+  intents_dispatcher_->RegisterReplyNotification(
       base::Bind(&WebIntentPickerController::OnSendReturnMessage,
                  base::Unretained(this)));
 }
@@ -186,19 +186,19 @@ void WebIntentPickerController::OnServiceChosen(size_t index) {
     ClosePicker();
   }
 
-  intents_host_->DispatchIntent(new_tab_contents);
+  intents_dispatcher_->DispatchIntent(new_tab_contents);
 }
 
 void WebIntentPickerController::OnCancelled() {
-  if (!intents_host_.get())
+  if (!intents_dispatcher_.get())
     return;
 
   if (service_tab_) {
-    intents_host_->SendReplyMessage(webkit_glue::WEB_INTENT_SERVICE_TAB_CLOSED,
-                                    string16());
+    intents_dispatcher_->SendReplyMessage(
+        webkit_glue::WEB_INTENT_SERVICE_TAB_CLOSED, string16());
   } else {
-    intents_host_->SendReplyMessage(webkit_glue::WEB_INTENT_PICKER_CANCELLED,
-                                    string16());
+    intents_dispatcher_->SendReplyMessage(
+        webkit_glue::WEB_INTENT_PICKER_CANCELLED, string16());
   }
 
   ClosePicker();

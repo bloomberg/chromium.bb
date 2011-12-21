@@ -18,7 +18,7 @@
 #include "content/browser/download/download_stats.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
-#include "content/browser/intents/intents_host_impl.h"
+#include "content/browser/intents/web_intents_dispatcher_impl.h"
 #include "content/browser/load_from_memory_cache_details.h"
 #include "content/browser/load_notification_details.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -914,8 +914,9 @@ void TabContents::OnRegisterIntentService(const string16& action,
 
 void TabContents::OnWebIntentDispatch(const webkit_glue::WebIntentData& intent,
                                       int intent_id) {
-  IntentsHostImpl* intents_host = new IntentsHostImpl(this, intent, intent_id);
-  delegate_->WebIntentDispatch(this, intents_host);
+  WebIntentsDispatcherImpl* intents_dispatcher =
+      new WebIntentsDispatcherImpl(this, intent, intent_id);
+  delegate_->WebIntentDispatch(this, intents_dispatcher);
 }
 
 void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,

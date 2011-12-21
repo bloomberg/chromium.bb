@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INTENTS_INTENTS_HOST_IMPL_H_
-#define CONTENT_BROWSER_INTENTS_INTENTS_HOST_IMPL_H_
+#ifndef CONTENT_BROWSER_INTENTS_WEB_INTENTS_DISPATCHER_IMPL_H_
+#define CONTENT_BROWSER_INTENTS_WEB_INTENTS_DISPATCHER_IMPL_H_
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/public/browser/intents_host.h"
+#include "content/public/browser/web_intents_dispatcher.h"
 #include "webkit/glue/web_intent_data.h"
 
 class IntentInjector;
@@ -18,26 +18,26 @@ class IntentInjector;
 // service can be delivered. Keeps a copy of triggering intent data to
 // be delivered to the service and serves as a forwarder for sending reply
 // messages back to the client page.
-class IntentsHostImpl : public content::IntentsHost,
-                        public TabContentsObserver {
+class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
+                                 public TabContentsObserver {
  public:
   // |source_tab| is the page which triggered the web intent.
   // |intent| is the intent payload created by that page.
   // |intent_id| is the identifier assigned by WebKit to direct replies back to
   // the correct Javascript callback.
-  IntentsHostImpl(TabContents* source_tab,
-                  const webkit_glue::WebIntentData& intent,
-                  int intent_id);
-  virtual ~IntentsHostImpl();
+  WebIntentsDispatcherImpl(TabContents* source_tab,
+                           const webkit_glue::WebIntentData& intent,
+                           int intent_id);
+  virtual ~WebIntentsDispatcherImpl();
 
-  // IntentsHost implementation
+  // WebIntentsDispatcher implementation.
   virtual const webkit_glue::WebIntentData& GetIntent() OVERRIDE;
   virtual void DispatchIntent(TabContents* destination_tab) OVERRIDE;
   virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
                                 const string16& data) OVERRIDE;
   virtual void RegisterReplyNotification(const base::Closure& closure) OVERRIDE;
 
-  // TabContentsObserver implementation
+  // TabContentsObserver implementation.
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
  private:
@@ -53,7 +53,7 @@ class IntentsHostImpl : public content::IntentsHost,
   // A callback to be notified when SendReplyMessage is called.
   base::Closure reply_notifier_;
 
-  DISALLOW_COPY_AND_ASSIGN(IntentsHostImpl);
+  DISALLOW_COPY_AND_ASSIGN(WebIntentsDispatcherImpl);
 };
 
-#endif  // CONTENT_BROWSER_INTENTS_INTENTS_HOST_IMPL_H_
+#endif  // CONTENT_BROWSER_INTENTS_WEB_INTENTS_DISPATCHER_IMPL_H_

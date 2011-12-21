@@ -13,7 +13,7 @@
 #include "webkit/glue/web_intent_reply_data.h"
 
 namespace content {
-class IntentsHost;
+class WebIntentsDispatcher;
 }
 
 namespace webkit_glue {
@@ -44,11 +44,11 @@ class CONTENT_EXPORT IntentInjector : public TabContentsObserver {
 
   // Sets the intent data to be injected. Call after the user has selected a
   // service to pass the intent data to that service.
-  // |source_tab| is a sender to use to communicate to the source tab. The
-  // caller must ensure that SourceTabContentsDestroyed is called when this
+  // |intents_dispatcher| is a sender to use to communicate to the source tab.
+  // The caller must ensure that SourceTabContentsDestroyed is called when this
   // object becomes unusable.
   // |intent| is the intent data from the source
-  void SetIntent(content::IntentsHost* source_tab,
+  void SetIntent(content::WebIntentsDispatcher* intents_dispatcher,
                  const webkit_glue::WebIntentData& intent);
 
  private:
@@ -63,7 +63,7 @@ class CONTENT_EXPORT IntentInjector : public TabContentsObserver {
   scoped_ptr<webkit_glue::WebIntentData> source_intent_;
 
   // Weak pointer to the message forwarder to the tab invoking the intent.
-  content::IntentsHost* source_tab_;
+  content::WebIntentsDispatcher* intents_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(IntentInjector);
 };

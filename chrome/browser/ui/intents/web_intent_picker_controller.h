@@ -25,7 +25,7 @@ class WebIntentPicker;
 class WebIntentPickerFactory;
 
 namespace content {
-class IntentsHost;
+class WebIntentsDispatcher;
 }
 
 namespace webkit_glue {
@@ -43,9 +43,9 @@ class WebIntentPickerController : public content::NotificationObserver,
   virtual ~WebIntentPickerController();
 
   // Sets the intent data and return pathway handler object for which
-  // this picker was created. The picker takes ownership of |intents_host|.
-  // |intents_host| must not be NULL.
-  void SetIntentsHost(content::IntentsHost* intents_host);
+  // this picker was created. The picker takes ownership of
+  // |intents_dispatcher|. |intents_dispatcher| must not be NULL.
+  void SetIntentsDispatcher(content::WebIntentsDispatcher* intents_dispatcher);
 
   // Shows the web intent picker for |browser|, given the intent
   // |action| and MIME-type |type|.
@@ -120,7 +120,7 @@ class WebIntentPickerController : public content::NotificationObserver,
 
   // The routing object for the renderer which launched the intent.
   // Contains the intent data and a way to signal back to the client page.
-  scoped_ptr<content::IntentsHost> intents_host_;
+  scoped_ptr<content::WebIntentsDispatcher> intents_dispatcher_;
 
   // Weak pointer to the tab servicing the intent. Remembered in order to
   // close it when a reply is sent.

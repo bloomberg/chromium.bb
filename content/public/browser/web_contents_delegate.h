@@ -31,8 +31,8 @@ class ListValue;
 namespace content {
 class BrowserContext;
 class DownloadItem;
-class IntentsHost;
 class JavaScriptDialogCreator;
+class WebIntentsDispatcher;
 struct FileChooserParams;
 }
 
@@ -329,9 +329,11 @@ class CONTENT_EXPORT WebContentsDelegate {
                                      const string16& title,
                                      const string16& disposition);
 
-  // Web Intents notification handler. Takes ownership of the |intents_host|.
-  virtual void WebIntentDispatch(TabContents* tab,
-                                 content::IntentsHost* intents_host);
+  // Web Intents notification handler. Takes ownership of the
+  // |intents_dispatcher|.
+  virtual void WebIntentDispatch(
+      TabContents* tab,
+      content::WebIntentsDispatcher* intents_dispatcher);
 
   // Result of string search in the page. This includes the number of matches
   // found and the selection rect (in screen coordinates) for the string found.

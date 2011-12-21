@@ -2,34 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/intents/intents_host_impl.h"
+#include "content/browser/intents/web_intents_dispatcher_impl.h"
 
 #include "content/browser/intents/intent_injector.h"
 #include "content/common/intents_messages.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
-IntentsHostImpl::IntentsHostImpl(TabContents* source_tab,
-                                 const webkit_glue::WebIntentData& intent,
-                                 int intent_id)
+WebIntentsDispatcherImpl::WebIntentsDispatcherImpl(
+    TabContents* source_tab,
+    const webkit_glue::WebIntentData& intent,
+    int intent_id)
     : TabContentsObserver(source_tab),
       intent_(intent),
       intent_id_(intent_id),
       intent_injector_(NULL) {}
 
-IntentsHostImpl::~IntentsHostImpl() {}
+WebIntentsDispatcherImpl::~WebIntentsDispatcherImpl() {}
 
-const webkit_glue::WebIntentData& IntentsHostImpl::GetIntent() {
+const webkit_glue::WebIntentData& WebIntentsDispatcherImpl::GetIntent() {
   return intent_;
 }
 
-void IntentsHostImpl::DispatchIntent(TabContents* destination_tab) {
+void WebIntentsDispatcherImpl::DispatchIntent(TabContents* destination_tab) {
   DCHECK(!intent_injector_);
   intent_injector_ = new IntentInjector(destination_tab);
   intent_injector_->SetIntent(this, intent_);
 }
 
-void IntentsHostImpl::SendReplyMessage(
+void WebIntentsDispatcherImpl::SendReplyMessage(
     webkit_glue::WebIntentReplyType reply_type,
     const string16& data) {
   intent_injector_ = NULL;
@@ -43,11 +44,12 @@ void IntentsHostImpl::SendReplyMessage(
     reply_notifier_.Run();
 }
 
-void IntentsHostImpl::RegisterReplyNotification(const base::Closure& closure) {
+void WebIntentsDispatcherImpl::RegisterReplyNotification(
+    const base::Closure& closure) {
   reply_notifier_ = closure;
 }
 
-void IntentsHostImpl::TabContentsDestroyed(TabContents* tab) {
+void WebIntentsDispatcherImpl::TabContentsDestroyed(TabContents* tab) {
   if (intent_injector_)
     intent_injector_->SourceTabContentsDestroyed(tab);
 

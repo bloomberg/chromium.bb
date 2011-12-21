@@ -36,7 +36,7 @@ class RenderViewContextMenuViews;
 struct NavigationInfo;
 
 namespace content {
-class IntentsHost;
+class WebIntentsDispatcher;
 }
 
 namespace ui {
@@ -168,8 +168,9 @@ class ExternalTabContainer : public content::WebContentsDelegate,
                                      const string16& href,
                                      const string16& title,
                                      const string16& disposition) OVERRIDE;
-  virtual void WebIntentDispatch(TabContents* tab,
-                                 content::IntentsHost* intents_host) OVERRIDE;
+  virtual void WebIntentDispatch(
+      TabContents* tab,
+      content::WebIntentsDispatcher* intents_dispatcher) OVERRIDE;
   virtual void FindReply(TabContents* tab,
                          int request_id,
                          int number_of_matches,

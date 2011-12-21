@@ -153,11 +153,11 @@
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/intents_host.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
@@ -3926,16 +3926,18 @@ void Browser::RegisterIntentHandler(TabContents* tab,
   RegisterIntentHandlerHelper(tab, action, type, href, title, disposition);
 }
 
-void Browser::WebIntentDispatch(TabContents* tab,
-                                content::IntentsHost* intents_host) {
+void Browser::WebIntentDispatch(
+    TabContents* tab, content::WebIntentsDispatcher* intents_dispatcher) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
     return;
 
   TabContentsWrapper* tcw =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
-  tcw->web_intent_picker_controller()->SetIntentsHost(intents_host);
+  tcw->web_intent_picker_controller()->SetIntentsDispatcher(intents_dispatcher);
   tcw->web_intent_picker_controller()->ShowDialog(
-      this, intents_host->GetIntent().action, intents_host->GetIntent().type);
+      this,
+      intents_dispatcher->GetIntent().action,
+      intents_dispatcher->GetIntent().type);
 }
 
 void Browser::FindReply(TabContents* tab,

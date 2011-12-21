@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_INTENTS_DISPATCHER_H_
-#define CONTENT_RENDERER_INTENTS_DISPATCHER_H_
+#ifndef CONTENT_RENDERER_WEB_INTENTS_HOST_H_
+#define CONTENT_RENDERER_WEB_INTENTS_HOST_H_
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
@@ -22,14 +22,14 @@ namespace webkit_glue {
 struct WebIntentData;
 }
 
-// IntentsDispatcher is a delegate for Web Intents messages. It is the
+// WebIntentsHost is a delegate for Web Intents messages. It is the
 // renderer-side handler for IPC messages delivering the intent payload data
 // and preparing it for access by the service page.
-class IntentsDispatcher : public content::RenderViewObserver {
+class WebIntentsHost : public content::RenderViewObserver {
  public:
   // |render_view| must not be NULL.
-  explicit IntentsDispatcher(RenderViewImpl* render_view);
-  virtual ~IntentsDispatcher();
+  explicit WebIntentsHost(RenderViewImpl* render_view);
+  virtual ~WebIntentsHost();
 
   // Called by the bound intent object to register the result from the service
   // page.
@@ -63,7 +63,7 @@ class IntentsDispatcher : public content::RenderViewObserver {
   // injected into the Javascript context.
   scoped_ptr<BoundDeliveredIntent> delivered_intent_;
 
-  DISALLOW_COPY_AND_ASSIGN(IntentsDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(WebIntentsHost);
 };
 
-#endif  // CONTENT_RENDERER_INTENTS_DISPATCHER_H_
+#endif  // CONTENT_RENDERER_WEB_INTENTS_HOST_H_

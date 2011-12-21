@@ -19,7 +19,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/public/browser/intents_host.h"
+#include "content/public/browser/web_intents_dispatcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/web_intent_service_data.h"
@@ -99,9 +99,9 @@ class WebIntentPickerFactoryMock : public WebIntentPickerFactory {
   WebIntentPicker* picker_;
 };
 
-class IntentsHostMock : public content::IntentsHost {
+class IntentsDispatcherMock : public content::WebIntentsDispatcher {
  public:
-  explicit IntentsHostMock(const webkit_glue::WebIntentData& intent)
+  explicit IntentsDispatcherMock(const webkit_glue::WebIntentData& intent)
       : intent_(intent),
         dispatched_(false) {}
 
@@ -179,8 +179,8 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
   webkit_glue::WebIntentData intent;
   intent.action = ASCIIToUTF16("a");
   intent.type = ASCIIToUTF16("b");
-  IntentsHostMock* host = new IntentsHostMock(intent);
-  controller->SetIntentsHost(host);
+  IntentsDispatcherMock* host = new IntentsDispatcherMock(intent);
+  controller->SetIntentsDispatcher(host);
 
   OnServiceChosen(controller, 1);
   ASSERT_EQ(2, browser()->tab_count());

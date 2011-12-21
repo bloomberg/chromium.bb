@@ -10,14 +10,14 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/intents_messages.h"
-#include "content/public/browser/intents_host.h"
+#include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/content_switches.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
 IntentInjector::IntentInjector(TabContents* tab_contents)
     : TabContentsObserver(tab_contents),
-      source_tab_(NULL) {
+      intents_dispatcher_(NULL) {
   DCHECK(tab_contents);
 }
 
@@ -25,21 +25,22 @@ IntentInjector::~IntentInjector() {
 }
 
 void IntentInjector::TabContentsDestroyed(TabContents* tab) {
-  if (source_tab_) {
-    source_tab_->SendReplyMessage(webkit_glue::WEB_INTENT_SERVICE_TAB_CLOSED,
-                                  string16());
+  if (intents_dispatcher_) {
+    intents_dispatcher_->SendReplyMessage(
+        webkit_glue::WEB_INTENT_SERVICE_TAB_CLOSED, string16());
   }
 
   delete this;
 }
 
 void IntentInjector::SourceTabContentsDestroyed(TabContents* tab) {
-  source_tab_ = NULL;
+  intents_dispatcher_ = NULL;
 }
 
-void IntentInjector::SetIntent(content::IntentsHost* source_tab,
-                               const webkit_glue::WebIntentData& intent) {
-  source_tab_ = source_tab;
+void IntentInjector::SetIntent(
+    content::WebIntentsDispatcher* intents_dispatcher,
+    const webkit_glue::WebIntentData& intent) {
+  intents_dispatcher_ = intents_dispatcher;
   source_intent_.reset(new webkit_glue::WebIntentData(intent));
 
   SendIntent();
@@ -90,7 +91,7 @@ void IntentInjector::OnReply(webkit_glue::WebIntentReplyType reply_type,
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
     NOTREACHED();
 
-  if (source_tab_) {
-    source_tab_->SendReplyMessage(reply_type, data);
+  if (intents_dispatcher_) {
+    intents_dispatcher_->SendReplyMessage(reply_type, data);
   }
 }

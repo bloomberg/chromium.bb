@@ -62,7 +62,6 @@ class DevToolsAgent;
 class ExternalPopupMenu;
 class GeolocationDispatcher;
 class GURL;
-class IntentsDispatcher;
 class JavaBridgeDispatcher;
 class LoadProgressTracker;
 class MediaStreamImpl;
@@ -77,6 +76,7 @@ struct ViewMsg_Navigate_Params;
 struct ViewMsg_StopFinding_Params;
 struct ViewMsg_SwapOut_Params;
 struct WebDropData;
+class WebIntentsHost;
 class WebPluginDelegateProxy;
 class WebUIBindings;
 
@@ -1117,8 +1117,8 @@ class RenderViewImpl : public RenderWidget,
   // The geolocation dispatcher attached to this view, lazily initialized.
   GeolocationDispatcher* geolocation_dispatcher_;
 
-  // The intents dispatcher attached to this view. Not lazily initialized.
-  IntentsDispatcher* intents_dispatcher_;
+  // The intents host attached to this view. Not lazily initialized.
+  WebIntentsHost* intents_host_;
 
   // The speech dispatcher attached to this view, lazily initialized.
   SpeechInputDispatcher* speech_input_dispatcher_;

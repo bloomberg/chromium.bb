@@ -54,7 +54,7 @@
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/idle_user_detector.h"
-#include "content/renderer/intents_dispatcher.h"
+#include "content/renderer/web_intents_host.h"
 #include "content/renderer/java/java_bridge_dispatcher.h"
 #include "content/renderer/load_progress_tracker.h"
 #include "content/renderer/media/audio_message_filter.h"
@@ -391,7 +391,7 @@ RenderViewImpl::RenderViewImpl(
     decrement_shared_popup_at_destruction_ = false;
   }
 
-  intents_dispatcher_ = new IntentsDispatcher(this);
+  intents_host_ = new WebIntentsHost(this);
 
   RenderThread::Get()->AddRoute(routing_id_, this);
   // Take a reference on behalf of the RenderThread.  This will be balanced

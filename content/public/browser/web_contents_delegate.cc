@@ -9,9 +9,9 @@
 #include "base/memory/singleton.h"
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/public/browser/intents_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/url_constants.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/web_intent_data.h"
@@ -304,10 +304,10 @@ void WebContentsDelegate::RegisterIntentHandler(TabContents* tab,
 
 void WebContentsDelegate::WebIntentDispatch(
     TabContents* tab,
-    content::IntentsHost* intents_host) {
-  // The caller passes this method ownership of the |intents_host|, but this
-  // empty implementation will not use it, so we delete it immediately.
-  delete intents_host;
+    content::WebIntentsDispatcher* intents_dispatcher) {
+  // The caller passes this method ownership of the |intents_dispatcher|, but
+  // this empty implementation will not use it, so we delete it immediately.
+  delete intents_dispatcher;
 }
 
 void WebContentsDelegate::FindReply(TabContents* tab,

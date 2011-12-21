@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/intents_dispatcher.h"
+#include "content/renderer/web_intents_host.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -24,12 +24,12 @@ using WebKit::WebString;
 // It is made available to the Javascript runtime in the service page using
 // NPAPI methods as with plugin/Javascript interaction objects and other
 // browser-provided Javascript API objects on |window|.
-class IntentsDispatcher::BoundDeliveredIntent : public CppBoundClass {
+class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
  public:
   BoundDeliveredIntent(const string16& action,
                        const string16& type,
                        const string16& data,
-                       IntentsDispatcher* parent,
+                       WebIntentsHost* parent,
                        WebKit::WebFrame* frame) {
     action_ = WebString(action).utf8();
     type_ = WebString(type).utf8();
@@ -124,18 +124,18 @@ class IntentsDispatcher::BoundDeliveredIntent : public CppBoundClass {
   scoped_ptr<CppVariant> data_val_;
 
   // The dispatcher object, for forwarding postResult/postFailure calls.
-  IntentsDispatcher* parent_;
+  WebIntentsHost* parent_;
 };
 
-IntentsDispatcher::IntentsDispatcher(RenderViewImpl* render_view)
+WebIntentsHost::WebIntentsHost(RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view) {
 }
 
-IntentsDispatcher::~IntentsDispatcher() {}
+WebIntentsHost::~WebIntentsHost() {}
 
-bool IntentsDispatcher::OnMessageReceived(const IPC::Message& message) {
+bool WebIntentsHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(IntentsDispatcher, message)
+  IPC_BEGIN_MESSAGE_MAP(WebIntentsHost, message)
     IPC_MESSAGE_HANDLER(IntentsMsg_SetWebIntentData, OnSetIntent)
     IPC_MESSAGE_HANDLER(IntentsMsg_WebIntentReply, OnWebIntentReply);
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -143,11 +143,11 @@ bool IntentsDispatcher::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void IntentsDispatcher::OnSetIntent(const webkit_glue::WebIntentData& intent) {
+void WebIntentsHost::OnSetIntent(const webkit_glue::WebIntentData& intent) {
   intent_.reset(new webkit_glue::WebIntentData(intent));
 }
 
-void IntentsDispatcher::OnWebIntentReply(
+void WebIntentsHost::OnWebIntentReply(
     webkit_glue::WebIntentReplyType reply_type,
     const WebKit::WebString& data,
     int intent_id) {
@@ -161,12 +161,12 @@ void IntentsDispatcher::OnWebIntentReply(
   }
 }
 
-void IntentsDispatcher::OnResult(const WebKit::WebString& data) {
+void WebIntentsHost::OnResult(const WebKit::WebString& data) {
   Send(new IntentsHostMsg_WebIntentReply(
       routing_id(), webkit_glue::WEB_INTENT_REPLY_SUCCESS, data));
 }
 
-void IntentsDispatcher::OnFailure(const WebKit::WebString& data) {
+void WebIntentsHost::OnFailure(const WebKit::WebString& data) {
   Send(new IntentsHostMsg_WebIntentReply(
       routing_id(), webkit_glue::WEB_INTENT_REPLY_FAILURE, data));
 }
@@ -175,7 +175,7 @@ void IntentsDispatcher::OnFailure(const WebKit::WebString& data) {
 // should persist the data through redirects, and not deliver it to any
 // sub-frames. TODO(gbillock): This policy needs to be fine-tuned and
 // documented.
-void IntentsDispatcher::DidClearWindowObject(WebKit::WebFrame* frame) {
+void WebIntentsHost::DidClearWindowObject(WebKit::WebFrame* frame) {
   if (intent_.get() == NULL || frame->top() != frame)
     return;
 
