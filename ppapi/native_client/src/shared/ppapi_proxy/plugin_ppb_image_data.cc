@@ -136,8 +136,10 @@ const PPB_ImageData* PluginImageData::GetInterface() {
 }
 
 PluginImageData::PluginImageData()
-    : shm_size_(0),
+    : shm_fd_(-1),
+      shm_size_(0),
       addr_(NULL) {
+  memset(&desc_, 0, sizeof(desc_));
 }
 
 PluginImageData::~PluginImageData() {

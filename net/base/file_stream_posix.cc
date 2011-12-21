@@ -184,6 +184,7 @@ class FileStream::AsyncContext {
 FileStream::AsyncContext::AsyncContext()
     : message_loop_(MessageLoopForIO::current()),
       background_io_completed_(true, false),
+      message_loop_task_(NULL),
       is_closing_(false),
       record_uma_(false) {}
 

@@ -63,7 +63,8 @@ FileSystemOperation::FileSystemOperation(
     FileSystemContext* file_system_context)
     : proxy_(proxy),
       dispatcher_(dispatcher),
-      operation_context_(file_system_context, NULL) {
+      operation_context_(file_system_context, NULL),
+      peer_handle_(base::kNullProcessHandle) {
 #ifndef NDEBUG
   pending_operation_ = kOperationNone;
 #endif
@@ -721,10 +722,12 @@ void FileSystemOperation::DidOpenFile(
     bool unused) {
   if (!dispatcher_.get())
     return;
-  if (rv == base::PLATFORM_FILE_OK)
+  if (rv == base::PLATFORM_FILE_OK) {
+    CHECK_NE(base::kNullProcessHandle, peer_handle_);
     dispatcher_->DidOpenFile(file.ReleaseValue(), peer_handle_);
-  else
+  } else {
     dispatcher_->DidFail(rv);
+  }
 }
 
 void FileSystemOperation::OnFileOpenedForWrite(

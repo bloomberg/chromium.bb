@@ -110,7 +110,11 @@ struct QuotaDatabase::QuotaTableImporter {
 };
 
 // Clang requires explicit out-of-line constructors for them.
-QuotaDatabase::QuotaTableEntry::QuotaTableEntry() {}
+QuotaDatabase::QuotaTableEntry::QuotaTableEntry()
+    : type(kStorageTypeUnknown),
+      quota(0) {
+}
+
 QuotaDatabase::QuotaTableEntry::QuotaTableEntry(
     const std::string& host,
     StorageType type,
@@ -120,7 +124,11 @@ QuotaDatabase::QuotaTableEntry::QuotaTableEntry(
       quota(quota) {
 }
 
-QuotaDatabase::OriginInfoTableEntry::OriginInfoTableEntry() {}
+QuotaDatabase::OriginInfoTableEntry::OriginInfoTableEntry()
+    : type(kStorageTypeUnknown),
+      used_count(0) {
+}
+
 QuotaDatabase::OriginInfoTableEntry::OriginInfoTableEntry(
     const GURL& origin,
     StorageType type,

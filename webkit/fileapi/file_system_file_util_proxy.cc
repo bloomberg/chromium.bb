@@ -19,7 +19,7 @@ typedef fileapi::FileSystemFileUtilProxy Proxy;
 
 class EnsureFileExistsHelper {
  public:
-  EnsureFileExistsHelper() : error_(base::PLATFORM_FILE_OK) {}
+  EnsureFileExistsHelper() : error_(base::PLATFORM_FILE_OK), created_(false) {}
 
   void RunWork(const Proxy::EnsureFileExistsTask& task) {
     error_ = task.Run(&created_);

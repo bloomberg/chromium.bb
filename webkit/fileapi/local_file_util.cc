@@ -23,6 +23,9 @@ class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
       : file_enum_(platform_root_path, recursive, file_type),
         platform_root_path_(platform_root_path),
         virtual_root_path_(virtual_root_path) {
+#if defined(OS_WIN)
+    memset(&file_util_info_, 0, sizeof(file_util_info_));
+#endif  // defined(OS_WIN)
   }
 
   ~LocalFileEnumerator() {}
