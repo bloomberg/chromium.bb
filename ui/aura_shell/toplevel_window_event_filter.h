@@ -24,7 +24,7 @@ class AURA_SHELL_EXPORT ToplevelWindowEventFilter : public aura::EventFilter {
   explicit ToplevelWindowEventFilter(aura::Window* owner);
   virtual ~ToplevelWindowEventFilter();
 
-  // Overridden from EventFilter:
+  // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
                                  aura::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(aura::Window* target,

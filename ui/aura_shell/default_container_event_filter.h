@@ -21,7 +21,7 @@ class DefaultContainerEventFilter : public ToplevelWindowEventFilter {
   explicit DefaultContainerEventFilter(aura::Window* owner);
   virtual ~DefaultContainerEventFilter();
 
-  // Overridden from aura::ToplevelWindowEventFilter:
+  // Overridden from ToplevelWindowEventFilter:
   virtual bool PreHandleMouseEvent(aura::Window* target,
                                    aura::MouseEvent* event) OVERRIDE;
 
