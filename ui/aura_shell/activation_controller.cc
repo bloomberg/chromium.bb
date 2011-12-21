@@ -22,6 +22,7 @@ aura::Window* GetContainer(int id) {
 }
 
 // Returns true if children of |window| can be activated.
+// These are the only containers in which windows can receive focus.
 bool SupportsChildActivation(aura::Window* window) {
   return window->id() == kShellWindowId_DefaultContainer ||
          window->id() == kShellWindowId_AlwaysOnTopContainer ||
