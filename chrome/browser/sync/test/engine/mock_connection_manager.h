@@ -95,6 +95,12 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
                                          std::string name,
                                          int64 version,
                                          int64 sync_ts);
+  // Versions of the AddUpdate function that accept specifics.
+  sync_pb::SyncEntity* AddUpdateSpecifics(int id, int parent_id,
+      std::string name,int64 version, int64 sync_ts, bool is_dir,
+      int64 position, const sync_pb::EntitySpecifics& specifics);
+  sync_pb::SyncEntity* SetNigori(int id, int64 version, int64 sync_ts,
+      const sync_pb::EntitySpecifics& specifics);
 
   // Find the last commit sent by the client, and replay it for the next get
   // updates command.  This can be used to simulate the GetUpdates that happens
@@ -238,6 +244,10 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
                                      std::string parentid, std::string name,
                                      int64 version, int64 sync_ts,
                                      bool is_dir);
+  sync_pb::SyncEntity* AddUpdateMeta(std::string id, std::string parentid,
+                                    std::string name, int64 version,
+                                    int64 sync_ts);
+
   // Functions to handle the various types of server request.
   void ProcessGetUpdates(sync_pb::ClientToServerMessage* csm,
                          sync_pb::ClientToServerResponse* response);

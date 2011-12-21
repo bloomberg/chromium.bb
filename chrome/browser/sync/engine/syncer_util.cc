@@ -253,6 +253,53 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
   if (!entry->Get(IS_UNAPPLIED_UPDATE))
     return SUCCESS;  // No work to do.
   syncable::Id id = entry->Get(ID);
+  const sync_pb::EntitySpecifics& specifics = entry->Get(SERVER_SPECIFICS);
+
+  // We intercept updates to the Nigori node, update the Cryptographer and
+  // encrypt any unsynced changes here because there is no Nigori
+  // ChangeProcessor. We never put the nigori node in a state of
+  // conflict_encryption.
+  //
+  // We always update the cryptographer with the server's nigori node,
+  // even if we have a locally modified nigori node (we manually merge nigori
+  // data in the conflict resolver in that case). This handles the case where
+  // two clients both set a different passphrase. The second client to attempt
+  // to commit will go into a state of having pending keys, unioned the set of
+  // encrypted types, and eventually re-encrypt everything with the passphrase
+  // of the first client and commit the set of merged encryption keys. Until the
+  // second client provides the pending passphrase, the cryptographer will
+  // preserve the encryption keys based on the local passphrase, while the
+  // nigori node will preserve the server encryption keys.
+  //
+  // If non-encryption changes are made to the nigori node, they will be
+  // lost as part of conflict resolution. This is intended, as we place a higher
+  // priority on preserving the server's passphrase change to preserving local
+  // non-encryption changes. Next time the non-encryption changes are made to
+  // the nigori node (e.g. on restart), they will commit without issue.
+  if (specifics.HasExtension(sync_pb::nigori)) {
+    const sync_pb::NigoriSpecifics& nigori =
+        specifics.GetExtension(sync_pb::nigori);
+    cryptographer->Update(nigori);
+
+    // Make sure any unsynced changes are properly encrypted as necessary.
+    // We only perform this if the cryptographer is ready. If not, these are
+    // re-encrypted at SetPassphrase time (via ReEncryptEverything). This logic
+    // covers the case where the nigori updated marked new datatypes for
+    // encryption, but didn't change the passphrase.
+    if (cryptographer->is_ready()) {
+      // Note that we don't bother to encrypt any data for which IS_UNSYNCED
+      // == false here. The machine that turned on encryption should know about
+      // and re-encrypt all synced data. It's possible it could get interrupted
+      // during this process, but we currently reencrypt everything at startup
+      // as well, so as soon as a client is restarted with this datatype marked
+      // for encryption, all the data should be updated as necessary.
+
+      // If this fails, something is wrong with the cryptographer, but there's
+      // nothing we can do about it here.
+      syncable::ProcessUnsyncedChangesForEncryption(trans,
+                                                    cryptographer);
+    }
+  }
 
   if (entry->Get(IS_UNSYNCED)) {
     DVLOG(1) << "Skipping update, returning conflict for: " << id
@@ -287,44 +334,6 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
       DVLOG(1) << "Not deleting directory; it's not empty " << *entry;
       return CONFLICT;
     }
-  }
-
-  // We intercept updates to the Nigori node, update the Cryptographer and
-  // encrypt any unsynced changes here because there is no Nigori
-  // ChangeProcessor.
-  const sync_pb::EntitySpecifics& specifics = entry->Get(SERVER_SPECIFICS);
-  if (specifics.HasExtension(sync_pb::nigori)) {
-    const sync_pb::NigoriSpecifics& nigori =
-        specifics.GetExtension(sync_pb::nigori);
-    cryptographer->Update(nigori);
-
-    // Make sure any unsynced changes are properly encrypted as necessary.
-    const syncable::ModelTypeSet encrypted_types =
-        cryptographer->GetEncryptedTypes();
-    if (!VerifyUnsyncedChangesAreEncrypted(trans, encrypted_types) &&
-        (!cryptographer->is_ready() ||
-         !syncable::ProcessUnsyncedChangesForEncryption(trans,
-                                                        cryptographer))) {
-      // We were unable to encrypt the changes, possibly due to a missing
-      // passphrase. We return conflict, even though the conflict is with the
-      // unsynced change and not the nigori node. We ensure foward progress
-      // because the cryptographer already has the pending keys set, so once
-      // the new passphrase is entered we should be able to encrypt properly.
-      // And, because this update will not be applied yet, next time around
-      // we will properly encrypt all appropriate unsynced data.
-      // Note: we return CONFLICT_ENCRYPTION instead of CONFLICT. See
-      // explanation below.
-      DVLOG(1) << "Marking nigori node update as conflicting due to being "
-               << "unable to encrypt all necessary unsynced changes.";
-      return CONFLICT_ENCRYPTION;
-    }
-
-    // Note that we don't bother to encrypt any synced data that now requires
-    // encryption. The machine that turned on encryption should encrypt
-    // everything itself. It's possible it could get interrupted during this
-    // process, but we currently reencrypt everything at startup as well,
-    // so as soon as a client is restarted with this datatype encrypted, all the
-    // data should be updated as necessary.
   }
 
   // Only apply updates that we can decrypt. If we can't decrypt the update, it

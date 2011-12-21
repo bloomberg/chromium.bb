@@ -230,9 +230,50 @@ SyncEntity* MockConnectionManager::AddUpdateBookmark(int id, int parent_id,
                            sync_ts);
 }
 
+SyncEntity* MockConnectionManager::AddUpdateSpecifics(
+    int id, int parent_id, string name, int64 version, int64 sync_ts,
+    bool is_dir, int64 position, const sync_pb::EntitySpecifics& specifics) {
+  SyncEntity* ent = AddUpdateMeta(
+      TestIdFactory::FromNumber(id).GetServerId(),
+      TestIdFactory::FromNumber(parent_id).GetServerId(),
+      name, version, sync_ts);
+  ent->set_position_in_parent(position);
+  ent->mutable_specifics()->CopyFrom(specifics);
+  ent->set_folder(is_dir);
+  return ent;
+}
+
+sync_pb::SyncEntity* MockConnectionManager::SetNigori(
+    int id, int64 version,int64 sync_ts,
+    const sync_pb::EntitySpecifics& specifics) {
+  SyncEntity* ent = GetUpdateResponse()->add_entries();
+  ent->set_id_string(TestIdFactory::FromNumber(id).GetServerId());
+  ent->set_parent_id_string(TestIdFactory::FromNumber(0).GetServerId());
+  ent->set_server_defined_unique_tag(syncable::ModelTypeToRootTag(
+      syncable::NIGORI));
+  ent->set_name("Nigori");
+  ent->set_non_unique_name("Nigori");
+  ent->set_version(version);
+  ent->set_sync_timestamp(sync_ts);
+  ent->set_mtime(sync_ts);
+  ent->set_ctime(1);
+  ent->set_position_in_parent(0);
+  ent->set_folder(false);
+  ent->mutable_specifics()->CopyFrom(specifics);
+  return ent;
+}
+
 SyncEntity* MockConnectionManager::AddUpdateFull(string id, string parent_id,
                                                  string name, int64 version,
                                                  int64 sync_ts, bool is_dir) {
+  SyncEntity* ent = AddUpdateMeta(id, parent_id, name, version, sync_ts);
+  AddDefaultBookmarkData(ent, is_dir);
+  return ent;
+}
+
+SyncEntity* MockConnectionManager::AddUpdateMeta(string id, string parent_id,
+                                                 string name, int64 version,
+                                                 int64 sync_ts) {
   SyncEntity* ent = GetUpdateResponse()->add_entries();
   ent->set_id_string(id);
   ent->set_parent_id_string(parent_id);
@@ -243,8 +284,6 @@ SyncEntity* MockConnectionManager::AddUpdateFull(string id, string parent_id,
   ent->set_mtime(sync_ts);
   ent->set_ctime(1);
   ent->set_position_in_parent(GeneratePositionInParent());
-  AddDefaultBookmarkData(ent, is_dir);
-
   return ent;
 }
 

@@ -12,10 +12,12 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
+#include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/sessions/status_controller.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/util/cryptographer.h"
 
 using std::map;
 using std::set;
@@ -43,6 +45,7 @@ enum SimpleConflictResolutions {
   UNDELETE,                  // Resolved by undeleting local item.
   IGNORE_ENCRYPTION,         // Resolved by ignoring an encryption-only server
                              // change. TODO(zea): implement and use this.
+  NIGORI_MERGE,              // Resolved by merging nigori nodes.
   CONFLICT_RESOLUTION_SIZE,
 };
 
@@ -78,6 +81,7 @@ void ConflictResolver::OverwriteServerChanges(WriteTransaction* trans,
 ConflictResolver::ProcessSimpleConflictResult
 ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
                                         const Id& id,
+                                        const Cryptographer* cryptographer,
                                         StatusController* status) {
   MutableEntry entry(trans, syncable::GET_BY_ID, id);
   // Must be good as the entry won't have been cleaned up.
@@ -124,7 +128,40 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
                                     entry.Get(syncable::SERVER_PARENT_ID);
     bool entry_deleted = entry.Get(syncable::IS_DEL);
 
-    if (!entry_deleted && name_matches && parent_matches) {
+    // We manually merge nigori data.
+    if (entry.GetModelType() == syncable::NIGORI) {
+      // Create a new set of specifics based on the server specifics (which
+      // preserves their encryption keys).
+      sync_pb::EntitySpecifics specifics =
+          entry.Get(syncable::SERVER_SPECIFICS);
+      sync_pb::NigoriSpecifics* nigori =
+          specifics.MutableExtension(sync_pb::nigori);
+      // Store the merged set of encrypted types (cryptographer->Update(..) will
+      // have merged the local types already).
+      cryptographer->UpdateNigoriFromEncryptedTypes(nigori);
+      // The local set of keys is already merged with the server's set within
+      // the cryptographer. If we don't have pending keys we can store the
+      // merged set back immediately. Else we preserve the server keys and will
+      // update the nigori when the user provides the pending passphrase via
+      // SetPassphrase(..).
+      if (cryptographer->is_ready()) {
+        cryptographer->GetKeys(nigori->mutable_encrypted());
+      }
+      // TODO(zea): Find a better way of doing this. As it stands, we have to
+      // update this code whenever we add a new non-cryptographer related field
+      // to the nigori node.
+      if (entry.Get(syncable::SPECIFICS).GetExtension(sync_pb::nigori)
+              .sync_tabs()) {
+        nigori->set_sync_tabs(true);
+      }
+      entry.Put(syncable::SPECIFICS, specifics);
+      DVLOG(1) << "Resovling simple conflict, merging nigori nodes: " << entry;
+      status->increment_num_server_overwrites();
+      OverwriteServerChanges(trans, &entry);
+      UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
+                                NIGORI_MERGE,
+                                CONFLICT_RESOLUTION_SIZE);
+    } else if (!entry_deleted && name_matches && parent_matches) {
       // TODO(zea): We may prefer to choose the local changes over the server
       // if we know the local changes happened before (or vice versa).
       // See http://crbug.com/76596
@@ -193,10 +230,10 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
 }
 
 bool ConflictResolver::ResolveSimpleConflicts(
-    const ScopedDirLookup& dir,
+    syncable::WriteTransaction* trans,
+    const Cryptographer* cryptographer,
     const ConflictProgress& progress,
     sessions::StatusController* status) {
-  WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
   bool forward_progress = false;
   // First iterate over simple conflict items (those that belong to no set).
   set<Id>::const_iterator conflicting_item_it;
@@ -209,7 +246,7 @@ bool ConflictResolver::ResolveSimpleConflicts(
     if (item_set_it == progress.IdToConflictSetEnd() ||
         0 == item_set_it->second) {
       // We have a simple conflict.
-      switch (ProcessSimpleConflict(&trans, id, status)) {
+      switch (ProcessSimpleConflict(trans, id, cryptographer, status)) {
         case NO_SYNC_PROGRESS:
           break;
         case SYNC_PROGRESS:
@@ -221,7 +258,8 @@ bool ConflictResolver::ResolveSimpleConflicts(
   return forward_progress;
 }
 
-bool ConflictResolver::ResolveConflicts(const ScopedDirLookup& dir,
+bool ConflictResolver::ResolveConflicts(syncable::WriteTransaction* trans,
+                                        const Cryptographer* cryptographer,
                                         const ConflictProgress& progress,
                                         sessions::StatusController* status) {
   // TODO(rlarocque): A good amount of code related to the resolution of
@@ -238,7 +276,7 @@ bool ConflictResolver::ResolveConflicts(const ScopedDirLookup& dir,
         << " unprocessed conflict sets.";
   }
 
-  return ResolveSimpleConflicts(dir, progress, status);
+  return ResolveSimpleConflicts(trans, cryptographer, progress, status);
 }
 
 }  // namespace browser_sync
