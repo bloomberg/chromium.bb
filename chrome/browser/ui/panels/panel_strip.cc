@@ -520,8 +520,9 @@ void PanelStrip::BringUpOrDownTitlebars(bool bring_up) {
   // would allow the user to be able to click on it.
   //
   // Currently, no platforms use both delays.
-  DCHECK(task_delay_milliseconds == 0);
-  if (!bring_up)
+  DCHECK(task_delay_milliseconds == 0 ||
+         kMillisecondsBeforeCollapsingFromTitleOnlyState == 0);
+  if (!bring_up && task_delay_milliseconds == 0)
     task_delay_milliseconds = kMillisecondsBeforeCollapsingFromTitleOnlyState;
 
   // OnAutoHidingDesktopBarVisibilityChanged will handle this.
