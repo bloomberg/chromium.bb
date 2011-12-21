@@ -128,13 +128,13 @@ interface PPB_ImageData {
       [in] PP_Bool init_to_zero);
 
   /**
-   * IsImageData() determiens if a given resource is image data.
+   * IsImageData() determines if a given resource is image data.
    *
    * @param[in] image_data A <code>PP_Resource</code> corresponding to image
    * data.
    *
    * @return A <code>PP_Bool</code> with <code>PP_TRUE</code> if the given
-   * resrouce is an image data or <code>PP_FALSE</code> if the resource is
+   * resource is an image data or <code>PP_FALSE</code> if the resource is
    * invalid or some type other than image data.
    */
   PP_Bool IsImageData(

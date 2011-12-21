@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_image_data.idl modified Mon Aug 29 10:11:34 2011. */
+/* From ppb_image_data.idl modified Tue Nov  8 15:46:54 2011. */
 
 #ifndef PPAPI_C_PPB_IMAGE_DATA_H_
 #define PPAPI_C_PPB_IMAGE_DATA_H_
@@ -152,13 +152,13 @@ struct PPB_ImageData {
                         const struct PP_Size* size,
                         PP_Bool init_to_zero);
   /**
-   * IsImageData() determiens if a given resource is image data.
+   * IsImageData() determines if a given resource is image data.
    *
    * @param[in] image_data A <code>PP_Resource</code> corresponding to image
    * data.
    *
    * @return A <code>PP_Bool</code> with <code>PP_TRUE</code> if the given
-   * resrouce is an image data or <code>PP_FALSE</code> if the resource is
+   * resource is an image data or <code>PP_FALSE</code> if the resource is
    * invalid or some type other than image data.
    */
   PP_Bool (*IsImageData)(PP_Resource image_data);
