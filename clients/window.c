@@ -1225,9 +1225,9 @@ window_set_focus_item(struct window *window, struct item *focus)
 }
 
 static void
-window_handle_motion(void *data, struct wl_input_device *input_device,
-		     uint32_t time,
-		     int32_t x, int32_t y, int32_t sx, int32_t sy)
+input_handle_motion(void *data, struct wl_input_device *input_device,
+		    uint32_t time,
+		    int32_t x, int32_t y, int32_t sx, int32_t sy)
 {
 	struct input *input = data;
 	struct window *window = input->pointer_focus;
@@ -1254,9 +1254,9 @@ window_handle_motion(void *data, struct wl_input_device *input_device,
 }
 
 static void
-window_handle_button(void *data,
-		     struct wl_input_device *input_device,
-		     uint32_t time, uint32_t button, uint32_t state)
+input_handle_button(void *data,
+		    struct wl_input_device *input_device,
+		    uint32_t time, uint32_t button, uint32_t state)
 {
 	struct input *input = data;
 	struct window *window = input->pointer_focus;
@@ -1317,8 +1317,8 @@ window_handle_button(void *data,
 }
 
 static void
-window_handle_key(void *data, struct wl_input_device *input_device,
-		  uint32_t time, uint32_t key, uint32_t state)
+input_handle_key(void *data, struct wl_input_device *input_device,
+		 uint32_t time, uint32_t key, uint32_t state)
 {
 	struct input *input = data;
 	struct window *window = input->keyboard_focus;
@@ -1347,7 +1347,7 @@ window_handle_key(void *data, struct wl_input_device *input_device,
 }
 
 static void
-remove_pointer_focus(struct input *input, uint32_t time)
+input_remove_pointer_focus(struct input *input, uint32_t time)
 {
 	struct window *window = input->pointer_focus;
 
@@ -1363,10 +1363,10 @@ remove_pointer_focus(struct input *input, uint32_t time)
 }
 
 static void
-window_handle_pointer_focus(void *data,
-			    struct wl_input_device *input_device,
-			    uint32_t time, struct wl_surface *surface,
-			    int32_t x, int32_t y, int32_t sx, int32_t sy)
+input_handle_pointer_focus(void *data,
+			   struct wl_input_device *input_device,
+			   uint32_t time, struct wl_surface *surface,
+			   int32_t x, int32_t y, int32_t sx, int32_t sy)
 {
 	struct input *input = data;
 	struct window *window;
@@ -1375,7 +1375,7 @@ window_handle_pointer_focus(void *data,
 
 	window = input->pointer_focus;
 	if (window && window->surface != surface)
-		remove_pointer_focus(input, time);
+		input_remove_pointer_focus(input, time);
 
 	if (surface) {
 		input->pointer_focus = wl_surface_get_user_data(surface);
@@ -1401,7 +1401,7 @@ window_handle_pointer_focus(void *data,
 }
 
 static void
-remove_keyboard_focus(struct input *input)
+input_remove_keyboard_focus(struct input *input)
 {
 	struct window *window = input->keyboard_focus;
 
@@ -1417,18 +1417,18 @@ remove_keyboard_focus(struct input *input)
 }
 
 static void
-window_handle_keyboard_focus(void *data,
-			     struct wl_input_device *input_device,
-			     uint32_t time,
-			     struct wl_surface *surface,
-			     struct wl_array *keys)
+input_handle_keyboard_focus(void *data,
+			    struct wl_input_device *input_device,
+			    uint32_t time,
+			    struct wl_surface *surface,
+			    struct wl_array *keys)
 {
 	struct input *input = data;
 	struct window *window;
 	struct display *d = input->display;
 	uint32_t *k, *end;
 
-	remove_keyboard_focus(input);
+	input_remove_keyboard_focus(input);
 
 	if (surface)
 		input->keyboard_focus = wl_surface_get_user_data(surface);
@@ -1449,11 +1449,11 @@ window_handle_keyboard_focus(void *data,
 }
 
 static const struct wl_input_device_listener input_device_listener = {
-	window_handle_motion,
-	window_handle_button,
-	window_handle_key,
-	window_handle_pointer_focus,
-	window_handle_keyboard_focus,
+	input_handle_motion,
+	input_handle_button,
+	input_handle_key,
+	input_handle_pointer_focus,
+	input_handle_keyboard_focus,
 };
 
 void
@@ -2352,8 +2352,8 @@ display_add_input(struct display *d, uint32_t id)
 static void
 input_destroy(struct input *input)
 {
-	remove_keyboard_focus(input);
-	remove_pointer_focus(input, 0);
+	input_remove_keyboard_focus(input);
+	input_remove_pointer_focus(input, 0);
 
 	if (input->drag_offer)
 		data_offer_destroy(input->drag_offer);
