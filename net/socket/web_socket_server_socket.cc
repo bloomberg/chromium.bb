@@ -17,13 +17,15 @@
 #endif
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/task.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -120,7 +122,7 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
             handshake_buf_, kHandshakeLimitBytes)),
         is_transport_read_pending_(false),
         is_transport_write_pending_(false),
-        method_factory_(this) {
+        weak_factory_(this) {
     DCHECK(transport_socket);
     DCHECK(delegate);
   }
@@ -315,17 +317,12 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
   }
 
   // WebSocketServerSocket implementation.
-  virtual int Accept(net::OldCompletionCallback* callback) {
+  virtual int Accept(const net::CompletionCallback& callback) OVERRIDE {
     if (phase_ != PHASE_NYMPH)
       return net::ERR_UNEXPECTED;
     phase_ = PHASE_HANDSHAKE;
-    net::CompletionCallback cb;
-    if (callback) {
-      cb = base::Bind(&net::OldCompletionCallbackAdapter, callback);
-    }
     pending_reqs_.push_front(PendingReq(
-        PendingReq::TYPE_READ_METADATA, fill_handshake_buf_.get(),
-        cb));
+        PendingReq::TYPE_READ_METADATA, fill_handshake_buf_.get(), callback));
     ConsiderTransportRead();
     return net::ERR_IO_PENDING;
   }
@@ -360,9 +357,9 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
       // PostTask rather than direct call in order to:
       // (1) guarantee calling callback after returning from Read();
       // (2) avoid potential stack overflow;
-      MessageLoop::current()->PostTask(FROM_HERE,
-          method_factory_.NewRunnableMethod(
-              &WebSocketServerSocketImpl::OnRead, rv));
+      MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(&WebSocketServerSocketImpl::OnRead,
+                                weak_factory_.GetWeakPtr(), rv));
     }
   }
 
@@ -388,9 +385,9 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
       // PostTask rather than direct call in order to:
       // (1) guarantee calling callback after returning from Read();
       // (2) avoid potential stack overflow;
-      MessageLoop::current()->PostTask(FROM_HERE,
-          method_factory_.NewRunnableMethod(
-              &WebSocketServerSocketImpl::OnWrite, rv));
+      MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(&WebSocketServerSocketImpl::OnWrite,
+                                weak_factory_.GetWeakPtr(), rv));
     }
   }
 
@@ -877,14 +874,14 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
   scoped_refptr<net::DrainableIOBuffer> fill_handshake_buf_;
   scoped_refptr<net::DrainableIOBuffer> process_handshake_buf_;
 
-  // Pending io requests we need to complete.
+  // Pending IO requests we need to complete.
   std::deque<PendingReq> pending_reqs_;
 
   // Whether transport requests are pending.
   bool is_transport_read_pending_;
   bool is_transport_write_pending_;
 
-  ScopedRunnableMethodFactory<WebSocketServerSocketImpl> method_factory_;
+  base::WeakPtrFactory<WebSocketServerSocketImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketServerSocketImpl);
 };

@@ -7,7 +7,8 @@
 #include <stdlib.h>
 #include <algorithm>
 
-#include "base/callback_old.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -221,8 +222,6 @@ class ReadWriteTracker {
       net::WebSocketServerSocket* ws, int bytes_to_read, int bytes_to_write)
       : ws_(ws),
         buf_size_(1 << 14),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            accept_callback_(this, &ReadWriteTracker::OnAccept)),
         read_buf_(new net::IOBuffer(buf_size_)),
         write_buf_(new net::IOBuffer(buf_size_)),
         bytes_remaining_to_read_(bytes_to_read),
@@ -230,7 +229,8 @@ class ReadWriteTracker {
         read_initiated_(false),
         write_initiated_(false),
         got_final_zero_(false) {
-    int rv = ws_->Accept(&accept_callback_);
+    int rv = ws_->Accept(
+        base::Bind(&ReadWriteTracker::OnAccept, base::Unretained(this)));
     if (rv != net::ERR_IO_PENDING)
       OnAccept(rv);
   }
@@ -306,7 +306,6 @@ class ReadWriteTracker {
  private:
   net::WebSocketServerSocket* const ws_;
   int const buf_size_;
-  net::OldCompletionCallbackImpl<ReadWriteTracker> accept_callback_;
   scoped_refptr<net::IOBuffer> read_buf_;
   scoped_refptr<net::IOBuffer> write_buf_;
   int bytes_remaining_to_read_;
@@ -327,10 +326,6 @@ class WebSocketServerSocketTest : public testing::Test {
 
   virtual void SetUp() {
     count_ = 0;
-    accept_callback_[0].reset(NewCallback<WebSocketServerSocketTest, int>(
-        this, &WebSocketServerSocketTest::OnAccept0));
-    accept_callback_[1].reset(NewCallback<WebSocketServerSocketTest, int>(
-        this, &WebSocketServerSocketTest::OnAccept1));
   }
 
   virtual void TearDown() {
@@ -350,7 +345,6 @@ class WebSocketServerSocketTest : public testing::Test {
   }
 
   int count_;
-  scoped_ptr<net::OldCompletionCallback> accept_callback_[2];
 };
 
 TEST_F(WebSocketServerSocketTest, Handshake) {
@@ -385,7 +379,8 @@ TEST_F(WebSocketServerSocketTest, Handshake) {
     ASSERT_TRUE(ws != NULL);
     kill_list.push_back(ws);
 
-    int rv = ws->Accept(accept_callback_[0].get());
+    int rv = ws->Accept(base::Bind(&WebSocketServerSocketTest::OnAccept0,
+                                   base::Unretained(this)));
     if (rv != ERR_IO_PENDING)
       OnAccept0(rv);
   }
@@ -440,7 +435,8 @@ TEST_F(WebSocketServerSocketTest, BadCred) {
     ASSERT_TRUE(ws != NULL);
     kill_list.push_back(ws);
 
-    int rv = ws->Accept(accept_callback_[1].get());
+    int rv = ws->Accept(base::Bind(&WebSocketServerSocketTest::OnAccept1,
+                                   base::Unretained(this)));
     if (rv != ERR_IO_PENDING)
       OnAccept1(rv);
   }
@@ -497,7 +493,8 @@ TEST_F(WebSocketServerSocketTest, ReorderedHandshake) {
     ASSERT_TRUE(ws != NULL);
     kill_list.push_back(ws);
 
-    int rv = ws->Accept(accept_callback_[0].get());
+    int rv = ws->Accept(base::Bind(&WebSocketServerSocketTest::OnAccept0,
+                                   base::Unretained(this)));
     if (rv != ERR_IO_PENDING)
       OnAccept0(rv);
   }

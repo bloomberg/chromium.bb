@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/v1_host_channel_authenticator.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/secure_util.h"
 #include "net/base/io_buffer.h"
@@ -23,9 +25,7 @@ V1HostChannelAuthenticator::V1HostChannelAuthenticator(
     : local_cert_(local_cert),
       local_private_key_(local_private_key),
       shared_secret_(shared_secret),
-      socket_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(connect_callback_(
-          this, &V1HostChannelAuthenticator::OnConnected)) {
+      socket_(NULL) {
 }
 
 V1HostChannelAuthenticator::~V1HostChannelAuthenticator() {
@@ -51,7 +51,9 @@ void V1HostChannelAuthenticator::SecureAndAuthenticate(
   socket_.reset(net::CreateSSLServerSocket(
       channel_socket.release(), cert, local_private_key_, ssl_config));
 
-  int result = socket_->Handshake(&connect_callback_);
+  int result = socket_->Handshake(
+      base::Bind(&V1HostChannelAuthenticator::OnConnected,
+                 base::Unretained(this)));
   if (result == net::ERR_IO_PENDING) {
     return;
   }

@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "net/base/completion_callback.h"
 
 namespace crypto {
 class RSAPrivateKey;
@@ -52,9 +51,6 @@ class V1HostChannelAuthenticator : public ChannelAuthenticator,
   DoneCallback done_callback_;
 
   scoped_refptr<net::GrowableIOBuffer> auth_read_buf_;
-
-  net::OldCompletionCallbackImpl<V1HostChannelAuthenticator>
-      connect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(V1HostChannelAuthenticator);
 };
