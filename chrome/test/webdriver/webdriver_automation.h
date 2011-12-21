@@ -41,7 +41,7 @@ class Point;
 // Creates and controls the Chrome instance.
 // This class should be created and accessed on a single thread.
 // Note: All member functions are void because they are invoked
-// by posting a task from NewRunnableMethod.
+// by posting a task.
 class Automation {
  public:
   struct BrowserOptions {
