@@ -85,6 +85,8 @@
       '-autofill.AutofillTest.testFillProfileCrazyCharacters',
       # crbug.com/99475
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
+      # crbug.com/108269
+      '-find_in_page.FindMatchTests.testSearchWithinSpecialURL',
       # crbug.com/99506
       '-notifications.NotificationsTest.testSpecialURLNotification',
       # crbug.com/71715
