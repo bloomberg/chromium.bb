@@ -4,10 +4,12 @@
 
 #include "chrome/browser/chromeos/legacy_window_manager/initial_browser_window_observer.h"
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
 namespace {
@@ -16,6 +18,11 @@ namespace {
 // command line: http://goo.gl/uLwIL
 const char kInitialWindowFile[] =
     "/var/run/state/windowmanager/initial-chrome-window-mapped";
+
+void WriteInitialWindowFile() {
+  if (file_util::WriteFile(FilePath(kInitialWindowFile), "", 0) == -1)
+    LOG(ERROR) << "Failed to touch " << kInitialWindowFile;
+}
 
 }  // namespace
 
@@ -32,7 +39,9 @@ void InitialBrowserWindowObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   registrar_.RemoveAll();
-  file_util::WriteFile(FilePath(kInitialWindowFile), "", 0);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&WriteInitialWindowFile));
 }
 
 }  // namespace chromeos
