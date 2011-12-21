@@ -21,7 +21,6 @@ const char* kDefaultMountOptions[] = {
   "nodev",
   "noexec",
   "nosuid",
-  "sync",
 };
 
 const char* kDefaultUnmountOptions[] = {
