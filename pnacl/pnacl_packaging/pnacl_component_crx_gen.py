@@ -285,11 +285,7 @@ def GeneratePrivateKey():
          PnaclDirs.OutputDir())
 
 
-def BuildArchCRX(version_quad,
-                 arch,
-                 lib_overrides,
-                 unpacked_only,
-                 prev_key=None):
+def BuildArchCRX(version_quad, arch, lib_overrides, options):
   """ Build an architecture specific version for the chrome component
   install (an actual CRX, vs a zip file).
   """
@@ -308,13 +304,8 @@ def BuildArchCRX(version_quad,
   # at least there are no conflicting overlaps.
   # E.g., libgcc_eh, libgcc are still not quite the same and overlap.
   for lib_mode in LIBMODES:
-    # Skip ARM glibc for now (no binaries).
-    if lib_mode == 'glibc' and arch == 'arm':
-      print 'Skip copying glibc libs for arch ARM'
-      continue
-    # PNaCl GlibC tarball is only available for X86-64 linux
-    if lib_mode == 'glibc' and (PLATFORM != 'linux' or ARCH != 'x86-64'):
-      print 'Skip copying glibc libs for OS %s' % PLATFORM
+    if lib_mode == 'glibc' and options.skip_glibc:
+      print 'Skip copying glibc libs for arch %s' % arch
       continue
 
     if lib_mode == 'newlib':
@@ -331,14 +322,14 @@ def BuildArchCRX(version_quad,
 
   # Skip the CRX generation if we are only building the unpacked version
   # for commandline testing.
-  if unpacked_only:
+  if options.unpacked_only:
     return
 
   # Generate manifest one level up (to have layout look like the "all" package).
   PnaclPackaging.GenerateManifest(J(parent_dir, 'manifest.json'),
                                   version_quad,
                                   arch)
-  CRXGen.RunCRXGen(parent_dir, prev_key)
+  CRXGen.RunCRXGen(parent_dir, options.prev_priv_key)
 
 
 def LayoutAllDir():
@@ -386,7 +377,7 @@ def BuildUnpacked(version_quad):
                                   PnaclPackaging.WEBSTORE_PUBLIC_KEY)
 
 
-def BuildAll(version_quad, lib_overrides, unpacked_only, prev_key=None):
+def BuildAll(version_quad, lib_overrides, options):
   """ Package the pnacl components 3 ways.
   1) Arch-specific CRXes that can be queried by Omaha.
   2) A zip containing all arch files for the Chrome Webstore.
@@ -394,9 +385,9 @@ def BuildAll(version_quad, lib_overrides, unpacked_only, prev_key=None):
   """
   StepBanner("BUILD_ALL", "Packaging for version: %s" % version_quad)
   for arch in ARCHES:
-    BuildArchCRX(version_quad, arch, lib_overrides, unpacked_only, prev_key)
+    BuildArchCRX(version_quad, arch, lib_overrides, options)
   LayoutAllDir()
-  if not unpacked_only:
+  if not options.unpacked_only:
     BuildCWSZip(version_quad)
   BuildUnpacked(version_quad)
 
@@ -410,12 +401,15 @@ def Main():
                     action='store_true', default=False,
                     help='Clean out destination directory first.')
   parser.add_option('-u', '--unpacked_only', action='store_true',
-                    dest='unpacked_only',
-                    default=False,
+                    dest='unpacked_only', default=False,
                     help='Only generate the unpacked version')
+  parser.add_option('-s', '--skip_glibc', dest='skip_glibc',
+                    default=False, action='store_true',
+                    help='Skip copying the glibc libraries.')
   parser.add_option('-d', '--dest', dest='dest',
                     help='The destination root for laying out the extension')
-  parser.add_option('-p', '--priv_key', dest='prev_priv_key',
+  parser.add_option('-p', '--priv_key',
+                    dest='prev_priv_key', default=None,
                     help='Specify the old private key')
   parser.add_option('-L', '--lib_override',
                     dest='lib_overrides', action='append', default=[],
@@ -462,10 +456,7 @@ def Main():
     print 'Invalid version format: %s\n' % version_quad
     return 1
 
-  BuildAll(version_quad,
-           lib_overrides,
-           options.unpacked_only,
-           options.prev_priv_key)
+  BuildAll(version_quad, lib_overrides, options)
   return 0
 
 

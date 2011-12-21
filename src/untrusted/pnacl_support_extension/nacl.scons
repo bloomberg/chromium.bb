@@ -42,6 +42,11 @@ if arch == 'x86-64':
   # Add dependency.
   pnacl_crx_inputs.append(env.File('${LIB_DIR}/libpnacl_irt_shim.a'))
 
+# For now, don't copy glibc files when not testing with --nacl_glibc.
+# The PNaCl glibc tarball may not be available.
+may_skip_glibc = ''
+if not env.Bit('nacl_glibc'):
+  may_skip_glibc = '--skip_glibc '
 
 generated_crx = env.Command(
     # Output (a directory with a bunch of files, like manifest.json)
@@ -56,5 +61,6 @@ generated_crx = env.Command(
      lib_override +
      # Build only the unpacked extension, not zipped up files, etc.
      '-u ' +
+     may_skip_glibc +
      # Dummy version number that's probably newer than anything.
      '9999.9.9.9'))
