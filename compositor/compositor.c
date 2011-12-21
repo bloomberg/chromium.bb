@@ -1437,6 +1437,18 @@ notify_keyboard_focus(struct wl_input_device *device,
 	}
 }
 
+/**
+ * notify_touch - emulates button touches and notifies surfaces accordingly.
+ *
+ * It assumes always the correct cycle sequence until it gets here: touch_down
+ * → touch_update → ... → touch_update → touch_end. The driver is responsible
+ * for sending along such order.
+ */
+WL_EXPORT void
+notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
+             int x, int y, int touch_type)
+{
+}
 
 static void
 input_device_attach(struct wl_client *client,

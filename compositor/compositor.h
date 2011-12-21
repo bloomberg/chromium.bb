@@ -293,6 +293,10 @@ notify_keyboard_focus(struct wl_input_device *device,
 		      struct wl_array *keys);
 
 void
+notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
+	     int x, int y, int touch_type);
+
+void
 wlsc_output_finish_frame(struct wlsc_output *output, int msecs);
 void
 wlsc_output_damage(struct wlsc_output *output);

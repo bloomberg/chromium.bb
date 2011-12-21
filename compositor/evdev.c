@@ -47,17 +47,22 @@ struct evdev_input_device {
 	struct {
 		int min_x, max_x, min_y, max_y;
 		int old_x, old_y, reset_x, reset_y;
+		int slot_mt;
 	} abs;
-	int is_touchpad;
+	int is_touchpad, is_mt;
 };
 
 /* event type flags */
-#define EVDEV_ABSOLUTE_MOTION	(1 << 0)
-#define EVDEV_RELATIVE_MOTION	(1 << 1)
+#define EVDEV_ABSOLUTE_MOTION		(1 << 0)
+#define EVDEV_ABSOLUTE_MT_DOWN		(1 << 1)
+#define EVDEV_ABSOLUTE_MT_MOTION	(1 << 2)
+#define EVDEV_ABSOLUTE_MT_UP		(1 << 3)
+#define EVDEV_RELATIVE_MOTION		(1 << 4)
 
 struct evdev_motion_accumulator {
 	int x, y;
 	int dx, dy;
+	int mt_x, mt_y;
 	int type; /* event type flags */
 };
 
@@ -83,8 +88,14 @@ evdev_process_key(struct evdev_input_device *device,
 			device->abs.reset_y = 1;
 		}
 		break;
-
 	case BTN_TOUCH:
+		/* Multitouch touchscreen devices might not send individually
+		 * button events each time a new finger is down. So we don't
+		 * send notification for such devices and we solve the button
+		 * case emulating on compositor side. */
+		if (device->is_mt)
+			break;
+
 		/* Treat BTN_TOUCH from devices that only have BTN_TOUCH as
 		 * BTN_LEFT */
 		e->code = BTN_LEFT;
@@ -108,6 +119,39 @@ evdev_process_key(struct evdev_input_device *device,
 	}
 }
 
+static void
+evdev_process_touch(struct evdev_input_device *device,
+		    struct input_event *e, int time,
+		    struct evdev_motion_accumulator *accum)
+{
+	const int screen_width = device->output->current->width;
+	const int screen_height = device->output->current->height;
+
+	switch (e->code) {
+	case ABS_MT_SLOT:
+		device->abs.slot_mt = e->value;
+		break;
+	case ABS_MT_TRACKING_ID:
+		if (e->value >= 0)
+			accum->type |= EVDEV_ABSOLUTE_MT_DOWN;
+		else
+			accum->type |= EVDEV_ABSOLUTE_MT_UP;
+		break;
+	case ABS_MT_POSITION_X:
+		accum->mt_x = (e->value - device->abs.min_x) * screen_width /
+			(device->abs.max_x - device->abs.min_x) +
+			device->output->x;
+		accum->type |= EVDEV_ABSOLUTE_MT_MOTION;
+		break;
+	case ABS_MT_POSITION_Y:
+		accum->mt_y = (e->value - device->abs.min_y) * screen_height /
+			(device->abs.max_y - device->abs.min_y) +
+			device->output->y;
+		accum->type |= EVDEV_ABSOLUTE_MT_MOTION;
+		break;
+	}
+}
+
 static inline void
 evdev_process_absolute_motion(struct evdev_input_device *device,
 		struct input_event *e, struct evdev_motion_accumulator *accum)
@@ -120,13 +164,13 @@ evdev_process_absolute_motion(struct evdev_input_device *device,
 		accum->x = (e->value - device->abs.min_x) * screen_width /
 			(device->abs.max_x - device->abs.min_x) +
 			device->output->x;
-		accum->type = EVDEV_ABSOLUTE_MOTION;
+		accum->type |= EVDEV_ABSOLUTE_MOTION;
 		break;
 	case ABS_Y:
 		accum->y = (e->value - device->abs.min_y) * screen_height /
 			(device->abs.max_y - device->abs.min_y) +
 			device->output->y;
-		accum->type = EVDEV_ABSOLUTE_MOTION;
+		accum->type |= EVDEV_ABSOLUTE_MOTION;
 		break;
 	}
 }
@@ -149,7 +193,7 @@ evdev_process_absolute_motion_touchpad(struct evdev_input_device *device,
 				(device->abs.max_x - device->abs.min_x);
 		}
 		device->abs.old_x = e->value;
-		accum->type = EVDEV_RELATIVE_MOTION;
+		accum->type |= EVDEV_RELATIVE_MOTION;
 		break;
 	case ABS_Y:
 		e->value -= device->abs.min_y;
@@ -162,7 +206,7 @@ evdev_process_absolute_motion_touchpad(struct evdev_input_device *device,
 				(device->abs.max_y - device->abs.min_y);
 		}
 		device->abs.old_y = e->value;
-		accum->type = EVDEV_RELATIVE_MOTION;
+		accum->type |= EVDEV_RELATIVE_MOTION;
 		break;
 	}
 }
@@ -174,12 +218,26 @@ evdev_process_relative_motion(struct input_event *e,
 	switch (e->code) {
 	case REL_X:
 		accum->dx += e->value;
-		accum->type = EVDEV_RELATIVE_MOTION;
+		accum->type |= EVDEV_RELATIVE_MOTION;
 		break;
 	case REL_Y:
 		accum->dy += e->value;
-		accum->type = EVDEV_RELATIVE_MOTION;
+		accum->type |= EVDEV_RELATIVE_MOTION;
 		break;
+	}
+}
+
+static inline void
+evdev_process_absolute(struct evdev_input_device *device,
+		struct input_event *e, int time,
+		struct evdev_motion_accumulator *accum)
+{
+	if (device->is_touchpad) {
+		evdev_process_absolute_motion_touchpad(device, e, accum);
+	} else if (device->is_mt) {
+		evdev_process_touch(device, e, time, accum);
+	} else {
+		evdev_process_absolute_motion(device, e, accum);
 	}
 }
 
@@ -197,6 +255,8 @@ is_motion_event(struct input_event *e)
 		switch (e->code) {
 		case ABS_X:
 		case ABS_Y:
+		case ABS_MT_POSITION_X:
+		case ABS_MT_POSITION_Y:
 			return 1;
 		}
 	}
@@ -205,33 +265,40 @@ is_motion_event(struct input_event *e)
 }
 
 static void
-evdev_reset_accum(struct wl_input_device *device,
-		  struct evdev_motion_accumulator *accum)
-{
-	memset(accum, 0, sizeof *accum);
-
-	/* There are cases where only one axis on ts devices can be sent
-	 * through the bytestream whereas the other could be omitted. For
-	 * this, we have to save the old value that will be forwarded without
-	 * modifications to the compositor. */
-	accum->x = device->x;
-	accum->y = device->y;
-}
-
-static void
 evdev_flush_motion(struct wl_input_device *device, uint32_t time,
-		   struct evdev_motion_accumulator *accum)
+		   struct evdev_motion_accumulator *accum, int slot_mt)
 {
 	if (!accum->type)
 		return;
 
-	if (accum->type == EVDEV_RELATIVE_MOTION)
+	if (accum->type & EVDEV_RELATIVE_MOTION) {
 		notify_motion(device, time,
 			      device->x + accum->dx, device->y + accum->dy);
-	if (accum->type == EVDEV_ABSOLUTE_MOTION)
+		accum->type &= ~EVDEV_RELATIVE_MOTION;
+		accum->dx = 0;
+		accum->dy = 0;
+	}
+	if (accum->type & EVDEV_ABSOLUTE_MT_DOWN) {
+		notify_touch(device, time, slot_mt, accum->mt_x, accum->mt_y,
+			     WL_INPUT_DEVICE_TOUCH_DOWN);
+		accum->type &= ~EVDEV_ABSOLUTE_MT_DOWN;
+		accum->type &= ~EVDEV_ABSOLUTE_MT_MOTION;
+	}
+	if (accum->type & EVDEV_ABSOLUTE_MT_MOTION) {
+		notify_touch(device, time, slot_mt, accum->mt_x, accum->mt_y,
+				WL_INPUT_DEVICE_TOUCH_MOTION);
+		accum->type &= ~EVDEV_ABSOLUTE_MT_DOWN;
+		accum->type &= ~EVDEV_ABSOLUTE_MT_MOTION;
+	}
+	if (accum->type & EVDEV_ABSOLUTE_MT_UP) {
+		notify_touch(device, time, slot_mt, 0, 0,
+			     WL_INPUT_DEVICE_TOUCH_UP);
+		accum->type &= ~EVDEV_ABSOLUTE_MT_UP;
+	}
+	if (accum->type & EVDEV_ABSOLUTE_MOTION) {
 		notify_motion(device, time, accum->x, accum->y);
-
-	evdev_reset_accum(device, accum);
+		accum->type &= ~EVDEV_ABSOLUTE_MOTION;
+	}
 }
 
 static int
@@ -254,7 +321,9 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 		return 1;
 	}
 
-	evdev_reset_accum(&device->master->base.input_device, &accumulator);
+	accumulator.type = 0;
+	accumulator.mt_x = accumulator.x = device->master->base.input_device.x;
+	accumulator.mt_y = accumulator.y = device->master->base.input_device.y;
 
 	e = ev;
 	end = (void *) ev + len;
@@ -266,18 +335,14 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 		 * events and send as a bunch */
 		if (!is_motion_event(e))
 			evdev_flush_motion(&device->master->base.input_device,
-					   time, &accumulator);
+					   time, &accumulator,
+					   device->abs.slot_mt);
 		switch (e->type) {
 		case EV_REL:
 			evdev_process_relative_motion(e, &accumulator);
 			break;
 		case EV_ABS:
-			if (device->is_touchpad)
-				evdev_process_absolute_motion_touchpad(device,
-					e, &accumulator);
-			else
-				evdev_process_absolute_motion(device, e,
-					&accumulator);
+			evdev_process_absolute(device, e, time, &accumulator);
 			break;
 		case EV_KEY:
 			evdev_process_key(device, e, time);
@@ -285,7 +350,8 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 		}
 	}
 
-	evdev_flush_motion(&device->master->base.input_device, time, &accumulator);
+	evdev_flush_motion(&device->master->base.input_device, time,
+			   &accumulator, device->abs.slot_mt);
 
 	return 1;
 }
@@ -329,6 +395,10 @@ evdev_configure_device(struct evdev_input_device *device)
 			device->abs.min_y = absinfo.minimum;
 			device->abs.max_y = absinfo.maximum;
 		}
+		if (TEST_BIT(abs_bits, ABS_MT_SLOT)) {
+			device->is_mt = 1;
+			device->abs.slot_mt = 0;
+		}
 	}
 	if (TEST_BIT(ev_bits, EV_KEY)) {
 		has_key = 1;
@@ -366,7 +436,9 @@ evdev_input_device_create(struct evdev_input *master,
 
 	device->master = master;
 	device->is_touchpad = 0;
+	device->is_mt = 0;
 	device->devnode = strdup(path);
+	device->abs.slot_mt = -1;
 
 	device->fd = open(path, O_RDONLY);
 	if (device->fd < 0)
