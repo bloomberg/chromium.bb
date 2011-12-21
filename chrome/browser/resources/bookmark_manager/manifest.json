@@ -11,6 +11,7 @@
   "permissions": [
     "bookmarks",
     "experimental",
+    "systemPrivate",
     "tabs",
     "chrome://favicon/",
     "chrome://resources/"
