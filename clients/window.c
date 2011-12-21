@@ -1448,12 +1448,51 @@ input_handle_keyboard_focus(void *data,
 	}
 }
 
+static void
+input_handle_touch_down(void *data,
+			struct wl_input_device *wl_input_device,
+			uint32_t time, struct wl_surface *surface,
+			int32_t id, int32_t x, int32_t y)
+{
+}
+
+static void
+input_handle_touch_up(void *data,
+		      struct wl_input_device *wl_input_device,
+		      uint32_t time, int32_t id)
+{
+}
+
+static void
+input_handle_touch_motion(void *data,
+			  struct wl_input_device *wl_input_device,
+			  uint32_t time, int32_t id, int32_t x, int32_t y)
+{
+}
+
+static void
+input_handle_touch_frame(void *data,
+			 struct wl_input_device *wl_input_device)
+{
+}
+
+static void
+input_handle_touch_cancel(void *data,
+			  struct wl_input_device *wl_input_device)
+{
+}
+
 static const struct wl_input_device_listener input_device_listener = {
 	input_handle_motion,
 	input_handle_button,
 	input_handle_key,
 	input_handle_pointer_focus,
 	input_handle_keyboard_focus,
+	input_handle_touch_down,
+	input_handle_touch_up,
+	input_handle_touch_motion,
+	input_handle_touch_frame,
+	input_handle_touch_cancel,
 };
 
 void
