@@ -281,7 +281,7 @@ static PageList GeneratePageList(
        it != inspectable_tabs.end(); ++it) {
 
     TabContents* tab_contents = *it;
-    NavigationController& controller = tab_contents->controller();
+    NavigationController& controller = tab_contents->GetController();
 
     NavigationEntry* entry = controller.GetActiveEntry();
     if (entry == NULL || !entry->url().is_valid())

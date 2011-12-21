@@ -117,11 +117,11 @@ void BalloonHost::Init() {
       MSG_ROUTING_NONE,
       NULL,
       NULL));
-  tab_contents_->set_view_type(chrome::VIEW_TYPE_NOTIFICATION);
+  tab_contents_->SetViewType(chrome::VIEW_TYPE_NOTIFICATION);
   tab_contents_->SetDelegate(this);
   Observe(tab_contents_.get());
 
-  tab_contents_->controller().LoadURL(
+  tab_contents_->GetController().LoadURL(
       balloon_->notification().content_url(), content::Referrer(),
       content::PAGE_TRANSITION_LINK, std::string());
 

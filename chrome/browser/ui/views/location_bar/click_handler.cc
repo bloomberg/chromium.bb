@@ -26,7 +26,7 @@ void ClickHandler::OnMouseReleased(const views::MouseEvent& event) {
     return;
 
   TabContents* tab = location_bar_->GetTabContentsWrapper()->tab_contents();
-  NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
+  NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
   if (!nav_entry) {
     NOTREACHED();
     return;

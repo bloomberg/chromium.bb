@@ -44,7 +44,7 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
     params.link_url = url;
     params.unfiltered_link_url = url;
     TabContents* tab_contents = browser()->GetSelectedTabContents();
-    params.page_url = tab_contents->controller().GetActiveEntry()->url();
+    params.page_url = tab_contents->GetController().GetActiveEntry()->url();
 #if defined(OS_MACOSX)
     params.writing_direction_default = 0;
     params.writing_direction_left_to_right = 0;

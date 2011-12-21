@@ -87,30 +87,14 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
 
   // Intrinsic tab state -------------------------------------------------------
 
-  // Gets the controller for this tab contents.
-  NavigationController& controller() { return controller_; }
-  const NavigationController& controller() const { return controller_; }
-
   // Returns the user browser context associated with this TabContents (via the
   // NavigationController).
   content::BrowserContext* browser_context() const {
     return controller_.browser_context();
   }
 
-  // Allows overriding the type of this tab.
-  void set_view_type(content::ViewType type) { view_type_ = type; }
-
   // Returns the SavePackage which manages the page saving job. May be NULL.
   SavePackage* save_package() const { return save_package_.get(); }
-
-  // Return the currently active RenderProcessHost and RenderViewHost. Each of
-  // these may change over time.
-  content::RenderProcessHost* GetRenderProcessHost() const;
-
-
-
-
-
 
   WebUI* committed_web_ui() const {
     return render_manager_.web_ui();
@@ -469,8 +453,11 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   virtual base::PropertyBag* GetPropertyBag() OVERRIDE;
   virtual content::WebContentsDelegate* GetDelegate() OVERRIDE;
   virtual void SetDelegate(content::WebContentsDelegate* delegate) OVERRIDE;
-
-
+  virtual NavigationController& GetController() OVERRIDE;
+  virtual const NavigationController& GetController() const OVERRIDE;
+  // TODO(jam): browser_context getters go here
+  virtual void SetViewType(content::ViewType type) OVERRIDE;
+  virtual content::RenderProcessHost* GetRenderProcessHost() const OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
   // TODO(jam): webui stuff goes here
   virtual RenderWidgetHostView* GetRenderWidgetHostView() const OVERRIDE;

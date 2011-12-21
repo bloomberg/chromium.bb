@@ -129,6 +129,6 @@ Profile* PasswordManagerDelegateImpl::GetProfileForPasswordManager() {
 }
 
 bool PasswordManagerDelegateImpl::DidLastPageLoadEncounterSSLErrors() {
-  return tab_contents_->tab_contents()->controller().ssl_manager()->
+  return tab_contents_->tab_contents()->GetController().ssl_manager()->
       ProcessedSSLErrorFromRequest();
 }

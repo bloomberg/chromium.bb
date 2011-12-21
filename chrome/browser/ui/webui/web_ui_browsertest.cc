@@ -179,7 +179,7 @@ void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   TestNavigationObserver navigation_observer(
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-              controller()),
+              GetController()),
       this, 1);
   browser::NavigateParams params(
       browser(), GURL(browse_to), content::PAGE_TRANSITION_TYPED);

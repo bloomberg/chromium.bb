@@ -103,10 +103,10 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
   // Set |this| as a property so the ConstrainedHtmlUI can retrieve it.
   ConstrainedHtmlUI::GetPropertyAccessor().SetProperty(
       tab_contents->GetPropertyBag(), this);
-  tab_contents->controller().LoadURL(delegate->GetDialogContentURL(),
-                                     content::Referrer(),
-                                     content::PAGE_TRANSITION_START_PAGE,
-                                     std::string());
+  tab_contents->GetController().LoadURL(delegate->GetDialogContentURL(),
+                                        content::Referrer(),
+                                        content::PAGE_TRANSITION_START_PAGE,
+                                        std::string());
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.native_widget = this;

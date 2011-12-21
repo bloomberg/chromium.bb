@@ -115,10 +115,10 @@ ConstrainedHtmlDelegateViews::ConstrainedHtmlDelegateViews(
   // Set |this| as a property so the ConstrainedHtmlUI can retrieve it.
   ConstrainedHtmlUI::GetPropertyAccessor().SetProperty(
       html_tab_contents_->tab_contents()->GetPropertyBag(), this);
-  tab_contents->controller().LoadURL(delegate->GetDialogContentURL(),
-                                     content::Referrer(),
-                                     content::PAGE_TRANSITION_START_PAGE,
-                                     std::string());
+  tab_contents->GetController().LoadURL(delegate->GetDialogContentURL(),
+                                        content::Referrer(),
+                                        content::PAGE_TRANSITION_START_PAGE,
+                                        std::string());
 }
 
 ConstrainedHtmlDelegateViews::~ConstrainedHtmlDelegateViews() {

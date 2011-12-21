@@ -584,7 +584,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     EXPECT_FALSE(tab->IsLoading());
     ui_test_utils::WindowedNotificationObserver back_nav_observer(
         content::NOTIFICATION_LOAD_STOP,
-        content::Source<NavigationController>(&tab->controller()));
+        content::Source<NavigationController>(&tab->GetController()));
     browser->GoBack(CURRENT_TAB);
     back_nav_observer.Wait();
     bool js_result;
@@ -763,7 +763,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
           new ui_test_utils::WindowedNotificationObserver(
               content::NOTIFICATION_LOAD_STOP,
               content::Source<NavigationController>(
-                  &tab_contents->controller())));
+                  &tab_contents->GetController())));
     }
 
     // ui_test_utils::NavigateToURL waits until DidStopLoading is called on
@@ -1351,7 +1351,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
   // Navigate to about:crash and then wait for the renderer to crash.
   ASSERT_TRUE(GetPrerenderContents());
   ASSERT_TRUE(GetPrerenderContents()->prerender_contents());
-  GetPrerenderContents()->prerender_contents()->tab_contents()->controller().
+  GetPrerenderContents()->prerender_contents()->tab_contents()->GetController().
       LoadURL(
           GURL(chrome::kAboutCrashURL),
           content::Referrer(),

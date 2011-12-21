@@ -29,7 +29,7 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
               browser()->toolbar_model()->GetText());
 
     // Check after commit.
-    CommitPendingLoad(&contents->controller());
+    CommitPendingLoad(&contents->GetController());
     EXPECT_EQ(should_display, browser()->toolbar_model()->ShouldDisplayURL());
     EXPECT_EQ(ASCIIToUTF16(expected_text),
               browser()->toolbar_model()->GetText());

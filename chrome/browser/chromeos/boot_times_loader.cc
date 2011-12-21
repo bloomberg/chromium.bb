@@ -475,7 +475,7 @@ void BootTimesLoader::Observe(
     case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
       TabContents* tab_contents = content::Source<TabContents>(source).ptr();
       RenderWidgetHost* render_widget_host =
-          GetRenderWidgetHost(&tab_contents->controller());
+          GetRenderWidgetHost(&tab_contents->GetController());
       render_widget_hosts_loading_.erase(render_widget_host);
       break;
     }

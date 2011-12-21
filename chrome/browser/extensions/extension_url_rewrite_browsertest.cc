@@ -30,7 +30,7 @@ class ExtensionURLRewriteBrowserTest : public ExtensionBrowserTest {
   }
 
   NavigationController* GetNavigationController() const {
-    return &browser()->GetSelectedTabContents()->controller();
+    return &browser()->GetSelectedTabContents()->GetController();
   }
 
   NavigationEntry* GetNavigationEntry() const {

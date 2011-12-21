@@ -285,7 +285,7 @@ void PrerenderContents::StartPrerendering(
   if (starting_page_id_ < 0)
     starting_page_id_ = 0;
   starting_page_id_ += kPrerenderPageIdOffset;
-  prerender_contents_->tab_contents()->controller().set_max_restored_page_id(
+  prerender_contents_->tab_contents()->GetController().set_max_restored_page_id(
       starting_page_id_);
 
   tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
@@ -343,7 +343,7 @@ void PrerenderContents::StartPrerendering(
   content::PageTransition transition = content::PAGE_TRANSITION_LINK;
   if (origin_ == ORIGIN_OMNIBOX_EXACT || origin_ == ORIGIN_OMNIBOX_EXACT_FULL)
     transition = content::PAGE_TRANSITION_TYPED;
-  new_contents->controller().LoadURL(
+  new_contents->GetController().LoadURL(
       prerender_url_,
       referrer_,
       transition, std::string());

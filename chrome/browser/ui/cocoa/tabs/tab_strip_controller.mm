@@ -1178,7 +1178,7 @@ private:
 
   if (oldContents) {
     int oldModelIndex = browser_->GetIndexOfController(
-        &(oldContents->tab_contents()->controller()));
+        &(oldContents->tab_contents()->GetController()));
     if (oldModelIndex != -1) {  // When closing a tab, the old tab may be gone.
       NSInteger oldIndex = [self indexFromModelIndex:oldModelIndex];
       TabContentsController* oldController =

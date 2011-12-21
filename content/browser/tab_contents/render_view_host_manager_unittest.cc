@@ -168,7 +168,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   // Load the two URLs in the second tab. Note that the first navigation creates
   // a RVH that's not pending (since there is no cross-site transition), so
   // we use the committed one.
-  contents2.controller().LoadURL(
+  contents2.GetController().LoadURL(
       kNtpUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
       std::string());
   TestRenderViewHost* ntp_rvh2 = static_cast<TestRenderViewHost*>(
@@ -178,7 +178,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
 
   // The second one is the opposite, creating a cross-site transition and
   // requiring a beforeunload ack.
-  contents2.controller().LoadURL(
+  contents2.GetController().LoadURL(
       kDestUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
       std::string());
   EXPECT_TRUE(contents2.cross_navigation_pending());
@@ -199,7 +199,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   // SiteInstance.
   NavigateActiveAndCommit(kNtpUrl);
 
-  contents2.controller().LoadURL(
+  contents2.GetController().LoadURL(
       kNtpUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
       std::string());
   dest_rvh2->SendShouldCloseACK(true);
@@ -292,7 +292,7 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   TestTabContents tab_contents(browser_context(), instance);
   notifications.ListenFor(
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      content::Source<NavigationController>(&tab_contents.controller()));
+      content::Source<NavigationController>(&tab_contents.GetController()));
 
   // Create.
   RenderViewHostManager manager(&tab_contents, &tab_contents);
@@ -380,7 +380,7 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   TestTabContents tab_contents(browser_context(), instance);
   notifications.ListenFor(
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      content::Source<NavigationController>(&tab_contents.controller()));
+      content::Source<NavigationController>(&tab_contents.GetController()));
 
   // Create.
   RenderViewHostManager manager(&tab_contents, &tab_contents);
@@ -610,7 +610,7 @@ TEST_F(RenderViewHostManagerTest, PageDoesBackAndReload) {
   EXPECT_EQ(evil_rvh, contents()->render_manager_for_testing()->current_host());
 
   // Also we should not have a pending navigation entry.
-  NavigationEntry* entry = contents()->controller().GetActiveEntry();
+  NavigationEntry* entry = contents()->GetController().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_EQ(kUrl2, entry->url());
 }

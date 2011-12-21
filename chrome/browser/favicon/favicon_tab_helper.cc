@@ -42,7 +42,7 @@ void FaviconTabHelper::FetchFavicon(const GURL& url) {
 SkBitmap FaviconTabHelper::GetFavicon() const {
   // Like GetTitle(), we also want to use the favicon for the last committed
   // entry rather than a pending navigation entry.
-  const NavigationController& controller = tab_contents()->controller();
+  const NavigationController& controller = tab_contents()->GetController();
   NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
     return entry->favicon().bitmap();
@@ -54,7 +54,7 @@ SkBitmap FaviconTabHelper::GetFavicon() const {
 }
 
 bool FaviconTabHelper::FaviconIsValid() const {
-  const NavigationController& controller = tab_contents()->controller();
+  const NavigationController& controller = tab_contents()->GetController();
   NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
     return entry->favicon().is_valid();
@@ -68,7 +68,7 @@ bool FaviconTabHelper::FaviconIsValid() const {
 
 bool FaviconTabHelper::ShouldDisplayFavicon() {
   // Always display a throbber during pending loads.
-  const NavigationController& controller = tab_contents()->controller();
+  const NavigationController& controller = tab_contents()->GetController();
   if (controller.GetLastCommittedEntry() && controller.pending_entry())
     return true;
 
@@ -79,7 +79,7 @@ bool FaviconTabHelper::ShouldDisplayFavicon() {
 }
 
 void FaviconTabHelper::SaveFavicon() {
-  NavigationEntry* entry = tab_contents()->controller().GetActiveEntry();
+  NavigationEntry* entry = tab_contents()->GetController().GetActiveEntry();
   if (!entry || entry->url().is_empty())
     return;
 
@@ -128,7 +128,7 @@ void FaviconTabHelper::OnUpdateFaviconURL(
 }
 
 NavigationEntry* FaviconTabHelper::GetActiveEntry() {
-  return tab_contents()->controller().GetActiveEntry();
+  return tab_contents()->GetController().GetActiveEntry();
 }
 
 void FaviconTabHelper::StartDownload(int id, const GURL& url, int image_size) {

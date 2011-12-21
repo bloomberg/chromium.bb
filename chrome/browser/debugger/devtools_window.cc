@@ -161,7 +161,7 @@ DevToolsWindow* DevToolsWindow::Create(
       Browser::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
   tab_contents->tab_contents()->GetRenderViewHost()->AllowBindings(
       content::BINDINGS_POLICY_WEB_UI);
-  tab_contents->tab_contents()->controller().LoadURL(
+  tab_contents->tab_contents()->GetController().LoadURL(
       GetDevToolsUrl(profile, docked, shared_worker_frontend),
       content::Referrer(),
       content::PAGE_TRANSITION_START_PAGE,
@@ -187,7 +187,7 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
   g_instances.Get().push_back(this);
   // Wipe out page icon so that the default application icon is used.
   NavigationEntry* entry =
-      tab_contents_->tab_contents()->controller().GetActiveEntry();
+      tab_contents_->tab_contents()->GetController().GetActiveEntry();
   entry->favicon().set_bitmap(SkBitmap());
   entry->favicon().set_is_valid(true);
 
@@ -196,12 +196,12 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
       this,
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &tab_contents_->tab_contents()->controller()));
+          &tab_contents_->tab_contents()->GetController()));
   registrar_.Add(
       this,
       content::NOTIFICATION_TAB_CLOSING,
       content::Source<NavigationController>(
-          &tab_contents_->tab_contents()->controller()));
+          &tab_contents_->tab_contents()->GetController()));
   registrar_.Add(
       this,
       chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
@@ -369,7 +369,7 @@ bool DevToolsWindow::FindInspectedBrowserAndTabIndex(Browser** browser,
     return false;
 
   const NavigationController& controller =
-      inspected_tab_->tab_contents()->controller();
+      inspected_tab_->tab_contents()->GetController();
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end(); ++it) {
     int tab_index = (*it)->GetIndexOfController(&controller);
@@ -469,7 +469,7 @@ void DevToolsWindow::Observe(int type,
     AddDevToolsExtensionsToClient();
   } else if (type == content::NOTIFICATION_TAB_CLOSING) {
     if (content::Source<NavigationController>(source).ptr() ==
-            &tab_contents_->tab_contents()->controller()) {
+            &tab_contents_->tab_contents()->GetController()) {
       // This happens when browser closes all of its tabs as a result
       // of window.Close event.
       // Notify manager that this DevToolsClientHost no longer exists and

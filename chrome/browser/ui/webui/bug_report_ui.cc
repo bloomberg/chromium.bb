@@ -356,8 +356,8 @@ WebUIMessageHandler* BugReportHandler::Attach(WebUI* web_ui) {
 
 bool BugReportHandler::Init() {
   std::string page_url;
-  if (tab_->controller().GetActiveEntry()) {
-     page_url = tab_->controller().GetActiveEntry()->url().spec();
+  if (tab_->GetController().GetActiveEntry()) {
+     page_url = tab_->GetController().GetActiveEntry()->url().spec();
   }
 
   std::string params = page_url.substr(strlen(chrome::kChromeUIBugReportURL));

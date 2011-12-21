@@ -93,7 +93,7 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame) {
     return true;
 
   TabContents* tab = owner_->GetTabContents();
-  NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
+  NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
   if (!nav_entry) {
     NOTREACHED();
     return true;

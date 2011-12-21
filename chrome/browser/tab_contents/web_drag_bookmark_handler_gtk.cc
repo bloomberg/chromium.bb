@@ -82,7 +82,7 @@ void WebDragBookmarkHandlerGtk::OnDrop() {
 
     // Focus the target browser.
     Browser* browser = Browser::GetBrowserForController(
-        &tab_->tab_contents()->controller(), NULL);
+        &tab_->tab_contents()->GetController(), NULL);
     if (browser)
       browser->window()->Show();
   }

@@ -163,7 +163,7 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
     TabContents* tab_contents = browser()->GetSelectedTabContents();
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        content::Source<NavigationController>(&tab_contents->controller()));
+        content::Source<NavigationController>(&tab_contents->GetController()));
     tab_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
     mouse_event.type = WebKit::WebInputEvent::MouseUp;
     tab_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);

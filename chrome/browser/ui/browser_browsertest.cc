@@ -398,9 +398,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   EXPECT_TRUE(newtab);
   EXPECT_NE(oldtab, newtab);
   nav_observer.Wait();
-  ASSERT_TRUE(newtab->controller().GetLastCommittedEntry());
+  ASSERT_TRUE(newtab->GetController().GetLastCommittedEntry());
   EXPECT_EQ(https_url.spec(),
-            newtab->controller().GetLastCommittedEntry()->url().spec());
+            newtab->GetController().GetLastCommittedEntry()->url().spec());
 
   // Popup window should not be in the opener's process.
   content::RenderProcessHost* popup_process =
@@ -432,9 +432,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   EXPECT_TRUE(newtab2);
   EXPECT_NE(oldtab, newtab2);
   nav_observer2.Wait();
-  ASSERT_TRUE(newtab2->controller().GetLastCommittedEntry());
+  ASSERT_TRUE(newtab2->GetController().GetLastCommittedEntry());
   EXPECT_EQ(https_url.spec(),
-            newtab2->controller().GetLastCommittedEntry()->url().spec());
+            newtab2->GetController().GetLastCommittedEntry()->url().spec());
 
   // This popup window should also not be in the opener's process.
   content::RenderProcessHost* popup_process2 =
@@ -485,9 +485,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   EXPECT_TRUE(newtab);
   EXPECT_NE(oldtab, newtab);
   nav_observer.Wait();
-  ASSERT_TRUE(newtab->controller().GetLastCommittedEntry());
+  ASSERT_TRUE(newtab->GetController().GetLastCommittedEntry());
   EXPECT_EQ(https_url.spec(),
-            newtab->controller().GetLastCommittedEntry()->url().spec());
+            newtab->GetController().GetLastCommittedEntry()->url().spec());
 
   // Popup window should still be in the opener's process.
   content::RenderProcessHost* popup_process =
@@ -505,9 +505,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   oldtab->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(navigate_str));
   nav_observer2.Wait();
-  ASSERT_TRUE(oldtab->controller().GetLastCommittedEntry());
+  ASSERT_TRUE(oldtab->GetController().GetLastCommittedEntry());
   EXPECT_EQ(https_url.spec(),
-            oldtab->controller().GetLastCommittedEntry()->url().spec());
+            oldtab->GetController().GetLastCommittedEntry()->url().spec());
 
   // Original window should still be in the original process.
   content::RenderProcessHost* new_process = newtab->GetRenderProcessHost();
@@ -662,7 +662,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
 
   NavigationEntry* entry = browser()->GetSelectedTabContents()->
-      controller().GetActiveEntry();
+      GetController().GetActiveEntry();
   EXPECT_EQ(expected_favicon_url.spec(), entry->favicon().url().spec());
 }
 
@@ -682,7 +682,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_FaviconChange) {
   ui_test_utils::NavigateToURL(browser(), file_url);
 
   NavigationEntry* entry = browser()->GetSelectedTabContents()->
-      controller().GetActiveEntry();
+      GetController().GetActiveEntry();
   static const FilePath::CharType* kIcon =
       FILE_PATH_LITERAL("test1.png");
   GURL expected_favicon_url(
@@ -1151,7 +1151,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
   ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContents()->controller()));
+          &browser()->GetSelectedTabContents()->GetController()));
   browser()->GoBack(CURRENT_TAB);
   back_nav_load_observer.Wait();
   EXPECT_TRUE(browser()->command_updater()->IsCommandEnabled(IDC_FORWARD));
@@ -1159,7 +1159,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
   ui_test_utils::WindowedNotificationObserver forward_nav_load_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContents()->controller()));
+          &browser()->GetSelectedTabContents()->GetController()));
   browser()->GoForward(CURRENT_TAB);
   // This check will happen before the navigation completes, since the browser
   // won't process the renderer's response until the Wait() call below.

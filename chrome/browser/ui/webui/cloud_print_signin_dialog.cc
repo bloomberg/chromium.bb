@@ -60,7 +60,8 @@ CloudPrintSigninFlowHandler::CloudPrintSigninFlowHandler(
 
 void CloudPrintSigninFlowHandler::RegisterMessages() {
   if (web_ui_ && web_ui_->tab_contents()) {
-    NavigationController* controller = &web_ui_->tab_contents()->controller();
+    NavigationController* controller =
+        &web_ui_->tab_contents()->GetController();
     NavigationEntry* pending_entry = controller->pending_entry();
     if (pending_entry)
       pending_entry->set_url(CloudPrintURL(

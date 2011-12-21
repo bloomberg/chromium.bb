@@ -1066,7 +1066,7 @@ bool UpdateTabFunction::RunImpl() {
                   NULL, &tab_strip, &contents, &tab_index, &error_)) {
     return false;
   }
-  NavigationController& controller = contents->tab_contents()->controller();
+  NavigationController& controller = contents->tab_contents()->GetController();
 
   // TODO(rafaelw): handle setting remaining tab properties:
   // -title
@@ -1373,13 +1373,13 @@ bool ReloadTabFunction::RunImpl() {
   TabContents* tab_contents = contents->tab_contents();
   if (tab_contents->showing_interstitial_page()) {
     // This does as same as Browser::ReloadInternal.
-    NavigationEntry* entry = tab_contents->controller().GetActiveEntry();
+    NavigationEntry* entry = tab_contents->GetController().GetActiveEntry();
     GetCurrentBrowser()->OpenURL(entry->url(), GURL(), CURRENT_TAB,
                                  content::PAGE_TRANSITION_RELOAD);
   } else if (bypass_cache) {
-    tab_contents->controller().ReloadIgnoringCache(true);
+    tab_contents->GetController().ReloadIgnoringCache(true);
   } else {
-    tab_contents->controller().Reload(true);
+    tab_contents->GetController().Reload(true);
   }
 
   return true;
@@ -1608,7 +1608,7 @@ bool DetectTabLanguageFunction::RunImpl() {
       return false;
   }
 
-  if (contents->tab_contents()->controller().needs_reload()) {
+  if (contents->tab_contents()->GetController().needs_reload()) {
     // If the tab hasn't been loaded, don't wait for the tab to load.
     error_ = keys::kCannotDetermineLanguageOfUnloadedTab;
     return false;
@@ -1632,11 +1632,11 @@ bool DetectTabLanguageFunction::RunImpl() {
   registrar_.Add(
       this, content::NOTIFICATION_TAB_CLOSING,
       content::Source<NavigationController>(
-          &(contents->tab_contents()->controller())));
+          &(contents->tab_contents()->GetController())));
   registrar_.Add(
       this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(
-          &(contents->tab_contents()->controller())));
+          &(contents->tab_contents()->GetController())));
   return true;
 }
 

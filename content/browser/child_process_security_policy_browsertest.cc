@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(ChildProcessSecurityPolicyInProcessBrowserTest, NoLeak) {
   base::KillProcess(tab->GetRenderProcessHost()->GetHandle(),
                     content::RESULT_CODE_KILLED, true);
 
-  tab->controller().Reload(true);
+  tab->GetController().Reload(true);
   EXPECT_EQ(
       ChildProcessSecurityPolicy::GetInstance()->security_state_.size(), 1U);
 }

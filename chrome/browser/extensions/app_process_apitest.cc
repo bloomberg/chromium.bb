@@ -57,7 +57,7 @@ static void WindowOpenHelper(Browser* browser,
   TabContents* newtab = last_active_browser->GetSelectedTabContents();
   EXPECT_TRUE(newtab);
   observer.Wait();
-  EXPECT_EQ(url, newtab->controller().GetLastCommittedEntry()->url());
+  EXPECT_EQ(url, newtab->GetController().GetLastCommittedEntry()->url());
   if (newtab_process_should_equal_opener)
     EXPECT_EQ(opener_host->process(), newtab->GetRenderProcessHost());
   else
@@ -79,7 +79,7 @@ static void NavigateTabHelper(TabContents* contents, const GURL& url) {
       &result));
   ASSERT_TRUE(result);
   observer.Wait();
-  EXPECT_EQ(url, contents->controller().GetLastCommittedEntry()->url());
+  EXPECT_EQ(url, contents->GetController().GetLastCommittedEntry()->url());
 }
 
 IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
@@ -374,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessRedirectBack) {
   // process.
   ASSERT_EQ(3, browser()->tab_count());
   EXPECT_EQ("/files/extensions/api_test/app_process/path1/empty.html",
-            browser()->GetTabContentsAt(2)->controller().
+            browser()->GetTabContentsAt(2)->GetController().
                 GetLastCommittedEntry()->url().path());
   EXPECT_EQ(browser()->GetTabContentsAt(1)->GetRenderProcessHost(),
             browser()->GetTabContentsAt(2)->GetRenderProcessHost());
@@ -423,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-              controller()));
+              GetController()));
   browser()->Reload(CURRENT_TAB);
   reload_observer.Wait();
   EXPECT_TRUE(process_map->Contains(
@@ -435,7 +435,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-              controller()));
+              GetController()));
   browser()->Reload(CURRENT_TAB);
   reload_observer2.Wait();
   EXPECT_FALSE(process_map->Contains(
@@ -447,7 +447,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-              controller()));
+              GetController()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(contents->GetRenderViewHost(),
                                                L"", L"location.reload();"));
   js_reload_observer.Wait();
@@ -460,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-              controller()));
+              GetController()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(contents->GetRenderViewHost(),
                                                L"", L"location.reload();"));
   js_reload_observer2.Wait();
@@ -505,14 +505,14 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
   ASSERT_NE(browser(), last_active_browser);
   TabContents* newtab = last_active_browser->GetSelectedTabContents();
   EXPECT_TRUE(newtab);
-  if (!newtab->controller().GetLastCommittedEntry() ||
-      newtab->controller().GetLastCommittedEntry()->url() != app_url) {
+  if (!newtab->GetController().GetLastCommittedEntry() ||
+      newtab->GetController().GetLastCommittedEntry()->url() != app_url) {
     // TODO(gbillock): This still looks racy. Need to make a custom
     // observer to intercept new window creation and then look for
     // NAV_ENTRY_COMMITTED on the new tab there.
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::Source<NavigationController>(&(newtab->controller())));
+        content::Source<NavigationController>(&(newtab->GetController())));
     observer.Wait();
   }
 
@@ -652,7 +652,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadAppAfterCrash) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-              controller()));
+              GetController()));
   browser()->Reload(CURRENT_TAB);
   observer.Wait();
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(

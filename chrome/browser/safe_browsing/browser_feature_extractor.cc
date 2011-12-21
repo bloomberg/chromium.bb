@@ -151,7 +151,7 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
   }
 
   // Extract features pertaining to this navigation.
-  const NavigationController& controller = tab_->controller();
+  const NavigationController& controller = tab_->GetController();
   int url_index = -1;
   int first_host_index = -1;
 

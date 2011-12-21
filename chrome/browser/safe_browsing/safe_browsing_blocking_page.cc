@@ -146,7 +146,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   RecordUserAction(SHOW);
   if (!is_main_frame_load_blocked_) {
     navigation_entry_index_to_remove_ =
-        tab()->controller().last_committed_entry_index();
+        tab()->GetController().last_committed_entry_index();
   } else {
     navigation_entry_index_to_remove_ = -1;
   }
@@ -467,13 +467,13 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
 
     // Otherwise the offending entry has committed, and we need to go back or
     // to a safe page.  We will close the interstitial when that page commits.
-    if (tab()->controller().CanGoBack()) {
-      tab()->controller().GoBack();
+    if (tab()->GetController().CanGoBack()) {
+      tab()->GetController().GoBack();
     } else {
-      tab()->controller().LoadURL(GURL(chrome::kChromeUINewTabURL),
-                                  content::Referrer(),
-                                  content::PAGE_TRANSITION_START_PAGE,
-                                  std::string());
+      tab()->GetController().LoadURL(GURL(chrome::kChromeUINewTabURL),
+                                     content::Referrer(),
+                                     content::PAGE_TRANSITION_START_PAGE,
+                                     std::string());
     }
     return;
   }
@@ -599,11 +599,13 @@ void SafeBrowsingBlockingPage::DontProceed() {
   // for the tab has by then already been destroyed.  We also don't delete the
   // current entry if it has been committed again, which is possible on a page
   // that had a subresource warning.
-  int last_committed_index = tab()->controller().last_committed_entry_index();
+  int last_committed_index =
+      tab()->GetController().last_committed_entry_index();
   if (navigation_entry_index_to_remove_ != -1 &&
       navigation_entry_index_to_remove_ != last_committed_index &&
       !tab()->is_being_destroyed()) {
-    tab()->controller().RemoveEntryAtIndex(navigation_entry_index_to_remove_);
+    tab()->GetController().RemoveEntryAtIndex(
+        navigation_entry_index_to_remove_);
     navigation_entry_index_to_remove_ = -1;
   }
   InterstitialPage::DontProceed();

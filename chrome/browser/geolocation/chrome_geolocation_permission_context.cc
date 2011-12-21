@@ -175,7 +175,7 @@ GeolocationConfirmInfoBarDelegate::GeolocationConfirmInfoBarDelegate(
       requesting_frame_url_(requesting_frame_url),
       display_languages_(display_languages) {
   const NavigationEntry* committed_entry =
-      infobar_helper->tab_contents()->controller().GetLastCommittedEntry();
+      infobar_helper->tab_contents()->GetController().GetLastCommittedEntry();
   committed_contents_unique_id_ = committed_entry ?
       committed_entry->unique_id() : 0;
 }

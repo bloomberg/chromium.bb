@@ -1305,7 +1305,7 @@ TabContents* Browser::AddRestoredTab(
   std::vector<NavigationEntry*> entries;
   TabNavigation::CreateNavigationEntriesFromTabNavigations(
       profile_, navigations, &entries);
-  new_tab->controller().Restore(
+  new_tab->GetController().Restore(
       selected_navigation, from_last_session, &entries);
   DCHECK_EQ(0u, entries.size());
 
@@ -1328,7 +1328,7 @@ TabContents* Browser::AddRestoredTab(
     // contains similar logic.
     new_tab->GetView()->SizeContents(window_->GetRestoredBounds().size());
     new_tab->HideContents();
-    new_tab->controller().LoadIfNecessary();
+    new_tab->GetController().LoadIfNecessary();
   }
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(profile_);
@@ -1355,7 +1355,7 @@ void Browser::ReplaceRestoredTab(
   std::vector<NavigationEntry*> entries;
   TabNavigation::CreateNavigationEntriesFromTabNavigations(
       profile_, navigations, &entries);
-  replacement->controller().Restore(
+  replacement->GetController().Restore(
       selected_navigation, from_last_session, &entries);
   DCHECK_EQ(0u, entries.size());
 
@@ -1371,7 +1371,7 @@ bool Browser::CanRestoreTab() {
 bool Browser::NavigateToIndexWithDisposition(int index,
                                              WindowOpenDisposition disp) {
   NavigationController& controller =
-      GetOrCloneTabForDisposition(disp)->controller();
+      GetOrCloneTabForDisposition(disp)->GetController();
   if (index < 0 || index >= controller.entry_count())
     return false;
   controller.GoToIndex(index);
@@ -1500,7 +1500,7 @@ bool Browser::IsClosingPermitted() {
 
 bool Browser::CanGoBack() const {
   return GetSelectedTabContentsWrapper()->
-      tab_contents()->controller().CanGoBack();
+      tab_contents()->GetController().CanGoBack();
 }
 
 void Browser::GoBack(WindowOpenDisposition disposition) {
@@ -1514,19 +1514,19 @@ void Browser::GoBack(WindowOpenDisposition disposition) {
     if (current_tab->tab_contents()->showing_interstitial_page() &&
         (new_tab != current_tab->tab_contents()))
       return;
-    new_tab->controller().GoBack();
+    new_tab->GetController().GoBack();
   }
 }
 
 bool Browser::CanGoForward() const {
   return GetSelectedTabContentsWrapper()->
-      tab_contents()->controller().CanGoForward();
+      tab_contents()->GetController().CanGoForward();
 }
 
 void Browser::GoForward(WindowOpenDisposition disposition) {
   content::RecordAction(UserMetricsAction("Forward"));
   if (CanGoForward())
-    GetOrCloneTabForDisposition(disposition)->controller().GoForward();
+    GetOrCloneTabForDisposition(disposition)->GetController().GoForward();
 }
 
 void Browser::Reload(WindowOpenDisposition disposition) {
@@ -1544,7 +1544,7 @@ void Browser::ReloadInternal(WindowOpenDisposition disposition,
   // If we are showing an interstitial, treat this as an OpenURL.
   TabContents* current_tab = GetSelectedTabContents();
   if (current_tab && current_tab->showing_interstitial_page()) {
-    NavigationEntry* entry = current_tab->controller().GetActiveEntry();
+    NavigationEntry* entry = current_tab->GetController().GetActiveEntry();
     DCHECK(entry);  // Should exist if interstitial is showing.
     OpenURL(entry->url(), GURL(), disposition, content::PAGE_TRANSITION_RELOAD);
     return;
@@ -1555,9 +1555,9 @@ void Browser::ReloadInternal(WindowOpenDisposition disposition,
   if (!tab->FocusLocationBarByDefault())
     tab->Focus();
   if (ignore_cache)
-    tab->controller().ReloadIgnoringCache(true);
+    tab->GetController().ReloadIgnoringCache(true);
   else
-    tab->controller().Reload(true);
+    tab->GetController().Reload(true);
 }
 
 void Browser::Home(WindowOpenDisposition disposition) {
@@ -2061,7 +2061,7 @@ void Browser::OpenCreateShortcutsDialog() {
           "Menu item should be disabled.";
 
   NavigationEntry* entry =
-      current_tab->tab_contents()->controller().GetLastCommittedEntry();
+      current_tab->tab_contents()->GetController().GetLastCommittedEntry();
   if (!entry)
     return;
 
@@ -2175,7 +2175,7 @@ void Browser::ShowAboutConflictsTab() {
 void Browser::ShowBrokenPageTab(TabContents* contents) {
   content::RecordAction(UserMetricsAction("ReportBug"));
   string16 page_title = contents->GetTitle();
-  NavigationEntry* entry = contents->controller().GetActiveEntry();
+  NavigationEntry* entry = contents->GetController().GetActiveEntry();
   if (!entry)
     return;
   std::string page_url = entry->url().spec();
@@ -3095,7 +3095,7 @@ TabContentsWrapper* Browser::CreateTabContentsForURL(
   if (!defer_load) {
     // Load the initial URL before adding the new tab contents to the tab strip
     // so that the tab contents has navigation state.
-    contents->tab_contents()->controller().LoadURL(
+    contents->tab_contents()->GetController().LoadURL(
         url, referrer, transition, std::string());
   }
 
@@ -3103,7 +3103,7 @@ TabContentsWrapper* Browser::CreateTabContentsForURL(
 }
 
 bool Browser::CanDuplicateContentsAt(int index) {
-  NavigationController& nc = GetTabContentsAt(index)->controller();
+  NavigationController& nc = GetTabContentsAt(index)->GetController();
   return nc.tab_contents() && nc.GetLastCommittedEntry();
 }
 
@@ -3182,7 +3182,7 @@ void Browser::CreateHistoricalTab(TabContentsWrapper* contents) {
 
   // We only create historical tab entries for tabbed browser windows.
   if (service && CanSupportWindowFeature(FEATURE_TABSTRIP)) {
-    service->CreateHistoricalTab(&contents->tab_contents()->controller(),
+    service->CreateHistoricalTab(&contents->tab_contents()->GetController(),
         tab_handler_->GetTabStripModel()->GetIndexOfTabContents(contents));
   }
 }
@@ -3274,7 +3274,7 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CLOSING,
       content::Source<NavigationController>(
-          &contents->tab_contents()->controller()),
+          &contents->tab_contents()->GetController()),
       content::NotificationService::NoDetails());
 
   // Sever the TabContents' connection back to us.
@@ -3372,11 +3372,11 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
   TabInsertedAt(new_contents, index,
                 (index == tab_handler_->GetTabStripModel()->active_index()));
 
-  int entry_count = new_contents->tab_contents()->controller().entry_count();
+  int entry_count = new_contents->tab_contents()->GetController().entry_count();
   if (entry_count > 0) {
     // Send out notification so that observers are updated appropriately.
-    new_contents->tab_contents()->controller().NotifyEntryChanged(
-        new_contents->tab_contents()->controller().GetEntryAtIndex(
+    new_contents->tab_contents()->GetController().NotifyEntryChanged(
+        new_contents->tab_contents()->GetController().GetEntryAtIndex(
             entry_count - 1),
         entry_count - 1);
   }
@@ -3544,7 +3544,7 @@ void Browser::LoadingStateChanged(TabContents* source) {
       // last committed entry is not NULL. Last committed entry could be NULL
       // when an interstitial page is injected (e.g. bad https certificate,
       // malware site etc). When this happens, we abort the shortcut update.
-      NavigationEntry* entry = source->controller().GetLastCommittedEntry();
+      NavigationEntry* entry = source->GetController().GetLastCommittedEntry();
       if (entry) {
         TabContentsWrapper::GetCurrentWrapperForContents(source)->
             extension_tab_helper()->GetApplicationInfo(entry->page_id());
@@ -3645,7 +3645,7 @@ bool Browser::IsApplication() const {
 }
 
 void Browser::ConvertContentsToApplication(TabContents* contents) {
-  const GURL& url = contents->controller().GetActiveEntry()->url();
+  const GURL& url = contents->GetController().GetActiveEntry()->url();
   std::string app_name = web_app::GenerateApplicationNameFromURL(url);
 
   DetachContents(contents);
@@ -3763,7 +3763,7 @@ void Browser::OnStartDownload(TabContents* source,
   }
 
   // If the download occurs in a new tab, close it.
-  if (source->controller().IsInitialNavigation() && tab_count() > 1)
+  if (source->GetController().IsInitialNavigation() && tab_count() > 1)
     CloseContents(source);
 }
 
@@ -3990,7 +3990,7 @@ void Browser::OnDidGetApplicationInfo(TabContentsWrapper* source,
     return;
 
   NavigationEntry* entry =
-      source->tab_contents()->controller().GetLastCommittedEntry();
+      source->tab_contents()->GetController().GetLastCommittedEntry();
   if (!entry || (entry->page_id() != page_id))
     return;
 
@@ -4101,7 +4101,7 @@ void Browser::Observe(int type,
       // actually be for a different window while we're doing asynchronous
       // closing of this one.
       if (GetSelectedTabContents() &&
-          &GetSelectedTabContents()->controller() ==
+          &GetSelectedTabContents()->GetController() ==
           content::Source<NavigationController>(source).ptr())
         UpdateToolbar(false);
       break;
@@ -4581,7 +4581,7 @@ void Browser::UpdateCommandsForTabState() {
     return;
 
   // Navigation commands
-  NavigationController& nc = current_tab->controller();
+  NavigationController& nc = current_tab->GetController();
   command_updater_.UpdateCommandEnabled(IDC_BACK, nc.CanGoBack());
   command_updater_.UpdateCommandEnabled(IDC_FORWARD, nc.CanGoForward());
   command_updater_.UpdateCommandEnabled(IDC_RELOAD,
@@ -4597,7 +4597,7 @@ void Browser::UpdateCommandsForTabState() {
   window_->SetStarredState(
       current_tab_wrapper->bookmark_tab_helper()->is_starred());
   command_updater_.UpdateCommandEnabled(IDC_VIEW_SOURCE,
-      current_tab->controller().CanViewSource());
+      current_tab->GetController().CanViewSource());
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION,
       toolbar_model_.ShouldDisplayURL() && current_tab->GetURL().is_valid());
   if (is_devtools())
@@ -4753,7 +4753,7 @@ void Browser::ScheduleUIUpdate(const TabContents* source,
     // this for any tab so they start & stop quickly.
     tab_handler_->GetTabStripModel()->UpdateTabContentsStateAt(
         tab_handler_->GetTabStripModel()->GetIndexOfController(
-            &source->controller()),
+            &source->GetController()),
         TabStripModelObserver::LOADING_ONLY);
     // The status bubble needs to be updated during INVALIDATE_LOAD too, but
     // we do that asynchronously by not stripping INVALIDATE_LOAD from
@@ -4767,7 +4767,7 @@ void Browser::ScheduleUIUpdate(const TabContents* source,
     // asynchronously.
     tab_handler_->GetTabStripModel()->UpdateTabContentsStateAt(
         tab_handler_->GetTabStripModel()->GetIndexOfController(
-            &source->controller()),
+            &source->GetController()),
         TabStripModelObserver::TITLE_NOT_LOADING);
   }
 
@@ -5175,7 +5175,7 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
     // HideInstant is invoked after release so that InstantController is not
     // active when HideInstant asks it for its state.
     HideInstant();
-    preview_contents->tab_contents()->controller().PruneAllButActive();
+    preview_contents->tab_contents()->GetController().PruneAllButActive();
     tab_handler_->GetTabStripModel()->AddTabContents(
         preview_contents,
         -1,
@@ -5207,7 +5207,7 @@ void Browser::ViewSource(TabContentsWrapper* contents) {
   DCHECK(contents);
 
   NavigationEntry* active_entry =
-      contents->tab_contents()->controller().GetActiveEntry();
+      contents->tab_contents()->GetController().GetActiveEntry();
   if (!active_entry)
     return;
 
@@ -5221,9 +5221,9 @@ void Browser::ViewSource(TabContentsWrapper* contents,
   DCHECK(contents);
 
   TabContentsWrapper* view_source_contents = contents->Clone();
-  view_source_contents->tab_contents()->controller().PruneAllButActive();
+  view_source_contents->tab_contents()->GetController().PruneAllButActive();
   NavigationEntry* active_entry =
-      view_source_contents->tab_contents()->controller().GetActiveEntry();
+      view_source_contents->tab_contents()->GetController().GetActiveEntry();
   if (!active_entry)
     return;
 
@@ -5277,7 +5277,8 @@ int Browser::GetContentRestrictionsForSelectedTab() {
   TabContents* current_tab = GetSelectedTabContents();
   if (current_tab) {
     content_restrictions = current_tab->content_restrictions();
-    NavigationEntry* active_entry = current_tab->controller().GetActiveEntry();
+    NavigationEntry* active_entry =
+        current_tab->GetController().GetActiveEntry();
     // See comment in UpdateCommandsForTabState about why we call url().
     if (!SavePackage::IsSavableURL(active_entry ? active_entry->url() : GURL())
         || current_tab->showing_interstitial_page())

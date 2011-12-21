@@ -207,7 +207,8 @@ void TabFinder::FetchRedirectStart(TabContents* tab) {
   if (profile->IsOffTheRecord())
     return;
 
-  NavigationEntry* committed_entry = tab->controller().GetLastCommittedEntry();
+  NavigationEntry* committed_entry =
+      tab->GetController().GetLastCommittedEntry();
   if (!committed_entry || committed_entry->url().is_empty())
     return;
 
