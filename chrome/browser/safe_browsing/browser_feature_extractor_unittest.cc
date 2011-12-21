@@ -92,7 +92,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
   void NavigateAndCommit(const GURL& url,
                          const GURL& referrer,
                          content::PageTransition type) {
-    contents()->controller().LoadURL(
+    contents()->GetController().LoadURL(
         url, content::Referrer(referrer, WebKit::WebReferrerPolicyDefault),
         type, std::string());
 

@@ -96,7 +96,8 @@ class InstantLoader::FrameLoadObserver : public content::NotificationObserver {
         tab_contents_(tab_contents),
         text_(text),
         verbatim_(verbatim),
-        unique_id_(tab_contents_->controller().pending_entry()->unique_id()) {
+        unique_id_(
+            tab_contents_->GetController().pending_entry()->unique_id()) {
     registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
                    content::Source<TabContents>(tab_contents_));
   }
@@ -141,7 +142,7 @@ void InstantLoader::FrameLoadObserver::Observe(
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
       int page_id = *(content::Details<int>(details).ptr());
       NavigationEntry* active_entry =
-          tab_contents_->controller().GetActiveEntry();
+          tab_contents_->GetController().GetActiveEntry();
       if (!active_entry || active_entry->page_id() != page_id ||
           active_entry->unique_id() != unique_id_) {
         return;
@@ -290,7 +291,7 @@ InstantLoader::TabContentsDelegateImpl::TabContentsDelegateImpl(
       content::Source<TabContents>(loader->preview_contents()->tab_contents()));
   registrar_.Add(this, content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
       content::Source<NavigationController>(
-          &loader->preview_contents()->tab_contents()->controller()));
+          &loader->preview_contents()->tab_contents()->GetController()));
 }
 
 void InstantLoader::TabContentsDelegateImpl::PrepareForNewLoad() {
@@ -331,7 +332,7 @@ void InstantLoader::TabContentsDelegateImpl::CommitHistory(
   }
 
   NavigationEntry* active_entry =
-      tab->tab_contents()->controller().GetActiveEntry();
+      tab->tab_contents()->GetController().GetActiveEntry();
   if (!active_entry) {
     // It appears to be possible to get here with no active entry. This seems
     // to be possible with an auth dialog, but I can't narrow down the
@@ -424,7 +425,7 @@ void InstantLoader::TabContentsDelegateImpl::NavigationStateChanged(
     const TabContents* source,
     unsigned changed_flags) {
   if (!loader_->ready() && !registered_render_widget_host_ &&
-      source->controller().entry_count()) {
+      source->GetController().entry_count()) {
     // The load has been committed. Install an observer that waits for the
     // first paint then makes the preview active. We wait for the load to be
     // committed before waiting on paint as there is always an initial paint
@@ -547,9 +548,9 @@ void InstantLoader::TabContentsDelegateImpl::OnSetSuggestions(
     const std::vector<std::string>& suggestions,
     InstantCompleteBehavior behavior) {
   TabContentsWrapper* source = loader_->preview_contents();
-  if (!source->tab_contents()->controller().GetActiveEntry() ||
+  if (!source->tab_contents()->GetController().GetActiveEntry() ||
       page_id !=
-          source->tab_contents()->controller().GetActiveEntry()->page_id()) {
+          source->tab_contents()->GetController().GetActiveEntry()->page_id()) {
     return;
   }
 
@@ -563,8 +564,8 @@ void InstantLoader::TabContentsDelegateImpl::OnInstantSupportDetermined(
     int32 page_id,
     bool result) {
   TabContents* source = loader_->preview_contents()->tab_contents();
-  if (!source->controller().GetActiveEntry() ||
-      page_id != source->controller().GetActiveEntry()->page_id())
+  if (!source->GetController().GetActiveEntry() ||
+      page_id != source->GetController().GetActiveEntry()->page_id())
     return;
 
   content::Details<const bool> details(&result);
@@ -693,7 +694,7 @@ bool InstantLoader::Update(TabContentsWrapper* tab_contents,
     DCHECK(template_url_id_ == 0);
     preview_tab_contents_delegate_->PrepareForNewLoad();
     frame_load_observer_.reset(NULL);
-    preview_contents_->tab_contents()->controller().LoadURL(
+    preview_contents_->tab_contents()->GetController().LoadURL(
         url_, content::Referrer(), transition_type, std::string());
   }
   return true;
@@ -774,7 +775,7 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
           this,
           content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
           content::Source<NavigationController>(
-              &preview_contents_->tab_contents()->controller()));
+              &preview_contents_->tab_contents()->GetController()));
 #endif
     }
     preview_contents_->tab_contents()->SetDelegate(NULL);
@@ -811,7 +812,7 @@ void InstantLoader::MaybeLoadInstantURL(TabContentsWrapper* tab_contents,
 
 bool InstantLoader::IsNavigationPending() const {
   return preview_contents_.get() &&
-      preview_contents_->tab_contents()->controller().pending_entry();
+      preview_contents_->tab_contents()->GetController().pending_entry();
 }
 
 void InstantLoader::Observe(int type,
@@ -994,13 +995,13 @@ void InstantLoader::ReplacePreviewContents(TabContentsWrapper* old_tc,
       this,
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
       content::Source<NavigationController>(
-          &old_tc->tab_contents()->controller()));
+          &old_tc->tab_contents()->GetController()));
 #endif
   registrar_.Remove(
       this,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(
-          &old_tc->tab_contents()->controller()));
+          &old_tc->tab_contents()->GetController()));
 
   // We prerendered so we should be ready to show. If we're ready, swap in
   // immediately, otherwise show the preview as normal.
@@ -1024,7 +1025,7 @@ void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
   // will overlap.
   int32 max_page_id = tab_contents->tab_contents()->GetMaxPageID();
   if (max_page_id != -1) {
-    preview_contents_->tab_contents()->controller().set_max_restored_page_id(
+    preview_contents_->tab_contents()->GetController().set_max_restored_page_id(
         max_page_id + 1);
   }
 
@@ -1040,14 +1041,14 @@ void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
       this,
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
       content::Source<NavigationController>(
-          &preview_contents_->tab_contents()->controller()));
+          &preview_contents_->tab_contents()->GetController()));
 #endif
 
   registrar_.Add(
       this,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(
-          &preview_contents_->tab_contents()->controller()));
+          &preview_contents_->tab_contents()->GetController()));
 
   gfx::Rect tab_bounds;
   tab_contents->tab_contents()->view()->GetContainerBounds(&tab_bounds);
@@ -1086,7 +1087,7 @@ void InstantLoader::LoadInstantURL(TabContentsWrapper* tab_contents,
   CommandLine* cl = CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kInstantURL))
     instant_url = GURL(cl->GetSwitchValueASCII(switches::kInstantURL));
-  preview_contents_->tab_contents()->controller().LoadURL(
+  preview_contents_->tab_contents()->GetController().LoadURL(
       instant_url, content::Referrer(), transition_type, std::string());
   RenderViewHost* host = preview_contents_->tab_contents()->GetRenderViewHost();
   preview_contents_->tab_contents()->HideContents();

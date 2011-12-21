@@ -534,7 +534,7 @@ void TestingAutomationProvider::AppendTab(int handle,
         browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
     if (contents) {
       append_tab_response = GetIndexForNavigationController(
-          &contents->tab_contents()->controller(), browser);
+          &contents->tab_contents()->GetController(), browser);
     }
   }
 
@@ -1251,7 +1251,7 @@ void TestingAutomationProvider::GetTab(int win_handle,
     Browser* browser = browser_tracker_->GetResource(win_handle);
     if (tab_index < browser->tab_count()) {
       TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
-      *tab_handle = tab_tracker_->Add(&tab_contents->controller());
+      *tab_handle = tab_tracker_->Add(&tab_contents->GetController());
     }
   }
 }
@@ -2962,7 +2962,7 @@ void TestingAutomationProvider::GetNavigationInfo(
     return;
   }
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  const NavigationController& controller = tab_contents->controller();
+  const NavigationController& controller = tab_contents->GetController();
   NavigationEntry* nav_entry = controller.GetActiveEntry();
   DCHECK(nav_entry);
 
@@ -3526,7 +3526,7 @@ void TestingAutomationProvider::OmniboxAcceptInput(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   NavigationController& controller =
-      browser->GetSelectedTabContents()->controller();
+      browser->GetSelectedTabContents()->GetController();
   new OmniboxAcceptNotificationObserver(&controller, this, reply_message);
   browser->window()->GetLocationBar()->AcceptInput();
 }
@@ -4540,7 +4540,7 @@ void EnsureTabSelected(Browser* browser, TabContents* tab) {
   if (!active || active->tab_contents() != tab ||
       browser != BrowserList::GetLastActive()) {
     browser->ActivateTabAt(
-        browser->tabstrip_model()->GetIndexOfController(&tab->controller()),
+        browser->tabstrip_model()->GetIndexOfController(&tab->GetController()),
         true /* user_gesture */);
   }
 }
@@ -5709,7 +5709,7 @@ void TestingAutomationProvider::SendOSLevelKeyEventToTab(
   // The key events will be sent to the browser window, we need the current tab
   // containing the element we send the text in to be shown.
   browser->ActivateTabAt(
-      browser->GetIndexOfController(&tab_contents->controller()), true);
+      browser->GetIndexOfController(&tab_contents->GetController()), true);
 
   BrowserWindow* browser_window = browser->window();
   if (!browser_window) {
@@ -5842,7 +5842,7 @@ void TestingAutomationProvider::LaunchApp(
   }
 
   // This observer will delete itself.
-  new AppLaunchObserver(&old_contents->controller(), this, reply_message,
+  new AppLaunchObserver(&old_contents->GetController(), this, reply_message,
                         launch_container);
   Browser::OpenApplication(profile(), extension, launch_container, GURL(),
                            CURRENT_TAB);
@@ -6087,7 +6087,7 @@ void TestingAutomationProvider::NavigateToURL(
     return;
   }
   new NavigationNotificationObserver(
-      &tab_contents->controller(), this, reply_message,
+      &tab_contents->GetController(), this, reply_message,
       navigation_count, false, true);
   browser->OpenURLFromTab(tab_contents, OpenURLParams(
       GURL(url), content::Referrer(), CURRENT_TAB,
@@ -6175,7 +6175,7 @@ void TestingAutomationProvider::GoForward(
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  NavigationController& controller = tab_contents->controller();
+  NavigationController& controller = tab_contents->GetController();
   if (!controller.CanGoForward()) {
     DictionaryValue dict;
     dict.SetBoolean("did_go_forward", false);
@@ -6199,7 +6199,7 @@ void TestingAutomationProvider::GoBack(
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  NavigationController& controller = tab_contents->controller();
+  NavigationController& controller = tab_contents->GetController();
   if (!controller.CanGoBack()) {
     DictionaryValue dict;
     dict.SetBoolean("did_go_back", false);
@@ -6223,7 +6223,7 @@ void TestingAutomationProvider::ReloadJSON(
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  NavigationController& controller = tab_contents->controller();
+  NavigationController& controller = tab_contents->GetController();
   new NavigationNotificationObserver(&controller, this, reply_message,
                                      1, false, true);
   controller.Reload(false);
@@ -6409,7 +6409,7 @@ void TestingAutomationProvider::ActivateTabJSON(
     return;
   }
   browser->ActivateTabAt(
-      browser->GetIndexOfController(&tab_contents->controller()), true);
+      browser->GetIndexOfController(&tab_contents->GetController()), true);
   reply.SendSuccess(NULL);
 }
 

@@ -464,7 +464,7 @@ void TabSpecificContentSettings::Observe(
   DCHECK(type == chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED);
 
   content::Details<const ContentSettingsDetails> settings_details(details);
-  const NavigationController& controller = tab_contents()->controller();
+  const NavigationController& controller = tab_contents()->GetController();
   NavigationEntry* entry = controller.GetActiveEntry();
   GURL entry_url;
   if (entry)

@@ -853,7 +853,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-                controller()));
+                GetController()));
     browser()->Reload(CURRENT_TAB);
     observer.Wait();
   }
@@ -869,7 +869,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-                controller()));
+                GetController()));
     browser()->Reload(CURRENT_TAB);
     observer.Wait();
   }
@@ -892,7 +892,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnReloadCrashedTab) {
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-                controller()));
+                GetController()));
     browser()->Reload(CURRENT_TAB);
     observer.Wait();
   }

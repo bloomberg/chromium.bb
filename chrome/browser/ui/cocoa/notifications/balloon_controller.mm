@@ -176,7 +176,7 @@ const int kRightMargin = 2;
 - (void)updateContents {
   DCHECK(htmlContents_.get()) << "BalloonView::Update called before Show";
   if (htmlContents_->tab_contents()) {
-    htmlContents_->tab_contents()->controller().LoadURL(
+    htmlContents_->tab_contents()->GetController().LoadURL(
         balloon_->notification().content_url(), content::Referrer(),
         content::PAGE_TRANSITION_LINK, std::string());
   }

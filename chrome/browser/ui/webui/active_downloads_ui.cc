@@ -220,7 +220,7 @@ void ActiveDownloadsHandler::PlayMediaFile(const ListValue* args) {
   FilePath file_path(UTF16ToUTF8(ExtractStringValue(args)));
 
   Browser* browser = Browser::GetBrowserForController(
-      &tab_contents_->controller(), NULL);
+      &tab_contents_->GetController(), NULL);
   MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
   mediaplayer->PopupMediaPlayer(browser);
   mediaplayer->ForcePlayMediaFile(profile_, file_path);

@@ -90,12 +90,12 @@ WebUIMessageHandler* SyncPromoHandler::Attach(WebUI* web_ui) {
   prefs_ = Profile::FromWebUI(web_ui)->GetPrefs();
   DCHECK(prefs_);
   // Ignore events from view-source:chrome://syncpromo.
-  if (!web_ui->tab_contents()->controller().GetActiveEntry()->
+  if (!web_ui->tab_contents()->GetController().GetActiveEntry()->
           IsViewSourceMode()) {
     // Listen to see if the tab we're in gets closed.
     registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
         content::Source<NavigationController>(
-            &web_ui->tab_contents()->controller()));
+            &web_ui->tab_contents()->GetController()));
     // Listen to see if the window we're in gets closed.
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
         content::NotificationService::AllSources());

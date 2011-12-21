@@ -635,7 +635,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillAfterReload) {
   LOG(WARNING) << "Reloading the page.";
   TabContents* tab =
       browser()->GetSelectedTabContentsWrapper()->tab_contents();
-  tab->controller().Reload(false);
+  tab->GetController().Reload(false);
   ui_test_utils::WaitForLoadStop(tab);
 
   // Invoke Autofill.

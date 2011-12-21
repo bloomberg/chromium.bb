@@ -96,7 +96,7 @@ bool OptionsMenuModel::IsCommandIdEnabled(int command_id) const {
       DCHECK(translate_infobar_delegate_->owner() != NULL);
       DCHECK(translate_infobar_delegate_->owner()->tab_contents() != NULL);
       NavigationEntry* entry = translate_infobar_delegate_->owner()->
-          tab_contents()->controller().GetActiveEntry();
+          tab_contents()->GetController().GetActiveEntry();
       // Delegate and tab contents should never be NULL, but active entry
       // can be NULL when running tests. We want to return false if NULL.
       return (entry != NULL) && !entry->url().SchemeIsSecure();

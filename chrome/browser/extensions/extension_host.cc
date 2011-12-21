@@ -133,7 +133,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       profile_, site_instance, MSG_ROUTING_NONE, NULL, NULL));
   TabContentsObserver::Observe(host_contents_.get());
   host_contents_->SetDelegate(this);
-  host_contents_->set_view_type(host_type);
+  host_contents_->SetViewType(host_type);
 
   // TODO(mpcomplete): This was lifted from PrefsTabHelper, but it might be
   // better to reuse all of PrefsTabHelper. We'd first have to make it not
@@ -251,7 +251,7 @@ void ExtensionHost::LoadInitialURL() {
     return;
   }
 
-  host_contents_->controller().LoadURL(
+  host_contents_->GetController().LoadURL(
       initial_url_, content::Referrer(), content::PAGE_TRANSITION_LINK,
       std::string());
 }

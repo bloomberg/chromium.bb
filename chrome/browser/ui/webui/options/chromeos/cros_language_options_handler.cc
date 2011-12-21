@@ -212,7 +212,7 @@ void CrosLanguageOptionsHandler::RestartCallback(const ListValue* args) {
   content::RecordAction(UserMetricsAction("LanguageOptions_SignOut"));
 
   Browser* browser = Browser::GetBrowserForController(
-      &web_ui_->tab_contents()->controller(), NULL);
+      &web_ui_->tab_contents()->GetController(), NULL);
   if (browser)
     browser->ExecuteCommand(IDC_EXIT);
 }

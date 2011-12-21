@@ -253,7 +253,7 @@ TabContents* WebIntentPickerGtk::SetInlineDisposition(const GURL& url) {
   tab_contents_container_.reset(new TabContentsContainerGtk(NULL));
   tab_contents_container_->SetTab(inline_disposition_tab_contents_.get());
 
-  inline_disposition_tab_contents_->tab_contents()->controller().LoadURL(
+  inline_disposition_tab_contents_->tab_contents()->GetController().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_START_PAGE,
       std::string());
 

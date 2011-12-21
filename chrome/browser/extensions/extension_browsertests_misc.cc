@@ -702,7 +702,7 @@ static void WindowOpenHelper(Browser* browser, const GURL& start_url,
   GURL expected_url = start_url.Resolve(newtab_url);
   observer.Wait();
   EXPECT_EQ(expected_url,
-            newtab->controller().GetLastCommittedEntry()->url());
+            newtab->GetController().GetLastCommittedEntry()->url());
   if (newtab_result)
     *newtab_result = newtab;
 }
@@ -811,7 +811,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-                controller()));
+                GetController()));
     browser()->Reload(CURRENT_TAB);
     observer.Wait();
   }
@@ -838,7 +838,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-                controller()));
+                GetController()));
     browser()->Reload(CURRENT_TAB);
     observer.Wait();
   }

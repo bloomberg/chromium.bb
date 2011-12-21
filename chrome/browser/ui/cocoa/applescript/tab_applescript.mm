@@ -187,7 +187,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
   }
 
   NavigationEntry* entry =
-      tabContents_->tab_contents()->controller().GetActiveEntry();
+      tabContents_->tab_contents()->GetController().GetActiveEntry();
   if (!entry) {
     return nil;
   }
@@ -211,7 +211,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
   }
 
   NavigationEntry* entry =
-      tabContents_->tab_contents()->controller().GetActiveEntry();
+      tabContents_->tab_contents()->GetController().GetActiveEntry();
   if (!entry)
     return;
 
@@ -226,7 +226,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 
 - (NSString*)title {
   NavigationEntry* entry =
-      tabContents_->tab_contents()->controller().GetActiveEntry();
+      tabContents_->tab_contents()->GetController().GetActiveEntry();
   if (!entry)
     return nil;
 
@@ -305,21 +305,21 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 
 - (void)handlesGoBackScriptCommand:(NSScriptCommand*)command {
   NavigationController& navigationController =
-      tabContents_->tab_contents()->controller();
+      tabContents_->tab_contents()->GetController();
   if (navigationController.CanGoBack())
     navigationController.GoBack();
 }
 
 - (void)handlesGoForwardScriptCommand:(NSScriptCommand*)command {
   NavigationController& navigationController =
-      tabContents_->tab_contents()->controller();
+      tabContents_->tab_contents()->GetController();
   if (navigationController.CanGoForward())
     navigationController.GoForward();
 }
 
 - (void)handlesReloadScriptCommand:(NSScriptCommand*)command {
   NavigationController& navigationController =
-      tabContents_->tab_contents()->controller();
+      tabContents_->tab_contents()->GetController();
   const bool checkForRepost = true;
   navigationController.Reload(checkForRepost);
 }
@@ -388,7 +388,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 
 - (void)handlesViewSourceScriptCommand:(NSScriptCommand*)command {
   NavigationEntry* entry =
-      tabContents_->tab_contents()->controller().GetLastCommittedEntry();
+      tabContents_->tab_contents()->GetController().GetLastCommittedEntry();
   if (entry) {
     tabContents_->tab_contents()->OpenURL(
         GURL(chrome::kViewSourceScheme + std::string(":") +

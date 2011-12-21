@@ -133,7 +133,7 @@ void AlternateNavURLFetcher::Observe(
       // See above.
       NavigationController* controller =
           &content::Source<TabContentsWrapper>(source)->
-              tab_contents()->controller();
+              tab_contents()->GetController();
       if (controller_ == controller) {
         delete this;
       } else if (!controller_) {

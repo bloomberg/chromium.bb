@@ -371,7 +371,7 @@ bool CompleteInstallFunction::RunImpl() {
   // permissions install dialog.
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       profile(), test_webstore_installer_delegate,
-      &(dispatcher()->delegate()->GetAssociatedTabContents()->controller()),
+      &(dispatcher()->delegate()->GetAssociatedTabContents()->GetController()),
       id, WebstoreInstaller::FLAG_NONE);
   installer->Start();
 
@@ -426,7 +426,7 @@ void SilentlyInstallFunction::OnWebstoreParseSuccess(
 
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       profile(), this,
-      &(dispatcher()->delegate()->GetAssociatedTabContents()->controller()),
+      &(dispatcher()->delegate()->GetAssociatedTabContents()->GetController()),
       id_, WebstoreInstaller::FLAG_NONE);
   installer->Start();
 }

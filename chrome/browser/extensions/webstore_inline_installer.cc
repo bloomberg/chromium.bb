@@ -394,7 +394,7 @@ void WebstoreInlineInstaller::InstallUIProceed() {
       tab_contents()->browser_context());
 
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
-      profile, this, &(tab_contents()->controller()), id_,
+      profile, this, &(tab_contents()->GetController()), id_,
       WebstoreInstaller::FLAG_INLINE_INSTALL);
   installer->Start();
 }

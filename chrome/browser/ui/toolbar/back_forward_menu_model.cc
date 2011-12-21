@@ -289,10 +289,10 @@ int BackForwardMenuModel::GetHistoryItemCount() const {
 
   if (model_type_ == FORWARD_MENU) {
     // Only count items from n+1 to end (if n is current entry)
-    items = contents->controller().entry_count() -
-            contents->controller().GetCurrentEntryIndex() - 1;
+    items = contents->GetController().entry_count() -
+            contents->GetController().GetCurrentEntryIndex() - 1;
   } else {
-    items = contents->controller().GetCurrentEntryIndex();
+    items = contents->GetController().GetCurrentEntryIndex();
   }
 
   if (items > kMaxHistoryItems)
@@ -307,7 +307,7 @@ int BackForwardMenuModel::GetChapterStopCount(int history_items) const {
   TabContents* contents = GetTabContents();
 
   int chapter_stops = 0;
-  int current_entry = contents->controller().GetCurrentEntryIndex();
+  int current_entry = contents->GetController().GetCurrentEntryIndex();
 
   if (history_items == kMaxHistoryItems) {
     int chapter_id = current_entry;
@@ -331,7 +331,7 @@ int BackForwardMenuModel::GetChapterStopCount(int history_items) const {
 int BackForwardMenuModel::GetIndexOfNextChapterStop(int start_from,
                                                     bool forward) const {
   TabContents* contents = GetTabContents();
-  NavigationController& controller = contents->controller();
+  NavigationController& controller = contents->GetController();
 
   int max_count = controller.entry_count();
   if (start_from < 0 || start_from >= max_count)
@@ -383,7 +383,7 @@ int BackForwardMenuModel::FindChapterStop(int offset,
     offset *= -1;
 
   TabContents* contents = GetTabContents();
-  int entry = contents->controller().GetCurrentEntryIndex() + offset;
+  int entry = contents->GetController().GetCurrentEntryIndex() + offset;
   for (int i = 0; i < skip + 1; i++)
     entry = GetIndexOfNextChapterStop(entry, forward);
 
@@ -417,10 +417,10 @@ int BackForwardMenuModel::MenuIndexToNavEntryIndex(int index) const {
   // Convert anything above the History items separator.
   if (index < history_items) {
     if (model_type_ == FORWARD_MENU) {
-      index += contents->controller().GetCurrentEntryIndex() + 1;
+      index += contents->GetController().GetCurrentEntryIndex() + 1;
     } else {
       // Back menu is reverse.
-      index = contents->controller().GetCurrentEntryIndex() - (index + 1);
+      index = contents->GetController().GetCurrentEntryIndex() - (index + 1);
     }
     return index;
   }
@@ -440,7 +440,7 @@ int BackForwardMenuModel::MenuIndexToNavEntryIndex(int index) const {
 
 NavigationEntry* BackForwardMenuModel::GetNavigationEntry(int index) const {
   int controller_index = MenuIndexToNavEntryIndex(index);
-  NavigationController& controller = GetTabContents()->controller();
+  NavigationController& controller = GetTabContents()->GetController();
   if (controller_index >= 0 && controller_index < controller.entry_count())
     return controller.GetEntryAtIndex(controller_index);
 

@@ -104,7 +104,7 @@ UpdateShortcutWorker::UpdateShortcutWorker(TabContentsWrapper* tab_contents)
       this,
       content::NOTIFICATION_TAB_CLOSING,
       content::Source<NavigationController>(
-          &tab_contents_->tab_contents()->controller()));
+          &tab_contents_->tab_contents()->GetController()));
 }
 
 void UpdateShortcutWorker::Run() {
@@ -118,7 +118,7 @@ void UpdateShortcutWorker::Observe(
     const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_TAB_CLOSING &&
       content::Source<NavigationController>(source).ptr() ==
-        &tab_contents_->tab_contents()->controller()) {
+        &tab_contents_->tab_contents()->GetController()) {
     // Underlying tab is closing.
     tab_contents_ = NULL;
   }

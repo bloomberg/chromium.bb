@@ -83,7 +83,7 @@ class ErrorPageTest : public InProcessBrowserTest {
     TestNavigationObserver test_navigation_observer(
         content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
-                controller()),
+                GetController()),
         NULL,
         num_navigations);
     if (direction == HISTORY_NAVIGATE_BACK) {

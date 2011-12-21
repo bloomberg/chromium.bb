@@ -115,9 +115,9 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
   }
 
   void GoBack(bool is_cross_site) {
-    NavigationEntry* entry = contents()->controller().GetEntryAtOffset(-1);
+    NavigationEntry* entry = contents()->GetController().GetEntryAtOffset(-1);
     ASSERT_TRUE(entry);
-    contents()->controller().GoBack();
+    contents()->GetController().GoBack();
 
     // The pending RVH should commit for cross-site navigations.
     RenderViewHost* rvh = is_cross_site ?
@@ -493,7 +493,7 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   EXPECT_EQ(kGoodURL, controller().GetActiveEntry()->url().spec());
 
   // Navigate forward to the malware URL.
-  contents()->controller().GoForward();
+  contents()->GetController().GoForward();
   ShowInterstitial(false, kBadURL);
   sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);

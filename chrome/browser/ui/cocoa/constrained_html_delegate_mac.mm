@@ -105,10 +105,10 @@ ConstrainedHtmlDelegateMac::ConstrainedHtmlDelegateMac(
   ConstrainedHtmlUI::GetPropertyAccessor().SetProperty(
       tab_contents->GetPropertyBag(), this);
 
-  tab_contents->controller().LoadURL(delegate->GetDialogContentURL(),
-                                     content::Referrer(),
-                                     content::PAGE_TRANSITION_START_PAGE,
-                                     std::string());
+  tab_contents->GetController().LoadURL(delegate->GetDialogContentURL(),
+                                        content::Referrer(),
+                                        content::PAGE_TRANSITION_START_PAGE,
+                                        std::string());
 
   // Create NSWindow to hold tab_contents in the constrained sheet:
   gfx::Size size;

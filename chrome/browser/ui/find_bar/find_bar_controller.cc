@@ -93,7 +93,7 @@ void FindBarController::ChangeTabContents(TabContentsWrapper* contents) {
       this,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(
-          &tab_contents_->tab_contents()->controller()));
+          &tab_contents_->tab_contents()->GetController()));
 
   MaybeSetPrepopulateText();
 
@@ -133,7 +133,7 @@ void FindBarController::Observe(int type,
   } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     NavigationController* source_controller =
         content::Source<NavigationController>(source).ptr();
-    if (source_controller == &tab_contents_->tab_contents()->controller()) {
+    if (source_controller == &tab_contents_->tab_contents()->GetController()) {
       content::LoadCommittedDetails* commit_details =
           content::Details<content::LoadCommittedDetails>(details).ptr();
       content::PageTransition transition_type =

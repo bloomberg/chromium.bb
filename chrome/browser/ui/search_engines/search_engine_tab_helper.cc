@@ -86,7 +86,7 @@ void SearchEngineTabHelper::OnPageHasOSDD(
       return;
   }
 
-  const NavigationController& controller = tab_contents()->controller();
+  const NavigationController& controller = tab_contents()->GetController();
   const NavigationEntry* entry = controller.GetLastCommittedEntry();
   DCHECK(entry);
 
@@ -136,7 +136,7 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   if (profile->IsOffTheRecord())
     return;
 
-  const NavigationController& controller = tab_contents()->controller();
+  const NavigationController& controller = tab_contents()->GetController();
   int last_index = controller.last_committed_entry_index();
   // When there was no previous page, the last index will be 0. This is
   // normally due to a form submit that opened in a new tab.

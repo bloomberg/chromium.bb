@@ -250,7 +250,7 @@ void TabRestoreService::BrowserClosing(TabRestoreServiceDelegate* delegate) {
     PopulateTab(&(window->tabs[entry_index]),
                 tab_index,
                 delegate,
-                &delegate->GetTabContentsAt(tab_index)->controller());
+                &delegate->GetTabContentsAt(tab_index)->GetController());
     if (window->tabs[entry_index].navigations.empty()) {
       window->tabs.erase(window->tabs.begin() + entry_index);
     } else {
@@ -361,7 +361,7 @@ void TabRestoreService::RestoreEntryById(TabRestoreServiceDelegate* delegate,
                                      tab.pinned, tab.from_last_session,
                                      tab.session_storage_namespace);
         if (restored_tab) {
-          restored_tab->controller().LoadIfNecessary();
+          restored_tab->GetController().LoadIfNecessary();
           RecordAppLaunch(profile(), tab);
         }
       }

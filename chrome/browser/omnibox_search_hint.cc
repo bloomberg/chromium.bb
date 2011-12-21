@@ -149,7 +149,7 @@ bool HintInfoBar::Accept() {
 // OmniboxSearchHint ----------------------------------------------------------
 
 OmniboxSearchHint::OmniboxSearchHint(TabContentsWrapper* tab) : tab_(tab) {
-  NavigationController* controller = &(tab->tab_contents()->controller());
+  NavigationController* controller = &(tab->tab_contents()->GetController());
   notification_registrar_.Add(
       this,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -172,7 +172,7 @@ void OmniboxSearchHint::Observe(int type,
                                 const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     NavigationEntry* entry =
-        tab_->tab_contents()->controller().GetActiveEntry();
+        tab_->tab_contents()->GetController().GetActiveEntry();
     if (search_engine_urls_.find(entry->url().spec()) ==
         search_engine_urls_.end()) {
       // The search engine is not in our white-list, bail.
