@@ -241,6 +241,12 @@ void InterstitialPage::Hide() {
     entry->set_title(original_tab_title_);
     tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
   }
+
+  content::NotificationService::current()->Notify(
+      content::NOTIFICATION_INTERSTITIAL_DETACHED,
+      content::Source<TabContents>(tab_),
+      content::NotificationService::NoDetails());
+
   delete this;
 }
 
@@ -396,6 +402,17 @@ content::RendererPreferences InterstitialPage::GetRendererPrefs(
 WebPreferences InterstitialPage::GetWebkitPrefs() {
   return content::GetContentClient()->browser()->GetWebkitPrefs(
       render_view_host());
+}
+
+bool InterstitialPage::PreHandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event,
+    bool* is_keyboard_shortcut) {
+  return tab_->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
+}
+
+void InterstitialPage::HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) {
+  return tab_->HandleKeyboardEvent(event);
 }
 
 RenderViewHost* InterstitialPage::CreateRenderViewHost() {

@@ -272,6 +272,10 @@ enum NotificationType {
   // source is the TabContents, the details not used.
   NOTIFICATION_INTERSTITIAL_ATTACHED,
 
+  // Notification than an interstitial has become detached from a tab. The
+  // source is the TabContents, the details not used.
+  NOTIFICATION_INTERSTITIAL_DETACHED,
+
   // Indicates that a RenderProcessHost was created and its handle is now
   // available. The source will be the RenderProcessHost that corresponds to
   // the process.

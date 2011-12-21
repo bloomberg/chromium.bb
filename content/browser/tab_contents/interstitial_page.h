@@ -132,6 +132,10 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
   virtual content::RendererPreferences GetRendererPrefs(
       content::BrowserContext* browser_context) const OVERRIDE;
   virtual WebPreferences GetWebkitPrefs() OVERRIDE;
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
 
   // Invoked with the NavigationEntry that is going to be added to the
   // navigation controller.

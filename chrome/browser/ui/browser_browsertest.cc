@@ -43,6 +43,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -138,6 +139,20 @@ void RunCloseWithAppMenuCallback(Browser* browser) {
       FROM_HERE, base::Bind(&CloseWindowCallback, browser));
   browser->ShowAppMenu();
 }
+
+// Displays "INTERSTITIAL" while the interstitial is attached.
+// (InterstitialPage can be used in a test directly, but there would be no way
+// to visually tell if it is showing or not.)
+class TestInterstitialPage : public InterstitialPage {
+ public:
+  TestInterstitialPage(TabContents* tab, bool new_navigation, const GURL& url)
+      : InterstitialPage(tab, new_navigation, url) { }
+  virtual ~TestInterstitialPage() { }
+
+  virtual std::string GetHTMLContents() OVERRIDE {
+    return "<h1>INTERSTITIAL</h1>";
+  }
+};
 
 }  // namespace
 
@@ -1313,6 +1328,49 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageZoom) {
   EXPECT_TRUE(enable_minus);
 
   browser()->Zoom(content::PAGE_ZOOM_RESET);
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
+  ASSERT_TRUE(test_server()->Start());
+  host_resolver()->AddRule("www.example.com", "127.0.0.1");
+  GURL url(test_server()->GetURL("empty.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  CommandUpdater* command_updater = browser()->command_updater();
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_VIEW_SOURCE));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_PRINT));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SAVE_PAGE));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_ENCODING_MENU));
+
+  TabContents* contents = browser()->GetSelectedTabContents();
+  TestInterstitialPage* interstitial = new TestInterstitialPage(
+      contents, false, GURL());
+
+  ui_test_utils::WindowedNotificationObserver interstitial_observer(
+      content::NOTIFICATION_INTERSTITIAL_ATTACHED,
+      content::Source<TabContents>(contents));
+  interstitial->Show();
+  interstitial_observer.Wait();
+
+  EXPECT_TRUE(contents->showing_interstitial_page());
+
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_VIEW_SOURCE));
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_PRINT));
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SAVE_PAGE));
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_ENCODING_MENU));
+
+  ui_test_utils::WindowedNotificationObserver interstitial_detach_observer(
+      content::NOTIFICATION_INTERSTITIAL_DETACHED,
+      content::Source<TabContents>(contents));
+  interstitial->Proceed();
+  interstitial_detach_observer.Wait();
+  // interstitial is deleted now.
+
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_VIEW_SOURCE));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_PRINT));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SAVE_PAGE));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_ENCODING_MENU));
+
 }
 
 // TODO(ben): this test was never enabled. It has bit-rotted since being added.

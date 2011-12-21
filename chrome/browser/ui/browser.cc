@@ -3262,6 +3262,9 @@ void Browser::TabInsertedAt(TabContentsWrapper* contents,
 
   registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
                  content::Source<TabContents>(contents->tab_contents()));
+
+  registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_DETACHED,
+                 content::Source<TabContents>(contents->tab_contents()));
 }
 
 void Browser::TabClosingAt(TabStripModel* tab_strip_model,
@@ -4220,6 +4223,12 @@ void Browser::Observe(int type,
 
     case content::NOTIFICATION_INTERSTITIAL_ATTACHED:
       UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
+      UpdateCommandsForTabState();
+      break;
+
+    case content::NOTIFICATION_INTERSTITIAL_DETACHED:
+      UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
+      UpdateCommandsForTabState();
       break;
 
     default:
@@ -4595,7 +4604,8 @@ void Browser::UpdateCommandsForTabState() {
       command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, false);
 
   // Changing the encoding is not possible on Chrome-internal webpages.
-  bool is_chrome_internal = HasInternalURL(nc.GetActiveEntry());
+  bool is_chrome_internal = HasInternalURL(nc.GetActiveEntry()) ||
+      current_tab->showing_interstitial_page();
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_MENU,
       !is_chrome_internal && SavePackage::IsSavableContents(
           current_tab->contents_mime_type()));
@@ -5095,6 +5105,8 @@ void Browser::TabDetachedAtImpl(TabContentsWrapper* contents, int index,
 
   registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
                     content::Source<TabContents>(contents->tab_contents()));
+  registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_DETACHED,
+                    content::Source<TabContents>(contents->tab_contents()));
   registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
                     content::Source<TabContents>(contents->tab_contents()));
 }
@@ -5267,8 +5279,11 @@ int Browser::GetContentRestrictionsForSelectedTab() {
     content_restrictions = current_tab->content_restrictions();
     NavigationEntry* active_entry = current_tab->controller().GetActiveEntry();
     // See comment in UpdateCommandsForTabState about why we call url().
-    if (!SavePackage::IsSavableURL(active_entry ? active_entry->url() : GURL()))
+    if (!SavePackage::IsSavableURL(active_entry ? active_entry->url() : GURL())
+        || current_tab->showing_interstitial_page())
       content_restrictions |= content::CONTENT_RESTRICTION_SAVE;
+    if (current_tab->showing_interstitial_page())
+      content_restrictions |= content::CONTENT_RESTRICTION_PRINT;
   }
   return content_restrictions;
 }
