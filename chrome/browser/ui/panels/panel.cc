@@ -194,7 +194,6 @@ bool Panel::IsActive() const {
 
 void Panel::FlashFrame() {
   native_panel_->DrawAttention();
-  manager()->OnPanelAttentionStateChanged(this);
 }
 
 gfx::NativeWindow Panel::GetNativeHandle() {

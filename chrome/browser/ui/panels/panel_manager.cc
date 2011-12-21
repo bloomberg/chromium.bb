@@ -186,11 +186,6 @@ void PanelManager::OnPanelExpansionStateChanged(
     panel_strip_->OnPanelExpansionStateChanged(panel, old_state);
 }
 
-void PanelManager::OnPanelAttentionStateChanged(Panel* panel) {
-  if (panel->expansion_state() == Panel::IN_OVERFLOW)
-    panel_overflow_strip_->OnPanelAttentionStateChanged(panel);
-}
-
 void PanelManager::OnPreferredWindowSizeChanged(
     Panel* panel, const gfx::Size& preferred_window_size) {
   if (!auto_sizing_enabled_)

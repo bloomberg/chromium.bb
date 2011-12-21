@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_overflow_indicator.h"
 #include "chrome/browser/ui/panels/panel_overflow_strip.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
@@ -19,9 +18,8 @@
 
 namespace {
 
-// We override the default value for testing purpose.
-const int kMaxVisibleOverflowPanelsForTesting = 3;
-const int kMaxVisibleOverflowPanelsOnHoverForTesting = 6;
+//  We override the default value for testing purpose.
+const int kMaxVisibleOverflowForTesting = 3;
 
 // Encapsulates all the info we need to verify if a panel behaves as expected
 // when we do the overflow testing.
@@ -88,14 +86,8 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     BasePanelBrowserTest::SetUpOnMainThread();
 
-    PanelManager* panel_manager = PanelManager::GetInstance();
-    panel_manager->panel_overflow_strip()->set_max_visible_panels(
-        kMaxVisibleOverflowPanelsForTesting);
-    panel_manager->panel_overflow_strip()->set_max_visible_panels_on_hover(
-        kMaxVisibleOverflowPanelsOnHoverForTesting);
-
-    PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
-    panel_manager->SetMouseWatcherForTesting(mouse_watcher);
+    PanelManager::GetInstance()->panel_overflow_strip()->
+        set_max_visible_panels(kMaxVisibleOverflowForTesting);
 
     // All the overflow tests assume 800x600 work area. Do the check now.
     DCHECK(PanelManager::GetInstance()->work_area().width() == 800);
@@ -188,8 +180,6 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 #define MAYBE_ActivateOverflowPanels ActivateOverflowPanels
 #define MAYBE_HoverOverOverflowArea HoverOverOverflowArea
 #define MAYBE_ResizePanel ResizePanel
-#define MAYBE_OverflowIndicatorCount OverflowIndicatorCount
-#define MAYBE_DrawOverflowAttention DrawOverflowAttention
 #else
 #define MAYBE_CheckPanelProperties DISABLED_CheckPanelProperties
 #define MAYBE_UpdateDraggableStatus DISABLED_UpdateDraggableStatus
@@ -202,8 +192,6 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 #define MAYBE_ActivateOverflowPanels DISABLED_ActivateOverflowPanels
 #define MAYBE_HoverOverOverflowArea DISABLED_HoverOverOverflowArea
 #define MAYBE_ResizePanel DISABLED_ResizePanel
-#define MAYBE_OverflowIndicatorCount DISABLED_OverflowIndicatorCount
-#define MAYBE_DrawOverflowAttention DISABLED_DrawOverflowAttention
 #endif
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CheckPanelProperties) {
@@ -258,46 +246,20 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CreateOverflowPanels) {
   PanelOverflowStrip* panel_overflow_strip =
       panel_manager->panel_overflow_strip();
 
-  EXPECT_EQ(0, panel_manager->num_panels());
-  EXPECT_EQ(0, panel_strip->num_panels());
-  EXPECT_EQ(0, panel_overflow_strip->num_panels());
-  EXPECT_FALSE(panel_overflow_strip->overflow_indicator());
+  const int panel_widths[] = {
+      250, 260, 200,  // normal
+      255, 220        // overflow
+  };
+  CreateOverflowPanels(3, 2, panel_widths);
 
-  // Create 3 normal panels.
-  Panel* panel0 = CreatePanelWithBounds("Panel0", gfx::Rect(0, 0, 250, 200));
-  Panel* panel1 = CreatePanelWithBounds("Panel1", gfx::Rect(0, 0, 260, 200));
-  Panel* panel2 = CreatePanelWithBounds("Panel2", gfx::Rect(0, 0, 200, 200));
-
-  EXPECT_EQ(3, panel_manager->num_panels());
-  EXPECT_EQ(3, panel_strip->num_panels());
-  EXPECT_EQ(0, panel_overflow_strip->num_panels());
-  EXPECT_FALSE(panel_overflow_strip->overflow_indicator());
-  EXPECT_EQ(Panel::EXPANDED, panel0->expansion_state());
-  EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
-  EXPECT_EQ(Panel::EXPANDED, panel2->expansion_state());
-
-  // Create 1 overflow panel.
-  CreatePanelParams params(
-      "Panel3", gfx::Rect(0, 0, 255, 200), SHOW_AS_INACTIVE);
-  Panel* panel3 = CreatePanelWithParams(params);
-  WaitForExpansionStateChanged(panel3, Panel::IN_OVERFLOW);
-
-  EXPECT_EQ(4, panel_manager->num_panels());
-  EXPECT_EQ(3, panel_strip->num_panels());
-  EXPECT_EQ(1, panel_overflow_strip->num_panels());
-  EXPECT_FALSE(panel_overflow_strip->overflow_indicator());
-  EXPECT_TRUE(IsPanelVisible(panel3));
-
-  // Create 1 more overflow panel.
-  params.name = "Panel4";
-  Panel* panel4 = CreatePanelWithParams(params);
-  WaitForExpansionStateChanged(panel4, Panel::IN_OVERFLOW);
-
-  EXPECT_EQ(5, panel_manager->num_panels());
+  std::vector<Panel*> panels = panel_manager->panels();
+  ASSERT_EQ(5u, panels.size());
   EXPECT_EQ(3, panel_strip->num_panels());
   EXPECT_EQ(2, panel_overflow_strip->num_panels());
-  EXPECT_FALSE(panel_overflow_strip->overflow_indicator());
-  EXPECT_TRUE(IsPanelVisible(panel4));
+  EXPECT_EQ(Panel::IN_OVERFLOW, panels[3]->expansion_state());
+  EXPECT_TRUE(IsPanelVisible(panels[3]));
+  EXPECT_EQ(Panel::IN_OVERFLOW, panels[4]->expansion_state());
+  EXPECT_TRUE(IsPanelVisible(panels[4]));
 
   PanelManager::GetInstance()->RemoveAll();
 }
@@ -320,7 +282,6 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
   ASSERT_EQ(8u, panels.size());
   EXPECT_EQ(3, panel_strip->num_panels());
   EXPECT_EQ(5, panel_overflow_strip->num_panels());
-  EXPECT_EQ(2, panel_overflow_strip->overflow_indicator()->GetCount());
   EXPECT_EQ(Panel::IN_OVERFLOW, panels[3]->expansion_state());
   EXPECT_TRUE(IsPanelVisible(panels[3]));
   EXPECT_EQ(Panel::IN_OVERFLOW, panels[4]->expansion_state());
@@ -762,6 +723,8 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_ActivateOverflowPanels) {
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_HoverOverOverflowArea) {
   PanelManager* panel_manager = PanelManager::GetInstance();
+  PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
+  panel_manager->SetMouseWatcherForTesting(mouse_watcher);
   PanelOverflowStrip* panel_overflow_strip =
       panel_manager->panel_overflow_strip();
   int iconified_width = panel_overflow_strip->current_display_width();
@@ -960,216 +923,4 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_ResizePanel) {
   panel3->Close();
   panel4->Close();
   panel5->Close();
-}
-
-IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_OverflowIndicatorCount) {
-  PanelManager* panel_manager = PanelManager::GetInstance();
-  PanelOverflowStrip* overflow_strip = panel_manager->panel_overflow_strip();
-
-  // Create normal and overflow panels.
-  //   normal:               P0, P1, P2
-  //   overflow:             P3, P4, P5
-  const int panel_widths[] = {
-      250, 250, 210,  // normal
-      250, 250, 260   // overflow
-  };
-  std::vector<Panel*> panels = CreateOverflowPanels(3, 3, panel_widths);
-  EXPECT_EQ(3, overflow_strip->num_panels());
-  EXPECT_FALSE(overflow_strip->overflow_indicator());
-
-  // Create 5 overflow-on-overflow panels.
-  //   normal:               P0, P1, P2
-  //   overflow:             P3, P4, P5, (P6, P7, P8, P9, P10)
-  // The panels enclosed in parentheses are hidden.
-  int num_existing_panels = panel_manager->num_panels();
-  for (int i = 0; i < 5; ++i) {
-    CreatePanelParams params(
-        MakePanelName(num_existing_panels + i),
-        gfx::Rect(0, 0, 250, 200),
-        SHOW_AS_INACTIVE);
-    Panel* panel = CreatePanelWithParams(params);
-    WaitForExpansionStateChanged(panel, Panel::IN_OVERFLOW);
-    EXPECT_EQ(i + 1, overflow_strip->overflow_indicator()->GetCount());
-    panels.push_back(panel);
-  }
-
-  // Expand the overflow area by moving mouse over it.
-  // Expect the overflow indicator count gets updated.
-  //   normal:               P0, P1, P2
-  //   overflow:             P3, P4, P5, P6, P7, P8, (P9, P10)
-  MoveMouseAndWaitForOverflowAnimationEnded(panels[3]->GetBounds().origin());
-  EXPECT_TRUE(IsPanelVisible(panels[6]));
-  EXPECT_TRUE(IsPanelVisible(panels[7]));
-  EXPECT_TRUE(IsPanelVisible(panels[8]));
-  EXPECT_FALSE(IsPanelVisible(panels[9]));
-  EXPECT_FALSE(IsPanelVisible(panels[10]));
-  EXPECT_EQ(2, overflow_strip->overflow_indicator()->GetCount());
-
-  // Close an overflow panel that makes one overflow-on-overflow panel become
-  // visible. Expect the overflow indicator count gets decreased by 1.
-  //   normal:               P0, P1, P2
-  //   overflow:             P4, P5, P6, P7, P8, P9, (P10)
-  CloseWindowAndWait(panels[3]->browser());
-  EXPECT_TRUE(IsPanelVisible(panels[6]));
-  EXPECT_TRUE(IsPanelVisible(panels[7]));
-  EXPECT_TRUE(IsPanelVisible(panels[8]));
-  EXPECT_TRUE(IsPanelVisible(panels[9]));
-  EXPECT_FALSE(IsPanelVisible(panels[10]));
-  EXPECT_EQ(1, overflow_strip->overflow_indicator()->GetCount());
-
-  // Shrink the overflow area by stopping hovering the mouse over the overflow
-  // area. Expect the overflow indicator count gets updated.
-  //   normal:               P0, P1, P2
-  //   overflow:             P4, P5, P6, (P7, P8, P9, P10)
-  MoveMouseAndWaitForOverflowAnimationEnded(gfx::Point(
-      panels[4]->GetBounds().right() + 5, panels[4]->GetBounds().y()));
-  EXPECT_TRUE(IsPanelVisible(panels[6]));
-  EXPECT_FALSE(IsPanelVisible(panels[7]));
-  EXPECT_FALSE(IsPanelVisible(panels[8]));
-  EXPECT_FALSE(IsPanelVisible(panels[9]));
-  EXPECT_FALSE(IsPanelVisible(panels[10]));
-  EXPECT_EQ(4, overflow_strip->overflow_indicator()->GetCount());
-
-  // Close an overflow panel.
-  // Expect the overflow indicator count gets decreased by 1.
-  //   normal:               P0, P1, P2
-  //   overflow:             P5, P6, P7, (P8, P9, P10)
-  CloseWindowAndWait(panels[4]->browser());
-  EXPECT_TRUE(IsPanelVisible(panels[6]));
-  EXPECT_TRUE(IsPanelVisible(panels[7]));
-  EXPECT_FALSE(IsPanelVisible(panels[8]));
-  EXPECT_FALSE(IsPanelVisible(panels[9]));
-  EXPECT_FALSE(IsPanelVisible(panels[10]));
-  EXPECT_EQ(3, overflow_strip->overflow_indicator()->GetCount());
-
-  // Activating a big overflow panel will cause 2 normal panels to move to the
-  // oevrflow area and also get the top visible overflow panel bumped to the
-  // overflow-on-overflow.
-  // Expect the overflow indicator count gets increased by 1.
-  //   normal:               P0, P5
-  //   overflow:             P1, P2, P6, (P7, P8, P9, P10)
-  panels[5]->Activate();
-  WaitForPanelActiveState(panels[5], SHOW_AS_ACTIVE);
-  WaitForExpansionStateChanged(panels[5], Panel::EXPANDED);
-  EXPECT_TRUE(IsPanelVisible(panels[6]));
-  EXPECT_FALSE(IsPanelVisible(panels[7]));
-  EXPECT_FALSE(IsPanelVisible(panels[8]));
-  EXPECT_FALSE(IsPanelVisible(panels[9]));
-  EXPECT_FALSE(IsPanelVisible(panels[10]));
-  EXPECT_EQ(4, overflow_strip->overflow_indicator()->GetCount());
-
-  panel_manager->RemoveAll();
-}
-
-IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_DrawOverflowAttention) {
-  PanelManager* panel_manager = PanelManager::GetInstance();
-  PanelStrip* panel_strip = panel_manager->panel_strip();
-  PanelOverflowStrip* overflow_strip = panel_manager->panel_overflow_strip();
-
-  // Create normal and overflow panels.
-  //   normal:               P0, P1, P2, P3
-  //   overflow:             P4, P5, P6, (P7, P8, P9, P10, P11)
-  // The panels enclosed in parentheses are hidden.
-  const int panel_widths[] = {
-      100, 210, 210, 210,  // normal
-      210, 260, 210,       // overflow
-      210, 210, 210,       // overflow-on-overflow on shrunk
-      210, 210             // overflow-on-overflow on expanded
-  };
-  std::vector<Panel*> panels = CreateOverflowPanels(4, 8, panel_widths);
-  EXPECT_EQ(4, panel_strip->num_panels());
-  EXPECT_EQ(8, overflow_strip->num_panels());
-  PanelOverflowIndicator* overflow_indicator =
-      overflow_strip->overflow_indicator();
-
-  // Draw attention for a visible overflow panel.
-  // Expect no impact to the overflow indicator.
-  //   normal:               P0, P1, P2, P3
-  //   overflow:             P4, *P5, P6, (P7, P8, P9, P10, P11)
-  EXPECT_FALSE(panels[5]->IsDrawingAttention());
-  panels[5]->FlashFrame();
-  EXPECT_TRUE(panels[5]->IsDrawingAttention());
-  EXPECT_FALSE(overflow_indicator->IsDrawingAttention());
-
-  // Activating this overflow panel will clear its attention.
-  // Expect no impact to the overflow indicator.
-  //   normal:               P0, P1, P2, P5
-  //   overflow:             P3, P4, P6, (P7, P8, P9, P10, P11)
-  panels[5]->Activate();
-  WaitForPanelActiveState(panels[5], SHOW_AS_ACTIVE);
-  EXPECT_FALSE(panels[5]->IsDrawingAttention());
-  EXPECT_FALSE(overflow_indicator->IsDrawingAttention());
-
-  // Draw attention for an overflow-on-overflow panel.
-  // Expect the overflow indicator is showing attention.
-  //   normal:               P0, P1, P2, P5
-  //   overflow:             P3, P4, P6, (P7, *P8, P9, P10, P11)
-  EXPECT_FALSE(panels[8]->IsDrawingAttention());
-  panels[8]->FlashFrame();
-  EXPECT_TRUE(panels[8]->IsDrawingAttention());
-  EXPECT_TRUE(overflow_indicator->IsDrawingAttention());
-
-  // Draw attention for another overflow-on-overflow panel.
-  // Expect the overflow indicator is still showing attention.
-  //   normal:               P0, P1, P2, P5
-  //   overflow:             P3, P4, P6, (P7, *P8, P9, *P10, P11)
-  EXPECT_FALSE(panels[10]->IsDrawingAttention());
-  panels[10]->FlashFrame();
-  EXPECT_TRUE(panels[10]->IsDrawingAttention());
-  EXPECT_TRUE(overflow_indicator->IsDrawingAttention());
-
-  // Stop drawing attention for an overflow-on-overflow panel by activating it.
-  // Expect the overflow indicator is still showing attention.
-  //   normal:               P0, P1, P2, P8
-  //   overflow:             P5, P3, P4, (P6, P7, P9, *P10, P11)
-  panels[8]->Activate();
-  WaitForPanelActiveState(panels[8], SHOW_AS_ACTIVE);
-  EXPECT_FALSE(panels[8]->IsDrawingAttention());
-  EXPECT_TRUE(overflow_indicator->IsDrawingAttention());
-
-  // Stop drawing attention for another overflow-on-overflow panel by activating
-  // it. Expect the overflow indicator is not showing attention.
-  //   normal:               P0, P1, P2, P10
-  //   overflow:             P8, P5, P3, (P4, P6, P7, P9, P11)
-  panels[10]->Activate();
-  WaitForPanelActiveState(panels[10], SHOW_AS_ACTIVE);
-  EXPECT_FALSE(panels[10]->IsDrawingAttention());
-  EXPECT_FALSE(overflow_indicator->IsDrawingAttention());
-
-  // Draw attention for the top overflow panel.
-  // Expect no impact to the overflow indicator.
-  //   normal:               P0, P1, P2, P10
-  //   overflow:             P8, P5, *P3, (P4, P6, P7, P9, P11)
-  EXPECT_TRUE(IsPanelVisible(panels[3]));
-  EXPECT_FALSE(panels[3]->IsDrawingAttention());
-  panels[3]->FlashFrame();
-  EXPECT_TRUE(panels[3]->IsDrawingAttention());
-  EXPECT_FALSE(overflow_indicator->IsDrawingAttention());
-
-  // Activating a big overflow panel will cause 2 normal panels to move to the
-  // overflow area and also get the top visible overflow panel bumped to the
-  // overflow-on-overflow.
-  // Expect the overflow indicator is showing attention.
-  //   normal:               P0, P1, P5
-  //   overflow:             P2, P10, P8, (*P3, P4, P6, P7, P9, P11)
-  panels[5]->Activate();
-  WaitForPanelActiveState(panels[5], SHOW_AS_ACTIVE);
-  WaitForExpansionStateChanged(panels[5], Panel::EXPANDED);
-  EXPECT_EQ(3, panel_strip->num_panels());
-  EXPECT_EQ(9, overflow_strip->num_panels());
-  EXPECT_FALSE(IsPanelVisible(panels[3]));
-  EXPECT_TRUE(panels[3]->IsDrawingAttention());
-  EXPECT_TRUE(overflow_indicator->IsDrawingAttention());
-
-  // Close an overflow panel that would move the first oveflow-on-overflow panel
-  // to become visible. Expect the overflow indicator is not showing attention.
-  //   normal:               P0, P1, P5
-  //   overflow:             P2, P10, P3, (P4, P6, P7, P9, P11)
-  CloseWindowAndWait(panels[8]->browser());
-  EXPECT_EQ(3, panel_strip->num_panels());
-  EXPECT_EQ(8, overflow_strip->num_panels());
-  EXPECT_TRUE(panels[3]->IsDrawingAttention());
-  EXPECT_FALSE(overflow_indicator->IsDrawingAttention());
-
-  panel_manager->RemoveAll();
 }
