@@ -251,8 +251,8 @@ void AcceleratedSurface::DoDestroy() {
 
   base::AutoLock locked(lock_);
 
-  device_ = NULL;
   query_ = NULL;
+  device_ = NULL;
 }
 
 void AcceleratedSurface::DoResize(const gfx::Size& size) {
