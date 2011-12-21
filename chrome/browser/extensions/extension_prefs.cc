@@ -1708,7 +1708,17 @@ void ExtensionPrefs::InitializePageOrdinalMap(
   for (ExtensionIdSet::const_iterator ext_it = extension_ids.begin();
        ext_it != extension_ids.end(); ++ext_it) {
     UpdatePageOrdinalMap(StringOrdinal(), GetPageOrdinal(*ext_it));
+
+    // Ensure that the web store app still isn't found in this list, since
+    // it is added after this loop.
+    DCHECK(*ext_it != extension_misc::kWebStoreAppId);
   }
+
+  // Include the Web Store App since it is displayed on the NTP.
+  StringOrdinal web_store_app_page =
+      GetPageOrdinal(extension_misc::kWebStoreAppId);
+  if (web_store_app_page.IsValid())
+    UpdatePageOrdinalMap(StringOrdinal(), web_store_app_page);
 }
 
 void ExtensionPrefs::UpdatePageOrdinalMap(const StringOrdinal& old_value,

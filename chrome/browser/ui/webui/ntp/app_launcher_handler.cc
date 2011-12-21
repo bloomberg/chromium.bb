@@ -173,8 +173,8 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   // We convert the page_ordinal to an integer because the pages are referenced
   // from within an array in the javascript code, which can't be easily
   // changed to handle the StringOrdinal values, so we do the conversion here.
-  value->SetInteger("page_index",
-                    prefs->PageStringOrdinalAsInteger(page_ordinal));
+  int page_index = prefs->PageStringOrdinalAsInteger(page_ordinal);
+  value->SetInteger("page_index", page_index >= 0 ? page_index : 0);
 
   StringOrdinal app_launch_ordinal =
       prefs->GetAppLaunchOrdinal(extension->id());
