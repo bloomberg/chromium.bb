@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_OPTIONS_UI_H_
-#define CHROME_BROWSER_UI_WEBUI_OPTIONS2_OPTIONS_UI_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS2_OPTIONS_UI2_H_
+#define CHROME_BROWSER_UI_WEBUI_OPTIONS2_OPTIONS_UI2_H_
 #pragma once
 
 #include <string>
@@ -16,12 +16,14 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 
+namespace options2 {
+
 // The base class handler of Javascript messages of options pages.
-class OptionsPage2UIHandler : public WebUIMessageHandler,
+class OptionsPageUIHandler : public WebUIMessageHandler,
                               public content::NotificationObserver {
  public:
-  OptionsPage2UIHandler();
-  virtual ~OptionsPage2UIHandler();
+  OptionsPageUIHandler();
+  virtual ~OptionsPageUIHandler();
 
   // Is this handler enabled?
   virtual bool IsEnabled();
@@ -64,25 +66,25 @@ class OptionsPage2UIHandler : public WebUIMessageHandler,
   content::NotificationRegistrar registrar_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(OptionsPage2UIHandler);
+  DISALLOW_COPY_AND_ASSIGN(OptionsPageUIHandler);
 };
 
-// An interface for common operations that a host of OptionsPage2UIHandlers
+// An interface for common operations that a host of OptionsPageUIHandlers
 // should provide.
-class OptionsPage2UIHandlerHost {
+class OptionsPageUIHandlerHost {
  public:
   virtual void InitializeHandlers() = 0;
 
  protected:
-  virtual ~OptionsPage2UIHandlerHost() {}
+  virtual ~OptionsPageUIHandlerHost() {}
 };
 
 // The WebUI for chrome:settings-frame.
-class Options2UI : public ChromeWebUI,
-                   public OptionsPage2UIHandlerHost {
+class OptionsUI : public ChromeWebUI,
+                  public OptionsPageUIHandlerHost {
  public:
-  explicit Options2UI(TabContents* contents);
-  virtual ~Options2UI();
+  explicit OptionsUI(TabContents* contents);
+  virtual ~OptionsUI();
 
   static RefCountedMemory* GetFaviconResourceBytes();
 
@@ -91,13 +93,13 @@ class Options2UI : public ChromeWebUI,
   virtual void RenderViewReused(RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidBecomeActiveForReusedRenderView() OVERRIDE;
 
-  // Overridden from OptionsPage2UIHandlerHost:
+  // Overridden from OptionsPageUIHandlerHost:
   virtual void InitializeHandlers() OVERRIDE;
 
  private:
   // Adds OptionsPageUiHandler to the handlers list if handler is enabled.
   void AddOptionsPageUIHandler(base::DictionaryValue* localized_strings,
-                               OptionsPage2UIHandler* handler);
+                               OptionsPageUIHandler* handler);
 
   // Sets the WebUI CommandLineString property with arguments passed while
   // launching chrome.
@@ -105,7 +107,9 @@ class Options2UI : public ChromeWebUI,
 
   bool initialized_handlers_;
 
-  DISALLOW_COPY_AND_ASSIGN(Options2UI);
+  DISALLOW_COPY_AND_ASSIGN(OptionsUI);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_OPTIONS_UI_H_
+}  // namespace options2
+
+#endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_OPTIONS_UI2_H_

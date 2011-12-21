@@ -175,6 +175,8 @@ bool AreUserNamesEqual(const string16& user1, const string16& user2) {
 
 }  // namespace
 
+namespace options2 {
+
 SyncSetupHandler2::SyncSetupHandler2(ProfileManager* profile_manager)
     : flow_(NULL),
       profile_manager_(profile_manager) {
@@ -663,3 +665,5 @@ void SyncSetupHandler2::ShowLoginErrorMessage(const string16& error_message) {
   args.SetString("error_message", error_message);
   ShowGaiaLogin(args);
 }
+
+}  // namespace options2
