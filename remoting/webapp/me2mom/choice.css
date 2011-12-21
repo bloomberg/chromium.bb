@@ -13,7 +13,7 @@ body {
   background: -webkit-gradient(radial, center center, 0, center center, 400,
                                from(rgb(254, 254, 254)),
                                to(rgb(239, 239, 239)));
-  font-family: 'Droid sans', Arial, sans-serif;
+  font-family: 'Open sans', Arial, sans-serif;
   margin:0;
   padding:0;
   direction: __MSG_@@bidi_dir__;
