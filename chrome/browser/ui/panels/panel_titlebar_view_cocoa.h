@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/cocoa_protocols.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 
 @class CrTrackingArea;
@@ -40,7 +41,7 @@ enum PanelDragState {
 - (void)setCurrentProgress:(NSAnimationProgress)progress;
 @end
 
-@interface PanelTitlebarViewCocoa : NSView {
+@interface PanelTitlebarViewCocoa : NSView<NSAnimationDelegate> {
  @private
   IBOutlet PanelWindowControllerCocoa* controller_;
   IBOutlet NSView* icon_;
