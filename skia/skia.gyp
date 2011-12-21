@@ -7,6 +7,9 @@
     {
       'target_name': 'skia',
       'type': '<(component)',
+      'variables': {
+        'optimize': 'max',
+      },
       'sources': [
         #'../third_party/skia/src/animator/SkAnimate.h',
         #'../third_party/skia/src/animator/SkAnimateActive.cpp',
@@ -982,6 +985,9 @@
     {
       'target_name': 'skia_opts',
       'type': 'static_library',
+      'variables': {
+        'optimize': 'max',
+      },
       'include_dirs': [
         '..',
         'config',
@@ -1065,6 +1071,9 @@
     {
       'target_name': 'skia_libtess',
       'type': 'static_library',
+      'variables': {
+        'optimize': 'max',
+      },
       'include_dirs': [
         '../third_party/skia/third_party/glu',
       ],
