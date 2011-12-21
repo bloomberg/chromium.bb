@@ -5226,14 +5226,6 @@
    fun:_ZNK7WebCore4Font14drawSimpleTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
    fun:_ZNK7WebCore4Font8drawTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
 }
-{
-   bug_108254
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN26TemplateURLPrepopulateData22FindPrepopulatedEngineERKSs
-   fun:_ZN58TemplateURLPrepopulateDataTest_FindPrepopulatedEngine_Test8TestBodyEv
-}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
