@@ -225,9 +225,11 @@ bool NaClProcessHost::Launch(
   if (!LaunchSelLdr()) {
     return false;
   }
-  chrome_render_message_filter_ = chrome_render_message_filter;
-  reply_msg_ = reply_msg;
 
+  chrome_render_message_filter_ = chrome_render_message_filter;
+
+  // On success, we take responsibility for sending the reply.
+  reply_msg_ = reply_msg;
   return true;
 }
 
@@ -384,8 +386,10 @@ void NaClProcessHost::OnProcessLaunched() {
     SendStart(nacl_browser->IrtFile());
   } else {
     // We're waiting for the IRT to be open.
-    nacl_browser->MakeIrtAvailable(base::Bind(&NaClProcessHost::IrtReady,
-                                              weak_factory_.GetWeakPtr()));
+    if (!nacl_browser->MakeIrtAvailable(
+            base::Bind(&NaClProcessHost::IrtReady,
+                       weak_factory_.GetWeakPtr())))
+      delete this;
   }
 }
 

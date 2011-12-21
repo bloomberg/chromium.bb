@@ -147,7 +147,12 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
 void ChromeRenderMessageFilter::OnLaunchNaCl(
     const std::wstring& url, int socket_count, IPC::Message* reply_msg) {
   NaClProcessHost* host = new NaClProcessHost(url);
-  host->Launch(this, socket_count, reply_msg);
+  if (!host->Launch(this, socket_count, reply_msg)) {
+    // On failure, the NaClProcessHost didn't send the reply which the renderer
+    // is blocked on. Unblock the renderer by sending an error.
+    reply_msg->set_reply_error();
+    Send(reply_msg);
+  }
 }
 #endif
 

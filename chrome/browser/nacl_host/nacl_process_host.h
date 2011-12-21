@@ -31,7 +31,10 @@ class NaClProcessHost : public BrowserChildProcessHost {
   // Do any minimal work that must be done at browser startup.
   static void EarlyStartup();
 
-  // Initialize the new NaCl process, returning true on success.
+  // Initialize the new NaCl process, returning true on success. On success,
+  // the NaCl process host will assume responsibility for sending the reply
+  // message. On failure, the reply will not be sent and this is the caller's
+  // responsibility to avoid hanging the renderer.
   bool Launch(ChromeRenderMessageFilter* chrome_render_message_filter,
               int socket_count,
               IPC::Message* reply_msg);
@@ -62,7 +65,9 @@ class NaClProcessHost : public BrowserChildProcessHost {
   // this for sending the reply once the process has started.
   scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter_;
 
-  // The reply message to send.
+  // The reply message to send. We must always send this message when the
+  // sub-process either succeeds or fails to unblock the renderer waiting for
+  // the reply. NULL when there is no reply to send.
   IPC::Message* reply_msg_;
 
   // Socket pairs for the NaCl process and renderer.
