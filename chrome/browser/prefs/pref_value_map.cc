@@ -69,6 +69,10 @@ void PrefValueMap::Clear() {
   prefs_.clear();
 }
 
+void PrefValueMap::Swap(PrefValueMap* other) {
+  prefs_.swap(other->prefs_);
+}
+
 PrefValueMap::iterator PrefValueMap::begin() {
   return prefs_.begin();
 }

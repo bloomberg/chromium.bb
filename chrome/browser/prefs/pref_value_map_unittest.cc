@@ -87,3 +87,25 @@ TEST_F(PrefValueMapTest, GetDifferingKeys) {
   expected_differing_paths.push_back("e");
   EXPECT_EQ(expected_differing_paths, differing_paths);
 }
+
+TEST_F(PrefValueMapTest, SwapTwoMaps) {
+  PrefValueMap first_map;
+  EXPECT_TRUE(first_map.SetValue("a", Value::CreateStringValue("test")));
+  EXPECT_TRUE(first_map.SetValue("b", Value::CreateStringValue("test")));
+  EXPECT_TRUE(first_map.SetValue("c", Value::CreateStringValue("test")));
+
+  PrefValueMap second_map;
+  EXPECT_TRUE(second_map.SetValue("d", Value::CreateStringValue("test")));
+  EXPECT_TRUE(second_map.SetValue("e", Value::CreateStringValue("test")));
+  EXPECT_TRUE(second_map.SetValue("f", Value::CreateStringValue("test")));
+
+  first_map.Swap(&second_map);
+
+  EXPECT_TRUE(first_map.GetValue("d", NULL));
+  EXPECT_TRUE(first_map.GetValue("e", NULL));
+  EXPECT_TRUE(first_map.GetValue("f", NULL));
+
+  EXPECT_TRUE(second_map.GetValue("a", NULL));
+  EXPECT_TRUE(second_map.GetValue("b", NULL));
+  EXPECT_TRUE(second_map.GetValue("c", NULL));
+}

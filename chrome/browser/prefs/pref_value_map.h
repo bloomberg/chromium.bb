@@ -42,6 +42,9 @@ class PrefValueMap {
   // Clears the map.
   void Clear();
 
+  // Swaps the contents of two maps.
+  void Swap(PrefValueMap* other);
+
   iterator begin();
   iterator end();
   const_iterator begin() const;
