@@ -23,6 +23,11 @@ class Window;
 }
 
 namespace aura_shell {
+
+namespace test {
+class TooltipControllerTest;
+}  // namespace test
+
 namespace internal {
 
 // TooltipController provides tooltip functionality for aura shell.
@@ -48,6 +53,8 @@ class AURA_SHELL_EXPORT TooltipController : public aura::client::TooltipClient,
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
  private:
+  friend class aura_shell::test::TooltipControllerTest;
+
   class Tooltip;
 
   void TooltipTimerFired();

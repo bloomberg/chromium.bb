@@ -130,6 +130,7 @@ Shell::~Shell() {
   // TooltipController needs a valid shell instance. We delete it before
   // deleting the shell |instance_|.
   RemoveRootWindowEventFilter(tooltip_controller_.get());
+  aura::client::SetTooltipClient(NULL);
 
   // Make sure we delete WorkspaceController before launcher is
   // deleted as it has a reference to launcher model.
@@ -207,6 +208,7 @@ void Shell::Init() {
   // Initialize TooltipController.
   tooltip_controller_.reset(new internal::TooltipController);
   AddRootWindowEventFilter(tooltip_controller_.get());
+  aura::client::SetTooltipClient(tooltip_controller_.get());
 
   // Initialize drag drop controller.
   drag_drop_controller_.reset(new internal::DragDropController);

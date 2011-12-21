@@ -99,11 +99,12 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
 #endif
       skip_schedule_paint_(false) {
   host_->SetView(this);
-  window_->SetProperty(aura::client::kTooltipTextKey, &tooltip_);
+  aura::client::SetTooltipText(window_, &tooltip_);
   aura::client::SetActivationDelegate(window_, this);
 }
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
+  aura::client::SetTooltipText(window_, NULL);
 }
 
 void RenderWidgetHostViewAura::InitAsChild() {
