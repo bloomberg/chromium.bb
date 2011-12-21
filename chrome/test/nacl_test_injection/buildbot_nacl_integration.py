@@ -44,6 +44,7 @@ def Main(args):
     # These tests are flakey on the chrome waterfall and need to be looked at.
     # TODO(bsy): http://code.google.com/p/nativeclient/issues/detail?id=2509
     tests_to_disable.append('run_pm_redir_stderr_bg_1000000_chrome_browser_test')
+    tests_to_disable.append('run_pm_redir_stderr_bg_0_chrome_browser_test')
     tests_to_disable.append('run_pm_redir_stderr_fg_0_chrome_browser_test')
     # TODO(cdn): Reenable once we can pass
     # --disable-extensions-resource-whitelist to chrome for this test.
