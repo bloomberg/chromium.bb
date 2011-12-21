@@ -172,7 +172,8 @@ html[os=mac] list > .folder > .label {
   background-image: url("../../../../app/theme/bookmark_bar_folder_mac.png");
 }
 
-html[os=mac] .tree-label {
+html[os=mac] .tree-label,
+html[os=mac] .tree-row[may-have-children] > .tree-label {
   background-image: url("../../../../app/theme/bookmark_bar_folder_mac.png");
 }
 
