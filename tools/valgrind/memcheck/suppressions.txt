@@ -5191,13 +5191,6 @@
    fun:_ZN7WebCore8Document36updateLayoutIgnorePendingStylesheetsEv
 }
 {
-   bug_107840
-   Memcheck:Leak
-   ...
-   fun:dlsym
-   fun:_ZN4base14PlatformThread7SetNameEPKc
-}
-{
    bug_108146a
    Memcheck:Leak
    fun:_Znw*
