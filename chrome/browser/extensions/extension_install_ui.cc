@@ -117,8 +117,8 @@ string16 ExtensionInstallUI::Prompt::GetDialogTitle(
   }
 }
 
-string16 ExtensionInstallUI::Prompt::GetHeading(std::string extension_name)
-    const {
+string16 ExtensionInstallUI::Prompt::GetHeading(
+    const std::string& extension_name) const {
   if (type_ == INLINE_INSTALL_PROMPT) {
     return UTF8ToUTF16(extension_name);
   } else {

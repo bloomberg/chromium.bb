@@ -52,7 +52,7 @@ bool ParseTimeFromValue(const double& ms_since_epoch, base::Time* time) {
 
 // Given a DictionaryValue |dict|, returns either the value stored as |key|, or
 // false, if the given key doesn't exist in the dictionary.
-bool DataRemovalRequested(base::DictionaryValue* dict, std::string key) {
+bool DataRemovalRequested(base::DictionaryValue* dict, const std::string& key) {
   bool value = false;
   if (!dict->GetBoolean(key, &value))
     return false;

@@ -56,7 +56,7 @@ struct PostMessageResource {
 
 struct OpenManifestEntryResource {
  public:
-  OpenManifestEntryResource(std::string target_url,
+  OpenManifestEntryResource(const std::string& target_url,
                             int32_t* descp,
                             ErrorInfo* infop,
                             bool* portablep,

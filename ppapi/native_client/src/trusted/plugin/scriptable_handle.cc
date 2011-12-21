@@ -55,7 +55,7 @@ void RememberValidHandle(const ScriptableHandle* handle) {
   g_ValidHandles->insert(handle);
 }
 
-pp::Var Error(nacl::string call_name, const char* caller,
+pp::Var Error(const nacl::string& call_name, const char* caller,
               const char* error, pp::Var* exception) {
   nacl::stringstream error_stream;
   error_stream << call_name << ": " << error;
@@ -74,7 +74,7 @@ pp::Var Error(nacl::string call_name, const char* caller,
 // Helper functionality common to HasProperty and HasMethod.
 bool HasCallType(Plugin* plugin,
                  CallType call_type,
-                 nacl::string call_name,
+                 const nacl::string& call_name,
                  const char* caller) {
   uintptr_t id = plugin->browser_interface()->StringToIdentifier(call_name);
   PLUGIN_PRINTF(("ScriptableHandle::%s (id=%"NACL_PRIxPTR")\n",
@@ -88,7 +88,7 @@ bool HasCallType(Plugin* plugin,
 // Sets |exception| on failure.
 pp::Var Invoke(Plugin* plugin,
                CallType call_type,
-               nacl::string call_name,
+               const nacl::string& call_name,
                const char* caller,
                const std::vector<pp::Var>& args,
                pp::Var* exception) {

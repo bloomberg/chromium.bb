@@ -128,7 +128,7 @@ static Value* CreateColumnValue(const TaskManagerModel* tm,
 }
 
 static void CreateGroupColumnList(const TaskManagerModel* tm,
-                                  const std::string column_name,
+                                  const std::string& column_name,
                                   const int index,
                                   const int length,
                                   DictionaryValue* val) {

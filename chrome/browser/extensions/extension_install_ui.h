@@ -54,7 +54,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
 
     // Getters for UI element labels.
     string16 GetDialogTitle(const Extension* extension) const;
-    string16 GetHeading(std::string extension_name) const;
+    string16 GetHeading(const std::string& extension_name) const;
     string16 GetAcceptButtonLabel() const;
     bool HasAbortButtonLabel() const;
     string16 GetAbortButtonLabel() const;
