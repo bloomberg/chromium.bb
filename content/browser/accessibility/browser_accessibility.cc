@@ -251,6 +251,8 @@ void BrowserAccessibility::InternalAddReference() {
 
 void BrowserAccessibility::InternalReleaseReference(bool recursive) {
   DCHECK_GT(ref_count_, 0);
+  // It is a bug for ref_count_ to be gt 1 when |recursive| is true.
+  DCHECK(!recursive || ref_count_ == 1);
 
   if (recursive || ref_count_ == 1) {
     for (std::vector<BrowserAccessibility*>::iterator iter = children_.begin();
@@ -258,6 +260,10 @@ void BrowserAccessibility::InternalReleaseReference(bool recursive) {
          ++iter) {
       (*iter)->InternalReleaseReference(true);
     }
+    children_.clear();
+    // Force this to be the last ref. As the DCHECK above indicates, this
+    // should always be the case. Make it so defensively.
+    ref_count_ = 1;
   }
 
   ref_count_--;
@@ -271,7 +277,6 @@ void BrowserAccessibility::InternalReleaseReference(bool recursive) {
         ViewHostMsg_AccEvent::OBJECT_HIDE, this);
 
     instance_active_ = false;
-    children_.clear();
     manager_->Remove(child_id_, renderer_id_);
     NativeReleaseReference();
   }
