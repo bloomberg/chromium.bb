@@ -211,10 +211,9 @@ void GetSearchProvidersUsingKeywordResult(
 
 bool DidDefaultSearchProviderChange(
     const WDTypedResult& result,
-    const std::vector<TemplateURL*>& template_urls,
-    const TemplateURL** backup_default_search_provider) {
+    scoped_ptr<TemplateURL>* backup_default_search_provider) {
   DCHECK(backup_default_search_provider);
-  DCHECK(*backup_default_search_provider == NULL);
+  DCHECK(!backup_default_search_provider->get());
   DCHECK_EQ(result.GetType(), KEYWORDS_RESULT);
 
   WDKeywordsResult keyword_result = reinterpret_cast<
@@ -223,9 +222,8 @@ bool DidDefaultSearchProviderChange(
   if (!keyword_result.did_default_search_provider_change)
     return false;
 
-  *backup_default_search_provider = GetTemplateURLByID(
-      template_urls,
-      keyword_result.default_search_provider_id_backup);
+  backup_default_search_provider->reset(
+      keyword_result.default_search_provider_backup);
   return true;
 }
 
