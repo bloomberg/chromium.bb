@@ -16,8 +16,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/plugin_service.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/plugin_service.h"
+#include "webkit/plugins/webplugininfo.h"
+
+using content::PluginService;
 
 namespace {
 

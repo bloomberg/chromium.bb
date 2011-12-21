@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
-#include "content/browser/plugin_service.h"
+#include "content/browser/plugin_service_impl.h"
 #include "content/browser/utility_process_host.h"
 #include "ipc/ipc_message.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -49,8 +49,9 @@ class CONTENT_EXPORT PluginLoaderPosix : public UtilityProcessHost::Client,
   PluginLoaderPosix();
 
   // Must be called from the IO thread.
-  void LoadPlugins(scoped_refptr<base::MessageLoopProxy> target_loop,
-                   const PluginService::GetPluginsCallback& callback);
+  void LoadPlugins(
+      scoped_refptr<base::MessageLoopProxy> target_loop,
+      const content::PluginService::GetPluginsCallback& callback);
 
   // UtilityProcessHost::Client:
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
@@ -62,11 +63,11 @@ class CONTENT_EXPORT PluginLoaderPosix : public UtilityProcessHost::Client,
  private:
   struct PendingCallback {
     PendingCallback(scoped_refptr<base::MessageLoopProxy> target_loop,
-                    const PluginService::GetPluginsCallback& callback);
+                    const content::PluginService::GetPluginsCallback& callback);
     ~PendingCallback();
 
     scoped_refptr<base::MessageLoopProxy> target_loop;
-    PluginService::GetPluginsCallback callback;
+    content::PluginService::GetPluginsCallback callback;
   };
 
   virtual ~PluginLoaderPosix();

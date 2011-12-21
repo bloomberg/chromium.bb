@@ -11,13 +11,14 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "content/browser/plugin_service.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/plugins/npapi/mock_plugin_list.cc"
 #include "webkit/plugins/webplugininfo.h"
 
 using content::BrowserThread;
+using content::PluginService;
 
 class PluginPrefsTest : public ::testing::Test {
  public:

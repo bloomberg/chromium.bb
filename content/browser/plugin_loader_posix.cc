@@ -23,7 +23,7 @@ PluginLoaderPosix::PluginLoaderPosix()
 
 void PluginLoaderPosix::LoadPlugins(
     scoped_refptr<base::MessageLoopProxy> target_loop,
-    const PluginService::GetPluginsCallback& callback) {
+    const content::PluginService::GetPluginsCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   callbacks_.push_back(PendingCallback(target_loop, callback));
@@ -68,11 +68,11 @@ void PluginLoaderPosix::GetPluginsToLoad() {
   next_load_index_ = 0;
 
   canonical_list_.clear();
-  PluginService::GetInstance()->GetPluginList()->GetPluginPathsToLoad(
+  PluginServiceImpl::GetInstance()->GetPluginList()->GetPluginPathsToLoad(
       &canonical_list_);
 
   internal_plugins_.clear();
-  PluginService::GetInstance()->GetPluginList()->GetInternalPlugins(
+  PluginServiceImpl::GetInstance()->GetPluginList()->GetInternalPlugins(
       &internal_plugins_);
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -152,7 +152,8 @@ bool PluginLoaderPosix::MaybeRunPendingCallbacks() {
   if (next_load_index_ < canonical_list_.size())
     return false;
 
-  PluginService::GetInstance()->GetPluginList()->SetPlugins(loaded_plugins_);
+  PluginServiceImpl::GetInstance()->GetPluginList()->SetPlugins(
+      loaded_plugins_);
   for (std::vector<PendingCallback>::iterator it = callbacks_.begin();
        it != callbacks_.end();
        ++it) {
@@ -171,7 +172,7 @@ bool PluginLoaderPosix::MaybeRunPendingCallbacks() {
 
 PluginLoaderPosix::PendingCallback::PendingCallback(
     scoped_refptr<base::MessageLoopProxy> loop,
-    const PluginService::GetPluginsCallback& cb)
+    const content::PluginService::GetPluginsCallback& cb)
     : target_loop(loop),
       callback(cb) {
 }

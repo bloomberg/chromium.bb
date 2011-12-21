@@ -29,8 +29,8 @@ include_rules = [
 
   # TODO(jam): this needs to be removed, and only use content/public. BUG=98716
   "+content/browser",
-  "-content/browser/notification_service_impl.h"
-  "-content/browser/plugin_service.h"
+  "-content/browser/notification_service_impl.h",
+  "-content/browser/plugin_service_impl.h",
 
   "-content/common",
   # TODO(jam): remove all the exceptions. BUG=98716

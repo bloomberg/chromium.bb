@@ -5,8 +5,8 @@
 // This class responds to requests from renderers for the list of plugins, and
 // also a proxy object for plugin instances.
 
-#ifndef CONTENT_BROWSER_PLUGIN_SERVICE_H_
-#define CONTENT_BROWSER_PLUGIN_SERVICE_H_
+#ifndef CONTENT_BROWSER_PLUGIN_SERVICE_IMPL_H_
+#define CONTENT_BROWSER_PLUGIN_SERVICE_IMPL_H_
 #pragma once
 
 #include <set>
@@ -57,13 +57,13 @@ class PluginList;
 }
 }
 
-class CONTENT_EXPORT PluginService
+class CONTENT_EXPORT PluginServiceImpl
     : NON_EXPORTED_BASE(public content::PluginService),
       public base::WaitableEventWatcher::Delegate,
       public content::NotificationObserver {
  public:
-  // Returns the PluginService singleton.
-  static PluginService* GetInstance();
+  // Returns the PluginServiceImpl singleton.
+  static PluginServiceImpl* GetInstance();
 
   // content::PluginService implementation:
   virtual void Init() OVERRIDE;
@@ -103,6 +103,8 @@ class CONTENT_EXPORT PluginService
       const webkit::WebPluginInfo& info) OVERRIDE;
   virtual string16 GetPluginGroupName(const std::string& plugin_name) OVERRIDE;
   virtual webkit::npapi::PluginList* GetPluginList() OVERRIDE;
+  virtual void SetPluginListForTesting(
+      webkit::npapi::PluginList* plugin_list) OVERRIDE;
 
   // Gets the browser's UI locale.
   const std::string& GetUILocale();
@@ -140,15 +142,13 @@ class CONTENT_EXPORT PluginService
   // Cancels opening a channel to a NPAPI plugin.
   void CancelOpenChannelToNpapiPlugin(PluginProcessHost::Client* client);
 
-  void SetPluginListForTesting(webkit::npapi::PluginList* plugin_list);
-
  private:
-  friend struct DefaultSingletonTraits<PluginService>;
+  friend struct DefaultSingletonTraits<PluginServiceImpl>;
 
-  // Creates the PluginService object, but doesn't actually build the plugin
+  // Creates the PluginServiceImpl object, but doesn't actually build the plugin
   // list yet.  It's generated lazily.
-  PluginService();
-  virtual ~PluginService();
+  PluginServiceImpl();
+  virtual ~PluginServiceImpl();
 
   // base::WaitableEventWatcher::Delegate implementation.
   virtual void OnWaitableEventSignaled(
@@ -231,9 +231,7 @@ class CONTENT_EXPORT PluginService
   scoped_refptr<PluginLoaderPosix> plugin_loader_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(PluginService);
+  DISALLOW_COPY_AND_ASSIGN(PluginServiceImpl);
 };
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(PluginService);
-
-#endif  // CONTENT_BROWSER_PLUGIN_SERVICE_H_
+#endif  // CONTENT_BROWSER_PLUGIN_SERVICE_IMPL_H_

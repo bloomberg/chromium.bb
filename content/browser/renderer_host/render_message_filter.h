@@ -26,7 +26,7 @@
 #include "ui/gfx/surface/transport_dib.h"
 
 struct FontDescriptor;
-class PluginService;
+class PluginServiceImpl;
 class RenderWidgetHelper;
 struct ViewHostMsg_CreateWindow_Params;
 
@@ -67,7 +67,7 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
  public:
   // Create the filter.
   RenderMessageFilter(int render_process_id,
-                      PluginService* plugin_service,
+                      PluginServiceImpl * plugin_service,
                       content::BrowserContext* browser_context,
                       net::URLRequestContextGetter* request_context,
                       RenderWidgetHelper* render_widget_helper);
@@ -230,7 +230,7 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   // be non-null if Init succeeds. We do not own the objects, they are managed
   // by the BrowserProcess, which has a wider scope than we do.
   ResourceDispatcherHost* resource_dispatcher_host_;
-  PluginService* plugin_service_;
+  PluginServiceImpl* plugin_service_;
 
   // The browser context associated with our renderer process.  This should only
   // be accessed on the UI thread!

@@ -6,7 +6,6 @@
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
-#include "content/browser/plugin_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "chrome/common/chrome_paths.h"

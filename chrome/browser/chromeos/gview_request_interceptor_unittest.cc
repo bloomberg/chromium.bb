@@ -14,10 +14,11 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/browser/mock_resource_context.h"
-#include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/dummy_resource_handler.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/test/test_browser_thread.h"
+#include "ipc/ipc_message.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
@@ -28,6 +29,7 @@
 #include "webkit/plugins/npapi/mock_plugin_list.h"
 
 using content::BrowserThread;
+using content::PluginService;
 
 namespace chromeos {
 

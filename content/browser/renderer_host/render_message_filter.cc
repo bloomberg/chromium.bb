@@ -19,8 +19,8 @@
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/plugin_process_host.h"
-#include "content/browser/plugin_service.h"
 #include "content/browser/plugin_service_filter.h"
+#include "content/browser/plugin_service_impl.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/media/media_observer.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -266,7 +266,7 @@ class RenderMessageFilter::OpenChannelToNpapiPluginCallback
 
 RenderMessageFilter::RenderMessageFilter(
     int render_process_id,
-    PluginService* plugin_service,
+    PluginServiceImpl* plugin_service,
     content::BrowserContext* browser_context,
     net::URLRequestContextGetter* request_context,
     RenderWidgetHelper* render_widget_helper)
@@ -558,12 +558,12 @@ void RenderMessageFilter::OnGetPlugins(
     const base::TimeTicks now = base::TimeTicks::Now();
     if (now - last_plugin_refresh_time_ >= threshold) {
       // Only refresh if the threshold hasn't been exceeded yet.
-      PluginService::GetInstance()->RefreshPlugins();
+      PluginServiceImpl::GetInstance()->RefreshPlugins();
       last_plugin_refresh_time_ = now;
     }
   }
 
-  PluginService::GetInstance()->GetPlugins(
+  PluginServiceImpl::GetInstance()->GetPlugins(
       base::Bind(&RenderMessageFilter::GetPluginsCallback, this, reply_msg));
 }
 
@@ -572,7 +572,7 @@ void RenderMessageFilter::GetPluginsCallback(
     const std::vector<webkit::WebPluginInfo>& all_plugins) {
   // Filter the plugin list.
   content::PluginServiceFilter* filter =
-      PluginService::GetInstance()->GetFilter();
+      PluginServiceImpl::GetInstance()->GetFilter();
   std::vector<webkit::WebPluginInfo> plugins;
 
   int child_process_id = -1;

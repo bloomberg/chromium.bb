@@ -74,7 +74,7 @@ class PluginLoaderPosixTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    PluginService::GetInstance()->Init();
+    PluginServiceImpl::GetInstance()->Init();
   }
 
   MessageLoop* message_loop() { return &message_loop_; }
@@ -104,7 +104,7 @@ class PluginLoaderPosixTest : public testing::Test {
 
 TEST_F(PluginLoaderPosixTest, QueueRequests) {
   int did_callback = 0;
-  PluginService::GetPluginsCallback callback =
+  content::PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
   EXPECT_EQ(0u, plugin_loader()->number_of_pending_callbacks());
@@ -131,7 +131,7 @@ TEST_F(PluginLoaderPosixTest, QueueRequests) {
 
 TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoads) {
   int did_callback = 0;
-  PluginService::GetPluginsCallback callback =
+  content::PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
@@ -172,7 +172,7 @@ TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoads) {
 
 TEST_F(PluginLoaderPosixTest, TwoFailures) {
   int did_callback = 0;
-  PluginService::GetPluginsCallback callback =
+  content::PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
@@ -211,7 +211,7 @@ TEST_F(PluginLoaderPosixTest, TwoFailures) {
 
 TEST_F(PluginLoaderPosixTest, CrashedProcess) {
   int did_callback = 0;
-  PluginService::GetPluginsCallback callback =
+  content::PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
@@ -244,7 +244,7 @@ TEST_F(PluginLoaderPosixTest, CrashedProcess) {
 
 TEST_F(PluginLoaderPosixTest, InternalPlugin) {
   int did_callback = 0;
-  PluginService::GetPluginsCallback callback =
+  content::PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
@@ -293,7 +293,7 @@ TEST_F(PluginLoaderPosixTest, InternalPlugin) {
 
 TEST_F(PluginLoaderPosixTest, AllCrashed) {
   int did_callback = 0;
-  PluginService::GetPluginsCallback callback =
+  content::PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);

@@ -61,9 +61,9 @@
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
-#include "content/browser/plugin_service.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_monster.h"
@@ -78,6 +78,7 @@
 #include "webkit/quota/quota_manager.h"
 
 using content::BrowserThread;
+using content::PluginService;
 
 namespace keys = extension_manifest_keys;
 

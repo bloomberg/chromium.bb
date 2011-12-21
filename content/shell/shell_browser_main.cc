@@ -12,7 +12,7 @@
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/save_file_manager.h"
-#include "content/browser/plugin_service.h"
+#include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"

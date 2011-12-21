@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/plugin_service.h"
+#include "content/browser/plugin_service_impl.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -43,6 +43,7 @@ using ::base::files::FilePathWatcher;
 #endif
 
 using content::BrowserThread;
+using content::PluginService;
 using content::PluginServiceFilter;
 
 namespace {
@@ -112,7 +113,7 @@ class PluginDirWatcherDelegate : public FilePathWatcher::Delegate {
 namespace content {
 // static
 PluginService* PluginService::GetInstance() {
-  return ::PluginService::GetInstance();
+  return PluginServiceImpl::GetInstance();
 }
 
 void PluginService::PurgePluginListCache(BrowserContext* browser_context,
@@ -128,18 +129,18 @@ void PluginService::PurgePluginListCache(BrowserContext* browser_context,
 }  // namespace content
 
 // static
-PluginService* PluginService::GetInstance() {
-  return Singleton<PluginService>::get();
+PluginServiceImpl* PluginServiceImpl::GetInstance() {
+  return Singleton<PluginServiceImpl>::get();
 }
 
-PluginService::PluginService()
+PluginServiceImpl::PluginServiceImpl()
     : plugin_list_(NULL),
       ui_locale_(
           content::GetContentClient()->browser()->GetApplicationLocale()),
       filter_(NULL) {
 }
 
-PluginService::~PluginService() {
+PluginServiceImpl::~PluginServiceImpl() {
 #if defined(OS_WIN)
   // Release the events since they're owned by RegKey, not WaitableEvent.
   hkcu_watcher_.StopWatching();
@@ -153,7 +154,7 @@ PluginService::~PluginService() {
   DCHECK(pending_plugin_clients_.empty());
 }
 
-void PluginService::Init() {
+void PluginServiceImpl::Init() {
   if (!plugin_list_)
     plugin_list_ = webkit::npapi::PluginList::Singleton();
 
@@ -181,7 +182,7 @@ void PluginService::Init() {
 #endif
 }
 
-void PluginService::StartWatchingPlugins() {
+void PluginServiceImpl::StartWatchingPlugins() {
   // Start watching for changes in the plugin list. This means watching
   // for changes in the Windows registry keys and on both Windows and POSIX
   // watch for changes in the paths that are expected to contain plugins.
@@ -225,18 +226,18 @@ void PluginService::StartWatchingPlugins() {
     VLOG(1) << "Watching for changes in: " << plugin_dirs[i].value();
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(&PluginService::RegisterFilePathWatcher, watcher,
+        base::Bind(&PluginServiceImpl::RegisterFilePathWatcher, watcher,
                    plugin_dirs[i], file_watcher_delegate_));
     file_watchers_.push_back(watcher);
   }
 #endif
 }
 
-const std::string& PluginService::GetUILocale() {
+const std::string& PluginServiceImpl::GetUILocale() {
   return ui_locale_;
 }
 
-PluginProcessHost* PluginService::FindNpapiPluginProcess(
+PluginProcessHost* PluginServiceImpl::FindNpapiPluginProcess(
     const FilePath& plugin_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -250,7 +251,7 @@ PluginProcessHost* PluginService::FindNpapiPluginProcess(
   return NULL;
 }
 
-PpapiPluginProcessHost* PluginService::FindPpapiPluginProcess(
+PpapiPluginProcessHost* PluginServiceImpl::FindPpapiPluginProcess(
     const FilePath& plugin_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -266,7 +267,7 @@ PpapiPluginProcessHost* PluginService::FindPpapiPluginProcess(
   return NULL;
 }
 
-PpapiPluginProcessHost* PluginService::FindPpapiBrokerProcess(
+PpapiPluginProcessHost* PluginServiceImpl::FindPpapiBrokerProcess(
     const FilePath& broker_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -282,7 +283,7 @@ PpapiPluginProcessHost* PluginService::FindPpapiBrokerProcess(
   return NULL;
 }
 
-PluginProcessHost* PluginService::FindOrStartNpapiPluginProcess(
+PluginProcessHost* PluginServiceImpl::FindOrStartNpapiPluginProcess(
     const FilePath& plugin_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -304,7 +305,7 @@ PluginProcessHost* PluginService::FindOrStartNpapiPluginProcess(
   return new_host.release();
 }
 
-PpapiPluginProcessHost* PluginService::FindOrStartPpapiPluginProcess(
+PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     const FilePath& plugin_path,
     PpapiPluginProcessHost::PluginClient* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -324,7 +325,7 @@ PpapiPluginProcessHost* PluginService::FindOrStartPpapiPluginProcess(
       client->GetResourceContext()->host_resolver());
 }
 
-PpapiPluginProcessHost* PluginService::FindOrStartPpapiBrokerProcess(
+PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiBrokerProcess(
     const FilePath& plugin_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -344,7 +345,7 @@ PpapiPluginProcessHost* PluginService::FindOrStartPpapiBrokerProcess(
   return PpapiPluginProcessHost::CreateBrokerHost(*info);
 }
 
-void PluginService::OpenChannelToNpapiPlugin(
+void PluginServiceImpl::OpenChannelToNpapiPlugin(
     int render_process_id,
     int render_view_id,
     const GURL& url,
@@ -362,12 +363,12 @@ void PluginService::OpenChannelToNpapiPlugin(
     page_url,
     &client->GetResourceContext()
   };
-  GetPlugins(
-      base::Bind(&PluginService::ForwardGetAllowedPluginForOpenChannelToPlugin,
-                 base::Unretained(this), params, url, mime_type, client));
+  GetPlugins(base::Bind(
+      &PluginServiceImpl::ForwardGetAllowedPluginForOpenChannelToPlugin,
+      base::Unretained(this), params, url, mime_type, client));
 }
 
-void PluginService::OpenChannelToPpapiPlugin(
+void PluginServiceImpl::OpenChannelToPpapiPlugin(
     const FilePath& path,
     PpapiPluginProcessHost::PluginClient* client) {
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiPluginProcess(
@@ -378,7 +379,7 @@ void PluginService::OpenChannelToPpapiPlugin(
     client->OnChannelOpened(base::kNullProcessHandle, IPC::ChannelHandle());
 }
 
-void PluginService::OpenChannelToPpapiBroker(
+void PluginServiceImpl::OpenChannelToPpapiBroker(
     const FilePath& path,
     PpapiPluginProcessHost::BrokerClient* client) {
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiBrokerProcess(path);
@@ -388,14 +389,14 @@ void PluginService::OpenChannelToPpapiBroker(
     client->OnChannelOpened(base::kNullProcessHandle, IPC::ChannelHandle());
 }
 
-void PluginService::CancelOpenChannelToNpapiPlugin(
+void PluginServiceImpl::CancelOpenChannelToNpapiPlugin(
     PluginProcessHost::Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(ContainsKey(pending_plugin_clients_, client));
   pending_plugin_clients_.erase(client);
 }
 
-void PluginService::ForwardGetAllowedPluginForOpenChannelToPlugin(
+void PluginServiceImpl::ForwardGetAllowedPluginForOpenChannelToPlugin(
     const content::PluginServiceFilterParams& params,
     const GURL& url,
     const std::string& mime_type,
@@ -406,7 +407,7 @@ void PluginService::ForwardGetAllowedPluginForOpenChannelToPlugin(
       params.resource_context);
 }
 
-void PluginService::GetAllowedPluginForOpenChannelToPlugin(
+void PluginServiceImpl::GetAllowedPluginForOpenChannelToPlugin(
     int render_process_id,
     int render_view_id,
     const GURL& url,
@@ -425,12 +426,13 @@ void PluginService::GetAllowedPluginForOpenChannelToPlugin(
     plugin_path = info.path;
 
   // Now we jump back to the IO thread to finish opening the channel.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&PluginService::FinishOpenChannelToPlugin,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PluginServiceImpl::FinishOpenChannelToPlugin,
                  base::Unretained(this), plugin_path, client));
 }
 
-void PluginService::FinishOpenChannelToPlugin(
+void PluginServiceImpl::FinishOpenChannelToPlugin(
     const FilePath& plugin_path,
     PluginProcessHost::Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -449,7 +451,7 @@ void PluginService::FinishOpenChannelToPlugin(
   }
 }
 
-bool PluginService::GetPluginInfoArray(
+bool PluginServiceImpl::GetPluginInfoArray(
     const GURL& url,
     const std::string& mime_type,
     bool allow_wildcard,
@@ -461,16 +463,16 @@ bool PluginService::GetPluginInfoArray(
   return use_stale;
 }
 
-bool PluginService::GetPluginInfo(int render_process_id,
-                                  int render_view_id,
-                                  const content::ResourceContext& context,
-                                  const GURL& url,
-                                  const GURL& page_url,
-                                  const std::string& mime_type,
-                                  bool allow_wildcard,
-                                  bool* is_stale,
-                                  webkit::WebPluginInfo* info,
-                                  std::string* actual_mime_type) {
+bool PluginServiceImpl::GetPluginInfo(int render_process_id,
+                                      int render_view_id,
+                                      const content::ResourceContext& context,
+                                      const GURL& url,
+                                      const GURL& page_url,
+                                      const std::string& mime_type,
+                                      bool allow_wildcard,
+                                      bool* is_stale,
+                                      webkit::WebPluginInfo* info,
+                                      std::string* actual_mime_type) {
   std::vector<webkit::WebPluginInfo> plugins;
   std::vector<std::string> mime_types;
   bool stale = GetPluginInfoArray(
@@ -501,8 +503,8 @@ bool PluginService::GetPluginInfo(int render_process_id,
   return false;
 }
 
-bool PluginService::GetPluginInfoByPath(const FilePath& plugin_path,
-                                        webkit::WebPluginInfo* info) {
+bool PluginServiceImpl::GetPluginInfoByPath(const FilePath& plugin_path,
+                                            webkit::WebPluginInfo* info) {
   std::vector<webkit::WebPluginInfo> plugins;
   plugin_list_->GetPluginsIfNoRefreshNeeded(&plugins);
 
@@ -518,13 +520,14 @@ bool PluginService::GetPluginInfoByPath(const FilePath& plugin_path,
   return false;
 }
 
-void PluginService::GetPlugins(const GetPluginsCallback& callback) {
+void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
   scoped_refptr<base::MessageLoopProxy> target_loop(
       MessageLoop::current()->message_loop_proxy());
 
 #if defined(OS_WIN)
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&PluginService::GetPluginsInternal, base::Unretained(this),
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&PluginServiceImpl::GetPluginsInternal, base::Unretained(this),
           target_loop, callback));
 #else
   std::vector<webkit::WebPluginInfo> cached_plugins;
@@ -544,11 +547,12 @@ void PluginService::GetPlugins(const GetPluginsCallback& callback) {
 #endif
 }
 
-void PluginService::GetPluginGroups(const GetPluginGroupsCallback& callback) {
+void PluginServiceImpl::GetPluginGroups(
+    const GetPluginGroupsCallback& callback) {
   GetPlugins(base::Bind(&GetPluginsForGroupsCallback, callback));
 }
 
-void PluginService::GetPluginsInternal(
+void PluginServiceImpl::GetPluginsInternal(
      base::MessageLoopProxy* target_loop,
      const PluginService::GetPluginsCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -560,7 +564,7 @@ void PluginService::GetPluginsInternal(
       base::Bind(&RunGetPluginsCallback, callback, plugins));
 }
 
-void PluginService::OnWaitableEventSignaled(
+void PluginServiceImpl::OnWaitableEventSignaled(
     base::WaitableEvent* waitable_event) {
 #if defined(OS_WIN)
   if (waitable_event == hkcu_event_.get()) {
@@ -577,9 +581,9 @@ void PluginService::OnWaitableEventSignaled(
 #endif  // defined(OS_WIN)
 }
 
-void PluginService::Observe(int type,
-                            const content::NotificationSource& source,
-                            const content::NotificationDetails& details) {
+void PluginServiceImpl::Observe(int type,
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
 #if defined(OS_MACOSX)
   if (type == content::NOTIFICATION_APP_ACTIVATED) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -590,7 +594,7 @@ void PluginService::Observe(int type,
   NOTREACHED();
 }
 
-void PluginService::RegisterPepperPlugins() {
+void PluginServiceImpl::RegisterPepperPlugins() {
   // TODO(abarth): It seems like the PepperPluginRegistry should do this work.
   PepperPluginRegistry::ComputeList(&ppapi_plugins_);
   for (size_t i = 0; i < ppapi_plugins_.size(); ++i) {
@@ -599,7 +603,7 @@ void PluginService::RegisterPepperPlugins() {
 }
 
 // There should generally be very few plugins so a brute-force search is fine.
-content::PepperPluginInfo* PluginService::GetRegisteredPpapiPluginInfo(
+content::PepperPluginInfo* PluginServiceImpl::GetRegisteredPpapiPluginInfo(
     const FilePath& plugin_path) {
   content::PepperPluginInfo* info = NULL;
   for (size_t i = 0; i < ppapi_plugins_.size(); i++) {
@@ -627,7 +631,7 @@ content::PepperPluginInfo* PluginService::GetRegisteredPpapiPluginInfo(
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
 // static
-void PluginService::RegisterFilePathWatcher(
+void PluginServiceImpl::RegisterFilePathWatcher(
     FilePathWatcher *watcher,
     const FilePath& path,
     FilePathWatcher::Delegate* delegate) {
@@ -636,43 +640,44 @@ void PluginService::RegisterFilePathWatcher(
 }
 #endif
 
-void PluginService::SetFilter(content::PluginServiceFilter* filter) {
+void PluginServiceImpl::SetFilter(content::PluginServiceFilter* filter) {
   filter_ = filter;
 }
 
-content::PluginServiceFilter* PluginService::GetFilter() {
+content::PluginServiceFilter* PluginServiceImpl::GetFilter() {
   return filter_;
 }
 
-void PluginService::RefreshPlugins() {
+void PluginServiceImpl::RefreshPlugins() {
   plugin_list_->RefreshPlugins();
 }
 
-void PluginService::AddExtraPluginPath(const FilePath& path) {
+void PluginServiceImpl::AddExtraPluginPath(const FilePath& path) {
   plugin_list_->AddExtraPluginPath(path);
 }
 
-void PluginService::RemoveExtraPluginPath(const FilePath& path) {
+void PluginServiceImpl::RemoveExtraPluginPath(const FilePath& path) {
   plugin_list_->RemoveExtraPluginPath(path);
 }
 
-void PluginService::UnregisterInternalPlugin(const FilePath& path) {
+void PluginServiceImpl::UnregisterInternalPlugin(const FilePath& path) {
   plugin_list_->UnregisterInternalPlugin(path);
 }
 
-void PluginService::SetPluginListForTesting(
+void PluginServiceImpl::SetPluginListForTesting(
     webkit::npapi::PluginList* plugin_list) {
   plugin_list_ = plugin_list;
 }
 
-void PluginService::RegisterInternalPlugin(const webkit::WebPluginInfo& info) {
+void PluginServiceImpl::RegisterInternalPlugin(
+    const webkit::WebPluginInfo& info) {
   plugin_list_->RegisterInternalPlugin(info);
 }
 
-string16 PluginService::GetPluginGroupName(const std::string& plugin_name) {
+string16 PluginServiceImpl::GetPluginGroupName(const std::string& plugin_name) {
   return plugin_list_->GetPluginGroupName(plugin_name);
 }
 
-webkit::npapi::PluginList* PluginService::GetPluginList() {
+webkit::npapi::PluginList* PluginServiceImpl::GetPluginList() {
   return plugin_list_;
 }

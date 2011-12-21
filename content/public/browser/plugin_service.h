@@ -130,6 +130,9 @@ class PluginService {
 
   // TODO(dpranke): This should be private.
   virtual webkit::npapi::PluginList* GetPluginList() = 0;
+
+  virtual void SetPluginListForTesting(
+      webkit::npapi::PluginList* plugin_list) = 0;
 };
 
 }  // namespace content

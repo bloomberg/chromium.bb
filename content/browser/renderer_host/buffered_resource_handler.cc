@@ -13,7 +13,7 @@
 #include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_types.h"
-#include "content/browser/plugin_service.h"
+#include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/x509_user_cert_resource_handler.h"
@@ -357,7 +357,7 @@ bool BufferedResourceHandler::ShouldWaitForPlugins() {
   host_->PauseRequest(info->child_id(), info->request_id(), true);
 
   // Get the plugins asynchronously.
-  PluginService::GetInstance()->GetPlugins(
+  PluginServiceImpl::GetInstance()->GetPlugins(
       base::Bind(&BufferedResourceHandler::OnPluginsLoaded, this));
   return true;
 }
@@ -416,7 +416,7 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
       ResourceDispatcherHost::InfoForRequest(request_);
   bool stale = false;
   webkit::WebPluginInfo plugin;
-  bool found = PluginService::GetInstance()->GetPluginInfo(
+  bool found = PluginServiceImpl::GetInstance()->GetPluginInfo(
       info->child_id(), info->route_id(), *info->context(),
       request_->url(), GURL(), type, allow_wildcard,
       &stale, &plugin, NULL);

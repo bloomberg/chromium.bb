@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/plugin_service.h"
+#include "content/browser/plugin_service_impl.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -26,7 +26,7 @@ const char kNPAPITestPluginMimeType[] = "application/vnd.npapi-test";
 void OpenChannel(PluginProcessHost::Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Start opening the channel
-  PluginService::GetInstance()->OpenChannelToNpapiPlugin(
+  PluginServiceImpl::GetInstance()->OpenChannelToNpapiPlugin(
       0, 0, GURL(), GURL(), kNPAPITestPluginMimeType, client);
 }
 
@@ -158,11 +158,11 @@ void QuitUIMessageLoopFromIOThread() {
 void OpenChannelAndThenCancel(PluginProcessHost::Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Start opening the channel
-  PluginService::GetInstance()->OpenChannelToNpapiPlugin(
+  PluginServiceImpl::GetInstance()->OpenChannelToNpapiPlugin(
       0, 0, GURL(), GURL(), kNPAPITestPluginMimeType, client);
   // Immediately cancel it. This is guaranteed to work since PluginService needs
   // to consult its filter on the FILE thread.
-  PluginService::GetInstance()->CancelOpenChannelToNpapiPlugin(client);
+  PluginServiceImpl::GetInstance()->CancelOpenChannelToNpapiPlugin(client);
   // Before we terminate the test, add a roundtrip through the FILE thread to
   // make sure that it's had a chance to post back to the IO thread. Then signal
   // the UI thread to stop and exit the test.

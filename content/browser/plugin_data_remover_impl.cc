@@ -9,7 +9,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/version.h"
 #include "content/browser/plugin_process_host.h"
-#include "content/browser/plugin_service.h"
+#include "content/browser/plugin_service_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/plugin_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -95,7 +95,7 @@ class PluginDataRemoverImpl::Context
     // Balanced in OnChannelOpened or OnError. Exactly one them will eventually
     // be called, so we need to keep this object around until then.
     AddRef();
-    PluginService::GetInstance()->OpenChannelToNpapiPlugin(
+    PluginServiceImpl::GetInstance()->OpenChannelToNpapiPlugin(
         0, 0, GURL(), GURL(), mime_type, this);
   }
 
