@@ -214,6 +214,11 @@ class MockCookieStore : public net::CookieStore {
                                  const base::Closure& callback) {
     ADD_FAILURE();
   }
+  virtual void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,
+                                            const base::Time& delete_end,
+                                            const DeleteCallback& callback) {
+    ADD_FAILURE();
+  }
 
   virtual net::CookieMonster* GetCookieMonster() { return NULL; }
 

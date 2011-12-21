@@ -140,6 +140,13 @@ void DelayedCookieMonster::DeleteCookieAsync(const GURL& url,
   ADD_FAILURE();
 }
 
+void DelayedCookieMonster::DeleteAllCreatedBetweenAsync(
+    const base::Time& delete_begin,
+    const base::Time& delete_end,
+    const DeleteCallback& callback) {
+  ADD_FAILURE();
+}
+
 CookieMonster* DelayedCookieMonster::GetCookieMonster() {
   return cookie_monster_;
 }

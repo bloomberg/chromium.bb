@@ -54,6 +54,7 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   typedef base::Callback<void(const std::string& cookie)>
       GetCookiesCallback;
   typedef base::Callback<void(bool success)> SetCookiesCallback;
+  typedef base::Callback<void(int num_deleted)> DeleteCallback;
 
 
   // Sets a single cookie.  Expects a cookie line, like "a=1; domain=b.com".
@@ -90,6 +91,13 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   virtual void DeleteCookieAsync(const GURL& url,
                                  const std::string& cookie_name,
                                  const base::Closure& callback) = 0;
+
+  // Deletes all of the cookies that have a creation_date greater than or equal
+  // to |delete_begin| and less than |delete_end|
+  // Returns the number of cookies that have been deleted.
+  virtual void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,
+                                            const base::Time& delete_end,
+                                            const DeleteCallback& callback) = 0;
 
   // Returns the underlying CookieMonster.
   virtual CookieMonster* GetCookieMonster() = 0;

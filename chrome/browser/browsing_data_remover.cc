@@ -47,7 +47,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_data_remover.h"
 #include "content/public/browser/user_metrics.h"
-#include "net/base/cookie_monster.h"
+#include "net/base/cookie_store.h"
 #include "net/base/net_errors.h"
 #include "net/base/transport_security_state.h"
 #include "net/disk_cache/disk_cache.h"
@@ -617,14 +617,10 @@ void BrowsingDataRemover::OnClearedCookies(int num_deleted) {
 void BrowsingDataRemover::ClearCookiesOnIOThread(
     net::URLRequestContextGetter* rq_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::CookieMonster* cookie_monster = rq_context->
-      GetURLRequestContext()->cookie_store()->GetCookieMonster();
-  if (cookie_monster) {
-      cookie_monster->DeleteAllCreatedBetweenAsync(
-          delete_begin_, delete_end_,
-          base::Bind(&BrowsingDataRemover::OnClearedCookies,
-                     base::Unretained(this)));
-  } else {
-    OnClearedCookies(0);
-  }
+  net::CookieStore* cookie_store = rq_context->
+      GetURLRequestContext()->cookie_store();
+  cookie_store->DeleteAllCreatedBetweenAsync(
+      delete_begin_, delete_end_,
+      base::Bind(&BrowsingDataRemover::OnClearedCookies,
+                 base::Unretained(this)));
 }

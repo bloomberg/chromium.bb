@@ -150,7 +150,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   bool InitializeFrom(const CookieList& list);
 
   typedef base::Callback<void(const CookieList& cookies)> GetCookieListCallback;
-  typedef base::Callback<void(int num_deleted)> DeleteCallback;
   typedef base::Callback<void(bool success)> DeleteCookieCallback;
 
   // Sets a cookie given explicit user-provided cookie attributes. The cookie
@@ -192,13 +191,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // Deletes all of the cookies.
   void DeleteAllAsync(const DeleteCallback& callback);
-
-  // Deletes all of the cookies that have a creation_date greater than or equal
-  // to |delete_begin| and less than |delete_end|
-  // Returns the number of cookies that have been deleted.
-  void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,
-                                    const base::Time& delete_end,
-                                    const DeleteCallback& callback);
 
   // Deletes all cookies that match the host of the given URL
   // regardless of path.  This includes all http_only and secure cookies,
@@ -273,6 +265,14 @@ class NET_EXPORT CookieMonster : public CookieStore {
   virtual void DeleteCookieAsync(
       const GURL& url, const std::string& cookie_name,
       const base::Closure& callback) OVERRIDE;
+
+  // Deletes all of the cookies that have a creation_date greater than or equal
+  // to |delete_begin| and less than |delete_end|
+  // Returns the number of cookies that have been deleted.
+  virtual void DeleteAllCreatedBetweenAsync(
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
+      const DeleteCallback& callback) OVERRIDE;
 
   virtual CookieMonster* GetCookieMonster() OVERRIDE;
 
