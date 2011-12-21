@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "net/base/completion_callback.h"
 #include "net/proxy/proxy_server.h"
 #include "net/spdy/spdy_http_utils.h"
@@ -48,29 +50,31 @@ namespace net {
 
 class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
  public:
-  explicit SpdyWebSocketStreamEventRecorder(OldCompletionCallback* callback)
+  explicit SpdyWebSocketStreamEventRecorder(const CompletionCallback& callback)
       : callback_(callback) {}
   virtual ~SpdyWebSocketStreamEventRecorder() {}
 
-  void SetOnCreated(Callback1<SpdyWebSocketStreamEvent*>::Type* callback) {
-    on_created_.reset(callback);
+  typedef base::Callback<void(SpdyWebSocketStreamEvent*)> StreamEventCallback;
+
+  void SetOnCreated(const StreamEventCallback& callback) {
+    on_created_ = callback;
   }
-  void SetOnSentHeaders(Callback1<SpdyWebSocketStreamEvent*>::Type* callback) {
-    on_sent_headers_.reset(callback);
+  void SetOnSentHeaders(const StreamEventCallback& callback) {
+    on_sent_headers_ = callback;
   }
   void SetOnReceivedHeader(
-      Callback1<SpdyWebSocketStreamEvent*>::Type* callback) {
-    on_received_header_.reset(callback);
+      const StreamEventCallback& callback) {
+    on_received_header_ = callback;
   }
-  void SetOnSentData(Callback1<SpdyWebSocketStreamEvent*>::Type* callback) {
-    on_sent_data_.reset(callback);
+  void SetOnSentData(const StreamEventCallback& callback) {
+    on_sent_data_ = callback;
   }
   void SetOnReceivedData(
-      Callback1<SpdyWebSocketStreamEvent*>::Type* callback) {
-    on_received_data_.reset(callback);
+      const StreamEventCallback& callback) {
+    on_received_data_ = callback;
   }
-  void SetOnClose(Callback1<SpdyWebSocketStreamEvent*>::Type* callback) {
-    on_close_.reset(callback);
+  void SetOnClose(const StreamEventCallback& callback) {
+    on_close_ = callback;
   }
 
   virtual void OnCreatedSpdyStream(int result) {
@@ -79,8 +83,8 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
                                  spdy::SpdyHeaderBlock(),
                                  result,
                                  std::string()));
-    if (on_created_.get())
-      on_created_->Run(&events_.back());
+    if (!on_created_.is_null())
+      on_created_.Run(&events_.back());
   }
   virtual void OnSentSpdyHeaders(int result) {
     events_.push_back(
@@ -88,8 +92,8 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
                                  spdy::SpdyHeaderBlock(),
                                  result,
                                  std::string()));
-    if (on_sent_data_.get())
-      on_sent_data_->Run(&events_.back());
+    if (!on_sent_data_.is_null())
+      on_sent_data_.Run(&events_.back());
   }
   virtual int OnReceivedSpdyResponseHeader(
       const spdy::SpdyHeaderBlock& headers, int status) {
@@ -99,8 +103,8 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
             headers,
             status,
             std::string()));
-    if (on_received_header_.get())
-      on_received_header_->Run(&events_.back());
+    if (!on_received_header_.is_null())
+      on_received_header_.Run(&events_.back());
     return status;
   }
   virtual void OnSentSpdyData(int amount_sent) {
@@ -110,8 +114,8 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
             spdy::SpdyHeaderBlock(),
             amount_sent,
             std::string()));
-    if (on_sent_data_.get())
-      on_sent_data_->Run(&events_.back());
+    if (!on_sent_data_.is_null())
+      on_sent_data_.Run(&events_.back());
   }
   virtual void OnReceivedSpdyData(const char* data, int length) {
     events_.push_back(
@@ -120,8 +124,8 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
             spdy::SpdyHeaderBlock(),
             length,
             std::string(data, length)));
-    if (on_received_data_.get())
-      on_received_data_->Run(&events_.back());
+    if (!on_received_data_.is_null())
+      on_received_data_.Run(&events_.back());
   }
   virtual void OnCloseSpdyStream() {
     events_.push_back(
@@ -130,10 +134,10 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
             spdy::SpdyHeaderBlock(),
             OK,
             std::string()));
-    if (on_close_.get())
-      on_close_->Run(&events_.back());
-    if (callback_)
-      callback_->Run(OK);
+    if (!on_close_.is_null())
+      on_close_.Run(&events_.back());
+    if (!callback_.is_null())
+      callback_.Run(OK);
   }
 
   const std::vector<SpdyWebSocketStreamEvent>& GetSeenEvents() const {
@@ -142,13 +146,13 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
 
  private:
   std::vector<SpdyWebSocketStreamEvent> events_;
-  scoped_ptr<Callback1<SpdyWebSocketStreamEvent*>::Type> on_created_;
-  scoped_ptr<Callback1<SpdyWebSocketStreamEvent*>::Type> on_sent_headers_;
-  scoped_ptr<Callback1<SpdyWebSocketStreamEvent*>::Type> on_received_header_;
-  scoped_ptr<Callback1<SpdyWebSocketStreamEvent*>::Type> on_sent_data_;
-  scoped_ptr<Callback1<SpdyWebSocketStreamEvent*>::Type> on_received_data_;
-  scoped_ptr<Callback1<SpdyWebSocketStreamEvent*>::Type> on_close_;
-  OldCompletionCallback* callback_;
+  StreamEventCallback on_created_;
+  StreamEventCallback on_sent_headers_;
+  StreamEventCallback on_received_header_;
+  StreamEventCallback on_sent_data_;
+  StreamEventCallback on_received_data_;
+  StreamEventCallback on_close_;
+  CompletionCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyWebSocketStreamEventRecorder);
 };
@@ -170,7 +174,7 @@ class SpdyWebSocketStreamTest : public testing::Test {
   }
 
   void DoSync(SpdyWebSocketStreamEvent* event) {
-    sync_callback_.Run(OK);
+    sync_callback_.SetResult(OK);
   }
 
  protected:
@@ -297,8 +301,8 @@ class SpdyWebSocketStreamTest : public testing::Test {
   scoped_ptr<spdy::SpdyFrame> closing_frame_;
   HostPortPair host_port_pair_;
   HostPortProxyPair host_port_proxy_pair_;
-  TestOldCompletionCallback completion_callback_;
-  TestOldCompletionCallback sync_callback_;
+  TestCompletionCallback completion_callback_;
+  TestCompletionCallback sync_callback_;
 
   static const char kMessageFrame[];
   static const char kClosingFrame[];
@@ -332,12 +336,13 @@ TEST_F(SpdyWebSocketStreamTest, Basic) {
   EXPECT_EQ(OK, InitSession(reads, arraysize(reads),
                             writes, arraysize(writes), false));
 
-  SpdyWebSocketStreamEventRecorder delegate(&completion_callback_);
-  SpdyWebSocketStreamTest* test = this;  // Necessary for NewCallback.
+  SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnReceivedHeader(
-      NewCallback(test, &SpdyWebSocketStreamTest::DoSendHelloFrame));
+      base::Bind(&SpdyWebSocketStreamTest::DoSendHelloFrame,
+                 base::Unretained(this)));
   delegate.SetOnReceivedData(
-      NewCallback(test, &SpdyWebSocketStreamTest::DoSendClosingFrame));
+      base::Bind(&SpdyWebSocketStreamTest::DoSendClosingFrame,
+                 base::Unretained(this)));
 
   websocket_stream_.reset(new SpdyWebSocketStream(session_, &delegate));
 
@@ -403,12 +408,12 @@ TEST_F(SpdyWebSocketStreamTest, DestructionBeforeClose) {
   EXPECT_EQ(OK, InitSession(reads, arraysize(reads),
                             writes, arraysize(writes), false));
 
-  SpdyWebSocketStreamEventRecorder delegate(&completion_callback_);
-  SpdyWebSocketStreamTest* test = this;  // Necessary for NewCallback.
+  SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnReceivedHeader(
-      NewCallback(test, &SpdyWebSocketStreamTest::DoSendHelloFrame));
+      base::Bind(&SpdyWebSocketStreamTest::DoSendHelloFrame,
+                 base::Unretained(this)));
   delegate.SetOnReceivedData(
-      NewCallback(test, &SpdyWebSocketStreamTest::DoSync));
+      base::Bind(&SpdyWebSocketStreamTest::DoSync, base::Unretained(this)));
 
   websocket_stream_.reset(new SpdyWebSocketStream(session_, &delegate));
 
@@ -465,12 +470,12 @@ TEST_F(SpdyWebSocketStreamTest, DestructionAfterExplicitClose) {
   EXPECT_EQ(OK, InitSession(reads, arraysize(reads),
                             writes, arraysize(writes), false));
 
-  SpdyWebSocketStreamEventRecorder delegate(&completion_callback_);
-  SpdyWebSocketStreamTest* test = this;  // Necessary for NewCallback.
+  SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnReceivedHeader(
-      NewCallback(test, &SpdyWebSocketStreamTest::DoSendHelloFrame));
+      base::Bind(&SpdyWebSocketStreamTest::DoSendHelloFrame,
+                 base::Unretained(this)));
   delegate.SetOnReceivedData(
-      NewCallback(test, &SpdyWebSocketStreamTest::DoClose));
+      base::Bind(&SpdyWebSocketStreamTest::DoClose, base::Unretained(this)));
 
   websocket_stream_.reset(new SpdyWebSocketStream(session_, &delegate));
 
@@ -535,8 +540,7 @@ TEST_F(SpdyWebSocketStreamTest, IOPending) {
 
   // Create a dummy WebSocketStream which cause ERR_IO_PENDING to another
   // WebSocketStream under test.
-  SpdyWebSocketStreamTest* test = this;  // Necessary for NewCallback.
-  SpdyWebSocketStreamEventRecorder block_delegate(NULL);
+  SpdyWebSocketStreamEventRecorder block_delegate((CompletionCallback()));
 
   scoped_ptr<SpdyWebSocketStream> block_stream(
       new SpdyWebSocketStream(session_, &block_delegate));
@@ -546,12 +550,15 @@ TEST_F(SpdyWebSocketStreamTest, IOPending) {
             block_stream->InitializeStream(block_url, HIGHEST, block_net_log));
 
   // Create a WebSocketStream under test.
-  SpdyWebSocketStreamEventRecorder delegate(&completion_callback_);
-  delegate.SetOnCreated(NewCallback(test, &SpdyWebSocketStreamTest::DoSync));
+  SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
+  delegate.SetOnCreated(
+      base::Bind(&SpdyWebSocketStreamTest::DoSync, base::Unretained(this)));
   delegate.SetOnReceivedHeader(
-      NewCallback(test, &SpdyWebSocketStreamTest::DoSendHelloFrame));
+      base::Bind(&SpdyWebSocketStreamTest::DoSendHelloFrame,
+                 base::Unretained(this)));
   delegate.SetOnReceivedData(
-      NewCallback(test, &SpdyWebSocketStreamTest::DoSendClosingFrame));
+      base::Bind(&SpdyWebSocketStreamTest::DoSendClosingFrame,
+                 base::Unretained(this)));
 
   websocket_stream_.reset(new SpdyWebSocketStream(session_, &delegate));
   BoundNetLog net_log;
