@@ -624,7 +624,6 @@ class QuotaManager::DatabaseTaskBase : public QuotaThreadTask {
         manager_(manager),
         database_(manager->database_.get()),
         db_disabled_(false) {
-    DCHECK(manager_);
     DCHECK(database_);
   }
 
@@ -656,7 +655,6 @@ class QuotaManager::InitializeTask : public QuotaManager::DatabaseTaskBase {
       : DatabaseTaskBase(manager),
         temporary_quota_override_(-1),
         desired_available_space_(-1) {
-    DCHECK(manager);
   }
 
  protected:
