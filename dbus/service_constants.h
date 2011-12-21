@@ -115,6 +115,7 @@ const char kSpeak[] = "Speak";
 const char kSetProperties[] = "SetProperties";
 const char kStop[] = "Stop";
 const char kIsSpeaking[] = "IsSpeaking";
+const char kShutdown[] = "Shutdown";
 }  // namespace speech_synthesis
 
 namespace chromium {
