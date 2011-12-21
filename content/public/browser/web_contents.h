@@ -11,6 +11,10 @@
 
 class NavigationController;
 class RenderViewHost;
+class RenderWidgetHostView;
+// TODO(jam): of course we will have to rename TabContentsView etc to use
+// WebContents.
+class TabContentsView;
 
 namespace base {
 class PropertyBag;
@@ -19,8 +23,6 @@ class PropertyBag;
 namespace content {
 
 class RenderProcessHost;
-// TODO(jam): of course we will have to rename TabContentsView etc to use
-// WebPage.
 class WebContentsDelegate;
 
 // Describes what goes in the main content area of a tab.
@@ -51,6 +53,13 @@ class WebContents {
 
   // Gets the current RenderViewHost for this tab.
   virtual RenderViewHost* GetRenderViewHost() const = 0;
+
+  // Returns the currently active RenderWidgetHostView. This may change over
+  // time and can be NULL (during setup and teardown).
+  virtual RenderWidgetHostView* GetRenderWidgetHostView() const = 0;
+
+  // The TabContentsView will never change and is guaranteed non-NULL.
+  virtual TabContentsView* GetView() const = 0;
 };
 
 }  // namespace content

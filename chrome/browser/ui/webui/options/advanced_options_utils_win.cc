@@ -62,7 +62,7 @@ void AdvancedOptionsUtilities::ShowManageSSLCertificates(
 #if defined(USE_AURA)
       NULL;
 #else
-      tab_contents->view()->GetTopLevelNativeWindow();
+      tab_contents->GetView()->GetTopLevelNativeWindow();
 #endif
   ::CryptUIDlgCertMgr(&cert_mgr);
 }

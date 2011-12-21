@@ -406,7 +406,7 @@ RenderViewHost* InterstitialPage::CreateRenderViewHost() {
 }
 
 TabContentsView* InterstitialPage::CreateTabContentsView() {
-  TabContentsView* tab_contents_view = tab()->view();
+  TabContentsView* tab_contents_view = tab()->GetView();
   RenderWidgetHostView* view =
       tab_contents_view->CreateViewForWidget(render_view_host_);
   render_view_host_->SetView(view);

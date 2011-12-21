@@ -931,7 +931,7 @@ bool CreateTabFunction::RunImpl() {
   browser::Navigate(&params);
 
   if (active)
-    params.target_contents->tab_contents()->view()->SetInitialFocus();
+    params.target_contents->tab_contents()->GetView()->SetInitialFocus();
 
   // Return data about the newly created tab.
   if (has_callback()) {

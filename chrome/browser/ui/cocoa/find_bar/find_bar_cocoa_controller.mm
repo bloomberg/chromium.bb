@@ -468,7 +468,7 @@ const float kRightEdgeOffset = 25;
 
   // Get the size of the container.
   gfx::Rect container_rect(
-      contents->tab_contents()->view()->GetContainerSize());
+      contents->tab_contents()->GetView()->GetContainerSize());
 
   // Position the FindBar on the top right corner.
   view_rect.set_x(

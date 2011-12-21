@@ -683,11 +683,11 @@ bool BookmarkBarGtk::GetTabContentsSize(gfx::Size* size) {
     // so don't NOTREACHED() and error the program.
     return false;
   }
-  if (!tab_contents->view()) {
+  if (!tab_contents->GetView()) {
     NOTREACHED();
     return false;
   }
-  *size = tab_contents->view()->GetContainerSize();
+  *size = tab_contents->GetView()->GetContainerSize();
   return true;
 }
 

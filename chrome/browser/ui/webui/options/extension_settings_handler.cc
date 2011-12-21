@@ -482,7 +482,7 @@ void ExtensionSettingsHandler::HandleSelectFilePathMessage(
   load_extension_dialog_ = SelectFileDialog::Create(this);
   load_extension_dialog_->SelectFile(type, select_title, FilePath(), &info,
       file_type_index, FILE_PATH_LITERAL(""), web_ui_->tab_contents(),
-      web_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
+      web_ui_->tab_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
 

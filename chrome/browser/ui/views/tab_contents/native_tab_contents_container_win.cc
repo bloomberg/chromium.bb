@@ -53,7 +53,7 @@ void NativeTabContentsContainerWin::DetachContents(TabContents* contents) {
     ShowWindow(container_hwnd, SW_HIDE);
 
     // Reset the parent to NULL to ensure hidden tabs don't receive messages.
-    static_cast<TabContentsViewViews*>(contents->view())->Unparent();
+    static_cast<TabContentsViewViews*>(contents->GetView())->Unparent();
   }
 }
 

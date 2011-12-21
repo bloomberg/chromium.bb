@@ -1184,7 +1184,7 @@ private:
       TabContentsController* oldController =
           [tabContentsArray_ objectAtIndex:oldIndex];
       [oldController willBecomeUnselectedTab];
-      oldContents->tab_contents()->view()->StoreFocus();
+      oldContents->tab_contents()->GetView()->StoreFocus();
       oldContents->tab_contents()->WasHidden();
     }
   }
@@ -1221,7 +1221,7 @@ private:
 
   if (newContents) {
     newContents->tab_contents()->DidBecomeSelected();
-    newContents->tab_contents()->view()->RestoreFocus();
+    newContents->tab_contents()->GetView()->RestoreFocus();
 
     if (newContents->find_tab_helper()->find_ui_active())
       browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();

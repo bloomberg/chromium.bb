@@ -1051,8 +1051,8 @@ void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
           &preview_contents_->tab_contents()->GetController()));
 
   gfx::Rect tab_bounds;
-  tab_contents->tab_contents()->view()->GetContainerBounds(&tab_bounds);
-  preview_contents_->tab_contents()->view()->SizeContents(tab_bounds.size());
+  tab_contents->tab_contents()->GetView()->GetContainerBounds(&tab_bounds);
+  preview_contents_->tab_contents()->GetView()->SizeContents(tab_bounds.size());
 }
 
 void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {

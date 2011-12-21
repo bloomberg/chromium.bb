@@ -2280,7 +2280,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 - (int)currentTabContentsHeight {
   TabContents* tc = browser_->GetSelectedTabContents();
-  return tc ? tc->view()->GetContainerSize().height() : 0;
+  return tc ? tc->GetView()->GetContainerSize().height() : 0;
 }
 
 - (ui::ThemeProvider*)themeProvider {

@@ -66,8 +66,8 @@ void SpeechInputBubbleImpl::Show() {
   // arrow anchor point inside that to point at the bottom-left of the html
   // input element rect if the position is valid, otherwise point it towards
   // the page icon in the omnibox.
-  gfx::NativeView view = tab_contents()->view()->GetNativeView();
-  NSWindow* parentWindow = tab_contents()->view()->GetTopLevelNativeWindow();
+  gfx::NativeView view = tab_contents()->GetView()->GetNativeView();
+  NSWindow* parentWindow = tab_contents()->GetView()->GetTopLevelNativeWindow();
   NSRect tab_bounds = [view bounds];
   int anchor_x = tab_bounds.origin.x + element_rect_.x() +
                  element_rect_.width() - kBubbleTargetOffsetX;

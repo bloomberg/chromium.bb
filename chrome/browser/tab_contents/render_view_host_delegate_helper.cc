@@ -176,7 +176,7 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
                       base_tab_contents,
                       NULL);
   new_contents->set_opener_web_ui_type(webui_type);
-  TabContentsView* new_view = new_contents->view();
+  TabContentsView* new_view = new_contents->GetView();
 
   // TODO(brettw) it seems bogus that we have to call this function on the
   // newly created object and give it one of its own member variables.

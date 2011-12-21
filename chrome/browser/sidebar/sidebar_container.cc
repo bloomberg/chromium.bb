@@ -79,7 +79,7 @@ void SidebarContainer::Expand() {
   }
 
   delegate_->UpdateSidebar(this);
-  sidebar_contents_->view()->SetInitialFocus();
+  sidebar_contents_->GetView()->SetInitialFocus();
 }
 
 void SidebarContainer::Collapse() {

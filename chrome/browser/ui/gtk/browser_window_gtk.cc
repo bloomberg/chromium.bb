@@ -1257,7 +1257,7 @@ void BrowserWindowGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
                                         bool user_gesture) {
   TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::ActiveTabChanged");
   if (old_contents && !old_contents->tab_contents()->is_being_destroyed())
-    old_contents->tab_contents()->view()->StoreFocus();
+    old_contents->tab_contents()->GetView()->StoreFocus();
 
   // Update various elements that are interested in knowing the current
   // TabContents.
@@ -1269,7 +1269,7 @@ void BrowserWindowGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
   // TODO(estade): after we manage browser activation, add a check to make sure
   // we are the active browser before calling RestoreFocus().
   if (!browser_->tabstrip_model()->closing_all()) {
-    new_contents->tab_contents()->view()->RestoreFocus();
+    new_contents->tab_contents()->GetView()->RestoreFocus();
     if (new_contents->find_tab_helper()->find_ui_active())
       browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();
   }

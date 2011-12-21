@@ -18,7 +18,7 @@ BalloonViewHost::~BalloonViewHost() {
 }
 
 void BalloonViewHost::UpdateActualSize(const gfx::Size& new_size) {
-  tab_contents_->view()->SizeContents(new_size);
+  tab_contents_->GetView()->SizeContents(new_size);
   NSView* view = native_view();
   NSRect frame = [view frame];
   frame.size.width = new_size.width();

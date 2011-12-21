@@ -126,7 +126,7 @@ void ConstrainedWindowGtk::FocusConstrainedWindow() {
   // TODO(estade): this define should not need to be here because this class
   // should not be used on linux/views.
 #if defined(TOOLKIT_GTK)
-    static_cast<TabContentsViewGtk*>(wrapper_->tab_contents()->view())->
+    static_cast<TabContentsViewGtk*>(wrapper_->tab_contents()->GetView())->
         SetFocusedWidget(focus_widget);
 #endif
   }
@@ -136,11 +136,11 @@ ConstrainedWindowGtk::TabContentsViewType*
     ConstrainedWindowGtk::ContainingView() {
 #if defined(TOOLKIT_VIEWS)
   return static_cast<NativeTabContentsViewGtk*>(
-      static_cast<TabContentsViewViews*>(wrapper_->tab_contents()->view())->
+      static_cast<TabContentsViewViews*>(wrapper_->tab_contents()->GetView())->
           native_tab_contents_view());
 #else
   return static_cast<TabContentsViewType*>(
-      static_cast<TabContentsViewGtk*>(wrapper_->tab_contents()->view())->
+      static_cast<TabContentsViewGtk*>(wrapper_->tab_contents()->GetView())->
           wrapper());
 #endif
 }

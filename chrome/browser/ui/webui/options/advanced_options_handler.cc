@@ -352,7 +352,7 @@ void AdvancedOptionsHandler::HandleSelectDownloadLocation(
       l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE),
       pref_service->GetFilePath(prefs::kDownloadDefaultDirectory),
       NULL, 0, FILE_PATH_LITERAL(""), web_ui_->tab_contents(),
-      web_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
+      web_ui_->tab_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
 void AdvancedOptionsHandler::FileSelected(const FilePath& path, int index,

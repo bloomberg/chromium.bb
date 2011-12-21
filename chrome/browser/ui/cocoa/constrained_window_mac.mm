@@ -106,7 +106,7 @@ void ConstrainedWindowMac::ShowConstrainedWindow() {
   // this case, open the sheet now. Else, Realize() will be called later, when
   // our tab becomes visible.
   NSWindow* browserWindow =
-      wrapper_->tab_contents()->view()->GetTopLevelNativeWindow();
+      wrapper_->tab_contents()->GetView()->GetTopLevelNativeWindow();
   NSWindowController* controller = [browserWindow windowController];
   if (controller != nil) {
     DCHECK([controller isKindOfClass:[BrowserWindowController class]]);

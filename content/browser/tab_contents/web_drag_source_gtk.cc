@@ -381,7 +381,7 @@ void WebDragSourceGtk::OnDragEnd(GtkWidget* sender,
 }
 
 gfx::NativeView WebDragSourceGtk::GetContentNativeView() const {
-  return tab_contents_->view()->GetContentNativeView();
+  return tab_contents_->GetView()->GetContentNativeView();
 }
 
 gboolean WebDragSourceGtk::OnDragIconExpose(GtkWidget* sender,

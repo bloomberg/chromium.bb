@@ -76,7 +76,7 @@ void ExtensionView::SetVisible(bool is_visible) {
 void ExtensionView::CreateWidgetHostView() {
   DCHECK(!initialized_);
   initialized_ = true;
-  Attach(host_->host_contents()->view()->GetNativeView());
+  Attach(host_->host_contents()->GetView()->GetNativeView());
   host_->CreateRenderViewSoon();
   SetVisible(false);
 }

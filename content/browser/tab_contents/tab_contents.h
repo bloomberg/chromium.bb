@@ -108,17 +108,6 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
         : render_manager_.pending_web_ui();
   }
 
-  // Returns the currently active RenderWidgetHostView. This may change over
-  // time and can be NULL (during setup and teardown).
-  RenderWidgetHostView* GetRenderWidgetHostView() const {
-    return render_manager_.GetRenderWidgetHostView();
-  }
-
-  // The TabContentsView will never change and is guaranteed non-NULL.
-  TabContentsView* view() const {
-    return view_.get();
-  }
-
   // Tab navigation state ------------------------------------------------------
 
   // Returns the current navigation properties, which if a navigation is
@@ -470,6 +459,9 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   virtual void SetViewType(content::ViewType type) OVERRIDE;
   virtual content::RenderProcessHost* GetRenderProcessHost() const OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
+  // TODO(jam): webui stuff goes here
+  virtual RenderWidgetHostView* GetRenderWidgetHostView() const OVERRIDE;
+  virtual TabContentsView* GetView() const OVERRIDE;
 
 
   // RenderViewHostDelegate ----------------------------------------------------

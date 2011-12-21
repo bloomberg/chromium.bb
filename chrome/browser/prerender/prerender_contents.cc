@@ -250,7 +250,7 @@ void PrerenderContents::StartPrerendering(
       starting_page_id_ = source_tc->GetMaxPageID();
 
       // Set the size of the new TC to that of the old TC.
-      source_tc->view()->GetContainerBounds(&tab_bounds);
+      source_tc->GetView()->GetContainerBounds(&tab_bounds);
     }
   } else {
     int max_page_id = -1;
@@ -276,7 +276,7 @@ void PrerenderContents::StartPrerendering(
     if (active_browser) {
       TabContents* active_tab_contents = active_browser->GetTabContentsAt(
           active_browser->active_index());
-      active_tab_contents->view()->GetContainerBounds(&tab_bounds);
+      active_tab_contents->GetView()->GetContainerBounds(&tab_bounds);
     }
   }
 
@@ -292,7 +292,8 @@ void PrerenderContents::StartPrerendering(
   new_contents->SetDelegate(tab_contents_delegate_.get());
 
   // Set the size of the prerender TabContents.
-  prerender_contents_->tab_contents()->view()->SizeContents(tab_bounds.size());
+  prerender_contents_->tab_contents()->GetView()->SizeContents(
+      tab_bounds.size());
 
   // Register as an observer of the RenderViewHost so we get messages.
   render_view_host_observer_.reset(

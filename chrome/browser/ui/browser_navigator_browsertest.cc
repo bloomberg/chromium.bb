@@ -662,7 +662,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
   // All platforms should respect size however provided width > 400 (Mac has a
   // minimum window width of 400).
   EXPECT_EQ(p.window_bounds.size(),
-            p.target_contents->tab_contents()->view()->GetContainerSize());
+            p.target_contents->tab_contents()->GetView()->GetContainerSize());
 
   // We should have two windows, the new popup and the browser() provided by the
   // framework.

@@ -761,7 +761,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     // TODO(jcampan): http://crbug.com/8123 we should not need to set the
     //                initial focus explicitly.
-    browser->GetSelectedTabContents()->view()->SetInitialFocus();
+    browser->GetSelectedTabContents()->GetView()->SetInitialFocus();
 
     if (!browser_shown_) {
       browser_shown_ = true;

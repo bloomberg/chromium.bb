@@ -33,7 +33,7 @@ RenderViewContextMenuViews::~RenderViewContextMenuViews() {
 
 void RenderViewContextMenuViews::RunMenuAt(int x, int y) {
   TabContentsViewViews* tab =
-      static_cast<TabContentsViewViews*>(source_tab_contents_->view());
+      static_cast<TabContentsViewViews*>(source_tab_contents_->GetView());
   views::Widget* parent = tab->GetTopLevelWidget();
   if (menu_runner_->RunMenuAt(parent, NULL,
           gfx::Rect(gfx::Point(x, y), gfx::Size()),

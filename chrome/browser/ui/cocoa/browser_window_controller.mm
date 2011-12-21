@@ -702,7 +702,7 @@ enum {
     // If the intrinsic width is bigger, then make it the zoomed width.
     const int kScrollbarWidth = 16;  // TODO(viettrungluu): ugh.
     TabContentsViewMac* tab_contents_view =
-        static_cast<TabContentsViewMac*>(contents->view());
+        static_cast<TabContentsViewMac*>(contents->GetView());
     CGFloat intrinsicWidth = static_cast<CGFloat>(
         tab_contents_view->preferred_width() + kScrollbarWidth);
     zoomedWidth = std::max(zoomedWidth,

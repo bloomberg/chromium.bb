@@ -266,7 +266,7 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
       BrowserWindow* inspected_window = inspected_browser->window();
       tab_contents_->tab_contents()->SetDelegate(this);
       inspected_window->UpdateDevTools();
-      tab_contents_->tab_contents()->view()->SetInitialFocus();
+      tab_contents_->tab_contents()->GetView()->SetInitialFocus();
       inspected_window->Show();
       TabStripModel* tabstrip_model = inspected_browser->tabstrip_model();
       tabstrip_model->ActivateTabAt(inspected_tab_index, true);
@@ -289,7 +289,7 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
 
   if (should_show_window) {
     browser_->window()->Show();
-    tab_contents_->tab_contents()->view()->SetInitialFocus();
+    tab_contents_->tab_contents()->GetView()->SetInitialFocus();
   }
 
   ScheduleAction(action);
@@ -647,7 +647,7 @@ void DevToolsWindow::ActivateWindow() {
   } else {
     BrowserWindow* inspected_window = GetInspectedBrowserWindow();
     if (inspected_window)
-      tab_contents_->tab_contents()->view()->Focus();
+      tab_contents_->tab_contents()->GetView()->Focus();
   }
 }
 

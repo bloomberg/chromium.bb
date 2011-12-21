@@ -224,7 +224,7 @@ TabContents::TabContents(content::BrowserContext* browser_context,
   // We have the initial size of the view be based on the size of the passed in
   // tab contents (normally a tab from the same window).
   view_->CreateView(base_tab_contents ?
-      base_tab_contents->view()->GetContainerSize() : gfx::Size());
+      base_tab_contents->GetView()->GetContainerSize() : gfx::Size());
 
 #if defined(ENABLE_JAVA_BRIDGE)
   java_bridge_dispatcher_host_manager_.reset(
@@ -1446,6 +1446,14 @@ RenderViewHost* TabContents::GetRenderViewHost() const {
   return render_manager_.current_host();
 }
 
+RenderWidgetHostView* TabContents::GetRenderWidgetHostView() const {
+  return render_manager_.GetRenderWidgetHostView();
+}
+
+TabContentsView* TabContents::GetView() const {
+  return view_.get();
+}
+
 RenderViewHostDelegate::View* TabContents::GetViewDelegate() {
   return view_.get();
 }
@@ -1488,7 +1496,7 @@ void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
         new ViewMsg_EnableViewSourceMode(render_view_host->routing_id()));
   }
 
-  view()->RenderViewCreated(render_view_host);
+  GetView()->RenderViewCreated(render_view_host);
 
   FOR_EACH_OBSERVER(
       TabContentsObserver, observers_, RenderViewCreated(render_view_host));
@@ -1526,7 +1534,7 @@ void TabContents::RenderViewGone(RenderViewHost* rvh,
   SetIsLoading(false, NULL);
   NotifyDisconnected();
   SetIsCrashed(status, error_code);
-  view()->OnTabCrashed(crashed_status(), crashed_error_code());
+  GetView()->OnTabCrashed(crashed_status(), crashed_error_code());
 
   FOR_EACH_OBSERVER(TabContentsObserver,
                     observers_,
@@ -1671,15 +1679,15 @@ void TabContents::Close(RenderViewHost* rvh) {
   // TODO(shess): This could get more fine-grained.  For instance,
   // closing a tab in another window while selecting text in the
   // current window's Omnibox should be just fine.
-  if (view()->IsEventTracking()) {
-    view()->CloseTabAfterEventTracking();
+  if (GetView()->IsEventTracking()) {
+    GetView()->CloseTabAfterEventTracking();
     return;
   }
 
   // If we close the tab while we're in the middle of a drag, we'll crash.
   // Instead, cancel the drag and close it as soon as the drag ends.
-  if (view()->IsDoingDrag()) {
-    view()->CancelDragAndCloseTab();
+  if (GetView()->IsDoingDrag()) {
+    GetView()->CancelDragAndCloseTab();
     return;
   }
 
@@ -2085,10 +2093,10 @@ void TabContents::set_encoding(const std::string& encoding) {
 }
 
 void TabContents::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
-  RenderWidgetHostView* rwh_view = view()->CreateViewForWidget(rvh);
+  RenderWidgetHostView* rwh_view = GetView()->CreateViewForWidget(rvh);
   // Can be NULL during tests.
   if (rwh_view)
-    rwh_view->SetSize(view()->GetContainerSize());
+    rwh_view->SetSize(GetView()->GetContainerSize());
 }
 
 bool TabContents::GotResponseToLockMouseRequest(bool allowed) {

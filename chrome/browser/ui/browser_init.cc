@@ -1209,7 +1209,7 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
   browser->window()->Show();
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
   //                focus explicitly.
-  browser->GetSelectedTabContents()->view()->SetInitialFocus();
+  browser->GetSelectedTabContents()->GetView()->SetInitialFocus();
 
   return browser;
 }

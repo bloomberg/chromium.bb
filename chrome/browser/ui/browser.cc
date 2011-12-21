@@ -709,7 +709,7 @@ TabContents* Browser::OpenApplicationWindow(
 
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
   //                focus explicitly.
-  contents->view()->SetInitialFocus();
+  contents->GetView()->SetInitialFocus();
   return contents;
 }
 
@@ -1326,7 +1326,7 @@ TabContents* Browser::AddRestoredTab(
     // anchor link location calculations to be incorrect even after a new
     // layout with proper view dimensions. TabStripModel::AddTabContents()
     // contains similar logic.
-    new_tab->view()->SizeContents(window_->GetRestoredBounds().size());
+    new_tab->GetView()->SizeContents(window_->GetRestoredBounds().size());
     new_tab->HideContents();
     new_tab->GetController().LoadIfNecessary();
   }
@@ -1655,7 +1655,7 @@ void Browser::NewTab() {
 
   if (is_type_tabbed()) {
     AddBlankTab(true);
-    GetSelectedTabContentsWrapper()->tab_contents()->view()->RestoreFocus();
+    GetSelectedTabContentsWrapper()->tab_contents()->GetView()->RestoreFocus();
   } else {
     Browser* b = GetOrCreateTabbedBrowser(profile_);
     b->AddBlankTab(true);
@@ -1663,7 +1663,7 @@ void Browser::NewTab() {
     // The call to AddBlankTab above did not set the focus to the tab as its
     // window was not active, so we have to do it explicitly.
     // See http://crbug.com/6380.
-    b->GetSelectedTabContentsWrapper()->tab_contents()->view()->RestoreFocus();
+    b->GetSelectedTabContentsWrapper()->tab_contents()->GetView()->RestoreFocus();
   }
 }
 

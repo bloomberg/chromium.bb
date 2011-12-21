@@ -296,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocus) {
 
       // Activate the location bar or the page.
       if (kFocusPage[i][j]) {
-        browser()->GetTabContentsAt(j)->view()->Focus();
+        browser()->GetTabContentsAt(j)->GetView()->Focus();
       } else {
         browser()->FocusLocationBar();
       }

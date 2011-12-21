@@ -34,7 +34,7 @@ void ExtensionViewMac::Init() {
 }
 
 gfx::NativeView ExtensionViewMac::native_view() {
-  return extension_host_->host_contents()->view()->GetNativeView();
+  return extension_host_->host_contents()->GetView()->GetNativeView();
 }
 
 RenderViewHost* ExtensionViewMac::render_view_host() const {

@@ -62,7 +62,7 @@ Shell* Shell::CreateNewWindow(content::BrowserContext* browser_context,
 
 #if defined(OS_WIN)
   TabContentsViewWin* view =
-      static_cast<TabContentsViewWin*>(shell->tab_contents_->view());
+      static_cast<TabContentsViewWin*>(shell->tab_contents_->GetView());
   view->SetParent(shell->window_);
 #endif
 

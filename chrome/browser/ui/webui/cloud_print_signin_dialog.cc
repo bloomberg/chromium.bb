@@ -91,8 +91,8 @@ void CloudPrintSigninFlowHandler::Observe(
 }
 
 void CloudPrintSigninFlowHandler::StoreDialogSize() {
-  if (web_ui_ && web_ui_->tab_contents() && web_ui_->tab_contents()->view()) {
-    gfx::Size size = web_ui_->tab_contents()->view()->GetContainerSize();
+  if (web_ui_ && web_ui_->tab_contents() && web_ui_->tab_contents()->GetView()) {
+    gfx::Size size = web_ui_->tab_contents()->GetView()->GetContainerSize();
     Profile* profile = Profile::FromWebUI(web_ui_);
     profile->GetPrefs()->SetInteger(prefs::kCloudPrintSigninDialogWidth,
                                     size.width());

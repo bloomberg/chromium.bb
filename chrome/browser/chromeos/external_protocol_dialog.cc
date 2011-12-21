@@ -117,7 +117,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
 
   gfx::NativeWindow parent_window;
   if (tab_contents) {
-    parent_window = tab_contents->view()->GetTopLevelNativeWindow();
+    parent_window = tab_contents->GetView()->GetTopLevelNativeWindow();
   } else {
     // Dialog is top level if we don't have a tab_contents associated with us.
     parent_window = NULL;

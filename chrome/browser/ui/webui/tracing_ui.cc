@@ -313,7 +313,7 @@ void TracingMessageHandler::OnLoadTraceFile(const ListValue* list) {
       string16(),
       FilePath(),
       NULL, 0, FILE_PATH_LITERAL(""), web_ui_->tab_contents(),
-      web_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
+      web_ui_->tab_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
 void TracingMessageHandler::LoadTraceFileComplete(std::string* file_contents) {
@@ -344,7 +344,7 @@ void TracingMessageHandler::OnSaveTraceFile(const ListValue* list) {
       string16(),
       FilePath(),
       NULL, 0, FILE_PATH_LITERAL(""), web_ui_->tab_contents(),
-      web_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
+      web_ui_->tab_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
 void TracingMessageHandler::SaveTraceFileComplete() {

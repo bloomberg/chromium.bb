@@ -1042,5 +1042,5 @@ void CertificateManagerHandler::CheckTpmTokenReady(const ListValue* args) {
 #endif
 
 gfx::NativeWindow CertificateManagerHandler::GetParentWindow() const {
-  return web_ui_->tab_contents()->view()->GetTopLevelNativeWindow();
+  return web_ui_->tab_contents()->GetView()->GetTopLevelNativeWindow();
 }

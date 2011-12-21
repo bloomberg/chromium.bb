@@ -289,7 +289,7 @@ TabContents* WebIntentPickerGtk::SetInlineDisposition(const GURL& url) {
 
   // TODO(gbillock): This size calculation needs more thought.
   // Move up to WebIntentPicker?
-  gfx::Size tab_size = wrapper_->tab_contents()->view()->GetContainerSize();
+  gfx::Size tab_size = wrapper_->tab_contents()->GetView()->GetContainerSize();
   int width = std::max(tab_size.width()/2, kMainContentWidth);
   int height = std::max(tab_size.height()/2, kMainContentWidth);
   gtk_widget_set_size_request(tab_contents_container_->widget(),

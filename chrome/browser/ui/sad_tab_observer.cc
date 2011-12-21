@@ -39,7 +39,7 @@ void SadTabObserver::RenderViewGone(base::TerminationStatus status) {
     return;
 
   gfx::NativeView view = AcquireSadTab(status);
-  tab_contents()->view()->InstallOverlayView(view);
+  tab_contents()->GetView()->InstallOverlayView(view);
 }
 
 void SadTabObserver::Observe(int type,
@@ -48,7 +48,7 @@ void SadTabObserver::Observe(int type,
   switch (type) {
     case content::NOTIFICATION_TAB_CONTENTS_CONNECTED:
       if (HasSadTab()) {
-        tab_contents()->view()->RemoveOverlayView();
+        tab_contents()->GetView()->RemoveOverlayView();
         ReleaseSadTab();
       }
       break;
@@ -73,7 +73,7 @@ gfx::NativeView SadTabObserver::AcquireSadTab(base::TerminationStatus status) {
   // and later re-parent it.
   // TODO(avi): This is a cheat. Can this be made cleaner?
   sad_tab_params.parent_widget =
-      static_cast<TabContentsViewViews*>(tab_contents()->view());
+      static_cast<TabContentsViewViews*>(tab_contents()->GetView());
   sad_tab_params.ownership =
       views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   sad_tab_.reset(new views::Widget);

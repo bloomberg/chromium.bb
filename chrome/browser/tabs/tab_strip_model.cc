@@ -724,9 +724,9 @@ void TabStripModel::AddTabContents(TabContentsWrapper* contents,
   // new background tab.
   if (TabContentsWrapper* old_contents = GetActiveTabContents()) {
     if ((add_types & ADD_ACTIVE) == 0) {
-      contents->tab_contents()->view()->
+      contents->tab_contents()->GetView()->
           SizeContents(old_contents->tab_contents()->
-                          view()->GetContainerSize());
+              GetView()->GetContainerSize());
       // We need to hide the contents or else we get and execute paints for
       // background tabs. With enough background tabs they will steal the
       // backing store of the visible tab causing flashing. See bug 20831.

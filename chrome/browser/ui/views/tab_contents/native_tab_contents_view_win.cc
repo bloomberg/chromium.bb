@@ -298,7 +298,7 @@ void NativeTabContentsViewWin::ScrollCommon(UINT message, int scroll_type,
   if (!ScrollZoom(scroll_type)) {
     // Reflect scroll message to the view() to give it a chance
     // to process scrolling.
-    SendMessage(delegate_->GetTabContents()->view()->GetContentNativeView(),
+    SendMessage(delegate_->GetTabContents()->GetView()->GetContentNativeView(),
                 message, MAKELONG(scroll_type, position),
                 reinterpret_cast<LPARAM>(scrollbar));
   }
