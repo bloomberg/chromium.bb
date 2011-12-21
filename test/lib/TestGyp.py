@@ -449,6 +449,11 @@ class TestGypNinja(TestGypBase):
   def run_built_executable(self, name, *args, **kw):
     # Enclosing the name in a list avoids prepending the original dir.
     program = [self.built_file_path(name, type=self.EXECUTABLE, **kw)]
+    if sys.platform == 'darwin':
+      libdir = os.path.join('out', 'Default', 'lib')
+      if self.configuration:
+        libdir = os.path.join('out', self.configuration, 'lib')
+      os.environ['DYLD_LIBRARY_PATH'] = libdir
     return self.run(program=program, *args, **kw)
 
   def built_file_path(self, name, type=None, **kw):
@@ -458,9 +463,10 @@ class TestGypNinja(TestGypBase):
       result.append(chdir)
     result.append('out')
     result.append(self.configuration_dirname())
-    if type in (self.STATIC_LIB,):
-      result.append('obj')
-    elif type in (self.SHARED_LIB,):
+    if type == self.STATIC_LIB:
+      if sys.platform != 'darwin':
+        result.append('obj')
+    elif type == self.SHARED_LIB:
       result.append('lib')
     subdir = kw.get('subdir')
     if subdir:

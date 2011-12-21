@@ -555,6 +555,10 @@ class NinjaWriter:
       'loadable_module': 'so',
       'shared_library': 'so',
       }
+    # TODO(thakis/jeremya): Remove once the mac path name computation is done
+    # by XcodeSettings.
+    if self.flavor == 'mac':
+      DEFAULT_EXTENSION['shared_library'] = 'dylib'
     extension = spec.get('product_extension',
                          DEFAULT_EXTENSION.get(spec['type'], ''))
     if extension:
@@ -597,6 +601,10 @@ class NinjaWriter:
       if self.toolset != 'target':
         libdir = 'lib/%s' % self.toolset
       return os.path.join(libdir, filename)
+    # TODO(thakis/jeremya): Remove once the mac path name computation is done
+    # by XcodeSettings.
+    elif spec['type'] == 'static_library' and self.flavor == 'mac':
+      return filename
     else:
       return self.GypPathToUniqueOutput(filename, qualified=False)
 
