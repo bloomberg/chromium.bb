@@ -463,6 +463,7 @@
 
     <event name="touch_down">
       <arg name="time" type="uint"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="id" type="int" />
       <arg name="x" type="int" />
       <arg name="y" type="int" />
