@@ -535,11 +535,9 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   const TemplateURL* hijacked_default_search_provider = NULL;
   scoped_ptr<TemplateURL> backup_default_search_provider;
   // No check is required if the default search is managed.
-  // |DidDefaultSearchProviderChange| must always be called because it will
-  // take care of the unowned backup default search provider instance.
-  if (DidDefaultSearchProviderChange(*result,
-                                     &backup_default_search_provider) &&
-      !is_default_search_managed_) {
+  if (!is_default_search_managed_ &&
+      DidDefaultSearchProviderChange(*result,
+                                     &backup_default_search_provider)) {
     hijacked_default_search_provider = default_search_provider;
     is_default_search_hijacked = true;
   }
