@@ -92,10 +92,10 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));
-  prefs_tab_helper_.reset(new PrefsTabHelper(this));
+  prefs_tab_helper_.reset(new PrefsTabHelper(contents));
   prerender_tab_helper_.reset(new prerender::PrerenderTabHelper(this));
   print_view_manager_.reset(new printing::PrintViewManager(this));
-  restore_tab_helper_.reset(new RestoreTabHelper(this));
+  restore_tab_helper_.reset(new RestoreTabHelper(contents));
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
   snapshot_tab_helper_.reset(new SnapshotTabHelper(this));
   ssl_helper_.reset(new TabContentsSSLHelper(this));

@@ -13,7 +13,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -211,10 +210,10 @@ const size_t kPerScriptFontDefaultsLength = arraysize(kPerScriptFontDefaults);
 
 }  // namespace
 
-PrefsTabHelper::PrefsTabHelper(TabContentsWrapper* wrapper)
-    : TabContentsObserver(wrapper->tab_contents()),
-      wrapper_(wrapper) {
-  PrefService* prefs = wrapper->profile()->GetPrefs();
+PrefsTabHelper::PrefsTabHelper(TabContents* contents)
+    : TabContentsObserver(contents),
+      contents_(contents) {
+  PrefService* prefs = GetProfile()->GetPrefs();
   pref_change_registrar_.Init(prefs);
   if (prefs) {
     for (int i = 0; i < kPrefsToObserveLength; ++i)
@@ -235,7 +234,7 @@ PrefsTabHelper::PrefsTabHelper(TabContentsWrapper* wrapper)
   }
 
   per_tab_prefs_.reset(
-      wrapper_->profile()->GetPrefs()->CreatePrefServiceWithPerTabPrefStore());
+      GetProfile()->GetPrefs()->CreatePrefServiceWithPerTabPrefStore());
   RegisterPerTabUserPrefs(per_tab_prefs_.get());
   per_tab_pref_change_registrar_.Init(per_tab_prefs_.get());
   for (int i = 0; i < kPerTabPrefsToObserveLength; ++i) {
@@ -243,14 +242,14 @@ PrefsTabHelper::PrefsTabHelper(TabContentsWrapper* wrapper)
   }
 
   renderer_preferences_util::UpdateFromSystemSettings(
-      tab_contents()->GetMutableRendererPrefs(), wrapper_->profile());
+      tab_contents()->GetMutableRendererPrefs(), GetProfile());
 
   registrar_.Add(this, chrome::NOTIFICATION_USER_STYLE_SHEET_UPDATED,
                  content::NotificationService::AllSources());
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
-                     ThemeServiceFactory::GetForProfile(wrapper->profile())));
+                     ThemeServiceFactory::GetForProfile(GetProfile())));
 #endif
 }
 
@@ -406,7 +405,7 @@ void PrefsTabHelper::Observe(int type,
     case chrome::NOTIFICATION_PREF_CHANGED: {
       std::string* pref_name_in = content::Details<std::string>(details).ptr();
       DCHECK(content::Source<PrefService>(source).ptr() ==
-                 wrapper_->profile()->GetPrefs() ||
+                 GetProfile()->GetPrefs() ||
              content::Source<PrefService>(source).ptr() == per_tab_prefs_);
       if ((*pref_name_in == prefs::kDefaultCharset) ||
           StartsWithASCII(*pref_name_in, "webkit.webprefs.", true)) {
@@ -434,6 +433,10 @@ void PrefsTabHelper::UpdateWebPreferences() {
 
 void PrefsTabHelper::UpdateRendererPreferences() {
   renderer_preferences_util::UpdateFromSystemSettings(
-      tab_contents()->GetMutableRendererPrefs(), wrapper_->profile());
+      tab_contents()->GetMutableRendererPrefs(), GetProfile());
   tab_contents()->GetRenderViewHost()->SyncRendererPrefs();
+}
+
+Profile* PrefsTabHelper::GetProfile() {
+  return Profile::FromBrowserContext(contents_->browser_context());
 }

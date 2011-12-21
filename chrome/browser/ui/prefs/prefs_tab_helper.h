@@ -11,14 +11,15 @@
 #include "content/public/browser/notification_registrar.h"
 
 class PrefService;
-class TabContentsWrapper;
+class Profile;
+class TabContents;
 struct WebPreferences;
 
 // Per-tab class to handle user preferences.
 class PrefsTabHelper : public TabContentsObserver,
                        public content::NotificationObserver {
  public:
-  explicit PrefsTabHelper(TabContentsWrapper* tab_contents);
+  explicit PrefsTabHelper(TabContents* contents);
   virtual ~PrefsTabHelper();
 
   static void RegisterUserPrefs(PrefService* prefs);
@@ -44,8 +45,10 @@ class PrefsTabHelper : public TabContentsObserver,
   // Update the TabContents's RendererPreferences.
   void UpdateRendererPreferences();
 
-  // Our owning TabContentsWrapper.
-  TabContentsWrapper* wrapper_;
+  Profile* GetProfile();
+
+  // Our owning TabContents.
+  TabContents* contents_;
 
   content::NotificationRegistrar registrar_;
 

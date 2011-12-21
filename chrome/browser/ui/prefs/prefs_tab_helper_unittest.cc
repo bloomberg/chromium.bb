@@ -14,7 +14,7 @@ using content::BrowserThread;
 
 class TestPrefsTabHelper : public PrefsTabHelper {
  public:
-  explicit TestPrefsTabHelper(TabContentsWrapper* tab_contents)
+  explicit TestPrefsTabHelper(TabContents* tab_contents)
       : PrefsTabHelper(tab_contents),
         was_update_web_preferences_called_(false) {
   }
@@ -95,7 +95,7 @@ TEST_F(PrefsTabHelperTest, PerTabJavaScriptEnabled) {
 
 TEST_F(PrefsTabHelperTest, OverridePrefsOnViewCreation) {
   TestPrefsTabHelper* test_prefs_helper =
-      new TestPrefsTabHelper(contents_wrapper());
+      new TestPrefsTabHelper(contents_wrapper()->tab_contents());
   contents_wrapper()->prefs_tab_helper_.reset(test_prefs_helper);
   EXPECT_FALSE(test_prefs_helper->was_update_web_preferences_called());
   test_prefs_helper->NotifyRenderViewCreated();
