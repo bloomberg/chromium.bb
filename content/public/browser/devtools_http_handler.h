@@ -27,6 +27,7 @@ class DevToolsHttpHandler {
       DevToolsHttpHandlerDelegate* delegate);
 
   // Called from the main thread in order to stop protocol handler.
+  // Automatically destroys the handler instance.
   virtual void Stop() = 0;
 
  protected:

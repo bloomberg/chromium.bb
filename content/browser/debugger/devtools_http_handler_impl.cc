@@ -160,8 +160,7 @@ void DevToolsHttpHandlerImpl::Start() {
 void DevToolsHttpHandlerImpl::Stop() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DevToolsHttpHandlerImpl::Teardown, this));
-  protect_ptr_ = NULL;
+      base::Bind(&DevToolsHttpHandlerImpl::TeardownAndRelease, this));
 }
 
 void DevToolsHttpHandlerImpl::OnHttpRequest(
@@ -467,10 +466,10 @@ DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
     : ip_(ip),
       port_(port),
       overridden_frontend_url_(frontend_host),
-      delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(protect_ptr_(this)) {
+      delegate_(delegate) {
   if (overridden_frontend_url_.empty())
       overridden_frontend_url_ = "/devtools/devtools.html";
+  AddRef();
 }
 
 void DevToolsHttpHandlerImpl::Init() {
@@ -478,8 +477,11 @@ void DevToolsHttpHandlerImpl::Init() {
 }
 
 // Run on I/O thread
-void DevToolsHttpHandlerImpl::Teardown() {
+void DevToolsHttpHandlerImpl::TeardownAndRelease() {
   server_ = NULL;
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&DevToolsHttpHandlerImpl::Release, this));
 }
 
 void DevToolsHttpHandlerImpl::Bind(net::URLRequest* request,
