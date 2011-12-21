@@ -148,7 +148,9 @@ WebIntentPickerView::WebIntentPickerView(views::View* anchor_view,
                                          WebIntentPickerDelegate* delegate)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       delegate_(delegate),
-      button_hbox_(NULL) {}
+      button_hbox_(NULL),
+      plus_button_(NULL) {
+}
 
 WebIntentPickerView::~WebIntentPickerView() {
 }

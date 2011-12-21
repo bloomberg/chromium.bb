@@ -32,7 +32,10 @@ const char kPermissionDeniedError[] =
 }
 
 WebSocketProxyPrivate::WebSocketProxyPrivate()
-    : listening_port_(-1), do_tls_(false), is_finalized_(false){
+    : port_(-1),
+      listening_port_(-1),
+      do_tls_(false),
+      is_finalized_(false) {
 }
 
 WebSocketProxyPrivate::~WebSocketProxyPrivate() {

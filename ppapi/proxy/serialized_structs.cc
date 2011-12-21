@@ -73,6 +73,7 @@ PPBFlash_DrawGlyphs_Params::PPBFlash_DrawGlyphs_Params()
   clip.size.width = 0;
   position.x = 0;
   position.y = 0;
+  allow_subpixel_aa = PP_FALSE;
 }
 
 PPBFlash_DrawGlyphs_Params::~PPBFlash_DrawGlyphs_Params() {}
