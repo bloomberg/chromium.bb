@@ -765,7 +765,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
 }
 
 #if defined(OS_WIN)
+#if defined(COMPONENT_BUILD)
+// http://crbug.com/107735
+#define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
+#else
 #define MAYBE_PluginLoadUnload PluginLoadUnload
+#endif  // COMPONENT_BUILD
 #elif defined(OS_LINUX)
 // http://crbug.com/47598
 #define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
