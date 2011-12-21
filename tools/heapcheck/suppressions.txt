@@ -1751,3 +1751,10 @@
    fun:browser_sync::DataTypeManagerImpl::Stop
    fun:ProfileSyncService::Shutdown
 }
+{
+   bug_108254
+   Heapcheck:Leak
+   ...
+   fun:TemplateURLPrepopulateData::FindPrepopulatedEngine
+   fun:TemplateURLPrepopulateDataTest_FindPrepopulatedEngine_Test::TestBody
+}
