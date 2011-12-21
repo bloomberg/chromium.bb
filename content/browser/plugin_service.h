@@ -12,6 +12,7 @@
 #include <set>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/waitable_event_watcher.h"
@@ -57,7 +58,7 @@ class PluginList;
 }
 
 class CONTENT_EXPORT PluginService
-    : public content::PluginService,
+    : NON_EXPORTED_BASE(public content::PluginService),
       public base::WaitableEventWatcher::Delegate,
       public content::NotificationObserver {
  public:
