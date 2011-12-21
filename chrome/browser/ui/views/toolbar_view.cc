@@ -277,9 +277,7 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
     return icon;
 
   // Draw the chrome app menu icon onto the canvas.
-  scoped_ptr<gfx::CanvasSkia> canvas(
-      new gfx::CanvasSkia(gfx::Size(icon.width(), icon.height()), false));
-  canvas->DrawBitmapInt(icon, 0, 0);
+  scoped_ptr<gfx::CanvasSkia> canvas(new gfx::CanvasSkia(icon, false));
 
   SkBitmap badge;
   // Only one badge can be active at any given time. The Upgrade notification

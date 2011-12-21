@@ -248,9 +248,7 @@ class NativeMenuWin::MenuHostWindow {
       if (data->native_menu_win->model_->GetIconAt(data->model_index, &icon)) {
         // We currently don't support items with both icons and checkboxes.
         DCHECK(type != ui::MenuModel::TYPE_CHECK);
-        gfx::CanvasSkia canvas(gfx::Size(icon.width(), icon.height()), false);
-        canvas.sk_canvas()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
-        canvas.DrawBitmapInt(icon, 0, 0);
+        gfx::CanvasSkia canvas(icon, false);
         skia::DrawToNativeContext(
             canvas.sk_canvas(), dc,
             draw_item_struct->rcItem.left + kItemLeftMargin,

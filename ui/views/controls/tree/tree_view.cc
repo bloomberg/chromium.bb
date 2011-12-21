@@ -699,8 +699,6 @@ HIMAGELIST TreeView::CreateImageList() {
       if (model_images[i].width() != width ||
           model_images[i].height() != height) {
         gfx::CanvasSkia canvas(gfx::Size(width, height), false);
-        // Make the background completely transparent.
-        canvas.sk_canvas()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
 
         // Draw our icons into this canvas.
         int height_offset = (height - model_images[i].height()) / 2;

@@ -240,10 +240,7 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
   // of the profile icon.
   if (item_.active) {
     const SkBitmap* avatar_image = item_.icon.ToSkBitmap();
-    gfx::CanvasSkia canvas(gfx::Size(avatar_image->width(),
-                                     avatar_image->height()),
-                           /* is_opaque */ true);
-    canvas.DrawBitmapInt(*avatar_image, 0, 0);
+    gfx::CanvasSkia canvas(*avatar_image, /* is_opaque */ true);
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     SkBitmap check_image = rb.GetImageNamed(IDR_PROFILE_SELECTED);

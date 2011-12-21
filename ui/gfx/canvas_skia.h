@@ -17,6 +17,8 @@
 typedef struct _GdkPixbuf GdkPixbuf;
 #endif
 
+class SkBitmap;
+
 namespace gfx {
 
 class Canvas;
@@ -44,11 +46,17 @@ class UI_EXPORT CanvasSkia : public Canvas {
     TruncateFadeHeadAndTail,
   };
 
-  // Creates an empty Canvas. Callers must use initialize before using the
-  // canvas.
+  // Creates an empty canvas.
   CanvasSkia();
 
+  // If this canvas is not opaque, it's explicitly cleared to transparent before
+  // being returned.
   CanvasSkia(const gfx::Size& size, bool is_opaque);
+
+  // Constructs a canvas the size of the provided |bitmap|, and draws the
+  // bitmap into it.
+  CanvasSkia(const SkBitmap& bitmap, bool is_opaque);
+
   explicit CanvasSkia(SkCanvas* canvas);
 
   virtual ~CanvasSkia();

@@ -806,8 +806,6 @@ HWND TableView::CreateNativeControl(HWND parent_container) {
     // refresh in order to force a refresh of the icon area (somehow the clip
     // rect does not include the icon).
     gfx::CanvasSkia canvas(gfx::Size(kImageSize, kImageSize), false);
-    // Make the background completely transparent.
-    canvas.sk_canvas()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
     {
       base::win::ScopedHICON empty_icon(
           IconUtil::CreateHICONFromSkBitmap(canvas.ExtractBitmap()));

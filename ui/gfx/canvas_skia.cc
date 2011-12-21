@@ -8,6 +8,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/brush.h"
 #include "ui/gfx/font.h"
@@ -52,6 +53,13 @@ CanvasSkia::CanvasSkia(const gfx::Size& size, bool is_opaque)
     : owned_canvas_(new skia::PlatformCanvas(size.width(), size.height(),
                                              is_opaque)),
       canvas_(owned_canvas_.get()) {
+}
+
+CanvasSkia::CanvasSkia(const SkBitmap& bitmap, bool is_opaque)
+    : owned_canvas_(new skia::PlatformCanvas(bitmap.width(), bitmap.height(),
+                                             is_opaque)),
+      canvas_(owned_canvas_.get()) {
+  DrawBitmapInt(bitmap, 0, 0);
 }
 
 CanvasSkia::CanvasSkia()

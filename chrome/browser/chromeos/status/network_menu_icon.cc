@@ -674,8 +674,7 @@ const SkBitmap NetworkMenuIcon::GenerateBitmapFromComponents(
     const SkBitmap* bottom_left_badge,
     const SkBitmap* bottom_right_badge) {
   DCHECK(!icon.empty());
-  gfx::CanvasSkia canvas(gfx::Size(icon.width(), icon.height()), false);
-  canvas.DrawBitmapInt(icon, 0, 0);
+  gfx::CanvasSkia canvas(icon, false);
 
   if (top_left_badge) {
     canvas.DrawBitmapInt(*top_left_badge, kBadgeLeftX, kBadgeTopY);

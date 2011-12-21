@@ -95,9 +95,9 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
 
 BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
                                                    bool is_opaque) {
-  cairo_surface_t* surface =
-      cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
-                                 width, height);
+  // This initializes the bitmap to all zeros.
+  cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+                                                        width, height);
 
   BitmapPlatformDevice* device = Create(width, height, is_opaque, surface);
 
