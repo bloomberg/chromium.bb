@@ -30,6 +30,15 @@ const int kIconAndTextPadding = 5;
 // titlebar with a twitch of the mouse pointer.
 const int kDragThreshold = 3;
 
+// 'Glint' is a speck of light that moves across the titlebar to attract a bit
+// more attention using movement in addition to color of the titlebar.
+// It initially moves fast, then starts to slow down to avoid being annoying
+// if the user chooses not to react on it.
+const double kGlintAnimationDuration = 0.6;
+const double kStartGlintRepeatIntervalSeconds = 0.1;
+const double kFinalGlintRepeatIntervalSeconds = 2.0;
+const double kGlintRepeatIntervalIncreaseFactor = 1.5;
+
 // Used to implement TestingAPI
 static NSEvent* MakeMouseEvent(NSEventType type,
                                NSPoint point,
@@ -44,6 +53,22 @@ static NSEvent* MakeMouseEvent(NSEventType type,
                           clickCount:clickCount
                             pressure:0.0];
 }
+
+@implementation RepaintAnimation
+- (id)initWithView:(NSView*)targetView duration:(double) duration {
+  if (![super initWithDuration:duration animationCurve:NSAnimationEaseInOut])
+    return nil;
+  [self setAnimationBlockingMode:NSAnimationNonblocking];
+  targetView_ = targetView;
+  return self;
+}
+
+- (void)setCurrentProgress:(NSAnimationProgress)progress {
+  [super setCurrentProgress:progress];
+  [targetView_ setNeedsDisplay:YES];
+}
+@end
+
 
 @implementation PanelTitlebarViewCocoa
 
@@ -64,6 +89,7 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   if (closeButtonTrackingArea_.get())
     [self removeTrackingArea:closeButtonTrackingArea_.get()];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [self stopGlintAnimation];
   [super dealloc];
 }
 
@@ -100,6 +126,30 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
     strokeColor = [NSColor colorWithCalibratedWhite:0.6 alpha:1.0];
     titleColor = [attentionColor gtm_legibleTextColor];
+
+    if ([glintAnimation_ isAnimating]) {
+      scoped_nsobject<NSGradient> glint([NSGradient alloc]);
+      NSColor* gold =
+          [NSColor colorWithCalibratedRed:0.8 green:0.8 blue:0.0 alpha:1.0];
+      [glint initWithColorsAndLocations:gold, 0.0,
+           [NSColor colorWithCalibratedWhite:1.0 alpha:0.4], 0.3,
+           [NSColor colorWithCalibratedWhite:1.0 alpha:0.0], 1.0,
+           nil];
+      NSRect bounds = [self bounds];
+      NSPoint point = bounds.origin;
+      // The size and position values are experimentally choosen to create
+      // a "speck of light attached to the top edge" effect.
+      int gradientRadius = NSHeight(bounds) * 2;
+      point.y += gradientRadius / 2;
+      double rangeOfMotion = NSWidth(bounds) + 4 * gradientRadius;
+      double startPoint = - 2 * gradientRadius;
+      point.x = startPoint + rangeOfMotion * [glintAnimation_ currentValue];
+      [glint drawFromCenter:point
+                     radius:0.0
+                   toCenter:point
+                     radius:gradientRadius
+                    options:NSGradientDrawsBeforeStartingLocation];
+    }
   } else if (theme && !theme->UsingDefaultTheme()) {
     NSColor* backgroundColor = nil;
     if ([[self window] isMainWindow]) {
@@ -439,13 +489,16 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   if (isDrawingAttention_)
     return;
   isDrawingAttention_ = YES;
-  [self setNeedsDisplay:YES];
+
+  [self startGlintAnimation];
 }
 
 - (void)stopDrawingAttention {
   if (!isDrawingAttention_)
     return;
   isDrawingAttention_ = NO;
+
+  [self stopGlintAnimation];
   [self setNeedsDisplay:YES];
 }
 
@@ -453,6 +506,44 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   return isDrawingAttention_;
 }
 
+- (void)startGlintAnimation {
+  glintInterval_ = kStartGlintRepeatIntervalSeconds;
+  [self restartGlintAnimation:nil];
+}
+
+- (void)stopGlintAnimation {
+  if (glintAnimationTimer_.get()) {
+    [glintAnimationTimer_ invalidate];
+    glintAnimationTimer_.reset();
+  }
+  if ([glintAnimation_ isAnimating])
+    [glintAnimation_ stopAnimation];
+}
+
+- (void)restartGlintAnimation:(NSTimer*)timer {
+  if (!glintAnimation_.get()) {
+    glintAnimation_.reset(
+        [[RepaintAnimation alloc] initWithView:self
+                                      duration:kGlintAnimationDuration]);
+    [glintAnimation_ setDelegate:self];
+  }
+  [glintAnimation_ startAnimation];
+}
+
+- (void)animationDidEnd:(NSAnimation*)animation {
+  if (animation == glintAnimation_.get()) {  // Restart after a timeout.
+    glintAnimationTimer_.reset([[NSTimer
+        scheduledTimerWithTimeInterval:glintInterval_
+                                target:self
+                              selector:@selector(restartGlintAnimation:)
+                              userInfo:nil
+                               repeats:NO] retain]);
+    // Gradually reduce the frequency of repeating the animation,
+    // calming it down if user decides not to act upon it.
+    if (glintInterval_ < kFinalGlintRepeatIntervalSeconds)
+      glintInterval_ *= kGlintRepeatIntervalIncreaseFactor;
+  }
+}
 
 // (Private/TestingAPI)
 - (PanelWindowControllerCocoa*)controller {
