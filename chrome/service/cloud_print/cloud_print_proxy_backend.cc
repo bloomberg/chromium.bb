@@ -59,7 +59,7 @@ class CloudPrintProxyBackend::Core
                             const std::string& last_robot_email,
                             const std::string& last_user_email);
 
-  void DoInitializeWithToken(const std::string cloud_print_token,
+  void DoInitializeWithToken(const std::string& cloud_print_token,
                              const std::string& proxy_id);
   void DoInitializeWithRobotToken(const std::string& robot_oauth_refresh_token,
                                   const std::string& robot_email,
@@ -268,7 +268,7 @@ void CloudPrintProxyBackend::Core::DoInitializeWithLsid(
 }
 
 void CloudPrintProxyBackend::Core::DoInitializeWithToken(
-    const std::string cloud_print_token,
+    const std::string& cloud_print_token,
     const std::string& proxy_id) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   auth_->AuthenticateWithToken(cloud_print_token);

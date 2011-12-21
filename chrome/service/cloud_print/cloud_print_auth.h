@@ -56,7 +56,7 @@ class CloudPrintAuth
                             const std::string& last_robot_email,
                             const std::string& last_user_email);
 
-  void AuthenticateWithToken(const std::string cloud_print_token);
+  void AuthenticateWithToken(const std::string& cloud_print_token);
   void AuthenticateWithRobotToken(const std::string& robot_oauth_refresh_token,
                                   const std::string& robot_email);
   void AuthenticateWithRobotAuthCode(const std::string& robot_oauth_auth_code,

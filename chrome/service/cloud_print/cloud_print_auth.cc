@@ -67,7 +67,7 @@ void CloudPrintAuth::AuthenticateWithLsid(
 }
 
 void CloudPrintAuth::AuthenticateWithToken(
-    const std::string cloud_print_token) {
+    const std::string& cloud_print_token) {
   VLOG(1) << "CP_AUTH: Authenticating with token";
 
   client_login_token_ = cloud_print_token;
