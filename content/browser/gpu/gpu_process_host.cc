@@ -165,8 +165,12 @@ static bool HostIsValid(GpuProcessHost* host) {
     return false;
 
   // Check if the GPU process has died and the host is about to be destroyed.
-  if (host->disconnect_was_alive())
+  if (host->disconnect_was_alive()) {
+    // Ensure that this GPU process host is not used again by removing it from
+    // the host-id map.
+    g_hosts_by_id.Pointer()->Remove(host->host_id());
     return false;
+  }
 
   // The Gpu process is invalid if it's not using software, the card is
   // blacklisted, and we can kill it and start over.
