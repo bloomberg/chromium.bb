@@ -51,8 +51,9 @@ class PluginService {
   // all the pages with plugins. If |browser_context| is NULL, purges the cache
   // in all renderers.
   // NOTE: can only be called on the UI thread.
-  static void PurgePluginListCache(BrowserContext* browser_context,
-                                   bool reload_pages);
+  CONTENT_EXPORT static void PurgePluginListCache(
+      BrowserContext* browser_context,
+      bool reload_pages);
 
   virtual ~PluginService() {}
 
