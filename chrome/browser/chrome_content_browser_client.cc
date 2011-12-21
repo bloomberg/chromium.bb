@@ -600,27 +600,29 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
     content::RenderProcessHost* process =
         content::RenderProcessHost::FromID(child_process_id);
+    if (process) {
+      Profile* profile = Profile::FromBrowserContext(
+          process->GetBrowserContext());
+      extensions::ProcessMap* process_map =
+          profile->GetExtensionService()->process_map();
+      if (process_map && process_map->Contains(process->GetID()))
+        command_line->AppendSwitch(switches::kExtensionProcess);
 
-    Profile* profile = Profile::FromBrowserContext(
-        process->GetBrowserContext());
-    extensions::ProcessMap* process_map =
-        profile->GetExtensionService()->process_map();
-    if (process_map && process_map->Contains(process->GetID()))
-      command_line->AppendSwitch(switches::kExtensionProcess);
+      PrefService* prefs = profile->GetPrefs();
+      // Currently this pref is only registered if applied via a policy.
+      if (prefs->HasPrefPath(prefs::kDisable3DAPIs) &&
+          prefs->GetBoolean(prefs::kDisable3DAPIs)) {
+        // Turn this policy into a command line switch.
+        command_line->AppendSwitch(switches::kDisable3DAPIs);
+      }
 
-    PrefService* prefs = profile->GetPrefs();
-    // Currently this pref is only registered if applied via a policy.
-    if (prefs->HasPrefPath(prefs::kDisable3DAPIs) &&
-        prefs->GetBoolean(prefs::kDisable3DAPIs)) {
-      // Turn this policy into a command line switch.
-      command_line->AppendSwitch(switches::kDisable3DAPIs);
-    }
-
-    // Disable client-side phishing detection in the renderer if it is disabled
-    // in the Profile preferences or the browser process.
-    if (!prefs->GetBoolean(prefs::kSafeBrowsingEnabled) ||
-        !g_browser_process->safe_browsing_detection_service()) {
-      command_line->AppendSwitch(switches::kDisableClientSidePhishingDetection);
+      // Disable client-side phishing detection in the renderer if it is
+      // disabled in the Profile preferences or the browser process.
+      if (!prefs->GetBoolean(prefs::kSafeBrowsingEnabled) ||
+          !g_browser_process->safe_browsing_detection_service()) {
+        command_line->AppendSwitch(
+            switches::kDisableClientSidePhishingDetection);
+      }
     }
 
     static const char* const kSwitchNames[] = {

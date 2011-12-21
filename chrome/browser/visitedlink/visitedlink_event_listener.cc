@@ -128,6 +128,8 @@ void VisitedLinkEventListener::NewTable(base::SharedMemory* table_memory) {
     // Make sure to not send to incognito renderers.
     content::RenderProcessHost* process =
         content::RenderProcessHost::FromID(i->first);
+    if (!process)
+      continue;
     Profile* profile = Profile::FromBrowserContext(
         process->GetBrowserContext());
     VisitedLinkMaster* master = profile->GetVisitedLinkMaster();
