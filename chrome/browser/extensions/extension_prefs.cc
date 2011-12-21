@@ -238,7 +238,7 @@ class ScopedExtensionControlledPrefUpdate : public DictionaryPrefUpdate {
   DISALLOW_COPY_AND_ASSIGN(ScopedExtensionControlledPrefUpdate);
 };
 
-std::string JoinPrefs(std::string parent, const char* child) {
+std::string JoinPrefs(const std::string& parent, const char* child) {
   return parent + "." + child;
 }
 

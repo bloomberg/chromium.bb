@@ -49,7 +49,7 @@ class ExtensionHelper
 
   void InlineWebstoreInstall(int install_id,
                              std::string webstore_item_id,
-                             GURL requestor_url);
+                             const GURL& requestor_url);
 
   int browser_window_id() const { return browser_window_id_; }
   content::ViewType view_type() const { return view_type_; }

@@ -37,12 +37,12 @@ struct PolicyStatusInfo {
   };
 
   PolicyStatusInfo();
-  PolicyStatusInfo(string16 name,
+  PolicyStatusInfo(const string16& name,
                    PolicySourceType source_type,
                    PolicyLevel level,
                    Value* value,
                    PolicyStatus status,
-                   string16 error_message);
+                   const string16& error_message);
   ~PolicyStatusInfo();
 
   // Returns a DictionaryValue pointer containing the information in the object

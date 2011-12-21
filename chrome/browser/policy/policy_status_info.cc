@@ -28,12 +28,12 @@ PolicyStatusInfo::PolicyStatusInfo()
 }
 
 PolicyStatusInfo::PolicyStatusInfo(
-    string16 name,
+    const string16& name,
     PolicySourceType source_type,
     PolicyLevel level,
     Value* value,
     PolicyStatus status,
-    string16 error_message)
+    const string16& error_message)
     : name(name),
       source_type(source_type),
       level(level),

@@ -94,7 +94,7 @@ void ExtensionInstallUI::Prompt::SetPermissions(
 }
 
 void ExtensionInstallUI::Prompt::SetInlineInstallWebstoreData(
-    std::string localized_user_count,
+    const std::string& localized_user_count,
     double average_rating,
     int rating_count) {
   CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
