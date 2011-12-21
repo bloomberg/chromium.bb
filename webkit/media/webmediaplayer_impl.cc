@@ -164,7 +164,7 @@ bool WebMediaPlayerImpl::Initialize(
   // Create proxy and default video renderer.
   proxy_ = new WebMediaPlayerProxy(main_loop_, this);
   scoped_refptr<VideoRendererImpl> video_renderer =
-      new VideoRendererImpl(proxy_);
+      new VideoRendererImpl(base::Bind(&WebMediaPlayerProxy::Repaint, proxy_));
   filter_collection_->AddVideoRenderer(video_renderer);
   proxy_->SetVideoRenderer(video_renderer);
 

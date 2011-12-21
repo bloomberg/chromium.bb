@@ -435,6 +435,7 @@
         '../../media/simple_data_source_unittest.cc',
         '../../media/test_response_generator.cc',
         '../../media/test_response_generator.h',
+        '../../media/video_renderer_impl_unittest.cc',
         '../../mocks/mock_resource_loader_bridge.h',
         '../../mocks/mock_webframeclient.h',
         '../../mocks/mock_weburlloader.cc',
