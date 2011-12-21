@@ -17,7 +17,7 @@
 
 .trash > .can,
 .trash > .lid {
-  background: url('chrome://resources/images/trash2.png') 0 0 no-repeat;
+  background: url('chrome://resources/images/trash.png') 0 0 no-repeat;
   left: 8px;
   position: absolute;
   right: 8px;

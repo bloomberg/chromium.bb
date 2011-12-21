@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This comment is only here because changes to resources are not picked up
-without changes to the corresponding grd file. paaaae -->
+without changes to the corresponding grd file. -->
 <grit latest_public_release="0" current_release="1">
   <outputs>
     <output filename="grit/shared_resources.h" type="rc_header">
@@ -58,8 +58,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/images/spinner.svg" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_THROBBER"
                file="shared/images/throbber.svg" type="BINDATA" />
-      <include name="IDR_SHARED_IMAGES_TRASH2"
-               file="shared/images/trash2.png" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_TRASH"
+               file="shared/images/trash.png" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR"
                file="shared/js/cr.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_COMMAND_LINE"
