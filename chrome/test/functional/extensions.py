@@ -255,9 +255,11 @@ class ExtensionsTest(pyauto.PyUITest):
                     msg='Unexpected host permissions information.')
 
     permissions_api = ext['api_permissions']
-    self.assertTrue(len(permissions_api) == 3 and
+    print permissions_api
+    self.assertTrue(len(permissions_api) == 4 and
                     'bookmarks' in permissions_api and
                     'experimental' in permissions_api and
+                    'systemPrivate' in permissions_api and
                     'tabs' in permissions_api,
                     msg='Unexpected host permissions information.')
 
