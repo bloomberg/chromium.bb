@@ -217,7 +217,7 @@ SkPoint GetHeaderFooterPosition(
 void PrintHeaderFooterText(
     string16 text,
     WebKit::WebCanvas* canvas,
-    HeaderFooterPaint paint,
+    HeaderFooterPaint* paint,
     float webkit_scale_factor,
     const PageSizeMargins& page_layout,
     printing::HorizontalHeaderFooterPosition horizontal_position,
@@ -225,20 +225,20 @@ void PrintHeaderFooterText(
     double offset_to_baseline) {
 #if defined(USE_SKIA)
   size_t text_byte_length = text.length() * sizeof(char16);
-  double text_width_in_points = SkScalarToDouble(paint.measureText(
+  double text_width_in_points = SkScalarToDouble(paint->measureText(
       text.c_str(), text_byte_length));
   SkPoint point = GetHeaderFooterPosition(webkit_scale_factor, page_layout,
                                           horizontal_position,
                                           vertical_position, offset_to_baseline,
                                           text_width_in_points);
-  paint.setTextSize(SkDoubleToScalar(
-      paint.getTextSize() / webkit_scale_factor));
+  paint->setTextSize(SkDoubleToScalar(
+      paint->getTextSize() / webkit_scale_factor));
   canvas->drawText(text.c_str(), text_byte_length, point.x(), point.y(),
-                   paint);
+                   *paint);
 #elif defined(OS_MACOSX)
   ScopedCFTypeRef<CFStringRef> cf_text(base::SysUTF16ToCFStringRef(text));
   ScopedCFTypeRef<CFAttributedStringRef> cf_attr_text(
-      CFAttributedStringCreate(NULL, cf_text, paint));
+      CFAttributedStringCreate(NULL, cf_text, *paint));
   ScopedCFTypeRef<CTLineRef> line(CTLineCreateWithAttributedString(
       cf_attr_text));
   double text_width_in_points =
@@ -322,10 +322,10 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
   double text_height = printing::kSettingHeaderFooterInterstice +
                        header_vertical_bounds.height();
   if (text_height <= page_layout.margin_top) {
-    PrintHeaderFooterText(date, canvas, paint, webkit_scale_factor, page_layout,
-                          printing::LEFT, printing::TOP,
+    PrintHeaderFooterText(date, canvas, &paint, webkit_scale_factor,
+                          page_layout, printing::LEFT, printing::TOP,
                           header_vertical_bounds.top());
-    PrintHeaderFooterText(title, canvas, paint, webkit_scale_factor,
+    PrintHeaderFooterText(title, canvas, &paint, webkit_scale_factor,
                           page_layout, printing::CENTER, printing::TOP,
                           header_vertical_bounds.top());
   }
@@ -354,10 +354,10 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
   text_height = printing::kSettingHeaderFooterInterstice +
                 footer_vertical_bounds.height();
   if (text_height <= page_layout.margin_bottom) {
-    PrintHeaderFooterText(page_of_total_pages, canvas, paint,
+    PrintHeaderFooterText(page_of_total_pages, canvas, &paint,
                           webkit_scale_factor, page_layout, printing::RIGHT,
                           printing::BOTTOM, footer_vertical_bounds.bottom());
-    PrintHeaderFooterText(url, canvas, paint, webkit_scale_factor, page_layout,
+    PrintHeaderFooterText(url, canvas, &paint, webkit_scale_factor, page_layout,
                           printing::LEFT, printing::BOTTOM,
                           footer_vertical_bounds.bottom());
   }
