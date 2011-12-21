@@ -298,7 +298,7 @@ bool KeywordTable::DidDefaultSearchProviderChange() {
       protector::kProtectorHistogramDefaultSearchProvider,
       protector::kProtectorErrorValueChanged,
       protector::kProtectorErrorCount);
-  LOG(ERROR) << "Default Search Provider is changed.";
+  LOG(WARNING) << "Default Search Provider is changed.";
   return true;
 }
 
