@@ -19,6 +19,7 @@
 #include "base/threading/thread.h"
 #include "base/timer.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/notifier/sync_notifier_factory.h"
@@ -154,12 +155,14 @@ class SyncBackendHost {
   // As a fallback when no cached auth information is available, try to
   // bootstrap authentication using |lsid|, if it isn't empty.
   // Optionally delete the Sync Data folder (if it's corrupt).
+  // Note: |unrecoverable_error_handler| caould be invoked from any thread.
   void Initialize(SyncFrontend* frontend,
                   const WeakHandle<JsEventHandler>& event_handler,
                   const GURL& service_url,
                   syncable::ModelTypeSet initial_types,
                   const sync_api::SyncCredentials& credentials,
-                  bool delete_sync_data_folder);
+                  bool delete_sync_data_folder,
+                  UnrecoverableErrorHandler* unrecoverable_error_handler);
 
   // Called from |frontend_loop| to update SyncCredentials.
   void UpdateCredentials(const sync_api::SyncCredentials& credentials);
@@ -270,7 +273,8 @@ class SyncBackendHost {
         sync_notifier::SyncNotifierFactory* sync_notifier_factory,
         bool delete_sync_data_folder,
         const std::string& restored_key_for_bootstrapping,
-        bool setup_for_test_mode);
+        bool setup_for_test_mode,
+        UnrecoverableErrorHandler* unrecoverable_error_handler);
     ~DoInitializeOptions();
 
     MessageLoop* sync_loop;
@@ -285,6 +289,7 @@ class SyncBackendHost {
     bool delete_sync_data_folder;
     std::string restored_key_for_bootstrapping;
     bool setup_for_test_mode;
+    UnrecoverableErrorHandler* unrecoverable_error_handler;
   };
 
   // Allows tests to perform alternate core initialization work.

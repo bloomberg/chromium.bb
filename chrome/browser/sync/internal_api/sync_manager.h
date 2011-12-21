@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/time.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
@@ -440,7 +441,9 @@ class SyncManager {
             const SyncCredentials& credentials,
             sync_notifier::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
-            bool setup_for_test_mode);
+            bool setup_for_test_mode,
+            browser_sync::UnrecoverableErrorHandler*
+                unrecoverbale_error_handler);
 
   // Checks if the sync server is reachable.
   void CheckServerReachable();

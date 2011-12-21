@@ -316,13 +316,18 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
   if (delete_stale_data)
     ClearStaleErrors();
 
+  backend_unrecoverable_error_handler_.reset(
+    new browser_sync::BackendUnrecoverableErrorHandler(
+        MakeWeakHandle(AsWeakPtr())));
+
   backend_->Initialize(
       this,
       MakeWeakHandle(sync_js_controller_.AsWeakPtr()),
       sync_service_url_,
       initial_types,
       credentials,
-      delete_stale_data);
+      delete_stale_data,
+      backend_unrecoverable_error_handler_.get());
 }
 
 void ProfileSyncService::CreateBackend() {

@@ -14,9 +14,11 @@ include_rules = [
   # maybe this file should live in syncable?
   "+chrome/browser/sync/engine/model_safe_worker.h",
 
+  # For the unrecoverable error handler stuff.
   "+chrome/common/random.h",
   "+chrome/common/sqlite_utils.h",
 
   "-chrome/browser/sync/internal_api",
+  "+chrome/browser/sync/internal_api/includes",
 ]
 

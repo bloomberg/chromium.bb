@@ -19,6 +19,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/cryptographer.h"
@@ -48,6 +49,8 @@ class DirectoryManager {
   // result is true.  Note that events to |delegate| may be sent from
   // *any* thread.  |transaction_observer| must be initialized.
   bool Open(const std::string& name, DirectoryChangeDelegate* delegate,
+            browser_sync::UnrecoverableErrorHandler*
+                unrecoverable_error_handler,
             const browser_sync::WeakHandle<TransactionObserver>&
                 transaction_observer);
 
@@ -80,6 +83,8 @@ class DirectoryManager {
   DirOpenResult OpenImpl(
       const std::string& name, const FilePath& path,
       DirectoryChangeDelegate* delegate,
+      browser_sync::UnrecoverableErrorHandler*
+          unrecoverable_error_handler,
       const browser_sync::WeakHandle<TransactionObserver>&
           transaction_observer,
       bool* was_open);

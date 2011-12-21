@@ -26,6 +26,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
+#include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/blob.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
@@ -814,7 +815,8 @@ class Directory {
     MetahandleSet metahandles_to_purge;
   };
 
-  Directory();
+  explicit Directory(
+      browser_sync::UnrecoverableErrorHandler* unrecoverable_error_handler);
   virtual ~Directory();
 
   // Does not take ownership of |delegate|, which must not be NULL.
@@ -867,6 +869,8 @@ class Directory {
 
   // Unique to each account / client pair.
   std::string cache_guid() const;
+
+  browser_sync::UnrecoverableErrorHandler* unrecoverable_error_handler();
 
  protected:  // for friends, mainly used by Entry constructors
   virtual EntryKernel* GetEntryByHandle(int64 handle);
@@ -1187,6 +1191,8 @@ class Directory {
   Kernel* kernel_;
 
   DirectoryBackingStore* store_;
+
+  browser_sync::UnrecoverableErrorHandler* unrecoverable_error_handler_;
 };
 
 class ScopedKernelLock {

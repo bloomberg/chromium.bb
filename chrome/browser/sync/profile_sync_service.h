@@ -20,6 +20,7 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/sync/backend_unrecoverable_error_handler.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/failed_datatypes_handler.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
@@ -704,6 +705,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // keeps track of data types that failed to load.
   FailedDatatypesHandler failed_datatypes_handler_;
+
+  scoped_ptr<browser_sync::BackendUnrecoverableErrorHandler>
+      backend_unrecoverable_error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

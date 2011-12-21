@@ -2320,6 +2320,8 @@
         'browser/sync/glue/ui_model_worker.h',
         'browser/sync/backend_migrator.cc',
         'browser/sync/backend_migrator.h',
+        'browser/sync/backend_unrecoverable_error_handler.cc',
+        'browser/sync/backend_unrecoverable_error_handler.h',
         'browser/sync/failed_datatypes_handler.cc',
         'browser/sync/failed_datatypes_handler.h',
         'browser/sync/profile_sync_components_factory.h',

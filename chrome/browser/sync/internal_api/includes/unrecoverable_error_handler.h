@@ -27,3 +27,4 @@ class UnrecoverableErrorHandler {
 }
 
 #endif  // CHROME_BROWSER_SYNC_INTERNAL_API_INCLUDES_UNRECOVERABLE_ERROR_HANDLER_H_
+

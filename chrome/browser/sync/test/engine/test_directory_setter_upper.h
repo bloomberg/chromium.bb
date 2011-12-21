@@ -37,6 +37,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
+#include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler_mock.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test/null_directory_change_delegate.h"
@@ -73,6 +74,7 @@ class TestDirectorySetterUpper {
   void reset_directory_manager(syncable::DirectoryManager* d);
 
   syncable::NullDirectoryChangeDelegate delegate_;
+  MockUnrecoverableErrorHandler handler_mock_;
 
  private:
   void RunInvariantCheck(const syncable::ScopedDirLookup& dir);
@@ -121,7 +123,8 @@ class MockDirectorySetterUpper : public TestDirectorySetterUpper {
 
   class MockDirectory : public syncable::Directory {
    public:
-    explicit MockDirectory(const std::string& name);
+     MockDirectory(const std::string& name,
+                   browser_sync::UnrecoverableErrorHandler* handler_mock);
     virtual ~MockDirectory();
     MOCK_METHOD1(PurgeEntriesWithTypeIn, void(syncable::ModelTypeSet));
 

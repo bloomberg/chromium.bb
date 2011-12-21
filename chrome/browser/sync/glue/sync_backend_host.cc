@@ -114,7 +114,8 @@ void SyncBackendHost::Initialize(
     const GURL& sync_service_url,
     syncable::ModelTypeSet initial_types,
     const SyncCredentials& credentials,
-    bool delete_sync_data_folder) {
+    bool delete_sync_data_folder,
+    UnrecoverableErrorHandler* unrecoverable_error_handler) {
   if (!sync_thread_.Start())
     return;
 
@@ -143,7 +144,8 @@ void SyncBackendHost::Initialize(
       &sync_notifier_factory_,
       delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
-      false));
+      false,
+      unrecoverable_error_handler));
 }
 
 void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
@@ -532,7 +534,8 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     sync_notifier::SyncNotifierFactory* sync_notifier_factory,
     bool delete_sync_data_folder,
     const std::string& restored_key_for_bootstrapping,
-    bool setup_for_test_mode)
+    bool setup_for_test_mode,
+    UnrecoverableErrorHandler* unrecoverable_error_handler)
     : sync_loop(sync_loop),
       registrar(registrar),
       event_handler(event_handler),
@@ -542,7 +545,8 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
       sync_notifier_factory(sync_notifier_factory),
       delete_sync_data_folder(delete_sync_data_folder),
       restored_key_for_bootstrapping(restored_key_for_bootstrapping),
-      setup_for_test_mode(setup_for_test_mode) {
+      setup_for_test_mode(setup_for_test_mode),
+      unrecoverable_error_handler(unrecoverable_error_handler){
 }
 
 SyncBackendHost::DoInitializeOptions::~DoInitializeOptions() {}
@@ -762,7 +766,8 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.credentials,
       options.sync_notifier_factory->CreateSyncNotifier(),
       options.restored_key_for_bootstrapping,
-      options.setup_for_test_mode);
+      options.setup_for_test_mode,
+      options.unrecoverable_error_handler);
   LOG_IF(ERROR, !success) << "Syncapi initialization failed!";
 }
 

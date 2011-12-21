@@ -92,6 +92,7 @@ bool VerifyReferenceIntegrityUnsafe(const syncable::MetahandlesIndex &index) {
 }  // namespace
 
 using std::string;
+using browser_sync::UnrecoverableErrorHandler;
 
 namespace syncable {
 
@@ -482,7 +483,10 @@ Directory::Kernel::~Kernel() {
   delete metahandles_index;
 }
 
-Directory::Directory() : kernel_(NULL), store_(NULL) {
+Directory::Directory(UnrecoverableErrorHandler* unrecoverable_error_handler)
+    : kernel_(NULL),
+      store_(NULL),
+      unrecoverable_error_handler_(unrecoverable_error_handler) {
 }
 
 Directory::~Directory() {
@@ -705,6 +709,10 @@ void Directory::ReindexParentId(EntryKernel* const entry,
         kernel_->parent_id_child_index);
     entry->put(PARENT_ID, new_parent_id);
   }
+}
+
+UnrecoverableErrorHandler* Directory::unrecoverable_error_handler() {
+  return unrecoverable_error_handler_;
 }
 
 void Directory::ClearDirtyMetahandles() {

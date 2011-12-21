@@ -30,6 +30,7 @@
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/http_post_provider_factory.h"
 #include "chrome/browser/sync/internal_api/http_post_provider_interface.h"
+#include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler_mock.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
@@ -751,13 +752,15 @@ class SyncManagerTest : public testing::Test,
     EXPECT_FALSE(sync_notifier_observer_);
     EXPECT_FALSE(js_backend_.IsInitialized());
 
+    browser_sync::MockUnrecoverableErrorHandler handler_mock;
     // Takes ownership of |sync_notifier_mock_|.
     sync_manager_.Init(temp_dir_.path(),
                        WeakHandle<JsEventHandler>(),
                        "bogus", 0, false,
                        new TestHttpPostProviderFactory(), this, this, "bogus",
                        credentials, sync_notifier_mock_, "",
-                       true /* setup_for_test_mode */);
+                       true /* setup_for_test_mode */,
+                       &handler_mock);
 
     EXPECT_TRUE(sync_notifier_observer_);
     EXPECT_TRUE(js_backend_.IsInitialized());

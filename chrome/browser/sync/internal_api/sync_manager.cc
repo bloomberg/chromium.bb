@@ -80,6 +80,7 @@ using browser_sync::SyncEngineEvent;
 using browser_sync::SyncEngineEventListener;
 using browser_sync::SyncScheduler;
 using browser_sync::Syncer;
+using browser_sync::UnrecoverableErrorHandler;
 using browser_sync::WeakHandle;
 using browser_sync::sessions::SyncSessionContext;
 using syncable::DirectoryManager;
@@ -143,6 +144,7 @@ class SyncManager::SyncInternal
         initialized_(false),
         setup_for_test_mode_(false),
         observing_ip_address_changes_(false),
+        unrecoverable_error_handler_(NULL),
         created_on_loop_(MessageLoop::current()) {
     // Pre-fill |notification_info_map_|.
     for (int i = syncable::FIRST_REAL_MODEL_TYPE;
@@ -191,7 +193,8 @@ class SyncManager::SyncInternal
             const SyncCredentials& credentials,
             sync_notifier::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
-            bool setup_for_test_mode);
+            bool setup_for_test_mode,
+            UnrecoverableErrorHandler* unrecoverable_error_handler);
 
   void CheckServerReachable() {
     if (connection_manager()) {
@@ -565,6 +568,8 @@ class SyncManager::SyncInternal
   // This is for keeping track of client events to send to the server.
   DebugInfoEventListener debug_info_event_listener_;
 
+  UnrecoverableErrorHandler* unrecoverable_error_handler_;
+
   MessageLoop* const created_on_loop_;
 };
 
@@ -697,7 +702,8 @@ bool SyncManager::Init(
     const SyncCredentials& credentials,
     sync_notifier::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
-    bool setup_for_test_mode) {
+    bool setup_for_test_mode,
+    UnrecoverableErrorHandler* unrecoverable_error_handler) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(post_factory);
   DVLOG(1) << "SyncManager starting Init...";
@@ -714,7 +720,8 @@ bool SyncManager::Init(
                      credentials,
                      sync_notifier,
                      restored_key_for_bootstrapping,
-                     setup_for_test_mode);
+                     setup_for_test_mode,
+                     unrecoverable_error_handler);
 }
 
 void SyncManager::CheckServerReachable() {
@@ -830,7 +837,8 @@ bool SyncManager::SyncInternal::Init(
     const SyncCredentials& credentials,
     sync_notifier::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
-    bool setup_for_test_mode) {
+    bool setup_for_test_mode,
+    UnrecoverableErrorHandler* unrecoverable_error_handler) {
   CHECK(!initialized_);
 
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -859,6 +867,8 @@ bool SyncManager::SyncInternal::Init(
   observing_ip_address_changes_ = true;
 
   connection_manager()->AddListener(this);
+
+  unrecoverable_error_handler_ = unrecoverable_error_handler;
 
   // Test mode does not use a syncer context or syncer thread.
   if (!setup_for_test_mode_) {
@@ -1044,6 +1054,7 @@ bool SyncManager::SyncInternal::OpenDirectory() {
       dir_manager()->Open(
           username_for_share(),
           this,
+          unrecoverable_error_handler_,
           browser_sync::MakeWeakHandle(
               js_mutation_event_observer_.AsWeakPtr()));
   if (!share_opened) {

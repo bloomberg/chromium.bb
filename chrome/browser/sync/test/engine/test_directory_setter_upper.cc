@@ -40,7 +40,8 @@ void TestDirectorySetterUpper::reset_directory_manager(DirectoryManager* d) {
 
 void TestDirectorySetterUpper::SetUp() {
   Init();
-  ASSERT_TRUE(manager()->Open(name(), &delegate_, NullTransactionObserver()));
+  ASSERT_TRUE(manager()->Open(name(), &delegate_, &handler_mock_,
+              NullTransactionObserver()));
 }
 
 void TestDirectorySetterUpper::TearDown() {
@@ -83,7 +84,8 @@ void ManuallyOpenedTestDirectorySetterUpper::SetUp() {
 
 void ManuallyOpenedTestDirectorySetterUpper::Open() {
   ASSERT_TRUE(
-      manager()->Open(name(), &delegate_, NullTransactionObserver()));
+      manager()->Open(name(), &delegate_, &handler_mock_,
+      NullTransactionObserver()));
   was_opened_ = true;
 }
 
@@ -113,7 +115,9 @@ void TriggeredOpenTestDirectorySetterUpper::TearDown() {
 }
 
 MockDirectorySetterUpper::MockDirectory::MockDirectory(
-    const std::string& name) {
+  const std::string& name,
+  browser_sync::UnrecoverableErrorHandler* handler_mock)
+      : Directory(handler_mock) {
   InitKernelForTest(name, &delegate_, NullTransactionObserver());
 }
 
@@ -126,7 +130,7 @@ MockDirectorySetterUpper::Manager::Manager(
 }
 
 MockDirectorySetterUpper::MockDirectorySetterUpper()
-    : directory_(new MockDirectory(name())) {
+    : directory_(new MockDirectory(name(), &handler_mock_)) {
 }
 
 MockDirectorySetterUpper::~MockDirectorySetterUpper() {}
