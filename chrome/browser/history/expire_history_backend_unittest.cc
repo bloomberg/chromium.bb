@@ -524,7 +524,7 @@ TEST_F(ExpireHistoryTest, DeleteURLWithoutFavicon) {
   // Delete the URL and its dependencies.
   expirer_.DeleteURL(last_row.url());
 
-  // All the normal data + the favicon should be gone.
+  // All the normal data except the favicon should be gone.
   EnsureURLInfoGone(last_row);
   EXPECT_TRUE(HasFavicon(favicon_id));
 }
@@ -570,6 +570,43 @@ TEST_F(ExpireHistoryTest, DontDeleteStarredURL) {
 
   // Now it should be completely deleted.
   EnsureURLInfoGone(url_row);
+}
+
+// Deletes multiple URLs at once.  The favicon for the third one but
+// not the first two should be deleted.
+TEST_F(ExpireHistoryTest, DeleteURLs) {
+  URLID url_ids[3];
+  Time visit_times[4];
+  AddExampleData(url_ids, visit_times);
+
+  // Verify things are the way we expect with URL rows, favicons,
+  // thumbnails.
+  URLRow rows[3];
+  FaviconID favicon_ids[3];
+  std::vector<GURL> urls;
+  // Push back a bogus URL (which shouldn't change anything).
+  urls.push_back(GURL());
+  for (size_t i = 0; i < arraysize(rows); ++i) {
+    ASSERT_TRUE(main_db_->GetURLRow(url_ids[i], &rows[i]));
+    favicon_ids[i] = GetFavicon(rows[i].url(), FAVICON);
+    EXPECT_TRUE(HasFavicon(favicon_ids[i]));
+    // TODO(sky): fix this, see comment in HasThumbnail.
+    // EXPECT_TRUE(HasThumbnail(url_ids[i]));
+    urls.push_back(rows[i].url());
+  }
+
+  StarURL(rows[0].url());
+
+  // Delete the URLs and their dependencies.
+  expirer_.DeleteURLs(urls);
+
+  // First one should still be around (since it was starred).
+  ASSERT_TRUE(main_db_->GetRowForURL(rows[0].url(), &rows[0]));
+  EnsureURLInfoGone(rows[1]);
+  EnsureURLInfoGone(rows[2]);
+  EXPECT_TRUE(HasFavicon(favicon_ids[0]));
+  EXPECT_TRUE(HasFavicon(favicon_ids[1]));
+  EXPECT_FALSE(HasFavicon(favicon_ids[2]));
 }
 
 // Expires all URLs more recent than a given time, with no starred items.

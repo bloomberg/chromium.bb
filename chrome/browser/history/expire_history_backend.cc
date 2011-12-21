@@ -209,7 +209,7 @@ void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
        ++url) {
     URLRow url_row;
     if (!main_db_->GetRowForURL(*url, &url_row))
-      return;  // Nothing to delete.
+      continue;  // Nothing to delete.
 
     // Collect all the visits and delete them. Note that we don't give
     // up if there are no visits, since the URL could still have an
@@ -230,12 +230,12 @@ void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
         (bookmark_service && bookmark_service->IsBookmarked(*url));
 
     DeleteOneURL(url_row, is_bookmarked, &dependencies);
-    if (!is_bookmarked)
-      DeleteFaviconsIfPossible(dependencies.affected_favicons);
-
-    if (text_db_)
-      text_db_->OptimizeChangedDatabases(dependencies.text_db_changes);
   }
+
+  DeleteFaviconsIfPossible(dependencies.affected_favicons);
+
+  if (text_db_)
+    text_db_->OptimizeChangedDatabases(dependencies.text_db_changes);
 
   BroadcastDeleteNotifications(&dependencies);
 }
