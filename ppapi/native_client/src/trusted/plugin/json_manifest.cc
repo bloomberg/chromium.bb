@@ -62,7 +62,7 @@ const char* const kUrlKey =         "url";
 
 // Looks up |property_name| in the vector |valid_names| with length
 // |valid_name_count|.  Returns true if |property_name| is found.
-bool FindMatchingProperty(nacl::string property_name,
+bool FindMatchingProperty(const nacl::string& property_name,
                           const char** valid_names,
                           size_t valid_name_count) {
   for (size_t i = 0; i < valid_name_count; ++i) {
