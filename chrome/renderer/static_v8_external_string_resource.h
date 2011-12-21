@@ -17,6 +17,7 @@ class StaticV8ExternalAsciiStringResource
     : public v8::String::ExternalAsciiStringResource {
  public:
   explicit StaticV8ExternalAsciiStringResource(const base::StringPiece& buffer);
+  virtual ~StaticV8ExternalAsciiStringResource();
 
   virtual const char* data() const OVERRIDE;
   virtual size_t length() const OVERRIDE;

@@ -9,6 +9,9 @@ StaticV8ExternalAsciiStringResource::StaticV8ExternalAsciiStringResource(
     : buffer_(buffer) {
 }
 
+StaticV8ExternalAsciiStringResource::~StaticV8ExternalAsciiStringResource() {
+}
+
 const char* StaticV8ExternalAsciiStringResource::data() const {
   return buffer_.data();
 }
