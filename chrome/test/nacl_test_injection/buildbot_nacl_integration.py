@@ -41,6 +41,11 @@ def Main(args):
     # This test failed and caused the build's gatekeep to close the tree.
     # http://code.google.com/p/chromium/issues/detail?id=96434
     tests_to_disable.append('run_ppapi_example_post_message_test')
+    # These tests are flakey on the chrome waterfall and need to be looked at.
+    # TODO(bsy): http://code.google.com/p/nativeclient/issues/detail?id=2509
+    tests_to_disable.append('run_pm_redir_stderr_bg_1000000_chrome_browser_test')
+    tests_to_disable.append('run_pm_redir_stderr_fg_0_chrome_browser_test')
+
 
     # TODO(ncbray) why did these tests flake?
     # http://code.google.com/p/nativeclient/issues/detail?id=2230
