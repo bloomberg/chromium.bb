@@ -4,6 +4,8 @@
 
 #include "content/browser/geolocation/arbitrator_dependency_factories_for_test.h"
 
+using content::AccessTokenStore;
+
 GeolocationArbitratorDependencyFactoryWithLocationProvider::
     GeolocationArbitratorDependencyFactoryWithLocationProvider(
     LocationProviderFactoryFunction factory_function)

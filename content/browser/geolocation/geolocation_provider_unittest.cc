@@ -12,6 +12,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::AccessTokenStore;
+using content::FakeAccessTokenStore;
 using testing::_;
 using testing::DoAll;
 using testing::DoDefault;

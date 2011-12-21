@@ -25,6 +25,8 @@
     '<(INTERMEDIATE_DIR)',
   ],
   'sources': [
+    'public/browser/access_token_store.cc',
+    'public/browser/access_token_store.h',
     'public/browser/browser_context.h',
     'public/browser/browser_main_parts.h',
     'public/browser/browser_message_filter.cc',
@@ -221,8 +223,6 @@
     'browser/gamepad/gamepad_provider.h',
     'browser/gamepad/gamepad_service.cc',
     'browser/gamepad/gamepad_service.h',
-    'browser/geolocation/access_token_store.cc',
-    'browser/geolocation/access_token_store.h',
     'browser/geolocation/arbitrator_dependency_factory.cc',
     'browser/geolocation/arbitrator_dependency_factory.h',
     'browser/geolocation/core_location_data_provider_mac.h',

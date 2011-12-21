@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/geolocation/access_token_store.h"
+#include "content/public/browser/access_token_store.h"
+
+using content::AccessTokenStore;
 
 namespace {
 // The maximum period of time we'll wait for a complete set of device data

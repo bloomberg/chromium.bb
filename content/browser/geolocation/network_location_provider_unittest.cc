@@ -15,6 +15,8 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::FakeAccessTokenStore;
+
 namespace {
 
 // Constants used in multiple tests.

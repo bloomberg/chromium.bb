@@ -5,9 +5,11 @@
 #include "content/browser/geolocation/arbitrator_dependency_factory.h"
 
 #include "base/time.h"
-#include "content/browser/geolocation/access_token_store.h"
 #include "content/browser/geolocation/location_provider.h"
+#include "content/public/browser/access_token_store.h"
 #include "content/public/browser/content_browser_client.h"
+
+using content::AccessTokenStore;
 
 // GeolocationArbitratorDependencyFactory
 GeolocationArbitratorDependencyFactory::

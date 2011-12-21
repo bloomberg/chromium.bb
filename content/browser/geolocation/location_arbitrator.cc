@@ -9,6 +9,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/browser/geolocation/arbitrator_dependency_factory.h"
+#include "content/public/browser/access_token_store.h"
+
+using content::AccessTokenStore;
 
 namespace {
 

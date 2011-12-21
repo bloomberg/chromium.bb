@@ -135,6 +135,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #endif
 
+using content::AccessTokenStore;
 using content::BrowserThread;
 
 namespace {

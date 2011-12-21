@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
+using content::AccessTokenStore;
 using content::BrowserThread;
 
 namespace {

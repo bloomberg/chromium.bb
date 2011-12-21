@@ -9,18 +9,21 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "base/time.h"
-#include "content/browser/geolocation/access_token_store.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/geolocation_observer.h"
 #include "content/common/content_export.h"
 #include "content/common/geoposition.h"
+#include "content/public/browser/access_token_store.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context_getter.h"
 
-class AccessTokenStore;
 class GeolocationArbitratorDependencyFactory;
 class GURL;
 class LocationProviderBase;
+
+namespace content {
+class AccessTokenStore;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -77,7 +80,7 @@ class CONTENT_EXPORT GeolocationArbitrator
   // |providers_| or deleted on error (e.g. it fails to start).
   void RegisterProvider(LocationProviderBase* provider);
   void OnAccessTokenStoresLoaded(
-      AccessTokenStore::AccessTokenSet access_token_store,
+      content::AccessTokenStore::AccessTokenSet access_token_store,
       net::URLRequestContextGetter* context_getter);
   void DoStartProviders();
   // Returns true if |new_position| is an improvement over |old_position|.
@@ -88,7 +91,7 @@ class CONTENT_EXPORT GeolocationArbitrator
                            bool from_same_provider) const;
 
   scoped_refptr<GeolocationArbitratorDependencyFactory> dependency_factory_;
-  scoped_refptr<AccessTokenStore> access_token_store_;
+  scoped_refptr<content::AccessTokenStore> access_token_store_;
   GetTimeNow get_time_now_;
   GeolocationObserver* observer_;
   ScopedVector<LocationProviderBase> providers_;

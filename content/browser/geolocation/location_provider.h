@@ -19,9 +19,12 @@
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 
-class AccessTokenStore;
 struct Geoposition;
 class GURL;
+
+namespace content {
+class AccessTokenStore;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -93,7 +96,7 @@ class CONTENT_EXPORT LocationProviderBase
 // Factory functions for the various types of location provider to abstract
 // over the platform-dependent implementations.
 CONTENT_EXPORT LocationProviderBase* NewNetworkLocationProvider(
-    AccessTokenStore* access_token_store,
+    content::AccessTokenStore* access_token_store,
     net::URLRequestContextGetter* context,
     const GURL& url,
     const string16& access_token);

@@ -10,12 +10,15 @@
 #include "base/string16.h"
 #include "content/common/content_export.h"
 
-class AccessTokenStore;
 class GURL;
 class LocationProviderBase;
 
 namespace base {
 class Time;
+}
+
+namespace content {
+class AccessTokenStore;
 }
 
 namespace net {
@@ -31,9 +34,9 @@ class CONTENT_EXPORT GeolocationArbitratorDependencyFactory
   typedef base::Time (*GetTimeNow)();
 
   virtual GetTimeNow GetTimeFunction() = 0;
-  virtual AccessTokenStore* NewAccessTokenStore() = 0;
+  virtual content::AccessTokenStore* NewAccessTokenStore() = 0;
   virtual LocationProviderBase* NewNetworkLocationProvider(
-      AccessTokenStore* access_token_store,
+      content::AccessTokenStore* access_token_store,
       net::URLRequestContextGetter* context,
       const GURL& url,
       const string16& access_token) = 0;
@@ -51,9 +54,9 @@ class CONTENT_EXPORT DefaultGeolocationArbitratorDependencyFactory
  public:
   // GeolocationArbitratorDependencyFactory
   virtual GetTimeNow GetTimeFunction() OVERRIDE;
-  virtual AccessTokenStore* NewAccessTokenStore() OVERRIDE;
+  virtual content::AccessTokenStore* NewAccessTokenStore() OVERRIDE;
   virtual LocationProviderBase* NewNetworkLocationProvider(
-      AccessTokenStore* access_token_store,
+      content::AccessTokenStore* access_token_store,
       net::URLRequestContextGetter* context,
       const GURL& url,
       const string16& access_token) OVERRIDE;

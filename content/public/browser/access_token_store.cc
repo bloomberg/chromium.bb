@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/geolocation/access_token_store.h"
+#include "content/public/browser/access_token_store.h"
+
+namespace content {
 
 AccessTokenStore::AccessTokenStore() {
 }
 
 AccessTokenStore::~AccessTokenStore() {
 }
+
+}  // namespace content

@@ -13,6 +13,8 @@ using base::MessageLoopProxy;
 using testing::_;
 using testing::Invoke;
 
+namespace content {
+
 FakeAccessTokenStore::FakeAccessTokenStore()
     : originating_message_loop_(NULL) {
   ON_CALL(*this, LoadAccessTokens(_))
@@ -49,3 +51,5 @@ void FakeAccessTokenStore::DefaultSaveAccessToken(
 }
 
 FakeAccessTokenStore::~FakeAccessTokenStore() {}
+
+}  // namespace content

@@ -7,12 +7,12 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "content/browser/geolocation/access_token_store.h"
+#include "content/public/browser/access_token_store.h"
 
 class PrefService;
 
 // Creates a new access token store backed by the global chome prefs.
-class ChromeAccessTokenStore : public AccessTokenStore {
+class ChromeAccessTokenStore : public content::AccessTokenStore {
  public:
   static void RegisterPrefs(PrefService* prefs);
 

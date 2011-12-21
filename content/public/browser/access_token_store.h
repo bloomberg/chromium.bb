@@ -10,8 +10,8 @@
 // This API is provided as abstract base classes to allow mocking and testing
 // of clients, without dependency on browser process singleton objects etc.
 
-#ifndef CONTENT_BROWSER_GEOLOCATION_ACCESS_TOKEN_STORE_H_
-#define CONTENT_BROWSER_GEOLOCATION_ACCESS_TOKEN_STORE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_ACCESS_TOKEN_STORE_H_
+#define CONTENT_PUBLIC_BROWSER_ACCESS_TOKEN_STORE_H_
 #pragma once
 
 #include <map>
@@ -27,6 +27,8 @@ class GURL;
 namespace net {
 class URLRequestContextGetter;
 }
+
+namespace content {
 
 // Provides storage for the access token used in the network request.
 class AccessTokenStore : public base::RefCountedThreadSafe<AccessTokenStore> {
@@ -57,4 +59,6 @@ class AccessTokenStore : public base::RefCountedThreadSafe<AccessTokenStore> {
   DISALLOW_COPY_AND_ASSIGN(AccessTokenStore);
 };
 
-#endif  // CONTENT_BROWSER_GEOLOCATION_ACCESS_TOKEN_STORE_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_ACCESS_TOKEN_STORE_H_

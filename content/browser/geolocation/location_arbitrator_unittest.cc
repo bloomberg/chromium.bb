@@ -12,6 +12,9 @@
 #include "content/common/geoposition.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::AccessTokenStore;
+using content::FakeAccessTokenStore;
+
 namespace {
 
 class MockLocationObserver : public GeolocationObserver {

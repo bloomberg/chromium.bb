@@ -21,6 +21,10 @@
 #include "content/common/content_export.h"
 #include "content/common/geoposition.h"
 
+namespace content {
+class AccessTokenStore;
+}
+
 class NetworkLocationProvider
     : public LocationProviderBase,
       public RadioDataProvider::ListenerInterface,
@@ -64,7 +68,7 @@ class NetworkLocationProvider
     CacheAgeList cache_age_list_;  // Oldest first.
   };
 
-  NetworkLocationProvider(AccessTokenStore* access_token_store,
+  NetworkLocationProvider(content::AccessTokenStore* access_token_store,
                           net::URLRequestContextGetter* context,
                           const GURL& url,
                           const string16& access_token);
@@ -97,7 +101,7 @@ class NetworkLocationProvider
                                          const RadioData& radio_data,
                                          const WifiData& wifi_data) OVERRIDE;
 
-  scoped_refptr<AccessTokenStore> access_token_store_;
+  scoped_refptr<content::AccessTokenStore> access_token_store_;
 
   // The device data providers, acquired via global factories.
   RadioDataProvider* radio_data_provider_;

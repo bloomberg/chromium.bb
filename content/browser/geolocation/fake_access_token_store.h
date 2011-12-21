@@ -7,9 +7,11 @@
 #pragma once
 
 #include "base/message_loop_proxy.h"
-#include "content/browser/geolocation/access_token_store.h"
+#include "content/public/browser/access_token_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace content {
 
 // A fake (non-persisted) access token store instance useful for testing.
 class FakeAccessTokenStore : public AccessTokenStore {
@@ -42,5 +44,7 @@ class FakeAccessTokenStore : public AccessTokenStore {
 
   DISALLOW_COPY_AND_ASSIGN(FakeAccessTokenStore);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_FAKE_ACCESS_TOKEN_STORE_H_

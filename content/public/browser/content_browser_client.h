@@ -14,7 +14,6 @@
 #include "content/public/common/content_client.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
-class AccessTokenStore;
 class BrowserURLHandler;
 class CommandLine;
 class FilePath;
@@ -36,6 +35,7 @@ class WorkerProcessHost;
 struct WebPreferences;
 
 namespace content {
+class AccessTokenStore;
 class BrowserMainParts;
 struct MainFunctionParams;
 struct ShowDesktopNotificationHostMsgParams;

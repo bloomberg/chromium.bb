@@ -125,7 +125,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual MHTMLGenerationManager* GetMHTMLGenerationManager() OVERRIDE;
   virtual net::NetLog* GetNetLog() OVERRIDE;
   virtual speech_input::SpeechInputManager* GetSpeechInputManager() OVERRIDE;
-  virtual AccessTokenStore* CreateAccessTokenStore() OVERRIDE;
+  virtual content::AccessTokenStore* CreateAccessTokenStore() OVERRIDE;
   virtual bool IsFastShutdownPossible() OVERRIDE;
   virtual WebPreferences GetWebkitPrefs(RenderViewHost* rvh) OVERRIDE;
   virtual void UpdateInspectorSetting(RenderViewHost* rvh,
