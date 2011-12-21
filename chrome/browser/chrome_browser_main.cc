@@ -1986,6 +1986,12 @@ void RecordPreReadExperimentTime(const char* name, base::TimeDelta time) {
   if (env->GetVar(chrome::kPreReadEnvironmentVariable, &pre_read) &&
       (pre_read == "0" || pre_read == "1")) {
     std::string uma_name(name);
+
+    // We want XP to record a separate histogram, as the loader on XP
+    // is very different from the Vista and Win7 loaders.
+    if (base::win::GetVersion() <= base::win::VERSION_XP)
+      uma_name += "_XP";
+
     uma_name += "_PreRead";
     uma_name += pre_read == "1" ? "Enabled" : "Disabled";
     AddPreReadHistogramTime(uma_name.c_str(), time);
