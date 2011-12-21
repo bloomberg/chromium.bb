@@ -33,6 +33,8 @@ int PathToIDR(const std::string& path) {
     idr = IDR_FOLDER_OPEN_RTL;
   } else if (path == "ui/resources/throbber.png") {
     idr = IDR_THROBBER;
+  } else if (path == "fonts/open_sans.woff") {
+    idr = IDR_THIRD_PARTY_FONTS_OPEN_SANS;
   } else {
     // The name of the files in the grd list are prefixed with the following
     // directory:
