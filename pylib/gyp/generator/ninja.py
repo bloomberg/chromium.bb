@@ -5,6 +5,7 @@
 import gyp
 import gyp.common
 import gyp.system_test
+import gyp.xcode_emulation
 import os.path
 import pprint
 import subprocess
@@ -207,7 +208,7 @@ class NinjaWriter:
       self.ninja.newline()
     return targets
 
-  def WriteSpec(self, spec, config):
+  def WriteSpec(self, spec, config_name):
     """The main entry point for NinjaWriter: write the build rules for a spec.
 
     Returns the path to the build output, or None, and a list of targets for
@@ -215,6 +216,7 @@ class NinjaWriter:
 
     self.name = spec['target_name']
     self.toolset = spec['toolset']
+    config = spec['configurations'][config_name]
 
     if spec['type'] == 'settings':
       # TODO: 'settings' is not actually part of gyp; it was
@@ -224,6 +226,9 @@ class NinjaWriter:
              "Please fix the source gyp file to use type 'none'.")
       print "See http://code.google.com/p/chromium/issues/detail?id=96629 ."
       spec['type'] = 'none'
+
+    if self.flavor == 'mac':
+      self.xcode_settings = gyp.xcode_emulation.XcodeSettings(spec)
 
     # Compute predepends for all rules.
     # actions_depends is the dependencies this target depends on before running
@@ -259,7 +264,8 @@ class NinjaWriter:
     link_deps = []
     sources = spec.get('sources', []) + extra_sources
     if sources:
-      link_deps = self.WriteSources(config, sources, compile_depends)
+      link_deps = self.WriteSources(
+          config_name, config, sources, compile_depends)
       # Some actions/rules output 'sources' that are already object files.
       link_deps += [self.GypPathToNinja(f) for f in sources if f.endswith('.o')]
 
@@ -268,7 +274,7 @@ class NinjaWriter:
     output = None
     final_deps = link_deps or sources_depends or actions_depends
     if final_deps:
-      output = self.WriteTarget(spec, config, final_deps,
+      output = self.WriteTarget(spec, config_name, config, final_deps,
                                 order_only=actions_depends)
       if self.name != output and self.toolset == 'target':
         # Write a short name to build this target.  This benefits both the
@@ -414,19 +420,18 @@ class NinjaWriter:
 
     return outputs
 
-  def WriteSources(self, config, sources, predepends):
+  def WriteSources(self, config_name, config, sources, predepends):
     """Write build rules to compile all of |sources|."""
     if self.toolset == 'host':
       self.ninja.variable('cc', '$cc_host')
       self.ninja.variable('cxx', '$cxx_host')
 
     if self.flavor == 'mac':
-      # TODO(jeremya/thakis): Extract these from XcodeSettings instead.
-      cflags = []
-      cflags_c = []
-      cflags_cc = []
-      cflags_objc = []
-      cflags_objcc = []
+      cflags = self.xcode_settings.GetCflags(config_name)
+      cflags_c = self.xcode_settings.GetCflagsC(config_name)
+      cflags_cc = self.xcode_settings.GetCflagsCC(config_name)
+      cflags_objc = self.xcode_settings.GetCflagsObjC(config_name)
+      cflags_objcc = self.xcode_settings.GetCflagsObjCC(config_name)
     else:
       cflags = config.get('cflags', [])
       cflags_c = config.get('cflags_c', [])
@@ -470,7 +475,7 @@ class NinjaWriter:
     self.ninja.newline()
     return outputs
 
-  def WriteTarget(self, spec, config, final_deps, order_only):
+  def WriteTarget(self, spec, config_name, config, final_deps, order_only):
     if spec['type'] == 'none':
       # This target doesn't have any explicit final output, but is instead
       # used for its effects before the final output (e.g. copies steps).
@@ -515,8 +520,8 @@ class NinjaWriter:
 
     if output_uses_linker:
       if self.flavor == 'mac':
-        # TODO(jeremya/thakis): Get this from XcodeSettings.
-        ldflags = []
+        ldflags = self.xcode_settings.GetLdflags(self, config_name,
+              self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']))
       else:
         ldflags = config.get('ldflags', [])
       self.WriteVariableList('ldflags',
@@ -818,7 +823,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
       obj += '.' + toolset
     output_file = os.path.join(obj, base_path, name + '.ninja')
     spec = target_dicts[qualified_target]
-    config = spec['configurations'][config_name]
 
     writer = NinjaWriter(target_outputs, base_path, builddir,
                          OpenOutput(os.path.join(options.toplevel_dir,
@@ -827,7 +831,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
                          flavor)
     master_ninja.subninja(output_file)
 
-    output, compile_depends = writer.WriteSpec(spec, config)
+    output, compile_depends = writer.WriteSpec(spec, config_name)
     if output:
       linkable = spec['type'] in ('static_library', 'shared_library')
       target_outputs[qualified_target] = (output, compile_depends, linkable)
