@@ -1519,19 +1519,20 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 		wlsc_surface_transform(es, x, y, &sx, &sy);
 		if (wd->touch_focus_resource)
 			wl_resource_post_event(wd->touch_focus_resource,
-					touch_type, time, touch_id, sx, sy);
+					       touch_type, time,
+					       touch_id, sx, sy);
 		break;
 	case WL_INPUT_DEVICE_TOUCH_UP:
 		wlsc_compositor_idle_release(ec);
 		wd->num_tp--;
 
+		if (wd->touch_focus_resource)
+			wl_resource_post_event(wd->touch_focus_resource,
+					       touch_type, time, touch_id);
 		if (wd->num_tp == 0) {
 			wd->touch_focus = NULL;
 			wd->touch_focus_resource = NULL;
 		}
-		if (wd->touch_focus_resource)
-			wl_resource_post_event(wd->touch_focus_resource,
-					touch_type, time, touch_id);
 		break;
 	}
 }
