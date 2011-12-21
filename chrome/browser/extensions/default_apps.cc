@@ -7,8 +7,9 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -35,15 +36,14 @@ static bool ShouldInstallInProfile(Profile* profile) {
           prefs::kDefaultAppsInstallState));
   switch (state) {
     case default_apps::kUnknown: {
-      // We get here for either new profile, or profiles created before the
-      // default apps feature was implemented.  In the former case, we always
-      // want to install default apps.  In the latter case, we don't want to
-      // disturb a user that has already installed and possibly curated a list
-      // of favourite apps, so we only install if there are no apps in the
-      // profile.  We can check for both these cases by looking to see if
-      // any apps already exist.
-      ExtensionService* extension_service = profile->GetExtensionService();
-      if (extension_service && extension_service->HasApps())
+      // This is the first time the default apps feature runs on this profile.
+      // Determine if we want to install them or not. The best check would be
+      // to see if this is a newly created profile, but its not possible to do
+      // that.  The next best thing is to see if this is a chrome first run.
+      // However, this means that multi-profile support is broken: secondary
+      // profiles will not get default apps.
+      // TODO(rogerta): add support for multiple profiles.
+      if (!FirstRun::IsChromeFirstRun())
         install_apps = false;
       break;
     }
@@ -82,7 +82,18 @@ static bool ShouldInstallInProfile(Profile* profile) {
         kDefaultAppsTrialName)->group_name() != kDefaultAppsTrialNoAppsGroup;
   }
 
-  // Save the state if needed.
+  // Save the state if needed.  Once it is decided whether we are installing
+  // default apps or not, we want to always respond with same value.  Therefore
+  // on first run of this feature (i.e. the current state is kUnknown) the
+  // state is updated to remember the choice that was made at this time.  The
+  // next time chrome runs it will use the same decision.
+  //
+  // The reason for responding with the same value is that once an external
+  // extenson provider has provided apps for a given profile, it must continue
+  // to provide those extensions on each subsequent run.  Otherwise the
+  // extension manager will automatically uninstall the apps.  The extension
+  // manager is smart enough to know not to reinstall the apps on all
+  // subsequent runs of chrome.
   if (state == default_apps::kUnknown) {
     if (install_apps) {
       profile->GetPrefs()->SetInteger(prefs::kDefaultAppsInstallState,
