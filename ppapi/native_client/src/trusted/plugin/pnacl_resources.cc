@@ -11,6 +11,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/browser_interface.h"
+#include "native_client/src/trusted/plugin/manifest.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/pnacl_coordinator.h"
@@ -43,15 +44,23 @@ void PnaclResources::StartDownloads() {
   // Schedule the downloads.
   CHECK(resource_urls_.size() > 0);
   for (size_t i = 0; i < resource_urls_.size(); ++i) {
-    const nacl::string& full_url = resource_base_url_ + resource_urls_[i];
+    nacl::string full_url;
+    ErrorInfo error_info;
+    if (!manifest_->ResolveURL(resource_urls_[i], &full_url, &error_info)) {
+      coordinator_->ReportNonPpapiError(nacl::string("failed to resolve ") +
+                                        resource_urls_[i] + ": " +
+                                        error_info.message() + "\n");
+      break;
+    }
     pp::CompletionCallback ready_callback =
         callback_factory_.NewCallback(&PnaclResources::ResourceReady,
                                       resource_urls_[i],
                                       full_url);
     if (!plugin_->StreamAsFile(full_url,
+                               manifest_->PermitsExtensionUrls(),
                                ready_callback.pp_completion_callback())) {
-      coordinator_->ReportNonPpapiError(
-          nacl::string("failed to download ") + resource_urls_[i] + "\n");
+      coordinator_->ReportNonPpapiError(nacl::string("failed to download ") +
+                                        resource_urls_[i] + "\n");
       break;
     }
   }

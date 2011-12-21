@@ -298,8 +298,13 @@ class Plugin : public pp::InstancePrivate {
   // Requests a URL asynchronously resulting in a call to pp_callback with
   // a PP_Error indicating status. On success an open file descriptor
   // corresponding to the url body is recorded for further lookup.
-  // This is used by SRPC-based StreamAsFile().
-  bool StreamAsFile(const nacl::string& url, PP_CompletionCallback pp_callback);
+  // permits_extension_urls determines whether a call to stream as file
+  // should be allowed to load URLs that are outside of the origin of the
+  // plugin.  This is used by, e.g., the pnacl coordinator, which loads
+  // llc, ld, and various object files from a chrome extension URL.
+  bool StreamAsFile(const nacl::string& url,
+                    bool permits_extension_urls,
+                    PP_CompletionCallback pp_callback);
   // Returns an open POSIX file descriptor retrieved by StreamAsFile()
   // or NACL_NO_FILE_DESC. The caller must take ownership of the descriptor.
   int32_t GetPOSIXFileDesc(const nacl::string& url);
@@ -321,8 +326,6 @@ class Plugin : public pp::InstancePrivate {
   const nacl::string& mime_type() const { return mime_type_; }
   // The default MIME type for the NaCl plugin.
   static const char* const kNaClMIMEType;
-  // Tests if the MIME type is not a NaCl MIME type.
-  bool IsForeignMIMEType() const;
   // Returns true if PPAPI Dev interfaces should be allowed.
   bool enable_dev_interfaces() { return enable_dev_interfaces_; }
 
@@ -452,6 +455,10 @@ class Plugin : public pp::InstancePrivate {
 
   // Determines the appropriate nexe for the sandbox and requests a load.
   void RequestNexeLoad();
+
+  // This NEXE is being used as a content type handler rather than directly by
+  // an HTML document.
+  bool NexeIsContentHandler() const;
 
   // Callback used when loading a URL for SRPC-based StreamAsFile().
   void UrlDidOpenForStreamAsFile(int32_t pp_error,

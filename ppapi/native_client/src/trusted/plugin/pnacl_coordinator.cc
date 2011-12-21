@@ -33,8 +33,12 @@ namespace {
 const char kLlcUrl[] = "llc";
 const char kLdUrl[] = "ld";
 
-nacl::string ResourceBaseUrl() {
-  return nacl::string("pnacl_support/") + GetSandboxISA() + "/";
+nacl::string ExtensionUrl() {
+  // TODO(sehr,jvoung): Find a better way to express the URL for the pnacl
+  // extension than a constant string here.
+  const nacl::string kPnaclExtensionOrigin =
+      "chrome-extension://gcodniebolpnpaiggndmcmmfpldlknih/";
+  return kPnaclExtensionOrigin + GetSandboxISA() + "/";
 }
 
 nacl::string Random32CharHexString(struct NaClDescRng* rng) {
@@ -172,15 +176,8 @@ void PnaclFileDescPair::ReadFileDidOpen(int32_t pp_error) {
 //////////////////////////////////////////////////////////////////////
 class PnaclManifest : public Manifest {
  public:
-  PnaclManifest(const pp::URLUtil_Dev* url_util,
-                const nacl::string& manifest_base_url)
-      : Manifest(url_util, manifest_base_url, GetSandboxISA(), false) {
-    size_t last_slash_pos = manifest_base_url_.rfind("/");
-    CHECK(last_slash_pos != nacl::string::npos);
-    // url_prefix contains everything in manifest_base_url up to and including
-    // the last slash.
-    url_prefix_ =
-        manifest_base_url_.substr(0, last_slash_pos + 1) + ResourceBaseUrl();
+  explicit PnaclManifest(const pp::URLUtil_Dev* url_util)
+      : Manifest(url_util, ExtensionUrl(), GetSandboxISA(), false) {
   }
   virtual ~PnaclManifest() { }
 
@@ -201,9 +198,9 @@ class PnaclManifest : public Manifest {
                           nacl::string* full_url,
                           ErrorInfo* error_info) const {
     // Does not do general URL resolution, simply appends relative_url to
-    // the end of url_prefix_.
+    // the end of manifest_base_url_.
     UNREFERENCED_PARAMETER(error_info);
-    *full_url = url_prefix_ + relative_url;
+    *full_url = manifest_base_url_ + relative_url;
     return true;
   }
 
@@ -232,8 +229,12 @@ class PnaclManifest : public Manifest {
     return ResolveURL(key_basename, full_url, error_info);
   }
 
- private:
-  nacl::string url_prefix_;
+  // Since the pnacl coordinator manifest provides access to resources
+  // in the chrome extension, lookups will need to access resources in their
+  // extension origin rather than the plugin's origin.
+  virtual bool PermitsExtensionUrls() const {
+    return true;
+  }
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -246,10 +247,9 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
   PLUGIN_PRINTF(("PnaclCoordinator::BitcodeToNative (plugin=%p, pexe=%s)\n",
                  static_cast<void*>(plugin), pexe_url.c_str()));
   PnaclCoordinator* coordinator =
-      new PnaclCoordinator(plugin,
-                           pexe_url,
-                           translate_notify_callback,
-                           ResourceBaseUrl());
+      new PnaclCoordinator(plugin, pexe_url, translate_notify_callback);
+  PLUGIN_PRINTF(("PnaclCoordinator::BitcodeToNative (manifest=%p)\n",
+                 reinterpret_cast<const void*>(coordinator->manifest_)));
   // Load llc and ld.
   std::vector<nacl::string> resource_urls;
   resource_urls.push_back(kLlcUrl);
@@ -260,7 +260,7 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
   coordinator->resources_.reset(
       new PnaclResources(plugin,
                          coordinator,
-                         coordinator->resource_base_url_,
+                         coordinator->manifest_,
                          resource_urls,
                          resources_cb));
   CHECK(coordinator->resources_ != NULL);
@@ -297,25 +297,19 @@ int32_t PnaclCoordinator::GetLoadedFileDesc(int32_t pp_error,
 PnaclCoordinator::PnaclCoordinator(
     Plugin* plugin,
     const nacl::string& pexe_url,
-    const pp::CompletionCallback& translate_notify_callback,
-    const nacl::string& resource_base_url)
+    const pp::CompletionCallback& translate_notify_callback)
   : plugin_(plugin),
     translate_notify_callback_(translate_notify_callback),
-    resource_base_url_(resource_base_url),
     llc_subprocess_(NULL),
     ld_subprocess_(NULL),
     subprocesses_should_die_(false),
     file_system_(new pp::FileSystem(plugin, PP_FILESYSTEMTYPE_LOCALTEMPORARY)),
-    // TODO(sehr,jvoung): change base url to pnacl extension/testing url.
-    manifest_(new PnaclManifest(plugin->url_util(),
-                                plugin->manifest_base_url())),
+    manifest_(new PnaclManifest(plugin->url_util())),
     pexe_url_(pexe_url) {
   PLUGIN_PRINTF(("PnaclCoordinator::PnaclCoordinator (this=%p, plugin=%p)\n",
                  static_cast<void*>(this), static_cast<void*>(plugin)));
   callback_factory_.Initialize(this);
   NaClXMutexCtor(&subprocess_mu_);
-  // Check the temporary file system.
-  CHECK(file_system_ != NULL);
 }
 
 PnaclCoordinator::~PnaclCoordinator() {
@@ -433,7 +427,9 @@ void PnaclCoordinator::NexePairDidOpen(int32_t pp_error) {
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::RunTranslate);
 
-  if (!plugin_->StreamAsFile(pexe_url_, cb.pp_completion_callback())) {
+  if (!plugin_->StreamAsFile(pexe_url_,
+                             manifest_->PermitsExtensionUrls(),
+                             cb.pp_completion_callback())) {
     ReportNonPpapiError(nacl::string("failed to download ") + pexe_url_ + "\n");
   }
 }

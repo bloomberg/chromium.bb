@@ -276,7 +276,9 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
       this,
       &PluginReverseInterface::StreamAsFile_MainThreadContinuation,
       open_cont);
-  if (!plugin_->StreamAsFile(mapped_url, stream_cc.pp_completion_callback())) {
+  if (!plugin_->StreamAsFile(mapped_url,
+                             manifest_->PermitsExtensionUrls(),
+                             stream_cc.pp_completion_callback())) {
     NaClLog(4,
             "OpenManifestEntry_MainThreadContinuation: StreamAsFile failed\n");
     nacl::MutexLocker take(&mu_);

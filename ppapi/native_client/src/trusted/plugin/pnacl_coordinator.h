@@ -197,8 +197,7 @@ class PnaclCoordinator {
   // Therefore the constructor is private.
   PnaclCoordinator(Plugin* plugin,
                    const nacl::string& pexe_url,
-                   const pp::CompletionCallback& translate_notify_callback,
-                   const nacl::string& resource_base_url);
+                   const pp::CompletionCallback& translate_notify_callback);
 
   // Callback for when llc and ld have been downloaded.
   // This is the first callback invoked in response to BitcodeToNative.
@@ -240,9 +239,6 @@ class PnaclCoordinator {
   // TODO(sehr): remove this when file lookup is through ReverseService.
   pp::CompletionCallbackFactory<PnaclCoordinator,
                                 PnaclRefCount> callback_factory_;
-
-  // URLs used to lookup downloaded resources.
-  nacl::string resource_base_url_;
 
   // Helper subprocesses loaded by the plugin (deleted by the plugin).
   // A nacl sandbox running the llc nexe.

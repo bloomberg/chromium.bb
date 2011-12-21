@@ -69,6 +69,8 @@ class JsonManifest : public Manifest {
                           ErrorInfo* error_info,
                           bool* is_portable) const;
 
+  // A JSON manifest does not allow access to extension URLs.
+  virtual bool PermitsExtensionUrls() const { return false; }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(JsonManifest);

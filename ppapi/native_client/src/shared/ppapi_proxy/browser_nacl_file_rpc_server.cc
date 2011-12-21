@@ -37,7 +37,9 @@ void NaClFileRpcServer::StreamAsFile(
 
   plugin::Plugin* plugin = LookupBrowserPppForInstance(instance)->plugin();
   // Will always call the callback on success or failure.
-  bool success = plugin->StreamAsFile(url, remote_callback);
+  bool success = plugin->StreamAsFile(url,
+                                      false,  // Don't allow extension access.
+                                      remote_callback);
   DebugPrintf("NaClFile::StreamAsFile: success=%d\n", success);
 
   rpc->result = NACL_SRPC_RESULT_OK;

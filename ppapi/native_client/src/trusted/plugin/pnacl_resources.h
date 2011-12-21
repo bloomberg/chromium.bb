@@ -19,6 +19,7 @@
 
 namespace plugin {
 
+class Manifest;
 class Plugin;
 class PnaclCoordinator;
 
@@ -29,12 +30,12 @@ class PnaclResources {
  public:
   PnaclResources(Plugin* plugin,
                  PnaclCoordinator* coordinator,
-                 const nacl::string& resource_base_url,
+                 const Manifest* manifest,
                  const std::vector<nacl::string>& resource_urls,
                  const pp::CompletionCallback& all_loaded_callback)
       : plugin_(plugin),
         coordinator_(coordinator),
-        resource_base_url_(resource_base_url),
+        manifest_(manifest),
         resource_urls_(resource_urls),
         all_loaded_callback_(all_loaded_callback) {
     callback_factory_.Initialize(this);
@@ -62,8 +63,8 @@ class PnaclResources {
   Plugin* plugin_;
   // The coordinator responsible for reporting errors, etc.
   PnaclCoordinator* coordinator_;
-  // The base url for looking up resources.
-  nacl::string resource_base_url_;
+  // The manifest for looking up resource URLs.
+  const Manifest* manifest_;
   // The list of resource URLs (relative to resource_base_url_) to load.
   std::vector<nacl::string> resource_urls_;
   // Callback to be invoked when all resources can be guaranteed available.

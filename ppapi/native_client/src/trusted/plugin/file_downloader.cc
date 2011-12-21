@@ -43,9 +43,11 @@ void FileDownloader::Initialize(Plugin* instance) {
 bool FileDownloader::Open(
     const nacl::string& url,
     DownloadFlags flags,
+    bool allow_extension_url,
     const pp::CompletionCallback& callback,
     PP_URLLoaderTrusted_StatusCallback progress_callback) {
-  PLUGIN_PRINTF(("FileDownloader::Open (url=%s)\n", url.c_str()));
+  PLUGIN_PRINTF(("FileDownloader::Open (url=%s, allow_extension_url=%d)\n",
+                 url.c_str(), allow_extension_url));
   if (callback.pp_completion_callback().func == NULL ||
       instance_ == NULL ||
       file_io_trusted_interface_ == NULL)
@@ -68,13 +70,9 @@ bool FileDownloader::Open(
     url_scheme_ = instance_->GetUrlScheme(url);
     bool grant_universal_access = false;
     if (url_scheme_ == SCHEME_CHROME_EXTENSION) {
-      if (instance_->IsForeignMIMEType()) {
-        // This NEXE is being used as a content type handler rather than
-        // directly by an HTML document. In that case, the NEXE runs in the
-        // security context of the content it is rendering and the NEXE itself
-        // appears to be a cross-origin resource stored in a Chrome extension.
-        // We request universal access during this load so that we can read the
-        // NEXE.
+      if (allow_extension_url) {
+        // This NEXE has been granted rights to access URLs in the chrome
+        // extension scheme.
         grant_universal_access = true;
       }
     } else if (url_scheme_ == SCHEME_DATA) {
@@ -94,6 +92,9 @@ bool FileDownloader::Open(
 
     if (url_loader_trusted_interface_ != NULL) {
       if (grant_universal_access) {
+        // TODO(sehr,jvoung): this should use
+        // pp::URLRequestInfo::SetAllowCrossOriginRequests() when
+        // support for web accessible resources is added to extensions.
         url_loader_trusted_interface_->GrantUniversalAccess(
             url_loader_.pp_resource());
       }

@@ -57,6 +57,7 @@ class FileDownloader {
   // update received by the loader.
   bool Open(const nacl::string& url,
             DownloadFlags flags,
+            bool allow_extension_url,
             const pp::CompletionCallback& callback,
             PP_URLLoaderTrusted_StatusCallback progress_callback);
 

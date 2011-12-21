@@ -66,6 +66,12 @@ class Manifest {
                           ErrorInfo* error_info,
                           bool* is_portable) const = 0;
 
+  // Some manifests (e.g., the pnacl coordinator manifest) need to access
+  // resources from an extension origin distinct from the plugin's origin
+  // (e.g., the pnacl coordinator needs to load llc, ld, and some libraries).
+  // This method returns true if such access should be allowed.
+  virtual bool PermitsExtensionUrls() const = 0;
+
  protected:
   NACL_DISALLOW_COPY_AND_ASSIGN(Manifest);
 
