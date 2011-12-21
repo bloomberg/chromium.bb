@@ -364,12 +364,21 @@ MPFR_DIR = $(abspath BUILD/.gcc-extra-install-mpfr)
 PPL_DIR = $(abspath BUILD/.gcc-extra-install-ppl)
 CLOOG_DIR = $(abspath BUILD/.gcc-extra-install-cloog-ppl)
 
+# For Linux we want to make sure we don't dynamically link in libstdc++
+# because it ties our binaries to a host GCC version that other places
+# the toolchain gets installed might not match.
+ifeq ($(PLATFORM),linux)
+lstdc++ = -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic
+else
+lstdc++ = -lstdc++
+endif
+
 ifneq ($(SRCDIR),)
 GCC_EXTRAS_FLAGS = \
     --with-gmp=$(GMP_DIR) \
     --with-mpfr=$(MPFR_DIR) \
     --with-ppl=$(PPL_DIR) \
-    --with-host-libstdcxx="-lpwl -lstdc++ -lm" \
+    --with-host-libstdcxx="-lpwl $(lstdc++) -lm" \
     --with-cloog=$(CLOOG_DIR) \
     --disable-ppl-version-check
 else
