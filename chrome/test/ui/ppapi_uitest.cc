@@ -129,6 +129,12 @@ class PPAPITestBase : public UITest {
     ASSERT_TRUE(tab.get());
     ASSERT_TRUE(tab->NavigateToURL(test_url));
 
+    // The large timeout was causing the cycle time for the whole test suite
+    // to be too long when a tiny bug caused all tests to timeout.
+    // http://crbug.com/108264
+    int timeout_ms = 90000;
+    //int timeout_ms = TestTimeouts::large_test_timeout_ms());
+
     // See comment above TestingInstance in ppapi/test/testing_instance.h.
     // Basically it sets a series of numbered cookies. The value of "..." means
     // it's still working and we should continue to wait, any other value
@@ -140,7 +146,7 @@ class PPAPITestBase : public UITest {
       std::string cookie_name = StringPrintf("PPAPI_PROGRESS_%d",
                                              progress_number);
       progress = WaitUntilCookieNonEmpty(tab.get(), test_url,
-            cookie_name.c_str(), TestTimeouts::large_test_timeout_ms());
+                                         cookie_name.c_str(), timeout_ms);
       if (progress != "...")
         break;
       progress_number++;
