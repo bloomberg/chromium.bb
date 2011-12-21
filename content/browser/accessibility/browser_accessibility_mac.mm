@@ -57,3 +57,13 @@ BrowserAccessibilityCocoa* BrowserAccessibility::toBrowserAccessibilityCocoa() {
   return static_cast<BrowserAccessibilityMac*>(this)->
       native_view();
 }
+
+std::string BrowserAccessibility::ToString() {
+  BrowserAccessibilityCocoa* cocoa_node = this->toBrowserAccessibilityCocoa();
+  NSString* dump = [NSString stringWithFormat:@"%@|%@|%@|%@",
+      [cocoa_node role],
+      [cocoa_node subrole],
+      [cocoa_node title],
+      [cocoa_node value]];
+  return [dump cStringUsingEncoding:NSUTF8StringEncoding];
+}

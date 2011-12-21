@@ -2436,6 +2436,7 @@
         'app/chrome_dll_resource.h',
         'app/chrome_version.rc.version',
         'browser/accessibility/accessibility_extension_apitest.cc',
+        'browser/accessibility/dump_accessibility_tree_browsertest.cc',
         'browser/autocomplete/autocomplete_browsertest.cc',
         'browser/autofill/form_structure_browsertest.cc',
         'browser/automation/automation_tab_helper_browsertest.cc',
@@ -2881,6 +2882,12 @@
           'sources!': [
             'browser/extensions/browser_action_test_util_gtk.cc',
             'browser/ui/gtk/view_id_util_browsertest.cc',
+          ],
+        }],
+        # TODO(dtseng): Change this to OS=="linux" once Windows support done.
+        ['OS!="mac"', {
+          'sources!': [
+            'browser/accessibility/dump_accessibility_tree_browsertest.cc',
           ],
         }],
         ['OS=="win"', {
