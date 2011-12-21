@@ -621,9 +621,7 @@
   # HTML5 media performance tests.
   'AV_PERF': {
      'linux': [
-       'media.media_playbacktime',
-       'media.media_perf',
-       'media.media_fps',
+       'media.media_constrained_network_perf',
      ],
   },
 
