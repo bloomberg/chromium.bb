@@ -46,8 +46,7 @@ SadTabView::SadTabView(TabContents* tab_contents, Kind kind)
           ResourceBundle::BaseFont)),
       message_(NULL),
       help_link_(NULL),
-      feedback_link_(NULL),
-      reload_button_(NULL) {
+      feedback_link_(NULL) {
   DCHECK(tab_contents);
 
   // Sometimes the user will never see this tab, so keep track of the total

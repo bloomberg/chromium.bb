@@ -6,9 +6,7 @@
 
 namespace net {
 
-OriginBoundCertStore::OriginBoundCert::OriginBoundCert()
-    : type_(CLIENT_CERT_INVALID_TYPE) {
-}
+OriginBoundCertStore::OriginBoundCert::OriginBoundCert() {}
 
 OriginBoundCertStore::OriginBoundCert::OriginBoundCert(
     const std::string& origin,

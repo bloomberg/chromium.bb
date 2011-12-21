@@ -115,7 +115,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       seeking_(false),
       playback_rate_(0.0f),
       pending_seek_(false),
-      pending_seek_seconds_(0.0f),
       client_(client),
       proxy_(NULL),
       delegate_(delegate),

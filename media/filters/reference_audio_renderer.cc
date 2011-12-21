@@ -13,8 +13,7 @@ namespace media {
 ReferenceAudioRenderer::ReferenceAudioRenderer(AudioManager* audio_manager)
     : AudioRendererBase(),
       audio_manager_(audio_manager),
-      bytes_per_second_(0),
-      buffer_capacity_(0) {
+      bytes_per_second_(0) {
 }
 
 ReferenceAudioRenderer::~ReferenceAudioRenderer() {

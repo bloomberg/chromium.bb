@@ -205,8 +205,6 @@ CloudPolicyCacheBase* CloudPolicySubsystem::GetCloudPolicyCacheBase() const {
 }
 
 CloudPolicySubsystem::CloudPolicySubsystem()
-    : refresh_pref_name_(NULL),
-      data_store_(NULL) {
-}
+    : refresh_pref_name_(NULL) {}
 
 }  // namespace policy

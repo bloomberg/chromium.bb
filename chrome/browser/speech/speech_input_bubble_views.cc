@@ -93,12 +93,6 @@ SpeechInputBubbleView::SpeechInputBubbleView(
       delegate_(delegate),
       element_rect_(element_rect),
       tab_contents_(tab_contents),
-      icon_(NULL),
-      heading_(NULL),
-      message_(NULL),
-      try_again_(NULL),
-      cancel_(NULL),
-      mic_settings_(NULL),
       display_mode_(SpeechInputBubbleBase::DISPLAY_MODE_WARM_UP),
       kIconLayoutMinWidth(ResourceBundle::GetSharedInstance().GetBitmapNamed(
                           IDR_SPEECH_INPUT_MIC_EMPTY)->width()) {

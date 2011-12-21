@@ -85,12 +85,6 @@ PPB_WebSocket_Impl::PPB_WebSocket_Impl(PP_Instance instance)
       close_was_clean_(PP_FALSE),
       buffered_amount_(0),
       buffered_amount_after_close_(0) {
-  connect_callback_.func = NULL;
-  connect_callback_.user_data = NULL;
-  receive_callback_.func = NULL;
-  receive_callback_.user_data = NULL;
-  close_callback_.func = NULL;
-  close_callback_.user_data = NULL;
   empty_string_ = new StringVar("", 0);
 }
 

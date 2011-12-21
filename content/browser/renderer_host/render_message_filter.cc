@@ -279,8 +279,7 @@ RenderMessageFilter::RenderMessageFilter(
       render_widget_helper_(render_widget_helper),
       incognito_(browser_context->IsOffTheRecord()),
       webkit_context_(browser_context->GetWebKitContext()),
-      render_process_id_(render_process_id),
-      cpu_usage_(0) {
+      render_process_id_(render_process_id) {
   DCHECK(request_context_);
 
   render_widget_helper_->Init(render_process_id_, resource_dispatcher_host_);
