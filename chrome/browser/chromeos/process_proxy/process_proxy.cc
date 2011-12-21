@@ -130,13 +130,12 @@ void ProcessProxy::Close() {
   process_launched_ = false;
   callback_set_ = false;
 
+  // Wait to ensure process dies before we call StopWatching and close read
+  // end of the pipe the process writes to.
+  base::KillProcess(pid_, 0, true /* wait */);
+
   // TODO(tbarzic): What if this fails?
   StopWatching();
-
-  if (HANDLE_EINTR(kill(pid_, SIGQUIT)) != 0)
-    DPLOG(WARNING) << "sigquit failed.";
-
-  base::EnsureProcessGetsReaped(pid_);
 
   // Close all fds owned by us that may still be opened. If wather had been
   // started, it took ownership of some fds.

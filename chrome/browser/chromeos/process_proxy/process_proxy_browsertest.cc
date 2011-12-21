@@ -79,9 +79,11 @@ class ProcessProxyTest : public InProcessBrowserTest {
   void EndRegistryTest() {
     registry_->CloseProcess(pid_);
 
-    // Make sure process gets reaped.
-    // TODO(tbarzic): Revisit this.
-    EXPECT_NE(0, HANDLE_EINTR(waitpid(pid_,NULL, 0)));
+    base::TerminationStatus status = base::GetTerminationStatus(pid_, NULL);
+    EXPECT_NE(base::TERMINATION_STATUS_STILL_RUNNING, status);
+
+    if (status == base::TERMINATION_STATUS_STILL_RUNNING)
+      base::KillProcess(pid_, 0, true);
 
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      MessageLoop::QuitClosure());
