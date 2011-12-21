@@ -30,7 +30,6 @@ void DefaultOriginBoundCertStore::FlushStore(
 bool DefaultOriginBoundCertStore::GetOriginBoundCert(
     const std::string& origin,
     SSLClientCertType* type,
-    base::Time* expiration_time,
     std::string* private_key_result,
     std::string* cert_result) {
   base::AutoLock autolock(lock_);
@@ -43,7 +42,6 @@ bool DefaultOriginBoundCertStore::GetOriginBoundCert(
 
   OriginBoundCert* cert = it->second;
   *type = cert->type();
-  *expiration_time = cert->expiration_time();
   *private_key_result = cert->private_key();
   *cert_result = cert->cert();
 
@@ -53,7 +51,6 @@ bool DefaultOriginBoundCertStore::GetOriginBoundCert(
 void DefaultOriginBoundCertStore::SetOriginBoundCert(
     const std::string& origin,
     SSLClientCertType type,
-    base::Time expiration_time,
     const std::string& private_key,
     const std::string& cert) {
   base::AutoLock autolock(lock_);
@@ -61,8 +58,7 @@ void DefaultOriginBoundCertStore::SetOriginBoundCert(
 
   InternalDeleteOriginBoundCert(origin);
   InternalInsertOriginBoundCert(
-      origin,
-      new OriginBoundCert(origin, type, expiration_time, private_key, cert));
+      origin, new OriginBoundCert(origin, type, private_key, cert));
 }
 
 void DefaultOriginBoundCertStore::DeleteOriginBoundCert(

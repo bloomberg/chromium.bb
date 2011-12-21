@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/time.h"
 #include "net/base/net_export.h"
 #include "net/base/ssl_client_cert_type.h"
 
@@ -31,7 +30,6 @@ class NET_EXPORT OriginBoundCertStore {
     OriginBoundCert();
     OriginBoundCert(const std::string& origin,
                     SSLClientCertType type,
-                    base::Time expiration_time,
                     const std::string& private_key,
                     const std::string& cert);
     ~OriginBoundCert();
@@ -40,8 +38,6 @@ class NET_EXPORT OriginBoundCertStore {
     const std::string& origin() const { return origin_; }
     // TLS ClientCertificateType.
     SSLClientCertType type() const { return type_; }
-    // The time after which this certificate is no longer valid.
-    base::Time expiration_time() const { return expiration_time_; }
     // The encoding of the private key depends on the type.
     // rsa_sign: DER-encoded PrivateKeyInfo struct.
     // ecdsa_sign: DER-encoded EncryptedPrivateKeyInfo struct.
@@ -52,7 +48,6 @@ class NET_EXPORT OriginBoundCertStore {
    private:
     std::string origin_;
     SSLClientCertType type_;
-    base::Time expiration_time_;
     std::string private_key_;
     std::string cert_;
   };
@@ -62,14 +57,12 @@ class NET_EXPORT OriginBoundCertStore {
   // TODO(rkn): File I/O may be required, so this should have an asynchronous
   // interface.
   // Returns true on success. |private_key_result| stores a DER-encoded
-  // PrivateKeyInfo struct, |cert_result| stores a DER-encoded certificate,
-  // |type| is the ClientCertificateType of the returned certificate, and
-  // |expiration_time| is the expiration time of the certificate.
-  // Returns false if no origin bound cert exists for the specified origin.
+  // PrivateKeyInfo struct and |cert_result| stores a DER-encoded
+  // certificate. Returns false if no origin bound cert exists for the
+  // specified origin.
   virtual bool GetOriginBoundCert(
       const std::string& origin,
       SSLClientCertType* type,
-      base::Time* expiration_time,
       std::string* private_key_result,
       std::string* cert_result) = 0;
 
@@ -77,7 +70,6 @@ class NET_EXPORT OriginBoundCertStore {
   virtual void SetOriginBoundCert(
       const std::string& origin,
       SSLClientCertType type,
-      base::Time expiration_time,
       const std::string& private_key,
       const std::string& cert) = 0;
 

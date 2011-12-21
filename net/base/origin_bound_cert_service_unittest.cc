@@ -457,56 +457,6 @@ TEST(OriginBoundCertServiceTest, CancelRequest) {
   EXPECT_EQ(6, service->cert_count());
 }
 
-TEST(OriginBoundCertServiceTest, Expiration) {
-  OriginBoundCertStore* store = new DefaultOriginBoundCertStore(NULL);
-  store->SetOriginBoundCert("https://good",
-                            CLIENT_CERT_RSA_SIGN,
-                            base::Time::Now() + base::TimeDelta::FromDays(1),
-                            "a",
-                            "b");
-  store->SetOriginBoundCert("https://expired",
-                            CLIENT_CERT_RSA_SIGN,
-                            base::Time::Now() - base::TimeDelta::FromDays(1),
-                            "c",
-                            "d");
-  OriginBoundCertService service(store);
-  EXPECT_EQ(2, service.cert_count());
-
-  int error;
-  std::vector<uint8> types;
-  types.push_back(CLIENT_CERT_RSA_SIGN);
-  TestCompletionCallback callback;
-  OriginBoundCertService::RequestHandle request_handle;
-
-  // Cert still valid - synchronous completion.
-  SSLClientCertType type1;
-  std::string private_key_info1, der_cert1;
-  error = service.GetOriginBoundCert(
-      "https://good", types, &type1, &private_key_info1, &der_cert1,
-      callback.callback(), &request_handle);
-  EXPECT_EQ(OK, error);
-  EXPECT_TRUE(request_handle == NULL);
-  EXPECT_EQ(2, service.cert_count());
-  EXPECT_EQ(CLIENT_CERT_RSA_SIGN, type1);
-  EXPECT_STREQ("a", private_key_info1.c_str());
-  EXPECT_STREQ("b", der_cert1.c_str());
-
-  // Cert expired - New cert will be generated, asynchronous completion.
-  SSLClientCertType type2;
-  std::string private_key_info2, der_cert2;
-  error = service.GetOriginBoundCert(
-      "https://expired", types, &type2, &private_key_info2, &der_cert2,
-      callback.callback(), &request_handle);
-  EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle != NULL);
-  error = callback.WaitForResult();
-  EXPECT_EQ(OK, error);
-  EXPECT_EQ(2, service.cert_count());
-  EXPECT_EQ(CLIENT_CERT_RSA_SIGN, type2);
-  EXPECT_LT(1U, private_key_info2.size());
-  EXPECT_LT(1U, der_cert2.size());
-}
-
 #endif  // !defined(USE_OPENSSL)
 
 }  // namespace

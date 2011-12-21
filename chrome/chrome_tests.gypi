@@ -3930,6 +3930,7 @@
             '../webkit/support/webkit_support.gyp:glue',
           ],
           'sources': [
+            'browser/net/sqlite_origin_bound_cert_store_unittest.cc',
             'browser/safe_browsing/filter_false_positive_perftest.cc',
             'browser/visitedlink/visitedlink_perftest.cc',
             'common/json_value_serializer_perftest.cc',

@@ -134,7 +134,6 @@ class OriginBoundCertServiceWorker {
     error_ = OriginBoundCertService::GenerateCert(origin_,
                                                   type_,
                                                   serial_number_,
-                                                  &expiration_time_,
                                                   &private_key_,
                                                   &cert_);
 #if defined(USE_NSS)
@@ -160,8 +159,8 @@ class OriginBoundCertServiceWorker {
       // memory leaks or worse errors.
       base::AutoLock locked(lock_);
       if (!canceled_) {
-        origin_bound_cert_service_->HandleResult(
-            origin_, error_, type_, expiration_time_, private_key_, cert_);
+        origin_bound_cert_service_->HandleResult(origin_, error_, type_,
+                                                 private_key_, cert_);
       }
     }
     delete this;
@@ -209,7 +208,6 @@ class OriginBoundCertServiceWorker {
   bool canceled_;
 
   int error_;
-  base::Time expiration_time_;
   std::string private_key_;
   std::string cert_;
 
@@ -324,26 +322,20 @@ int OriginBoundCertService::GetOriginBoundCert(
   requests_++;
 
   // Check if an origin bound cert of an acceptable type already exists for this
-  // origin, and that it has not expired.
-  base::Time now = base::Time::Now();
-  base::Time expiration_time;
+  // origin.
   if (origin_bound_cert_store_->GetOriginBoundCert(origin,
                                                    type,
-                                                   &expiration_time,
                                                    private_key,
                                                    cert)) {
-    if (expiration_time < now) {
-      DVLOG(1) << "Cert store had expired cert for " << origin;
-    } else if (!IsSupportedCertType(*type) ||
-               std::find(requested_types.begin(), requested_types.end(),
-                         *type) == requested_types.end()) {
-      DVLOG(1) << "Cert store had cert of wrong type " << *type << " for "
-               << origin;
-    } else {
+    if (IsSupportedCertType(*type) &&
+        std::find(requested_types.begin(), requested_types.end(), *type) !=
+        requested_types.end()) {
       cert_store_hits_++;
       *out_req = NULL;
       return OK;
     }
+    DVLOG(1) << "Cert store had cert of wrong type " << *type << " for "
+             << origin;
   }
 
   // |origin_bound_cert_store_| has no cert for this origin. See if an
@@ -371,10 +363,8 @@ int OriginBoundCertService::GetOriginBoundCert(
     inflight_joins_++;
   } else {
     // Need to make a new request.
-    OriginBoundCertServiceWorker* worker = new OriginBoundCertServiceWorker(
-            origin,
-            preferred_type,
-            this);
+    OriginBoundCertServiceWorker* worker =
+        new OriginBoundCertServiceWorker(origin, preferred_type, this);
     job = new OriginBoundCertServiceJob(worker, preferred_type);
     if (!worker->Start()) {
       delete job;
@@ -398,12 +388,8 @@ int OriginBoundCertService::GetOriginBoundCert(
 int OriginBoundCertService::GenerateCert(const std::string& origin,
                                          SSLClientCertType type,
                                          uint32 serial_number,
-                                         base::Time* expiration_time,
                                          std::string* private_key,
                                          std::string* cert) {
-  base::Time now = base::Time::Now();
-  base::Time not_valid_after =
-      now + base::TimeDelta::FromDays(kValidityPeriodInDays);
   std::string der_cert;
   std::vector<uint8> private_key_info;
   switch (type) {
@@ -418,8 +404,7 @@ int OriginBoundCertService::GenerateCert(const std::string& origin,
           key.get(),
           origin,
           serial_number,
-          now,
-          not_valid_after,
+          base::TimeDelta::FromDays(kValidityPeriodInDays),
           &der_cert)) {
         DLOG(ERROR) << "Unable to create x509 cert for client";
         return ERR_ORIGIN_BOUND_CERT_GENERATION_FAILED;
@@ -441,8 +426,7 @@ int OriginBoundCertService::GenerateCert(const std::string& origin,
           key.get(),
           origin,
           serial_number,
-          now,
-          not_valid_after,
+          base::TimeDelta::FromDays(kValidityPeriodInDays),
           &der_cert)) {
         DLOG(ERROR) << "Unable to create x509 cert for client";
         return ERR_ORIGIN_BOUND_CERT_GENERATION_FAILED;
@@ -466,7 +450,6 @@ int OriginBoundCertService::GenerateCert(const std::string& origin,
 
   private_key->swap(key_out);
   cert->swap(der_cert);
-  *expiration_time = not_valid_after;
   return OK;
 }
 
@@ -482,13 +465,11 @@ void OriginBoundCertService::CancelRequest(RequestHandle req) {
 void OriginBoundCertService::HandleResult(const std::string& origin,
                                           int error,
                                           SSLClientCertType type,
-                                          base::Time expiration_time,
                                           const std::string& private_key,
                                           const std::string& cert) {
   DCHECK(CalledOnValidThread());
 
-  origin_bound_cert_store_->SetOriginBoundCert(
-      origin, type, expiration_time, private_key, cert);
+  origin_bound_cert_store_->SetOriginBoundCert(origin, type, private_key, cert);
 
   std::map<std::string, OriginBoundCertServiceJob*>::iterator j;
   j = inflight_.find(origin);
