@@ -115,7 +115,7 @@ class MockAppCacheStorage : public AppCacheStorage {
     if (!disk_cache_.get()) {
       const int kMaxCacheSize = 10 * 1024 * 1024;
       disk_cache_.reset(new AppCacheDiskCache);
-      disk_cache_->InitWithMemBackend(kMaxCacheSize, NULL);
+      disk_cache_->InitWithMemBackend(kMaxCacheSize, net::CompletionCallback());
     }
     return disk_cache_.get();
   }

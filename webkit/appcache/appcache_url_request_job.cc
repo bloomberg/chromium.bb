@@ -6,6 +6,8 @@
 
 #include "webkit/appcache/appcache_url_request_job.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -28,8 +30,6 @@ AppCacheURLRequestJob::AppCacheURLRequestJob(
       delivery_type_(AWAITING_DELIVERY_ORDERS),
       group_id_(0), cache_id_(kNoCacheId), is_fallback_(false),
       cache_entry_not_found_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(read_callback_(
-          this, &AppCacheURLRequestJob::OnReadComplete)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(storage_);
 }
@@ -268,7 +268,9 @@ bool AppCacheURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size,
   DCHECK_NE(buf_size, 0);
   DCHECK(bytes_read);
   DCHECK(!reader_->IsReadPending());
-  reader_->ReadData(buf, buf_size, &read_callback_);
+  reader_->ReadData(
+      buf, buf_size, base::Bind(&AppCacheURLRequestJob::OnReadComplete,
+                                base::Unretained(this)));
   SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
   return false;
 }

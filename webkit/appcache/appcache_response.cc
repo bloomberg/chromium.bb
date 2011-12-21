@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/pickle.h"
 #include "base/string_util.h"
+#include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/io_buffer.h"
 #include "webkit/appcache/appcache_service.h"
@@ -74,8 +75,11 @@ HttpResponseInfoIOBuffer::~HttpResponseInfoIOBuffer() {}
 
 AppCacheResponseIO::AppCacheResponseIO(
     int64 response_id, int64 group_id, AppCacheDiskCacheInterface* disk_cache)
-    : response_id_(response_id), group_id_(group_id), disk_cache_(disk_cache),
-      entry_(NULL), buffer_len_(0), user_callback_(NULL),
+    : response_id_(response_id),
+      group_id_(group_id),
+      disk_cache_(disk_cache),
+      entry_(NULL),
+      buffer_len_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
@@ -95,9 +99,9 @@ void AppCacheResponseIO::InvokeUserOldCompletionCallback(int result) {
   // so the caller can schedule additional operations in the callback.
   buffer_ = NULL;
   info_buffer_ = NULL;
-  net::OldCompletionCallback* temp_user_callback = user_callback_;
-  user_callback_ = NULL;
-  temp_user_callback->Run(result);
+  net::CompletionCallback cb = callback_;
+  callback_.Reset();
+  cb.Run(result);
 }
 
 void AppCacheResponseIO::ReadRaw(int index, int offset,
@@ -143,13 +147,16 @@ AppCacheResponseReader::~AppCacheResponseReader() {
 }
 
 void AppCacheResponseReader::ReadInfo(HttpResponseInfoIOBuffer* info_buf,
-                                      net::OldCompletionCallback* callback) {
-  DCHECK(callback && !IsReadPending());
-  DCHECK(info_buf && !info_buf->http_info.get());
-  DCHECK(!buffer_.get() && !info_buffer_.get());
+                                      const net::CompletionCallback& callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(!IsReadPending());
+  DCHECK(info_buf);
+  DCHECK(!info_buf->http_info.get());
+  DCHECK(!buffer_.get());
+  DCHECK(!info_buffer_.get());
 
   info_buffer_ = info_buf;
-  user_callback_ = callback;  // cleared on completion
+  callback_ = callback;  // cleared on completion
   OpenEntryIfNeededAndContinue();
 }
 
@@ -170,14 +177,17 @@ void AppCacheResponseReader::ContinueReadInfo() {
 }
 
 void AppCacheResponseReader::ReadData(net::IOBuffer* buf, int buf_len,
-                                      net::OldCompletionCallback* callback) {
-  DCHECK(callback && !IsReadPending());
-  DCHECK(buf && (buf_len >= 0));
-  DCHECK(!buffer_.get() && !info_buffer_.get());
+                                      const net::CompletionCallback& callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(!IsReadPending());
+  DCHECK(buf);
+  DCHECK(buf_len >= 0);
+  DCHECK(!buffer_.get());
+  DCHECK(!info_buffer_.get());
 
   buffer_ = buf;
   buffer_len_ = buf_len;
-  user_callback_ = callback;  // cleared on completion
+  callback_ = callback;  // cleared on completion
   OpenEntryIfNeededAndContinue();
 }
 
@@ -237,8 +247,9 @@ void AppCacheResponseReader::OpenEntryIfNeededAndContinue() {
   } else {
     open_callback_ = new EntryCallback<AppCacheResponseReader>(
         this, &AppCacheResponseReader::OnOpenEntryComplete);
-    rv = disk_cache_->OpenEntry(response_id_, &open_callback_->entry_ptr_,
-                                open_callback_.get());
+    rv = disk_cache_->OpenEntry(
+        response_id_, &open_callback_->entry_ptr_,
+        base::Bind(&net::OldCompletionCallbackAdapter, open_callback_));
   }
 
   if (rv != net::ERR_IO_PENDING)
@@ -276,15 +287,19 @@ AppCacheResponseWriter::~AppCacheResponseWriter() {
     create_callback_.release()->Cancel();
 }
 
-void AppCacheResponseWriter::WriteInfo(HttpResponseInfoIOBuffer* info_buf,
-                                       net::OldCompletionCallback* callback) {
-  DCHECK(callback && !IsWritePending());
-  DCHECK(info_buf && info_buf->http_info.get());
-  DCHECK(!buffer_.get() && !info_buffer_.get());
+void AppCacheResponseWriter::WriteInfo(
+    HttpResponseInfoIOBuffer* info_buf,
+    const net::CompletionCallback& callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(!IsWritePending());
+  DCHECK(info_buf);
+  DCHECK(info_buf->http_info.get());
+  DCHECK(!buffer_.get());
+  DCHECK(!info_buffer_.get());
   DCHECK(info_buf->http_info->headers);
 
   info_buffer_ = info_buf;
-  user_callback_ = callback;  // cleared on completion
+  callback_ = callback;  // cleared on completion
   CreateEntryIfNeededAndContinue();
 }
 
@@ -303,15 +318,18 @@ void AppCacheResponseWriter::ContinueWriteInfo() {
   WriteRaw(kResponseInfoIndex, 0, buffer_, write_amount_);
 }
 
-void AppCacheResponseWriter::WriteData(net::IOBuffer* buf, int buf_len,
-                                       net::OldCompletionCallback* callback) {
-  DCHECK(callback && !IsWritePending());
-  DCHECK(buf && (buf_len >= 0));
-  DCHECK(!buffer_.get() && !info_buffer_.get());
+void AppCacheResponseWriter::WriteData(
+    net::IOBuffer* buf, int buf_len, const net::CompletionCallback& callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(!IsWritePending());
+  DCHECK(buf);
+  DCHECK(buf_len >= 0);
+  DCHECK(!buffer_.get());
+  DCHECK(!info_buffer_.get());
 
   buffer_ = buf;
   write_amount_ = buf_len;
-  user_callback_ = callback;  // cleared on completion
+  callback_ = callback;  // cleared on completion
   CreateEntryIfNeededAndContinue();
 }
 
@@ -346,8 +364,9 @@ void AppCacheResponseWriter::CreateEntryIfNeededAndContinue() {
     creation_phase_ = INITIAL_ATTEMPT;
     create_callback_ = new EntryCallback<AppCacheResponseWriter>(
         this, &AppCacheResponseWriter::OnCreateEntryComplete);
-    rv = disk_cache_->CreateEntry(response_id_, &create_callback_->entry_ptr_,
-                                  create_callback_.get());
+    rv = disk_cache_->CreateEntry(
+        response_id_, &create_callback_->entry_ptr_,
+        base::Bind(&net::OldCompletionCallbackAdapter, create_callback_));
   }
   if (rv != net::ERR_IO_PENDING)
     OnCreateEntryComplete(rv);
@@ -360,15 +379,18 @@ void AppCacheResponseWriter::OnCreateEntryComplete(int rv) {
     if (rv != net::OK) {
       // We may try to overwrite existing entries.
       creation_phase_ = DOOM_EXISTING;
-      rv = disk_cache_->DoomEntry(response_id_, create_callback_.get());
+      rv = disk_cache_->DoomEntry(
+          response_id_, base::Bind(&net::OldCompletionCallbackAdapter,
+                                   create_callback_));
       if (rv != net::ERR_IO_PENDING)
         OnCreateEntryComplete(rv);
       return;
     }
   } else if (creation_phase_ == DOOM_EXISTING) {
     creation_phase_ = SECOND_ATTEMPT;
-    rv = disk_cache_->CreateEntry(response_id_, &create_callback_->entry_ptr_,
-                                  create_callback_.get());
+    rv = disk_cache_->CreateEntry(
+        response_id_, &create_callback_->entry_ptr_,
+        base::Bind(&net::OldCompletionCallbackAdapter, create_callback_));
     if (rv != net::ERR_IO_PENDING)
       OnCreateEntryComplete(rv);
     return;
@@ -389,4 +411,3 @@ void AppCacheResponseWriter::OnCreateEntryComplete(int rv) {
 }
 
 }  // namespace appcache
-

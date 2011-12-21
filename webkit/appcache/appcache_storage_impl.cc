@@ -1208,10 +1208,6 @@ AppCacheStorageImpl::AppCacheStorageImpl(AppCacheService* service)
       is_response_deletion_scheduled_(false),
       did_start_deleting_responses_(false),
       last_deletable_response_rowid_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(doom_callback_(
-          this, &AppCacheStorageImpl::OnDeletedOneResponse)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(init_callback_(
-          this, &AppCacheStorageImpl::OnDiskCacheInitialized)),
       database_(NULL), is_disabled_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
@@ -1596,7 +1592,9 @@ void AppCacheStorageImpl::DeleteOneResponse() {
 
   // TODO(michaeln): add group_id to DoomEntry args
   int64 id = deletable_response_ids_.front();
-  int rv = disk_cache_->DoomEntry(id, &doom_callback_);
+  int rv = disk_cache_->DoomEntry(
+      id, base::Bind(&AppCacheStorageImpl::OnDeletedOneResponse,
+                     base::Unretained(this)));
   if (rv != net::ERR_IO_PENDING)
     OnDeletedOneResponse(rv);
 }
@@ -1682,11 +1680,15 @@ AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
     disk_cache_.reset(new AppCacheDiskCache);
     if (is_incognito_) {
       rv = disk_cache_->InitWithMemBackend(
-          kMaxMemDiskCacheSize, &init_callback_);
+          kMaxMemDiskCacheSize,
+          base::Bind(&AppCacheStorageImpl::OnDiskCacheInitialized,
+                     base::Unretained(this)));
     } else {
       rv = disk_cache_->InitWithDiskBackend(
           cache_directory_.Append(kDiskCacheDirectoryName),
-          kMaxDiskCacheSize, false, cache_thread_, &init_callback_);
+          kMaxDiskCacheSize, false, cache_thread_,
+          base::Bind(&AppCacheStorageImpl::OnDiskCacheInitialized,
+                     base::Unretained(this)));
     }
 
     // We should not keep this reference around.

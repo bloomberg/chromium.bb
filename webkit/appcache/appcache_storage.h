@@ -254,7 +254,6 @@ class APPCACHE_EXPORT AppCacheStorage {
     scoped_ptr<AppCacheResponseReader> reader_;
     DelegateReferenceVector delegates_;
     scoped_refptr<HttpResponseInfoIOBuffer> info_buffer_;
-    net::OldCompletionCallbackImpl<ResponseInfoLoadTask> read_callback_;
   };
 
   typedef std::map<int64, ResponseInfoLoadTask*> PendingResponseInfoLoads;

@@ -59,30 +59,28 @@ class AppCacheDiskCache::EntryImpl : public Entry {
 class AppCacheDiskCache::ActiveCall {
  public:
   explicit ActiveCall(AppCacheDiskCache* owner)
-      : entry_(NULL), callback_(NULL), owner_(owner), entry_ptr_(NULL),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            async_completion_(this, &ActiveCall::OnAsyncCompletion)) {
+      : entry_(NULL),
+        owner_(owner),
+        entry_ptr_(NULL) {
   }
 
   int CreateEntry(int64 key, Entry** entry,
-                  net::OldCompletionCallback* callback) {
+                  const net::CompletionCallback& callback) {
     int rv = owner_->disk_cache()->CreateEntry(
         base::Int64ToString(key), &entry_ptr_,
-        base::Bind(&ActiveCall::OnAsyncCompletion,
-                   base::Unretained(this)));
+        base::Bind(&ActiveCall::OnAsyncCompletion, base::Unretained(this)));
     return HandleImmediateReturnValue(rv, entry, callback);
   }
 
   int OpenEntry(int64 key, Entry** entry,
-                net::OldCompletionCallback* callback) {
+                const net::CompletionCallback& callback) {
     int rv = owner_->disk_cache()->OpenEntry(
         base::Int64ToString(key), &entry_ptr_,
-        base::Bind(&ActiveCall::OnAsyncCompletion,
-                   base::Unretained(this)));
+        base::Bind(&ActiveCall::OnAsyncCompletion, base::Unretained(this)));
     return HandleImmediateReturnValue(rv, entry, callback);
   }
 
-  int DoomEntry(int64 key, net::OldCompletionCallback* callback) {
+  int DoomEntry(int64 key, const net::CompletionCallback& callback) {
     int rv = owner_->disk_cache()->DoomEntry(
         base::Int64ToString(key),
         base::Bind(&ActiveCall::OnAsyncCompletion, base::Unretained(this)));
@@ -91,7 +89,7 @@ class AppCacheDiskCache::ActiveCall {
 
  private:
   int HandleImmediateReturnValue(int rv, Entry** entry,
-                                 net::OldCompletionCallback* callback) {
+                                 const net::CompletionCallback& callback) {
     if (rv == net::ERR_IO_PENDING) {
       // OnAsyncCompletion will be called later.
       callback_ = callback;
@@ -109,20 +107,19 @@ class AppCacheDiskCache::ActiveCall {
     owner_->RemoveActiveCall(this);
     if (rv == net::OK && entry_)
       *entry_ = new EntryImpl(entry_ptr_);
-    callback_->Run(rv);
-    callback_ = NULL;
+    callback_.Run(rv);
+    callback_.Reset();
     delete this;
   }
 
   Entry** entry_;
-  net::OldCompletionCallback* callback_;
+  net::CompletionCallback callback_;
   AppCacheDiskCache* owner_;
   disk_cache::Entry* entry_ptr_;
-  net::OldCompletionCallbackImpl<ActiveCall> async_completion_;
 };
 
 AppCacheDiskCache::AppCacheDiskCache()
-    : is_disabled_(false), init_callback_(NULL) {
+    : is_disabled_(false) {
 }
 
 AppCacheDiskCache::~AppCacheDiskCache() {
@@ -137,13 +134,14 @@ AppCacheDiskCache::~AppCacheDiskCache() {
 
 int AppCacheDiskCache::InitWithDiskBackend(
     const FilePath& disk_cache_directory, int disk_cache_size, bool force,
-    base::MessageLoopProxy* cache_thread, net::OldCompletionCallback* callback) {
+    base::MessageLoopProxy* cache_thread,
+    const net::CompletionCallback& callback) {
   return Init(net::APP_CACHE, disk_cache_directory,
               disk_cache_size, force, cache_thread, callback);
 }
 
 int AppCacheDiskCache::InitWithMemBackend(
-    int mem_cache_size, net::OldCompletionCallback* callback) {
+    int mem_cache_size, const net::CompletionCallback& callback) {
   return Init(net::MEMORY_CACHE, FilePath(), mem_cache_size, false, NULL,
               callback);
 }
@@ -162,8 +160,9 @@ void AppCacheDiskCache::Disable() {
 }
 
 int AppCacheDiskCache::CreateEntry(int64 key, Entry** entry,
-                                   net::OldCompletionCallback* callback) {
-  DCHECK(entry && callback);
+                                   const net::CompletionCallback& callback) {
+  DCHECK(entry);
+  DCHECK(!callback.is_null());
   if (is_disabled_)
     return net::ERR_ABORTED;
 
@@ -179,8 +178,9 @@ int AppCacheDiskCache::CreateEntry(int64 key, Entry** entry,
 }
 
 int AppCacheDiskCache::OpenEntry(int64 key, Entry** entry,
-                                 net::OldCompletionCallback* callback) {
-  DCHECK(entry && callback);
+                                 const net::CompletionCallback& callback) {
+  DCHECK(entry);
+  DCHECK(!callback.is_null());
   if (is_disabled_)
     return net::ERR_ABORTED;
 
@@ -196,8 +196,8 @@ int AppCacheDiskCache::OpenEntry(int64 key, Entry** entry,
 }
 
 int AppCacheDiskCache::DoomEntry(int64 key,
-                                 net::OldCompletionCallback* callback) {
-  DCHECK(callback);
+                                 const net::CompletionCallback& callback) {
+  DCHECK(!callback.is_null());
   if (is_disabled_)
     return net::ERR_ABORTED;
 
@@ -212,11 +212,13 @@ int AppCacheDiskCache::DoomEntry(int64 key,
   return (new ActiveCall(this))->DoomEntry(key, callback);
 }
 
+AppCacheDiskCache::PendingCall::~PendingCall() {}
+
 int AppCacheDiskCache::Init(net::CacheType cache_type,
                             const FilePath& cache_directory,
                             int cache_size, bool force,
                             base::MessageLoopProxy* cache_thread,
-                            net::OldCompletionCallback* callback) {
+                            const net::CompletionCallback& callback) {
   DCHECK(!is_initializing() && !disk_cache_.get());
   is_disabled_ = false;
   create_backend_callback_ = new CreateBackendCallback(
@@ -241,9 +243,9 @@ void AppCacheDiskCache::OnCreateBackendComplete(int rv) {
   create_backend_callback_ = NULL;
 
   // Invoke our clients callback function.
-  if (init_callback_) {
-    init_callback_->Run(rv);
-    init_callback_ = NULL;
+  if (!init_callback_.is_null()) {
+    init_callback_.Run(rv);
+    init_callback_.Reset();
   }
 
   // Service pending calls that were queued up while we were initailizating.
@@ -265,7 +267,7 @@ void AppCacheDiskCache::OnCreateBackendComplete(int rv) {
         break;
     }
     if (rv != net::ERR_IO_PENDING)
-      iter->callback->Run(rv);
+      iter->callback.Run(rv);
   }
   pending_calls_.clear();
 }

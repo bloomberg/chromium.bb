@@ -335,22 +335,12 @@ TEST_F(FileSystemURLRequestJobTest, NoSuchFile) {
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().error());
 }
 
-class QuitNowTask : public Task {
- public:
-  virtual void Run() {
-    MessageLoop::current()->QuitNow();
-  }
-};
-
 TEST_F(FileSystemURLRequestJobTest, Cancel) {
   WriteFile("file1.dat", kTestFileData, arraysize(kTestFileData) - 1);
   TestRequestNoRun(CreateFileSystemURL("file1.dat"));
 
   // Run StartAsync() and only StartAsync().
-  MessageLoop::current()->PostTask(FROM_HERE, new QuitNowTask);
-  MessageLoop::current()->Run();
-
-  request_.reset();
+  MessageLoop::current()->DeleteSoon(FROM_HERE, request_.release());
   MessageLoop::current()->RunAllPending();
   // If we get here, success! we didn't crash!
 }

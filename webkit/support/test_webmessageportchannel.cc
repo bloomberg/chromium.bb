@@ -4,6 +4,7 @@
 
 #include "webkit/support/test_webmessageportchannel.h"
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/task.h"
@@ -66,9 +67,8 @@ void TestWebMessagePortChannel::postMessage(const WebString& data,
     return;
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(remote_.get(),
-                        &TestWebMessagePortChannel::queueMessage,
-                        new Message(data, ports)));
+      base::Bind(&TestWebMessagePortChannel::queueMessage, remote_.get(),
+                 new Message(data, ports)));
 }
 
 bool TestWebMessagePortChannel::tryGetMessage(WebString* data,

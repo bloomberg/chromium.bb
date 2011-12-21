@@ -82,16 +82,7 @@ class AppCacheResponseTest : public testing::Test {
     io_thread_.reset(NULL);
   }
 
-  AppCacheResponseTest()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(read_callback_(
-            this, &AppCacheResponseTest::OnReadComplete)),
-        ALLOW_THIS_IN_INITIALIZER_LIST(read_info_callback_(
-            this, &AppCacheResponseTest::OnReadInfoComplete)),
-        ALLOW_THIS_IN_INITIALIZER_LIST(write_callback_(
-            this, &AppCacheResponseTest::OnWriteComplete)),
-        ALLOW_THIS_IN_INITIALIZER_LIST(write_info_callback_(
-            this, &AppCacheResponseTest::OnWriteInfoComplete)) {
-  }
+  AppCacheResponseTest() {}
 
   template <class Method>
   void RunTestOnIOThread(Method method) {
@@ -195,7 +186,10 @@ class AppCacheResponseTest : public testing::Test {
     EXPECT_FALSE(writer_->IsWritePending());
     expected_write_result_ = GetHttpResponseInfoSize(head);
     write_info_buffer_ = new HttpResponseInfoIOBuffer(head);
-    writer_->WriteInfo(write_info_buffer_, &write_info_callback_);
+    writer_->WriteInfo(
+        write_info_buffer_,
+        base::Bind(&AppCacheResponseTest::OnWriteInfoComplete,
+                   base::Unretained(this)));
   }
 
   void WriteResponseBody(scoped_refptr<IOBuffer> io_buffer, int buf_len) {
@@ -203,7 +197,9 @@ class AppCacheResponseTest : public testing::Test {
     write_buffer_ = io_buffer;
     expected_write_result_ = buf_len;
     writer_->WriteData(
-        write_buffer_, buf_len, &write_callback_);
+        write_buffer_, buf_len,
+        base::Bind(&AppCacheResponseTest::OnWriteComplete,
+                   base::Unretained(this)));
   }
 
   void ReadResponseBody(scoped_refptr<IOBuffer> io_buffer, int buf_len) {
@@ -211,7 +207,9 @@ class AppCacheResponseTest : public testing::Test {
     read_buffer_ = io_buffer;
     expected_read_result_ = buf_len;
     reader_->ReadData(
-        read_buffer_, buf_len, &read_callback_);
+        read_buffer_, buf_len,
+        base::Bind(&AppCacheResponseTest::OnReadComplete,
+                   base::Unretained(this)));
   }
 
   // AppCacheResponseReader / Writer completion callbacks
@@ -321,7 +319,10 @@ class AppCacheResponseTest : public testing::Test {
   void ReadNonExistentInfo() {
     EXPECT_FALSE(reader_->IsReadPending());
     read_info_buffer_ = new HttpResponseInfoIOBuffer();
-    reader_->ReadInfo(read_info_buffer_, &read_info_callback_);
+    reader_->ReadInfo(
+        read_info_buffer_,
+        base::Bind(&AppCacheResponseTest::OnReadInfoComplete,
+                   base::Unretained(this)));
     EXPECT_TRUE(reader_->IsReadPending());
     expected_read_result_ = net::ERR_CACHE_MISS;
   }
@@ -329,7 +330,10 @@ class AppCacheResponseTest : public testing::Test {
   void ReadNonExistentData() {
     EXPECT_FALSE(reader_->IsReadPending());
     read_buffer_ = new IOBuffer(kBlockSize);
-    reader_->ReadData(read_buffer_, kBlockSize, &read_callback_);
+    reader_->ReadData(
+        read_buffer_, kBlockSize,
+        base::Bind(&AppCacheResponseTest::OnReadComplete,
+                   base::Unretained(this)));
     EXPECT_TRUE(reader_->IsReadPending());
     expected_read_result_ = net::ERR_CACHE_MISS;
   }
@@ -506,7 +510,9 @@ class AppCacheResponseTest : public testing::Test {
     read_buffer_ = new IOBuffer(kBlockSize);
     expected_read_result_ = 0;
     reader_->ReadData(
-        read_buffer_, kBlockSize, &read_callback_);
+        read_buffer_, kBlockSize,
+        base::Bind(&AppCacheResponseTest::OnReadComplete,
+                   base::Unretained(this)));
   }
 
   void ReadRange() {
@@ -668,8 +674,6 @@ class AppCacheResponseTest : public testing::Test {
   scoped_refptr<HttpResponseInfoIOBuffer> read_info_buffer_;
   scoped_refptr<IOBuffer> read_buffer_;
   int expected_read_result_;
-  net::OldCompletionCallbackImpl<AppCacheResponseTest> read_callback_;
-  net::OldCompletionCallbackImpl<AppCacheResponseTest> read_info_callback_;
   bool should_delete_reader_in_completion_callback_;
   int reader_deletion_count_down_;
   bool read_callback_was_called_;
@@ -679,8 +683,6 @@ class AppCacheResponseTest : public testing::Test {
   scoped_refptr<HttpResponseInfoIOBuffer> write_info_buffer_;
   scoped_refptr<IOBuffer> write_buffer_;
   int expected_write_result_;
-  net::OldCompletionCallbackImpl<AppCacheResponseTest> write_callback_;
-  net::OldCompletionCallbackImpl<AppCacheResponseTest> write_info_callback_;
   bool should_delete_writer_in_completion_callback_;
   int writer_deletion_count_down_;
   bool write_callback_was_called_;

@@ -5,6 +5,7 @@
 #include "webkit/appcache/appcache_service.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
@@ -345,11 +346,7 @@ class AppCacheService::CheckResponseHelper : AsyncHelper {
         kIOBufferSize(32 * 1024),
         expected_total_size_(0),
         amount_headers_read_(0),
-        amount_data_read_(0),
-        ALLOW_THIS_IN_INITIALIZER_LIST(read_info_callback_(
-            this, &CheckResponseHelper::OnReadInfoComplete)),
-        ALLOW_THIS_IN_INITIALIZER_LIST(read_data_callback_(
-            this, &CheckResponseHelper::OnReadDataComplete)) {
+        amount_data_read_(0) {
   }
 
   virtual void Start() {
@@ -382,8 +379,6 @@ class AppCacheService::CheckResponseHelper : AsyncHelper {
   int64 expected_total_size_;
   int amount_headers_read_;
   int amount_data_read_;
-  net::OldCompletionCallbackImpl<CheckResponseHelper> read_info_callback_;
-  net::OldCompletionCallbackImpl<CheckResponseHelper> read_data_callback_;
   DISALLOW_COPY_AND_ASSIGN(CheckResponseHelper);
 };
 
@@ -418,7 +413,9 @@ void AppCacheService::CheckResponseHelper::OnGroupLoaded(
   response_reader_.reset(service_->storage()->CreateResponseReader(
       manifest_url_, group->group_id(), response_id_));
   info_buffer_ = new HttpResponseInfoIOBuffer();
-  response_reader_->ReadInfo(info_buffer_, &read_info_callback_);
+  response_reader_->ReadInfo(
+      info_buffer_, base::Bind(&CheckResponseHelper::OnReadInfoComplete,
+                               base::Unretained(this)));
 }
 
 void AppCacheService::CheckResponseHelper::OnReadInfoComplete(int result) {
@@ -433,16 +430,20 @@ void AppCacheService::CheckResponseHelper::OnReadInfoComplete(int result) {
 
   // Start reading the data.
   data_buffer_ = new net::IOBuffer(kIOBufferSize);
-  response_reader_->ReadData(data_buffer_, kIOBufferSize,
-                             &read_data_callback_);
+  response_reader_->ReadData(
+      data_buffer_, kIOBufferSize,
+      base::Bind(&CheckResponseHelper::OnReadDataComplete,
+                 base::Unretained(this)));
 }
 
 void AppCacheService::CheckResponseHelper::OnReadDataComplete(int result) {
   if (result > 0) {
     // Keep reading until we've read thru everything or failed to read.
     amount_data_read_ += result;
-    response_reader_->ReadData(data_buffer_, kIOBufferSize,
-                               &read_data_callback_);
+    response_reader_->ReadData(
+        data_buffer_, kIOBufferSize,
+        base::Bind(&CheckResponseHelper::OnReadDataComplete,
+                   base::Unretained(this)));
     return;
   }
 

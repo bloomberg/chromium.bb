@@ -4,6 +4,8 @@
 
 #include "webkit/appcache/appcache_storage.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "webkit/appcache/appcache_response.h"
 #include "webkit/appcache/appcache_service.h"
@@ -46,9 +48,7 @@ AppCacheStorage::ResponseInfoLoadTask::ResponseInfoLoadTask(
       manifest_url_(manifest_url),
       group_id_(group_id),
       response_id_(response_id),
-      info_buffer_(new HttpResponseInfoIOBuffer),
-      ALLOW_THIS_IN_INITIALIZER_LIST(read_callback_(
-          this, &ResponseInfoLoadTask::OnReadComplete)) {
+      info_buffer_(new HttpResponseInfoIOBuffer) {
   storage_->pending_info_loads_.insert(
       PendingResponseInfoLoads::value_type(response_id, this));
 }
@@ -61,7 +61,9 @@ void AppCacheStorage::ResponseInfoLoadTask::StartIfNeeded() {
     return;
   reader_.reset(
       storage_->CreateResponseReader(manifest_url_, group_id_, response_id_));
-  reader_->ReadInfo(info_buffer_, &read_callback_);
+  reader_->ReadInfo(
+      info_buffer_, base::Bind(&ResponseInfoLoadTask::OnReadComplete,
+                               base::Unretained(this)));
 }
 
 void AppCacheStorage::ResponseInfoLoadTask::OnReadComplete(int result) {

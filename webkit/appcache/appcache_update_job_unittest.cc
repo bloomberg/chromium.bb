@@ -978,18 +978,16 @@ class AppCacheUpdateJobTest : public testing::Test,
     const std::string seed_data(kManifest1Contents);
     scoped_refptr<net::StringIOBuffer> io_buffer(
         new net::StringIOBuffer(seed_data));
-    write_callback_.reset(
-        new net::OldCompletionCallbackImpl<AppCacheUpdateJobTest>(this,
-            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
-    response_writer_->WriteData(io_buffer, seed_data.length(),
-                                write_callback_.get());
+    response_writer_->WriteData(
+        io_buffer, seed_data.length(),
+        base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+                   base::Unretained(this)));
 
     // Start update after data write completes asynchronously.
   }
 
   void StartUpdateAfterSeedingStorageData(int result) {
     ASSERT_GT(result, 0);
-    write_callback_.reset();
     response_writer_.reset();
 
     AppCacheUpdateJob* update = group_->update_job_;
@@ -1104,11 +1102,10 @@ class AppCacheUpdateJobTest : public testing::Test,
     const std::string seed_data("different");
     scoped_refptr<net::StringIOBuffer> io_buffer(
         new net::StringIOBuffer(seed_data));
-    write_callback_.reset(
-        new net::OldCompletionCallbackImpl<AppCacheUpdateJobTest>(this,
-            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
-    response_writer_->WriteData(io_buffer, seed_data.length(),
-                                write_callback_.get());
+    response_writer_->WriteData(
+        io_buffer, seed_data.length(),
+        base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+                   base::Unretained(this)));
 
     // Start update after data write completes asynchronously.
   }
@@ -1167,10 +1164,10 @@ class AppCacheUpdateJobTest : public testing::Test,
     response_info->headers = headers;  // adds ref to headers
     scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
-    write_callback_.reset(
-        new net::OldCompletionCallbackImpl<AppCacheUpdateJobTest>(this,
-            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
-    response_writer_->WriteInfo(io_buffer, write_callback_.get());
+    response_writer_->WriteInfo(
+        io_buffer,
+        base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+                   base::Unretained(this)));
 
     // Start update after data write completes asynchronously.
   }
@@ -1226,10 +1223,10 @@ class AppCacheUpdateJobTest : public testing::Test,
     response_info->headers = headers;  // adds ref to headers
     scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
-    write_callback_.reset(
-        new net::OldCompletionCallbackImpl<AppCacheUpdateJobTest>(this,
-            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
-    response_writer_->WriteInfo(io_buffer, write_callback_.get());
+    response_writer_->WriteInfo(
+        io_buffer,
+        base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+                   base::Unretained(this)));
 
     // Start update after data write completes asynchronously.
   }
@@ -1285,10 +1282,10 @@ class AppCacheUpdateJobTest : public testing::Test,
     response_info->headers = headers;  // adds ref to headers
     scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
-    write_callback_.reset(
-        new net::OldCompletionCallbackImpl<AppCacheUpdateJobTest>(this,
-            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
-    response_writer_->WriteInfo(io_buffer, write_callback_.get());
+    response_writer_->WriteInfo(
+        io_buffer,
+        base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+                   base::Unretained(this)));
 
     // Start update after data write completes asynchronously.
   }
@@ -2666,10 +2663,10 @@ class AppCacheUpdateJobTest : public testing::Test,
     response_info->headers = headers;  // adds ref to headers
     scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
-    write_callback_.reset(
-        new net::OldCompletionCallbackImpl<AppCacheUpdateJobTest>(this,
-            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
-    response_writer_->WriteInfo(io_buffer, write_callback_.get());
+    response_writer_->WriteInfo(
+        io_buffer,
+        base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+                   base::Unretained(this)));
 
     // Start update after data write completes asynchronously.
   }
@@ -2725,10 +2722,10 @@ class AppCacheUpdateJobTest : public testing::Test,
     response_info->headers = headers;  // adds ref to headers
     scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
-    write_callback_.reset(
-        new net::OldCompletionCallbackImpl<AppCacheUpdateJobTest>(this,
-            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
-    response_writer_->WriteInfo(io_buffer, write_callback_.get());
+    response_writer_->WriteInfo(
+        io_buffer,
+        base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+                   base::Unretained(this)));
 
     // Start update after data write completes asynchronously.
   }
@@ -3230,8 +3227,6 @@ class AppCacheUpdateJobTest : public testing::Test,
   scoped_ptr<base::WaitableEvent> event_;
 
   scoped_ptr<AppCacheResponseWriter> response_writer_;
-  scoped_ptr<net::OldCompletionCallbackImpl<AppCacheUpdateJobTest> >
-      write_callback_;
 
   // Hosts used by an async test that need to live until update job finishes.
   // Otherwise, test can put host on the stack instead of here.

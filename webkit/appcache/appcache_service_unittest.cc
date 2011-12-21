@@ -40,9 +40,9 @@ class MockResponseReader : public AppCacheResponseReader {
         data_(data), data_size_(data_size) {
   }
   virtual void ReadInfo(HttpResponseInfoIOBuffer* info_buf,
-                        net::OldCompletionCallback* callback) OVERRIDE {
+                        const net::CompletionCallback& callback) OVERRIDE {
     info_buffer_ = info_buf;
-    user_callback_ = callback;  // Cleared on completion.
+    callback_ = callback;  // Cleared on completion.
 
     int rv = info_.get() ? info_size_ : net::ERR_FAILED;
     info_buffer_->http_info.reset(info_.release());
@@ -50,10 +50,10 @@ class MockResponseReader : public AppCacheResponseReader {
     ScheduleUserCallback(rv);
   }
   virtual void ReadData(net::IOBuffer* buf, int buf_len,
-                        net::OldCompletionCallback* callback) OVERRIDE {
+                        const net::CompletionCallback& callback) OVERRIDE {
     buffer_ = buf;
     buffer_len_ = buf_len;
-    user_callback_ = callback;  // Cleared on completion.
+    callback_ = callback;  // Cleared on completion.
 
     if (!data_) {
       ScheduleUserCallback(net::ERR_CACHE_READ_FAILURE);

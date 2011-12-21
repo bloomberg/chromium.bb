@@ -139,7 +139,6 @@ class APPCACHE_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
   net::HttpByteRange range_requested_;
   scoped_ptr<net::HttpResponseInfo> range_response_info_;
   scoped_ptr<AppCacheResponseReader> reader_;
-  net::OldCompletionCallbackImpl<AppCacheURLRequestJob> read_callback_;
   base::WeakPtrFactory<AppCacheURLRequestJob> weak_factory_;
 };
 

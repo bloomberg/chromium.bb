@@ -505,9 +505,8 @@ class ViewEntryJob : public BaseInternalsJob,
       int64 response_id, int64 group_id)
       : BaseInternalsJob(request, service),
         manifest_url_(manifest_url), entry_url_(entry_url),
-        response_id_(response_id), group_id_(group_id), amount_read_(0),
-        ALLOW_THIS_IN_INITIALIZER_LIST(read_callback_(
-            this, &ViewEntryJob::OnReadComplete)) {}
+        response_id_(response_id), group_id_(group_id), amount_read_(0) {
+  }
 
   virtual void Start() {
     DCHECK(request_);
@@ -566,7 +565,8 @@ class ViewEntryJob : public BaseInternalsJob,
     reader_.reset(appcache_service_->storage()->CreateResponseReader(
         manifest_url_, group_id_, response_id_));
     reader_->ReadData(
-        response_data_, amount_to_read, &read_callback_);
+        response_data_, amount_to_read,
+        base::Bind(&ViewEntryJob::OnReadComplete, base::Unretained(this)));
   }
 
   void OnReadComplete(int result) {
@@ -585,7 +585,6 @@ class ViewEntryJob : public BaseInternalsJob,
   scoped_refptr<net::IOBuffer> response_data_;
   int amount_read_;
   scoped_ptr<AppCacheResponseReader> reader_;
-  net::OldCompletionCallbackImpl<ViewEntryJob> read_callback_;
 };
 
 }  // namespace
