@@ -107,9 +107,8 @@ class KeywordTable : public WebDatabaseTable {
   bool SetDefaultSearchProviderID(int64 id);
   int64 GetDefaultSearchProviderID();
 
-  // Backup of the default search provider. NULL if the backup is invalid. The
-  // returned TemplateURL is owned by the caller.
-  TemplateURL* GetDefaultSearchProviderBackup();
+  // Backup of the default search provider. 0 if the setting can't be verified.
+  int64 GetDefaultSearchProviderIDBackup();
 
   // Returns true if the default search provider has been changed out under
   // us. This can happen if another process modifies our database or the

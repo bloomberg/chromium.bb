@@ -806,8 +806,8 @@ void WebDataService::GetKeywordsImpl(WebDataRequest* request) {
         db_->GetKeywordTable()->GetDefaultSearchProviderID();
     result.builtin_keyword_version =
         db_->GetKeywordTable()->GetBuiltinKeywordVersion();
-    result.default_search_provider_backup =
-        db_->GetKeywordTable()->GetDefaultSearchProviderBackup();
+    result.default_search_provider_id_backup =
+        db_->GetKeywordTable()->GetDefaultSearchProviderIDBackup();
     result.did_default_search_provider_change =
         db_->GetKeywordTable()->DidDefaultSearchProviderChange();
     request->SetResult(

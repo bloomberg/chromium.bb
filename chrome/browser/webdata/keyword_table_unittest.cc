@@ -195,6 +195,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   template_url.set_short_name(ASCIIToUTF16("short_name"));
   template_url.set_keyword(ASCIIToUTF16("keyword"));
   GURL favicon_url("http://favicon.url/");
+  GURL originating_url("http://originating.url/");
   template_url.SetFaviconURL(favicon_url);
   template_url.SetURL("http://url/", 0, 0);
   template_url.set_safe_for_autoreplace(true);
@@ -207,17 +208,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   ASSERT_TRUE(db.GetKeywordTable()->SetDefaultSearchProviderID(1));
   EXPECT_TRUE(db.GetKeywordTable()->IsBackupSignatureValid());
   EXPECT_EQ(1, db.GetKeywordTable()->GetDefaultSearchProviderID());
-
-  scoped_ptr<TemplateURL> backup_url(
-      db.GetKeywordTable()->GetDefaultSearchProviderBackup());
-  EXPECT_EQ(1, backup_url->id());
-  EXPECT_EQ(ASCIIToUTF16("short_name"), backup_url->short_name());
-  EXPECT_EQ(ASCIIToUTF16("keyword"), backup_url->keyword());
-  EXPECT_TRUE(favicon_url == backup_url->GetFaviconURL());
-  EXPECT_EQ("http://url/", backup_url->url()->url());
-  EXPECT_TRUE(backup_url->safe_for_autoreplace());
-  EXPECT_TRUE(backup_url->show_in_default_list());
-  EXPECT_EQ("url2", backup_url->suggestions_url()->url());
+  EXPECT_EQ(1, db.GetKeywordTable()->GetDefaultSearchProviderIDBackup());
   EXPECT_FALSE(db.GetKeywordTable()->DidDefaultSearchProviderChange());
 
   // Change the actual setting.
@@ -225,16 +216,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
       "Default Search Provider ID", 2));
   EXPECT_TRUE(db.GetKeywordTable()->IsBackupSignatureValid());
   EXPECT_EQ(2, db.GetKeywordTable()->GetDefaultSearchProviderID());
-
-  backup_url.reset(db.GetKeywordTable()->GetDefaultSearchProviderBackup());
-  EXPECT_EQ(1, backup_url->id());
-  EXPECT_EQ(ASCIIToUTF16("short_name"), backup_url->short_name());
-  EXPECT_EQ(ASCIIToUTF16("keyword"), backup_url->keyword());
-  EXPECT_TRUE(favicon_url == backup_url->GetFaviconURL());
-  EXPECT_EQ("http://url/", backup_url->url()->url());
-  EXPECT_TRUE(backup_url->safe_for_autoreplace());
-  EXPECT_TRUE(backup_url->show_in_default_list());
-  EXPECT_EQ("url2", backup_url->suggestions_url()->url());
+  EXPECT_EQ(1, db.GetKeywordTable()->GetDefaultSearchProviderIDBackup());
   EXPECT_TRUE(db.GetKeywordTable()->DidDefaultSearchProviderChange());
 
   // Change the backup.
@@ -244,7 +226,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
       "Default Search Provider ID Backup", 2));
   EXPECT_FALSE(db.GetKeywordTable()->IsBackupSignatureValid());
   EXPECT_EQ(1, db.GetKeywordTable()->GetDefaultSearchProviderID());
-  EXPECT_EQ(NULL, db.GetKeywordTable()->GetDefaultSearchProviderBackup());
+  EXPECT_EQ(0, db.GetKeywordTable()->GetDefaultSearchProviderIDBackup());
   EXPECT_TRUE(db.GetKeywordTable()->DidDefaultSearchProviderChange());
 
   // Change the signature.
@@ -254,7 +236,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
       "Default Search Provider ID Backup Signature", ""));
   EXPECT_FALSE(db.GetKeywordTable()->IsBackupSignatureValid());
   EXPECT_EQ(1, db.GetKeywordTable()->GetDefaultSearchProviderID());
-  EXPECT_EQ(NULL, db.GetKeywordTable()->GetDefaultSearchProviderBackup());
+  EXPECT_EQ(0, db.GetKeywordTable()->GetDefaultSearchProviderIDBackup());
   EXPECT_TRUE(db.GetKeywordTable()->DidDefaultSearchProviderChange());
 
   // Change keywords.
@@ -264,16 +246,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   ASSERT_TRUE(remove_keyword.Run());
   EXPECT_TRUE(db.GetKeywordTable()->IsBackupSignatureValid());
   EXPECT_EQ(1, db.GetKeywordTable()->GetDefaultSearchProviderID());
-
-  backup_url.reset(db.GetKeywordTable()->GetDefaultSearchProviderBackup());
-  EXPECT_EQ(1, backup_url->id());
-  EXPECT_EQ(ASCIIToUTF16("short_name"), backup_url->short_name());
-  EXPECT_EQ(ASCIIToUTF16("keyword"), backup_url->keyword());
-  EXPECT_TRUE(favicon_url == backup_url->GetFaviconURL());
-  EXPECT_EQ("http://url/", backup_url->url()->url());
-  EXPECT_TRUE(backup_url->safe_for_autoreplace());
-  EXPECT_TRUE(backup_url->show_in_default_list());
-  EXPECT_EQ("url2", backup_url->suggestions_url()->url());
+  EXPECT_EQ(1, db.GetKeywordTable()->GetDefaultSearchProviderIDBackup());
   EXPECT_TRUE(db.GetKeywordTable()->DidDefaultSearchProviderChange());
 
   // Change keywords backup.
@@ -283,7 +256,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   ASSERT_TRUE(remove_keyword_backup.Run());
   EXPECT_FALSE(db.GetKeywordTable()->IsBackupSignatureValid());
   EXPECT_EQ(1, db.GetKeywordTable()->GetDefaultSearchProviderID());
-  EXPECT_EQ(NULL, db.GetKeywordTable()->GetDefaultSearchProviderBackup());
+  EXPECT_EQ(0, db.GetKeywordTable()->GetDefaultSearchProviderIDBackup());
   EXPECT_TRUE(db.GetKeywordTable()->DidDefaultSearchProviderChange());
 }
 

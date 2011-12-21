@@ -9,7 +9,6 @@
 // This file contains utility functions for search engine functionality.
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 
 class PrefService;
@@ -47,6 +46,7 @@ void GetSearchProvidersUsingKeywordResult(
 // lost.
 bool DidDefaultSearchProviderChange(
     const WDTypedResult& result,
-    scoped_ptr<TemplateURL>* backup_default_search_provider);
+    const std::vector<TemplateURL*>& template_urls,
+    const TemplateURL** backup_default_search_provider);
 
 #endif  // CHROME_BROWSER_SEARCH_ENGINES_UTIL_H_
