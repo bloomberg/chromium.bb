@@ -78,7 +78,7 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
     }
     case kGLImplementationDesktopGL:
     case kGLImplementationAppleGL: {
-      scoped_refptr<GLSurface> surface(new PbufferGLSurfaceCGL(size));
+      scoped_refptr<GLSurface> surface(new NoOpGLSurfaceCGL(size));
       if (!surface->Initialize())
         return NULL;
 

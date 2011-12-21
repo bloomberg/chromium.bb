@@ -41,7 +41,6 @@ using content::BrowserThread;
     [self setAutoresizingMask:NSViewMaxXMargin|NSViewMinYMargin];
 
     std::vector<NSOpenGLPixelFormatAttribute> attributes;
-    attributes.push_back(NSOpenGLPFAAccelerated);
     attributes.push_back(NSOpenGLPFADoubleBuffer);
     if (gfx::GLContext::SupportsDualGpus())
       attributes.push_back(NSOpenGLPFAAllowOfflineRenderers);

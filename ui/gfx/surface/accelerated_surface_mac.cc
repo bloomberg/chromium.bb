@@ -18,8 +18,7 @@ AcceleratedSurface::AcceleratedSurface()
     : io_surface_id_(0),
       allocate_fbo_(false),
       texture_(0),
-      fbo_(0),
-      depth_stencil_renderbuffer_(0) {
+      fbo_(0) {
 }
 
 AcceleratedSurface::~AcceleratedSurface() {}
@@ -34,9 +33,10 @@ bool AcceleratedSurface::Initialize(
   if (!gfx::GLSurface::InitializeOneOff())
     return false;
 
-  // Drawing to IOSurfaces via OpenGL only works with desktop GL and
+  // Drawing to IOSurfaces via OpenGL only works with Apple's GL and
   // not with the OSMesa software renderer.
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL)
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL &&
+      gfx::GetGLImplementation() != gfx::kGLImplementationAppleGL)
     return false;
 
   gl_surface_ = gfx::GLSurface::CreateOffscreenGLSurface(
@@ -167,20 +167,7 @@ void AcceleratedSurface::AllocateRenderBuffers(GLenum target,
     // Generate and bind the framebuffer object.
     glGenFramebuffersEXT(1, &fbo_);
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
-    // Generate (but don't bind) the depth buffer -- we don't need
-    // this bound in order to do offscreen rendering.
-    glGenRenderbuffersEXT(1, &depth_stencil_renderbuffer_);
   }
-
-  // Reallocate the depth buffer.
-  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_stencil_renderbuffer_);
-  glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
-                           GL_DEPTH24_STENCIL8_EXT,
-                           size.width(),
-                           size.height());
-
-  // Unbind the renderbuffers.
-  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
 
   // Make sure that subsequent set-up code affects the render texture.
   glBindTexture(target, texture_);
@@ -195,21 +182,6 @@ bool AcceleratedSurface::SetupFrameBufferObject(GLenum target) {
                             texture_,
                             0);
   fbo_status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-  if (fbo_status == GL_FRAMEBUFFER_COMPLETE_EXT) {
-    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
-                                 GL_DEPTH_ATTACHMENT_EXT,
-                                 GL_RENDERBUFFER_EXT,
-                                 depth_stencil_renderbuffer_);
-    fbo_status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-  }
-  // Attach the depth and stencil buffer.
-  if (fbo_status == GL_FRAMEBUFFER_COMPLETE_EXT) {
-    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
-                                 0x8D20,  // GL_STENCIL_ATTACHMENT,
-                                 GL_RENDERBUFFER_EXT,
-                                 depth_stencil_renderbuffer_);
-    fbo_status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-  }
   return fbo_status == GL_FRAMEBUFFER_COMPLETE_EXT;
 }
 
@@ -290,7 +262,7 @@ uint32 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
 
   // Don't think we need to identify a plane.
   GLuint plane = 0;
-  io_surface_support->CGLTexImageIOSurface2D(
+  CGLError error = io_surface_support->CGLTexImageIOSurface2D(
       static_cast<CGLContextObj>(gl_context_->GetHandle()),
       target,
       GL_RGBA,
@@ -300,9 +272,14 @@ uint32 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
       GL_UNSIGNED_INT_8_8_8_8_REV,
       io_surface_.get(),
       plane);
+  if (error != kCGLNoError) {
+    DLOG(ERROR) << "CGL error " << error << " during CGLTexImageIOSurface2D";
+  }
   if (allocate_fbo_) {
     // Set up the frame buffer object.
-    SetupFrameBufferObject(target);
+    if (!SetupFrameBufferObject(target)) {
+      DLOG(ERROR) << "Failed to set up frame buffer object";
+    }
   }
   surface_size_ = size;
   real_surface_size_ = clamped_size;

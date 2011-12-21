@@ -38,7 +38,6 @@ bool GLContextCGL::Initialize(
   }
 
   std::vector<CGLPixelFormatAttribute> attribs;
-  attribs.push_back(kCGLPFAPBuffer);
   bool using_offline_renderer =
       SupportsDualGpus() && gpu_preference == PreferIntegratedGpu;
   if (using_offline_renderer) {

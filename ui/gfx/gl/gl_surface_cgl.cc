@@ -68,53 +68,36 @@ void* GLSurfaceCGL::GetPixelFormat() {
   return g_pixel_format;
 }
 
-PbufferGLSurfaceCGL::PbufferGLSurfaceCGL(const gfx::Size& size)
-  : size_(size),
-    pbuffer_(NULL) {
+NoOpGLSurfaceCGL::NoOpGLSurfaceCGL(const gfx::Size& size)
+  : size_(size) {
 }
 
-PbufferGLSurfaceCGL::~PbufferGLSurfaceCGL() {
+NoOpGLSurfaceCGL::~NoOpGLSurfaceCGL() {
   Destroy();
 }
 
-bool PbufferGLSurfaceCGL::Initialize() {
-  if (CGLCreatePBuffer(size_.width(),
-                       size_.height(),
-                       GL_TEXTURE_2D,
-                       GL_RGBA,
-                       0,
-                       reinterpret_cast<CGLPBufferObj*>(&pbuffer_))
-      != kCGLNoError) {
-    LOG(ERROR) << "Error creating pbuffer.";
-    Destroy();
-    return false;
-  }
-
+bool NoOpGLSurfaceCGL::Initialize() {
   return true;
 }
 
-void PbufferGLSurfaceCGL::Destroy() {
-  if (pbuffer_) {
-    CGLDestroyPBuffer(static_cast<CGLPBufferObj>(pbuffer_));
-    pbuffer_ = NULL;
-  }
+void NoOpGLSurfaceCGL::Destroy() {
 }
 
-bool PbufferGLSurfaceCGL::IsOffscreen() {
+bool NoOpGLSurfaceCGL::IsOffscreen() {
   return true;
 }
 
-bool PbufferGLSurfaceCGL::SwapBuffers() {
-  NOTREACHED() << "Cannot call SwapBuffers on a PbufferGLSurfaceCGL.";
+bool NoOpGLSurfaceCGL::SwapBuffers() {
+  NOTREACHED() << "Cannot call SwapBuffers on a NoOpGLSurfaceCGL.";
   return false;
 }
 
-gfx::Size PbufferGLSurfaceCGL::GetSize() {
+gfx::Size NoOpGLSurfaceCGL::GetSize() {
   return size_;
 }
 
-void* PbufferGLSurfaceCGL::GetHandle() {
-  return pbuffer_;
+void* NoOpGLSurfaceCGL::GetHandle() {
+  return NULL;
 }
 
 }  // namespace gfx

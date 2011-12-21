@@ -18,9 +18,9 @@
 
 namespace {
 
-// We are backed by an Pbuffer offscreen surface for the purposes of creating a
-// context, but use FBOs to render to texture backed IOSurface
-class IOSurfaceImageTransportSurface : public gfx::PbufferGLSurfaceCGL,
+// We are backed by an offscreen surface for the purposes of creating
+// a context, but use FBOs to render to texture backed IOSurface
+class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
                                        public ImageTransportSurface {
  public:
   IOSurfaceImageTransportSurface(GpuChannelManager* manager,
@@ -73,9 +73,9 @@ class IOSurfaceImageTransportSurface : public gfx::PbufferGLSurfaceCGL,
   DISALLOW_COPY_AND_ASSIGN(IOSurfaceImageTransportSurface);
 };
 
-// We are backed by an Pbuffer offscreen surface for the purposes of creating a
-// context, but use FBOs to render offscreen.
-class TransportDIBImageTransportSurface : public gfx::PbufferGLSurfaceCGL,
+// We are backed by an offscreen surface for the purposes of creating
+// a context, but use FBOs to render to texture backed IOSurface
+class TransportDIBImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
                                           public ImageTransportSurface {
  public:
   TransportDIBImageTransportSurface(GpuChannelManager* manager,
@@ -147,7 +147,7 @@ IOSurfaceImageTransportSurface::IOSurfaceImageTransportSurface(
     int32 renderer_id,
     int32 command_buffer_id,
     gfx::PluginWindowHandle handle)
-        : gfx::PbufferGLSurfaceCGL(gfx::Size(1, 1)),
+        : gfx::NoOpGLSurfaceCGL(gfx::Size(1, 1)),
           fbo_id_(0),
           texture_id_(0),
           io_surface_id_(0),
@@ -170,12 +170,13 @@ bool IOSurfaceImageTransportSurface::Initialize() {
   // Only support IOSurfaces if the GL implementation is the native desktop GL.
   // IO surfaces will not work with, for example, OSMesa software renderer
   // GL contexts.
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL)
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL &&
+      gfx::GetGLImplementation() != gfx::kGLImplementationAppleGL)
     return false;
 
   if (!helper_->Initialize())
     return false;
-  return PbufferGLSurfaceCGL::Initialize();
+  return NoOpGLSurfaceCGL::Initialize();
 }
 
 void IOSurfaceImageTransportSurface::Destroy() {
@@ -190,7 +191,7 @@ void IOSurfaceImageTransportSurface::Destroy() {
   }
 
   helper_->Destroy();
-  PbufferGLSurfaceCGL::Destroy();
+  NoOpGLSurfaceCGL::Destroy();
 }
 
 bool IOSurfaceImageTransportSurface::IsOffscreen() {
@@ -374,7 +375,7 @@ TransportDIBImageTransportSurface::TransportDIBImageTransportSurface(
     int32 renderer_id,
     int32 command_buffer_id,
     gfx::PluginWindowHandle handle)
-        : gfx::PbufferGLSurfaceCGL(gfx::Size(1, 1)),
+        : gfx::NoOpGLSurfaceCGL(gfx::Size(1, 1)),
           fbo_id_(0),
           render_buffer_id_(0),
           made_current_(false) {
@@ -394,7 +395,7 @@ TransportDIBImageTransportSurface::~TransportDIBImageTransportSurface() {
 bool TransportDIBImageTransportSurface::Initialize() {
   if (!helper_->Initialize())
     return false;
-  return PbufferGLSurfaceCGL::Initialize();
+  return NoOpGLSurfaceCGL::Initialize();
 }
 
 void TransportDIBImageTransportSurface::Destroy() {
@@ -409,7 +410,7 @@ void TransportDIBImageTransportSurface::Destroy() {
   }
 
   helper_->Destroy();
-  PbufferGLSurfaceCGL::Destroy();
+  NoOpGLSurfaceCGL::Destroy();
 }
 
 bool TransportDIBImageTransportSurface::IsOffscreen() {
@@ -590,6 +591,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
 
   switch (gfx::GetGLImplementation()) {
     case gfx::kGLImplementationDesktopGL:
+    case gfx::kGLImplementationAppleGL:
       if (!io_surface_support) {
         surface = new TransportDIBImageTransportSurface(manager,
                                                         render_view_id,

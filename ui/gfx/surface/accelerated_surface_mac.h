@@ -119,9 +119,9 @@ class SURFACE_EXPORT AcceleratedSurface {
   gfx::Size GetSize() const { return surface_size_; }
 
  private:
-  // Helper function to generate names for the backing texture, render buffers
-  // and FBO.  On return, the resulting buffer names can be attached to |fbo_|.
-  // |target| is the target type for the color buffer.
+  // Helper function to generate names for the backing texture and FBO.  On
+  // return, the resulting names can be attached to |fbo_|.  |target| is
+  // the target type for the color buffer.
   void AllocateRenderBuffers(GLenum target, const gfx::Size& size);
 
   // Helper function to attach the buffers previously allocated by a call to
@@ -173,7 +173,6 @@ class SURFACE_EXPORT AcceleratedSurface {
   // The FBO and renderbuffer are only allocated if allocate_fbo_ is
   // true.
   GLuint fbo_;
-  GLuint depth_stencil_renderbuffer_;
   // Allocate a TransportDIB in the renderer.
   base::Callback<void(size_t, TransportDIB::Handle*)> dib_alloc_callback_;
   base::Callback<void(TransportDIB::Id)> dib_free_callback_;
