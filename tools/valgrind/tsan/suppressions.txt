@@ -695,8 +695,7 @@
 {
   bug_107181a
   ThreadSanitizer:Race
-  fun:media::AudioRendererAlgorithmBase::set_playback_rate
-  fun:media::AudioRendererAlgorithmOLA::set_playback_rate
+  ...
   fun:media::AudioRendererBase::SetPlaybackRate
   fun:AudioRendererImpl::SetPlaybackRate
   fun:media::CompositeFilter::SetPlaybackRate
