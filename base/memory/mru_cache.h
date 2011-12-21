@@ -135,7 +135,7 @@ class MRUCacheBase {
 
   // Erases the item referenced by the given iterator. An iterator to the item
   // following it will be returned. The iterator must be valid.
-  iterator Erase(iterator pos) {
+  iterator Erase(const iterator& pos) {
     deletor_(pos->second);
     index_.erase(pos->first);
     return ordering_.erase(pos);
@@ -143,11 +143,12 @@ class MRUCacheBase {
 
   // MRUCache entries are often processed in reverse order, so we add this
   // convenience function (not typically defined by STL containers).
-  reverse_iterator Erase(reverse_iterator pos) {
+  reverse_iterator Erase(const reverse_iterator& pos) {
     // We have to actually give it the incremented iterator to delete, since
     // the forward iterator that base() returns is actually one past the item
     // being iterated over.
-    return reverse_iterator(Erase((++pos).base()));
+    reverse_iterator next = pos;
+    return reverse_iterator(Erase((++next).base()));
   }
 
   // Shrinks the cache so it only holds |new_size| items. If |new_size| is
