@@ -3977,6 +3977,9 @@ TEST_F(GLES2DecoderTest, TexImage2DRedefinitionSucceeds) {
           GL_TEXTURE_2D, 0, GL_RGBA, kWidth, kHeight, 0, GL_RGBA,
           GL_UNSIGNED_BYTE, kSharedMemoryId, kSharedMemoryOffset);
     } else {
+      SetupClearTextureExpections(
+          kServiceTextureId, kServiceTextureId, GL_TEXTURE_2D, GL_TEXTURE_2D,
+          0, GL_RGBA, GL_UNSIGNED_BYTE, kWidth, kHeight);
       cmd.Init(
           GL_TEXTURE_2D, 0, GL_RGBA, kWidth, kHeight, 0, GL_RGBA,
           GL_UNSIGNED_BYTE, 0, 0);
@@ -5131,8 +5134,7 @@ TEST_F(GLES2DecoderTest, TexSubImage2DClearsAfterTexImage2DNULL) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderTest,
-       TexSubImage2DDoesNotClearAfterTexImage2DWithDataThenNULL) {
+TEST_F(GLES2DecoderTest, TexSubImage2DClearsAfterTexImage2DWithDataThenNULL) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   // Put in data (so it should be marked as cleared)
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
@@ -5141,8 +5143,12 @@ TEST_F(GLES2DecoderTest,
   TexImage2D tex_cmd;
   tex_cmd.Init(
       GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
-  // There is no expectation. Same size, no data = no-op.
+  // It won't actually call TexImage2D, just mark it as uncleared.
   EXPECT_EQ(error::kNoError, ExecuteCmd(tex_cmd));
+  // Next call to TexSubImage2d should clear.
+  SetupClearTextureExpections(
+      kServiceTextureId, kServiceTextureId, GL_TEXTURE_2D, GL_TEXTURE_2D,
+      0, GL_RGBA, GL_UNSIGNED_BYTE, 2, 2);
   EXPECT_CALL(*gl_, TexSubImage2D(
       GL_TEXTURE_2D, 0, 1, 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
       shared_memory_address_))

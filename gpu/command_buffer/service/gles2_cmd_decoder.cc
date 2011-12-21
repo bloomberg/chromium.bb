@@ -6440,6 +6440,11 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
       type == tex_type && format == tex_format;
 
   if (level_is_same && !pixels) {
+    // Just set the level info but mark the texture as uncleared.
+    texture_manager()->SetLevelInfo(
+        feature_info_, info,
+        target, level, internal_format, width, height, 1, border, format, type,
+        false);
     tex_image_2d_failed_ = false;
     return error::kNoError;
   }
@@ -6451,7 +6456,7 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
     framebuffer_manager()->IncFramebufferStateChangeCount();
   }
 
-  if (!teximage2d_faster_than_texsubimage2d_ && level_is_same) {
+  if (!teximage2d_faster_than_texsubimage2d_ && level_is_same && pixels) {
     glTexSubImage2D(target, level, 0, 0, width, height, format, type, pixels);
     tex_image_2d_failed_ = false;
     return error::kNoError;
