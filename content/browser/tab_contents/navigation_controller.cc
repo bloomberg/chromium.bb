@@ -686,11 +686,6 @@ content::NavigationType NavigationController::ClassifyNavigation(
     GURL url(temp);
     tab_contents_->GetRenderViewHost()->Send(new ViewMsg_TempCrashWithData(url));
     return content::NAVIGATION_TYPE_NAV_IGNORE;
-
-
-    if (tab_contents_->GetSiteInstance()->HasProcess())
-      tab_contents_->GetSiteInstance()->GetProcess()->ReceivedBadMessage();
-    return content::NAVIGATION_TYPE_NAV_IGNORE;
   }
   NavigationEntry* existing_entry = entries_[existing_entry_index].get();
 
