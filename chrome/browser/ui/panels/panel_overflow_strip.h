@@ -13,6 +13,7 @@
 
 class Browser;
 class PanelManager;
+class PanelOverflowIndicator;
 namespace ui {
 class SlideAnimation;
 }
@@ -41,6 +42,9 @@ class PanelOverflowStrip : public PanelMouseWatcherObserver,
   void OnPanelExpansionStateChanged(
       Panel* panel, Panel::ExpansionState old_state);
 
+  // Called when a panel is starting/stopping drawing an attention.
+  void OnPanelAttentionStateChanged(Panel* panel);
+
   // Refreshes the layouts for all panels to reflect any possible changes.
   void Refresh();
 
@@ -55,8 +59,17 @@ class PanelOverflowStrip : public PanelMouseWatcherObserver,
 #ifdef UNIT_TEST
   int current_display_width() const { return current_display_width_; }
 
+  // This might return NULL.
+  PanelOverflowIndicator* overflow_indicator() const {
+    return overflow_indicator_.get();
+  }
+
   void set_max_visible_panels(int max_visible_panels) {
     max_visible_panels_ = max_visible_panels;
+  }
+
+  void set_max_visible_panels_on_hover(int max_visible_panels_on_hover) {
+    max_visible_panels_on_hover_ = max_visible_panels_on_hover;
   }
 #endif
 
@@ -72,6 +85,11 @@ class PanelOverflowStrip : public PanelMouseWatcherObserver,
 
   void DoRefresh(size_t start_index, size_t end_index);
 
+  // Used to update the overflow indicator.
+  void UpdateMaxVisiblePanelsOnHover();
+  void UpdateOverflowIndicatorCount();
+  void UpdateOverflowIndicatorAttention();
+
   // Computes the layout of the |index| panel to fit into the area.
   // Empty bounds will be returned if this is not possible due to not enough
   // space.
@@ -82,6 +100,11 @@ class PanelOverflowStrip : public PanelMouseWatcherObserver,
   // the overflow area.
   bool ShouldShowOverflowTitles(const gfx::Point& mouse_position) const;
   void ShowOverflowTitles(bool show_overflow_titles);
+
+  int max_visible_panels() const {
+    return are_overflow_titles_shown_ ? max_visible_panels_on_hover_
+                                      : max_visible_panels_;
+  }
 
   // Weak pointer since PanelManager owns PanelOverflowStrip instance.
   PanelManager* panel_manager_;
@@ -98,8 +121,17 @@ class PanelOverflowStrip : public PanelMouseWatcherObserver,
   // the panel showing more info when the mouse hovers over it.
   int current_display_width_;
 
-  // Maximium number of overflow panels allowed to be shown.
+  // Maximium number of overflow panels allowed to be shown when the mouse
+  // does not hover over the overflow area.
   int max_visible_panels_;
+
+  // Maximium number of overflow panels allowed to be shown when the mouse
+  // hovers over the overflow area and causes it to be expanded.
+  int max_visible_panels_on_hover_;
+
+  // Used to show "+N" indicator when number of overflow panels exceed
+  // |max_visible_panels_|.
+  scoped_ptr<PanelOverflowIndicator> overflow_indicator_;
 
   // For mouse hover-over effect.
   bool are_overflow_titles_shown_;
