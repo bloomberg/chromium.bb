@@ -649,7 +649,6 @@ void PanelStrip::Rearrange() {
   // Add/remove panels from/to overflow. A change in work area or the
   // resize/removal of a panel may affect how many panels fit in the strip.
   if (panel_index < panels_.size()) {
-    DCHECK(panel_index >= 0);
     // Move panels to overflow in reverse to maintain their order.
     for (size_t overflow_index = panels_.size() - 1;
          overflow_index >= panel_index; --overflow_index)
