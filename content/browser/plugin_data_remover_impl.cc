@@ -136,7 +136,7 @@ class PluginDataRemoverImpl::Context
   }
 
   virtual void OnError() OVERRIDE {
-    LOG(DFATAL) << "Couldn't open plugin channel";
+    LOG(ERROR) << "Couldn't open plugin channel";
     SignalDone();
     // Balancing the AddRef call.
     Release();
