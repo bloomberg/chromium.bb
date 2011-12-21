@@ -107,14 +107,13 @@ bool ShouldShowActionOnUI(
 ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
                                        Profile* profile,
                                        SigninManager* signin_manager,
-                                       const std::string& cros_user)
+                                       StartBehavior start_behavior)
     : last_auth_error_(AuthError::None()),
       passphrase_required_reason_(sync_api::REASON_PASSPHRASE_NOT_REQUIRED),
       factory_(factory),
       profile_(profile),
       // |profile| may be NULL in unit tests.
       sync_prefs_(profile_ ? profile_->GetPrefs() : NULL),
-      cros_user_(cros_user),
       sync_service_url_(kDevServerUrl),
       backend_initialized_(false),
       is_auth_in_progress_(false),
@@ -127,7 +126,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       encrypted_types_(browser_sync::Cryptographer::SensitiveTypes()),
       encrypt_everything_(false),
       encryption_pending_(false),
-      auto_start_enabled_(false),
+      auto_start_enabled_(start_behavior == AUTO_START),
       failed_datatypes_handler_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // By default, dev, canary, and unbranded Chromium users will go to the
   // development servers. Development servers have more features than standard
@@ -142,10 +141,6 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
     sync_service_url_ = GURL(kSyncServerUrl);
   }
 
-  // TODO(atwilson): Set auto_start_enabled_ for other platforms that want this
-  // functionality.
-  if (!cros_user_.empty())
-    auto_start_enabled_ = true;
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -164,7 +159,7 @@ bool ProfileSyncService::AreCredentialsAvailable(
   }
 
   // CrOS user is always logged in. Chrome uses signin_ to check logged in.
-  if (cros_user_.empty() && signin_->GetAuthenticatedUsername().empty())
+  if (signin_->GetAuthenticatedUsername().empty())
     return false;
 
   TokenService* token_service = profile()->GetTokenService();
@@ -291,8 +286,7 @@ void ProfileSyncService::InitSettings() {
 
 SyncCredentials ProfileSyncService::GetCredentials() {
   SyncCredentials credentials;
-  credentials.email = cros_user_.empty() ?
-      signin_->GetAuthenticatedUsername() : cros_user_;
+  credentials.email = signin_->GetAuthenticatedUsername();
   DCHECK(!credentials.email.empty());
   TokenService* service = profile_->GetTokenService();
   credentials.sync_token = service->GetTokenForService(
@@ -1466,7 +1460,7 @@ void ProfileSyncService::Observe(int type,
         }
         if (!sync_prefs_.IsStartSuppressed())
           StartUp();
-      } else if (cros_user_.empty() &&
+      } else if (!auto_start_enabled_ &&
                  !signin_->GetAuthenticatedUsername().empty()) {
         // If not in auto-start / Chrome OS mode, and we have a username
         // without tokens, the user will need to signin again. NotifyObservers

@@ -28,6 +28,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
+#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
@@ -128,11 +129,14 @@ class PasswordTestProfileSyncService : public TestProfileSyncService {
   PasswordTestProfileSyncService(
       ProfileSyncComponentsFactory* factory,
       Profile* profile,
-      const std::string& test_user,
+      SigninManager* signin,
       bool synchronous_backend_initialization,
       const base::Closure& initial_condition_setup_cb,
       const base::Closure& passphrase_accept_cb)
-      : TestProfileSyncService(factory, profile, test_user,
+      : TestProfileSyncService(factory,
+                               profile,
+                               signin,
+                               ProfileSyncService::AUTO_START,
                                synchronous_backend_initialization,
                                initial_condition_setup_cb),
         callback_(passphrase_accept_cb) {}
@@ -212,8 +216,10 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   void StartSyncService(const base::Closure& root_callback,
                         const base::Closure& node_callback) {
     if (!service_.get()) {
+      SigninManager* signin = new SigninManager();
+      signin->SetAuthenticatedUsername("test_user");
       service_.reset(new PasswordTestProfileSyncService(
-          &factory_, &profile_, "test_user", false,
+          &factory_, &profile_, signin, false,
           root_callback, node_callback));
       syncable::ModelTypeSet preferred_types =
           service_->GetPreferredDataTypes();

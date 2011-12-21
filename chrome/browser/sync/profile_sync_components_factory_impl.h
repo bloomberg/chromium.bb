@@ -22,8 +22,7 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   virtual ~ProfileSyncComponentsFactoryImpl() {}
 
   // ProfileSyncComponentsFactory interface.
-  virtual ProfileSyncService* CreateProfileSyncService(
-      const std::string& cros_user) OVERRIDE;
+  virtual ProfileSyncService* CreateProfileSyncService() OVERRIDE;
 
   virtual void RegisterDataTypes(ProfileSyncService* pss) OVERRIDE;
 

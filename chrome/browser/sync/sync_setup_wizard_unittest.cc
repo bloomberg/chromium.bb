@@ -61,8 +61,9 @@ class MockSyncSetupHandler : public OptionsSyncSetupHandler {
 class ProfileSyncServiceForWizardTest : public ProfileSyncService {
  public:
   ProfileSyncServiceForWizardTest(ProfileSyncComponentsFactory* factory,
-                                  Profile* profile)
-      : ProfileSyncService(factory, profile, new SigninManager(), ""),
+                                  Profile* profile,
+                                  ProfileSyncService::StartBehavior behavior)
+      : ProfileSyncService(factory, profile, new SigninManager(), behavior),
         user_cancelled_dialog_(false),
         is_using_secondary_passphrase_(false),
         encrypt_everything_(false) {
@@ -144,11 +145,6 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
     chosen_data_types_.Clear();
   }
 
-  // Use this to have the service act as if it were running under CrOS.
-  void set_cros_mode() {
-    cros_user_ = kTestUser;
-  }
-
   virtual void ShowSyncSetup(const std::string& sub_page) {
     // Do Nothing.
   }
@@ -178,8 +174,10 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
 
 class TestingProfileWithSyncService : public TestingProfile {
  public:
-  TestingProfileWithSyncService() {
-    sync_service_.reset(new ProfileSyncServiceForWizardTest(&factory_, this));
+  explicit TestingProfileWithSyncService(
+      ProfileSyncService::StartBehavior behavior) {
+    sync_service_.reset(new ProfileSyncServiceForWizardTest(
+        &factory_, this, behavior));
   }
 
   virtual ProfileSyncService* GetProfileSyncService() {
@@ -199,8 +197,12 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
         service_(NULL),
         flow_(NULL) {}
   virtual ~SyncSetupWizardTest() {}
+  virtual TestingProfile* BuildProfile() {
+    return new TestingProfileWithSyncService(
+        ProfileSyncService::MANUAL_START);
+  }
   virtual void SetUp() {
-    set_profile(new TestingProfileWithSyncService());
+    set_profile(BuildProfile());
     profile()->CreateBookmarkModel(false);
     // Wait for the bookmarks model to load.
     profile()->BlockUntilBookmarkModelLoaded();
@@ -528,34 +530,6 @@ TEST_F(SyncSetupWizardTest, DiscreteRunGaiaLogin) {
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
 }
 
-// Tests a scenario where sync is disabled on chrome os on startup due to
-// an auth error (application specific password is needed).
-TEST_F(SyncSetupWizardTest, CrosAuthSetup) {
-  service_->set_cros_mode();
-
-  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
-
-  AttachSyncSetupHandler();
-  EXPECT_EQ(SyncSetupWizard::GAIA_SUCCESS, flow_->end_state_);
-
-  DictionaryValue dialog_args;
-  SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_EQ(4U, dialog_args.size());
-  std::string actual_user;
-  dialog_args.GetString("user", &actual_user);
-  EXPECT_EQ(kTestUser, actual_user);
-  int error = -1;
-  dialog_args.GetInteger("error", &error);
-  EXPECT_EQ(0, error);
-  bool editable = true;
-  dialog_args.GetBoolean("editable_user", &editable);
-  EXPECT_FALSE(editable);
-  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
-  EXPECT_TRUE(service_->user_cancelled_dialog_);
-  EXPECT_TRUE(service_->profile()->GetPrefs()->GetBoolean(
-      prefs::kSyncHasSetupCompleted));
-}
-
 TEST_F(SyncSetupWizardTest, NonFatalError) {
   CompleteSetup();
 
@@ -620,4 +594,41 @@ TEST_F(SyncSetupWizardTest, NonFatalError) {
   EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
   CloseSetupUI();
   EXPECT_FALSE(wizard_->IsVisible());
+}
+
+class SyncSetupWizardCrosTest : public SyncSetupWizardTest {
+ public:
+  virtual TestingProfile* BuildProfile() {
+    TestingProfile* profile =
+        new TestingProfileWithSyncService(ProfileSyncService::AUTO_START);
+    profile->GetProfileSyncService()->signin()->SetAuthenticatedUsername(
+        kTestUser);
+    return profile;
+  }
+};
+
+// Tests a scenario where sync is disabled on chrome os on startup due to
+// an auth error (application specific password is needed).
+TEST_F(SyncSetupWizardCrosTest, CrosAuthSetup) {
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+
+  AttachSyncSetupHandler();
+  EXPECT_EQ(SyncSetupWizard::GAIA_SUCCESS, flow_->end_state_);
+
+  DictionaryValue dialog_args;
+  SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
+  EXPECT_EQ(4U, dialog_args.size());
+  std::string actual_user;
+  dialog_args.GetString("user", &actual_user);
+  EXPECT_EQ(kTestUser, actual_user);
+  int error = -1;
+  dialog_args.GetInteger("error", &error);
+  EXPECT_EQ(0, error);
+  bool editable = true;
+  dialog_args.GetBoolean("editable_user", &editable);
+  EXPECT_FALSE(editable);
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  EXPECT_TRUE(service_->user_cancelled_dialog_);
+  EXPECT_TRUE(service_->profile()->GetPrefs()->GetBoolean(
+      prefs::kSyncHasSetupCompleted));
 }

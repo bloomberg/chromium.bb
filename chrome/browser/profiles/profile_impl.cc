@@ -1392,37 +1392,20 @@ TokenService* ProfileImpl::GetTokenService() {
 }
 
 ProfileSyncService* ProfileImpl::GetProfileSyncService() {
-#if defined(OS_CHROMEOS)
-  if (!sync_service_.get()) {
-    // In ChromeOS, sync only gets initialized properly from login, when
-    // kLoginManager is specified. If this gets called before login, or
-    // during a debugging session without kLoginManager, this will return
-    // NULL, so ensure that calls either handle a NULL result, or use
-    // HasProfileSyncService() to guard against the call.
-    return NULL;
-  }
-#endif
-  return GetProfileSyncService("");
-}
-
-ProfileSyncService* ProfileImpl::GetProfileSyncService(
-    const std::string& cros_user) {
-
   if (!ProfileSyncService::IsSyncEnabled())
     return NULL;
   if (!profile_sync_service_created_) {
     profile_sync_service_created_ = true;
-    InitSyncService(cros_user);
+    InitSyncService();
   }
   return sync_service_.get();
 }
 
-void ProfileImpl::InitSyncService(const std::string& cros_user) {
+void ProfileImpl::InitSyncService() {
   profile_sync_factory_.reset(
       new ProfileSyncComponentsFactoryImpl(this,
                                            CommandLine::ForCurrentProcess()));
-  sync_service_.reset(
-      profile_sync_factory_->CreateProfileSyncService(cros_user));
+  sync_service_.reset(profile_sync_factory_->CreateProfileSyncService());
   profile_sync_factory_->RegisterDataTypes(sync_service_.get());
   sync_service_->Initialize();
 

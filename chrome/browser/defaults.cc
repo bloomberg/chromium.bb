@@ -29,7 +29,7 @@ const bool kShowImportOnBookmarkBar = false;
 const bool kShowExitMenuItem = true;
 const bool kDownloadPageHasShowInFolder = true;
 const bool kSizeTabButtonToTopOfTabStrip = true;
-const bool kBootstrapSyncAuthentication = true;
+const bool kSyncAutoStarts = true;
 const bool kShowOtherBrowsersInAboutMemory = false;
 const bool kAlwaysOpenIncognitoWindow = true;
 const bool kShowCancelButtonInTaskManager = true;
@@ -66,7 +66,7 @@ const bool kShowExitMenuItem = false;
 const bool kShowExitMenuItem = true;
 #endif
 const bool kSizeTabButtonToTopOfTabStrip = false;
-const bool kBootstrapSyncAuthentication = false;
+const bool kSyncAutoStarts = false;
 const bool kShowOtherBrowsersInAboutMemory = true;
 const bool kAlwaysOpenIncognitoWindow = false;
 const bool kShowCancelButtonInTaskManager = false;
