@@ -148,8 +148,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // of profiles is still sorted.
   void UpdateSortForProfileIndex(size_t index);
 
-  void OnGAIAPictureLoaded(FilePath path, gfx::Image** image) const;
-  void OnGAIAPictureSaved(FilePath path, bool* success) const;
+  void OnGAIAPictureLoaded(const FilePath& path, gfx::Image** image) const;
+  void OnGAIAPictureSaved(const FilePath& path, bool* success) const;
 
   PrefService* prefs_;
   std::vector<std::string> sorted_keys_;

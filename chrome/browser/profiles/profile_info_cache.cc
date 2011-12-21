@@ -350,7 +350,7 @@ const gfx::Image* ProfileInfoCache::GetGAIAPictureOfProfileAtIndex(
   return NULL;
 }
 
-void ProfileInfoCache::OnGAIAPictureLoaded(FilePath path,
+void ProfileInfoCache::OnGAIAPictureLoaded(const FilePath& path,
                                            gfx::Image** image) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -369,7 +369,8 @@ void ProfileInfoCache::OnGAIAPictureLoaded(FilePath path,
       content::NotificationService::NoDetails());
 }
 
-void ProfileInfoCache::OnGAIAPictureSaved(FilePath path, bool* success) const  {
+void ProfileInfoCache::OnGAIAPictureSaved(const FilePath& path,
+                                          bool* success) const  {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (*success) {
