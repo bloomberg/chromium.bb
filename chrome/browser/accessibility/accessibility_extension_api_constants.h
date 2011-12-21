@@ -25,6 +25,7 @@ extern const char kCheckedKey[];
 extern const char kHasSubmenuKey[];
 extern const char kVolumeKey[];
 extern const char kIsVolumeMutedKey[];
+extern const char kMessageKey[];
 
 // Events.
 extern const char kOnWindowOpened[];

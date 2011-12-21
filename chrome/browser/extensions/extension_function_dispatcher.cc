@@ -285,6 +285,7 @@ void FactoryRegistry::ResetFunctions() {
   // Accessibility.
   RegisterFunction<GetFocusedControlFunction>();
   RegisterFunction<SetAccessibilityEnabledFunction>();
+  RegisterFunction<GetAlertsForTabFunction>();
 
   // Text-to-speech.
   RegisterFunction<ExtensionTtsEngineSendTtsEventFunction>();

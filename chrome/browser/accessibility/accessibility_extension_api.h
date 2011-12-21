@@ -90,4 +90,12 @@ class GetFocusedControlFunction : public SyncExtensionFunction {
       "experimental.accessibility.getFocusedControl")
 };
 
+// API function that returns alerts being shown on the give tab.
+class GetAlertsForTabFunction : public SyncExtensionFunction {
+  virtual ~GetAlertsForTabFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.accessibility.getAlertsForTab")
+};
+
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_

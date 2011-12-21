@@ -21,6 +21,7 @@ const char kCheckedKey[] = "details.isChecked";
 const char kHasSubmenuKey[] = "details.hasSubmenu";
 const char kVolumeKey[] = "volume";
 const char kIsVolumeMutedKey[] = "isVolumeMuted";
+const char kMessageKey[] = "message";
 
 // Events.
 const char kOnWindowOpened[] = "experimental.accessibility.onWindowOpened";

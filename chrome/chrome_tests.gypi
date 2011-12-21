@@ -2433,6 +2433,7 @@
         'app/chrome_dll.rc',
         'app/chrome_dll_resource.h',
         'app/chrome_version.rc.version',
+        'browser/accessibility/accessibility_extension_apitest.cc',
         'browser/autocomplete/autocomplete_browsertest.cc',
         'browser/autofill/form_structure_browsertest.cc',
         'browser/automation/automation_tab_helper_browsertest.cc',

@@ -120,6 +120,17 @@
           "volume": {"type": "double", "description": "The value of the volume percent. This must be between 0.0 and 100.0."},
           "isVolumeMuted": {"type": "boolean", "description": "True if the volume is muted."}
         }
+      },
+      {
+        "id": "AlertInfo",
+        "type": "object",
+        "description": "Information about an alert",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The message the alert is showing."
+          }
+        }
       }
     ],
     "functions": [
@@ -151,6 +162,30 @@
                   { "$ref": "AccessibilityObject" },
                   { "type": "null" }
                 ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getAlertsForTab",
+        "type": "function",
+        "description": "Gets alerts being shown on the given tab.",
+        "parameters": [
+          {
+            "name": "tabId",
+            "type": "integer",
+            "minimum": 0
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "alerts",
+                "type": "array",
+                "items": { "$ref": "AlertInfo" },
+                "description": "Alerts being shown on the given tab."
               }
             ]
           }
