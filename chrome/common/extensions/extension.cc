@@ -2196,10 +2196,6 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
       *error = ASCIIToUTF16(errors::kInvalidDevToolsPage);
       return false;
     }
-    if (!api_permissions.count(ExtensionAPIPermission::kExperimental)) {
-      *error = ASCIIToUTF16(errors::kDevToolsExperimental);
-      return false;
-    }
     devtools_url_ = GetResourceURL(devtools_str);
   }
 

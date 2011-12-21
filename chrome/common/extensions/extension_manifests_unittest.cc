@@ -522,13 +522,9 @@ TEST_F(ExtensionManifestTest, ExperimentalPermission) {
 }
 
 TEST_F(ExtensionManifestTest, DevToolsExtensions) {
-  LoadAndExpectError("devtools_extension_no_permissions.json",
-      errors::kDevToolsExperimental);
   LoadAndExpectError("devtools_extension_url_invalid_type.json",
       errors::kInvalidDevToolsPage);
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
   scoped_refptr<Extension> extension;
   extension = LoadAndExpectSuccess("devtools_extension.json");
   EXPECT_EQ(extension->url().spec() + "devtools.html",

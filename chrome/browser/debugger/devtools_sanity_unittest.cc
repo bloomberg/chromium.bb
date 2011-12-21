@@ -171,10 +171,10 @@ void TimeoutCallback(const std::string& timeout_message) {
 
 // Base class for DevTools tests that test devtools functionality for
 // extensions and content scripts.
-class DevToolsExtensionDebugTest : public DevToolsSanityTest,
-                                   public content::NotificationObserver {
+class DevToolsExtensionTest : public DevToolsSanityTest,
+                              public content::NotificationObserver {
  public:
-  DevToolsExtensionDebugTest() : DevToolsSanityTest() {
+  DevToolsExtensionTest() : DevToolsSanityTest() {
     PathService::Get(chrome::DIR_TEST_DATA, &test_extensions_dir_);
     test_extensions_dir_ = test_extensions_dir_.AppendASCII("devtools");
     test_extensions_dir_ = test_extensions_dir_.AppendASCII("extensions");
@@ -252,12 +252,6 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
   }
 
   FilePath test_extensions_dir_;
-};
-
-class DevToolsExtensionAPITest : public DevToolsExtensionDebugTest {
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-  }
 };
 
 class WorkerDevToolsSanityTest : public InProcessBrowserTest {
@@ -444,14 +438,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 }
 
 // Tests that a content script is in the scripts list.
-IN_PROC_BROWSER_TEST_F(DevToolsExtensionAPITest,
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
                        TestDevToolsExtensionAPI) {
   LoadExtension("devtools_extension");
   RunTest("waitForTestResultsInConsole", "");
 }
 
 // Tests that a content script is in the scripts list.
-IN_PROC_BROWSER_TEST_F(DevToolsExtensionDebugTest,
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
                        TestContentScriptIsPresent) {
   LoadExtension("simple_content_script");
   RunTest("testContentScriptIsPresent", kPageWithContentScript);

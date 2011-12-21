@@ -429,6 +429,10 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
     extension_info->Set("startPage",
         new StringValue((*extension)->devtools_url().spec()));
     extension_info->Set("name", new StringValue((*extension)->name()));
+    bool allow_experimental = (*extension)->HasAPIPermission(
+        ExtensionAPIPermission::kExperimental);
+    extension_info->Set("exposeExperimentalAPIs",
+        new base::FundamentalValue(allow_experimental));
     results.Append(extension_info);
   }
   CallClientFunction(ASCIIToUTF16("WebInspector.addExtensions"), results);

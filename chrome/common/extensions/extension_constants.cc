@@ -159,9 +159,6 @@ const char kChromeVersionTooLow[] =
     "This extension requires * version * or greater.";
 const char kDisabledByPolicy[] =
     "This extension has been disabled by your administrator.";
-const char kDevToolsExperimental[] =
-    "You must request the 'experimental' permission in order to use the"
-    " DevTools API.";
 const char kExpectString[] = "Expect string value.";
 const char kExperimentalFlagRequired[] =
     "Loading extensions with 'experimental' permission requires"
