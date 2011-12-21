@@ -55,7 +55,8 @@ void ChromeLogger::Log(LogLevel level, const char* file, int line,
 }
 
 ChromeScheduler::ChromeScheduler()
-    : created_on_loop_(MessageLoop::current()),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      created_on_loop_(MessageLoop::current()),
       is_started_(false),
       is_stopped_(false) {
   CHECK(created_on_loop_);
@@ -71,29 +72,33 @@ void ChromeScheduler::Start() {
   CHECK(!is_started_);
   is_started_ = true;
   is_stopped_ = false;
-  scoped_runnable_method_factory_.reset(
-      new ScopedRunnableMethodFactory<ChromeScheduler>(this));
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void ChromeScheduler::Stop() {
   CHECK_EQ(created_on_loop_, MessageLoop::current());
   is_stopped_ = true;
   is_started_ = false;
-  scoped_runnable_method_factory_.reset();
+  weak_factory_.InvalidateWeakPtrs();
   STLDeleteElements(&posted_tasks_);
   posted_tasks_.clear();
 }
 
-void ChromeScheduler::Schedule(
-    invalidation::TimeDelta delay,
-    invalidation::Closure* task) {
+void ChromeScheduler::Schedule(invalidation::TimeDelta delay,
+                               invalidation::Closure* task) {
+  DCHECK(invalidation::IsCallbackRepeatable(task));
   CHECK_EQ(created_on_loop_, MessageLoop::current());
-  Task* task_to_post = MakeTaskToPost(task);
-  if (!task_to_post) {
+
+  if (!is_started_) {
+    delete task;
     return;
   }
+
+  posted_tasks_.insert(task);
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, task_to_post, delay.InMillisecondsRoundedUp());
+      FROM_HERE, base::Bind(&ChromeScheduler::RunPostedTask,
+                            weak_factory_.GetWeakPtr(), task),
+      delay.InMillisecondsRoundedUp());
 }
 
 bool ChromeScheduler::IsRunningOnThread() const {
@@ -103,21 +108,6 @@ bool ChromeScheduler::IsRunningOnThread() const {
 invalidation::Time ChromeScheduler::GetCurrentTime() const {
   CHECK_EQ(created_on_loop_, MessageLoop::current());
   return base::Time::Now();
-}
-
-Task* ChromeScheduler::MakeTaskToPost(
-    invalidation::Closure* task) {
-  DCHECK(invalidation::IsCallbackRepeatable(task));
-  CHECK_EQ(created_on_loop_, MessageLoop::current());
-  if (!scoped_runnable_method_factory_.get()) {
-    delete task;
-    return NULL;
-  }
-  posted_tasks_.insert(task);
-  Task* task_to_post =
-      scoped_runnable_method_factory_->NewRunnableMethod(
-          &ChromeScheduler::RunPostedTask, task);
-  return task_to_post;
 }
 
 void ChromeScheduler::RunPostedTask(invalidation::Closure* task) {
@@ -188,7 +178,7 @@ void ChromeStorage::RunAndDeleteReadKeyCallback(
 
 ChromeNetwork::ChromeNetwork()
     : packet_handler_(NULL),
-      scoped_callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
 ChromeNetwork::~ChromeNetwork() {
   STLDeleteElements(&network_status_receivers_);
@@ -215,8 +205,9 @@ void ChromeNetwork::UpdatePacketHandler(
   packet_handler_ = packet_handler;
   if (packet_handler_ != NULL) {
     packet_handler_->SetMessageReceiver(
-        scoped_callback_factory_.NewCallback(
-            &ChromeNetwork::HandleInboundMessage));
+        new invalidation::MessageCallback(
+            base::Bind(&ChromeNetwork::HandleInboundMessage,
+                       weak_factory_.GetWeakPtr())));
   }
 }
 
