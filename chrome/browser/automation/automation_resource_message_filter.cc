@@ -320,12 +320,9 @@ void AutomationResourceMessageFilter::ResumePendingRenderViewInIOThread(
   RenderViewMap::iterator automation_details_iter(
       filtered_render_views_.Get().find(renderer_key));
 
-  if (automation_details_iter == filtered_render_views_.Get().end()) {
-    NOTREACHED() << "Failed to find pending view for renderer pid:"
-                 << renderer_pid
-                 << ", render view id:"
-                 << renderer_id;
-  }
+  DCHECK(automation_details_iter != filtered_render_views_.Get().end())
+      << "Failed to find pending view for renderer pid:"
+      << renderer_pid << ", render view id:" << renderer_id;
 
   DCHECK(automation_details_iter->second.is_pending_render_view);
 
