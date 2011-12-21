@@ -1076,8 +1076,7 @@ void TaskManagerChildProcessResourceProvider::RetrieveChildProcessData() {
     // Only add processes which are already started, since we need their handle.
     if ((*iter)->handle() == base::kNullProcessHandle)
       continue;
-    content::ChildProcessData data;
-    data.type = (*iter)->type();
+    content::ChildProcessData data((*iter)->type());
     data.name = (*iter)->name();
     data.handle = (*iter)->handle();
     child_processes.push_back(data);

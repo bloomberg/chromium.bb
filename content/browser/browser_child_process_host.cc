@@ -56,12 +56,12 @@ void ChildNotificationHelper(int notification_type,
 
 BrowserChildProcessHost::BrowserChildProcessHost(
     content::ProcessType type)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(client_(this)),
+    : data_(type),
+      ALLOW_THIS_IN_INITIALIZER_LIST(client_(this)),
 #if !defined(OS_WIN)
       ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
 #endif
       disconnect_was_alive_(false) {
-  data_.type = type;
   data_.id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
 
   child_process_host_.reset(ChildProcessHost::Create(this));
