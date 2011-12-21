@@ -5493,7 +5493,7 @@ Because search results are requested even while you're typing your query, your d
         Reload
       </message>
       <message name="IDS_ACCNAME_LOCATION" desc="The accessible name for the location bar edit field.">
-        Location
+        Address
       </message>
       <message name="IDS_ACCNAME_STAR" desc="The accessible name for the bookmark button.">
         Bookmark
