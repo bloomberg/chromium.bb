@@ -18,10 +18,10 @@ EXTRA_ENV = {
 
   # Use the IRT shim by default on x86-64. This can be disabled with an
   # explicit flag (--noirtshim) or via -nostdlib.
-  'USE_IRT_SHIM': '${ARCH==X8664 ? 1 : 0}',
+  'USE_IRT_SHIM'  : '${ARCH==X8664 && !SHARED ? 1 : 0}',
 
   # Flags for pnacl-nativeld
-  'LD_FLAGS': '${STATIC ? -static : ${SHARED ? -shared}}',
+  'LD_FLAGS': '${STATIC ? -static} ${SHARED ? -shared}',
 
   'STATIC'         : '0',
   'SHARED'         : '0',
@@ -33,55 +33,52 @@ EXTRA_ENV = {
   'OUTPUT_TYPE'   : '',
 
   # Library Strings
-  'EMITMODE'         : '${STATIC ? static : ${SHARED ? shared : dynamic}}',
+  'LD_ARGS' : '${STDLIB ? ${LD_ARGS_normal} : ${LD_ARGS_nostdlib}}',
 
-  'LD_ARGS' : '${STDLIB ? ' +
-              '${LD_ARGS_%LIBMODE%_%EMITMODE%} : ${LD_ARGS_nostdlib}}',
+  'LD_ARGS_IRT_SHIM':
+    '-entry=_pnacl_wrapper_start -lpnacl_irt_shim',
+
+  'CRTBEGIN' : '${SHARED ? -l:crtbeginS.o : -l:crtbegin.o}',
+  'CRTEND'   : '${SHARED ? -l:crtendS.o : -l:crtend.o}',
+  'LIBGCC_EH': '${STATIC ? -lgcc_eh : -lgcc_s}',
 
   'LD_ARGS_nostdlib': '-nostdlib ${ld_inputs}',
 
-  'LD_ARGS_IRT_SHIM':
-    '${USE_IRT_SHIM ? -lpnacl_irt_shim  -entry=_pnacl_wrapper_start}',
-
   # These are just the dependencies in the native link.
-  # TODO(pdox): To simplify translation, reduce from 4 to 2 cases.
+  'LD_ARGS_normal':
+    '${USE_IRT_SHIM ? ${LD_ARGS_IRT_SHIM}} ' +
+    '${CRTBEGIN} ${ld_inputs} ' +
+    '${STATIC ? --start-group} ' +
+    '${USE_DEFAULTLIBS ? ${DEFAULTLIBS}} ' +
+    '${STATIC ? --end-group} ' +
+    '${CRTEND}',
+
+  # TODO(pdox): To simplify translation, reduce from 3 to 2 cases.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
-  'LD_ARGS_newlib_static':
-    '${LD_ARGS_IRT_SHIM} -l:crtbegin.o --start-group ' +
-    '${ld_inputs} ${DEFAULTLIBS} --end-group ' +
-    '-l:libcrt_platform.a -l:crtend.o',
+  'DEFAULTLIBS':
+    '${LINKER_HACK} ${GLIBC_STATIC_HACK} ${LIBGCC_EH} -lgcc ${MISC_LIBS}',
 
-  'LD_ARGS_glibc_static' :
-     '${LD_ARGS_IRT_SHIM} -l:crtbegin.o ${ld_inputs} ' +
-     '--start-group ${DEFAULTLIBS} --end-group -l:crtend.o',
+  'MISC_LIBS':
+    # TODO(pdox):
+    # Move libcrt_platform into the __pnacl namespace,
+    # with stubs to access it from newlib.
+    '${LIBMODE_NEWLIB ? -l:libcrt_platform.a} ' +
+    # This is needed because the ld.so sonames don't match
+    # between X86-32 and X86-64.
+    # TODO(pdox): Unify the names.
+    '${LIBMODE_GLIBC && !STATIC ? -l:ld-2.9.so}',
 
-  'LD_ARGS_glibc_shared' :
-     '--eh-frame-hdr -shared ' +
-     '-l:crtbeginS.o ${ld_inputs} ${DEFAULTLIBS} -l:crtendS.o',
+  # GLibC static is poorly supported.
+  # We cannot correctly record native dependencies in bitcode.
+  # As an hack, just always assume these libraries are needed.
+  'GLIBC_STATIC_HACK':
+    '${LIBMODE_GLIBC && STATIC ? -lstdc++ -lm -lc -lpthread}',
 
-  'LD_ARGS_glibc_dynamic':
-    '--eh-frame-hdr ${LD_ARGS_IRT_SHIM} ' +
-    '-l:crtbegin.o ${ld_inputs} ${DEFAULTLIBS} -l:crtend.o',
-
-  'DEFAULTLIBS' : '${USE_DEFAULTLIBS ? ${DEFAULTLIBS_%LIBMODE%_%EMITMODE%}}',
-  'DEFAULTLIBS_newlib_static': '-lgcc_eh -lgcc',
-  'DEFAULTLIBS_glibc_static' : '-lgcc_eh -lgcc ${GLIBC_HACK}',
-  'DEFAULTLIBS_glibc_shared' : '${DEFAULTLIBS_glibc_dynamic}',
-  'DEFAULTLIBS_glibc_dynamic':
-    '${SDK_HACK} ${GLIBC_HACK} ${DSO_HACK} ${ABI_DEPS}',
-
-  # libgcc and libgcc_s
-  'ABI_DEPS': '-lgcc_s -lgcc',
-
-  # Because of ABI and symbol versioning issues, these still need to
-  # be included directly in the native link.
+  # Because our bitcode linker doesn't record symbol resolution information,
+  # some libraries still need to be included directly in the native link.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=577
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2089
-  'GLIBC_HACK': '-lstdc++ -lm -lc -lpthread',
-  'DSO_HACK'  : '-l:ld-2.9.so',
-  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2451
-  'SDK_HACK'  : '',
-  # END HACK
+  'LINKER_HACK': '', # Populated in function ApplyBitcodeConfig().
 
   # Intermediate variable LLCVAR is used for delaying evaluation.
   'LLCVAR'        : '${SANDBOXED ? LLC_SB : LLVM_LLC}',
@@ -259,13 +256,24 @@ def ApplyBitcodeConfig(bcfile, bctype):
   # Read the bitcode metadata to extract library
   # dependencies and SOName.
   metadata = GetBitcodeMetadata(bcfile)
-  for lib in metadata['NeedsLibrary']:
-    env.append('LD_FLAGS', '--add-extra-dt-needed=' + lib)
-    # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2451
-    direct_libs = ['srpc','ppapi_cpp']
-    for libname in direct_libs:
-      if lib == 'lib'+libname+'.so':
-        env.append('SDK_HACK', '-l'+libname)
+  for needed in metadata['NeedsLibrary']:
+    env.append('LD_FLAGS', '--add-extra-dt-needed=' + needed)
+
+  # Certain libraries still need to be linked directly.
+  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2451
+  direct_libs = ['libsrpc',
+                 'libppapi_cpp',
+                 'libstdc++',
+                 'libm',
+                 'libc',
+                 'libpthread']
+  for name in direct_libs:
+    for needed in metadata['NeedsLibrary']:
+      if needed.startswith(name):
+        env.append('LINKER_HACK', '-l:'+needed)
+        if name == 'libc' or name == 'libpthread':
+          env.append('LINKER_HACK', '-l:%s_nonshared.a' % name)
+        break
 
   if bctype == 'pso':
     soname = metadata['SOName']

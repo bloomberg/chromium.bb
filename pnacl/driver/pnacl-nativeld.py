@@ -37,7 +37,12 @@ EXTRA_ENV = {
    # LD_SB is the non-srpc sandboxed tool.
   'LDMODE'      : '${SANDBOXED ? SB : BFD}',
   'LD'          : '${LD_%LDMODE%}',
-  'LD_FLAGS'    : '-nostdlib -m ${LD_EMUL} ${#LD_SCRIPT ? -T ${LD_SCRIPT}} ' +
+  # --eh-frame-hdr asks the linker to generate an .eh_frame_hdr section,
+  # which is a presorted list of registered frames. This section is
+  # used by libgcc_eh/libgcc_s to avoid doing the sort during runtime.
+  # http://www.airs.com/blog/archives/462
+  'LD_FLAGS'    : '-nostdlib -m ${LD_EMUL} --eh-frame-hdr ' +
+                  '${#LD_SCRIPT ? -T ${LD_SCRIPT}} ' +
                   '${STATIC ? -static} ${SHARED ? -shared} ${RELOCATABLE ? -r}',
 
   'EMITMODE'         : '${RELOCATABLE ? relocatable : ' +
@@ -112,7 +117,6 @@ LDPatterns = [
   ( ('(--section-start)','(.*)'), PassThrough),
   ( '(-?-soname=.*)',             PassThrough),
   ( ('(-?-soname)', '(.*)'),      PassThrough),
-  ( '(--eh-frame-hdr)',           PassThrough),
   ( '(-M)',                       PassThrough),
   ( '(-t)',                       PassThrough),
   ( ('-y','(.*)'),                PassThrough),
