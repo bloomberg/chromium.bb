@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/utf_string_conversions.h"
+#include "base/stl_util.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,29 +21,23 @@ namespace {
 class TestingSpellCheckProvider : public SpellCheckProvider {
  public:
   TestingSpellCheckProvider()
-      : SpellCheckProvider(NULL, NULL),
-        is_using_platform_spelling_engine_(true) {
+      : SpellCheckProvider(NULL, NULL) {
   }
 
   virtual ~TestingSpellCheckProvider() {
-    for (std::vector<IPC::Message*>::iterator i = messages_.begin();
-         i != messages_.end();
-         ++i) {
-      delete *i;
-    }
+    STLDeleteContainerPointers(messages_.begin(), messages_.end());
   }
 
-  virtual bool Send(IPC::Message* message) {
+  virtual bool Send(IPC::Message* message) OVERRIDE {
     messages_.push_back(message);
     return true;
   }
 
-  virtual bool is_using_platform_spelling_engine() const {
-    return is_using_platform_spelling_engine_;
+  virtual bool is_using_platform_spelling_engine() const OVERRIDE {
+    return true;
   }
 
   std::vector<IPC::Message*> messages_;
-  bool is_using_platform_spelling_engine_;
 };
 
 // A fake completion object for verification.
@@ -53,8 +48,9 @@ class FakeTextCheckingCompletion : public WebKit::WebTextCheckingCompletion {
   }
 
   virtual void didFinishCheckingText(
-      const WebKit::WebVector<WebKit::WebTextCheckingResult>& results) {
-    completion_count_++;
+      const WebKit::WebVector<WebKit::WebTextCheckingResult>& results)
+        OVERRIDE {
+    ++completion_count_;
     last_results_ = results;
   }
 
@@ -62,10 +58,10 @@ class FakeTextCheckingCompletion : public WebKit::WebTextCheckingCompletion {
   WebKit::WebVector<WebKit::WebTextCheckingResult> last_results_;
 };
 
-class SpellCheckProviderTest : public testing::Test {
+class SpellCheckProviderMacTest : public testing::Test {
  public:
-  SpellCheckProviderTest() { }
-  virtual ~SpellCheckProviderTest() { }
+  SpellCheckProviderMacTest() { }
+  virtual ~SpellCheckProviderMacTest() { }
 
  protected:
   TestingSpellCheckProvider provider_;
@@ -83,9 +79,9 @@ struct MessageParameters {
   string16 text;
 };
 
-MessageParameters ReadPlatformRequestTextCheck(IPC::Message* message) {
+MessageParameters ReadRequestTextCheck(IPC::Message* message) {
   MessageParameters parameters;
-  bool ok = SpellCheckHostMsg_PlatformRequestTextCheck::Read(
+  bool ok = SpellCheckHostMsg_RequestTextCheck::Read(
       message,
       &parameters.router_id,
       &parameters.request_id,
@@ -107,7 +103,7 @@ void FakeMessageArrival(SpellCheckProvider* provider,
   EXPECT_TRUE(handled);
 }
 
-TEST_F(SpellCheckProviderTest, SingleRoundtripSuccess) {
+TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
   FakeTextCheckingCompletion completion;
   int document_tag = 123;
 
@@ -119,7 +115,7 @@ TEST_F(SpellCheckProviderTest, SingleRoundtripSuccess) {
   EXPECT_EQ(provider_.pending_text_request_size(), 1U);
 
   MessageParameters read_parameters =
-      ReadPlatformRequestTextCheck(provider_.messages_[0]);
+      ReadRequestTextCheck(provider_.messages_[0]);
   EXPECT_EQ(read_parameters.text, UTF8ToUTF16("hello"));
 
   FakeMessageArrival(&provider_, read_parameters);
@@ -127,7 +123,7 @@ TEST_F(SpellCheckProviderTest, SingleRoundtripSuccess) {
   EXPECT_EQ(provider_.pending_text_request_size(), 0U);
 }
 
-TEST_F(SpellCheckProviderTest, TwoRoundtripSuccess) {
+TEST_F(SpellCheckProviderMacTest, TwoRoundtripSuccess) {
   int document_tag = 123;
 
   FakeTextCheckingCompletion completion1;
@@ -145,11 +141,11 @@ TEST_F(SpellCheckProviderTest, TwoRoundtripSuccess) {
   EXPECT_EQ(provider_.pending_text_request_size(), 2U);
 
   MessageParameters read_parameters1 =
-      ReadPlatformRequestTextCheck(provider_.messages_[0]);
+      ReadRequestTextCheck(provider_.messages_[0]);
   EXPECT_EQ(read_parameters1.text, UTF8ToUTF16("hello"));
 
   MessageParameters read_parameters2 =
-      ReadPlatformRequestTextCheck(provider_.messages_[1]);
+      ReadRequestTextCheck(provider_.messages_[1]);
   EXPECT_EQ(read_parameters2.text, UTF8ToUTF16("bye"));
 
   FakeMessageArrival(&provider_, read_parameters1);
@@ -160,19 +156,6 @@ TEST_F(SpellCheckProviderTest, TwoRoundtripSuccess) {
   FakeMessageArrival(&provider_, read_parameters2);
   EXPECT_EQ(completion1.completion_count_, 1U);
   EXPECT_EQ(completion2.completion_count_, 1U);
-  EXPECT_EQ(provider_.pending_text_request_size(), 0U);
-}
-
-TEST_F(SpellCheckProviderTest, PlatformEngineUnavailable) {
-  provider_.is_using_platform_spelling_engine_ = false;
-
-  int document_tag = 123;
-  FakeTextCheckingCompletion completion;
-  provider_.RequestTextChecking(WebKit::WebString("hello"),
-                                document_tag,
-                                &completion);
-  EXPECT_EQ(completion.completion_count_, 1U);
-  EXPECT_EQ(provider_.messages_.size(), 0U);
   EXPECT_EQ(provider_.pending_text_request_size(), 0U);
 }
 

@@ -7,8 +7,8 @@
 
 #include "content/public/browser/browser_message_filter.h"
 
-// A message filter implementation that receives
-// the platform spell checker requests from SpellCheckProvider.
+// A message filter implementation that receives spell checker requests from
+// SpellCheckProvider.
 class SpellCheckMessageFilter : public content::BrowserMessageFilter {
  public:
   explicit SpellCheckMessageFilter(int render_process_id);
@@ -22,17 +22,6 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
                                  bool* message_was_ok) OVERRIDE;
 
  private:
-  void OnPlatformCheckSpelling(const string16& word, int tag, bool* correct);
-  void OnPlatformFillSuggestionList(const string16& word,
-                                    std::vector<string16>* suggestions);
-  void OnGetDocumentTag(int* tag);
-  void OnDocumentWithTagClosed(int tag);
-  void OnShowSpellingPanel(bool show);
-  void OnUpdateSpellingPanelWithMisspelledWord(const string16& word);
-  void OnPlatformRequestTextCheck(int route_id,
-                                  int identifier,
-                                  int document_tag,
-                                  const string16& text);
   void OnSpellCheckerRequestDictionary();
   void OnNotifyChecked(const string16& word, bool misspelled);
 

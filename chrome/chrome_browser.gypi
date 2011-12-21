@@ -2206,6 +2206,8 @@
         'browser/spellchecker/spellcheck_host_metrics.h',
         'browser/spellchecker/spellcheck_message_filter.cc',
         'browser/spellchecker/spellcheck_message_filter.h',
+        'browser/spellchecker/spellcheck_message_filter_mac.cc',
+        'browser/spellchecker/spellcheck_message_filter_mac.h',
         'browser/spellchecker/spellcheck_platform_mac.h',
         'browser/spellchecker/spellcheck_platform_mac.mm',
         'browser/spellchecker/spellcheck_profile.cc',

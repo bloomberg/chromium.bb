@@ -48,21 +48,20 @@ void SpellCheckProvider::RequestTextChecking(
     const WebString& text,
     int document_tag,
     WebTextCheckingCompletion* completion) {
+#if defined(OS_MACOSX)
   // Text check (unified request for grammar and spell check) is only
-  // available for browser process, so we ask the system sellchecker
+  // available for browser process, so we ask the system spellchecker
   // over IPC or return an empty result if the checker is not
   // available.
-  if (!is_using_platform_spelling_engine()) {
-    completion->didFinishCheckingText
-        (std::vector<WebTextCheckingResult>());
-    return;
-  }
-
-  Send(new SpellCheckHostMsg_PlatformRequestTextCheck(
+  Send(new SpellCheckHostMsg_RequestTextCheck(
       routing_id(),
       text_check_completions_.Add(completion),
       document_tag,
       text));
+#else
+    completion->didFinishCheckingText(
+        std::vector<WebTextCheckingResult>());
+#endif  // !OS_MACOSX
 }
 
 bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
@@ -91,7 +90,9 @@ void SpellCheckProvider::FocusedNodeChanged(const WebKit::WebNode& unused) {
       checked = true;
   }
 
+#if defined(OS_MACOSX)
   Send(new SpellCheckHostMsg_ToggleSpellCheck(routing_id(), enabled, checked));
+#endif
 }
 
 void SpellCheckProvider::spellCheck(
@@ -136,7 +137,9 @@ WebString SpellCheckProvider::autoCorrectWord(const WebString& word) {
 }
 
 void SpellCheckProvider::showSpellingUI(bool show) {
+#if defined(OS_MACOSX)
   Send(new SpellCheckHostMsg_ShowSpellingPanel(routing_id(), show));
+#endif
 }
 
 bool SpellCheckProvider::isShowingSpellingUI() {
@@ -145,8 +148,10 @@ bool SpellCheckProvider::isShowingSpellingUI() {
 
 void SpellCheckProvider::updateSpellingUIWithMisspelledWord(
     const WebString& word) {
+#if defined(OS_MACOSX)
   Send(new SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord(routing_id(),
                                                                    word));
+#endif
 }
 
 bool SpellCheckProvider::is_using_platform_spelling_engine() const {

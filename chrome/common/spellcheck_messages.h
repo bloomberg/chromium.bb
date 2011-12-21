@@ -57,6 +57,17 @@ IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableAutoSpellCorrect,
 
 // Messages sent from the renderer to the browser.
 
+// The renderer has tried to spell check a word, but couldn't because no
+// dictionary was available to load. Request that the browser find an
+// appropriate dictionary and return it.
+IPC_MESSAGE_CONTROL0(SpellCheckHostMsg_RequestDictionary)
+
+// Tracks spell checking occurrence to collect histogram.
+IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_NotifyChecked,
+                    string16 /* word */,
+                    bool /* true if checked word is misspelled */)
+
+#if defined(OS_MACOSX)
 // Asks the browser for a unique document tag.
 IPC_SYNC_MESSAGE_ROUTED0_1(SpellCheckHostMsg_GetDocumentTag,
                            int /* the tag */)
@@ -75,32 +86,22 @@ IPC_MESSAGE_ROUTED1(SpellCheckHostMsg_ShowSpellingPanel,
 IPC_MESSAGE_ROUTED1(SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord,
                     string16 /* the word to update the panel with */)
 
-// The renderer has tried to spell check a word, but couldn't because no
-// dictionary was available to load. Request that the browser find an
-// appropriate dictionary and return it.
-IPC_MESSAGE_CONTROL0(SpellCheckHostMsg_RequestDictionary)
-
-IPC_SYNC_MESSAGE_CONTROL2_1(SpellCheckHostMsg_PlatformCheckSpelling,
+IPC_SYNC_MESSAGE_CONTROL2_1(SpellCheckHostMsg_CheckSpelling,
                             string16 /* word */,
                             int /* document tag */,
                             bool /* correct */)
 
-IPC_SYNC_MESSAGE_CONTROL1_1(SpellCheckHostMsg_PlatformFillSuggestionList,
+IPC_SYNC_MESSAGE_CONTROL1_1(SpellCheckHostMsg_FillSuggestionList,
                             string16 /* word */,
                             std::vector<string16> /* suggestions */)
 
-IPC_MESSAGE_CONTROL4(SpellCheckHostMsg_PlatformRequestTextCheck,
+IPC_MESSAGE_CONTROL4(SpellCheckHostMsg_RequestTextCheck,
                      int /* route_id for response */,
                      int /* request identifier given by WebKit */,
                      int /* document tag */,
                      string16 /* sentence */)
 
-// Only used on Mac.
 IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_ToggleSpellCheck,
                     bool /* enabled */,
                     bool /* checked */)
-
-// Tracks spell checking occurrence to collect histogram.
-IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_NotifyChecked,
-                    string16 /* word */,
-                    bool /* true if checked word is misspelled */)
+#endif  // OS_MACOSX

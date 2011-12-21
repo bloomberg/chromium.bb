@@ -246,8 +246,10 @@ bool SpellCheck::CheckSpelling(const string16& word_to_check, int tag) {
   bool word_correct = false;
 
   if (is_using_platform_spelling_engine_) {
-    RenderThread::Get()->Send(new SpellCheckHostMsg_PlatformCheckSpelling(
+#if defined(OS_MACOSX)
+    RenderThread::Get()->Send(new SpellCheckHostMsg_CheckSpelling(
         word_to_check, tag, &word_correct));
+#endif
   } else {
     std::string word_to_check_utf8(UTF16ToUTF8(word_to_check));
     // Hunspell shouldn't let us exceed its max, but check just in case
@@ -271,8 +273,10 @@ void SpellCheck::FillSuggestionList(
     const string16& wrong_word,
     std::vector<string16>* optional_suggestions) {
   if (is_using_platform_spelling_engine_) {
-    RenderThread::Get()->Send(new SpellCheckHostMsg_PlatformFillSuggestionList(
+#if defined(OS_MACOSX)
+    RenderThread::Get()->Send(new SpellCheckHostMsg_FillSuggestionList(
         wrong_word, optional_suggestions));
+#endif
     return;
   }
 

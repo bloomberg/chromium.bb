@@ -86,6 +86,7 @@
 #include "chrome/browser/chrome_browser_main_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
+#include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
@@ -344,6 +345,9 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   host->GetChannel()->AddFilter(
       new SearchProviderInstallStateMessageFilter(id, profile));
   host->GetChannel()->AddFilter(new SpellCheckMessageFilter(id));
+#if defined(OS_MACOSX)
+  host->GetChannel()->AddFilter(new SpellCheckMessageFilterMac());
+#endif
   host->GetChannel()->AddFilter(new ChromeBenchmarkingMessageFilter(
       id, profile, profile->GetRequestContextForRenderProcess(id)));
 

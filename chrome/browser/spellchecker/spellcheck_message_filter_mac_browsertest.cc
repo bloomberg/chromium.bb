@@ -4,8 +4,9 @@
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/spellchecker/spellcheck_message_filter.h"
+#include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -14,22 +15,18 @@
 
 namespace {
 
-typedef InProcessBrowserTest SpellCheckMessageFilterBrowserTest;
+typedef InProcessBrowserTest SpellCheckMessageFilterMacBrowserTest;
 
 // Fake filter for testing, which stores sent messages and
 // allows verification by the test case.
-class TestingSpellCheckMessageFilter : public SpellCheckMessageFilter {
+class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterMac {
  public:
   explicit TestingSpellCheckMessageFilter(MessageLoopForUI* loop)
-      : SpellCheckMessageFilter(0),
+      : SpellCheckMessageFilterMac(),
         loop_(loop) { }
 
   ~TestingSpellCheckMessageFilter() {
-    for (std::vector<IPC::Message*>::iterator i = sent_messages_.begin();
-         i != sent_messages_.end();
-         ++i) {
-      delete *i;
-    }
+    STLDeleteContainerPointers(sent_messages_.begin(), sent_messages_.end());
   }
 
   virtual bool Send(IPC::Message* message) {
@@ -43,13 +40,13 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilter {
 };
 
 // Uses browsertest to setup chrome threads.
-IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterBrowserTest,
+IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterMacBrowserTest,
                        SpellCheckReturnMessage) {
-  scoped_refptr<TestingSpellCheckMessageFilter> target
-      (new TestingSpellCheckMessageFilter(MessageLoopForUI::current()));
+  scoped_refptr<TestingSpellCheckMessageFilter> target(
+      new TestingSpellCheckMessageFilter(MessageLoopForUI::current()));
 
-  SpellCheckHostMsg_PlatformRequestTextCheck to_be_received
-      (123, 456, 789, UTF8ToUTF16("zz."));
+  SpellCheckHostMsg_RequestTextCheck to_be_received(
+      123, 456, 789, UTF8ToUTF16("zz."));
   bool handled = false;
   target->OnMessageReceived(to_be_received, &handled);
   EXPECT_TRUE(handled);

@@ -8,7 +8,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
-#include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -32,19 +31,6 @@ bool SpellCheckMessageFilter::OnMessageReceived(const IPC::Message& message,
                                                 bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(SpellCheckMessageFilter, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_PlatformCheckSpelling,
-                        OnPlatformCheckSpelling)
-    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_PlatformFillSuggestionList,
-                        OnPlatformFillSuggestionList)
-    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_GetDocumentTag, OnGetDocumentTag)
-    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_DocumentWithTagClosed,
-                        OnDocumentWithTagClosed)
-    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_ShowSpellingPanel,
-                        OnShowSpellingPanel)
-    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord,
-                        OnUpdateSpellingPanelWithMisspelledWord)
-    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_PlatformRequestTextCheck,
-                        OnPlatformRequestTextCheck)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_RequestDictionary,
                         OnSpellCheckerRequestDictionary)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_NotifyChecked,
@@ -52,58 +38,6 @@ bool SpellCheckMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void SpellCheckMessageFilter::OnPlatformCheckSpelling(const string16& word,
-                                                      int tag,
-                                                      bool* correct) {
-#if defined(OS_MACOSX)
-  *correct = spellcheck_mac::CheckSpelling(word, tag);
-#endif
-}
-
-void SpellCheckMessageFilter::OnPlatformFillSuggestionList(
-    const string16& word,
-    std::vector<string16>* suggestions) {
-#if defined(OS_MACOSX)
-  spellcheck_mac::FillSuggestionList(word, suggestions);
-#endif
-}
-
-void SpellCheckMessageFilter::OnGetDocumentTag(int* tag) {
-#if defined(OS_MACOSX)
-  *tag = spellcheck_mac::GetDocumentTag();
-#endif
-}
-
-void SpellCheckMessageFilter::OnDocumentWithTagClosed(int tag) {
-#if defined(OS_MACOSX)
-  spellcheck_mac::CloseDocumentWithTag(tag);
-#endif
-}
-
-void SpellCheckMessageFilter::OnShowSpellingPanel(bool show) {
-#if defined(OS_MACOSX)
-  spellcheck_mac::ShowSpellingPanel(show);
-#endif
-}
-
-void SpellCheckMessageFilter::OnUpdateSpellingPanelWithMisspelledWord(
-    const string16& word) {
-#if defined(OS_MACOSX)
-  spellcheck_mac::UpdateSpellingPanelWithMisspelledWord(word);
-#endif
-}
-
-void SpellCheckMessageFilter::OnPlatformRequestTextCheck(
-    int route_id,
-    int identifier,
-    int document_tag,
-    const string16& text) {
-#if defined(OS_MACOSX)
-  spellcheck_mac::RequestTextCheck(
-      route_id, identifier, document_tag, text, this);
-#endif
 }
 
 void SpellCheckMessageFilter::OnSpellCheckerRequestDictionary() {

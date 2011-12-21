@@ -2024,7 +2024,8 @@
         'renderer/safe_browsing/phishing_term_feature_extractor_unittest.cc',
         'renderer/safe_browsing/phishing_url_feature_extractor_unittest.cc',
         'renderer/safe_browsing/scorer_unittest.cc',
-        'renderer/spellchecker/spellcheck_provider_unittest.cc',
+        'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
+        'renderer/spellchecker/spellcheck_provider_mac_unittest.cc',
         'renderer/spellchecker/spellcheck_unittest.cc',
         'renderer/spellchecker/spellcheck_worditerator_unittest.cc',
         'service/cloud_print/cloud_print_helpers_unittest.cc',
@@ -2238,6 +2239,7 @@
             'browser/password_manager/password_store_default_unittest.cc',
             'tools/convert_dict/convert_dict_unittest.cc',
             '../third_party/hunspell/google/hunspell_tests.cc',
+            'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
           ],
           # TODO(mark): We really want this for all non-static library targets,
           # but when we tried to pull it up to the common.gypi level, it broke
@@ -2964,7 +2966,7 @@
             '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
           'sources': [
-            'browser/spellchecker/spellcheck_message_filter_browsertest.cc',
+            'browser/spellchecker/spellcheck_message_filter_mac_browsertest.cc',
             '../content/renderer/external_popup_menu_browsertest.cc',
           ],
           'sources!': [
