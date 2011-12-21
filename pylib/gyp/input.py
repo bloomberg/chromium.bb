@@ -1358,9 +1358,11 @@ class DependencyGraphNode(object):
       # True) and this target won't be linked.
       return dependencies
 
-    # Don't traverse 'none' targets unless explicitly done.
+    # Don't traverse 'none' targets if explicitly excluded.
     if (target_type == 'none' and
-        not targets[self.ref].get('dependencies_traverse')):
+        not targets[self.ref].get('dependencies_traverse', True)):
+      if self.ref not in dependencies:
+        dependencies.append(self.ref)
       return dependencies
 
     # Executables and loadable modules are already fully and finally linked.

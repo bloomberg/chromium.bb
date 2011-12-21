@@ -17,7 +17,6 @@
       'target_name': 'chain',
       'type': 'none',
       'dependencies': ['b/b.gyp:b'],
-      'dependencies_traverse': 1,
     },
     {
       'target_name': 'doesnt_need_chain',
@@ -33,6 +32,7 @@
       'sources': [
       ],
       'dependencies': ['b/b.gyp:b'],
+      'dependencies_traverse': 0,
     },
     {
       'target_name': 'other_chain',
