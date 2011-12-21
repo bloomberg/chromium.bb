@@ -87,7 +87,7 @@ class SaveAsDialog : public SelectFileDialog::Listener,
   friend class base::RefCounted<SaveAsDialog>;
   virtual ~SaveAsDialog() {}
 
-  static void WriteFile(FilePath path, const std::string& content) {
+  static void WriteFile(const FilePath& path, const std::string& content) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     DCHECK(!path.empty());
 
