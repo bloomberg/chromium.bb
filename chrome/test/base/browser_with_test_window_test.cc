@@ -78,7 +78,7 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
       TestRenderViewHostForTab(controller->tab_contents());
 
   TestRenderViewHost* pending_rvh = static_cast<TestRenderViewHost*>(
-      controller->tab_contents()->render_manager_for_testing()->
+      controller->tab_contents()->GetRenderManagerForTesting()->
       pending_render_view_host());
   if (pending_rvh) {
     // Simulate the ShouldClose_ACK that is received from the current renderer

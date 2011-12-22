@@ -603,7 +603,7 @@ void SafeBrowsingBlockingPage::DontProceed() {
       tab()->GetController().last_committed_entry_index();
   if (navigation_entry_index_to_remove_ != -1 &&
       navigation_entry_index_to_remove_ != last_committed_index &&
-      !tab()->is_being_destroyed()) {
+      !tab()->IsBeingDestroyed()) {
     tab()->GetController().RemoveEntryAtIndex(
         navigation_entry_index_to_remove_);
     navigation_entry_index_to_remove_ = -1;

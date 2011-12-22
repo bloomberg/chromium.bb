@@ -121,7 +121,7 @@ void TabContentsDragWin::StartDragging(const WebDropData& drop_data,
                                    view_->GetTabContents());
 
   const GURL& page_url = view_->GetTabContents()->GetURL();
-  const std::string& page_encoding = view_->GetTabContents()->encoding();
+  const std::string& page_encoding = view_->GetTabContents()->GetEncoding();
 
   // If it is not drag-out, do the drag-and-drop in the current UI thread.
   if (drop_data.download_metadata.empty()) {

@@ -1422,10 +1422,10 @@ private:
   TabLoadingState oldState = [tabController loadingState];
   TabLoadingState newState = kTabDone;
   NSImage* throbberImage = nil;
-  if (contents->tab_contents()->is_crashed()) {
+  if (contents->tab_contents()->IsCrashed()) {
     newState = kTabCrashed;
     newHasIcon = true;
-  } else if (contents->tab_contents()->waiting_for_response()) {
+  } else if (contents->tab_contents()->IsWaitingForResponse()) {
     newState = kTabWaiting;
     throbberImage = throbberWaitingImage;
   } else if (contents->tab_contents()->IsLoading()) {

@@ -31,7 +31,7 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, AbortOnEnd) {
   // possibility that http://crbug.com/75604 and
   // https://bugs.webkit.org/show_bug.cgi?id=71122 have reverted before
   // marking this as flakey.
-  EXPECT_FALSE(tab_contents->is_crashed());
+  EXPECT_FALSE(tab_contents->IsCrashed());
 }
 
 // This is a browser test because the DumpRenderTree framework holds
@@ -51,5 +51,5 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, XsltBadImport) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   TabContents* tab_contents = browser()->GetSelectedTabContents();
-  EXPECT_FALSE(tab_contents->is_crashed());
+  EXPECT_FALSE(tab_contents->IsCrashed());
 }

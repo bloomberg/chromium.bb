@@ -434,7 +434,7 @@ void InstantLoader::TabContentsDelegateImpl::NavigationStateChanged(
     RenderWidgetHostView *rwhv = source->GetRenderWidgetHostView();
     if (rwhv)
       RegisterForPaintNotifications(rwhv->GetRenderWidgetHost());
-  } else if (source->is_crashed()) {
+  } else if (source->IsCrashed()) {
     PreviewPainted();
   }
 }

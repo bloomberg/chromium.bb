@@ -70,7 +70,7 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
     ASSERT_TRUE(preview_tab_);
 
     preview_ui_ =
-        static_cast<PrintPreviewUI*>(preview_tab_->tab_contents()->web_ui());
+        static_cast<PrintPreviewUI*>(preview_tab_->tab_contents()->GetWebUI());
     ASSERT_TRUE(preview_ui_);
   }
 

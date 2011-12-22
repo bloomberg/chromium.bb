@@ -56,8 +56,8 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
 
-  PrintPreviewUI* preview_ui =
-      reinterpret_cast<PrintPreviewUI*>(preview_tab->tab_contents()->web_ui());
+  PrintPreviewUI* preview_ui = reinterpret_cast<PrintPreviewUI*>(
+      preview_tab->tab_contents()->GetWebUI());
   ASSERT_TRUE(preview_ui != NULL);
 
   scoped_refptr<RefCountedBytes> data;
@@ -118,8 +118,8 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
 
-  PrintPreviewUI* preview_ui =
-      reinterpret_cast<PrintPreviewUI*>(preview_tab->tab_contents()->web_ui());
+  PrintPreviewUI* preview_ui = reinterpret_cast<PrintPreviewUI*>(
+      preview_tab->tab_contents()->GetWebUI());
   ASSERT_TRUE(preview_ui != NULL);
 
   scoped_refptr<RefCountedBytes> data;
@@ -187,8 +187,8 @@ TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
 
-  PrintPreviewUI* preview_ui =
-      reinterpret_cast<PrintPreviewUI*>(preview_tab->tab_contents()->web_ui());
+  PrintPreviewUI* preview_ui = reinterpret_cast<PrintPreviewUI*>(
+      preview_tab->tab_contents()->GetWebUI());
   ASSERT_TRUE(preview_ui != NULL);
 
   // Test with invalid |preview_ui_addr|.

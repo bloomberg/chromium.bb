@@ -1076,7 +1076,7 @@ void Browser::OnWindowActivated() {
   // On some platforms we want to automatically reload tabs that are
   // killed when the user selects them.
   TabContents* contents = GetSelectedTabContents();
-  if (contents && contents->crashed_status() ==
+  if (contents && contents->GetCrashedStatus() ==
      base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kReloadKilledTabs)) {
@@ -3301,7 +3301,7 @@ void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
                                bool user_gesture) {
   // On some platforms we want to automatically reload tabs that are
   // killed when the user selects them.
-  if (user_gesture && new_contents->tab_contents()->crashed_status() ==
+  if (user_gesture && new_contents->tab_contents()->GetCrashedStatus() ==
         base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
     const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
     if (parsed_command_line.HasSwitch(switches::kReloadKilledTabs)) {

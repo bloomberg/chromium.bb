@@ -42,7 +42,7 @@ void BlockedContentTabHelper::DidNavigateMainFrame(
 
 void BlockedContentTabHelper::PopupNotificationVisibilityChanged(
     bool visible) {
-  if (tab_contents()->is_being_destroyed())
+  if (tab_contents()->IsBeingDestroyed())
     return;
   tab_contents_wrapper_->content_settings()->SetPopupsBlocked(visible);
 }

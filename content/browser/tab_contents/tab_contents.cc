@@ -270,7 +270,7 @@ TabContents::~TabContents() {
 }
 
 bool TabContents::OnMessageReceived(const IPC::Message& message) {
-  if (web_ui() && web_ui()->OnMessageReceived(message))
+  if (GetWebUI() && GetWebUI()->OnMessageReceived(message))
     return true;
 
   ObserverListBase<TabContentsObserver>::Iterator it(observers_);
@@ -346,6 +346,36 @@ void TabContents::SetViewType(content::ViewType type) {
   view_type_ = type;
 }
 
+const GURL& TabContents::GetURL() const {
+  // We may not have a navigation entry yet
+  NavigationEntry* entry = controller_.GetActiveEntry();
+  return entry ? entry->virtual_url() : GURL::EmptyGURL();
+}
+
+
+const base::PropertyBag* TabContents::GetPropertyBag() const {
+  return &property_bag_;
+}
+
+base::PropertyBag* TabContents::GetPropertyBag() {
+  return &property_bag_;
+}
+
+content::WebContentsDelegate* TabContents::GetDelegate() {
+  return delegate_;
+}
+
+void TabContents::SetDelegate(content::WebContentsDelegate* delegate) {
+  // TODO(cbentzel): remove this debugging code?
+  if (delegate == delegate_)
+    return;
+  if (delegate_)
+    delegate_->Detach(this);
+  delegate_ = delegate;
+  if (delegate_)
+    delegate_->Attach(this);
+}
+
 content::RenderProcessHost* TabContents::GetRenderProcessHost() const {
   if (render_manager_.current_host())
     return render_manager_.current_host()->process();
@@ -353,10 +383,25 @@ content::RenderProcessHost* TabContents::GetRenderProcessHost() const {
     return NULL;
 }
 
-const GURL& TabContents::GetURL() const {
-  // We may not have a navigation entry yet
-  NavigationEntry* entry = controller_.GetActiveEntry();
-  return entry ? entry->virtual_url() : GURL::EmptyGURL();
+RenderViewHost* TabContents::GetRenderViewHost() const {
+  return render_manager_.current_host();
+}
+
+RenderWidgetHostView* TabContents::GetRenderWidgetHostView() const {
+  return render_manager_.GetRenderWidgetHostView();
+}
+
+TabContentsView* TabContents::GetView() const {
+  return view_.get();
+}
+
+WebUI* TabContents::GetWebUI() const {
+  return render_manager_.web_ui() ? render_manager_.web_ui()
+      : render_manager_.pending_web_ui();
+}
+
+WebUI* TabContents::GetCommittedWebUI() const {
+  return render_manager_.web_ui();
 }
 
 const string16& TabContents::GetTitle() const {
@@ -428,12 +473,46 @@ SiteInstance* TabContents::GetPendingSiteInstance() const {
   return dest_rvh->site_instance();
 }
 
-void TabContents::AddObserver(TabContentsObserver* observer) {
-  observers_.AddObserver(observer);
+bool TabContents::IsLoading() const {
+  return is_loading_;
 }
 
-void TabContents::RemoveObserver(TabContentsObserver* observer) {
-  observers_.RemoveObserver(observer);
+bool TabContents::IsWaitingForResponse() const {
+  return waiting_for_response_;
+}
+
+const net::LoadStateWithParam& TabContents::GetLoadState() const {
+  return load_state_;
+}
+
+const string16& TabContents::GetLoadStateHost() const {
+  return load_state_host_;
+}
+
+uint64 TabContents::GetUploadSize() const {
+  return upload_size_;
+}
+
+uint64 TabContents::GetUploadPosition() const {
+  return upload_position_;
+}
+
+const std::string& TabContents::GetEncoding() const {
+  return encoding_;
+}
+
+bool TabContents::DisplayedInsecureContent() const {
+  return displayed_insecure_content_;
+}
+
+void TabContents::SetCapturingContents(bool cap) {
+  capturing_contents_ = cap;
+}
+
+bool TabContents::IsCrashed() const {
+  return (crashed_status_ == base::TERMINATION_STATUS_PROCESS_CRASHED ||
+          crashed_status_ == base::TERMINATION_STATUS_ABNORMAL_TERMINATION ||
+          crashed_status_ == base::TERMINATION_STATUS_PROCESS_WAS_KILLED);
 }
 
 void TabContents::SetIsCrashed(base::TerminationStatus status, int error_code) {
@@ -443,6 +522,14 @@ void TabContents::SetIsCrashed(base::TerminationStatus status, int error_code) {
   crashed_status_ = status;
   crashed_error_code_ = error_code;
   NotifyNavigationStateChanged(INVALIDATE_TAB);
+}
+
+base::TerminationStatus TabContents::GetCrashedStatus() const {
+  return crashed_status_;
+}
+
+bool TabContents::IsBeingDestroyed() const {
+  return is_being_destroyed_;
 }
 
 void TabContents::NotifyNavigationStateChanged(unsigned changed_flags) {
@@ -465,8 +552,13 @@ void TabContents::DidBecomeSelected() {
   FOR_EACH_OBSERVER(TabContentsObserver, observers_, DidBecomeSelected());
 }
 
+
+base::TimeTicks TabContents::GetLastSelectedTime() const {
+  return last_selected_time_;
+}
+
 void TabContents::WasHidden() {
-  if (!capturing_contents()) {
+  if (!capturing_contents_) {
     // |GetRenderViewHost()| can be NULL if the user middle clicks a link to
     // open a tab in then background, then closes the tab before selecting it.
     // This is because closing the tab calls TabContents::Destroy(), which
@@ -482,6 +574,41 @@ void TabContents::WasHidden() {
       content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
       content::Source<TabContents>(this),
       content::NotificationService::NoDetails());
+}
+
+void TabContents::ShowContents() {
+  RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->DidBecomeSelected();
+}
+
+void TabContents::HideContents() {
+  // TODO(pkasting): http://b/1239839  Right now we purposefully don't call
+  // our superclass HideContents(), because some callers want to be very picky
+  // about the order in which these get called.  In addition to making the code
+  // here practically impossible to understand, this also means we end up
+  // calling TabContents::WasHidden() twice if callers call both versions of
+  // HideContents() on a TabContents.
+  WasHidden();
+}
+
+bool TabContents::NeedToFireBeforeUnload() {
+  // TODO(creis): Should we fire even for interstitial pages?
+  return notify_disconnection() &&
+      !showing_interstitial_page() &&
+      !GetRenderViewHost()->SuddenTerminationAllowed();
+}
+
+RenderViewHostManager* TabContents::GetRenderManagerForTesting() {
+  return &render_manager_;
+}
+
+void TabContents::AddObserver(TabContentsObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void TabContents::RemoveObserver(TabContentsObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void TabContents::Activate() {
@@ -558,29 +685,6 @@ void TabContents::WebUISend(RenderViewHost* render_view_host,
                             const base::ListValue& args) {
   if (delegate_)
     delegate_->WebUISend(this, source_url, name, args);
-}
-
-void TabContents::ShowContents() {
-  RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
-  if (rwhv)
-    rwhv->DidBecomeSelected();
-}
-
-void TabContents::HideContents() {
-  // TODO(pkasting): http://b/1239839  Right now we purposefully don't call
-  // our superclass HideContents(), because some callers want to be very picky
-  // about the order in which these get called.  In addition to making the code
-  // here practically impossible to understand, this also means we end up
-  // calling TabContents::WasHidden() twice if callers call both versions of
-  // HideContents() on a TabContents.
-  WasHidden();
-}
-
-bool TabContents::NeedToFireBeforeUnload() {
-  // TODO(creis): Should we fire even for interstitial pages?
-  return notify_disconnection() &&
-      !showing_interstitial_page() &&
-      !GetRenderViewHost()->SuddenTerminationAllowed();
 }
 
 // TODO(adriansc): Remove this method once refactoring changed all call sites.
@@ -828,13 +932,13 @@ bool TabContents::IsActiveEntry(int32 page_id) {
 }
 
 void TabContents::SetOverrideEncoding(const std::string& encoding) {
-  set_encoding(encoding);
+  SetEncoding(encoding);
   GetRenderViewHost()->Send(new ViewMsg_SetPageEncoding(
       GetRenderViewHost()->routing_id(), encoding));
 }
 
 void TabContents::ResetOverrideEncoding() {
-  reset_encoding();
+  encoding_.clear();
   GetRenderViewHost()->Send(new ViewMsg_ResetPageEncodingToDefault(
       GetRenderViewHost()->routing_id()));
 }
@@ -1424,41 +1528,6 @@ void TabContents::NotifyDisconnected() {
       content::NotificationService::NoDetails());
 }
 
-const base::PropertyBag* TabContents::GetPropertyBag() const {
-  return &property_bag_;
-}
-
-base::PropertyBag* TabContents::GetPropertyBag() {
-  return &property_bag_;
-}
-
-content::WebContentsDelegate* TabContents::GetDelegate() {
-  return delegate_;
-}
-
-void TabContents::SetDelegate(content::WebContentsDelegate* delegate) {
-  // TODO(cbentzel): remove this debugging code?
-  if (delegate == delegate_)
-    return;
-  if (delegate_)
-    delegate_->Detach(this);
-  delegate_ = delegate;
-  if (delegate_)
-    delegate_->Attach(this);
-}
-
-RenderViewHost* TabContents::GetRenderViewHost() const {
-  return render_manager_.current_host();
-}
-
-RenderWidgetHostView* TabContents::GetRenderWidgetHostView() const {
-  return render_manager_.GetRenderWidgetHostView();
-}
-
-TabContentsView* TabContents::GetView() const {
-  return view_.get();
-}
-
 RenderViewHostDelegate::View* TabContents::GetViewDelegate() {
   return view_.get();
 }
@@ -1515,7 +1584,7 @@ void TabContents::RenderViewReady(RenderViewHost* rvh) {
   }
 
   NotifyConnected();
-  bool was_crashed = is_crashed();
+  bool was_crashed = IsCrashed();
   SetIsCrashed(base::TERMINATION_STATUS_STILL_RUNNING, 0);
 
   // Restore the focus to the tab (otherwise the focus will be on the top
@@ -1539,11 +1608,11 @@ void TabContents::RenderViewGone(RenderViewHost* rvh,
   SetIsLoading(false, NULL);
   NotifyDisconnected();
   SetIsCrashed(status, error_code);
-  GetView()->OnTabCrashed(crashed_status(), crashed_error_code());
+  GetView()->OnTabCrashed(GetCrashedStatus(), crashed_error_code_);
 
   FOR_EACH_OBSERVER(TabContentsObserver,
                     observers_,
-                    RenderViewGone(crashed_status()));
+                    RenderViewGone(GetCrashedStatus()));
 }
 
 void TabContents::RenderViewDeleted(RenderViewHost* rvh) {
@@ -1665,7 +1734,7 @@ void TabContents::UpdateTitle(RenderViewHost* rvh,
 
 void TabContents::UpdateEncoding(RenderViewHost* render_view_host,
                                  const std::string& encoding) {
-  set_encoding(encoding);
+  SetEncoding(encoding);
 }
 
 void TabContents::UpdateTargetURL(int32 page_id, const GURL& url) {
@@ -2092,7 +2161,7 @@ void TabContents::OnDialogShown() {
   Activate();
 }
 
-void TabContents::set_encoding(const std::string& encoding) {
+void TabContents::SetEncoding(const std::string& encoding) {
   encoding_ = content::GetContentClient()->browser()->
       GetCanonicalEncodingNameByAliasName(encoding);
 }

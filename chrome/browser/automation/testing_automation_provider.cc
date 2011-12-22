@@ -6574,7 +6574,7 @@ void TestingAutomationProvider::GetPageCurrentEncoding(
     DCHECK(browser);
 
     if (browser->command_updater()->IsCommandEnabled(IDC_ENCODING_MENU))
-      *current_encoding = nav->tab_contents()->encoding();
+      *current_encoding = nav->tab_contents()->GetEncoding();
   }
 }
 

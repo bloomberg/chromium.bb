@@ -266,9 +266,9 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
     const TabStripModel* model = browser->tabstrip_model();
     for (int i = 0; i < model->count(); i++) {
       TabContents* contents = model->GetTabContentsAt(i)->tab_contents();
-      if (!contents->is_crashed()) {
+      if (!contents->IsCrashed()) {
         TabStats stats;
-        stats.last_selected = contents->last_selected_time();
+        stats.last_selected = contents->GetLastSelectedTime();
         stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
         stats.is_pinned = model->IsTabPinned(i);
         stats.is_selected = model->IsTabSelected(i);

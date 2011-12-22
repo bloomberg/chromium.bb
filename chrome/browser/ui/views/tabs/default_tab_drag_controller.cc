@@ -841,7 +841,7 @@ void DefaultTabDragController::Attach(TabStrip* attached_tabstrip,
     }
 
     // Return the TabContents' to normalcy.
-    source_dragged_contents()->tab_contents()->set_capturing_contents(false);
+    source_dragged_contents()->tab_contents()->SetCapturingContents(false);
 
     // Inserting counts as a move. We don't want the tabs to jitter when the
     // user moves the tab immediately after attaching it.
@@ -896,7 +896,7 @@ void DefaultTabDragController::Attach(TabStrip* attached_tabstrip,
 void DefaultTabDragController::Detach() {
   // Prevent the TabContents' HWND from being hidden by any of the model
   // operations performed during the drag.
-  source_dragged_contents()->tab_contents()->set_capturing_contents(true);
+  source_dragged_contents()->tab_contents()->SetCapturingContents(true);
 
   // Calculate the drag bounds.
   std::vector<gfx::Rect> drag_bounds;

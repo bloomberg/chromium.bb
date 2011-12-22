@@ -10,12 +10,10 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/property_bag.h"
-#include "base/string16.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
@@ -85,46 +83,8 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
               SessionStorageNamespace* session_storage_namespace);
   virtual ~TabContents();
 
-  // Intrinsic tab state -------------------------------------------------------
-
-  // Returns the user browser context associated with this TabContents (via the
-  // NavigationController).
-  content::BrowserContext* browser_context() const {
-    return controller_.browser_context();
-  }
-
   // Returns the SavePackage which manages the page saving job. May be NULL.
   SavePackage* save_package() const { return save_package_.get(); }
-
-  WebUI* committed_web_ui() const {
-    return render_manager_.web_ui();
-  }
-
-  // Returns the committed WebUI if one exists, otherwise the pending one.
-  // Callers who want to use the pending WebUI for the pending navigation entry
-  // should use GetWebUIForCurrentState instead.
-  WebUI* web_ui() const {
-    return render_manager_.web_ui() ? render_manager_.web_ui()
-        : render_manager_.pending_web_ui();
-  }
-
-  // Tab navigation state ------------------------------------------------------
-
-  // Returns the current navigation properties, which if a navigation is
-  // pending may be provisional (e.g., the navigation could result in a
-  // download, in which case the URL would revert to what it was previously).
-  virtual const GURL& GetURL() const OVERRIDE;
-  virtual const string16& GetTitle() const;
-
-  // The max page ID for any page that the current SiteInstance has loaded in
-  // this TabContents.  Page IDs are specific to a given SiteInstance and
-  // TabContents, corresponding to a specific RenderView in the renderer.
-  // Page IDs increase with each new page that is loaded by a tab.
-  int32 GetMaxPageID();
-
-  // The max page ID for any page that the given SiteInstance has loaded in
-  // this TabContents.
-  int32 GetMaxPageIDForSiteInstance(SiteInstance* site_instance);
 
   // Updates the max page ID for the current SiteInstance in this TabContents
   // to be at least |page_id|.
@@ -134,89 +94,6 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   // to be at least |page_id|.
   void UpdateMaxPageIDForSiteInstance(SiteInstance* site_instance,
                                       int32 page_id);
-
-  // Returns the SiteInstance associated with the current page.
-  SiteInstance* GetSiteInstance() const;
-
-  // Returns the SiteInstance for the pending navigation, if any.  Otherwise
-  // returns the current SiteInstance.
-  SiteInstance* GetPendingSiteInstance() const;
-
-  // Return whether this tab contents is loading a resource.
-  bool IsLoading() const { return is_loading_; }
-
-  // Returns whether this tab contents is waiting for a first-response for the
-  // main resource of the page. This controls whether the throbber state is
-  // "waiting" or "loading."
-  bool waiting_for_response() const { return waiting_for_response_; }
-
-  const net::LoadStateWithParam& load_state() const { return load_state_; }
-  const string16& load_state_host() const { return load_state_host_; }
-  uint64 upload_size() const { return upload_size_; }
-  uint64 upload_position() const { return upload_position_; }
-
-  const std::string& encoding() const { return encoding_; }
-  void set_encoding(const std::string& encoding);
-  void reset_encoding() {
-    encoding_.clear();
-  }
-
-  bool displayed_insecure_content() const {
-    return displayed_insecure_content_;
-  }
-
-  // Internal state ------------------------------------------------------------
-
-  // This flag indicates whether the tab contents is currently being
-  // screenshotted by the DraggedTabController.
-  bool capturing_contents() const { return capturing_contents_; }
-  void set_capturing_contents(bool cap) { capturing_contents_ = cap; }
-
-  // Indicates whether this tab should be considered crashed. The setter will
-  // also notify the delegate when the flag is changed.
-  bool is_crashed() const {
-    return (crashed_status_ == base::TERMINATION_STATUS_PROCESS_CRASHED ||
-            crashed_status_ == base::TERMINATION_STATUS_ABNORMAL_TERMINATION ||
-            crashed_status_ == base::TERMINATION_STATUS_PROCESS_WAS_KILLED);
-  }
-  base::TerminationStatus crashed_status() const { return crashed_status_; }
-  int crashed_error_code() const { return crashed_error_code_; }
-  void SetIsCrashed(base::TerminationStatus status, int error_code);
-
-  // Whether the tab is in the process of being destroyed.
-  // Added as a tentative work-around for focus related bug #4633.  This allows
-  // us not to store focus when a tab is being closed.
-  bool is_being_destroyed() const { return is_being_destroyed_; }
-
-  // Convenience method for notifying the delegate of a navigation state
-  // change. See WebContentsDelegate.
-  void NotifyNavigationStateChanged(unsigned changed_flags);
-
-  // Invoked when the tab contents becomes selected. If you override, be sure
-  // and invoke super's implementation.
-  virtual void DidBecomeSelected();
-  base::TimeTicks last_selected_time() const {
-    return last_selected_time_;
-  }
-
-  // Invoked when the tab contents becomes hidden.
-  // NOTE: If you override this, call the superclass version too!
-  virtual void WasHidden();
-
-  // TODO(brettw) document these.
-  virtual void ShowContents();
-  virtual void HideContents();
-
-  // Returns true if the before unload and unload listeners need to be
-  // fired. The value of this changes over time. For example, if true and the
-  // before unload listener is executed and allows the user to exit, then this
-  // returns false.
-  bool NeedToFireBeforeUnload();
-
-  // Expose the render manager for testing.
-  RenderViewHostManager* render_manager_for_testing() {
-    return &render_manager_;
-  }
 
   // Commands ------------------------------------------------------------------
 
@@ -459,16 +336,46 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   virtual void SetViewType(content::ViewType type) OVERRIDE;
   virtual content::RenderProcessHost* GetRenderProcessHost() const OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
-  // TODO(jam): webui stuff goes here
   virtual RenderWidgetHostView* GetRenderWidgetHostView() const OVERRIDE;
   virtual TabContentsView* GetView() const OVERRIDE;
-
+  virtual WebUI* GetWebUI() const OVERRIDE;
+  virtual WebUI* GetCommittedWebUI() const OVERRIDE;
+  virtual const string16& GetTitle() const OVERRIDE;
+  virtual int32 GetMaxPageID() OVERRIDE;
+  virtual int32 GetMaxPageIDForSiteInstance(
+      SiteInstance* site_instance) OVERRIDE;
+  virtual SiteInstance* GetSiteInstance() const OVERRIDE;
+  virtual SiteInstance* GetPendingSiteInstance() const OVERRIDE;
+  virtual bool IsLoading() const OVERRIDE;
+  virtual bool IsWaitingForResponse() const OVERRIDE;
+  virtual const net::LoadStateWithParam& GetLoadState() const OVERRIDE;
+  virtual const string16& GetLoadStateHost() const OVERRIDE;
+  virtual uint64 GetUploadSize() const OVERRIDE;
+  virtual uint64 GetUploadPosition() const OVERRIDE;
+  virtual const std::string& GetEncoding() const OVERRIDE;
+  virtual bool DisplayedInsecureContent() const OVERRIDE;
+  virtual void SetCapturingContents(bool cap) OVERRIDE;
+  virtual bool IsCrashed() const OVERRIDE;
+  virtual void SetIsCrashed(base::TerminationStatus status,
+                            int error_code) OVERRIDE;
+  virtual base::TerminationStatus GetCrashedStatus() const OVERRIDE;
+  virtual bool IsBeingDestroyed() const OVERRIDE;
+  virtual void NotifyNavigationStateChanged(unsigned changed_flags) OVERRIDE;
+  virtual void DidBecomeSelected() OVERRIDE;
+  virtual base::TimeTicks GetLastSelectedTime() const OVERRIDE;
+  virtual void WasHidden() OVERRIDE;
+  virtual void ShowContents() OVERRIDE;
+  virtual void HideContents() OVERRIDE;
+  virtual bool NeedToFireBeforeUnload() OVERRIDE;
+  virtual RenderViewHostManager* GetRenderManagerForTesting() OVERRIDE;
 
   // RenderViewHostDelegate ----------------------------------------------------
 
   virtual RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
   virtual RenderViewHostDelegate::RendererManagement*
       GetRendererManagementDelegate() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual const GURL& GetURL() const OVERRIDE;
   virtual TabContents* GetAsTabContents() OVERRIDE;
   virtual content::ViewType GetRenderViewType() const OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
@@ -545,7 +452,6 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   virtual void HandleMouseDown() OVERRIDE;
   virtual void HandleMouseUp() OVERRIDE;
   virtual void HandleMouseActivate() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void RunFileChooser(
       RenderViewHost* render_view_host,
       const content::FileChooserParams& params) OVERRIDE;
@@ -736,6 +642,8 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   virtual bool CreateRenderViewForRenderManager(
       RenderViewHost* render_view_host) OVERRIDE;
 
+  void SetEncoding(const std::string& encoding);
+
   // Stores random bits of data for others to associate with this object.
   // WARNING: this needs to be deleted after NavigationController.
   base::PropertyBag property_bag_;
@@ -779,7 +687,9 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   base::TerminationStatus crashed_status_;
   int crashed_error_code_;
 
-  // See waiting_for_response() above.
+  // Whether this tab contents is waiting for a first-response for the
+  // main resource of the page. This controls whether the throbber state is
+  // "waiting" or "loading."
   bool waiting_for_response_;
 
   // Map of SiteInstance ID to max page ID for this tab. A page ID is specific
@@ -815,7 +725,8 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
 
   // Data for misc internal state ----------------------------------------------
 
-  // See capturing_contents() above.
+  // Whether the tab contents is currently being screenshotted by the
+  // DraggedTabController.
   bool capturing_contents_;
 
   // See getter above.

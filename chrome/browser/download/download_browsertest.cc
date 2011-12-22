@@ -595,7 +595,7 @@ class DownloadTest : public InProcessBrowserTest {
       return;
 
     ActiveDownloadsUI* downloads_ui = static_cast<ActiveDownloadsUI*>(
-        popup->GetSelectedTabContents()->web_ui());
+        popup->GetSelectedTabContents()->GetWebUI());
 
     ASSERT_TRUE(downloads_ui);
     const ActiveDownloadsUI::DownloadList& downloads =

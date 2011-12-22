@@ -209,7 +209,7 @@ void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
   TabContentsWrapper* preview_tab = tab_controller->GetPrintPreviewForTab(
       browser()->GetSelectedTabContentsWrapper());
   ASSERT_TRUE(preview_tab);
-  SetWebUIInstance(preview_tab->tab_contents()->web_ui());
+  SetWebUIInstance(preview_tab->tab_contents()->GetWebUI());
 }
 
 const char WebUIBrowserTest::kDummyURL[] = "chrome://DummyURL";
@@ -405,7 +405,7 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
 void WebUIBrowserTest::SetupHandlers() {
   WebUI* web_ui_instance = override_selected_web_ui_ ?
       override_selected_web_ui_ :
-      browser()->GetSelectedTabContents()->web_ui();
+      browser()->GetSelectedTabContents()->GetWebUI();
   ASSERT_TRUE(web_ui_instance != NULL);
   web_ui_instance->set_register_callback_overwrites(true);
   test_handler_->Attach(web_ui_instance);

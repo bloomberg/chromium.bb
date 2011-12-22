@@ -249,7 +249,7 @@ void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
                                      linked_ptr<net::FileStream>(file_stream),
                                      download_url_,
                                      tab_contents_->GetURL(),
-                                     tab_contents_->encoding(),
+                                     tab_contents_->GetEncoding(),
                                      tab_contents_);
             drag_file_downloader->Start(
                 new drag_download_util::PromiseFileFinalizer(

@@ -151,7 +151,7 @@
 
   for (int i = 0; i < browser_->tab_count(); ++i) {
     // Check to see if tab is closing.
-    if (browser_->GetTabContentsAt(i)->is_being_destroyed()) {
+    if (browser_->GetTabContentsAt(i)->IsBeingDestroyed()) {
       continue;
     }
 

@@ -1022,7 +1022,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
   // Kill the singleton tab.
   tab_contents->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
-  EXPECT_TRUE(tab_contents->is_crashed());
+  EXPECT_TRUE(tab_contents->IsCrashed());
 
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
@@ -1032,7 +1032,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   ui_test_utils::NavigateToURL(&p);
 
   // The tab should not be sad anymore.
-  EXPECT_FALSE(tab_contents->is_crashed());
+  EXPECT_FALSE(tab_contents->IsCrashed());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,

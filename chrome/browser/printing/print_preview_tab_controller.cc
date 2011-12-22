@@ -255,7 +255,7 @@ void PrintPreviewTabController::OnRendererProcessClosed(
     RemovePreviewTab(closed_preview_tabs[i]);
     PrintPreviewUI* print_preview_ui =
         static_cast<PrintPreviewUI*>(
-            closed_preview_tabs[i]->tab_contents()->web_ui());
+            closed_preview_tabs[i]->tab_contents()->GetWebUI());
     if (print_preview_ui)
       print_preview_ui->OnPrintPreviewTabClosed();
   }
@@ -395,9 +395,9 @@ TabContentsWrapper* PrintPreviewTabController::CreatePrintPreviewTab(
 void PrintPreviewTabController::SetInitiatorTabURLAndTitle(
     TabContentsWrapper* preview_tab) {
   TabContentsWrapper* initiator_tab = GetInitiatorTab(preview_tab);
-  if (initiator_tab && preview_tab->tab_contents()->web_ui()) {
+  if (initiator_tab && preview_tab->tab_contents()->GetWebUI()) {
     PrintPreviewUI* print_preview_ui =
-        static_cast<PrintPreviewUI*>(preview_tab->tab_contents()->web_ui());
+        static_cast<PrintPreviewUI*>(preview_tab->tab_contents()->GetWebUI());
     print_preview_ui->SetInitiatorTabURLAndTitle(
         initiator_tab->tab_contents()->GetURL().spec(),
         initiator_tab->print_view_manager()->RenderSourceName());
@@ -461,7 +461,7 @@ void PrintPreviewTabController::RemoveInitiatorTab(
 
   // Initiator tab is closed. Close the print preview tab too.
   PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(preview_tab->tab_contents()->web_ui());
+      static_cast<PrintPreviewUI*>(preview_tab->tab_contents()->GetWebUI());
   if (print_preview_ui)
     print_preview_ui->OnInitiatorTabClosed();
 }
@@ -478,7 +478,7 @@ void PrintPreviewTabController::RemovePreviewTab(
   // Print preview TabContents is destroyed. Notify |PrintPreviewUI| to abort
   // the initiator tab preview request.
   PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(preview_tab->tab_contents()->web_ui());
+      static_cast<PrintPreviewUI*>(preview_tab->tab_contents()->GetWebUI());
   if (print_preview_ui)
     print_preview_ui->OnTabDestroyed();
 

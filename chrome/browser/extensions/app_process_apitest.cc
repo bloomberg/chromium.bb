@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_TRUE(process_map->Contains(
       browser()->GetTabContentsAt(1)->GetRenderProcessHost()->GetID()));
-  EXPECT_FALSE(browser()->GetTabContentsAt(1)->web_ui());
+  EXPECT_FALSE(browser()->GetTabContentsAt(1)->GetWebUI());
   LOG(INFO) << "Nav 1.";
 
   ui_test_utils::NavigateToURLWithDisposition(
@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_TRUE(process_map->Contains(
       browser()->GetTabContentsAt(2)->GetRenderProcessHost()->GetID()));
-  EXPECT_FALSE(browser()->GetTabContentsAt(2)->web_ui());
+  EXPECT_FALSE(browser()->GetTabContentsAt(2)->GetWebUI());
   LOG(INFO) << "Nav 2.";
 
   ui_test_utils::WindowedNotificationObserver tab_added_observer(
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   LOG(INFO) << "Nav 3.";
   EXPECT_FALSE(process_map->Contains(
       browser()->GetTabContentsAt(3)->GetRenderProcessHost()->GetID()));
-  EXPECT_FALSE(browser()->GetTabContentsAt(3)->web_ui());
+  EXPECT_FALSE(browser()->GetTabContentsAt(3)->GetWebUI());
 
   // We should have opened 3 new extension tabs. Including the original blank
   // tab, we now have 4 tabs. Because the app_process app has the background
@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
   LOG(INFO) << "Nav 1.";
   EXPECT_TRUE(process_map->Contains(
       browser()->GetTabContentsAt(1)->GetRenderProcessHost()->GetID()));
-  EXPECT_FALSE(browser()->GetTabContentsAt(1)->web_ui());
+  EXPECT_FALSE(browser()->GetTabContentsAt(1)->GetWebUI());
 
   ui_test_utils::WindowedNotificationObserver tab_added_observer(
       content::NOTIFICATION_TAB_ADDED,
@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
   LOG(INFO) << "Nav 2.";
   EXPECT_TRUE(process_map->Contains(
       browser()->GetTabContentsAt(2)->GetRenderProcessHost()->GetID()));
-  EXPECT_FALSE(browser()->GetTabContentsAt(2)->web_ui());
+  EXPECT_FALSE(browser()->GetTabContentsAt(2)->GetWebUI());
 
   // We should have opened 2 new extension tabs. Including the original blank
   // tab, we now have 3 tabs. The two app tabs should not be in the same
@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_FALSE(process_map->Contains(
       browser()->GetTabContentsAt(1)->GetRenderProcessHost()->GetID()));
-  EXPECT_FALSE(browser()->GetTabContentsAt(1)->web_ui());
+  EXPECT_FALSE(browser()->GetTabContentsAt(1)->GetWebUI());
 
   ui_test_utils::WindowedNotificationObserver tab_added_observer(
       content::NOTIFICATION_TAB_ADDED,
@@ -297,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path2/empty.html"));
   EXPECT_FALSE(process_map->Contains(
       browser()->GetTabContentsAt(2)->GetRenderProcessHost()->GetID()));
-  EXPECT_FALSE(browser()->GetTabContentsAt(2)->web_ui());
+  EXPECT_FALSE(browser()->GetTabContentsAt(2)->GetWebUI());
 
   // We should have opened 2 new bookmark app tabs. Including the original blank
   // tab, we now have 3 tabs.  Because normal pages use the

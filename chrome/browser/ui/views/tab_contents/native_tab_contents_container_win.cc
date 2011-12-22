@@ -102,7 +102,7 @@ bool NativeTabContentsContainerWin::SkipDefaultKeyEventProcessing(
   // not process them, they'll be returned to us and we'll treat them as
   // accelerators then.
   return container_->tab_contents() &&
-         !container_->tab_contents()->is_crashed();
+         !container_->tab_contents()->IsCrashed();
 }
 
 bool NativeTabContentsContainerWin::IsFocusable() const {

@@ -445,7 +445,7 @@ void Downloader::OnFileStreamCreatedOnUIThread(const GURL& url,
     DownloadStarted(true, url);
     download_manager->DownloadUrlToFile(url,
                                         tab_contents->GetURL(),
-                                        tab_contents->encoding(),
+                                        tab_contents->GetEncoding(),
                                         save_info,
                                         tab_contents);
   } else {

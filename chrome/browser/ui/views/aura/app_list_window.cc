@@ -99,7 +99,7 @@ void AppListWindow::Init(const gfx::Rect& bounds) {
   tab->SetDelegate(this);
 
   contents_->LoadURL(GURL(chrome::kChromeUIAppListURL));
-  static_cast<AppListUI*>(tab->web_ui())->set_delegate(this);
+  static_cast<AppListUI*>(tab->GetWebUI())->set_delegate(this);
 
   // Use a background with transparency to trigger transparent webkit.
   SkBitmap background;

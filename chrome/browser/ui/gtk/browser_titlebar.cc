@@ -640,7 +640,7 @@ void BrowserTitlebar::UpdateThrobber(TabContents* tab_contents) {
 
   if (tab_contents && tab_contents->IsLoading()) {
     GdkPixbuf* icon_pixbuf =
-        throbber_.GetNextFrame(tab_contents->waiting_for_response());
+        throbber_.GetNextFrame(tab_contents->IsWaitingForResponse());
     gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_), icon_pixbuf);
   } else {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -991,7 +991,7 @@ bool BrowserTitlebar::IsCommandIdChecked(int command_id) const {
         browser_window_->browser()->GetSelectedTabContents();
     if (tab_contents) {
       return controller.IsItemChecked(browser_window_->browser()->profile(),
-                                      tab_contents->encoding(),
+                                      tab_contents->GetEncoding(),
                                       command_id);
     }
     return false;

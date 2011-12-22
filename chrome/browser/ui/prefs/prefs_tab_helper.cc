@@ -438,5 +438,5 @@ void PrefsTabHelper::UpdateRendererPreferences() {
 }
 
 Profile* PrefsTabHelper::GetProfile() {
-  return Profile::FromBrowserContext(contents_->browser_context());
+  return Profile::FromBrowserContext(contents_->GetBrowserContext());
 }

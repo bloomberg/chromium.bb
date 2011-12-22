@@ -66,9 +66,9 @@ class WebUITest : public TabContentsWrapperTestHarness {
     // process transition, and our RVH pointer will be the "committed" one.
     // In the second call to this function from WebUIToStandard, it won't
     // actually be pending, which is the point of this test.
-    if (contents->render_manager_for_testing()->pending_render_view_host()) {
+    if (contents->GetRenderManagerForTesting()->pending_render_view_host()) {
       static_cast<TestRenderViewHost*>(
-          contents->render_manager_for_testing()->
+          contents->GetRenderManagerForTesting()->
           pending_render_view_host())->SendNavigate(page_id + 1, next_url);
     } else {
       static_cast<TestRenderViewHost*>(

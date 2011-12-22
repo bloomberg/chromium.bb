@@ -370,7 +370,7 @@ TEST_F(TabContentsTest, CrossSiteBoundaries) {
   EXPECT_NE(instance1, instance2);
   EXPECT_TRUE(contents()->pending_rvh() == NULL);
   // We keep the original RVH around, swapped out.
-  EXPECT_TRUE(contents()->render_manager_for_testing()->IsSwappedOut(orig_rvh));
+  EXPECT_TRUE(contents()->GetRenderManagerForTesting()->IsSwappedOut(orig_rvh));
   EXPECT_EQ(orig_rvh_delete_count, 0);
 
   // Going back should switch SiteInstances again.  The first SiteInstance is
@@ -393,7 +393,7 @@ TEST_F(TabContentsTest, CrossSiteBoundaries) {
   EXPECT_EQ(goback_rvh, contents()->GetRenderViewHost());
   EXPECT_EQ(instance1, contents()->GetSiteInstance());
   // The pending RVH should now be swapped out, not deleted.
-  EXPECT_TRUE(contents()->render_manager_for_testing()->
+  EXPECT_TRUE(contents()->GetRenderManagerForTesting()->
       IsSwappedOut(pending_rvh));
   EXPECT_EQ(pending_rvh_delete_count, 0);
 
@@ -834,7 +834,7 @@ TEST_F(TabContentsTest, CrossSiteCantPreemptAfterUnload) {
 
   // Simulate the pending renderer's response, which leads to an unload request
   // being sent to orig_rvh.
-  contents()->render_manager_for_testing()->OnCrossSiteResponse(0, 0);
+  contents()->GetRenderManagerForTesting()->OnCrossSiteResponse(0, 0);
 
   // Suppose the original renderer navigates now, while the unload request is in
   // flight.  We should ignore it, wait for the unload ack, and let the pending

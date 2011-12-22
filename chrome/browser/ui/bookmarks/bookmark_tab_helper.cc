@@ -51,13 +51,13 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() {
   // does.
   if (tab_contents()->GetController().GetLastCommittedEntry()) {
     // Not the first load, always use the committed Web UI.
-    return CanShowBookmarkBar(tab_contents()->committed_web_ui());
+    return CanShowBookmarkBar(tab_contents()->GetCommittedWebUI());
   }
 
   // When it's the first load, we know either the pending one or the committed
   // one will have the Web UI in it (see GetWebUIForCurrentState), and only one
   // of them will be valid, so we can just check both.
-  return CanShowBookmarkBar(tab_contents()->web_ui());
+  return CanShowBookmarkBar(tab_contents()->GetWebUI());
 }
 
 void BookmarkTabHelper::DidNavigateMainFrame(

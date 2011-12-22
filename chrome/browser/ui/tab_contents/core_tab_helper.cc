@@ -26,14 +26,14 @@ string16 CoreTabHelper::GetDefaultTitle() {
 
 string16 CoreTabHelper::GetStatusText() const {
   if (!tab_contents()->IsLoading() ||
-      tab_contents()->load_state().state == net::LOAD_STATE_IDLE) {
+      tab_contents()->GetLoadState().state == net::LOAD_STATE_IDLE) {
     return string16();
   }
 
-  switch (tab_contents()->load_state().state) {
+  switch (tab_contents()->GetLoadState().state) {
     case net::LOAD_STATE_WAITING_FOR_DELEGATE:
       return l10n_util::GetStringFUTF16(IDS_LOAD_STATE_WAITING_FOR_DELEGATE,
-                                        tab_contents()->load_state().param);
+                                        tab_contents()->GetLoadState().param);
     case net::LOAD_STATE_WAITING_FOR_CACHE:
       return l10n_util::GetStringUTF16(IDS_LOAD_STATE_WAITING_FOR_CACHE);
     case net::LOAD_STATE_WAITING_FOR_APPCACHE:
@@ -53,16 +53,17 @@ string16 CoreTabHelper::GetStatusText() const {
     case net::LOAD_STATE_SSL_HANDSHAKE:
       return l10n_util::GetStringUTF16(IDS_LOAD_STATE_SSL_HANDSHAKE);
     case net::LOAD_STATE_SENDING_REQUEST:
-      if (tab_contents()->upload_size())
+      if (tab_contents()->GetUploadSize()) {
         return l10n_util::GetStringFUTF16Int(
-                    IDS_LOAD_STATE_SENDING_REQUEST_WITH_PROGRESS,
-                    static_cast<int>((100 * tab_contents()->upload_position()) /
-                        tab_contents()->upload_size()));
-      else
+            IDS_LOAD_STATE_SENDING_REQUEST_WITH_PROGRESS,
+            static_cast<int>((100 * tab_contents()->GetUploadPosition()) /
+                tab_contents()->GetUploadSize()));
+      } else {
         return l10n_util::GetStringUTF16(IDS_LOAD_STATE_SENDING_REQUEST);
+      }
     case net::LOAD_STATE_WAITING_FOR_RESPONSE:
       return l10n_util::GetStringFUTF16(IDS_LOAD_STATE_WAITING_FOR_RESPONSE,
-                                        tab_contents()->load_state_host());
+                                        tab_contents()->GetLoadStateHost());
     // Ignore net::LOAD_STATE_READING_RESPONSE and net::LOAD_STATE_IDLE
     case net::LOAD_STATE_IDLE:
     case net::LOAD_STATE_READING_RESPONSE:

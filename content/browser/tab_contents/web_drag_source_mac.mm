@@ -333,7 +333,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
         linked_ptr<net::FileStream>(fileStream),
         downloadURL_,
         contents_->GetURL(),
-        contents_->encoding(),
+        contents_->GetEncoding(),
         contents_));
 
     // The finalizer will take care of closing and deletion.

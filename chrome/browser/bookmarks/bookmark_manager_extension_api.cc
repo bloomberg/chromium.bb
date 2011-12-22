@@ -424,7 +424,7 @@ bool DropBookmarkManagerFunction::RunImpl() {
         dispatcher()->delegate()->GetAssociatedTabContents();
     CHECK(tab_contents);
     ExtensionWebUI* web_ui =
-        static_cast<ExtensionWebUI*>(tab_contents->web_ui());
+        static_cast<ExtensionWebUI*>(tab_contents->GetWebUI());
     CHECK(web_ui);
     BookmarkManagerExtensionEventRouter* router =
         web_ui->bookmark_manager_extension_event_router();

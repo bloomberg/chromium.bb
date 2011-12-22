@@ -428,7 +428,7 @@ void DraggedTabControllerGtk::Attach(TabStripGtk* attached_tabstrip,
     }
 
     // Return the TabContents' to normalcy.
-    drag_data_->GetSourceTabContents()->set_capturing_contents(false);
+    drag_data_->GetSourceTabContents()->SetCapturingContents(false);
 
     // We need to ask the tabstrip we're attached to ensure that the ideal
     // bounds for all its tabs are correctly generated, because the calculation

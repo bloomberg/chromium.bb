@@ -153,7 +153,7 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
     return;
   }
 
-  if (tab_contents->displayed_insecure_content())
+  if (tab_contents->DisplayedInsecureContent())
     entry->ssl().set_displayed_insecure_content();
 }
 

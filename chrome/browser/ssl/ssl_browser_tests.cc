@@ -46,7 +46,7 @@ class SSLUITest : public InProcessBrowserTest {
 
   void CheckAuthenticatedState(TabContents* tab,
                                bool displayed_insecure_content) {
-    ASSERT_FALSE(tab->is_crashed());
+    ASSERT_FALSE(tab->IsCrashed());
     NavigationEntry* entry = tab->GetController().GetActiveEntry();
     ASSERT_TRUE(entry);
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->page_type());
@@ -59,7 +59,7 @@ class SSLUITest : public InProcessBrowserTest {
   }
 
   void CheckUnauthenticatedState(TabContents* tab) {
-    ASSERT_FALSE(tab->is_crashed());
+    ASSERT_FALSE(tab->IsCrashed());
     NavigationEntry* entry = tab->GetController().GetActiveEntry();
     ASSERT_TRUE(entry);
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->page_type());
@@ -74,7 +74,7 @@ class SSLUITest : public InProcessBrowserTest {
                                       net::CertStatus error,
                                       bool ran_insecure_content,
                                       bool interstitial) {
-    ASSERT_FALSE(tab->is_crashed());
+    ASSERT_FALSE(tab->IsCrashed());
     NavigationEntry* entry = tab->GetController().GetActiveEntry();
     ASSERT_TRUE(entry);
     EXPECT_EQ(interstitial ?

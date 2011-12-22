@@ -1378,5 +1378,5 @@ MobileSetupUI::MobileSetupUI(TabContents* contents) : ChromeWebUI(contents) {
 void MobileSetupUI::RenderViewCreated(RenderViewHost* host) {
   ChromeWebUI::RenderViewCreated(host);
   // Destroyed by the corresponding RenderViewHost.
-  new PortalFrameLoadObserver(host, tab_contents()->web_ui());
+  new PortalFrameLoadObserver(host, tab_contents()->GetWebUI());
 }

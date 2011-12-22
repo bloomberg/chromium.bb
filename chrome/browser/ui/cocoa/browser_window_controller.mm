@@ -961,7 +961,7 @@ enum {
     if (!current_tab) {
       return;
     }
-    const std::string encoding = current_tab->encoding();
+    const std::string encoding = current_tab->GetEncoding();
 
     bool toggled = encoding_controller.IsItemChecked(profile, encoding, tag);
     NSInteger oldState = [item state];

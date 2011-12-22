@@ -135,10 +135,10 @@ void PrintPreviewUI::SetInitiatorTabURLAndTitle(
 void PrintPreviewUI::SetSourceIsModifiable(
     TabContentsWrapper* print_preview_tab,
     bool source_is_modifiable) {
-  if (!print_preview_tab || !print_preview_tab->tab_contents()->web_ui())
+  if (!print_preview_tab || !print_preview_tab->tab_contents()->GetWebUI())
     return;
-  PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(print_preview_tab->tab_contents()->web_ui());
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
+      print_preview_tab->tab_contents()->GetWebUI());
   print_preview_ui->source_is_modifiable_ = source_is_modifiable;
 }
 

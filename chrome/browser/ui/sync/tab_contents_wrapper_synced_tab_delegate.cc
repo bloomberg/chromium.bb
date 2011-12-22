@@ -27,7 +27,7 @@ SessionID::id_type TabContentsWrapperSyncedTabDelegate::GetSessionId() const {
 }
 
 bool TabContentsWrapperSyncedTabDelegate::IsBeingDestroyed() const {
-  return tab_contents_wrapper_->tab_contents()->is_being_destroyed();
+  return tab_contents_wrapper_->tab_contents()->IsBeingDestroyed();
 }
 
 Profile* TabContentsWrapperSyncedTabDelegate::profile() const {

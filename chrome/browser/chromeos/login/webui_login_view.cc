@@ -207,7 +207,7 @@ void WebUILoginView::LoadURL(const GURL & url) {
 }
 
 WebUI* WebUILoginView::GetWebUI() {
-  return webui_login_->dom_contents()->tab_contents()->web_ui();
+  return webui_login_->dom_contents()->tab_contents()->GetWebUI();
 }
 
 void WebUILoginView::SetStatusAreaEnabled(bool enable) {

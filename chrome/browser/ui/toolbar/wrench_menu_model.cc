@@ -102,7 +102,7 @@ bool EncodingMenuModel::IsCommandIdChecked(int command_id) const {
     return false;
   EncodingMenuController controller;
   return controller.IsItemChecked(browser_->profile(),
-                                  current_tab->encoding(), command_id);
+                                  current_tab->GetEncoding(), command_id);
 }
 
 bool EncodingMenuModel::IsCommandIdEnabled(int command_id) const {

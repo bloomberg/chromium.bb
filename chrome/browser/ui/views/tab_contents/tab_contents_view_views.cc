@@ -375,7 +375,7 @@ TabContents* TabContentsViewViews::GetTabContents() {
 }
 
 bool TabContentsViewViews::IsShowingSadTab() const {
-  return tab_contents_->is_crashed() && overlaid_view_;
+  return tab_contents_->IsCrashed() && overlaid_view_;
 }
 
 void TabContentsViewViews::OnNativeTabContentsViewShown() {
