@@ -220,13 +220,12 @@ class CBuildBotTest(mox.MoxTestBase):
     """Test _UploadPrebuilts with a private location."""
     buildnumber = 4
     check = mox.And(mox.IsA(list),
-                    mox.In('gs://chromeos-%s/%s/%d/prebuilts/' %
-                           (self._test_board, 'full', buildnumber)),
-                    mox.In('full'))
+                    mox.In('gs://chromeos-prebuilt'),
+                    mox.In('binary'))
     cros_lib.OldRunCommand(check, cwd=os.path.dirname(commands.__file__))
     self.mox.ReplayAll()
     commands.UploadPrebuilts(self._buildroot, self._test_board, 'private',
-                             'full', None, buildnumber)
+                             'binary', None, buildnumber)
     self.mox.VerifyAll()
 
   def testChromePrebuilts(self):
