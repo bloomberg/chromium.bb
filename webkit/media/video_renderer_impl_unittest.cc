@@ -56,6 +56,8 @@ class VideoRendererImplTest : public testing::Test {
     // Forward all time requests to lock-protected getter.
     ON_CALL(host_, GetTime())
         .WillByDefault(Invoke(this, &VideoRendererImplTest::GetTime));
+    ON_CALL(host_, GetDuration())
+        .WillByDefault(Return(base::TimeDelta::FromSeconds(10)));
 
     decoder_ = new media::MockVideoDecoder();
     EXPECT_CALL(*decoder_, natural_size())
