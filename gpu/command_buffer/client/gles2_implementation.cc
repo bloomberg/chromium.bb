@@ -1511,7 +1511,7 @@ void GLES2Implementation::BufferDataHelper(
   if (size > max_size || !data) {
     helper_->BufferData(target, size, 0, 0, usage);
     if (data != NULL) {
-      BufferSubData(target, 0, size, data);
+      BufferSubDataHelper(target, 0, size, data);
     }
     return;
   }

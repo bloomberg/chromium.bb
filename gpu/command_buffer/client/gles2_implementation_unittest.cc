@@ -2175,6 +2175,32 @@ TEST_F(GLES2ImplementationTest, CreateProgram) {
   EXPECT_EQ(kProgramsAndShadersStartId, id);
 }
 
+TEST_F(GLES2ImplementationTest, BufferDataLargerThanTransferBuffer) {
+  struct Cmds {
+    BufferData set_size;
+    BufferSubData copy_data1;
+    cmd::SetToken set_token1;
+    BufferSubData copy_data2;
+    cmd::SetToken set_token2;
+  };
+  const unsigned kUsableSize =
+      kTransferBufferSize - GLES2Implementation::kStartingOffset;
+  uint8 buf[kUsableSize * 2] = { 0, };
+  Cmds expected;
+  expected.set_size.Init(
+      GL_ARRAY_BUFFER, arraysize(buf), 0, 0, GL_DYNAMIC_DRAW);
+  expected.copy_data1.Init(
+      GL_ARRAY_BUFFER, 0, kUsableSize, transfer_buffer_id_,
+      AllocateTransferBuffer(kUsableSize));
+  expected.set_token1.Init(GetNextToken());
+  expected.copy_data2.Init(
+      GL_ARRAY_BUFFER, kUsableSize, kUsableSize, transfer_buffer_id_,
+      AllocateTransferBuffer(kUsableSize));
+  expected.set_token2.Init(GetNextToken());
+  gl_->BufferData(GL_ARRAY_BUFFER, arraysize(buf), buf, GL_DYNAMIC_DRAW);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 #include "gpu/command_buffer/client/gles2_implementation_unittest_autogen.h"
 
 }  // namespace gles2
