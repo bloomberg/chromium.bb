@@ -353,6 +353,14 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     }
   }
 
+  if (params.mimeType.isNull() && (actual_mime_type.size() > 0)) {
+    // Webkit might say that mime type is null while we already know the
+    // actual mime type via ChromeViewHostMsg_GetPluginInfo. In that case
+    // we should use what we know since WebpluginDelegateProxy does some
+    // specific initializations based on this information.
+    params.mimeType = WebString::fromUTF8(actual_mime_type.c_str());
+  }
+
   if (status.value ==
       ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked) {
     render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
