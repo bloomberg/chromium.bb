@@ -72,7 +72,7 @@ class ChromeURLContentSecurityPolicyExceptionSet
     insert(chrome::kChromeUISimUnlockHost);
     insert(chrome::kChromeUISystemInfoHost);
 #endif
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
     insert(chrome::kChromeUIKeyboardHost);
 #endif
 #if defined(OS_CHROMEOS) || defined(USE_AURA)
