@@ -20,8 +20,9 @@ SIBsim4
 # runtime errors
 # crash, works on ARM
 aha
-# crash
+# crash w/ newlib: http://code.google.com/p/nativeclient/issues/detail?id=2505
 dt
+# crash
 lua
 # crash on ARM/qemu
 almabench
@@ -37,10 +38,16 @@ voronoi
 BuiltinTypeInfo
 # bad tail call label applied in clang optimization passes
 byval-alignment
-# don't know (incorrect output but no crash)
+# burg's nexe output matches the reference output, but not the native gcc
+# binary's output... so maybe this is a bug in gcc, or ???
+# Workaround may be to set USE_REFERENCE_OUTPUT = 1 in burg's Makefile.
 burg
+# Would pick up the "#ifdef LITTLE_ENDIAN" for pnacl if we modified the
+# test to #include <endian.h>.
+security-sha
+# don't know (incorrect output but no crash)
 imp
 automotive-bitcount
-security-sha
 telecomm-fft
+# rand() inconsistency http://llvm.org/bugs/show_bug.cgi?id=11629
 puzzle
