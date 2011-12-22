@@ -23,6 +23,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "chrome/browser/history/in_memory_url_index_cache.pb.h"
+#include "chrome/browser/history/url_index_private_data.h"
 #include "sql/connection.h"
 
 namespace base {

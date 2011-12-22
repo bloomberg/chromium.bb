@@ -1420,6 +1420,8 @@
         'browser/history/top_sites_extension_api.h',
         'browser/history/url_database.cc',
         'browser/history/url_database.h',
+        'browser/history/url_index_private_data.cc',
+        'browser/history/url_index_private_data.h',
         'browser/history/visit_database.cc',
         'browser/history/visit_database.h',
         'browser/history/visit_tracker.cc',
