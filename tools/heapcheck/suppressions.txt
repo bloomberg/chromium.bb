@@ -1751,3 +1751,10 @@
    fun:browser_sync::DataTypeManagerImpl::Stop
    fun:ProfileSyncService::Shutdown
 }
+{
+   bug_108398
+   Heapcheck:Leak
+   ...
+   fun:BrowserThemePack::BuildFromExtension
+   fun:BrowserThemePackTest_CanBuildAndReadPack_Test::TestBody
+}
