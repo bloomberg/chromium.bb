@@ -402,10 +402,33 @@
     },
   ],
   'conditions': [
-    ['target_arch=="arm"', {
+    ['target_arch=="arm" or OS=="win"', {
       'targets': [
         {
-          'target_name': 'omx_video_decode_accelerator_unittest',
+          'conditions': [
+            ['target_arch=="arm"', {
+              'target_name': 'omx_video_decode_accelerator_unittest',
+              'include_dirs': [
+                '<(DEPTH)/third_party/openmax/il',
+              ],
+            }],
+            ['OS=="win"', {
+              'target_name': 'dxva_video_decode_accelerator_unittest',
+              'dependencies': [
+                '../third_party/angle/src/build_angle.gyp:libEGL',
+                '../third_party/angle/src/build_angle.gyp:libGLESv2',
+                '../media/media.gyp:media',
+                '../ui/gfx/gl/gl.gyp:gl',        
+              ],
+              'conditions': [
+                ['win_use_allocator_shim==1', {
+                  'dependencies': [
+                    '../base/allocator/allocator.gyp:allocator',
+                  ],
+                }],
+              ],              
+            }],
+          ],            
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'type': 'executable',
           'dependencies': [
@@ -415,10 +438,9 @@
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/angle/include',
-            '<(DEPTH)/third_party/openmax/il',
           ],
           'sources': [
-            'common/gpu/media/omx_video_decode_accelerator_unittest.cc',
+            'common/gpu/media/video_decode_accelerator_unittest.cc',
           ],
         }
       ],
