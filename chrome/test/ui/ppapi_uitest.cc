@@ -549,7 +549,8 @@ TEST_PPAPI_NACL_VIA_HTTP(FileSystem)
 #if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_LINUX)
 #define MAYBE_FlashFullscreen DISABLED_FlashFullscreen
 #else
-#define MAYBE_FlashFullscreen FlashFullscreen
+// http://crbug.com/108471.
+#define MAYBE_FlashFullscreen FLAKY_FlashFullscreen
 #endif
 
 TEST_F(PPAPITest, MAYBE_FlashFullscreen) {
