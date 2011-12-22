@@ -21,7 +21,9 @@
   <include src="chromeos/internet_options.js"></include>
   <include src="chromeos/internet_detail.js"></include>
   <include src="chromeos/system_options.js"></include>
-  <include src="chromeos/bluetooth_list_element.js"></include>
+  <include src="chromeos/bluetooth_device_list.js"></include>
+  <include src="chromeos/bluetooth_add_device_overlay.js"></include>
+  <include src="chromeos/bluetooth_pair_device_overlay.js"></include>
   <include src="chromeos/accounts_options.js"></include>
   <include src="chromeos/proxy_options.js"></include>
   <include src="chromeos/proxy_rules_list.js"></include>
@@ -35,6 +37,8 @@
   var InternetOptions = options.InternetOptions;
   var DetailsInternetPage = options.internet.DetailsInternetPage;
   var SystemOptions = options.SystemOptions;
+  var BluetoothOptions = options.BluetoothOptions;
+  var BluetoothPairing = options.BluetoothPairing;
 </if>
 <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
   <include src="certificate_tree.js"></include>

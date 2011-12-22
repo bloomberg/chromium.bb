@@ -50,6 +50,7 @@
   <link rel="stylesheet" href="chromeos/internet_options_page.css">
   <link rel="stylesheet" href="chromeos/proxy.css">
   <link rel="stylesheet" href="chromeos/system_options_page.css">
+  <link rel="stylesheet" href="chromeos/bluetooth.css">
 </if>
 <if expr="pp_ifdef('chromeos') and pp_ifdef('use_virtual_keyboard')">
   <link rel="stylesheet" href="chromeos/virtual_keyboard.css">
@@ -93,6 +94,8 @@
   <include src="pack_extension_overlay.html">
   <include src="../sync_setup_overlay.html">
   <if expr="pp_ifdef('chromeos')">
+     <include src="chromeos/bluetooth_add_device_overlay.html">
+     <include src="chromeos/bluetooth_pair_device_overlay.html">
      <include
          src="chromeos/language_customize_modifier_keys_overlay.html">
      <include src="chromeos/internet_detail.html">

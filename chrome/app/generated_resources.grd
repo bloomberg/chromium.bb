@@ -12082,14 +12082,14 @@ changed since last sign in
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENABLE">
         Enable bluetooth
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_FIND_BLUETOOTH_DEVICES">
-        Search for devices
+      <message name="IDS_OPTIONS_SETTINGS_ADD_BLUETOOTH_DEVICE">
+        Add a device
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_NO_BLUETOOTH_DEVICES_FOUND">
-        No devices found.
+      <message name="IDS_OPTIONS_SETTINGS_FIND_BLUETOOTH_DEVICES">
+        Search
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING">
-        Searching...
+        Searching for devices...
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTED">
         Connected
@@ -12097,14 +12097,11 @@ changed since last sign in
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTING">
         Connecting
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_NOT_PAIRED">
-        Not Paired
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_NOT_CONNECTED">
+        Not Connected
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_FAILED_PAIRING">
-        Unsuccessful Pairing
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_PAIRED">
-        Paired
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE">
+        Add Bluetooth Device
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT">
         Connect
@@ -12124,17 +12121,14 @@ changed since last sign in
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REJECT_PASSKEY">
         Reject
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.  The label %1 is replaced by the passkey and %2 with the name of the device.">
-        Please confirm that the passkey <ph name="PASSKEY">%1<ex>0123</ex></ph> is shown on "<ph name="DEVICE_NAME">%2<ex>Nexus S</ex></ph>".
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.  The label %1 is replaced with the name of the device.">
+        Please confirm this passkey is shown on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when the external device has no display or means of input.">
         Please enter the passkey:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when pairing a wireless keyboard.  The label %1 is replaced by the passkey and %2 with the name of the device.">
-        Please enter the passkey <ph name="PASSKEY">%1<ex>0123</ex></ph> on "<ph name="DEVICE_NAME">%2<ex>Nexus S</ex></ph>".
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_FAILED_PAIRING_INSTRUCTIONS" desc="">
-        Please make sure that "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>" is turned on, in range and ready for pairing.
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when pairing a wireless keyboard.  The label %1 is replaced with the name of the device.">
+        Please enter this passkey on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
       </message>
       <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for accessbility.">
         Enable accessibility features

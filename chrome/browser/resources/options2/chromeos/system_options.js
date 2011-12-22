@@ -14,7 +14,6 @@ cr.define('options', function() {
    * Encapsulated handling of ChromeOS system options page.
    * @constructor
    */
-
   function SystemOptions() {
     OptionsPage.call(this, 'system', templateData.systemPageTabTitle,
                      'systemPage');
@@ -25,6 +24,12 @@ cr.define('options', function() {
   // Inherit SystemOptions from OptionsPage.
   SystemOptions.prototype = {
     __proto__: options.OptionsPage.prototype,
+
+    /**
+     * Flag indicating if currently scanning for Bluetooth devices.
+     * @type {boolean}
+     */
+    isScanning_: false,
 
     /**
      * Initializes SystemOptions page.
@@ -43,13 +48,13 @@ cr.define('options', function() {
           use_24hour_clock.disabled = true;
       }
 
-      options.system.bluetooth.BluetoothListElement.decorate(
-          $('bluetooth-device-list'));
+      options.system.bluetooth.BluetoothDeviceList.decorate(
+          $('bluetooth-paired-devices-list'));
 
-      // TODO(kevers): Populate list of connected bluetooth devices.
-      //               Set state of 'Enable bluetooth' checkbox.
-      $('bluetooth-find-devices').onclick = function(event) {
-        findBluetoothDevices_();
+      $('bluetooth-add-device').onclick = function(event) {
+        if (! this.isScanning_)
+          findBluetoothDevices_(true);
+        OptionsPage.navigateToPage('bluetooth');
       };
       $('enable-bluetooth').onclick = function(event) {
         chrome.send('bluetoothEnableChange', [Boolean(true)]);
@@ -90,34 +95,15 @@ cr.define('options', function() {
 
   /**
    * Scan for bluetooth devices.
+   * @param {boolean} reset Indicates if the list of unpaired devices should be
+   *     cleared.
    * @private
    */
-  function findBluetoothDevices_() {
-    setVisibility_('bluetooth-scanning-label', true);
-    setVisibility_('bluetooth-scanning-icon', true);
-
-    // Remove devices that are not currently connected.
-    var devices = $('bluetooth-device-list').childNodes;
-    for (var i = devices.length - 1; i >= 0; i--) {
-      var device = devices.item(i);
-      var data = device.data;
-      if (!data || data.status !== 'connected')
-        $('bluetooth-device-list').removeChild(device);
-    }
+  function findBluetoothDevices_(reset) {
+    this.isScanning_ = true;
+    if (reset)
+      $('bluetooth-unpaired-devices-list').clear();
     chrome.send('findBluetoothDevices');
-  }
-
-  /**
-   * Sets the visibility of an element.
-   * @param {string} id The id of the element.
-   * @param {boolean} visible True if the element should be made visible.
-   * @private
-   */
-  function setVisibility_(id, visible) {
-    if (visible)
-      $(id).classList.remove("transparent");
-    else
-      $(id).classList.add("transparent");
   }
 
   //
@@ -147,20 +133,15 @@ cr.define('options', function() {
   SystemOptions.setBluetoothState = function(checked) {
     $('disable-bluetooth').hidden = !checked;
     $('enable-bluetooth').hidden = checked;
-    $('bluetooth-finder-container').hidden = !checked;
-    $('no-bluetooth-devices-label').hidden = !checked;
-    if (!checked) {
-      setVisibility_('bluetooth-scanning-label', false);
-      setVisibility_('bluetooth-scanning-icon', false);
-    }
+    $('bluetooth-paired-devices-list').parentNode.hidden = !checked;
+    $('bluetooth-add-device').hidden = !checked;
     // Flush list of previously discovered devices if bluetooth is turned off.
     if (!checked) {
-      var devices = $('bluetooth-device-list').childNodes;
-      for (var i = devices.length - 1; i >= 0; i--) {
-        var device = devices.item(i);
-        $('bluetooth-device-list').removeChild(device);
-      }
+      $('bluetooth-paired-devices-list').clear();
+      $('bluetooth-unpaired-devices-list').clear();
     }
+    if (checked && ! this.isScanning_)
+      findBluetoothDevices_(true);
   }
 
   /**
@@ -174,17 +155,29 @@ cr.define('options', function() {
    *     Decription of the bluetooth device.
    */
   SystemOptions.addBluetoothDevice = function(device) {
-    if ($('bluetooth-device-list').appendDevice(device))
-      $('no-bluetooth-devices-label').hidden = true;
+    if (device.paired) {
+      // Test to see if the device is currently in the unpaired list, in which
+      // case it should be removed from that list.
+      var index = $('bluetooth-unpaired-devices-list').find(device.address);
+      if (index != undefined)
+        $('bluetooth-unpaired-devices-list').deleteItemAtIndex(index);
+      $('bluetooth-paired-devices-list').appendDevice(device);
+    } else {
+      $('bluetooth-unpaired-devices-list').appendDevice(device);
+    }
+    // One device can be in the process of pairing.  If found, display
+    // the Bluetooth pairing overlay.
+    if (device.pairing)
+      BluetoothPairing.showDialog(device);
   };
 
   /**
-   * Hides the scanning label and icon that are used to indicate that a device
-   * search is in progress.
+   * Notification that a single pass of device discovery has completed.
    */
   SystemOptions.notifyBluetoothSearchComplete = function() {
-    setVisibility_('bluetooth-scanning-label', false);
-    setVisibility_('bluetooth-scanning-icon', false);
+    // TODO(kevers): Determine the fate of this method once continuous
+    // scanning is implemented in the Bluetooth code.
+    this.isScanning_ = false;
   };
 
   /**

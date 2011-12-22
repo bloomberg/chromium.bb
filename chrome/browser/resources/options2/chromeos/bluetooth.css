@@ -1,0 +1,50 @@
+.bluetooth-device-list {
+  margin: 10px;
+  padding: 5px 10px;
+}
+
+.bluetooth-device[paired] {
+  color: gray;
+}
+
+#bluetooth-scanning {
+  -webkit-box-orient: horizontal;
+  display: -webkit-inline-box;
+  margin-bottom: 5px;
+}
+
+#bluetooth-scanning-label {
+  -webkit-margin-start: 5px;
+}
+
+#bluetooth-scanning-icon {
+  -webkit-margin-start: 10px;
+  vertical-align: middle;
+}
+
+#bluetooth-unpaired-devices-list {
+  /* Prevent dialog from expanding if many devices are found. */
+  max-height: 192px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+#bluetooth-pairing-instructions,
+#bluetooth-passkey {
+  margin: 10px;
+}
+
+#bluetooth-pairing-passkey-display {
+  padding: 5px;
+  text-align: center;
+}
+
+.bluetooth-passkey-char {
+  color: #555;
+  font-size: 150%;
+  padding: 5px;
+}
+
+.bluetooth-passkey-char.key-typed {
+  text-decoration: underline;
+}

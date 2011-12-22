@@ -172,7 +172,6 @@ function load() {
                               PersonalOptions.getInstance());
   OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
                               PersonalOptions.getInstance());
-
   OptionsPage.register(ExtensionSettings.getInstance());
   OptionsPage.registerOverlay(PackExtensionOverlay.getInstance(),
                               ExtensionSettings.getInstance());
@@ -198,6 +197,11 @@ function load() {
     OptionsPage.registerOverlay(languageModifierKeysOverlay,
                                 SystemOptions.getInstance(),
                                 [$('modifier-keys-button')]);
+    OptionsPage.registerOverlay(BluetoothOptions.getInstance(),
+                                SystemOptions.getInstance(),
+                                [$('bluetooth-add-device')]);
+    OptionsPage.registerOverlay(BluetoothPairing.getInstance(),
+                                SystemOptions.getInstance());
   }
 
   Preferences.getInstance().initialize();

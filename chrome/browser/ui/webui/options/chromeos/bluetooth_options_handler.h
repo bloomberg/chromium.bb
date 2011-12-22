@@ -83,10 +83,6 @@ class BluetoothOptionsHandler : public OptionsPageUIHandler,
   // |device| is the Bluetooth device being paired.
   void RequestPasskey(chromeos::BluetoothDevice* device);
 
-  // Callback to validate a user entered passkey.
-  // |args| is a list containing the device address and entered passkey.
-  void ValidatePasskeyCallback(const base::ListValue* args);
-
   // chromeos::BluetoothManager::Observer override.
   virtual void DefaultAdapterChanged(
       chromeos::BluetoothAdapter* adapter) OVERRIDE;

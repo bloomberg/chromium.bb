@@ -62,23 +62,19 @@ void BluetoothOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_DISABLE));
   localized_strings->SetString("enableBluetooth",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_ENABLE));
-  localized_strings->SetString("noBluetoothDevicesFound",
+  localized_strings->SetString("addBluetoothDevice",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_ADD_BLUETOOTH_DEVICE));
+  localized_strings->SetString("bluetoothAddDeviceTitle",
       l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_NO_BLUETOOTH_DEVICES_FOUND));
+      IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE));
   localized_strings->SetString("findBluetoothDevices",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_FIND_BLUETOOTH_DEVICES));
   localized_strings->SetString("bluetoothScanning",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING));
   localized_strings->SetString("bluetoothDeviceConnected",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTED));
-  localized_strings->SetString("bluetoothDeviceConnecting",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTING));
-  localized_strings->SetString("bluetoothDeviceNotPaired",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_NOT_PAIRED));
-  localized_strings->SetString("bluetoothDevicePaired",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_PAIRED));
-  localized_strings->SetString("bluetoothDeviceFailedPairing",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_FAILED_PAIRING));
+  localized_strings->SetString("bluetoothDeviceNotConnected",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_NOT_CONNECTED));
   localized_strings->SetString("bluetoothConnectDevice",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT));
   localized_strings->SetString("bluetoothDisconnectDevice",
@@ -102,9 +98,6 @@ void BluetoothOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("bluetoothRemotePasskey",
       l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PASSKEY_REQUEST));
-  localized_strings->SetString("bluetoothFailedPairingInstructions",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_FAILED_PAIRING_INSTRUCTIONS));
 }
 
 void BluetoothOptionsHandler::Initialize() {
@@ -257,11 +250,6 @@ void BluetoothOptionsHandler::RequestPasskey(
   SendDeviceNotification(device, &params);
 }
 
-void BluetoothOptionsHandler::ValidatePasskeyCallback(
-    const base::ListValue* args) {
-  // TODO(kevers): Implement me.
-}
-
 void BluetoothOptionsHandler::DefaultAdapterChanged(
     chromeos::BluetoothAdapter* adapter) {
   std::string old_default_adapter_id = default_adapter_id_;
@@ -338,14 +326,14 @@ void BluetoothOptionsHandler::GenerateFakeDeviceList() {
     "Fake Wireless Keyboard",
     "01-02-03-04-05-06",
     "input-keyboard",
-    true,
-    true,
+    false,
+    false,
     "");
   GenerateFakeDevice(
     "Fake Wireless Mouse",
     "02-03-04-05-06-01",
     "input-mouse",
-    true,
+    false,
     false,
     "");
   GenerateFakeDevice(
@@ -355,27 +343,6 @@ void BluetoothOptionsHandler::GenerateFakeDeviceList() {
     false,
     false,
     "");
-  GenerateFakeDevice(
-    "Fake Connecting Keyboard",
-    "04-05-06-01-02-03",
-    "input-keyboard",
-    false,
-    false,
-    "bluetoothRemotePasskey");
-  GenerateFakeDevice(
-    "Fake Connecting Phone",
-    "05-06-01-02-03-04",
-    "phone",
-    false,
-    false,
-    "bluetoothConfirmPasskey");
-  GenerateFakeDevice(
-    "Fake Connecting Headset",
-    "06-01-02-03-04-05",
-    "headset",
-    false,
-    false,
-    "bluetoothEnterPasskey");
   web_ui_->CallJavascriptFunction(
       "options.SystemOptions.notifyBluetoothSearchComplete");
 }
