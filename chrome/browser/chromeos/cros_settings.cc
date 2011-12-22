@@ -165,7 +165,6 @@ void CrosSettings::AddSettingsObserver(const char* path,
   NotificationObserverList::Iterator it(*observer_list);
   content::NotificationObserver* existing_obs;
   while ((existing_obs = it.GetNext()) != NULL) {
-    DCHECK(existing_obs != obs) << path << " observer already registered";
     if (existing_obs == obs)
       return;
   }

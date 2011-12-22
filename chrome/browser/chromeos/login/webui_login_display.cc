@@ -36,13 +36,25 @@ WebUILoginDisplay::WebUILoginDisplay(LoginDisplay::Delegate* delegate)
 
 void WebUILoginDisplay::Init(const UserList& users,
                              bool show_guest,
+                             bool show_users,
                              bool show_new_user) {
   // Testing that the delegate has been set.
   DCHECK(delegate_);
 
   users_ = users;
   show_guest_ = show_guest;
+  show_users_ = show_users;
   show_new_user_ = show_new_user;
+}
+
+void WebUILoginDisplay::PreferencesChanged(const UserList& users,
+                                           bool show_guest,
+                                           bool show_users,
+                                           bool show_new_user) {
+  // Set all internal state as for init and then redraw the attached UI.
+  Init(users, show_guest, show_users, show_new_user);
+  if (webui_handler_)
+    webui_handler_->OnPreferencesChanged();
 }
 
 void WebUILoginDisplay::OnBeforeUserRemoved(const std::string& username) {
@@ -190,6 +202,10 @@ const UserList& WebUILoginDisplay::GetUsers() const {
 
 bool WebUILoginDisplay::IsShowGuest() const {
   return show_guest_;
+}
+
+bool WebUILoginDisplay::IsShowUsers() const {
+  return show_users_;
 }
 
 bool WebUILoginDisplay::IsShowNewUser() const {

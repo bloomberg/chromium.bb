@@ -94,14 +94,24 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                  content::NotificationService::AllSources());
+  cros_settings_->AddSettingsObserver(kAccountsPrefShowUserNamesOnSignIn, this);
+  cros_settings_->AddSettingsObserver(kAccountsPrefAllowNewUser, this);
+  cros_settings_->AddSettingsObserver(kAccountsPrefAllowGuest, this);
+  cros_settings_->AddSettingsObserver(kAccountsPrefUsers, this);
 }
 
 void ExistingUserController::Init(const UserList& users) {
-  UserList filtered_users;
-  bool show_users_on_signin;
+  UpdateLoginDisplay(users, true);
 
-  // TODO(pastarmovj): Make this class an observer of the CrosSettings to be
-  // able to update the UI whenever policy is loaded.
+  LoginUtils::Get()->PrewarmAuthentication();
+  DBusThreadManager::Get()->GetSessionManagerClient()->EmitLoginPromptReady();
+}
+
+void ExistingUserController::UpdateLoginDisplay(const UserList& users,
+                                                bool init) {
+  bool show_users_on_signin;
+  UserList filtered_users;
+
   cros_settings_->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
                              &show_users_on_signin);
   if (show_users_on_signin) {
@@ -121,13 +131,17 @@ void ExistingUserController::Init(const UserList& users) {
   // have guest session link.
   bool show_guest;
   cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &show_guest);
+  bool show_users;
+  cros_settings_->GetBoolean(kAccountsPrefShowUserNamesOnSignIn, &show_users);
   show_guest &= !filtered_users.empty();
   bool show_new_user = true;
   login_display_->set_parent_window(GetNativeWindow());
-  login_display_->Init(filtered_users, show_guest, show_new_user);
-
-  LoginUtils::Get()->PrewarmAuthentication();
-  DBusThreadManager::Get()->GetSessionManagerClient()->EmitLoginPromptReady();
+  if (init) {
+    login_display_->Init(filtered_users, show_guest, show_users, show_new_user);
+  } else {
+    login_display_->PreferencesChanged(
+        filtered_users, show_guest, show_users, show_new_user);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -138,6 +152,12 @@ void ExistingUserController::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED) {
+    // Signed settings changed notify views and update them.
+    const chromeos::UserList& users = chromeos::UserManager::Get()->GetUsers();
+    UpdateLoginDisplay(users, false);
+    return;
+  }
   if (type != chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED)
     return;
   login_display_->OnUserImageChanged(*content::Details<User>(details).ptr());

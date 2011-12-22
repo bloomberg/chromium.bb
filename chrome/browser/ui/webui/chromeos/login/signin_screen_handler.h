@@ -37,6 +37,7 @@ class LoginDisplayWebUIHandler {
   virtual void OnLoginSuccess(const std::string& username) = 0;
   virtual void OnUserRemoved(const std::string& username) = 0;
   virtual void OnUserImageChanged(const User& user) = 0;
+  virtual void OnPreferencesChanged() = 0;
   virtual void ShowError(int login_attempts,
                          const std::string& error_text,
                          const std::string& help_link_text,
@@ -85,6 +86,9 @@ class SigninScreenHandlerDelegate {
   // Whether login as guest is available.
   virtual bool IsShowGuest() const = 0;
 
+  // Whether login as guest is available.
+  virtual bool IsShowUsers() const = 0;
+
   // Whether new user pod is available.
   virtual bool IsShowNewUser() const = 0;
 
@@ -130,6 +134,7 @@ class SigninScreenHandler : public BaseScreenHandler,
   virtual void OnLoginSuccess(const std::string& username) OVERRIDE;
   virtual void OnUserRemoved(const std::string& username) OVERRIDE;
   virtual void OnUserImageChanged(const User& user) OVERRIDE;
+  virtual void OnPreferencesChanged() OVERRIDE;
   virtual void ShowError(int login_attempts,
                          const std::string& error_text,
                          const std::string& help_link_text,

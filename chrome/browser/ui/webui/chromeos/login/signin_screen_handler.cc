@@ -426,6 +426,13 @@ void SigninScreenHandler::OnUserImageChanged(const User& user) {
       "login.AccountPickerScreen.updateUserImage", user_email);
 }
 
+void SigninScreenHandler::OnPreferencesChanged() {
+  if (delegate_ && !delegate_->IsShowUsers())
+    HandleShowAddUser(NULL);
+  else
+    SendUserList(false);
+}
+
 void SigninScreenHandler::ShowError(int login_attempts,
                                     const std::string& error_text,
                                     const std::string& help_link_text,

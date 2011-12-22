@@ -59,7 +59,7 @@ void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
   UserList users(1, &chromeos::UserManager::Get()->logged_in_user());
   login_display_.reset(new WebUILoginDisplay(this));
   login_display_->set_background_bounds(bounds);
-  login_display_->Init(users, false, false);
+  login_display_->Init(users, false, true, false);
 
   static_cast<OobeUI*>(GetWebUI())->ShowSigninScreen(login_display_.get());
 

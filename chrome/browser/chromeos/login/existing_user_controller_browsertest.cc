@@ -40,7 +40,8 @@ class MockLoginDisplay : public LoginDisplay {
       : LoginDisplay(NULL, gfx::Rect()) {
   }
 
-  MOCK_METHOD3(Init, void(const UserList&, bool, bool));
+  MOCK_METHOD4(Init, void(const UserList&, bool, bool, bool));
+  MOCK_METHOD4(PreferencesChanged, void(const UserList&, bool, bool, bool));
   MOCK_METHOD1(OnUserImageChanged, void(const User&));
   MOCK_METHOD0(OnFadeOut, void(void));
   MOCK_METHOD1(OnLoginSuccess, void(const std::string&));
@@ -145,7 +146,7 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     EXPECT_CALL(*mock_login_display_host_.get(), GetNativeWindow())
         .Times(1)
         .WillOnce(ReturnNull());
-    EXPECT_CALL(*mock_login_display_.get(), Init(_, false, true))
+    EXPECT_CALL(*mock_login_display_.get(), Init(_, false, true, true))
         .Times(1);
   }
 
