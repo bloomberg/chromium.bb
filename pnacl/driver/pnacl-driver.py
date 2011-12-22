@@ -60,11 +60,14 @@ EXTRA_ENV = {
   'CC_FLAGS_DRAGONEGG': '-D__native_client__=1 -D__pnacl__=1 ' +
                         '-flto -fplugin=${DRAGONEGG_PLUGIN}',
 
-  'ISYSTEM'        : '${ISYSTEM_USER} ${ISYSTEM_BUILTIN}',
-  'ISYSTEM_BUILTIN': '${STDINC ? ${ISYSTEM_%LIBMODE%}}',
+  'ISYSTEM'        : '${ISYSTEM_USER} ${STDINC ? ${ISYSTEM_BUILTIN}}',
   'ISYSTEM_USER'   : '',  # System include directories specified by
                           # using the -isystem flag.
 
+  'ISYSTEM_BUILTIN':
+    '${BASE_SDK}/include ' +
+    '${ISYSTEM_%FRONTEND%} ' +
+    '${ISYSTEM_%LIBMODE%}',
 
   'ISYSTEM_CLANG':
       '${BASE_LLVM}/lib/clang/3.1/include',
@@ -76,17 +79,13 @@ EXTRA_ENV = {
         'lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include',
 
   'ISYSTEM_newlib' :
-    '${BASE_SDK}/include ' +
-    '${ISYSTEM_%FRONTEND%} ' +
     '${BASE_LIBSTDCPP}/include/c++/4.6.2 ' +
     '${BASE_LIBSTDCPP}/include/c++/4.6.2/arm-none-linux-gnueabi ' +
     '${BASE_INCLUDE} ' +
     '${BASE_NEWLIB}/arm-none-linux-gnueabi/include',
 
   'ISYSTEM_glibc' :
-    '${BASE_SDK}/include ' +
     '${BASE_GLIBC}/include ' +
-    '${ISYSTEM_%FRONTEND%} ' +
     '${BASE_GLIBC}/include/c++/4.4.3 ' +
     '${BASE_GLIBC}/include/c++/4.4.3/x86_64-nacl',
 

@@ -166,11 +166,17 @@ readonly INSTALL_SDK_ROOT="${INSTALL_ROOT}/sdk"
 readonly INSTALL_SDK_INCLUDE="${INSTALL_SDK_ROOT}/include"
 readonly INSTALL_SDK_LIB="${INSTALL_SDK_ROOT}/lib"
 
-# The pattern `lib-${platform}' is implicit in verify() and sdk().
-readonly INSTALL_LIB="${INSTALL_ROOT}/lib"
-readonly INSTALL_LIB_ARM="${INSTALL_ROOT}/lib-arm"
-readonly INSTALL_LIB_X8632="${INSTALL_ROOT}/lib-x86-32"
-readonly INSTALL_LIB_X8664="${INSTALL_ROOT}/lib-x86-64"
+# Bitcode lib directories. These will soon be split apart.
+# BUG= http://code.google.com/p/nativeclient/issues/detail?id=2452
+readonly INSTALL_LIB_NEWLIB="${INSTALL_ROOT}/lib"
+readonly INSTALL_LIB_GLIBC="${INSTALL_ROOT}/lib"
+
+# Native file library directories
+# The pattern `${INSTALL_LIB_NATIVE}${arch}' is used in many places.
+readonly INSTALL_LIB_NATIVE="${INSTALL_ROOT}/lib-"
+readonly INSTALL_LIB_ARM="${INSTALL_LIB_NATIVE}arm"
+readonly INSTALL_LIB_X8632="${INSTALL_LIB_NATIVE}x86-32"
+readonly INSTALL_LIB_X8664="${INSTALL_LIB_NATIVE}x86-64"
 
 # PNaCl client-translators (sandboxed) binary locations
 readonly INSTALL_SB_TOOLS="${INSTALL_ROOT}/tools-sb"
@@ -196,6 +202,7 @@ readonly PNACL_DGCC="${INSTALL_BIN}/pnacl-dgcc"
 readonly PNACL_DGXX="${INSTALL_BIN}/pnacl-dg++"
 readonly PNACL_CLANG="${INSTALL_BIN}/pnacl-clang"
 readonly PNACL_CLANGXX="${INSTALL_BIN}/pnacl-clang++"
+readonly PNACL_PP="${INSTALL_BIN}/pnacl-clang -E"
 readonly PNACL_AR="${INSTALL_BIN}/pnacl-ar"
 readonly PNACL_RANLIB="${INSTALL_BIN}/pnacl-ranlib"
 readonly PNACL_AS="${INSTALL_BIN}/pnacl-as"
@@ -206,6 +213,10 @@ readonly PNACL_READELF="${INSTALL_BIN}/readelf"
 readonly PNACL_SIZE="${INSTALL_BIN}/size"
 readonly PNACL_STRIP="${INSTALL_BIN}/pnacl-strip"
 readonly ILLEGAL_TOOL="${INSTALL_BIN}"/pnacl-illegal
+
+# PNACL_CC_NEUTRAL is pnacl-cc without LibC bias (newlib vs. glibc)
+# This should only be used in conjunction with -E, -c, or -S.
+readonly PNACL_CC_NEUTRAL="${INSTALL_BIN}/pnacl-clang -nodefaultlibs"
 
 # Set the default frontend.
 # Can be default, clang, or dragonegg
@@ -904,8 +915,8 @@ glibc-crt1() {
   ${PNACL_CC} ${flags} -c "${TC_SRC_GLIBC}"/sysdeps/nacl/start.c -o start.bc
   ${PNACL_CC} ${flags} -c "${TC_SRC_GLIBC}"/csu/init.c -o init.bc
   ${PNACL_LD} -r -nostdlib -no-save-temps start.bc init.bc -o crt1.bc
-  mkdir -p "${INSTALL_LIB}"
-  cp crt1.bc "${INSTALL_LIB}"
+  mkdir -p "${INSTALL_LIB_GLIBC}"
+  cp crt1.bc "${INSTALL_LIB_GLIBC}"
   spopd
 }
 
@@ -1069,8 +1080,9 @@ clean-install() {
 #+ libs-clean            - Removes the library directories
 libs-clean() {
   StepBanner "LIBS-CLEAN" "Cleaning ${INSTALL_ROOT}/libs-*"
-  rm -rf "${INSTALL_LIB}"/*
-  rm -rf "${INSTALL_LIB}"-*/*
+  rm -rf "${INSTALL_LIB_NEWLIB}"/*
+  rm -rf "${INSTALL_LIB_GLIBC}"/*
+  rm -rf "${INSTALL_LIB_NATIVE}"*
 }
 
 
@@ -1645,7 +1657,7 @@ libgcc_eh() {
   local arch=$1
   local objdir="${TC_BUILD}/libgcc_eh-${arch}"
   local subdir="${objdir}/fake-target/libgcc"
-  local installdir="${INSTALL_LIB}-${arch}"
+  local installdir="${INSTALL_LIB_NATIVE}${arch}"
   mkdir -p "${installdir}"
   rm -rf "${installdir}"/libgcc_s*
   rm -rf "${installdir}"/libgcc_eh*
@@ -1739,9 +1751,7 @@ install-unwind-header() {
 
 compiler-rt-all() {
   StepBanner "COMPILER-RT (LIBGCC)"
-  if ! ${LIBMODE_GLIBC}; then
-    compiler-rt arm
-  fi
+  compiler-rt arm
   compiler-rt x86-32
   compiler-rt x86-64
 }
@@ -1752,7 +1762,7 @@ compiler-rt() {
   local arch=$1
   local src="${TC_SRC_COMPILER_RT}/compiler-rt/lib"
   local objdir="${TC_BUILD_COMPILER_RT}-${arch}"
-  local installdir="${INSTALL_LIB}-${arch}"
+  local installdir="${INSTALL_LIB_NATIVE}${arch}"
   StepBanner "compiler rt" "build (${arch})"
 
   rm -rf "${objdir}"
@@ -1761,7 +1771,7 @@ compiler-rt() {
   spushd "${objdir}"
   RunWithLog libgcc.${arch}.make \
       make -j ${PNACL_CONCURRENCY} -f ${src}/Makefile-pnacl libgcc.a \
-        CC="${PNACL_CC}" \
+        CC="${PNACL_CC_NEUTRAL}" \
         AR="${PNACL_AR}" \
         "SRC_DIR=${src}" \
         "CFLAGS=-arch ${arch} --pnacl-allow-translate -O3 -fPIC"
@@ -1890,9 +1900,13 @@ libstdcpp-install() {
     ${MAKE_OPTS} install-data
 
   # Install bitcode library
-  mkdir -p "${INSTALL_LIB}"
-  cp "${objdir}/pnacl-target/src/.libs/libstdc++.a" "${INSTALL_LIB}"
-
+  if ${LIBMODE_NEWLIB}; then
+    local installdir="${INSTALL_LIB_NEWLIB}"
+  else
+    local installdir="${INSTALL_LIB_GLIBC}"
+  fi
+  mkdir -p "${installdir}"
+  cp "${objdir}/pnacl-target/src/.libs/libstdc++.a" "${installdir}"
   spopd
 }
 
@@ -2887,7 +2901,7 @@ newlib-install() {
   rm -f "${sys_include}/pthread.h"
 
   StepBanner "NEWLIB" "copying libraries"
-  local destdir="${INSTALL_LIB}"
+  local destdir="${INSTALL_LIB_NEWLIB}"
   # We only install libc/libg/libm
   mkdir -p "${destdir}"
   cp ${objdir}/${REAL_CROSS_TARGET}/newlib/lib[cgm].a "${destdir}"
@@ -2917,70 +2931,80 @@ libs-support() {
 }
 
 libs-support-newlib() {
-  mkdir -p "${INSTALL_LIB}"
+  mkdir -p "${INSTALL_LIB_NEWLIB}"
   spushd "${PNACL_SUPPORT}"
   # Install crt1.x (linker script)
   StepBanner "LIBS-SUPPORT-NEWLIB" "Install crt1.x (linker script)"
-  cp crt1.x "${INSTALL_LIB}"/crt1.x
+  cp crt1.x "${INSTALL_LIB_NEWLIB}"/crt1.x
   spopd
 }
 
 libs-support-bitcode() {
-  local flags="-no-save-temps"
-  mkdir -p "${INSTALL_LIB}"
+  local build_dir="${TC_BUILD}/libs-support-bitcode"
+  local cc_cmd="${PNACL_CC_NEUTRAL} -no-save-temps"
 
-  spushd "${PNACL_SUPPORT}"
-
+  mkdir -p "${build_dir}"
+  spushd "${PNACL_SUPPORT}/bitcode"
   # Install crti.bc (empty _init/_fini)
   StepBanner "LIBS-SUPPORT" "Install crti.bc"
-  ${PNACL_CC} ${flags} -c crti.c -o "${INSTALL_LIB}"/crti.bc
+  ${cc_cmd} -c crti.c -o "${build_dir}"/crti.bc
 
   # Install crtbegin bitcode (__dso_handle/__cxa_finalize for C++)
   StepBanner "LIBS-SUPPORT" "Install crtbegin.bc / crtbeginS.bc"
-  ${PNACL_CC} ${flags} -c bitcode/crtdummy.c -o "${INSTALL_LIB}"/crtdummy.bc
-  ${PNACL_CC} ${flags} -c bitcode/crtbegin.c -o "${INSTALL_LIB}"/crtbegin.bc
-  ${PNACL_CC} ${flags} -c bitcode/crtbegin.c -o "${INSTALL_LIB}"/crtbeginS.bc \
-                       -DSHARED
+  ${cc_cmd} -c crtdummy.c -o "${build_dir}"/crtdummy.bc
+  ${cc_cmd} -c crtbegin.c -o "${build_dir}"/crtbegin.bc
+  ${cc_cmd} -c crtbegin.c -o "${build_dir}"/crtbeginS.bc \
+            -DSHARED
 
   # Install pnacl_abi.bc
+  # (NOTE: This does a trivial bitcode link to set the right metadata)
   StepBanner "LIBS-SUPPORT" "Install pnacl_abi.bc (stub pso)"
-  ${PNACL_CC} ${flags} -Wno-builtin-requires-header -nostdlib -shared \
-              -Wl,-soname="" pnacl_abi.c -o "${INSTALL_LIB}"/pnacl_abi.bc
+  ${cc_cmd} -Wno-builtin-requires-header -nostdlib -shared \
+            -Wl,-soname="" pnacl_abi.c -o "${build_dir}"/pnacl_abi.bc
+
+  spopd
+
+  # Install to both newlib and glibc lib directories
+  spushd "${build_dir}"
+  local files="crti.bc crtdummy.bc crtbegin.bc crtbeginS.bc pnacl_abi.bc"
+  mkdir -p "${INSTALL_LIB_NEWLIB}"
+  cp -f ${files} "${INSTALL_LIB_NEWLIB}"
+  mkdir -p "${INSTALL_LIB_GLIBC}"
+  cp -f ${files} "${INSTALL_LIB_GLIBC}"
   spopd
 }
 
 libs-support-native() {
   local arch=$1
-  local destdir="${INSTALL_LIB}"-${arch}
+  local destdir="${INSTALL_LIB_NATIVE}"${arch}
   local label="LIBS-SUPPORT (${arch})"
   mkdir -p "${destdir}"
 
-  local flags="-arch ${arch} --pnacl-allow-native --pnacl-allow-translate \
-               -no-save-temps"
+  local flags="--pnacl-allow-native --pnacl-allow-translate -no-save-temps"
+  local cc_cmd="${PNACL_CC_NEUTRAL} -arch ${arch} ${flags}"
 
   spushd "${PNACL_SUPPORT}"
 
   # Compile crtbegin.o / crtend.o
   StepBanner "${label}" "Install crtbegin.o / crtend.o"
-  ${PNACL_CC} ${flags} -c crtbegin.c -o "${destdir}"/crtbegin.o
-  ${PNACL_CC} ${flags} -c crtend.c -o "${destdir}"/crtend.o
+  ${cc_cmd} -c crtbegin.c -o "${destdir}"/crtbegin.o
+  ${cc_cmd} -c crtend.c -o "${destdir}"/crtend.o
 
-  # TODO(pdox): Use this for shared objects when we build libgcc_s.so ourselves
   # Compile crtbeginS.o / crtendS.o
   StepBanner "${label}" "Install crtbeginS.o / crtendS.o"
-  ${PNACL_CC} ${flags} -c crtbegin.c -fPIC -DSHARED -o "${destdir}"/crtbeginS.o
-  ${PNACL_CC} ${flags} -c crtend.c -fPIC -DSHARED -o "${destdir}"/crtendS.o
+  ${cc_cmd} -c crtbegin.c -fPIC -DSHARED -o "${destdir}"/crtbeginS.o
+  ${cc_cmd} -c crtend.c -fPIC -DSHARED -o "${destdir}"/crtendS.o
 
   # Make libcrt_platform.a
   StepBanner "${label}" "Install libcrt_platform.a"
   local tmpdir="${TC_BUILD}/libs-support-native"
   rm -rf "${tmpdir}"
   mkdir -p "${tmpdir}"
-  ${PNACL_CC} ${flags} -c setjmp_${arch/-/_}.S -o "${tmpdir}"/setjmp.o
+  ${cc_cmd} -c setjmp_${arch/-/_}.S -o "${tmpdir}"/setjmp.o
 
   # For ARM, also compile aeabi_read_tp.S
   if  [ ${arch} == arm ] ; then
-    ${PNACL_CC} ${flags} -c aeabi_read_tp.S -o "${tmpdir}"/aeabi_read_tp.o
+    ${cc_cmd} -c aeabi_read_tp.S -o "${tmpdir}"/aeabi_read_tp.o
   fi
   spopd
 
@@ -3084,22 +3108,10 @@ sdk-irt-shim() {
 }
 
 sdk-verify() {
-  # This avoids errors when *.o finds no matches.
-  shopt -s nullglob
-
   StepBanner "SDK" "Verify"
 
   # Verify bitcode libraries
-  SubBanner "VERIFY: ${INSTALL_SDK_LIB}"
-  for i in ${INSTALL_SDK_LIB}/*.a ; do
-    verify-archive-llvm "$i"
-  done
-
-  for i in ${INSTALL_SDK_LIB}/*.pso ; do
-    verify-pso "$i"
-  done
-
-  shopt -u nullglob
+  verify-bitcode-dir "${INSTALL_SDK_LIB}"
 }
 
 newlib-nacl-headers-clean() {
@@ -3308,8 +3320,8 @@ IsLinkerScript() {
 # Usage: VerifyLinkerScript <filename>
 VerifyLinkerScript() {
   local archive="$1"
-  # Use cpp to strip the C-style comments.
-  ${PNACL_CC} -E -xc "${archive}" | awk -v archive="$(basename ${archive})" '
+  # Use preprocessor to strip the C-style comments.
+  ${PNACL_PP} -xc "${archive}" | awk -v archive="$(basename ${archive})" '
     BEGIN { status = 0 }
     NF == 0 || $1 == "#" { next }
     $1 == "INPUT" && $2 == "(" && $NF == ")" { next }
@@ -3422,21 +3434,61 @@ verify-pso() {
   fi
 }
 
+#+ verify-bitcode-dir    - Verify that the files in a directory are bitcode.
+verify-bitcode-dir() {
+  local dir="$1"
+  # This avoids errors when * finds no matches.
+  shopt -s nullglob
+  SubBanner "VERIFY: ${dir}"
+  for i in "${dir}"/*.a ; do
+    verify-archive-llvm "$i"
+  done
+  for i in "${dir}"/*.pso ; do
+    verify-pso "$i"
+  done
+  for i in "${dir}"/*.bc ; do
+    echo -n "verify $i: "
+    verify-object-llvm "$i"
+    echo "PASS (bitcode)"
+  done
+  for i in "${dir}"/*.o ; do
+    Fatal "Native object file $i inside bitcode directory"
+  done
+  shopt -u nullglob
+}
+
+
+#+ verify-native-dir     - Verify that files in a directory are native for arch.
+verify-native-dir() {
+  local arch="$1"
+  local dir="$2"
+
+  SubBanner "VERIFY: ${dir}"
+
+  # This avoids errors when * finds no matches.
+  shopt -s nullglob
+  for i in "${dir}"/*.o ; do
+    verify-object-${arch} "$i"
+  done
+
+  for i in "${dir}"/*.a ; do
+    verify-archive-${arch} "$i"
+  done
+
+  for i in "${dir}"/*.bc "${dir}"/*.pso ; do
+    Fatal "Bitcode file $i found inside native directory"
+  done
+  shopt -u nullglob
+}
+
 #
 # verify-archive-llvm <archive>
 # Verifies that a given archive is bitcode and free of ASMSs
 #
 verify-archive-llvm() {
-  if ${LLVM_BCANALYZER} "$1" 2> /dev/null ; then
-    # This fires only when we build in single-bitcode-lib mode
-    echo -n "verify $(basename "$1"): "
-    verify-object-llvm "$1"
-    echo "PASS (single-bitcode)"
-  else
-    # Currently all the files are .o in the llvm archives.
-    # Eventually more and more should be .bc.
-    VerifyArchive verify-object-llvm '*.bc *.o' "$@"
-  fi
+  # Currently all the files are .o in the llvm archives.
+  # Eventually more and more should be .bc.
+  VerifyArchive verify-object-llvm '*.bc *.o' "$@"
 }
 
 #
@@ -3468,32 +3520,19 @@ verify-archive-x86-64() {
 #+                         are of the correct architecture.
 verify() {
   StepBanner "VERIFY"
+  verify-bitcode
+  verify-native
+}
 
-  # Verify bitcode libraries in lib/
-  # The GLibC build does not currently have any bitcode
-  # libraries in this location.
-  if ${LIBMODE_NEWLIB}; then
-    SubBanner "VERIFY: ${INSTALL_LIB}"
-    for i in ${INSTALL_LIB}/*.a ; do
-      verify-archive-llvm "$i"
-    done
-  fi
+verify-bitcode() {
+  verify-bitcode-dir "${INSTALL_LIB_NEWLIB}"
+  verify-bitcode-dir "${INSTALL_LIB_GLIBC}"
+}
 
-  # Verify platform libraries
-  for platform in arm x86-32 x86-64; do
-    if [ "${platform}" == "arm" ] && ${LIBMODE_GLIBC}; then
-      continue
-    fi
-
-    SubBanner "VERIFY: ${INSTALL_LIB}-${platform}"
-    # There are currently no .o files here
-    #for i in "${INSTALL_LIB}-${platform}"/*.o ; do
-    #  verify-object-${platform} "$i"
-    #done
-
-    for i in "${INSTALL_LIB}-${platform}"/*.a ; do
-      verify-archive-${platform} "$i"
-    done
+verify-native() {
+  local arch
+  for arch in arm x86-32 x86-64; do
+    verify-native-dir ${arch} "${INSTALL_LIB_NATIVE}${arch}"
   done
 }
 
