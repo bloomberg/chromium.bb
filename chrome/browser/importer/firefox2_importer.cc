@@ -158,7 +158,6 @@ void Firefox2Importer::ImportBookmarksFile(
   std::vector<std::string> lines;
   base::SplitString(content, '\n', &lines);
 
-  std::vector<ProfileWriter::BookmarkEntry> toolbar_bookmarks;
   string16 last_folder;
   bool last_folder_on_toolbar = false;
   bool last_folder_is_empty = true;
@@ -217,7 +216,6 @@ void Firefox2Importer::ImportBookmarksFile(
         // The toolbar folder should be at the top level.
         entry.in_toolbar = true;
         entry.path.assign(path.begin() + toolbar_folder - 1, path.end());
-        toolbar_bookmarks.push_back(entry);
       } else {
         // Add this bookmark to the list of |bookmarks|.
         if (!has_subfolder && !last_folder.empty()) {
@@ -225,8 +223,8 @@ void Firefox2Importer::ImportBookmarksFile(
           last_folder.clear();
         }
         entry.path.assign(path.begin(), path.end());
-        bookmarks->push_back(entry);
       }
+      bookmarks->push_back(entry);
 
       // Save the favicon. DataURLToFaviconUsage will handle the case where
       // there is no favicon.
@@ -275,7 +273,7 @@ void Firefox2Importer::ImportBookmarksFile(
           if (toolbar_folder <= path.size()) {
             entry.in_toolbar = true;
             entry.path.assign(path.begin() + toolbar_folder - 1, path.end());
-            toolbar_bookmarks.push_back(entry);
+            bookmarks->push_back(entry);
           }
         } else {
           // Add this folder to the list of |bookmarks|.
@@ -291,9 +289,6 @@ void Firefox2Importer::ImportBookmarksFile(
         toolbar_folder = 0;
     }
   }
-
-  bookmarks->insert(bookmarks->begin(), toolbar_bookmarks.begin(),
-                    toolbar_bookmarks.end());
 }
 
 void Firefox2Importer::ImportBookmarks() {

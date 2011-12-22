@@ -36,6 +36,7 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
   struct BookmarkEntry {
     BookmarkEntry();
     ~BookmarkEntry();
+    bool operator==(const BookmarkEntry& other) const;
 
     bool in_toolbar;
     bool is_folder;

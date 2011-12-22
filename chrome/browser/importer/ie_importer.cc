@@ -43,6 +43,21 @@
 
 namespace {
 
+// Registry key paths from which we import IE settings.
+const char16 kStorage2Path[] =
+  L"Software\\Microsoft\\Internet Explorer\\IntelliForms\\Storage2";
+const char16 kSearchScopePath[] =
+  L"Software\\Microsoft\\Internet Explorer\\SearchScopes";
+const char16 kIESettingsMain[] =
+  L"Software\\Microsoft\\Internet Explorer\\Main";
+const char16 kIEFavoritesOrderKey[] =
+  L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\"
+  L"MenuOrder\\Favorites";
+const char16 kIEVersionKey[] =
+  L"Software\\Microsoft\\Internet Explorer";
+const char16 kIEToolbarKey[] =
+  L"Software\\Microsoft\\Internet Explorer\\Toolbar";
+
 // A struct that hosts the information of AutoComplete data in PStore.
 struct AutoCompleteInfo {
   string16 key;
@@ -62,6 +77,189 @@ base::Time GetFileCreationTime(const string16& file) {
   if (GetFileTime(file_handle, &creation_filetime, NULL, NULL))
     creation_time = base::Time::FromFileTime(creation_filetime);
   return creation_time;
+}
+
+// Safely read an object of type T from a raw sequence of bytes.
+template<typename T>
+bool BinaryRead(T* data, size_t offset, const std::vector<uint8>& blob) {
+  if (offset + sizeof(T) > blob.size())
+    return false;
+  memcpy(data, &blob[offset], sizeof(T));
+  return true;
+}
+
+// Safely read an ITEMIDLIST from a raw sequence of bytes.
+//
+// An ITEMIDLIST is a list of SHITEMIDs, terminated by a SHITEMID with
+// .cb = 0. Here, before simply casting &blob[offset] to LPITEMIDLIST,
+// we verify that the list structure is not overrunning the boundary of
+// the binary blob.
+LPCITEMIDLIST BinaryReadItemIDList(size_t offset, size_t idlist_size,
+                                   const std::vector<uint8>& blob) {
+  size_t head = 0;
+  while (true) {
+    SHITEMID id;
+    if (head >= idlist_size || !BinaryRead(&id, offset + head, blob))
+      return NULL;
+    if (id.cb == 0)
+      break;
+    head += id.cb;
+  }
+  return reinterpret_cast<LPCITEMIDLIST>(&blob[offset]);
+}
+
+// Compares the two bookmarks in the order of IE's Favorites menu.
+// Returns true if rhs should come later than lhs (lhs < rhs).
+struct IEOrderBookmarkComparator {
+  bool operator()(const ProfileWriter::BookmarkEntry& lhs,
+                  const ProfileWriter::BookmarkEntry& rhs) const {
+    static const uint32 kNotSorted = 0xfffffffb; // IE uses this magic value.
+    FilePath lhs_prefix;
+    FilePath rhs_prefix;
+    for (size_t i = 0; i <= lhs.path.size() && i <= rhs.path.size(); ++i) {
+      const FilePath::StringType lhs_i =
+        (i < lhs.path.size() ? lhs.path[i] : lhs.title + L".url");
+      const FilePath::StringType rhs_i =
+        (i < rhs.path.size() ? rhs.path[i] : rhs.title + L".url");
+      lhs_prefix = lhs_prefix.Append(lhs_i);
+      rhs_prefix = rhs_prefix.Append(rhs_i);
+      if (lhs_i == rhs_i)
+        continue;
+      // The first path element that differs between the two.
+      std::map<FilePath, uint32>::const_iterator lhs_iter =
+        sort_index_->find(lhs_prefix);
+      std::map<FilePath, uint32>::const_iterator rhs_iter =
+        sort_index_->find(rhs_prefix);
+      uint32 lhs_sort_index = (lhs_iter == sort_index_->end() ? kNotSorted
+        : lhs_iter->second);
+      uint32 rhs_sort_index = (rhs_iter == sort_index_->end() ? kNotSorted
+        : rhs_iter->second);
+      if (lhs_sort_index != rhs_sort_index)
+        return lhs_sort_index < rhs_sort_index;
+      // If they have the same sort order, sort alphabetically.
+      return lhs_i < rhs_i;
+    }
+    return lhs.path.size() < rhs.path.size();
+  }
+  const std::map<FilePath, uint32>* sort_index_;
+};
+
+// IE stores the order of the Favorites menu in registry under:
+// HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MenuOrder\Favorites.
+// The folder hierarchy of Favorites menu is directly mapped to the key
+// hierarchy in the registry.
+//
+// If the order of the items in a folder is customized by user, the order is
+// recorded in the REG_BINARY value named "Order" of the corresponding key.
+// The content of the "Order" value is a raw binary dump of an array of the
+// following data structure
+//   struct {
+//     uint32 size;  // Note that ITEMIDLIST is variably-sized.
+//     uint32 sort_index;  // 0 means this is the first item, 1 the second, ...
+//     ITEMIDLIST item_id;
+//   };
+// where each item_id should correspond to a favorites link file (*.url) in
+// the current folder.
+bool ParseFavoritesOrderBlob(
+    const Importer* importer,
+    const std::vector<uint8>& blob,
+    const FilePath& path,
+    std::map<FilePath, uint32>* sort_index) WARN_UNUSED_RESULT {
+  static const int kItemCountOffset = 16;
+  static const int kItemListStartOffset = 20;
+
+  // Read the number of items.
+  uint32 item_count = 0;
+  if (!BinaryRead(&item_count, kItemCountOffset, blob))
+    return false;
+
+  // Traverse over the items.
+  size_t base_offset = kItemListStartOffset;
+  for (uint32 i = 0; i < item_count && !importer->cancelled(); ++i) {
+    static const int kSizeOffset = 0;
+    static const int kSortIndexOffset = 4;
+    static const int kItemIDListOffset = 8;
+
+    // Read the size (number of bytes) of the current item.
+    uint32 item_size = 0;
+    if (!BinaryRead(&item_size, base_offset + kSizeOffset, blob) ||
+        base_offset + item_size <= base_offset || // checking overflow
+        base_offset + item_size > blob.size())
+      return false;
+
+    // Read the sort index of the current item.
+    uint32 item_sort_index = 0;
+    if (!BinaryRead(&item_sort_index, base_offset + kSortIndexOffset, blob))
+      return false;
+
+    // Read the file name from the ITEMIDLIST structure.
+    LPCITEMIDLIST idlist = BinaryReadItemIDList(
+      base_offset + kItemIDListOffset, item_size - kItemIDListOffset, blob);
+    TCHAR item_filename[MAX_PATH];
+    if (!idlist || FAILED(SHGetPathFromIDList(idlist, item_filename)))
+      return false;
+    FilePath item_relative_path =
+      path.Append(FilePath(item_filename).BaseName());
+
+    // Record the retrieved information and go to the next item.
+    sort_index->insert(std::make_pair(item_relative_path, item_sort_index));
+    base_offset += item_size;
+  }
+  return true;
+}
+
+bool ParseFavoritesOrderRegistryTree(
+    const Importer* importer,
+    const base::win::RegKey& key,
+    const FilePath& path,
+    std::map<FilePath, uint32>* sort_index) WARN_UNUSED_RESULT {
+  // Parse the order information of the current folder.
+  DWORD blob_length = 0;
+  if (key.ReadValue(L"Order", NULL, &blob_length, NULL) == ERROR_SUCCESS) {
+    std::vector<uint8> blob(blob_length);
+    if (blob_length > 0 &&
+        key.ReadValue(L"Order", reinterpret_cast<DWORD*>(&blob[0]),
+                      &blob_length, NULL) == ERROR_SUCCESS) {
+      if (!ParseFavoritesOrderBlob(importer, blob, path, sort_index))
+        return false;
+    }
+  }
+
+  // Recursively parse subfolders.
+  for (base::win::RegistryKeyIterator child(key.Handle(), L"");
+       child.Valid() && !importer->cancelled();
+       ++child) {
+    base::win::RegKey subkey(key.Handle(), child.Name(), KEY_READ);
+    if (subkey.Valid()) {
+      FilePath subpath(path.Append(child.Name()));
+      if (!ParseFavoritesOrderRegistryTree(importer, subkey, subpath,
+                                           sort_index)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool ParseFavoritesOrderInfo(
+    const Importer* importer,
+    std::map<FilePath, uint32>* sort_index) WARN_UNUSED_RESULT {
+  base::win::RegKey key(HKEY_CURRENT_USER, kIEFavoritesOrderKey, KEY_READ);
+  if (!key.Valid())
+    return false;
+  return ParseFavoritesOrderRegistryTree(importer, key, FilePath(), sort_index);
+}
+
+// Read the sort order from registry. If failed, we don't touch the list
+// and use the default (alphabetical) order.
+void SortBookmarksInIEOrder(
+    const Importer* importer,
+    std::vector<ProfileWriter::BookmarkEntry>* bookmarks) {
+  std::map<FilePath, uint32> sort_index;
+  if (!ParseFavoritesOrderInfo(importer, &sort_index))
+    return;
+  IEOrderBookmarkComparator compare = {&sort_index};
+  std::sort(bookmarks->begin(), bookmarks->end(), compare);
 }
 
 }  // namespace
@@ -322,9 +520,6 @@ void IEImporter::ImportPasswordsIE7() {
     return;
   }
 
-  const wchar_t* kStorage2Path =
-      L"Software\\Microsoft\\Internet Explorer\\IntelliForms\\Storage2";
-
   base::win::RegKey key(HKEY_CURRENT_USER, kStorage2Path, KEY_READ);
   base::win::RegistryValueIterator reg_iterator(HKEY_CURRENT_USER,
                                                 kStorage2Path);
@@ -356,9 +551,6 @@ void IEImporter::ImportSearchEngines() {
   // Each key represents a search engine. The URL value contains the URL and
   // the DisplayName the name.
   // The default key's name is contained under DefaultScope.
-  const wchar_t* kSearchScopePath =
-      L"Software\\Microsoft\\Internet Explorer\\SearchScopes";
-
   base::win::RegKey key(HKEY_CURRENT_USER, kSearchScopePath, KEY_READ);
   string16 default_search_engine_name;
   const TemplateURL* default_search_engine = NULL;
@@ -434,8 +626,6 @@ void IEImporter::ImportSearchEngines() {
 }
 
 void IEImporter::ImportHomepage() {
-  const wchar_t* kIESettingsMain =
-      L"Software\\Microsoft\\Internet Explorer\\Main";
   const wchar_t* kIEHomepage = L"Start Page";
   const wchar_t* kIEDefaultHomepage = L"Default_Page_URL";
 
@@ -510,8 +700,7 @@ bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo* info) {
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     // The Link folder name is stored in the registry.
     DWORD buffer_length = sizeof(buffer);
-    base::win::RegKey reg_key(HKEY_CURRENT_USER,
-        L"Software\\Microsoft\\Internet Explorer\\Toolbar", KEY_READ);
+    base::win::RegKey reg_key(HKEY_CURRENT_USER, kIEToolbarKey, KEY_READ);
     if (reg_key.ReadValue(L"LinksFolderName", buffer,
                           &buffer_length, NULL) != ERROR_SUCCESS)
       return false;
@@ -525,7 +714,6 @@ bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo* info) {
 
 void IEImporter::ParseFavoritesFolder(const FavoritesInfo& info,
                                       BookmarkVector* bookmarks) {
-  BookmarkVector toolbar_bookmarks;
   FilePath file;
   std::vector<FilePath::StringType> file_list;
   FilePath favorites_path(info.path);
@@ -573,13 +761,12 @@ void IEImporter::ParseFavoritesFolder(const FavoritesInfo& info,
     if (!entry.path.empty() && entry.path[0] == info.links_folder) {
       // Bookmarks in the Link folder should be imported to the toolbar.
       entry.in_toolbar = true;
-      toolbar_bookmarks.push_back(entry);
-    } else {
-      bookmarks->push_back(entry);
     }
+    bookmarks->push_back(entry);
   }
-  bookmarks->insert(bookmarks->begin(), toolbar_bookmarks.begin(),
-                    toolbar_bookmarks.end());
+
+  // Reflect the menu order in IE.
+  SortBookmarksInIEOrder(this, bookmarks);
 }
 
 int IEImporter::CurrentIEVersion() const {
@@ -587,8 +774,7 @@ int IEImporter::CurrentIEVersion() const {
   if (version < 0) {
     wchar_t buffer[128];
     DWORD buffer_length = sizeof(buffer);
-    base::win::RegKey reg_key(HKEY_LOCAL_MACHINE,
-        L"Software\\Microsoft\\Internet Explorer", KEY_READ);
+    base::win::RegKey reg_key(HKEY_LOCAL_MACHINE, kIEVersionKey, KEY_READ);
     LONG result = reg_key.ReadValue(L"Version", buffer, &buffer_length, NULL);
     version = ((result == ERROR_SUCCESS)? _wtoi(buffer) : 0);
   }

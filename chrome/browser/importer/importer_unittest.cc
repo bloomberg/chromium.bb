@@ -12,8 +12,10 @@
 #include <pstore.h>
 #include <shlguid.h>
 #include <urlhist.h>
+#include <shlobj.h>
 #endif
 
+#include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
@@ -39,6 +41,7 @@
 #include "webkit/forms/password_form.h"
 
 #if defined(OS_WIN)
+#include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/importer/ie_importer.h"
@@ -54,81 +57,7 @@
 
 using content::BrowserThread;
 
-class ImporterTest : public testing::Test {
- public:
-  ImporterTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_),
-        profile_(new TestingProfile()) {
-  }
-
-  ~ImporterTest() {
-    profile_.reset(NULL);
-  }
-
- protected:
-  virtual void SetUp() {
-    // Creates a new profile in a new subdirectory in the temp directory.
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    FilePath test_path = temp_dir_.path().AppendASCII("ImporterTest");
-    file_util::Delete(test_path, true);
-    file_util::CreateDirectory(test_path);
-    profile_path_ = test_path.AppendASCII("profile");
-    app_path_ = test_path.AppendASCII("app");
-    file_util::CreateDirectory(app_path_);
-  }
-
-  void Firefox3xImporterTest(std::string profile_dir,
-                             importer::ImporterProgressObserver* observer,
-                             ProfileWriter* writer,
-                             bool import_search_plugins) {
-    FilePath data_path;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
-    data_path = data_path.AppendASCII(profile_dir);
-    ASSERT_TRUE(file_util::CopyDirectory(data_path, profile_path_, true));
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
-    data_path = data_path.AppendASCII("firefox3_nss");
-    ASSERT_TRUE(file_util::CopyDirectory(data_path, profile_path_, false));
-
-    FilePath search_engine_path = app_path_;
-    search_engine_path = search_engine_path.AppendASCII("searchplugins");
-    file_util::CreateDirectory(search_engine_path);
-    if (import_search_plugins) {
-      ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
-      data_path = data_path.AppendASCII("firefox3_searchplugins");
-      if (!file_util::PathExists(data_path)) {
-        // TODO(maruel):  Create search test data that we can open source!
-        LOG(ERROR) << L"Missing internal test data";
-        return;
-      }
-      ASSERT_TRUE(file_util::CopyDirectory(data_path,
-                                           search_engine_path, false));
-    }
-
-    MessageLoop* loop = MessageLoop::current();
-    importer::SourceProfile source_profile;
-    source_profile.importer_type = importer::TYPE_FIREFOX3;
-    source_profile.app_path = app_path_;
-    source_profile.source_path = profile_path_;
-    scoped_refptr<ImporterHost> host(new ImporterHost);
-    host->SetObserver(observer);
-    int items = importer::HISTORY | importer::PASSWORDS | importer::FAVORITES;
-    if (import_search_plugins)
-      items = items | importer::SEARCH_ENGINES;
-    loop->PostTask(FROM_HERE, base::Bind(
-        &ImporterHost::StartImportSettings, host.get(), source_profile,
-        profile_.get(), items, make_scoped_refptr(writer), true));
-    loop->Run();
-  }
-
-  ScopedTempDir temp_dir_;
-  MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-  FilePath profile_path_;
-  FilePath app_path_;
-  scoped_ptr<TestingProfile> profile_;
-};
+namespace {
 
 const int kMaxPathSize = 5;
 
@@ -140,36 +69,51 @@ struct BookmarkList {
   const char* url;
 };
 
+bool LexicographicCompareBookmark(const ProfileWriter::BookmarkEntry& lhs,
+                                  const ProfileWriter::BookmarkEntry& rhs) {
+  if (lhs.path == rhs.path)
+    return lhs.title < rhs.title;
+  return lhs.path < rhs.path;
+}
+
+// Returns true if the |entry| is equal to |expected|.
+bool EqualBookmarkEntry(const ProfileWriter::BookmarkEntry& entry,
+                        const BookmarkList& expected) {
+  if (expected.in_toolbar != entry.in_toolbar ||
+      expected.path_size != entry.path.size() ||
+      expected.url != entry.url.spec() ||
+      WideToUTF16Hack(expected.title) != entry.title)
+    return false;
+  for (size_t i = 0; i < expected.path_size; ++i) {
+    if (WideToUTF16Hack(expected.path[i]) != entry.path[i])
+      return false;
+  }
+  return true;
+}
+
 // Returns true if the |entry| is in the |list|.
 bool FindBookmarkEntry(const ProfileWriter::BookmarkEntry& entry,
                        const BookmarkList* list, int list_size) {
   for (int i = 0; i < list_size; ++i) {
-    if (list[i].in_toolbar == entry.in_toolbar &&
-        list[i].path_size == entry.path.size() &&
-        list[i].url == entry.url.spec() &&
-        WideToUTF16Hack(list[i].title) == entry.title) {
-      bool equal = true;
-      for (size_t k = 0; k < list[i].path_size; ++k)
-        if (WideToUTF16Hack(list[i].path[k]) != entry.path[k]) {
-          equal = false;
-          break;
-        }
-
-      if (equal)
-        return true;
-    }
+    if (EqualBookmarkEntry(entry, list[i]))
+      return true;
   }
   return false;
 }
 
+// TODO(kinaba): too many #ifdef's. Move tests for IE to another file.
 #if defined(OS_WIN)
+const char16 kUnitTestRegistrySubKey[] = L"SOFTWARE\\Chromium Unit Tests";
+const char16 kUnitTestUserOverrideSubKey[] =
+    L"SOFTWARE\\Chromium Unit Tests\\HKCU Override";
+
 static const BookmarkList kIEBookmarks[] = {
-  {true, 1, {L"Links"},
-   L"TheLink",
-   "http://www.links-thelink.com/"},
   {true, 2, {L"Links", L"SubFolderOfLinks"},
    L"SubLink",
    "http://www.links-sublink.com/"},
+  {true, 1, {L"Links"},
+   L"TheLink",
+   "http://www.links-thelink.com/"},
   {false, 0, {},
    L"Google Home Page",
    "http://www.google.com/"},
@@ -185,6 +129,16 @@ static const BookmarkList kIEBookmarks[] = {
   {false, 1, {L"a"},
    L"\x4E2D\x6587",
    "http://chinese-title-favorite/"},
+  {false, 0, {},
+   L"SubFolder",
+   "http://www.subfolder.com/"},
+};
+
+static const BookmarkList kIESortedBookmarks[] = {
+  {false, 0, {}, L"a", "http://www.google.com/0"},
+  {false, 1, {L"b"}, L"a", "http://www.google.com/1"},
+  {false, 1, {L"b"}, L"b", "http://www.google.com/2"},
+  {false, 0, {}, L"c", "http://www.google.com/3"},
 };
 
 static const wchar_t* kIEIdentifyUrl =
@@ -192,82 +146,52 @@ static const wchar_t* kIEIdentifyUrl =
 static const wchar_t* kIEIdentifyTitle =
     L"Unittest GUID";
 
-class TestObserver : public ProfileWriter,
-                     public importer::ImporterProgressObserver {
- public:
-  TestObserver() : ProfileWriter(NULL) {
-    bookmark_count_ = 0;
-    history_count_ = 0;
-    password_count_ = 0;
+const wchar_t kIEFavoritesOrderKey[] =
+  L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\"
+  L"MenuOrder\\Favorites";
+
+bool CreateOrderBlob(const FilePath& favorites_folder,
+                     const string16& path,
+                     const std::vector<string16>& entries) {
+  if (entries.size() > 255)
+    return false;
+
+  // Create a binary sequence for setting a specific order of favorites.
+  // The format depends on the version of Shell32.dll, so we cannot embed
+  // a binary constant here.
+  std::vector<uint8> blob(20, 0);
+  blob[16] = static_cast<uint8>(entries.size());
+
+  for (size_t i = 0; i < entries.size(); ++i) {
+    ITEMIDLIST* id_list_full = ILCreateFromPath(
+        favorites_folder.Append(path).Append(entries[i]).value().c_str());
+    ITEMIDLIST* id_list = ILFindLastID(id_list_full);
+    size_t id_list_size = id_list->mkid.cb + sizeof(id_list->mkid);
+
+    blob.resize(blob.size() + 8);
+    uint32 total_size = id_list_size + 8;
+    memcpy(&blob[blob.size() - 8], &total_size, 4);
+    uint32 sort_index = i;
+    memcpy(&blob[blob.size() - 4], &sort_index, 4);
+    blob.resize(blob.size() + id_list_size);
+    memcpy(&blob[blob.size() - id_list_size], id_list, id_list_size);
+    ILFree(id_list_full);
   }
 
-  // importer::ImporterProgressObserver:
-  virtual void ImportStarted() OVERRIDE {}
-  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE {}
-  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE {}
-  virtual void ImportEnded() OVERRIDE {
-    MessageLoop::current()->Quit();
-    EXPECT_EQ(arraysize(kIEBookmarks), bookmark_count_);
-    EXPECT_EQ(1, history_count_);
+  string16 key_path = kIEFavoritesOrderKey;
+  if (!path.empty())
+    key_path += L"\\" + path;
+  base::win::RegKey key;
+  if (key.Create(HKEY_CURRENT_USER, key_path.c_str(), KEY_WRITE) !=
+      ERROR_SUCCESS) {
+    return false;
   }
-
-  virtual bool BookmarkModelIsLoaded() const {
-    // Profile is ready for writing.
-    return true;
+  if (key.WriteValue(L"Order", &blob[0], blob.size(), REG_BINARY) !=
+      ERROR_SUCCESS) {
+    return false;
   }
-
-  virtual bool TemplateURLServiceIsLoaded() const {
-    return true;
-  }
-
-  virtual void AddPasswordForm(const webkit::forms::PasswordForm& form) {
-    // Importer should obtain this password form only.
-    EXPECT_EQ(GURL("http://localhost:8080/security/index.htm"), form.origin);
-    EXPECT_EQ("http://localhost:8080/", form.signon_realm);
-    EXPECT_EQ(L"user", form.username_element);
-    EXPECT_EQ(L"1", form.username_value);
-    EXPECT_EQ(L"", form.password_element);
-    EXPECT_EQ(L"2", form.password_value);
-    EXPECT_EQ("", form.action.spec());
-    ++password_count_;
-  }
-
-  virtual void AddHistoryPage(const std::vector<history::URLRow>& page,
-                              history::VisitSource visit_source) {
-    // Importer should read the specified URL.
-    for (size_t i = 0; i < page.size(); ++i) {
-      if (page[i].title() == kIEIdentifyTitle &&
-          page[i].url() == GURL(kIEIdentifyUrl))
-        ++history_count_;
-    }
-    EXPECT_EQ(history::SOURCE_IE_IMPORTED, visit_source);
-  }
-
-  virtual void AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
-                            const string16& top_level_folder_name) OVERRIDE {
-    // Importer should import the IE Favorites folder the same as the list.
-    for (size_t i = 0; i < bookmarks.size(); ++i) {
-      if (FindBookmarkEntry(bookmarks[i], kIEBookmarks,
-                            arraysize(kIEBookmarks)))
-        ++bookmark_count_;
-    }
-  }
-
-  virtual void AddKeyword(std::vector<TemplateURL*> template_url,
-                          int default_keyword_index) {
-    // TODO(jcampan): bug 1169230: we should test keyword importing for IE.
-    // In order to do that we'll probably need to mock the Windows registry.
-    NOTREACHED();
-    STLDeleteContainerPointers(template_url.begin(), template_url.end());
-  }
-
- private:
-  ~TestObserver() {}
-
-  size_t bookmark_count_;
-  size_t history_count_;
-  size_t password_count_;
-};
+  return true;
+}
 
 bool CreateUrlFile(const string16& file, const string16& url) {
   base::win::ScopedComPtr<IUniformResourceLocator> locator;
@@ -327,7 +251,241 @@ void WritePStore(IPStore* pstore, const GUID* type, const GUID* subtype) {
     ASSERT_TRUE(res == PST_E_OK);
   }
 }
+#endif  // defined(OS_WIN)
 
+class ImporterTest : public testing::Test {
+ public:
+  ImporterTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_),
+        profile_(new TestingProfile()) {
+  }
+
+  ~ImporterTest() {
+    profile_.reset(NULL);
+  }
+
+ protected:
+  virtual void SetUp() {
+    // Creates a new profile in a new subdirectory in the temp directory.
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    FilePath test_path = temp_dir_.path().AppendASCII("ImporterTest");
+    file_util::Delete(test_path, true);
+    file_util::CreateDirectory(test_path);
+    profile_path_ = test_path.AppendASCII("profile");
+    app_path_ = test_path.AppendASCII("app");
+    file_util::CreateDirectory(app_path_);
+    StartRegistryOverride();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    EndRegistryOverride();
+  }
+
+  void StartRegistryOverride() {
+#if defined(OS_WIN)
+    EXPECT_EQ(ERROR_SUCCESS, RegOverridePredefKey(HKEY_CURRENT_USER, NULL));
+    temp_hkcu_hive_key_.Create(HKEY_CURRENT_USER,
+                               kUnitTestUserOverrideSubKey,
+                               KEY_ALL_ACCESS);
+    EXPECT_TRUE(temp_hkcu_hive_key_.Valid());
+    EXPECT_EQ(ERROR_SUCCESS,
+              RegOverridePredefKey(HKEY_CURRENT_USER,
+                                   temp_hkcu_hive_key_.Handle()));
+#endif
+  }
+
+  void EndRegistryOverride() {
+#if defined(OS_WIN)
+    EXPECT_EQ(ERROR_SUCCESS, RegOverridePredefKey(HKEY_CURRENT_USER, NULL));
+    temp_hkcu_hive_key_.Close();
+    base::win::RegKey key(HKEY_CURRENT_USER, kUnitTestRegistrySubKey,
+                          KEY_ALL_ACCESS);
+    key.DeleteKey(L"");
+#endif
+  }
+
+  void Firefox3xImporterTest(std::string profile_dir,
+                             importer::ImporterProgressObserver* observer,
+                             ProfileWriter* writer,
+                             bool import_search_plugins) {
+    FilePath data_path;
+    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
+    data_path = data_path.AppendASCII(profile_dir);
+    ASSERT_TRUE(file_util::CopyDirectory(data_path, profile_path_, true));
+    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
+    data_path = data_path.AppendASCII("firefox3_nss");
+    ASSERT_TRUE(file_util::CopyDirectory(data_path, profile_path_, false));
+
+    FilePath search_engine_path = app_path_;
+    search_engine_path = search_engine_path.AppendASCII("searchplugins");
+    file_util::CreateDirectory(search_engine_path);
+    if (import_search_plugins) {
+      ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
+      data_path = data_path.AppendASCII("firefox3_searchplugins");
+      if (!file_util::PathExists(data_path)) {
+        // TODO(maruel):  Create search test data that we can open source!
+        LOG(ERROR) << L"Missing internal test data";
+        return;
+      }
+      ASSERT_TRUE(file_util::CopyDirectory(data_path,
+                                           search_engine_path, false));
+    }
+
+    MessageLoop* loop = MessageLoop::current();
+    importer::SourceProfile source_profile;
+    source_profile.importer_type = importer::TYPE_FIREFOX3;
+    source_profile.app_path = app_path_;
+    source_profile.source_path = profile_path_;
+    scoped_refptr<ImporterHost> host(new ImporterHost);
+    host->SetObserver(observer);
+    int items = importer::HISTORY | importer::PASSWORDS | importer::FAVORITES;
+    if (import_search_plugins)
+      items = items | importer::SEARCH_ENGINES;
+    loop->PostTask(FROM_HERE, base::Bind(
+        &ImporterHost::StartImportSettings, host.get(), source_profile,
+        profile_.get(), items, make_scoped_refptr(writer), true));
+    loop->Run();
+  }
+
+  ScopedTempDir temp_dir_;
+  MessageLoopForUI message_loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
+  FilePath profile_path_;
+  FilePath app_path_;
+  scoped_ptr<TestingProfile> profile_;
+#if defined(OS_WIN)
+  base::win::RegKey temp_hkcu_hive_key_;
+#endif
+};
+
+#if defined(OS_WIN)
+class TestObserver : public ProfileWriter,
+                     public importer::ImporterProgressObserver {
+ public:
+  TestObserver() : ProfileWriter(NULL) {
+    bookmark_count_ = 0;
+    history_count_ = 0;
+    password_count_ = 0;
+  }
+
+  // importer::ImporterProgressObserver:
+  virtual void ImportStarted() OVERRIDE {}
+  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE {}
+  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE {}
+  virtual void ImportEnded() OVERRIDE {
+    MessageLoop::current()->Quit();
+    EXPECT_EQ(arraysize(kIEBookmarks), bookmark_count_);
+    EXPECT_EQ(1, history_count_);
+  }
+
+  virtual bool BookmarkModelIsLoaded() const {
+    // Profile is ready for writing.
+    return true;
+  }
+
+  virtual bool TemplateURLServiceIsLoaded() const {
+    return true;
+  }
+
+  virtual void AddPasswordForm(const webkit::forms::PasswordForm& form) {
+    // Importer should obtain this password form only.
+    EXPECT_EQ(GURL("http://localhost:8080/security/index.htm"), form.origin);
+    EXPECT_EQ("http://localhost:8080/", form.signon_realm);
+    EXPECT_EQ(L"user", form.username_element);
+    EXPECT_EQ(L"1", form.username_value);
+    EXPECT_EQ(L"", form.password_element);
+    EXPECT_EQ(L"2", form.password_value);
+    EXPECT_EQ("", form.action.spec());
+    ++password_count_;
+  }
+
+  virtual void AddHistoryPage(const std::vector<history::URLRow>& page,
+                              history::VisitSource visit_source) {
+    // Importer should read the specified URL.
+    for (size_t i = 0; i < page.size(); ++i) {
+      if (page[i].title() == kIEIdentifyTitle &&
+          page[i].url() == GURL(kIEIdentifyUrl))
+        ++history_count_;
+    }
+    EXPECT_EQ(history::SOURCE_IE_IMPORTED, visit_source);
+  }
+
+  virtual void AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
+                            const string16& top_level_folder_name) OVERRIDE {
+    ASSERT_LE(bookmark_count_ + bookmarks.size(), arraysize(kIEBookmarks));
+    // Importer should import the IE Favorites folder the same as the list,
+    // in the same order.
+    for (size_t i = 0; i < bookmarks.size(); ++i) {
+      EXPECT_TRUE(EqualBookmarkEntry(bookmarks[i],
+                                     kIEBookmarks[bookmark_count_]));
+      ++bookmark_count_;
+    }
+  }
+
+  virtual void AddKeyword(std::vector<TemplateURL*> template_url,
+                          int default_keyword_index) {
+    // TODO(jcampan): bug 1169230: we should test keyword importing for IE.
+    // In order to do that we'll probably need to mock the Windows registry.
+    NOTREACHED();
+    STLDeleteContainerPointers(template_url.begin(), template_url.end());
+  }
+
+ private:
+  ~TestObserver() {}
+
+  size_t bookmark_count_;
+  size_t history_count_;
+  size_t password_count_;
+};
+
+class MalformedFavoritesRegistryTestObserver
+    : public ProfileWriter,
+      public importer::ImporterProgressObserver {
+ public:
+  MalformedFavoritesRegistryTestObserver() : ProfileWriter(NULL) {
+    bookmark_count_ = 0;
+  }
+
+  // importer::ImporterProgressObserver:
+  virtual void ImportStarted() OVERRIDE {}
+  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE {}
+  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE {}
+  virtual void ImportEnded() OVERRIDE {
+    MessageLoop::current()->Quit();
+    EXPECT_EQ(arraysize(kIESortedBookmarks), bookmark_count_);
+  }
+
+  virtual bool BookmarkModelIsLoaded() const { return true; }
+  virtual bool TemplateURLServiceIsLoaded() const { return true; }
+
+  virtual void AddPasswordForm(const webkit::forms::PasswordForm& form) {}
+  virtual void AddHistoryPage(const std::vector<history::URLRow>& page,
+                              history::VisitSource visit_source) {}
+  virtual void AddKeyword(std::vector<TemplateURL*> template_url,
+                          int default_keyword_index) {}
+  virtual void AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
+                            const string16& top_level_folder_name) OVERRIDE {
+    ASSERT_LE(bookmark_count_ + bookmarks.size(),
+              arraysize(kIESortedBookmarks));
+    for (size_t i = 0; i < bookmarks.size(); ++i) {
+      EXPECT_TRUE(EqualBookmarkEntry(bookmarks[i],
+                                     kIESortedBookmarks[bookmark_count_]));
+      ++bookmark_count_;
+    }
+  }
+
+ private:
+  ~MalformedFavoritesRegistryTestObserver() {}
+
+  size_t bookmark_count_;
+};
+#endif  // defined(OS_WIN)
+
+}  // namespace
+
+#if defined(OS_WIN)
 TEST_F(ImporterTest, IEImporter) {
   // Sets up a favorites folder.
   base::win::ScopedCOMInitializer com_init;
@@ -341,6 +499,8 @@ TEST_F(ImporterTest, IEImporter) {
                             L"http://www.google.com/"));
   ASSERT_TRUE(CreateUrlFile(path + L"\\SubFolder\\Title.url",
                             L"http://www.link.com/"));
+  ASSERT_TRUE(CreateUrlFile(path + L"\\SubFolder.url",
+                            L"http://www.subfolder.com/"));
   ASSERT_TRUE(CreateUrlFile(path + L"\\TheLink.url",
                             L"http://www.links-thelink.com/"));
   ASSERT_TRUE(CreateUrlFile(path + L"\\WithPortAndQuery.url",
@@ -353,6 +513,19 @@ TEST_F(ImporterTest, IEImporter) {
                             L"http://www.links-sublink.com/"));
   file_util::WriteFile(path + L"\\InvalidUrlFile.url", "x", 1);
   file_util::WriteFile(path + L"\\PlainTextFile.txt", "x", 1);
+
+  const wchar_t* root_links[] = {
+    L"Links",
+    L"Google Home Page.url",
+    L"TheLink.url",
+    L"SubFolder",
+    L"WithPortAndQuery.url",
+    L"a",
+    L"SubFolder.url",
+  };
+  ASSERT_TRUE(CreateOrderBlob(
+      FilePath(path), L"",
+      std::vector<string16>(root_links, root_links + arraysize(root_links))));
 
   HRESULT res;
 
@@ -374,6 +547,9 @@ TEST_F(ImporterTest, IEImporter) {
   source_profile.importer_type = importer::TYPE_IE;
   source_profile.source_path = temp_dir_.path();
 
+  // IUrlHistoryStg2::AddUrl seems to reset the override. Ensure it here.
+  StartRegistryOverride();
+
   loop->PostTask(FROM_HERE, base::Bind(
       &ImporterHost::StartImportSettings,
       host.get(),
@@ -387,6 +563,82 @@ TEST_F(ImporterTest, IEImporter) {
   // Cleans up.
   url_history_stg2->DeleteUrl(kIEIdentifyUrl, 0);
   url_history_stg2.Release();
+}
+
+TEST_F(ImporterTest, IEImporterMalformedFavoritesRegistry) {
+  // Sets up a favorites folder.
+  base::win::ScopedCOMInitializer com_init;
+  string16 path = temp_dir_.path().AppendASCII("Favorites").value();
+  CreateDirectory(path.c_str(), NULL);
+  CreateDirectory((path + L"\\b").c_str(), NULL);
+  ASSERT_TRUE(CreateUrlFile(path + L"\\a.url",
+                            L"http://www.google.com/0"));
+  ASSERT_TRUE(CreateUrlFile(path + L"\\b\\a.url",
+                            L"http://www.google.com/1"));
+  ASSERT_TRUE(CreateUrlFile(path + L"\\b\\b.url",
+                            L"http://www.google.com/2"));
+  ASSERT_TRUE(CreateUrlFile(path + L"\\c.url",
+                            L"http://www.google.com/3"));
+
+  struct BadBinaryData {
+    const char* data;
+    int length;
+  };
+  static const BadBinaryData kBadBinary[] = {
+    // number_of_items field is truncated
+    {"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+     "\x00\xff\xff\xff", 17},
+    // number_of_items = 0xffff, but the byte sequence is too short.
+    {"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+     "\xff\xff\x00\x00", 20},
+    // number_of_items = 1, size_of_item is too big.
+    {"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+     "\x01\x00\x00\x00"
+     "\xff\xff\x00\x00\x00\x00\x00\x00"
+     "\x00\x00\x00\x00", 32},
+    // number_of_items = 1, size_of_item = 16, size_of_shid is too big.
+    {"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+     "\x01\x00\x00\x00"
+     "\x10\x00\x00\x00\x00\x00\x00\x00"
+     "\xff\x7f\x00\x00" "\x00\x00\x00\x00", 36},
+    // number_of_items = 1, size_of_item = 16, size_of_shid is too big.
+    {"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+     "\x01\x00\x00\x00"
+     "\x10\x00\x00\x00\x00\x00\x00\x00"
+     "\x06\x00\x00\x00" "\x00\x00\x00\x00", 36},
+  };
+
+  // Verify malformed registry data are safely ignored and alphabetical
+  // sort is performed.
+  for (size_t i = 0; i < arraysize(kBadBinary); ++i) {
+    base::win::RegKey key;
+    ASSERT_EQ(ERROR_SUCCESS,
+              key.Create(HKEY_CURRENT_USER, kIEFavoritesOrderKey, KEY_WRITE));
+    ASSERT_EQ(ERROR_SUCCESS,
+              key.WriteValue(L"Order", kBadBinary[i].data, kBadBinary[i].length,
+                             REG_BINARY));
+
+    // Starts to import the above settings.
+    MessageLoop* loop = MessageLoop::current();
+    scoped_refptr<ImporterHost> host(new ImporterHost);
+
+    MalformedFavoritesRegistryTestObserver* observer =
+        new MalformedFavoritesRegistryTestObserver();
+    host->SetObserver(observer);
+    importer::SourceProfile source_profile;
+    source_profile.importer_type = importer::TYPE_IE;
+    source_profile.source_path = temp_dir_.path();
+
+    loop->PostTask(FROM_HERE, base::Bind(
+        &ImporterHost::StartImportSettings,
+        host.get(),
+        source_profile,
+        profile_.get(),
+        importer::FAVORITES,
+        observer,
+        true));
+    loop->Run();
+  }
 }
 
 TEST_F(ImporterTest, IE7Importer) {
