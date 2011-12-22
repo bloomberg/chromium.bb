@@ -46,10 +46,10 @@ static base::LazyInstance<ChildProcessList> g_child_process_list =
 // Helper functions since the child process related notifications happen on the
 // UI thread.
 void ChildNotificationHelper(int notification_type,
-                             content::ChildProcessData data) {
+                             const content::ChildProcessData& data) {
   content::NotificationService::current()->
         Notify(notification_type, content::NotificationService::AllSources(),
-               content::Details<content::ChildProcessData>(&data));
+               content::Details<const content::ChildProcessData>(&data));
 }
 
 }  // namespace
