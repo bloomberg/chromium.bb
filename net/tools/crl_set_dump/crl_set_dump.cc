@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
     final_crl_set = crl_set;
   }
 
-  const net::CRLSet::CRLList& crls = crl_set->crls();
+  const net::CRLSet::CRLList& crls = final_crl_set->crls();
   for (net::CRLSet::CRLList::const_iterator i = crls.begin(); i != crls.end();
        i++) {
     printf("%s\n", base::HexEncode(i->first.data(), i->first.size()).c_str());
