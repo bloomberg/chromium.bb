@@ -5227,6 +5227,15 @@
    fun:_ZN16BrowserThemePack18BuildFromExtensionEPK9Extension
    fun:_ZN45BrowserThemePackTest_CanBuildAndReadPack_Test8TestBodyEv
 }
+{
+   bug_108399
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:*WebSocketServerSocketImpl16ProcessHandshakeEvEN6Buffer*
+   fun:*WebSocketServerSocketImpl16ProcessHandshakeEv
+   fun:*WebSocketServerSocketImpl6OnReadEi
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

@@ -1758,3 +1758,11 @@
    fun:BrowserThemePack::BuildFromExtension
    fun:BrowserThemePackTest_CanBuildAndReadPack_Test::TestBody
 }
+{
+   bug_108399
+   Heapcheck:Leak
+   ...
+   fun:*Buffer
+   fun:::WebSocketServerSocketImpl::ProcessHandshake
+   fun:::WebSocketServerSocketImpl::OnRead
+}
