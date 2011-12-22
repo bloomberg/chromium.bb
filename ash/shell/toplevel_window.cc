@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/examples/toplevel_window.h"
+#include "ash/shell/toplevel_window.h"
 
 #include "base/utf_string_conversions.h"
 #include "ui/aura/window.h"
@@ -10,8 +10,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
-namespace examples {
+namespace ash {
+namespace shell {
 
 ToplevelWindow::CreateParams::CreateParams()
     : can_resize(false),
@@ -57,5 +57,5 @@ views::NonClientFrameView* ToplevelWindow::CreateNonClientFrameView() {
   return new aura_shell::internal::ToplevelFrameView;
 }
 
-}  // namespace examples
-}  // namespace aura_shell
+}  // namespace shell
+}  // namespace ash

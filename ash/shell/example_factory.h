@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_EXAMPLES_EXAMPLE_FACTORY_H_
-#define UI_AURA_SHELL_EXAMPLES_EXAMPLE_FACTORY_H_
+#ifndef ASH_SHELL_EXAMPLE_FACTORY_H_
+#define ASH_SHELL_EXAMPLE_FACTORY_H_
 #pragma once
 
 namespace views {
 class View;
 }
 
-namespace aura_shell {
-namespace examples {
+namespace ash {
+namespace shell {
 
 void CreatePointyBubble(views::View* anchor_view);
 
@@ -20,7 +20,7 @@ void CreateLockScreen();
 // Creates a window showing samples of commonly used widgets.
 void CreateWidgetsWindow();
 
-}  // namespace examples
-}  // namespace aura_shell
+}  // namespace shell
+}  // namespace ash
 
-#endif  // UI_AURA_SHELL_EXAMPLES_EXAMPLE_FACTORY_H_
+#endif  // ASH_SHELL_EXAMPLE_FACTORY_H_

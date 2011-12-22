@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_EXAMPLES_WINDOW_TYPE_LAUNCHER_H_
-#define UI_AURA_SHELL_EXAMPLES_WINDOW_TYPE_LAUNCHER_H_
+#ifndef ASH_SHELL_WINDOW_TYPE_LAUNCHER_H_
+#define ASH_SHELL_WINDOW_TYPE_LAUNCHER_H_
 #pragma once
 
 #include "ui/views/context_menu_controller.h"
@@ -16,8 +16,8 @@ class MenuRunner;
 class NativeTextButton;
 }
 
-namespace aura_shell {
-namespace examples {
+namespace ash {
+namespace shell {
 
 // The contents view/delegate of a window that shows some buttons that create
 // various window types.
@@ -74,7 +74,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncher);
 };
 
-}  // namespace examples
-}  // namespace aura_shell
+}  // namespace shell
+}  // namespace ash
 
-#endif  // UI_AURA_SHELL_EXAMPLES_WINDOW_TYPE_LAUNCHER_H_
+#endif  // ASH_SHELL_WINDOW_TYPE_LAUNCHER_H_

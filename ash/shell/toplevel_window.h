@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_EXAMPLES_TOPLEVEL_WINDOW_H_
-#define UI_AURA_SHELL_EXAMPLES_TOPLEVEL_WINDOW_H_
+#ifndef ASH_SHELL_TOPLEVEL_WINDOW_H_
+#define ASH_SHELL_TOPLEVEL_WINDOW_H_
 #pragma once
 
 #include "ui/views/widget/widget_delegate.h"
 
-namespace aura_shell {
-namespace examples {
+namespace ash {
+namespace shell {
 
 class ToplevelWindow : public views::WidgetDelegateView {
  public:
@@ -40,7 +40,7 @@ class ToplevelWindow : public views::WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindow);
 };
 
-}  // namespace examples
-}  // namespace aura_shell
+}  // namespace shell
+}  // namespace ash
 
-#endif  // UI_AURA_SHELL_EXAMPLES_TOPLEVEL_WINDOW_H_
+#endif  // ASH_SHELL_TOPLEVEL_WINDOW_H_

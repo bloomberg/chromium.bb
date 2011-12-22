@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/shell/toplevel_window.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura_shell/examples/toplevel_window.h"
 #include "ui/aura_shell/launcher/launcher_types.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_delegate.h"
@@ -57,10 +57,10 @@ class ShellDelegateImpl : public aura_shell::ShellDelegate {
   }
 
   virtual void CreateNewWindow() OVERRIDE {
-    aura_shell::examples::ToplevelWindow::CreateParams create_params;
+    ash::shell::ToplevelWindow::CreateParams create_params;
     create_params.can_resize = true;
     create_params.can_maximize = true;
-    aura_shell::examples::ToplevelWindow::CreateToplevelWindow(create_params);
+    ash::shell::ToplevelWindow::CreateToplevelWindow(create_params);
   }
 
   virtual views::Widget* CreateStatusArea() OVERRIDE {
@@ -96,13 +96,13 @@ class ShellDelegateImpl : public aura_shell::ShellDelegate {
 
 }  // namespace
 
-namespace aura_shell {
-namespace examples {
+namespace ash {
+namespace shell {
 
 void InitWindowTypeLauncher();
 
-}  // namespace examples
-}  // namespace aura_shell
+}  // namespace shell
+}  // namespace ash
 
 int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);
@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
 
   aura_shell::Shell::CreateInstance(new ShellDelegateImpl);
 
-  aura_shell::examples::InitWindowTypeLauncher();
+  ash::shell::InitWindowTypeLauncher();
 
   aura::RootWindow::GetInstance()->Run();
 

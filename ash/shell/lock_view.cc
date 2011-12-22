@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/shell/example_factory.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/examples/example_factory.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/gfx/canvas.h"
@@ -13,8 +13,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace aura_shell {
-namespace examples {
+using aura_shell::Shell;
+
+namespace ash {
+namespace shell {
 
 class LockView : public views::WidgetDelegateView {
  public:
@@ -68,5 +70,5 @@ void CreateLockScreen() {
   widget->GetNativeView()->SetName("LockView");
 }
 
-}  // namespace examples
-}  // namespace aura_shell
+}  // namespace shell
+}  // namespace ash

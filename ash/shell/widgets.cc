@@ -128,8 +128,8 @@ views::NonClientFrameView* WidgetsWindow::CreateNonClientFrameView() {
 
 }  // namespace
 
-namespace aura_shell {
-namespace examples {
+namespace ash {
+namespace shell {
 
 void CreateWidgetsWindow() {
   gfx::Rect bounds(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight);
@@ -139,5 +139,5 @@ void CreateWidgetsWindow() {
   widget->Show();
 }
 
-}  // namespace examples
-}  // namespace aura_shell
+}  // namespace shell
+}  // namespace ash

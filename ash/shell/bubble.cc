@@ -9,8 +9,8 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
-namespace examples {
+namespace ash {
+namespace shell {
 
 struct BubbleConfig {
   string16 label;
@@ -44,5 +44,5 @@ void CreatePointyBubble(views::View* anchor_view) {
   bubble->Show();
 }
 
-}  // namespace examples
-}  // namespace aura_shell
+}  // namespace shell
+}  // namespace ash

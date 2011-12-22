@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/examples/window_type_launcher.h"
+#include "ash/shell/window_type_launcher.h"
 
+#include "ash/shell/example_factory.h"
+#include "ash/shell/toplevel_window.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/examples/example_factory.h"
-#include "ui/aura_shell/examples/toplevel_window.h"
 #include "ui/aura_shell/shadow_types.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/toplevel_frame_view.h"
@@ -23,8 +23,8 @@
 using views::MenuItemView;
 using views::MenuRunner;
 
-namespace aura_shell {
-namespace examples {
+namespace ash {
+namespace shell {
 
 namespace {
 
@@ -145,7 +145,8 @@ void InitWindowTypeLauncher() {
       views::Widget::CreateWindowWithBounds(new WindowTypeLauncher,
                                             gfx::Rect(120, 150, 400, 300));
   widget->GetNativeView()->SetName("WindowTypeLauncher");
-  internal::SetShadowType(widget->GetNativeView(), internal::SHADOW_TYPE_NONE);
+  aura_shell::internal::SetShadowType(widget->GetNativeView(),
+                                      aura_shell::internal::SHADOW_TYPE_NONE);
   widget->Show();
 }
 
@@ -313,5 +314,5 @@ void WindowTypeLauncher::ShowContextMenuForView(views::View* source,
     return;
 }
 
-}  // namespace examples
-}  // namespace aura_shell
+}  // namespace shell
+}  // namespace ash
