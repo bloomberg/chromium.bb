@@ -166,11 +166,15 @@ class InputMethodMenu
   // item.
   bool IndexPointsToConfigureImeMenuItem(int index) const;
 
-  // Stops observing InputMethodManager.
+  // Add / Remove InputMethodManager observers.
+  void AddObservers();
   void RemoveObservers();
 
   // Initializes objects for reading/writing Chrome prefs.
   void InitializePrefMembers();
+
+  bool initialized_prefs_;
+  bool initialized_observers_;
 
   // The current input method list.
   scoped_ptr<input_method::InputMethodDescriptors> input_method_descriptors_;
