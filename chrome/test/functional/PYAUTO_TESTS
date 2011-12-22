@@ -312,9 +312,6 @@
       '-extensions.ExtensionsTest.testDisableEnableExtension',
       # Need internal data dirs in autotest package. crosbug.com/6855
       '-find_in_page.FindMatchTests.testSearchInPDF',
-      # Plugin crash infobar does not show up for file:/// flash urls
-      # crosbug.com/14971
-      '-infobars.InfobarTest.testPluginCrashInfobar',
       # crosbug.com/24496
       '-infobars.InfobarTest.testPluginCrashForMultiTabs',
       # Flaky: crosbug.com/14439
