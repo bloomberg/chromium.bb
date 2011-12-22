@@ -23,8 +23,6 @@ class TestShellDelegate : public ShellDelegate {
   virtual void RequestAppListWidget(
       const gfx::Rect& bounds,
       const SetWidgetCallback& callback) OVERRIDE;
-  virtual void BuildAppListModel(AppListModel* model) OVERRIDE;
-  virtual AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual void LauncherItemClicked(const LauncherItem& item) OVERRIDE;
   virtual bool ConfigureLauncherItem(LauncherItem* item) OVERRIDE;
 };

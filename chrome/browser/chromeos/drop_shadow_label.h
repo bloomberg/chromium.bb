@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_APP_LIST_DROP_SHADOW_LABEL_H_
-#define UI_AURA_SHELL_APP_LIST_DROP_SHADOW_LABEL_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DROP_SHADOW_LABEL_H_
+#define CHROME_BROWSER_CHROMEOS_DROP_SHADOW_LABEL_H_
 #pragma once
 
 #include "ui/gfx/font.h"
 #include "ui/views/controls/label.h"
 
-namespace aura_shell {
+namespace chromeos {
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -49,6 +49,6 @@ class DropShadowLabel : public views::Label  {
   DISALLOW_COPY_AND_ASSIGN(DropShadowLabel);
 };
 
-}  // namespace aura_shell
+}  // namespace chromeos
 
-#endif  // UI_AURA_SHELL_APP_LIST_DROP_SHADOW_LABEL_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DROP_SHADOW_LABEL_H_

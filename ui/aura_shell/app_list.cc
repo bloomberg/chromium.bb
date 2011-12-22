@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/app_list/app_list.h"
+#include "ui/aura_shell/app_list.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/app_list/app_list_model.h"
-#include "ui/aura_shell/app_list/app_list_view.h"
-#include "ui/aura_shell/aura_shell_switches.h"
-#include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell.h"
+#include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/gfx/screen.h"
 
@@ -29,7 +25,7 @@ gfx::Rect GetPreferredBounds(bool show) {
   gfx::Point cursor = gfx::Screen::GetCursorScreenPoint();
   gfx::Rect work_area = gfx::Screen::GetMonitorWorkAreaNearestPoint(cursor);
   gfx::Rect widget_bounds(work_area);
-  widget_bounds.Inset(100, 100);
+  widget_bounds.Inset(150, 100);
   if (!show)
     widget_bounds.Offset(0, kMoveUpAnimationOffset);
 
@@ -65,23 +61,9 @@ void AppList::SetVisible(bool visible) {
   if (widget_) {
     ScheduleAnimation();
   } else if (is_visible_ && !set_widget_factory_.HasWeakPtrs()) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kAuraViewsAppList)) {
-      scoped_ptr<AppListModel> model(new AppListModel);
-      Shell::GetInstance()->delegate()->BuildAppListModel(model.get());
-
-      // AppListModel and AppListViewDelegate are owned by AppListView. They
-      // will be released with AppListView on close.
-      new AppListView(
-          model.release(),
-          Shell::GetInstance()->delegate()->CreateAppListViewDelegate(),
-          GetPreferredBounds(false),
-          base::Bind(&AppList::SetWidget, set_widget_factory_.GetWeakPtr()));
-    } else {
-      Shell::GetInstance()->delegate()->RequestAppListWidget(
-          GetPreferredBounds(false),
-          base::Bind(&AppList::SetWidget, set_widget_factory_.GetWeakPtr()));
-    }
+    Shell::GetInstance()->delegate()->RequestAppListWidget(
+        GetPreferredBounds(false),
+        base::Bind(&AppList::SetWidget, set_widget_factory_.GetWeakPtr()));
   }
 }
 
