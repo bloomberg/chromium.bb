@@ -190,6 +190,11 @@ var SourceRow = (function() {
       if (this.description_.toLowerCase().indexOf(filter.text) != -1)
         return true;
 
+      // Allow specifying source types by name.
+      var sourceType = this.sourceEntry_.getSourceTypeString();
+      if (sourceType.toLowerCase().indexOf(filter.text) != -1)
+        return true;
+
       var entryText = JSON.stringify(this.sourceEntry_.getLogEntries());
       return entryText.toLowerCase().indexOf(filter.text) != -1;
     },
