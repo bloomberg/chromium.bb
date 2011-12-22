@@ -18,7 +18,7 @@
 #include "media/filters/file_data_source_factory.h"
 #include "media/filters/null_audio_renderer.h"
 #include "media/filters/reference_audio_renderer.h"
-#include "media/tools/player_wtl/wtl_renderer.h"
+#include "media/filters/video_renderer_base.h"
 
 using media::FFmpegAudioDecoder;
 using media::FFmpegDemuxerFactory;
@@ -58,7 +58,7 @@ void Movie::SetFrameBuffer(HBITMAP hbmp, HWND hwnd) {
   movie_hwnd_ = hwnd;
 }
 
-bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
+bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
   // Close previous movie.
   if (pipeline_) {
     Close();

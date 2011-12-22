@@ -13,23 +13,6 @@
 #include "media/base/yuv_convert.h"
 #include "ui/gfx/gl/gl_implementation.h"
 
-GlVideoRenderer::GlVideoRenderer(Display* display, Window window,
-                                 MessageLoop* main_message_loop)
-    : display_(display),
-      window_(window),
-      gl_context_(NULL),
-      main_message_loop_(main_message_loop) {
-}
-
-GlVideoRenderer::~GlVideoRenderer() {}
-
-void GlVideoRenderer::OnStop(const base::Closure& callback) {
-  glXMakeCurrent(display_, 0, NULL);
-  glXDestroyContext(display_, gl_context_);
-  if (!callback.is_null())
-    callback.Run();
-}
-
 static GLXContext InitGLContext(Display* display, Window window) {
   // Some versions of NVIDIA's GL libGL.so include a broken version of
   // dlopen/dlsym, and so linking it into chrome breaks it. So we dynamically
@@ -123,16 +106,57 @@ static const char kFragmentShader[] =
 // Buffer size for compile errors.
 static const unsigned int kErrorSize = 4096;
 
-bool GlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
+GlVideoRenderer::GlVideoRenderer(Display* display, Window window)
+    : display_(display),
+      window_(window),
+      gl_context_(NULL) {
+}
+
+GlVideoRenderer::~GlVideoRenderer() {
+  glXMakeCurrent(display_, 0, NULL);
+  glXDestroyContext(display_, gl_context_);
+}
+
+void GlVideoRenderer::Paint(media::VideoFrame* video_frame) {
+  if (!gl_context_)
+    Initialize(video_frame->width(), video_frame->height());
+
+  // Convert YUV frame to RGB.
+  DCHECK(video_frame->format() == media::VideoFrame::YV12 ||
+         video_frame->format() == media::VideoFrame::YV16);
+  DCHECK(video_frame->stride(media::VideoFrame::kUPlane) ==
+         video_frame->stride(media::VideoFrame::kVPlane));
+  DCHECK(video_frame->planes() == media::VideoFrame::kNumYUVPlanes);
+
+  if (glXGetCurrentContext() != gl_context_ ||
+      glXGetCurrentDrawable() != window_) {
+    glXMakeCurrent(display_, window_, gl_context_);
+  }
+  for (unsigned int i = 0; i < media::VideoFrame::kNumYUVPlanes; ++i) {
+    unsigned int width = (i == media::VideoFrame::kYPlane) ?
+        video_frame->width() : video_frame->width() / 2;
+    unsigned int height = (i == media::VideoFrame::kYPlane ||
+                           video_frame->format() == media::VideoFrame::YV16) ?
+        video_frame->height() : video_frame->height() / 2;
+    glActiveTexture(GL_TEXTURE0 + i);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, video_frame->stride(i));
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
+                 GL_LUMINANCE, GL_UNSIGNED_BYTE, video_frame->data(i));
+  }
+
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glXSwapBuffers(display_, window_);
+}
+
+void GlVideoRenderer::Initialize(int width, int height) {
+  CHECK(!gl_context_);
   LOG(INFO) << "Initializing GL Renderer...";
 
   // Resize the window to fit that of the video.
-  XResizeWindow(display_, window_, decoder->natural_size().width(),
-                decoder->natural_size().height());
+  XResizeWindow(display_, window_, width, height);
 
   gl_context_ = InitGLContext(display_, window_);
-  if (!gl_context_)
-    return false;
+  CHECK(gl_context_) << "Failed to initialize GL context";
 
   // Create 3 textures, one for each plane, and bind them to different
   // texture units.
@@ -224,51 +248,4 @@ bool GlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
   // We are getting called on a thread. Release the context so that it can be
   // made current on the main thread.
   glXMakeCurrent(display_, 0, NULL);
-
-  return true;
-}
-
-void GlVideoRenderer::OnFrameAvailable() {
-  main_message_loop_->PostTask(FROM_HERE,
-      base::Bind(&GlVideoRenderer::PaintOnMainThread, this));
-}
-
-void GlVideoRenderer::PaintOnMainThread() {
-  DCHECK_EQ(main_message_loop_, MessageLoop::current());
-
-  scoped_refptr<media::VideoFrame> video_frame;
-  GetCurrentFrame(&video_frame);
-
-  if (!video_frame) {
-    // TODO(jiesun): Use color fill rather than create black frame then scale.
-    PutCurrentFrame(video_frame);
-    return;
-  }
-
-  // Convert YUV frame to RGB.
-  DCHECK(video_frame->format() == media::VideoFrame::YV12 ||
-         video_frame->format() == media::VideoFrame::YV16);
-  DCHECK(video_frame->stride(media::VideoFrame::kUPlane) ==
-         video_frame->stride(media::VideoFrame::kVPlane));
-  DCHECK(video_frame->planes() == media::VideoFrame::kNumYUVPlanes);
-
-  if (glXGetCurrentContext() != gl_context_ ||
-      glXGetCurrentDrawable() != window_) {
-    glXMakeCurrent(display_, window_, gl_context_);
-  }
-  for (unsigned int i = 0; i < media::VideoFrame::kNumYUVPlanes; ++i) {
-    unsigned int width = (i == media::VideoFrame::kYPlane) ?
-        video_frame->width() : video_frame->width() / 2;
-    unsigned int height = (i == media::VideoFrame::kYPlane ||
-                           video_frame->format() == media::VideoFrame::YV16) ?
-        video_frame->height() : video_frame->height() / 2;
-    glActiveTexture(GL_TEXTURE0 + i);
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, video_frame->stride(i));
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
-                 GL_LUMINANCE, GL_UNSIGNED_BYTE, video_frame->data(i));
-  }
-  PutCurrentFrame(video_frame);
-
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  glXSwapBuffers(display_, window_);
 }

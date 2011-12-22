@@ -7,29 +7,24 @@
 
 #include <X11/Xlib.h>
 
-#include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
-#include "media/filters/video_renderer_base.h"
+#include "base/basictypes.h"
 
 class MessageLoop;
 
-class X11VideoRenderer : public media::VideoRendererBase {
- public:
-  X11VideoRenderer(Display* display, Window window,
-                   MessageLoop* main_message_loop);
+namespace media {
+class VideoFrame;
+}
 
- protected:
-  // VideoRendererBase implementation.
-  virtual bool OnInitialize(media::VideoDecoder* decoder) OVERRIDE;
-  virtual void OnStop(const base::Closure& callback) OVERRIDE;
-  virtual void OnFrameAvailable() OVERRIDE;
+class X11VideoRenderer {
+ public:
+  X11VideoRenderer(Display* display, Window window);
+  ~X11VideoRenderer();
+
+  void Paint(media::VideoFrame* video_frame);
 
  private:
-  // Only allow to be deleted by reference counting.
-  friend class scoped_refptr<X11VideoRenderer>;
-  virtual ~X11VideoRenderer();
-
-  void PaintOnMainThread();
+  // Initializes X11 rendering for the given dimensions.
+  void Initialize(int width, int height);
 
   Display* display_;
   Window window_;
@@ -42,8 +37,6 @@ class X11VideoRenderer : public media::VideoRendererBase {
   unsigned long picture_;
 
   bool use_render_;
-
-  MessageLoop* main_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(X11VideoRenderer);
 };

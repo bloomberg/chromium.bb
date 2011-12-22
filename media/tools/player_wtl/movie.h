@@ -15,11 +15,11 @@
 
 class AudioManager;
 template <typename T> struct DefaultSingletonTraits;
-class WtlVideoRenderer;
 
 namespace media {
 
 class PipelineImpl;
+class VideoRendererBase;
 
 class Movie {
  public:
@@ -27,7 +27,7 @@ class Movie {
   static Movie* GetInstance();
 
   // Open a movie.
-  bool Open(const wchar_t* url, WtlVideoRenderer* video_renderer);
+  bool Open(const wchar_t* url, VideoRendererBase* video_renderer);
 
   // Set playback rate.
   void Play(float rate);

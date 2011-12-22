@@ -9,12 +9,13 @@
 #include <process.h>
 #include <string.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
+#include "media/filters/video_renderer_base.h"
 #include "media/tools/player_wtl/movie.h"
 #include "media/tools/player_wtl/player_wtl.h"
-#include "media/tools/player_wtl/wtl_renderer.h"
 
 // Fetchs current time as milliseconds.
 // Returns as double for high duration and precision.
@@ -42,9 +43,15 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
     view_size_ = 2;  // Normal size.
     view_rotate_ = media::ROTATE_0;
     view_filter_ = media::FILTER_NONE;
-    renderer_ = new WtlVideoRenderer(this);
+    renderer_ = new media::VideoRendererBase(base::Bind(
+        &WtlVideoWindow::InvalidateWrapper, base::Unretained(this)));
     last_frame_ = NULL;
     hbmp_ = NULL;
+  }
+
+  // Drops the bool return so we can use base::Bind().
+  void InvalidateWrapper() {
+    Invalidate();
   }
 
   BOOL PreTranslateMessage(MSG* /*msg*/)  {
@@ -228,7 +235,11 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
     if (!bmp_.IsNull()) {
       scoped_refptr<media::VideoFrame> frame;
       renderer_->GetCurrentFrame(&frame);
-      if (frame.get()) {
+      if (frame) {
+        // Size the window the first time we get a frame.
+        if (!last_frame_)
+          SetSize(frame->width(), frame->height());
+
         base::TimeDelta frame_timestamp = frame->GetTimestamp();
         if (frame != last_frame_ || frame_timestamp != last_timestamp_) {
           last_frame_ = frame;
@@ -356,9 +367,10 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
     hbmp_ = hbmp;
   }
 
-  CBitmap bmp_;  // Used by mainfrm.h.
-  SIZE size_;  // Used by WtlVideoWindow.
-  scoped_refptr<WtlVideoRenderer> renderer_;  // Used by WtlVideoWindow.
+  // Following member variables are accessed by CMainFrame.
+  CBitmap bmp_;
+  SIZE size_;
+  scoped_refptr<media::VideoRendererBase> renderer_;
 
  private:
   HBITMAP hbmp_;  // For Images

@@ -68,87 +68,30 @@ static XRenderPictFormat* GetRenderARGB32Format(Display* dpy) {
   return pictformat;
 }
 
-X11VideoRenderer::X11VideoRenderer(Display* display, Window window,
-                                   MessageLoop* main_message_loop)
+X11VideoRenderer::X11VideoRenderer(Display* display, Window window)
     : display_(display),
       window_(window),
       image_(NULL),
       picture_(0),
-      use_render_(false),
-      main_message_loop_(main_message_loop) {
+      use_render_(false) {
 }
 
-X11VideoRenderer::~X11VideoRenderer() {}
-
-void X11VideoRenderer::OnStop(const base::Closure& callback) {
+X11VideoRenderer::~X11VideoRenderer() {
   if (image_)
     XDestroyImage(image_);
-  XRenderFreePicture(display_, picture_);
-  if (!callback.is_null())
-    callback.Run();
+  if (use_render_)
+    XRenderFreePicture(display_, picture_);
 }
 
-bool X11VideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
-  LOG(INFO) << "Initializing X11 Renderer...";
-
-  // Resize the window to fit that of the video.
-  int width = decoder->natural_size().width();
-  int height = decoder->natural_size().height();
-  XResizeWindow(display_, window_, width, height);
-
-  // Allocate an XImage for caching RGB result.
-  image_ = CreateImage(display_, width, height);
-
-  // Testing XRender support. We'll use the very basic of XRender
-  // so if it presents it is already good enough. We don't need
-  // to check its version.
-  int dummy;
-  use_render_ = XRenderQueryExtension(display_, &dummy, &dummy);
-
-  if (use_render_) {
-    LOG(INFO) << "Using XRender extension.";
-
-    // If we are using XRender, we'll create a picture representing the
-    // window.
-    XWindowAttributes attr;
-    XGetWindowAttributes(display_, window_, &attr);
-
-    XRenderPictFormat* pictformat = XRenderFindVisualFormat(
-        display_,
-        attr.visual);
-    CHECK(pictformat) << "XRender does not support default visual";
-
-    picture_ = XRenderCreatePicture(display_, window_, pictformat, 0, NULL);
-    CHECK(picture_) << "Backing picture not created";
-  }
-
-  return true;
-}
-
-void X11VideoRenderer::OnFrameAvailable() {
-  main_message_loop_->PostTask(FROM_HERE,
-      base::Bind(&X11VideoRenderer::PaintOnMainThread, this));
-}
-
-void X11VideoRenderer::PaintOnMainThread() {
-  DCHECK_EQ(main_message_loop_, MessageLoop::current());
-
-  scoped_refptr<media::VideoFrame> video_frame;
-  GetCurrentFrame(&video_frame);
-  if (!video_frame) {
-    // TODO(jiesun): Use color fill rather than create black frame then scale.
-    PutCurrentFrame(video_frame);
-    return;
-  }
-
+void X11VideoRenderer::Paint(media::VideoFrame* video_frame) {
   int width = video_frame->width();
   int height = video_frame->height();
 
-  // Check if we need to re-allocate our XImage.
+  if (!image_)
+    Initialize(width, height);
+
+  // Check if we need to reallocate our XImage.
   if (image_->width != width || image_->height != height) {
-    LOG(INFO) << "Detection resolution change: "
-              << image_->width << "x" << image_->height << " -> "
-              << width << "x" << height;
     XDestroyImage(image_);
     image_ = CreateImage(display_, width, height);
   }
@@ -174,7 +117,6 @@ void X11VideoRenderer::PaintOnMainThread() {
                            video_frame->stride(media::VideoFrame::kUPlane),
                            image_->bytes_per_line,
                            yuv_type);
-  PutCurrentFrame(video_frame);
 
   if (use_render_) {
     // If XRender is used, we'll upload the image to a pixmap. And then
@@ -233,4 +175,36 @@ void X11VideoRenderer::PaintOnMainThread() {
             0, 0, 0, 0, width, height);
   XFlush(display_);
   XFreeGC(display_, gc);
+}
+
+void X11VideoRenderer::Initialize(int width, int height) {
+  CHECK(!image_);
+  LOG(INFO) << "Initializing X11 Renderer...";
+
+  // Resize the window to fit that of the video.
+  XResizeWindow(display_, window_, width, height);
+  image_ = CreateImage(display_, width, height);
+
+  // Testing XRender support. We'll use the very basic of XRender
+  // so if it presents it is already good enough. We don't need
+  // to check its version.
+  int dummy;
+  use_render_ = XRenderQueryExtension(display_, &dummy, &dummy);
+
+  if (use_render_) {
+    LOG(INFO) << "Using XRender extension.";
+
+    // If we are using XRender, we'll create a picture representing the
+    // window.
+    XWindowAttributes attr;
+    XGetWindowAttributes(display_, window_, &attr);
+
+    XRenderPictFormat* pictformat = XRenderFindVisualFormat(
+        display_,
+        attr.visual);
+    CHECK(pictformat) << "XRender does not support default visual";
+
+    picture_ = XRenderCreatePicture(display_, window_, pictformat, 0, NULL);
+    CHECK(picture_) << "Backing picture not created";
+  }
 }

@@ -22,12 +22,14 @@
 #include "media/base/media_switches.h"
 #include "media/base/message_loop_factory_impl.h"
 #include "media/base/pipeline_impl.h"
+#include "media/base/video_frame.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source_factory.h"
 #include "media/filters/null_audio_renderer.h"
 #include "media/filters/reference_audio_renderer.h"
+#include "media/filters/video_renderer_base.h"
 #include "media/tools/player_x11/gl_video_renderer.h"
 #include "media/tools/player_x11/x11_video_renderer.h"
 
@@ -36,6 +38,8 @@ static Window g_window = 0;
 static bool g_running = false;
 
 AudioManager* g_audio_manager = NULL;
+
+media::VideoRendererBase* g_video_renderer = NULL;
 
 class MessageLoopQuitter {
  public:
@@ -74,9 +78,24 @@ bool InitX11() {
   return true;
 }
 
+typedef base::Callback<void(media::VideoFrame*)> PaintCB;
+void Paint(MessageLoop* message_loop, const PaintCB& paint_cb) {
+  if (message_loop != MessageLoop::current()) {
+    message_loop->PostTask(FROM_HERE, base::Bind(
+        &Paint, message_loop, paint_cb));
+    return;
+  }
+
+  scoped_refptr<media::VideoFrame> video_frame;
+  g_video_renderer->GetCurrentFrame(&video_frame);
+  if (video_frame)
+    paint_cb.Run(video_frame);
+  g_video_renderer->PutCurrentFrame(video_frame);
+}
+
 bool InitPipeline(MessageLoop* message_loop,
                   const char* filename,
-                  bool use_gl,
+                  const PaintCB& paint_cb,
                   bool enable_audio,
                   scoped_refptr<media::PipelineImpl>* pipeline,
                   MessageLoop* paint_message_loop,
@@ -98,13 +117,10 @@ bool InitPipeline(MessageLoop* message_loop,
   collection->AddVideoDecoder(new media::FFmpegVideoDecoder(
       message_loop_factory->GetMessageLoop("VideoDecoderThread")));
 
-  if (use_gl) {
-    collection->AddVideoRenderer(
-        new GlVideoRenderer(g_display, g_window, paint_message_loop));
-  } else {
-    collection->AddVideoRenderer(
-        new X11VideoRenderer(g_display, g_window, paint_message_loop));
-  }
+  // Create our video renderer and save a reference to it for painting.
+  g_video_renderer = new media::VideoRendererBase(base::Bind(
+      &Paint, paint_message_loop, paint_cb));
+  collection->AddVideoRenderer(g_video_renderer);
 
   if (enable_audio) {
     collection->AddAudioRenderer(
@@ -200,6 +216,8 @@ void PeriodicalUpdate(
 }
 
 int main(int argc, char** argv) {
+  base::AtExitManager at_exit;
+
   scoped_refptr<AudioManager> audio_manager(AudioManager::Create());
   g_audio_manager = audio_manager;
 
@@ -241,7 +259,6 @@ int main(int argc, char** argv) {
     return 1;
 
   // Initialize the pipeline thread and the pipeline.
-  base::AtExitManager at_exit;
   scoped_ptr<media::MessageLoopFactory> message_loop_factory(
       new media::MessageLoopFactoryImpl());
   scoped_ptr<base::Thread> thread;
@@ -249,8 +266,21 @@ int main(int argc, char** argv) {
   MessageLoop message_loop;
   thread.reset(new base::Thread("PipelineThread"));
   thread->Start();
+
+  // Create both our renderers but only bind the one we plan on using.
+  X11VideoRenderer x11_renderer(g_display, g_window);
+  GlVideoRenderer gl_renderer(g_display, g_window);
+  PaintCB paint_cb;
+  if (use_gl) {
+    paint_cb = base::Bind(
+        &GlVideoRenderer::Paint, base::Unretained(&gl_renderer));
+  } else {
+    paint_cb = base::Bind(
+        &X11VideoRenderer::Paint, base::Unretained(&x11_renderer));
+  }
+
   if (InitPipeline(thread->message_loop(), filename.c_str(),
-                   use_gl, enable_audio, &pipeline, &message_loop,
+                   paint_cb, enable_audio, &pipeline, &message_loop,
                    message_loop_factory.get())) {
     // Main loop of the application.
     g_running = true;

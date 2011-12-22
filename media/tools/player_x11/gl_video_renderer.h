@@ -5,30 +5,25 @@
 #ifndef MEDIA_TOOLS_PLAYER_X11_GL_VIDEO_RENDERER_H_
 #define MEDIA_TOOLS_PLAYER_X11_GL_VIDEO_RENDERER_H_
 
-#include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
-#include "media/filters/video_renderer_base.h"
+#include "base/basictypes.h"
 #include "ui/gfx/gl/gl_bindings.h"
 
 class MessageLoop;
 
-class GlVideoRenderer : public media::VideoRendererBase {
- public:
-  GlVideoRenderer(Display* display, Window window,
-                  MessageLoop* main_message_loop);
+namespace media {
+class VideoFrame;
+}
 
- protected:
-  // VideoRendererBase implementation.
-  virtual bool OnInitialize(media::VideoDecoder* decoder) OVERRIDE;
-  virtual void OnStop(const base::Closure& callback) OVERRIDE;
-  virtual void OnFrameAvailable() OVERRIDE;
+class GlVideoRenderer {
+ public:
+  GlVideoRenderer(Display* display, Window window);
+  ~GlVideoRenderer();
+
+  void Paint(media::VideoFrame* video_frame);
 
  private:
-  // Only allow to be deleted by reference counting.
-  friend class scoped_refptr<GlVideoRenderer>;
-  virtual ~GlVideoRenderer();
-
-  void PaintOnMainThread();
+  // Initializes GL rendering for the given dimensions.
+  void Initialize(int width, int height);
 
   Display* display_;
   Window window_;
@@ -38,8 +33,6 @@ class GlVideoRenderer : public media::VideoRendererBase {
 
   // 3 textures, one for each plane.
   GLuint textures_[3];
-
-  MessageLoop* main_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(GlVideoRenderer);
 };

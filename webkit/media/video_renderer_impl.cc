@@ -232,7 +232,7 @@ static void ConvertVideoFrameToBitmap(
 }
 
 VideoRendererImpl::VideoRendererImpl(const base::Closure& paint_cb)
-    : paint_cb_(paint_cb),
+    : media::VideoRendererBase(paint_cb),
       bitmap_timestamp_(media::kNoTimestamp) {
 }
 
@@ -273,19 +273,6 @@ void VideoRendererImpl::Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) {
   // Do a slower paint using |bitmap_|.
   SlowPaint(bitmap_, canvas, dest_rect);
   PutCurrentFrame(video_frame);
-}
-
-bool VideoRendererImpl::OnInitialize(media::VideoDecoder* decoder) {
-  return true;
-}
-
-void VideoRendererImpl::OnStop(const base::Closure& callback) {
-  if (!callback.is_null())
-    callback.Run();
-}
-
-void VideoRendererImpl::OnFrameAvailable() {
-  paint_cb_.Run();
 }
 
 }  // namespace webkit_media
