@@ -36,6 +36,9 @@ namespace {
 // Command line flag for overriding the default location for putting generated
 // test images that do not match references.
 const char kGeneratedDir[] = "generated-dir";
+// Command line flag for overriding the default location for reference images.
+const char kReferenceDir[] = "reference-dir";
+
 
 // Reads and decodes a PNG image to a bitmap. Returns true on success. The PNG
 // should have been encoded using |gfx::PNGCodec::Encode|.
@@ -103,6 +106,10 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       generated_img_dir_ = command_line->GetSwitchValuePath(kGeneratedDir);
     else
       generated_img_dir_ = test_data_dir_.AppendASCII("generated");
+    if (command_line->HasSwitch(kReferenceDir))
+      ref_img_dir_ = command_line->GetSwitchValuePath(kReferenceDir);
+    else
+      ref_img_dir_ = test_data_dir_.AppendASCII("gpu_reference");
 
     test_name_ = testing::UnitTest::GetInstance()->current_test_info()->name();
     const char* test_status_prefixes[] = {"DISABLED_", "FLAKY_", "FAILS_"};
@@ -124,45 +131,56 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   //     <test_name>_<revision>.png
   // E.g.,
   //     WebGLTeapot_19762.png
+  // The number is the chromium revision that generated the image.
   //
-  // On failure, the image and diff image will be written to disk.
-  // The formats are:
-  //     FAIL_<test_name>.png, DIFF_<test_name>.png
+  // On failure or on ref image generation, the image and diff image will be
+  // written to disk. The formats are:
+  //     FAIL_<ref_image_name>, DIFF_<ref_image_name>
   // E.g.,
-  //     FAIL_WebGLTeapot.png, DIFF_WebGLTeapot.png
+  //     FAIL_WebGLTeapot_19762.png, DIFF_WebGLTeapot_19762.png
   bool CompareImages(const SkBitmap& gen_bmp) {
-    SkBitmap ref_bmp;
+    SkBitmap ref_bmp_on_disk;
+    const SkBitmap* ref_bmp;
+    bool save_gen = false;
+    bool save_diff = false;
+    bool rt = true;
     if (ref_img_path_.empty() ||
-        !ReadPNGFile(ref_img_path_, &ref_bmp)) {
+        !ReadPNGFile(ref_img_path_, &ref_bmp_on_disk)) {
       chrome::VersionInfo chrome_version_info;
-      FilePath img_revision_path = generated_img_dir_.AppendASCII(
+      FilePath img_revision_path = ref_img_dir_.AppendASCII(
           test_name_ + "_" + chrome_version_info.LastChange() + ".png");
       if (!WritePNGFile(gen_bmp, img_revision_path)) {
         LOG(ERROR) << "Can't save generated image to: "
                    << img_revision_path.value()
                    << " as future reference.";
-        return false;
+        rt = false;
       }
       if (!ref_img_path_.empty()) {
         LOG(ERROR) << "Can't read the local ref image: "
                    << ref_img_path_.value()
                    << ", reset it.";
         file_util::Delete(ref_img_path_, false);
-        return false;
+        rt = false;
       }
-      return true;
+      ref_img_path_ = img_revision_path;
+      // If we re-generate the ref image, we save the gen and diff images so
+      // the ref image can be uploaded to the server and be viewed later.
+      save_gen = true;
+      save_diff = true;
+      ref_bmp = &gen_bmp;
+    } else {
+      ref_bmp = &ref_bmp_on_disk;
     }
 
-    bool rt = true;
-    bool save_diff = false;
     SkBitmap diff_bmp;
-    if (ref_bmp.width() != gen_bmp.width() ||
-        ref_bmp.height() != gen_bmp.height()) {
+    if (ref_bmp->width() != gen_bmp.width() ||
+        ref_bmp->height() != gen_bmp.height()) {
       LOG(ERROR)
           << "Dimensions do not match (Expected) vs (Actual):"
-          << "(" << ref_bmp.width() << "x" << ref_bmp.height()
+          << "(" << ref_bmp->width() << "x" << ref_bmp->height()
               << ") vs. "
           << "(" << gen_bmp.width() << "x" << gen_bmp.height() << ")";
+      save_gen = true;
       rt = false;
     } else {
       // Compare pixels and create a simple diff image.
@@ -172,7 +190,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       diff_bmp.allocPixels();
       diff_bmp.eraseColor(SK_ColorWHITE);
       SkAutoLockPixels lock_bmp(gen_bmp);
-      SkAutoLockPixels lock_ref_bmp(ref_bmp);
+      SkAutoLockPixels lock_ref_bmp(*ref_bmp);
       SkAutoLockPixels lock_diff_bmp(diff_bmp);
       // The reference images were saved with no alpha channel. Use the mask to
       // set alpha to 0.
@@ -180,7 +198,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       for (int x = 0; x < gen_bmp.width(); ++x) {
         for (int y = 0; y < gen_bmp.height(); ++y) {
           if ((*gen_bmp.getAddr32(x, y) & kAlphaMask) !=
-              (*ref_bmp.getAddr32(x, y) & kAlphaMask)) {
+              (*ref_bmp->getAddr32(x, y) & kAlphaMask)) {
             ++diff_pixels_count;
             *diff_bmp.getAddr32(x, y) = 192 << 16;  // red
           }
@@ -189,24 +207,27 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       if (diff_pixels_count > 0) {
         LOG(ERROR) << diff_pixels_count
                    << " pixels do not match.";
-        rt = false;
+        save_gen = true;
         save_diff = true;
+        rt = false;
       }
     }
-    if (!rt) {
+
+    std::string ref_img_filename = ref_img_path_.BaseName().MaybeAsASCII();
+    if (save_gen) {
       FilePath img_fail_path = generated_img_dir_.AppendASCII(
-          "FAIL_" + test_name_ + ".png");
+          "FAIL_" + ref_img_filename);
       if (!WritePNGFile(gen_bmp, img_fail_path)) {
         LOG(ERROR) << "Can't save generated image to: "
                    << img_fail_path.value();
       }
-      if (save_diff) {
-        FilePath img_diff_path = generated_img_dir_.AppendASCII(
-            "DIFF_" + test_name_ + ".png");
-        if (!WritePNGFile(diff_bmp, img_diff_path)) {
-          LOG(ERROR) << "Can't save generated diff image to: "
-                     << img_diff_path.value();
-        }
+    }
+    if (save_diff) {
+      FilePath img_diff_path = generated_img_dir_.AppendASCII(
+          "DIFF_" + ref_img_filename);
+      if (!WritePNGFile(diff_bmp, img_diff_path)) {
+        LOG(ERROR) << "Can't save generated diff image to: "
+                   << img_diff_path.value();
       }
     }
     return rt;
@@ -224,6 +245,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 
  private:
   FilePath generated_img_dir_;
+  FilePath ref_img_dir_;
   FilePath ref_img_path_;
   // The name of the test, with any special prefixes dropped.
   std::string test_name_;
@@ -236,7 +258,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   void ObtainLocalRefImageFilePath() {
     FilePath filter;
     filter = filter.AppendASCII(test_name_ + "_*.png");
-    file_util::FileEnumerator locator(generated_img_dir_,
+    file_util::FileEnumerator locator(ref_img_dir_,
                                       false,  // non recursive
                                       file_util::FileEnumerator::FILES,
                                       filter.value());
