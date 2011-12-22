@@ -16,7 +16,6 @@
 DownloadShelfContextMenuView::DownloadShelfContextMenuView(
     BaseDownloadItemModel* model)
     : DownloadShelfContextMenu(model) {
-    DCHECK(model);
 }
 
 DownloadShelfContextMenuView::~DownloadShelfContextMenuView() {}

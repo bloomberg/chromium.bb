@@ -9,7 +9,7 @@
 namespace content {
 
 net::IOBuffer* AssembleData(const ContentVector& contents, size_t* num_bytes) {
-  if (*num_bytes)
+  if (num_bytes)
     *num_bytes = 0;
 
   size_t data_len;
