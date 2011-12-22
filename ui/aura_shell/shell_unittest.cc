@@ -2,17 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura_shell/aura_shell_switches.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/test/aura_shell_test_base.h"
+#include "ui/gfx/size.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace aura_shell {
-namespace test {
 
 namespace {
 
@@ -70,9 +73,23 @@ class ModalWindow : public views::WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(ModalWindow);
 };
 
+// After base::AutoReset<> but via setter and getter.
+class AutoResetUseFullscreenHostWindow {
+ public:
+  AutoResetUseFullscreenHostWindow(bool new_value) {
+    old_value_ = aura::RootWindow::use_fullscreen_host_window();
+    aura::RootWindow::set_use_fullscreen_host_window(new_value);
+  }
+  ~AutoResetUseFullscreenHostWindow() {
+    aura::RootWindow::set_use_fullscreen_host_window(old_value_);
+  }
+ private:
+  bool old_value_;
+};
+
 }  // namespace
 
-class ShellTest : public AuraShellTestBase {
+class ShellTest : public test::AuraShellTestBase {
  public:
   ShellTest() {}
   virtual ~ShellTest() {}
@@ -247,5 +264,29 @@ TEST_F(ShellTest, IsScreenLocked) {
   EXPECT_FALSE(Shell::GetInstance()->IsScreenLocked());
 }
 
-}  // namespace test
+TEST_F(ShellTest, DefaultToCompactWindowMode) {
+  // We only change default window mode with full-screen host windows.
+  AutoResetUseFullscreenHostWindow use_fullscreen_host_window(true);
+
+  // Wide screens use normal window mode.
+  Shell* shell = Shell::GetInstance();
+  gfx::Size monitor_size(1440, 900);
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  EXPECT_FALSE(shell->DefaultToCompactWindowMode(monitor_size, &command_line));
+
+  // Alex-sized screens need compact mode.
+  monitor_size.SetSize(1280, 800);
+  EXPECT_TRUE(shell->DefaultToCompactWindowMode(monitor_size, &command_line));
+
+  // ZGB-sized screens need compact mode.
+  monitor_size.SetSize(1366, 768);
+  EXPECT_TRUE(shell->DefaultToCompactWindowMode(monitor_size, &command_line));
+
+  // Even for a small screen, the user can force normal mode.
+  monitor_size.SetSize(800, 600);
+  command_line.AppendSwitchASCII(aura_shell::switches::kAuraWindowMode,
+                                 aura_shell::switches::kAuraWindowModeNormal);
+  EXPECT_FALSE(shell->DefaultToCompactWindowMode(monitor_size, &command_line));
+}
+
 }  // namespace aura_shell

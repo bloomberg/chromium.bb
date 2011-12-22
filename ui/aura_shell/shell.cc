@@ -38,6 +38,8 @@
 #include "ui/aura_shell/workspace_controller.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/screen.h"
+#include "ui/gfx/size.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 
@@ -46,6 +48,11 @@ namespace aura_shell {
 namespace {
 
 using views::Widget;
+
+// Screen width at or below which we automatically start in compact window mode,
+// in pixels. Should be at least 1366 pixels, the resolution of ChromeOS ZGB
+// device displays, as we traditionally used a single window on those devices.
+const int kCompactWindowModeWidthThreshold = 1366;
 
 // Creates each of the special window containers that holds windows of various
 // types in the shell UI. They are added to |containers| from back to front in
@@ -176,6 +183,16 @@ void Shell::DeleteInstance() {
 }
 
 void Shell::Init() {
+  // On small screens we automatically enable --aura-window-mode=compact if the
+  // user has not explicitly set a window mode flag. This must happen before
+  // we create containers or layout managers.
+  gfx::Size monitor_size = gfx::Screen::GetPrimaryMonitorSize();
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (DefaultToCompactWindowMode(monitor_size, command_line)) {
+    command_line->AppendSwitchASCII(switches::kAuraWindowMode,
+                                    switches::kAuraWindowModeCompact);
+  }
+
   aura::RootWindow* root_window = aura::RootWindow::GetInstance();
   root_window->SetCursor(aura::kCursorPointer);
 
@@ -194,7 +211,6 @@ void Shell::Init() {
 
   InitLayoutManagers(root_window);
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kAuraNoShadows))
     shadow_controller_.reset(new internal::ShadowController());
 
@@ -212,6 +228,26 @@ void Shell::Init() {
 
   // Initialize drag drop controller.
   drag_drop_controller_.reset(new internal::DragDropController);
+}
+
+bool Shell::DefaultToCompactWindowMode(const gfx::Size& monitor_size,
+                                       CommandLine* command_line) const {
+  // Developers often run the Aura shell in a window on their desktop.
+  // Don't mess with their window mode.
+  if (!aura::RootWindow::use_fullscreen_host_window())
+    return false;
+
+  // If user set the flag, don't override their desired behavior.
+  if (command_line->HasSwitch(switches::kAuraWindowMode))
+    return false;
+
+  // If the screen is wide enough, we prefer multiple draggable windows.
+  // We explicitly don't care about height, since users don't generally stack
+  // browser windows vertically.
+  if (monitor_size.width() > kCompactWindowModeWidthThreshold)
+    return false;
+
+  return true;
 }
 
 void Shell::InitLayoutManagers(aura::RootWindow* root_window) {

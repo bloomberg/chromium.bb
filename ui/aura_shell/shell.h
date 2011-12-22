@@ -10,11 +10,14 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura_shell/aura_shell_export.h"
+
+class CommandLine;
 
 namespace aura {
 class EventFilter;
@@ -23,6 +26,7 @@ class Window;
 }
 namespace gfx {
 class Rect;
+class Size;
 }
 
 namespace aura_shell {
@@ -93,12 +97,20 @@ class AURA_SHELL_EXPORT Shell {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ShellTest, DefaultToCompactWindowMode);
+
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
 
   explicit Shell(ShellDelegate* delegate);
   virtual ~Shell();
 
   void Init();
+
+  // Returns true if the |monitor_size| is narrow and the user has not set
+  // an explicit window mode flag on the |command_line|.
+  bool DefaultToCompactWindowMode(const gfx::Size& monitor_size,
+                                  CommandLine* command_line) const;
+
   void InitLayoutManagers(aura::RootWindow* root_window);
 
   // Enables WorkspaceManager.

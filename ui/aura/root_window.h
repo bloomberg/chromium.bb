@@ -53,6 +53,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   static void set_use_fullscreen_host_window(bool use_fullscreen) {
     use_fullscreen_host_window_ = use_fullscreen;
   }
+  static bool use_fullscreen_host_window() {
+    return use_fullscreen_host_window_;
+  }
 
   ui::Compositor* compositor() { return compositor_.get(); }
   gfx::Point last_mouse_location() const { return last_mouse_location_; }
