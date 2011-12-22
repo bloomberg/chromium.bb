@@ -133,7 +133,7 @@ void SslHmacChannelAuthenticator::OnConnected(int result) {
     // Generate authentication digest to write to the socket.
     std::string auth_bytes = GetAuthBytes(
         socket_.get(), is_ssl_server() ?
-        kClientAuthSslExporterLabel : kHostAuthSslExporterLabel, auth_key_);
+        kHostAuthSslExporterLabel : kClientAuthSslExporterLabel, auth_key_);
     if (auth_bytes.empty()) {
       done_callback_.Run(net::ERR_FAILED, NULL);
       return;
@@ -251,7 +251,7 @@ bool SslHmacChannelAuthenticator::VerifyAuthBytes(
   // Compute expected auth bytes.
   std::string auth_bytes = GetAuthBytes(
       socket_.get(), is_ssl_server() ?
-      kHostAuthSslExporterLabel : kClientAuthSslExporterLabel, auth_key_);
+      kClientAuthSslExporterLabel : kHostAuthSslExporterLabel, auth_key_);
   if (auth_bytes.empty())
     return false;
 
