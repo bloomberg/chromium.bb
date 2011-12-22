@@ -22,7 +22,7 @@ namespace keys = extension_manifest_keys;
 
 namespace {
 
-TEST(ExtensionL10nUtil, GetValidLocalesEmptyLocaleFolder) {
+TEST(ExtensionL10nUtil, FLAKY_GetValidLocalesEmptyLocaleFolder) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
