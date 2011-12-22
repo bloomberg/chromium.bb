@@ -1534,8 +1534,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       for configname in sorted(configs.keys()):
         config = configs[configname]
         if self.flavor == 'mac':
-          ldflags = self.xcode_settings.GetLdflags(self, configname,
-              generator_default_variables['PRODUCT_DIR'])
+          ldflags = self.xcode_settings.GetLdflags(configname,
+              generator_default_variables['PRODUCT_DIR'], self.Absolutify)
 
           # TARGET_POSTBUILDS_$(BUILDTYPE) is added to postbuilds later on.
           target_postbuilds = self.xcode_settings.GetTargetPostbuilds(

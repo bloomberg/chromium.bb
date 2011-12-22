@@ -520,8 +520,9 @@ class NinjaWriter:
 
     if output_uses_linker:
       if self.flavor == 'mac':
-        ldflags = self.xcode_settings.GetLdflags(self, config_name,
-              self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']))
+        ldflags = self.xcode_settings.GetLdflags(config_name,
+            self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
+            self.GypPathToNinja)
       else:
         ldflags = config.get('ldflags', [])
       self.WriteVariableList('ldflags',

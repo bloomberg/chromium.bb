@@ -318,26 +318,32 @@ class XcodeSettings(object):
     self.configname = None
     return cflags_objcc
 
-  def GetLdflags(self, target, configname, product_dir):
-    """Returns flags that need to be passed to the linker."""
+  def GetLdflags(self, configname, product_dir, map_gyp_to_build_path):
+    """Returns flags that need to be passed to the linker.
+
+    Args:
+        configname: The name of the configuration to get ld flags for.
+        product_dir: The directory where products such static and dynamic
+            libraries are placed. This is added to the library search path.
+        map_gyp_to_build_path: A function that converts paths relative to the
+            current gyp file to paths relative to the build direcotry.
+    """
     self.configname = configname
     ldflags = []
 
     # The xcode build is relative to a gyp file's directory, and OTHER_LDFLAGS
     # contains two entries that depend on this. Explicitly absolutify for these
     # two cases.
-    def AbsolutifyPrefix(flag, prefix):
+    def MapGypPathWithPrefix(flag, prefix):
       if flag.startswith(prefix):
-        # TODO(thakis): Absolutify() isn't a method on NinjaWriter, pass in
-        # Absolutify() as a paremeter instead.
-        flag = prefix + target.Absolutify(flag[len(prefix):])
+        flag = prefix + map_gyp_to_build_path(flag[len(prefix):])
       return flag
     for ldflag in self._Settings().get('OTHER_LDFLAGS', []):
       # Required for ffmpeg (no idea why they don't use LIBRARY_SEARCH_PATHS,
       # TODO(thakis): Update ffmpeg.gyp):
-      ldflag = AbsolutifyPrefix(ldflag, '-L')
+      ldflag = MapGypPathWithPrefix(ldflag, '-L')
       # Required for the nacl plugin:
-      ldflag = AbsolutifyPrefix(ldflag, '-Wl,-exported_symbols_list ')
+      ldflag = MapGypPathWithPrefix(ldflag, '-Wl,-exported_symbols_list ')
       ldflags.append(ldflag)
 
     if self._Test('DEAD_CODE_STRIPPING', 'YES', default='NO'):
@@ -359,10 +365,9 @@ class XcodeSettings(object):
       ldflags.append('-L' + library_path)
 
     if 'ORDER_FILE' in self._Settings():
-      # TODO(thakis): Absolutify() isn't a method on NinjaWriter, pass in
-      # Absolutify() as a paremeter instead.
       ldflags.append('-Wl,-order_file ' +
-                     '-Wl,' + target.Absolutify(self._Settings()['ORDER_FILE']))
+                     '-Wl,' + map_gyp_to_build_path(
+                                  self._Settings()['ORDER_FILE']))
 
     # TODO: Do not hardcode arch. Supporting fat binaries will be annoying.
     ldflags.append('-arch i386')
