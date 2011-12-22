@@ -119,7 +119,7 @@ void wl_list_insert_list(struct wl_list *list, struct wl_list *other);
 
 #ifdef __GNUC__
 #define __container_of(ptr, sample, member)				\
-	(typeof(sample))((char *)(ptr)	-				\
+	(__typeof__(sample))((char *)(ptr)	-			\
 		 ((char *)&(sample)->member - (char *)(sample)))
 #else
 #define __container_of(ptr, sample, member)				\
