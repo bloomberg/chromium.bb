@@ -282,6 +282,8 @@
                 'src/common/linux/elf_symbols_to_module.h',
                 'src/common/linux/file_id.cc',
                 'src/common/linux/file_id.h',
+                'src/common/linux/memory_mapped_file.cc',
+                'src/common/linux/memory_mapped_file.h',
                 'src/common/linux/guid_creator.h',
                 'src/common/module.cc',
                 'src/common/module.h',
@@ -336,6 +338,10 @@
             'src/common/linux/libcurl_wrapper.cc',
             'src/common/linux/libcurl_wrapper.h',
             'src/common/linux/linux_libc_support.h',
+            'src/common/linux/memory_mapped_file.cc',
+            'src/common/linux/memory_mapped_file.h',
+            'src/common/linux/safe_readlink.cc',
+            'src/common/linux/safe_readlink.h',
             'src/common/memory.h',
             'src/common/string_conversion.cc',
             'src/common/string_conversion.h',
@@ -439,6 +445,10 @@
 
           'sources': [
             'src/tools/linux/md2core/minidump-2-core.cc'
+          ],
+
+          'dependencies': [
+            'breakpad_client',
           ],
 
           'include_dirs': [
