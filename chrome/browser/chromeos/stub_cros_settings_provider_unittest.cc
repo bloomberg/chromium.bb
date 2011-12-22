@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
