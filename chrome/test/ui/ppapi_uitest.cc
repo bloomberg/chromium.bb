@@ -225,6 +225,25 @@ class PPAPINaClTest : public PPAPITestBase {
   }
 };
 
+class PPAPINaClTestDisallowedSockets : public PPAPITestBase {
+ public:
+  PPAPINaClTestDisallowedSockets() {
+    FilePath plugin_lib;
+    EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
+    EXPECT_TRUE(file_util::PathExists(plugin_lib));
+
+    // Enable running NaCl outside of the store.
+    launch_arguments_.AppendSwitch(switches::kEnableNaCl);
+  }
+
+  // Append the correct mode and testcase string
+  std::string BuildQuery(const std::string& base,
+                         const std::string& test_case) {
+    return StringPrintf("%smode=nacl&testcase=%s", base.c_str(),
+                        test_case.c_str());
+  }
+};
+
 // This macro finesses macro expansion to do what we want.
 #define STRIP_PREFIXES(test_name) StripPrefixes(#test_name)
 
@@ -262,11 +281,18 @@ class PPAPINaClTest : public PPAPITestBase {
 
 #if defined(DISABLE_NACL)
 #define TEST_PPAPI_NACL_VIA_HTTP(test_name)
+#define TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(test_name)
 #else
 
 // NaCl based PPAPI tests
 #define TEST_PPAPI_NACL_VIA_HTTP(test_name) \
     TEST_F(PPAPINaClTest, test_name) { \
+  RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
+}
+
+// NaCl based PPAPI tests with disallowed socket API
+#define TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(test_name) \
+    TEST_F(PPAPINaClTestDisallowedSockets, test_name) { \
   RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
 }
 #endif
@@ -332,6 +358,9 @@ TEST_PPAPI_NACL_VIA_HTTP(TCPSocketPrivateShared)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(UDPSocketPrivateShared)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivateShared)
 TEST_PPAPI_NACL_VIA_HTTP(UDPSocketPrivateShared)
+
+TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(TCPSocketPrivateDisallowed)
+TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(UDPSocketPrivateDisallowed)
 
 // URLLoader tests.
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_BasicGET)
