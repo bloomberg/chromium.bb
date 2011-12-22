@@ -38,10 +38,6 @@ class SpellCheckProvider : public content::RenderViewObserver,
       int document_tag,
       WebKit::WebTextCheckingCompletion* completion);
 
-  // Check the availability of the platform spellchecker.
-  // Makes this virtual for overriding on the unittest.
-  virtual bool is_using_platform_spelling_engine() const;
-
   // The number of ongoing IPC requests.
   size_t pending_text_request_size() const {
     return text_check_completions_.size();

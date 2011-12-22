@@ -33,10 +33,6 @@ class TestingSpellCheckProvider : public SpellCheckProvider {
     return true;
   }
 
-  virtual bool is_using_platform_spelling_engine() const OVERRIDE {
-    return true;
-  }
-
   std::vector<IPC::Message*> messages_;
 };
 

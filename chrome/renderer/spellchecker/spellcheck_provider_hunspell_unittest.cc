@@ -18,8 +18,7 @@
 
 namespace {
 
-// Faked test target, which stores sent message for verification,
-// and allows manipulate |is_using_platform_spelling_engine| parameter.
+// Faked test target, which stores sent message for verification.
 class TestingSpellCheckProvider : public SpellCheckProvider {
  public:
   TestingSpellCheckProvider()
@@ -33,10 +32,6 @@ class TestingSpellCheckProvider : public SpellCheckProvider {
   virtual bool Send(IPC::Message* message) OVERRIDE {
     messages_.push_back(message);
     return true;
-  }
-
-  virtual bool is_using_platform_spelling_engine() const OVERRIDE {
-    return false;
   }
 
   std::vector<IPC::Message*> messages_;

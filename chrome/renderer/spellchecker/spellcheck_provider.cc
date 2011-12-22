@@ -78,6 +78,7 @@ bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
 }
 
 void SpellCheckProvider::FocusedNodeChanged(const WebKit::WebNode& unused) {
+#if defined(OS_MACOSX)
   bool enabled = false;
   WebKit::WebNode node = render_view()->GetFocusedNode();
   if (!node.isNull())
@@ -90,9 +91,8 @@ void SpellCheckProvider::FocusedNodeChanged(const WebKit::WebNode& unused) {
       checked = true;
   }
 
-#if defined(OS_MACOSX)
   Send(new SpellCheckHostMsg_ToggleSpellCheck(routing_id(), enabled, checked));
-#endif
+#endif  // OS_MACOSX
 }
 
 void SpellCheckProvider::spellCheck(
@@ -152,10 +152,6 @@ void SpellCheckProvider::updateSpellingUIWithMisspelledWord(
   Send(new SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord(routing_id(),
                                                                    word));
 #endif
-}
-
-bool SpellCheckProvider::is_using_platform_spelling_engine() const {
-  return spellcheck_ && spellcheck_->is_using_platform_spelling_engine();
 }
 
 void SpellCheckProvider::OnAdvanceToNextMisspelling() {
