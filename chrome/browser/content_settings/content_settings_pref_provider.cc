@@ -607,10 +607,11 @@ void PrefProvider::UpdateObsoleteGeolocationPref(
   DictionaryPrefUpdate update(prefs_, prefs::kGeolocationContentSettings);
   DictionaryValue* obsolete_geolocation_settings = update.Get();
   DictionaryValue* requesting_origin_settings_dictionary = NULL;
-  obsolete_geolocation_settings->GetDictionaryWithoutPathExpansion(
-      requesting_origin.spec(), &requesting_origin_settings_dictionary);
+  bool settings_found =
+      obsolete_geolocation_settings->GetDictionaryWithoutPathExpansion(
+          requesting_origin.spec(), &requesting_origin_settings_dictionary);
   if (setting == CONTENT_SETTING_DEFAULT) {
-    if (requesting_origin_settings_dictionary) {
+    if (settings_found) {
       requesting_origin_settings_dictionary->RemoveWithoutPathExpansion(
           embedding_origin.spec(), NULL);
       if (requesting_origin_settings_dictionary->empty()) {
@@ -619,7 +620,7 @@ void PrefProvider::UpdateObsoleteGeolocationPref(
       }
     }
   } else {
-    if (!requesting_origin_settings_dictionary) {
+    if (!settings_found) {
       requesting_origin_settings_dictionary = new DictionaryValue;
       obsolete_geolocation_settings->SetWithoutPathExpansion(
           requesting_origin.spec(), requesting_origin_settings_dictionary);
@@ -1084,8 +1085,10 @@ void PrefProvider::SyncObsoletePrefs() {
     DCHECK(pattern_pair.first.IsValid() && pattern_pair.second.IsValid());
 
     DictionaryValue* settings_dictionary = NULL;
-    pattern_pairs_dictionary->GetDictionaryWithoutPathExpansion(
-        key, &settings_dictionary);
+    bool settings_found =
+        pattern_pairs_dictionary->GetDictionaryWithoutPathExpansion(
+            key, &settings_dictionary);
+    DCHECK(settings_found);
 
     int setting_value = 0;
     if (settings_dictionary->GetInteger(

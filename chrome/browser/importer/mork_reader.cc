@@ -172,8 +172,10 @@ bool MorkReader::ParseMap(const std::string& first_line,
                           StringMap* map) {
   // If the first line is the a=c line (column map), just skip over it.
   std::string line(first_line);
-  if (StartsWithASCII(line, "< <(a=c)>", true))
-    ReadLine(&line);
+  if (StartsWithASCII(line, "< <(a=c)>", true)) {
+    if (!ReadLine(&line))
+      return false;
+  }
 
   std::string key;
   do {

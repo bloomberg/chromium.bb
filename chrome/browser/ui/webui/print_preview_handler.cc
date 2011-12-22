@@ -398,7 +398,8 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   settings->GetBoolean(printing::kSettingCloudPrintDialog, &is_cloud_dialog);
   if (is_cloud_printer && !open_pdf_in_preview) {
     std::string print_ticket;
-    args->GetString(1, &print_ticket);
+    bool res = args->GetString(1, &print_ticket);
+    DCHECK(res);
     SendCloudPrintJob(*settings, print_ticket);
   } else if (print_to_pdf && !open_pdf_in_preview) {
     HandlePrintToPdf(*settings);

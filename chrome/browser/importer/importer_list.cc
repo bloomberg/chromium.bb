@@ -127,7 +127,8 @@ void ImporterList::DetectSourceProfiles(
   observer_ = observer;
   is_observed_ = true;
 
-  BrowserThread::GetCurrentThreadIdentifier(&source_thread_id_);
+  bool res = BrowserThread::GetCurrentThreadIdentifier(&source_thread_id_);
+  DCHECK(res);
 
   BrowserThread::PostTask(
       BrowserThread::FILE,

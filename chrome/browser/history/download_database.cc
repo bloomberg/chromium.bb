@@ -89,7 +89,8 @@ bool DownloadDatabase::EnsureColumnExists(
 
 bool DownloadDatabase::InitDownloadTable() {
   CheckThread();
-  meta_table_.Init(&GetDB(), 0, 0);
+  bool success = meta_table_.Init(&GetDB(), 0, 0);
+  DCHECK(success);
   meta_table_.GetValue(kNextDownloadId, &next_id_);
   if (GetDB().DoesTableExist("downloads")) {
     return EnsureColumnExists("end_time", "INTEGER NOT NULL DEFAULT 0") &&
