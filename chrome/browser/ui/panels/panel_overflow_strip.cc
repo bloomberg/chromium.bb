@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
+#include "chrome/browser/ui/panels/panel_overflow_indicator.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -17,8 +18,14 @@ namespace {
 // titles, when the mouse hovers over the area.
 static const int kOverflowAreaHoverWidth = 200;
 
-// Maximium number of overflow panels allowed to be shown.
-const size_t kMaxVisibleOverflowPanelsAllowed = 6;
+// Maximium number of visible overflow panels when the mouse does not hover over
+// the overflow area.
+const size_t kMaxVisibleOverflowPanels = 6;
+
+// The ratio to determine the maximum number of visible overflow panels when the
+// mouse hovers over the overflow area. These panels cannot occupy more than the
+// fixed percentage of the display area height.
+const double kHeightRatioForMaxVisibleOverflowPanelsOnHover = 0.67;
 
 // This value is experimental and subjective.
 const int kOverflowHoverAnimationMs = 180;
@@ -27,7 +34,8 @@ const int kOverflowHoverAnimationMs = 180;
 PanelOverflowStrip::PanelOverflowStrip(PanelManager* panel_manager)
     : panel_manager_(panel_manager),
       current_display_width_(0),
-      max_visible_panels_(kMaxVisibleOverflowPanelsAllowed),
+      max_visible_panels_(kMaxVisibleOverflowPanels),
+      max_visible_panels_on_hover_(0),
       are_overflow_titles_shown_(false),
       overflow_hover_animator_start_width_(0),
       overflow_hover_animator_end_width_(0) {
@@ -35,16 +43,35 @@ PanelOverflowStrip::PanelOverflowStrip(PanelManager* panel_manager)
 
 PanelOverflowStrip::~PanelOverflowStrip() {
   DCHECK(panels_.empty());
+  DCHECK(!overflow_indicator_.get());
 }
 
 void PanelOverflowStrip::SetDisplayArea(const gfx::Rect& display_area) {
   if (display_area_ == display_area)
     return;
-
   display_area_ = display_area;
+
   UpdateCurrentWidth();
 
+  if (overflow_indicator_.get()) {
+    max_visible_panels_on_hover_ = 0;  // reset this value for recomputation.
+    UpdateMaxVisiblePanelsOnHover();
+    UpdateOverflowIndicatorCount();
+  }
+
   Refresh();
+}
+
+void PanelOverflowStrip::UpdateMaxVisiblePanelsOnHover() {
+  // No need to recompute this value.
+  if (max_visible_panels_on_hover_)
+    return;
+
+  DCHECK(!panels_.empty());
+  max_visible_panels_on_hover_ =
+      kHeightRatioForMaxVisibleOverflowPanelsOnHover *
+      display_area_.height() /
+      panels_.front()->IconOnlySize().height();
 }
 
 void PanelOverflowStrip::UpdateCurrentWidth() {
@@ -69,24 +96,44 @@ void PanelOverflowStrip::AddPanel(Panel* panel) {
     Refresh();
   }
 
-  if (panels_.size() == 1)
+  if (num_panels() == 1)
     panel_manager_->mouse_watcher()->AddObserver(this);
+
+  // Update the overflow indicator only when the number of overflow panels go
+  // beyond the maximum visible limit.
+  if (num_panels() > max_visible_panels_) {
+    if (!overflow_indicator_.get()) {
+      overflow_indicator_.reset(PanelOverflowIndicator::Create());
+      UpdateMaxVisiblePanelsOnHover();
+    }
+    UpdateOverflowIndicatorCount();
+  }
 }
 
 bool PanelOverflowStrip::Remove(Panel* panel) {
   size_t index = 0;
-  for (Panels::iterator iter = panels_.begin(); iter != panels_.end();
-       ++iter, ++index) {
-    if (*iter == panel) {
-      panels_.erase(iter);
-      DoRefresh(index, panels_.size() - 1);
-      panel_manager_->OnPanelRemoved(panel);
-      if (panels_.empty())
-        panel_manager_->mouse_watcher()->RemoveObserver(this);
-      return true;
-    }
-  }
-  return false;
+  Panels::iterator iter = panels_.begin();
+  for (; iter != panels_.end(); ++iter, ++index)
+    if (*iter == panel)
+      break;
+  if (iter == panels_.end())
+    return false;
+
+  panels_.erase(iter);
+  DoRefresh(index, panels_.size() - 1);
+  panel_manager_->OnPanelRemoved(panel);
+
+  if (panels_.empty())
+    panel_manager_->mouse_watcher()->RemoveObserver(this);
+
+  // Update the overflow indicator. If the number of overflow panels fall below
+  // the maximum visible limit, we do not need the overflow indicator any more.
+  if (num_panels() < max_visible_panels_)
+    overflow_indicator_.reset();
+  else
+    UpdateOverflowIndicatorCount();
+
+  return true;
 }
 
 void PanelOverflowStrip::RemoveAll() {
@@ -106,6 +153,11 @@ void PanelOverflowStrip::OnPanelExpansionStateChanged(
   AddPanel(panel);
   panel->SetAppIconVisibility(false);
   panel->set_draggable(false);
+}
+
+void PanelOverflowStrip::OnPanelAttentionStateChanged(Panel* panel) {
+  DCHECK(panel->expansion_state() == Panel::IN_OVERFLOW);
+  UpdateOverflowIndicatorAttention();
 }
 
 void PanelOverflowStrip::Refresh() {
@@ -128,6 +180,47 @@ void PanelOverflowStrip::DoRefresh(size_t start_index, size_t end_index) {
   }
 }
 
+void PanelOverflowStrip::UpdateOverflowIndicatorCount() {
+  int max_panels = max_visible_panels();
+
+  // Setting the count to 0 will hide the indicator.
+  if (num_panels() <= max_panels) {
+    overflow_indicator_->SetCount(0);
+    return;
+  }
+
+  // Update the bounds and count.
+  int height = overflow_indicator_->GetHeight();
+  overflow_indicator_->SetBounds(gfx::Rect(
+      display_area_.x(),
+      panels_[max_panels - 1]->GetBounds().y() - height,
+      current_display_width_,
+      height));
+  overflow_indicator_->SetCount(num_panels() - max_panels);
+
+  // The attention state might get changed when there is a change to count
+  // value.
+  UpdateOverflowIndicatorAttention();
+}
+
+void PanelOverflowStrip::UpdateOverflowIndicatorAttention() {
+  int max_panels = max_visible_panels();
+
+  // The overflow indicator is painted as drawing attention only when there is
+  // at least one hidden panel that is drawing attention.
+  bool is_drawing_attention = false;
+  for (int index = max_panels; index < num_panels(); ++index) {
+    if (panels_[index]->IsDrawingAttention()) {
+      is_drawing_attention = true;
+      break;
+    }
+  }
+  if (is_drawing_attention)
+    overflow_indicator_->DrawAttention();
+  else
+    overflow_indicator_->StopDrawingAttention();
+}
+
 gfx::Rect PanelOverflowStrip::ComputeLayout(
     size_t index, const gfx::Size& iconified_size) const {
   DCHECK(index != kInvalidPanelIndex);
@@ -138,8 +231,7 @@ gfx::Rect PanelOverflowStrip::ComputeLayout(
   bounds.set_x(display_area_.x());
   bounds.set_y(bottom - iconified_size.height());
 
-  if (are_overflow_titles_shown_ ||
-      static_cast<int>(index) < max_visible_panels_) {
+  if (static_cast<int>(index) < max_visible_panels()) {
     bounds.set_width(current_display_width_);
     bounds.set_height(iconified_size.height());
   } else {
@@ -161,13 +253,8 @@ bool PanelOverflowStrip::ShouldShowOverflowTitles(
   if (panels_.empty())
     return false;
 
-  Panel* top_visible_panel;
-  if (are_overflow_titles_shown_) {
-    top_visible_panel = panels_.back();
-  } else {
-    top_visible_panel = num_panels() >= max_visible_panels_ ?
-        panels_[max_visible_panels_ - 1] : panels_.back();
-  }
+  Panel* top_visible_panel = num_panels() >= max_visible_panels() ?
+        panels_[max_visible_panels() - 1] : panels_.back();
   return mouse_position.x() <= display_area_.x() + current_display_width_ &&
          top_visible_panel->GetBounds().y() <= mouse_position.y() &&
          mouse_position.y() <= display_area_.bottom();
@@ -206,6 +293,10 @@ void PanelOverflowStrip::ShowOverflowTitles(bool show_overflow_titles) {
     PanelManager::AdjustTimeInterval(kOverflowHoverAnimationMs));
 
   overflow_hover_animator_->Show();
+
+  // The overflow indicator count needs to be updated when the overflow area
+  // gets changed.
+  UpdateOverflowIndicatorCount();
 }
 
 void PanelOverflowStrip::AnimationEnded(const ui::Animation* animation) {
@@ -219,13 +310,15 @@ void PanelOverflowStrip::AnimationProgressed(const ui::Animation* animation) {
   int current_display_width = overflow_hover_animator_->CurrentValueBetween(
       overflow_hover_animator_start_width_, overflow_hover_animator_end_width_);
   bool end_of_shrinking = current_display_width == display_area_.width();
+  int max_visible_panels = end_of_shrinking ?
+      max_visible_panels_ : max_visible_panels_on_hover_;
 
   // Update each overflow panel.
-  for (size_t i = 0; i < panels_.size(); ++i) {
+  for (int i = 0; i < num_panels(); ++i) {
     Panel* overflow_panel = panels_[i];
     gfx::Rect bounds = overflow_panel->GetBounds();
 
-    if (static_cast<int>(i) >= max_visible_panels_ && end_of_shrinking) {
+    if (i >= max_visible_panels) {
       bounds.set_width(0);
       bounds.set_height(0);
     } else {
@@ -234,6 +327,14 @@ void PanelOverflowStrip::AnimationProgressed(const ui::Animation* animation) {
     }
 
     overflow_panel->SetPanelBoundsInstantly(bounds);
+  }
+
+  // Update the indicator.
+  if (overflow_indicator_.get()) {
+    gfx::Rect bounds = overflow_indicator_->GetBounds();
+    bounds.set_width(current_display_width);
+    overflow_indicator_->SetBounds(bounds);
+    overflow_indicator_->SetCount(num_panels() - max_visible_panels);
   }
 }
 
