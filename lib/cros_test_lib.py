@@ -6,6 +6,7 @@
 
 """Cros unit test library, with utility functions."""
 
+from __future__ import print_function
 import cStringIO
 import os
 import re
@@ -123,8 +124,16 @@ class OutputCapturer(object):
 
     if exc_type:
       print('Exception during output capturing: %r' % exc_val)
-      print('Captured stdout was:\n%s' % '\n'.join(self.GetStdoutLines()))
-      print('Captured stderr was:\n%s' % '\n'.join(self.GetStderrLines()))
+      stdout = self.GetStdout()
+      if stdout:
+        print('Captured stdout was:\n%s' % stdout)
+      else:
+        print('No captured stdout')
+      stderr = self.GetStderr()
+      if stderr:
+        print('Captured stderr was:\n%s' % stderr)
+      else:
+        print('No captured stderr')
 
   def StartCapturing(self):
     """Begin capturing stdout and stderr."""
@@ -373,6 +382,14 @@ class TestCase(unittest.TestCase):
     check_msg_func = self._GenCheckMsgFunc(None, regexp)
     return self._AssertOutputEndsInMsg(check_msg_func,
                                        check_stdout, check_stderr)
+
+  def AssertRaisesAndReturn(self, error, func, *args, **kwargs):
+    """Like assertRaises, but return exception raised."""
+    try:
+      func(*args, **kwargs)
+      self.assertTrue(False, msg='Expected %s but got none' % error)
+    except error as ex:
+      return ex
 
 class MoxTestCase(TestCase, mox.MoxTestBase):
   """Add mox.MoxTestBase super class to TestCase."""

@@ -22,8 +22,9 @@ import chromite.lib.operation as operation
 import chromite.lib.upgrade_table as utable
 import merge_package_status as mps
 
+# pylint: disable=E1101,W0201
+
 oper = operation.Operation('cros_portage_upgrade')
-oper.verbose = True # Without verbose Info messages don't show up.
 
 NOT_APPLICABLE = 'N/A'
 WORLD_TARGET = 'world'
@@ -175,7 +176,7 @@ class Upgrader(object):
 
       self._stable_repo_status = statuses
     else:
-      raise RuntimeError("Unable to run 'git status -s' in %s:\n%s" %
+      raise RuntimeError('Unable to run "git status -s" in %s:\n%s' %
                          (self._stable_repo, result.output))
 
     self._stable_repo_stashed = False
@@ -191,10 +192,10 @@ class Upgrader(object):
           branch = match.group(1)
           if branch != '(no branch)':
             return
-          raise RuntimeError("To perform upgrade, %s must be on a branch." %
+          raise RuntimeError('To perform upgrade, %s must be on a branch.' %
                              self._stable_repo)
 
-    raise RuntimeError("Unable to determine whether %s is on a branch." %
+    raise RuntimeError('Unable to determine whether %s is on a branch.' %
                        self._stable_repo)
 
   def _PkgUpgradeRequested(self, info):
@@ -318,7 +319,7 @@ class Upgrader(object):
 
   def _SplitEBuildPath(self, ebuild_path):
     """Split a full ebuild path into (overlay, cat, pn, pv)."""
-    (ebuild_path, ebuild) = os.path.splitext(ebuild_path)
+    (ebuild_path, _ebuild) = os.path.splitext(ebuild_path)
     (ebuild_path, pv) = os.path.split(ebuild_path)
     (ebuild_path, pn) = os.path.split(ebuild_path)
     (ebuild_path, cat) = os.path.split(ebuild_path)
@@ -378,7 +379,7 @@ class Upgrader(object):
                                      )
     if cmd_result.returncode == 0:
       ebuild_path = cmd_result.output.strip()
-      (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
+      (_overlay, cat, _pn, pv) = self._SplitEBuildPath(ebuild_path)
       return os.path.join(cat, pv)
     else:
       return None
@@ -430,7 +431,7 @@ class Upgrader(object):
 
     if cmd_result.returncode == 0:
       ebuild_path = cmd_result.output.strip()
-      (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
+      (_overlay, cat, _pn, pv) = self._SplitEBuildPath(ebuild_path)
       return os.path.join(cat, pv)
     else:
       return None
@@ -459,8 +460,8 @@ class Upgrader(object):
       if match:
         return ('M' != match.group(1), '~' != match.group(2))
 
-    raise RuntimeError("Unable to determine whether %s is stable from equery:\n"
-                       " %s\noutput:\n %s" % (cpv, ' '.join(cmd), output))
+    raise RuntimeError('Unable to determine whether %s is stable from equery:\n'
+                       ' %s\noutput:\n %s' % (cpv, ' '.join(cmd), output))
 
   def _VerifyEbuildOverlay(self, cpv, expected_overlay,
                            stable_only, was_overwrite):
@@ -488,7 +489,7 @@ class Upgrader(object):
                                  combine_stdout_stderr=True,
                                  )
     ebuild_path = result.output.strip()
-    (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
+    (overlay, _cat, _pn, _pv) = self._SplitEBuildPath(ebuild_path)
     if overlay != expected_overlay:
       if was_overwrite:
         raise RuntimeError('Upgraded ebuild for %s is not visible because'
@@ -541,15 +542,15 @@ class Upgrader(object):
         match = self._missing_eclass_re.search(line)
         if match:
           eclass = match.group(1)
-          oper.Info("Determined that %s requires %s" % (cpv, eclass))
+          oper.Notice('Determined that %s requires %s' % (cpv, eclass))
           return eclass
 
       # _outdated_eclass_re works on the entire output at once.
       match = self._outdated_eclass_re.search(output)
       if match:
         eclass = match.group(1)
-        oper.Info("Making educated guess that %s requires update of %s" %
-                  (cpv, eclass))
+        oper.Notice('Making educated guess that %s requires update of %s' %
+                    (cpv, eclass))
         return eclass
 
     return None
@@ -578,19 +579,19 @@ class Upgrader(object):
       package_mask = match.group(1)
 
     if package_mask:
-      oper.Error("\nUpgraded package '%s' appears to be masked by a line in\n"
-                 "'%s'\n"
-                 "Full emerge output is above. Address mask issue, "
-                 "then run this again." %
+      oper.Error('\nUpgraded package "%s" appears to be masked by a line in\n'
+                 '"%s"\n'
+                 'Full emerge output is above. Address mask issue, '
+                 'then run this again.' %
                  (upgraded_cpv, package_mask))
     else:
-      oper.Error("\nUpgraded package '%s' is masked somehow (See full "
-                 "emerge output above). Address that and then run this "
-                 "again." % upgraded_cpv)
+      oper.Error('\nUpgraded package "%s" is masked somehow (See full '
+                 'emerge output above). Address that and then run this '
+                 'again.' % upgraded_cpv)
 
   def _PkgUpgradeStaged(self, upstream_cpv):
     """Return True if package upgrade is already staged."""
-    (cat, pkgname, version, rev) = portage.versions.catpkgsplit(upstream_cpv)
+    (cat, pkgname, _version, _rev) = portage.versions.catpkgsplit(upstream_cpv)
     ebuild = upstream_cpv.replace(cat + '/', '') + '.ebuild'
     ebuild_relative_path = os.path.join(cat, pkgname, ebuild)
 
@@ -635,9 +636,9 @@ class Upgrader(object):
     Returns:
       The upstream_cpv if the package was upgraded, None otherwise.
     """
-    oper.Info('Copying %s from upstream.' % upstream_cpv)
+    oper.Notice('Copying %s from upstream.' % upstream_cpv)
 
-    (cat, pkgname, version, rev) = portage.versions.catpkgsplit(upstream_cpv)
+    (cat, pkgname, _version, _rev) = portage.versions.catpkgsplit(upstream_cpv)
     ebuild = upstream_cpv.replace(cat + '/', '') + '.ebuild'
     catpkgsubdir = os.path.join(cat, pkgname)
     pkgdir = os.path.join(self._stable_repo, catpkgsubdir)
@@ -647,7 +648,7 @@ class Upgrader(object):
     upstream_ebuild_path = os.path.join(upstream_pkgdir, ebuild)
     if not os.path.exists(upstream_ebuild_path):
       # Note: this should only be possible during unit tests.
-      raise RuntimeError("Cannot find upstream ebuild at '%s'" %
+      raise RuntimeError('Cannot find upstream ebuild at "%s"' %
                          upstream_ebuild_path)
 
     # If pkgdir already exists, remove everything in it.
@@ -699,14 +700,14 @@ class Upgrader(object):
       if os.path.exists(local_path) and filecmp.cmp(upstream_path, local_path):
         return False
       else:
-        oper.Info('Copying %s from upstream.' % eclass)
+        oper.Notice('Copying %s from upstream.' % eclass)
         if not os.path.exists(os.path.dirname(local_path)):
           os.makedirs(os.path.dirname(local_path))
         shutil.copy2(upstream_path, local_path)
         self._RunGit(self._stable_repo, 'add %s' % eclass_subpath)
         return True
 
-    raise RuntimeError("Cannot find upstream '%s'.  Looked at '%s'" %
+    raise RuntimeError('Cannot find upstream "%s".  Looked at "%s"' %
                        (eclass, upstream_path))
 
   def _GetPackageUpgradeState(self, info):
@@ -772,8 +773,8 @@ class Upgrader(object):
                utable.UpgradeTable.STATE_CURRENT: ' (current)',
                }[info['state']]
 
-    print '[%s] %s%s%s' % (info['overlay'], info['cpv'],
-                           up_stat, action_stat)
+    oper.Info('[%s] %s%s%s' % (info['overlay'], info['cpv'],
+                               up_stat, action_stat))
 
   def _AppendPackageRow(self, info):
     """Add a row to status table for the package in |info|."""
@@ -866,15 +867,15 @@ class Upgrader(object):
       # Determine whether upgrade of this package is requested.
       if self._PkgUpgradeRequested(info):
         if self._PkgUpgradeStaged(info['upstream_cpv']):
-          oper.Info('Determined that %s is already staged.' %
-                    info['upstream_cpv'])
+          oper.Notice('Determined that %s is already staged.' %
+                      info['upstream_cpv'])
           info['upgraded_cpv'] = info['upstream_cpv']
         elif info['cpv_cmp_upstream'] > 0:
           info['upgraded_cpv'] = self._CopyUpstreamPackage(info['upstream_cpv'])
         elif info['cpv_cmp_upstream'] == 0:
           if self._force:
-            oper.Info('Forcing upgrade of existing %s.' %
-                      info['upstream_cpv'])
+            oper.Notice('Forcing upgrade of existing %s.' %
+                        info['upstream_cpv'])
             upgraded_cpv = self._CopyUpstreamPackage(info['upstream_cpv'])
             info['upgraded_cpv'] = upgraded_cpv
           else:
@@ -922,7 +923,7 @@ class Upgrader(object):
 
     return sorted(pkgs)
 
-  def _CreateCommitMessage(self, upgrade_lines, remaining_lines=[]):
+  def _CreateCommitMessage(self, upgrade_lines, remaining_lines=None):
     """Create appropriate git commit message for upgrades in |upgrade_lines|."""
     message = None
     upgrade_pkgs = self._ExtractUpgradedPkgs(upgrade_lines)
@@ -980,10 +981,10 @@ class Upgrader(object):
             # If the lines in the message body are not in the expected
             # format simply push them to the end of the new commit
             # message body, but left intact.
-            oper.Warning("It looks like the existing commit message "
-                         "that you are amending was not generated by\n"
-                         "this utility.  Appending previous commit "
-                         "message to newly generated message.")
+            oper.Warning('It looks like the existing commit message '
+                         'that you are amending was not generated by\n'
+                         'this utility.  Appending previous commit '
+                         'message to newly generated message.')
             before_break = False
             remaining_lines.append(line)
         else:
@@ -1005,29 +1006,28 @@ class Upgrader(object):
       # If any of the upgraded_cpvs are masked, then emerge should have
       # failed.  Give a helpful message.  If it didn't fail then panic.
       if ok:
-        oper.Error("\nEmerge passed for masked package(s)!  Something "
-                   "fishy here. Emerge output follows:")
-        print output
-        raise RuntimeError("Show this to the build team.")
+        raise RuntimeError('Emerge passed for masked package(s)!  Something '
+                           'fishy here. Emerge output follows:\n%s\n'
+                           'Show this to the build team.' % output)
 
       else:
-        oper.Error("\nEmerge output for '%s' on %s follows:" %
+        oper.Error('\nEmerge output for "%s" on %s follows:' %
                    (cmd, self._curr_arch))
         print output
         for masked_cpv in masked_cpvs:
           self._GiveMaskedError(masked_cpv, output)
-        raise RuntimeError("\nOne or more upgraded packages are masked "
-                           "(see above).")
+        raise RuntimeError('\nOne or more upgraded packages are masked '
+                           '(see above).')
 
     if ok:
-      oper.Info("Confirmed that all upgraded packages can be emerged "
-                "on %s after upgrade." % self._curr_board)
+      oper.Notice('Confirmed that all upgraded packages can be emerged '
+                  'on %s after upgrade.' % self._curr_board)
     else:
-      oper.Error("Packages cannot be emerged after upgrade.  The output "
-                 "of '%s' follows:" % cmd)
+      oper.Error('Packages cannot be emerged after upgrade.  The output '
+                 'of "%s" follows:' % cmd)
       print output
-      raise RuntimeError("Failed to complete upgrades on %s (see above). "
-                         "Address the emerge errors before continuing." %
+      raise RuntimeError('Failed to complete upgrades on %s (see above). '
+                         'Address the emerge errors before continuing.' %
                          self._curr_board)
 
   def _UpgradePackages(self, infolist):
@@ -1084,17 +1084,17 @@ class Upgrader(object):
       filelist = self._stable_repo_status.keys()
       ebuilds = [e for e in filelist if e.endswith('.ebuild')]
       for ebuild in ebuilds:
-        (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild)
+        (_overlay, cat, _pn, pv) = self._SplitEBuildPath(ebuild)
         cpv = '%s/%s' % (cat, pv)
 
         # Look for info with ['upgraded_cpv'] that matches
         matching_infos = [i for i in infolist if i['upgraded_cpv'] == cpv]
         if not matching_infos:
-          err_msgs.append("Staged %s is not one of upgrade targets." % ebuild)
+          err_msgs.append('Staged %s is not one of upgrade targets.' % ebuild)
 
       if err_msgs:
-        raise RuntimeError("%s\n"
-                           "Add to upgrade targets or reset staged changes." %
+        raise RuntimeError('%s\n'
+                           'Add to upgrade targets or reset staged changes.' %
                            '\n'.join(err_msgs))
 
   def _GenParallelEmergeArgv(self, args):
@@ -1112,7 +1112,7 @@ class Upgrader(object):
 
   def _SetPortTree(self, settings, trees):
     """Set self._porttree from portage |settings| and |trees|."""
-    root = settings["ROOT"]
+    root = settings['ROOT']
     self._porttree = trees[root]['porttree']
 
   def _GetPortageDBAPI(self):
@@ -1166,11 +1166,11 @@ class Upgrader(object):
     try:
       deps_tree, deps_info = deps.GenDependencyTree()
     except SystemExit:
-      oper.Error("Run of parallel_emerge exited with error while assembling"
-                 " package dependencies (error message should be above).\n"
-                 "Command effectively was:\n%s" %
+      oper.Error('Run of parallel_emerge exited with error while assembling'
+                 ' package dependencies (error message should be above).\n'
+                 'Command effectively was:\n%s' %
                  ' '.join(['parallel_emerge'] + argv))
-      oper.Error("Address the source of the error, then run again.")
+      oper.Error('Address the source of the error, then run again.')
       raise
     self._SetPortTree(deps.emerge.settings, deps.emerge.trees)
     self._deps_graph = deps.GenDependencyGraph(deps_tree, deps_info)
@@ -1205,7 +1205,7 @@ class Upgrader(object):
 
       dbapi = self._GetPortageDBAPI()
       ebuild_path = dbapi.findname2(info['cpv'])[0]
-      (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
+      (overlay, _cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
       ver_rev = pv.replace(pn + '-', '')
       slot, = dbapi.aux_get(info['cpv'], ['SLOT'])
 
@@ -1270,9 +1270,9 @@ class Upgrader(object):
         verrev = Upgrader._GetVerRevFromCpv(arg)
 
         if verrev and not upgrade_mode:
-          raise RuntimeError("Specifying specific versions is only allowed "
-                             "in upgrade mode.  Don't know what to do with "
-                             "'%s'." % arg)
+          raise RuntimeError('Specifying specific versions is only allowed '
+                             'in upgrade mode.  Do not know what to do with '
+                             '"%s".' % arg)
 
         # Local cpv search ignores version in argument, if any.  If version is
         # in argument, though, it *must* be found upstream.
@@ -1296,10 +1296,10 @@ class Upgrader(object):
         if not upstream_cpv and verrev:
           # See if --unstable-ok is required for this upstream version.
           if not self._unstable_ok and self._FindUpstreamCPV(arg, True):
-            raise RuntimeError("Upstream '%s' is unstable on %s.  Re-run with "
-                               "--unstable-ok option?" % (arg, self._curr_arch))
+            raise RuntimeError('Upstream "%s" is unstable on %s.  Re-run with '
+                               '--unstable-ok option?' % (arg, self._curr_arch))
           else:
-            raise RuntimeError("Unable to find '%s' upstream on %s." %
+            raise RuntimeError('Unable to find "%s" upstream on %s.' %
                                (arg, self._curr_arch))
 
         any_cpv = local_cpv if local_cpv else upstream_cpv
@@ -1307,23 +1307,23 @@ class Upgrader(object):
           self._FillInfoFromCPV(info, any_cpv)
 
         if local_cpv and upstream_cpv:
-          oper.Info("Resolved '%s' to '%s' (local) and '%s' (upstream)." %
-                    (arg, local_cpv, upstream_cpv))
+          oper.Notice('Resolved "%s" to "%s" (local) and "%s" (upstream).' %
+                      (arg, local_cpv, upstream_cpv))
           info['cpv'] = local_cpv
           info['upstream_cpv'] = upstream_cpv
         elif local_cpv:
-          oper.Info("Resolved '%s' to '%s' (local)." %
-                    (arg, local_cpv))
+          oper.Notice('Resolved "%s" to "%s" (local).' %
+                      (arg, local_cpv))
           info['cpv'] = local_cpv
         elif upstream_cpv:
-          oper.Info("Resolved '%s' to '%s' (upstream)." %
-                    (arg, upstream_cpv))
+          oper.Notice('Resolved "%s" to "%s" (upstream).' %
+                      (arg, upstream_cpv))
           info['upstream_cpv'] = upstream_cpv
         else:
-          msg = ("Unable to resolve '%s' as a package either local or upstream."
+          msg = ('Unable to resolve "%s" as a package either local or upstream.'
                  % arg)
           if arg.find('/') < 0:
-            msg = msg + " Try specifying the full category/package_name."
+            msg = msg + ' Try specifying the full category/package_name.'
 
           raise RuntimeError(msg)
 
@@ -1336,13 +1336,13 @@ class Upgrader(object):
     if not self._upstream:
       if os.path.exists(self._upstream_repo):
         # Previously created upstream cache can be re-used.  Just update it.
-        oper.Info('Updating previously created upstream cache at %s.' %
-                  self._upstream_repo)
+        oper.Notice('Updating previously created upstream cache at %s.' %
+                    self._upstream_repo)
         self._RunGit(self._upstream_repo, 'remote update')
       else:
         # Create local copy of upstream gentoo.
-        oper.Info('Cloning origin/gentoo at %s as upstream reference.' %
-                  self._upstream_repo)
+        oper.Notice('Cloning origin/gentoo at %s as upstream reference.' %
+                    self._upstream_repo)
         root = os.path.dirname(self._upstream_repo)
         name = os.path.basename(self._upstream_repo)
         self._RunGit(root, 'clone %s %s' % (self.PORTAGE_GIT_URL, name))
@@ -1365,8 +1365,8 @@ class Upgrader(object):
     """Undo any checkout of upstream gentoo if requested."""
     if not self._upstream:
       if self._no_upstream_cache:
-        oper.Info('Removing upstream cache at %s as requested.'
-                  % self._upstream_repo)
+        oper.Notice('Removing upstream cache at %s as requested.'
+                    % self._upstream_repo)
         shutil.rmtree(self._upstream_repo)
 
         # Remove the README file, too.
@@ -1374,7 +1374,7 @@ class Upgrader(object):
         if os.path.exists(readmepath):
           os.remove(readmepath)
       else:
-        oper.Info('Keeping upstream cache at %s.' % self._upstream_repo)
+        oper.Notice('Keeping upstream cache at %s.' % self._upstream_repo)
 
     os.rmdir(self._emptydir)
 
@@ -1490,11 +1490,11 @@ class Upgrader(object):
                      ' Instead, copy them to the applicable overlay dir.\n'
                      '%s' %
                      '\n'.join(lines))
-      oper.Info('\n'
-                'To remove any individual file above from commit do:\n'
-                ' cd %s; git reset HEAD~ <filepath>; rm <filepath>;'
-                ' git commit --amend -C HEAD; cd -' %
-                self._stable_repo)
+      oper.Notice('\n'
+                  'To remove any individual file above from commit do:\n'
+                  ' cd %s; git reset HEAD~ <filepath>; rm <filepath>;'
+                  ' git commit --amend -C HEAD; cd -' %
+                  self._stable_repo)
 
       if key_lines:
         oper.Warning('\n'
@@ -1507,10 +1507,10 @@ class Upgrader(object):
                      (self._GetPkgKeywordsFile(),
                       '\n'.join(key_lines)))
 
-      oper.Info('\n'
-                'If you wish to undo all the changes to %s:\n'
-                ' cd %s; git reset --hard HEAD~; cd -' %
-                (self.STABLE_OVERLAY_NAME, self._stable_repo))
+      oper.Notice('\n'
+                  'If you wish to undo all the changes to %s:\n'
+                  ' cd %s; git reset --hard HEAD~; cd -' %
+                  (self.STABLE_OVERLAY_NAME, self._stable_repo))
 
   def PreRunChecks(self):
     """Run any board-independent validation checks before Run is called."""
@@ -1546,8 +1546,8 @@ class Upgrader(object):
       if not upgrade_mode and upstream_only_infolist:
         # This means that not all arguments were found in local source, which is
         # only allowed in upgrade mode.
-        msg = ("The following packages were not found in current overlays"
-               " (but they do exist upstream):\n%s" %
+        msg = ('The following packages were not found in current overlays'
+               ' (but they do exist upstream):\n%s' %
                '\n'.join([info['user_arg'] for info in upstream_only_infolist]))
         raise RuntimeError(msg)
 
@@ -1562,7 +1562,7 @@ class Upgrader(object):
         # if --upgrade-deep was requested.
         local_target_infolist = [i for i in target_infolist if i['cpv']]
         if local_target_infolist:
-          oper.Info("Assembling package dependencies.")
+          oper.Notice('Assembling package dependencies.')
           full_infolist = self._GetCurrentVersions(local_target_infolist)
           full_infolist = self._FinalizeLocalInfolist(full_infolist)
         else:
@@ -1602,19 +1602,19 @@ class Upgrader(object):
 
     if csv:
       filehandle = open(csv, 'w')
-      oper.Info('Writing package status as csv to %s.' % csv)
+      oper.Notice('Writing package status as csv to %s.' % csv)
       self._master_table.WriteCSV(filehandle)
       filehandle.close()
     elif not self._IsInUpgradeMode():
-      oper.Info('Package status report file not requested (--to-csv).')
+      oper.Notice('Package status report file not requested (--to-csv).')
 
   def SayGoodbye(self):
     """Print any final messages to user."""
     if not self._IsInUpgradeMode():
       # Without this message users are confused why running a script
       # with 'upgrade' in the name does not actually do an upgrade.
-      oper.Warning("Completed status report run.  To run in 'upgrade'"
-                   " mode include the --upgrade option.")
+      oper.Warning('Completed status report run.  To run in "upgrade"'
+                   ' mode include the --upgrade option.')
 
 def _BoardIsSetUp(board):
   """Return true if |board| has been setup."""
@@ -1679,42 +1679,42 @@ def _CreateOptParser():
   parser = MyOptParser(usage=usage, epilog=epilog)
   parser.add_option('--amend', dest='amend', action='store_true',
                     default=False,
-                    help="Amend existing commit when doing upgrade.")
+                    help='Amend existing commit when doing upgrade.')
   parser.add_option('--board', dest='board', type='string', action='store',
-                    default=None, help="Target board(s), colon-separated")
+                    default=None, help='Target board(s), colon-separated')
   parser.add_option('--force', dest='force', action='store_true',
                     default=False,
-                    help="Force upgrade even if version already in source")
+                    help='Force upgrade even if version already in source')
   parser.add_option('--host', dest='host', action='store_true',
                     default=False,
-                    help="Host target pseudo-board")
+                    help='Host target pseudo-board')
   parser.add_option('--no-upstream-cache', dest='no_upstream_cache',
                     action='store_true', default=False,
-                    help="Do not preserve cached upstream for future runs")
+                    help='Do not preserve cached upstream for future runs')
   parser.add_option('--rdeps', dest='rdeps', action='store_true',
                     default=False,
-                    help="Use runtime dependencies only")
+                    help='Use runtime dependencies only')
   parser.add_option('--srcroot', dest='srcroot', type='string', action='store',
                     default='%s/trunk/src' % os.environ['HOME'],
-                    help="Path to root src directory [default: '%default']")
+                    help='Path to root src directory [default: "%default"]')
   parser.add_option('--to-csv', dest='csv_file', type='string', action='store',
-                    default=None, help="File to write csv-formatted results to")
+                    default=None, help='File to write csv-formatted results to')
   parser.add_option('--upgrade', dest='upgrade',
                     action='store_true', default=False,
-                    help="Upgrade target package(s) only")
+                    help='Upgrade target package(s) only')
   parser.add_option('--upgrade-deep', dest='upgrade_deep', action='store_true',
                     default=False,
-                    help="Upgrade target package(s) and all dependencies")
+                    help='Upgrade target package(s) and all dependencies')
   # TODO(mtennant): Put UPSTREAM_TMP_REPO in as default for better transparency.
   parser.add_option('--upstream', dest='upstream', type='string',
                     action='store', default=None,
-                    help="Latest upstream repo location [default: '%default']")
+                    help='Latest upstream repo location [default: "%default"]')
   parser.add_option('--unstable-ok', dest='unstable_ok', action='store_true',
                     default=False,
-                    help="Use latest upstream ebuild, stable or not")
+                    help='Use latest upstream ebuild, stable or not')
   parser.add_option('--verbose', dest='verbose', action='store_true',
                     default=False,
-                    help="Enable verbose output (for debugging)")
+                    help='Enable verbose output (for debugging)')
 
   return parser
 
@@ -1724,7 +1724,9 @@ def main():
   parser = _CreateOptParser()
   (options, args) = parser.parse_args()
 
-  if (options.verbose): logging.basicConfig(level=logging.DEBUG)
+  if (options.verbose):
+    logging.basicConfig(level=logging.DEBUG)
+    oper.verbose = True
 
   #
   # Do some argument checking.
@@ -1797,7 +1799,7 @@ def main():
     upgrader.PrepareToRun()
 
     for board in boards:
-      oper.Info('Running with board %s.' % board)
+      oper.Notice('Running with board %s.' % board)
       upgrader.RunBoard(board)
   except RuntimeError as ex:
     passed = False
@@ -1807,7 +1809,7 @@ def main():
     upgrader.RunCompleted()
 
   if not passed:
-    oper.Die("Failed with above errors.")
+    oper.Die('Failed with above errors.')
 
   if upgrader.CommitIsStaged():
     upgrader.Commit()
