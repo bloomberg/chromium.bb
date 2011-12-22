@@ -23,6 +23,10 @@
 #include "content/public/browser/notification_types.h"
 #include "ui/gfx/rect.h"
 
+#if defined(USE_AURA)
+#include "ui/gfx/screen.h"
+#endif
+
 // static
 const Extension* Panel::GetExtensionFromBrowser(Browser* browser) {
   // Find the extension. When we create a panel from an extension, the extension
@@ -529,8 +533,16 @@ gfx::Rect Panel::GetInstantBounds() {
 
 WindowOpenDisposition Panel::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
-  NOTIMPLEMENTED();
+#if defined(USE_AURA)
+  // TODO(stevenjb): Remove this platform specific behavior after R18 when
+  // the panel code has moved to aura_shell.
+  gfx::Size window_size = gfx::Screen::GetMonitorAreaNearestWindow(
+      native_panel_->GetNativePanelHandle()).size();
+  return browser::DispositionForPopupBounds(
+      bounds, window_size.width(), window_size.height());
+#else
   return NEW_POPUP;
+#endif
 }
 
 FindBar* Panel::CreateFindBar() {

@@ -157,12 +157,6 @@ const int kDefaultHungPluginDetectFrequency = 2000;
 const int kMinDevToolsHeight = 50;
 const int kMinContentsHeight = 50;
 
-#if defined(USE_AURA) && defined(OS_CHROMEOS)
-// If a popup window is larger than this fraction of the screen, create a tab.
-const float kPopupMaxWidthFactor = 0.5;
-const float kPopupMaxHeightFactor = 0.6;
-#endif
-
 // How long do we wait before we consider a window hung (in ms).
 const int kDefaultPluginMessageResponseTimeout = 30000;
 // The number of milliseconds between loading animation frames.
@@ -1328,23 +1322,14 @@ gfx::Rect BrowserView::GetInstantBounds() {
 
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
-#if defined(USE_AURA) && defined(OS_CHROMEOS)
-  // If a popup is larger than a given fraction of the screen, turn it into
-  // a foreground tab. Also check for width or height == 0, which would
-  // indicate a tab sized popup window.
-  gfx::Size size = gfx::Screen::GetMonitorAreaNearestWindow(
+#if defined(USE_AURA)
+  gfx::Size window_size = gfx::Screen::GetMonitorAreaNearestWindow(
       GetWidget()->GetNativeView()).size();
-  int max_width = size.width() * kPopupMaxWidthFactor;
-  int max_height = size.height() * kPopupMaxHeightFactor;
-
-  if (bounds.width() > max_width ||
-      bounds.width() == 0 ||
-      bounds.height() > max_height ||
-      bounds.height() == 0) {
-    return NEW_FOREGROUND_TAB;
-  }
-#endif
+  return browser::DispositionForPopupBounds(
+      bounds, window_size.width(), window_size.height());
+#else
   return NEW_POPUP;
+#endif
 }
 
 FindBar* BrowserView::CreateFindBar() {

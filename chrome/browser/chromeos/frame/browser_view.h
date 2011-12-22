@@ -118,10 +118,6 @@ class BrowserView : public ::BrowserView,
     return should_show_layout_mode_button_;
   }
 
-  // static implementation for chromeos::PanelBrowserView.
-  static WindowOpenDisposition DispositionForPopupBounds(
-      const gfx::Rect& bounds);
-
  protected:
   virtual void GetAccessiblePanes(
       std::vector<views::AccessiblePaneView*>* panes) OVERRIDE;
