@@ -15,13 +15,14 @@
 ** limitations under the License.
 */
 
-#include "SkFontHost_fontconfig_direct.h"
+#include "skia/ext/SkFontHost_fontconfig_direct.h"
 
 #include <unistd.h>
 #include <fcntl.h>
 
 #include <fontconfig/fontconfig.h>
 
+#include "third_party/skia/include/core/SkTypeface.h"
 #include "unicode/utf16.h"
 
 namespace {
@@ -222,9 +223,9 @@ FcPattern* MatchFont(FcFontSet* font_set,
 
 // Retrieves |is_bold|, |is_italic| and |font_family| properties from |font|.
 bool GetFontProperties(FcPattern* font,
+                       std::string* font_family,
                        bool* is_bold,
-                       bool* is_italic,
-                       std::string* font_family) {
+                       bool* is_italic) {
   FcChar8* c_family;
   if (FcPatternGetString(font, FC_FAMILY, 0, &c_family))
     return false;
@@ -250,13 +251,10 @@ bool GetFontProperties(FcPattern* font,
   const bool have_embolden =
       FcPatternGet(font, FC_EMBOLDEN, 0, &embolden) == 0;
 
-  if (is_bold)
-    *is_bold = resulting_bold > FC_WEIGHT_MEDIUM && !have_embolden;
-  if (is_italic)
-    *is_italic = resulting_italic > FC_SLANT_ROMAN && !have_matrix;
+  *is_bold = resulting_bold > FC_WEIGHT_MEDIUM && !have_embolden;
+  *is_italic = resulting_italic > FC_SLANT_ROMAN && !have_matrix;
+  *font_family = reinterpret_cast<char*>(c_family);
 
-  if (font_family)
-    *font_family = reinterpret_cast<char*>(c_family);
   return true;
 }
 
@@ -280,6 +278,28 @@ bool FontConfigDirect::Match(std::string* result_family,
         return false;
 
     SkAutoMutexAcquire ac(mutex_);
+
+    // Given |family|, |is_bold| and |is_italic| but not |data|, the result will
+    // be a function of these three parameters, and thus eligible for caching.
+    // This is the fast path for |SkTypeface::CreateFromName()|.
+    bool eligible_for_cache = !family.empty() && is_bold && is_italic && !data;
+    if (eligible_for_cache) {
+        int style = (*is_bold ? SkTypeface::kBold : 0 ) |
+                    (*is_italic ? SkTypeface::kItalic : 0);
+        FontMatchKey key = FontMatchKey(family, style);
+        const std::map<FontMatchKey, FontMatch>::const_iterator i =
+            font_match_cache_.find(key);
+        if (i != font_match_cache_.end()) {
+            *is_bold = i->second.is_bold;
+            *is_italic = i->second.is_italic;
+            if (result_family)
+                *result_family = i->second.family;
+            if (result_filefaceid)
+                *result_filefaceid = i->second.filefaceid;
+            return true;
+        }
+    }
+
     FcPattern* pattern = FcPatternCreate();
 
     if (filefaceid_valid) {
@@ -391,9 +411,9 @@ bool FontConfigDirect::Match(std::string* result_family,
         return false;
     }
 
-    unsigned out_filefaceid;
+    FontMatch font_match;
     if (filefaceid_valid) {
-        out_filefaceid = filefaceid;
+        font_match.filefaceid = filefaceid;
     } else {
         unsigned out_fileid;
         const std::string filename(reinterpret_cast<char*>(c_filename));
@@ -409,14 +429,34 @@ bool FontConfigDirect::Match(std::string* result_family,
         // fileid stored in filename_to_fileid_ and fileid_to_filename_ is
         // unique only up to the font file. We have to encode face_index for
         // the out param.
-        out_filefaceid = FileIdAndFaceIndexToFileFaceId(out_fileid, face_index);
+        font_match.filefaceid =
+            FileIdAndFaceIndexToFileFaceId(out_fileid, face_index);
     }
 
-    if (result_filefaceid)
-        *result_filefaceid = out_filefaceid;
-
-    bool success = GetFontProperties(match, is_bold, is_italic, result_family);
+    bool success = GetFontProperties(match,
+                                     &font_match.family,
+                                     &font_match.is_bold,
+                                     &font_match.is_italic);
     FcFontSetDestroy(font_set);
+
+    if (success) {
+        // If eligible, cache the result of the matching.
+        if (eligible_for_cache) {
+            int style = (*is_bold ? SkTypeface::kBold : 0 ) |
+                        (*is_italic ? SkTypeface::kItalic : 0);
+            font_match_cache_[FontMatchKey(family, style)] = font_match;
+        }
+
+        if (result_family)
+            *result_family = font_match.family;
+        if (result_filefaceid)
+            *result_filefaceid = font_match.filefaceid;
+        if (is_bold)
+            *is_bold = font_match.is_bold;
+        if (is_italic)
+            *is_italic = font_match.is_italic;
+    }
+
     return success;
 }
 

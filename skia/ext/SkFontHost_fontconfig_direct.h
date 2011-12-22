@@ -44,6 +44,17 @@ class SK_API FontConfigDirect : public FontConfigInterface {
   // fileid stored in two maps below are unique per font file.
   std::map<unsigned, std::string> fileid_to_filename_;
   std::map<std::string, unsigned> filename_to_fileid_;
+
+  // Cache of |family,style| to |FontMatch| to minimize querying FontConfig.
+  typedef std::pair<std::string, int> FontMatchKey;
+  struct FontMatch {
+    std::string family;
+    bool is_bold;
+    bool is_italic;
+    unsigned filefaceid;
+  };
+  std::map<FontMatchKey, FontMatch> font_match_cache_;
+
   unsigned next_file_id_;
 };
 
