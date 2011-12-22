@@ -53,6 +53,7 @@ extern const char kAutomationReinitializeOnChannelError[];
 extern const char kCheckForUpdateIntervalSec[];
 extern const char kChromeVersion[];
 extern const char kCipherSuiteBlacklist[];
+extern const char kClearTokenService[];
 extern const char kCloudPrintDeleteFile[];
 extern const char kCloudPrintFile[];
 extern const char kCloudPrintJobTitle[];
@@ -276,6 +277,7 @@ extern const char kSbDisableAutoUpdate[];
 extern const char kSbDisableDownloadProtection[];
 extern const char kSearchInOmniboxHint[];
 extern const char kServiceAccountLsid[];
+extern const char kSetToken[];
 extern const char kShowAutofillTypePredictions[];
 extern const char kShowComponentExtensionOptions[];
 extern const char kShowCompositedLayerBorders[];
@@ -373,11 +375,8 @@ extern const char kDebugViewsPaint[];
 extern const char kTouchDevices[];
 #endif
 
-
 #ifndef NDEBUG
 extern const char kOAuthHostUrl[];
-extern const char kClearTokenService[];
-extern const char kSetToken[];
 extern const char kWebSocketLiveExperimentHost[];
 extern const char kFileManagerExtensionPath[];
 #endif

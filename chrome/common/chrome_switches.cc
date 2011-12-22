@@ -1303,16 +1303,16 @@ const char kDebugViewsPaint[]               = "debug-views-paint";
 const char kTouchDevices[]                  = "touch-devices";
 #endif
 
-#ifndef NDEBUG
-// URL of the OAuth server host
-const char kOAuthHostUrl[]                  = "oauth-host-url";
-
 // Clears the token service before using it. This allows simulating the
 // expiration of credentials during testing.
 const char kClearTokenService[]             = "clear-token-service";
 
 // Sets a token in the token service, for testing.
 const char kSetToken[]                      = "set-token";
+
+#ifndef NDEBUG
+// URL of the OAuth server host
+const char kOAuthHostUrl[]                  = "oauth-host-url";
 
 // Debug-only switch to specify which websocket live experiment host to be
 // used. If host is specified, it also makes initial delay shorter (5 min to 5

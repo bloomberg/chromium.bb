@@ -64,7 +64,6 @@ void TokenService::Initialize(const char* const source,
   web_data_service_ = profile->GetWebDataService(Profile::EXPLICIT_ACCESS);
   source_ = std::string(source);
 
-#ifndef NDEBUG
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   // Allow the token service to be cleared from the command line.
   if (cmd_line->HasSwitch(switches::kClearTokenService))
@@ -79,7 +78,6 @@ void TokenService::Initialize(const char* const source,
     token_map_[service] = token;
     SaveAuthTokenToDB(service, token);
   }
-#endif
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_UPDATED,
