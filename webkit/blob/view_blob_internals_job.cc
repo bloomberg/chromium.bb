@@ -4,6 +4,7 @@
 
 #include "webkit/blob/view_blob_internals_job.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/i18n/number_formatting.h"
@@ -99,7 +100,7 @@ ViewBlobInternalsJob::ViewBlobInternalsJob(
     net::URLRequest* request, BlobStorageController* blob_storage_controller)
     : net::URLRequestSimpleJob(request),
       blob_storage_controller_(blob_storage_controller),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 ViewBlobInternalsJob::~ViewBlobInternalsJob() {
@@ -107,8 +108,8 @@ ViewBlobInternalsJob::~ViewBlobInternalsJob() {
 
 void ViewBlobInternalsJob::Start() {
   MessageLoop::current()->PostTask(
-      FROM_HERE,
-      method_factory_.NewRunnableMethod(&ViewBlobInternalsJob::DoWorkAsync));
+      FROM_HERE, base::Bind(&ViewBlobInternalsJob::DoWorkAsync,
+                            weak_factory_.GetWeakPtr()));
 }
 
 bool ViewBlobInternalsJob::IsRedirectResponse(GURL* location,
@@ -126,7 +127,7 @@ bool ViewBlobInternalsJob::IsRedirectResponse(GURL* location,
 
 void ViewBlobInternalsJob::Kill() {
   net::URLRequestSimpleJob::Kill();
-  method_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void ViewBlobInternalsJob::DoWorkAsync() {

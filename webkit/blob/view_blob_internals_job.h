@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "net/url_request/url_request_simple_job.h"
 #include "webkit/blob/blob_export.h"
 
@@ -44,7 +44,7 @@ class BLOB_EXPORT ViewBlobInternalsJob : public net::URLRequestSimpleJob {
                                       std::string* out);
 
   BlobStorageController* blob_storage_controller_;
-  ScopedRunnableMethodFactory<ViewBlobInternalsJob> method_factory_;
+  base::WeakPtrFactory<ViewBlobInternalsJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewBlobInternalsJob);
 };
