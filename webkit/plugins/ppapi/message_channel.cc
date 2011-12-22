@@ -134,7 +134,13 @@ PP_Var CopyPPVar(const PP_Var& var) {
       return PP_MakeUndefined();
     PP_Var new_buffer_var = PpapiGlobals::Get()->GetVarTracker()->
         MakeArrayBufferPPVar(buffer->ByteLength());
+    DCHECK(new_buffer_var.type == PP_VARTYPE_ARRAY_BUFFER);
+    if (new_buffer_var.type != PP_VARTYPE_ARRAY_BUFFER)
+      return PP_MakeUndefined();
     ArrayBufferVar* new_buffer = ArrayBufferVar::FromPPVar(new_buffer_var);
+    DCHECK(new_buffer);
+    if (!new_buffer)
+      return PP_MakeUndefined();
     memcpy(new_buffer->Map(), buffer->Map(), buffer->ByteLength());
     return new_buffer_var;
   } else {
@@ -420,4 +426,3 @@ void MessageChannel::SetPassthroughObject(NPObject* passthrough) {
 
 }  // namespace ppapi
 }  // namespace webkit
-
