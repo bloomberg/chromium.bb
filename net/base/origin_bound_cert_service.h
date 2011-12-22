@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
@@ -86,7 +87,8 @@ class NET_EXPORT OriginBoundCertService
   friend class OriginBoundCertServiceWorker;  // Calls HandleResult.
 
   // On success, |private_key| stores a DER-encoded PrivateKeyInfo
-  // struct, and |cert| stores a DER-encoded certificate. Returns
+  // struct, |cert| stores a DER-encoded certificate, and |expiration_time|
+  // stores the expiration time of the certificate. Returns
   // OK if successful and an error code otherwise.
   // |serial_number| is passed in because it is created with the function
   // base::RandInt, which opens the file /dev/urandom. /dev/urandom is opened
@@ -94,12 +96,14 @@ class NET_EXPORT OriginBoundCertService
   static int GenerateCert(const std::string& origin,
                           SSLClientCertType type,
                           uint32 serial_number,
+                          base::Time* expiration_time,
                           std::string* private_key,
                           std::string* cert);
 
   void HandleResult(const std::string& origin,
                     int error,
                     SSLClientCertType type,
+                    base::Time expiration_time,
                     const std::string& private_key,
                     const std::string& cert);
 

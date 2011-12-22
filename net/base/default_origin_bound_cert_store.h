@@ -57,11 +57,13 @@ class NET_EXPORT DefaultOriginBoundCertStore : public OriginBoundCertStore {
   virtual bool GetOriginBoundCert(
       const std::string& origin,
       SSLClientCertType* type,
+      base::Time* expiration_time,
       std::string* private_key_result,
       std::string* cert_result) OVERRIDE;
   virtual void SetOriginBoundCert(
       const std::string& origin,
       SSLClientCertType type,
+      base::Time expiration_time,
       const std::string& private_key,
       const std::string& cert) OVERRIDE;
   virtual void DeleteOriginBoundCert(const std::string& origin) OVERRIDE;
