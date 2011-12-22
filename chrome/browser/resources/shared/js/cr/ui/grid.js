@@ -235,12 +235,12 @@ cr.define('cr.ui', function() {
     /**
      * Returns the height of after filler in the list.
      * @param {number} lastIndex The index of item past the last in viewport.
-     * @param {number} itemHeight The height of the item.
      * @return {number} The height of after filler.
      * @override
      */
-    getAfterFillerHeight: function(lastIndex, itemHeight) {
+    getAfterFillerHeight: function(lastIndex) {
       var columns = this.columns;
+      var itemHeight = this.getDefaultItemHeight_();
       // We calculate the row of last item, and the row of last shown item.
       // The difference is the number of rows not shown.
       var afterRows = Math.floor((this.dataModel.length - 1) / columns) -
