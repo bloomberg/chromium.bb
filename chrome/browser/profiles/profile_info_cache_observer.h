@@ -16,23 +16,13 @@ class ProfileInfoCacheObserver {
  public:
   virtual ~ProfileInfoCacheObserver() {}
 
-  virtual void OnProfileAdded(
-      const string16& profile_name,
-      const string16& profile_base_dir,
-      const FilePath& profile_path,
-      const gfx::Image* avatar_image) = 0;
-  virtual void OnProfileWillBeRemoved(
-      const string16& profile_name) = 0;
-  virtual void OnProfileWasRemoved(
-      const string16& profile_name) = 0;
-  virtual void OnProfileNameChanged(
-      const string16& old_profile_name,
-      const string16& new_profile_name) = 0;
-  virtual void OnProfileAvatarChanged(
-      const string16& profile_name,
-      const string16& profile_base_dir,
-      const FilePath& profile_path,
-      const gfx::Image* avatar_image) = 0;
+  virtual void OnProfileAdded(const FilePath& profile_path) = 0;
+  virtual void OnProfileWillBeRemoved(const FilePath& profile_path) = 0;
+  virtual void OnProfileWasRemoved(const FilePath& profile_path,
+                                   const string16& profile_name) = 0;
+  virtual void OnProfileNameChanged(const FilePath& profile_path,
+                                    const string16& old_profile_name) = 0;
+  virtual void OnProfileAvatarChanged(const FilePath& profile_path) = 0;
 
  protected:
   ProfileInfoCacheObserver() {}

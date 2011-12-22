@@ -21,30 +21,26 @@ class ProfileInfoCache;
 // unexpected profile names.
 class ProfileNameVerifierObserver : public ProfileInfoCacheObserver {
  public:
-  ProfileNameVerifierObserver();
+  explicit ProfileNameVerifierObserver(
+      TestingProfileManager* testing_profile_manager);
   virtual ~ProfileNameVerifierObserver();
 
   // ProfileInfoCacheObserver overrides:
-  virtual void OnProfileAdded(
-      const string16& profile_name,
-      const string16& profile_base_dir,
-      const FilePath& profile_path,
-      const gfx::Image* avatar_image) OVERRIDE;
+  virtual void OnProfileAdded(const FilePath& profile_path) OVERRIDE;
   virtual void OnProfileWillBeRemoved(
-      const string16& profile_name) OVERRIDE;
+      const FilePath& profile_path) OVERRIDE;
   virtual void OnProfileWasRemoved(
+      const FilePath& profile_path,
       const string16& profile_name) OVERRIDE;
   virtual void OnProfileNameChanged(
-      const string16& old_profile_name,
-      const string16& new_profile_name) OVERRIDE;
-  virtual void OnProfileAvatarChanged(
-      const string16& profile_name,
-      const string16& profile_base_dir,
       const FilePath& profile_path,
-      const gfx::Image* avatar_image) OVERRIDE;
+      const string16& old_profile_name) OVERRIDE;
+  virtual void OnProfileAvatarChanged(const FilePath& profile_path) OVERRIDE;
 
  private:
+  ProfileInfoCache* GetCache();
   std::set<string16> profile_names_;
+  TestingProfileManager* testing_profile_manager_;
   DISALLOW_COPY_AND_ASSIGN(ProfileNameVerifierObserver);
 };
 

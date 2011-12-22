@@ -206,14 +206,9 @@ void ProfileInfoCache::AddProfileToCache(const FilePath& profile_path,
 
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
 
-  gfx::Image& avatar_img =
-      ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-          GetDefaultAvatarIconResourceIDAtIndex(icon_index));
-
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
-                    OnProfileAdded(name, UTF8ToUTF16(key),
-                                   profile_path, &avatar_img));
+                    OnProfileAdded(profile_path));
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
@@ -235,7 +230,7 @@ void ProfileInfoCache::DeleteProfileFromCache(const FilePath& profile_path) {
 
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
-                    OnProfileWillBeRemoved(name));
+                    OnProfileWillBeRemoved(profile_path));
 
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   DictionaryValue* cache = update.Get();
@@ -245,7 +240,7 @@ void ProfileInfoCache::DeleteProfileFromCache(const FilePath& profile_path) {
 
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
-                    OnProfileWasRemoved(name));
+                    OnProfileWasRemoved(profile_path, name));
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
@@ -414,12 +409,13 @@ void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
   string16 new_display_name = GetNameOfProfileAtIndex(index);
+  FilePath profile_path = GetPathOfProfileAtIndex(index);
   UpdateSortForProfileIndex(index);
 
   if (old_display_name != new_display_name) {
     FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                       observer_list_,
-                      OnProfileNameChanged(old_display_name, new_display_name));
+                      OnProfileNameChanged(profile_path, old_display_name));
   }
 }
 
@@ -441,17 +437,10 @@ void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
 
-  string16 name = GetNameOfProfileAtIndex(index);
   FilePath profile_path = GetPathOfProfileAtIndex(index);
-  std::string key = CacheKeyFromProfilePath(profile_path);
-  gfx::Image& avatar_img =
-      ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-          GetDefaultAvatarIconResourceIDAtIndex(icon_index));
-
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
-                    OnProfileAvatarChanged(name, UTF8ToUTF16(key),
-                                           profile_path, &avatar_img));
+                    OnProfileAvatarChanged(profile_path));
 }
 
 void ProfileInfoCache::SetBackgroundStatusOfProfileAtIndex(
@@ -476,12 +465,13 @@ void ProfileInfoCache::SetGAIANameOfProfileAtIndex(size_t index,
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
   string16 new_display_name = GetNameOfProfileAtIndex(index);
+  FilePath profile_path = GetPathOfProfileAtIndex(index);
   UpdateSortForProfileIndex(index);
 
   if (old_display_name != new_display_name) {
     FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                       observer_list_,
-                      OnProfileNameChanged(old_display_name, new_display_name));
+                      OnProfileNameChanged(profile_path, old_display_name));
   }
 }
 
@@ -496,12 +486,13 @@ void ProfileInfoCache::SetIsUsingGAIANameOfProfileAtIndex(size_t index,
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
   string16 new_display_name = GetNameOfProfileAtIndex(index);
+  FilePath profile_path = GetPathOfProfileAtIndex(index);
   UpdateSortForProfileIndex(index);
 
   if (old_display_name != new_display_name) {
     FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                       observer_list_,
-                      OnProfileNameChanged(old_display_name, new_display_name));
+                      OnProfileNameChanged(profile_path, old_display_name));
   }
 }
 
@@ -552,34 +543,23 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
 
-  string16 name = GetNameOfProfileAtIndex(index);
-  const gfx::Image& avatar_image = GetAvatarIconOfProfileAtIndex(index);
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
-                    OnProfileAvatarChanged(name, UTF8ToUTF16(key),
-                                           path, &avatar_image));
+                    OnProfileAvatarChanged(path));
 }
 
 void ProfileInfoCache::SetIsUsingGAIAPictureOfProfileAtIndex(size_t index,
                                                              bool value) {
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
-  string16 name = GetNameOfProfileAtIndex(index);
   info->SetBoolean(kUseGAIAPictureKey, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
 
   // Retrieve some info to update observers who care about avatar changes.
-  if (value) {
-    FilePath profile_path = GetPathOfProfileAtIndex(index);
-    std::string key = CacheKeyFromProfilePath(profile_path);
-    if (gaia_pictures_.find(key) != gaia_pictures_.end()) {
-      FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
-                        observer_list_,
-                        OnProfileAvatarChanged(name, UTF8ToUTF16(key),
-                                               profile_path,
-                                               gaia_pictures_[key]));
-    }
-  }
+  FilePath profile_path = GetPathOfProfileAtIndex(index);
+  FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
+                    observer_list_,
+                    OnProfileAvatarChanged(profile_path));
 }
 
 string16 ProfileInfoCache::ChooseNameForNewProfile(size_t icon_index) {

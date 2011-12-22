@@ -215,10 +215,11 @@ ProfileShortcutManagerWin::~ProfileShortcutManagerWin() {
 }
 
 void ProfileShortcutManagerWin::OnProfileAdded(
-    const string16& profile_name,
-    const string16& profile_base_dir,
-    const FilePath& profile_path,
-    const gfx::Image* avatar_image) {
+    const FilePath& profile_path) {
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(profile_path);
+
   // Launch task to add shortcut to desktop on Windows. If this is the very
   // first profile created, don't add the user name to the shortcut.
   // TODO(mirandac): respect master_preferences choice to create no shortcuts
@@ -227,8 +228,10 @@ void ProfileShortcutManagerWin::OnProfileAdded(
     {
       // We make a copy of the Image to ensure that the underlying image data is
       // AddRef'd, in case the original copy gets deleted.
-      gfx::Image* avatar_copy = avatar_image ?
-          new gfx::Image(*avatar_image) : NULL;
+      gfx::Image* avatar_copy =
+          new gfx::Image(cache.GetAvatarIconOfProfileAtIndex(index));
+      string16 profile_name = cache.GetNameOfProfileAtIndex(index);
+      string16 profile_base_dir = profile_path.BaseName().value();
       BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
           base::Bind(&CreateChromeDesktopShortcutForProfile,
                      profile_name, profile_base_dir, profile_path,
@@ -238,8 +241,6 @@ void ProfileShortcutManagerWin::OnProfileAdded(
     // If this is the second existing multi-user account created, change the
     // original shortcut use the first profile's details (name, badge,
     // argument).
-    ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
     if (cache.GetNumberOfProfiles() == 2) {
       // Get the index of the first profile, based on the index of the second
       // profile. It's either 0 or 1, whichever the second profile isn't.
@@ -286,7 +287,11 @@ void ProfileShortcutManagerWin::OnProfileAdded(
 }
 
 void ProfileShortcutManagerWin::OnProfileWillBeRemoved(
-    const string16& profile_name) {
+    const FilePath& profile_path) {
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  string16 profile_name = cache.GetNameOfProfileAtIndex(
+      cache.GetIndexOfProfileWithPath(profile_path));
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   string16 shortcut;
   if (ShellUtil::GetChromeShortcutName(dist, false, profile_name, &shortcut)) {
@@ -300,6 +305,7 @@ void ProfileShortcutManagerWin::OnProfileWillBeRemoved(
 }
 
 void ProfileShortcutManagerWin::OnProfileWasRemoved(
+    const FilePath& profile_path,
     const string16& profile_name) {
   // If there is one profile left, we want to remove the badge and name from it.
   ProfileInfoCache& cache =
@@ -307,11 +313,7 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
   if (cache.GetNumberOfProfiles() != 1)
     return;
 
-  // TODO(stevet): Now that we've sunk our fangs onto ProfileInfoCache, we
-  // should clean up the ProfileInfoCacheObserver interface and its users
-  // (including us) to not pass every parameter through and instead query the
-  // cache when needed.
-  FilePath profile_path = cache.GetPathOfProfileAtIndex(0);
+  FilePath last_profile_path = cache.GetPathOfProfileAtIndex(0);
   string16 old_shortcut;
   string16 new_shortcut;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
@@ -327,18 +329,23 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
         base::Bind(&UpdateChromeDesktopShortcutForProfile,
                    new_shortcut,
                    CreateProfileShortcutSwitch(UTF8ToUTF16(
-                       profile_path.BaseName().MaybeAsASCII())),
-                   profile_path,
+                       last_profile_path.BaseName().MaybeAsASCII())),
+                   last_profile_path,
                    static_cast<gfx::Image*>(NULL)));
   }
 }
 
 void ProfileShortcutManagerWin::OnProfileNameChanged(
-    const string16& old_profile_name,
-    const string16& new_profile_name) {
+    const FilePath& profile_path,
+    const string16& old_profile_name) {
   // Launch task to change name of desktop shortcut on Windows.
   // TODO(mirandac): respect master_preferences choice to create no shortcuts
   // (see http://crbug.com/104463)
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  string16 new_profile_name = cache.GetNameOfProfileAtIndex(
+      cache.GetIndexOfProfileWithPath(profile_path));
+
   string16 old_shortcut;
   string16 new_shortcut;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
@@ -354,10 +361,15 @@ void ProfileShortcutManagerWin::OnProfileNameChanged(
 }
 
 void ProfileShortcutManagerWin::OnProfileAvatarChanged(
-      const string16& profile_name,
-      const string16& profile_base_dir,
-      const FilePath& profile_path,
-      const gfx::Image* avatar_image) {
+      const FilePath& profile_path) {
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(profile_path);
+  string16 profile_name = cache.GetNameOfProfileAtIndex(index);
+  string16 profile_base_dir =
+      UTF8ToUTF16(profile_path.BaseName().MaybeAsASCII());
+  const gfx::Image& avatar_image = cache.GetAvatarIconOfProfileAtIndex(index);
+
   // Launch task to change the icon of the desktop shortcut on windows.
   string16 new_shortcut;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
@@ -365,8 +377,7 @@ void ProfileShortcutManagerWin::OnProfileAvatarChanged(
                                        &new_shortcut)) {
     // We make a copy of the Image to ensure that the underlying image data is
     // AddRef'd, in case the original copy gets deleted.
-    gfx::Image* avatar_copy = avatar_image ?
-        new gfx::Image(*avatar_image) : NULL;
+    gfx::Image* avatar_copy = new gfx::Image(avatar_image);
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         base::Bind(&UpdateChromeDesktopShortcutForProfile,
                    new_shortcut,

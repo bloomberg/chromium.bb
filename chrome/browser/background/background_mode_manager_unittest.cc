@@ -258,36 +258,31 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheObserver) {
   manager.RegisterProfile(profile1);
   EXPECT_FALSE(BrowserList::WillKeepAlive());
 
-  ProfileInfoCache* cache = profile_manager_.profile_info_cache();
-
   // Install app, should show status tray icon.
   manager.OnBackgroundAppInstalled(NULL);
   manager.SetBackgroundAppCount(1);
   manager.SetBackgroundAppCountForProfile(1);
   manager.OnApplicationListChanged(profile1);
 
-  string16 p1name = cache->GetNameOfProfileAtIndex(0);
-  manager.OnProfileNameChanged(p1name, UTF8ToUTF16("p1new"));
+  manager.OnProfileNameChanged(
+      profile1->GetPath(),
+      manager.GetBackgroundModeData(profile1)->name());
 
-  EXPECT_EQ(UTF8ToUTF16("p1new"),
+  EXPECT_EQ(UTF8ToUTF16("p1"),
             manager.GetBackgroundModeData(profile1)->name());
 
   TestingProfile* profile2 = profile_manager_.CreateTestingProfile("p2");
   manager.RegisterProfile(profile2);
   EXPECT_EQ(2, manager.NumberOfBackgroundModeData());
 
-  gfx::Image gaia_image(gfx::test::CreateImage());
-  manager.OnProfileAdded(UTF8ToUTF16("p2new"),
-                         profile2->GetPath().BaseName().LossyDisplayName(),
-                         profile2->GetPath(),
-                         &gaia_image);
-  EXPECT_EQ(UTF8ToUTF16("p2new"),
+  manager.OnProfileAdded(profile2->GetPath());
+  EXPECT_EQ(UTF8ToUTF16("p2"),
             manager.GetBackgroundModeData(profile2)->name());
 
-  manager.OnProfileWillBeRemoved(UTF8ToUTF16("p2new"));
+  manager.OnProfileWillBeRemoved(profile2->GetPath());
   EXPECT_EQ(1, manager.NumberOfBackgroundModeData());
 
   // Check that the background mode data we think is in the map actually is.
-  EXPECT_EQ(UTF8ToUTF16("p1new"),
+  EXPECT_EQ(UTF8ToUTF16("p1"),
             manager.GetBackgroundModeData(profile1)->name());
 }

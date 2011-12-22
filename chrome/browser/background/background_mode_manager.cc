@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -386,10 +387,11 @@ void BackgroundModeManager::OnApplicationListChanged(Profile* profile) {
 
 ///////////////////////////////////////////////////////////////////////////////
 //  BackgroundModeManager, ProfileInfoCacheObserver overrides
-void BackgroundModeManager::OnProfileAdded(const string16& profile_name,
-                                           const string16& profile_base_dir,
-                                           const FilePath& profile_path,
-                                           const gfx::Image* avatar_image) {
+void BackgroundModeManager::OnProfileAdded(const FilePath& profile_path) {
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  string16 profile_name = cache.GetNameOfProfileAtIndex(
+      cache.GetIndexOfProfileWithPath(profile_path));
   // At this point, the profile should be registered with the background mode
   // manager, but when it's actually added to the cache is when its name is
   // set so we need up to update that with the background_mode_data.
@@ -406,7 +408,11 @@ void BackgroundModeManager::OnProfileAdded(const string16& profile_name,
 }
 
 void BackgroundModeManager::OnProfileWillBeRemoved(
-    const string16& profile_name) {
+    const FilePath& profile_path) {
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  string16 profile_name = cache.GetNameOfProfileAtIndex(
+      cache.GetIndexOfProfileWithPath(profile_path));
   // Remove the profile from our map of profiles.
   BackgroundModeInfoMap::iterator it =
       GetBackgroundModeIterator(profile_name);
@@ -417,12 +423,18 @@ void BackgroundModeManager::OnProfileWillBeRemoved(
   }
 }
 
-void BackgroundModeManager::OnProfileWasRemoved(const string16& profile_name) {
+void BackgroundModeManager::OnProfileWasRemoved(
+    const FilePath& profile_path,
+    const string16& profile_name) {
 }
 
 void BackgroundModeManager::OnProfileNameChanged(
-    const string16& old_profile_name,
-    const string16& new_profile_name) {
+    const FilePath& profile_path,
+    const string16& old_profile_name) {
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  string16 new_profile_name = cache.GetNameOfProfileAtIndex(
+      cache.GetIndexOfProfileWithPath(profile_path));
   BackgroundModeInfoMap::const_iterator it =
       GetBackgroundModeIterator(old_profile_name);
   // We check that the returned iterator is valid due to unittests, but really
@@ -435,10 +447,7 @@ void BackgroundModeManager::OnProfileNameChanged(
 }
 
 void BackgroundModeManager::OnProfileAvatarChanged(
-    const string16& profile_name,
-    const string16& profile_base_dir,
-    const FilePath& profile_path,
-    const gfx::Image* avatar_image) {
+    const FilePath& profile_path) {
 
 }
 ///////////////////////////////////////////////////////////////////////////////
