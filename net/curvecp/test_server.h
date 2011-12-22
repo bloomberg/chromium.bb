@@ -7,8 +7,6 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "base/task.h"
-#include "net/base/completion_callback.h"
 #include "net/base/test_data_stream.h"
 #include "net/curvecp/curvecp_server_socket.h"
 
@@ -20,18 +18,14 @@ class IOBuffer;
 
 // TestServer is the server which processes the listen socket.
 // It will create an EchoServer instance to handle each connection.
-class TestServer : public OldCompletionCallback,
-                   public CurveCPServerSocket::Acceptor {
+class TestServer : public CurveCPServerSocket::Acceptor {
  public:
   TestServer();
   virtual ~TestServer();
 
   bool Start(int port);
 
-  // OldCompletionCallback methods:
-  virtual void RunWithParams(const Tuple1<int>& params) OVERRIDE;
-
-  // CurveCPServerSocket::Acceptor methods:
+  // CurveCPServerSocket::Acceptor implementation.
   virtual void OnAccept(CurveCPServerSocket* new_socket) OVERRIDE;
 
   // Returns the number of errors this server encountered.

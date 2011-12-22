@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -45,13 +44,6 @@ bool TestServer::Start(int port) {
     return false;
   }
   return true;
-}
-
-void TestServer::RunWithParams(const Tuple1<int>& params) {
-  int status = params.a;
-  LOG(INFO) << "Callback! " << status;
-  if (status < 0)
-    MessageLoop::current()->Quit();
 }
 
 void TestServer::OnAccept(CurveCPServerSocket* new_socket) {
