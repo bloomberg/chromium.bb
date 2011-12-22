@@ -23,12 +23,6 @@ const cr = (function() {
   const isChromeOS = /CrOS/.test(navigator.userAgent);
 
   /**
-   * Whether this is on touchui build or not.
-   * @type {boolean}
-   */
-  const isTouch = /Touch/.test(navigator.userAgent);
-
-  /**
    * Whether this is on vanilla Linux (not chromeOS).
    * @type {boolean}
    */
@@ -358,7 +352,6 @@ const cr = (function() {
     isWindows: isWindows,
     isLinux: isLinux,
     isViews: isViews,
-    isTouch: isTouch,
     enablePlatformSpecificCSSRules: enablePlatformSpecificCSSRules,
     define: define,
     defineProperty: defineProperty,
