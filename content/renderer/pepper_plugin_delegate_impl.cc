@@ -1296,6 +1296,9 @@ PepperPluginDelegateImpl::ConnectToPpapiBroker(
 
   webkit::ppapi::PluginModule* plugin_module =
       webkit::ppapi::ResourceHelper::GetPluginModule(client);
+  if (!plugin_module)
+    return NULL;
+
   PpapiBroker* broker = plugin_module->GetBroker();
   if (!broker) {
     broker_impl = CreatePpapiBroker(plugin_module);
