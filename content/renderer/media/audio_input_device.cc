@@ -26,6 +26,8 @@ AudioInputDevice::AudioInputDevice(size_t buffer_size,
       stream_id_(0),
       session_id_(0),
       pending_device_ready_(false),
+      shared_memory_handle_(base::SharedMemory::NULLHandle()),
+      socket_handle_(base::SyncSocket::kInvalidHandle),
       memory_length_(0) {
   filter_ = RenderThreadImpl::current()->audio_input_message_filter();
   audio_data_.reserve(channels);

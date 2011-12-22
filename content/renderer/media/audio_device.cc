@@ -28,6 +28,8 @@ AudioDevice::AudioDevice()
       stream_id_(0),
       play_on_start_(true),
       is_started_(false),
+      shared_memory_handle_(base::SharedMemory::NULLHandle()),
+      socket_handle_(base::SyncSocket::kInvalidHandle),
       memory_length_(0) {
   filter_ = RenderThreadImpl::current()->audio_message_filter();
 }
@@ -43,6 +45,8 @@ AudioDevice::AudioDevice(size_t buffer_size,
       stream_id_(0),
       play_on_start_(true),
       is_started_(false),
+      shared_memory_handle_(base::SharedMemory::NULLHandle()),
+      socket_handle_(base::SyncSocket::kInvalidHandle),
       memory_length_(0) {
   filter_ = RenderThreadImpl::current()->audio_message_filter();
   Initialize(buffer_size,
