@@ -315,6 +315,8 @@
       # Plugin crash infobar does not show up for file:/// flash urls
       # crosbug.com/14971
       '-infobars.InfobarTest.testPluginCrashInfobar',
+      # crosbug.com/24496
+      '-infobars.InfobarTest.testPluginCrashForMultiTabs',
       # Flaky: crosbug.com/14439
       '-instant',
       # crosbug.com/14256
