@@ -150,6 +150,116 @@ inline unsigned FileIdAndFaceIndexToFileFaceId(unsigned fileid, int face_index)
   return (fileid << 4) | face_index;
 }
 
+// Normally we only return exactly the font asked for. In last-resort
+// cases, the request either doesn't specify a font or is one of the
+// basic font names like "Sans", "Serif" or "Monospace". This function
+// tells you whether a given request is for such a fallback.
+bool IsFallbackFontAllowed(const std::string& family) {
+  const char* family_cstr = family.c_str();
+  return family.empty() ||
+         strcasecmp(family_cstr, "sans") == 0 ||
+         strcasecmp(family_cstr, "serif") == 0 ||
+         strcasecmp(family_cstr, "monospace") == 0;
+}
+
+// Find matching font from |font_set| for the given font family.
+FcPattern* MatchFont(FcFontSet* font_set,
+                     FcChar8* post_config_family,
+                     const std::string& family) {
+  // Older versions of fontconfig have a bug where they cannot select
+  // only scalable fonts so we have to manually filter the results.
+  FcPattern* match = NULL;
+  for (int i = 0; i < font_set->nfont; ++i) {
+    FcPattern* current = font_set->fonts[i];
+    FcBool is_scalable;
+
+    if (FcPatternGetBool(current, FC_SCALABLE, 0,
+                         &is_scalable) != FcResultMatch ||
+        !is_scalable) {
+      continue;
+    }
+
+    // fontconfig can also return fonts which are unreadable
+    FcChar8* c_filename;
+    if (FcPatternGetString(current, FC_FILE, 0, &c_filename) != FcResultMatch)
+      continue;
+
+    if (access(reinterpret_cast<char*>(c_filename), R_OK) != 0)
+      continue;
+
+    match = current;
+    break;
+  }
+
+  if (match && !IsFallbackFontAllowed(family)) {
+    bool acceptable_substitute = false;
+    for (int id = 0; id < 255; ++id) {
+      FcChar8* post_match_family;
+      if (FcPatternGetString(match, FC_FAMILY, id, &post_match_family) !=
+          FcResultMatch)
+        break;
+      acceptable_substitute =
+          (strcasecmp(reinterpret_cast<char*>(post_config_family),
+                      reinterpret_cast<char*>(post_match_family)) == 0 ||
+           // Workaround for Issue 12530:
+           //   requested family: "Bitstream Vera Sans"
+           //   post_config_family: "Arial"
+           //   post_match_family: "Bitstream Vera Sans"
+           // -> We should treat this case as a good match.
+           strcasecmp(family.c_str(),
+                      reinterpret_cast<char*>(post_match_family)) == 0) ||
+           IsMetricCompatibleReplacement(family.c_str(),
+               reinterpret_cast<char*>(post_match_family));
+      if (acceptable_substitute)
+        break;
+    }
+    if (!acceptable_substitute)
+      return NULL;
+  }
+
+  return match;
+}
+
+// Retrieves |is_bold|, |is_italic| and |font_family| properties from |font|.
+bool GetFontProperties(FcPattern* font,
+                       bool* is_bold,
+                       bool* is_italic,
+                       std::string* font_family) {
+  FcChar8* c_family;
+  if (FcPatternGetString(font, FC_FAMILY, 0, &c_family))
+    return false;
+ 
+  int resulting_bold;
+  if (FcPatternGetInteger(font, FC_WEIGHT, 0, &resulting_bold))
+    resulting_bold = FC_WEIGHT_NORMAL;
+
+  int resulting_italic;
+  if (FcPatternGetInteger(font, FC_SLANT, 0, &resulting_italic))
+    resulting_italic = FC_SLANT_ROMAN;
+
+  // If we ask for an italic font, fontconfig might take a roman font and set
+  // the undocumented property FC_MATRIX to a skew matrix. It'll then say
+  // that the font is italic or oblique. So, if we see a matrix, we don't
+  // believe that it's italic.
+  FcValue matrix;
+  const bool have_matrix = FcPatternGet(font, FC_MATRIX, 0, &matrix) == 0;
+
+  // If we ask for an italic font, fontconfig might take a roman font and set
+  // FC_EMBOLDEN.
+  FcValue embolden;
+  const bool have_embolden =
+      FcPatternGet(font, FC_EMBOLDEN, 0, &embolden) == 0;
+
+  if (is_bold)
+    *is_bold = resulting_bold > FC_WEIGHT_MEDIUM && !have_embolden;
+  if (is_italic)
+    *is_italic = resulting_italic > FC_SLANT_ROMAN && !have_matrix;
+
+  if (font_family)
+    *font_family = reinterpret_cast<char*>(c_family);
+  return true;
+}
+
 }  // anonymous namespace
 
 FontConfigDirect::FontConfigDirect()
@@ -158,21 +268,6 @@ FontConfigDirect::FontConfigDirect()
 }
 
 FontConfigDirect::~FontConfigDirect() {
-}
-
-// -----------------------------------------------------------------------------
-// Normally we only return exactly the font asked for. In last-resort
-// cases, the request either doesn't specify a font or is one of the
-// basic font names like "Sans", "Serif" or "Monospace". This function
-// tells you whether a given request is for such a fallback.
-// -----------------------------------------------------------------------------
-static bool IsFallbackFontAllowed(const std::string& family)
-{
-    const char* family_cstr = family.c_str();
-    return family.empty() ||
-           strcasecmp(family_cstr, "sans") == 0 ||
-           strcasecmp(family_cstr, "serif") == 0 ||
-           strcasecmp(family_cstr, "monospace") == 0;
 }
 
 bool FontConfigDirect::Match(std::string* result_family,
@@ -276,64 +371,11 @@ bool FontConfigDirect::Match(std::string* result_family,
         return false;
     }
 
-    // Older versions of fontconfig have a bug where they cannot select
-    // only scalable fonts so we have to manually filter the results.
-    FcPattern* match = NULL;
-    for (int i = 0; i < font_set->nfont; ++i) {
-      FcPattern* current = font_set->fonts[i];
-      FcBool is_scalable;
-
-      if (FcPatternGetBool(current, FC_SCALABLE, 0,
-                           &is_scalable) != FcResultMatch ||
-          !is_scalable) {
-        continue;
-      }
-
-      // fontconfig can also return fonts which are unreadable
-      FcChar8* c_filename;
-      if (FcPatternGetString(current, FC_FILE, 0, &c_filename) != FcResultMatch)
-        continue;
-
-      if (access(reinterpret_cast<char*>(c_filename), R_OK) != 0)
-        continue;
-
-      match = current;
-      break;
-    }
-
+    FcPattern* match = MatchFont(font_set, post_config_family, family);
     if (!match) {
-      FcPatternDestroy(pattern);
-      FcFontSetDestroy(font_set);
-      return false;
-    }
-
-    if (!IsFallbackFontAllowed(family)) {
-      bool acceptable_substitute = false;
-      for (int id = 0; id < 255; ++id) {
-        FcChar8* post_match_family;
-        if (FcPatternGetString(match, FC_FAMILY, id, &post_match_family) !=
-            FcResultMatch)
-          break;
-        acceptable_substitute =
-          (strcasecmp((char *)post_config_family,
-                      (char *)post_match_family) == 0 ||
-           // Workaround for Issue 12530:
-           //   requested family: "Bitstream Vera Sans"
-           //   post_config_family: "Arial"
-           //   post_match_family: "Bitstream Vera Sans"
-           // -> We should treat this case as a good match.
-           strcasecmp(family.c_str(),
-                      (char *)post_match_family) == 0) ||
-           IsMetricCompatibleReplacement(family.c_str(),
-                                         (char*)post_match_family);
-        if (acceptable_substitute)
-          break;
-      }
-      if (!acceptable_substitute) {
         FcPatternDestroy(pattern);
         FcFontSetDestroy(font_set);
         return false;
-      }
     }
 
     FcPatternDestroy(pattern);
@@ -348,13 +390,13 @@ bool FontConfigDirect::Match(std::string* result_family,
         FcFontSetDestroy(font_set);
         return false;
     }
-    const std::string filename(reinterpret_cast<char*>(c_filename));
 
     unsigned out_filefaceid;
     if (filefaceid_valid) {
         out_filefaceid = filefaceid;
     } else {
         unsigned out_fileid;
+        const std::string filename(reinterpret_cast<char*>(c_filename));
         const std::map<std::string, unsigned>::const_iterator
             i = filename_to_fileid_.find(filename);
         if (i == filename_to_fileid_.end()) {
@@ -373,44 +415,9 @@ bool FontConfigDirect::Match(std::string* result_family,
     if (result_filefaceid)
         *result_filefaceid = out_filefaceid;
 
-    FcChar8* c_family;
-    if (FcPatternGetString(match, FC_FAMILY, 0, &c_family)) {
-        FcFontSetDestroy(font_set);
-        return false;
-    }
-
-    int resulting_bold;
-    if (FcPatternGetInteger(match, FC_WEIGHT, 0, &resulting_bold))
-      resulting_bold = FC_WEIGHT_NORMAL;
-
-    int resulting_italic;
-    if (FcPatternGetInteger(match, FC_SLANT, 0, &resulting_italic))
-      resulting_italic = FC_SLANT_ROMAN;
-
-    // If we ask for an italic font, fontconfig might take a roman font and set
-    // the undocumented property FC_MATRIX to a skew matrix. It'll then say
-    // that the font is italic or oblique. So, if we see a matrix, we don't
-    // believe that it's italic.
-    FcValue matrix;
-    const bool have_matrix = FcPatternGet(match, FC_MATRIX, 0, &matrix) == 0;
-
-    // If we ask for an italic font, fontconfig might take a roman font and set
-    // FC_EMBOLDEN.
-    FcValue embolden;
-    const bool have_embolden =
-        FcPatternGet(match, FC_EMBOLDEN, 0, &embolden) == 0;
-
-    if (is_bold)
-      *is_bold = resulting_bold > FC_WEIGHT_MEDIUM && !have_embolden;
-    if (is_italic)
-      *is_italic = resulting_italic > FC_SLANT_ROMAN && !have_matrix;
-
-    if (result_family)
-        *result_family = (char *) c_family;
-
+    bool success = GetFontProperties(match, is_bold, is_italic, result_family);
     FcFontSetDestroy(font_set);
-
-    return true;
+    return success;
 }
 
 int FontConfigDirect::Open(unsigned filefaceid) {
