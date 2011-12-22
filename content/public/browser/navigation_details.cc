@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/tab_contents/navigation_details.h"
+#include "content/public/browser/navigation_details.h"
 
 namespace content {
 

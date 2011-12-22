@@ -10,8 +10,8 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/navigation_details.h"
 #include "net/base/registry_controlled_domain.h"
 
 ConstrainedWindowTabHelper::ConstrainedWindowTabHelper(

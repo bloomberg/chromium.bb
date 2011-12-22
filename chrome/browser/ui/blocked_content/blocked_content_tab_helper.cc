@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_container.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/navigation_details.h"
 
 BlockedContentTabHelper::BlockedContentTabHelper(
     TabContentsWrapper* tab_contents)

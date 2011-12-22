@@ -5,8 +5,8 @@
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/navigation_details.h"
 
 void TabContentsObserver::RenderViewCreated(RenderViewHost* render_view_host) {
 }
