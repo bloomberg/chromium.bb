@@ -144,7 +144,7 @@ def PushChange(stable_branch, tracking_branch, dryrun):
   merge_branch = GitBranch(constants.MERGE_BRANCH, tracking_branch)
   if merge_branch.Exists():
     merge_branch.Delete()
-  _SimpleRunCommand('repo sync .')
+  _SimpleRunCommand('repo sync --current-branch .')
   merge_branch.CreateBranch()
   if not merge_branch.Exists():
     cros_build_lib.Die('Unable to create merge branch.')
