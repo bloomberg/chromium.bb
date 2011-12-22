@@ -202,37 +202,27 @@ class AppCacheStorageImplTest : public testing::Test {
     scoped_refptr<MockQuotaManager> mock_manager_;
   };
 
-  // Helper class run a test on our io_thread. The io_thread
-  // is spun up once and reused for all tests.
   template <class Method>
-  class WrapperTask : public Task {
-   public:
-    WrapperTask(AppCacheStorageImplTest* test, Method method)
-        : test_(test), method_(method) {
-    }
+  void RunMethod(Method method) {
+    (this->*method)();
+  }
 
-    virtual void Run() OVERRIDE {
-      test_->SetUpTest();
+  // Helper callback to run a test on our io_thread. The io_thread is spun up
+  // once and reused for all tests.
+  template <class Method>
+  void MethodWrapper(Method method) {
+    SetUpTest();
 
-      // Ensure InitTask execution prior to conducting a test.
-      test_->FlushDbThreadTasks();
+    // Ensure InitTask execution prior to conducting a test.
+    FlushDbThreadTasks();
 
-      // We also have to wait for InitTask completion call to be performed
-      // on the IO thread prior to running the test. Its guaranteed to be
-      // queued by this time.
-      MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(&RunMethod, test_, method_));
-    }
-
-    static void RunMethod(AppCacheStorageImplTest* test, Method method) {
-      (test->*method)();
-    }
-
-   private:
-    AppCacheStorageImplTest* test_;
-    Method method_;
-  };
-
+    // We also have to wait for InitTask completion call to be performed
+    // on the IO thread prior to running the test. Its guaranteed to be
+    // queued by this time.
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&AppCacheStorageImplTest::RunMethod<Method>,
+                              base::Unretained(this), method));
+  }
 
   static void SetUpTestCase() {
     io_thread.reset(new base::Thread("AppCacheTest.IOThread"));
@@ -257,7 +247,8 @@ class AppCacheStorageImplTest : public testing::Test {
   void RunTestOnIOThread(Method method) {
     test_finished_event_ .reset(new base::WaitableEvent(false, false));
     io_thread->message_loop()->PostTask(
-        FROM_HERE, new WrapperTask<Method>(this, method));
+        FROM_HERE, base::Bind(&AppCacheStorageImplTest::MethodWrapper<Method>,
+                              base::Unretained(this), method));
     test_finished_event_->Wait();
   }
 

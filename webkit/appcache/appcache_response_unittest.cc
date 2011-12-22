@@ -53,24 +53,13 @@ class AppCacheResponseTest : public testing::Test {
     AppCacheResponseTest* test_;
   };
 
-  // Helper class run a test on our io_thread. The io_thread
-  // is spun up once and reused for all tests.
+  // Helper callback to run a test on our io_thread. The io_thread is spun up
+  // once and reused for all tests.
   template <class Method>
-  class WrapperTask : public Task {
-   public:
-    WrapperTask(AppCacheResponseTest* test, Method method)
-        : test_(test), method_(method) {
-    }
-
-    virtual void Run() {
-      test_->SetUpTest();
-      (test_->*method_)();
-    }
-
-   private:
-    AppCacheResponseTest* test_;
-    Method method_;
-  };
+  void MethodWrapper(Method method) {
+    SetUpTest();
+    (this->*method)();
+  }
 
   static void SetUpTestCase() {
     io_thread_.reset(new base::Thread("AppCacheResponseTest Thread"));
@@ -88,7 +77,8 @@ class AppCacheResponseTest : public testing::Test {
   void RunTestOnIOThread(Method method) {
     test_finished_event_ .reset(new base::WaitableEvent(false, false));
     io_thread_->message_loop()->PostTask(
-        FROM_HERE, new WrapperTask<Method>(this, method));
+        FROM_HERE, base::Bind(&AppCacheResponseTest::MethodWrapper<Method>,
+                              base::Unretained(this), method));
     test_finished_event_->Wait();
   }
 

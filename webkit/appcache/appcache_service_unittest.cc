@@ -69,7 +69,7 @@ class MockResponseReader : public AppCacheResponseReader {
   void ScheduleUserCallback(int result) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&MockResponseReader::InvokeUserOldCompletionCallback,
+        base::Bind(&MockResponseReader::InvokeUserCompletionCallback,
                    weak_factory_.GetWeakPtr(), result));
   }
 

@@ -248,7 +248,7 @@ void AppCacheDiskCache::OnCreateBackendComplete(int rv) {
     init_callback_.Reset();
   }
 
-  // Service pending calls that were queued up while we were initailizating.
+  // Service pending calls that were queued up while we were initializing.
   for (PendingCalls::const_iterator iter = pending_calls_.begin();
        iter < pending_calls_.end(); ++iter) {
     int rv = net::ERR_FAILED;

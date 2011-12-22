@@ -122,8 +122,8 @@ class APPCACHE_EXPORT AppCacheResponseIO {
   virtual void OnIOComplete(int result) = 0;
 
   bool IsIOPending() { return !callback_.is_null(); }
-  void ScheduleIOOldCompletionCallback(int result);
-  void InvokeUserOldCompletionCallback(int result);
+  void ScheduleIOCompletionCallback(int result);
+  void InvokeUserCompletionCallback(int result);
   void ReadRaw(int index, int offset, net::IOBuffer* buf, int buf_len);
   void WriteRaw(int index, int offset, net::IOBuffer* buf, int buf_len);
 

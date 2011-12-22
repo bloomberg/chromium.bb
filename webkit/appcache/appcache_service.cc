@@ -24,6 +24,14 @@
 
 namespace appcache {
 
+namespace {
+
+void DeferredCallback(const net::CompletionCallback& callback, int rv) {
+  callback.Run(rv);
+}
+
+}  // namespace
+
 AppCacheInfoCollection::AppCacheInfoCollection() {}
 
 AppCacheInfoCollection::~AppCacheInfoCollection() {}
@@ -52,7 +60,7 @@ class AppCacheService::NewAsyncHelper
     if (!callback_.is_null()) {
       // Defer to guarantee async completion.
       MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(&DeferredCallCallback, callback_, rv));
+          FROM_HERE, base::Bind(&DeferredCallback, callback_, rv));
     }
     callback_.Reset();
   }
@@ -80,8 +88,9 @@ class AppCacheService::AsyncHelper
     : public AppCacheStorage::Delegate {
  public:
   AsyncHelper(
-      AppCacheService* service, net::OldCompletionCallback* callback)
-      : service_(service), callback_(callback) {
+      AppCacheService* service, const net::CompletionCallback& callback)
+      : service_(service),
+        callback_(callback) {
     service_->pending_helpers_.insert(this);
   }
 
@@ -95,27 +104,22 @@ class AppCacheService::AsyncHelper
 
  protected:
   void CallCallback(int rv) {
-    if (callback_) {
+    if (!callback_.is_null()) {
       // Defer to guarantee async completion.
       MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(&DeferredCallCallback, callback_, rv));
+          FROM_HERE, base::Bind(&DeferredCallback, callback_, rv));
     }
-    callback_ = NULL;
-  }
-
-  static void DeferredCallCallback(net::OldCompletionCallback* callback,
-                                   int rv) {
-    callback->Run(rv);
+    callback_.Reset();
   }
 
   AppCacheService* service_;
-  net::OldCompletionCallback* callback_;
+  net::CompletionCallback callback_;
 };
 
 void AppCacheService::AsyncHelper::Cancel() {
-  if (callback_) {
-    callback_->Run(net::ERR_ABORTED);
-    callback_ = NULL;
+  if (!callback_.is_null()) {
+    callback_.Run(net::ERR_ABORTED);
+    callback_.Reset();
   }
   service_->storage()->CancelDelegateCallbacks(this);
   service_ = NULL;
@@ -339,7 +343,7 @@ class AppCacheService::CheckResponseHelper : AsyncHelper {
   CheckResponseHelper(
       AppCacheService* service, const GURL& manifest_url, int64 cache_id,
       int64 response_id)
-      : AsyncHelper(service, NULL),
+      : AsyncHelper(service, net::CompletionCallback()),
         manifest_url_(manifest_url),
         cache_id_(cache_id),
         response_id_(response_id),
