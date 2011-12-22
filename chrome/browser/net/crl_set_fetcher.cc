@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/crl_set_fetcher.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
@@ -42,9 +43,7 @@ void CRLSetFetcher::StartInitialLoad(ComponentUpdateService* cus) {
 
   if (!BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(
-              this,
-              &CRLSetFetcher::DoInitialLoadFromDisk))) {
+          base::Bind(&CRLSetFetcher::DoInitialLoadFromDisk, this))) {
     NOTREACHED();
   }
 }
@@ -69,9 +68,9 @@ void CRLSetFetcher::DoInitialLoadFromDisk() {
   // loaded, if any.
   if (!BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(
-              this,
+          base::Bind(
               &CRLSetFetcher::RegisterComponent,
+              this,
               sequence_of_loaded_crl))) {
     NOTREACHED();
   }
@@ -102,8 +101,8 @@ void CRLSetFetcher::LoadFromDisk(FilePath path,
 
   if (!BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              this, &CRLSetFetcher::SetCRLSetIfNewer, crl_set))) {
+          base::Bind(
+              &CRLSetFetcher::SetCRLSetIfNewer, this, crl_set))) {
     NOTREACHED();
   }
 }

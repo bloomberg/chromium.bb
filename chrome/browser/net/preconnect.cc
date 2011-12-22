@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/preconnect.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,8 +30,7 @@ void PreconnectOnUIThread(
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableFunction(PreconnectOnIOThread, url, motivation,
-                          count));
+      base::Bind(&PreconnectOnIOThread, url, motivation, count));
   return;
 }
 
