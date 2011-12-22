@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile_manager.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -71,74 +72,52 @@ bool HasAnyDefaultUserPrefs(Profile* profile) {
 }
 
 // Simple task to log the size of the current profile.
-class ProfileSizeTask : public Task {
- public:
-  explicit ProfileSizeTask(Profile* profile);
-  virtual ~ProfileSizeTask() {}
-
-  virtual void Run();
- private:
-  FilePath path_;
-  int extension_count_;
-};
-
-ProfileSizeTask::ProfileSizeTask(Profile* profile)
-    : path_(profile->GetPath()), extension_count_(-1) {
-  // This object should not remember the profile pointer since it should not
-  // be accessed from IO thread.
-
-  // Count number of extensions in this profile.
-  ExtensionService* extension_service = profile->GetExtensionService();
-  if (extension_service)
-    extension_count_ = extension_service->GetAppIds().size();
-}
-
-void ProfileSizeTask::Run() {
+void ProfileSizeTask(const FilePath& path, int extension_count) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  int64 size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("*"));
+  int64 size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("*"));
   int size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.TotalSize", size_MB);
 
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("History"));
+  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("History"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.HistorySize", size_MB);
 
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("History*"));
+  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("History*"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.TotalHistorySize", size_MB);
 
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Cookies"));
+  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("Cookies"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.CookiesSize", size_MB);
 
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Bookmarks"));
+  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("Bookmarks"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.BookmarksSize", size_MB);
 
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Favicons"));
+  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("Favicons"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.FaviconsSize", size_MB);
 
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Top Sites"));
+  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("Top Sites"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.TopSitesSize", size_MB);
 
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Visited Links"));
+  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("Visited Links"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.VisitedLinksSize", size_MB);
 
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Web Data"));
+  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("Web Data"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.WebDataSize", size_MB);
 
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Extension*"));
+  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("Extension*"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.ExtensionSize", size_MB);
 
   // Count number of extensions in this profile, if we know.
-  if (extension_count_ != -1) {
-    UMA_HISTOGRAM_COUNTS_10000("Profile.AppCount", extension_count_);
+  if (extension_count != -1) {
+    UMA_HISTOGRAM_COUNTS_10000("Profile.AppCount", extension_count);
 
     static bool default_apps_trial_exists = base::FieldTrialList::TrialExists(
         kDefaultAppsTrialName);
@@ -146,7 +125,7 @@ void ProfileSizeTask::Run() {
       UMA_HISTOGRAM_COUNTS_10000(
           base::FieldTrial::MakeName("Profile.AppCount",
                                      kDefaultAppsTrialName),
-          extension_count_);
+          extension_count);
     }
   }
 }
@@ -482,9 +461,17 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
 }
 
 void ProfileManager::DoFinalInitLogging(Profile* profile) {
+  // Count number of extensions in this profile.
+  int extension_count = -1;
+  ExtensionService* extension_service = profile->GetExtensionService();
+  if (extension_service)
+    extension_count = extension_service->GetAppIds().size();
+
   // Log the profile size after a reasonable startup delay.
-  BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
-                                 new ProfileSizeTask(profile), 112000);
+  BrowserThread::PostDelayedTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&ProfileSizeTask, profile->GetPath(), extension_count),
+      112000);
 }
 
 Profile* ProfileManager::CreateProfileHelper(const FilePath& path) {
