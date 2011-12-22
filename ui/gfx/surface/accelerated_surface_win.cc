@@ -365,7 +365,7 @@ void AcceleratedSurface::DoPresentAndAcknowledge(
 
   ::SetWindowPos(
       window_,
-      HWND_BOTTOM,
+      NULL,
       0, 0,
       size.width(), size.height(),
       SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOMOVE |SWP_NOOWNERZORDER |
