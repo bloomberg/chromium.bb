@@ -351,8 +351,10 @@ void BrowsingHistoryHandler::ExtractSearchHistoryArguments(
     const StringValue* string_value =
       static_cast<const StringValue*>(list_member);
     string16 string16_value;
-    if (string_value->GetAsString(&string16_value))
-      base::StringToInt(string16_value, month);
+    if (string_value->GetAsString(&string16_value)) {
+      bool converted = base::StringToInt(string16_value, month);
+      DCHECK(converted);
+    }
   }
 }
 

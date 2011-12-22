@@ -447,8 +447,10 @@ void CoreOptionsHandler::HandleClearPref(const ListValue* args) {
     return;
 
   std::string metric;
-  if (args->GetSize() > 1)
-    args->GetString(1, &metric);
+  if (args->GetSize() > 1) {
+    if (!args->GetString(1, &metric))
+      NOTREACHED();
+  }
 
   ClearPref(pref_name, metric);
 }
