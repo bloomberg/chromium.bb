@@ -732,6 +732,7 @@
         'GR_STATIC_RECT_VB=1',
         'GR_AGGRESSIVE_SHADER_OPTS=1',
         'SK_DISABLE_FAST_AA_STROKE_RECT',
+        'SK_OLD_EMPTY_PATH_BEHAVIOR=1',
         'SK_DEFAULT_FONT_CACHE_LIMIT=(20*1024*1024)',
       ],
       'sources!': [
