@@ -15,7 +15,6 @@
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/pepper_session_manager.h"
 #include "remoting/protocol/pepper_stream_channel.h"
-#include "remoting/protocol/v1_client_channel_authenticator.h"
 #include "third_party/libjingle/source/talk/p2p/base/candidate.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 

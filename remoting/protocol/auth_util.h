@@ -7,11 +7,18 @@
 
 #include <string>
 
+#include "base/string_piece.h"
+
+namespace net {
+class SSLSocket;
+}  // namespace net
+
 namespace remoting {
 namespace protocol {
 
 // Labels for use when exporting the SSL master keys.
 extern const char kClientAuthSslExporterLabel[];
+extern const char kHostAuthSslExporterLabel[];
 
 // Fake hostname used for SSL connections.
 extern const char kSslFakeHostName[];
@@ -28,10 +35,11 @@ bool VerifySupportAuthToken(const std::string& jid,
                             const std::string& access_code,
                             const std::string& auth_token);
 
-// Returns hash used for channel authentication.
-bool GetAuthBytes(const std::string& shared_secret,
-                  const std::string& key_material,
-                  std::string* auth_bytes);
+// Returns authentication bytes that must be used for the given
+// |socket|. Empty string is returned in case of failure.
+std::string GetAuthBytes(net::SSLSocket* socket,
+                         const base::StringPiece& label,
+                         const base::StringPiece& shared_secret);
 
 }  // namespace protocol
 }  // namespace remoting

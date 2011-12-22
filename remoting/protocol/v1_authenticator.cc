@@ -9,8 +9,7 @@
 #include "crypto/rsa_private_key.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/auth_util.h"
-#include "remoting/protocol/v1_client_channel_authenticator.h"
-#include "remoting/protocol/v1_host_channel_authenticator.h"
+#include "remoting/protocol/ssl_hmac_channel_authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 using buzz::QName;
@@ -78,7 +77,11 @@ XmlElement* V1ClientAuthenticator::GetNextMessage() {
 ChannelAuthenticator*
 V1ClientAuthenticator::CreateChannelAuthenticator() const {
   DCHECK_EQ(state_, ACCEPTED);
-  return new V1ClientChannelAuthenticator(remote_cert_, shared_secret_);
+  SslHmacChannelAuthenticator* result =
+      SslHmacChannelAuthenticator::CreateForClient(
+          remote_cert_, shared_secret_);
+  result->SetLegacyOneWayMode(SslHmacChannelAuthenticator::SEND_ONLY);
+  return result;
 };
 
 V1HostAuthenticator::V1HostAuthenticator(
@@ -134,8 +137,11 @@ XmlElement* V1HostAuthenticator::GetNextMessage() {
 ChannelAuthenticator*
 V1HostAuthenticator::CreateChannelAuthenticator() const {
   DCHECK_EQ(state_, ACCEPTED);
-  return new V1HostChannelAuthenticator(
-      local_cert_, local_private_key_.get(), shared_secret_);
+  SslHmacChannelAuthenticator* result =
+      SslHmacChannelAuthenticator::CreateForHost(
+          local_cert_, local_private_key_.get(), shared_secret_);
+  result->SetLegacyOneWayMode(SslHmacChannelAuthenticator::RECEIVE_ONLY);
+  return result;
 };
 
 V1HostAuthenticatorFactory::V1HostAuthenticatorFactory(

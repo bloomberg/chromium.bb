@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/v1_authenticator.h"
+#include "remoting/protocol/ssl_hmac_channel_authenticator.h"
 
 #include "base/bind.h"
 #include "base/file_path.h"
@@ -11,8 +11,6 @@
 #include "base/path_service.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/net_errors.h"
-#include "remoting/protocol/authenticator.h"
-#include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/connection_tester.h"
 #include "remoting/protocol/fake_session.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,19 +18,12 @@
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 using testing::_;
-using testing::DeleteArg;
-using testing::Mock;
 using testing::SaveArg;
 
 namespace remoting {
 namespace protocol {
 
 namespace {
-
-const int kMessageSize = 100;
-const int kMessages = 1;
-
-const char kClientJid[] = "host2@gmail.com/321";
 
 const char kTestSharedSecret[] = "1234-1234-5678";
 const char kTestSharedSecretBad[] = "0000-0000-0001";
@@ -44,11 +35,11 @@ class MockChannelDoneCallback {
 
 }  // namespace
 
-class V1AuthenticatorTest : public testing::Test {
+class SslHmacChannelAuthenticatorTest : public testing::Test {
  public:
-  V1AuthenticatorTest() {
+  SslHmacChannelAuthenticatorTest() {
   }
-  virtual ~V1AuthenticatorTest() {
+  virtual ~SslHmacChannelAuthenticatorTest() {
   }
 
  protected:
@@ -74,46 +65,6 @@ class V1AuthenticatorTest : public testing::Test {
         crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
   }
 
-  void InitAuthenticators(const std::string& client_secret,
-                          const std::string& host_secret) {
-    host_.reset(new V1HostAuthenticator(
-        host_cert_, private_key_.get(), host_secret, kClientJid));
-    client_.reset(new V1ClientAuthenticator(kClientJid, client_secret));
-  }
-
-  void RunAuthExchange() {
-    do {
-      scoped_ptr<buzz::XmlElement> message;
-
-      // Pass message from client to host.
-      ASSERT_EQ(Authenticator::MESSAGE_READY, client_->state());
-      message.reset(client_->GetNextMessage());
-      ASSERT_TRUE(message.get());
-      ASSERT_NE(Authenticator::MESSAGE_READY, client_->state());
-
-      ASSERT_EQ(Authenticator::WAITING_MESSAGE, host_->state());
-      host_->ProcessMessage(message.get());
-      ASSERT_NE(Authenticator::WAITING_MESSAGE, host_->state());
-
-      // Are we done yet?
-      if (host_->state() == Authenticator::ACCEPTED ||
-          host_->state() == Authenticator::REJECTED) {
-        break;
-      }
-
-      // Pass message from host to client.
-      ASSERT_EQ(Authenticator::MESSAGE_READY, host_->state());
-      message.reset(host_->GetNextMessage());
-      ASSERT_TRUE(message.get());
-      ASSERT_NE(Authenticator::MESSAGE_READY, host_->state());
-
-      ASSERT_EQ(Authenticator::WAITING_MESSAGE, client_->state());
-      client_->ProcessMessage(message.get());
-      ASSERT_NE(Authenticator::WAITING_MESSAGE, client_->state());
-    } while (host_->state() != Authenticator::ACCEPTED &&
-             host_->state() != Authenticator::REJECTED);
-  }
-
   void RunChannelAuth(bool expected_fail) {
     client_fake_socket_.reset(new FakeSocket());
     host_fake_socket_.reset(new FakeSocket());
@@ -132,19 +83,17 @@ class V1AuthenticatorTest : public testing::Test {
     net::StreamSocket* client_socket = NULL;
     net::StreamSocket* host_socket = NULL;
 
-    EXPECT_CALL(client_callback_, OnDone(net::OK, _))
-        .WillOnce(SaveArg<1>(&client_socket));
     if (expected_fail) {
+      EXPECT_CALL(client_callback_, OnDone(net::ERR_FAILED, NULL));
       EXPECT_CALL(host_callback_, OnDone(net::ERR_FAILED, NULL));
     } else {
+      EXPECT_CALL(client_callback_, OnDone(net::OK, _))
+          .WillOnce(SaveArg<1>(&client_socket));
       EXPECT_CALL(host_callback_, OnDone(net::OK, _))
           .WillOnce(SaveArg<1>(&host_socket));
     }
 
     message_loop_.RunAllPending();
-
-    Mock::VerifyAndClearExpectations(&client_callback_);
-    Mock::VerifyAndClearExpectations(&host_callback_);
 
     client_socket_.reset(client_socket);
     host_socket_.reset(host_socket);
@@ -154,8 +103,6 @@ class V1AuthenticatorTest : public testing::Test {
 
   scoped_ptr<crypto::RSAPrivateKey> private_key_;
   std::string host_cert_;
-  scoped_ptr<V1HostAuthenticator> host_;
-  scoped_ptr<V1ClientAuthenticator> client_;
   scoped_ptr<FakeSocket> client_fake_socket_;
   scoped_ptr<FakeSocket> host_fake_socket_;
   scoped_ptr<ChannelAuthenticator> client_auth_;
@@ -165,41 +112,39 @@ class V1AuthenticatorTest : public testing::Test {
   scoped_ptr<net::StreamSocket> client_socket_;
   scoped_ptr<net::StreamSocket> host_socket_;
 
-  DISALLOW_COPY_AND_ASSIGN(V1AuthenticatorTest);
+  DISALLOW_COPY_AND_ASSIGN(SslHmacChannelAuthenticatorTest);
 };
 
-TEST_F(V1AuthenticatorTest, SuccessfulAuth) {
-  {
-    SCOPED_TRACE("RunAuthExchange");
-    InitAuthenticators(kTestSharedSecret, kTestSharedSecret);
-    RunAuthExchange();
-  }
-  ASSERT_EQ(Authenticator::ACCEPTED, host_->state());
-  ASSERT_EQ(Authenticator::ACCEPTED, client_->state());
+// Verify that a channel can be connected using a valid shared secret.
+TEST_F(SslHmacChannelAuthenticatorTest, SuccessfulAuth) {
+  client_auth_.reset(SslHmacChannelAuthenticator::CreateForClient(
+      host_cert_, kTestSharedSecret));
+  host_auth_.reset(SslHmacChannelAuthenticator::CreateForHost(
+      host_cert_, private_key_.get(), kTestSharedSecret));
 
-  client_auth_.reset(client_->CreateChannelAuthenticator());
-  host_auth_.reset(host_->CreateChannelAuthenticator());
   RunChannelAuth(false);
 
   EXPECT_TRUE(client_socket_.get() != NULL);
   EXPECT_TRUE(host_socket_.get() != NULL);
 
   StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
-                                kMessageSize, kMessages);
+                                100, 2);
 
   tester.Start();
   message_loop_.Run();
   tester.CheckResults();
 }
 
-// Verify that connection is rejected when secrets don't match.
-TEST_F(V1AuthenticatorTest, InvalidSecret) {
-  {
-    SCOPED_TRACE("RunAuthExchange");
-    InitAuthenticators(kTestSharedSecretBad, kTestSharedSecret);
-    RunAuthExchange();
-  }
-  ASSERT_EQ(Authenticator::REJECTED, host_->state());
+// Verify that channels cannot be using invalid shared secret.
+TEST_F(SslHmacChannelAuthenticatorTest, InvalidChannelSecret) {
+  client_auth_.reset(SslHmacChannelAuthenticator::CreateForClient(
+      host_cert_, kTestSharedSecretBad));
+  host_auth_.reset(SslHmacChannelAuthenticator::CreateForHost(
+      host_cert_, private_key_.get(), kTestSharedSecret));
+
+  RunChannelAuth(true);
+
+  EXPECT_TRUE(host_socket_.get() == NULL);
 }
 
 }  // namespace protocol

@@ -9,12 +9,16 @@
 #include "base/string_util.h"
 #include "crypto/hmac.h"
 #include "crypto/sha2.h"
+#include "net/base/net_errors.h"
+#include "net/socket/ssl_socket.h"
 
 namespace remoting {
 namespace protocol {
 
 const char kClientAuthSslExporterLabel[] =
     "EXPORTER-remoting-channel-auth-client";
+const char kHostAuthSslExporterLabel[] =
+    "EXPORTER-remoting-channel-auth-host";
 
 const char kSslFakeHostName[] = "chromoting";
 
@@ -37,23 +41,31 @@ bool VerifySupportAuthToken(const std::string& jid,
 }
 
 // static
-bool GetAuthBytes(const std::string& shared_secret,
-                  const std::string& key_material,
-                  std::string* auth_bytes) {
+std::string GetAuthBytes(net::SSLSocket* socket,
+                         const base::StringPiece& label,
+                         const base::StringPiece& shared_secret) {
+  // Get keying material from SSL.
+  unsigned char key_material[kAuthDigestLength];
+  int export_result = socket->ExportKeyingMaterial(
+      label, "", key_material, kAuthDigestLength);
+  if (export_result != net::OK) {
+    LOG(ERROR) << "Error fetching keying material: " << export_result;
+    return std::string();
+  }
+
   // Generate auth digest based on the keying material and shared secret.
   crypto::HMAC response(crypto::HMAC::SHA256);
-  if (!response.Init(key_material)) {
+  if (!response.Init(key_material, kAuthDigestLength)) {
     NOTREACHED() << "HMAC::Init failed";
-    return false;
+    return std::string();
   }
   unsigned char out_bytes[kAuthDigestLength];
   if (!response.Sign(shared_secret, out_bytes, kAuthDigestLength)) {
     NOTREACHED() << "HMAC::Sign failed";
-    return false;
+    return std::string();
   }
 
-  auth_bytes->assign(out_bytes, out_bytes + kAuthDigestLength);
-  return true;
+  return std::string(out_bytes, out_bytes + kAuthDigestLength);
 }
 
 }  // namespace protocol
