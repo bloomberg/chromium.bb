@@ -25,10 +25,10 @@
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
 #include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
-#include "chrome/browser/ui/panels/panel_slide_animation.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -480,7 +480,7 @@ enum {
 
 - (float)animation:(NSAnimation*)animation
   valueForProgress:(NSAnimationProgress)progress {
-  return PanelSlideAnimation::ComputeAnimationValue(
+  return PanelBoundsAnimation::ComputeAnimationValue(
       progress, playingMinimizeAnimation_, animationStopToShowTitlebarOnly_);
 }
 

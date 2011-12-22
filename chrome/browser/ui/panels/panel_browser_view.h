@@ -14,10 +14,10 @@
 #include "ui/base/animation/animation_delegate.h"
 
 class Browser;
-class Panel;
 class NativePanelTestingWin;
+class Panel;
+class PanelBoundsAnimation;
 class PanelBrowserFrameView;
-class PanelSlideAnimation;
 
 // A browser view that implements Panel specific behavior.
 class PanelBrowserView : public BrowserView,
@@ -149,7 +149,7 @@ class PanelBrowserView : public BrowserView,
   MouseDraggingState mouse_dragging_state_;
 
   // Used to animate the bounds change.
-  scoped_ptr<PanelSlideAnimation> bounds_animator_;
+  scoped_ptr<PanelBoundsAnimation> bounds_animator_;
   gfx::Rect animation_start_bounds_;
 
   // Is the panel in highlighted state to draw people's attention?

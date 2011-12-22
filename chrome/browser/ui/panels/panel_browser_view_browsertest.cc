@@ -9,10 +9,10 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/panels/base_panel_browser_test.h"
 #include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_slide_animation.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -80,7 +80,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     return GetBrowserView(panel)->GetNativeHandle();
   }
 
-  PanelSlideAnimation* GetBoundsAnimator(Panel* panel) const {
+  PanelBoundsAnimation* GetBoundsAnimator(Panel* panel) const {
     return GetBrowserView(panel)->bounds_animator_.get();
   }
 

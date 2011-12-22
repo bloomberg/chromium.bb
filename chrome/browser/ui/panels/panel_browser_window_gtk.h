@@ -14,14 +14,9 @@
 #include "ui/base/x/work_area_watcher_x_observer.h"
 
 class Panel;
+class PanelBoundsAnimation;
 class PanelSettingsMenuModel;
 class NativePanelTestingGtk;
-
-namespace ui {
-
-class LinearAnimation;
-
-}
 
 class PanelBrowserWindowGtk : public BrowserWindowGtk,
                               public MenuGtk::Delegate,
@@ -195,7 +190,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   base::Time disableMinimizeUntilTime_;
 
   // Used to animate the bounds change.
-  scoped_ptr<ui::LinearAnimation> bounds_animator_;
+  scoped_ptr<PanelBoundsAnimation> bounds_animator_;
   gfx::Rect animation_start_bounds_;
 
   // This records the bounds set on the last animation progress notification.

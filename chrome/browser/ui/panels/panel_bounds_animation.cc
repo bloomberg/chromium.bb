@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/panels/panel_slide_animation.h"
+#include "chrome/browser/ui/panels/panel_bounds_animation.h"
 
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -16,10 +16,10 @@ const int kSetBoundsAnimationBigMinimizeMs = 1500;
 
 }
 
-PanelSlideAnimation::PanelSlideAnimation(ui::AnimationDelegate* target,
-                                         Panel* panel,
-                                         const gfx::Rect& initial_bounds,
-                                         const gfx::Rect& final_bounds)
+PanelBoundsAnimation::PanelBoundsAnimation(ui::AnimationDelegate* target,
+                                           Panel* panel,
+                                           const gfx::Rect& initial_bounds,
+                                           const gfx::Rect& final_bounds)
     : ui::LinearAnimation(kDefaultFramerateHz, target),
       panel_(panel),
       for_big_minimize_(false),
@@ -42,16 +42,16 @@ PanelSlideAnimation::PanelSlideAnimation(ui::AnimationDelegate* target,
   SetDuration(PanelManager::AdjustTimeInterval(duration));
 }
 
-PanelSlideAnimation::~PanelSlideAnimation() {
+PanelBoundsAnimation::~PanelBoundsAnimation() {
 }
 
-double PanelSlideAnimation::GetCurrentValue() const {
+double PanelBoundsAnimation::GetCurrentValue() const {
   return ComputeAnimationValue(ui::LinearAnimation::GetCurrentValue(),
                                for_big_minimize_,
                                animation_stop_to_show_titlebar_);
 }
 
-double PanelSlideAnimation::ComputeAnimationValue(double progress,
+double PanelBoundsAnimation::ComputeAnimationValue(double progress,
     bool for_big_minimize, double animation_stop_to_show_titlebar) {
   if (!for_big_minimize) {
     // Cubic easing out.
@@ -78,4 +78,3 @@ double PanelSlideAnimation::ComputeAnimationValue(double progress,
   }
   return value;
 }
-

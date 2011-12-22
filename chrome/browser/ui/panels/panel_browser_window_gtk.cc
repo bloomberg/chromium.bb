@@ -7,12 +7,11 @@
 #include "base/bind.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
-#include "chrome/browser/ui/panels/panel_slide_animation.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/x/work_area_watcher_x.h"
 
@@ -431,7 +430,7 @@ void PanelBrowserWindowGtk::StartBoundsAnimation(
     animation_start_bounds_ = from_bounds;
   }
 
-  bounds_animator_.reset(new PanelSlideAnimation(
+  bounds_animator_.reset(new PanelBoundsAnimation(
       this, panel_.get(), from_bounds, to_bounds));
 
   bounds_animator_->Start();

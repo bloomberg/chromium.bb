@@ -7,9 +7,9 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_slide_animation.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/task_manager_dialog.h"
@@ -135,7 +135,7 @@ void PanelBrowserView::SetBoundsInternal(const gfx::Rect& new_bounds,
 
   animation_start_bounds_ = GetBounds();
 
-  bounds_animator_.reset(new PanelSlideAnimation(
+  bounds_animator_.reset(new PanelBoundsAnimation(
       this, panel(), animation_start_bounds_, new_bounds));
   bounds_animator_->Start();
 }
