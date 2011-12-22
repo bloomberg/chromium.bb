@@ -365,7 +365,7 @@ void DefaultTabDragController::Init(
 
   registrar_.Add(
       this,
-      content::NOTIFICATION_TAB_CONTENTS_DELEGATE_DESTROYED,
+      content::NOTIFICATION_WEB_CONTENTS_DELEGATE_DESTROYED,
       content::NotificationService::AllSources());
 }
 
@@ -478,7 +478,7 @@ void DefaultTabDragController::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_TAB_CONTENTS_DELEGATE_DESTROYED) {
+  if (type == content::NOTIFICATION_WEB_CONTENTS_DELEGATE_DESTROYED) {
     content::WebContentsDelegate* delegate =
         content::Source<content::WebContentsDelegate>(source).ptr();
     for (size_t i = 0; i < drag_data_.size(); ++i)

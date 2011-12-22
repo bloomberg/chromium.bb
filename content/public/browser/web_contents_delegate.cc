@@ -345,7 +345,7 @@ WebContentsDelegate::~WebContentsDelegate() {
   }
   DCHECK(attached_contents_.empty());
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_TAB_CONTENTS_DELEGATE_DESTROYED,
+      content::NOTIFICATION_WEB_CONTENTS_DELEGATE_DESTROYED,
       content::Source<WebContentsDelegate>(this),
       content::NotificationService::NoDetails());
 }

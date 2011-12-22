@@ -261,7 +261,7 @@ enum NotificationType {
   // This notification is sent when a WebContentsDelegate is being
   // destroyed. The source is a Source<WebContentsDelegate>.
   // TODO(sky): Remove when we figure out http://crbug.com/107172.
-  NOTIFICATION_TAB_CONTENTS_DELEGATE_DESTROYED,
+  NOTIFICATION_WEB_CONTENTS_DELEGATE_DESTROYED,
 
   // A RenderViewHost was created for a TabContents. The source is the
   // associated TabContents, and the details is the RenderViewHost
