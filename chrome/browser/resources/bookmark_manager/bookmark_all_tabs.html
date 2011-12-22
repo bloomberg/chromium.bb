@@ -44,6 +44,10 @@ found in the LICENSE file.
 </head>
 <body class="page" i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 
+<if expr="pp_ifdef('chromeos')">
+<div class="dialog-title" i18n-content="title"></div>
+</if>
+
 <div class="dialog-body">
   <div>
     <label id="name-form">

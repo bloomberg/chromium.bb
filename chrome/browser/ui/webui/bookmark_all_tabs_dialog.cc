@@ -69,8 +69,12 @@ void BookmarkAllTabsDialogBuilder::Show() {
   GURL url(kBookmarkAllTabsURL);
   TabContentsWrapper* tab = browser->GetSelectedTabContentsWrapper();
 
+#if defined(OS_CHROMEOS)
+  string16 title;  // Empty title means no titlebar.
+#else
   string16 title =
       l10n_util::GetStringUTF16(IDS_BOOKMARK_MANAGER_BOOKMARK_ALL_TABS);
+#endif
 
   ExtensionDialog* dialog = ExtensionDialog::Show(
       url,

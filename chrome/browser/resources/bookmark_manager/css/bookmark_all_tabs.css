@@ -21,6 +21,19 @@ body {
   width: 100%;
 }
 
+/* The top title of the dialog. */
+.dialog-title {
+  -webkit-box-sizing: border-box;
+  background-image: -webkit-linear-gradient(top, #fff, #f6f6f6);
+  border-bottom: 1px #d6d9e3 solid;
+  color: #42506c;
+  cursor: default;
+  font-size: 15px;
+  font-weight: bold;
+  height: 32px;
+  padding: 8px 15px;
+}
+
 /* Container for the detail list views. */
 .dialog-body {
   -webkit-box-flex: 1;
