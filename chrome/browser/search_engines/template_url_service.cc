@@ -533,12 +533,13 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   // search may be changed below by Sync which effectively undoes the hijacking.
   bool is_default_search_hijacked = false;
   const TemplateURL* hijacked_default_search_provider = NULL;
-  const TemplateURL* backup_default_search_provider = NULL;
+  scoped_ptr<TemplateURL> backup_default_search_provider;
   // No check is required if the default search is managed.
-  if (!is_default_search_managed_ &&
-      DidDefaultSearchProviderChange(*result,
-                                     template_urls,
-                                     &backup_default_search_provider)) {
+  // |DidDefaultSearchProviderChange| must always be called because it will
+  // take care of the unowned backup default search provider instance.
+  if (DidDefaultSearchProviderChange(*result,
+                                     &backup_default_search_provider) &&
+      !is_default_search_managed_) {
     hijacked_default_search_provider = default_search_provider;
     is_default_search_hijacked = true;
   }
@@ -633,7 +634,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
       protector::Protector* protector = new protector::Protector(profile());
       protector->ShowChange(protector::CreateDefaultSearchProviderChange(
           hijacked_default_search_provider,
-          backup_default_search_provider));
+          backup_default_search_provider.release()));
     }
   }
 

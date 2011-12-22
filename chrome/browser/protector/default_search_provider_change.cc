@@ -165,6 +165,8 @@ DefaultSearchProviderChange::DefaultSearchProviderChange(
     // search provider will be used.
     old_id_ = 0;
   }
+  // TODO(avayvod): Keep the URL and delete it later.
+  delete old_url;
 }
 
 DefaultSearchProviderChange::~DefaultSearchProviderChange() {

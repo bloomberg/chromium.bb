@@ -5,6 +5,7 @@
 #include "chrome/browser/webdata/keyword_table.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "base/string_number_conversions.h"
@@ -222,12 +223,40 @@ int64 KeywordTable::GetDefaultSearchProviderID() {
   return value;
 }
 
-int64 KeywordTable::GetDefaultSearchProviderIDBackup() {
+TemplateURL* KeywordTable::GetDefaultSearchProviderBackup() {
   if (!IsBackupSignatureValid())
-    return 0;
-  int64 backup_value = 0;
-  meta_table_->GetValue(kDefaultSearchIDBackupKey, &backup_value);
-  return backup_value;
+    return NULL;
+
+  int64 backup_id = 0;
+  if (!meta_table_->GetValue(kDefaultSearchIDBackupKey, &backup_id)) {
+    LOG(ERROR) << "No default search id backup found.";
+    return NULL;
+  }
+  sql::Statement s(db_->GetUniqueStatement(
+      "SELECT id, short_name, keyword, favicon_url, url, "
+      "safe_for_autoreplace, originating_url, date_created, "
+      "usage_count, input_encodings, show_in_default_list, "
+      "suggest_url, prepopulate_id, autogenerate_keyword, logo_id, "
+      "created_by_policy, instant_url, last_modified, sync_guid "
+      "FROM keywords_backup WHERE id=?"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return NULL;
+  }
+  s.BindInt64(0, backup_id);
+  if (!s.Step()) {
+    LOG(ERROR) << "No default search provider with backup id.";
+    return NULL;
+  }
+
+  scoped_ptr<TemplateURL> template_url(new TemplateURL());
+  GetURLFromStatement(s, template_url.get());
+
+  if (!s.Succeeded()) {
+    LOG(ERROR) << "Statement has not succeeded.";
+    return NULL;
+  }
+  return template_url.release();
 }
 
 bool KeywordTable::DidDefaultSearchProviderChange() {
@@ -236,7 +265,7 @@ bool KeywordTable::DidDefaultSearchProviderChange() {
         protector::kProtectorHistogramDefaultSearchProvider,
         protector::kProtectorErrorBackupInvalid,
         protector::kProtectorErrorCount);
-    LOG(ERROR) << "Backup signature is invalid";
+    LOG(ERROR) << "Backup signature is invalid.";
     return true;
   }
 
@@ -269,7 +298,7 @@ bool KeywordTable::DidDefaultSearchProviderChange() {
       protector::kProtectorHistogramDefaultSearchProvider,
       protector::kProtectorErrorValueChanged,
       protector::kProtectorErrorCount);
-  LOG(ERROR) << "Default Search Provider is changed.";
+  LOG(WARNING) << "Default Search Provider is changed.";
   return true;
 }
 

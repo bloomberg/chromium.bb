@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 // This file contains utility functions for search engine functionality.
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 
 class PrefService;
@@ -46,7 +47,6 @@ void GetSearchProvidersUsingKeywordResult(
 // lost.
 bool DidDefaultSearchProviderChange(
     const WDTypedResult& result,
-    const std::vector<TemplateURL*>& template_urls,
-    const TemplateURL** backup_default_search_provider);
+    scoped_ptr<TemplateURL>* backup_default_search_provider);
 
 #endif  // CHROME_BROWSER_SEARCH_ENGINES_UTIL_H_
