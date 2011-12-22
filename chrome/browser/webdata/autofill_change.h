@@ -54,7 +54,7 @@ class AutofillProfileChange : public GenericAutofillChange<std::string> {
   // When |type| == UPDATE, |profile| should be non-NULL.
   // When |type| == REMOVE, |profile| should be NULL.
   AutofillProfileChange(Type type,
-                        std::string key,
+                        const std::string& key,
                         const AutofillProfile* profile);
   virtual ~AutofillProfileChange();
 
@@ -75,7 +75,7 @@ class AutofillCreditCardChange : public GenericAutofillChange<std::string> {
   // When |type| == UPDATE, |credit_card| should be non-NULL.
   // When |type| == REMOVE, |credit_card| should be NULL.
   AutofillCreditCardChange(Type type,
-                           std::string key,
+                           const std::string& key,
                            const CreditCard* credit_card);
   virtual ~AutofillCreditCardChange();
 
