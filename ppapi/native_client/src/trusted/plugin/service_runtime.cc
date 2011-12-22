@@ -552,6 +552,7 @@ SrpcClient* ServiceRuntime::SetupAppChannel() {
     SrpcClient* srpc_client = SrpcClient::New(plugin(), connect_desc);
     PLUGIN_PRINTF(("ServiceRuntime::SetupAppChannel (srpc_client=%p)\n",
                    static_cast<void*>(srpc_client)));
+    delete connect_desc;
     return srpc_client;
   }
 }
