@@ -18,6 +18,7 @@ found in the LICENSE file.
     <script src="client_screen.js"></script>
     <script src="client_session.js"></script>
     <script src="debug_log.js"></script>
+    <script src="event_handlers.js"></script>
     <script src="host_list.js"></script>
     <script src="host_screen.js"></script>
     <script src="host_session.js"></script>
@@ -38,10 +39,7 @@ found in the LICENSE file.
     <title i18n-content="PRODUCT_NAME"></title>
   </head>
 
-  <body onBeforeUnload="return remoting.promptClose();"
-        onLoad="remoting.init();"
-        onResize="remoting.onResize();"
-        onUnload="remoting.disconnect();">
+  <body>
 
     <!-- loading-mode is initially visible, but becomes hidden as soon as an
          AppMode is selected by remoting.init. All other divs are initially
@@ -56,8 +54,7 @@ found in the LICENSE file.
       <span id="email-status">
         <span id="current-email"></span>
         <span data-ui-mode="home client.unconnected client.connect-failed">
-        (<a href="#" onclick="remoting.clearOAuth2();"
-            i18n-content="SIGN_OUT_BUTTON"></a>)
+        (<a id="clear-oauth" href="#" i18n-content="SIGN_OUT_BUTTON"></a>)
         </span>
       </span>
     </div>
@@ -74,11 +71,12 @@ found in the LICENSE file.
       <div class="toolbar-border">
         <span id="session-status-message" i18n-content="LABEL_CONNECTED"></span>
         <strong id="connected-to"></strong>
-        <button type="button" onclick="remoting.disconnect();"
-                i18n-content="DISCONNECT_MYSELF_BUTTON"></button>
+        <button id="toolbar-disconnect"
+                type="button"
+                i18n-content="DISCONNECT_MYSELF_BUTTON">
+        </button>
         <span class="end-align">
-          <button id="toggle-scaling"
-                  onClick="remoting.toggleScaleToFit(this);">
+          <button id="toggle-scaling">
             <img src="scale-to-fit.png">
           </button>
         </span>
@@ -106,9 +104,11 @@ found in the LICENSE file.
       <div id="auth-panel" data-ui-mode="auth">
         <div class="description" i18n-content="DESCRIPTION_AUTHORIZE"></div>
         <div class="centered-button">
-          <button id="auth-button" class="big-button"
-                  type="button" onclick="remoting.oauth2.doAuthRedirect();"
-                  i18n-content="CONTINUE_BUTTON"></button>
+          <button id="auth-button"
+                  class="big-button"
+                  type="button"
+                  i18n-content="CONTINUE_BUTTON">
+          </button>
         </div>
       </div> <!-- auth-panel -->
 
@@ -128,9 +128,9 @@ found in the LICENSE file.
             <td>
               <button id="share-button"
                       i18n-content="HOME_SHARE_BUTTON"
-                      onclick="remoting.tryShare();"
                       class="mode-select-button"
-                      type="button"></button>
+                      type="button">
+              </button>
             </td>
           </tr>
           <tr class="mode-select-table-underline mode-select-table-spacer">
@@ -142,11 +142,11 @@ found in the LICENSE file.
             <td i18n-content="HOME_ACCESS_DESCRIPTION"
                 class="mode-select-label"></td>
             <td>
-              <button i18n-content="HOME_ACCESS_BUTTON"
-                      onclick="remoting.setMode(
-                                   remoting.AppMode.CLIENT_UNCONNECTED);"
+              <button id="access-mode-button"
+                      i18n-content="HOME_ACCESS_BUTTON"
                       class="mode-select-button"
-                      type="button"></button>
+                      type="button">
+              </button>
             </td>
           </tr>
         </table>
@@ -186,8 +186,9 @@ found in the LICENSE file.
           <div id="host-shared-message" class="message"
                i18n-content="MESSAGE_SHARED"></div>
           <div class="centered-button">
-            <button type="button" class="big-button"
-                    onclick="remoting.cancelShare();"
+            <button id="cancel-share-button"
+                    type="button"
+                    class="big-button"
                     i18n-content="STOP_SHARING_BUTTON">
             </button>
           </div>
@@ -203,10 +204,10 @@ found in the LICENSE file.
 
         <div class="centered-button"
              data-ui-mode="host.share-failed host.share-finished">
-          <button type="button"
+          <button id="host-finished-button"
+                  type="button"
                   class="big-button"
                   autofocus="autofocus"
-                  onclick="remoting.setMode(remoting.AppMode.HOME);"
                   i18n-content="OK">
           </button>
         </div>
@@ -219,17 +220,21 @@ found in the LICENSE file.
         <div data-ui-mode="client.unconnected">
           <div class="description" i18n-content="DESCRIPTION_CONNECT"></div>
           <div id="access-code-entry-row">
-            <form action="" onsubmit="remoting.tryConnect(); return false;">
+            <form id="access-code-form" action="">
               <label for="access-code-entry" i18n-content="ACCESS_CODE"></label>
               <input id="access-code-entry"
                      type="text"
                      autofocus="autofocus"
                      autocomplete="off"/>
-              <button id="connect-button" class="big-button"
-                      type="submit" i18n-content="CONNECT_BUTTON"></button>
-              <button class="big-button" type="button"
-                      i18n-content="CANCEL"
-                      onclick="remoting.setMode(remoting.AppMode.HOME);">
+              <button id="connect-button"
+                      class="big-button"
+                      type="submit"
+                      i18n-content="CONNECT_BUTTON">
+              </button>
+              <button id="client-cancel-button"
+                      class="big-button"
+                      type="button"
+                      i18n-content="CANCEL">
               </button>
             </form>
           </div> <!-- code-entry-row -->
@@ -250,12 +255,11 @@ found in the LICENSE file.
 
         <div data-ui-mode="client.connect-failed.it2me client.session-finished.it2me"
              class="centered-button">
-          <button type="button"
+          <button id="client-finished-button"
+                  type="button"
                   class="big-button"
                   i18n-content="OK"
-                  autofocus="autofocus"
-                  onclick="remoting.setMode(
-                               remoting.AppMode.CLIENT_UNCONNECTED);">
+                  autofocus="autofocus">
           </button>
         </div> <!-- client.connect-failed client.session-finished -->
 
@@ -271,8 +275,8 @@ found in the LICENSE file.
              data-ui-mode="host.waiting-for-connection host.waiting-for-code client.connecting">
           <img src="spinner.gif">
           <span class="waiting icon-label" i18n-content="FOOTER_WAITING"></span>
-          <button id="cancel-button" class="big-button"
-                  onclick="remoting.cancelPendingOperation();"
+          <button id="cancel-button"
+                  class="big-button"
                   i18n-content="CANCEL">
           </button>
         </div> <!-- waiting-footer -->

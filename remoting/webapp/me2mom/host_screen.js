@@ -12,12 +12,11 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-(function() {
-
 /**
  * @type {boolean} Whether or not the last share was cancelled by the user.
  *     This controls what screen is shown when the host plugin signals
  *     completion.
+ * @private
  */
 var lastShareWasCancelled_ = false;
 
@@ -179,22 +178,26 @@ remoting.cancelShare = function() {
 
 /**
  * @type {boolean} Whether or not the access code timeout countdown is running.
+ * @private
  */
 var timerRunning_ = false;
 
 /**
  * @type {number} The id of the access code expiry countdown timer.
+ * @private
  */
 var accessCodeTimerId_ = 0;
 
 /**
  * @type {number} The number of seconds until the access code expires.
+ * @private
  */
 var accessCodeExpiresIn_ = 0;
 
 /**
  * The timer callback function, which needs to be visible from the global
  * namespace.
+ * @private
  */
 remoting.decrementAccessCodeTimeout_ = function() {
   --accessCodeExpiresIn_;
@@ -214,6 +217,7 @@ function disableTimeoutCountdown_() {
 
 /**
  * Constants controlling the access code timer countdown display.
+ * @private
  */
 var ACCESS_CODE_TIMER_DISPLAY_THRESHOLD_ = 30;
 var ACCESS_CODE_RED_THRESHOLD_ = 10;
@@ -265,5 +269,3 @@ function onNatTraversalPolicyChanged_(enabled) {
   var container = document.getElementById('nat-box-container');
   container.hidden = enabled;
 }
-
-}());

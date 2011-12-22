@@ -115,6 +115,7 @@
       'webapp/me2mom/debug_log.js',
       'webapp/me2mom/dividerbottom.png',
       'webapp/me2mom/dividertop.png',
+      'webapp/me2mom/event_handlers.js',
       'webapp/me2mom/host_list.js',
       'webapp/me2mom/host_screen.js',
       'webapp/me2mom/host_session.js',

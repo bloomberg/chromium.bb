@@ -44,6 +44,8 @@ remoting.HostTableEntry = function() {
   this.hostNameCell_ = null;
   /** @type {function(remoting.HostTableEntry):void} @private */
   this.onRename_ = function(hostId) {};
+  /** @type {function():void} @private */
+  this.onBlurReference_ = function() {};
 };
 
 /**
@@ -139,11 +141,13 @@ remoting.HostTableEntry.prototype.beginRename_ = function() {
 
   /** @type {remoting.HostTableEntry} */
   var that = this;
-  editBox.onblur = function() { that.commitRename_(); };
+  // Keep a reference to the blur event handler so that we can remove it later.
+  this.onBlurReference_ = function() { that.commitRename_(); };
+  editBox.addEventListener('blur', this.onBlurReference_, false);
 
   /** @param {Event} event The keydown event. */
   var onKeydown = function(event) { that.onKeydown_(event); }
-  editBox.onkeydown = onKeydown;
+  editBox.addEventListener('keydown', onKeydown, false);
 };
 
 /**
@@ -171,9 +175,9 @@ remoting.HostTableEntry.prototype.removeEditBox_ = function() {
   var editBox = this.hostNameCell_.querySelector('input');
   if (editBox) {
     // onblur will fire when the edit box is removed, so remove the hook.
-    editBox.onblur = null;
+    editBox.removeEventListener('blur', this.onBlurReference_, false);
   }
-  this.hostNameCell_.innerHTML = '';
+  this.hostNameCell_.innerHTML = '';  // Remove the edit box.
   this.hostNameCell_.appendChild(document.createTextNode(this.host.hostName));
 };
 

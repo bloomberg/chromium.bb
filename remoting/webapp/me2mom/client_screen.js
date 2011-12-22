@@ -12,8 +12,6 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-(function() {
-
 /**
  * @type {boolean} Whether or not the plugin should scale itself.
  */
@@ -49,6 +47,7 @@ remoting.hostPublicKey = '';
 /**
  * @type {XMLHttpRequest} The XHR object corresponding to the current
  *     support-hosts request, if there is one outstanding.
+ * @private
  */
 remoting.supportHostsXhr_ = null;
 
@@ -85,7 +84,7 @@ remoting.tryConnect = function() {
   } else {
     tryConnectWithAccessToken_();
   }
-}
+};
 
 /**
  * Cancel an incomplete connect operation.
@@ -102,16 +101,17 @@ remoting.cancelConnect = function() {
     remoting.clientSession = null;
   }
   remoting.setMode(remoting.AppMode.HOME);
-}
+};
 
 /**
  * Enable or disable scale-to-fit.
  *
- * @param {Element} button The scale-to-fit button. The style of this button is
- *     updated to reflect the new scaling state.
+ * @param {Event} event The click event. The style of the target is updated to
+ *     reflect the new scaling state.
  * @return {void} Nothing.
  */
-remoting.toggleScaleToFit = function(button) {
+remoting.toggleScaleToFit = function(event) {
+  var button = /** @type Element */(event.target);
   remoting.scaleToFit = !remoting.scaleToFit;
   if (remoting.scaleToFit) {
     addClass(button, 'toggle-button-active');
@@ -119,7 +119,7 @@ remoting.toggleScaleToFit = function(button) {
     removeClass(button, 'toggle-button-active');
   }
   remoting.clientSession.updateDimensions();
-}
+};
 
 /**
  * Update the remoting client layout in response to a resize event.
@@ -129,7 +129,7 @@ remoting.toggleScaleToFit = function(button) {
 remoting.onResize = function() {
   if (remoting.clientSession)
     remoting.clientSession.onResize();
-}
+};
 
 /**
  * Disconnect the remoting client.
@@ -147,7 +147,7 @@ remoting.disconnect = function() {
       remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
     }
   }
-}
+};
 
 /**
  * Second stage of the 'connect' functionality. Once an access token is
@@ -462,7 +462,7 @@ remoting.connectHost = function(hostId, retryIfOffline) {
     remoting.oauth2.callWithToken(setToken);
   };
   remoting.wcsLoader.startAsync(callWithToken, remoting.connectHostWithWcs);
-}
+};
 
 /**
  * Continue making the connection to a host, once WCS has initialized.
@@ -483,6 +483,4 @@ remoting.connectHostWithWcs = function() {
   };
 
   remoting.oauth2.callWithToken(createPluginAndConnect);
-}
-
-}());
+};

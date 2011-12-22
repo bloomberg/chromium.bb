@@ -25,8 +25,6 @@ remoting.Error = {
   SERVICE_UNAVAILABLE: /*i18n-content*/'ERROR_SERVICE_UNAVAILABLE'
 };
 
-(function() {
-
 /**
  * Entry point for app initialization.
  */
@@ -72,8 +70,11 @@ remoting.init = function() {
     var button = document.getElementById('share-button');
     button.disabled = true;
   }
-}
+};
 
+/**
+ * If there is an incomplete share or connection in progress, cancel it.
+ */
 remoting.cancelPendingOperation = function() {
   document.getElementById('cancel-button').disabled = true;
   switch (remoting.getMajorMode()) {
@@ -84,7 +85,7 @@ remoting.cancelPendingOperation = function() {
       remoting.cancelConnect();
       break;
   }
-}
+};
 
 /**
  * If the client is connected, or the host is shared, prompt before closing.
@@ -103,7 +104,7 @@ remoting.promptClose = function() {
     default:
       return null;
   }
-}
+};
 
 /**
  * Sign the user out of Chromoting by clearing the OAuth refresh token.
@@ -112,7 +113,7 @@ remoting.clearOAuth2 = function() {
   remoting.oauth2.clear();
   window.localStorage.removeItem(KEY_EMAIL_);
   remoting.setMode(remoting.AppMode.UNAUTHENTICATED);
-}
+};
 
 /**
  * Callback function called when the browser window loses focus. In this case,
@@ -133,7 +134,10 @@ function refreshEmail_() {
   }
 }
 
-/** The key under which the email address is stored. */
+/**
+ * The key under which the email address is stored.
+ * @private
+ */
 var KEY_EMAIL_ = 'remoting-email';
 
 /**
@@ -180,4 +184,3 @@ function isHostModeSupported_() {
   // Currently, sharing on Chromebooks is not supported.
   return !navigator.userAgent.match(/\bCrOS\b/);
 }
-}());
