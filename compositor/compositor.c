@@ -1455,6 +1455,28 @@ find_resource_for_surface(struct wl_list *list, struct wl_surface *surface)
 }
 
 static void
+lose_touch_focus_resource(struct wl_listener *listener,
+			  struct wl_resource *resource, uint32_t time)
+{
+	struct wlsc_input_device *device =
+		container_of(listener, struct wlsc_input_device,
+			     touch_focus_resource_listener);
+
+	device->touch_focus_resource = NULL;
+}
+
+static void
+lose_touch_focus(struct wl_listener *listener,
+		 struct wl_resource *resource, uint32_t time)
+{
+	struct wlsc_input_device *device =
+		container_of(listener, struct wlsc_input_device,
+			     touch_focus_listener);
+
+	device->touch_focus = NULL;
+}
+
+static void
 touch_set_focus(struct wlsc_input_device *device,
 		struct wl_surface *surface, uint32_t time)
 {
@@ -1464,15 +1486,33 @@ touch_set_focus(struct wlsc_input_device *device,
 	if (device->touch_focus == surface)
 		return;
 
-	resource = find_resource_for_surface(&input_device->resource_list,
-					     surface);
-	if (!resource) {
-		fprintf(stderr, "couldn't find resource\n");
-		return;
-	}
+	if (surface) {
+		resource =
+			find_resource_for_surface(&input_device->resource_list,
+						  surface);
+		if (!resource) {
+			fprintf(stderr, "couldn't find resource\n");
+			return;
+		}
 
-	device->touch_focus = surface;
-	device->touch_focus_resource = resource;
+		device->touch_focus_resource_listener.func =
+			lose_touch_focus_resource;
+		wl_list_insert(resource->destroy_listener_list.prev,
+			       &device->touch_focus_resource_listener.link);
+		device->touch_focus_listener.func = lose_touch_focus;
+		wl_list_insert(surface->resource.destroy_listener_list.prev,
+			       &device->touch_focus_listener.link);
+
+		device->touch_focus = surface;
+		device->touch_focus_resource = resource;
+	} else {
+		if (device->touch_focus)
+			wl_list_remove(&device->touch_focus_listener.link);
+		if (device->touch_focus_resource)
+			wl_list_remove(&device->touch_focus_resource_listener.link);
+		device->touch_focus = NULL;
+		device->touch_focus_resource = NULL;
+	}
 }
 
 /**
@@ -1504,11 +1544,12 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 		if (wd->num_tp == 1) {
 			es = wlsc_compositor_pick_surface(ec, x, y, &sx, &sy);
 			touch_set_focus(wd, &es->surface, time);
-		} else {
+		} else if (wd->touch_focus) {
 			es = (struct wlsc_surface *) wd->touch_focus;
 			wlsc_surface_transform(es, x, y, &sx, &sy);
 		}
-		if (wd->touch_focus_resource)
+
+		if (wd->touch_focus_resource && wd->touch_focus)
 			wl_resource_post_event(wd->touch_focus_resource,
 					       touch_type, time,
 					       wd->touch_focus,
@@ -1516,6 +1557,9 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 		break;
 	case WL_INPUT_DEVICE_TOUCH_MOTION:
 		es = (struct wlsc_surface *) wd->touch_focus;
+		if (!es)
+			break;
+
 		wlsc_surface_transform(es, x, y, &sx, &sy);
 		if (wd->touch_focus_resource)
 			wl_resource_post_event(wd->touch_focus_resource,
@@ -1529,10 +1573,8 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 		if (wd->touch_focus_resource)
 			wl_resource_post_event(wd->touch_focus_resource,
 					       touch_type, time, touch_id);
-		if (wd->num_tp == 0) {
-			wd->touch_focus = NULL;
-			wd->touch_focus_resource = NULL;
-		}
+		if (wd->num_tp == 0)
+			touch_set_focus(wd, NULL, time);
 		break;
 	}
 }
