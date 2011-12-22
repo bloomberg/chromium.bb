@@ -51,6 +51,7 @@ struct wl_socket {
 	struct sockaddr_un addr;
 	char lock_addr[113];
 	struct wl_list link;
+	struct wl_event_source *source;
 };
 
 struct wl_client {
@@ -667,14 +668,15 @@ wl_display_destroy(struct wl_display *display)
 	struct wl_socket *s, *next;
 	struct wl_global *global, *gnext;
 
-  	wl_event_loop_destroy(display->loop);
 	wl_list_for_each_safe(s, next, &display->socket_list, link) {
+		wl_event_source_remove(s->source);
 		close(s->fd);
 		unlink(s->addr.sun_path);
 		close(s->fd_lock);
 		unlink(s->lock_addr);
 		free(s);
 	}
+	wl_event_loop_destroy(display->loop);
 
 	wl_list_for_each_safe(global, gnext, &display->global_list, link)
 		free(global);
@@ -858,9 +860,10 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 		return -1;
 	}
 
-	if (wl_event_loop_add_fd(display->loop, s->fd,
-				 WL_EVENT_READABLE,
-				 socket_data, display) == NULL) {
+	s->source = wl_event_loop_add_fd(display->loop, s->fd,
+					 WL_EVENT_READABLE,
+					 socket_data, display);
+	if (s->source == NULL) {
 		close(s->fd);
 		unlink(s->addr.sun_path);
 		free(s);
