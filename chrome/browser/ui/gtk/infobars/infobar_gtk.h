@@ -15,13 +15,12 @@
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 class CustomDrawButton;
 class GtkThemeService;
-class MenuGtk;
 
 namespace ui {
 class GtkSignalRegistrar;
