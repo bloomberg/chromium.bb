@@ -70,6 +70,7 @@ remoting.currentConnectionType = null;
  * calls through directly to tryConnectWithAccessToken_.
  */
 remoting.tryConnect = function() {
+  remoting.currentConnectionType = remoting.ConnectionType.It2Me;
   document.getElementById('cancel-button').disabled = false;
   if (remoting.oauth2.needsNewAccessToken()) {
     remoting.oauth2.refreshAccessToken(function(xhr) {
@@ -188,7 +189,6 @@ function tryConnectWithWcs_(success) {
       showConnectError_(remoting.Error.INVALID_ACCESS_CODE);
     } else {
       var supportId = remoting.accessCode.substring(0, kSupportIdLen);
-      remoting.currentConnectionType = remoting.ConnectionType.It2Me;
       remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
       resolveSupportId(supportId);
     }
