@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -24,6 +25,11 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/test/gfx_test_utils.h"
+
+#if defined(VIEWS_COMPOSITOR)
+#include "ui/gfx/compositor/compositor.h"
+#endif
 
 namespace {
 
@@ -104,12 +110,16 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       ReplaceFirstSubstringAfterOffset(
           &test_name_, 0, test_status_prefixes[i], "");
     }
+
+#if defined(VIEWS_COMPOSITOR)
+    ui::Compositor::set_compositor_factory_for_testing(NULL);
+#endif
   }
 
   // Compares the generated bitmap with the appropriate reference image on disk.
   // Returns true iff the images were the same.
   //
-  // If no valid reference image exists, save the genrated bitmap to the disk.
+  // If no valid reference image exists, save the generated bitmap to the disk.
   // The image format is:
   //     <test_name>_<revision>.png
   // E.g.,
@@ -257,13 +267,16 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(GpuPixelBrowserTest);
 };
 
-// Currently fails (and times out) on linux due to a NOTIMPLEMENTED() statement.
-// (http://crbug.com/89964)
-#if defined(OS_LINUX)
-#define MAYBE_WebGLTeapot DISABLED_WebGLTeapot
-#else
+// Enable initially only on Windows and progressively enable on more
+// platforms.
+// Bug tracking test failure on Windows/Mac: http://crbug.com/95214
+// Bug tracking test failure on Linux: http://crbug.com/95214
+#if defined(OS_WIN)
 #define MAYBE_WebGLTeapot WebGLTeapot
+#else
+#define MAYBE_WebGLTeapot DISABLED_WebGLTeapot
 #endif
+
 IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLTeapot) {
   // If test baseline needs to be updated after a given revision, update the
   // revision number in SetRefImageNoOlderThan(#revision).
@@ -275,14 +288,34 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLTeapot) {
       net::FilePathToFileURL(test_data_dir_.AppendASCII("webgl_teapot").
           AppendASCII("teapot.html")));
 
+  gfx::Size container_size(500, 500);
+  ResizeTabContainer(browser(), container_size);
+
   // Wait for message from teapot page indicating the GL calls have been issued.
   ASSERT_TRUE(message_queue.WaitForMessage(NULL));
 
+  std::vector<unsigned char> screenshot_png;
+
+  gfx::Rect root_bounds = browser()->window()->GetBounds();
+  gfx::Rect tab_contents_bounds;
+  browser()->GetSelectedTabContents()->GetContainerBounds(&tab_contents_bounds);
+
+  gfx::Rect snapshot_bounds(tab_contents_bounds.x() - root_bounds.x(),
+                            tab_contents_bounds.y() - root_bounds.y(),
+                            tab_contents_bounds.width(),
+                            tab_contents_bounds.height());
+
+  gfx::NativeWindow native_window = browser()->window()->GetNativeHandle();
+  bool success = browser::GrabWindowSnapshot(native_window, &screenshot_png,
+                                             snapshot_bounds);
+  ASSERT_TRUE(success);
+
   SkBitmap bitmap;
-  gfx::Size container_size(500, 500);
-  ResizeTabContainer(browser(), container_size);
-  ASSERT_TRUE(ui_test_utils::TakeRenderWidgetSnapshot(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(),
-      container_size, &bitmap));
+  success = gfx::PNGCodec::Decode(
+      reinterpret_cast<unsigned char*>(&*screenshot_png.begin()),
+      screenshot_png.size(),
+      &bitmap);
+
+  ASSERT_TRUE(success);
   ASSERT_TRUE(CompareImages(bitmap));
 }

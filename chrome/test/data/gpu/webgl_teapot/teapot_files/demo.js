@@ -51,6 +51,7 @@ var g_normalSamplerLoc = 0;
 var g_envSamplerLoc = 0;
 
 var g_pendingTextureLoads = 0;
+var g_swapsBeforeAck = 5;
 
 // The "model" matrix is the "world" matrix in Standard Annotations
 // and Semantics
@@ -386,7 +387,13 @@ function loadCubeMap(base, suffix) {
 
 function waitForFinish() {
   if (g_pendingTextureLoads == 0) {
-    domAutomationController.setAutomationId(1);
-    domAutomationController.send("ok");
+    if (g_swapsBeforeAck == 0) {
+      domAutomationController.setAutomationId(1);
+      domAutomationController.send("ok");
+    } else {
+      draw();
+      g_swapsBeforeAck--;
+      window.webkitRequestAnimationFrame(waitForFinish);
+    }
   }
 }
