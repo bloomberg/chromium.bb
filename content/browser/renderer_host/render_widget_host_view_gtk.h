@@ -138,6 +138,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView {
   // RenderWidgetHost::ForwardEditCommandsForNextKeyEvent().
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event);
 
+  bool RetrieveSurrounding(std::string* text, size_t* cursor_index);
+
   GdkEventButton* last_mouse_down() const {
     return last_mouse_down_;
   }
@@ -286,10 +288,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView {
   // The event for the last mouse down we handled. We need this for context
   // menus and drags.
   GdkEventButton* last_mouse_down_;
-
-  string16 selection_text_;
-  size_t selection_text_offset_;
-  ui::Range selection_range_;
 
 #if defined(OS_CHROMEOS)
   // Custimized tooltip window.

@@ -25,6 +25,7 @@
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
+#include "base/utf_offset_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/backing_store_gtk.h"
 #include "content/browser/renderer_host/gtk_im_context_wrapper.h"
@@ -901,6 +902,8 @@ void RenderWidgetHostViewGtk::SetTooltipText(const string16& tooltip_text) {
 void RenderWidgetHostViewGtk::SelectionChanged(const string16& text,
                                                size_t offset,
                                                const ui::Range& range) {
+  RenderWidgetHostView::SelectionChanged(text, offset, range);
+
   if (text.empty() || range.is_empty())
     return;
   size_t pos = range.GetMin() - offset;
@@ -911,10 +914,6 @@ void RenderWidgetHostViewGtk::SelectionChanged(const string16& text,
     NOTREACHED() << "The text can not cover range.";
     return;
   }
-
-  selection_text_ = text;
-  selection_text_offset_ = offset;
-  selection_range_ = range;
 
   std::string utf8_selection = UTF16ToUTF8(text.substr(pos, n));
   GtkClipboard* x_clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
@@ -1305,6 +1304,30 @@ void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
 #endif
 
   host_->ForwardKeyboardEvent(event);
+}
+
+bool RenderWidgetHostViewGtk::RetrieveSurrounding(std::string* text,
+                                                  size_t* cursor_index) {
+  if (!selection_range_.IsValid())
+    return false;
+
+  size_t offset = selection_range_.GetMin() - selection_text_offset_;
+  DCHECK(offset <= selection_text_.length());
+
+  if (offset == selection_text_.length()) {
+    *text = UTF16ToUTF8(selection_text_);
+    *cursor_index = text->length();
+    return true;
+  }
+
+  *text = UTF16ToUTF8AndAdjustOffset(
+      base::StringPiece16(selection_text_), &offset);
+  if (offset == string16::npos) {
+    NOTREACHED() << "Invalid offset in UTF16 string.";
+    return false;
+  }
+  *cursor_index = offset;
+  return true;
 }
 
 void RenderWidgetHostViewGtk::set_last_mouse_down(GdkEventButton* event) {
