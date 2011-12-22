@@ -23,7 +23,6 @@
 #include "ui/gfx/gl/gl_switches.h"
 
 #if defined(OS_WIN)
-#include "content/common/gpu/media/dxva_video_decode_accelerator.h"
 #include "sandbox/src/sandbox.h"
 #endif
 
@@ -84,8 +83,6 @@ int GpuMain(const content::MainFunctionParams& parameters) {
 #if defined(OS_WIN)
   sandbox::TargetServices* target_services =
       parameters.sandbox_info->target_services;
-  // Initialize H/W video decoding stuff which fails in the sandbox.
-  DXVAVideoDecodeAccelerator::PreSandboxInitialization();
   // For windows, if the target_services interface is not zero, the process
   // is sandboxed and we must call LowerToken() before rendering untrusted
   // content.

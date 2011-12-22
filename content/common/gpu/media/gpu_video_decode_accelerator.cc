@@ -9,28 +9,17 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif  // OS_WIN
-
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_messages.h"
-
-#if (defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)) || defined(OS_WIN)
-#if defined(OS_WIN)
-#include "content/common/gpu/media/dxva_video_decode_accelerator.h"
-#else  // OS_WIN
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 #include "content/common/gpu/media/omx_video_decode_accelerator.h"
-#endif  // OS_WIN
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface_egl.h"
 #endif
-
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gfx/size.h"
 
@@ -120,32 +109,18 @@ void GpuVideoDecodeAccelerator::NotifyError(
 
 void GpuVideoDecodeAccelerator::Initialize(
     const media::VideoDecodeAccelerator::Profile profile,
-    IPC::Message* init_done_msg,
-    base::ProcessHandle renderer_process) {
+    IPC::Message* init_done_msg) {
   DCHECK(!video_decode_accelerator_.get());
   DCHECK(!init_done_msg_);
   DCHECK(init_done_msg);
   init_done_msg_ = init_done_msg;
-
-#if (defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)) || defined(OS_WIN)
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
   DCHECK(stub_ && stub_->decoder());
-#if defined(OS_WIN)
-  if (base::win::GetVersion() < base::win::VERSION_WIN7) {
-    NOTIMPLEMENTED() << "HW video decode acceleration not available.";
-    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
-    return;
-  }
-  DLOG(INFO) << "Initializing DXVA HW decoder for windows.";
-  DXVAVideoDecodeAccelerator* video_decoder =
-      new DXVAVideoDecodeAccelerator(this, renderer_process);
-#else  // OS_WIN
-  OmxVideoDecodeAccelerator* video_decoder =
-      new OmxVideoDecodeAccelerator(this);
-  video_decoder->SetEglState(
+  OmxVideoDecodeAccelerator* omx_decoder = new OmxVideoDecodeAccelerator(this);
+  omx_decoder->SetEglState(
       gfx::GLSurfaceEGL::GetHardwareDisplay(),
       stub_->decoder()->GetGLContext()->GetHandle());
-#endif  // OS_WIN
-  video_decode_accelerator_ = video_decoder;
+  video_decode_accelerator_ = omx_decoder;
   video_decode_accelerator_->Initialize(profile);
 #else  // Update RenderViewImpl::createMediaPlayer when adding clauses.
   NOTIMPLEMENTED() << "HW video decode acceleration not available.";

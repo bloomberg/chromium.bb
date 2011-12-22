@@ -402,23 +402,10 @@
     },
   ],
   'conditions': [
-    ['target_arch=="arm" or OS=="win"', {
+    ['target_arch=="arm"', {
       'targets': [
         {
-          'conditions': [
-            ['target_arch=="arm"', {
-              'target_name': 'omx_video_decode_accelerator_unittest',
-              'include_dirs': [
-                '<(DEPTH)/third_party/openmax/il',
-              ],
-            }],
-            ['OS=="win"', {
-              'target_name': 'dxva_video_decode_accelerator_unittest',
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],  
+          'target_name': 'omx_video_decode_accelerator_unittest',
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'type': 'executable',
           'dependencies': [
@@ -428,9 +415,10 @@
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/angle/include',
+            '<(DEPTH)/third_party/openmax/il',
           ],
           'sources': [
-            'common/gpu/media/video_decode_accelerator_unittest.cc',
+            'common/gpu/media/omx_video_decode_accelerator_unittest.cc',
           ],
         }
       ],
