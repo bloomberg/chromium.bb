@@ -738,7 +738,6 @@ void GLES2Implementation::FreeEverything() {
   Finish();
   FreeUnusedSharedMemory();
   transfer_buffer_.Free();
-  helper_->FreeRingBuffer();
 }
 
 void GLES2Implementation::WaitForCmd() {
