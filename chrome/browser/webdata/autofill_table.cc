@@ -139,11 +139,10 @@ bool AddAutofillProfileNamesToProfile(sql::Connection* db,
       "SELECT guid, first_name, middle_name, last_name "
       "FROM autofill_profile_names "
       "WHERE guid=?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
   s.BindString(0, profile->guid());
+
+  if (!s.is_valid())
+    return false;
 
   std::vector<string16> first_names;
   std::vector<string16> middle_names;
@@ -154,6 +153,9 @@ bool AddAutofillProfileNamesToProfile(sql::Connection* db,
     middle_names.push_back(s.ColumnString16(2));
     last_names.push_back(s.ColumnString16(3));
   }
+  if (!s.Succeeded())
+    return false;
+
   profile->SetMultiInfo(NAME_FIRST, first_names);
   profile->SetMultiInfo(NAME_MIDDLE, middle_names);
   profile->SetMultiInfo(NAME_LAST, last_names);
@@ -166,17 +168,19 @@ bool AddAutofillProfileEmailsToProfile(sql::Connection* db,
       "SELECT guid, email "
       "FROM autofill_profile_emails "
       "WHERE guid=?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
   s.BindString(0, profile->guid());
+
+  if (!s.is_valid())
+    return false;
 
   std::vector<string16> emails;
   while (s.Step()) {
     DCHECK_EQ(profile->guid(), s.ColumnString(0));
     emails.push_back(s.ColumnString16(1));
   }
+  if (!s.Succeeded())
+    return false;
+
   profile->SetMultiInfo(EMAIL_ADDRESS, emails);
   return true;
 }
@@ -187,19 +191,22 @@ bool AddAutofillProfilePhonesToProfile(sql::Connection* db,
       "SELECT guid, type, number "
       "FROM autofill_profile_phones "
       "WHERE guid=? AND type=?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-  s.BindString(0, profile->guid());
+
   // Value used to be either [(0, phone), (1, fax)] but fax has been removed.
+  s.BindString(0, profile->guid());
   s.BindInt(1, 0);
+
+  if (!s.is_valid())
+    return false;
 
   std::vector<string16> numbers;
   while (s.Step()) {
     DCHECK_EQ(profile->guid(), s.ColumnString(0));
     numbers.push_back(s.ColumnString16(2));
   }
+  if (!s.Succeeded())
+    return false;
+
   profile->SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, numbers);
   return true;
 }
@@ -221,19 +228,13 @@ bool AddAutofillProfileNames(const AutofillProfile& profile,
       "INSERT INTO autofill_profile_names"
       " (guid, first_name, middle_name, last_name) "
       "VALUES (?,?,?,?)"));
-    if (!s) {
-      NOTREACHED();
-      return false;
-    }
     s.BindString(0, profile.guid());
     s.BindString16(1, first_names[i]);
     s.BindString16(2, middle_names[i]);
     s.BindString16(3, last_names[i]);
 
-    if (!s.Run()) {
-      NOTREACHED();
+    if (!s.Run())
       return false;
-    }
   }
   return true;
 }
@@ -249,18 +250,13 @@ bool AddAutofillProfileEmails(const AutofillProfile& profile,
       "INSERT INTO autofill_profile_emails"
       " (guid, email) "
       "VALUES (?,?)"));
-    if (!s) {
-      NOTREACHED();
-      return false;
-    }
     s.BindString(0, profile.guid());
     s.BindString16(1, emails[i]);
 
-    if (!s.Run()) {
-      NOTREACHED();
+    if (!s.Run())
       return false;
-    }
   }
+
   return true;
 }
 
@@ -275,19 +271,13 @@ bool AddAutofillProfilePhones(const AutofillProfile& profile,
       "INSERT INTO autofill_profile_phones"
       " (guid, type, number) "
       "VALUES (?,?,?)"));
-    if (!s) {
-      NOTREACHED();
-      return false;
-    }
     s.BindString(0, profile.guid());
     // Value used to be either [(0, phone), (1, fax)] but fax has been removed.
     s.BindInt(1, 0);
     s.BindString16(2, numbers[i]);
 
-    if (!s.Run()) {
-      NOTREACHED();
+    if (!s.Run())
       return false;
-    }
   }
 
   return true;
@@ -310,34 +300,22 @@ bool AddAutofillProfilePieces(const AutofillProfile& profile,
 bool RemoveAutofillProfilePieces(const std::string& guid, sql::Connection* db) {
   sql::Statement s1(db->GetUniqueStatement(
       "DELETE FROM autofill_profile_names WHERE guid = ?"));
-  if (!s1) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s1.BindString(0, guid);
+
   if (!s1.Run())
     return false;
 
   sql::Statement s2(db->GetUniqueStatement(
       "DELETE FROM autofill_profile_emails WHERE guid = ?"));
-  if (!s2) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s2.BindString(0, guid);
+
   if (!s2.Run())
     return false;
 
   sql::Statement s3(db->GetUniqueStatement(
       "DELETE FROM autofill_profile_phones WHERE guid = ?"));
-  if (!s3) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s3.BindString(0, guid);
+
   return s3.Run();
 }
 
@@ -387,11 +365,6 @@ bool AutofillTable::GetFormValuesForElementName(const string16& name,
         "WHERE name = ? "
         "ORDER BY count DESC "
         "LIMIT ?"));
-    if (!s) {
-      NOTREACHED() << "Statement prepare failed";
-      return false;
-    }
-
     s.BindString16(0, name);
     s.BindInt(1, limit);
   } else {
@@ -406,11 +379,6 @@ bool AutofillTable::GetFormValuesForElementName(const string16& name,
         "value_lower < ? "
         "ORDER BY count DESC "
         "LIMIT ?"));
-    if (!s) {
-      NOTREACHED() << "Statement prepare failed";
-      return false;
-    }
-
     s.BindString16(0, name);
     s.BindString16(1, prefix_lower);
     s.BindString16(2, next_prefix);
@@ -434,10 +402,6 @@ bool AutofillTable::RemoveFormElementsAddedBetween(
       "SELECT DISTINCT a.pair_id, a.name, a.value "
       "FROM autofill_dates ad JOIN autofill a ON ad.pair_id = a.pair_id "
       "WHERE ad.date_created >= ? AND ad.date_created < ?"));
-  if (!s) {
-    NOTREACHED() << "Statement 1 prepare failed";
-    return false;
-  }
   s.BindInt64(0, delete_begin.ToTimeT());
   s.BindInt64(1,
               delete_end.is_null() ?
@@ -450,11 +414,8 @@ bool AutofillTable::RemoveFormElementsAddedBetween(
                                  s.ColumnString16(1),
                                  s.ColumnString16(2)));
   }
-
-  if (!s.Succeeded()) {
-    NOTREACHED();
+  if (!s.Succeeded())
     return false;
-  }
 
   for (AutofillElementList::iterator itr = elements.begin();
        itr != elements.end(); itr++) {
@@ -482,10 +443,6 @@ bool AutofillTable::RemoveFormElementForTimeRange(int64 pair_id,
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM autofill_dates WHERE pair_id = ? AND "
       "date_created >= ? AND date_created < ?"));
-  if (!s) {
-    NOTREACHED() << "Statement 1 prepare failed";
-    return false;
-  }
   s.BindInt64(0, pair_id);
   s.BindInt64(1, delete_begin.is_null() ? 0 : delete_begin.ToTimeT());
   s.BindInt64(2, delete_end.is_null() ? std::numeric_limits<int64>::max() :
@@ -523,16 +480,17 @@ bool AutofillTable::GetIDAndCountOfFormElement(
     const FormField& element,
     int64* pair_id,
     int* count) {
+  DCHECK(pair_id);
+  DCHECK(count);
+
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT pair_id, count FROM autofill "
       "WHERE name = ? AND value = ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindString16(0, element.name);
   s.BindString16(1, element.value);
+
+  if (!s.is_valid())
+    return false;
 
   *pair_id = 0;
   *count = 0;
@@ -546,13 +504,9 @@ bool AutofillTable::GetIDAndCountOfFormElement(
 }
 
 bool AutofillTable::GetCountOfFormElement(int64 pair_id, int* count) {
+  DCHECK(count);
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT count FROM autofill WHERE pair_id = ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindInt64(0, pair_id);
 
   if (s.Step()) {
@@ -565,38 +519,23 @@ bool AutofillTable::GetCountOfFormElement(int64 pair_id, int* count) {
 bool AutofillTable::SetCountOfFormElement(int64 pair_id, int count) {
   sql::Statement s(db_->GetUniqueStatement(
       "UPDATE autofill SET count = ? WHERE pair_id = ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindInt(0, count);
   s.BindInt64(1, pair_id);
-  if (!s.Run()) {
-    NOTREACHED();
-    return false;
-  }
 
-  return true;
+  return s.Run();
 }
 
 bool AutofillTable::InsertFormElement(const FormField& element,
                                       int64* pair_id) {
+  DCHECK(pair_id);
   sql::Statement s(db_->GetUniqueStatement(
       "INSERT INTO autofill (name, value, value_lower) VALUES (?,?,?)"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindString16(0, element.name);
   s.BindString16(1, element.value);
   s.BindString16(2, base::i18n::ToLower(element.value));
 
-  if (!s.Run()) {
-    NOTREACHED();
+  if (!s.Run())
     return false;
-  }
 
   *pair_id = db_->GetLastInsertRowId();
   return true;
@@ -607,20 +546,10 @@ bool AutofillTable::InsertPairIDAndDate(int64 pair_id,
   sql::Statement s(db_->GetUniqueStatement(
       "INSERT INTO autofill_dates "
       "(pair_id, date_created) VALUES (?, ?)"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindInt64(0, pair_id);
   s.BindInt64(1, date_created.ToTimeT());
 
-  if (!s.Run()) {
-    NOTREACHED();
-    return false;
-  }
-
-  return true;
+  return s.Run();
 }
 
 bool AutofillTable::AddFormFieldValuesTime(
@@ -649,14 +578,14 @@ bool AutofillTable::AddFormFieldValuesTime(
 bool AutofillTable::ClearAutofillEmptyValueElements() {
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT pair_id FROM autofill WHERE TRIM(value)= \"\""));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
+  if (!s.is_valid())
     return false;
-  }
 
   std::set<int64> ids;
   while (s.Step())
     ids.insert(s.ColumnInt64(0));
+  if (!s.Succeeded())
+    return false;
 
   bool success = true;
   for (std::set<int64>::const_iterator iter = ids.begin(); iter != ids.end();
@@ -673,11 +602,6 @@ bool AutofillTable::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT name, value, date_created FROM autofill a JOIN "
       "autofill_dates ad ON a.pair_id=ad.pair_id"));
-
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   bool first_entry = true;
   AutofillKey* current_key_ptr = NULL;
@@ -712,6 +636,10 @@ bool AutofillTable::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
       timestamps_ptr->push_back(time);
     }
   }
+
+  if (!s.Succeeded())
+    return false;
+
   // If there is at least one result returned, first_entry will be false.
   // For this case we need to do a final cleanup step.
   if (!first_entry) {
@@ -732,14 +660,9 @@ bool AutofillTable::GetAutofillTimestamps(const string16& name,
       "SELECT date_created FROM autofill a JOIN "
       "autofill_dates ad ON a.pair_id=ad.pair_id "
       "WHERE a.name = ? AND a.value = ?"));
-
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindString16(0, name);
   s.BindString16(1, value);
+
   while (s.Step())
     timestamps->push_back(Time::FromTimeT(s.ColumnInt64(0)));
 
@@ -756,13 +679,12 @@ bool AutofillTable::UpdateAutofillEntries(
     std::string sql = "SELECT pair_id FROM autofill "
                       "WHERE name = ? AND value = ?";
     sql::Statement s(db_->GetUniqueStatement(sql.c_str()));
-    if (!s.is_valid()) {
-      NOTREACHED() << "Statement prepare failed";
-      return false;
-    }
-
     s.BindString16(0, entries[i].key().name());
     s.BindString16(1, entries[i].key().value());
+
+    if (!s.is_valid())
+      return false;
+
     if (s.Step()) {
       if (!RemoveFormElementForID(s.ColumnInt64(0)))
         return false;
@@ -782,20 +704,13 @@ bool AutofillTable::InsertAutofillEntry(const AutofillEntry& entry) {
   std::string sql = "INSERT INTO autofill (name, value, value_lower, count) "
                     "VALUES (?, ?, ?, ?)";
   sql::Statement s(db_->GetUniqueStatement(sql.c_str()));
-  if (!s.is_valid()) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindString16(0, entry.key().name());
   s.BindString16(1, entry.key().value());
   s.BindString16(2, base::i18n::ToLower(entry.key().value()));
   s.BindInt(3, entry.timestamps().size());
 
-  if (!s.Run()) {
-    NOTREACHED();
+  if (!s.Run())
     return false;
-  }
 
   int64 pair_id = db_->GetLastInsertRowId();
   for (size_t i = 0; i < entry.timestamps().size(); i++) {
@@ -838,10 +753,6 @@ bool AutofillTable::RemoveFormElement(const string16& name,
   // Find the id for that pair.
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT pair_id FROM autofill WHERE  name = ? AND value= ?"));
-  if (!s) {
-    NOTREACHED() << "Statement 1 prepare failed";
-    return false;
-  }
   s.BindString16(0, name);
   s.BindString16(1, value);
 
@@ -859,19 +770,9 @@ bool AutofillTable::AddAutofillProfile(const AutofillProfile& profile) {
       "(guid, company_name, address_line_1, address_line_2, city, state,"
       " zipcode, country, country_code, date_modified)"
       "VALUES (?,?,?,?,?,?,?,?,?,?)"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   BindAutofillProfileToStatement(profile, &s);
 
-  if (!s.Run()) {
-    NOTREACHED();
-    return false;
-  }
-
-  if (!s.Succeeded())
+  if (!s.Run())
     return false;
 
   return AddAutofillProfilePieces(profile, db_);
@@ -886,16 +787,9 @@ bool AutofillTable::GetAutofillProfile(const std::string& guid,
       " zipcode, country, country_code, date_modified "
       "FROM autofill_profiles "
       "WHERE guid=?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindString(0, guid);
-  if (!s.Step())
-    return false;
 
-  if (!s.Succeeded())
+  if (!s.Step())
     return false;
 
   scoped_ptr<AutofillProfile> p(AutofillProfileFromStatement(s));
@@ -921,10 +815,6 @@ bool AutofillTable::GetAutofillProfiles(
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid "
       "FROM autofill_profiles"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   while (s.Step()) {
     std::string guid = s.ColumnString(0);
@@ -995,13 +885,9 @@ bool AutofillTable::UpdateAutofillProfileMulti(const AutofillProfile& profile) {
       "    city=?, state=?, zipcode=?, country=?, country_code=?, "
       "    date_modified=? "
       "WHERE guid=?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   BindAutofillProfileToStatement(profile, &s);
   s.BindString(10, profile.guid());
+
   bool result = s.Run();
   DCHECK_GT(db_->GetLastChangeCount(), 0);
   if (!result)
@@ -1020,27 +906,17 @@ bool AutofillTable::RemoveAutofillProfile(const std::string& guid) {
   if (IsAutofillGUIDInTrash(guid)) {
     sql::Statement s_trash(db_->GetUniqueStatement(
         "DELETE FROM autofill_profiles_trash WHERE guid = ?"));
-    if (!s_trash) {
-      NOTREACHED() << "Statement prepare failed";
-      return false;
-    }
     s_trash.BindString(0, guid);
-    if (!s_trash.Run()) {
-      NOTREACHED() << "Expected item in trash.";
-      return false;
-    }
 
-    return true;
+    bool success = s_trash.Run();
+    DCHECK_GT(db_->GetLastChangeCount(), 0) << "Expected item in trash";
+    return success;
   }
 
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM autofill_profiles WHERE guid = ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindString(0, guid);
+
   if (!s.Run())
     return false;
 
@@ -1050,45 +926,26 @@ bool AutofillTable::RemoveAutofillProfile(const std::string& guid) {
 bool AutofillTable::ClearAutofillProfiles() {
   sql::Statement s1(db_->GetUniqueStatement(
       "DELETE FROM autofill_profiles"));
-  if (!s1) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   if (!s1.Run())
     return false;
 
   sql::Statement s2(db_->GetUniqueStatement(
       "DELETE FROM autofill_profile_names"));
-  if (!s2) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   if (!s2.Run())
     return false;
 
   sql::Statement s3(db_->GetUniqueStatement(
       "DELETE FROM autofill_profile_emails"));
-  if (!s3) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   if (!s3.Run())
     return false;
 
   sql::Statement s4(db_->GetUniqueStatement(
       "DELETE FROM autofill_profile_phones"));
-  if (!s4) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
-  if (!s4.Run())
-    return false;
-
-  return true;
+  return s4.Run();
 }
 
 bool AutofillTable::AddCreditCard(const CreditCard& credit_card) {
@@ -1097,20 +954,13 @@ bool AutofillTable::AddCreditCard(const CreditCard& credit_card) {
       "(guid, name_on_card, expiration_month, expiration_year, "
       "card_number_encrypted, date_modified)"
       "VALUES (?,?,?,?,?,?)"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   BindCreditCardToStatement(credit_card, &s);
 
-  if (!s.Run()) {
-    NOTREACHED();
+  if (!s.Run())
     return false;
-  }
 
   DCHECK_GT(db_->GetLastChangeCount(), 0);
-  return s.Succeeded();
+  return true;
 }
 
 bool AutofillTable::GetCreditCard(const std::string& guid,
@@ -1121,18 +971,13 @@ bool AutofillTable::GetCreditCard(const std::string& guid,
       "card_number_encrypted, date_modified "
       "FROM credit_cards "
       "WHERE guid = ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindString(0, guid);
+
   if (!s.Step())
     return false;
 
   *credit_card = CreditCardFromStatement(s);
-
-  return s.Succeeded();
+  return true;
 }
 
 bool AutofillTable::GetCreditCards(
@@ -1143,10 +988,6 @@ bool AutofillTable::GetCreditCards(
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid "
       "FROM credit_cards"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   while (s.Step()) {
     std::string guid = s.ColumnString(0);
@@ -1176,13 +1017,9 @@ bool AutofillTable::UpdateCreditCard(const CreditCard& credit_card) {
       "SET guid=?, name_on_card=?, expiration_month=?, "
       "    expiration_year=?, card_number_encrypted=?, date_modified=? "
       "WHERE guid=?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   BindCreditCardToStatement(credit_card, &s);
   s.BindString(6, credit_card.guid());
+
   bool result = s.Run();
   DCHECK_GT(db_->GetLastChangeCount(), 0);
   return result;
@@ -1192,12 +1029,8 @@ bool AutofillTable::RemoveCreditCard(const std::string& guid) {
   DCHECK(guid::IsValidGUID(guid));
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM credit_cards WHERE guid = ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindString(0, guid);
+
   return s.Run();
 }
 
@@ -1217,73 +1050,50 @@ bool AutofillTable::RemoveAutofillProfilesAndCreditCardsModifiedBetween(
   sql::Statement s_profiles_get(db_->GetUniqueStatement(
       "SELECT guid FROM autofill_profiles "
       "WHERE date_modified >= ? AND date_modified < ?"));
-  if (!s_profiles_get) {
-    NOTREACHED() << "Autofill profiles statement prepare failed";
-    return false;
-  }
-
   s_profiles_get.BindInt64(0, delete_begin_t);
   s_profiles_get.BindInt64(1, delete_end_t);
+
   profile_guids->clear();
   while (s_profiles_get.Step()) {
     std::string guid = s_profiles_get.ColumnString(0);
     profile_guids->push_back(guid);
   }
+  if (!s_profiles_get.Succeeded())
+    return false;
 
   // Remove Autofill profiles in the time range.
   sql::Statement s_profiles(db_->GetUniqueStatement(
       "DELETE FROM autofill_profiles "
       "WHERE date_modified >= ? AND date_modified < ?"));
-  if (!s_profiles) {
-    NOTREACHED() << "Autofill profiles statement prepare failed";
-    return false;
-  }
-
   s_profiles.BindInt64(0, delete_begin_t);
   s_profiles.BindInt64(1, delete_end_t);
-  s_profiles.Run();
 
-  if (!s_profiles.Succeeded()) {
-    NOTREACHED();
+  if (!s_profiles.Run())
     return false;
-  }
 
   // Remember Autofill credit cards in the time range.
   sql::Statement s_credit_cards_get(db_->GetUniqueStatement(
       "SELECT guid FROM credit_cards "
       "WHERE date_modified >= ? AND date_modified < ?"));
-  if (!s_credit_cards_get) {
-    NOTREACHED() << "Autofill profiles statement prepare failed";
-    return false;
-  }
-
   s_credit_cards_get.BindInt64(0, delete_begin_t);
   s_credit_cards_get.BindInt64(1, delete_end_t);
+
   credit_card_guids->clear();
   while (s_credit_cards_get.Step()) {
     std::string guid = s_credit_cards_get.ColumnString(0);
     credit_card_guids->push_back(guid);
   }
+  if (!s_credit_cards_get.Succeeded())
+    return false;
 
   // Remove Autofill credit cards in the time range.
   sql::Statement s_credit_cards(db_->GetUniqueStatement(
       "DELETE FROM credit_cards "
       "WHERE date_modified >= ? AND date_modified < ?"));
-  if (!s_credit_cards) {
-    NOTREACHED() << "Autofill credit cards statement prepare failed";
-    return false;
-  }
-
   s_credit_cards.BindInt64(0, delete_begin_t);
   s_credit_cards.BindInt64(1, delete_end_t);
-  s_credit_cards.Run();
 
-  if (!s_credit_cards.Succeeded()) {
-    NOTREACHED();
-    return false;
-  }
-
-  return true;
+  return s_credit_cards.Run();
 }
 
 bool AutofillTable::GetAutofillProfilesInTrash(
@@ -1293,10 +1103,6 @@ bool AutofillTable::GetAutofillProfilesInTrash(
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid "
       "FROM autofill_profiles_trash"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   while (s.Step()) {
     std::string guid = s.ColumnString(0);
@@ -1309,10 +1115,6 @@ bool AutofillTable::GetAutofillProfilesInTrash(
 bool AutofillTable::EmptyAutofillProfilesTrash() {
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM autofill_profiles_trash"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   return s.Run();
 }
@@ -1321,11 +1123,8 @@ bool AutofillTable::EmptyAutofillProfilesTrash() {
 bool AutofillTable::RemoveFormElementForID(int64 pair_id) {
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM autofill WHERE pair_id = ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
   s.BindInt64(0, pair_id);
+
   if (s.Run())
     return RemoveFormElementForTimeRange(pair_id, Time(), Time(), NULL);
 
@@ -1337,27 +1136,15 @@ bool AutofillTable::AddAutofillGUIDToTrash(const std::string& guid) {
     "INSERT INTO autofill_profiles_trash"
     " (guid) "
     "VALUES (?)"));
-  if (!s) {
-    NOTREACHED();
-    return sql::INIT_FAILURE;
-  }
-
   s.BindString(0, guid);
-  if (!s.Run()) {
-    NOTREACHED();
-    return false;
-  }
-  return true;
+
+  return s.Run();
 }
 
 bool AutofillTable::IsAutofillProfilesTrashEmpty() {
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid "
       "FROM autofill_profiles_trash"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   return !s.Step();
 }
@@ -1367,12 +1154,8 @@ bool AutofillTable::IsAutofillGUIDInTrash(const std::string& guid) {
       "SELECT guid "
       "FROM autofill_profiles_trash "
       "WHERE guid = ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindString(0, guid);
+
   return s.Step();
 }
 
@@ -1635,26 +1418,26 @@ bool AutofillTable::MigrateToVersion27UpdateLegacyCreditCards() {
       "FROM autofill_profiles, credit_cards "
       "WHERE credit_cards.billing_address = autofill_profiles.label";
   sql::Statement s(db_->GetUniqueStatement(stmt.c_str()));
-  if (!s)
-    return false;
 
   std::map<int, int> cc_billing_map;
   while (s.Step())
     cc_billing_map[s.ColumnInt(0)] = s.ColumnInt(1);
+  if (!s.Succeeded())
+    return false;
 
   // Windows already stores the IDs as strings in |billing_address|. Try
   // to convert those.
   if (cc_billing_map.empty()) {
     std::string stmt = "SELECT unique_id,billing_address FROM credit_cards";
     sql::Statement s(db_->GetUniqueStatement(stmt.c_str()));
-    if (!s)
-      return false;
 
     while (s.Step()) {
       int id = 0;
       if (base::StringToInt(s.ColumnString(1), &id))
         cc_billing_map[s.ColumnInt(0)] = id;
     }
+    if (!s.Succeeded())
+      return false;
   }
 
   if (!db_->Execute("CREATE TABLE credit_cards_temp ( "
@@ -1693,9 +1476,6 @@ bool AutofillTable::MigrateToVersion27UpdateLegacyCreditCards() {
     sql::Statement s(db_->GetCachedStatement(
         SQL_FROM_HERE,
         "UPDATE credit_cards SET billing_address=? WHERE unique_id=?"));
-    if (!s)
-      return false;
-
     s.BindInt(0, (*iter).second);
     s.BindInt(1, (*iter).first);
 
@@ -1716,9 +1496,6 @@ bool AutofillTable::MigrateToVersion30AddDateModifed() {
 
     sql::Statement s(db_->GetUniqueStatement(
         "UPDATE autofill_profiles SET date_modified=?"));
-    if (!s)
-      return false;
-
     s.BindInt64(0, Time::Now().ToTimeT());
 
     if (!s.Run())
@@ -1734,9 +1511,6 @@ bool AutofillTable::MigrateToVersion30AddDateModifed() {
 
     sql::Statement s(db_->GetUniqueStatement(
         "UPDATE credit_cards SET date_modified=?"));
-    if (!s)
-      return false;
-
     s.BindInt64(0, Time::Now().ToTimeT());
 
     if (!s.Run())
@@ -1760,21 +1534,19 @@ bool AutofillTable::MigrateToVersion31AddGUIDToCreditCardsAndProfiles() {
 
     sql::Statement s(db_->GetUniqueStatement("SELECT unique_id "
                                              "FROM autofill_profiles"));
-    if (!s)
-      return false;
 
     while (s.Step()) {
       sql::Statement update_s(
           db_->GetUniqueStatement("UPDATE autofill_profiles "
                                   "SET guid=? WHERE unique_id=?"));
-      if (!update_s)
-        return false;
       update_s.BindString(0, guid::GenerateGUID());
       update_s.BindInt(1, s.ColumnInt(0));
 
       if (!update_s.Run())
         return false;
     }
+    if (!s.Succeeded())
+      return false;
   }
 
   // Note that we need to check for the guid column's existence due to the
@@ -1790,21 +1562,19 @@ bool AutofillTable::MigrateToVersion31AddGUIDToCreditCardsAndProfiles() {
 
     sql::Statement s(db_->GetUniqueStatement("SELECT unique_id "
                                              "FROM credit_cards"));
-    if (!s)
-      return false;
 
     while (s.Step()) {
       sql::Statement update_s(
           db_->GetUniqueStatement("UPDATE credit_cards "
                                   "set guid=? WHERE unique_id=?"));
-      if (!update_s)
-        return false;
       update_s.BindString(0, guid::GenerateGUID());
       update_s.BindInt(1, s.ColumnInt(0));
 
       if (!update_s.Run())
         return false;
     }
+    if (!s.Succeeded())
+      return false;
   }
 
   return true;
@@ -1906,6 +1676,7 @@ bool AutofillTable::MigrateToVersion33ProfilesBasedOnFirstName() {
         "company_name, address_line_1, address_line_2, city, state, "
         "zipcode, country, phone, date_modified "
         "FROM autofill_profiles"));
+
     while (s.Step()) {
       AutofillProfile profile;
       profile.set_guid(s.ColumnString(0));
@@ -1930,9 +1701,6 @@ bool AutofillTable::MigrateToVersion33ProfilesBasedOnFirstName() {
           "(guid, company_name, address_line_1, address_line_2, city,"
           " state, zipcode, country, date_modified)"
           "VALUES (?,?,?,?,?,?,?,?,?)"));
-      if (!s)
-        return false;
-
       s_insert.BindString(0, profile.guid());
       s_insert.BindString16(1, profile.GetInfo(COMPANY_NAME));
       s_insert.BindString16(2, profile.GetInfo(ADDRESS_HOME_LINE1));
@@ -1949,7 +1717,9 @@ bool AutofillTable::MigrateToVersion33ProfilesBasedOnFirstName() {
       // Add the other bits: names, emails, and phone numbers.
       if (!AddAutofillProfilePieces(profile, db_))
         return false;
-    }
+    }  // endwhile
+    if (!s.Succeeded())
+      return false;
 
     if (!db_->Execute("DROP TABLE autofill_profiles"))
       return false;
@@ -2005,15 +1775,10 @@ bool AutofillTable::MigrateToVersion34ProfilesBasedOnCountryCode() {
     sql::Statement s(db_->GetUniqueStatement("SELECT guid, country "
                                              "FROM autofill_profiles"));
 
-    if (!s)
-      return false;
-
     while (s.Step()) {
       sql::Statement update_s(
           db_->GetUniqueStatement("UPDATE autofill_profiles "
                                   "SET country_code=? WHERE guid=?"));
-      if (!update_s)
-        return false;
 
       string16 country = s.ColumnString16(1);
       std::string app_locale = AutofillCountry::ApplicationLocale();
@@ -2024,6 +1789,8 @@ bool AutofillTable::MigrateToVersion34ProfilesBasedOnCountryCode() {
       if (!update_s.Run())
         return false;
     }
+    if (!s.Succeeded())
+      return false;
   }
 
   return true;
@@ -2044,8 +1811,6 @@ bool AutofillTable::MigrateToVersion35GreatBritainCountryCodes() {
 bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid, date_modified FROM autofill_profiles"));
-  if (!s)
-    return false;
 
   // Accumulate the good profiles.
   std::vector<AutofillProfile> accumulated_profiles;
@@ -2084,7 +1849,9 @@ bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
       // An invalid profile, so trash it.
       AddAutofillGUIDToTrash(p->guid());
     }
-  }
+  }  // endwhile
+  if (!s.Succeeded())
+    return false;
 
   // Drop the current profiles.
   if (!ClearAutofillProfiles())
@@ -2109,6 +1876,7 @@ bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
         "WHERE guid=?"));
     s_date.BindInt64(0, date_item->second);
     s_date.BindString(1, iter->guid());
+
     if (!s_date.Run())
       return false;
   }

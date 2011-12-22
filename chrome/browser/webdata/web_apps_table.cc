@@ -55,16 +55,13 @@ bool WebAppsTable::SetWebAppImage(const GURL& url, const SkBitmap& image) {
   sql::Statement s(db_->GetUniqueStatement(
       "INSERT OR REPLACE INTO web_app_icons "
       "(url, width, height, image) VALUES (?, ?, ?, ?)"));
-  if (!s)
-    return false;
-
   std::vector<unsigned char> image_data;
   gfx::PNGCodec::EncodeBGRASkBitmap(image, false, &image_data);
-
   s.BindString(0, history::HistoryDatabase::GURLToDatabaseURL(url));
   s.BindInt(1, image.width());
   s.BindInt(2, image.height());
   s.BindBlob(3, &image_data.front(), static_cast<int>(image_data.size()));
+
   return s.Run();
 }
 
@@ -72,11 +69,8 @@ bool WebAppsTable::GetWebAppImages(const GURL& url,
                                   std::vector<SkBitmap>* images) {
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT image FROM web_app_icons WHERE url=?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
   s.BindString(0, history::HistoryDatabase::GURLToDatabaseURL(url));
+
   while (s.Step()) {
     SkBitmap image;
     int col_bytes = s.ColumnByteLength(0);
@@ -91,51 +85,38 @@ bool WebAppsTable::GetWebAppImages(const GURL& url,
       }
     }
   }
-  return true;
+  return s.Succeeded();
 }
 
 bool WebAppsTable::SetWebAppHasAllImages(const GURL& url,
                                         bool has_all_images) {
   sql::Statement s(db_->GetUniqueStatement(
       "INSERT OR REPLACE INTO web_apps (url, has_all_images) VALUES (?, ?)"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
   s.BindString(0, history::HistoryDatabase::GURLToDatabaseURL(url));
   s.BindInt(1, has_all_images ? 1 : 0);
+
   return s.Run();
 }
 
 bool WebAppsTable::GetWebAppHasAllImages(const GURL& url) {
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT has_all_images FROM web_apps WHERE url=?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
   s.BindString(0, history::HistoryDatabase::GURLToDatabaseURL(url));
+
   return (s.Step() && s.ColumnInt(0) == 1);
 }
 
 bool WebAppsTable::RemoveWebApp(const GURL& url) {
   sql::Statement delete_s(db_->GetUniqueStatement(
       "DELETE FROM web_app_icons WHERE url = ?"));
-  if (!delete_s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
   delete_s.BindString(0, history::HistoryDatabase::GURLToDatabaseURL(url));
+
   if (!delete_s.Run())
     return false;
 
   sql::Statement delete_s2(db_->GetUniqueStatement(
       "DELETE FROM web_apps WHERE url = ?"));
-  if (!delete_s2) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
   delete_s2.BindString(0, history::HistoryDatabase::GURLToDatabaseURL(url));
+
   return delete_s2.Run();
 }
-

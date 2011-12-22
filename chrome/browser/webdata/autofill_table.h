@@ -246,7 +246,10 @@ class AutofillTable : public WebDatabaseTable {
 
   // Removes rows from autofill_profiles and credit_cards if they were created
   // on or after |delete_begin| and strictly before |delete_end|.  Returns lists
-  // of deleted guids in |profile_guids| and |credit_card_guids|.
+  // of deleted guids in |profile_guids| and |credit_card_guids|. Return value
+  // is true if all rows were successfully removed. Returns false on database
+  // error. In that case, the output vector state is undefined, and may be
+  // partially filled.
   bool RemoveAutofillProfilesAndCreditCardsModifiedBetween(
       const base::Time& delete_begin,
       const base::Time& delete_end,

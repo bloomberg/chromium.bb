@@ -148,14 +148,10 @@ bool KeywordTable::AddKeyword(const TemplateURL& url) {
       "autogenerate_keyword, logo_id, created_by_policy, instant_url, "
       "last_modified, sync_guid, id) VALUES "
       "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
   BindURLToStatement(url, &s);
   s.BindInt64(kUrlIdPosition, url.id());
+
   if (!s.Run()) {
-    NOTREACHED();
     return false;
   }
   return UpdateBackupSignature();
@@ -163,12 +159,10 @@ bool KeywordTable::AddKeyword(const TemplateURL& url) {
 
 bool KeywordTable::RemoveKeyword(TemplateURLID id) {
   DCHECK(id);
-  sql::Statement s(db_->GetUniqueStatement("DELETE FROM keywords WHERE id=?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
+  sql::Statement s(
+      db_->GetUniqueStatement("DELETE FROM keywords WHERE id = ?"));
   s.BindInt64(0, id);
+
   return s.Run() && UpdateBackupSignature();
 }
 
@@ -180,10 +174,7 @@ bool KeywordTable::GetKeywords(std::vector<TemplateURL*>* urls) {
       "suggest_url, prepopulate_id, autogenerate_keyword, logo_id, "
       "created_by_policy, instant_url, last_modified, sync_guid "
       "FROM keywords ORDER BY id ASC"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
+
   while (s.Step()) {
     TemplateURL* template_url = new TemplateURL();
     GetURLFromStatement(s, template_url);
@@ -203,12 +194,9 @@ bool KeywordTable::UpdateKeyword(const TemplateURL& url) {
       "suggest_url=?, prepopulate_id=?, autogenerate_keyword=?, "
       "logo_id=?, created_by_policy=?, instant_url=?, last_modified=?, "
       "sync_guid=? WHERE id=?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
   BindURLToStatement(url, &s);
   s.BindInt64(kUrlIdPosition, url.id());
+
   return s.Run() && UpdateBackupSignature();
 }
 

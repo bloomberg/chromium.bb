@@ -114,10 +114,6 @@ bool LoginsTable::AddLogin(const PasswordForm& form) {
       " blacklisted_by_user, scheme) "
       "VALUES "
       "(?,?,?,?,?,?,?,?,?,?,?,?,?)"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   std::string encrypted_password;
   s.BindString(0, form.origin.spec());
@@ -135,11 +131,8 @@ bool LoginsTable::AddLogin(const PasswordForm& form) {
   s.BindInt64(10, form.date_created.ToTimeT());
   s.BindInt(11, form.blacklisted_by_user);
   s.BindInt(12, form.scheme);
-  if (!s.Run()) {
-    NOTREACHED();
-    return false;
-  }
-  return true;
+
+  return s.Run();
 }
 
 bool LoginsTable::UpdateLogin(const PasswordForm& form) {
@@ -154,10 +147,6 @@ bool LoginsTable::UpdateLogin(const PasswordForm& form) {
       "username_value = ? AND "
       "password_element = ? AND "
       "signon_realm = ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   s.BindString(0, form.action.spec());
   std::string encrypted_password;
@@ -172,11 +161,7 @@ bool LoginsTable::UpdateLogin(const PasswordForm& form) {
   s.BindString16(7, form.password_element);
   s.BindString(8, form.signon_realm);
 
-  if (!s.Run()) {
-    NOTREACHED();
-    return false;
-  }
-  return true;
+  return s.Run();
 }
 
 bool LoginsTable::RemoveLogin(const PasswordForm& form) {
@@ -189,10 +174,6 @@ bool LoginsTable::RemoveLogin(const PasswordForm& form) {
       "password_element = ? AND "
       "submit_element = ? AND "
       "signon_realm = ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
   s.BindString(0, form.origin.spec());
   s.BindString16(1, form.username_element);
   s.BindString16(2, form.username_value);
@@ -200,11 +181,7 @@ bool LoginsTable::RemoveLogin(const PasswordForm& form) {
   s.BindString16(4, form.submit_element);
   s.BindString(5, form.signon_realm);
 
-  if (!s.Run()) {
-    NOTREACHED();
-    return false;
-  }
-  return true;
+  return s.Run();
 }
 
 bool LoginsTable::RemoveLoginsCreatedBetween(base::Time delete_begin,
@@ -212,10 +189,6 @@ bool LoginsTable::RemoveLoginsCreatedBetween(base::Time delete_begin,
   sql::Statement s1(db_->GetUniqueStatement(
       "DELETE FROM logins WHERE "
       "date_created >= ? AND date_created < ?"));
-  if (!s1) {
-    NOTREACHED() << "Statement 1 prepare failed";
-    return false;
-  }
   s1.BindInt64(0, delete_begin.ToTimeT());
   s1.BindInt64(1,
                delete_end.is_null() ?
@@ -226,10 +199,6 @@ bool LoginsTable::RemoveLoginsCreatedBetween(base::Time delete_begin,
 #if defined(OS_WIN)
   sql::Statement s2(db_->GetUniqueStatement(
       "DELETE FROM ie7_logins WHERE date_created >= ? AND date_created < ?"));
-  if (!s2) {
-    NOTREACHED() << "Statement 2 prepare failed";
-    return false;
-  }
   s2.BindInt64(0, delete_begin.ToTimeT());
   s2.BindInt64(1,
                delete_end.is_null() ?
@@ -252,11 +221,6 @@ bool LoginsTable::GetLogins(const PasswordForm& form,
                 "ssl_valid, preferred, "
                 "date_created, blacklisted_by_user, scheme FROM logins "
                 "WHERE signon_realm == ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   s.BindString(0, form.signon_realm);
 
   while (s.Step()) {
@@ -281,10 +245,6 @@ bool LoginsTable::GetAllLogins(std::vector<PasswordForm*>* forms,
   stmt.append("ORDER BY origin_url");
 
   sql::Statement s(db_->GetUniqueStatement(stmt.c_str()));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   while (s.Step()) {
     PasswordForm* new_form = new PasswordForm();

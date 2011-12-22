@@ -34,7 +34,7 @@ bool ExtractIntents(sql::Statement* s,
       service.disposition = WebIntentServiceData::DISPOSITION_INLINE;
     services->push_back(service);
   }
-  return true;
+  return s->Succeeded();
 }
 
 }  // namespace
@@ -79,8 +79,8 @@ bool WebIntentsTable::GetWebIntentServices(
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT service_url, action, type, title, disposition FROM web_intents "
       "WHERE action=?"));
-
   s.BindString16(0, action);
+
   return ExtractIntents(&s, services);
 }
 
@@ -94,8 +94,8 @@ bool WebIntentsTable::GetWebIntentServicesForURL(
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT service_url, action, type, title, disposition FROM web_intents "
       "WHERE service_url=?"));
-
   s.BindString16(0, service_url);
+
   return ExtractIntents(&s, services);
 }
 
@@ -123,6 +123,7 @@ bool WebIntentsTable::SetWebIntentService(const WebIntentServiceData& service) {
   s.BindString16(2, service.action);
   s.BindString16(3, service.title);
   s.BindString16(4, disposition);
+
   return s.Run();
 }
 
@@ -134,9 +135,9 @@ bool WebIntentsTable::RemoveWebIntentService(
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM web_intents "
       "WHERE service_url = ? AND action = ? AND type = ?"));
-
   s.BindString(0, service.service_url.spec());
   s.BindString16(1, service.action);
   s.BindString16(2, service.type);
+
   return s.Run();
 }

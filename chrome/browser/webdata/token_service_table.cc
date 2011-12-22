@@ -30,36 +30,27 @@ bool TokenServiceTable::IsSyncable() {
 bool TokenServiceTable::RemoveAllTokens() {
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM token_service"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   return s.Run();
 }
 
 bool TokenServiceTable::SetTokenForService(const std::string& service,
                                            const std::string& token) {
-  // Don't bother with a cached statement since this will be a relatively
-  // infrequent operation.
-  sql::Statement s(db_->GetUniqueStatement(
-      "INSERT OR REPLACE INTO token_service "
-      "(service, encrypted_token) VALUES (?, ?)"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
   std::string encrypted_token;
-
   bool encrypted = Encryptor::EncryptString(token, &encrypted_token);
   if (!encrypted) {
     return false;
   }
 
+  // Don't bother with a cached statement since this will be a relatively
+  // infrequent operation.
+  sql::Statement s(db_->GetUniqueStatement(
+      "INSERT OR REPLACE INTO token_service "
+      "(service, encrypted_token) VALUES (?, ?)"));
   s.BindString(0, service);
   s.BindBlob(1, encrypted_token.data(),
              static_cast<int>(encrypted_token.length()));
+
   return s.Run();
 }
 
@@ -67,10 +58,9 @@ bool TokenServiceTable::GetAllTokens(
     std::map<std::string, std::string>* tokens) {
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT service, encrypted_token FROM token_service"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
+
+  if (!s.is_valid())
     return false;
-  }
 
   while (s.Step()) {
     std::string encrypted_token;
@@ -89,4 +79,3 @@ bool TokenServiceTable::GetAllTokens(
   }
   return true;
 }
-

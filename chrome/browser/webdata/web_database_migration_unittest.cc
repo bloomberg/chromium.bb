@@ -697,7 +697,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion29ToCurrent) {
 
     sql::Statement s_profiles(connection.GetUniqueStatement(
         "SELECT date_modified FROM autofill_profiles "));
-    ASSERT_TRUE(s_profiles);
+    ASSERT_TRUE(s_profiles.is_valid());
     while (s_profiles.Step()) {
       EXPECT_GE(s_profiles.ColumnInt64(0),
                 pre_creation_time.ToTimeT());
@@ -708,7 +708,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion29ToCurrent) {
 
     sql::Statement s_credit_cards(connection.GetUniqueStatement(
         "SELECT date_modified FROM credit_cards "));
-    ASSERT_TRUE(s_credit_cards);
+    ASSERT_TRUE(s_credit_cards.is_valid());
     while (s_credit_cards.Step()) {
       EXPECT_GE(s_credit_cards.ColumnInt64(0),
                 pre_creation_time.ToTimeT());
@@ -1875,4 +1875,3 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion42ToCurrent) {
     EXPECT_FALSE(s.Step());
   }
 }
-
