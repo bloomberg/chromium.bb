@@ -38,6 +38,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
   virtual void Persist() OVERRIDE;
 
  private:
+  struct CacheOperationDataShim;
   enum State {
     GET_BACKEND,
     GET_BACKEND_COMPLETE,
@@ -54,33 +55,14 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
     NONE,
   };
 
-  class CallbackImpl : public CallbackRunner<Tuple1<int> > {
-   public:
-    CallbackImpl(const base::WeakPtr<DiskCacheBasedSSLHostInfo>& obj,
-                 void (DiskCacheBasedSSLHostInfo::*meth)(int));
-    virtual ~CallbackImpl();
-
-    disk_cache::Backend** backend_pointer() { return &backend_; }
-    disk_cache::Entry** entry_pointer() { return &entry_; }
-    disk_cache::Backend* backend() const { return backend_; }
-    disk_cache::Entry* entry() const { return entry_; }
-
-    // CallbackRunner<Tuple1<int> >:
-    virtual void RunWithParams(const Tuple1<int>& params) OVERRIDE;
-
-   private:
-    base::WeakPtr<DiskCacheBasedSSLHostInfo> obj_;
-    void (DiskCacheBasedSSLHostInfo::*meth_)(int);
-
-    disk_cache::Backend* backend_;
-    disk_cache::Entry* entry_;
-  };
-
   virtual ~DiskCacheBasedSSLHostInfo();
 
   std::string key() const;
 
-  void OnIOComplete(int rv);
+  // The |unused| parameter is a small hack so that we can have the
+  // CacheOperationDataShim object owned by the Callback that is created for
+  // this method.  See comment above CacheOperationDataShim for details.
+  void OnIOComplete(CacheOperationDataShim* unused, int rv);
 
   int DoLoop(int rv);
 
@@ -102,11 +84,9 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
   // DoSetDone is the terminal state of the write operation.
   int DoSetDone();
 
-  // IsCallbackPending returns true if we have a pending callback.
-  bool IsCallbackPending() const;
-
   base::WeakPtrFactory<DiskCacheBasedSSLHostInfo> weak_factory_;
-  CallbackImpl* callback_;
+  CacheOperationDataShim* data_shim_;  // Owned by |io_callback_|.
+  CompletionCallback io_callback_;
   State state_;
   bool ready_;
   bool found_entry_;  // Controls the behavior of DoCreateOrOpen.
