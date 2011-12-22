@@ -3106,11 +3106,15 @@ void RenderViewImpl::requestStorageQuota(
 
 void RenderViewImpl::registerIntentService(
     WebKit::WebFrame* frame, const WebKit::WebIntentServiceInfo& service) {
+  string16 title = service.title();
+  if (title.empty())
+    title = webview()->mainFrame()->document().title();
+
   Send(new IntentsHostMsg_RegisterIntentService(routing_id_,
                                                 service.action(),
                                                 service.type(),
                                                 service.url().spec().utf16(),
-                                                service.title(),
+                                                title,
                                                 service.disposition()));
 }
 

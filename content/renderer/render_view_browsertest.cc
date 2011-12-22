@@ -7,6 +7,7 @@
 #include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "content/common/intents_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/renderer/render_view_impl.h"
@@ -15,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentServiceInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/range/range.h"
@@ -1083,4 +1085,31 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   EXPECT_EQ(-1, view()->history_page_ids_[1]);
   EXPECT_EQ(expected_page_id, view()->history_page_ids_[2]);
   EXPECT_EQ(expected_page_id_2, view()->history_page_ids_[3]);
+}
+
+TEST_F(RenderViewImplTest, FindTitleForIntentsPage) {
+  view()->set_send_content_state_immediately(true);
+  LoadHTML("<html><head><title>title</title>"
+           "<intent action=\"a\" type=\"t\"></intent></head></html>");
+  WebKit::WebIntentServiceInfo service;
+  service.setAction(ASCIIToUTF16("a"));
+  service.setType(ASCIIToUTF16("t"));
+  view()->registerIntentService(GetMainFrame(), service);
+  ProcessPendingMessages();
+
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      IntentsHostMsg_RegisterIntentService::ID));
+  const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
+      IntentsHostMsg_RegisterIntentService::ID);
+  ASSERT_TRUE(msg);
+  string16 action;
+  string16 type;
+  string16 href;
+  string16 title;
+  string16 disposition;
+  IntentsHostMsg_RegisterIntentService::Read(
+      msg, &action, &type, &href, &title, &disposition);
+  EXPECT_EQ(ASCIIToUTF16("a"), action);
+  EXPECT_EQ(ASCIIToUTF16("t"), type);
+  EXPECT_EQ(ASCIIToUTF16("title"), title);
 }
