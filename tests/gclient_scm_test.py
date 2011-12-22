@@ -1004,12 +1004,12 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsValidRevision', True)
     gclient_scm.scm.GIT.IsValidRevision(cwd=self.base_path, rev=self.fake_hash_1
         ).AndReturn(True)
-    gclient_scm.scm.GIT.IsValidRevision(cwd=self.base_path, rev='1'
-        ).AndReturn(False)
 
     self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
     gclient_scm.scm.GIT.IsGitSvn(cwd=self.base_path).MultipleTimes(
         ).AndReturn(False)
+
+    gclient_scm.scm.os.path.isdir(self.base_path).AndReturn(True)
 
     self.mox.ReplayAll()
 
@@ -1019,7 +1019,7 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     # the LKGR gets flipped to git sha1's some day).
     self.assertEquals(git_scm.GetUsableRev(self.fake_hash_1, options),
                       self.fake_hash_1)
-    # An SVN rev with a purely git repo should raise an exception.
+    # An SVN rev with an existing purely git repo should raise an exception.
     self.assertRaises(gclient_scm.gclient_utils.Error,
                       git_scm.GetUsableRev, '1', options)
 
@@ -1054,10 +1054,16 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     gclient_scm.scm.GIT.IsValidRevision(cwd=self.base_path, rev=too_big
         ).AndReturn(False)
 
+    gclient_scm.os.path.isdir(self.base_path).AndReturn(False)
+    gclient_scm.os.path.isdir(self.base_path).MultipleTimes().AndReturn(True)
+
     self.mox.ReplayAll()
 
     git_svn_scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                                     relpath=self.relpath)
+    # Without an existing checkout, this should fail. TODO(dbeam) Fix this.
+    self.assertRaises(gclient_scm.gclient_utils.Error,
+                      git_svn_scm.GetUsableRev, '1', options)
     # Given an SVN revision with a git-svn checkout, it should be translated to
     # a git sha1 and be usable.
     self.assertEquals(git_svn_scm.GetUsableRev('1', options),

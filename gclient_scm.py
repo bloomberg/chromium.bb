@@ -489,26 +489,39 @@ class GitWrapper(SCMWrapper):
     If SCM is git-svn and the head revision is less than |rev|, git svn fetch
     will be called on the source."""
     sha1 = None
-    # As an optimization, only verify an SVN revision as [0-9]{1,6} for now to
-    # avoid making a network request.
-    if (scm.GIT.IsGitSvn(cwd=self.checkout_path) and
-        rev.isdigit() and len(rev) < 7):
-      local_head = scm.GIT.GetGitSvnHeadRev(cwd=self.checkout_path)
-      if not local_head or local_head < int(rev):
-        if options.verbose:
-          print('Running git svn fetch. This might take a while.\n')
-        scm.GIT.Capture(['svn', 'fetch'], cwd=self.checkout_path)
-      sha1 = scm.GIT.GetSha1ForSvnRev(cwd=self.checkout_path, rev=rev)
+    # Handles an SVN rev.  As an optimization, only verify an SVN revision as
+    # [0-9]{1,6} for now to avoid making a network request.
+    if rev.isdigit() and len(rev) < 7:
+      # If the content of the safesync_url appears to be an SVN rev and the
+      # URL of the source appears to be git, we can only attempt to find out
+      # if a revision is useful after we've cloned the original URL, so just
+      # ignore for now.
+      if (os.path.isdir(self.checkout_path) and
+          scm.GIT.IsGitSvn(cwd=self.checkout_path)):
+        local_head = scm.GIT.GetGitSvnHeadRev(cwd=self.checkout_path)
+        if not local_head or local_head < int(rev):
+          if options.verbose:
+            print('Running git svn fetch. This might take a while.\n')
+          scm.GIT.Capture(['svn', 'fetch'], cwd=self.checkout_path)
+        sha1 = scm.GIT.GetSha1ForSvnRev(cwd=self.checkout_path, rev=rev)
+        if not sha1:
+          raise gclient_utils.Error(
+              ( 'It appears that either your git-svn remote is incorrectly\n'
+                'configured or the revision in your safesync_url is\n'
+                'higher than git-svn remote\'s HEAD as we couldn\'t find a\n'
+                'corresponding git hash for SVN rev %s.' ) % rev)
     elif scm.GIT.IsValidRevision(cwd=self.checkout_path, rev=rev):
       sha1 = rev
+
     if not sha1:
       raise gclient_utils.Error(
-          ( '%s is not a value hash. Safesync URLs with a git checkout\n'
-            'currently require a git-svn remote or a safesync_url that\n'
-            'provides git sha1s. Please add a git-svn remote or change\n'
-            'your safesync_url. For more info, see:\n'
+          ( 'We could not find a valid hash for safesync_url response "%s".\n'
+            'Safesync URLs with a git checkout currently require a git-svn\n'
+            'remote or a safesync_url that provides git sha1s. Please add a\n'
+            'git-svn remote or change your safesync_url. For more info, see:\n'
             'http://code.google.com/p/chromium/wiki/UsingNewGit'
-            '#Initial_checkout') % rev)
+            '#Initial_checkout' ) % rev)
+
     return sha1
 
   def FullUrlForRelativeUrl(self, url):

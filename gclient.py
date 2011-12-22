@@ -920,18 +920,7 @@ solutions = [
         if not s.managed:
           self._options.revisions.append('%s@unmanaged' % s.name)
         elif s.safesync_url:
-          handle = urllib.urlopen(s.safesync_url)
-          rev = handle.read().strip()
-          handle.close()
-          scm = gclient_scm.CreateSCM(s.url, s.root.root_dir, s.name)
-          safe_rev = scm.GetUsableRev(rev=rev, options=self._options)
-          if not safe_rev:
-            raise gclient_utils.Error(
-                'Despite our best attempts, we couldn\'t find a useful\n'
-                'safesync_url revision for you.')
-          if self._options.verbose:
-            print('Using safesync_url revision: %s.\n' % safe_rev)
-          self._options.revisions.append('%s@%s' % (s.name, safe_rev))
+          self._ApplySafeSyncRev(dep=s)
     if not self._options.revisions:
       return revision_overrides
     solutions_names = [s.name for s in self.dependencies]
@@ -949,6 +938,25 @@ solutions = [
         revision_overrides[sol] = rev
       index += 1
     return revision_overrides
+
+  def _ApplySafeSyncRev(self, dep):
+    """Finds a valid revision from the content of the safesync_url and apply it
+    by appending revisions to the revision list. Throws if revision appears to
+    be invalid for the given |dep|."""
+    assert len(dep.safesync_url) > 0
+    handle = urllib.urlopen(dep.safesync_url)
+    rev = handle.read().strip()
+    handle.close()
+    if not rev:
+      raise gclient_utils.Error(
+          'It appears your safesync_url (%s) is not working properly\n'
+          '(as it returned an empty response). Check your config.' %
+          dep.safesync_url)
+    scm = gclient_scm.CreateSCM(dep.url, dep.root.root_dir, dep.name)
+    safe_rev = scm.GetUsableRev(rev=rev, options=self._options)
+    if self._options.verbose:
+      print('Using safesync_url revision: %s.\n' % safe_rev)
+    self._options.revisions.append('%s@%s' % (dep.name, safe_rev))
 
   def RunOnDeps(self, command, args):
     """Runs a command on each dependency in a client and its dependencies.
