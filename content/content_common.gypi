@@ -327,6 +327,42 @@
         ],
       },
     }],
+    ['OS=="win"', {
+      'dependencies': [
+        '../media/media.gyp:media',
+        '../third_party/angle/src/build_angle.gyp:libEGL',
+        '../third_party/angle/src/build_angle.gyp:libGLESv2',
+      ],
+      'link_settings': {
+        'libraries': [
+           '-ld3d9.lib',
+           '-ld3dx9.lib',
+           '-ldxva2.lib',
+           '-lstrmiids.lib',
+           '-lmf.lib',
+           '-lmfplat.lib',
+           '-lmfuuid.lib',
+        ],
+        'msvs_settings': {
+          'VCLinkerTool': {
+            'DelayLoadDLLs': [
+              'd3d9.dll',
+              'd3dx9_43.dll',
+              'dxva2.dll',
+              'mf.dll',
+              'mfplat.dll',
+            ],
+          },
+        },
+      },
+      'sources': [
+        'common/gpu/media/dxva_video_decode_accelerator.cc',
+        'common/gpu/media/dxva_video_decode_accelerator.h',
+      ],
+      'include_dirs': [
+        '<(DEPTH)/third_party/angle/include',
+      ],
+    }],
     ['OS=="win" and directxsdk_exists=="True"', {
       'actions': [
       {

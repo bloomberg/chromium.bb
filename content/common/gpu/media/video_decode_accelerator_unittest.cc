@@ -28,6 +28,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -36,13 +37,20 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/utf_string_conversions.h"
+
+#if (!defined(OS_CHROMEOS) || !defined(ARCH_CPU_ARMEL)) && !defined(OS_WIN)
+#error The VideoAccelerator tests are only supported on cros/ARM/Windows.
+#endif
+
+#if defined(OS_WIN)
+#include "content/common/gpu/media/dxva_video_decode_accelerator.h"
+#else  // OS_WIN
 #include "content/common/gpu/media/omx_video_decode_accelerator.h"
+#endif  // defined(OS_WIN)
+
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/GLES2/gl2.h"
-
-#if !defined(OS_CHROMEOS) || !defined(ARCH_CPU_ARMEL)
-#error This test (and OmxVideoDecodeAccelerator) are only supported on cros/ARM!
-#endif
 
 using media::VideoDecodeAccelerator;
 
@@ -61,20 +69,21 @@ namespace {
 //   (the latter tests just decode speed).
 // - |profile| is the media::H264Profile set during Initialization.
 // An empty value for a numeric field means "ignore".
-const char* test_video_data = "test-25fps.h264:320:240:250:258:50:175:1";
+const FilePath::CharType* test_video_data =
+    FILE_PATH_LITERAL("test-25fps.h264:320:240:250:258:50:175:1");
 
 // Parse |data| into its constituent parts and set the various output fields
 // accordingly.  CHECK-fails on unexpected or missing required data.
 // Unspecified optional fields are set to -1.
-void ParseTestVideoData(std::string data,
-                        std::string* file_name,
+void ParseTestVideoData(FilePath::StringType data,
+                        FilePath::StringType* file_name,
                         int* width, int* height,
                         int* num_frames,
                         int* num_NALUs,
                         int* min_fps_render,
                         int* min_fps_no_render,
                         int* profile) {
-  std::vector<std::string> elements;
+  std::vector<FilePath::StringType> elements;
   base::SplitString(data, ':', &elements);
   CHECK_GE(elements.size(), 1U) << data;
   CHECK_LE(elements.size(), 8U) << data;
@@ -98,17 +107,12 @@ void ParseTestVideoData(std::string data,
     CHECK(base::StringToInt(elements[7], profile));
 }
 
-
-// Helper for managing X11, EGL, and GLES2 resources.  Xlib is not thread-safe,
-// and GL state is thread-specific, so all the methods of this class (except for
-// ctor/dtor) ensure they're being run on a single thread.
-//
-// TODO(fischman): consider moving this into media/ if we can de-dup some of the
-// code that ends up getting copy/pasted all over the place (esp. the GL setup
-// code).
+// Provides functionality for managing EGL, GLES2 and UI resources.
+// This class is not thread safe and thus all the methods of this class
+// (except for ctor/dtor) ensure they're being run on a single thread.
 class RenderingHelper {
  public:
-  explicit RenderingHelper();
+  RenderingHelper();
   ~RenderingHelper();
 
   // Initialize all structures to prepare to render to one or more windows of
@@ -119,8 +123,8 @@ class RenderingHelper {
   // then all the usual work is done, except for the final swap of the EGL
   // surface to the display.  This cuts test times over 50% so is worth doing
   // when testing non-rendering-related aspects.
-  void Initialize(bool suppress_swap_to_display, int num_windows,
-                  int width, int height, base::WaitableEvent* done);
+  void Initialize(bool suppress_swap_to_display, int num_windows, int width,
+                  int height, base::WaitableEvent* done);
 
   // Undo the effects of Initialize() and signal |*done|.
   void UnInitialize(base::WaitableEvent* done);
@@ -136,26 +140,43 @@ class RenderingHelper {
   // Delete |texture_id|.
   void DeleteTexture(GLuint texture_id);
 
+  // Platform specific Init/Uninit.
+  void PlatformInitialize();
+  void PlatformUnInitialize();
+
+  // Platform specific window creation.
+  EGLNativeWindowType PlatformCreateWindow(int top_left_x, int top_left_y);
+
+  // Platform specific display surface returned here.
+  EGLDisplay PlatformGetDisplay();
+
   EGLDisplay egl_display() { return egl_display_; }
+
   EGLContext egl_context() { return egl_context_; }
+
   MessageLoop* message_loop() { return message_loop_; }
 
- private:
-  // Zero-out internal state.  Helper for ctor & UnInitialize().
+ protected:
   void Clear();
 
-  bool suppress_swap_to_display_;
+  // We ensure all operations are carried out on the same thread by remembering
+  // where we were Initialized.
+  MessageLoop* message_loop_;
   int width_;
   int height_;
-  Display* x_display_;
-  std::vector<Window> x_windows_;
+  bool suppress_swap_to_display_;
+
   EGLDisplay egl_display_;
   EGLContext egl_context_;
   std::vector<EGLSurface> egl_surfaces_;
   std::map<GLuint, int> texture_id_to_surface_index_;
-  // We ensure all operations are carried out on the same thread by remembering
-  // where we were Initialized.
-  MessageLoop* message_loop_;
+
+#if defined(OS_WIN)
+  std::vector<HWND> windows_;
+#else  // OS_WIN
+  Display* x_display_;
+  std::vector<Window> x_windows_;
+#endif  // OS_WIN
 };
 
 RenderingHelper::RenderingHelper() {
@@ -164,19 +185,7 @@ RenderingHelper::RenderingHelper() {
 
 RenderingHelper::~RenderingHelper() {
   CHECK_EQ(width_, 0) << "Must call UnInitialize before dtor.";
-}
-
-void RenderingHelper::Clear() {
-  suppress_swap_to_display_ = false;
-  width_ = 0;
-  height_ = 0;
-  x_display_ = NULL;
-  x_windows_.clear();
-  egl_display_ = EGL_NO_DISPLAY;
-  egl_context_ = EGL_NO_CONTEXT;
-  egl_surfaces_.clear();
-  texture_id_to_surface_index_.clear();
-  message_loop_ = NULL;
+  Clear();
 }
 
 // Helper for Shader creation.
@@ -200,7 +209,8 @@ static void CreateShader(
 void RenderingHelper::Initialize(
     bool suppress_swap_to_display,
     int num_windows,
-    int width, int height,
+    int width,
+    int height,
     base::WaitableEvent* done) {
   // Use width_ != 0 as a proxy for the class having already been
   // Initialize()'d, and UnInitialize() before continuing.
@@ -218,15 +228,10 @@ void RenderingHelper::Initialize(
   message_loop_ = MessageLoop::current();
   CHECK_GT(num_windows, 0);
 
-  // Per-display X11 & EGL initialization.
-  CHECK(x_display_ = XOpenDisplay(NULL));
-  int depth = DefaultDepth(x_display_, DefaultScreen(x_display_));
-  XSetWindowAttributes window_attributes;
-  window_attributes.background_pixel =
-      BlackPixel(x_display_, DefaultScreen(x_display_));
-  window_attributes.override_redirect = true;
+  PlatformInitialize();
 
-  egl_display_ = eglGetDisplay(x_display_);
+  egl_display_ = PlatformGetDisplay();
+
   EGLint major;
   EGLint minor;
   CHECK(eglInitialize(egl_display_, &major, &minor)) << eglGetError();
@@ -253,28 +258,16 @@ void RenderingHelper::Initialize(
     // Arrange X windows whimsically, with some padding.
     int top_left_x = (width + 20) * (i % 4);
     int top_left_y = (height + 12) * (i % 3);
-    Window x_window = XCreateWindow(
-      x_display_, DefaultRootWindow(x_display_),
-      top_left_x, top_left_y, width_, height_,
-      0 /* border width */,
-      depth, CopyFromParent /* class */, CopyFromParent /* visual */,
-      (CWBackPixel | CWOverrideRedirect), &window_attributes);
-    x_windows_.push_back(x_window);
-    XStoreName(x_display_, x_window, "OmxVideoDecodeAcceleratorTest");
-    XSelectInput(x_display_, x_window, ExposureMask);
-    XMapWindow(x_display_, x_window);
 
+    EGLNativeWindowType window = PlatformCreateWindow(top_left_x, top_left_y);
     EGLSurface egl_surface =
-        eglCreateWindowSurface(egl_display_, egl_config, x_window, NULL);
+        eglCreateWindowSurface(egl_display_, egl_config, window, NULL);
     egl_surfaces_.push_back(egl_surface);
     CHECK_NE(egl_surface, EGL_NO_SURFACE);
   }
   CHECK(eglMakeCurrent(egl_display_, egl_surfaces_[0],
                        egl_surfaces_[0], egl_context_)) << eglGetError();
 
-  // GLES2 initialization.  Note: This is pretty much copy/pasted from
-  // media/tools/player_x11/gles_video_renderer.cc, with some simplification
-  // applied.
   static const float kVertices[] =
       { -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f, -1.f, };
   static const float kTextureCoordsEgl[] = { 0, 1, 0, 0, 1, 1, 1, 0, };
@@ -319,26 +312,31 @@ void RenderingHelper::Initialize(
   glEnableVertexAttribArray(tc_location);
   glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0,
                         kTextureCoordsEgl);
-
   done->Signal();
 }
 
 void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
   CHECK_EQ(MessageLoop::current(), message_loop_);
-  // Destroy resources acquired in Initialize, in reverse-acquisition order.
   CHECK(eglMakeCurrent(egl_display_, EGL_NO_SURFACE, EGL_NO_SURFACE,
                        EGL_NO_CONTEXT)) << eglGetError();
   CHECK(eglDestroyContext(egl_display_, egl_context_));
   for (size_t i = 0; i < egl_surfaces_.size(); ++i)
     CHECK(eglDestroySurface(egl_display_, egl_surfaces_[i]));
   CHECK(eglTerminate(egl_display_));
-  for (size_t i = 0; i < x_windows_.size(); ++i) {
-    CHECK(XUnmapWindow(x_display_, x_windows_[i]));
-    CHECK(XDestroyWindow(x_display_, x_windows_[i]));
-  }
-  // Mimic newly-created object.
   Clear();
   done->Signal();
+}
+
+void RenderingHelper::Clear() {
+  suppress_swap_to_display_ = false;
+  width_ = 0;
+  height_ = 0;
+  texture_id_to_surface_index_.clear();
+  message_loop_ = NULL;
+  egl_display_ = EGL_NO_DISPLAY;
+  egl_context_ = EGL_NO_CONTEXT;
+  egl_surfaces_.clear();
+  PlatformUnInitialize();
 }
 
 void RenderingHelper::CreateTexture(int window_id, GLuint* texture_id,
@@ -389,6 +387,76 @@ void RenderingHelper::DeleteTexture(GLuint texture_id) {
   glDeleteTextures(1, &texture_id);
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
+
+#if defined(OS_WIN)
+void RenderingHelper::PlatformInitialize() {}
+
+void RenderingHelper::PlatformUnInitialize() {
+  for (size_t i = 0; i < windows_.size(); ++i) {
+    DestroyWindow(windows_[i]);
+  }
+  windows_.clear();
+}
+
+EGLNativeWindowType RenderingHelper::PlatformCreateWindow(
+    int top_left_x, int top_left_y) {
+  HWND window = CreateWindowEx(0, L"Static", L"VideoDecodeAcceleratorTest",
+                               WS_OVERLAPPEDWINDOW | WS_VISIBLE, top_left_x,
+                               top_left_y, width_, height_, NULL, NULL, NULL,
+                               NULL);
+  CHECK(window != NULL);
+  windows_.push_back(window);
+  return window;
+}
+
+EGLDisplay RenderingHelper::PlatformGetDisplay() {
+  return eglGetDisplay(EGL_DEFAULT_DISPLAY);
+}
+
+#else  // OS_WIN
+
+void RenderingHelper::PlatformInitialize() {
+  CHECK(x_display_ = XOpenDisplay(NULL));
+}
+
+void RenderingHelper::PlatformUnInitialize() {
+  // Destroy resources acquired in Initialize, in reverse-acquisition order.
+  for (size_t i = 0; i < x_windows_.size(); ++i) {
+    CHECK(XUnmapWindow(x_display_, x_windows_[i]));
+    CHECK(XDestroyWindow(x_display_, x_windows_[i]));
+  }
+  // Mimic newly created object.
+  x_display_ = NULL;
+  x_windows_.clear();
+}
+
+EGLDisplay RenderingHelper::PlatformGetDisplay() {
+  return eglGetDisplay(x_display_);
+}
+
+EGLNativeWindowType RenderingHelper::PlatformCreateWindow(int top_left_x,
+                                                          int top_left_y) {
+  int depth = DefaultDepth(x_display_, DefaultScreen(x_display_));
+
+  XSetWindowAttributes window_attributes;
+  window_attributes.background_pixel =
+      BlackPixel(x_display_, DefaultScreen(x_display_));
+  window_attributes.override_redirect = true;
+
+  Window x_window = XCreateWindow(
+      x_display_, DefaultRootWindow(x_display_),
+      top_left_x, top_left_y, width_, height_,
+      0 /* border width */,
+      depth, CopyFromParent /* class */, CopyFromParent /* visual */,
+      (CWBackPixel | CWOverrideRedirect), &window_attributes);
+  x_windows_.push_back(x_window);
+  XStoreName(x_display_, x_window, "VideoDecodeAcceleratorTest");
+  XSelectInput(x_display_, x_window, ExposureMask);
+  XMapWindow(x_display_, x_window);
+  return x_window;
+}
+
+#endif  // OS_WIN
 
 // State of the EglRenderingVDAClient below.  Order matters here as the test
 // makes assumptions about it.
@@ -523,7 +591,7 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   size_t encoded_data_next_pos_to_decode_;
   int next_bitstream_buffer_id_;
   ClientStateNotification* note_;
-  scoped_refptr<OmxVideoDecodeAccelerator> decoder_;
+  scoped_refptr<VideoDecodeAccelerator> decoder_;
   std::set<int> outstanding_texture_ids_;
   int reset_after_frame_num_;
   int delete_decoder_state_;
@@ -569,8 +637,15 @@ EglRenderingVDAClient::~EglRenderingVDAClient() {
 
 void EglRenderingVDAClient::CreateDecoder() {
   CHECK(decoder_deleted());
-  decoder_ = new OmxVideoDecodeAccelerator(this);
-  decoder_->SetEglState(egl_display(), egl_context());
+#if defined(OS_WIN)
+  scoped_refptr<DXVAVideoDecodeAccelerator> decoder =
+      new DXVAVideoDecodeAccelerator(this, base::GetCurrentProcessHandle());
+#else  // OS_WIN
+  scoped_refptr<OmxVideoDecodeAccelerator> decoder =
+      new OmxVideoDecodeAccelerator(this);
+  decoder->SetEglState(egl_display(), egl_context());
+#endif  // OS_WIN
+  decoder_ = decoder.release();
   SetState(CS_DECODER_SET);
   if (decoder_deleted())
     return;
@@ -785,7 +860,7 @@ double EglRenderingVDAClient::frames_per_second() {
 // - Number of concurrent in-flight Decode() calls per decoder.
 // - reset_after_frame_num: see EglRenderingVDAClient ctor.
 // - delete_decoder_phase: see EglRenderingVDAClient ctor.
-class OmxVideoDecodeAcceleratorTest
+class VideoDecodeAcceleratorTest
     : public ::testing::TestWithParam<
   Tuple5<int, int, int, ResetPoint, ClientState> > {
 };
@@ -809,7 +884,7 @@ enum { kMinSupportedNumConcurrentDecoders = 3 };
 
 // Test the most straightforward case possible: data is decoded from a single
 // chunk and rendered to the screen.
-TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
+TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   // Can be useful for debugging VLOGs from OVDA.
   // logging::SetMinLogLevel(-1);
 
@@ -822,7 +897,7 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
   const int reset_after_frame_num = GetParam().d;
   const int delete_decoder_state = GetParam().e;
 
-  std::string test_video_file;
+  FilePath::StringType test_video_file;
   int frame_width, frame_height;
   int num_frames, num_NALUs, min_fps_render, min_fps_no_render, profile;
   ParseTestVideoData(test_video_data, &test_video_file, &frame_width,
@@ -849,7 +924,15 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
 
   // Initialize the rendering helper.
   base::Thread rendering_thread("EglRenderingVDAClientThread");
-  rendering_thread.Start();
+  base::Thread::Options options;
+  options.message_loop_type = MessageLoop::TYPE_DEFAULT;
+#if defined(OS_WIN)
+  // For windows the decoding thread initializes the media foundation decoder
+  // which uses COM. We need the thread to be a UI thread.
+  options.message_loop_type = MessageLoop::TYPE_UI;
+#endif  // OS_WIN
+
+  rendering_thread.StartWithOptions(options);
   RenderingHelper rendering_helper;
 
   base::WaitableEvent done(false, false);
@@ -889,7 +972,8 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
       // We expect initialization to fail only when more than the supported
       // number of decoders is instantiated.  Assert here that something else
       // didn't trigger failure.
-      ASSERT_GT(num_concurrent_decoders, kMinSupportedNumConcurrentDecoders);
+      ASSERT_GT(num_concurrent_decoders,
+                static_cast<size_t>(kMinSupportedNumConcurrentDecoders));
       continue;
     }
     ASSERT_EQ(state, CS_INITIALIZED);
@@ -947,14 +1031,14 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
 // Test that Reset() mid-stream works fine and doesn't affect decoding even when
 // Decode() calls are made during the reset.
 INSTANTIATE_TEST_CASE_P(
-    MidStreamReset, OmxVideoDecodeAcceleratorTest,
+    MidStreamReset, VideoDecodeAcceleratorTest,
     ::testing::Values(
         MakeTuple(1, 1, 1, static_cast<ResetPoint>(100), CS_RESET)));
 
 // Test that Destroy() mid-stream works fine (primarily this is testing that no
 // crashes occur).
 INSTANTIATE_TEST_CASE_P(
-    TearDownTiming, OmxVideoDecodeAcceleratorTest,
+    TearDownTiming, VideoDecodeAcceleratorTest,
     ::testing::Values(
         MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_DECODER_SET),
         MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_INITIALIZED),
@@ -970,7 +1054,7 @@ INSTANTIATE_TEST_CASE_P(
 // Test that decoding various variation works: multiple concurrent decoders and
 // multiple NALUs per Decode() call.
 INSTANTIATE_TEST_CASE_P(
-    DecodeVariations, OmxVideoDecodeAcceleratorTest,
+    DecodeVariations, VideoDecodeAcceleratorTest,
     ::testing::Values(
         MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
         MakeTuple(1, 1, 10, END_OF_STREAM_RESET, CS_RESET),
@@ -991,7 +1075,7 @@ INSTANTIATE_TEST_CASE_P(
 // Find out how many concurrent decoders can go before we exhaust system
 // resources.
 INSTANTIATE_TEST_CASE_P(
-    ResourceExhaustion, OmxVideoDecodeAcceleratorTest,
+    ResourceExhaustion, VideoDecodeAcceleratorTest,
     ::testing::Values(
         // +0 hack below to promote enum to int.
         MakeTuple(1, kMinSupportedNumConcurrentDecoders + 0, 1,
@@ -1009,16 +1093,21 @@ INSTANTIATE_TEST_CASE_P(
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);  // Removes gtest-specific args.
-  CommandLine cmd_line(argc, argv);  // Must run after InitGoogleTest.
-  CommandLine::SwitchMap switches = cmd_line.GetSwitches();
+  CommandLine::Init(argc, argv);
+
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  DCHECK(cmd_line);
+
+  CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
     if (it->first == "test_video_data") {
       test_video_data = it->second.c_str();
-      continue;
     }
     LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
   }
-
+#if defined(OS_WIN)
+  DXVAVideoDecodeAccelerator::PreSandboxInitialization();
+#endif  // OS_WIN
   return RUN_ALL_TESTS();
 }
