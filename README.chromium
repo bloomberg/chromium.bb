@@ -1,15 +1,18 @@
-Name: libsrtp
-URL: http://srtp.sourceforge.net
-Version: unknown
-License File: LICENSE
+Name: Libsrtp library. Used for p2p voice and video communication.
+Short Name: libsrtp
+URL: http://srtp.sourceforge.net/srtp.html
+Version: 1.4.4
+License: BSD-based license
+License File: srtp/LICENSE
+Security Critical: Yes
 
 Description:
-Contains sources of libSRTP used by Chrome.
-The current version contains copy of the libsrtp CVS from 2010-09-20. Command
-used to obtain this copy:
+  Libsrtp provides secure media transmission in a real
+  time communication. It's used with libjingle which
+  provides the p2p session setup.
 
-  cvs -d:pserver:anonymous@srtp.cvs.sourceforge.net:/cvsroot/srtp co -P srtp
+  Libsrtp is distributed under the following BSD-based license, detailed info
+  in srtp/LICENSE.
 
-Following files are not included in this copy:
- 1. The configure script.
- 2. All .cvsignore files.
+Local Modifications:
+
