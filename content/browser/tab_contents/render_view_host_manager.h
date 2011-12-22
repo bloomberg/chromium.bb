@@ -44,7 +44,14 @@ class CONTENT_EXPORT RenderViewHostManager
   // "RenderManager" so that the duplicate implementation of them will be clear.
   class CONTENT_EXPORT Delegate {
    public:
-    // See tab_contents.h's implementation for more.
+    // Initializes the given renderer if necessary and creates the view ID
+    // corresponding to this view host. If this method is not called and the
+    // process is not shared, then the TabContents will act as though the
+    // renderer is not running (i.e., it will render "sad tab"). This method is
+    // automatically called from LoadURL.
+    //
+    // If you are attaching to an already-existing RenderView, you should call
+    // InitWithExistingID.
     virtual bool CreateRenderViewForRenderManager(
         RenderViewHost* render_view_host) = 0;
     virtual void BeforeUnloadFiredFromRenderManager(
@@ -68,7 +75,8 @@ class CONTENT_EXPORT RenderViewHostManager
         GetLastCommittedNavigationEntryForRenderManager() = 0;
 
     // Returns true if the location bar should be focused by default rather than
-    // the page contents.
+    // the page contents. The view calls this function when the tab is focused
+    // to see what it should do.
     virtual bool FocusLocationBarByDefault() = 0;
 
     // Focuses the location bar.

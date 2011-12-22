@@ -67,7 +67,7 @@ using WebKit::WebDragOperationsMask;
 // entering and exiting).  One example is an interstitial page (e.g., safe
 // browsing warning).
 - (BOOL)onlyAllowsNavigation {
-  return tabContents_->showing_interstitial_page();
+  return tabContents_->ShowingInterstitialPage();
 }
 
 // Messages to send during the tracking of a drag, usually upon receiving

@@ -264,7 +264,7 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
   void SendCommand(const std::string& command) {
     TabContents* contents = browser()->GetSelectedTabContents();
     // We use InterstitialPage::GetInterstitialPage(tab) instead of
-    // tab->interstitial_page() because the tab doesn't have a pointer
+    // tab->GetInterstitialPage() because the tab doesn't have a pointer
     // to its interstital page until it gets a command from the renderer
     // that it has indeed displayed it -- and this sometimes happens after
     // NavigateToURL returns.
@@ -294,16 +294,16 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
   void AssertNoInterstitial(bool wait_for_delete) {
     TabContents* contents = browser()->GetSelectedTabContents();
 
-    if (contents->showing_interstitial_page() && wait_for_delete) {
+    if (contents->ShowingInterstitialPage() && wait_for_delete) {
       // We'll get notified when the interstitial is deleted.
       static_cast<TestSafeBrowsingBlockingPage*>(
-          contents->interstitial_page())->set_wait_for_delete();
+          contents->GetInterstitialPage())->set_wait_for_delete();
       ui_test_utils::RunMessageLoop();
     }
 
     // Can't use InterstitialPage::GetInterstitialPage() because that
     // gets updated after the TestSafeBrowsingBlockingPage destructor
-    ASSERT_FALSE(contents->showing_interstitial_page());
+    ASSERT_FALSE(contents->ShowingInterstitialPage());
   }
 
   bool YesInterstitial() {

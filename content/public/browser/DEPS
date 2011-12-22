@@ -4,8 +4,10 @@ include_rules = [
   # TODO(jam): remove
   "+content/browser/download/download_id.h",
   "+content/browser/download/download_state_info.h",
+  "+content/browser/download/save_package.h",
   "+content/browser/download/interrupt_reasons.h",
   "+content/browser/javascript_dialogs.h",
   "+content/browser/tab_contents/navigation_entry.h",
   "+content/browser/tab_contents/tab_contents.h",
+  "+content/browser/webui/web_ui.h",
 ]

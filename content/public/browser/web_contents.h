@@ -9,8 +9,14 @@
 #include "base/basictypes.h"
 #include "base/process_util.h"
 #include "base/string16.h"
+#include "content/browser/download/save_package.h"
+#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/common/content_export.h"
+#include "ui/gfx/native_widget_types.h"
+#include "webkit/glue/window_open_disposition.h"
 
+class InterstitialPage;
 class NavigationController;
 class RenderViewHost;
 class RenderViewHostManager;
@@ -19,11 +25,14 @@ class SiteInstance;
 // TODO(jam): of course we will have to rename TabContentsView etc to use
 // WebContents.
 class TabContentsView;
-class WebUI;
 
 namespace base {
 class PropertyBag;
 class TimeTicks;
+}
+
+namespace gfx {
+class Rect;
 }
 
 namespace net {
@@ -35,6 +44,7 @@ namespace content {
 class BrowserContext;
 class RenderProcessHost;
 class WebContentsDelegate;
+struct RendererPreferences;
 
 // Describes what goes in the main content area of a tab.
 class WebContents {
@@ -170,6 +180,149 @@ class WebContents {
 
   // Expose the render manager for testing.
   virtual RenderViewHostManager* GetRenderManagerForTesting() = 0;
+
+  // Commands ------------------------------------------------------------------
+
+  // Stop any pending navigation.
+  virtual void Stop() = 0;
+
+  // Creates a new TabContents with the same state as this one. The returned
+  // heap-allocated pointer is owned by the caller.
+  virtual TabContents* Clone() = 0;
+
+  // Shows the page info.
+  virtual void ShowPageInfo(const GURL& url,
+                            const NavigationEntry::SSLStatus& ssl,
+                            bool show_history) = 0;
+
+  // Window management ---------------------------------------------------------
+
+  // Adds a new tab or window with the given already-created contents.
+  virtual void AddNewContents(TabContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture) = 0;
+
+  // Views and focus -----------------------------------------------------------
+  // TODO(brettw): Most of these should be removed and the caller should call
+  // the view directly.
+
+  // Returns the actual window that is focused when this TabContents is shown.
+  virtual gfx::NativeView GetContentNativeView() const = 0;
+
+  // Returns the NativeView associated with this TabContents. Outside of
+  // automation in the context of the UI, this is required to be implemented.
+  virtual gfx::NativeView GetNativeView() const = 0;
+
+  // Returns the bounds of this TabContents in the screen coordinate system.
+  virtual void GetContainerBounds(gfx::Rect* out) const = 0;
+
+  // Makes the tab the focused window.
+  virtual void Focus() = 0;
+
+  // Focuses the first (last if |reverse| is true) element in the page.
+  // Invoked when this tab is getting the focus through tab traversal (|reverse|
+  // is true when using Shift-Tab).
+  virtual void FocusThroughTabTraversal(bool reverse) = 0;
+
+  // Interstitials -------------------------------------------------------------
+
+  // Various other systems need to know about our interstitials.
+  virtual bool ShowingInterstitialPage() const = 0;
+
+  // Returns the currently showing interstitial, NULL if no interstitial is
+  // showing.
+  virtual InterstitialPage* GetInterstitialPage() const = 0;
+
+  // Misc state & callbacks ----------------------------------------------------
+
+  // Prepare for saving the current web page to disk.
+  virtual void OnSavePage() = 0;
+
+  // Save page with the main HTML file path, the directory for saving resources,
+  // and the save type: HTML only or complete web page. Returns true if the
+  // saving process has been initiated successfully.
+  virtual bool SavePage(const FilePath& main_file,
+                        const FilePath& dir_path,
+                        SavePackage::SavePackageType save_type) = 0;
+
+  // Returns true if the active NavigationEntry's page_id equals page_id.
+  virtual bool IsActiveEntry(int32 page_id) = 0;
+
+  // Returns the contents MIME type after a navigation.
+  virtual const std::string& GetContentsMimeType() const = 0;
+
+  // Returns true if this TabContents will notify about disconnection.
+  virtual bool WillNotifyDisconnection() const = 0;
+
+  // Override the encoding and reload the page by sending down
+  // ViewMsg_SetPageEncoding to the renderer. |UpdateEncoding| is kinda
+  // the opposite of this, by which 'browser' is notified of
+  // the encoding of the current tab from 'renderer' (determined by
+  // auto-detect, http header, meta, bom detection, etc).
+  virtual void SetOverrideEncoding(const std::string& encoding) = 0;
+
+  // Remove any user-defined override encoding and reload by sending down
+  // ViewMsg_ResetPageEncodingToDefault to the renderer.
+  virtual void ResetOverrideEncoding() = 0;
+
+  // Returns the settings which get passed to the renderer.
+  virtual content::RendererPreferences* GetMutableRendererPrefs() = 0;
+
+  // Set the time when we started to create the new tab page.  This time is
+  // from before we created this TabContents.
+  virtual void SetNewTabStartTime(const base::TimeTicks& time) = 0;
+  virtual base::TimeTicks GetNewTabStartTime() const = 0;
+
+  // Notification that tab closing has started.  This can be called multiple
+  // times, subsequent calls are ignored.
+  virtual void OnCloseStarted() = 0;
+
+  // Returns true if underlying TabContentsView should accept drag-n-drop.
+  virtual bool ShouldAcceptDragAndDrop() const = 0;
+
+  // A render view-originated drag has ended. Informs the render view host and
+  // tab contents delegate.
+  virtual void SystemDragEnded() = 0;
+
+  // Indicates if this tab was explicitly closed by the user (control-w, close
+  // tab menu item...). This is false for actions that indirectly close the tab,
+  // such as closing the window.  The setter is maintained by TabStripModel, and
+  // the getter only useful from within TAB_CLOSED notification
+  virtual void SetClosedByUserGesture(bool value) = 0;
+  virtual bool GetClosedByUserGesture() const = 0;
+
+  // Gets the zoom level for this tab.
+  virtual double GetZoomLevel() const = 0;
+
+  // Gets the zoom percent for this tab.
+  virtual int GetZoomPercent(bool* enable_increment,
+                             bool* enable_decrement) = 0;
+
+  // Opens view-source tab for this contents.
+  virtual void ViewSource() = 0;
+
+  virtual void ViewFrameSource(const GURL& url,
+                               const std::string& content_state)= 0;
+
+  // Gets the minimum/maximum zoom percent.
+  virtual int GetMinimumZoomPercent() const = 0;
+  virtual int GetMaximumZoomPercent() const = 0;
+
+  // Get the content restrictions (see content::ContentRestriction).
+  virtual int GetContentRestrictions() const = 0;
+
+  // Query the WebUIFactory for the TypeID for the current URL.
+  virtual WebUI::TypeID GetWebUITypeForCurrentState() = 0;
+
+  // Returns the WebUI for the current state of the tab. This will either be
+  // the pending WebUI, the committed WebUI, or NULL.
+  virtual WebUI* GetWebUIForCurrentState()= 0;
+
+  // Called when the reponse to a pending mouse lock request has arrived.
+  // Returns true if |allowed| is true and the mouse has been successfully
+  // locked.
+  virtual bool GotResponseToLockMouseRequest(bool allowed) = 0;
 };
 
 }  // namespace content

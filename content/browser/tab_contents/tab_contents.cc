@@ -594,13 +594,66 @@ void TabContents::HideContents() {
 
 bool TabContents::NeedToFireBeforeUnload() {
   // TODO(creis): Should we fire even for interstitial pages?
-  return notify_disconnection() &&
-      !showing_interstitial_page() &&
+  return WillNotifyDisconnection() &&
+      !ShowingInterstitialPage() &&
       !GetRenderViewHost()->SuddenTerminationAllowed();
 }
 
 RenderViewHostManager* TabContents::GetRenderManagerForTesting() {
   return &render_manager_;
+}
+
+void TabContents::Stop() {
+  render_manager_.Stop();
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_, StopNavigation());
+}
+
+TabContents* TabContents::Clone() {
+  // We create a new SiteInstance so that the new tab won't share processes
+  // with the old one. This can be changed in the future if we need it to share
+  // processes for some reason.
+  TabContents* tc = new TabContents(
+      GetBrowserContext(),
+      SiteInstance::CreateSiteInstance(GetBrowserContext()),
+      MSG_ROUTING_NONE, this, NULL);
+  tc->GetController().CopyStateFrom(controller_);
+  return tc;
+}
+
+void TabContents::ShowPageInfo(const GURL& url,
+                               const NavigationEntry::SSLStatus& ssl,
+                               bool show_history) {
+  if (!delegate_)
+    return;
+
+  delegate_->ShowPageInfo(GetBrowserContext(), url, ssl, show_history);
+}
+
+void TabContents::AddNewContents(TabContents* new_contents,
+                                 WindowOpenDisposition disposition,
+                                 const gfx::Rect& initial_pos,
+                                 bool user_gesture) {
+  if (!delegate_)
+    return;
+
+  delegate_->AddNewContents(this, new_contents, disposition, initial_pos,
+                            user_gesture);
+}
+
+gfx::NativeView TabContents::GetContentNativeView() const {
+  return view_->GetContentNativeView();
+}
+
+gfx::NativeView TabContents::GetNativeView() const {
+  return view_->GetNativeView();
+}
+
+void TabContents::GetContainerBounds(gfx::Rect* out) const {
+  view_->GetContainerBounds(out);
+}
+
+void TabContents::Focus() {
+  view_->Focus();
 }
 
 void TabContents::AddObserver(TabContentsObserver* observer) {
@@ -798,96 +851,25 @@ void TabContents::SetHistoryLengthAndPrune(const SiteInstance* site_instance,
                                                  minimum_page_id));
 }
 
-void TabContents::Stop() {
-  render_manager_.Stop();
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_, StopNavigation());
-}
-
-TabContents* TabContents::Clone() {
-  // We create a new SiteInstance so that the new tab won't share processes
-  // with the old one. This can be changed in the future if we need it to share
-  // processes for some reason.
-  TabContents* tc = new TabContents(
-      GetBrowserContext(),
-      SiteInstance::CreateSiteInstance(GetBrowserContext()),
-      MSG_ROUTING_NONE, this, NULL);
-  tc->GetController().CopyStateFrom(controller_);
-  return tc;
-}
-
-void TabContents::ShowPageInfo(const GURL& url,
-                               const NavigationEntry::SSLStatus& ssl,
-                               bool show_history) {
-  if (!delegate_)
-    return;
-
-  delegate_->ShowPageInfo(GetBrowserContext(), url, ssl, show_history);
-}
-
-void TabContents::AddNewContents(TabContents* new_contents,
-                                 WindowOpenDisposition disposition,
-                                 const gfx::Rect& initial_pos,
-                                 bool user_gesture) {
-  if (!delegate_)
-    return;
-
-  delegate_->AddNewContents(this, new_contents, disposition, initial_pos,
-                            user_gesture);
-}
-
-gfx::NativeView TabContents::GetContentNativeView() const {
-  return view_->GetContentNativeView();
-}
-
-gfx::NativeView TabContents::GetNativeView() const {
-  return view_->GetNativeView();
-}
-
-void TabContents::GetContainerBounds(gfx::Rect *out) const {
-  view_->GetContainerBounds(out);
-}
-
-void TabContents::Focus() {
-  view_->Focus();
-}
-
 void TabContents::FocusThroughTabTraversal(bool reverse) {
-  if (showing_interstitial_page()) {
+  if (ShowingInterstitialPage()) {
     render_manager_.interstitial_page()->FocusThroughTabTraversal(reverse);
     return;
   }
   GetRenderViewHost()->SetInitialFocus(reverse);
 }
 
-bool TabContents::FocusLocationBarByDefault() {
-  WebUI* web_ui = GetWebUIForCurrentState();
-  if (web_ui)
-    return web_ui->focus_location_bar_by_default();
-  NavigationEntry* entry = controller_.GetActiveEntry();
-  if (entry && entry->url() == GURL(chrome::kAboutBlankURL))
-    return true;
-  return false;
+bool TabContents::ShowingInterstitialPage() const {
+  return render_manager_.interstitial_page() != NULL;
 }
 
-void TabContents::SetFocusToLocationBar(bool select_all) {
-  if (delegate_)
-    delegate_->SetFocusToLocationBar(select_all);
-}
-
-bool TabContents::CanDownload(int request_id) {
-  if (delegate_)
-    return delegate_->CanDownload(this, request_id);
-  return true;
-}
-
-void TabContents::OnStartDownload(DownloadItem* download) {
-  if (delegate_)
-    delegate_->OnStartDownload(this, download);
+InterstitialPage* TabContents::GetInterstitialPage() const {
+  return render_manager_.interstitial_page();
 }
 
 void TabContents::OnSavePage() {
   // If we can not save the page, try to download it.
-  if (!SavePackage::IsSavableContents(contents_mime_type())) {
+  if (!SavePackage::IsSavableContents(GetContentsMimeType())) {
     DownloadManager* dlm = GetBrowserContext()->GetDownloadManager();
     const GURL& current_page_url = GetURL();
     if (dlm && current_page_url.is_valid()) {
@@ -919,16 +901,19 @@ bool TabContents::SavePage(const FilePath& main_file, const FilePath& dir_path,
   return save_package_->Init();
 }
 
-void TabContents::OnSaveURL(const GURL& url) {
-  DownloadManager* dlm = GetBrowserContext()->GetDownloadManager();
-  dlm->DownloadUrl(url, GetURL(), "", this);
-}
-
 bool TabContents::IsActiveEntry(int32 page_id) {
   NavigationEntry* active_entry = controller_.GetActiveEntry();
   return (active_entry != NULL &&
           active_entry->site_instance() == GetSiteInstance() &&
           active_entry->page_id() == page_id);
+}
+
+const std::string& TabContents::GetContentsMimeType() const {
+  return contents_mime_type_;
+}
+
+bool TabContents::WillNotifyDisconnection() const {
+  return notify_disconnection_;
 }
 
 void TabContents::SetOverrideEncoding(const std::string& encoding) {
@@ -941,6 +926,18 @@ void TabContents::ResetOverrideEncoding() {
   encoding_.clear();
   GetRenderViewHost()->Send(new ViewMsg_ResetPageEncodingToDefault(
       GetRenderViewHost()->routing_id()));
+}
+
+content::RendererPreferences* TabContents::GetMutableRendererPrefs() {
+  return &renderer_preferences_;
+}
+
+void TabContents::SetNewTabStartTime(const base::TimeTicks& time) {
+  new_tab_start_time_ = time;
+}
+
+base::TimeTicks TabContents::GetNewTabStartTime() const {
+  return new_tab_start_time_;
 }
 
 void TabContents::OnCloseStarted() {
@@ -965,6 +962,14 @@ void TabContents::SystemDragEnded() {
     GetRenderViewHost()->DragSourceSystemDragEnded();
   if (delegate_)
     delegate_->DragEnded();
+}
+
+void TabContents::SetClosedByUserGesture(bool value) {
+  closed_by_user_gesture_ = value;
+}
+
+bool TabContents::GetClosedByUserGesture() const {
+  return closed_by_user_gesture_;
 }
 
 double TabContents::GetZoomLevel() const {
@@ -1018,9 +1023,81 @@ void TabContents::ViewFrameSource(const GURL& url,
   delegate_->ViewSourceForFrame(this, url, content_state);
 }
 
-void TabContents::SetContentRestrictions(int restrictions) {
-  content_restrictions_ = restrictions;
-  delegate_->ContentRestrictionsChanged(this);
+int TabContents::GetMinimumZoomPercent() const {
+  return minimum_zoom_percent_;
+}
+
+int TabContents::GetMaximumZoomPercent() const {
+  return maximum_zoom_percent_;
+}
+
+int TabContents::GetContentRestrictions() const {
+  return content_restrictions_;
+}
+
+WebUI::TypeID TabContents::GetWebUITypeForCurrentState() {
+  return content::WebUIFactory::Get()->GetWebUIType(GetBrowserContext(),
+                                                    GetURL());
+}
+
+WebUI* TabContents::GetWebUIForCurrentState() {
+  // When there is a pending navigation entry, we want to use the pending WebUI
+  // that goes along with it to control the basic flags. For example, we want to
+  // show the pending URL in the URL bar, so we want the display_url flag to
+  // be from the pending entry.
+  //
+  // The confusion comes because there are multiple possibilities for the
+  // initial load in a tab as a side effect of the way the RenderViewHostManager
+  // works.
+  //
+  //  - For the very first tab the load looks "normal". The new tab Web UI is
+  //    the pending one, and we want it to apply here.
+  //
+  //  - For subsequent new tabs, they'll get a new SiteInstance which will then
+  //    get switched to the one previously associated with the new tab pages.
+  //    This switching will cause the manager to commit the RVH/WebUI. So we'll
+  //    have a committed Web UI in this case.
+  //
+  // This condition handles all of these cases:
+  //
+  //  - First load in first tab: no committed nav entry + pending nav entry +
+  //    pending dom ui:
+  //    -> Use pending Web UI if any.
+  //
+  //  - First load in second tab: no committed nav entry + pending nav entry +
+  //    no pending Web UI:
+  //    -> Use the committed Web UI if any.
+  //
+  //  - Second navigation in any tab: committed nav entry + pending nav entry:
+  //    -> Use pending Web UI if any.
+  //
+  //  - Normal state with no load: committed nav entry + no pending nav entry:
+  //    -> Use committed Web UI.
+  if (controller_.pending_entry() &&
+      (controller_.GetLastCommittedEntry() ||
+       render_manager_.pending_web_ui()))
+    return render_manager_.pending_web_ui();
+  return render_manager_.web_ui();
+}
+
+bool TabContents::GotResponseToLockMouseRequest(bool allowed) {
+  return GetRenderViewHost() ?
+      GetRenderViewHost()->GotResponseToLockMouseRequest(allowed) : false;
+}
+
+bool TabContents::FocusLocationBarByDefault() {
+  WebUI* web_ui = GetWebUIForCurrentState();
+  if (web_ui)
+    return web_ui->focus_location_bar_by_default();
+  NavigationEntry* entry = controller_.GetActiveEntry();
+  if (entry && entry->url() == GURL(chrome::kAboutBlankURL))
+    return true;
+  return false;
+}
+
+void TabContents::SetFocusToLocationBar(bool select_all) {
+  if (delegate_)
+    delegate_->SetFocusToLocationBar(select_all);
 }
 
 void TabContents::OnRegisterIntentService(const string16& action,
@@ -1116,7 +1193,7 @@ void TabContents::OnDidFailProvisionalLoadWithError(
     // in the previous tab type. If you navigate somewhere that activates the
     // tab with the interstitial again, you'll see a flash before the new load
     // commits of the interstitial page.
-    if (showing_interstitial_page()) {
+    if (ShowingInterstitialPage()) {
       LOG(WARNING) << "Discarding message during interstitial.";
       return;
     }
@@ -1231,7 +1308,8 @@ void TabContents::OnDidFailLoadWithError(int64 frame_id,
 }
 
 void TabContents::OnUpdateContentRestrictions(int restrictions) {
-  SetContentRestrictions(restrictions);
+  content_restrictions_ = restrictions;
+  delegate_->ContentRestrictionsChanged(this);
 }
 
 void TabContents::OnGoToEntryAtOffset(int offset) {
@@ -1263,6 +1341,11 @@ void TabContents::OnUpdateZoomLimits(int minimum_percent,
   minimum_zoom_percent_ = minimum_percent;
   maximum_zoom_percent_ = maximum_percent;
   temporary_zoom_settings_ = !remember;
+}
+
+void TabContents::OnSaveURL(const GURL& url) {
+  DownloadManager* dlm = GetBrowserContext()->GetDownloadManager();
+  dlm->DownloadUrl(url, GetURL(), "", this);
 }
 
 void TabContents::OnEnumerateDirectory(int request_id,
@@ -1339,51 +1422,6 @@ void TabContents::SetIsLoading(bool is_loading,
   content::NotificationService::current()->Notify(type,
       content::Source<NavigationController>(&controller_),
       det);
-}
-
-WebUI* TabContents::GetWebUIForCurrentState() {
-  // When there is a pending navigation entry, we want to use the pending WebUI
-  // that goes along with it to control the basic flags. For example, we want to
-  // show the pending URL in the URL bar, so we want the display_url flag to
-  // be from the pending entry.
-  //
-  // The confusion comes because there are multiple possibilities for the
-  // initial load in a tab as a side effect of the way the RenderViewHostManager
-  // works.
-  //
-  //  - For the very first tab the load looks "normal". The new tab Web UI is
-  //    the pending one, and we want it to apply here.
-  //
-  //  - For subsequent new tabs, they'll get a new SiteInstance which will then
-  //    get switched to the one previously associated with the new tab pages.
-  //    This switching will cause the manager to commit the RVH/WebUI. So we'll
-  //    have a committed Web UI in this case.
-  //
-  // This condition handles all of these cases:
-  //
-  //  - First load in first tab: no committed nav entry + pending nav entry +
-  //    pending dom ui:
-  //    -> Use pending Web UI if any.
-  //
-  //  - First load in second tab: no committed nav entry + pending nav entry +
-  //    no pending Web UI:
-  //    -> Use the committed Web UI if any.
-  //
-  //  - Second navigation in any tab: committed nav entry + pending nav entry:
-  //    -> Use pending Web UI if any.
-  //
-  //  - Normal state with no load: committed nav entry + no pending nav entry:
-  //    -> Use committed Web UI.
-  if (controller_.pending_entry() &&
-      (controller_.GetLastCommittedEntry() ||
-       render_manager_.pending_web_ui()))
-    return render_manager_.pending_web_ui();
-  return render_manager_.web_ui();
-}
-
-WebUI::TypeID TabContents::GetWebUITypeForCurrentState() {
-  return content::WebUIFactory::Get()->GetWebUIType(GetBrowserContext(),
-                                                    GetURL());
 }
 
 void TabContents::DidNavigateMainFramePostCommit(
@@ -1905,7 +1943,7 @@ void TabContents::RunJavaScriptMessage(
   // want the hidden page's dialogs to interfere with the interstitial.
   bool suppress_this_message =
       rvh->is_swapped_out() ||
-      showing_interstitial_page() ||
+      ShowingInterstitialPage() ||
       !delegate_ ||
       delegate_->ShouldSuppressDialogs();
 
@@ -2171,9 +2209,4 @@ void TabContents::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
   // Can be NULL during tests.
   if (rwh_view)
     rwh_view->SetSize(GetView()->GetContainerSize());
-}
-
-bool TabContents::GotResponseToLockMouseRequest(bool allowed) {
-  return GetRenderViewHost() ?
-      GetRenderViewHost()->GotResponseToLockMouseRequest(allowed) : false;
 }

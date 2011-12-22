@@ -443,7 +443,7 @@ void TaskManagerTabContentsResourceProvider::Add(
 
   // Don't add dead tabs or tabs that haven't yet connected.
   if (!tab_contents->tab_contents()->GetRenderProcessHost()->GetHandle() ||
-      !tab_contents->tab_contents()->notify_disconnection()) {
+      !tab_contents->tab_contents()->WillNotifyDisconnection()) {
     return;
   }
 

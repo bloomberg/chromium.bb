@@ -1352,7 +1352,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   interstitial->Show();
   interstitial_observer.Wait();
 
-  EXPECT_TRUE(contents->showing_interstitial_page());
+  EXPECT_TRUE(contents->ShowingInterstitialPage());
 
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_VIEW_SOURCE));
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_PRINT));

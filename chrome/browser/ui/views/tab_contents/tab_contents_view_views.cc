@@ -140,8 +140,8 @@ void TabContentsViewViews::RenderViewCreated(RenderViewHost* host) {
 }
 
 void TabContentsViewViews::Focus() {
-  if (tab_contents_->interstitial_page()) {
-    tab_contents_->interstitial_page()->Focus();
+  if (tab_contents_->GetInterstitialPage()) {
+    tab_contents_->GetInterstitialPage()->Focus();
     return;
   }
 
@@ -387,8 +387,8 @@ void TabContentsViewViews::OnNativeTabContentsViewHidden() {
 }
 
 void TabContentsViewViews::OnNativeTabContentsViewSized(const gfx::Size& size) {
-  if (tab_contents_->interstitial_page())
-    tab_contents_->interstitial_page()->SetSize(size);
+  if (tab_contents_->GetInterstitialPage())
+    tab_contents_->GetInterstitialPage()->SetSize(size);
   RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);

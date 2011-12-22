@@ -328,10 +328,10 @@ NavigationEntry* NavigationController::GetLastCommittedEntry() const {
 
 bool NavigationController::CanViewSource() const {
   bool is_supported_mime_type = net::IsSupportedNonImageMimeType(
-      tab_contents_->contents_mime_type().c_str());
+      tab_contents_->GetContentsMimeType().c_str());
   NavigationEntry* active_entry = GetActiveEntry();
   return active_entry && !active_entry->IsViewSourceMode() &&
-    is_supported_mime_type && !tab_contents_->interstitial_page();
+    is_supported_mime_type && !tab_contents_->GetInterstitialPage();
 }
 
 NavigationEntry* NavigationController::GetEntryAtOffset(int offset) const {
@@ -1018,11 +1018,11 @@ void NavigationController::PruneAllButActive() {
     entries_.clear();
   }
 
-  if (tab_contents_->interstitial_page()) {
+  if (tab_contents_->GetInterstitialPage()) {
     // Normally the interstitial page hides itself if the user doesn't proceeed.
     // This would result in showing a NavigationEntry we just removed. Set this
     // so the interstitial triggers a reload if the user doesn't proceed.
-    tab_contents_->interstitial_page()->set_reload_on_dont_proceed(true);
+    tab_contents_->GetInterstitialPage()->set_reload_on_dont_proceed(true);
   }
 }
 
@@ -1114,8 +1114,8 @@ void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
 
     // If an interstitial page is showing, we want to close it to get back
     // to what was showing before.
-    if (tab_contents_->interstitial_page())
-      tab_contents_->interstitial_page()->DontProceed();
+    if (tab_contents_->GetInterstitialPage())
+      tab_contents_->GetInterstitialPage()->DontProceed();
 
     DiscardNonCommittedEntries();
     return;
@@ -1125,8 +1125,8 @@ void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
   // cannot make new requests.  Unblock (and disable) it to allow this
   // navigation to succeed.  The interstitial will stay visible until the
   // resulting DidNavigate.
-  if (tab_contents_->interstitial_page())
-    tab_contents_->interstitial_page()->CancelForNavigation();
+  if (tab_contents_->GetInterstitialPage())
+    tab_contents_->GetInterstitialPage()->CancelForNavigation();
 
   // For session history navigations only the pending_entry_index_ is set.
   if (!pending_entry_) {

@@ -74,7 +74,7 @@ class TabStripModel : public content::NotificationObserver {
     CLOSE_NONE                     = 0,
 
     // Indicates the tab was closed by the user. If true,
-    // TabContents::set_closed_by_user_gesture(true) is invoked.
+    // TabContents::SetClosedByUserGesture(true) is invoked.
     CLOSE_USER_GESTURE             = 1 << 0,
 
     // If true the history is recorded so that the tab can be reopened later.

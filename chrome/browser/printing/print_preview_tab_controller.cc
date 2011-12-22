@@ -156,7 +156,7 @@ PrintPreviewTabController* PrintPreviewTabController::GetInstance() {
 
 // static
 void PrintPreviewTabController::PrintPreview(TabContentsWrapper* tab) {
-  if (tab->tab_contents()->showing_interstitial_page())
+  if (tab->tab_contents()->ShowingInterstitialPage())
     return;
 
   PrintPreviewTabController* tab_controller = GetInstance();

@@ -537,7 +537,7 @@ void SessionService::Observe(int type,
         return;
       TabClosed(tab->restore_tab_helper()->window_id(),
                 tab->restore_tab_helper()->session_id(),
-                tab->tab_contents()->closed_by_user_gesture());
+                tab->tab_contents()->GetClosedByUserGesture());
       RecordSessionUpdateHistogramData(content::NOTIFICATION_TAB_CLOSED,
           &last_updated_tab_closed_time_);
       break;

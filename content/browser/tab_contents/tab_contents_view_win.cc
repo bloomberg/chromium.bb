@@ -88,8 +88,8 @@ void TabContentsViewWin::SizeContents(const gfx::Size& size) {
   } else {
     // Our size matches what we want but the renderers size may not match.
     // Pretend we were resized so that the renderers size is updated too.
-    if (tab_contents_->interstitial_page())
-      tab_contents_->interstitial_page()->SetSize(size);
+    if (tab_contents_->GetInterstitialPage())
+      tab_contents_->GetInterstitialPage()->SetSize(size);
     RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
     if (rwhv)
       rwhv->SetSize(size);
@@ -100,8 +100,8 @@ void TabContentsViewWin::RenderViewCreated(RenderViewHost* host) {
 }
 
 void TabContentsViewWin::Focus() {
-  if (tab_contents_->interstitial_page()) {
-    tab_contents_->interstitial_page()->Focus();
+  if (tab_contents_->GetInterstitialPage()) {
+    tab_contents_->GetInterstitialPage()->Focus();
     return;
   }
 
@@ -242,8 +242,8 @@ LRESULT TabContentsViewWin::OnWindowPosChanged(
     return 0;
 
   gfx::Size size(window_pos->cx, window_pos->cy);
-  if (tab_contents_->interstitial_page())
-    tab_contents_->interstitial_page()->SetSize(size);
+  if (tab_contents_->GetInterstitialPage())
+    tab_contents_->GetInterstitialPage()->SetSize(size);
   RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);

@@ -983,13 +983,13 @@ TEST_F(TabContentsTest,
   interstitial->Show();
   // The interstitial should not show until its navigation has committed.
   EXPECT_FALSE(interstitial->is_showing());
-  EXPECT_FALSE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == NULL);
+  EXPECT_FALSE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   // Let's commit the interstitial navigation.
   interstitial->TestDidNavigate(1, url2);
   EXPECT_TRUE(interstitial->is_showing());
-  EXPECT_TRUE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == interstitial);
+  EXPECT_TRUE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
   NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->url() == url2);
@@ -998,8 +998,8 @@ TEST_F(TabContentsTest,
   interstitial->DontProceed();
   EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
-  EXPECT_FALSE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == NULL);
+  EXPECT_FALSE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->url() == url1);
@@ -1028,13 +1028,13 @@ TEST_F(TabContentsTest,
   interstitial->Show();
   // The interstitial should not show until its navigation has committed.
   EXPECT_FALSE(interstitial->is_showing());
-  EXPECT_FALSE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == NULL);
+  EXPECT_FALSE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   // Let's commit the interstitial navigation.
   interstitial->TestDidNavigate(1, url2);
   EXPECT_TRUE(interstitial->is_showing());
-  EXPECT_TRUE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == interstitial);
+  EXPECT_TRUE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
   NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->url() == url2);
@@ -1043,8 +1043,8 @@ TEST_F(TabContentsTest,
   interstitial->DontProceed();
   EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
-  EXPECT_FALSE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == NULL);
+  EXPECT_FALSE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->url() == url1);
@@ -1071,13 +1071,13 @@ TEST_F(TabContentsTest, ShowInterstitialNoNewNavigationDontProceed) {
   interstitial->Show();
   // The interstitial should not show until its navigation has committed.
   EXPECT_FALSE(interstitial->is_showing());
-  EXPECT_FALSE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == NULL);
+  EXPECT_FALSE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   // Let's commit the interstitial navigation.
   interstitial->TestDidNavigate(1, url2);
   EXPECT_TRUE(interstitial->is_showing());
-  EXPECT_TRUE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == interstitial);
+  EXPECT_TRUE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
   NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   // The URL specified to the interstitial should have been ignored.
@@ -1087,8 +1087,8 @@ TEST_F(TabContentsTest, ShowInterstitialNoNewNavigationDontProceed) {
   interstitial->DontProceed();
   EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
-  EXPECT_FALSE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == NULL);
+  EXPECT_FALSE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->url() == url1);
@@ -1120,13 +1120,13 @@ TEST_F(TabContentsTest,
   interstitial->Show();
   // The interstitial should not show until its navigation has committed.
   EXPECT_FALSE(interstitial->is_showing());
-  EXPECT_FALSE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == NULL);
+  EXPECT_FALSE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   // Let's commit the interstitial navigation.
   interstitial->TestDidNavigate(1, url2);
   EXPECT_TRUE(interstitial->is_showing());
-  EXPECT_TRUE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == interstitial);
+  EXPECT_TRUE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
   NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->url() == url2);
@@ -1136,8 +1136,8 @@ TEST_F(TabContentsTest,
   // The interstitial should show until the new navigation commits.
   ASSERT_FALSE(deleted);
   EXPECT_EQ(TestInterstitialPage::OKED, state);
-  EXPECT_TRUE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == interstitial);
+  EXPECT_TRUE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
 
   // Simulate the navigation to the page, that's when the interstitial gets
   // hidden.
@@ -1145,8 +1145,8 @@ TEST_F(TabContentsTest,
   rvh()->SendNavigate(2, url3);
 
   EXPECT_TRUE(deleted);
-  EXPECT_FALSE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == NULL);
+  EXPECT_FALSE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->url() == url3);
@@ -1175,13 +1175,13 @@ TEST_F(TabContentsTest,
   interstitial->Show();
   // The interstitial should not show until its navigation has committed.
   EXPECT_FALSE(interstitial->is_showing());
-  EXPECT_FALSE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == NULL);
+  EXPECT_FALSE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   // Let's commit the interstitial navigation.
   interstitial->TestDidNavigate(1, url2);
   EXPECT_TRUE(interstitial->is_showing());
-  EXPECT_TRUE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == interstitial);
+  EXPECT_TRUE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
   NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->url() == url2);
@@ -1191,8 +1191,8 @@ TEST_F(TabContentsTest,
   // The interstitial should show until the new navigation commits.
   ASSERT_FALSE(deleted);
   EXPECT_EQ(TestInterstitialPage::OKED, state);
-  EXPECT_TRUE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == interstitial);
+  EXPECT_TRUE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
 
   // Simulate the navigation to the page, that's when the interstitial gets
   // hidden.
@@ -1200,8 +1200,8 @@ TEST_F(TabContentsTest,
   rvh()->SendNavigate(2, url3);
 
   EXPECT_TRUE(deleted);
-  EXPECT_FALSE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == NULL);
+  EXPECT_FALSE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->url() == url3);
@@ -1229,13 +1229,13 @@ TEST_F(TabContentsTest, ShowInterstitialNoNewNavigationProceed) {
   interstitial->Show();
   // The interstitial should not show until its navigation has committed.
   EXPECT_FALSE(interstitial->is_showing());
-  EXPECT_FALSE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == NULL);
+  EXPECT_FALSE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   // Let's commit the interstitial navigation.
   interstitial->TestDidNavigate(1, url2);
   EXPECT_TRUE(interstitial->is_showing());
-  EXPECT_TRUE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == interstitial);
+  EXPECT_TRUE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
   NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   // The URL specified to the interstitial should have been ignored.
@@ -1247,8 +1247,8 @@ TEST_F(TabContentsTest, ShowInterstitialNoNewNavigationProceed) {
   // away and shows the original page.
   EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::OKED, state);
-  EXPECT_FALSE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == NULL);
+  EXPECT_FALSE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->url() == url1);
@@ -1469,8 +1469,8 @@ TEST_F(TabContentsTest, ShowInterstitialOnInterstitial) {
   rvh()->SendNavigate(2, landing_url);
 
   EXPECT_TRUE(deleted2);
-  EXPECT_FALSE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == NULL);
+  EXPECT_FALSE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->url() == landing_url);
@@ -1524,8 +1524,8 @@ TEST_F(TabContentsTest, ShowInterstitialProceedShowInterstitial) {
   rvh()->SendNavigate(2, landing_url);
 
   EXPECT_TRUE(deleted2);
-  EXPECT_FALSE(contents()->showing_interstitial_page());
-  EXPECT_TRUE(contents()->interstitial_page() == NULL);
+  EXPECT_FALSE(contents()->ShowingInterstitialPage());
+  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->url() == landing_url);
@@ -1598,7 +1598,7 @@ TEST_F(TabContentsTest, TwoQuickInterstitials) {
 
   // Make the interstitial navigation commit it should be showing.
   interstitial2->TestDidNavigate(1, interstitial_url);
-  EXPECT_EQ(interstitial2, contents()->interstitial_page());
+  EXPECT_EQ(interstitial2, contents()->GetInterstitialPage());
 }
 
 // Test showing an interstitial and have its renderer crash.
@@ -1756,7 +1756,7 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneSourceInterstitial) {
   EXPECT_EQ(url3, other_controller.GetEntryAtIndex(1)->url());
 
   // And the merged controller shouldn't be showing an interstitial.
-  EXPECT_FALSE(other_contents->showing_interstitial_page());
+  EXPECT_FALSE(other_contents->ShowingInterstitialPage());
 }
 
 // Makes sure that CopyStateFromAndPrune does the right thing if the object
@@ -1802,8 +1802,8 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneTargetInterstitial) {
   EXPECT_TRUE(other_controller.GetTransientEntry());
 
   // And the interstitial should be showing.
-  EXPECT_TRUE(other_contents->showing_interstitial_page());
+  EXPECT_TRUE(other_contents->ShowingInterstitialPage());
 
   // And the interstitial should do a reload on don't proceed.
-  EXPECT_TRUE(other_contents->interstitial_page()->reload_on_dont_proceed());
+  EXPECT_TRUE(other_contents->GetInterstitialPage()->reload_on_dont_proceed());
 }

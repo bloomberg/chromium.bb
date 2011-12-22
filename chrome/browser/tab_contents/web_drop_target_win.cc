@@ -109,7 +109,7 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
   // Don't pass messages to the renderer if an interstitial page is showing
   // because we don't want the interstitial page to navigate.  Instead,
   // pass the messages on to a separate interstitial DropTarget handler.
-  if (tab_contents_->showing_interstitial_page())
+  if (tab_contents_->ShowingInterstitialPage())
     return interstitial_drop_target_->OnDragEnter(data_object, effects);
 
   // TODO(tc): PopulateWebDropData can be slow depending on what is in the
@@ -153,7 +153,7 @@ DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
   if (current_rvh_ != tab_contents_->GetRenderViewHost())
     OnDragEnter(data_object, key_state, cursor_position, effects);
 
-  if (tab_contents_->showing_interstitial_page())
+  if (tab_contents_->ShowingInterstitialPage())
     return interstitial_drop_target_->OnDragOver(data_object, effects);
 
   POINT client_pt = cursor_position;
@@ -180,7 +180,7 @@ void WebDropTarget::OnDragLeave(IDataObject* data_object) {
   if (current_rvh_ != tab_contents_->GetRenderViewHost())
     return;
 
-  if (tab_contents_->showing_interstitial_page()) {
+  if (tab_contents_->ShowingInterstitialPage()) {
     interstitial_drop_target_->OnDragLeave(data_object);
   } else {
     tab_contents_->GetRenderViewHost()->DragTargetDragLeave();
@@ -204,10 +204,10 @@ DWORD WebDropTarget::OnDrop(IDataObject* data_object,
   if (current_rvh_ != tab_contents_->GetRenderViewHost())
     OnDragEnter(data_object, key_state, cursor_position, effect);
 
-  if (tab_contents_->showing_interstitial_page())
+  if (tab_contents_->ShowingInterstitialPage())
     interstitial_drop_target_->OnDragOver(data_object, effect);
 
-  if (tab_contents_->showing_interstitial_page())
+  if (tab_contents_->ShowingInterstitialPage())
     return interstitial_drop_target_->OnDrop(data_object, effect);
 
   POINT client_pt = cursor_position;

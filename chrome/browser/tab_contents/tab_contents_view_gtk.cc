@@ -203,8 +203,8 @@ void TabContentsViewGtk::RenderViewCreated(RenderViewHost* host) {
 }
 
 void TabContentsViewGtk::Focus() {
-  if (tab_contents_->showing_interstitial_page()) {
-    tab_contents_->interstitial_page()->Focus();
+  if (tab_contents_->ShowingInterstitialPage()) {
+    tab_contents_->GetInterstitialPage()->Focus();
   } else if (wrapper()) {
     wrapper()->Focus();
   }
@@ -422,6 +422,6 @@ void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
   RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
-  if (tab_contents_->interstitial_page())
-    tab_contents_->interstitial_page()->SetSize(size);
+  if (tab_contents_->GetInterstitialPage())
+    tab_contents_->GetInterstitialPage()->SetSize(size);
 }

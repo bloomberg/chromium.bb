@@ -42,7 +42,7 @@ BookmarkTabHelper::~BookmarkTabHelper() {
 }
 
 bool BookmarkTabHelper::ShouldShowBookmarkBar() {
-  if (tab_contents()->showing_interstitial_page())
+  if (tab_contents()->ShowingInterstitialPage())
     return false;
 
   // See TabContents::GetWebUIForCurrentState() comment for more info. This case

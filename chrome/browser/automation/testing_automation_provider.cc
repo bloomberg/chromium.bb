@@ -1536,8 +1536,8 @@ void TestingAutomationProvider::HideInterstitialPage(int tab_handle,
                                                      bool* success) {
   *success = false;
   TabContents* tab_contents = GetTabContentsForHandle(tab_handle, NULL);
-  if (tab_contents && tab_contents->interstitial_page()) {
-    tab_contents->interstitial_page()->DontProceed();
+  if (tab_contents && tab_contents->GetInterstitialPage()) {
+    tab_contents->GetInterstitialPage()->DontProceed();
     *success = true;
   }
 }
@@ -1589,7 +1589,7 @@ void TestingAutomationProvider::GetPageType(
     // In order to return the proper result when an interstitial is shown and
     // no navigation entry were created for it we need to ask the TabContents.
     if (*page_type == content::PAGE_TYPE_NORMAL &&
-        tab->tab_contents()->showing_interstitial_page())
+        tab->tab_contents()->ShowingInterstitialPage())
       *page_type = content::PAGE_TYPE_INTERSTITIAL;
   } else {
     *success = false;

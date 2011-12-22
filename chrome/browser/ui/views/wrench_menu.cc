@@ -528,8 +528,8 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
 
     TabContents* selected_tab = menu_->browser_->GetSelectedTabContents();
     if (selected_tab) {
-      int min_percent = selected_tab->minimum_zoom_percent();
-      int max_percent = selected_tab->maximum_zoom_percent();
+      int min_percent = selected_tab->GetMinimumZoomPercent();
+      int max_percent = selected_tab->GetMaximumZoomPercent();
 
       int step = (max_percent - min_percent) / 10;
       for (int i = min_percent; i <= max_percent; i += step) {

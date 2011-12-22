@@ -594,7 +594,7 @@ bool PrintViewManager::OpportunisticallyCreatePrintJob(int cookie) {
 
 bool PrintViewManager::PrintNowInternal(IPC::Message* message) {
   // Don't print / print preview interstitials.
-  if (tab_contents()->showing_interstitial_page())
+  if (tab_contents()->ShowingInterstitialPage())
     return false;
   return Send(message);
 }

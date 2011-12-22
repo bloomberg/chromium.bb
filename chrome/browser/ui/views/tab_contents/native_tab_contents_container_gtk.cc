@@ -129,8 +129,8 @@ void NativeTabContentsContainerGtk::AboutToRequestFocusFromTabTraversal(
   if (!container_->tab_contents())
     return;
   // Give an opportunity to the tab to reset its focus.
-  if (container_->tab_contents()->interstitial_page()) {
-    container_->tab_contents()->interstitial_page()->FocusThroughTabTraversal(
+  if (container_->tab_contents()->GetInterstitialPage()) {
+    container_->tab_contents()->GetInterstitialPage()->FocusThroughTabTraversal(
         reverse);
     return;
   }

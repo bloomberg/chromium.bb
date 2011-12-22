@@ -34,6 +34,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 using content::BrowserThread;
 using content::DownloadItem;
@@ -989,8 +990,8 @@ void DownloadManagerImpl::ShowDownloadInBrowser(DownloadItem* download) {
   if (!content)
     content = delegate_->GetAlternativeTabContentsToNotifyForDownload();
 
-  if (content)
-    content->OnStartDownload(download);
+  if (content && content->GetDelegate())
+    content->GetDelegate()->OnStartDownload(content, download);
 }
 
 int DownloadManagerImpl::InProgressCount() const {

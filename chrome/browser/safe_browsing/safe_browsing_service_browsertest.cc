@@ -382,7 +382,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
 
   bool ShowingInterstitialPage() {
     TabContents* contents = browser()->GetSelectedTabContents();
-    InterstitialPage* interstitial_page = contents->interstitial_page();
+    InterstitialPage* interstitial_page = contents->GetInterstitialPage();
     return interstitial_page != NULL;
   }
 

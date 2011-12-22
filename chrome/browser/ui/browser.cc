@@ -1511,7 +1511,7 @@ void Browser::GoBack(WindowOpenDisposition disposition) {
     TabContents* new_tab = GetOrCloneTabForDisposition(disposition);
     // If we are on an interstitial page and clone the tab, it won't be copied
     // to the new tab, so we don't need to go back.
-    if (current_tab->tab_contents()->showing_interstitial_page() &&
+    if (current_tab->tab_contents()->ShowingInterstitialPage() &&
         (new_tab != current_tab->tab_contents()))
       return;
     new_tab->GetController().GoBack();
@@ -1543,7 +1543,7 @@ void Browser::ReloadInternal(WindowOpenDisposition disposition,
                              bool ignore_cache) {
   // If we are showing an interstitial, treat this as an OpenURL.
   TabContents* current_tab = GetSelectedTabContents();
-  if (current_tab && current_tab->showing_interstitial_page()) {
+  if (current_tab && current_tab->ShowingInterstitialPage()) {
     NavigationEntry* entry = current_tab->GetController().GetActiveEntry();
     DCHECK(entry);  // Should exist if interstitial is showing.
     OpenURL(entry->url(), GURL(), disposition, content::PAGE_TRANSITION_RELOAD);
@@ -1834,7 +1834,7 @@ void Browser::BookmarkCurrentPage() {
 void Browser::SavePage() {
   content::RecordAction(UserMetricsAction("SavePage"));
   TabContents* current_tab = GetSelectedTabContents();
-  if (current_tab && current_tab->contents_mime_type() == "application/pdf")
+  if (current_tab && current_tab->GetContentsMimeType() == "application/pdf")
     content::RecordAction(UserMetricsAction("PDF.SavePage"));
   GetSelectedTabContents()->OnSavePage();
 }
@@ -3051,7 +3051,7 @@ TabContentsWrapper* Browser::AddBlankTabAt(int index, bool foreground) {
   params.disposition = foreground ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
   params.tabstrip_index = index;
   browser::Navigate(&params);
-  params.target_contents->tab_contents()->set_new_tab_start_time(
+  params.target_contents->tab_contents()->SetNewTabStartTime(
       new_tab_start_time);
   return params.target_contents;
 }
@@ -3668,14 +3668,14 @@ void Browser::BeforeUnloadFired(TabContents* tab,
   if (!is_attempting_to_close_browser_) {
     *proceed_to_fire_unload = proceed;
     if (!proceed)
-      tab->set_closed_by_user_gesture(false);
+      tab->SetClosedByUserGesture(false);
     return;
   }
 
   if (!proceed) {
     CancelWindowClose();
     *proceed_to_fire_unload = false;
-    tab->set_closed_by_user_gesture(false);
+    tab->SetClosedByUserGesture(false);
     return;
   }
 
@@ -4302,7 +4302,7 @@ void Browser::SetTabContentBlocked(TabContentsWrapper* wrapper, bool blocked) {
     return;
   }
   tabstrip_model()->SetTabBlocked(index, blocked);
-  UpdatePrintingState(wrapper->tab_contents()->content_restrictions());
+  UpdatePrintingState(wrapper->tab_contents()->GetContentRestrictions());
 }
 
 void Browser::SetSuggestedText(const string16& text,
@@ -4605,10 +4605,10 @@ void Browser::UpdateCommandsForTabState() {
 
   // Changing the encoding is not possible on Chrome-internal webpages.
   bool is_chrome_internal = HasInternalURL(nc.GetActiveEntry()) ||
-      current_tab->showing_interstitial_page();
+      current_tab->ShowingInterstitialPage();
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_MENU,
       !is_chrome_internal && SavePackage::IsSavableContents(
-          current_tab->contents_mime_type()));
+          current_tab->GetContentsMimeType()));
 
   // Show various bits of UI
   // TODO(pinkerton): Disable app-mode in the model until we implement it
@@ -5276,14 +5276,14 @@ int Browser::GetContentRestrictionsForSelectedTab() {
   int content_restrictions = 0;
   TabContents* current_tab = GetSelectedTabContents();
   if (current_tab) {
-    content_restrictions = current_tab->content_restrictions();
+    content_restrictions = current_tab->GetContentRestrictions();
     NavigationEntry* active_entry =
         current_tab->GetController().GetActiveEntry();
     // See comment in UpdateCommandsForTabState about why we call url().
     if (!SavePackage::IsSavableURL(active_entry ? active_entry->url() : GURL())
-        || current_tab->showing_interstitial_page())
+        || current_tab->ShowingInterstitialPage())
       content_restrictions |= content::CONTENT_RESTRICTION_SAVE;
-    if (current_tab->showing_interstitial_page())
+    if (current_tab->ShowingInterstitialPage())
       content_restrictions |= content::CONTENT_RESTRICTION_PRINT;
   }
   return content_restrictions;

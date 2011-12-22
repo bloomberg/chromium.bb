@@ -123,7 +123,7 @@ class SSLUITest : public InProcessBrowserTest {
   }
 
   void ProceedThroughInterstitial(TabContents* tab) {
-    InterstitialPage* interstitial_page = tab->interstitial_page();
+    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
     ASSERT_TRUE(interstitial_page);
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
@@ -338,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSExpiredCertAndDontProceed) {
                                  false, true);
 
   // Simulate user clicking "Take me back".
-  InterstitialPage* interstitial_page = tab->interstitial_page();
+  InterstitialPage* interstitial_page = tab->GetInterstitialPage();
   ASSERT_TRUE(interstitial_page);
   interstitial_page->DontProceed();
 
@@ -382,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoBackViaButton) {
   EXPECT_FALSE(tab->GetRenderViewHost()->is_swapped_out());
 
   // We should be back at the original good page.
-  EXPECT_FALSE(browser()->GetSelectedTabContents()->interstitial_page());
+  EXPECT_FALSE(browser()->GetSelectedTabContents()->GetInterstitialPage());
   CheckUnauthenticatedState(tab);
 }
 
@@ -409,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoBackViaMenu) {
   tab->GetController().GoToOffset(-1);
 
   // We should be back at the original good page.
-  EXPECT_FALSE(browser()->GetSelectedTabContents()->interstitial_page());
+  EXPECT_FALSE(browser()->GetSelectedTabContents()->GetInterstitialPage());
   CheckUnauthenticatedState(tab);
 }
 
@@ -458,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoForward) {
   }
 
   // We should be showing the second good page.
-  EXPECT_FALSE(browser()->GetSelectedTabContents()->interstitial_page());
+  EXPECT_FALSE(browser()->GetSelectedTabContents()->GetInterstitialPage());
   CheckUnauthenticatedState(tab);
   EXPECT_FALSE(tab->GetController().CanGoForward());
   NavigationEntry* entry4 = tab->GetController().GetActiveEntry();
@@ -489,7 +489,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
   EXPECT_FALSE(browser()->command_updater()->IsCommandEnabled(IDC_BACK));
 
   // We should have an interstitial page showing.
-  ASSERT_TRUE(tab2->tab_contents()->interstitial_page());
+  ASSERT_TRUE(tab2->tab_contents()->GetInterstitialPage());
 }
 
 // Disabled due to crash in downloads code that this triggers.
@@ -519,12 +519,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestBadHTTPSDownload) {
   // |ProceedThroughInterstitial| since no page load will commit.
   TabContents* tab = browser()->GetSelectedTabContents();
   ASSERT_TRUE(tab != NULL);
-  ASSERT_TRUE(tab->interstitial_page() != NULL);
+  ASSERT_TRUE(tab->GetInterstitialPage() != NULL);
   {
     ui_test_utils::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_DOWNLOAD_INITIATED,
         content::NotificationService::AllSources());
-    tab->interstitial_page()->Proceed();
+    tab->GetInterstitialPage()->Proceed();
     observer.Wait();
   }
 
@@ -532,7 +532,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestBadHTTPSDownload) {
   // back button on the browser. Note that this doesn't wait for a
   // NAV_ENTRY_COMMITTED notification because going back with an
   // active interstitial simply hides the interstitial.
-  ASSERT_TRUE(tab->interstitial_page() != NULL);
+  ASSERT_TRUE(tab->GetInterstitialPage() != NULL);
   EXPECT_TRUE(browser()->CanGoBack());
   browser()->GoBack(CURRENT_TAB);
 }

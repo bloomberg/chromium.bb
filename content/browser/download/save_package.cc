@@ -1157,7 +1157,7 @@ void SavePackage::GetSaveInfo() {
   DCHECK(download_manager_);
   download_manager_->delegate()->GetSaveDir(
       tab_contents(), &website_save_dir, &download_save_dir);
-  std::string mime_type = tab_contents()->contents_mime_type();
+  std::string mime_type = tab_contents()->GetContentsMimeType();
   std::string accept_languages =
       content::GetContentClient()->browser()->GetAcceptLangs(
           tab_contents()->GetBrowserContext());
@@ -1230,7 +1230,7 @@ void SavePackage::OnPathPicked(const FilePath& final_name,
   saved_main_file_path_ = final_name;
   // TODO(asanka): This call may block on IO and shouldn't be made
   // from the UI thread.  See http://crbug.com/61827.
-  net::GenerateSafeFileName(tab_contents()->contents_mime_type(), false,
+  net::GenerateSafeFileName(tab_contents()->GetContentsMimeType(), false,
                             &saved_main_file_path_);
 
   saved_main_directory_path_ = saved_main_file_path_.DirName();

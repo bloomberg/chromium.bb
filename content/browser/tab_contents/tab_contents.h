@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/property_bag.h"
-#include "content/browser/download/save_package.h"
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -23,12 +22,10 @@
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "net/base/load_states.h"
-#include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/resource_type.h"
 
 #if defined(OS_WIN)
@@ -95,19 +92,6 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   void UpdateMaxPageIDForSiteInstance(SiteInstance* site_instance,
                                       int32 page_id);
 
-  // Commands ------------------------------------------------------------------
-
-  // Implementation of PageNavigator.
-
-  // Deprecated. Please use the one-argument variant instead.
-  // TODO(adriansc): Remove this method once refactoring changed all call sites.
-  virtual TabContents* OpenURL(const GURL& url,
-                               const GURL& referrer,
-                               WindowOpenDisposition disposition,
-                               content::PageTransition transition) OVERRIDE;
-
-  virtual TabContents* OpenURL(const OpenURLParams& params) OVERRIDE;
-
   // Called by the NavigationController to cause the TabContents to navigate to
   // the current pending entry. The NavigationController should be called back
   // with RendererDidNavigate on success or DiscardPendingEntry on failure.
@@ -118,80 +102,8 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   //
   // If this method returns false, then the navigation is discarded (equivalent
   // to calling DiscardPendingEntry on the NavigationController).
-  virtual bool NavigateToPendingEntry(
+  bool NavigateToPendingEntry(
       NavigationController::ReloadType reload_type);
-
-  // Stop any pending navigation.
-  virtual void Stop();
-
-  // Creates a new TabContents with the same state as this one. The returned
-  // heap-allocated pointer is owned by the caller.
-  virtual TabContents* Clone();
-
-  // Shows the page info.
-  void ShowPageInfo(const GURL& url,
-                    const NavigationEntry::SSLStatus& ssl,
-                    bool show_history);
-
-  // Window management ---------------------------------------------------------
-
-  // Adds a new tab or window with the given already-created contents.
-  void AddNewContents(TabContents* new_contents,
-                      WindowOpenDisposition disposition,
-                      const gfx::Rect& initial_pos,
-                      bool user_gesture);
-
-  // Views and focus -----------------------------------------------------------
-  // TODO(brettw): Most of these should be removed and the caller should call
-  // the view directly.
-
-  // Returns the actual window that is focused when this TabContents is shown.
-  gfx::NativeView GetContentNativeView() const;
-
-  // Returns the NativeView associated with this TabContents. Outside of
-  // automation in the context of the UI, this is required to be implemented.
-  gfx::NativeView GetNativeView() const;
-
-  // Returns the bounds of this TabContents in the screen coordinate system.
-  void GetContainerBounds(gfx::Rect *out) const;
-
-  // Makes the tab the focused window.
-  void Focus();
-
-  // Focuses the first (last if |reverse| is true) element in the page.
-  // Invoked when this tab is getting the focus through tab traversal (|reverse|
-  // is true when using Shift-Tab).
-  void FocusThroughTabTraversal(bool reverse);
-
-  // These next two functions are declared on RenderViewHostManager::Delegate
-  // but also accessed directly by other callers.
-
-  // Returns true if the location bar should be focused by default rather than
-  // the page contents. The view calls this function when the tab is focused
-  // to see what it should do.
-  virtual bool FocusLocationBarByDefault() OVERRIDE;
-
-  // Focuses the location bar.
-  virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
-
-  // Creates a view and sets the size for the specified RVH.
-  virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh) OVERRIDE;
-
-  // Toolbars and such ---------------------------------------------------------
-
-  // Notifies the delegate that a download is about to be started.
-  // This notification is fired before a local temporary file has been created.
-  bool CanDownload(int request_id);
-
-  // Notifies the delegate that a download started.
-  void OnStartDownload(content::DownloadItem* download);
-
-  // Interstitials -------------------------------------------------------------
-
-  // Various other systems need to know about our interstitials.
-  bool showing_interstitial_page() const {
-    return render_manager_.interstitial_page() != NULL;
-  }
 
   // Sets the passed passed interstitial as the currently showing interstitial.
   // |interstitial_page| should be non NULL (use the remove_interstitial_page
@@ -206,120 +118,9 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
     render_manager_.remove_interstitial_page();
   }
 
-  // Returns the currently showing interstitial, NULL if no interstitial is
-  // showing.
-  InterstitialPage* interstitial_page() const {
-    return render_manager_.interstitial_page();
-  }
-
-  // Misc state & callbacks ----------------------------------------------------
-
-  // Prepare for saving the current web page to disk.
-  void OnSavePage();
-
-  // Save page with the main HTML file path, the directory for saving resources,
-  // and the save type: HTML only or complete web page. Returns true if the
-  // saving process has been initiated successfully.
-  bool SavePage(const FilePath& main_file, const FilePath& dir_path,
-                SavePackage::SavePackageType save_type);
-
-  // Prepare for saving the URL to disk.
-  // URL may refer to the iframe on the page.
-  void OnSaveURL(const GURL& url);
-
-  // Returns true if the active NavigationEntry's page_id equals page_id.
-  bool IsActiveEntry(int32 page_id);
-
-  const std::string& contents_mime_type() const {
-    return contents_mime_type_;
-  }
-
-  // Returns true if this TabContents will notify about disconnection.
-  bool notify_disconnection() const { return notify_disconnection_; }
-
-  // Override the encoding and reload the page by sending down
-  // ViewMsg_SetPageEncoding to the renderer. |UpdateEncoding| is kinda
-  // the opposite of this, by which 'browser' is notified of
-  // the encoding of the current tab from 'renderer' (determined by
-  // auto-detect, http header, meta, bom detection, etc).
-  void SetOverrideEncoding(const std::string& encoding);
-
-  // Remove any user-defined override encoding and reload by sending down
-  // ViewMsg_ResetPageEncodingToDefault to the renderer.
-  void ResetOverrideEncoding();
-
-  content::RendererPreferences* GetMutableRendererPrefs() {
-    return &renderer_preferences_;
-  }
-
   void set_opener_web_ui_type(WebUI::TypeID opener_web_ui_type) {
     opener_web_ui_type_ = opener_web_ui_type;
   }
-
-  // Set the time when we started to create the new tab page.  This time is
-  // from before we created this TabContents.
-  void set_new_tab_start_time(const base::TimeTicks& time) {
-    new_tab_start_time_ = time;
-  }
-  base::TimeTicks new_tab_start_time() const { return new_tab_start_time_; }
-
-  // Notification that tab closing has started.  This can be called multiple
-  // times, subsequent calls are ignored.
-  void OnCloseStarted();
-
-  // Returns true if underlying TabContentsView should accept drag-n-drop.
-  bool ShouldAcceptDragAndDrop() const;
-
-  // A render view-originated drag has ended. Informs the render view host and
-  // tab contents delegate.
-  void SystemDragEnded();
-
-  // Indicates if this tab was explicitly closed by the user (control-w, close
-  // tab menu item...). This is false for actions that indirectly close the tab,
-  // such as closing the window.  The setter is maintained by TabStripModel, and
-  // the getter only useful from within TAB_CLOSED notification
-  void set_closed_by_user_gesture(bool value) {
-    closed_by_user_gesture_ = value;
-  }
-  bool closed_by_user_gesture() const { return closed_by_user_gesture_; }
-
-  // Overridden from JavaScriptDialogDelegate:
-  virtual void OnDialogClosed(IPC::Message* reply_msg,
-                              bool success,
-                              const string16& user_input) OVERRIDE;
-  virtual gfx::NativeWindow GetDialogRootWindow() const OVERRIDE;
-  virtual void OnDialogShown() OVERRIDE;
-
-  // Gets the zoom level for this tab.
-  double GetZoomLevel() const;
-
-  // Gets the zoom percent for this tab.
-  int GetZoomPercent(bool* enable_increment, bool* enable_decrement);
-
-  // Opens view-source tab for this contents.
-  void ViewSource();
-
-  void ViewFrameSource(const GURL& url,
-                       const std::string& content_state);
-
-  // Gets the minimum/maximum zoom percent.
-  int minimum_zoom_percent() const { return minimum_zoom_percent_; }
-  int maximum_zoom_percent() const { return maximum_zoom_percent_; }
-
-  int content_restrictions() const { return content_restrictions_; }
-  void SetContentRestrictions(int restrictions);
-
-  // Query the WebUIFactory for the TypeID for the current URL.
-  WebUI::TypeID GetWebUITypeForCurrentState();
-
-  // Returns the WebUI for the current state of the tab. This will either be
-  // the pending WebUI, the committed WebUI, or NULL.
-  WebUI* GetWebUIForCurrentState();
-
-  // Called when the reponse to a pending mouse lock request has arrived.
-  // Returns true if |allowed| is true and the mouse has been successfully
-  // locked.
-  bool GotResponseToLockMouseRequest(bool allowed);
 
   JavaBridgeDispatcherHostManager* java_bridge_dispatcher_host_manager() const {
     return java_bridge_dispatcher_host_manager_.get();
@@ -368,6 +169,63 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   virtual void HideContents() OVERRIDE;
   virtual bool NeedToFireBeforeUnload() OVERRIDE;
   virtual RenderViewHostManager* GetRenderManagerForTesting() OVERRIDE;
+  virtual void Stop() OVERRIDE;
+  virtual TabContents* Clone() OVERRIDE;
+  virtual void ShowPageInfo(const GURL& url,
+                            const NavigationEntry::SSLStatus& ssl,
+                            bool show_history) OVERRIDE;
+  virtual void AddNewContents(TabContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture) OVERRIDE;
+  virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
+  virtual gfx::NativeView GetNativeView() const OVERRIDE;
+  virtual void GetContainerBounds(gfx::Rect* out) const OVERRIDE;
+  virtual void Focus() OVERRIDE;
+  virtual void FocusThroughTabTraversal(bool reverse) OVERRIDE;
+  virtual bool ShowingInterstitialPage() const OVERRIDE;
+  virtual InterstitialPage* GetInterstitialPage() const OVERRIDE;
+  virtual void OnSavePage() OVERRIDE;
+  virtual bool SavePage(const FilePath& main_file,
+                        const FilePath& dir_path,
+                        SavePackage::SavePackageType save_type) OVERRIDE;
+  virtual bool IsActiveEntry(int32 page_id) OVERRIDE;
+
+  virtual const std::string& GetContentsMimeType() const OVERRIDE;
+  virtual bool WillNotifyDisconnection() const OVERRIDE;
+  virtual void SetOverrideEncoding(const std::string& encoding) OVERRIDE;
+  virtual void ResetOverrideEncoding() OVERRIDE;
+  virtual content::RendererPreferences* GetMutableRendererPrefs() OVERRIDE;
+  virtual void SetNewTabStartTime(const base::TimeTicks& time) OVERRIDE;
+  virtual base::TimeTicks GetNewTabStartTime() const OVERRIDE;
+  virtual void OnCloseStarted() OVERRIDE;
+  virtual bool ShouldAcceptDragAndDrop() const OVERRIDE;
+  virtual void SystemDragEnded() OVERRIDE;
+  virtual void SetClosedByUserGesture(bool value) OVERRIDE;
+  virtual bool GetClosedByUserGesture() const OVERRIDE;
+  virtual double GetZoomLevel() const OVERRIDE;
+  virtual int GetZoomPercent(bool* enable_increment,
+                             bool* enable_decrement) OVERRIDE;
+  virtual void ViewSource() OVERRIDE;
+  virtual void ViewFrameSource(const GURL& url,
+                               const std::string& content_state) OVERRIDE;
+  virtual int GetMinimumZoomPercent() const OVERRIDE;
+  virtual int GetMaximumZoomPercent() const OVERRIDE;
+  virtual int GetContentRestrictions() const OVERRIDE;
+  virtual WebUI::TypeID GetWebUITypeForCurrentState() OVERRIDE;
+  virtual WebUI* GetWebUIForCurrentState() OVERRIDE;
+  virtual bool GotResponseToLockMouseRequest(bool allowed) OVERRIDE;
+
+  // Implementation of PageNavigator.
+
+  // Deprecated. Please use the one-argument variant instead.
+  // TODO(adriansc): Remove this method once refactoring changed all call sites.
+  virtual TabContents* OpenURL(const GURL& url,
+                               const GURL& referrer,
+                               WindowOpenDisposition disposition,
+                               content::PageTransition transition) OVERRIDE;
+
+  virtual TabContents* OpenURL(const OpenURLParams& params) OVERRIDE;
 
   // RenderViewHostDelegate ----------------------------------------------------
 
@@ -465,6 +323,34 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   virtual void RequestToLockMouse() OVERRIDE;
   virtual void LostMouseLock() OVERRIDE;
 
+  // RenderViewHostManager::Delegate -------------------------------------------
+
+  virtual bool CreateRenderViewForRenderManager(
+      RenderViewHost* render_view_host) OVERRIDE;
+  virtual void BeforeUnloadFiredFromRenderManager(
+      bool proceed,
+      bool* proceed_to_fire_unload) OVERRIDE;
+  virtual void DidStartLoadingFromRenderManager(
+      RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewGoneFromRenderManager(
+      RenderViewHost* render_view_host) OVERRIDE;
+  virtual void UpdateRenderViewSizeForRenderManager() OVERRIDE;
+  virtual void NotifySwappedFromRenderManager() OVERRIDE;
+  virtual NavigationController& GetControllerForRenderManager() OVERRIDE;
+  virtual WebUI* CreateWebUIForRenderManager(const GURL& url) OVERRIDE;
+  virtual NavigationEntry*
+      GetLastCommittedNavigationEntryForRenderManager() OVERRIDE;
+  virtual bool FocusLocationBarByDefault() OVERRIDE;
+  virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
+  virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh) OVERRIDE;
+
+  // Overridden from JavaScriptDialogDelegate:
+  virtual void OnDialogClosed(IPC::Message* reply_msg,
+                              bool success,
+                              const string16& user_input) OVERRIDE;
+  virtual gfx::NativeWindow GetDialogRootWindow() const OVERRIDE;
+  virtual void OnDialogShown() OVERRIDE;
+
  protected:
   friend class TabContentsObserver;
 
@@ -540,6 +426,7 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   void OnUpdateZoomLimits(int minimum_percent,
                           int maximum_percent,
                           bool remember);
+  void OnSaveURL(const GURL& url);
   void OnEnumerateDirectory(int request_id, const FilePath& path);
   void OnJSOutOfMemory();
   void OnRegisterProtocolHandler(const std::string& protocol,
@@ -614,33 +501,6 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   void NotifySwapped();
   void NotifyConnected();
   void NotifyDisconnected();
-
-  // RenderViewHostManager::Delegate -------------------------------------------
-
-  virtual void BeforeUnloadFiredFromRenderManager(
-      bool proceed,
-      bool* proceed_to_fire_unload) OVERRIDE;
-  virtual void DidStartLoadingFromRenderManager(
-      RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewGoneFromRenderManager(
-      RenderViewHost* render_view_host) OVERRIDE;
-  virtual void UpdateRenderViewSizeForRenderManager() OVERRIDE;
-  virtual void NotifySwappedFromRenderManager() OVERRIDE;
-  virtual NavigationController& GetControllerForRenderManager() OVERRIDE;
-  virtual WebUI* CreateWebUIForRenderManager(const GURL& url) OVERRIDE;
-  virtual NavigationEntry*
-      GetLastCommittedNavigationEntryForRenderManager() OVERRIDE;
-
-  // Initializes the given renderer if necessary and creates the view ID
-  // corresponding to this view host. If this method is not called and the
-  // process is not shared, then the TabContents will act as though the renderer
-  // is not running (i.e., it will render "sad tab"). This method is
-  // automatically called from LoadURL.
-  //
-  // If you are attaching to an already-existing RenderView, you should call
-  // InitWithExistingID.
-  virtual bool CreateRenderViewForRenderManager(
-      RenderViewHost* render_view_host) OVERRIDE;
 
   void SetEncoding(const std::string& encoding);
 

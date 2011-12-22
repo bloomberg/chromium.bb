@@ -215,7 +215,8 @@ void InterstitialPage::Show() {
 
 void InterstitialPage::Hide() {
   RenderWidgetHostView* old_view = tab_->GetRenderViewHost()->view();
-  if (tab_->interstitial_page() == this && old_view && !old_view->IsShowing()) {
+  if (tab_->GetInterstitialPage() == this &&
+      old_view && !old_view->IsShowing()) {
     // Show the original RVH since we're going away.  Note it might not exist if
     // the renderer crashed while the interstitial was showing.
     // Note that it is important that we don't call Show() if the view is
@@ -233,7 +234,7 @@ void InterstitialPage::Hide() {
 
   render_view_host_->Shutdown();
   render_view_host_ = NULL;
-  if (tab_->interstitial_page())
+  if (tab_->GetInterstitialPage())
     tab_->remove_interstitial_page();
   // Let's revert to the original title if necessary.
   NavigationEntry* entry = tab_->GetController().GetActiveEntry();

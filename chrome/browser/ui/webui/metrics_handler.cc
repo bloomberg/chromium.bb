@@ -81,10 +81,10 @@ void MetricsHandler::HandleLogEventTime(const ListValue* args) {
 
   // Not all new tab pages get timed. In those cases, we don't have a
   // new_tab_start_time_.
-  if (tab->new_tab_start_time().is_null())
+  if (tab->GetNewTabStartTime().is_null())
     return;
 
-  base::TimeDelta duration = base::TimeTicks::Now() - tab->new_tab_start_time();
+  base::TimeDelta duration = base::TimeTicks::Now() - tab->GetNewTabStartTime();
   MetricEventDurationDetails details(event_name,
       static_cast<int>(duration.InMilliseconds()));
 
@@ -95,7 +95,7 @@ void MetricsHandler::HandleLogEventTime(const ListValue* args) {
   } else if (event_name == "Tab.NewTabOnload") {
     UMA_HISTOGRAM_TIMES("Tab.NewTabOnload", duration);
     // The new tab page has finished loading; reset it.
-    tab->set_new_tab_start_time(base::TimeTicks());
+    tab->SetNewTabStartTime(base::TimeTicks());
   } else {
     NOTREACHED();
   }

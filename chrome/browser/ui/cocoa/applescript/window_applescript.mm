@@ -176,7 +176,7 @@
   TabContentsWrapper* contents =
       browser_->AddSelectedTabWithURL(GURL(chrome::kChromeUINewTabURL),
                                       content::PAGE_TRANSITION_TYPED);
-  contents->tab_contents()->set_new_tab_start_time(newTabStartTime);
+  contents->tab_contents()->SetNewTabStartTime(newTabStartTime);
   [aTab setTabContent:contents];
 }
 
@@ -194,7 +194,7 @@
   params.disposition = NEW_FOREGROUND_TAB;
   params.tabstrip_index = index;
   browser::Navigate(&params);
-  params.target_contents->tab_contents()->set_new_tab_start_time(
+  params.target_contents->tab_contents()->SetNewTabStartTime(
       newTabStartTime);
 
   [aTab setTabContent:params.target_contents];

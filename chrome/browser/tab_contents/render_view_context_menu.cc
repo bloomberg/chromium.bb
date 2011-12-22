@@ -1009,13 +1009,13 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   }
 
   if (id == IDC_PRINT &&
-      (source_tab_contents_->content_restrictions() &
+      (source_tab_contents_->GetContentRestrictions() &
           content::CONTENT_RESTRICTION_PRINT)) {
     return false;
   }
 
   if (id == IDC_SAVE_PAGE &&
-      (source_tab_contents_->content_restrictions() &
+      (source_tab_contents_->GetContentRestrictions() &
           content::CONTENT_RESTRICTION_SAVE)) {
     return false;
   }
@@ -1093,7 +1093,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
              (original_lang == chrome::kUnknownLanguageCode ||
                  TranslateManager::IsSupportedLanguage(original_lang)) &&
              !helper->language_state().IsPageTranslated() &&
-             !source_tab_contents_->interstitial_page() &&
+             !source_tab_contents_->GetInterstitialPage() &&
              TranslateManager::IsTranslatableURL(params_.page_url);
     }
 
