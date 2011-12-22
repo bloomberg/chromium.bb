@@ -13,20 +13,16 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class Balloon;
 class Browser;
 class SiteInstance;
 
-namespace IPC {
-class Message;
-}
-
 class BalloonHost : public content::WebContentsDelegate,
-                    public TabContentsObserver,
+                    public content::WebContentsObserver,
                     public ExtensionFunctionDispatcher::Delegate {
  public:
   explicit BalloonHost(Balloon* balloon);
@@ -64,7 +60,7 @@ class BalloonHost : public content::WebContentsDelegate,
   virtual void UpdatePreferredSize(TabContents* source,
                                    const gfx::Size& pref_size) OVERRIDE;
 
-  // TabContentsObserver implementation:
+  // content::WebContentsObserver implementation:
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewReady() OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;

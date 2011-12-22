@@ -10,7 +10,7 @@
 #include "content/public/browser/notification_service.h"
 
 SnapshotTabHelper::SnapshotTabHelper(TabContentsWrapper* wrapper)
-    : TabContentsObserver(wrapper->tab_contents()),
+    : content::WebContentsObserver(wrapper->tab_contents()),
       wrapper_(wrapper) {
 }
 
@@ -22,7 +22,7 @@ void SnapshotTabHelper::CaptureSnapshot() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsObserver overrides
+// WebContentsObserver overrides
 
 bool SnapshotTabHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;

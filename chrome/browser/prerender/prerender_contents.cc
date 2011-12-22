@@ -237,7 +237,7 @@ void PrerenderContents::StartPrerendering(
   TabContents* new_contents = new TabContents(profile_, NULL, MSG_ROUTING_NONE,
                                               NULL, session_storage_namespace);
   prerender_contents_.reset(new TabContentsWrapper(new_contents));
-  TabContentsObserver::Observe(new_contents);
+  content::WebContentsObserver::Observe(new_contents);
 
   gfx::Rect tab_bounds;
   if (source_render_view_host) {
@@ -655,7 +655,7 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
 TabContentsWrapper* PrerenderContents::ReleasePrerenderContents() {
   prerender_contents_->tab_contents()->SetDelegate(NULL);
   render_view_host_observer_.reset();
-  TabContentsObserver::Observe(NULL);
+  content::WebContentsObserver::Observe(NULL);
   return prerender_contents_.release();
 }
 

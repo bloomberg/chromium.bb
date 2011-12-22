@@ -256,7 +256,7 @@ ClientSideDetectionHost* ClientSideDetectionHost::Create(
 }
 
 ClientSideDetectionHost::ClientSideDetectionHost(TabContents* tab)
-    : TabContentsObserver(tab),
+    : content::WebContentsObserver(tab),
       csd_service_(NULL),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       unsafe_unique_page_id_(-1) {

@@ -74,22 +74,22 @@ void HungRendererDialog::HideHungRendererDialog(TabContents* contents) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// HungRendererDialog::TabContentsObserverImpl
+// HungRendererDialog::WebContentsObserverImpl
 
-HungRendererDialog::TabContentsObserverImpl::TabContentsObserverImpl(
+HungRendererDialog::WebContentsObserverImpl::WebContentsObserverImpl(
     HungRendererDialog* dialog,
     TabContents* contents)
-    : TabContentsObserver(contents),
+    : content::WebContentsObserver(contents),
       contents_(contents),
       dialog_(dialog) {
 }
 
-void HungRendererDialog::TabContentsObserverImpl::RenderViewGone(
+void HungRendererDialog::WebContentsObserverImpl::RenderViewGone(
     base::TerminationStatus status) {
   dialog_->HideDialog(contents_);
 }
 
-void HungRendererDialog::TabContentsObserverImpl::TabContentsDestroyed(
+void HungRendererDialog::WebContentsObserverImpl::TabContentsDestroyed(
     TabContents* tab) {
   dialog_->HideDialog(contents_);
 }
@@ -124,7 +124,7 @@ void HungRendererDialog::ShowDialog(TabContents* contents) {
   DCHECK(browser);
   handler_ = new HungRendererDialogHandler(contents_);
   window_ = browser->BrowserShowHtmlDialog(this, NULL, STYLE_GENERIC);
-  contents_observer_.reset(new TabContentsObserverImpl(this, contents_));
+  contents_observer_.reset(new WebContentsObserverImpl(this, contents_));
 }
 
 void HungRendererDialog::HideDialog(TabContents* contents) {

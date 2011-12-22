@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_HISTORY_HISTORY_TAB_HELPER_H_
 #pragma once
 
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class HistoryService;
 class SkBitmap;
@@ -18,7 +18,7 @@ namespace history {
 class HistoryAddPageArgs;
 }
 
-class HistoryTabHelper : public TabContentsObserver,
+class HistoryTabHelper : public content::WebContentsObserver,
                          public content::NotificationObserver {
  public:
   explicit HistoryTabHelper(TabContents* tab_contents);
@@ -41,7 +41,7 @@ class HistoryTabHelper : public TabContentsObserver,
       const content::FrameNavigateParams& params);
 
  private:
-  // TabContentsObserver implementation.
+  // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,

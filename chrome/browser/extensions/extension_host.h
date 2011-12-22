@@ -13,10 +13,10 @@
 #include "base/perftimer.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "content/browser/javascript_dialogs.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/view_type.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -31,7 +31,6 @@ class Browser;
 class Extension;
 class PrefsTabHelper;
 class RenderWidgetHostView;
-class TabContents;
 struct WebPreferences;
 
 namespace content {
@@ -43,7 +42,7 @@ class RenderProcessHost;
 // privileges available to extensions.  It may have a view to be shown in the
 // browser UI, or it may be hidden.
 class ExtensionHost : public content::WebContentsDelegate,
-                      public TabContentsObserver,
+                      public content::WebContentsObserver,
                       public ExtensionFunctionDispatcher::Delegate,
                       public content::NotificationObserver {
  public:
@@ -107,7 +106,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   // |size_limit| in both width and height.
   void DisableScrollbarsForSmallWindows(const gfx::Size& size_limit);
 
-  // TabContentsObserver
+  // content::WebContentsObserver
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;

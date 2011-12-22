@@ -7,14 +7,13 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class InfoBarDelegate;
-class TabContents;
 
 // Per-tab info bar manager.
-class InfoBarTabHelper : public TabContentsObserver,
+class InfoBarTabHelper : public content::WebContentsObserver,
                          public content::NotificationObserver {
  public:
   explicit InfoBarTabHelper(TabContents* tab_contents);
@@ -49,7 +48,7 @@ class InfoBarTabHelper : public TabContentsObserver,
   InfoBarDelegate* GetInfoBarDelegateAt(size_t index);
   void set_infobars_enabled(bool value) { infobars_enabled_ = value; }
 
-  // TabContentsObserver overrides:
+  // content::WebContentsObserver overrides:
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
@@ -60,7 +59,7 @@ class InfoBarTabHelper : public TabContentsObserver,
 
   // Helper functions for infobars:
   TabContents* tab_contents() {
-    return TabContentsObserver::tab_contents();
+    return content::WebContentsObserver::tab_contents();
   }
 
  private:

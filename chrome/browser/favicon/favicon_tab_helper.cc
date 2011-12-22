@@ -21,7 +21,7 @@
 #include "ui/gfx/image/image.h"
 
 FaviconTabHelper::FaviconTabHelper(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents),
+    : content::WebContentsObserver(tab_contents),
       profile_(Profile::FromBrowserContext(tab_contents->GetBrowserContext())) {
   favicon_handler_.reset(new FaviconHandler(profile_, this,
                                             FaviconHandler::FAVICON));

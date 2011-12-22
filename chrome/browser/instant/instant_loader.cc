@@ -168,7 +168,7 @@ class InstantLoader::TabContentsDelegateImpl
       public CoreTabHelperDelegate,
       public ConstrainedWindowTabHelperDelegate,
       public content::NotificationObserver,
-      public TabContentsObserver {
+      public content::WebContentsObserver {
  public:
   explicit TabContentsDelegateImpl(InstantLoader* loader);
 
@@ -232,7 +232,7 @@ class InstantLoader::TabContentsDelegateImpl
   virtual void WillShowConstrainedWindow(TabContentsWrapper* source) OVERRIDE;
   virtual bool ShouldFocusConstrainedWindow() OVERRIDE;
 
-  // TabContentsObserver:
+  // content::WebContentsObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
@@ -280,7 +280,7 @@ class InstantLoader::TabContentsDelegateImpl
 
 InstantLoader::TabContentsDelegateImpl::TabContentsDelegateImpl(
     InstantLoader* loader)
-    : TabContentsObserver(loader->preview_contents()->tab_contents()),
+    : content::WebContentsObserver(loader->preview_contents()->tab_contents()),
       loader_(loader),
       registered_render_widget_host_(NULL),
       waiting_for_new_page_(true),

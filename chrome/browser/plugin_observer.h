@@ -7,19 +7,19 @@
 #pragma once
 
 #include "base/memory/weak_ptr.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class GURL;
 class InfoBarDelegate;
 class PluginInstaller;
 class TabContentsWrapper;
 
-class PluginObserver : public TabContentsObserver {
+class PluginObserver : public content::WebContentsObserver {
  public:
   explicit PluginObserver(TabContentsWrapper* tab_contents);
   virtual ~PluginObserver();
 
-  // IPC::Channel::Listener implementation.
+  // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:

@@ -9,10 +9,10 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class Profile;
@@ -20,7 +20,7 @@ class Profile;
 // This class consumes TabContents. It can host a renderer, but does not
 // have any visible display.
 class BackgroundContents : public content::WebContentsDelegate,
-                           public TabContentsObserver,
+                           public content::WebContentsObserver,
                            public content::NotificationObserver {
  public:
   class Delegate {
@@ -55,7 +55,7 @@ class BackgroundContents : public content::WebContentsDelegate,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;
 
-  // TabContentsObserver implementation:
+  // content::WebContentsObserver implementation:
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
 
   // content::NotificationObserver

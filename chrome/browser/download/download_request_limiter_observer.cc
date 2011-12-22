@@ -9,7 +9,7 @@
 
 DownloadRequestLimiterObserver::DownloadRequestLimiterObserver(
     TabContents* tab_contents)
-    : TabContentsObserver(tab_contents) {
+    : content::WebContentsObserver(tab_contents) {
 }
 
 DownloadRequestLimiterObserver::~DownloadRequestLimiterObserver() {

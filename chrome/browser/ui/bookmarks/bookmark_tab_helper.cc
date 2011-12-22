@@ -24,7 +24,7 @@ bool CanShowBookmarkBar(WebUI* ui) {
 }  // namespace
 
 BookmarkTabHelper::BookmarkTabHelper(TabContentsWrapper* tab_contents)
-    : TabContentsObserver(tab_contents->tab_contents()),
+    : content::WebContentsObserver(tab_contents->tab_contents()),
       is_starred_(false),
       tab_contents_wrapper_(tab_contents),
       delegate_(NULL),

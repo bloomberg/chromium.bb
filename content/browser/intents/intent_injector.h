@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/common/content_export.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
@@ -25,13 +25,13 @@ struct WebIntentData;
 // the context of the service, which will be running in the TabContents on which
 // this class is an observer. Attaches to the service tab and deletes itself
 // when that TabContents is closed.
-class CONTENT_EXPORT IntentInjector : public TabContentsObserver {
+class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
  public:
   // |tab_contents| must not be NULL.
   explicit IntentInjector(TabContents* tab_contents);
   virtual ~IntentInjector();
 
-  // TabContentsObserver implementation.
+  // content::WebContentsObserver implementation.
   virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,

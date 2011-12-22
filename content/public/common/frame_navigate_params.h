@@ -18,7 +18,7 @@
 
 namespace content {
 
-// Struct used by TabContentsObserver.
+// Struct used by WebContentsObserver.
 struct CONTENT_EXPORT FrameNavigateParams {
   FrameNavigateParams();
   ~FrameNavigateParams();

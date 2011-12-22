@@ -37,7 +37,7 @@ void TabEventObserver::StopObserving(AutomationTabHelper* tab_helper) {
 }
 
 AutomationTabHelper::AutomationTabHelper(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents),
+    : content::WebContentsObserver(tab_contents),
       is_loading_(false) {
 }
 

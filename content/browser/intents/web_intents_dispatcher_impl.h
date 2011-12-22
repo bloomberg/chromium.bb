@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "webkit/glue/web_intent_data.h"
 
@@ -19,7 +19,7 @@ class IntentInjector;
 // be delivered to the service and serves as a forwarder for sending reply
 // messages back to the client page.
 class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
-                                 public TabContentsObserver {
+                                 public content::WebContentsObserver {
  public:
   // |source_tab| is the page which triggered the web intent.
   // |intent| is the intent payload created by that page.
@@ -37,7 +37,7 @@ class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
                                 const string16& data) OVERRIDE;
   virtual void RegisterReplyNotification(const base::Closure& closure) OVERRIDE;
 
-  // TabContentsObserver implementation.
+  // content::WebContentsObserver implementation.
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
  private:

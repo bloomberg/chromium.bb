@@ -8,10 +8,10 @@
 
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 // Per-tab find manager. Handles dealing with the life cycle of find sessions.
-class FindTabHelper : public TabContentsObserver {
+class FindTabHelper : public content::WebContentsObserver {
  public:
   explicit FindTabHelper(TabContents* tab_contents);
   virtual ~FindTabHelper();

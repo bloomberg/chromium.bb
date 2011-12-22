@@ -18,16 +18,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
 class GURL;
 class SaveFileManager;
 class SaveItem;
 class SavePackage;
-class TabContents;
 struct SaveFileCreateInfo;
 
 namespace content {
@@ -48,7 +47,7 @@ class DownloadManager;
 // saving job, and exist for the duration of one tab's life time.
 class CONTENT_EXPORT SavePackage
     : public base::RefCountedThreadSafe<SavePackage>,
-      public TabContentsObserver,
+      public content::WebContentsObserver,
       public content::DownloadItem::Observer,
       public base::SupportsWeakPtr<SavePackage> {
  public:
@@ -124,7 +123,7 @@ class CONTENT_EXPORT SavePackage
   int tab_id() const { return tab_id_; }
   int id() const { return unique_id_; }
   TabContents* tab_contents() const {
-    return TabContentsObserver::tab_contents();
+    return content::WebContentsObserver::tab_contents();
   }
 
   void GetSaveInfo();
@@ -156,7 +155,7 @@ class CONTENT_EXPORT SavePackage
   void SaveNextFile(bool process_all_remainder_items);
   void DoSavingProcess();
 
-  // TabContentsObserver implementation.
+  // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // DownloadItem::Observer implementation.

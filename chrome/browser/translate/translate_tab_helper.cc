@@ -11,7 +11,7 @@
 #include "content/public/browser/notification_service.h"
 
 TranslateTabHelper::TranslateTabHelper(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents),
+    : content::WebContentsObserver(tab_contents),
       language_state_(&tab_contents->GetController()) {
 }
 

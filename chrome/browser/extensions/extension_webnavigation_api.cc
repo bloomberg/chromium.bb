@@ -481,7 +481,7 @@ void ExtensionWebNavigationEventRouter::TabDestroyed(
 
 ExtensionWebNavigationTabObserver::ExtensionWebNavigationTabObserver(
     TabContents* tab_contents)
-    : TabContentsObserver(tab_contents) {
+    : content::WebContentsObserver(tab_contents) {
   g_tab_observer.Get().insert(TabObserverMap::value_type(tab_contents, this));
 }
 

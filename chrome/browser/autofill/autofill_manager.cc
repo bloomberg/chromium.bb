@@ -245,7 +245,7 @@ void CheckForPopularForms(const std::vector<FormStructure*>& forms,
 }  // namespace
 
 AutofillManager::AutofillManager(TabContentsWrapper* tab_contents)
-    : TabContentsObserver(tab_contents->tab_contents()),
+    : content::WebContentsObserver(tab_contents->tab_contents()),
       tab_contents_wrapper_(tab_contents),
       personal_data_(NULL),
       download_manager_(tab_contents->profile(), this),
@@ -802,7 +802,7 @@ void AutofillManager::Reset() {
 
 AutofillManager::AutofillManager(TabContentsWrapper* tab_contents,
                                  PersonalDataManager* personal_data)
-    : TabContentsObserver(tab_contents->tab_contents()),
+    : content::WebContentsObserver(tab_contents->tab_contents()),
       tab_contents_wrapper_(tab_contents),
       personal_data_(personal_data),
       download_manager_(tab_contents->profile(), this),

@@ -7,16 +7,15 @@
 #pragma once
 
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class PrefService;
 class Profile;
-class TabContents;
 struct WebPreferences;
 
 // Per-tab class to handle user preferences.
-class PrefsTabHelper : public TabContentsObserver,
+class PrefsTabHelper : public content::WebContentsObserver,
                        public content::NotificationObserver {
  public:
   explicit PrefsTabHelper(TabContents* contents);
@@ -30,11 +29,11 @@ class PrefsTabHelper : public TabContentsObserver,
   // Update the RenderView's WebPreferences. Exposed as protected for testing.
   virtual void UpdateWebPreferences();
 
-  // TabContentsObserver overrides, exposed as protected for testing.
+  // content::WebContentsObserver overrides, exposed as protected for testing.
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
 
  private:
-  // TabContentsObserver overrides:
+  // content::WebContentsObserver overrides:
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
   // content::NotificationObserver overrides:

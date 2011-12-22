@@ -19,7 +19,7 @@
 #include "content/public/common/frame_navigate_params.h"
 
 HistoryTabHelper::HistoryTabHelper(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents),
+    : content::WebContentsObserver(tab_contents),
       received_page_title_(false) {
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED,
                  content::Source<TabContents>(tab_contents));

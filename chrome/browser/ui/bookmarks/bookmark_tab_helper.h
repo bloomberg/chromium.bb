@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_TAB_HELPER_H_
 #pragma once
 
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class BookmarkTabHelperDelegate;
 class TabContentsWrapper;
@@ -16,7 +16,7 @@ struct BookmarkNodeData;
 
 // Per-tab class to manage bookmarks.
 class BookmarkTabHelper : public content::NotificationObserver,
-                          public TabContentsObserver {
+                          public content::WebContentsObserver {
  public:
   // BookmarkDrag --------------------------------------------------------------
   // Interface for forwarding bookmark drag and drop to extenstions.
@@ -42,7 +42,7 @@ class BookmarkTabHelper : public content::NotificationObserver,
   // Returns true if the bookmark bar should be shown detached.
   bool ShouldShowBookmarkBar();
 
-  // TabContentsObserver overrides:
+  // content::WebContentsObserver overrides:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;

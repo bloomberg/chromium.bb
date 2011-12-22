@@ -7,13 +7,13 @@
 #pragma once
 
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class TabContentsWrapper;
 
 // Per-tab class to implement alternate error page functionality.
-class AlternateErrorPageTabObserver : public TabContentsObserver,
+class AlternateErrorPageTabObserver : public content::WebContentsObserver,
                                       public content::NotificationObserver {
  public:
   explicit AlternateErrorPageTabObserver(TabContentsWrapper* wrapper);
@@ -22,7 +22,7 @@ class AlternateErrorPageTabObserver : public TabContentsObserver,
   static void RegisterUserPrefs(PrefService* prefs);
 
  private:
-  // TabContentsObserver overrides:
+  // content::WebContentsObserver overrides:
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
 
   // content::NotificationObserver overrides:

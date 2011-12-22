@@ -6,18 +6,18 @@
 #define CHROME_BROWSER_UI_PDF_PDF_TAB_OBSERVER_H_
 #pragma once
 
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class TabContentsWrapper;
 
 // Per-tab class to handle PDF messages.
-class PDFTabObserver : public TabContentsObserver {
+class PDFTabObserver : public content::WebContentsObserver {
  public:
   explicit PDFTabObserver(TabContentsWrapper* wrapper);
   virtual ~PDFTabObserver();
 
  private:
-  // TabContentsObserver overrides:
+  // content::WebContentsObserver overrides:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Internal helpers ----------------------------------------------------------

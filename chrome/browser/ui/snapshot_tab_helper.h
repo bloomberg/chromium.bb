@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_UI_SNAPSHOT_TAB_HELPER_H_
 #pragma once
 
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class SkBitmap;
 class TabContentsWrapper;
 
 // Per-tab class to handle snapshot functionality.
-class SnapshotTabHelper : public TabContentsObserver {
+class SnapshotTabHelper : public content::WebContentsObserver {
  public:
   explicit SnapshotTabHelper(TabContentsWrapper* wrapper);
   virtual ~SnapshotTabHelper();
@@ -21,7 +21,7 @@ class SnapshotTabHelper : public TabContentsObserver {
   void CaptureSnapshot();
 
  private:
-  // TabContentsObserver overrides:
+  // content::WebContentsObserver overrides:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Internal helpers ----------------------------------------------------------

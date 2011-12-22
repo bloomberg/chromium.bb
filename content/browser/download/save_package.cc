@@ -116,7 +116,7 @@ SavePackage::SavePackage(TabContents* tab_contents,
                          SavePackageType save_type,
                          const FilePath& file_full_path,
                          const FilePath& directory_full_path)
-    : TabContentsObserver(tab_contents),
+    : content::WebContentsObserver(tab_contents),
       file_manager_(NULL),
       download_manager_(NULL),
       download_(NULL),
@@ -145,7 +145,7 @@ SavePackage::SavePackage(TabContents* tab_contents,
 }
 
 SavePackage::SavePackage(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents),
+    : content::WebContentsObserver(tab_contents),
       file_manager_(NULL),
       download_manager_(NULL),
       download_(NULL),
@@ -171,7 +171,7 @@ SavePackage::SavePackage(TabContents* tab_contents)
 SavePackage::SavePackage(TabContents* tab_contents,
                          const FilePath& file_full_path,
                          const FilePath& directory_full_path)
-    : TabContentsObserver(tab_contents),
+    : content::WebContentsObserver(tab_contents),
       file_manager_(NULL),
       download_manager_(NULL),
       download_(NULL),

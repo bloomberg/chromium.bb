@@ -35,7 +35,7 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
       profile_, site_instance, routing_id, NULL, NULL));
   tab_contents_->SetViewType(chrome::VIEW_TYPE_BACKGROUND_CONTENTS);
   tab_contents_->SetDelegate(this);
-  TabContentsObserver::Observe(tab_contents_.get());
+  content::WebContentsObserver::Observe(tab_contents_.get());
 
   // Close ourselves when the application is shutting down.
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,

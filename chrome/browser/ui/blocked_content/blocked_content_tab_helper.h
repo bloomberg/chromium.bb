@@ -8,8 +8,8 @@
 
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class BlockedContentContainer;
@@ -17,7 +17,7 @@ class BlockedContentTabHelperDelegate;
 class TabContentsWrapper;
 
 // Per-tab class to manage blocked popups.
-class BlockedContentTabHelper : public TabContentsObserver {
+class BlockedContentTabHelper : public content::WebContentsObserver {
  public:
   explicit BlockedContentTabHelper(TabContentsWrapper* tab_contents);
   virtual ~BlockedContentTabHelper();
@@ -55,7 +55,7 @@ class BlockedContentTabHelper : public TabContentsObserver {
   void GetBlockedContents(
       std::vector<TabContentsWrapper*>* blocked_contents) const;
 
-  // TabContentsObserver overrides:
+  // content::WebContentsObserver overrides:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;

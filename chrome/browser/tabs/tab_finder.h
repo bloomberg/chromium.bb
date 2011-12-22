@@ -53,15 +53,15 @@ class TabFinder : public content::NotificationObserver {
  private:
   friend struct DefaultSingletonTraits<TabFinder>;
 
-  class TabContentsObserverImpl;
+  class WebContentsObserverImpl;
 
   typedef std::map<TabContents*, GURL> TabContentsToURLMap;
-  typedef std::set<TabContentsObserverImpl*> TabContentsObservers;
+  typedef std::set<WebContentsObserverImpl*> WebContentsObservers;
 
   TabFinder();
   virtual ~TabFinder();
 
-  // Forwarded from TabContentsObserverImpl.
+  // Forwarded from WebContentsObserverImpl.
   void DidNavigateAnyFrame(
       TabContents* source,
       const content::LoadCommittedDetails& details,
@@ -76,11 +76,11 @@ class TabFinder : public content::NotificationObserver {
   TabContents* FindTabInBrowser(Browser* browser, const GURL& url);
 
   // If we're not currently tracking |tab| this creates a
-  // TabContentsObserverImpl to listen for navigations.
+  // WebContentsObserverImpl to listen for navigations.
   void TrackTab(TabContents* tab);
 
   // Invoked when a TabContents is being destroyed.
-  void TabDestroyed(TabContentsObserverImpl* observer);
+  void TabDestroyed(WebContentsObserverImpl* observer);
 
   // Cancels any pending requests for the specified tabs redirect chain.
   void CancelRequestsFor(TabContents* tab_contents);
@@ -102,7 +102,7 @@ class TabFinder : public content::NotificationObserver {
 
   content::NotificationRegistrar registrar_;
 
-  TabContentsObservers tab_contents_observers_;
+  WebContentsObservers tab_contents_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TabFinder);
 };

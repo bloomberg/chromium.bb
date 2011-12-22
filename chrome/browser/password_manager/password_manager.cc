@@ -57,7 +57,7 @@ static void ReportMetrics(bool password_manager_enabled) {
 
 PasswordManager::PasswordManager(TabContents* tab_contents,
                                  PasswordManagerDelegate* delegate)
-    : TabContentsObserver(tab_contents),
+    : content::WebContentsObserver(tab_contents),
       login_managers_deleter_(&pending_login_managers_),
       delegate_(delegate),
       observer_(NULL) {

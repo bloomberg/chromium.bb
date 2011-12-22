@@ -49,7 +49,7 @@ bool TabSpecificContentSettings::LocalSharedObjectsContainer::empty() const {
 }
 
 TabSpecificContentSettings::TabSpecificContentSettings(TabContents* tab)
-    : TabContentsObserver(tab),
+    : content::WebContentsObserver(tab),
       profile_(Profile::FromBrowserContext(tab->GetBrowserContext())),
       allowed_local_shared_objects_(profile_),
       blocked_local_shared_objects_(profile_),

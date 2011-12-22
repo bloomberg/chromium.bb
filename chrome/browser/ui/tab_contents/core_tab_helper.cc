@@ -12,7 +12,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 CoreTabHelper::CoreTabHelper(TabContentsWrapper* wrapper)
-    : TabContentsObserver(wrapper->tab_contents()),
+    : content::WebContentsObserver(wrapper->tab_contents()),
       delegate_(NULL),
       wrapper_(wrapper) {
 }
@@ -74,7 +74,7 @@ string16 CoreTabHelper::GetStatusText() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsObserver overrides
+// WebContentsObserver overrides
 
 void CoreTabHelper::DidBecomeSelected() {
   WebCacheManager::GetInstance()->ObserveActivity(

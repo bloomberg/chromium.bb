@@ -8,14 +8,14 @@
 
 #include <deque>
 
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class ConstrainedWindow;
 class ConstrainedWindowTabHelperDelegate;
 class TabContentsWrapper;
 
 // Per-tab class to manage constrained windows.
-class ConstrainedWindowTabHelper : public TabContentsObserver {
+class ConstrainedWindowTabHelper : public content::WebContentsObserver {
  public:
   explicit ConstrainedWindowTabHelper(TabContentsWrapper* tab_contents);
   virtual ~ConstrainedWindowTabHelper();
@@ -52,7 +52,7 @@ class ConstrainedWindowTabHelper : public TabContentsObserver {
   }
 
  private:
-  // Overridden from TabContentsObserver:
+  // Overridden from content::WebContentsObserver:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;

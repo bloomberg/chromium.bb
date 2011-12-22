@@ -13,13 +13,12 @@
 #include "chrome/browser/favicon/favicon_handler_delegate.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/common/favicon_url.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
 class FaviconHandler;
 class NavigationEntry;
 class SkBitmap;
-class TabContents;
 
 // FaviconTabHelper works with FaviconHandlers to fetch the favicons.
 //
@@ -30,7 +29,7 @@ class TabContents;
 // DownloadImage downloads the specified icon and returns it through the given
 // callback.
 //
-class FaviconTabHelper : public TabContentsObserver,
+class FaviconTabHelper : public content::WebContentsObserver,
                          public FaviconHandlerDelegate {
  public:
   explicit FaviconTabHelper(TabContents* tab_contents);
@@ -80,7 +79,7 @@ class FaviconTabHelper : public TabContentsObserver,
   virtual void NotifyFaviconUpdated() OVERRIDE;
 
  private:
-  // TabContentsObserver overrides.
+  // content::WebContentsObserver overrides.
   virtual void NavigateToPendingEntry(
       const GURL& url,
       NavigationController::ReloadType reload_type) OVERRIDE;

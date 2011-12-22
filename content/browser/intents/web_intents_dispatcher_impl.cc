@@ -13,7 +13,7 @@ WebIntentsDispatcherImpl::WebIntentsDispatcherImpl(
     TabContents* source_tab,
     const webkit_glue::WebIntentData& intent,
     int intent_id)
-    : TabContentsObserver(source_tab),
+    : content::WebContentsObserver(source_tab),
       intent_(intent),
       intent_id_(intent_id),
       intent_injector_(NULL) {}

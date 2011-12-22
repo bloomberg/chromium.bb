@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/select_file_dialog.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "net/base/directory_lister.h"

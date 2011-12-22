@@ -211,7 +211,7 @@ const size_t kPerScriptFontDefaultsLength = arraysize(kPerScriptFontDefaults);
 }  // namespace
 
 PrefsTabHelper::PrefsTabHelper(TabContents* contents)
-    : TabContentsObserver(contents),
+    : content::WebContentsObserver(contents),
       contents_(contents) {
   PrefService* prefs = GetProfile()->GetPrefs();
   pref_change_registrar_.Init(prefs);

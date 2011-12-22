@@ -289,7 +289,7 @@ bool OutdatedPluginInfoBarDelegate::LinkClicked(
 // PluginObserver -------------------------------------------------------------
 
 PluginObserver::PluginObserver(TabContentsWrapper* tab_contents)
-    : TabContentsObserver(tab_contents->tab_contents()),
+    : content::WebContentsObserver(tab_contents->tab_contents()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       tab_contents_(tab_contents) {
 }

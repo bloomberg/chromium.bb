@@ -16,22 +16,24 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
 
-class TabFinder::TabContentsObserverImpl : public TabContentsObserver {
+class TabFinder::WebContentsObserverImpl : public content::WebContentsObserver {
  public:
-  TabContentsObserverImpl(TabContents* tab, TabFinder* finder);
-  virtual ~TabContentsObserverImpl();
+  WebContentsObserverImpl(TabContents* tab, TabFinder* finder);
+  virtual ~WebContentsObserverImpl();
 
-  TabContents* tab_contents() { return TabContentsObserver::tab_contents(); }
+  TabContents* tab_contents() {
+    return content::WebContentsObserver::tab_contents();
+  }
 
-  // TabContentsObserver overrides:
+  // content::WebContentsObserver overrides:
   virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
@@ -40,26 +42,26 @@ class TabFinder::TabContentsObserverImpl : public TabContentsObserver {
  private:
   TabFinder* finder_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabContentsObserverImpl);
+  DISALLOW_COPY_AND_ASSIGN(WebContentsObserverImpl);
 };
 
-TabFinder::TabContentsObserverImpl::TabContentsObserverImpl(
+TabFinder::WebContentsObserverImpl::WebContentsObserverImpl(
     TabContents* tab,
     TabFinder* finder)
-    : TabContentsObserver(tab),
+    : content::WebContentsObserver(tab),
       finder_(finder) {
 }
 
-TabFinder::TabContentsObserverImpl::~TabContentsObserverImpl() {
+TabFinder::WebContentsObserverImpl::~WebContentsObserverImpl() {
 }
 
-void TabFinder::TabContentsObserverImpl::DidNavigateAnyFrame(
+void TabFinder::WebContentsObserverImpl::DidNavigateAnyFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   finder_->DidNavigateAnyFrame(tab_contents(), details, params);
 }
 
-void TabFinder::TabContentsObserverImpl::TabContentsDestroyed(
+void TabFinder::WebContentsObserverImpl::TabContentsDestroyed(
     TabContents* tab) {
   finder_->TabDestroyed(this);
   delete this;
@@ -166,19 +168,19 @@ TabContents* TabFinder::FindTabInBrowser(Browser* browser, const GURL& url) {
 }
 
 void TabFinder::TrackTab(TabContents* tab) {
-  for (TabContentsObservers::const_iterator i = tab_contents_observers_.begin();
+  for (WebContentsObservers::const_iterator i = tab_contents_observers_.begin();
        i != tab_contents_observers_.end(); ++i) {
     if ((*i)->tab_contents() == tab) {
       // Already tracking the tab.
       return;
     }
   }
-  TabContentsObserverImpl* observer = new TabContentsObserverImpl(tab, this);
+  WebContentsObserverImpl* observer = new WebContentsObserverImpl(tab, this);
   tab_contents_observers_.insert(observer);
   FetchRedirectStart(tab);
 }
 
-void TabFinder::TabDestroyed(TabContentsObserverImpl* observer) {
+void TabFinder::TabDestroyed(WebContentsObserverImpl* observer) {
   DCHECK_GT(tab_contents_observers_.count(observer), 0u);
   tab_contents_observers_.erase(observer);
 }

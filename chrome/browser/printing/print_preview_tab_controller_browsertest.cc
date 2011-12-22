@@ -13,9 +13,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -30,10 +30,10 @@ class PrintPreviewTabControllerBrowserTest : public InProcessBrowserTest {
   }
 };
 
-class TabDestroyedObserver : public TabContentsObserver {
+class TabDestroyedObserver : public content::WebContentsObserver {
  public:
   explicit TabDestroyedObserver(TabContents* contents)
-      : TabContentsObserver(contents),
+      : content::WebContentsObserver(contents),
         tab_destroyed_(false) {
   }
   virtual ~TabDestroyedObserver() {}

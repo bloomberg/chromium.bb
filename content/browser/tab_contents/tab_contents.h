@@ -21,7 +21,6 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
@@ -36,12 +35,12 @@ class LoadNotificationDetails;
 class RenderViewHost;
 class SessionStorageNamespace;
 class SiteInstance;
-class TabContentsObserver;
 class TabContentsView;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 
 namespace content {
 class DownloadItem;
+class WebContentsObserver;
 class WebContentsDelegate;
 }
 
@@ -352,14 +351,14 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   virtual void OnDialogShown() OVERRIDE;
 
  protected:
-  friend class TabContentsObserver;
+  friend class content::WebContentsObserver;
 
   // Add and remove observers for page navigation notifications. Adding or
   // removing multiple times has no effect. The order in which notifications
   // are sent to observers is undefined. Clients must be sure to remove the
   // observer before they go away.
-  void AddObserver(TabContentsObserver* observer);
-  void RemoveObserver(TabContentsObserver* observer);
+  void AddObserver(content::WebContentsObserver* observer);
+  void RemoveObserver(content::WebContentsObserver* observer);
 
  private:
   friend class NavigationController;
@@ -523,7 +522,7 @@ class CONTENT_EXPORT TabContents : public content::WebContents,
   // This MUST be listed above render_manager_ since at destruction time the
   // latter might cause RenderViewHost's destructor to call us and we might use
   // the observer list then.
-  ObserverList<TabContentsObserver> observers_;
+  ObserverList<content::WebContentsObserver> observers_;
 
   // Helper classes ------------------------------------------------------------
 

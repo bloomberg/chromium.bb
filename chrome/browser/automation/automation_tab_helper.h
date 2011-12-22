@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class TabContents;
 class AutomationTabHelper;
@@ -81,7 +81,7 @@ class TabEventObserver {
 // Per-tab automation support class. Receives automation/testing messages
 // from the renderer. Broadcasts tab events to |TabEventObserver|s.
 class AutomationTabHelper
-    : public TabContentsObserver,
+    : public content::WebContentsObserver,
       public base::SupportsWeakPtr<AutomationTabHelper> {
  public:
   explicit AutomationTabHelper(TabContents* tab_contents);
@@ -105,7 +105,7 @@ class AutomationTabHelper
       const std::vector<unsigned char>& png_data,
       const std::string& error_msg);
 
-  // TabContentsObserver implementation.
+  // content::WebContentsObserver implementation.
   virtual void DidStartLoading() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;

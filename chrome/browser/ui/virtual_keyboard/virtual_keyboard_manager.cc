@@ -20,8 +20,8 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/ime/text_input_type.h"
@@ -65,7 +65,7 @@ gfx::Rect GetKeyboardPosition(int height) {
 class KeyboardWidget
     : public views::Widget,
       public ui::AnimationDelegate,
-      public TabContentsObserver,
+      public content::WebContentsObserver,
       public ExtensionFunctionDispatcher::Delegate,
 #if defined(OS_CHROMEOS)
       public chromeos::input_method::InputMethodManager::VirtualKeyboardObserver,
@@ -108,7 +108,7 @@ class KeyboardWidget
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
 
-  // Overridden from TabContentsObserver.
+  // Overridden from content::WebContentsObserver.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
@@ -199,7 +199,8 @@ KeyboardWidget::KeyboardWidget()
   SetContentsView(dom_view_);
 
   // Setup observer so the events from the keyboard can be handled.
-  TabContentsObserver::Observe(dom_view_->dom_contents()->tab_contents());
+  content::WebContentsObserver::Observe(
+      dom_view_->dom_contents()->tab_contents());
 
   // Initialize the animation.
   animation_.reset(new ui::SlideAnimation(this));

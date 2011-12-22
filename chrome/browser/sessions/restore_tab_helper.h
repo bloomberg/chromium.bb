@@ -8,13 +8,11 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
-
-class TabContents;
+#include "content/public/browser/web_contents_observer.h"
 
 // This class keeps the extension API's windowID up-to-date with the current
 // window of the tab.
-class RestoreTabHelper : public TabContentsObserver {
+class RestoreTabHelper : public content::WebContentsObserver {
  public:
   explicit RestoreTabHelper(TabContents* contents);
   virtual ~RestoreTabHelper();
@@ -26,7 +24,7 @@ class RestoreTabHelper : public TabContentsObserver {
   void SetWindowID(const SessionID& id);
   const SessionID& window_id() const { return window_id_; }
 
-  // TabContentsObserver:
+  // content::WebContentsObserver:
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
 
  private:

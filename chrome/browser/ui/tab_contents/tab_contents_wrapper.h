@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/property_bag.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class AlternateErrorPageTabObserver;
 class AutocompleteHistoryManager;
@@ -52,10 +52,6 @@ class ThumbnailGenerator;
 class TranslateTabHelper;
 class WebIntentPickerController;
 
-namespace IPC {
-class Message;
-}
-
 namespace prerender {
 class PrerenderTabHelper;
 }
@@ -76,7 +72,7 @@ class SafeBrowsingTabObserver;
 // TODO(avi): Eventually, this class will become TabContents as far as
 // the browser front-end is concerned, and the current TabContents will be
 // renamed to something like WebContents; <http://crbug.com/105875>.
-class TabContentsWrapper : public TabContentsObserver {
+class TabContentsWrapper : public content::WebContentsObserver {
  public:
   // Takes ownership of |contents|, which must be heap-allocated (as it lives
   // in a scoped_ptr) and can not be NULL.
@@ -190,7 +186,7 @@ class TabContentsWrapper : public TabContentsObserver {
 
   // Overrides -----------------------------------------------------------------
 
-  // TabContentsObserver overrides:
+  // content::WebContentsObserver overrides:
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
  private:

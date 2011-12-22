@@ -5,18 +5,16 @@
 #ifndef CHROME_BROWSER_EXTERNAL_PROTOCOL_EXTERNAL_PROTOCOL_OBSERVER_H_
 #define CHROME_BROWSER_EXTERNAL_PROTOCOL_EXTERNAL_PROTOCOL_OBSERVER_H_
 
-#include "content/browser/tab_contents/tab_contents_observer.h"
-
-class TabContents;
+#include "content/public/browser/web_contents_observer.h"
 
 // ExternalProtocolObserver is responsible for handling messages from
 // TabContents relating to external protocols.
-class ExternalProtocolObserver : public TabContentsObserver {
+class ExternalProtocolObserver : public content::WebContentsObserver {
  public:
   explicit ExternalProtocolObserver(TabContents* tab_contents);
   virtual ~ExternalProtocolObserver();
 
-  // TabContentsObserver overrides.
+  // content::WebContentsObserver overrides.
   virtual void DidGetUserGesture() OVERRIDE;
 
  private:

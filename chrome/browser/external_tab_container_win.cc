@@ -206,7 +206,7 @@ bool ExternalTabContainer::Init(Profile* profile,
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
                  content::NotificationService::AllSources());
 
-  TabContentsObserver::Observe(tab_contents_->tab_contents());
+  content::WebContentsObserver::Observe(tab_contents_->tab_contents());
 
   // Start loading initial URL
   if (!initial_url.is_empty()) {

@@ -24,7 +24,7 @@
 #include "content/public/browser/notification_service.h"
 
 ExtensionTabHelper::ExtensionTabHelper(TabContentsWrapper* wrapper)
-    : TabContentsObserver(wrapper->tab_contents()),
+    : content::WebContentsObserver(wrapper->tab_contents()),
       delegate_(NULL),
       extension_app_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(

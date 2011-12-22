@@ -149,7 +149,7 @@ WebstoreInlineInstaller::WebstoreInlineInstaller(TabContents* tab_contents,
                                                  std::string webstore_item_id,
                                                  GURL requestor_url,
                                                  Delegate* delegate)
-    : TabContentsObserver(tab_contents),
+    : content::WebContentsObserver(tab_contents),
       install_id_(install_id),
       id_(webstore_item_id),
       requestor_url_(requestor_url),

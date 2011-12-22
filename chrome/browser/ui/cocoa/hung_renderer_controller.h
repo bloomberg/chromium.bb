@@ -26,7 +26,7 @@
 
 @class MultiKeyEquivalentButton;
 class TabContents;
-class TabContentsObserverBridge;
+class WebContentsObserverBridge;
 
 @interface HungRendererController : NSWindowController<NSTableViewDataSource> {
  @private
@@ -41,7 +41,7 @@ class TabContentsObserverBridge;
   TabContents* hungContents_;
 
   // Observes |hungContents_| in case it closes while the panel is up.
-  scoped_ptr<TabContentsObserverBridge> hungContentsObserver_;
+  scoped_ptr<WebContentsObserverBridge> hungContentsObserver_;
 
   // Backing data for |tableView_|.  Titles of each TabContents that
   // shares a renderer process with |hungContents_|.

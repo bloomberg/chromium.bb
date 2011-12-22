@@ -11,9 +11,9 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
 class BackingStore;
@@ -106,7 +106,7 @@ class HighlightTabsFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.highlight")
 };
 class UpdateTabFunction : public AsyncExtensionFunction,
-                          public TabContentsObserver {
+                          public content::WebContentsObserver {
  public:
   UpdateTabFunction();
  private:

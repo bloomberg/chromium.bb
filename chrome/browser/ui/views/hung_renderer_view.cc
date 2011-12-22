@@ -77,20 +77,20 @@ class HungPagesTableModel : public views::GroupTableModel {
  private:
   // Used to track a single TabContents. If the TabContents is destroyed
   // TabDestroyed() is invoked on the model.
-  class TabContentsObserverImpl : public TabContentsObserver {
+  class WebContentsObserverImpl : public content::WebContentsObserver {
    public:
-    TabContentsObserverImpl(HungPagesTableModel* model,
+    WebContentsObserverImpl(HungPagesTableModel* model,
                             TabContentsWrapper* tab);
 
     TabContents* tab_contents() const {
-      return TabContentsObserver::tab_contents();
+      return content::WebContentsObserver::tab_contents();
     }
 
     FaviconTabHelper* favicon_tab_helper() {
       return tab_->favicon_tab_helper();
     }
 
-    // TabContentsObserver overrides:
+    // WebContentsObserver overrides:
     virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
     virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
@@ -98,14 +98,14 @@ class HungPagesTableModel : public views::GroupTableModel {
     HungPagesTableModel* model_;
     TabContentsWrapper* tab_;
 
-    DISALLOW_COPY_AND_ASSIGN(TabContentsObserverImpl);
+    DISALLOW_COPY_AND_ASSIGN(WebContentsObserverImpl);
   };
 
   // Invoked when a TabContents is destroyed. Cleans up |tab_observers_| and
   // notifies the observer and delegate.
-  void TabDestroyed(TabContentsObserverImpl* tab);
+  void TabDestroyed(WebContentsObserverImpl* tab);
 
-  typedef ScopedVector<TabContentsObserverImpl> TabObservers;
+  typedef ScopedVector<WebContentsObserverImpl> TabObservers;
   TabObservers tab_observers_;
 
   ui::TableModelObserver* observer_;
@@ -142,12 +142,12 @@ void HungPagesTableModel::InitForTabContents(TabContents* hung_contents) {
     TabContentsWrapper* hung_wrapper =
         TabContentsWrapper::GetCurrentWrapperForContents(hung_contents);
     if (hung_wrapper)
-      tab_observers_.push_back(new TabContentsObserverImpl(this, hung_wrapper));
+      tab_observers_.push_back(new WebContentsObserverImpl(this, hung_wrapper));
     for (TabContentsIterator it; !it.done(); ++it) {
       if (*it != hung_wrapper &&
           it->tab_contents()->GetRenderProcessHost() ==
           hung_contents->GetRenderProcessHost())
-        tab_observers_.push_back(new TabContentsObserverImpl(this, *it));
+        tab_observers_.push_back(new WebContentsObserverImpl(this, *it));
     }
   }
   // The world is different.
@@ -190,7 +190,7 @@ void HungPagesTableModel::GetGroupRangeForItem(int item,
   range->length = RowCount();
 }
 
-void HungPagesTableModel::TabDestroyed(TabContentsObserverImpl* tab) {
+void HungPagesTableModel::TabDestroyed(WebContentsObserverImpl* tab) {
   // Clean up tab_observers_ and notify our observer.
   TabObservers::iterator i = std::find(
       tab_observers_.begin(), tab_observers_.end(), tab);
@@ -205,20 +205,20 @@ void HungPagesTableModel::TabDestroyed(TabContentsObserverImpl* tab) {
   // WARNING: we've likely been deleted.
 }
 
-HungPagesTableModel::TabContentsObserverImpl::TabContentsObserverImpl(
+HungPagesTableModel::WebContentsObserverImpl::WebContentsObserverImpl(
     HungPagesTableModel* model,
     TabContentsWrapper* tab)
-    : TabContentsObserver(tab->tab_contents()),
+    : content::WebContentsObserver(tab->tab_contents()),
       model_(model),
       tab_(tab) {
 }
 
-void HungPagesTableModel::TabContentsObserverImpl::RenderViewGone(
+void HungPagesTableModel::WebContentsObserverImpl::RenderViewGone(
     base::TerminationStatus status) {
   model_->TabDestroyed(this);
 }
 
-void HungPagesTableModel::TabContentsObserverImpl::TabContentsDestroyed(
+void HungPagesTableModel::WebContentsObserverImpl::TabContentsDestroyed(
     TabContents* tab) {
   model_->TabDestroyed(this);
 }

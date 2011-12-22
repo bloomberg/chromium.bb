@@ -58,7 +58,7 @@ static base::LazyInstance<base::PropertyAccessor<TabContentsWrapper*> >
 // TabContentsWrapper, public:
 
 TabContentsWrapper::TabContentsWrapper(TabContents* contents)
-    : TabContentsObserver(contents),
+    : content::WebContentsObserver(contents),
       in_destructor_(false),
       tab_contents_(contents) {
   DCHECK(contents);
@@ -176,7 +176,7 @@ Profile* TabContentsWrapper::profile() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsObserver overrides
+// WebContentsObserver overrides
 
 void TabContentsWrapper::TabContentsDestroyed(TabContents* tab) {
   // Destruction of the TabContents should only be done by us from our

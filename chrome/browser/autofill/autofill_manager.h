@@ -22,7 +22,7 @@
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class AutofillExternalDelegate;
 class AutofillField;
@@ -53,7 +53,7 @@ struct FormField;
 
 // Manages saving and restoring the user's personal information entered into web
 // forms.
-class AutofillManager : public TabContentsObserver,
+class AutofillManager : public content::WebContentsObserver,
                         public AutofillDownloadManager::Observer,
                         public base::RefCounted<AutofillManager> {
  public:
@@ -136,7 +136,7 @@ class AutofillManager : public TabContentsObserver,
                        const base::TimeTicks& timestamp);
 
  private:
-  // TabContentsObserver:
+  // content::WebContentsObserver:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;

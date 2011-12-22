@@ -9,10 +9,10 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "webkit/blob/deletable_file_reference.h"
 
 class FilePath;
+class TabContents;
 
 class PageCaptureSaveAsMHTMLFunction : public AsyncExtensionFunction {
  public:

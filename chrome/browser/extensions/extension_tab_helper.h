@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/common/web_apps.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Extension;
@@ -26,7 +26,7 @@ struct LoadCommittedDetails;
 
 // Per-tab extension helper. Also handles non-extension apps.
 class ExtensionTabHelper
-    : public TabContentsObserver,
+    : public content::WebContentsObserver,
       public ExtensionFunctionDispatcher::Delegate,
       public ImageLoadingTracker::Observer,
       public WebstoreInlineInstaller::Delegate,
@@ -84,7 +84,7 @@ class ExtensionTabHelper
   }
 
   TabContents* tab_contents() const {
-    return TabContentsObserver::tab_contents();
+    return content::WebContentsObserver::tab_contents();
   }
 
   // Sets a non-extension app icon associated with TabContents and fires an
@@ -92,7 +92,7 @@ class ExtensionTabHelper
   void SetAppIcon(const SkBitmap& app_icon);
 
  private:
-  // TabContentsObserver overrides.
+  // content::WebContentsObserver overrides.
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;

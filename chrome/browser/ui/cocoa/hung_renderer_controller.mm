@@ -37,16 +37,16 @@ namespace {
 HungRendererController* g_instance = NULL;
 }  // namespace
 
-class TabContentsObserverBridge : public TabContentsObserver {
+class WebContentsObserverBridge : public content::WebContentsObserver {
  public:
-  TabContentsObserverBridge(TabContents* tab_contents,
+  WebContentsObserverBridge(TabContents* tab_contents,
                             HungRendererController* controller)
-    : TabContentsObserver(tab_contents),
+    : content::WebContentsObserver(tab_contents),
       controller_(controller) {
   }
 
  protected:
-  // TabContentsObserver overrides:
+  // WebContentsObserver overrides:
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE {
     [controller_ renderViewGone];
   }
@@ -57,7 +57,7 @@ class TabContentsObserverBridge : public TabContentsObserver {
  private:
   HungRendererController* controller_;  // weak
 
-  DISALLOW_COPY_AND_ASSIGN(TabContentsObserverBridge);
+  DISALLOW_COPY_AND_ASSIGN(WebContentsObserverBridge);
 };
 
 @implementation HungRendererController
@@ -166,7 +166,7 @@ class TabContentsObserverBridge : public TabContentsObserver {
 - (void)showForTabContents:(TabContents*)contents {
   DCHECK(contents);
   hungContents_ = contents;
-  hungContentsObserver_.reset(new TabContentsObserverBridge(contents, self));
+  hungContentsObserver_.reset(new WebContentsObserverBridge(contents, self));
   scoped_nsobject<NSMutableArray> titles([[NSMutableArray alloc] init]);
   scoped_nsobject<NSMutableArray> favicons([[NSMutableArray alloc] init]);
   for (TabContentsIterator it; !it.done(); ++it) {

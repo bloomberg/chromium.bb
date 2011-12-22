@@ -13,7 +13,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 
 InfoBarTabHelper::InfoBarTabHelper(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents),
+    : content::WebContentsObserver(tab_contents),
       infobars_enabled_(true) {
   DCHECK(tab_contents);
 }

@@ -5,17 +5,15 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_LIMITER_OBSERVER_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_LIMITER_OBSERVER_H_
 
-#include "content/browser/tab_contents/tab_contents_observer.h"
-
-class TabContents;
+#include "content/public/browser/web_contents_observer.h"
 
 // Watches for user gesture notifications.
-class DownloadRequestLimiterObserver : public TabContentsObserver {
+class DownloadRequestLimiterObserver : public content::WebContentsObserver {
  public:
   explicit DownloadRequestLimiterObserver(TabContents* tab_contents);
   virtual ~DownloadRequestLimiterObserver();
 
-  // TabContentsObserver overrides.
+  // content::WebContentsObserver overrides.
   virtual void DidGetUserGesture() OVERRIDE;
 
  private:

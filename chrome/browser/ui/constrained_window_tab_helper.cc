@@ -16,7 +16,7 @@
 
 ConstrainedWindowTabHelper::ConstrainedWindowTabHelper(
     TabContentsWrapper* wrapper)
-    : TabContentsObserver(wrapper->tab_contents()),
+    : content::WebContentsObserver(wrapper->tab_contents()),
       wrapper_(wrapper),
       delegate_(NULL) {
 }

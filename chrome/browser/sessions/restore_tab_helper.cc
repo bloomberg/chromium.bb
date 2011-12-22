@@ -12,7 +12,7 @@
 #include "content/public/browser/notification_types.h"
 
 RestoreTabHelper::RestoreTabHelper(TabContents* contents)
-    : TabContentsObserver(contents),
+    : content::WebContentsObserver(contents),
       contents_(contents) {
 }
 

@@ -13,10 +13,9 @@
 #include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/native_widget_types.h"
 
-class TabContents;
 class HungRendererDialogHandler;
 
 class HungRendererDialog : private HtmlDialogUIDelegate {
@@ -28,12 +27,12 @@ class HungRendererDialog : private HtmlDialogUIDelegate {
   static void HideHungRendererDialog(TabContents* contents);
 
  private:
-  class TabContentsObserverImpl : public TabContentsObserver {
+  class WebContentsObserverImpl : public content::WebContentsObserver {
    public:
-    TabContentsObserverImpl(HungRendererDialog* dialog,
+    WebContentsObserverImpl(HungRendererDialog* dialog,
                             TabContents* contents);
 
-    // TabContentsObserver overrides:
+    // content::WebContentsObserver overrides:
     virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
     virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
@@ -41,7 +40,7 @@ class HungRendererDialog : private HtmlDialogUIDelegate {
     TabContents* contents_;  // weak
     HungRendererDialog* dialog_;  // weak
 
-    DISALLOW_COPY_AND_ASSIGN(TabContentsObserverImpl);
+    DISALLOW_COPY_AND_ASSIGN(WebContentsObserverImpl);
   };
 
   friend class HungRendererDialogUITest;
@@ -88,7 +87,7 @@ class HungRendererDialog : private HtmlDialogUIDelegate {
   // The dialog window.
   gfx::NativeWindow window_;
 
-  scoped_ptr<TabContentsObserverImpl> contents_observer_;
+  scoped_ptr<WebContentsObserverImpl> contents_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(HungRendererDialog);
 };

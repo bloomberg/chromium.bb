@@ -9,13 +9,13 @@
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/common/search_provider.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class SearchEngineTabHelperDelegate;
 
 // Per-tab search engine manager. Handles dealing search engine processing
 // functionality.
-class SearchEngineTabHelper : public TabContentsObserver {
+class SearchEngineTabHelper : public content::WebContentsObserver {
  public:
   explicit SearchEngineTabHelper(TabContents* tab_contents);
   virtual ~SearchEngineTabHelper();
@@ -23,7 +23,7 @@ class SearchEngineTabHelper : public TabContentsObserver {
   SearchEngineTabHelperDelegate* delegate() const { return delegate_; }
   void set_delegate(SearchEngineTabHelperDelegate* d) { delegate_ = d; }
 
-  // TabContentsObserver overrides.
+  // content::WebContentsObserver overrides.
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;

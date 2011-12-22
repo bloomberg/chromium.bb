@@ -15,22 +15,21 @@
 #include "base/memory/linked_ptr.h"
 #include "base/timer.h"
 #include "content/browser/renderer_host/backing_store.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class GURL;
 class Profile;
 class RenderWidgetHost;
 class SkBitmap;
-class TabContents;
 
 namespace history {
 class TopSites;
 }
 
 class ThumbnailGenerator : public content::NotificationObserver,
-                           public TabContentsObserver {
+                           public content::WebContentsObserver {
  public:
   typedef base::Callback<void(const SkBitmap&)> ThumbnailReadyCallback;
   // The result of clipping. This can be used to determine if the
@@ -123,7 +122,7 @@ class ThumbnailGenerator : public content::NotificationObserver,
                                     history::TopSites* top_sites,
                                     const GURL& url);
 
-  // TabContentsObserver overrides.
+  // content::WebContentsObserver overrides.
   virtual void DidStartLoading() OVERRIDE;
   virtual void StopNavigation() OVERRIDE;
 

@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -31,7 +31,7 @@ class SafeWebstoreResponseParser;
 class WebstoreInlineInstaller
     : public base::RefCountedThreadSafe<WebstoreInlineInstaller>,
       public ExtensionInstallUI::Delegate,
-      public TabContentsObserver,
+      public content::WebContentsObserver,
       public content::URLFetcherDelegate,
       public WebstoreInstaller::Delegate,
       public WebstoreInstallHelper::Delegate {
@@ -90,7 +90,7 @@ class WebstoreInlineInstaller
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
-  // TabContentsObserver interface implementation.
+  // content::WebContentsObserver interface implementation.
   virtual void TabContentsDestroyed(TabContents* tab_contents) OVERRIDE;
 
   // WebstoreInstaller::Delegate interface implementation.

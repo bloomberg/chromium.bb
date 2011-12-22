@@ -21,7 +21,7 @@ using WebKit::WebFindOptions;
 int FindTabHelper::find_request_id_counter_ = -1;
 
 FindTabHelper::FindTabHelper(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents),
+    : content::WebContentsObserver(tab_contents),
       find_ui_active_(false),
       find_op_aborted_(false),
       current_find_request_id_(find_request_id_counter_++),

@@ -65,7 +65,7 @@ static base::LazyInstance<ScriptedPrintPreviewClosureMap>
 namespace printing {
 
 PrintViewManager::PrintViewManager(TabContentsWrapper* tab)
-    : TabContentsObserver(tab->tab_contents()),
+    : content::WebContentsObserver(tab->tab_contents()),
       tab_(tab),
       number_pages_(0),
       printing_succeeded_(false),

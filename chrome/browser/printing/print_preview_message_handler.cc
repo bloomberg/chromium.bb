@@ -64,7 +64,7 @@ namespace printing {
 
 PrintPreviewMessageHandler::PrintPreviewMessageHandler(
     TabContents* tab_contents)
-    : TabContentsObserver(tab_contents) {
+    : content::WebContentsObserver(tab_contents) {
   DCHECK(tab_contents);
 }
 

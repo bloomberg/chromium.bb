@@ -131,7 +131,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       associated_tab_contents_(NULL) {
   host_contents_.reset(new TabContents(
       profile_, site_instance, MSG_ROUTING_NONE, NULL, NULL));
-  TabContentsObserver::Observe(host_contents_.get());
+  content::WebContentsObserver::Observe(host_contents_.get());
   host_contents_->SetDelegate(this);
   host_contents_->SetViewType(host_type);
 

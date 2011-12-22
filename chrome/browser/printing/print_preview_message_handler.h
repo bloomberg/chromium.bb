@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class PrintPreviewUI;
 class TabContentsWrapper;
@@ -22,12 +22,12 @@ struct PageSizeMargins;
 // TabContents offloads print preview message handling to
 // PrintPreviewMessageHandler. This object has the same life time as the
 // TabContents that owns it.
-class PrintPreviewMessageHandler : public TabContentsObserver {
+class PrintPreviewMessageHandler : public content::WebContentsObserver {
  public:
   explicit PrintPreviewMessageHandler(TabContents* tab_contents);
   virtual ~PrintPreviewMessageHandler();
 
-  // TabContentsObserver implementation.
+  // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void NavigateToPendingEntry(const GURL& url,
       NavigationController::ReloadType reload_type) OVERRIDE;

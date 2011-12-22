@@ -7,9 +7,9 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_MACOSX)
@@ -27,7 +27,7 @@ class SadTabGtk;
 #endif
 
 // Per-tab class to manage sad tab views.
-class SadTabObserver : public TabContentsObserver,
+class SadTabObserver : public content::WebContentsObserver,
                        public content::NotificationObserver {
  public:
   explicit SadTabObserver(TabContents* tab_contents);
@@ -43,7 +43,7 @@ class SadTabObserver : public TabContentsObserver,
   // Platform specific function to determine if there is a current sad tab page.
   bool HasSadTab();
 
-  // Overridden from TabContentsObserver:
+  // Overridden from content::WebContentsObserver:
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
 
   // Overridden from content::NotificationObserver:

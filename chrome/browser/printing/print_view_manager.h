@@ -8,9 +8,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "printing/printed_pages_source.h"
 
 class TabContentsWrapper;
@@ -31,7 +31,7 @@ class PrintViewManagerObserver;
 // delegates a few printing related commands to this instance.
 class PrintViewManager : public content::NotificationObserver,
                          public PrintedPagesSource,
-                         public TabContentsObserver {
+                         public content::WebContentsObserver {
  public:
   explicit PrintViewManager(TabContentsWrapper* tab);
   virtual ~PrintViewManager();
@@ -76,7 +76,7 @@ class PrintViewManager : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // TabContentsObserver implementation.
+  // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Terminates or cancels the print job if one was pending.

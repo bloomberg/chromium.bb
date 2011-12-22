@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace webkit {
 namespace forms {
@@ -21,17 +21,16 @@ struct FormData;
 
 class AutofillExternalDelegate;
 class Profile;
-class TabContents;
 
 // Per-tab Autocomplete history manager. Handles receiving form data from the
 // renderer and the storing and retrieving of form data through WebDataService.
-class AutocompleteHistoryManager : public TabContentsObserver,
+class AutocompleteHistoryManager : public content::WebContentsObserver,
                                    public WebDataServiceConsumer {
  public:
   explicit AutocompleteHistoryManager(TabContents* tab_contents);
   virtual ~AutocompleteHistoryManager();
 
-  // TabContentsObserver implementation.
+  // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WebDataServiceConsumer implementation.

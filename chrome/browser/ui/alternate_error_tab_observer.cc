@@ -16,7 +16,7 @@
 
 AlternateErrorPageTabObserver::AlternateErrorPageTabObserver(
     TabContentsWrapper* wrapper)
-        : TabContentsObserver(wrapper->tab_contents()),
+        : content::WebContentsObserver(wrapper->tab_contents()),
           wrapper_(wrapper) {
   PrefService* prefs = wrapper_->profile()->GetPrefs();
   if (prefs) {
@@ -39,7 +39,7 @@ void AlternateErrorPageTabObserver::RegisterUserPrefs(PrefService* prefs) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsObserver overrides
+// WebContentsObserver overrides
 
 void AlternateErrorPageTabObserver::RenderViewCreated(
     RenderViewHost* render_view_host) {

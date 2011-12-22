@@ -41,15 +41,15 @@ class HungRendererDialogGtk {
 
  private:
   // Dismiss the panel if |contents_| is closed or its renderer exits.
-  class TabContentsObserverImpl : public TabContentsObserver {
+  class WebContentsObserverImpl : public content::WebContentsObserver {
    public:
-    TabContentsObserverImpl(HungRendererDialogGtk* dialog,
+    WebContentsObserverImpl(HungRendererDialogGtk* dialog,
                             TabContents* contents)
-        : TabContentsObserver(contents),
+        : content::WebContentsObserver(contents),
           dialog_(dialog) {
     }
 
-    // TabContentsObserver overrides:
+    // content::WebContentsObserver overrides:
     virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE {
       dialog_->Hide();
     }
@@ -60,7 +60,7 @@ class HungRendererDialogGtk {
    private:
     HungRendererDialogGtk* dialog_;  // weak
 
-    DISALLOW_COPY_AND_ASSIGN(TabContentsObserverImpl);
+    DISALLOW_COPY_AND_ASSIGN(WebContentsObserverImpl);
   };
 
   // The GtkTreeView column ids.
@@ -78,7 +78,7 @@ class HungRendererDialogGtk {
   GtkDialog* dialog_;
   GtkListStore* model_;
   TabContents* contents_;
-  scoped_ptr<TabContentsObserverImpl> contents_observer_;
+  scoped_ptr<WebContentsObserverImpl> contents_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(HungRendererDialogGtk);
 };
@@ -176,7 +176,7 @@ void HungRendererDialogGtk::Init() {
 void HungRendererDialogGtk::ShowForTabContents(TabContents* hung_contents) {
   DCHECK(hung_contents && dialog_);
   contents_ = hung_contents;
-  contents_observer_.reset(new TabContentsObserverImpl(this, contents_));
+  contents_observer_.reset(new WebContentsObserverImpl(this, contents_));
   gtk_list_store_clear(model_);
 
   GtkTreeIter tree_iter;

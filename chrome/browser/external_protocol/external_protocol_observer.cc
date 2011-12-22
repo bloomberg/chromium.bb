@@ -8,7 +8,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 
 ExternalProtocolObserver::ExternalProtocolObserver(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents) {
+    : content::WebContentsObserver(tab_contents) {
 }
 
 ExternalProtocolObserver::~ExternalProtocolObserver() {

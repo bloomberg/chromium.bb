@@ -14,14 +14,15 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace {
 
-class ConstrainedHtmlDialogBrowserTestObserver : public TabContentsObserver {
+class ConstrainedHtmlDialogBrowserTestObserver
+    : public content::WebContentsObserver {
  public:
   explicit ConstrainedHtmlDialogBrowserTestObserver(TabContents* contents)
-      : TabContentsObserver(contents),
+      : content::WebContentsObserver(contents),
         tab_destroyed_(false) {
   }
   virtual ~ConstrainedHtmlDialogBrowserTestObserver() {}

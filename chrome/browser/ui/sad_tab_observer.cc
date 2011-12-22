@@ -20,7 +20,7 @@
 #endif
 
 SadTabObserver::SadTabObserver(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents) {
+    : content::WebContentsObserver(tab_contents) {
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
                  content::Source<TabContents>(tab_contents));
 }

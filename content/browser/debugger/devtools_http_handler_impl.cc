@@ -18,13 +18,13 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
 #include "content/public/browser/devtools_manager.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
@@ -78,7 +78,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
 
 static int next_id = 1;
 
-class TabContentsIDHelper : public TabContentsObserver {
+class TabContentsIDHelper : public content::WebContentsObserver {
  public:
 
   static int GetID(TabContents* tab) {
@@ -98,7 +98,7 @@ class TabContentsIDHelper : public TabContentsObserver {
 
  private:
   explicit TabContentsIDHelper(TabContents* tab)
-      : TabContentsObserver(tab),
+      : content::WebContentsObserver(tab),
         id_(next_id++) {
     id_to_tabcontents_.Get()[id_] = tab;
     tabcontents_to_id_.Get()[tab] = id_;

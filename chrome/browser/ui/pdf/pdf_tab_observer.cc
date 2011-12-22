@@ -9,7 +9,7 @@
 #include "chrome/common/render_messages.h"
 
 PDFTabObserver::PDFTabObserver(TabContentsWrapper* wrapper)
-    : TabContentsObserver(wrapper->tab_contents()),
+    : content::WebContentsObserver(wrapper->tab_contents()),
       wrapper_(wrapper) {
 }
 
@@ -17,7 +17,7 @@ PDFTabObserver::~PDFTabObserver() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsObserver overrides
+// WebContentsObserver overrides
 
 bool PDFTabObserver::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;

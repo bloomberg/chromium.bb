@@ -30,7 +30,6 @@
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/tab_contents/title_updated_details.h"
 #include "content/browser/webui/web_ui_factory.h"
@@ -44,6 +43,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_restriction.h"
@@ -112,6 +112,7 @@ using content::DevToolsManagerImpl;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::UserMetricsAction;
+using content::WebContentsObserver;
 
 namespace {
 
@@ -264,7 +265,7 @@ TabContents::~TabContents() {
         base::TimeTicks::Now() - tab_close_start_time_);
   }
 
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_, TabContentsDestroyed());
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, TabContentsDestroyed());
 
   SetDelegate(NULL);
 }
@@ -273,8 +274,8 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
   if (GetWebUI() && GetWebUI()->OnMessageReceived(message))
     return true;
 
-  ObserverListBase<TabContentsObserver>::Iterator it(observers_);
-  TabContentsObserver* observer;
+  ObserverListBase<WebContentsObserver>::Iterator it(observers_);
+  WebContentsObserver* observer;
   while ((observer = it.GetNext()) != NULL)
     if (observer->OnMessageReceived(message))
       return true;
@@ -549,7 +550,7 @@ void TabContents::DidBecomeSelected() {
 
   last_selected_time_ = base::TimeTicks::Now();
 
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_, DidBecomeSelected());
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, DidBecomeSelected());
 }
 
 
@@ -605,7 +606,7 @@ RenderViewHostManager* TabContents::GetRenderManagerForTesting() {
 
 void TabContents::Stop() {
   render_manager_.Stop();
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_, StopNavigation());
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, StopNavigation());
 }
 
 TabContents* TabContents::Clone() {
@@ -656,11 +657,11 @@ void TabContents::Focus() {
   view_->Focus();
 }
 
-void TabContents::AddObserver(TabContentsObserver* observer) {
+void TabContents::AddObserver(WebContentsObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void TabContents::RemoveObserver(TabContentsObserver* observer) {
+void TabContents::RemoveObserver(WebContentsObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -755,7 +756,7 @@ TabContents* TabContents::OpenURL(const OpenURLParams& params) {
   if (delegate_) {
     TabContents* new_contents = delegate_->OpenURLFromTab(this, params);
     // Notify observers.
-    FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                       DidOpenURL(params.url, params.referrer,
                                  params.disposition, params.transition));
     return new_contents;
@@ -818,7 +819,7 @@ bool TabContents::NavigateToEntry(
   }
 
   // Notify observers about navigation.
-  FOR_EACH_OBSERVER(TabContentsObserver,
+  FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
                     NavigateToPendingEntry(entry.url(), reload_type));
 
@@ -1129,13 +1130,13 @@ void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
       render_manager_.pending_render_view_host() ?
           render_manager_.pending_render_view_host() : GetRenderViewHost();
   // Notify observers about the start of the provisional load.
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidStartProvisionalLoadForFrame(frame_id, is_main_frame,
                     validated_url, is_error_page, rvh));
 
   if (is_main_frame) {
     // Notify observers about the provisional change in the main frame URL.
-    FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                       ProvisionalChangeToMainFrameUrl(url, opener_url));
   }
 }
@@ -1156,7 +1157,7 @@ void TabContents::OnDidRedirectProvisionalLoad(int32 page_id,
     return;
 
   // Notify observers about the provisional change in the main frame URL.
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     ProvisionalChangeToMainFrameUrl(target_url,
                                                     opener_url));
 }
@@ -1228,7 +1229,7 @@ void TabContents::OnDidFailProvisionalLoadWithError(
       content::Source<NavigationController>(&controller_),
       content::Details<ProvisionalLoadDetails>(&details));
 
-  FOR_EACH_OBSERVER(TabContentsObserver,
+  FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
                     DidFailProvisionalLoad(params.frame_id,
                                            params.is_main_frame,
@@ -1285,7 +1286,7 @@ void TabContents::OnDidRunInsecureContent(
 
 void TabContents::OnDocumentLoadedInFrame(int64 frame_id) {
   controller_.DocumentLoadedInFrame();
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DocumentLoadedInFrame(frame_id));
 }
 
@@ -1293,7 +1294,7 @@ void TabContents::OnDidFinishLoad(
     int64 frame_id,
     const GURL& validated_url,
     bool is_main_frame) {
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidFinishLoad(frame_id, validated_url, is_main_frame));
 }
 
@@ -1302,7 +1303,7 @@ void TabContents::OnDidFailLoadWithError(int64 frame_id,
                                          bool is_main_frame,
                                          int error_code,
                                          const string16& error_description) {
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidFailLoad(frame_id, validated_url, is_main_frame,
                                 error_code, error_description));
 }
@@ -1387,7 +1388,7 @@ void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
 void TabContents::OnAppCacheAccessed(const GURL& manifest_url,
                                      bool blocked_by_policy) {
   // Notify observers about navigation.
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     AppCacheAccessed(manifest_url, blocked_by_policy));
 }
 
@@ -1460,7 +1461,7 @@ void TabContents::DidNavigateMainFramePostCommit(
   }
 
   // Notify observers about navigation.
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidNavigateMainFrame(details, params));
 }
 
@@ -1477,7 +1478,7 @@ void TabContents::DidNavigateAnyFramePostCommit(
   }
 
   // Notify observers about navigation.
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidNavigateAnyFrame(details, params));
 }
 
@@ -1611,7 +1612,7 @@ void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
   GetView()->RenderViewCreated(render_view_host);
 
   FOR_EACH_OBSERVER(
-      TabContentsObserver, observers_, RenderViewCreated(render_view_host));
+      WebContentsObserver, observers_, RenderViewCreated(render_view_host));
 }
 
 void TabContents::RenderViewReady(RenderViewHost* rvh) {
@@ -1632,7 +1633,7 @@ void TabContents::RenderViewReady(RenderViewHost* rvh) {
     Focus();
   }
 
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_, RenderViewReady());
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, RenderViewReady());
 }
 
 void TabContents::RenderViewGone(RenderViewHost* rvh,
@@ -1648,14 +1649,14 @@ void TabContents::RenderViewGone(RenderViewHost* rvh,
   SetIsCrashed(status, error_code);
   GetView()->OnTabCrashed(GetCrashedStatus(), crashed_error_code_);
 
-  FOR_EACH_OBSERVER(TabContentsObserver,
+  FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
                     RenderViewGone(GetCrashedStatus()));
 }
 
 void TabContents::RenderViewDeleted(RenderViewHost* rvh) {
   render_manager_.RenderViewDeleted(rvh);
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_, RenderViewDeleted(rvh));
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, RenderViewDeleted(rvh));
 }
 
 void TabContents::DidNavigate(RenderViewHost* rvh,
@@ -1701,7 +1702,7 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
           params.transition | content::PAGE_TRANSITION_FORWARD_BACK);
     }
     // Notify observers about the commit of the provisional load.
-    FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                       DidCommitProvisionalLoadForFrame(params.frame_id,
                       is_main_frame, params.url, transition_type));
   }
@@ -1827,7 +1828,7 @@ void TabContents::DidStartLoading() {
   }
 
   // Notify observers about navigation.
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_, DidStartLoading());
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, DidStartLoading());
 }
 
 void TabContents::DidStopLoading() {
@@ -1850,7 +1851,7 @@ void TabContents::DidStopLoading() {
   SetIsLoading(false, details.get());
 
   // Notify observers about navigation.
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_, DidStopLoading());
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, DidStopLoading());
 }
 
 void TabContents::DidCancelLoading() {
@@ -1867,7 +1868,7 @@ void TabContents::DidChangeLoadProgress(double progress) {
 
 void TabContents::DocumentAvailableInMainFrame(
     RenderViewHost* render_view_host) {
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DocumentAvailableInMainFrame());
 }
 
@@ -1920,7 +1921,7 @@ void TabContents::RequestTransferURL(const GURL& url,
   }
   if (new_contents) {
     // Notify observers.
-    FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                       DidOpenRequestedURL(new_contents,
                                           url,
                                           referrer,
@@ -2025,7 +2026,7 @@ WebPreferences TabContents::GetWebkitPrefs() {
 
 void TabContents::OnUserGesture() {
   // Notify observers.
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_, DidGetUserGesture());
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, DidGetUserGesture());
 
   ResourceDispatcherHost* rdh =
       content::GetContentClient()->browser()->GetResourceDispatcherHost();
@@ -2035,7 +2036,7 @@ void TabContents::OnUserGesture() {
 
 void TabContents::OnIgnoredUIEvent() {
   // Notify observers.
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_, DidGetIgnoredUIEvent());
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, DidGetIgnoredUIEvent());
 }
 
 void TabContents::RendererUnresponsive(RenderViewHost* rvh,

@@ -15,9 +15,9 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
 struct RetargetingDetails;
@@ -115,7 +115,7 @@ class FrameNavigationState {
 };
 
 // Tab contents observer that forwards navigation events to the event router.
-class ExtensionWebNavigationTabObserver : public TabContentsObserver {
+class ExtensionWebNavigationTabObserver : public content::WebContentsObserver {
  public:
   explicit ExtensionWebNavigationTabObserver(TabContents* tab_contents);
   virtual ~ExtensionWebNavigationTabObserver();
@@ -127,7 +127,7 @@ class ExtensionWebNavigationTabObserver : public TabContentsObserver {
     return navigation_state_;
   }
 
-  // TabContentsObserver implementation.
+  // content::WebContentsObserver implementation.
   virtual void DidStartProvisionalLoadForFrame(
       int64 frame_id,
       bool is_main_frame,

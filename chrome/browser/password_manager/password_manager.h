@@ -11,7 +11,7 @@
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/login/login_model.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "webkit/forms/password_form.h"
 #include "webkit/forms/password_form_dom_manager.h"
 
@@ -25,7 +25,7 @@ class PrefService;
 // database through the WebDataService. The PasswordManager is a LoginModel
 // for purposes of supporting HTTP authentication dialogs.
 class PasswordManager : public LoginModel,
-                        public TabContentsObserver {
+                        public content::WebContentsObserver {
  public:
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -49,7 +49,7 @@ class PasswordManager : public LoginModel,
   // of 2 (see SavePassword).
   void ProvisionallySavePassword(webkit::forms::PasswordForm form);
 
-  // TabContentsObserver overrides.
+  // content::WebContentsObserver overrides.
   virtual void DidStopLoading() OVERRIDE;
   virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,

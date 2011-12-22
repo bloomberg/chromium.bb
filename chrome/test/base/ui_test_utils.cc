@@ -47,11 +47,11 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/test/test_navigation_observer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -75,10 +75,11 @@ namespace ui_test_utils {
 namespace {
 
 class DOMOperationObserver : public content::NotificationObserver,
-                             public TabContentsObserver {
+                             public content::WebContentsObserver {
  public:
   explicit DOMOperationObserver(RenderViewHost* render_view_host)
-      : TabContentsObserver(render_view_host->delegate()->GetAsTabContents()),
+      : content::WebContentsObserver(
+            render_view_host->delegate()->GetAsTabContents()),
         did_respond_(false) {
     registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    content::Source<RenderViewHost>(render_view_host));
@@ -95,7 +96,7 @@ class DOMOperationObserver : public content::NotificationObserver,
     MessageLoopForUI::current()->Quit();
   }
 
-  // Overridden from content::TabContentsObserver:
+  // Overridden from content::WebContentsObserver:
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE {
     MessageLoopForUI::current()->Quit();
   }

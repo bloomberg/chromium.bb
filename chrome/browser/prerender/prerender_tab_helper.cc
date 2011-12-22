@@ -166,7 +166,7 @@ class PrerenderTabHelper::HoverData {
 };
 
 PrerenderTabHelper::PrerenderTabHelper(TabContentsWrapper* tab)
-    : TabContentsObserver(tab->tab_contents()),
+    : content::WebContentsObserver(tab->tab_contents()),
       tab_(tab),
       pplt_load_start_(),
       last_hovers_(new HoverData[kNumHoverThresholds]) {

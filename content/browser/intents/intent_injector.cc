@@ -16,7 +16,7 @@
 #include "webkit/glue/web_intent_reply_data.h"
 
 IntentInjector::IntentInjector(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents),
+    : content::WebContentsObserver(tab_contents),
       intents_dispatcher_(NULL) {
   DCHECK(tab_contents);
 }
@@ -60,7 +60,7 @@ void IntentInjector::DidNavigateMainFrame(
 // RenderViewHostObserver, and do this on RenderViewHostInitialized. There's no
 // good hooks for attaching the intent to such an object, though. All RVHOs get
 // made deep inside tab contents initialization. Idea: propagate out
-// RenderViewHostInitialized to a TabContentsObserver latch? That still looks
+// RenderViewHostInitialized to a WebContentsObserver latch? That still looks
 // like it might be racy, though.
 void IntentInjector::SendIntent() {
   if (source_intent_.get() == NULL ||

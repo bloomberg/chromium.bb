@@ -14,15 +14,14 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
-#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
 
 class Profile;
 class RenderViewHost;
 class RenderViewHostDelegate;
 class SessionStorageNamespace;
-class TabContents;
 class TabContentsWrapper;
 struct FaviconURL;
 
@@ -42,7 +41,7 @@ class PrerenderTracker;
 // programatically view window.location.href) or RenderViewHostManager because
 // it is never allowed to navigate across a SiteInstance boundary.
 class PrerenderContents : public content::NotificationObserver,
-                          public TabContentsObserver {
+                          public content::WebContentsObserver {
  public:
   // PrerenderContents::Create uses the currently registered Factory to create
   // the PrerenderContents. Factory is intended for testing.
@@ -131,7 +130,7 @@ class PrerenderContents : public content::NotificationObserver,
   void OnJSOutOfMemory();
   bool ShouldSuppressDialogs();
 
-  // TabContentsObserver implementation.
+  // content::WebContentsObserver implementation.
   virtual void DidStopLoading() OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(
       int64 frame_id,

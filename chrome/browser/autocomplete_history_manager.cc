@@ -108,7 +108,7 @@ bool IsTextField(const FormField& field) {
 
 AutocompleteHistoryManager::AutocompleteHistoryManager(
     TabContents* tab_contents)
-    : TabContentsObserver(tab_contents),
+    : content::WebContentsObserver(tab_contents),
       pending_query_handle_(0),
       query_id_(0),
       external_delegate_(NULL) {
@@ -235,7 +235,7 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
     TabContents* tab_contents,
     Profile* profile,
     WebDataService* wds)
-    : TabContentsObserver(tab_contents),
+    : content::WebContentsObserver(tab_contents),
       profile_(profile),
       web_data_service_(wds),
       pending_query_handle_(0),

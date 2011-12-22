@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_UI_TAB_CONTENTS_CORE_TAB_HELPER_H_
 #pragma once
 
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class CoreTabHelperDelegate;
 class TabContentsWrapper;
 
 // Per-tab class to handle functionality that is core to the operation of tabs.
-class CoreTabHelper : public TabContentsObserver {
+class CoreTabHelper : public content::WebContentsObserver {
  public:
   explicit CoreTabHelper(TabContentsWrapper* wrapper);
   virtual ~CoreTabHelper();
@@ -27,7 +27,7 @@ class CoreTabHelper : public TabContentsObserver {
   string16 GetStatusText() const;
 
  private:
-  // TabContentsObserver overrides:
+  // content::WebContentsObserver overrides:
   virtual void DidBecomeSelected() OVERRIDE;
 
   // Delegate for notifying our owner about stuff. Not owned by us.

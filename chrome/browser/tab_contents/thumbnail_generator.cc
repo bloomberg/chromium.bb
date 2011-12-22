@@ -145,7 +145,7 @@ ThumbnailGenerator::~ThumbnailGenerator() {
 }
 
 void ThumbnailGenerator::StartThumbnailing(TabContents* tab_contents) {
-  TabContentsObserver::Observe(tab_contents);
+  content::WebContentsObserver::Observe(tab_contents);
 
   if (registrar_.IsEmpty()) {
     // Even though we deal in RenderWidgetHosts, we only care about its
