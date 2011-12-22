@@ -37,7 +37,7 @@ struct evdev_input {
 	char *seat_id;
 };
 
-#define MAX_SLOTS 10
+#define MAX_SLOTS 16
 
 struct evdev_input_device {
 	struct evdev_input *master;
@@ -279,8 +279,7 @@ is_motion_event(struct input_event *e)
 static void
 evdev_flush_motion(struct evdev_input_device *device, uint32_t time)
 {
-	struct wl_input_device *master =
-		&device->master->base.input_device;
+	struct wl_input_device *master = &device->master->base.input_device;
 
 	if (!device->type)
 		return;

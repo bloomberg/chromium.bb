@@ -5,12 +5,15 @@ noinst_PROGRAMS = $(clients_programs) 		\
 libexec_PROGRAMS = $(desktop_shell) $(tablet_shell)
 
 if BUILD_SIMPLE_CLIENTS
-simple_clients_programs = simple-egl simple-shm
+simple_clients_programs = simple-egl simple-shm simple-touch
 simple_egl_SOURCES = simple-egl.c
 simple_egl_LDADD = $(SIMPLE_CLIENT_LIBS) -lm
 
 simple_shm_SOURCES = simple-shm.c
 simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS)
+
+simple_touch_SOURCES = simple-touch.c
+simple_touch_LDADD = $(SIMPLE_CLIENT_LIBS)
 endif
 
 if BUILD_CLIENTS
