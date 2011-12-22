@@ -37,9 +37,14 @@ remoting.ClientSession = function(hostJid, hostPublicKey, accessCode, email,
   this.email = email;
   this.clientJid = '';
   this.sessionId = '';
-  /** @type {remoting.ViewerPlugin} */ this.plugin = null;
+  /** @type {remoting.ViewerPlugin} */
+  this.plugin = null;
   this.logToServer = new remoting.LogToServer();
   this.onStateChange = onStateChange;
+  /** @type {remoting.ClientSession} */
+  var that = this;
+  /** @type {function():void} @private */
+  this.refocusPlugin_ = function() { that.plugin.focus(); };
 };
 
 // Note that the positive values in both of these enums are copied directly
@@ -152,7 +157,11 @@ remoting.ClientSession.prototype.createPluginAndConnect =
   this.plugin.type = 'pepper-application/x-chromoting';
   this.plugin.width = 0;
   this.plugin.height = 0;
+  this.plugin.tabIndex = 0;  // Required, otherwise focus() doesn't work.
   container.appendChild(this.plugin);
+
+  this.plugin.focus();
+  this.plugin.addEventListener('blur', this.refocusPlugin_, false);
 
   if (!this.isPluginVersionSupported_(this.plugin)) {
     // TODO(ajwong): Remove from parent.
@@ -199,6 +208,7 @@ remoting.ClientSession.prototype.createPluginAndConnect =
  */
 remoting.ClientSession.prototype.removePlugin = function() {
   if (this.plugin) {
+    this.plugin.removeEventListener('blur', this.refocusPlugin_, false);
     var parentNode = this.plugin.parentNode;
     parentNode.removeChild(this.plugin);
     this.plugin = null;
