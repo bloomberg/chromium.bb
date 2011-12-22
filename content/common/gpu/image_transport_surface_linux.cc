@@ -212,7 +212,8 @@ EGLAcceleratedSurface::EGLAcceleratedSurface(const gfx::Size& size)
 
   XID window = XDefaultRootWindow(dpy);
   XWindowAttributes gwa;
-  XGetWindowAttributes(dpy, window, &gwa);
+  bool success = XGetWindowAttributes(dpy, window, &gwa);
+  DCHECK(success);
   pixmap_ = XCreatePixmap(
       dpy, window, size_.width(), size_.height(), gwa.depth);
 

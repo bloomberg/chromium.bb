@@ -170,7 +170,8 @@ void BrowsingHistoryHandler::HandleGetHistory(const ListValue* args) {
 
   // Get arguments (if any).
   int day = 0;
-  ExtractIntegerValue(args, &day);
+  bool res = ExtractIntegerValue(args, &day);
+  DCHECK(res);
 
   // Set our query options.
   history::QueryOptions options;

@@ -129,8 +129,10 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsRect() {
   BrowserAccessibility* root = manager_->GetRoot();
   int scroll_x = 0;
   int scroll_y = 0;
-  root->GetIntAttribute(WebAccessibility::ATTR_SCROLL_X, &scroll_x);
-  root->GetIntAttribute(WebAccessibility::ATTR_SCROLL_Y, &scroll_y);
+  if (!root->GetIntAttribute(WebAccessibility::ATTR_SCROLL_X, &scroll_x) ||
+      !root->GetIntAttribute(WebAccessibility::ATTR_SCROLL_Y, &scroll_y)) {
+    return bounds;
+  }
   bounds.Offset(-scroll_x, -scroll_y);
 
   return bounds;

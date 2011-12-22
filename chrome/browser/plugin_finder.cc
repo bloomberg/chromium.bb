@@ -39,7 +39,8 @@ PluginFinder::PluginFinder() {
     base::DictionaryValue* dict =
         static_cast<base::DictionaryValue*>(value.get());
     base::ListValue* list = NULL;
-    dict->GetList("plugins", &list);
+    bool success = dict->GetList("plugins", &list);
+    DCHECK(success);
     plugin_list_.reset(list->DeepCopy());
   }
   DCHECK(plugin_list_.get());
@@ -113,4 +114,3 @@ void PluginFinder::FindPlugin(
   }
   MessageLoop::current()->PostTask(FROM_HERE, not_found_callback);
 }
-

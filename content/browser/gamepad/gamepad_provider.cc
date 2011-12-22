@@ -56,7 +56,8 @@ GamepadProvider::GamepadProvider(GamepadDataFetcher* fetcher)
   base::SystemMonitor* monitor = base::SystemMonitor::Get();
   if (monitor)
     monitor->AddDevicesChangedObserver(this);
-  gamepad_shared_memory_.CreateAndMapAnonymous(data_size);
+  bool res = gamepad_shared_memory_.CreateAndMapAnonymous(data_size);
+  DCHECK(res);
   GamepadHardwareBuffer* hwbuf = SharedMemoryAsHardwareBuffer();
   memset(hwbuf, 0, sizeof(GamepadHardwareBuffer));
 

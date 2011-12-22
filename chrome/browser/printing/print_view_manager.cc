@@ -123,7 +123,7 @@ bool PrintViewManager::PrintPreviewNow() {
 }
 
 void PrintViewManager::PrintPreviewDone() {
-  BrowserThread::CurrentlyOn(BrowserThread::UI);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_NE(NOT_PREVIEWING, print_preview_state_);
 
   if (print_preview_state_ == SCRIPTED_PREVIEW) {
@@ -303,7 +303,7 @@ void PrintViewManager::OnScriptedPrintPreview(bool source_is_modifiable,
 }
 
 void PrintViewManager::OnScriptedPrintPreviewReply(IPC::Message* reply_msg) {
-  BrowserThread::CurrentlyOn(BrowserThread::UI);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Send(reply_msg);
 }
 
