@@ -184,7 +184,7 @@ class PPAPI_PROXY_EXPORT SerializedVar {
 //   void MyFunctionProxy(PP_Var param) {
 //     Send(new MyFunctionMsg(SerializedVarSendInput(dispatcher, param));
 //   }
-class SerializedVarSendInput : public SerializedVar {
+class PPAPI_PROXY_EXPORT SerializedVarSendInput : public SerializedVar {
  public:
   SerializedVarSendInput(Dispatcher* dispatcher, const PP_Var& var);
 
@@ -243,7 +243,7 @@ class PPAPI_PROXY_EXPORT ReceiveSerializedVarReturnValue
 //     ReceiveSerializedException se(dispatcher(), exception)
 //     Send(new PpapiHostMsg_Foo(&se));
 //   }
-class ReceiveSerializedException : public SerializedVar {
+class PPAPI_PROXY_EXPORT ReceiveSerializedException : public SerializedVar {
  public:
   ReceiveSerializedException(Dispatcher* dispatcher, PP_Var* exception);
   ~ReceiveSerializedException();
@@ -274,7 +274,7 @@ class ReceiveSerializedException : public SerializedVar {
 //     ReceiveSerializedVarVectorOutParam vect(dispatcher, count, vars);
 //     Send(new MyMsg(vect.OutParam()));
 //   }
-class ReceiveSerializedVarVectorOutParam {
+class PPAPI_PROXY_EXPORT ReceiveSerializedVarVectorOutParam {
  public:
   ReceiveSerializedVarVectorOutParam(Dispatcher* dispatcher,
                                      uint32_t* output_count,
@@ -333,7 +333,7 @@ class PPAPI_PROXY_EXPORT SerializedVarReceiveInput {
 //     PP_Var* array = vector.Get(dispatcher, &size);
 //     MyFunction(size, array);
 //   }
-class SerializedVarVectorReceiveInput {
+class PPAPI_PROXY_EXPORT SerializedVarVectorReceiveInput {
  public:
   SerializedVarVectorReceiveInput(const std::vector<SerializedVar>& serialized);
   ~SerializedVarVectorReceiveInput();
@@ -415,7 +415,7 @@ class PPAPI_PROXY_EXPORT SerializedVarOutParam {
 // For returning an array of PP_Vars to the other side and transferring
 // ownership.
 //
-class SerializedVarVectorOutParam {
+class PPAPI_PROXY_EXPORT SerializedVarVectorOutParam {
  public:
   SerializedVarVectorOutParam(std::vector<SerializedVar>* serialized);
   ~SerializedVarVectorOutParam();

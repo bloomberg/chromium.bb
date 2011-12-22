@@ -38,7 +38,7 @@ bool TestGraphics2D::Init() {
   image_data_interface_ = static_cast<const PPB_ImageData*>(
       pp::Module::Get()->GetBrowserInterface(PPB_IMAGEDATA_INTERFACE));
   return graphics_2d_interface_ && image_data_interface_ &&
-         InitTestingInterface();
+         CheckTestingInterface();
 }
 
 void TestGraphics2D::RunTests(const std::string& filter) {

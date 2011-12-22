@@ -13,6 +13,7 @@
 #endif
 
 using ppapi_proxy::PPBMessagingInterface;
+using ppapi_proxy::PPBVarInterface;
 using ppapi_proxy::DebugPrintf;
 using ppapi_proxy::DeserializeTo;
 
@@ -30,6 +31,11 @@ void PpbMessagingRpcServer::PPB_Messaging_PostMessage(
     return;
 
   PPBMessagingInterface()->PostMessage(instance, message);
+
+  // In the case of a string, DeserializeTo creates a PP_Var with a reference-
+  // count of 1. We must release the var, or it will stay in the browser's map.
+  PPBVarInterface()->Release(message);
+
   DebugPrintf("PPB_Messaging::PostMessage: instance=%"NACL_PRIu32"\n",
               instance);
 

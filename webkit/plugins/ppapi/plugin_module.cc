@@ -247,6 +247,16 @@ PP_Var GetDocumentURL(PP_Instance instance, PP_URLComponents_Dev* components) {
   return plugin_instance->GetDocumentURL(instance, components);
 }
 
+uint32_t GetLiveVars(PP_Var live_vars[], uint32_t array_size) {
+  std::vector<PP_Var> vars =
+      PpapiGlobals::Get()->GetVarTracker()->GetLiveVars();
+  for (size_t i = 0u;
+       i < std::min(static_cast<size_t>(array_size), vars.size());
+       ++i)
+    live_vars[i] = vars[i];
+  return vars.size();
+}
+
 const PPB_Testing_Dev testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
@@ -254,7 +264,8 @@ const PPB_Testing_Dev testing_interface = {
   &GetLiveObjectsForInstance,
   &IsOutOfProcess,
   &SimulateInputEvent,
-  &GetDocumentURL
+  &GetDocumentURL,
+  &GetLiveVars
 };
 
 // GetInterface ----------------------------------------------------------------
@@ -351,8 +362,7 @@ const void* GetInterface(const char* name) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePepperTesting)) {
     if (strcmp(name, PPB_TESTING_DEV_INTERFACE) == 0 ||
-        strcmp(name, PPB_TESTING_DEV_INTERFACE_0_7) == 0 ||
-        strcmp(name, PPB_TESTING_DEV_INTERFACE_0_8) == 0) {
+        strcmp(name, PPB_TESTING_DEV_INTERFACE_0_9) == 0) {
       return &testing_interface;
     }
   }

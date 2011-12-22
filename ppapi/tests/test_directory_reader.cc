@@ -72,7 +72,7 @@ int32_t DeleteDirectoryRecursively(pp::FileRef* dir,
 }  // namespace
 
 bool TestDirectoryReader::Init() {
-  return InitTestingInterface() && EnsureRunningOverHTTP();
+  return CheckTestingInterface() && EnsureRunningOverHTTP();
 }
 
 void TestDirectoryReader::RunTests(const std::string& filter) {

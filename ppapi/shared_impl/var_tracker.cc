@@ -149,6 +149,17 @@ PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes) {
   return array_buffer->GetPPVar();
 }
 
+std::vector<PP_Var> VarTracker::GetLiveVars() {
+  std::vector<PP_Var> var_vector;
+  var_vector.reserve(live_vars_.size());
+  for (VarMap::const_iterator iter = live_vars_.begin();
+       iter != live_vars_.end();
+       ++iter) {
+    var_vector.push_back(iter->second.var->GetPPVar());
+  }
+  return var_vector;
+}
+
 void VarTracker::TrackedObjectGettingOneRef(VarMap::const_iterator obj) {
   // Anybody using tracked objects should override this.
   NOTREACHED();

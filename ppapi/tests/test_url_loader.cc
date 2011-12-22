@@ -63,7 +63,7 @@ TestURLLoader::TestURLLoader(TestingInstance* instance)
 }
 
 bool TestURLLoader::Init() {
-  if (!InitTestingInterface()) {
+  if (!CheckTestingInterface()) {
     instance_->AppendError("Testing interface not available");
     return false;
   }

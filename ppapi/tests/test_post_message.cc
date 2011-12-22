@@ -69,7 +69,7 @@ TestPostMessage::~TestPostMessage() {
 }
 
 bool TestPostMessage::Init() {
-  bool success = InitTestingInterface();
+  bool success = CheckTestingInterface();
 
   // Set up a special listener that only responds to a FINISHED_WAITING string.
   // This is for use by WaitForMessages.
@@ -179,6 +179,7 @@ std::string TestPostMessage::TestSendInInit() {
   ASSERT_EQ(message_data_.size(), 1);
   ASSERT_TRUE(message_data_.back().is_string());
   ASSERT_EQ(message_data_.back().AsString(), kTestString);
+  message_data_.clear();
   PASS();
 }
 
@@ -236,6 +237,7 @@ std::string TestPostMessage::TestSendingData() {
   ASSERT_EQ(WaitForMessages(), 1);
   ASSERT_TRUE(message_data_.back().is_null());
 
+  message_data_.clear();
   ASSERT_TRUE(ClearListeners());
 
   PASS();
@@ -296,6 +298,7 @@ std::string TestPostMessage::TestSendingArrayBuffer() {
   for (size_t i = 0; i < test_data.ByteLength(); ++i)
     ASSERT_EQ(buff[i], received_buff[i]);
 
+  message_data_.clear();
   ASSERT_TRUE(ClearListeners());
 
   PASS();
@@ -361,6 +364,9 @@ std::string TestPostMessage::TestMessageEvent() {
   ASSERT_DOUBLE_EQ(double_vec[1], 2.0);
   ASSERT_DOUBLE_EQ(double_vec[2], 3.0);
 
+  message_data_.clear();
+  ASSERT_TRUE(ClearListeners());
+
   PASS();
 }
 
@@ -391,6 +397,8 @@ std::string TestPostMessage::TestExtraParam() {
   instance_->PostMessage(pp::Var());
   ASSERT_EQ(WaitForMessages(), 0);
   ASSERT_TRUE(message_data_.empty());
+
+  ASSERT_TRUE(ClearListeners());
 
   PASS();
 }
@@ -447,6 +455,9 @@ std::string TestPostMessage::TestNonMainThread() {
     ++received_counts[received_value];
   }
   ASSERT_EQ(received_counts, expected_counts);
+
+  message_data_.clear();
+  ASSERT_TRUE(ClearListeners());
 
   PASS();
 }

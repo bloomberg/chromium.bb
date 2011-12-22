@@ -69,7 +69,7 @@ REGISTER_TEST_CASE(VarDeprecated);
 bool TestVarDeprecated::Init() {
   var_interface_ = static_cast<const PPB_Var_Deprecated*>(
       pp::Module::Get()->GetBrowserInterface(PPB_VAR_DEPRECATED_INTERFACE));
-  return var_interface_ && InitTestingInterface();
+  return var_interface_ && CheckTestingInterface();
 }
 
 void TestVarDeprecated::RunTests(const std::string& filter) {
@@ -179,6 +179,7 @@ std::string TestVarDeprecated::TestNullInputInUtf8Conversion() {
   if (result == NULL) {
     return "Expected a non-null result for 0-lengthed string from VarToUtf8.";
   }
+  var_interface_->Release(converted_string);
 
   // Should not crash, and make an empty string.
   const char* null_string = NULL;
@@ -385,6 +386,10 @@ std::string TestVarDeprecated::TestPassReference() {
   pp::Var result = var_from_page_.Call(pp::Var(), "nice");
   ASSERT_TRUE(result.is_string());
   ASSERT_TRUE(result.AsString() == "worksnice");
+
+  // Reset var_from_page_ so it doesn't seem like a leak to the var leak
+  // checking code.
+  var_from_page_ = pp::Var();
 
   PASS();
 }

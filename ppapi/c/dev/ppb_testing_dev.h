@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_testing_dev.idl modified Wed Dec 14 12:58:12 2011. */
+/* From dev/ppb_testing_dev.idl modified Fri Dec 16 16:08:07 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_TESTING_DEV_H_
 #define PPAPI_C_DEV_PPB_TESTING_DEV_H_
@@ -20,7 +20,8 @@
 #define PPB_TESTING_DEV_INTERFACE_0_7 "PPB_Testing(Dev);0.7"
 #define PPB_TESTING_DEV_INTERFACE_0_8 "PPB_Testing(Dev);0.8"
 #define PPB_TESTING_DEV_INTERFACE_0_9 "PPB_Testing(Dev);0.9"
-#define PPB_TESTING_DEV_INTERFACE PPB_TESTING_DEV_INTERFACE_0_9
+#define PPB_TESTING_DEV_INTERFACE_0_91 "PPB_Testing(Dev);0.91"
+#define PPB_TESTING_DEV_INTERFACE PPB_TESTING_DEV_INTERFACE_0_91
 
 /**
  * @file
@@ -124,6 +125,15 @@ struct PPB_Testing_Dev {
    */
   struct PP_Var (*GetDocumentURL)(PP_Instance instance,
                                   struct PP_URLComponents_Dev* components);
+  /**
+   * Fetches up to |array_size| active PP_Vars in the tracker. Returns the
+   * number of vars in the tracker. The active vars are written to |live_vars|
+   * contiguously starting at index 0. The vars are not in any particular order.
+   * If the number of live vars is greater than |array_size|, then an arbitrary
+   * subset of |array_size| vars is written to |live_vars|. The reference count
+   * of the returned PP_Vars will *not* be affected by this call.
+   */
+  uint32_t (*GetLiveVars)(struct PP_Var live_vars[], uint32_t array_size);
 };
 
 struct PPB_Testing_Dev_0_7 {
@@ -145,6 +155,19 @@ struct PPB_Testing_Dev_0_8 {
   uint32_t (*GetLiveObjectsForInstance)(PP_Instance instance);
   PP_Bool (*IsOutOfProcess)();
   void (*SimulateInputEvent)(PP_Instance instance, PP_Resource input_event);
+};
+
+struct PPB_Testing_Dev_0_9 {
+  PP_Bool (*ReadImageData)(PP_Resource device_context_2d,
+                           PP_Resource image,
+                           const struct PP_Point* top_left);
+  void (*RunMessageLoop)(PP_Instance instance);
+  void (*QuitMessageLoop)(PP_Instance instance);
+  uint32_t (*GetLiveObjectsForInstance)(PP_Instance instance);
+  PP_Bool (*IsOutOfProcess)();
+  void (*SimulateInputEvent)(PP_Instance instance, PP_Resource input_event);
+  struct PP_Var (*GetDocumentURL)(PP_Instance instance,
+                                  struct PP_URLComponents_Dev* components);
 };
 /**
  * @}

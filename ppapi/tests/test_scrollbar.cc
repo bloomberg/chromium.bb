@@ -23,7 +23,7 @@ TestScrollbar::TestScrollbar(TestingInstance* instance)
 }
 
 bool TestScrollbar::Init() {
-  return InitTestingInterface();
+  return CheckTestingInterface();
 }
 
 void TestScrollbar::RunTests(const std::string& filter) {

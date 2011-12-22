@@ -109,7 +109,7 @@ int32_t WriteEntireBuffer(PP_Instance instance,
 }  // namespace
 
 bool TestFileIO::Init() {
-  return InitTestingInterface() && EnsureRunningOverHTTP();
+  return CheckTestingInterface() && EnsureRunningOverHTTP();
 }
 
 void TestFileIO::RunTests(const std::string& filter) {

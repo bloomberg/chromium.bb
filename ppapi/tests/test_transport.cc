@@ -105,7 +105,7 @@ TestTransport::~TestTransport() {
 bool TestTransport::Init() {
   transport_interface_ = static_cast<const PPB_Transport_Dev*>(
       pp::Module::Get()->GetBrowserInterface(PPB_TRANSPORT_DEV_INTERFACE));
-  return transport_interface_ && InitTestingInterface();
+  return transport_interface_ && CheckTestingInterface();
 }
 
 void TestTransport::RunTests(const std::string& filter) {

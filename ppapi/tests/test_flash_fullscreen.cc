@@ -46,7 +46,7 @@ TestFlashFullscreen::TestFlashFullscreen(TestingInstance* instance)
 }
 
 bool TestFlashFullscreen::Init() {
-  return InitTestingInterface();
+  return CheckTestingInterface();
 }
 
 void TestFlashFullscreen::RunTests(const std::string& filter) {

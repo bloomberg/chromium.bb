@@ -71,7 +71,7 @@ bool TestFullscreen::Init() {
     instance_->AppendError("Failed to initialize graphics2d_");
     return false;
   }
-  return InitTestingInterface();
+  return CheckTestingInterface();
 }
 
 void TestFullscreen::RunTests(const std::string& filter) {

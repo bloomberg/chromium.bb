@@ -6,6 +6,7 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PROXY_VAR_CACHE_H_
 
 #include <map>
+#include <vector>
 
 #include "native_client/src/include/nacl_memory.h"
 #include "native_client/src/shared/ppapi_proxy/proxy_var.h"
@@ -47,6 +48,9 @@ class ProxyVarCache {
 
   // Find the object in the cache associated with |pp_var|.
   SharedProxyVar SharedProxyVarForVar(PP_Var pp_var) const;
+
+  // Return all live Vars in the tracker. Reference counts are incremented.
+  std::vector<PP_Var> GetLiveVars();
 
  private:
   // Return whether or not a var type is cached.

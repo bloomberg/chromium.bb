@@ -14,7 +14,7 @@
 REGISTER_TEST_CASE(FileSystem);
 
 bool TestFileSystem::Init() {
-  return InitTestingInterface() && EnsureRunningOverHTTP();
+  return CheckTestingInterface() && EnsureRunningOverHTTP();
 }
 
 void TestFileSystem::RunTests(const std::string& filter) {

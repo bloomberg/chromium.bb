@@ -41,7 +41,7 @@ std::string ReportMismatch(const std::string& method_name,
 }  // namespace
 
 bool TestFileRef::Init() {
-  return InitTestingInterface() && EnsureRunningOverHTTP();
+  return CheckTestingInterface() && EnsureRunningOverHTTP();
 }
 
 void TestFileRef::RunTests(const std::string& filter) {

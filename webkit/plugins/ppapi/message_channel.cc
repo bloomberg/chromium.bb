@@ -184,6 +184,7 @@ bool MessageChannelInvoke(NPObject* np_obj, NPIdentifier name,
     MessageChannel& message_channel(ToMessageChannel(np_obj));
     PP_Var argument(NPVariantToPPVar(message_channel.instance(), &args[0]));
     message_channel.PostMessageToNative(argument);
+    PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(argument);
     return true;
   }
   // Other method calls we will pass to the passthrough object, if we have one.

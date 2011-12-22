@@ -15,7 +15,7 @@ REGISTER_TEST_CASE(VideoDecoder);
 bool TestVideoDecoder::Init() {
   video_decoder_interface_ = static_cast<const PPB_VideoDecoder_Dev*>(
       pp::Module::Get()->GetBrowserInterface(PPB_VIDEODECODER_DEV_INTERFACE));
-  return video_decoder_interface_ && InitTestingInterface();
+  return video_decoder_interface_ && CheckTestingInterface();
 }
 
 void TestVideoDecoder::RunTests(const std::string& filter) {

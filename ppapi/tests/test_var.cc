@@ -27,7 +27,7 @@ REGISTER_TEST_CASE(Var);
 bool TestVar::Init() {
   var_interface_ = static_cast<const PPB_Var*>(
       pp::Module::Get()->GetBrowserInterface(PPB_VAR_INTERFACE));
-  return var_interface_ && InitTestingInterface();
+  return var_interface_ && CheckTestingInterface();
 }
 
 void TestVar::RunTests(const std::string& filter) {
@@ -136,6 +136,7 @@ std::string TestVar::TestNullInputInUtf8Conversion() {
   if (result == NULL) {
     return "Expected a non-null result for 0-lengthed string from VarToUtf8.";
   }
+  var_interface_->Release(converted_string);
 
   // Should not crash, and make an empty string.
   const char* null_string = NULL;

@@ -104,7 +104,7 @@ Var::Var(const std::string& utf8_str) {
 Var::Var(const Var& other) {
   var_ = other.var_;
   if (NeedsRefcounting(var_)) {
-    if (has_interface<PPB_Var>()) {
+    if (has_interface<PPB_Var_1_0>()) {
       needs_release_ = true;
       get_interface<PPB_Var_1_0>()->AddRef(var_);
     } else {
@@ -117,7 +117,7 @@ Var::Var(const Var& other) {
 }
 
 Var::~Var() {
-  if (needs_release_ && has_interface<PPB_Var>())
+  if (needs_release_ && has_interface<PPB_Var_1_0>())
     get_interface<PPB_Var_1_0>()->Release(var_);
 }
 
@@ -132,8 +132,8 @@ Var& Var::operator=(const Var& other) {
   // object to itself by addrefing the new one before releasing the old one.
   bool old_needs_release = needs_release_;
   if (NeedsRefcounting(other.var_)) {
-    // Assume we already has_interface<PPB_Var> for refcounted vars or else we
-    // couldn't have created them in the first place.
+    // Assume we already has_interface<PPB_Var_1_0> for refcounted vars or else
+    // we couldn't have created them in the first place.
     needs_release_ = true;
     get_interface<PPB_Var_1_0>()->AddRef(other.var_);
   } else {
@@ -203,7 +203,7 @@ std::string Var::AsString() const {
     return std::string();
   }
 
-  if (!has_interface<PPB_Var>())
+  if (!has_interface<PPB_Var_1_0>())
     return std::string();
   uint32_t len;
   const char* str = get_interface<PPB_Var_1_0>()->VarToUtf8(var_, &len);
@@ -213,18 +213,18 @@ std::string Var::AsString() const {
 std::string Var::DebugString() const {
   char buf[256];
   if (is_undefined()) {
-    snprintf(buf, sizeof(buf), "Var<UNDEFINED>");
+    snprintf(buf, sizeof(buf), "Var(UNDEFINED)");
   } else if (is_null()) {
-    snprintf(buf, sizeof(buf), "Var<NULL>");
+    snprintf(buf, sizeof(buf), "Var(NULL)");
   } else if (is_bool()) {
-    snprintf(buf, sizeof(buf), AsBool() ? "Var<true>" : "Var<false>");
+    snprintf(buf, sizeof(buf), AsBool() ? "Var(true)" : "Var(false)");
   } else if (is_int()) {
     // Note that the following static_cast is necessary because
     // NativeClient's int32_t is actually "long".
     // TODO(sehr,polina): remove this after newlib is changed.
-    snprintf(buf, sizeof(buf), "Var<%d>", static_cast<int>(AsInt()));
+    snprintf(buf, sizeof(buf), "Var(%d)", static_cast<int>(AsInt()));
   } else if (is_double()) {
-    snprintf(buf, sizeof(buf), "Var<%f>", AsDouble());
+    snprintf(buf, sizeof(buf), "Var(%f)", AsDouble());
   } else if (is_string()) {
     char format[] = "Var<'%s'>";
     size_t decoration = sizeof(format) - 2;  // The %s is removed.
@@ -235,8 +235,12 @@ std::string Var::DebugString() const {
       str.append("...");
     }
     snprintf(buf, sizeof(buf), format, str.c_str());
+  } else if (is_array_buffer()) {
+    // TODO(dmichael): We could make this dump hex. Maybe DebugString should be
+    // virtual?
+    snprintf(buf, sizeof(buf), "Var(ARRAY_BUFFER)");
   } else if (is_object()) {
-    snprintf(buf, sizeof(buf), "Var<OBJECT>");
+    snprintf(buf, sizeof(buf), "Var(OBJECT)");
   }
   return buf;
 }

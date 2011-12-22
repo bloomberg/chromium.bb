@@ -136,6 +136,8 @@ void PluginVarSerializationRules::EndSendPassRef(const PP_Var& var,
   if (var.type == PP_VARTYPE_OBJECT) {
     var_tracker_->ReleaseHostObject(
         static_cast<PluginDispatcher*>(dispatcher), var);
+  } else if (var.type == PP_VARTYPE_STRING) {
+    var_tracker_->ReleaseVar(var);
   }
 }
 

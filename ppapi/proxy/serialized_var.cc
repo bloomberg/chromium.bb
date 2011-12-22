@@ -411,7 +411,7 @@ PP_Var* SerializedVarVectorReceiveInput::Get(Dispatcher* dispatcher,
                                              uint32_t* array_size) {
   deserialized_.resize(serialized_.size());
   for (size_t i = 0; i < serialized_.size(); i++) {
-    // The vector must be able to clean themselves up after this call is
+    // The vectors must be able to clean themselves up after this call is
     // torn down.
     serialized_[i].inner_->set_serialization_rules(
         dispatcher->serialization_rules());

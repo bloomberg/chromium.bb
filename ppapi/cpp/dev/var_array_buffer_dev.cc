@@ -32,6 +32,7 @@ VarArrayBuffer_Dev::VarArrayBuffer_Dev(uint32_t size_in_bytes)
     : buffer_(NULL) {
   if (has_interface<PPB_VarArrayBuffer_Dev>()) {
     var_ = get_interface<PPB_VarArrayBuffer_Dev>()->Create(size_in_bytes);
+    needs_release_ = true;
     buffer_ = Map();
   } else {
     PP_NOTREACHED();

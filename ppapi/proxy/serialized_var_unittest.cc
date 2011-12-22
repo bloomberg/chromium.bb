@@ -11,13 +11,6 @@ namespace proxy {
 
 namespace {
 
-PP_Var MakeStringVar(int64_t string_id) {
-  PP_Var ret;
-  ret.type = PP_VARTYPE_STRING;
-  ret.value.as_id = string_id;
-  return ret;
-}
-
 PP_Var MakeObjectVar(int64_t object_id) {
   PP_Var ret;
   ret.type = PP_VARTYPE_OBJECT;
@@ -34,6 +27,95 @@ class SerializedVarTest : public PluginProxyTest {
 
 // Tests output arguments in the plugin. This is when the host calls into the
 // plugin and the plugin returns something via an out param, like an exception.
+TEST_F(SerializedVarTest, PluginSerializedVarInOutParam) {
+  PP_Var host_object = MakeObjectVar(0x31337);
+
+  PP_Var plugin_object;
+  {
+    // Receive the object param, we should be tracking it with no refcount, and
+    // no messages sent.
+    SerializedVarTestConstructor input(host_object);
+    SerializedVarReceiveInput receive_input(input);
+    plugin_object = receive_input.Get(plugin_dispatcher());
+    EXPECT_EQ(0, var_tracker().GetRefCountForObject(plugin_object));
+    EXPECT_EQ(0u, sink().message_count());
+
+    SerializedVar sv;
+    {
+      // The "OutParam" does its work in its destructor, it will write the
+      // information to the SerializedVar we passed in the constructor.
+      SerializedVarOutParam out_param(&sv);
+      // An out-param needs to pass a reference to the caller, so it's the
+      // responsibility of the plugin to bump the ref-count on an input
+      // parameter.
+      var_tracker().AddRefVar(plugin_object);
+      EXPECT_EQ(1, var_tracker().GetRefCountForObject(plugin_object));
+      // We should have informed the host that a reference was taken.
+      EXPECT_EQ(1u, sink().message_count());
+      *out_param.OutParam(plugin_dispatcher()) = plugin_object;
+    }
+
+    // The object should have transformed the plugin object back to the host
+    // object ID. Nothing in the var tracker should have changed yet, and no
+    // messages should have been sent.
+    SerializedVarTestReader reader(sv);
+    EXPECT_EQ(host_object.value.as_id, reader.GetIncompleteVar().value.as_id);
+    EXPECT_EQ(1, var_tracker().GetRefCountForObject(plugin_object));
+    EXPECT_EQ(1u, sink().message_count());
+  }
+
+  // The out param should have done an "end receive caller owned" on the plugin
+  // var serialization rules, which should have released the "track-with-no-
+  // reference" count in the var tracker as well as the 1 reference we passed
+  // back to the host, so the object should no longer be in the tracker. The
+  // reference we added has been removed, so another message should be sent to
+  // the host to tell it we're done with the object.
+  EXPECT_EQ(-1, var_tracker().GetRefCountForObject(plugin_object));
+  EXPECT_EQ(2u, sink().message_count());
+}
+
+// Tests output strings in the plugin. This is when the host calls into the
+// plugin with a string and the plugin returns it via an out param.
+TEST_F(SerializedVarTest, PluginSerializedStringVarInOutParam) {
+  PP_Var plugin_string;
+  const std::string kTestString("elite");
+  {
+    // Receive the string param. We should track it with 1 refcount.
+    SerializedVarTestConstructor input(kTestString);
+    SerializedVarReceiveInput receive_input(input);
+    plugin_string = receive_input.Get(plugin_dispatcher());
+    EXPECT_EQ(1, var_tracker().GetRefCountForObject(plugin_string));
+    EXPECT_EQ(0u, sink().message_count());
+
+    SerializedVar sv;
+    {
+      // The "OutParam" does its work in its destructor, it will write the
+      // information to the SerializedVar we passed in the constructor.
+      SerializedVarOutParam out_param(&sv);
+      // An out-param needs to pass a reference to the caller, so it's the
+      // responsibility of the plugin to bump the ref-count of an input
+      // parameter.
+      var_tracker().AddRefVar(plugin_string);
+      EXPECT_EQ(2, var_tracker().GetRefCountForObject(plugin_string));
+      EXPECT_EQ(0u, sink().message_count());
+      *out_param.OutParam(plugin_dispatcher()) = plugin_string;
+    }
+
+    // The SerializedVar should have set the string value internally. Nothing in
+    // the var tracker should have changed yet, and no messages should have been
+    // sent.
+    SerializedVarTestReader reader(sv);
+    EXPECT_EQ(kTestString, reader.GetString());
+    EXPECT_EQ(2, var_tracker().GetRefCountForObject(plugin_string));
+    EXPECT_EQ(0u, sink().message_count());
+  }
+  // The reference the string had initially should be gone, and the reference we
+  // passed to the host should also be gone, so the string should be removed.
+  EXPECT_EQ(-1, var_tracker().GetRefCountForObject(plugin_string));
+  EXPECT_EQ(0u, sink().message_count());
+}
+
+// Tests receiving an argument and passing it back out as an output parameter.
 TEST_F(SerializedVarTest, PluginSerializedVarOutParam) {
   PP_Var host_object = MakeObjectVar(0x31337);
 
@@ -109,6 +191,72 @@ TEST_F(SerializedVarTest, PluginReceiveInput) {
   // Since we didn't keep any refs to the objects, it should have freed the
   // object.
   EXPECT_EQ(-1, var_tracker().GetRefCountForObject(plugin_object));
+}
+
+// Tests the case that the plugin receives the same vars twice as an input
+// parameter (not passing ownership) within a vector.
+TEST_F(SerializedVarTest, PluginVectorReceiveInput) {
+  PP_Var host_object = MakeObjectVar(0x31337);
+
+  PP_Var* plugin_objects;
+  PP_Var* plugin_objects2;
+  {
+    // Receive the params. The object should be tracked with no refcount and
+    // no messages sent. The string should is plugin-side only and should have
+    // a reference-count of 1.
+    std::vector<SerializedVar> input1;
+    input1.push_back(SerializedVarTestConstructor(host_object));
+    input1.push_back(SerializedVarTestConstructor("elite"));
+    SerializedVarVectorReceiveInput receive_input(input1);
+    uint32_t array_size = 0;
+    plugin_objects = receive_input.Get(plugin_dispatcher(), &array_size);
+    ASSERT_EQ(2u, array_size);
+    EXPECT_EQ(0, var_tracker().GetRefCountForObject(plugin_objects[0]));
+    EXPECT_EQ(1, var_tracker().GetRefCountForObject(plugin_objects[1]));
+    EXPECT_EQ(0u, sink().message_count());
+
+    // Receive the second param, it should be resolved to the same plugin
+    // object and there should still be no refcount.
+    std::vector<SerializedVar> input2;
+    input2.push_back(SerializedVarTestConstructor(host_object));
+    input2.push_back(SerializedVarTestConstructor("elite"));
+    SerializedVarVectorReceiveInput receive_input2(input2);
+    uint32_t array_size2 = 0;
+    plugin_objects2 = receive_input2.Get(plugin_dispatcher(), &array_size2);
+    ASSERT_EQ(2u, array_size2);
+    EXPECT_EQ(plugin_objects[0].value.as_id, plugin_objects2[0].value.as_id);
+    EXPECT_EQ(0, var_tracker().GetRefCountForObject(plugin_objects[0]));
+    // Strings get re-created with a new ID. We don't try to reuse strings in
+    // the tracker, so the string should get a new ID.
+    EXPECT_NE(plugin_objects[1].value.as_id, plugin_objects2[1].value.as_id);
+    EXPECT_EQ(1, var_tracker().GetRefCountForObject(plugin_objects2[1]));
+    EXPECT_EQ(0u, sink().message_count());
+
+    // Take a reference to the object, as if the plugin was using it, and then
+    // release it, we should still be tracking the object since the
+    // ReceiveInputs keep the "track_with_no_reference_count" alive until
+    // they're destroyed.
+    var_tracker().AddRefVar(plugin_objects[0]);
+    EXPECT_EQ(1, var_tracker().GetRefCountForObject(plugin_objects[0]));
+    var_tracker().ReleaseVar(plugin_objects[0]);
+    EXPECT_EQ(0, var_tracker().GetRefCountForObject(plugin_objects[0]));
+    EXPECT_EQ(2u, sink().message_count());
+
+    // Take a reference to a string and then release it. Make sure no messages
+    // are sent.
+    uint32_t old_message_count = sink().message_count();
+    var_tracker().AddRefVar(plugin_objects[1]);
+    EXPECT_EQ(2, var_tracker().GetRefCountForObject(plugin_objects[1]));
+    var_tracker().ReleaseVar(plugin_objects[1]);
+    EXPECT_EQ(1, var_tracker().GetRefCountForObject(plugin_objects[1]));
+    EXPECT_EQ(old_message_count, sink().message_count());
+  }
+
+  // Since we didn't keep any refs to the objects or strings, so they should
+  // have been freed.
+  EXPECT_EQ(-1, var_tracker().GetRefCountForObject(plugin_objects[0]));
+  EXPECT_EQ(-1, var_tracker().GetRefCountForObject(plugin_objects[1]));
+  EXPECT_EQ(-1, var_tracker().GetRefCountForObject(plugin_objects2[1]));
 }
 
 // Tests the plugin receiving a var as a return value from the browser

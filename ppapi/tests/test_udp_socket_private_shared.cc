@@ -38,7 +38,7 @@ bool TestUDPSocketPrivateShared::Init() {
   return tcp_socket_private_interface_ &&
       udp_socket_private_interface_ &&
       init_host_port &&
-      InitTestingInterface();
+      CheckTestingInterface();
 }
 
 void TestUDPSocketPrivateShared::RunTests(const std::string& filter) {

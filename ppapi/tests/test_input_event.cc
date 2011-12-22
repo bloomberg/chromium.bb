@@ -73,7 +73,7 @@ bool TestInputEvent::Init() {
       mouse_input_event_interface_ &&
       wheel_input_event_interface_ &&
       keyboard_input_event_interface_ &&
-      InitTestingInterface();
+      CheckTestingInterface();
 
   // Set up a listener for our message that signals that all input events have
   // been received.

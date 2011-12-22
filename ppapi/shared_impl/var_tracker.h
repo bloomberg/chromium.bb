@@ -5,6 +5,8 @@
 #ifndef PPAPI_SHARED_IMPL_VAR_TRACKER_H_
 #define PPAPI_SHARED_IMPL_VAR_TRACKER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
@@ -59,6 +61,12 @@ class PPAPI_SHARED_EXPORT VarTracker {
   // Create a new array buffer of size |size_in_bytes|. Return a PP_Var that
   // that references it and has an initial reference-count of 1.
   PP_Var MakeArrayBufferPPVar(uint32 size_in_bytes);
+
+  // Return a vector containing all PP_Vars that are in the tracker. This is
+  // to help implement PPB_Testing_Dev.GetLiveVars and should generally not be
+  // used in production code. The PP_Vars are returned in no particular order,
+  // and their reference counts are unaffected.
+  std::vector<PP_Var> GetLiveVars();
 
  protected:
   struct VarInfo {

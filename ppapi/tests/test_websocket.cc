@@ -53,7 +53,7 @@ bool TestWebSocket::Init() {
   if (!websocket_interface_ || !var_interface_ || !core_interface_)
     return false;
 
-  return InitTestingInterface();
+  return CheckTestingInterface();
 }
 
 void TestWebSocket::RunTests(const std::string& filter) {

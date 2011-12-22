@@ -31,7 +31,7 @@ bool TestTCPSocketPrivateShared::Init() {
 
   return tcp_socket_private_interface_ &&
       init_host_port &&
-      InitTestingInterface();
+      CheckTestingInterface();
 }
 
 void TestTCPSocketPrivateShared::RunTests(const std::string& filter) {

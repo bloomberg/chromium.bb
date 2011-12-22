@@ -80,8 +80,10 @@ class TestCase {
   virtual pp::deprecated::ScriptableObject* CreateTestObject();
 #endif
 
-  // Initializes the testing interface.
-  bool InitTestingInterface();
+  // Checks whether the testing interface is available. Returns true if it is,
+  // false otherwise. If it is not available, adds a descriptive error. This is
+  // for use by tests that require the testing interface.
+  bool CheckTestingInterface();
 
   // Makes sure the test is run over HTTP.
   bool EnsureRunningOverHTTP();
@@ -89,6 +91,11 @@ class TestCase {
   // Return true if the given test name matches the filter. This is true if
   // (a) filter is empty or (b) test_name and filter match exactly.
   bool MatchesFilter(const std::string& test_name, const std::string& filter);
+
+  // Check for leaked resources and vars at the end of the test. If any exist,
+  // return a string with some information about the error. Otherwise, return
+  // an empty string.
+  std::string CheckResourcesAndVars();
 
   // Pointer to the instance that owns us.
   TestingInstance* instance_;
@@ -150,7 +157,10 @@ class TestCaseFactory {
 #define RUN_TEST(name, test_filter) \
   if (MatchesFilter(#name, test_filter)) { \
     force_async_ = false; \
-    instance_->LogTest(#name, Test##name()); \
+    std::string error_message = Test##name(); \
+    if (error_message.empty()) \
+      error_message = CheckResourcesAndVars(); \
+    instance_->LogTest(#name, error_message); \
   }
 
 #define RUN_TEST_WITH_REFERENCE_CHECK(name, test_filter) \

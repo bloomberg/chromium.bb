@@ -18,7 +18,7 @@ REGISTER_TEST_CASE(Graphics3D);
 bool TestGraphics3D::Init() {
   opengl_es2_ = static_cast<const PPB_OpenGLES2*>(
       pp::Module::Get()->GetBrowserInterface(PPB_OPENGLES2_INTERFACE));
-  return opengl_es2_ && InitTestingInterface();
+  return opengl_es2_ && CheckTestingInterface();
 }
 
 void TestGraphics3D::RunTests(const std::string& filter) {

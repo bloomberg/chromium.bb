@@ -95,6 +95,19 @@ PP_Var GetDocumentURL(PP_Instance instance, PP_URLComponents_Dev* components) {
   return enter.functions()->GetDocumentURL(instance, components);
 }
 
+// TODO(dmichael): Ideally we could get a way to check the number of vars in the
+// host-side tracker when running out-of-process, to make sure the proxy does
+// not leak host-side vars.
+uint32_t GetLiveVars(PP_Var live_vars[], uint32_t array_size) {
+  std::vector<PP_Var> vars =
+      PpapiGlobals::Get()->GetVarTracker()->GetLiveVars();
+  for (size_t i = 0u;
+       i < std::min(static_cast<size_t>(array_size), vars.size());
+       ++i)
+    live_vars[i] = vars[i];
+  return vars.size();
+}
+
 const PPB_Testing_Dev testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
@@ -102,7 +115,8 @@ const PPB_Testing_Dev testing_interface = {
   &GetLiveObjectsForInstance,
   &IsOutOfProcess,
   &SimulateInputEvent,
-  &GetDocumentURL
+  &GetDocumentURL,
+  &GetLiveVars
 };
 
 InterfaceProxy* CreateTestingProxy(Dispatcher* dispatcher) {

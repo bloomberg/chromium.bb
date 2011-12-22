@@ -12,7 +12,8 @@
 label Chrome {
   M14 = 0.7,
   M15 = 0.8,
-  M17 = 0.9
+  M17 = 0.9,
+  M18 = 0.91
 };
 
 interface PPB_Testing_Dev {
@@ -114,4 +115,16 @@ interface PPB_Testing_Dev {
   [version=0.9]
   PP_Var GetDocumentURL([in] PP_Instance instance,
                         [out] PP_URLComponents_Dev components);
+
+  /**
+   * Fetches up to |array_size| active PP_Vars in the tracker. Returns the
+   * number of vars in the tracker. The active vars are written to |live_vars|
+   * contiguously starting at index 0. The vars are not in any particular order.
+   * If the number of live vars is greater than |array_size|, then an arbitrary
+   * subset of |array_size| vars is written to |live_vars|. The reference count
+   * of the returned PP_Vars will *not* be affected by this call.
+   */
+  [version=0.91]
+  uint32_t GetLiveVars([size_as=array_size] PP_Var[] live_vars,
+                       [in] uint32_t array_size);
 };

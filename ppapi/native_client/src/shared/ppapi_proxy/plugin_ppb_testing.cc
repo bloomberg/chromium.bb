@@ -6,12 +6,14 @@
 
 #include <cstddef>
 #include <new>
+#include <vector>
 
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_callback.h"
+#include "native_client/src/shared/ppapi_proxy/proxy_var_cache.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -145,6 +147,18 @@ struct PP_Var GetDocumentURL(PP_Instance instance,
   return url;
 }
 
+// TODO(dmichael): Ideally we could get a way to check the number of vars in the
+// host-side tracker when running NaCl, to make sure the proxy does not leak
+// host-side vars.
+uint32_t GetLiveVars(PP_Var live_vars[], uint32_t array_size) {
+  std::vector<PP_Var> vars = ProxyVarCache::GetInstance().GetLiveVars();
+  for (size_t i = 0u;
+       i < std::min(static_cast<size_t>(array_size), vars.size());
+       ++i)
+    live_vars[i] = vars[i];
+  return vars.size();
+}
+
 }  // namespace
 
 const PPB_Testing_Dev* PluginTesting::GetInterface() {
@@ -155,7 +169,8 @@ const PPB_Testing_Dev* PluginTesting::GetInterface() {
     GetLiveObjectsForInstance,
     IsOutOfProcess,
     SimulateInputEvent,
-    GetDocumentURL
+    GetDocumentURL,
+    GetLiveVars
   };
   return &testing_interface;
 }
