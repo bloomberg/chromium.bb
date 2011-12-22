@@ -14,6 +14,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
+#include "net/base/completion_callback.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context.h"
@@ -112,7 +113,8 @@ void ExtensionDataDeleter::DeleteCookiesOnIOThread() {
 
 void ExtensionDataDeleter::DeleteDatabaseOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  int rv = database_tracker_->DeleteDataForOrigin(origin_id_, NULL);
+  int rv = database_tracker_->DeleteDataForOrigin(
+      origin_id_, net::CompletionCallback());
   DCHECK(rv == net::OK || rv == net::ERR_IO_PENDING);
 }
 

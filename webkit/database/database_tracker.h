@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <utility>
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -133,7 +134,7 @@ class DatabaseTracker
   // if non-NULL.
   int DeleteDatabase(const string16& origin_identifier,
                      const string16& database_name,
-                     net::OldCompletionCallback* callback);
+                     const net::CompletionCallback& callback);
 
   // Delete any databases that have been touched since the cutoff date that's
   // supplied, omitting any that match IDs within |protected_origins|.
@@ -142,14 +143,14 @@ class DatabaseTracker
   // if non-NULL. Protected origins, according the the SpecialStoragePolicy,
   // are not deleted by this method.
   int DeleteDataModifiedSince(const base::Time& cutoff,
-                              net::OldCompletionCallback* callback);
+                              const net::CompletionCallback& callback);
 
   // Delete all databases that belong to the given origin. Returns net::OK on
   // success, net::FAILED if not all databases could be deleted, and
   // net::ERR_IO_PENDING and |callback| is invoked upon completion, if non-NULL.
   // virtual for unit testing only
   virtual int DeleteDataForOrigin(const string16& origin_identifier,
-                                  net::OldCompletionCallback* callback);
+                                  const net::CompletionCallback& callback);
 
   bool IsIncognitoProfile() const { return is_incognito_; }
 
@@ -172,7 +173,8 @@ class DatabaseTracker
   friend class MockDatabaseTracker;  // for testing
 
   typedef std::map<string16, std::set<string16> > DatabaseSet;
-  typedef std::map<net::OldCompletionCallback*, DatabaseSet> PendingCompletionMap;
+  typedef std::vector<std::pair<net::CompletionCallback, DatabaseSet> >
+      PendingDeletionCallbacks;
   typedef std::map<string16, base::PlatformFile> FileHandlesMap;
   typedef std::map<string16, string16> OriginDirectoriesMap;
 
@@ -194,7 +196,7 @@ class DatabaseTracker
     }
   };
 
-  // virtual for unittesting only
+  // virtual for unit-testing only.
   virtual ~DatabaseTracker();
 
   // Deletes the directory that stores all DBs in incognito mode, if it exists.
@@ -249,7 +251,7 @@ class DatabaseTracker
   // Schedule a set of open databases for deletion. If non-null, callback is
   // invoked upon completion.
   void ScheduleDatabasesForDeletion(const DatabaseSet& databases,
-                                    net::OldCompletionCallback* callback);
+                                    const net::CompletionCallback& callback);
 
   // Returns the directory where all DB files for the given origin are stored.
   string16 GetOriginDirectory(const string16& origin_identifier);
@@ -270,7 +272,7 @@ class DatabaseTracker
 
   // The set of databases that should be deleted but are still opened
   DatabaseSet dbs_to_be_deleted_;
-  PendingCompletionMap deletion_callbacks_;
+  PendingDeletionCallbacks deletion_callbacks_;
 
   // Apps and Extensions can have special rights.
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;

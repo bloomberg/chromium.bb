@@ -66,7 +66,7 @@ class QuotaThreadTask : public QuotaTask,
  protected:
   virtual ~QuotaThreadTask();
 
-  // One of the following Run methods should be overriden for execution
+  // One of the following Run methods should be overridden for execution
   // on the target thread.
 
   // A task to invoke the CallCompleted() method on the original thread will

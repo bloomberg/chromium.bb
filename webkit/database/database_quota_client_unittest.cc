@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/utf_string_conversions.h"
+#include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/database/database_quota_client.h"
@@ -68,7 +69,7 @@ class MockDatabaseTracker : public DatabaseTracker {
 
   virtual int DeleteDataForOrigin(
       const string16& origin_id,
-      net::OldCompletionCallback* callback) {
+      const net::CompletionCallback& callback) OVERRIDE {
     ++delete_called_count_;
     if (async_delete()) {
       base::MessageLoopProxy::current()->PostTask(
@@ -80,8 +81,8 @@ class MockDatabaseTracker : public DatabaseTracker {
     return net::OK;
   }
 
-  void AsyncDeleteDataForOrigin(net::OldCompletionCallback* callback) {
-    callback->Run(net::OK);
+  void AsyncDeleteDataForOrigin(const net::CompletionCallback& callback) {
+    callback.Run(net::OK);
   }
 
   void AddMockDatabase(const GURL& origin,  const char* name, int size) {

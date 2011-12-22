@@ -214,8 +214,8 @@ class DatabaseTracker_TestHelper_Test {
     // Delete db1. Should also delete origin1.
     TestObserver observer;
     tracker->AddObserver(&observer);
-    TestOldCompletionCallback callback;
-    int result = tracker->DeleteDatabase(kOrigin1, kDB1, &callback);
+    net::TestCompletionCallback callback;
+    int result = tracker->DeleteDatabase(kOrigin1, kDB1, callback.callback());
     EXPECT_EQ(net::ERR_IO_PENDING, result);
     ASSERT_FALSE(callback.have_result());
     EXPECT_TRUE(observer.DidReceiveNewNotification());
@@ -252,7 +252,7 @@ class DatabaseTracker_TestHelper_Test {
     base::Time yesterday = base::Time::Now();
     yesterday -= base::TimeDelta::FromDays(1);
     result = tracker->DeleteDataModifiedSince(
-        yesterday, &callback);
+        yesterday, callback.callback());
     EXPECT_EQ(net::ERR_IO_PENDING, result);
     ASSERT_FALSE(callback.have_result());
     EXPECT_TRUE(observer.DidReceiveNewNotification());
@@ -456,7 +456,8 @@ class DatabaseTracker_TestHelper_Test {
 
     tracker->DatabaseClosed(kOriginId, kName);
     EXPECT_TRUE(test_quota_proxy->WasAccessNotified(kOrigin));
-    EXPECT_EQ(net::OK, tracker->DeleteDatabase(kOriginId, kName, NULL));
+    EXPECT_EQ(net::OK, tracker->DeleteDatabase(
+        kOriginId, kName, net::CompletionCallback()));
     EXPECT_TRUE(test_quota_proxy->WasModificationNotified(kOrigin, -100));
     test_quota_proxy->reset();
 
@@ -477,7 +478,8 @@ class DatabaseTracker_TestHelper_Test {
     test_quota_proxy->reset();
 
     EXPECT_EQ(net::ERR_IO_PENDING,
-              tracker->DeleteDatabase(kOriginId, kName, NULL));
+              tracker->DeleteDatabase(kOriginId, kName,
+                                      net::CompletionCallback()));
     EXPECT_FALSE(test_quota_proxy->WasModificationNotified(kOrigin, -100));
 
     tracker->DatabaseClosed(kOriginId, kName);
@@ -804,7 +806,8 @@ class DatabaseTracker_TestHelper_Test {
     tracker->DatabaseClosed(kOriginId, kEmptyName);
 
     // Deleting it should return to the initial state.
-    EXPECT_EQ(net::OK, tracker->DeleteDatabase(kOriginId, kEmptyName, NULL));
+    EXPECT_EQ(net::OK, tracker->DeleteDatabase(kOriginId, kEmptyName,
+                                               net::CompletionCallback()));
     infos.clear();
     EXPECT_TRUE(tracker->GetAllOriginsInfo(&infos));
     EXPECT_TRUE(infos.empty());
