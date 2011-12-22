@@ -486,7 +486,8 @@ Directory::Kernel::~Kernel() {
 Directory::Directory(UnrecoverableErrorHandler* unrecoverable_error_handler)
     : kernel_(NULL),
       store_(NULL),
-      unrecoverable_error_handler_(unrecoverable_error_handler) {
+      unrecoverable_error_handler_(unrecoverable_error_handler),
+      unrecoverable_error_set_(false) {
 }
 
 Directory::~Directory() {
@@ -570,6 +571,16 @@ void Directory::Close() {
     kernel_ = NULL;
   }
 }
+
+void Directory::OnUnrecoverableError(const BaseTransaction* trans,
+                                     const tracked_objects::Location& location,
+                                     const std::string & message) {
+  DCHECK(trans != NULL);
+  unrecoverable_error_set_ = true;
+  unrecoverable_error_handler_->OnUnrecoverableError(location,
+                                                     message);
+}
+
 
 EntryKernel* Directory::GetEntryById(const Id& id) {
   ScopedKernelLock lock(this);
@@ -711,8 +722,9 @@ void Directory::ReindexParentId(EntryKernel* const entry,
   }
 }
 
-UnrecoverableErrorHandler* Directory::unrecoverable_error_handler() {
-  return unrecoverable_error_handler_;
+bool Directory::unrecoverable_error_set(const BaseTransaction* trans) const {
+  DCHECK(trans != NULL);
+  return unrecoverable_error_set_;
 }
 
 void Directory::ClearDirtyMetahandles() {
@@ -740,9 +752,13 @@ bool Directory::SafeToPurgeFromMemory(const EntryKernel* const entry) const {
 void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
   ReadTransaction trans(FROM_HERE, this);
   ScopedKernelLock lock(this);
+
+  // If there is an unrecoverable error then just bail out.
+  if (unrecoverable_error_set(&trans))
+    return;
+
   // Deep copy dirty entries from kernel_->metahandles_index into snapshot and
   // clear dirty flags.
-
   for (MetahandleSet::const_iterator i = kernel_->dirty_metahandles->begin();
        i != kernel_->dirty_metahandles->end(); ++i) {
     EntryKernel* entry = GetEntryByHandle(*i, &lock);
@@ -1232,12 +1248,36 @@ void BaseTransaction::Unlock() {
   dirkernel_->transaction_mutex.Release();
 }
 
+void BaseTransaction::OnUnrecoverableError(
+    const tracked_objects::Location& location,
+    const std::string& message) {
+  unrecoverable_error_set_ = true;
+  unrecoverable_error_location_ = location;
+  unrecoverable_error_msg_ = message;
+
+  // Note: We dont call the Directory's OnUnrecoverableError method right
+  // away. Instead we wait to unwind the stack and in the destructor of the
+  // transaction we would call the OnUnrecoverableError method.
+}
+
+void BaseTransaction::HandleUnrecoverableErrorIfSet() {
+  if (unrecoverable_error_set_) {
+    directory()->OnUnrecoverableError(this,
+        unrecoverable_error_location_,
+        unrecoverable_error_msg_);
+  }
+}
+
 BaseTransaction::BaseTransaction(const tracked_objects::Location& from_here,
                                  const char* name,
                                  WriterTag writer,
                                  Directory* directory)
     : from_here_(from_here), name_(name), writer_(writer),
-      directory_(directory), dirkernel_(directory->kernel_) {
+      directory_(directory), dirkernel_(directory->kernel_),
+      unrecoverable_error_set_(false) {
+  // TODO(lipalani): Don't issue a good transaction if the directory has
+  // unrecoverable error set. And the callers have to check trans.good before
+  // proceeding.
   TRACE_EVENT_BEGIN2("sync", name_,
                      "src_file", from_here_.file_name(),
                      "src_func", from_here_.function_name());
@@ -1261,6 +1301,7 @@ ReadTransaction::ReadTransaction(const tracked_objects::Location& location,
 }
 
 ReadTransaction::~ReadTransaction() {
+  HandleUnrecoverableErrorIfSet();
   Unlock();
 }
 
@@ -1369,12 +1410,21 @@ void WriteTransaction::NotifyTransactionComplete(
 WriteTransaction::~WriteTransaction() {
   const ImmutableEntryKernelMutationMap& mutations = RecordMutations();
 
-  if (OFF != kInvariantCheckLevel) {
-    const bool full_scan = (FULL_DB_VERIFICATION == kInvariantCheckLevel);
-    if (full_scan)
-      directory()->CheckTreeInvariants(this, full_scan);
-    else
-      directory()->CheckTreeInvariants(this, mutations.Get());
+  if (!unrecoverable_error_set_) {
+    if (OFF != kInvariantCheckLevel) {
+      const bool full_scan = (FULL_DB_VERIFICATION == kInvariantCheckLevel);
+      if (full_scan)
+        directory()->CheckTreeInvariants(this, full_scan);
+      else
+        directory()->CheckTreeInvariants(this, mutations.Get());
+    }
+  }
+
+  // |CheckTreeInvariants| could have thrown an unrecoverable error.
+  if (unrecoverable_error_set_) {
+    HandleUnrecoverableErrorIfSet();
+    Unlock();
+    return;
   }
 
   UnlockAndNotify(mutations);

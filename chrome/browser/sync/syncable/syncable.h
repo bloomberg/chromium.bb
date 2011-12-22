@@ -870,7 +870,17 @@ class Directory {
   // Unique to each account / client pair.
   std::string cache_guid() const;
 
-  browser_sync::UnrecoverableErrorHandler* unrecoverable_error_handler();
+  // Returns true if the directory had encountered an unrecoverable error.
+  // Note: Any function in |Directory| that can be called without holding a
+  // transaction need to check if the Directory already has an unrecoverable
+  // error on it.
+  bool unrecoverable_error_set(const BaseTransaction* trans) const;
+
+  // Called to set the unrecoverable error on the directory and to propagate
+  // the error to upper layers.
+  void OnUnrecoverableError(const BaseTransaction* trans,
+                            const tracked_objects::Location& location,
+                            const std::string & message);
 
  protected:  // for friends, mainly used by Entry constructors
   virtual EntryKernel* GetEntryByHandle(int64 handle);
@@ -1193,6 +1203,7 @@ class Directory {
   DirectoryBackingStore* store_;
 
   browser_sync::UnrecoverableErrorHandler* unrecoverable_error_handler_;
+  bool unrecoverable_error_set_;
 };
 
 class ScopedKernelLock {
@@ -1214,6 +1225,14 @@ class BaseTransaction {
 
   virtual ~BaseTransaction();
 
+  // This should be called when a database corruption is detected and there is
+  // no way for us to recover short of wiping the database clean. When this is
+  // called we set a bool in the transaction. The caller has to unwind the
+  // stack. When the destructor for the transaction is called it acts upon the
+  // bool and calls the Directory to handle the unrecoverable error.
+  void OnUnrecoverableError(const tracked_objects::Location& location,
+                            const std::string& message);
+
  protected:
   BaseTransaction(const tracked_objects::Location& from_here,
                   const char* name,
@@ -1223,11 +1242,22 @@ class BaseTransaction {
   void Lock();
   void Unlock();
 
+  // This should be called before unlocking because it calls the Direcotry's
+  // OnUnrecoverableError method which is not protected by locks and could
+  // be called from any thread. Holding the transaction lock ensures only one
+  // thread could call the method at a time.
+  void HandleUnrecoverableErrorIfSet();
+
   const tracked_objects::Location from_here_;
   const char* const name_;
   WriterTag writer_;
   Directory* const directory_;
   Directory::Kernel* const dirkernel_;  // for brevity
+
+  // Error information.
+  bool unrecoverable_error_set_;
+  tracked_objects::Location unrecoverable_error_location_;
+  std::string unrecoverable_error_msg_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BaseTransaction);

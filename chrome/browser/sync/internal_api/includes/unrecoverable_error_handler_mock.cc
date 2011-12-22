@@ -8,3 +8,4 @@ namespace browser_sync {
   MockUnrecoverableErrorHandler::MockUnrecoverableErrorHandler() {}
   MockUnrecoverableErrorHandler::~MockUnrecoverableErrorHandler() {}
 }  // namespace browser_sync
+
