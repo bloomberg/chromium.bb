@@ -282,6 +282,14 @@ cr.define('cr.ui.login', function() {
   };
 
   /**
+   * Disables signin UI.
+   */
+  DisplayManager.disableSigninUI = function() {
+    $('login-header-bar').disabled = true;
+    $('pod-row').disabled = true;
+  };
+
+  /**
    * Shows signin UI.
    * @param {string} opt_email An optional email for signin UI.
    */
@@ -302,6 +310,7 @@ cr.define('cr.ui.login', function() {
     else
       $(SCREEN_GAIA_SIGNIN).reset(currentScreenId == SCREEN_GAIA_SIGNIN);
 
+    $('login-header-bar').disabled = false;
     $('pod-row').reset(currentScreenId == SCREEN_ACCOUNT_PICKER);
   };
 

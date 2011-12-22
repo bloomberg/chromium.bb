@@ -340,6 +340,7 @@ cr.define('login', function() {
      */
     activate: function() {
       if (this.isGuest) {
+        Oobe.disableSigninUI();
         chrome.send('launchIncognito');
       } else if (!this.signinButtonElement.hidden) {
         // Switch to Gaia signin.
@@ -353,6 +354,7 @@ cr.define('login', function() {
       } else if (!this.passwordElement.value) {
         return false;
       } else {
+        Oobe.disableSigninUI();
         chrome.send('authenticateUser',
                     [this.user.username, this.passwordElement.value]);
       }
@@ -613,10 +615,8 @@ cr.define('login', function() {
       return this.activatedPod_;
     },
     set activatedPod(pod) {
-      if (pod && pod.activate()) {
-        this.disabled = true;
+      if (pod && pod.activate())
         this.activatedPod_ = pod;
-      }
     },
 
     /**
