@@ -14,9 +14,10 @@ function onLoad() {
   var goClient = function() {
     remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
   };
-  var sendAccessCode = function() {
+  /** @param {Event} event */
+  var sendAccessCode = function(event) {
     remoting.tryConnect();
-    return false;
+    event.preventDefault();
   };
   var doAuthRedirect = function() {
     remoting.oauth2.doAuthRedirect();
