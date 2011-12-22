@@ -1273,14 +1273,6 @@ class Browser : public TabHandlerDelegate,
   // Open the bookmark manager with a defined hash action.
   void OpenBookmarkManagerWithHash(const std::string& action, int64 node_id);
 
-  // Make the current tab exit fullscreen mode. If the browser was fullscreen
-  // because of that (as opposed to the user clicking the fullscreen button)
-  // then take the browser out of fullscreen mode as well.
-  void ExitTabbedFullscreenMode();
-
-  // Notifies the tab that it has been forced out of fullscreen mode.
-  void NotifyTabOfFullscreenExit();
-
   // Data members /////////////////////////////////////////////////////////////
 
   content::NotificationRegistrar registrar_;
