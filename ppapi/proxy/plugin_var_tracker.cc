@@ -106,8 +106,7 @@ PP_Var PluginVarTracker::GetHostObject(const PP_Var& plugin_object) const {
   }
 
   // Make a var with the host ID.
-  PP_Var ret;
-  ret.type = PP_VARTYPE_OBJECT;
+  PP_Var ret = { PP_VARTYPE_OBJECT };
   ret.value.as_id = object->host_var_id();
   return ret;
 }

@@ -39,7 +39,8 @@ const int kWritePermissions = base::PLATFORM_FILE_OPEN |
 
 PepperFileMessageFilter::PepperFileMessageFilter(
     int child_id, content::BrowserContext* browser_context)
-        : child_id_(child_id) {
+        : child_id_(child_id),
+          channel_(NULL) {
   pepper_path_ =
       browser_context->GetPath().Append(FILE_PATH_LITERAL("Pepper Data"));
 }

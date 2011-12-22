@@ -8,6 +8,7 @@ namespace content {
 
 FrameNavigateParams::FrameNavigateParams()
     : page_id(0),
+      transition(PAGE_TRANSITION_LINK),
       should_update_history(false) {
 }
 
