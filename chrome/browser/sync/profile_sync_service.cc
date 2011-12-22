@@ -1393,17 +1393,20 @@ void ProfileSyncService::Observe(int type,
       DCHECK(!(IsPassphraseRequiredForDecryption() &&
                !IsEncryptedDatatypeEnabled()));
 
-      // In the old world, this would be a no-op.  With new syncer thread,
-      // this is the point where it is safe to switch from config-mode to
-      // normal operation.
-      backend_->StartSyncingWithServer();
-
+      // This must be done before we start syncing with the server to avoid
+      // sending unencrypted data up on a first time sync.
       if (!encryption_pending_) {
         wizard_.Step(SyncSetupWizard::DONE);
         NotifyObservers();
       } else {
         backend_->EnableEncryptEverything();
       }
+
+      // In the old world, this would be a no-op.  With new syncer thread,
+      // this is the point where it is safe to switch from config-mode to
+      // normal operation.
+      backend_->StartSyncingWithServer();
+
       break;
     }
     case chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED: {
