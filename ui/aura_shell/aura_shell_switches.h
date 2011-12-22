@@ -14,6 +14,7 @@ namespace switches {
 // Please keep alphabetized.
 AURA_SHELL_EXPORT extern const char kAuraNoShadows[];
 AURA_SHELL_EXPORT extern const char kAuraTranslucentFrames[];
+AURA_SHELL_EXPORT extern const char kAuraViewsAppList[];
 AURA_SHELL_EXPORT extern const char kAuraWindowMode[];
 AURA_SHELL_EXPORT extern const char kAuraWindowModeCompact[];
 AURA_SHELL_EXPORT extern const char kAuraWindowModeNormal[];

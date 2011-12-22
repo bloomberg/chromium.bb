@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_APP_LIST_H_
-#define UI_AURA_SHELL_APP_LIST_H_
+#ifndef UI_AURA_SHELL_APP_LIST_APP_LIST_H_
+#define UI_AURA_SHELL_APP_LIST_APP_LIST_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -80,4 +80,4 @@ class AppList : public aura::EventFilter,
 }  // namespace internal
 }  // namespace aura_shell
 
-#endif  //  UI_AURA_SHELL_APP_LIST_H_
+#endif  //  UI_AURA_SHELL_APP_LIST_APP_LIST_H_

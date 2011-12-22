@@ -7,6 +7,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/aura/app_list_window.h"
+#include "chrome/browser/ui/views/aura/app_list/app_list_model_builder.h"
+#include "chrome/browser/ui/views/aura/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/views/aura/status_area_host_aura.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/aura/window.h"
@@ -62,6 +64,18 @@ void ChromeShellDelegate::RequestAppListWidget(
     const SetWidgetCallback& callback) {
   // AppListWindow deletes itself when closed.
   new AppListWindow(bounds, callback);
+}
+
+void ChromeShellDelegate::BuildAppListModel(aura_shell::AppListModel* model) {
+  AppListModelBuilder builder(ProfileManager::GetDefaultProfile(),
+                              model);
+  builder.Build();
+}
+
+aura_shell::AppListViewDelegate*
+ChromeShellDelegate::CreateAppListViewDelegate() {
+  // Shell will own the created delegate.
+  return new AppListViewDelegate;
 }
 
 void ChromeShellDelegate::LauncherItemClicked(

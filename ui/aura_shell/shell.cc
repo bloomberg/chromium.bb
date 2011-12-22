@@ -12,7 +12,7 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/activation_controller.h"
-#include "ui/aura_shell/app_list.h"
+#include "ui/aura_shell/app_list/app_list.h"
 #include "ui/aura_shell/aura_shell_switches.h"
 #include "ui/aura_shell/compact_layout_manager.h"
 #include "ui/aura_shell/compact_status_area_layout_manager.h"

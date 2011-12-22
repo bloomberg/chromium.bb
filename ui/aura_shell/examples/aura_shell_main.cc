@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura_shell/examples/example_factory.h"
 #include "ui/aura_shell/examples/toplevel_window.h"
 #include "ui/aura_shell/launcher/launcher_types.h"
 #include "ui/aura_shell/shell.h"
@@ -22,34 +23,6 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace {
-
-class AppListWindow : public views::WidgetDelegateView {
- public:
-  AppListWindow() {
-  }
-
-  // static
-  static views::Widget* Create(const gfx::Rect& bounds) {
-    AppListWindow* app_list = new AppListWindow;
-
-    views::Widget::InitParams widget_params(
-        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    widget_params.bounds = bounds;
-    widget_params.delegate = app_list;
-    widget_params.keep_on_top = true;
-    widget_params.transparent = true;
-
-    views::Widget* widget = new views::Widget;
-    widget->Init(widget_params);
-    widget->SetContentsView(app_list);
-    return widget;
-  }
-
-  // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRect(SkColorSetARGB(0x4F, 0xFF, 0, 0), bounds());
-  }
-};
 
 class ShellDelegateImpl : public aura_shell::ShellDelegate {
  public:
@@ -70,7 +43,19 @@ class ShellDelegateImpl : public aura_shell::ShellDelegate {
   virtual void RequestAppListWidget(
       const gfx::Rect& bounds,
       const SetWidgetCallback& callback) OVERRIDE {
-    callback.Run(AppListWindow::Create(bounds));
+    // TODO(xiyuan): Clean this up.
+    // The code below here is because we don't want to use
+    // --aura-views-applist. This function is deprecated and all code
+    // here will be removed when we clean it up.
+    aura_shell::examples::CreateAppList(bounds, callback);
+  }
+
+  virtual void BuildAppListModel(aura_shell::AppListModel* model) {
+    aura_shell::examples::BuildAppListModel(model);
+  }
+
+  virtual aura_shell::AppListViewDelegate* CreateAppListViewDelegate() {
+    return aura_shell::examples::CreateAppListViewDelegate();
   }
 
   virtual void LauncherItemClicked(
