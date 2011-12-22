@@ -354,41 +354,23 @@ static ssize_t HeaderTotalBytes(const NaClSrpcMessageHeader* header,
   return IovTotalBytes(header->iov, header->iov_length, entries_to_skip);
 }
 
-enum FragmentPosition {
-  FIRST_FRAGMENT,
-  LATER_FRAGMENT
-};
-
 static int ComputeFragmentSizes(const NaClSrpcMessageHeader* header,
-                                enum FragmentPosition fragment_position,
+                                size_t entries_to_skip,
                                 LengthHeader* fragment_size) {
-  size_t byte_count;
-  size_t max_user_bytes;
-  size_t fragment_header_count;
-
-  if (0 == NaClSrpcMaxImcSendmsgSize) {
-    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
-                "ComputeFragmentSizes: NaClSrpcModuleInit not called.\n");
-    return 0;
-  }
-  if (fragment_position == FIRST_FRAGMENT) {
-    /* The first fragment contains two fragment size headers. */
-    fragment_header_count = 2;
-  } else {
-    /* Later fragments contain one fragment size header. */
-    fragment_header_count = 1;
-  }
-  max_user_bytes =
-      NaClSrpcMaxImcSendmsgSize - fragment_header_count * FRAGMENT_OVERHEAD;
-  byte_count = (size_t) HeaderTotalBytes(header, fragment_header_count);
+  size_t byte_count = (size_t) HeaderTotalBytes(header, entries_to_skip);
   if (-1 == (ssize_t) byte_count) {
     NaClSrpcLog(NACL_SRPC_LOG_ERROR,
                 "ComputeFragmentSizes: byte_count was incorrect.\n");
     return 0;
   }
-  /* NaClSrpcMaxImcSendmsgSize <= NACL_ABI_SIZE_T_MAX, so cast is safe. */
+  if (0 == kNaClSrpcMaxImcSendmsgSize) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "ComputeFragmentSizes: NaClSrpcModuleInit not called.\n");
+    return 0;
+  }
+  /* kNaClSrpcMaxImcSendmsgSize <= NACL_ABI_SIZE_T_MAX, so cast is safe. */
   fragment_size->byte_count = (nacl_abi_size_t)
-      size_min(byte_count, max_user_bytes);
+      size_min(byte_count, kNaClSrpcMaxImcSendmsgSize);
   /* SRPC_DESC_MAX <= NACL_ABI_SIZE_T_MAX, so cast is safe. */
   fragment_size->desc_count = (nacl_abi_size_t)
       size_min(SRPC_DESC_MAX, header->NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH);
@@ -556,7 +538,8 @@ static int32_t FragmentLengthIsSane(LengthHeader* fragment_size,
    * This ensures that each fragment is "making progress" towards finishing
    * the total message.
    */
-  if (fragment_size->byte_count == 0 && fragment_size->desc_count == 0) {
+  if (fragment_size->byte_count == FRAGMENT_OVERHEAD &&
+      fragment_size->desc_count == 0) {
     NaClSrpcLog(NACL_SRPC_LOG_ERROR,
                 "FragmentLengthIsSane: empty fragment. Terminating.\n");
     return 0;
@@ -598,7 +581,6 @@ static int32_t MessageLengthsAreSane(LengthHeader* total_size,
   }
   /*
    * And the first fragment must be correct.
-   * Decrement bytes_received to remove the total_size header.
    */
   return FragmentLengthIsSane(fragment_size,
                               bytes_received - FRAGMENT_OVERHEAD,
@@ -909,7 +891,7 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
    * limiting the bytes and descriptors sent in the first fragment to preset
    * amounts.
    */
-  if (!ComputeFragmentSizes(&remaining, FIRST_FRAGMENT, &fragment_size)) {
+  if (!ComputeFragmentSizes(&remaining, 2, &fragment_size)) {
     NaClSrpcLog(NACL_SRPC_LOG_ERROR,
                 "NaClSrpcMessageChannelSend:"
                 " first ComputeFragmentSize failed.\n");
@@ -926,12 +908,6 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
               fragment_size.byte_count,
               fragment_size.desc_count);
   expected_bytes_sent = fragment_size.byte_count + 2 * FRAGMENT_OVERHEAD;
-  if (expected_bytes_sent > NaClSrpcMaxImcSendmsgSize) {
-    NaClSrpcLog(NACL_SRPC_LOG_FATAL,
-                "NaClSrpcMessageChannelSend: expected bytes %"
-                NACL_PRIdS" exceed maximum allowed %"NACL_PRIdNACL_SIZE"\n",
-                expected_bytes_sent, NaClSrpcMaxImcSendmsgSize);
-  }
   if (!BuildFragmentHeader(&remaining, &fragment_size, 2, &frag_hdr)) {
     NaClSrpcLog(NACL_SRPC_LOG_ERROR,
                 "NaClSrpcMessageChannelSend:"
@@ -983,7 +959,7 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
     /*
      * The fragment sizes are again limited.
      */
-    if (!ComputeFragmentSizes(&remaining, LATER_FRAGMENT, &fragment_size)) {
+    if (!ComputeFragmentSizes(&remaining, 1, &fragment_size)) {
       NaClSrpcLog(NACL_SRPC_LOG_ERROR,
                   "NaClSrpcMessageChannelSend:"
                   " other ComputeFragmentSize failed.\n");
@@ -1006,12 +982,6 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
      * Send the fragment.
      */
     expected_bytes_sent = fragment_size.byte_count + FRAGMENT_OVERHEAD;
-    if (expected_bytes_sent > NaClSrpcMaxImcSendmsgSize) {
-      NaClSrpcLog(NACL_SRPC_LOG_FATAL,
-                  "NaClSrpcMessageChannelSend: expected bytes %"
-                  NACL_PRIdS" exceed maximum allowed %"NACL_PRIdNACL_SIZE"\n",
-                  expected_bytes_sent, NaClSrpcMaxImcSendmsgSize);
-    }
     imc_ret = ImcSendmsg(channel->desc.raw_desc, &frag_hdr, 0);
     free(frag_hdr.iov);
     if ((size_t) imc_ret != expected_bytes_sent) {

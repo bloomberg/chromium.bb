@@ -18,7 +18,6 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_process.h"
 
-#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_timestamp.h"
@@ -77,9 +76,6 @@ void NaClSrpcLog(int detail_level, const char* fmt, ...) {
     vfprintf(stderr, fmt, ap);
     NaClXMutexUnlock(&log_mu);
     va_end(ap);
-  }
-  if (detail_level == NACL_SRPC_LOG_FATAL) {
-    NaClAbort();
   }
 }
 
