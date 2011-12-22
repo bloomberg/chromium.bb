@@ -822,6 +822,8 @@
         'protocol/util.h',
         'protocol/v1_authenticator.cc',
         'protocol/v1_authenticator.h',
+        'protocol/v2_authenticator.cc',
+        'protocol/v2_authenticator.h',
         'protocol/video_reader.cc',
         'protocol/video_reader.h',
         'protocol/video_stub.h',
@@ -946,6 +948,7 @@
         'protocol/rtp_video_writer_unittest.cc',
         'protocol/ssl_hmac_channel_authenticator_unittest.cc',
         'protocol/v1_authenticator_unittest.cc',
+        'protocol/v2_authenticator_unittest.cc',
         'run_all_unittests.cc',
       ],
       'conditions': [
