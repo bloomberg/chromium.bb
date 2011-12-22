@@ -275,7 +275,6 @@ void DeviceSettingsProvider::SetInPolicy(const std::string& prop,
   // Set the cache to the updated value.
   policy_ = data;
   UpdateValuesCache();
-  NotifyObservers(prop);
 
   if (!signed_settings_cache::Store(data, g_browser_process->local_state()))
     LOG(ERROR) << "Couldn't store to the temp storage.";
@@ -309,10 +308,10 @@ void DeviceSettingsProvider::FinishSetInPolicy(
 
 void DeviceSettingsProvider::UpdateValuesCache() {
   const em::PolicyData data = policy();
-  values_cache_.Clear();
+  PrefValueMap new_values_cache;
 
   if (data.has_username() && !data.has_request_token())
-    values_cache_.SetString(kDeviceOwner, data.username());
+    new_values_cache.SetString(kDeviceOwner, data.username());
 
   em::ChromeDeviceSettingsProto pol;
   pol.ParseFromString(data.policy_value());
@@ -324,31 +323,31 @@ void DeviceSettingsProvider::UpdateValuesCache() {
       pol.allow_new_users().has_allow_new_users() &&
       pol.allow_new_users().allow_new_users()) {
     // New users allowed, user_whitelist() ignored.
-    values_cache_.SetBoolean(kAccountsPrefAllowNewUser, true);
+    new_values_cache.SetBoolean(kAccountsPrefAllowNewUser, true);
   } else if (!pol.has_user_whitelist()) {
     // If we have the allow_new_users bool, and it is true, we honor that above.
     // In all other cases (don't have it, have it and it is set to false, etc),
     // We will honor the user_whitelist() if it is there and populated.
     // Otherwise we default to allowing new users.
-    values_cache_.SetBoolean(kAccountsPrefAllowNewUser, true);
+    new_values_cache.SetBoolean(kAccountsPrefAllowNewUser, true);
   } else {
-    values_cache_.SetBoolean(kAccountsPrefAllowNewUser,
+    new_values_cache.SetBoolean(kAccountsPrefAllowNewUser,
                              pol.user_whitelist().user_whitelist_size() == 0);
   }
 
-  values_cache_.SetBoolean(
+  new_values_cache.SetBoolean(
       kAccountsPrefAllowGuest,
       !pol.has_guest_mode_enabled() ||
       !pol.guest_mode_enabled().has_guest_mode_enabled() ||
       pol.guest_mode_enabled().guest_mode_enabled());
 
-  values_cache_.SetBoolean(
+  new_values_cache.SetBoolean(
       kAccountsPrefShowUserNamesOnSignIn,
       !pol.has_show_user_names() ||
       !pol.show_user_names().has_show_user_names() ||
       pol.show_user_names().show_user_names());
 
-  values_cache_.SetBoolean(
+  new_values_cache.SetBoolean(
       kSignedDataRoamingEnabled,
       pol.has_data_roaming_enabled() &&
       pol.data_roaming_enabled().has_data_roaming_enabled() &&
@@ -358,23 +357,23 @@ void DeviceSettingsProvider::UpdateValuesCache() {
   std::string serialized;
   if (pol.has_device_proxy_settings() &&
       pol.device_proxy_settings().SerializeToString(&serialized)) {
-    values_cache_.SetString(kSettingProxyEverywhere, serialized);
+    new_values_cache.SetString(kSettingProxyEverywhere, serialized);
   }
 
   if (!pol.has_release_channel() ||
       !pol.release_channel().has_release_channel()) {
     // Default to an invalid channel (will be ignored).
-    values_cache_.SetString(kReleaseChannel, "");
+    new_values_cache.SetString(kReleaseChannel, "");
   } else {
-    values_cache_.SetString(kReleaseChannel,
-                            pol.release_channel().release_channel());
+    new_values_cache.SetString(kReleaseChannel,
+                               pol.release_channel().release_channel());
   }
 
   if (pol.has_metrics_enabled()) {
-    values_cache_.SetBoolean(kStatsReportingPref,
-                             pol.metrics_enabled().metrics_enabled());
+    new_values_cache.SetBoolean(kStatsReportingPref,
+                                pol.metrics_enabled().metrics_enabled());
   } else {
-    values_cache_.SetBoolean(kStatsReportingPref, HasOldMetricsFile());
+    new_values_cache.SetBoolean(kStatsReportingPref, HasOldMetricsFile());
   }
 
   base::ListValue* list = new base::ListValue();
@@ -385,7 +384,30 @@ void DeviceSettingsProvider::UpdateValuesCache() {
        it != whitelist.end(); ++it) {
     list->Append(base::Value::CreateStringValue(*it));
   }
-  values_cache_.SetValue(kAccountsPrefUsers, list);
+  new_values_cache.SetValue(kAccountsPrefUsers, list);
+
+  // Collect all notifications but send them only after we have swapped the
+  // cache so that if somebody actually reads the cache will be already valid.
+  std::vector<std::string> notifications;
+  // Go through the new values and verify in the old ones.
+  PrefValueMap::iterator iter = new_values_cache.begin();
+  for (; iter != new_values_cache.end(); ++iter) {
+    const base::Value* old_value;
+    if (!values_cache_.GetValue(iter->first, &old_value) ||
+        !old_value->Equals(iter->second)) {
+      notifications.push_back(iter->first);
+    }
+  }
+  // Now check for values that have been removed from the policy blob.
+  for (iter = values_cache_.begin(); iter != values_cache_.end(); ++iter) {
+    const base::Value* value;
+    if (!new_values_cache.GetValue(iter->first, &value))
+      notifications.push_back(iter->first);
+  }
+  // Swap and notify.
+  values_cache_.Swap(&new_values_cache);
+  for (size_t i = 0; i < notifications.size(); ++i)
+    NotifyObservers(notifications[i]);
 }
 
 void DeviceSettingsProvider::ApplyMetricsSetting(bool use_file,
