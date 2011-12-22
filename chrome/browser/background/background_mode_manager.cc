@@ -673,7 +673,7 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
   menu->AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
   menu->AddSeparator();
 
-  if (background_mode_data_.size() > 1) {
+  if (profile_cache_->GetNumberOfProfiles() > 1) {
     std::vector<BackgroundModeData*> bmd_vector;
     for (BackgroundModeInfoMap::iterator it =
          background_mode_data_.begin();
@@ -683,18 +683,29 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
     }
     std::sort(bmd_vector.begin(), bmd_vector.end(),
               &BackgroundModeData::BackgroundModeDataCompare);
+    int profiles_with_apps = 0;
     for (std::vector<BackgroundModeData*>::const_iterator bmd_it =
          bmd_vector.begin();
          bmd_it != bmd_vector.end();
          ++bmd_it) {
       BackgroundModeData* bmd = *bmd_it;
-      ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(bmd);
-      bmd->BuildProfileMenu(submenu, menu);
+      // We should only display the profile in the status icon if it has at
+      // least one background app.
+      if (bmd->GetBackgroundAppCount() > 0) {
+        ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(bmd);
+        bmd->BuildProfileMenu(submenu, menu);
+        profiles_with_apps++;
+      }
     }
+    // We should only be displaying the status tray icon if there is at least
+    // one profile with a background app.
+    DCHECK_GT(profiles_with_apps, 0);
   } else {
-    // We should only have one profile in the list if we are not
-    // using multi-profiles.
-    DCHECK_EQ(background_mode_data_.size(), size_t(1));
+    // We should only have one profile in the cache if we are not
+    // using multi-profiles. If keep_alive_for_test_ is set, then we may not
+    // have any profiles in the cache.
+    DCHECK(profile_cache_->GetNumberOfProfiles() == size_t(1) ||
+           keep_alive_for_test_);
     background_mode_data_.begin()->second->BuildProfileMenu(menu, NULL);
     menu->AddSeparator();
   }
