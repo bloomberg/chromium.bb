@@ -17,6 +17,7 @@ GL_EXPORT extern const char kGLImplementationDesktopName[];
 GL_EXPORT extern const char kGLImplementationOSMesaName[];
 GL_EXPORT extern const char kGLImplementationAppleName[];
 GL_EXPORT extern const char kGLImplementationEGLName[];
+GL_EXPORT extern const char kGLImplementationSwiftShaderName[];
 extern const char kGLImplementationMockName[];
 
 }  // namespace gfx

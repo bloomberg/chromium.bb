@@ -304,8 +304,14 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
       policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
       policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
     } else {
-      policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                            sandbox::USER_RESTRICTED);
+      if (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
+          gfx::kGLImplementationSwiftShaderName) {
+        policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
+                              sandbox::USER_LIMITED);
+      } else {
+        policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
+                              sandbox::USER_RESTRICTED);
+      }
 
       // UI restrictions break when we access Windows from outside our job.
       // However, we don't want a proxy window in this process because it can
