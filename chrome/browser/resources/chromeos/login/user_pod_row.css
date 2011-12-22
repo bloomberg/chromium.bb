@@ -22,6 +22,7 @@ podrow {
   outline: none;
   padding: 10px;
   position: relative;
+  text-align: center;
   width: 170px;
 }
 
@@ -78,7 +79,6 @@ podrow {
   font-size: 15px;
   margin: 4px 0;
   overflow: hidden;
-  text-align: center;
   text-overflow: ellipsis;
 }
 
@@ -87,7 +87,7 @@ podrow {
 }
 
 .pod.focused .name {
-  visibility: hidden;
+  display: none;
 }
 
 .pod input[type='password'] {
@@ -101,17 +101,12 @@ podrow {
   border: 1px solid #aaa;
   box-sizing: border-box;
   height: 26px;
-  opacity: 0;
   padding: 4px 6px; 
-  position: absolute;
-  width: 170px;
-  top: 193px;
-  visibility: hidden;
+  width: 100%;
 }
 
-.pod.focused input[type='password'] {
-  opacity: 1;
-  visibility: visible;
+.pod:not(.focused) input[type='password'] {
+  display: none;
 }
 
 .pod input[type='password']:focus {
@@ -129,34 +124,35 @@ podrow {
 .pod .enter-guest-button,
 .pod .signin-button {
   box-sizing: border-box;
+  display: inline-block;
   height: 26px;
-  left: 46px;
-  opacity: 0;
-  padding: 0;
-  position: absolute;
-  top: 193px;
-  visibility: hidden;
-  width: 94px;
+  padding: 4px 8px;
+  min-width: 94px;
+  max-width: 100%;
 }
 
-.pod.focused .enter-guest-button,
-.pod.focused .signin-button {
-  opacity: 1;
-  visibility: visible;
+.pod:not(.focused) .enter-guest-button,
+.pod:not(.focused) .signin-button {
+  display: none;
 }
 
+/* TODO(ivankr): this element is anchored to .pod while should be to
+ * .password. Perhaps add a DIV container for both .password and .password-hint.
+ */
 .pod .password-hint {
+  box-sizing: border-box;
   cursor: text;
-  height: 14px;
+  height: 22px;
   opacity: 0.3;
   overflow: hidden;
   padding: 4px 8px;
   position: absolute;
+  text-align: left;
   text-overflow: ellipsis;
   top: 194px;
   visibility: hidden;
   white-space: nowrap;
-  width: 154px;
+  width: 100%;
   z-index: 1;
 }
 
@@ -220,10 +216,8 @@ html[dir=rtl] .pod .capslock-hint {
   color: white;
   font-size: small;
   margin: 5px;
+  padding: 3px 0;
   position: absolute;
-  padding-bottom: 3px;
-  padding-top: 3px;
-  text-align: center;
   /* Width of .user-image. */
   width: 160px;
   z-index: 1;
