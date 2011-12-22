@@ -188,10 +188,19 @@ cr.define('options', function() {
   };
 
   /**
-   * Displays the Touchpad Controls section when we detect a touchpad.
+   * Displays the touchpad controls section when we detect a touchpad, hides it
+   * otherwise.
    */
-  SystemOptions.showTouchpadControls = function() {
-    $('touchpad-controls').hidden = false;
+  SystemOptions.showTouchpadControls = function(show) {
+    $('touchpad-controls').hidden = !show;
+  };
+
+  /**
+   * Displays the mouse controls section when we detect a mouse, hides it
+   * otherwise.
+   */
+  SystemOptions.showMouseControls = function(show) {
+    $('mouse-controls').hidden = !show;
   };
 
   // Export

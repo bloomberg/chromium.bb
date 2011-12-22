@@ -44,9 +44,9 @@ void SelectXInputEvents() {
 
 // Checks the |event| and asynchronously sets the XKB layout when necessary.
 void HandleHierarchyChangedEvent(XIHierarchyEvent* event) {
-  if (!(event->flags & XISlaveAdded)) {
+  if (!(event->flags & XISlaveAdded))
     return;
-  }
+
   for (int i = 0; i < event->num_info; ++i) {
     XIHierarchyInfo* info = &event->info[i];
     if ((info->flags & XISlaveAdded) && (info->use == XIFloatingSlave)) {
@@ -91,17 +91,39 @@ void XInputHierarchyChangedEventListener::Stop() {
   xiopcode_ = -1;
 }
 
+void XInputHierarchyChangedEventListener::AddObserver(
+    DeviceHierarchyObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void XInputHierarchyChangedEventListener::RemoveObserver(
+    DeviceHierarchyObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 bool XInputHierarchyChangedEventListener::ProcessedXEvent(XEvent* xevent) {
   if ((xevent->xcookie.type != GenericEvent) ||
       (xevent->xcookie.extension != xiopcode_)) {
     return false;
   }
-  XGenericEventCookie* cookie = &(xevent->xcookie);
-  const bool should_consume = (cookie->evtype == XI_HierarchyChanged);
-  if (should_consume)
-    HandleHierarchyChangedEvent(static_cast<XIHierarchyEvent*>(cookie->data));
 
-  return should_consume;
+  XGenericEventCookie* cookie = &(xevent->xcookie);
+  const bool hierarchy_changed = (cookie->evtype == XI_HierarchyChanged);
+
+  if (hierarchy_changed) {
+    XIHierarchyEvent* event = static_cast<XIHierarchyEvent*>(cookie->data);
+    HandleHierarchyChangedEvent(event);
+    if (event->flags & XIDeviceEnabled || event->flags & XIDeviceDisabled)
+      NotifyDeviceHierarchyChanged();
+  }
+
+  return hierarchy_changed;
+}
+
+void XInputHierarchyChangedEventListener::NotifyDeviceHierarchyChanged() {
+  FOR_EACH_OBSERVER(DeviceHierarchyObserver,
+                    observer_list_,
+                    DeviceHierarchyChanged());
 }
 
 }  // namespace chromeos

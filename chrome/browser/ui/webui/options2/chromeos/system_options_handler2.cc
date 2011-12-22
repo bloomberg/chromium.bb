@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -45,6 +46,10 @@ void TouchpadExistsFileThread(bool* exists) {
   *exists = chromeos::system::touchpad_settings::TouchpadExists();
 }
 
+void MouseExistsFileThread(bool* exists) {
+  *exists = chromeos::system::mouse_settings::MouseExists();
+}
+
 }  // namespace
 
 namespace options2 {
@@ -53,6 +58,8 @@ SystemOptionsHandler::SystemOptionsHandler() {
 }
 
 SystemOptionsHandler::~SystemOptionsHandler() {
+  chromeos::XInputHierarchyChangedEventListener::GetInstance()
+      ->RemoveObserver(this);
 }
 
 void SystemOptionsHandler::GetLocalizedValues(
@@ -129,16 +136,36 @@ void SystemOptionsHandler::Initialize() {
   web_ui_->CallJavascriptFunction(
       "options.SystemOptions.SetAccessibilityCheckboxState", checked);
 
+  chromeos::XInputHierarchyChangedEventListener::GetInstance()
+      ->AddObserver(this);
+  DeviceHierarchyChanged();
+}
+
+void SystemOptionsHandler::CheckTouchpadExists() {
   bool* exists = new bool;
   BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
       base::Bind(&TouchpadExistsFileThread, exists),
       base::Bind(&SystemOptionsHandler::TouchpadExists, AsWeakPtr(), exists));
 }
 
+void SystemOptionsHandler::CheckMouseExists() {
+  bool* exists = new bool;
+  BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
+      base::Bind(&MouseExistsFileThread, exists),
+      base::Bind(&SystemOptionsHandler::MouseExists, AsWeakPtr(), exists));
+}
+
 void SystemOptionsHandler::TouchpadExists(bool* exists) {
-  if (*exists)
-    web_ui_->CallJavascriptFunction(
-        "options.SystemOptions.showTouchpadControls");
+  base::FundamentalValue val(*exists);
+  web_ui_->CallJavascriptFunction("options.SystemOptions.showTouchpadControls",
+                                  val);
+  delete exists;
+}
+
+void SystemOptionsHandler::MouseExists(bool* exists) {
+  base::FundamentalValue val(*exists);
+  web_ui_->CallJavascriptFunction("options.SystemOptions.showMouseControls",
+                                  val);
   delete exists;
 }
 
@@ -154,6 +181,11 @@ void SystemOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("increaseScreenBrightness",
       base::Bind(&SystemOptionsHandler::IncreaseScreenBrightnessCallback,
                  base::Unretained(this)));
+}
+
+void SystemOptionsHandler::DeviceHierarchyChanged() {
+  CheckMouseExists();
+  CheckTouchpadExists();
 }
 
 void SystemOptionsHandler::AccessibilityChangeCallback(const ListValue* args) {

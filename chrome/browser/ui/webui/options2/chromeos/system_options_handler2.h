@@ -8,6 +8,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/chromeos/device_hierarchy_observer.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 
 namespace base {
@@ -19,6 +20,7 @@ namespace options2 {
 // ChromeOS system options page UI handler.
 class SystemOptionsHandler
   : public OptionsPageUIHandler,
+    public chromeos::DeviceHierarchyObserver,
     public base::SupportsWeakPtr<SystemOptionsHandler> {
  public:
   SystemOptionsHandler();
@@ -30,6 +32,9 @@ class SystemOptionsHandler
   virtual void Initialize() OVERRIDE;
 
   virtual void RegisterMessages() OVERRIDE;
+
+  // DeviceHierarchyObserver implementation.
+  virtual void DeviceHierarchyChanged() OVERRIDE;
 
   // Called when the accessibility checkbox value is changed.
   // |args| will contain the checkbox checked state as a string
@@ -43,8 +48,13 @@ class SystemOptionsHandler
   void IncreaseScreenBrightnessCallback(const base::ListValue* args);
 
  private:
-  // Callback for TouchpadHelper.
+  // Check for input devices.
+  void CheckTouchpadExists();
+  void CheckMouseExists();
+
+  // Callback for input device checks.
   void TouchpadExists(bool* exists);
+  void MouseExists(bool* exists);
 
   DISALLOW_COPY_AND_ASSIGN(SystemOptionsHandler);
 };

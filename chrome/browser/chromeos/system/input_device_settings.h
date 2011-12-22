@@ -23,6 +23,8 @@ void SetTapToClick(bool enabled);
 
 namespace mouse_settings {
 
+bool MouseExists();
+
 void SetPrimaryButtonRight(bool right);
 
 }  // namespace mouse_settings

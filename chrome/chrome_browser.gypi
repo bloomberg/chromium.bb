@@ -823,6 +823,7 @@
         'browser/chromeos/tab_closeable_state_watcher.h',
         'browser/chromeos/upgrade_detector_chromeos.cc',
         'browser/chromeos/upgrade_detector_chromeos.h',
+        'browser/chromeos/device_hierarchy_observer.h',
         'browser/chromeos/device_settings_provider.cc',
         'browser/chromeos/device_settings_provider.h',
         'browser/chromeos/version_loader.cc',

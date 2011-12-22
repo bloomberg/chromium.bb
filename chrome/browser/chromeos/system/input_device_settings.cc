@@ -101,6 +101,11 @@ void SetTapToClick(bool enabled) {
 
 namespace mouse_settings {
 
+bool MouseExists() {
+  // TODO(achuith, adlr): Call mouse_ctrl when it exists.
+  return false;
+}
+
 void SetPrimaryButtonRight(bool right) {
   // TODO(achuith, adlr): Call mouse_ctrl when it exists.
 }

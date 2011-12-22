@@ -12,6 +12,8 @@
 
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
+#include "base/observer_list.h"
+#include "chrome/browser/chromeos/device_hierarchy_observer.h"
 
 typedef union _XEvent XEvent;
 
@@ -26,6 +28,9 @@ class XInputHierarchyChangedEventListener : public MessageLoopForUI::Observer {
   static XInputHierarchyChangedEventListener* GetInstance();
 
   void Stop();
+
+  void AddObserver(DeviceHierarchyObserver* observer);
+  void RemoveObserver(DeviceHierarchyObserver* observer);
 
  private:
   // Defines the delete on exit Singleton traits we like.  Best to have this
@@ -59,8 +64,13 @@ class XInputHierarchyChangedEventListener : public MessageLoopForUI::Observer {
   // Returns true if the event was processed, false otherwise.
   virtual bool ProcessedXEvent(XEvent* xevent);
 
+  // Notify observers that a device has been added/removed.
+  void NotifyDeviceHierarchyChanged();
+
   bool stopped_;
   int xiopcode_;
+
+  ObserverList<DeviceHierarchyObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(XInputHierarchyChangedEventListener);
 };
