@@ -129,7 +129,7 @@ void OAuth2RevocationFetcher::OnRevocationSuccess() {
 }
 
 void OAuth2RevocationFetcher::OnRevocationFailure(
-    GoogleServiceAuthError error) {
+    const GoogleServiceAuthError& error) {
   state_ = ERROR_STATE;
   consumer_->OnRevocationFailure(error);
 }

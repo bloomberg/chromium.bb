@@ -68,7 +68,7 @@ class OAuth2RevocationFetcher : public content::URLFetcherDelegate {
 
   // Helper mehtods for reporting back results.
   void OnRevocationSuccess();
-  void OnRevocationFailure(GoogleServiceAuthError error);
+  void OnRevocationFailure(const GoogleServiceAuthError& error);
 
   // Other helpers.
   static GURL MakeRevocationUrl();
