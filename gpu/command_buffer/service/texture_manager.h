@@ -76,6 +76,10 @@ class TextureManager {
       return num_uncleared_mips_;
     }
 
+    uint32 estimated_size() const {
+      return estimated_size_;
+    }
+
     // True if this texture meets all the GLES2 criteria for rendering.
     // See section 3.8.2 of the GLES2 spec.
     bool CanRender(const FeatureInfo* feature_info) const;
@@ -204,7 +208,8 @@ class TextureManager {
            depth(0),
            border(0),
            format(0),
-           type(0) {
+           type(0),
+           estimated_size(0) {
       }
 
       bool cleared;
@@ -217,6 +222,7 @@ class TextureManager {
       GLint border;
       GLenum format;
       GLenum type;
+      uint32 estimated_size;
     };
 
     // Set the info for a particular level.
@@ -254,7 +260,7 @@ class TextureManager {
         const FeatureInfo* feature_info, GLenum pname, GLint param);
 
     // Makes each of the mip levels as though they were generated.
-    bool MarkMipmapsGenerated(const FeatureInfo* feature_info);
+    bool MarkMipmapsGenerated( const FeatureInfo* feature_info);
 
     void MarkAsDeleted() {
       service_id_ = 0;
@@ -327,6 +333,9 @@ class TextureManager {
     // Whether the texture is immutable and no further changes to the format
     // or dimensions of the texture object can be made.
     bool immutable_;
+
+    // Size in bytes this texture is assumed to take in memory.
+    uint32 estimated_size_;
 
     DISALLOW_COPY_AND_ASSIGN(TextureInfo);
   };
@@ -483,6 +492,8 @@ class TextureManager {
       GLenum target,
       GLuint* black_texture);
 
+  void UpdateMemRepresented();
+
   // Info for each texture in the system.
   typedef base::hash_map<GLuint, TextureInfo::Ref> TextureInfoMap;
   TextureInfoMap texture_infos_;
@@ -495,6 +506,9 @@ class TextureManager {
   int num_unrenderable_textures_;
   int num_unsafe_textures_;
   int num_uncleared_mips_;
+
+  uint32 mem_represented_;
+  uint32 last_reported_mem_represented_;
 
   // Black (0,0,0,1) textures for when non-renderable textures are used.
   // NOTE: There is no corresponding TextureInfo for these textures.

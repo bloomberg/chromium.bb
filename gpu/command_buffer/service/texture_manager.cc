@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "base/bits.h"
+#include "base/debug/trace_event.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -247,6 +248,12 @@ void TextureManager::TextureInfo::SetLevelInfo(
   info.border = border;
   info.format = format;
   info.type = type;
+
+  estimated_size_ -= info.estimated_size;
+  GLES2Util::ComputeImageDataSize(
+      width, height, format, type, 4, &info.estimated_size);
+  estimated_size_ += info.estimated_size;
+
   if (!info.cleared) {
     DCHECK_NE(0, num_uncleared_mips_);
     --num_uncleared_mips_;
@@ -544,13 +551,25 @@ TextureManager::TextureManager(
       num_unrenderable_textures_(0),
       num_unsafe_textures_(0),
       num_uncleared_mips_(0),
+      mem_represented_(0),
+      last_reported_mem_represented_(1),
       black_2d_texture_id_(0),
       black_cube_texture_id_(0),
       black_oes_external_texture_id_(0),
       black_arb_texture_rectangle_id_(0) {
 }
 
+void TextureManager::UpdateMemRepresented() {
+  if (mem_represented_ != last_reported_mem_represented_) {
+    last_reported_mem_represented_ = mem_represented_;
+    TRACE_COUNTER_ID1(
+        "TextureManager", "TextureMemory", this, mem_represented_);
+  }
+}
+
 bool TextureManager::Initialize(const FeatureInfo* feature_info) {
+  UpdateMemRepresented();
+
   // TODO(gman): The default textures have to be real textures, not the 0
   // texture because we simulate non shared resources on top of shared
   // resources and all contexts that share resource share the same default
@@ -620,16 +639,13 @@ TextureManager::TextureInfo::Ref TextureManager::CreateDefaultAndBlackTextures(
           0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
     }
   } else {
-    // TODO(kbr): previous code called SetLevelInfo directly on the
-    // TextureInfo object for the GL_TEXTURE_EXTERNAL_OES case.
-    // Unclear whether this was deliberate.
     if (needs_initialization) {
       SetLevelInfo(&temp_feature_info, default_texture,
                    GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0,
                    GL_RGBA, GL_UNSIGNED_BYTE, true);
     } else {
-      default_texture->SetLevelInfo(
-          &temp_feature_info, GL_TEXTURE_EXTERNAL_OES, 0,
+      SetLevelInfo(
+          &temp_feature_info, default_texture, GL_TEXTURE_EXTERNAL_OES, 0,
           GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
     }
   }
@@ -753,9 +769,13 @@ void TextureManager::SetLevelInfo(
   }
   num_uncleared_mips_ -= info->num_uncleared_mips();
   DCHECK_GE(num_uncleared_mips_, 0);
+  mem_represented_ -= info->estimated_size();
   info->SetLevelInfo(
       feature_info, target, level, internal_format, width, height, depth,
       border, format, type, cleared);
+  mem_represented_ += info->estimated_size();
+  UpdateMemRepresented();
+
   num_uncleared_mips_ += info->num_uncleared_mips();
   if (!info->CanRender(feature_info)) {
     ++num_unrenderable_textures_;
@@ -802,7 +822,11 @@ bool TextureManager::MarkMipmapsGenerated(
   }
   num_uncleared_mips_ -= info->num_uncleared_mips();
   DCHECK_GE(num_uncleared_mips_, 0);
+  mem_represented_ -= info->estimated_size();
   bool result = info->MarkMipmapsGenerated(feature_info);
+  mem_represented_ += info->estimated_size();
+  UpdateMemRepresented();
+
   num_uncleared_mips_ += info->num_uncleared_mips();
   if (!info->CanRender(feature_info)) {
     ++num_unrenderable_textures_;
@@ -852,6 +876,11 @@ void TextureManager::RemoveTextureInfo(
     num_uncleared_mips_ -= info->num_uncleared_mips();
     DCHECK_GE(num_uncleared_mips_, 0);
     info->MarkAsDeleted();
+    // TODO(gman): Unforunately the memory does not get de-allocated here as
+    // resources are ref counted but for now there's no easy way to track this
+    // info past this point.
+    mem_represented_ += info->estimated_size();
+    UpdateMemRepresented();
     texture_infos_.erase(it);
   }
 }
