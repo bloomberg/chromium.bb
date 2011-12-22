@@ -27,6 +27,7 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
+#include "skia/ext/image_operations.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,12 +35,11 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/gtk_util.h"
-#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/pango_util.h"
 #include "ui/gfx/platform_font_pango.h"
 #include "ui/gfx/skbitmap_operations.h"
-#include "skia/ext/image_operations.h"
 
 #if !GTK_CHECK_VERSION(2, 22, 0)
 #define gtk_button_get_event_window(button) button->event_window
@@ -397,7 +397,7 @@ void TabRendererGtk::UpdateData(TabContents* contents,
     // will eventually be chromium-themable and this code will go away.
     data_.is_default_favicon =
         (data_.favicon.pixelRef() ==
-        ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
             IDR_DEFAULT_FAVICON)->pixelRef());
   }
 
@@ -760,7 +760,7 @@ void TabRendererGtk::Layout() {
         theme_service_->GetColor(ThemeService::COLOR_TAB_TEXT);
       if (!close_button_color_ || tab_text_color != close_button_color_) {
         close_button_color_ = tab_text_color;
-        ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+        ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
         close_button_->SetBackground(close_button_color_,
             rb.GetBitmapNamed(IDR_TAB_CLOSE),
             rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
@@ -910,7 +910,7 @@ void TabRendererGtk::DrawTabBackground(
   tab_bg->ToCairo()->SetSource(cr, widget, -offset_x, -offset_y);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   // Draw left edge
   gfx::Image& tab_l_mask = rb.GetNativeImageNamed(IDR_TAB_ALPHA_LEFT);
@@ -929,13 +929,12 @@ void TabRendererGtk::DrawTabBackground(
                                     width() - tab_active_l_width_, 0);
 }
 
-void TabRendererGtk::DrawTabShadow(
-    cairo_t* cr,
-    GtkWidget* widget,
-    int left_idr,
-    int center_idr,
-    int right_idr) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+void TabRendererGtk::DrawTabShadow(cairo_t* cr,
+                                   GtkWidget* widget,
+                                   int left_idr,
+                                   int center_idr,
+                                   int right_idr) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::Image& active_image_l = rb.GetNativeImageNamed(left_idr);
   gfx::Image& active_image_c = rb.GetNativeImageNamed(center_idr);
   gfx::Image& active_image_r = rb.GetNativeImageNamed(right_idr);
@@ -1114,7 +1113,7 @@ void TabRendererGtk::InitResources() {
     return;
 
   // Grab the pixel sizes of our masking images.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   GdkPixbuf* tab_active_l = rb.GetNativeImageNamed(IDR_TAB_ACTIVE_LEFT);
   tab_active_l_width_ = gdk_pixbuf_get_width(tab_active_l);
   tab_active_l_height_ = gdk_pixbuf_get_height(tab_active_l);
@@ -1125,7 +1124,7 @@ void TabRendererGtk::InitResources() {
   close_button_width_ = rb.GetBitmapNamed(IDR_TAB_CLOSE)->width();
   close_button_height_ = rb.GetBitmapNamed(IDR_TAB_CLOSE)->height();
 
-  const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
+  const gfx::Font& base_font = rb.GetFont(ui::ResourceBundle::BaseFont);
   title_font_ = new gfx::Font(base_font.GetFontName(), kFontPixelSize);
   title_font_height_ = title_font_->GetHeight();
 

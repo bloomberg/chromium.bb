@@ -759,7 +759,7 @@ std::string TaskManagerGtk::GetModelText(int row, int col_id) {
 GdkPixbuf* TaskManagerGtk::GetModelIcon(int row) {
   SkBitmap icon = model_->GetResourceIcon(row);
   if (icon.pixelRef() ==
-      ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
           IDR_DEFAULT_FAVICON)->pixelRef()) {
     return static_cast<GdkPixbuf*>(g_object_ref(
         GtkThemeService::GetDefaultFavicon(true)->ToGdkPixbuf()));

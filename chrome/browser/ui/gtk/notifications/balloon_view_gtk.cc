@@ -277,7 +277,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   gtk_container_add(GTK_CONTAINER(label_alignment), source_label_);
   gtk_box_pack_start(GTK_BOX(hbox_), label_alignment, FALSE, FALSE, 0);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   // Create a button to dismiss the balloon and add it to the toolbar.
   close_button_.reset(new CustomDrawButton(IDR_TAB_CLOSE,

@@ -536,7 +536,7 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
         allocation.y + allocation.height);
     cairo_t* copy_cr = cairo_create(target);
 
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
     cairo_set_operator(copy_cr, CAIRO_OPERATOR_SOURCE);
     if (draw_left_corner) {

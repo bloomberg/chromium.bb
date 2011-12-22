@@ -205,7 +205,7 @@ void BuildIconFromIDRWithColor(int id,
                                GtkStateType state,
                                GtkIconSet* icon_set) {
   SkColor color = GdkToSkColor(&style->fg[state]);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SkBitmap original = *rb.GetBitmapNamed(id);
 
   SkBitmap fill_color;
@@ -584,7 +584,7 @@ gfx::Image* GtkThemeService::GetFolderIcon(bool native) {
       return default_folder_icon_;
   }
 
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+  return &ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_BOOKMARK_BAR_FOLDER);
 }
 
@@ -604,7 +604,7 @@ gfx::Image* GtkThemeService::GetDefaultFavicon(bool native) {
       return default_bookmark_icon_;
   }
 
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+  return &ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_DEFAULT_FAVICON);
 }
 
@@ -1038,7 +1038,7 @@ SkBitmap* GtkThemeService::GenerateTabImage(int base_id) const {
 SkBitmap* GtkThemeService::GenerateTintedIcon(
     int base_id,
     const color_utils::HSL& tint) const {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return new SkBitmap(SkBitmapOperations::CreateHSLShiftedBitmap(
       *rb.GetBitmapNamed(base_id), tint));
 }

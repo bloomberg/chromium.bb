@@ -562,7 +562,7 @@ void BookmarkBarGtk::SetOverflowButtonAppearance() {
 
   GtkWidget* new_child = theme_service_->UsingNativeTheme() ?
       gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE) :
-      gtk_image_new_from_pixbuf(ResourceBundle::GetSharedInstance().
+      gtk_image_new_from_pixbuf(ui::ResourceBundle::GetSharedInstance().
           GetRTLEnabledPixbufNamed(IDR_BOOKMARK_BAR_CHEVRONS));
 
   gtk_container_add(GTK_CONTAINER(overflow_button_), new_child);

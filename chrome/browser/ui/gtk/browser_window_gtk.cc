@@ -449,7 +449,7 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
 
 void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
   // Draw the shadow above the toolbar. Tabs on the tabstrip will draw over us.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   int left_x, top_y;
   gtk_widget_translate_coordinates(toolbar_->widget(),
       GTK_WIDGET(window_), 0, 0, &left_x,
@@ -582,7 +582,7 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
 void BrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
                                       GtkWidget* widget,
                                       GdkEventExpose* event) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   // Like DrawCustomFrame(), except that we use the unthemed resources to draw
   // the background. We do this because we can't rely on sane images in the

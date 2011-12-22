@@ -71,7 +71,7 @@ void ExtensionInfoBarGtk::OnImageLoaded(
   // TODO(erg): IDR_EXTENSIONS_SECTION should have an IDR_INFOBAR_EXTENSIONS
   // icon of the correct size with real subpixel shading and such.
   SkBitmap* icon = image;
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (!image || image->empty())
     icon = rb.GetBitmapNamed(IDR_EXTENSIONS_SECTION);
 

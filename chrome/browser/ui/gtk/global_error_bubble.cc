@@ -50,7 +50,7 @@ GlobalErrorBubble::GlobalErrorBubble(Profile* profile,
   GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
 
   int resource_id = error_->GetBubbleViewIconResourceID();
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   GdkPixbuf* pixbuf = rb.GetNativeImageNamed(resource_id).ToGdkPixbuf();
   GtkWidget* image_view = gtk_image_new_from_pixbuf(pixbuf);
 

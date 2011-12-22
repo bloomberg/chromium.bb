@@ -5,12 +5,13 @@
 #include "chrome/browser/ui/gtk/web_intent_picker_gtk.h"
 
 #include <algorithm>
+
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
@@ -22,14 +23,14 @@
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/browsing_instance.h"
-#include "content/browser/site_instance.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
+#include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -138,7 +139,7 @@ void WebIntentPickerGtk::SetServiceURLs(const std::vector<GURL>& urls) {
       l10n_util::GetStringUTF8(IDS_FIND_MORE_INTENT_HANDLER_TOOLTIP).c_str());
   gtk_box_pack_start(GTK_BOX(button_hbox_), plus_button, FALSE, FALSE, 0);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   GdkPixbuf* icon_pixbuf = rb.GetNativeImageNamed(IDR_SIDETABS_NEW_TAB);
   SetServiceButtonImage(plus_button, icon_pixbuf);
 
@@ -159,7 +160,7 @@ void WebIntentPickerGtk::SetServiceIcon(size_t index, const SkBitmap& icon) {
 void WebIntentPickerGtk::SetDefaultServiceIcon(size_t index) {
   GtkWidget* button = GetServiceButton(index);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   GdkPixbuf* icon_pixbuf = rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON);
   SetServiceButtonImage(button, icon_pixbuf);
 }
@@ -196,7 +197,7 @@ void WebIntentPickerGtk::InitContents() {
   gtk_container_set_border_width(GTK_CONTAINER(contents_),
                                  ui::kContentAreaBorder);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   GdkPixbuf* image_pixbuf = rb.GetNativeImageNamed(IDR_PAGEINFO_INFO);
   GtkWidget* image = gtk_image_new_from_pixbuf(image_pixbuf);
   gtk_box_pack_start(GTK_BOX(contents_), image, FALSE, FALSE, 0);

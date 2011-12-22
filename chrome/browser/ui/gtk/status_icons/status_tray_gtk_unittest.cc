@@ -28,7 +28,7 @@ TEST(StatusTrayGtkTest, CreateIcon) {
   // Create an icon, set the images and tooltip, then shut it down.
   StatusTrayGtk tray;
   StatusIcon* icon = tray.CreateStatusIcon();
-  SkBitmap* bitmap = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  SkBitmap* bitmap = ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_STATUS_TRAY_ICON);
   icon->SetImage(*bitmap);
   icon->SetPressedImage(*bitmap);

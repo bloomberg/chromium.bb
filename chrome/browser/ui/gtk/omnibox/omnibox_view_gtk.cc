@@ -1833,8 +1833,8 @@ gfx::Font OmniboxViewGtk::GetFont() {
     return font;
   } else {
     return gfx::Font(
-        ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont).
-            GetFontName(),
+        ui::ResourceBundle::GetSharedInstance().GetFont(
+            ui::ResourceBundle::BaseFont).GetFontName(),
         popup_window_mode_ ?
             browser_defaults::kAutocompleteEditFontPixelSizeInPopup :
             browser_defaults::kAutocompleteEditFontPixelSize);

@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
-#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/point.h"
 
 namespace {
@@ -77,7 +77,7 @@ NineBox::NineBox(int top_left, int top, int top_right, int left, int center,
 NineBox::NineBox(int image, int top_margin, int bottom_margin, int left_margin,
                  int right_margin)
     : unref_images_on_destroy_(true) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   GdkPixbuf* pixbuf = rb.GetNativeImageNamed(image);
   int width = gdk_pixbuf_get_width(pixbuf);
   int height = gdk_pixbuf_get_height(pixbuf);

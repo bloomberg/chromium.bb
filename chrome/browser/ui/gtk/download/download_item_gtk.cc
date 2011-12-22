@@ -626,7 +626,7 @@ void DownloadItemGtk::UpdateDangerIcon() {
         GTK_IMAGE(dangerous_image_), stock, GTK_ICON_SIZE_SMALL_TOOLBAR);
   } else {
     // Set the warning icon.
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     int pixbuf_id =
         get_download()->GetDangerType() == DownloadStateInfo::DANGEROUS_URL ?
         IDR_SAFEBROWSING_WARNING : IDR_WARNING;

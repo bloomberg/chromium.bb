@@ -85,7 +85,7 @@ gboolean OnEventBoxExpose(GtkWidget* event_box,
   gdk_cairo_rectangle(cr, &expose->area);
   cairo_clip(cr);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::CairoCachedSurface* background =
       rb.GetNativeImageNamed(IDR_ABOUT_BACKGROUND_COLOR).ToCairo();
   background->SetSource(cr, event_box, 0, 0);
@@ -100,7 +100,7 @@ gboolean OnEventBoxExpose(GtkWidget* event_box,
 }  // namespace
 
 void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   static GdkPixbuf* background = rb.GetNativeImageNamed(IDR_ABOUT_BACKGROUND);
 
   // Build the dialog.

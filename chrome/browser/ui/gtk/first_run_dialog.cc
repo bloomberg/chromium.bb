@@ -187,7 +187,7 @@ void FirstRunDialog::ShowSearchEngineWindow() {
   gtk_container_add(GTK_CONTAINER(search_engine_window_), content_area);
 
   GdkPixbuf* pixbuf =
-      ResourceBundle::GetSharedInstance().GetRTLEnabledPixbufNamed(
+      ui::ResourceBundle::GetSharedInstance().GetRTLEnabledPixbufNamed(
           IDR_SEARCH_ENGINE_DIALOG_TOP);
   GtkWidget* top_image = gtk_image_new_from_pixbuf(pixbuf);
   // Right align the image.
@@ -338,7 +338,7 @@ void FirstRunDialog::OnTemplateURLServiceChanged() {
     int logo_id = (*search_engine_iter)->logo_id();
     if (show_images && logo_id > 0) {
       GdkPixbuf* pixbuf =
-          ResourceBundle::GetSharedInstance().GetNativeImageNamed(logo_id);
+          ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(logo_id);
       if (ballot_engines.size() > kNormalBallotSize) {
         GdkPixbuf* old = pixbuf;
         pixbuf = gdk_pixbuf_scale_simple(pixbuf,

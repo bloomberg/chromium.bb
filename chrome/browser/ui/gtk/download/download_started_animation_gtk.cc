@@ -85,7 +85,7 @@ DownloadStartedAnimationGtk::DownloadStartedAnimationGtk(
       tab_contents_(tab_contents) {
   static GdkPixbuf* kDownloadImage = NULL;
   if (!kDownloadImage) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     kDownloadImage = rb.GetNativeImageNamed(IDR_DOWNLOAD_ANIMATION_BEGIN);
   }
 

@@ -235,7 +235,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_box_pack_start(GTK_BOX(tab_to_search_label_hbox),
                      tab_to_search_partial_label_, FALSE, FALSE, 0);
   GtkWidget* tab_to_search_hbox = gtk_hbox_new(FALSE, 0);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   tab_to_search_magnifier_ = gtk_image_new_from_pixbuf(
       rb.GetNativeImageNamed(IDR_KEYWORD_SEARCH_MAGNIFIER));
   gtk_box_pack_start(GTK_BOX(tab_to_search_hbox), tab_to_search_magnifier_,
@@ -974,7 +974,7 @@ void LocationBarViewGtk::SetKeywordLabel(const string16& keyword) {
       gtk_image_set_from_pixbuf(GTK_IMAGE(tab_to_search_magnifier_), pixbuf);
       g_object_unref(pixbuf);
     } else {
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       gtk_image_set_from_pixbuf(GTK_IMAGE(tab_to_search_magnifier_),
                                 rb.GetNativeImageNamed(IDR_OMNIBOX_SEARCH));
     }

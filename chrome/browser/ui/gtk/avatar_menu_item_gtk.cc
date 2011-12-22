@@ -242,7 +242,7 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
     const SkBitmap* avatar_image = item_.icon.ToSkBitmap();
     gfx::CanvasSkia canvas(*avatar_image, /* is_opaque */ true);
 
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     SkBitmap check_image = rb.GetImageNamed(IDR_PROFILE_SELECTED);
     gfx::Rect check_rect(0, 0, check_image.width(), check_image.height());
     int y = avatar_image->height() - check_image.height();

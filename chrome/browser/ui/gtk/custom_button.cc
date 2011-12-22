@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/gtk/custom_button.h"
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "base/debug/trace_event.h"
+#include "base/logging.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -46,7 +46,7 @@ CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeService* theme_provider,
                    content::Source<ThemeService>(theme_provider));
   } else {
     // Load the button images from the resource bundle.
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     surfaces_[GTK_STATE_NORMAL]->UsePixbuf(
         normal_id_ ? rb.GetRTLEnabledPixbufNamed(normal_id_) : NULL);
     surfaces_[GTK_STATE_ACTIVE]->UsePixbuf(

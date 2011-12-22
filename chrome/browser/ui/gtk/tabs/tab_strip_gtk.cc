@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 
 #include <gtk/gtk.h>
+
 #include <algorithm>
 
 #include "base/bind.h"
@@ -1792,7 +1793,7 @@ bool TabStripGtk::CompleteDrop(guchar* data, bool is_plain_text) {
 
 // static
 gfx::Image* TabStripGtk::GetDropArrowImage(bool is_down) {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+  return &ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       is_down ? IDR_TAB_DROP_DOWN : IDR_TAB_DROP_UP);
 }
 

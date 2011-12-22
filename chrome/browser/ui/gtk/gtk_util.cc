@@ -132,7 +132,7 @@ void OnLabelRealize(GtkWidget* label, gpointer pixel_width) {
 
 // Ownership of |icon_list| is passed to the caller.
 GList* GetIconList() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   GList* icon_list = NULL;
   icon_list = g_list_append(icon_list,
                             rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_32));

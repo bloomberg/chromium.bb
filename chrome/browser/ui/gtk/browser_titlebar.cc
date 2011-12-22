@@ -111,7 +111,7 @@ gboolean OnMouseMoveEvent(GtkWidget* widget, GdkEventMotion* event,
 GdkPixbuf* GetOTRAvatar() {
   static GdkPixbuf* otr_avatar = NULL;
   if (!otr_avatar) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     otr_avatar = rb.GetRTLEnabledPixbufNamed(IDR_OTR_ICON);
   }
   return otr_avatar;
@@ -379,7 +379,7 @@ void BrowserTitlebar::Init() {
                        FALSE, 0);
     // We use the app logo as a placeholder image so the title doesn't jump
     // around.
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     app_mode_favicon_ = gtk_image_new_from_pixbuf(
         rb.GetRTLEnabledPixbufNamed(IDR_PRODUCT_LOGO_16));
     g_object_set_data(G_OBJECT(app_mode_favicon_), "left-align-popup",
@@ -643,7 +643,7 @@ void BrowserTitlebar::UpdateThrobber(TabContents* tab_contents) {
         throbber_.GetNextFrame(tab_contents->IsWaitingForResponse());
     gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_), icon_pixbuf);
   } else {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
     // Note: we want to exclude the application popup window.
     if (browser_window_->browser()->is_app() &&
@@ -1092,7 +1092,7 @@ static std::vector<GdkPixbuf*>* g_throbber_waiting_frames = NULL;
 // square GdkPixbufs that get stored in |frames|.
 static void MakeThrobberFrames(int resource_id,
                                std::vector<GdkPixbuf*>* frames) {
-  ResourceBundle &rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle &rb = ui::ResourceBundle::GetSharedInstance();
   SkBitmap* frame_strip = rb.GetBitmapNamed(resource_id);
 
   // Each frame of the animation is a square, so we use the height as the
