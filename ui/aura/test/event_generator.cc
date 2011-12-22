@@ -90,6 +90,35 @@ void EventGenerator::DragMouseTo(const gfx::Point& point) {
   ReleaseLeftButton();
 }
 
+void EventGenerator::MoveMouseToCenterOf(Window* window) {
+  MoveMouseTo(CenterOfWindowInRootWindowCoordinate(window));
+}
+
+void EventGenerator::PressTouch() {
+  TouchEvent touchev(ui::ET_TOUCH_PRESSED, current_location_, flags_);
+  Dispatch(touchev);
+}
+
+void EventGenerator::ReleaseTouch() {
+  TouchEvent touchev(ui::ET_TOUCH_RELEASED, current_location_, flags_);
+  Dispatch(touchev);
+}
+
+void EventGenerator::PressMoveAndReleaseTouchTo(const gfx::Point& point) {
+  PressTouch();
+
+  TouchEvent touchev(ui::ET_TOUCH_MOVED, point, flags_);
+  Dispatch(touchev);
+
+  current_location_ = point;
+
+  ReleaseTouch();
+}
+
+void EventGenerator::PressMoveAndReleaseTouchToCenterOf(Window* window) {
+  PressMoveAndReleaseTouchTo(CenterOfWindowInRootWindowCoordinate(window));
+}
+
 void EventGenerator::Dispatch(Event& event) {
   switch (event.type()) {
     case ui::ET_KEY_PRESSED:
@@ -107,14 +136,18 @@ void EventGenerator::Dispatch(Event& event) {
       aura::RootWindow::GetInstance()->DispatchMouseEvent(
           static_cast<MouseEvent*>(&event));
       break;
+    case ui::ET_TOUCH_RELEASED:
+    case ui::ET_TOUCH_PRESSED:
+    case ui::ET_TOUCH_MOVED:
+    case ui::ET_TOUCH_STATIONARY:
+    case ui::ET_TOUCH_CANCELLED:
+      aura::RootWindow::GetInstance()->DispatchTouchEvent(
+          static_cast<TouchEvent*>(&event));
+      break;
     default:
       NOTIMPLEMENTED();
       break;
   }
-}
-
-void EventGenerator::MoveMouseToCenterOf(Window* window) {
-  MoveMouseTo(CenterOfWindowInRootWindowCoordinate(window));
 }
 
 }  // namespace test

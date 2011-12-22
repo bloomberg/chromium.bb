@@ -6,6 +6,8 @@
 #define UI_AURA_SHELL_TOPLEVEL_WINDOW_EVENT_FILTER_H_
 #pragma once
 
+#include <set>
+
 #include "base/compiler_specific.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura_shell/aura_shell_export.h"
@@ -13,8 +15,9 @@
 #include "ui/gfx/rect.h"
 
 namespace aura {
-class Window;
+class LocatedEvent;
 class MouseEvent;
+class Window;
 }
 
 namespace aura_shell {
@@ -45,11 +48,15 @@ class AURA_SHELL_EXPORT ToplevelWindowEventFilter : public aura::EventFilter {
 
   // Called during a drag to resize/position the window.
   // The return value is returned by OnMouseEvent() above.
-  bool HandleDrag(aura::Window* target, aura::MouseEvent* event);
+  bool HandleDrag(aura::Window* target, aura::LocatedEvent* event);
+
+  // Updates the event location to window.
+  void UpdateLocationFromEvent(aura::Window* target,
+                               aura::LocatedEvent* event);
 
   // Updates the |window_component_| using the |event|'s location.
   void UpdateWindowComponentForEvent(aura::Window* window,
-                                     aura::MouseEvent* event);
+                                     aura::LocatedEvent* event);
 
   // Calculates the new origin of the window during a drag.
   gfx::Point GetOriginForDrag(int bounds_change,
@@ -86,6 +93,9 @@ class AURA_SHELL_EXPORT ToplevelWindowEventFilter : public aura::EventFilter {
 
   // The window component (hit-test code) the mouse is currently over.
   int window_component_;
+
+  // Set of touch ids currently pressed.
+  std::set<int> pressed_touch_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventFilter);
 };

@@ -163,10 +163,7 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
           event->flags() & ui::EF_IS_DOUBLE_CLICK) {
         ToggleMaximizedState(target);
       }
-      mouse_down_bounds_ = target->bounds();
-      mouse_down_offset_in_parent_ = event->location();
-      aura::Window::ConvertPointToWindow(target, target->parent(),
-                                         &mouse_down_offset_in_parent_);
+      UpdateLocationFromEvent(target, event);
       return GetBoundsChangeForWindowComponent(window_component_) !=
           kBoundsChange_None;
     case ui::ET_MOUSE_DRAGGED:
@@ -185,7 +182,36 @@ ui::TouchStatus ToplevelWindowEventFilter::PreHandleTouchEvent(
     aura::TouchEvent* event) {
   // Process EventFilters implementation first so that it processes
   // activation/focus first.
-  // TODO(sad): Allow moving/resizing/maximizing etc. from touch?
+  // TODO(sad): Allow resizing/maximizing etc. from touch?
+  UpdateWindowComponentForEvent(target, event);
+  int bounds_change = GetBoundsChangeForWindowComponent(window_component_);
+  if (bounds_change == kBoundsChange_None)
+    return ui::TOUCH_STATUS_UNKNOWN;
+
+  // Handle touch move by simulate mouse drag with single touch.
+  switch (event->type()) {
+    case ui::ET_TOUCH_PRESSED:
+      UpdateLocationFromEvent(target, event);
+      pressed_touch_ids_.insert(event->touch_id());
+      if (pressed_touch_ids_.size() == 1)
+        return ui::TOUCH_STATUS_START;
+      break;
+    case ui::ET_TOUCH_MOVED:
+      if (pressed_touch_ids_.size() == 1) {
+        if (HandleDrag(target, event))
+          return ui::TOUCH_STATUS_CONTINUE;
+      }
+      break;
+    case ui::ET_TOUCH_RELEASED:
+      pressed_touch_ids_.erase(event->touch_id());
+      if (pressed_touch_ids_.empty()) {
+        window_component_ = HTNOWHERE;
+        return ui::TOUCH_STATUS_END;
+      }
+      break;
+    default:
+      break;
+  }
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
@@ -202,7 +228,12 @@ void ToplevelWindowEventFilter::MoveWindowToFront(aura::Window* target) {
 }
 
 bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
-                                           aura::MouseEvent* event) {
+                                           aura::LocatedEvent* event) {
+  // This function only be triggered to move window
+  // by mouse drag or touch move event.
+  DCHECK(event->type() == ui::ET_MOUSE_DRAGGED ||
+         event->type() == ui::ET_TOUCH_MOVED);
+
   int bounds_change = GetBoundsChangeForWindowComponent(window_component_);
   if (bounds_change == kBoundsChange_None)
     return false;
@@ -232,9 +263,18 @@ bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
   return true;
 }
 
+void ToplevelWindowEventFilter::UpdateLocationFromEvent(
+    aura::Window* target,
+    aura::LocatedEvent* event) {
+  mouse_down_bounds_ = target->bounds();
+  mouse_down_offset_in_parent_ = event->location();
+  aura::Window::ConvertPointToWindow(target, target->parent(),
+                                     &mouse_down_offset_in_parent_);
+}
+
 void ToplevelWindowEventFilter::UpdateWindowComponentForEvent(
     aura::Window* target,
-    aura::MouseEvent* event) {
+    aura::LocatedEvent* event) {
   window_component_ =
       target->delegate()->GetNonClientComponent(event->location());
 }

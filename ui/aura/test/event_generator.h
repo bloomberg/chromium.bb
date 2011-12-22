@@ -19,13 +19,15 @@ namespace test {
 // TODO(oshima): Support key events.
 class EventGenerator {
  public:
-  // Creates an EventGenerator with the mouse location (0,0).
+  // Creates an EventGenerator with the mouse/touch location (0,0).
   EventGenerator();
 
-  // Creates an EventGenerator with the mouse location at |initial_location|.
+  // Creates an EventGenerator with the mouse/touch location
+  // at |initial_location|.
   explicit EventGenerator(const gfx::Point& initial_location);
 
-  // Creates an EventGenerator with the mouse location centered over |window|.
+  // Creates an EventGenerator with the mouse/touch location
+  // centered over |window|.
   explicit EventGenerator(Window* window);
 
   virtual ~EventGenerator();
@@ -68,6 +70,28 @@ class EventGenerator {
 
   // Generates events to move the mouse to the center of the window.
   void MoveMouseToCenterOf(Window* window);
+
+  // Generates a touch press event.
+  void PressTouch();
+
+  // Generates a touch release event.
+  void ReleaseTouch();
+
+  // Generates press, move and release event to move touch
+  // to be the given |point|.
+  void PressMoveAndReleaseTouchTo(const gfx::Point& point);
+
+  void PressMoveAndReleaseTouchTo(int x, int y) {
+    PressMoveAndReleaseTouchTo(gfx::Point(x, y));
+  }
+
+  void PressMoveAndReleaseTouchBy(int x, int y) {
+    PressMoveAndReleaseTouchTo(current_location_.Add(gfx::Point(x, y)));
+  }
+
+  // Generates press, move and release events to move touch
+  // to the center of the window.
+  void PressMoveAndReleaseTouchToCenterOf(Window* window);
 
  private:
   // Dispatch the |event| to the Desktop.

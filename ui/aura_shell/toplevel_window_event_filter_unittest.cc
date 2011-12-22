@@ -87,6 +87,11 @@ class ToplevelWindowEventFilterTest : public aura::test::AuraTestBase {
     generator.DragMouseBy(dx, dy);
   }
 
+  void TouchDragFromCenterBy(aura::Window* window, int dx, int dy) {
+    aura::test::EventGenerator generator(window);
+    generator.PressMoveAndReleaseTouchBy(dx, dy);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventFilterTest);
 };
@@ -99,6 +104,12 @@ TEST_F(ToplevelWindowEventFilterTest, Caption) {
   DragFromCenterBy(w1.get(), 100, 100);
   // Position should have been offset by 100,100.
   EXPECT_EQ(gfx::Point(100, 100), w1->bounds().origin());
+  // Size should not have.
+  EXPECT_EQ(size, w1->bounds().size());
+
+  TouchDragFromCenterBy(w1.get(), 100, 100);
+  // Position should have been offset by 100,100.
+  EXPECT_EQ(gfx::Point(200, 200), w1->bounds().origin());
   // Size should not have.
   EXPECT_EQ(size, w1->bounds().size());
 }
