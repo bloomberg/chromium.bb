@@ -483,6 +483,7 @@
         #'../third_party/skia/src/ports/SkFontHost_none.cpp',
         '../third_party/skia/src/ports/SkFontHost_sandbox_none.cpp',
         '../third_party/skia/src/ports/SkFontHost_win.cpp',
+        '../third_party/skia/src/ports/SkGlobalInitialization_chromium.cpp',
         #'../third_party/skia/src/ports/SkImageDecoder_CG.cpp',
         #'../third_party/skia/src/ports/SkImageDecoder_empty.cpp',
         #'../third_party/skia/src/ports/SkImageRef_ashmem.cpp',
@@ -734,6 +735,12 @@
         'SK_DISABLE_FAST_AA_STROKE_RECT',
         'SK_OLD_EMPTY_PATH_BEHAVIOR=1',
         'SK_DEFAULT_FONT_CACHE_LIMIT=(20*1024*1024)',
+
+        # skia uses static initializers to initialize the serialization logic
+        # of its "pictures" library. This is currently not used in chrome; if
+        # it ever gets used the processes that use it need to call
+        # SkGraphics::Init().
+        'SK_ALLOW_STATIC_GLOBAL_INITIALIZERS=0',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
