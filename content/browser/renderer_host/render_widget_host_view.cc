@@ -15,16 +15,6 @@
 #include "content/browser/renderer_host/gtk_window_utils.h"
 #endif
 
-#if defined(TOUCH_UI) && !defined(USE_AURA)
-// static
-void RenderWidgetHostView::GetDefaultScreenInfo(
-    WebKit::WebScreenInfo* results) {
-  GdkWindow* gdk_window =
-      gdk_display_get_default_group(gdk_display_get_default());
-  content::GetScreenInfoFromNativeWindow(gdk_window, results);
-}
-#endif
-
 RenderWidgetHostView::RenderWidgetHostView()
     : popup_type_(WebKit::WebPopupTypeNone),
       mouse_locked_(false),

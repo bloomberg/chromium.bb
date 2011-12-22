@@ -320,12 +320,7 @@ class BrowserCloseTest : public InProcessBrowserTest {
 
 #if defined(OS_CHROMEOS)
     // Get rid of downloads panel on ChromeOS
-    Browser* panel = NULL;
-#if defined(TOUCH_UI)
-    ActiveDownloadsUI::GetPopup(&panel);
-#else
-    panel = ActiveDownloadsUI::GetPopup();
-#endif
+    Browser* panel = ActiveDownloadsUI::GetPopup();
     if (panel)
       panel->CloseWindow();
     ui_test_utils::RunAllPendingInMessageLoop();

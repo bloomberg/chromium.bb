@@ -176,10 +176,6 @@
 #include "ui/gfx/gtk_util.h"
 #endif
 
-#if defined(TOUCH_UI)
-#include "ui/base/touch/touch_factory.h"
-#endif
-
 #if defined(USE_X11)
 #include "chrome/browser/chrome_browser_main_x11.h"
 #endif
