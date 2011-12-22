@@ -65,6 +65,11 @@ class AppCacheService::NewAsyncHelper
     callback_.Reset();
   }
 
+  static void DeferredCallCallback(const net::CompletionCallback& callback,
+                                   int rv) {
+    callback.Run(rv);
+  }
+
   AppCacheService* service_;
   net::CompletionCallback callback_;
 };
