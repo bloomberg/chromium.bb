@@ -41,8 +41,8 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
   TabContents* tab_contents = tab_util::GetTabContentsByID(
       render_process_host_id, routing_id);
   DCHECK(tab_contents);
-  ExternalProtocolDialog* handler =
-      new ExternalProtocolDialog(tab_contents, url, command);
+  // Windowing system takes ownership.
+  new ExternalProtocolDialog(tab_contents, url, command);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

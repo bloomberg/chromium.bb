@@ -122,8 +122,6 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(const string16& vfs_file_name,
                                                IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::PlatformFile file_handle = base::kInvalidPlatformFileValue;
-  IPC::PlatformFileForTransit target_handle =
-      IPC::InvalidPlatformFileForTransit();
   string16 origin_identifier;
   string16 database_name;
 
@@ -162,7 +160,7 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(const string16& vfs_file_name,
   // database tracker.
   bool auto_close = !db_tracker_->HasSavedIncognitoFileHandle(vfs_file_name);
   DCHECK_NE(base::kInvalidPlatformFileValue, file_handle);
-  target_handle =
+  IPC::PlatformFileForTransit target_handle =
       IPC::GetFileHandleForProcess(file_handle, peer_handle(), auto_close);
 
   DatabaseHostMsg_OpenFile::WriteReplyParams(reply_msg, target_handle);
