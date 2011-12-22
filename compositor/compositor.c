@@ -2172,6 +2172,8 @@ int main(int argc, char *argv[])
 	if (xserver)
 		wlsc_xserver_destroy(ec);
 
+	ec->shell->destroy(ec->shell);
+
 	if (ec->has_bind_display)
 		ec->unbind_display(ec->display, display);
 

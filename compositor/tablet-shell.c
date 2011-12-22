@@ -511,6 +511,16 @@ bind_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 	wl_client_add_resource(client, &shell->resource);
 }
 
+static void
+tablet_shell_destroy(struct wlsc_shell *base)
+{
+	struct tablet_shell *shell =
+		container_of(base, struct tablet_shell, shell);
+
+	wl_event_source_remove(shell->long_press_source);
+	free(shell);
+}
+
 void
 shell_init(struct wlsc_compositor *compositor);
 
@@ -552,6 +562,7 @@ shell_init(struct wlsc_compositor *compositor)
 	shell->shell.unlock = tablet_shell_unlock;
 	shell->shell.map = tablet_shell_map;
 	shell->shell.configure = tablet_shell_configure;
+	shell->shell.destroy = tablet_shell_destroy;
 
 	launch_ux_daemon(shell);
 

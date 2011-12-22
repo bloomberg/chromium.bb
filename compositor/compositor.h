@@ -161,6 +161,7 @@ struct wlsc_shell {
 	void (*configure)(struct wlsc_shell *shell,
 			  struct wlsc_surface *surface,
 			  int32_t x, int32_t y, int32_t width, int32_t height);
+	void (*destroy)(struct wlsc_shell *shell);
 };
 
 enum {

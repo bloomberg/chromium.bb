@@ -58,7 +58,7 @@ struct wl_shell {
 	struct wl_list panels;
 
 	struct {
-		const char *path;
+		char *path;
 		int duration;
 		struct wl_resource *binding;
 		struct wl_list surfaces;
@@ -123,7 +123,6 @@ shell_configuration(struct wl_shell *shell)
 	shell->screensaver.duration = duration;
 
 	return ret;
-	/* FIXME: free(shell->screensaver.path) on plugin fini */
 }
 
 static void
@@ -1234,6 +1233,15 @@ bind_screensaver(struct wl_client *client,
 	wl_resource_destroy(resource, 0);
 }
 
+static void
+shell_destroy(struct wlsc_shell *base)
+{
+	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
+
+	free(shell->screensaver.path);
+	free(shell);
+}
+
 int
 shell_init(struct wlsc_compositor *ec);
 
@@ -1252,6 +1260,7 @@ shell_init(struct wlsc_compositor *ec)
 	shell->shell.unlock = unlock;
 	shell->shell.map = map;
 	shell->shell.configure = configure;
+	shell->shell.destroy = shell_destroy;
 
 	wl_list_init(&shell->hidden_surface_list);
 	wl_list_init(&shell->backgrounds);
