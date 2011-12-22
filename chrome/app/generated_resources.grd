@@ -5044,6 +5044,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PER_TILE_PAINTING_DESCRIPTION" desc="Description for the flag to enable per-tile painting">
         Enable per-tile painting of page contents when compositing is enabled.
       </message>
+      <message name="IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_NAME" desc="Title for the flag to enable JavaScript Harmony features.">
+        Enable Experimental JavaScript
+      </message>
+      <message name="IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_DESCRIPTION" desc="Description for the flag to enable JavaScript Harmony features.">
+        Enable web pages to use experimental JavaScript features.
+      </message>
+
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

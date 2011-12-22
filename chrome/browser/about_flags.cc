@@ -508,6 +508,13 @@ const Experiment kExperiments[] = {
 #endif
     SINGLE_VALUE_TYPE(switches::kEnablePerTilePainting)
   },
+  {
+    "enable-javascript-harmony",
+    IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_NAME,
+    IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE_AND_VALUE(switches::kJavaScriptFlags, "--harmony")
+  },
 };
 
 const Experiment* experiments = kExperiments;
