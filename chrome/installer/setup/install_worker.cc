@@ -469,9 +469,11 @@ void AddUsageStatsWorkItems(const InstallationState& original_state,
     std::wstring state_key(
         installer_state.multi_package_binaries_distribution()->GetStateKey());
     install_list->AddCreateRegKeyWorkItem(root_key, state_key);
+    // Overwrite any existing value so that overinstalls (where Omaha writes a
+    // new value into a product's state key) pick up the correct value.
     install_list->AddSetRegValueWorkItem(root_key, state_key,
                                          google_update::kRegUsageStatsField,
-                                         usagestats, false);
+                                         usagestats, true);
 
     for (Products::const_iterator scan = products.begin(), end = products.end();
          scan != end; ++scan) {

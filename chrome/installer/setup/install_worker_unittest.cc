@@ -598,7 +598,7 @@ TEST_F(InstallWorkerTest, AddUsageStatsWorkItems) {
                   HasSubstr(multi_app_guid),
                   StrEq(google_update::kRegUsageStatsField),
                   Eq(static_cast<DWORD>(1)),
-                  _)).Times(1);
+                  Eq(true))).Times(1);
 
   // Expect to see some values cleaned up from Chrome's keys.
   BrowserDistribution* chrome_dist =
@@ -624,7 +624,8 @@ TEST_F(InstallWorkerTest, AddUsageStatsWorkItems) {
 
   AddUsageStatsWorkItems(*installation_state.get(),
                          *installer_state.get(),
-                         &work_item_list);}
+                         &work_item_list);
+}
 
 // The Quick Enable tests only make sense for the Google Chrome build as it
 // interacts with registry values that are specific to Google Update.
