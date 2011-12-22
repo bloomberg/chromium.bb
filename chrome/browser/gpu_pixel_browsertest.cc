@@ -2,42 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-#include <vector>
-
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/gpu/gpu_data_manager.h"
-#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/public/common/gpu_info.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_switches.h"
 #include "ui/gfx/size.h"
 
 namespace {
-
-// Command line flag for forcing the machine's GPU to be used instead of OSMesa.
-const char kUseGpuInTests[] = "use-gpu-in-tests";
 
 // Command line flag for overriding the default location for putting generated
 // test images that do not match references.
@@ -83,42 +71,24 @@ void ResizeTabContainer(Browser* browser, const gfx::Size& desired_size) {
   browser->window()->SetBounds(window_rect);
 }
 
-// Obtains info about the GPU. Iff the info is collected, |client_info| will be
-// set and true will be returned. Here we only need vendor_id and device_id,
-// which should be always collected during browser startup, so no need to run
-// GPU information collection here.
-// This will return false if we are running in a virtualized environment.
-bool GetGPUInfo(content::GPUInfo* client_info) {
-  CHECK(client_info);
-  const content::GPUInfo& info = GpuDataManager::GetInstance()->gpu_info();
-  if (info.vendor_id == 0 || info.device_id == 0)
-    return false;
-  *client_info = info;
-  return true;
-}
-
 }  // namespace
 
 // Test fixture for GPU image comparison tests.
 // TODO(kkania): Document how to add to/modify these tests.
 class GpuPixelBrowserTest : public InProcessBrowserTest {
  public:
-  GpuPixelBrowserTest() {}
+  GpuPixelBrowserTest() : ref_img_revision_no_older_than_(0) {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+
     // This enables DOM automation for tab contents.
     EnableDOMAutomation();
-
-    // These tests by default use any GL implementation it can find.
-    // This can be changed if the |kUseGL| switch is explicitly set to
-    // something or if |kUseGpuInTests| is present.
-    if (!command_line->HasSwitch(switches::kUseGL) &&
-        !command_line->HasSwitch(kUseGpuInTests)) {
-      command_line->AppendSwitchASCII(switches::kUseGL, "any");
-    }
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {
+    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
     test_data_dir_ = test_data_dir_.AppendASCII("gpu");
 
@@ -137,72 +107,56 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   }
 
   // Compares the generated bitmap with the appropriate reference image on disk.
-  // The reference image is determined by the name of the test, the |postfix|,
-  // and the vendor and device ID. Returns true iff the images were the same.
+  // Returns true iff the images were the same.
   //
-  // |postfix|, is an optional name that can be appended onto the images name to
-  // distinguish between images from a single test.
-  //
-  // On failure, the image will be written to disk, and can be collected as a
-  // baseline. The image format is:
-  //     <test_name>_<postfix>_<os>_<vendor_id>-<device_id>.png
+  // If no valid reference image exists, save the genrated bitmap to the disk.
+  // The image format is:
+  //     <test_name>_<revision>.png
   // E.g.,
-  //     WebGLFishTank_FirstTab_120981-1201.png
-  bool CompareImages(const SkBitmap& gen_bmp, const std::string& postfix) {
-    // Determine the name of the image.
-    std::string img_name = test_name_;
-    FilePath ref_img_dir;
-    if (postfix.length())
-      img_name += "_" + postfix;
-#if defined(OS_WIN)
-      const char* os_label = "win";
-#elif defined(OS_MACOSX)
-      const char* os_label = "mac";
-#elif defined(OS_LINUX)
-      const char* os_label = "linux";
-#else
-#error "Not implemented for this platform"
-#endif
-    content::GPUInfo info;
-    if (!GetGPUInfo(&info)) {
-      LOG(ERROR) << "Could not get gpu info";
-      return false;
-    }
-    // TODO(alokp): Why do we treat Mesa differently?
-    bool using_gpu = info.gl_renderer.compare(0, 4, "Mesa") != 0;
-    if (using_gpu) {
-      ref_img_dir = test_data_dir_.AppendASCII("gpu_reference");
-      img_name = base::StringPrintf("%s_%s_%04x-%04x.png",
-          img_name.c_str(), os_label, info.vendor_id, info.device_id);
-    } else {
-      ref_img_dir = test_data_dir_.AppendASCII("sw_reference");
-      img_name = base::StringPrintf("%s_%s_mesa.png",
-          img_name.c_str(), os_label);
+  //     WebGLTeapot_19762.png
+  //
+  // On failure, the image and diff image will be written to disk.
+  // The formats are:
+  //     FAIL_<test_name>.png, DIFF_<test_name>.png
+  // E.g.,
+  //     FAIL_WebGLTeapot.png, DIFF_WebGLTeapot.png
+  bool CompareImages(const SkBitmap& gen_bmp) {
+    SkBitmap ref_bmp;
+    if (ref_img_path_.empty() ||
+        !ReadPNGFile(ref_img_path_, &ref_bmp)) {
+      chrome::VersionInfo chrome_version_info;
+      FilePath img_revision_path = generated_img_dir_.AppendASCII(
+          test_name_ + "_" + chrome_version_info.LastChange() + ".png");
+      if (!WritePNGFile(gen_bmp, img_revision_path)) {
+        LOG(ERROR) << "Can't save generated image to: "
+                   << img_revision_path.value()
+                   << " as future reference.";
+        return false;
+      }
+      if (!ref_img_path_.empty()) {
+        LOG(ERROR) << "Can't read the local ref image: "
+                   << ref_img_path_.value()
+                   << ", reset it.";
+        file_util::Delete(ref_img_path_, false);
+        return false;
+      }
+      return true;
     }
 
-    // Read the reference image and verify the images' dimensions are equal.
-    FilePath ref_img_path = ref_img_dir.AppendASCII(img_name);
-    SkBitmap ref_bmp;
-    bool should_compare = true;
-    if (!ReadPNGFile(ref_img_path, &ref_bmp)) {
-      LOG(ERROR) << "Cannot read reference image: " << ref_img_path.value();
-      should_compare = false;
-    }
-    if (should_compare &&
-        (ref_bmp.width() != gen_bmp.width() ||
-         ref_bmp.height() != gen_bmp.height())) {
+    bool rt = true;
+    bool save_diff = false;
+    SkBitmap diff_bmp;
+    if (ref_bmp.width() != gen_bmp.width() ||
+        ref_bmp.height() != gen_bmp.height()) {
       LOG(ERROR)
           << "Dimensions do not match (Expected) vs (Actual):"
           << "(" << ref_bmp.width() << "x" << ref_bmp.height()
               << ") vs. "
           << "(" << gen_bmp.width() << "x" << gen_bmp.height() << ")";
-      should_compare = false;
-    }
-
-    // Compare pixels and create a simple diff image.
-    int diff_pixels_count = 0;
-    SkBitmap diff_bmp;
-    if (should_compare) {
+      rt = false;
+    } else {
+      // Compare pixels and create a simple diff image.
+      int diff_pixels_count = 0;
       diff_bmp.setConfig(SkBitmap::kARGB_8888_Config,
                          gen_bmp.width(), gen_bmp.height());
       diff_bmp.allocPixels();
@@ -222,26 +176,37 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
           }
         }
       }
+      if (diff_pixels_count > 0) {
+        LOG(ERROR) << diff_pixels_count
+                   << " pixels do not match.";
+        rt = false;
+        save_diff = true;
+      }
     }
+    if (!rt) {
+      FilePath img_fail_path = generated_img_dir_.AppendASCII(
+          "FAIL_" + test_name_ + ".png");
+      if (!WritePNGFile(gen_bmp, img_fail_path)) {
+        LOG(ERROR) << "Can't save generated image to: "
+                   << img_fail_path.value();
+      }
+      if (save_diff) {
+        FilePath img_diff_path = generated_img_dir_.AppendASCII(
+            "DIFF_" + test_name_ + ".png");
+        if (!WritePNGFile(diff_bmp, img_diff_path)) {
+          LOG(ERROR) << "Can't save generated diff image to: "
+                     << img_diff_path.value();
+        }
+      }
+    }
+    return rt;
+  }
 
-    // Write the generated and diff images if the comparison failed.
-    if (!should_compare || diff_pixels_count != 0) {
-      FilePath gen_img_path = generated_img_dir_.AppendASCII(img_name);
-      if (WritePNGFile(gen_bmp, gen_img_path)) {
-        // Output the generated image path to the log for easy parsing later.
-        std::cout << "*GEN_IMG=" << gen_img_path.value() << std::endl;
-      } else {
-        LOG(WARNING) << "Could not write generated image: "
-                     << gen_img_path.value();
-      }
-      if (should_compare) {
-        WritePNGFile(diff_bmp,
-                     generated_img_dir_.AppendASCII("diff-" + img_name));
-        LOG(ERROR) << "Images differ by pixel count: " << diff_pixels_count;
-      }
-      return false;
-    }
-    return true;
+  // This has to be called by every pixel test. If no specific revision is
+  // required, just call it with 0.
+  void SetRefImageRevisionNoOlderThan(int64 revision) {
+    ref_img_revision_no_older_than_ = revision;
+    ObtainLocalRefImageFilePath();
   }
 
  protected:
@@ -249,17 +214,61 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 
  private:
   FilePath generated_img_dir_;
+  FilePath ref_img_path_;
   // The name of the test, with any special prefixes dropped.
   std::string test_name_;
+
+  // Any local ref image generated from older revision is ignored.
+  int64 ref_img_revision_no_older_than_;
+
+  // If no valid local ref image is located, the ref_img_path_ remains
+  // empty.
+  void ObtainLocalRefImageFilePath() {
+    FilePath filter;
+    filter = filter.AppendASCII(test_name_ + "_*.png");
+    file_util::FileEnumerator locator(generated_img_dir_,
+                                      false,  // non recursive
+                                      file_util::FileEnumerator::FILES,
+                                      filter.value());
+    int64 max_revision = 0;
+    std::vector<FilePath> outdated_ref_imgs;
+    for (FilePath full_path = locator.Next();
+         !full_path.empty();
+         full_path = locator.Next()) {
+      std::string filename =
+          full_path.BaseName().RemoveExtension().MaybeAsASCII();
+      std::string revision_string =
+          filename.substr(test_name_.length() + 1);
+      int64 revision = 0;
+      bool converted = base::StringToInt64(revision_string, &revision);
+      CHECK(converted);
+      if (revision < ref_img_revision_no_older_than_ ||
+          revision < max_revision) {
+        outdated_ref_imgs.push_back(full_path);
+        continue;
+      }
+      ref_img_path_ = full_path;
+      max_revision = revision;
+    }
+    for (size_t i = 0; i < outdated_ref_imgs.size(); ++i)
+      file_util::Delete(outdated_ref_imgs[i], false);
+  }
 
   DISALLOW_COPY_AND_ASSIGN(GpuPixelBrowserTest);
 };
 
 // Currently fails (and times out) on linux due to a NOTIMPLEMENTED() statement.
 // (http://crbug.com/89964)
-// Fails (and times out) on Windows/Mac due to pixel mismatch.
-// (http://crbug.com/95214)
-IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, DISABLED_WebGLTeapot) {
+#if defined(OS_LINUX)
+#define MAYBE_WebGLTeapot DISABLED_WebGLTeapot
+#else
+#define MAYBE_WebGLTeapot WebGLTeapot
+#endif
+IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLTeapot) {
+  // If test baseline needs to be updated after a given revision, update the
+  // revision number in SetRefImageNoOlderThan(#revision).
+  SetRefImageRevisionNoOlderThan(0);
+
   ui_test_utils::DOMMessageQueue message_queue;
   ui_test_utils::NavigateToURL(
       browser(),
@@ -275,5 +284,5 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, DISABLED_WebGLTeapot) {
   ASSERT_TRUE(ui_test_utils::TakeRenderWidgetSnapshot(
       browser()->GetSelectedTabContents()->GetRenderViewHost(),
       container_size, &bitmap));
-  ASSERT_TRUE(CompareImages(bitmap, ""));
+  ASSERT_TRUE(CompareImages(bitmap));
 }
