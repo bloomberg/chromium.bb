@@ -416,7 +416,8 @@ bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileSize(
 void RendererWebKitPlatformSupportImpl::FileUtilities::revealFolderInOS(
     const WebString& path) {
   FilePath file_path(webkit_glue::WebStringToFilePath(path));
-  file_util::AbsolutePath(&file_path);
+  bool res = file_util::AbsolutePath(&file_path);
+  DCHECK(res);
   RenderThreadImpl::current()->Send(
       new ViewHostMsg_RevealFolderInOS(file_path));
 }
