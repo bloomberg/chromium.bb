@@ -131,12 +131,11 @@ void RectangleUpdateDecoder::ProcessPacketData(
     SubmitToConsumer();
 }
 
-void RectangleUpdateDecoder::SetScaleRatios(double horizontal_ratio,
-                                            double vertical_ratio) {
+void RectangleUpdateDecoder::SetOutputSize(const SkISize& size) {
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
-        FROM_HERE, base::Bind(&RectangleUpdateDecoder::SetScaleRatios,
-                              this, horizontal_ratio, vertical_ratio));
+        FROM_HERE, base::Bind(&RectangleUpdateDecoder::SetOutputSize,
+                              this, size));
     return;
   }
 
@@ -149,11 +148,10 @@ void RectangleUpdateDecoder::SetScaleRatios(double horizontal_ratio,
   // TODO(hclam): If the scale ratio has changed we should reallocate a
   // VideoFrame of different size. However if the scale ratio is always
   // smaller than 1.0 we can use the same video frame.
-  decoder_->SetScaleRatios(horizontal_ratio, vertical_ratio);
-
-  // TODO(wez): Defer refresh, so that resize, which will affect both scale
-  // factor and clip rect, doesn't lead to unnecessary refreshes.
-  DoRefresh();
+  if (decoder_.get()) {
+    decoder_->SetOutputSize(size);
+    RefreshFullFrame();
+  }
 }
 
 void RectangleUpdateDecoder::UpdateClipRect(const SkIRect& new_clip_rect) {

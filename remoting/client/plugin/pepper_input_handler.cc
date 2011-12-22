@@ -4,91 +4,102 @@
 
 #include "remoting/client/plugin/pepper_input_handler.h"
 
+#include "base/logging.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/point.h"
-#include "remoting/client/plugin/pepper_view_proxy.h"
+#include "remoting/proto/event.pb.h"
 
 namespace remoting {
 
-using protocol::MouseEvent;
-
-PepperInputHandler::PepperInputHandler(ClientContext* context,
-                                       protocol::ConnectionToHost* connection,
-                                       PepperViewProxy* view)
-    : InputHandler(context, connection, view),
-      pepper_view_(view),
-      wheel_ticks_x_(0),
-      wheel_ticks_y_(0) {
+PepperInputHandler::PepperInputHandler(protocol::InputStub* input_stub)
+    : input_stub_(input_stub), wheel_ticks_x_(0), wheel_ticks_y_(0)
+{
 }
 
 PepperInputHandler::~PepperInputHandler() {
 }
 
-void PepperInputHandler::Initialize() {
-}
+bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
+  switch (event.GetType()) {
+    case PP_INPUTEVENT_TYPE_CONTEXTMENU: {
+      // We need to return true here or else we'll get a local (plugin) context
+      // menu instead of the mouseup event for the right click.
+      return true;
+    }
 
-void PepperInputHandler::HandleKeyEvent(bool keydown,
-                                        const pp::KeyboardInputEvent& event) {
-  SendKeyEvent(keydown, event.GetKeyCode());
-}
+    case PP_INPUTEVENT_TYPE_KEYDOWN:
+    case PP_INPUTEVENT_TYPE_KEYUP: {
+      pp::KeyboardInputEvent pp_key_event(event);
+      protocol::KeyEvent key_event;
+      key_event.set_keycode(pp_key_event.GetKeyCode());
+      key_event.set_pressed(event.GetType() == PP_INPUTEVENT_TYPE_KEYDOWN);
+      input_stub_->InjectKeyEvent(key_event);
+      return true;
+    }
 
-void PepperInputHandler::HandleCharacterEvent(
-    const pp::KeyboardInputEvent& event) {
-  // TODO(garykac): Coordinate key and char events.
-}
+    case PP_INPUTEVENT_TYPE_MOUSEDOWN:
+    case PP_INPUTEVENT_TYPE_MOUSEUP: {
+      pp::MouseInputEvent pp_mouse_event(event);
+      protocol::MouseEvent mouse_event;
+      switch (pp_mouse_event.GetButton()) {
+        case PP_INPUTEVENT_MOUSEBUTTON_LEFT:
+          mouse_event.set_button(protocol::MouseEvent::BUTTON_LEFT);
+          break;
+        case PP_INPUTEVENT_MOUSEBUTTON_MIDDLE:
+          mouse_event.set_button(protocol::MouseEvent::BUTTON_MIDDLE);
+          break;
+        case PP_INPUTEVENT_MOUSEBUTTON_RIGHT:
+          mouse_event.set_button(protocol::MouseEvent::BUTTON_RIGHT);
+          break;
+        case PP_INPUTEVENT_MOUSEBUTTON_NONE:
+          break;
+      }
+      if (mouse_event.has_button()) {
+        bool is_down = (event.GetType() == PP_INPUTEVENT_TYPE_MOUSEDOWN);
+        mouse_event.set_button_down(is_down);
+        input_stub_->InjectMouseEvent(mouse_event);
+      }
+      return true;
+    }
 
-void PepperInputHandler::HandleMouseMoveEvent(
-    const pp::MouseInputEvent& event) {
-  SkIPoint p(SkIPoint::Make(event.GetPosition().x(), event.GetPosition().y()));
-  // Pepper gives co-ordinates in the plugin instance's co-ordinate system,
-  // which may be different from the host desktop's co-ordinate system.
-  double horizontal_ratio = view_->GetHorizontalScaleRatio();
-  double vertical_ratio = view_->GetVerticalScaleRatio();
+    case PP_INPUTEVENT_TYPE_MOUSEMOVE:
+    case PP_INPUTEVENT_TYPE_MOUSEENTER:
+    case PP_INPUTEVENT_TYPE_MOUSELEAVE: {
+      pp::MouseInputEvent pp_mouse_event(event);
+      protocol::MouseEvent mouse_event;
+      mouse_event.set_x(pp_mouse_event.GetPosition().x());
+      mouse_event.set_y(pp_mouse_event.GetPosition().y());
+      input_stub_->InjectMouseEvent(mouse_event);
+      return true;
+    }
 
-  if (horizontal_ratio == 0.0)
-    horizontal_ratio = 1.0;
-  if (vertical_ratio == 0.0)
-    vertical_ratio = 1.0;
+    case PP_INPUTEVENT_TYPE_WHEEL: {
+      pp::WheelInputEvent pp_wheel_event(event);
 
-  SendMouseMoveEvent(p.x() / horizontal_ratio, p.y() / vertical_ratio);
-}
+      pp::FloatPoint ticks = pp_wheel_event.GetTicks();
+      wheel_ticks_x_ += ticks.x();
+      wheel_ticks_y_ += ticks.y();
 
-void PepperInputHandler::HandleMouseButtonEvent(
-    bool button_down,
-    const pp::MouseInputEvent& event) {
-  MouseEvent::MouseButton button = MouseEvent::BUTTON_UNDEFINED;
-  switch (event.GetButton()) {
-    case PP_INPUTEVENT_MOUSEBUTTON_LEFT:
-      button = MouseEvent::BUTTON_LEFT;
+      int ticks_x = static_cast<int>(wheel_ticks_x_);
+      int ticks_y = static_cast<int>(wheel_ticks_y_);
+      if (ticks_x != 0 || ticks_y != 0) {
+        wheel_ticks_x_ -= ticks_x;
+        wheel_ticks_y_ -= ticks_y;
+        protocol::MouseEvent mouse_event;
+        mouse_event.set_wheel_offset_x(wheel_ticks_x_);
+        mouse_event.set_wheel_offset_y(wheel_ticks_y_);
+        input_stub_->InjectMouseEvent(mouse_event);
+      }
+      return true;
+    }
+
+    default: {
+      LOG(INFO) << "Unhandled input event: " << event.GetType();
       break;
-    case PP_INPUTEVENT_MOUSEBUTTON_MIDDLE:
-      button = MouseEvent::BUTTON_MIDDLE;
-      break;
-    case PP_INPUTEVENT_MOUSEBUTTON_RIGHT:
-      button = MouseEvent::BUTTON_RIGHT;
-      break;
-    case PP_INPUTEVENT_MOUSEBUTTON_NONE:
-      // Leave button undefined.
-      break;
+    }
   }
 
-  if (button != MouseEvent::BUTTON_UNDEFINED) {
-    SendMouseButtonEvent(button_down, button);
-  }
-}
-
-void PepperInputHandler::HandleMouseWheelEvent(
-    const pp::WheelInputEvent& event) {
-  pp::FloatPoint ticks = event.GetTicks();
-  wheel_ticks_x_ += ticks.x();
-  wheel_ticks_y_ += ticks.y();
-  int ticks_x = static_cast<int>(wheel_ticks_x_);
-  int ticks_y = static_cast<int>(wheel_ticks_y_);
-  if (ticks_x != 0 || ticks_y != 0) {
-    wheel_ticks_x_ -= ticks_x;
-    wheel_ticks_y_ -= ticks_y;
-    SendMouseWheelEvent(ticks_x, ticks_y);
-  }
+  return false;
 }
 
 }  // namespace remoting

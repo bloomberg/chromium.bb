@@ -26,7 +26,6 @@ class MessageLoop;
 namespace remoting {
 
 class ClientContext;
-class InputHandler;
 class RectangleUpdateDecoder;
 
 // TODO(sergeyu): Move VideoStub implementation to RectangleUpdateDecoder.
@@ -40,7 +39,6 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                    protocol::ConnectionToHost* connection,
                    ChromotingView* view,
                    RectangleUpdateDecoder* rectangle_decoder,
-                   InputHandler* input_handler,
                    const base::Closure& client_done);
   virtual ~ChromotingClient();
 
@@ -94,7 +92,6 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   protocol::ConnectionToHost* connection_;
   ChromotingView* view_;
   RectangleUpdateDecoder* rectangle_decoder_;
-  InputHandler* input_handler_;
 
   // If non-NULL, this is called when the client is done.
   base::Closure client_done_;

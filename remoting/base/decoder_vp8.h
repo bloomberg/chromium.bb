@@ -24,8 +24,7 @@ class DecoderVp8 : public Decoder {
   virtual bool IsReadyForData() OVERRIDE;
   virtual void Reset() OVERRIDE;
   virtual VideoPacketFormat::Encoding Encoding() OVERRIDE;
-  virtual void SetScaleRatios(double horizontal_ratio,
-                              double vertical_ratio) OVERRIDE;
+  virtual void SetOutputSize(const SkISize& size) OVERRIDE;
   virtual void SetClipRect(const SkIRect& clip_rect) OVERRIDE;
   virtual void RefreshRects(const RectVector& rects) OVERRIDE;
 
@@ -67,9 +66,8 @@ class DecoderVp8 : public Decoder {
   // Clipping rect for the output of the decoder.
   SkIRect clip_rect_;
 
-  // Scale factors of the decoded output.
-  double horizontal_scale_ratio_;
-  double vertical_scale_ratio_;
+  // Output dimensions.
+  SkISize output_size_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoderVp8);
 };

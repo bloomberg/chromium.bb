@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This class is an implementation of the ChromotingView using Pepper devices
-// as the backing stores.  This class is used only on pepper thread.
-// Chromoting objects access this object through PepperViewProxy which
-// delegates method calls on the pepper thread.
+// This class is an implementation of the ChromotingView for Pepper.  It is
+// callable only on the Pepper thread.
 
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_VIEW_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_VIEW_H_
@@ -28,8 +26,8 @@ class ClientContext;
 class PepperView : public ChromotingView,
                    public FrameConsumer {
  public:
-  // Constructs a PepperView that draws to the |rendering_device|. The
-  // |rendering_device| instance must outlive this class.
+  // Constructs a PepperView for the |instance|. The |instance| and
+  // |context| must outlive this class.
   PepperView(ChromotingInstance* instance, ClientContext* context);
   virtual ~PepperView();
 
@@ -42,8 +40,6 @@ class PepperView : public ChromotingView,
   virtual void SetConnectionState(
       protocol::ConnectionToHost::State state,
       protocol::ConnectionToHost::Error error) OVERRIDE;
-  virtual double GetHorizontalScaleRatio() const OVERRIDE;
-  virtual double GetVerticalScaleRatio() const OVERRIDE;
 
   // FrameConsumer implementation.
   virtual void AllocateFrame(media::VideoFrame::Format format,
@@ -55,9 +51,17 @@ class PepperView : public ChromotingView,
                                     RectVector* rects,
                                     const base::Closure& done) OVERRIDE;
 
-  // This is called when the dimension of the plugin element has changed.
-  // Return true if plugin size has changed, false otherwise.
-  bool SetPluginSize(const SkISize& plugin_size);
+  // Sets the display size of this view.  Returns true if plugin size has
+  // changed, false otherwise.
+  bool SetViewSize(const SkISize& plugin_size);
+
+  // Return the client view and original host dimensions.
+  const SkISize& get_view_size() const {
+    return view_size_;
+  }
+  const SkISize& get_host_size() const {
+    return host_size_;
+  }
 
  private:
   void OnPaintDone(base::Time paint_start);
@@ -95,7 +99,7 @@ class PepperView : public ChromotingView,
   bool flush_blocked_;
 
   // The size of the plugin element.
-  SkISize plugin_size_;
+  SkISize view_size_;
 
   // The size of the host screen.
   SkISize host_size_;

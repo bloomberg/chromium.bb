@@ -32,14 +32,15 @@ namespace remoting {
 
 namespace protocol {
 class ConnectionToHost;
+class KeyEventTracker;
 }  // namespace protocol
 
 class ChromotingClient;
 class ChromotingStats;
 class ClientContext;
-class InputHandler;
+class MouseInputFilter;
+class PepperInputHandler;
 class PepperView;
-class PepperViewProxy;
 class RectangleUpdateDecoder;
 
 struct ClientConfig;
@@ -118,16 +119,10 @@ class ChromotingInstance : public pp::InstancePrivate {
   // True if scale to fit is enabled.
   bool scale_to_fit_;
 
-  // PepperViewProxy is refcounted and used to interface between chromoting
-  // objects and PepperView and perform thread switching. It wraps around
-  // |view_| and receives method calls on chromoting threads. These method
-  // calls are then delegates on the pepper thread. During destruction of
-  // ChromotingInstance we need to detach PepperViewProxy from PepperView since
-  // both ChromotingInstance and PepperView are destroyed and there will be
-  // outstanding tasks on the pepper message loop.
-  scoped_refptr<PepperViewProxy> view_proxy_;
   scoped_refptr<RectangleUpdateDecoder> rectangle_decoder_;
-  scoped_ptr<InputHandler> input_handler_;
+  scoped_ptr<MouseInputFilter> mouse_input_filter_;
+  scoped_ptr<protocol::KeyEventTracker> key_event_tracker_;
+  scoped_ptr<PepperInputHandler> input_handler_;
   scoped_ptr<ChromotingClient> client_;
 
   // XmppProxy is a refcounted interface used to perform thread-switching and

@@ -39,15 +39,12 @@ class RectangleUpdateDecoder :
   // executed.
   void DecodePacket(const VideoPacket* packet, const base::Closure& done);
 
-  // Set the scale ratio for the decoded video frame. Scale ratio greater
-  // than 1.0 is not supported.
-  void SetScaleRatios(double horizontal_ratio, double vertical_ratio);
+  // Set the output dimensions to scale video output to.
+  void SetOutputSize(const SkISize& size);
 
   // Set a new clipping rectangle for the decoder. Decoder should respect
   // this clipping rectangle and only decode content in this rectangle and
   // report dirty rectangles accordingly to enhance performance.
-  //
-  // If scale ratio is not 1.0 then clipping rectangle is ignored.
   void UpdateClipRect(const SkIRect& clip_rect);
 
   // Force the decoder to output the last decoded video frame without any

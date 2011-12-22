@@ -262,12 +262,12 @@ void PepperView::SetConnectionState(protocol::ConnectionToHost::State state,
   }
 }
 
-bool PepperView::SetPluginSize(const SkISize& plugin_size) {
-  if (plugin_size_ == plugin_size)
+bool PepperView::SetViewSize(const SkISize& view_size) {
+  if (view_size_ == view_size)
     return false;
-  plugin_size_ = plugin_size;
+  view_size_ = view_size;
 
-  pp::Size pp_size = pp::Size(plugin_size.width(), plugin_size.height());
+  pp::Size pp_size = pp::Size(view_size.width(), view_size.height());
 
   graphics2d_ = pp::Graphics2D(instance_, pp_size, true);
   if (!instance_->BindGraphics(graphics2d_)) {
@@ -275,14 +275,14 @@ bool PepperView::SetPluginSize(const SkISize& plugin_size) {
     return false;
   }
 
-  if (plugin_size.isEmpty())
+  if (view_size.isEmpty())
     return false;
 
   // Allocate the backing store to save the desktop image.
   if ((backing_store_.get() == NULL) ||
       (backing_store_->size() != pp_size)) {
     VLOG(1) << "Allocate backing store: "
-            << plugin_size.width() << " x " << plugin_size.height();
+            << view_size.width() << " x " << view_size.height();
     backing_store_.reset(
         new pp::ImageData(instance_, pp::ImageData::GetNativeImageDataFormat(),
                           pp_size, false));
@@ -290,22 +290,6 @@ bool PepperView::SetPluginSize(const SkISize& plugin_size) {
         << "Not enough memory for backing store.";
   }
   return true;
-}
-
-double PepperView::GetHorizontalScaleRatio() const {
-  if (instance_->DoScaling()) {
-    DCHECK(!host_size_.isEmpty());
-    return 1.0 * plugin_size_.width() / host_size_.width();
-  }
-  return 1.0;
-}
-
-double PepperView::GetVerticalScaleRatio() const {
-  if (instance_->DoScaling()) {
-    DCHECK(!host_size_.isEmpty());
-    return 1.0 * plugin_size_.height() / host_size_.height();
-  }
-  return 1.0;
 }
 
 void PepperView::AllocateFrame(media::VideoFrame::Format format,

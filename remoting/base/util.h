@@ -54,12 +54,12 @@ int RoundToTwosMultiple(int x);
 // Align the sides of the rectangle to multiples of 2 (expanding outwards).
 SkIRect AlignRect(const SkIRect& rect);
 
-// Scale a rectangle by horizontal and vertical factors.  If the result has
-// non-integer coordinates then the smallest integer-coordinate rectangle that
-// wholly encloses it is returned.
+// Scales the supplied rectangle from |in_size| coordinates to |out_size|.
+// If the result has non-integer coordinates then the smallest integer-
+// coordinate rectangle that wholly encloses it is returned.
 SkIRect ScaleRect(const SkIRect& rect,
-                  double horizontal_ratio,
-                  double vertical_ratio);
+                  const SkISize& in_size,
+                  const SkISize& out_size);
 
 // Copy pixels in the rectangle from source to destination.
 void CopyRect(const uint8* src_plane,

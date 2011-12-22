@@ -23,8 +23,7 @@ DecoderVp8::DecoderVp8()
       codec_(NULL),
       last_image_(NULL),
       clip_rect_(SkIRect::MakeEmpty()),
-      horizontal_scale_ratio_(1.0),
-      vertical_scale_ratio_(1.0) {
+      output_size_(SkISize::Make(0, 0)) {
 }
 
 DecoderVp8::~DecoderVp8() {
@@ -103,10 +102,17 @@ Decoder::DecodeResult DecoderVp8::DecodePacket(const VideoPacket* packet) {
                                       remoting_rect.height()));
   }
 
-  if (!DoScaling())
-    ConvertRects(rects, &updated_rects_);
-  else
-    ScaleAndConvertRects(rects, &updated_rects_);
+  // TODO(wez): Fix the rest of the decode pipeline not to assume the frame
+  // size is the host dimensions, since it's not when scaling.  If the host
+  // gets smaller, then the output size will be too big and we'll overrun the
+  // frame, so currently we render 1:1 in that case; the app will see the
+  // host size change and resize us if need be.
+  if ((output_size_.width() > static_cast<int>(frame_->width())) ||
+      (output_size_.height() > static_cast<int>(frame_->height()))) {
+    output_size_.set(frame_->width(), frame_->height());
+  }
+
+  RefreshRects(rects);
   return DECODE_DONE;
 }
 
@@ -127,18 +133,8 @@ VideoPacketFormat::Encoding DecoderVp8::Encoding() {
   return VideoPacketFormat::ENCODING_VP8;
 }
 
-void DecoderVp8::SetScaleRatios(double horizontal_ratio,
-                                double vertical_ratio) {
-  // TODO(hclam): Ratio greater than 1.0 is not supported. This is
-  // because we need to reallocate the backing video frame and this
-  // is not implemented yet.
-  if (horizontal_ratio > 1.0 || horizontal_ratio <= 0.0 ||
-      vertical_ratio > 1.0 || vertical_ratio <= 0.0) {
-    return;
-  }
-
-  horizontal_scale_ratio_ = horizontal_ratio;
-  vertical_scale_ratio_ = vertical_ratio;
+void DecoderVp8::SetOutputSize(const SkISize& size) {
+  output_size_ = size;
 }
 
 void DecoderVp8::SetClipRect(const SkIRect& clip_rect) {
@@ -153,7 +149,8 @@ void DecoderVp8::RefreshRects(const RectVector& rects) {
 }
 
 bool DecoderVp8::DoScaling() const {
-  return horizontal_scale_ratio_ != 1.0 || vertical_scale_ratio_ != 1.0;
+  DCHECK(last_image_);
+  return !output_size_.equals(last_image_->d_w, last_image_->d_h);
 }
 
 void DecoderVp8::ConvertRects(const RectVector& input_rects,
@@ -203,30 +200,25 @@ void DecoderVp8::ScaleAndConvertRects(const RectVector& input_rects,
   if (!last_image_)
     return;
 
-  int input_width = last_image_->d_w;
-  int input_height = last_image_->d_h;
-
-  uint8* output_rgb_buf = frame_->data(media::VideoFrame::kRGBPlane);
-  const int output_stride = frame_->stride(media::VideoFrame::kRGBPlane);
-
-  // TODO(wez): Resize |frame_| to our desired output dimensions when scaling.
-  int output_width = ceil(input_width * horizontal_scale_ratio_);
-  int output_height = ceil(input_height * vertical_scale_ratio_);
+  DCHECK(output_size_.width() <= static_cast<int>(frame_->width()));
+  DCHECK(output_size_.height() <= static_cast<int>(frame_->height()));
 
   output_rects->clear();
 
   // Clip based on both the output dimensions and Pepper clip rect.
   SkIRect clip_rect = clip_rect_;
-  if (!clip_rect.intersect(SkIRect::MakeWH(output_width, output_height)))
+  if (!clip_rect.intersect(SkIRect::MakeSize(output_size_)))
     return;
+
+  SkISize image_size = SkISize::Make(last_image_->d_w, last_image_->d_h);
+  uint8* output_rgb_buf = frame_->data(media::VideoFrame::kRGBPlane);
+  const int output_stride = frame_->stride(media::VideoFrame::kRGBPlane);
 
   output_rects->reserve(input_rects.size());
 
   for (size_t i = 0; i < input_rects.size(); ++i) {
     // Determine the scaled area affected by this rectangle changing.
-    SkIRect output_rect = ScaleRect(input_rects[i],
-                                    horizontal_scale_ratio_,
-                                    vertical_scale_ratio_);
+    SkIRect output_rect = ScaleRect(input_rects[i], image_size, output_size_);
     if (!output_rect.intersect(clip_rect))
       continue;
 

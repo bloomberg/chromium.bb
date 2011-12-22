@@ -239,6 +239,7 @@ void ClientSession::RestoreEventState() {
   for (int i = 1; i < MouseEvent::BUTTON_MAX; i++) {
     if (remote_mouse_button_state_ & (1 << (i - 1))) {
       MouseEvent mouse;
+      // TODO(wez): Shouldn't [need to] set position here.
       mouse.set_x(remote_mouse_pos_.x());
       mouse.set_y(remote_mouse_pos_.y());
       mouse.set_button((MouseEvent::MouseButton)i);

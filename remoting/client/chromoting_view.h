@@ -5,10 +5,7 @@
 #ifndef REMOTING_CLIENT_CHROMOTING_VIEW_H_
 #define REMOTING_CLIENT_CHROMOTING_VIEW_H_
 
-#include <string>
-
-#include "base/memory/ref_counted.h"
-#include "media/base/video_frame.h"
+#include "base/basictypes.h"
 #include "remoting/protocol/connection_to_host.h"
 
 namespace remoting {
@@ -22,12 +19,7 @@ static const uint32 kFailedColor = 0xffcc00ff;
 // screen.
 class ChromotingView {
  public:
-  ChromotingView();
-  virtual ~ChromotingView();
-
-  // Get screen dimensions.
-  // TODO(garykac): This will need to be extended to support multi-monitors.
-  void GetScreenSize(int* width, int* height);
+  virtual ~ChromotingView() {}
 
   // Initialize the common structures for the view.
   virtual bool Initialize() = 0;
@@ -49,20 +41,6 @@ class ChromotingView {
   // Record the update the state of the connection, updating the UI as needed.
   virtual void SetConnectionState(protocol::ConnectionToHost::State state,
                                   protocol::ConnectionToHost::Error error) = 0;
-
-  // Return the horizontal scale factor of this view.
-  virtual double GetHorizontalScaleRatio() const = 0;
-
-  // Return the vertical scale factor of this view.
-  virtual double GetVerticalScaleRatio() const = 0;
-
- protected:
-  // Framebuffer for the decoder.
-  scoped_refptr<media::VideoFrame> frame_;
-
-  // Dimensions of |frame_| bitmap.
-  int frame_width_;
-  int frame_height_;
 };
 
 }  // namespace remoting

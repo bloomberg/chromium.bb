@@ -103,9 +103,11 @@ void ChromotingScriptableObject::Init() {
 
   AddMethod("connect", &ChromotingScriptableObject::DoConnect);
   AddMethod("disconnect", &ChromotingScriptableObject::DoDisconnect);
-  AddMethod("setScaleToFit", &ChromotingScriptableObject::DoSetScaleToFit);
   AddMethod("onIq", &ChromotingScriptableObject::DoOnIq);
   AddMethod("releaseAllKeys", &ChromotingScriptableObject::DoReleaseAllKeys);
+
+  // Older versions of the web app expect a setScaleToFit method.
+  AddMethod("setScaleToFit", &ChromotingScriptableObject::DoNothing);
 }
 
 bool ChromotingScriptableObject::HasProperty(const Var& name, Var* exception) {
@@ -410,20 +412,8 @@ Var ChromotingScriptableObject::DoDisconnect(const std::vector<Var>& args,
   return Var();
 }
 
-Var ChromotingScriptableObject::DoSetScaleToFit(const std::vector<Var>& args,
-                                                Var* exception) {
-  if (args.size() != 1) {
-    *exception = Var("Usage: setScaleToFit(scale_to_fit)");
-    return Var();
-  }
-
-  if (!args[0].is_bool()) {
-    *exception = Var("scale_to_fit must be a boolean.");
-    return Var();
-  }
-
-  VLOG(1) << "Setting scale-to-fit.";
-  instance_->SetScaleToFit(args[0].AsBool());
+Var ChromotingScriptableObject::DoNothing(const std::vector<Var>& args,
+                                          Var* exception) {
   return Var();
 }
 

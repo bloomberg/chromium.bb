@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/client_context.h"
-#include "remoting/client/input_handler.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/session_config.h"
@@ -27,14 +26,12 @@ ChromotingClient::ChromotingClient(const ClientConfig& config,
                                    protocol::ConnectionToHost* connection,
                                    ChromotingView* view,
                                    RectangleUpdateDecoder* rectangle_decoder,
-                                   InputHandler* input_handler,
                                    const base::Closure& client_done)
     : config_(config),
       context_(context),
       connection_(connection),
       view_(view),
       rectangle_decoder_(rectangle_decoder),
-      input_handler_(input_handler),
       client_done_(client_done),
       packet_being_processed_(false),
       last_sequence_number_(0),
@@ -205,9 +202,6 @@ void ChromotingClient::Initialize() {
 
   // Initialize the decoder.
   rectangle_decoder_->Initialize(connection_->config());
-
-  // Schedule the input handler to process the event queue.
-  input_handler_->Initialize();
 }
 
 }  // namespace remoting

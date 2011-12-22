@@ -6,37 +6,27 @@
 #define REMOTING_CLIENT_PLUGIN_PEPPER_INPUT_HANDLER_H_
 
 #include "base/compiler_specific.h"
-#include "remoting/client/input_handler.h"
+#include "remoting/protocol/input_stub.h"
 
 namespace pp {
-class KeyboardInputEvent;
-class MouseInputEvent;
-class WheelInputEvent;
-}
+class InputEvent;
+}  // namespace pp
 
 namespace remoting {
 
-class PepperViewProxy;
+namespace protocol {
+class InputStub;
+} // namespace protocol
 
-class PepperInputHandler : public InputHandler {
+class PepperInputHandler {
  public:
-  PepperInputHandler(ClientContext* context,
-                     protocol::ConnectionToHost* connection,
-                     PepperViewProxy* view);
+  PepperInputHandler(protocol::InputStub* input_stub);
   virtual ~PepperInputHandler();
 
-  virtual void Initialize() OVERRIDE;
-
-  void HandleKeyEvent(bool keydown, const pp::KeyboardInputEvent& event);
-  void HandleCharacterEvent(const pp::KeyboardInputEvent& event);
-
-  void HandleMouseMoveEvent(const pp::MouseInputEvent& event);
-  void HandleMouseButtonEvent(bool button_down,
-                              const pp::MouseInputEvent& event);
-  void HandleMouseWheelEvent(const pp::WheelInputEvent& event);
+  bool HandleInputEvent(const pp::InputEvent& event);
 
  private:
-  PepperViewProxy* pepper_view_;
+  protocol::InputStub* input_stub_;
 
   float wheel_ticks_x_;
   float wheel_ticks_y_;

@@ -61,9 +61,9 @@ void ConvertYUVToRGB32WithRect(const uint8* y_plane,
                                int y_stride,
                                int uv_stride,
                                int rgb_stride) {
-  int rgb_offset = CalculateRGBOffset(rect.fLeft, rect.fTop, rgb_stride);
-  int y_offset = CalculateYOffset(rect.fLeft, rect.fTop, y_stride);
-  int uv_offset = CalculateUVOffset(rect.fLeft, rect.fTop, uv_stride);
+  int rgb_offset = CalculateRGBOffset(rect.left(), rect.top(), rgb_stride);
+  int y_offset = CalculateYOffset(rect.left(), rect.top(), y_stride);
+  int uv_offset = CalculateUVOffset(rect.left(), rect.top(), uv_stride);
 
   media::ConvertYUVToRGB32(y_plane + y_offset,
                            u_plane + uv_offset,
@@ -86,14 +86,14 @@ void ScaleYUVToRGB32WithRect(const uint8* y_plane,
                              int y_stride,
                              int uv_stride,
                              int rgb_stride) {
-  int rgb_offset = CalculateRGBOffset(dest_rect.fLeft,
-                                      dest_rect.fTop,
+  int rgb_offset = CalculateRGBOffset(dest_rect.left(),
+                                      dest_rect.top(),
                                       rgb_stride);
-  int y_offset = CalculateYOffset(source_rect.fLeft,
-                                  source_rect.fTop,
+  int y_offset = CalculateYOffset(source_rect.left(),
+                                  source_rect.top(),
                                   y_stride);
-  int uv_offset = CalculateUVOffset(source_rect.fLeft,
-                                    source_rect.fTop,
+  int uv_offset = CalculateUVOffset(source_rect.left(),
+                                    source_rect.top(),
                                     uv_stride);
 
   media::ScaleYUVToRGB32(y_plane + y_offset,
@@ -143,20 +143,22 @@ int RoundToTwosMultiple(int x) {
 }
 
 SkIRect AlignRect(const SkIRect& rect) {
-  int x = RoundToTwosMultiple(rect.fLeft);
-  int y = RoundToTwosMultiple(rect.fTop);
-  int right = RoundToTwosMultiple(rect.fRight + 1);
-  int bottom = RoundToTwosMultiple(rect.fBottom + 1);
-  return SkIRect::MakeXYWH(x, y, right - x, bottom - y);
+  int x = RoundToTwosMultiple(rect.left());
+  int y = RoundToTwosMultiple(rect.top());
+  int right = RoundToTwosMultiple(rect.right() + 1);
+  int bottom = RoundToTwosMultiple(rect.bottom() + 1);
+  return SkIRect::MakeLTRB(x, y, right, bottom);
 }
 
 SkIRect ScaleRect(const SkIRect& rect,
-                  double horizontal_ratio,
-                  double vertical_ratio) {
-  int left = floor(rect.left() * horizontal_ratio);
-  int top = floor(rect.top() * vertical_ratio);
-  int right = ceil(rect.right() * horizontal_ratio);
-  int bottom = ceil(rect.bottom() * vertical_ratio);
+                  const SkISize& in_size,
+                  const SkISize& out_size) {
+  int left = (rect.left() * out_size.width()) / in_size.width();
+  int top = (rect.top() * out_size.height()) / in_size.height();
+  int right = (rect.right() * out_size.width() + out_size.width() - 1) /
+      in_size.width();
+  int bottom = (rect.bottom() * out_size.height() + out_size.height() - 1) /
+      in_size.height();
   return SkIRect::MakeLTRB(left, top, right, bottom);
 }
 
@@ -166,10 +168,10 @@ void CopyRect(const uint8* src_plane,
               int dest_plane_stride,
               int bytes_per_pixel,
               const SkIRect& rect) {
- // Get the address of the starting point.
-  const int src_y_offset = src_plane_stride * rect.fTop;
-  const int dest_y_offset = dest_plane_stride * rect.fTop;
-  const int x_offset = bytes_per_pixel * rect.fLeft;
+  // Get the address of the starting point.
+  const int src_y_offset = src_plane_stride * rect.top();
+  const int dest_y_offset = dest_plane_stride * rect.top();
+  const int x_offset = bytes_per_pixel * rect.left();
   src_plane += src_y_offset + x_offset;
   dest_plane += dest_y_offset + x_offset;
 

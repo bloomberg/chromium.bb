@@ -57,11 +57,10 @@ class Decoder {
 
   virtual VideoPacketFormat::Encoding Encoding() = 0;
 
-  // Set the scale factors of the decoded output. If the decoder doesn't support
-  // scaling then this all is ignored.
-  // If both |horizontal_ratio| and |vertical_ratio| equal 1.0 then scaling is
-  // turned off.
-  virtual void SetScaleRatios(double horizontal_ratio, double vertical_ratio) {}
+  // Set the output dimensions for the decoder.  If the dimensions are empty
+  // then the source is rendered without scaling.
+  // Output dimensions are ignored if the decoder doesn't support scaling.
+  virtual void SetOutputSize(const SkISize& size) {}
 
   // Set the clipping rectangle to the decoder. Decoder should respect this and
   // only output changes in this rectangle. The new clipping rectangle will be
@@ -71,9 +70,8 @@ class Decoder {
   virtual void SetClipRect(const SkIRect& clip_rect) {}
 
   // Force decoder to output a video frame with content in |rects| using the
-  // last decoded video frame.
-  //
-  // Coordinates of rectangles supplied here are before scaling.
+  // last decoded video frame.  |rects| are expressed in video frame rather
+  // than output coordinates.
   virtual void RefreshRects(const RectVector& rects) {}
 };
 
