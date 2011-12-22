@@ -52,8 +52,10 @@ bool MockDownloadManager::Init(content::BrowserContext* browser_context) {
 void MockDownloadManager::StartDownload(int32 id) {
 }
 
-void MockDownloadManager::UpdateDownload(int32 download_id, int64 bytes_so_far,
-                                         int64 bytes_per_sec) {
+void MockDownloadManager::UpdateDownload(int32 download_id,
+                                         int64 bytes_so_far,
+                                         int64 bytes_per_sec,
+                                         std::string hash_state) {
 }
 
 void MockDownloadManager::OnResponseCompleted(int32 download_id, int64 size,
@@ -63,7 +65,9 @@ void MockDownloadManager::OnResponseCompleted(int32 download_id, int64 size,
 void MockDownloadManager::CancelDownload(int32 download_id) {
 }
 
-void MockDownloadManager::OnDownloadInterrupted(int32 download_id, int64 size,
+void MockDownloadManager::OnDownloadInterrupted(int32 download_id,
+                                                int64 size,
+                                                std::string hash_state,
                                                 InterruptReason reason) {
 }
 

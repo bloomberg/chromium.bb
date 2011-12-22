@@ -77,7 +77,8 @@ class CONTENT_EXPORT DownloadFileManager
     virtual content::DownloadFile* CreateFile(
         DownloadCreateInfo* info,
         const DownloadRequestHandle& request_handle,
-        content::DownloadManager* download_manager) = 0;
+        content::DownloadManager* download_manager,
+        bool calculate_hash) = 0;
   };
 
   // Takes ownership of the factory.

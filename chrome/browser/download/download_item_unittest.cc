@@ -159,7 +159,7 @@ TEST_F(DownloadItemTest, NotificationAfterUpdate) {
   DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
 
-  item->UpdateProgress(kDownloadChunkSize, kDownloadSpeed);
+  item->UpdateProgress(kDownloadChunkSize, kDownloadSpeed, "");
   ASSERT_TRUE(observer.CheckUpdated());
   EXPECT_EQ(kDownloadSpeed, item->CurrentSpeed());
 }
@@ -202,7 +202,7 @@ TEST_F(DownloadItemTest, NotificationAfterInterrupted) {
   DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
 
-  item->Interrupted(kDownloadChunkSize, DOWNLOAD_INTERRUPT_REASON_NONE);
+  item->Interrupted(kDownloadChunkSize, "", DOWNLOAD_INTERRUPT_REASON_NONE);
   ASSERT_TRUE(observer.CheckUpdated());
 }
 

@@ -62,7 +62,7 @@ class MockDownloadFile : virtual public content::DownloadFile {
   virtual ~MockDownloadFile();
 
   // DownloadFile functions.
-  virtual net::Error Initialize(bool calculate_hash) OVERRIDE;
+  virtual net::Error Initialize() OVERRIDE;
   virtual net::Error AppendDataToFile(const char* data,
                                       size_t data_len) OVERRIDE;
   virtual net::Error Rename(const FilePath& full_path) OVERRIDE;
@@ -74,7 +74,8 @@ class MockDownloadFile : virtual public content::DownloadFile {
   virtual bool InProgress() const OVERRIDE;
   virtual int64 BytesSoFar() const OVERRIDE;
   virtual int64 CurrentSpeed() const OVERRIDE;
-  virtual bool GetSha256Hash(std::string* hash) OVERRIDE;
+  virtual bool GetHash(std::string* hash) OVERRIDE;
+  virtual std::string GetHashState() OVERRIDE;
   virtual void CancelDownloadRequest() OVERRIDE;
   virtual int Id() const OVERRIDE;
   virtual content::DownloadManager* GetDownloadManager() OVERRIDE;

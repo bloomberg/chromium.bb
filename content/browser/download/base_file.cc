@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/pickle.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -193,6 +194,8 @@ BaseFile::BaseFile(const FilePath& full_path,
                    const GURL& source_url,
                    const GURL& referrer_url,
                    int64 received_bytes,
+                   bool calculate_hash,
+                   const std::string& hash_state,
                    const linked_ptr<net::FileStream>& file_stream)
     : full_path_(full_path),
       source_url_(source_url),
@@ -201,12 +204,21 @@ BaseFile::BaseFile(const FilePath& full_path,
       bytes_so_far_(received_bytes),
       start_tick_(base::TimeTicks::Now()),
       power_save_blocker_(PowerSaveBlocker::kPowerSaveBlockPreventSystemSleep),
-      calculate_hash_(false),
+      calculate_hash_(calculate_hash),
       detached_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   memcpy(sha256_hash_, kEmptySha256Hash, kSha256HashLen);
   if (file_stream_.get())
     file_stream_->EnableErrorStatistics();
+
+  if (calculate_hash_) {
+    secure_hash_.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+    if ((bytes_so_far_ > 0) &&  // Not starting at the beginning.
+        (hash_state != "") &&  // Reasonably sure we have a hash state.
+        (!IsEmptyHash(hash_state))) {
+      SetHashState(hash_state);
+    }
+  }
 }
 
 BaseFile::~BaseFile() {
@@ -217,14 +229,9 @@ BaseFile::~BaseFile() {
     Cancel();  // Will delete the file.
 }
 
-net::Error BaseFile::Initialize(bool calculate_hash) {
+net::Error BaseFile::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
-
-  calculate_hash_ = calculate_hash;
-
-  if (calculate_hash_)
-    secure_hash_.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
 
   if (full_path_.empty()) {
     FilePath temp_file;
@@ -390,14 +397,36 @@ void BaseFile::Finish() {
   Close();
 }
 
-bool BaseFile::GetSha256Hash(std::string* hash) {
+bool BaseFile::GetHash(std::string* hash) {
   DCHECK(!detached_);
   hash->assign(reinterpret_cast<const char*>(sha256_hash_),
                sizeof(sha256_hash_));
   return (calculate_hash_ && !in_progress());
 }
 
-bool BaseFile::IsEmptySha256Hash(const std::string& hash) {
+std::string BaseFile::GetHashState() {
+  if (!calculate_hash_)
+    return "";
+
+  Pickle hash_state;
+  if (!secure_hash_->Serialize(&hash_state))
+    return "";
+
+  return std::string(reinterpret_cast<const char*>(hash_state.data()),
+                     hash_state.size());
+}
+
+bool BaseFile::SetHashState(const std::string& hash_state_bytes) {
+  if (!calculate_hash_)
+    return false;
+
+  Pickle hash_state(hash_state_bytes.c_str(), hash_state_bytes.size());
+  void* data_iterator = NULL;
+
+  return secure_hash_->Deserialize(&data_iterator, &hash_state);
+}
+
+bool BaseFile::IsEmptyHash(const std::string& hash) {
   return (hash.size() == kSha256HashLen &&
           0 == memcmp(hash.data(), kEmptySha256Hash, sizeof(kSha256HashLen)));
 }

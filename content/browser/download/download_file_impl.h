@@ -27,11 +27,12 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
   // Takes ownership of the object pointed to by |request_handle|.
   DownloadFileImpl(const DownloadCreateInfo* info,
                    DownloadRequestHandleInterface* request_handle,
-                   content::DownloadManager* download_manager);
+                   content::DownloadManager* download_manager,
+                   bool calculate_hash);
   virtual ~DownloadFileImpl();
 
   // DownloadFile functions.
-  virtual net::Error Initialize(bool calculate_hash) OVERRIDE;
+  virtual net::Error Initialize() OVERRIDE;
   virtual net::Error AppendDataToFile(const char* data,
                                       size_t data_len) OVERRIDE;
   virtual net::Error Rename(const FilePath& full_path) OVERRIDE;
@@ -43,7 +44,8 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
   virtual bool InProgress() const OVERRIDE;
   virtual int64 BytesSoFar() const OVERRIDE;
   virtual int64 CurrentSpeed() const OVERRIDE;
-  virtual bool GetSha256Hash(std::string* hash) OVERRIDE;
+  virtual bool GetHash(std::string* hash) OVERRIDE;
+  virtual std::string GetHashState() OVERRIDE;
   virtual void CancelDownloadRequest() OVERRIDE;
   virtual int Id() const OVERRIDE;
   virtual content::DownloadManager* GetDownloadManager() OVERRIDE;

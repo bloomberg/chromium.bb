@@ -34,6 +34,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_interfaces.h"
 
+namespace content {
+class DownloadManager;
+}  // namespace content
+
 using content::BrowserThread;
 using content::BrowserThreadImpl;
 using content::ChildProcessHostImpl;

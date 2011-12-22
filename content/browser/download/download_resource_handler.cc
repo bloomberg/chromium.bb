@@ -105,7 +105,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   info->url_chain = request_->url_chain();
   info->referrer_url = GURL(request_->referrer());
   info->start_time = base::Time::Now();
-  info->received_bytes = 0;
+  info->received_bytes = save_info_.offset;
   info->total_bytes = content_length_;
   info->state = DownloadItem::IN_PROGRESS;
   info->download_id = download_id_;
@@ -118,8 +118,16 @@ bool DownloadResourceHandler::OnResponseStarted(
   DownloadRequestHandle request_handle(rdh_, global_id_.child_id,
                                        render_view_id_, global_id_.request_id);
 
-  // TODO(ahendrickson) -- Get the last modified time and etag, so we can
-  // resume downloading.
+  // Get the last modified time and etag.
+  const net::HttpResponseHeaders* headers = request_->response_headers();
+  if (headers) {
+    std::string last_modified_hdr;
+    std::string etag;
+    if (headers->EnumerateHeader(NULL, "Last-Modified", &last_modified_hdr))
+      info->last_modified = last_modified_hdr;
+    if (headers->EnumerateHeader(NULL, "ETag", &etag))
+      info->etag = etag;
+  }
 
   CallStartedCB(net::OK);
 

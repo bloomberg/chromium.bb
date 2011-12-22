@@ -34,12 +34,13 @@ class CONTENT_EXPORT BaseFile {
            const GURL& source_url,
            const GURL& referrer_url,
            int64 received_bytes,
+           bool calculate_hash,
+           const std::string& hash_state,
            const linked_ptr<net::FileStream>& file_stream);
   virtual ~BaseFile();
 
-  // If calculate_hash is true, sha256 hash will be calculated.
   // Returns net::OK on success, or a network error code on failure.
-  net::Error Initialize(bool calculate_hash);
+  net::Error Initialize();
 
   // Write a new chunk of data to the file.
   // Returns net::OK on success (all bytes written to the file),
@@ -69,14 +70,17 @@ class CONTENT_EXPORT BaseFile {
   bool in_progress() const { return file_stream_ != NULL; }
   int64 bytes_so_far() const { return bytes_so_far_; }
 
-  // Set |hash| with sha256 digest for the file.
+  // Fills |hash| with the hash digest for the file.
   // Returns true if digest is successfully calculated.
-  virtual bool GetSha256Hash(std::string* hash);
+  virtual bool GetHash(std::string* hash);
+
+  // Returns the current (intermediate) state of the hash as a byte string.
+  virtual std::string GetHashState();
 
   // Returns true if the given hash is considered empty.  An empty hash is
   // a string of size kSha256HashLen that contains only zeros (initial value
   // for the hash).
-  static bool IsEmptySha256Hash(const std::string& hash);
+  static bool IsEmptyHash(const std::string& hash);
 
   virtual std::string DebugString() const;
 
@@ -91,10 +95,13 @@ class CONTENT_EXPORT BaseFile {
 
  private:
   friend class BaseFileTest;
-  FRIEND_TEST_ALL_PREFIXES(BaseFileTest, IsEmptySha256Hash);
+  FRIEND_TEST_ALL_PREFIXES(BaseFileTest, IsEmptyHash);
 
   // Split out from CurrentSpeed to enable testing.
   int64 CurrentSpeedAtTime(base::TimeTicks current_time) const;
+
+  // Resets the current state of the hash to the contents of |hash_state_bytes|.
+  virtual bool SetHashState(const std::string& hash_state_bytes);
 
   static const size_t kSha256HashLen = 32;
   static const unsigned char kEmptySha256Hash[kSha256HashLen];
@@ -117,10 +124,10 @@ class CONTENT_EXPORT BaseFile {
   // RAII handle to keep the system from sleeping while we're downloading.
   PowerSaveBlocker power_save_blocker_;
 
-  // Indicates if sha256 hash should be calculated for the file.
+  // Indicates if hash should be calculated for the file.
   bool calculate_hash_;
 
-  // Used to calculate sha256 hash for the file when calculate_hash_
+  // Used to calculate hash for the file when calculate_hash_
   // is set.
   scoped_ptr<crypto::SecureHash> secure_hash_;
 

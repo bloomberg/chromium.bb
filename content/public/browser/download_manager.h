@@ -105,8 +105,10 @@ class CONTENT_EXPORT DownloadManager
 
   // Notifications sent from the download thread to the UI thread
   virtual void StartDownload(int32 id) = 0;
-  virtual void UpdateDownload(int32 download_id, int64 bytes_so_far,
-                              int64 bytes_per_sec) = 0;
+  virtual void UpdateDownload(int32 download_id,
+                              int64 bytes_so_far,
+                              int64 bytes_per_sec,
+                              std::string hash_state) = 0;
 
   // |download_id| is the ID of the download.
   // |size| is the number of bytes that have been downloaded.
@@ -122,8 +124,12 @@ class CONTENT_EXPORT DownloadManager
   // Called when there is an error in the download.
   // |download_id| is the ID of the download.
   // |size| is the number of bytes that are currently downloaded.
+  // |hash_state| is the current state of the hash of the data that has been
+  // downloaded.
   // |reason| is a download interrupt reason code.
-  virtual void OnDownloadInterrupted(int32 download_id, int64 size,
+  virtual void OnDownloadInterrupted(int32 download_id,
+                                     int64 size,
+                                     std::string hash_state,
                                      InterruptReason reason) = 0;
 
   // Called when the download is renamed to its final name.

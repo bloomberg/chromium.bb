@@ -10,8 +10,14 @@
 
 using content::BrowserThread;
 
-SaveFile::SaveFile(const SaveFileCreateInfo* info)
-    : file_(FilePath(), info->url, GURL(), 0, linked_ptr<net::FileStream>()),
+SaveFile::SaveFile(const SaveFileCreateInfo* info, bool calculate_hash)
+    : file_(FilePath(),
+            info->url,
+            GURL(),
+            0,
+            calculate_hash,
+            "",
+            linked_ptr<net::FileStream>()),
       info_(info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -23,8 +29,8 @@ SaveFile::~SaveFile() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-net::Error SaveFile::Initialize(bool calculate_hash) {
-  return file_.Initialize(calculate_hash);
+net::Error SaveFile::Initialize() {
+  return file_.Initialize();
 }
 
 net::Error SaveFile::AppendDataToFile(const char* data, size_t data_len) {
@@ -63,8 +69,8 @@ int64 SaveFile::BytesSoFar() const {
   return file_.bytes_so_far();
 }
 
-bool SaveFile::GetSha256Hash(std::string* hash) {
-  return file_.GetSha256Hash(hash);
+bool SaveFile::GetHash(std::string* hash) {
+  return file_.GetHash(hash);
 }
 
 std::string SaveFile::DebugString() const {

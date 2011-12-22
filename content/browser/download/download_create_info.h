@@ -88,9 +88,17 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // which may look at the file extension and first few bytes of the file.
   std::string original_mime_type;
 
+  // For continuing a download, the modification time of the file.
+  // Storing as a string for exact match to server format on
+  // "If-Unmodified-Since" comparison.
+  std::string last_modified;
+
+  // For continuing a download, the ETAG of the file.
+  std::string etag;
+
   // True if we should display the 'save as...' UI and prompt the user
   // for the download location.
-  // False if the UI should be supressed and the download performed to the
+  // False if the UI should be suppressed and the download performed to the
   // default location.
   bool prompt_user_for_save_location;
 

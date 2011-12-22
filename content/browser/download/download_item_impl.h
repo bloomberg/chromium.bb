@@ -111,7 +111,9 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual void OpenDownload() OVERRIDE;
   virtual void ShowDownloadInShell() OVERRIDE;
   virtual void DangerousDownloadValidated() OVERRIDE;
-  virtual void UpdateProgress(int64 bytes_so_far, int64 bytes_per_sec) OVERRIDE;
+  virtual void UpdateProgress(int64 bytes_so_far,
+                              int64 bytes_per_sec,
+                              const std::string& hash_state) OVERRIDE;
   virtual void Cancel(bool user_cancel) OVERRIDE;
   virtual void MarkAsComplete() OVERRIDE;
   virtual void DelayedDownloadOpened() OVERRIDE;
@@ -119,7 +121,9 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
       int64 size, const std::string& final_hash) OVERRIDE;
   virtual void OnDownloadedFileRemoved() OVERRIDE;
   virtual void MaybeCompleteDownload() OVERRIDE;
-  virtual void Interrupted(int64 size, InterruptReason reason) OVERRIDE;
+  virtual void Interrupted(int64 size,
+                           const std::string& hash_state,
+                           InterruptReason reason) OVERRIDE;
   virtual void Delete(DeleteReason reason) OVERRIDE;
   virtual void Remove() OVERRIDE;
   virtual bool TimeRemaining(base::TimeDelta* remaining) const OVERRIDE;
@@ -155,6 +159,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual void SetTotalBytes(int64 total_bytes) OVERRIDE;
   virtual const std::string& GetHash() const OVERRIDE;
   virtual int64 GetReceivedBytes() const OVERRIDE;
+  virtual const std::string& GetHashState() const OVERRIDE;
   virtual int32 GetId() const OVERRIDE;
   virtual DownloadId GetGlobalId() const OVERRIDE;
   virtual base::Time GetStartTime() const OVERRIDE;
@@ -179,6 +184,8 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual bool IsTemporary() const OVERRIDE;
   virtual void SetOpened(bool opened) OVERRIDE;
   virtual bool GetOpened() const OVERRIDE;
+  virtual const std::string& GetLastModifiedTime() const OVERRIDE;
+  virtual const std::string& GetETag() const OVERRIDE;
   virtual InterruptReason GetLastReason() const OVERRIDE;
   virtual DownloadPersistentStoreInfo GetPersistentStoreInfo() const OVERRIDE;
   virtual DownloadStateInfo GetStateInfo() const OVERRIDE;
@@ -199,8 +206,15 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // downloads and false for downloads from the history.
   void Init(bool active);
 
-  // Internal helper for maintaining consistent received and total sizes.
-  void UpdateSize(int64 size);
+  // Internal helper for maintaining consistent received and total sizes, and
+  // hash state.
+  void UpdateProgress(int64 bytes_so_far, const std::string& hash_state);
+
+  // Internal helper for maintaining consistent received and total sizes, and
+  // setting the final hash.
+  // Should only be called from |OnAllDataSaved|.
+  void ProgressComplete(int64 bytes_so_far,
+                        const std::string& final_hash);
 
   // Called when the entire download operation (including renaming etc)
   // is completed.
@@ -265,10 +279,10 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // DownloadCreateInfo::remote_address.
   std::string remote_address_;
 
-  // Total bytes expected
+  // Total bytes expected.
   int64 total_bytes_;
 
-  // Current received bytes
+  // Current received bytes.
   int64 received_bytes_;
 
   // Current speed. Calculated by the DownloadFile.
@@ -279,31 +293,41 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // (ChromeDownloadManagerDelegate::GenerateFileHash() returned false).
   std::string hash_;
 
+  // A blob containing the state of the hash algorithm.  Only valid while the
+  // download is in progress.
+  std::string hash_state_;
+
+  // Server's time stamp for the file.
+  std::string last_modified_time_;
+
+  // Server's ETAG for the file.
+  std::string etag_;
+
   // Last reason.
   InterruptReason last_reason_;
 
   // Start time for recording statistics.
   base::TimeTicks start_tick_;
 
-  // The current state of this download
+  // The current state of this download.
   DownloadState state_;
 
-  // The views of this item in the download shelf and download tab
+  // The views of this item in the download shelf and download tab.
   ObserverList<Observer> observers_;
 
-  // Time the download was started
+  // Time the download was started.
   base::Time start_time_;
 
-  // Time the download completed
+  // Time the download completed.
   base::Time end_time_;
 
-  // Our persistent store handle
+  // Our persistent store handle.
   int64 db_handle_;
 
   // Our delegate.
   Delegate* delegate_;
 
-  // In progress downloads may be paused by the user, we note it here
+  // In progress downloads may be paused by the user, we note it here.
   bool is_paused_;
 
   // A flag for indicating if the download should be opened at completion.

@@ -15,7 +15,7 @@
 #include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_handler.h"
-#include "content/public/browser/download_file.h"
+#include "net/base/net_errors.h"
 
 class DownloadFileManager;
 class ResourceDispatcherHost;

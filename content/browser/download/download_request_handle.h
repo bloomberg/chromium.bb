@@ -32,11 +32,11 @@ class CONTENT_EXPORT DownloadRequestHandleInterface {
   virtual TabContents* GetTabContents() const = 0;
   virtual content::DownloadManager* GetDownloadManager() const = 0;
 
-  // Pause or resume the matching URL request.
+  // Pauses or resumes the matching URL request.
   virtual void PauseRequest() const = 0;
   virtual void ResumeRequest() const = 0;
 
-  // Cancel the request.
+  // Cancels the request.
   virtual void CancelRequest() const = 0;
 
   // Describe the object.

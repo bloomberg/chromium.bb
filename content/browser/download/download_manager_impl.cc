@@ -294,8 +294,7 @@ void DownloadManagerImpl::OnFileRemovalDetected(int64 db_handle) {
   }
 }
 
-void DownloadManagerImpl::RestartDownload(
-    int32 download_id) {
+void DownloadManagerImpl::RestartDownload(int32 download_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadItem* download = GetActiveDownloadItem(download_id);
@@ -422,14 +421,16 @@ void DownloadManagerImpl::ContinueDownloadWithPath(
   delegate_->AddItemToPersistentStore(download);
 }
 
-void DownloadManagerImpl::UpdateDownload(int32 download_id, int64 bytes_so_far,
-                                         int64 bytes_per_sec) {
+void DownloadManagerImpl::UpdateDownload(int32 download_id,
+                                         int64 bytes_so_far,
+                                         int64 bytes_per_sec,
+                                         std::string hash_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadMap::iterator it = active_downloads_.find(download_id);
   if (it != active_downloads_.end()) {
     DownloadItem* download = it->second;
     if (download->IsInProgress()) {
-      download->UpdateProgress(bytes_so_far, bytes_per_sec);
+      download->UpdateProgress(bytes_so_far, bytes_per_sec, hash_state);
       UpdateDownloadProgress();  // Reflect size updates.
       delegate_->UpdateItemInPersistentStore(download);
     }
@@ -622,6 +623,7 @@ void DownloadManagerImpl::DownloadCancelled(DownloadItem* download) {
 
 void DownloadManagerImpl::OnDownloadInterrupted(int32 download_id,
                                                 int64 size,
+                                                std::string hash_state,
                                                 InterruptReason reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -636,7 +638,7 @@ void DownloadManagerImpl::OnDownloadInterrupted(int32 download_id,
            << " download = " << download->DebugString(true);
 
   RemoveFromActiveList(download);
-  download->Interrupted(size, reason);
+  download->Interrupted(size, hash_state, reason);
   download->OffThreadCancel(file_manager_);
 }
 
@@ -769,6 +771,7 @@ void DownloadManagerImpl::DownloadUrlToFile(const GURL& url,
   DCHECK(tab_contents);
   ResourceDispatcherHost* resource_dispatcher_host =
       content::GetContentClient()->browser()->GetResourceDispatcherHost();
+
   // We send a pointer to content::ResourceContext, instead of the usual
   // reference, so that a copy of the object isn't made.
   // base::Bind can't handle 7 args, so we use URLParams and RenderParams.

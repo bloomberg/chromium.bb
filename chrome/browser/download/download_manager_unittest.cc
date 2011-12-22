@@ -70,13 +70,15 @@ class MockDownloadFileFactory
 
   virtual DownloadFile* CreateFile(DownloadCreateInfo* info,
                                    const DownloadRequestHandle& request_handle,
-                                   DownloadManager* download_manager) OVERRIDE;
+                                   DownloadManager* download_manager,
+                                   bool calculate_hash) OVERRIDE;
 };
 
 DownloadFile* MockDownloadFileFactory::CreateFile(
     DownloadCreateInfo* info,
     const DownloadRequestHandle& request_handle,
-    DownloadManager* download_manager) {
+    DownloadManager* download_manager,
+    bool calculate_hash) {
   NOTREACHED();
   return NULL;
 }
@@ -221,8 +223,10 @@ class DownloadManagerTest : public testing::Test {
   }
 
   void OnDownloadInterrupted(int32 download_id, int64 size,
+                             const std::string& hash_state,
                              InterruptReason reason) {
-    download_manager_->OnDownloadInterrupted(download_id, size, reason);
+    download_manager_->OnDownloadInterrupted(download_id, size,
+                                             hash_state, reason);
   }
 
   // Get the download item with ID |id|.
@@ -261,11 +265,13 @@ const size_t DownloadManagerTest::kTestDataLen =
 // A DownloadFile that we can inject errors into.
 class DownloadFileWithErrors : public DownloadFileImpl {
  public:
-  DownloadFileWithErrors(DownloadCreateInfo* info, DownloadManager* manager);
+  DownloadFileWithErrors(DownloadCreateInfo* info,
+                         DownloadManager* manager,
+                         bool calculate_hash);
   virtual ~DownloadFileWithErrors() {}
 
   // BaseFile delegated functions.
-  virtual net::Error Initialize(bool calculate_hash);
+  virtual net::Error Initialize();
   virtual net::Error AppendDataToFile(const char* data, size_t data_len);
   virtual net::Error Rename(const FilePath& full_path);
 
@@ -288,13 +294,17 @@ class DownloadFileWithErrors : public DownloadFileImpl {
 };
 
 DownloadFileWithErrors::DownloadFileWithErrors(DownloadCreateInfo* info,
-                                               DownloadManager* manager)
-    : DownloadFileImpl(info, new DownloadRequestHandle(), manager),
+                                               DownloadManager* manager,
+                                               bool calculate_hash)
+    : DownloadFileImpl(info,
+                       new DownloadRequestHandle(),
+                       manager,
+                       calculate_hash),
       forced_error_(net::OK) {
 }
 
-net::Error DownloadFileWithErrors::Initialize(bool calculate_hash) {
-  return ReturnError(DownloadFileImpl::Initialize(calculate_hash));
+net::Error DownloadFileWithErrors::Initialize() {
+  return ReturnError(DownloadFileImpl::Initialize());
 }
 
 net::Error DownloadFileWithErrors::AppendDataToFile(const char* data,
@@ -482,9 +492,9 @@ TEST_F(DownloadManagerTest, MAYBE_StartDownload) {
 
     DownloadFile* download_file(
         new DownloadFileImpl(info.get(), new DownloadRequestHandle(),
-                             download_manager_));
+                             download_manager_, false));
     AddDownloadToFileManager(info->download_id.local(), download_file);
-    download_file->Initialize(false);
+    download_file->Initialize();
     download_manager_->StartDownload(info->download_id.local());
     message_loop_.RunAllPending();
 
@@ -920,7 +930,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
 
   int64 error_size = 3;
-  OnDownloadInterrupted(0, error_size,
+  OnDownloadInterrupted(0, error_size, "",
                         DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);
   message_loop_.RunAllPending();
 
@@ -986,7 +996,8 @@ TEST_F(DownloadManagerTest, DownloadFileErrorTest) {
 
   // Create a download file that we can insert errors into.
   DownloadFileWithErrors* download_file(new DownloadFileWithErrors(
-      info.get(), download_manager_));
+      info.get(), download_manager_, false));
+  download_file->Initialize();
   AddDownloadToFileManager(local_id, download_file);
 
   // |download_file| is owned by DownloadFileManager.
@@ -1160,10 +1171,10 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
   // properly.
   DownloadFile* download_file(
       new DownloadFileImpl(info.get(), new DownloadRequestHandle(),
-                           download_manager_));
+                           download_manager_, false));
   download_file->Rename(cr_path);
   // This creates the .crdownload version of the file.
-  download_file->Initialize(false);
+  download_file->Initialize();
   // |download_file| is owned by DownloadFileManager.
   AddDownloadToFileManager(info->download_id.local(), download_file);
 
@@ -1237,10 +1248,10 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
   // properly.
   DownloadFile* download_file(
       new DownloadFileImpl(info.get(), new DownloadRequestHandle(),
-                           download_manager_));
+                           download_manager_, false));
   download_file->Rename(cr_path);
   // This creates the .crdownload version of the file.
-  download_file->Initialize(false);
+  download_file->Initialize();
   // |download_file| is owned by DownloadFileManager.
   AddDownloadToFileManager(info->download_id.local(), download_file);
 

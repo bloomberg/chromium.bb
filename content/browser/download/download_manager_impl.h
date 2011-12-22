@@ -44,12 +44,16 @@ class CONTENT_EXPORT DownloadManagerImpl
                                DownloadVector* result) OVERRIDE;
   virtual bool Init(content::BrowserContext* browser_context) OVERRIDE;
   virtual void StartDownload(int32 id) OVERRIDE;
-  virtual void UpdateDownload(int32 download_id, int64 bytes_so_far,
-                              int64 bytes_per_sec) OVERRIDE;
+  virtual void UpdateDownload(int32 download_id,
+                              int64 bytes_so_far,
+                              int64 bytes_per_sec,
+                              std::string hash_state) OVERRIDE;
   virtual void OnResponseCompleted(int32 download_id, int64 size,
                                    const std::string& hash) OVERRIDE;
   virtual void CancelDownload(int32 download_id) OVERRIDE;
-  virtual void OnDownloadInterrupted(int32 download_id, int64 size,
+  virtual void OnDownloadInterrupted(int32 download_id,
+                                     int64 size,
+                                     std::string hash_state,
                                      InterruptReason reason) OVERRIDE;
   virtual void OnDownloadRenamedToFinalName(int download_id,
                                             const FilePath& full_path,

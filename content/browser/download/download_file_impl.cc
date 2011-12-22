@@ -86,11 +86,14 @@ int DownloadFile::GetUniquePathNumberWithSuffix(
 DownloadFileImpl::DownloadFileImpl(
     const DownloadCreateInfo* info,
     DownloadRequestHandleInterface* request_handle,
-    content::DownloadManager* download_manager)
+    content::DownloadManager* download_manager,
+    bool calculate_hash)
     : file_(info->save_info.file_path,
             info->url(),
             info->referrer_url,
             info->received_bytes,
+            calculate_hash,
+            info->save_info.hash_state,
             info->save_info.file_stream),
       id_(info->download_id),
       request_handle_(request_handle),
@@ -103,8 +106,8 @@ DownloadFileImpl::~DownloadFileImpl() {
 }
 
 // BaseFile delegated functions.
-net::Error DownloadFileImpl::Initialize(bool calculate_hash) {
-  return file_.Initialize(calculate_hash);
+net::Error DownloadFileImpl::Initialize() {
+  return file_.Initialize();
 }
 
 net::Error DownloadFileImpl::AppendDataToFile(const char* data,
@@ -148,8 +151,12 @@ int64 DownloadFileImpl::CurrentSpeed() const {
   return file_.CurrentSpeed();
 }
 
-bool DownloadFileImpl::GetSha256Hash(std::string* hash) {
-  return file_.GetSha256Hash(hash);
+bool DownloadFileImpl::GetHash(std::string* hash) {
+  return file_.GetHash(hash);
+}
+
+std::string DownloadFileImpl::GetHashState() {
+  return file_.GetHashState();
 }
 
 // DownloadFileInterface implementation.

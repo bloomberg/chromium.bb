@@ -28,7 +28,7 @@ class CONTENT_EXPORT DownloadFile {
 
   // If calculate_hash is true, sha256 hash will be calculated.
   // Returns net::OK on success, or a network error code on failure.
-  virtual net::Error Initialize(bool calculate_hash) = 0;
+  virtual net::Error Initialize() = 0;
 
   // Write a new chunk of data to the file.
   // Returns net::OK on success (all bytes written to the file),
@@ -58,7 +58,10 @@ class CONTENT_EXPORT DownloadFile {
 
   // Set |hash| with sha256 digest for the file.
   // Returns true if digest is successfully calculated.
-  virtual bool GetSha256Hash(std::string* hash) = 0;
+  virtual bool GetHash(std::string* hash) = 0;
+
+  // Returns the current (intermediate) state of the hash as a byte string.
+  virtual std::string GetHashState() = 0;
 
   // Cancels the download request associated with this file.
   virtual void CancelDownloadRequest() = 0;

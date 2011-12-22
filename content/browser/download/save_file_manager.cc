@@ -213,10 +213,11 @@ void SaveFileManager::SendCancelRequest(int save_id) {
 void SaveFileManager::StartSave(SaveFileCreateInfo* info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(info);
-  SaveFile* save_file = new SaveFile(info);
+  // No need to calculate hash.
+  SaveFile* save_file = new SaveFile(info, false);
 
   // TODO(phajdan.jr): We should check the return value and handle errors here.
-  save_file->Initialize(false);  // No need to calculate hash.
+  save_file->Initialize();
 
   DCHECK(!LookupSaveFile(info->save_id));
   save_file_map_[info->save_id] = save_file;

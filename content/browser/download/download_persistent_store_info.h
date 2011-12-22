@@ -30,7 +30,6 @@ class DownloadItem;
 // the history, all fields except |referrer_url| are set by the DownloadDatabase
 // and read by the DownloadItem.
 struct CONTENT_EXPORT DownloadPersistentStoreInfo {
-  // TODO(ahendrickson) -- Reduce the number of constructors.
   DownloadPersistentStoreInfo();
   DownloadPersistentStoreInfo(const FilePath& path,
                               const GURL& url,

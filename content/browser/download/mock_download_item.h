@@ -27,14 +27,14 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_METHOD0(OpenDownload, void());
   MOCK_METHOD0(ShowDownloadInShell, void());
   MOCK_METHOD0(DangerousDownloadValidated, void());
-  MOCK_METHOD2(UpdateProgress, void(int64, int64));
+  MOCK_METHOD3(UpdateProgress, void(int64, int64, const std::string&));
   MOCK_METHOD1(Cancel, void(bool));
   MOCK_METHOD0(MarkAsComplete, void());
   MOCK_METHOD0(DelayedDownloadOpened, void());
   MOCK_METHOD2(OnAllDataSaved, void(int64, const std::string&));
   MOCK_METHOD0(OnDownloadedFileRemoved, void());
   MOCK_METHOD0(MaybeCompleteDownload, void());
-  MOCK_METHOD2(Interrupted, void(int64, InterruptReason));
+  MOCK_METHOD3(Interrupted, void(int64, const std::string&, InterruptReason));
   MOCK_METHOD1(Delete, void(DeleteReason));
   MOCK_METHOD0(Remove, void());
   MOCK_CONST_METHOD1(TimeRemaining, bool(base::TimeDelta*));
@@ -69,6 +69,7 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_CONST_METHOD0(GetRemoteAddress, std::string());
   MOCK_CONST_METHOD0(GetTotalBytes, int64());
   MOCK_CONST_METHOD0(GetReceivedBytes, int64());
+  MOCK_CONST_METHOD0(GetHashState, const std::string&());
   MOCK_CONST_METHOD0(GetHash, const std::string&());
   MOCK_CONST_METHOD0(GetId, int32());
   MOCK_CONST_METHOD0(GetGlobalId, DownloadId());
@@ -95,6 +96,8 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_CONST_METHOD0(IsTemporary, bool());
   MOCK_METHOD1(SetOpened, void(bool));
   MOCK_CONST_METHOD0(GetOpened, bool());
+  MOCK_CONST_METHOD0(GetLastModifiedTime, const std::string&());
+  MOCK_CONST_METHOD0(GetETag, const std::string&());
   MOCK_CONST_METHOD0(GetLastReason, InterruptReason());
   MOCK_CONST_METHOD0(GetPersistentStoreInfo, DownloadPersistentStoreInfo());
   MOCK_CONST_METHOD0(GetStateInfo, DownloadStateInfo());

@@ -139,7 +139,11 @@ class CONTENT_EXPORT DownloadItem {
 
   // Called periodically from the download thread, or from the UI thread
   // for saving packages.
-  virtual void UpdateProgress(int64 bytes_so_far, int64 bytes_per_sec) = 0;
+  // |bytes_so_far| is the number of bytes received so far.
+  // |hash_state| is the current hash state.
+  virtual void UpdateProgress(int64 bytes_so_far,
+                              int64 bytes_per_sec,
+                              const std::string& hash_state) = 0;
 
   // Cancel the download operation. We need to distinguish between cancels at
   // exit (DownloadManager destructor) from user interface initiated cancels
@@ -174,8 +178,11 @@ class CONTENT_EXPORT DownloadItem {
 
   // Download operation had an error.
   // |size| is the amount of data received at interruption.
+  // |hash_state| is the current hash state at interruption.
   // |reason| is the download interrupt reason code that the operation received.
-  virtual void Interrupted(int64 size, InterruptReason reason) = 0;
+  virtual void Interrupted(int64 size,
+                           const std::string& hash_state,
+                           InterruptReason reason) = 0;
 
   // Deletes the file from disk and removes the download from the views and
   // history.  |user| should be true if this is the result of the user clicking
@@ -261,6 +268,7 @@ class CONTENT_EXPORT DownloadItem {
   virtual int64 GetTotalBytes() const = 0;
   virtual void SetTotalBytes(int64 total_bytes) = 0;
   virtual int64 GetReceivedBytes() const = 0;
+  virtual const std::string& GetHashState() const = 0;
   virtual int32 GetId() const = 0;
   virtual DownloadId GetGlobalId() const = 0;
   virtual base::Time GetStartTime() const = 0;
@@ -287,6 +295,9 @@ class CONTENT_EXPORT DownloadItem {
   virtual bool IsTemporary() const = 0;
   virtual void SetOpened(bool opened) = 0;
   virtual bool GetOpened() const = 0;
+
+  virtual const std::string& GetLastModifiedTime() const = 0;
+  virtual const std::string& GetETag() const = 0;
 
   virtual InterruptReason GetLastReason() const = 0;
   virtual DownloadPersistentStoreInfo GetPersistentStoreInfo() const = 0;

@@ -167,6 +167,7 @@ DownloadItemImpl::DownloadItemImpl(Delegate* delegate,
       total_bytes_(info.total_bytes),
       received_bytes_(info.received_bytes),
       bytes_per_sec_(0),
+      last_reason_(DOWNLOAD_INTERRUPT_REASON_NONE),
       start_tick_(base::TimeTicks()),
       state_(static_cast<DownloadState>(info.state)),
       start_time_(info.start_time),
@@ -367,9 +368,25 @@ void DownloadItemImpl::DangerousDownloadValidated() {
   delegate_->MaybeCompleteDownload(this);
 }
 
-void DownloadItemImpl::UpdateSize(int64 bytes_so_far) {
+void DownloadItemImpl::ProgressComplete(int64 bytes_so_far,
+                                        const std::string& final_hash) {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  hash_ = final_hash;
+  hash_state_ = "";
+
+  received_bytes_ = bytes_so_far;
+
+  // If we've received more data than we were expecting (bad server info?),
+  // revert to 'unknown size mode'.
+  if (received_bytes_ > total_bytes_)
+    total_bytes_ = 0;
+}
+
+void DownloadItemImpl::UpdateProgress(int64 bytes_so_far,
+                                      const std::string& hash_state) {
+  hash_state_ = hash_state;
 
   received_bytes_ = bytes_so_far;
 
@@ -382,7 +399,9 @@ void DownloadItemImpl::UpdateSize(int64 bytes_so_far) {
 // Updates from the download thread may have been posted while this download
 // was being cancelled in the UI thread, so we'll accept them unless we're
 // complete.
-void DownloadItemImpl::UpdateProgress(int64 bytes_so_far, int64 bytes_per_sec) {
+void DownloadItemImpl::UpdateProgress(int64 bytes_so_far,
+                                      int64 bytes_per_sec,
+                                      const std::string& hash_state) {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -391,7 +410,7 @@ void DownloadItemImpl::UpdateProgress(int64 bytes_so_far, int64 bytes_per_sec) {
     return;
   }
   bytes_per_sec_ = bytes_per_sec;
-  UpdateSize(bytes_so_far);
+  UpdateProgress(bytes_so_far, hash_state);
   UpdateObservers();
 }
 
@@ -439,8 +458,7 @@ void DownloadItemImpl::OnAllDataSaved(
 
   DCHECK(!all_data_saved_);
   all_data_saved_ = true;
-  UpdateSize(size);
-  hash_ = final_hash;
+  ProgressComplete(size, final_hash);
 }
 
 void DownloadItemImpl::OnDownloadedFileRemoved() {
@@ -506,7 +524,9 @@ void DownloadItemImpl::UpdateTarget() {
     state_info_.target_name = full_path_.BaseName();
 }
 
-void DownloadItemImpl::Interrupted(int64 size, InterruptReason reason) {
+void DownloadItemImpl::Interrupted(int64 size,
+                                   const std::string& hash_state,
+                                   InterruptReason reason) {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -514,7 +534,7 @@ void DownloadItemImpl::Interrupted(int64 size, InterruptReason reason) {
     return;
 
   last_reason_ = reason;
-  UpdateSize(size);
+  UpdateProgress(size, hash_state);
   download_stats::RecordDownloadInterrupted(reason,
                                             received_bytes_,
                                             total_bytes_);
@@ -794,9 +814,8 @@ void DownloadItemImpl::Init(bool active) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UpdateTarget();
-  if (active) {
+  if (active)
     download_stats::RecordDownloadCount(download_stats::START_COUNT);
-  }
   VLOG(20) << __FUNCTION__ << "() " << DebugString(true);
 }
 
@@ -857,6 +876,8 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
         " is_paused = %c"
         " is_otr = %c"
         " safety_state = %s"
+        " last_modified = '%s'"
+        " etag = '%s'"
         " url_chain = \n\t\"%s\"\n\t"
         " target_name = \"%" PRFilePath "\""
         " full_path = \"%" PRFilePath "\"",
@@ -866,6 +887,8 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
         IsPaused() ? 'T' : 'F',
         IsOtr() ? 'T' : 'F',
         DebugSafetyStateString(GetSafetyState()),
+        GetLastModifiedTime().c_str(),
+        GetETag().c_str(),
         url_list.c_str(),
         state_info_.target_name.value().c_str(),
         GetFullPath().value().c_str());
@@ -915,6 +938,9 @@ void DownloadItemImpl::SetTotalBytes(int64 total_bytes) {
 }
 const std::string& DownloadItemImpl::GetHash() const { return hash_; }
 int64 DownloadItemImpl::GetReceivedBytes() const { return received_bytes_; }
+const std::string& DownloadItemImpl::GetHashState() const {
+  return hash_state_;
+}
 int32 DownloadItemImpl::GetId() const { return download_id_.local(); }
 DownloadId DownloadItemImpl::GetGlobalId() const { return download_id_; }
 base::Time DownloadItemImpl::GetStartTime() const { return start_time_; }
@@ -948,6 +974,10 @@ const FilePath& DownloadItemImpl::GetSuggestedPath() const {
 bool DownloadItemImpl::IsTemporary() const { return is_temporary_; }
 void DownloadItemImpl::SetOpened(bool opened) { opened_ = opened; }
 bool DownloadItemImpl::GetOpened() const { return opened_; }
+const std::string& DownloadItemImpl::GetLastModifiedTime() const {
+  return last_modified_time_;
+}
+const std::string& DownloadItemImpl::GetETag() const { return etag_; }
 InterruptReason DownloadItemImpl::GetLastReason() const {
   return last_reason_;
 }

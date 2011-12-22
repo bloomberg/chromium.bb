@@ -46,7 +46,7 @@ MockDownloadFile::MockDownloadFile(
 MockDownloadFile::~MockDownloadFile() {
 }
 
-net::Error MockDownloadFile::Initialize(bool calculate_hash) {
+net::Error MockDownloadFile::Initialize() {
   in_progress_ = true;
   if (recorder_)
     recorder_->Record(StatisticsRecorder::STAT_INITIALIZE);
@@ -109,8 +109,12 @@ int64 MockDownloadFile::CurrentSpeed() const {
   return 0;
 }
 
-bool MockDownloadFile::GetSha256Hash(std::string* hash) {
+bool MockDownloadFile::GetHash(std::string* hash) {
   return false;
+}
+
+std::string MockDownloadFile::GetHashState() {
+  return "";
 }
 
 // DownloadFileInterface implementation.

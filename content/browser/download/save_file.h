@@ -21,11 +21,11 @@
 // in a save session.
 class SaveFile {
  public:
-  explicit SaveFile(const SaveFileCreateInfo* info);
+  explicit SaveFile(const SaveFileCreateInfo* info, bool calculate_hash);
   virtual ~SaveFile();
 
   // BaseFile delegated functions.
-  net::Error Initialize(bool calculate_hash);
+  net::Error Initialize();
   net::Error AppendDataToFile(const char* data, size_t data_len);
   net::Error Rename(const FilePath& full_path);
   void Detach();
@@ -35,7 +35,7 @@ class SaveFile {
   FilePath FullPath() const;
   bool InProgress() const;
   int64 BytesSoFar() const;
-  bool GetSha256Hash(std::string* hash);
+  bool GetHash(std::string* hash);
   std::string DebugString() const;
 
   // Accessors.

@@ -705,7 +705,7 @@ void SavePackage::SaveFinished(int32 save_id, int64 size, bool is_success) {
   // Inform the DownloadItem to update UI.
   // We use the received bytes as number of saved files.
   if (download_)
-    download_->UpdateProgress(completed_count(), CurrentSpeed());
+    download_->UpdateProgress(completed_count(), CurrentSpeed(), "");
 
   if (save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_DOM &&
       save_item->url() == page_url_ && !save_item->received_bytes()) {
@@ -747,7 +747,7 @@ void SavePackage::SaveFailed(const GURL& save_url) {
   // Inform the DownloadItem to update UI.
   // We use the received bytes as number of saved files.
   if (download_)
-    download_->UpdateProgress(completed_count(), CurrentSpeed());
+    download_->UpdateProgress(completed_count(), CurrentSpeed(), "");
 
   if (save_type_ == SAVE_AS_ONLY_HTML ||
       save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_DOM) {
