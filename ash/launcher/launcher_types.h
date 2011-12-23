@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura {
 class Window;
@@ -18,13 +18,13 @@ class Window;
 namespace aura_shell {
 
 // Type the LauncherItem represents.
-enum AURA_SHELL_EXPORT LauncherItemType {
+enum ASH_EXPORT LauncherItemType {
   TYPE_TABBED,
   TYPE_APP
 };
 
 // Represents an image in a launcher item of type TYPE_APP.
-struct AURA_SHELL_EXPORT LauncherTabbedImage {
+struct ASH_EXPORT LauncherTabbedImage {
   LauncherTabbedImage() : user_data(NULL) {}
   LauncherTabbedImage(const SkBitmap& image, void* user_data)
       : image(image),
@@ -40,7 +40,7 @@ struct AURA_SHELL_EXPORT LauncherTabbedImage {
 
 typedef std::vector<LauncherTabbedImage> LauncherTabbedImages;
 
-struct AURA_SHELL_EXPORT LauncherItem {
+struct ASH_EXPORT LauncherItem {
   LauncherItem() : type(TYPE_TABBED), window(NULL), user_data(NULL) {}
   LauncherItem(LauncherItemType type,
                aura::Window* window,

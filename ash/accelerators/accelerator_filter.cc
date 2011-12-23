@@ -5,9 +5,9 @@
 #include "ash/accelerators/accelerator_filter.h"
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/shell.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura_shell/shell.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 

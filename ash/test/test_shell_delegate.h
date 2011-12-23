@@ -6,8 +6,8 @@
 #define ASH_TEST_TEST_SHELL_DELEGATE_H_
 #pragma once
 
+#include "ash/shell_delegate.h"
 #include "base/compiler_specific.h"
-#include "ui/aura_shell/shell_delegate.h"
 
 namespace aura_shell {
 namespace test {

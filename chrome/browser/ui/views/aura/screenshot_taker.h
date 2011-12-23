@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_AURA_SCREENSHOT_TAKER_H_
 #pragma once
 
+#include "ash/screenshot_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/aura_shell/screenshot_delegate.h"
 
 class ScreenshotTaker : public aura_shell::ScreenshotDelegate {
  public:

@@ -12,13 +12,13 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura_shell {
 namespace internal {
 
 // Exported for unit tests.
-class AURA_SHELL_EXPORT ActivationController
+class ASH_EXPORT ActivationController
     : public aura::client::ActivationClient,
       public aura::WindowObserver,
       public aura::RootWindowObserver {

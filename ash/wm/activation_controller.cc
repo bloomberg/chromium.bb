@@ -4,14 +4,14 @@
 
 #include "ash/wm/activation_controller.h"
 
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/aura_shell/shell.h"
-#include "ui/aura_shell/shell_window_ids.h"
 
 namespace aura_shell {
 namespace internal {

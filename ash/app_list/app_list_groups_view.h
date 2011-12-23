@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 #include "ui/base/models/list_model_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -27,7 +27,7 @@ class AppListModel;
 // AppListGroupsView displays the UI for an AppListModel. If there are more than
 // one group in the model , a button strip is displayed to allow user to switch
 // between pages.
-class AURA_SHELL_EXPORT AppListGroupsView : public views::View,
+class ASH_EXPORT AppListGroupsView : public views::View,
                                             public views::ButtonListener,
                                             public ui::ListModelObserver {
  public:

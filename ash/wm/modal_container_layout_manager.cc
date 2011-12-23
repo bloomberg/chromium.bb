@@ -4,6 +4,7 @@
 
 #include "ash/wm/modal_container_layout_manager.h"
 
+#include "ash/shell.h"
 #include "ash/wm/modality_event_filter.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
@@ -11,7 +12,6 @@
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/shell.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"

@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura {
 class Window;
@@ -25,7 +25,7 @@ namespace aura_shell {
 
 class LauncherModel;
 
-class AURA_SHELL_EXPORT Launcher : public aura::WindowObserver {
+class ASH_EXPORT Launcher : public aura::WindowObserver {
  public:
   explicit Launcher(aura::Window* window_container);
   ~Launcher();

@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura {
 class Window;
@@ -32,7 +32,7 @@ class WorkspaceManager;
 // WorkspaceControlls owns a WorkspaceManager. WorkspaceControlls bridges
 // events From RootWindowObserver translating them to WorkspaceManager, and
 // a move event between Laucher and Workspace.
-class AURA_SHELL_EXPORT WorkspaceController :
+class ASH_EXPORT WorkspaceController :
       public aura::RootWindowObserver,
       public aura::WindowObserver,
       public aura_shell::internal::WorkspaceObserver,

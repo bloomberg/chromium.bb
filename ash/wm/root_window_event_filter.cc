@@ -4,13 +4,13 @@
 
 #include "ash/wm/root_window_event_filter.h"
 
+#include "ash/shell.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/aura_shell/shell.h"
 #include "ui/base/hit_test.h"
 
 namespace aura_shell {

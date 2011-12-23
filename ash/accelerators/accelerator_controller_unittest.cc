@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/test/aura_shell_test_base.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/event.h"
@@ -10,8 +12,6 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/shell.h"
-#include "ui/aura_shell/shell_window_ids.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>

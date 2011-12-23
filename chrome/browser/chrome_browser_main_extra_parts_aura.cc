@@ -5,13 +5,13 @@
 #include "chrome/browser/chrome_browser_main_extra_parts_aura.h"
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/aura/screen_orientation_listener.h"
 #include "chrome/browser/ui/views/aura/screenshot_taker.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura_shell/shell.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/system/runtime_environment.h"

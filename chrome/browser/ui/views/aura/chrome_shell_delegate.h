@@ -7,10 +7,10 @@
 #pragma once
 
 #include "ash/launcher/launcher_types.h"
+#include "ash/shell_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura_shell/shell_delegate.h"
 
 class Browser;
 class StatusAreaHostAura;

@@ -6,7 +6,7 @@
 #define ASH_WM_SHADOW_TYPES_H_
 #pragma once
 
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura {
 class Window;
@@ -23,9 +23,9 @@ enum ShadowType {
   SHADOW_TYPE_RECTANGULAR,
 };
 
-AURA_SHELL_EXPORT void SetShadowType(aura::Window* window,
+ASH_EXPORT void SetShadowType(aura::Window* window,
                                      ShadowType shadow_type);
-AURA_SHELL_EXPORT ShadowType GetShadowType(aura::Window* window);
+ASH_EXPORT ShadowType GetShadowType(aura::Window* window);
 
 }  // namespace internal
 }  // namespace aura_shell

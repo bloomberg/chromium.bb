@@ -6,13 +6,13 @@
 #define ASH_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 #pragma once
 
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura_shell {
 
 class AppListItemModel;
 
-class AURA_SHELL_EXPORT AppListViewDelegate {
+class ASH_EXPORT AppListViewDelegate {
  public:
   // AppListView owns the delegate.
   virtual ~AppListViewDelegate() {}

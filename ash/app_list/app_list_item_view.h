@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ash/app_list/app_list_item_model_observer.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 #include "ui/views/view.h"
 
 class SkBitmap;
@@ -22,7 +22,7 @@ namespace aura_shell {
 class AppListItemModel;
 class AppListItemViewListener;
 
-class AURA_SHELL_EXPORT AppListItemView : public views::View,
+class ASH_EXPORT AppListItemView : public views::View,
                                           public AppListItemModelObserver {
  public:
   AppListItemView(AppListItemModel* model,

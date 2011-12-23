@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace ui {
@@ -25,7 +25,7 @@ class ScreenshotDelegate;
 // AcceleratorController provides functions for registering or unregistering
 // global keyboard accelerators, which are handled earlier than any windows. It
 // also implements several handlers as an accelerator target.
-class AURA_SHELL_EXPORT AcceleratorController : public ui::AcceleratorTarget {
+class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
  public:
   AcceleratorController();
   virtual ~AcceleratorController();

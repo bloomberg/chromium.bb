@@ -6,16 +6,16 @@
 #define ASH_WM_WINDOW_FRAME_H_
 #pragma once
 
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura_shell {
 
 // aura::Window property name for a pointer to the WindowFrame interface.
-AURA_SHELL_EXPORT extern const char* const kWindowFrameKey;
+ASH_EXPORT extern const char* const kWindowFrameKey;
 
 // Interface for clients implementing a window frame.  Implementors should
 // add a pointer to this interface to each aura::Window, using the key above.
-class AURA_SHELL_EXPORT WindowFrame {
+class ASH_EXPORT WindowFrame {
  public:
   virtual ~WindowFrame() {}
 

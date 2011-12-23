@@ -8,14 +8,14 @@
 
 #include "base/compiler_specific.h"
 #include "ui/aura/event_filter.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura_shell {
 namespace internal {
 
 class ModalityEventFilterDelegate;
 
-class AURA_SHELL_EXPORT ModalityEventFilter : public aura::EventFilter {
+class ASH_EXPORT ModalityEventFilter : public aura::EventFilter {
  public:
   ModalityEventFilter(aura::Window* container,
                       ModalityEventFilterDelegate* delegate);

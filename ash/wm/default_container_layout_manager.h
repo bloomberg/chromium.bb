@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura {
 class MouseEvent;
@@ -28,7 +28,7 @@ class ShowStateController;
 class WorkspaceManager;
 
 // LayoutManager for the default window container.
-class AURA_SHELL_EXPORT DefaultContainerLayoutManager
+class ASH_EXPORT DefaultContainerLayoutManager
     : public aura::LayoutManager {
  public:
   explicit DefaultContainerLayoutManager(WorkspaceManager* workspace_manager);

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/login/lock_window_aura.h"
 
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/shell.h"
-#include "ui/aura_shell/shell_window_ids.h"
 
 namespace chromeos {
 

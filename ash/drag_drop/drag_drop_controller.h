@@ -6,7 +6,7 @@
 #define ASH_DRAG_DROP_DRAG_DROP_CONTROLLER_H_
 #pragma once
 
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
@@ -28,7 +28,7 @@ namespace internal {
 
 class DragImageView;
 
-class AURA_SHELL_EXPORT DragDropController
+class ASH_EXPORT DragDropController
     : public aura::client::DragDropClient,
       public aura::EventFilter {
  public:

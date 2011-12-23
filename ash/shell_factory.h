@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_SHELL_FACTORY_H_
-#define UI_AURA_SHELL_SHELL_FACTORY_H_
+#ifndef ASH_SHELL_FACTORY_H_
+#define ASH_SHELL_FACTORY_H_
 #pragma once
 
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace views {
 class Widget;
@@ -18,10 +18,10 @@ namespace aura_shell {
 
 namespace internal {
 views::Widget* CreateDesktopBackground();
-AURA_SHELL_EXPORT views::Widget* CreateStatusArea();
+ASH_EXPORT views::Widget* CreateStatusArea();
 }  // namespace internal
 
 }  // namespace aura_shell
 
 
-#endif  // UI_AURA_SHELL_SHELL_FACTORY_H_
+#endif  // ASH_SHELL_FACTORY_H_

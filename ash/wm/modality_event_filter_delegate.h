@@ -6,7 +6,7 @@
 #define ASH_WM_MODALITY_EVENT_FILTER_DELEGATE_H_
 #pragma once
 
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura {
 class Window;
@@ -15,7 +15,7 @@ class Window;
 namespace aura_shell {
 namespace internal {
 
-class AURA_SHELL_EXPORT ModalityEventFilterDelegate {
+class ASH_EXPORT ModalityEventFilterDelegate {
  public:
   // Returns true if |window| can receive the specified event.
   virtual bool CanWindowReceiveEvents(aura::Window* window) = 0;

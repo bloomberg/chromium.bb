@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura_shell {
 
@@ -20,7 +20,7 @@ class AppListItemModelObserver;
 // AppListItemModel provides icon and title to be shown in a TileView and
 // action to be executed when the TileView is activated (clicked or enter
 // key it hit).
-class AURA_SHELL_EXPORT AppListItemModel {
+class ASH_EXPORT AppListItemModel {
  public:
   AppListItemModel();
   virtual ~AppListItemModel();

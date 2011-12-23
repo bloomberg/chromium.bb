@@ -12,7 +12,7 @@
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 #include "ui/gfx/point.h"
 
 namespace aura {
@@ -31,7 +31,7 @@ class TooltipControllerTest;
 namespace internal {
 
 // TooltipController provides tooltip functionality for aura shell.
-class AURA_SHELL_EXPORT TooltipController : public aura::client::TooltipClient,
+class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
                                             public aura::EventFilter,
                                             public aura::WindowObserver {
  public:

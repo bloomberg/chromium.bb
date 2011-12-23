@@ -5,11 +5,11 @@
 #include "ash/drag_drop/drag_drop_controller.h"
 
 #include "ash/drag_drop/drag_image_view.h"
+#include "ash/shell.h"
 #include "base/message_loop.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/shell.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 #include "ui/gfx/point.h"

@@ -8,7 +8,7 @@
 
 #include <set>
 
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura {
 class Window;
@@ -19,27 +19,27 @@ namespace aura_shell {
 // TODO(jamescook): Put all these functions in namespace window_util.
 
 // Returns true if |window| is in the maximized state.
-AURA_SHELL_EXPORT bool IsWindowMaximized(aura::Window* window);
+ASH_EXPORT bool IsWindowMaximized(aura::Window* window);
 
 // Convenience setters/getters for |aura::client::kRootWindowActiveWindow|.
-AURA_SHELL_EXPORT void ActivateWindow(aura::Window* window);
-AURA_SHELL_EXPORT void DeactivateWindow(aura::Window* window);
-AURA_SHELL_EXPORT bool IsActiveWindow(aura::Window* window);
-AURA_SHELL_EXPORT aura::Window* GetActiveWindow();
+ASH_EXPORT void ActivateWindow(aura::Window* window);
+ASH_EXPORT void DeactivateWindow(aura::Window* window);
+ASH_EXPORT bool IsActiveWindow(aura::Window* window);
+ASH_EXPORT aura::Window* GetActiveWindow();
 
 // Retrieves the activatable window for |window|. If |window| is activatable,
 // this will just return it, otherwise it will climb the parent/transient parent
 // chain looking for a window that is activatable, per the ActivationController.
 // If you're looking for a function to get the activatable "top level" window,
 // this is probably what you're looking for.
-AURA_SHELL_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
+ASH_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
 
 // Update window bounds based on a change in show state.
-AURA_SHELL_EXPORT void UpdateBoundsFromShowState(aura::Window* window);
+ASH_EXPORT void UpdateBoundsFromShowState(aura::Window* window);
 
 // Returns true if the set of |windows| contains a full-screen window.
 typedef std::set<aura::Window*> WindowSet;
-AURA_SHELL_EXPORT bool HasFullscreenWindow(const WindowSet& windows);
+ASH_EXPORT bool HasFullscreenWindow(const WindowSet& windows);
 
 }  // namespace aura_shell
 

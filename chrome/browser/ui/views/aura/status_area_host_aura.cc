@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/aura/status_area_host_aura.h"
 
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/memory_menu_button.h"
@@ -14,8 +16,6 @@
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/shell.h"
-#include "ui/aura_shell/shell_window_ids.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)

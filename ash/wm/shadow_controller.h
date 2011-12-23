@@ -13,7 +13,7 @@
 #include "base/memory/linked_ptr.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura {
 class Window;
@@ -29,7 +29,7 @@ class Shadow;
 
 // ShadowController observes changes to windows and creates and updates drop
 // shadows as needed.
-class AURA_SHELL_EXPORT ShadowController : public aura::RootWindowObserver,
+class ASH_EXPORT ShadowController : public aura::RootWindowObserver,
                                            public aura::WindowObserver {
 public:
   class TestApi {

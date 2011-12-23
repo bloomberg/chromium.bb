@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {
@@ -29,7 +29,7 @@ class WorkspaceTest;
 // A workspace contains a limited number of windows and the workspace
 // manager may create a new workspace if there is not enough room for
 // a new window.
-class AURA_SHELL_EXPORT Workspace {
+class ASH_EXPORT Workspace {
  public:
   explicit Workspace(WorkspaceManager* manager);
   virtual ~Workspace();

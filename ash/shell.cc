@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/shell.h"
+#include "ash/shell.h"
 
 #include <algorithm>
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_filter.h"
 #include "ash/app_list/app_list.h"
+#include "ash/ash_switches.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/launcher/launcher.h"
+#include "ash/shell_delegate.h"
+#include "ash/shell_factory.h"
+#include "ash/shell_window_ids.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/compact_layout_manager.h"
@@ -32,10 +36,6 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/aura_shell_switches.h"
-#include "ui/aura_shell/shell_delegate.h"
-#include "ui/aura_shell/shell_factory.h"
-#include "ui/aura_shell/shell_window_ids.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/screen.h"

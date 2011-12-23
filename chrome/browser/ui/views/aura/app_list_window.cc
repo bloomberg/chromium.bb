@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/aura/app_list_window.h"
 
+#include "ash/shell.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/aura/app_list_ui.h"
@@ -11,7 +12,6 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "ui/aura_shell/shell.h"
 #include "ui/views/widget/widget.h"
 
 AppListWindow::AppListWindow(const gfx::Rect& bounds,

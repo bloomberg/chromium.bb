@@ -6,11 +6,11 @@
 #define ASH_LAUNCHER_LAUNCHER_MODEL_OBSERVER_H_
 #pragma once
 
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura_shell {
 
-class AURA_SHELL_EXPORT LauncherModelObserver {
+class ASH_EXPORT LauncherModelObserver {
  public:
   // Invoked after an item has been added to the model.
   virtual void LauncherItemAdded(int index) = 0;

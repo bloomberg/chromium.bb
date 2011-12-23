@@ -6,7 +6,7 @@
 #define ASH_SHELL_EXAMPLE_FACTORY_H_
 #pragma once
 
-#include "ui/aura_shell/shell_delegate.h"
+#include "ash/shell_delegate.h"
 
 namespace aura_shell {
 class AppListModel;

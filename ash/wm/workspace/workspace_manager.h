@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/size.h"
 
@@ -29,7 +29,7 @@ class Workspace;
 class WorkspaceObserver;
 
 // WorkspaceManager manages multiple workspaces in the desktop.
-class AURA_SHELL_EXPORT WorkspaceManager {
+class ASH_EXPORT WorkspaceManager {
  public:
   explicit WorkspaceManager(aura::Window* viewport);
   virtual ~WorkspaceManager();

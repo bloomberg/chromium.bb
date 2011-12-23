@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_SHELL_WINDOW_IDS_H_
-#define UI_AURA_SHELL_SHELL_WINDOW_IDS_H_
+#ifndef ASH_SHELL_WINDOW_IDS_H_
+#define ASH_SHELL_WINDOW_IDS_H_
 #pragma once
 
 // Declarations of ids of special shell windows.
@@ -44,4 +44,4 @@ const int kShellWindowId_MenusAndTooltipsContainer = 8;
 }  // namespace aura_shell
 
 
-#endif  // UI_AURA_SHELL_SHELL_WINDOW_IDS_H_
+#endif  // ASH_SHELL_WINDOW_IDS_H_

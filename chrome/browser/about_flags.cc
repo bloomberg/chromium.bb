@@ -25,7 +25,7 @@
 #include "ui/gfx/gl/gl_switches.h"
 
 #if defined(USE_AURA)
-#include "ui/aura_shell/aura_shell_switches.h"
+#include "ash/ash_switches.h"
 #endif
 
 using content::UserMetricsAction;

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 #include "ui/gfx/rect.h"
 
 namespace views {
@@ -23,7 +23,7 @@ namespace aura_shell {
 // coordinate conversion as you have to account for the possibility of the
 // indices from the model not lining up with those you expect. This class lets
 // you define the 'interesting' views and operate on those views.
-class AURA_SHELL_EXPORT ViewModel {
+class ASH_EXPORT ViewModel {
  public:
   ViewModel();
   ~ViewModel();

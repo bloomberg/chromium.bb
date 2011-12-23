@@ -6,7 +6,7 @@
 #define ASH_WM_TOPLEVEL_FRAME_VIEW_H_
 #pragma once
 
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -21,7 +21,7 @@ class WindowCaption;
 // TODO(beng): Find a way to automatically this for all top-level windows in
 //             Aura. Right now windows have to override CreateNonClientFrameView
 //             on WidgetDelegate to specify this.
-class AURA_SHELL_EXPORT ToplevelFrameView : public views::NonClientFrameView {
+class ASH_EXPORT ToplevelFrameView : public views::NonClientFrameView {
  public:
   ToplevelFrameView();
   virtual ~ToplevelFrameView();

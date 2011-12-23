@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/shell.h"
 #include "ash/test/aura_shell_test_base.h"
 #include "ash/wm/shadow.h"
 #include "ash/wm/shadow_types.h"
@@ -14,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/shell.h"
 #include "ui/gfx/compositor/layer.h"
 
 namespace aura_shell {

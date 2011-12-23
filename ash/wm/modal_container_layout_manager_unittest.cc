@@ -4,14 +4,14 @@
 
 #include "ash/wm/modal_container_layout_manager.h"
 
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/test/aura_shell_test_base.h"
 #include "ash/wm/window_util.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/shell.h"
-#include "ui/aura_shell/shell_window_ids.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 

@@ -10,13 +10,13 @@
 
 #include "ash/app_list/app_list_item_model.h"
 #include "base/basictypes.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 #include "ui/base/models/list_model.h"
 
 namespace aura_shell {
 
 // AppListItemGroupModel holds a list of AppListItemModels.
-class AURA_SHELL_EXPORT AppListItemGroupModel {
+class ASH_EXPORT AppListItemGroupModel {
  public:
   typedef ui::ListModel<AppListItemModel> Items;
 

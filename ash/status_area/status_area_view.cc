@@ -4,12 +4,12 @@
 
 #include "ash/status_area/status_area_view.h"
 
+#include "ash/ash_export.h"
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura_shell/aura_shell_export.h"
-#include "ui/aura_shell/shell.h"
-#include "ui/aura_shell/shell_window_ids.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
@@ -32,7 +32,7 @@ void StatusAreaView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(status_mock_, 0, 0);
 }
 
-AURA_SHELL_EXPORT views::Widget* CreateStatusArea() {
+ASH_EXPORT views::Widget* CreateStatusArea() {
   StatusAreaView* status_area_view = new StatusAreaView;
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);

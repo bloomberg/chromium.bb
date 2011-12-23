@@ -6,6 +6,7 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
+#include "ash/shell.h"
 #include "ash/wm/default_container_layout_manager.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace.h"
@@ -14,7 +15,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/shell.h"
 
 namespace aura_shell {
 namespace internal {

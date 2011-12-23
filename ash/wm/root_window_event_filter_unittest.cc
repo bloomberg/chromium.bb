@@ -4,6 +4,7 @@
 
 #include "ash/wm/root_window_event_filter.h"
 
+#include "ash/shell_window_ids.h"
 #include "ash/test/test_activation_delegate.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/window_util.h"
@@ -16,7 +17,6 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/test/test_event_filter.h"
 #include "ui/aura/test/test_window_delegate.h"
-#include "ui/aura_shell/shell_window_ids.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
 

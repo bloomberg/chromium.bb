@@ -8,14 +8,14 @@
 
 #include "ash/app_list/app_list_item_group_model.h"
 #include "base/basictypes.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 #include "ui/base/models/list_model.h"
 
 namespace aura_shell {
 
 // Model for AppListView. It is consisted of a list of AppListItemGroupModels,
 // which in turn owns a list of AppListItemModels.
-class AURA_SHELL_EXPORT AppListModel {
+class ASH_EXPORT AppListModel {
  public:
   AppListModel();
   virtual ~AppListModel();

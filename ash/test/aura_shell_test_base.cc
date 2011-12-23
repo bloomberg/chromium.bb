@@ -4,8 +4,8 @@
 
 #include "ash/test/aura_shell_test_base.h"
 
+#include "ash/shell.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ui/aura_shell/shell.h"
 
 namespace aura_shell {
 namespace test {

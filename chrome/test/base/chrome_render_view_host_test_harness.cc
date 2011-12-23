@@ -7,8 +7,8 @@
 #include "chrome/test/base/testing_profile.h"
 
 #if defined(USE_AURA)
+#include "ash/shell.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura_shell/shell.h"
 #endif
 
 ChromeRenderViewHostTestHarness::ChromeRenderViewHostTestHarness()

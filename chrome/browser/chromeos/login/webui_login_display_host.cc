@@ -13,9 +13,9 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/shell.h"
-#include "ui/aura_shell/shell_window_ids.h"
 #endif
 
 namespace chromeos {

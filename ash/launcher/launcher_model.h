@@ -10,7 +10,7 @@
 
 #include "ash/launcher/launcher_types.h"
 #include "base/observer_list.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura {
 class Window;
@@ -21,7 +21,7 @@ namespace aura_shell {
 class LauncherModelObserver;
 
 // Model used by LauncherView.
-class AURA_SHELL_EXPORT LauncherModel {
+class ASH_EXPORT LauncherModel {
  public:
   LauncherModel();
   ~LauncherModel();

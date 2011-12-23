@@ -6,7 +6,7 @@
 #define ASH_APP_LIST_APP_LIST_ITEM_GROUP_VIEW_H_
 #pragma once
 
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 #include "ui/base/models/list_model_observer.h"
 #include "ui/views/view.h"
 
@@ -16,7 +16,7 @@ class AppListItemGroupModel;
 class AppListItemViewListener;
 
 // AppListItemGroupView displays its children tiles in a grid.
-class AURA_SHELL_EXPORT AppListItemGroupView
+class ASH_EXPORT AppListItemGroupView
     : public views::View,
       public ui::ListModelObserver {
  public:

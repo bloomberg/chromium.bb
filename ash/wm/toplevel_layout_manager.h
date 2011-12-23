@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura_shell {
 namespace internal {
@@ -23,7 +23,7 @@ class ShelfLayoutManager;
 // hosts what the shell considers to be top-level windows. It is used if the
 // WorkspaceManager is not enabled. ToplevelLayoutManager listens for changes to
 // kShowStateKey and resizes the window appropriately.
-class AURA_SHELL_EXPORT ToplevelLayoutManager : public aura::LayoutManager,
+class ASH_EXPORT ToplevelLayoutManager : public aura::LayoutManager,
                                                 public aura::WindowObserver {
  public:
   ToplevelLayoutManager();

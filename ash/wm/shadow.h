@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {
@@ -21,7 +21,7 @@ namespace internal {
 class ImageGrid;
 
 // Simple class that draws a drop shadow around content at given bounds.
-class AURA_SHELL_EXPORT Shadow {
+class ASH_EXPORT Shadow {
  public:
   Shadow();
   ~Shadow();

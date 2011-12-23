@@ -6,14 +6,14 @@
 
 #include <vector>
 
+#include "ash/ash_switches.h"
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/string_split.h"
 #include "base/time.h"
-#include "ui/aura_shell/aura_shell_switches.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/shell.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/font.h"

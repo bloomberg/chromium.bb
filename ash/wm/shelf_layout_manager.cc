@@ -5,10 +5,10 @@
 #include "ash/wm/shelf_layout_manager.h"
 
 #include "ash/launcher/launcher.h"
+#include "ash/shell.h"
 #include "base/auto_reset.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
-#include "ui/aura_shell/shell.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/views/widget/widget.h"

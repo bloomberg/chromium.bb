@@ -7,9 +7,9 @@
 #pragma once
 
 #include "ash/app_list/app_list_item_view_listener.h"
+#include "ash/ash_export.h"
+#include "ash/shell_delegate.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura_shell/aura_shell_export.h"
-#include "ui/aura_shell/shell_delegate.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace views {
@@ -23,7 +23,7 @@ class AppListViewDelegate;
 
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppListModelView and passes AppListModel to it for display.
-class AURA_SHELL_EXPORT AppListView : public views::WidgetDelegateView,
+class ASH_EXPORT AppListView : public views::WidgetDelegateView,
                                       public AppListItemViewListener {
  public:
   // Takes ownership of |model| and |delegate|.

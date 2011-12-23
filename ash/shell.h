@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_SHELL_H_
-#define UI_AURA_SHELL_SHELL_H_
+#ifndef ASH_SHELL_H_
+#define ASH_SHELL_H_
 #pragma once
 
 #include <utility>
 #include <vector>
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/aura_shell/aura_shell_export.h"
 
 class CommandLine;
 
@@ -48,7 +48,7 @@ class WorkspaceController;
 
 // Shell is a singleton object that presents the Shell API and implements the
 // RootWindow's delegate interface.
-class AURA_SHELL_EXPORT Shell {
+class ASH_EXPORT Shell {
  public:
   // Upon creation, the Shell sets itself as the RootWindow's delegate, which
   // takes ownership of the Shell.
@@ -146,4 +146,4 @@ class AURA_SHELL_EXPORT Shell {
 
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_SHELL_H_
+#endif  // ASH_SHELL_H_

@@ -6,14 +6,14 @@
 
 #include "ash/app_list/app_list_model.h"
 #include "ash/app_list/app_list_view.h"
+#include "ash/ash_switches.h"
+#include "ash/shell_delegate.h"
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/aura_shell_switches.h"
-#include "ui/aura_shell/shell_delegate.h"
-#include "ui/aura_shell/shell.h"
-#include "ui/aura_shell/shell_window_ids.h"
 #include "ui/gfx/screen.h"
 
 namespace aura_shell {

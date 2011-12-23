@@ -6,13 +6,13 @@
 #define ASH_APP_LIST_APP_LIST_ITEM_VIEW_LISTENER_H_
 #pragma once
 
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura_shell {
 
 class AppListItemView;
 
-class AURA_SHELL_EXPORT AppListItemViewListener {
+class ASH_EXPORT AppListItemViewListener {
  public:
   // Invoked when an AppListeItemModelView is activated by click or enter key.
   virtual void AppListItemActivated(AppListItemView* sender,

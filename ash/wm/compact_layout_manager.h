@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace views {
 class Widget;
@@ -25,7 +25,7 @@ namespace internal {
 // hosts what the shell considers to be top-level windows. It is used for low
 // resolution screens and keeps the main browser window maximized.
 // It listens for changes to kShowStateKey and resizes the window appropriately.
-class AURA_SHELL_EXPORT CompactLayoutManager : public aura::LayoutManager,
+class ASH_EXPORT CompactLayoutManager : public aura::LayoutManager,
                                                public aura::WindowObserver {
  public:
   explicit CompactLayoutManager(views::Widget* status_area_widget);

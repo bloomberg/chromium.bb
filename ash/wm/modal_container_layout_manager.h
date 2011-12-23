@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
 
 namespace aura {
@@ -32,7 +32,7 @@ namespace aura_shell {
 namespace internal {
 
 // LayoutManager for the modal window container.
-class AURA_SHELL_EXPORT ModalContainerLayoutManager
+class ASH_EXPORT ModalContainerLayoutManager
     : public aura::LayoutManager,
       public aura::WindowObserver,
       public ui::LayerAnimationObserver,

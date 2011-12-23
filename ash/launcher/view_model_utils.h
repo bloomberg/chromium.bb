@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace views {
 class View;
@@ -17,7 +17,7 @@ namespace aura_shell {
 
 class ViewModel;
 
-class AURA_SHELL_EXPORT ViewModelUtils {
+class ASH_EXPORT ViewModelUtils {
  public:
   // Sets the bounds of each view to its ideal bounds.
   static void SetViewBoundsToIdealBounds(const ViewModel& model);

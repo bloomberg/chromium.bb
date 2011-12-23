@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_SHELL_DELEGATE_H_
-#define UI_AURA_SHELL_SHELL_DELEGATE_H_
+#ifndef ASH_SHELL_DELEGATE_H_
+#define ASH_SHELL_DELEGATE_H_
 #pragma once
 
 #include "base/callback.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace gfx {
 class Rect;
@@ -24,7 +24,7 @@ class AppListViewDelegate;
 struct LauncherItem;
 
 // Delegate of the Shell.
-class AURA_SHELL_EXPORT ShellDelegate {
+class ASH_EXPORT ShellDelegate {
  public:
   // Callback to pass back a widget used by RequestAppListWidget.
   typedef base::Callback<void(views::Widget*)> SetWidgetCallback;
@@ -64,4 +64,4 @@ class AURA_SHELL_EXPORT ShellDelegate {
 };
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_SHELL_DELEGATE_H_
+#endif  // ASH_SHELL_DELEGATE_H_

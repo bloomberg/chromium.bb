@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "ui/aura/event_filter.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
@@ -22,7 +22,7 @@ class Window;
 
 namespace aura_shell {
 
-class AURA_SHELL_EXPORT ToplevelWindowEventFilter : public aura::EventFilter {
+class ASH_EXPORT ToplevelWindowEventFilter : public aura::EventFilter {
  public:
   explicit ToplevelWindowEventFilter(aura::Window* owner);
   virtual ~ToplevelWindowEventFilter();

@@ -10,7 +10,7 @@
 #include "base/observer_list.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura_shell {
 namespace internal {
@@ -23,7 +23,7 @@ namespace internal {
 // consumed by any of those filters. If an event is consumed by a filter, the
 // rest of the filter(s) and RootWindowEventFilter will not see the consumed
 // event.
-class AURA_SHELL_EXPORT RootWindowEventFilter : public aura::EventFilter {
+class ASH_EXPORT RootWindowEventFilter : public aura::EventFilter {
  public:
   RootWindowEventFilter();
   virtual ~RootWindowEventFilter();

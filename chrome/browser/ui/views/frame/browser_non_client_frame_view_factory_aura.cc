@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_aura.h"
 
+#include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 #include "chrome/browser/ui/views/frame/popup_non_client_frame_view.h"
-#include "ui/aura_shell/aura_shell_switches.h"
 
 namespace browser {
 

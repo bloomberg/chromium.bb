@@ -8,7 +8,7 @@
 #include "ash/app_list/app_list_item_view.h"
 #include "ash/app_list/app_list_model.h"
 #include "ash/app_list/app_list_view_delegate.h"
-#include "ui/aura_shell/shell.h"
+#include "ash/shell.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 

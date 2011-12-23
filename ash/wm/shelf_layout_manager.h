@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
@@ -27,7 +27,7 @@ namespace internal {
 // layout to the status area.
 // To respond to bounds changes in the status area StatusAreaLayoutManager works
 // closely with ShelfLayoutManager.
-class AURA_SHELL_EXPORT ShelfLayoutManager : public aura::LayoutManager,
+class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
                                              public ui::LayerAnimationObserver {
  public:
   ShelfLayoutManager(views::Widget* launcher, views::Widget* status);

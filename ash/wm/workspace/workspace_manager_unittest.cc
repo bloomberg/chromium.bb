@@ -4,6 +4,7 @@
 
 #include "ash/wm/workspace/workspace_manager.h"
 
+#include "ash/shell_window_ids.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/workspace/workspace.h"
 #include "ash/wm/workspace/workspace_observer.h"
@@ -12,7 +13,6 @@
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/shell_window_ids.h"
 #include "ui/base/ui_base_types.h"
 
 namespace {

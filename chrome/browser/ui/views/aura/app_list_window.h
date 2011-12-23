@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_AURA_APP_LIST_WINDOW_H_
 #pragma once
 
+#include "ash/shell_delegate.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_first_render_watcher.h"
 #include "chrome/browser/ui/webui/aura/app_list_ui_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "ui/aura_shell/shell_delegate.h"
 #include "ui/views/widget/widget_delegate.h"
 
 class DOMView;

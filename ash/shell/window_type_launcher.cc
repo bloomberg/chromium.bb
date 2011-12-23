@@ -4,6 +4,7 @@
 
 #include "ash/shell/window_type_launcher.h"
 
+#include "ash/shell_window_ids.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/wm/shadow_types.h"
@@ -11,7 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/shell_window_ids.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/views/controls/button/text_button.h"

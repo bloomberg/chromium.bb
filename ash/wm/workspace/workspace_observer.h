@@ -6,7 +6,7 @@
 #define ASH_WM_WORKSPACE_WORKSPACE_OBSERVER_H_
 #pragma once
 
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura {
 class Window;
@@ -18,7 +18,7 @@ class Workspace;
 class WorkspaceManager;
 
 // A class to observe changes in workspace state.
-class AURA_SHELL_EXPORT WorkspaceObserver {
+class ASH_EXPORT WorkspaceObserver {
  public:
   // Invoked when |start| window is moved and inserted
   // at the |target| window's position by |WorkspaceManager::RotateWindow|.

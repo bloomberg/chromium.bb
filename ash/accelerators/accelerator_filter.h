@@ -9,14 +9,14 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/event_filter.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "ash/ash_export.h"
 
 namespace aura_shell {
 namespace internal {
 
 // AcceleratorFilter filters key events for AcceleratorControler handling global
 // keyboard accelerators.
-class AURA_SHELL_EXPORT AcceleratorFilter : public aura::EventFilter {
+class ASH_EXPORT AcceleratorFilter : public aura::EventFilter {
  public:
   AcceleratorFilter();
   virtual ~AcceleratorFilter();

@@ -37,10 +37,10 @@
 #endif
 
 #if defined(USE_AURA)
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_observer.h"
-#include "ui/aura_shell/shell.h"
-#include "ui/aura_shell/shell_window_ids.h"
 #endif
 
 namespace {
