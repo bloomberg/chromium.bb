@@ -1032,6 +1032,14 @@
    fun:_ZN12_GLOBAL__N_111DnsReloader11MaybeReloadEv
 }
 
+{
+   # Intentional - atomic strings and hash map in WebCore::nameToPseudoTypeMap() (CSSSelector.cpp) are to be leaked
+   bug_108516
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCoreL19nameToPseudoTypeMapEv
+}
+
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
