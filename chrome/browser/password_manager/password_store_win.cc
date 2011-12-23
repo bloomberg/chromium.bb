@@ -25,7 +25,8 @@ namespace {
 // not set.
 class FormGetLoginsRequest : public PasswordStore::GetLoginsRequest {
  public:
-  explicit FormGetLoginsRequest(PasswordStore::GetLoginsCallback* callback)
+  explicit FormGetLoginsRequest(
+      const PasswordStore::GetLoginsCallback& callback)
       : GetLoginsRequest(callback) {}
 
   // We hold a copy of the |form| used in GetLoginsImpl as a pointer.  If the
@@ -161,8 +162,7 @@ void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
   if (ie7_form)
     request->value.push_back(ie7_form);
 
-  request->ForwardResult(GetLoginsRequest::TupleType(request->handle(),
-                                                     request->value));
+  request->ForwardResult(request->handle(), request->value);
 }
 
 PasswordStoreWin::PasswordStoreWin(LoginDatabase* login_database,
@@ -181,7 +181,7 @@ void PasswordStoreWin::ShutdownOnDBThread() {
 }
 
 PasswordStore::GetLoginsRequest* PasswordStoreWin::NewGetLoginsRequest(
-    GetLoginsCallback* callback) {
+    const GetLoginsCallback& callback) {
   return new FormGetLoginsRequest(callback);
 }
 

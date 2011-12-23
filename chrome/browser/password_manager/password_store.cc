@@ -4,10 +4,10 @@
 
 #include "chrome/browser/password_manager/password_store.h"
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
-#include "base/task.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/forms/password_form.h"
@@ -16,9 +16,10 @@ using content::BrowserThread;
 using std::vector;
 using webkit::forms::PasswordForm;
 
-PasswordStore::GetLoginsRequest::GetLoginsRequest(GetLoginsCallback* callback)
+PasswordStore::GetLoginsRequest::GetLoginsRequest(
+    const GetLoginsCallback& callback)
     : CancelableRequest1<GetLoginsCallback,
-                         std::vector<webkit::forms::PasswordForm*> >(callback) {
+                         std::vector<PasswordForm*> >(callback) {
 }
 
 PasswordStore::GetLoginsRequest::~GetLoginsRequest() {
@@ -91,12 +92,8 @@ void PasswordStore::RemoveObserver(Observer* observer) {
 PasswordStore::~PasswordStore() {}
 
 PasswordStore::GetLoginsRequest* PasswordStore::NewGetLoginsRequest(
-    GetLoginsCallback* callback) {
+    const GetLoginsCallback& callback) {
   return new GetLoginsRequest(callback);
-}
-
-void PasswordStore::ScheduleTask(Task* task) {
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, task);
 }
 
 void PasswordStore::ScheduleTask(const base::Closure& task) {
@@ -104,16 +101,15 @@ void PasswordStore::ScheduleTask(const base::Closure& task) {
 }
 
 void PasswordStore::ForwardLoginsResult(GetLoginsRequest* request) {
-  request->ForwardResult(GetLoginsRequest::TupleType(request->handle(),
-                                                     request->value));
+  request->ForwardResult(request->handle(), request->value);
 }
 
 template<typename BackendFunc>
 CancelableRequestProvider::Handle PasswordStore::Schedule(
     BackendFunc func, PasswordStoreConsumer* consumer) {
   scoped_refptr<GetLoginsRequest> request(NewGetLoginsRequest(
-      NewCallback(consumer,
-                  &PasswordStoreConsumer::OnPasswordStoreRequestDone)));
+      base::Bind(&PasswordStoreConsumer::OnPasswordStoreRequestDone,
+                 base::Unretained(consumer))));
   AddRequest(request, consumer->cancelable_consumer());
   ScheduleTask(base::Bind(func, this, request));
   return request->handle();
@@ -123,8 +119,8 @@ template<typename BackendFunc, typename ArgA>
 CancelableRequestProvider::Handle PasswordStore::Schedule(
     BackendFunc func, PasswordStoreConsumer* consumer, const ArgA& a) {
   scoped_refptr<GetLoginsRequest> request(NewGetLoginsRequest(
-      NewCallback(consumer,
-                  &PasswordStoreConsumer::OnPasswordStoreRequestDone)));
+      base::Bind(&PasswordStoreConsumer::OnPasswordStoreRequestDone,
+                 base::Unretained(consumer))));
   AddRequest(request, consumer->cancelable_consumer());
   ScheduleTask(base::Bind(func, this, request, a));
   return request->handle();

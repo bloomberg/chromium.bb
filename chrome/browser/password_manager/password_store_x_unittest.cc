@@ -220,29 +220,16 @@ class MockLoginDatabaseReturn {
                void(const std::vector<PasswordForm*>&));
 };
 
-class LoginDatabaseQueryTask : public Task {
- public:
-  LoginDatabaseQueryTask(LoginDatabase* login_db,
-                         bool autofillable,
-                         MockLoginDatabaseReturn* mock_return)
-      : login_db_(login_db), autofillable_(autofillable),
-        mock_return_(mock_return) {
-  }
-
-  virtual void Run() {
-    std::vector<PasswordForm*> forms;
-    if (autofillable_)
-      login_db_->GetAutofillableLogins(&forms);
-    else
-      login_db_->GetBlacklistLogins(&forms);
-    mock_return_->OnLoginDatabaseQueryDone(forms);
-  }
-
- private:
-  LoginDatabase* login_db_;
-  bool autofillable_;
-  MockLoginDatabaseReturn* mock_return_;
-};
+void LoginDatabaseQueryCallback(LoginDatabase* login_db,
+                                bool autofillable,
+                                MockLoginDatabaseReturn* mock_return) {
+  std::vector<PasswordForm*> forms;
+  if (autofillable)
+    login_db->GetAutofillableLogins(&forms);
+  else
+    login_db->GetBlacklistLogins(&forms);
+  mock_return->OnLoginDatabaseQueryDone(forms);
+}
 
 // Generate |count| expected logins, either autofillable or blacklisted.
 void InitExpectedForms(bool autofillable, size_t count, VectorOfForms* forms) {
@@ -709,7 +696,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   }
 
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new LoginDatabaseQueryTask(login_db, true, &ld_return));
+      base::Bind(&LoginDatabaseQueryCallback, login_db, true, &ld_return));
 
   // Wait for the login DB methods to execute on the DB thread.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
@@ -729,7 +716,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   }
 
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new LoginDatabaseQueryTask(login_db, false, &ld_return));
+      base::Bind(&LoginDatabaseQueryCallback, login_db, false, &ld_return));
 
   // Wait for the login DB methods to execute on the DB thread.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,

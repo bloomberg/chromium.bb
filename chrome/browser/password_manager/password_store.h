@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/callback_old.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
@@ -45,8 +44,8 @@ class PasswordStore
     : public base::RefCountedThreadSafe<PasswordStore>,
       public CancelableRequestProvider {
  public:
-  typedef Callback2<Handle,
-                    const std::vector<webkit::forms::PasswordForm*>&>::Type
+  typedef base::Callback<
+      void(Handle, const std::vector<webkit::forms::PasswordForm*>&)>
       GetLoginsCallback;
 
   // PasswordForm vector elements are meant to be owned by the
@@ -57,10 +56,11 @@ class PasswordStore
   // a typedef. At the moment, a subclass of CancelableRequest1 is required to
   // provide a destructor, which cleans up after canceled requests by deleting
   // vector elements.
-  class GetLoginsRequest : public CancelableRequest1<
-    GetLoginsCallback, std::vector<webkit::forms::PasswordForm*> > {
+  class GetLoginsRequest
+      : public CancelableRequest1<GetLoginsCallback,
+                                  std::vector<webkit::forms::PasswordForm*> > {
    public:
-    explicit GetLoginsRequest(GetLoginsCallback* callback);
+    explicit GetLoginsRequest(const GetLoginsCallback& callback);
     virtual ~GetLoginsRequest();
 
    private:
@@ -142,11 +142,10 @@ class PasswordStore
 
   // Provided to allow subclasses to extend GetLoginsRequest if additional info
   // is needed between a call and its Impl.
-  virtual GetLoginsRequest* NewGetLoginsRequest(GetLoginsCallback* callback);
+  virtual GetLoginsRequest* NewGetLoginsRequest(
+      const GetLoginsCallback& callback);
 
   // Schedule the given |task| to be run in the PasswordStore's own thread.
-  // TODO(mdm): Remove the Task* version of this when it is no longer needed.
-  virtual void ScheduleTask(Task* task);
   virtual void ScheduleTask(const base::Closure& task);
 
   // These will be run in PasswordStore's own thread.

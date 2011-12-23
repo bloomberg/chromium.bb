@@ -757,12 +757,6 @@ bool PasswordStoreMac::Init() {
   return PasswordStore::Init();
 }
 
-void PasswordStoreMac::ScheduleTask(Task* task) {
-  if (thread_.get()) {
-    thread_->message_loop()->PostTask(FROM_HERE, task);
-  }
-}
-
 void PasswordStoreMac::ScheduleTask(const base::Closure& task) {
   if (thread_.get()) {
     thread_->message_loop()->PostTask(FROM_HERE, task);

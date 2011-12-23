@@ -37,7 +37,7 @@ class PasswordStoreWin : public PasswordStoreDefault {
   void ShutdownOnDBThread();
 
   virtual GetLoginsRequest* NewGetLoginsRequest(
-      GetLoginsCallback* callback) OVERRIDE;
+      const GetLoginsCallback& callback) OVERRIDE;
 
   // See PasswordStoreDefault.
   virtual void Shutdown() OVERRIDE;

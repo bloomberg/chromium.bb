@@ -37,8 +37,6 @@ class PasswordStoreMac : public PasswordStore {
  protected:
   virtual ~PasswordStoreMac();
 
-  // Schedules tasks on |thread_|.
-  virtual void ScheduleTask(Task* task) OVERRIDE;
   virtual void ScheduleTask(const base::Closure& task) OVERRIDE;
 
  private:

@@ -66,9 +66,9 @@ class DBThreadObserverHelper :
     BrowserThread::PostTask(
         BrowserThread::DB,
         FROM_HERE,
-        NewRunnableMethod(this,
-                          &DBThreadObserverHelper::AddObserverTask,
-                          make_scoped_refptr(password_store)));
+        base::Bind(&DBThreadObserverHelper::AddObserverTask,
+                   this,
+                   make_scoped_refptr(password_store)));
     done_event_.Wait();
   }
 
