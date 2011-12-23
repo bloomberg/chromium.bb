@@ -3649,6 +3649,11 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         Cut it out!
       </message>
 
+      <!-- DevTools attached infobar -->
+      <message name="IDS_DEV_TOOLS_INFOBAR_LABEL" desc="Label displayed in an infobar when external debugger is attached to the page">
+        "<ph name="CLIENT_NAME">$1<ex>Extension Foo</ex></ph>" is debugging this tab.
+      </message>
+
       <!-- Basic Auth Dialog -->
       <message name="IDS_LOGIN_DIALOG_TITLE" desc="String to be displayed in the title bar of the login prompt dialog">
         Authentication Required

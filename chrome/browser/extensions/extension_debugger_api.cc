@@ -13,11 +13,14 @@
 #include "base/json/json_writer.h"
 #include "base/memory/singleton.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_debugger_api_constants.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -29,7 +32,9 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "grit/generated_resources.h"
 #include "webkit/glue/webkit_glue.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
@@ -38,11 +43,35 @@ using content::DevToolsManager;
 
 namespace keys = extension_debugger_api_constants;
 
+class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
+ public:
+  ExtensionDevToolsInfoBarDelegate(
+      InfoBarTabHelper* infobar_helper,
+      const std::string& client_name,
+      ExtensionDevToolsClientHost* client_host);
+  virtual ~ExtensionDevToolsInfoBarDelegate();
+
+  void ClearClientHost();
+
+ private:
+  // ConfirmInfoBarDelegate:
+  virtual bool ShouldExpire(
+      const content::LoadCommittedDetails& details) const OVERRIDE;
+  virtual int GetButtons() const OVERRIDE;
+  virtual Type GetInfoBarType() const OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+
+  std::string client_name_;
+  ExtensionDevToolsClientHost* client_host_;
+  DISALLOW_COPY_AND_ASSIGN(ExtensionDevToolsInfoBarDelegate);
+};
+
 class ExtensionDevToolsClientHost : public DevToolsClientHost,
                                     public content::NotificationObserver {
  public:
   ExtensionDevToolsClientHost(TabContents* tab_contents,
                               const std::string& extension_id,
+                              const std::string& extension_name,
                               int tab_id);
 
   ~ExtensionDevToolsClientHost();
@@ -50,6 +79,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   bool MatchesContentsAndExtensionId(TabContents* tab_contents,
                                      const std::string& extension_id);
   void Close();
+  void InfoBarDestroyed();
   void SendMessageToBackend(SendCommandDebuggerFunction* function,
                             const std::string& method,
                             Value* params);
@@ -61,6 +91,8 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   virtual void FrameNavigating(const std::string& url) {}
 
  private:
+  void SendDetachedEvent();
+
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -74,6 +106,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   typedef std::map<int, scoped_refptr<SendCommandDebuggerFunction> >
       PendingRequests;
   PendingRequests pending_requests_;
+  ExtensionDevToolsInfoBarDelegate* infobar_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDevToolsClientHost);
 };
@@ -126,11 +159,13 @@ class AttachedClientHosts {
 ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
     TabContents* tab_contents,
     const std::string& extension_id,
+    const std::string& extension_name,
     int tab_id)
     : tab_contents_(tab_contents),
       extension_id_(extension_id),
       tab_id_(tab_id),
-      last_request_id_(0) {
+      last_request_id_(0),
+      infobar_delegate_(NULL) {
   AttachedClientHosts::GetInstance()->Add(this);
 
   // Detach from debugger when extension unloads.
@@ -143,9 +178,23 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
   DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
       tab_contents_->GetRenderViewHost());
   DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(agent, this);
+
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
+  infobar_delegate_ = new ExtensionDevToolsInfoBarDelegate(
+      wrapper->infobar_tab_helper(), extension_name, this);
+  wrapper->infobar_tab_helper()->AddInfoBar(infobar_delegate_);
 }
 
 ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
+  if (infobar_delegate_) {
+    infobar_delegate_->ClearClientHost();
+    TabContentsWrapper* wrapper =
+        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
+    InfoBarTabHelper* helper = wrapper->infobar_tab_helper();
+    if(helper)
+      helper->RemoveInfoBar(infobar_delegate_);
+  }
   AttachedClientHosts::GetInstance()->Remove(this);
 }
 
@@ -157,19 +206,7 @@ bool ExtensionDevToolsClientHost::MatchesContentsAndExtensionId(
 
 // DevToolsClientHost interface
 void ExtensionDevToolsClientHost::InspectedTabClosing() {
-  // Tell extension that this client host has been detached.
-  Profile* profile =
-      Profile::FromBrowserContext(tab_contents_->GetBrowserContext());
-  if (profile != NULL && profile->GetExtensionEventRouter()) {
-    ListValue args;
-    args.Append(CreateDebuggeeId(tab_id_));
-
-    std::string json_args;
-    base::JSONWriter::Write(&args, false, &json_args);
-
-    profile->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id_, keys::kOnDetach, json_args, profile, GURL());
-  }
+  SendDetachedEvent();
   delete this;
 }
 
@@ -181,6 +218,12 @@ void ExtensionDevToolsClientHost::TabReplaced(
 void ExtensionDevToolsClientHost::Close() {
   DevToolsManager::GetInstance()->ClientHostClosing(this);
   delete this;
+}
+
+void ExtensionDevToolsClientHost::InfoBarDestroyed() {
+  infobar_delegate_ = NULL;
+  SendDetachedEvent();
+  Close();
 }
 
 void ExtensionDevToolsClientHost::SendMessageToBackend(
@@ -198,6 +241,21 @@ void ExtensionDevToolsClientHost::SendMessageToBackend(
   std::string json_args;
   base::JSONWriter::Write(&protocol_request, false, &json_args);
   DevToolsManager::GetInstance()->DispatchOnInspectorBackend(this, json_args);
+}
+
+void ExtensionDevToolsClientHost::SendDetachedEvent() {
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents_->GetBrowserContext());
+  if (profile != NULL && profile->GetExtensionEventRouter()) {
+    ListValue args;
+    args.Append(CreateDebuggeeId(tab_id_));
+
+    std::string json_args;
+    base::JSONWriter::Write(&args, false, &json_args);
+
+    profile->GetExtensionEventRouter()->DispatchEventToExtension(
+        extension_id_, keys::kOnDetach, json_args, profile, GURL());
+  }
 }
 
 void ExtensionDevToolsClientHost::Observe(
@@ -249,6 +307,42 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
     function->SendResponseBody(dictionary);
     pending_requests_.erase(id);
   }
+}
+
+ExtensionDevToolsInfoBarDelegate::ExtensionDevToolsInfoBarDelegate(
+    InfoBarTabHelper* infobar_helper,
+    const std::string& client_name,
+    ExtensionDevToolsClientHost* client_host)
+    : ConfirmInfoBarDelegate(infobar_helper),
+      client_name_(client_name),
+      client_host_(client_host) {
+}
+
+ExtensionDevToolsInfoBarDelegate::~ExtensionDevToolsInfoBarDelegate() {
+  if (client_host_)
+      client_host_->InfoBarDestroyed();
+}
+
+void ExtensionDevToolsInfoBarDelegate::ClearClientHost() {
+    client_host_ = NULL;
+}
+
+bool ExtensionDevToolsInfoBarDelegate::ShouldExpire(
+    const content::LoadCommittedDetails& details) const {
+  return false;
+}
+
+int ExtensionDevToolsInfoBarDelegate::GetButtons() const {
+  return BUTTON_CANCEL;
+}
+
+InfoBarDelegate::Type ExtensionDevToolsInfoBarDelegate::GetInfoBarType() const {
+  return WARNING_TYPE;
+}
+
+string16 ExtensionDevToolsInfoBarDelegate::GetMessageText() const {
+  return l10n_util::GetStringFUTF16(IDS_DEV_TOOLS_INFOBAR_LABEL,
+                                    UTF8ToUTF16(client_name_));
 }
 
 DebuggerFunction::DebuggerFunction()
@@ -335,7 +429,10 @@ bool AttachDebuggerFunction::RunImpl() {
     return false;
   }
 
-  new ExtensionDevToolsClientHost(contents_, GetExtension()->id(), tab_id_);
+  new ExtensionDevToolsClientHost(contents_,
+                                  GetExtension()->id(),
+                                  GetExtension()->name(),
+                                  tab_id_);
   SendResponse(true);
   return true;
 }
