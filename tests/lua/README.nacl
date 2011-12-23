@@ -1,8 +1,0 @@
-Experimental Native Client Lua Demo
-
-To build:
-* download the lua sources by just running 'make download nacl' (you will
-  need wget or curl).
-* build the module with 'make debug nacl' or 'make release nacl'
-
-Then point your browser to the lua.html page included here.
