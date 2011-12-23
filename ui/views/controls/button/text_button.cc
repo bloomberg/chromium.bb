@@ -753,7 +753,7 @@ std::string TextButton::GetClassName() const {
 }
 
 void TextButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if ((focusable() || IsAccessibilityFocusableInRootView()) && HasFocus()) {
+  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
     gfx::Rect rect(GetLocalBounds());
     rect.Inset(kFocusRectInset, kFocusRectInset);
     canvas->DrawFocusRect(rect);
@@ -841,7 +841,7 @@ std::string NativeTextButton::GetClassName() const {
 
 void NativeTextButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
 #if defined(OS_WIN)
-  if ((focusable() || IsAccessibilityFocusableInRootView()) && HasFocus()) {
+  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
     gfx::Rect rect(GetLocalBounds());
     rect.Inset(kFocusRectInset, kFocusRectInset);
     canvas->DrawFocusRect(rect);

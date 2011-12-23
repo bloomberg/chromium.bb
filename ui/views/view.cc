@@ -898,7 +898,7 @@ bool View::IsFocusable() const {
   return focusable_ && enabled_ && IsDrawn();
 }
 
-bool View::IsAccessibilityFocusableInRootView() const {
+bool View::IsAccessibilityFocusable() const {
   return (focusable_ || accessibility_focusable_) && enabled_ && IsDrawn();
 }
 
@@ -1093,7 +1093,7 @@ void View::OnPaintBorder(gfx::Canvas* canvas) {
 }
 
 void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if ((focusable() || IsAccessibilityFocusableInRootView()) && HasFocus()) {
+  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
     TRACE_EVENT2("views", "views::OnPaintFocusBorder",
                  "width", canvas->GetSkCanvas()->getDevice()->width(),
                  "height", canvas->GetSkCanvas()->getDevice()->height());

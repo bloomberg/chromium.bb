@@ -674,7 +674,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Return whether this view is focusable when the user requires full keyboard
   // access, even though it may not be normally focusable.
-  bool IsAccessibilityFocusableInRootView() const;
+  bool IsAccessibilityFocusable() const;
 
   // Set whether this view can be made focusable if the user requires
   // full keyboard access, even though it's not normally focusable.

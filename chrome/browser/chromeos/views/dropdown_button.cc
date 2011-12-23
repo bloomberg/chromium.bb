@@ -71,7 +71,7 @@ DropDownButton::~DropDownButton() {
 }
 
 void DropDownButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && (focusable() || IsAccessibilityFocusableInRootView())) {
+  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
     canvas->DrawFocusRect(gfx::Rect(kFocusFrameLeftOffset, kFocusFrameTopOffset,
                                     width() - kFocusFrameRightOffset,
                                     height() - kFocusFrameBottomOffset));

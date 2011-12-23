@@ -35,8 +35,8 @@ class VIEWS_EXPORT FocusSearch {
   //           view to FindNextFocusableView you will always get a valid view
   //           out, even if it's the same view.
   // - |accessibility_mode| should be true if full keyboard accessibility is
-  //   needed and you  want to check IsAccessibilityFocusableInRootView(),
-  //   rather than IsFocusable().
+  //   needed and you want to check IsAccessibilityFocusable(), rather than
+  //   IsFocusable().
   FocusSearch(View* root, bool cycle, bool accessibility_mode);
   virtual ~FocusSearch() {}
 
@@ -75,8 +75,7 @@ class VIEWS_EXPORT FocusSearch {
   bool IsViewFocusableCandidate(View* v, int skip_group_id);
 
   // Convenience method; returns true if a view is not NULL and is focusable
-  // (checking IsAccessibilityFocusableInRootView() if accessibility_mode_ is
-  // true).
+  // (checking IsAccessibilityFocusable() if |accessibility_mode_| is true).
   bool IsFocusable(View* v);
 
   // Returns the view selected for the group of the selected view. If the view

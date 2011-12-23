@@ -297,7 +297,7 @@ void FocusManager::RestoreFocusedView() {
   View* view = view_storage->RetrieveView(stored_focused_view_storage_id_);
   if (view) {
     if (ContainsView(view)) {
-      if (!view->IsFocusable() && view->IsAccessibilityFocusableInRootView()) {
+      if (!view->IsFocusable() && view->IsAccessibilityFocusable()) {
         // RequestFocus would fail, but we want to restore focus to controls
         // that had focus in accessibility mode.
         SetFocusedViewWithReason(view, kReasonFocusRestore);
