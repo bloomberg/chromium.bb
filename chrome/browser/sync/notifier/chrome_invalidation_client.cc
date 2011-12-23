@@ -28,7 +28,6 @@ ChromeInvalidationClient::Listener::~Listener() {}
 
 ChromeInvalidationClient::ChromeInvalidationClient()
     : chrome_system_resources_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      scoped_callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       listener_(NULL),
       state_writer_(NULL),
       ticl_ready_(false) {

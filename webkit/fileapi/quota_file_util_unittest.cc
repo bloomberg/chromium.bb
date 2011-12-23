@@ -5,7 +5,6 @@
 #include "webkit/fileapi/quota_file_util.h"
 
 #include "base/file_path.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
@@ -22,9 +21,7 @@ namespace fileapi {
 
 class QuotaFileUtilTest : public testing::Test {
  public:
-  QuotaFileUtilTest()
-      : callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  }
+  QuotaFileUtilTest() {}
 
   void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -80,7 +77,6 @@ class QuotaFileUtilTest : public testing::Test {
   FileSystemTestOriginHelper obfuscated_test_helper_;
   FileSystemTestOriginHelper quota_test_helper_;
   scoped_ptr<QuotaFileUtil> quota_file_util_;
-  base::ScopedCallbackFactory<QuotaFileUtilTest> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaFileUtilTest);
 };

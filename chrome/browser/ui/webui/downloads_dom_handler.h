@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/public/browser/download_item.h"
@@ -110,8 +109,6 @@ class DownloadsDOMHandler : public WebUIMessageHandler,
   // notification should follow close on the heels of such a change.
   typedef std::vector<content::DownloadItem*> OrderedDownloads;
   OrderedDownloads download_items_;
-
-  base::ScopedCallbackFactory<DownloadsDOMHandler> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsDOMHandler);
 };

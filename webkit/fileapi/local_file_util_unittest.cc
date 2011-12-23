@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
@@ -27,8 +26,7 @@ namespace fileapi {
 class LocalFileUtilTest : public testing::Test {
  public:
   LocalFileUtilTest()
-      : local_file_util_(new LocalFileUtil(new NativeFileUtil())),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      : local_file_util_(new LocalFileUtil(new NativeFileUtil())) {
   }
 
   void SetUp() {
@@ -97,8 +95,6 @@ class LocalFileUtilTest : public testing::Test {
   scoped_ptr<LocalFileUtil> local_file_util_;
   ScopedTempDir data_dir_;
   FileSystemTestOriginHelper test_helper_;
-
-  base::ScopedCallbackFactory<LocalFileUtilTest> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileUtilTest);
 };

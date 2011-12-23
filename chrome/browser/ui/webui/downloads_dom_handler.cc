@@ -124,8 +124,7 @@ class DownloadsDOMHandler::OriginalDownloadManagerObserver
 
 DownloadsDOMHandler::DownloadsDOMHandler(DownloadManager* dlm)
     : search_text_(),
-      download_manager_(dlm),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      download_manager_(dlm) {
   // Create our fileicon data source.
   Profile::FromBrowserContext(dlm->GetBrowserContext())->
       GetChromeURLDataManager()->AddDataSource(

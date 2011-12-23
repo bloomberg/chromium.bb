@@ -13,7 +13,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -126,8 +125,6 @@ class ChromeInvalidationClient
 
   base::NonThreadSafe non_thread_safe_;
   ChromeSystemResources chrome_system_resources_;
-  base::ScopedCallbackFactory<ChromeInvalidationClient>
-      scoped_callback_factory_;
   InvalidationVersionMap max_invalidation_versions_;
   browser_sync::WeakHandle<InvalidationVersionTracker>
       invalidation_version_tracker_;
