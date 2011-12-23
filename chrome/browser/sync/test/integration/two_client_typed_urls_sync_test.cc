@@ -179,8 +179,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddOneDeleteOther) {
   AssertAllProfilesHaveSameURLsAsVerifier();
 }
 
+// flaky, see crbug.com/108511
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
-                       AddOneDeleteOtherAddAgain) {
+                       FLAKY_AddOneDeleteOtherAddAgain) {
   const string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-delete-add-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
