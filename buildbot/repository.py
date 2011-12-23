@@ -132,12 +132,6 @@ class RepoRepository(object):
       os.unlink(manifest_path)
       shutil.copyfile(local_manifest, manifest_path)
 
-  def _FixRepoToolUrl(self):
-    """Point the repo source url to our internal mirror."""
-    cros_lib.RunCommand(['git', 'remote', 'set-url', 'origin',
-                         constants.REPO_URL],
-                         cwd=os.path.join(self.directory, '.repo/repo'))
-
   def _SyncToEBuilds(self):
     """Synchronize cros-workon packages to their stable commits.
 
@@ -180,15 +174,18 @@ class RepoRepository(object):
     jobs: An integer representing how many repo jobs to run.
     """
     try:
-      if not InARepoRepository(self.directory):
+      do_self_update = InARepoRepository(self.directory)
+      if not do_self_update:
         self.Initialize()
 
-      # For existing repositories, point the repo source url to our internal
-      # mirror.  Take out once builders/trybot users run through this code.
-      # TODO(rcui): Remove by Oct. 8, 2011
-      self._FixRepoToolUrl()
-
       self._ReinitializeIfNecessary(local_manifest)
+
+      if do_self_update:
+        # selfupdate prior to sync'ing.  Repo's first sync is  the manifest.
+        # if we're deploying a new manifest that uses new repo functionality,
+        # we have to repo up to date else it would fail.
+        cros_lib.RunCommand(['repo', 'selfupdate'],
+                             cwd=self.directory)
       cros_lib.OldRunCommand(['repo', 'sync', '--jobs', str(jobs)],
                              cwd=self.directory, num_retries=2)
       FixExternalRepoPushUrls(self.directory)
