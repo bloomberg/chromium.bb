@@ -140,8 +140,16 @@ def _IsIncrementalBuild(buildroot, clobber):
 
 def _RunSudoNoOp():
   """Run sudo with a noop, to reset the sudo timestamp."""
+  # This resets the normal terminal-bound sudo.
   proc = subprocess.Popen(['sudo', 'echo'], stdout=subprocess.PIPE, shell=False)
   proc.communicate()
+  # This resets the terminal-less sudo. This is achieved by replacing all of
+  # stdin,stdout,stderr with a PIPE, as that is what sudo uses to determine tty.
+  # Without a tty, the timestamp will belong to a special /dev/null sudo. See
+  # crosbug.com/18393 for details.
+  proc = subprocess.Popen(['sudo', 'su'], stdin=subprocess.PIPE,
+      stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+  proc.communicate(input='')
 
 
 def _RunSudoPeriodically(queue):
@@ -540,6 +548,8 @@ def _RunBuildStagesWrapper(bot_id, options, build_config):
 def _RunBuildStagesWithSudoProcess(bot_id, options, build_config):
   """Starts sudo process before running build stages, and manages cleanup."""
   # Reset sudo timestamp
+  cros_lib.Info('Launching sudo keepalive process. '
+                'This may ask for password twice.')
   _RunSudoNoOp()
   sudo_queue = _LaunchSudoKeepAliveProcess()
 
