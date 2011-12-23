@@ -89,7 +89,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, Add) {
 }
 
 // TCM: 3705291
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddThenDelete) {
+// flaky, see crbug.com/108511
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, FLAKY_AddThenDelete) {
   const string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-one-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -149,7 +150,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, DisableEnableSync) {
   AssertAllProfilesHaveSameURLsAsVerifier();
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddOneDeleteOther) {
+// flaky, see crbug.com/108511
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, FLAKY_AddOneDeleteOther) {
   const string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-one-delete-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
