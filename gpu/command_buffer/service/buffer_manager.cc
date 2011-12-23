@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/buffer_manager.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -11,7 +12,10 @@ namespace gpu {
 namespace gles2 {
 
 BufferManager::BufferManager()
-    : allow_buffers_on_multiple_targets_(false) {
+    : allow_buffers_on_multiple_targets_(false),
+      mem_represented_(0),
+      last_reported_mem_represented_(1) {
+  UpdateMemRepresented();
 }
 
 BufferManager::~BufferManager() {
@@ -20,8 +24,9 @@ BufferManager::~BufferManager() {
 
 void BufferManager::Destroy(bool have_context) {
   while (!buffer_infos_.empty()) {
+    BufferInfo* info = buffer_infos_.begin()->second;
+    mem_represented_ -= info->size();
     if (have_context) {
-      BufferInfo* info = buffer_infos_.begin()->second;
       if (!info->IsDeleted()) {
         GLuint service_id = info->service_id();
         glDeleteBuffersARB(1, &service_id);
@@ -29,6 +34,16 @@ void BufferManager::Destroy(bool have_context) {
       }
     }
     buffer_infos_.erase(buffer_infos_.begin());
+  }
+  DCHECK_EQ(0u, mem_represented_);
+  UpdateMemRepresented();
+}
+
+void BufferManager::UpdateMemRepresented() {
+  if (mem_represented_ != last_reported_mem_represented_) {
+    last_reported_mem_represented_ = mem_represented_;
+    TRACE_COUNTER_ID1(
+        "BufferManager", "BufferMemory", this, mem_represented_);
   }
 }
 
@@ -49,7 +64,10 @@ BufferManager::BufferInfo* BufferManager::GetBufferInfo(
 void BufferManager::RemoveBufferInfo(GLuint client_id) {
   BufferInfoMap::iterator it = buffer_infos_.find(client_id);
   if (it != buffer_infos_.end()) {
-    it->second->MarkAsDeleted();
+    BufferInfo* buffer = it->second;
+    buffer->MarkAsDeleted();
+    mem_represented_ -= buffer->size();
+    UpdateMemRepresented();
     buffer_infos_.erase(it);
   }
 }
@@ -190,10 +208,12 @@ bool BufferManager::GetClientId(GLuint service_id, GLuint* client_id) const {
 void BufferManager::SetInfo(
     BufferManager::BufferInfo* info, GLsizeiptr size, GLenum usage) {
   DCHECK(info);
+  mem_represented_ -= info->size();
   info->SetInfo(size,
                 usage,
                 info->target() == GL_ELEMENT_ARRAY_BUFFER ||
                 allow_buffers_on_multiple_targets_);
+  mem_represented_ += info->size();
 }
 
 bool BufferManager::SetTarget(BufferManager::BufferInfo* info, GLenum target) {

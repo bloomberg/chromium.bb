@@ -177,12 +177,17 @@ class BufferManager {
   }
 
  private:
+  void UpdateMemRepresented();
+
   // Info for each buffer in the system.
   typedef base::hash_map<GLuint, BufferInfo::Ref> BufferInfoMap;
   BufferInfoMap buffer_infos_;
 
   // Whether or not buffers can be bound to multiple targets.
   bool allow_buffers_on_multiple_targets_;
+
+  size_t mem_represented_;
+  size_t last_reported_mem_represented_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferManager);
 };
