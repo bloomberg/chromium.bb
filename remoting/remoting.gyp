@@ -903,6 +903,7 @@
         'base/base_mock_objects.cc',
         'base/base_mock_objects.h',
 # BUG57351        'client/chromoting_view_unittest.cc',
+        'client/mouse_input_filter_unittest.cc',
         'host/capturer_linux_unittest.cc',
         'host/capturer_mac_unittest.cc',
         'host/capturer_win_unittest.cc',

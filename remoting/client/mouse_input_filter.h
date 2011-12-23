@@ -34,8 +34,8 @@ class MouseInputFilter : public protocol::InputStub {
  private:
   protocol::InputStub* input_stub_;
 
-  SkISize input_size_;
-  SkISize output_size_;
+  SkISize input_max_;
+  SkISize output_max_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseInputFilter);
 };

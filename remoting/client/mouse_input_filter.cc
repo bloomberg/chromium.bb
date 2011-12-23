@@ -10,8 +10,8 @@ namespace remoting {
 
 MouseInputFilter::MouseInputFilter(protocol::InputStub* input_stub)
     : input_stub_(input_stub) {
-  input_size_.setEmpty();
-  output_size_.setEmpty();
+  input_max_.setEmpty();
+  output_max_.setEmpty();
 }
 
 MouseInputFilter::~MouseInputFilter() {
@@ -22,28 +22,34 @@ void MouseInputFilter::InjectKeyEvent(const protocol::KeyEvent& event) {
 }
 
 void MouseInputFilter::InjectMouseEvent(const protocol::MouseEvent& event) {
-  if (input_size_.isZero() || output_size_.isZero())
+  if (input_max_.isEmpty() || output_max_.isEmpty())
     return;
 
+  // We scale based on the maximum input & output coordinates, rather than the
+  // input and output sizes, so that it's possible to reach the edge of the
+  // output when up-scaling.  We also take care to round up or down correctly,
+  // which is important when down-scaling.
   protocol::MouseEvent out_event(event);
   if (out_event.has_x()) {
-    int x = (out_event.x() * output_size_.width()) / input_size_.width();
-    out_event.set_x(std::max(0, std::min(output_size_.width() - 1, x)));
+    int x = out_event.x() * output_max_.width();
+    x = (x + input_max_.width() / 2) / input_max_.width();
+    out_event.set_x(std::max(0, std::min(output_max_.width(), x)));
   }
   if (out_event.has_y()) {
-    int y = (out_event.y() * output_size_.height()) / input_size_.height();
-    out_event.set_y(std::max(0, std::min(output_size_.height() - 1, y)));
+    int y = out_event.y() * output_max_.height();
+    y = (y + input_max_.height() / 2) / input_max_.height();
+    out_event.set_y(std::max(0, std::min(output_max_.height(), y)));
   }
 
   input_stub_->InjectMouseEvent(out_event);
 }
 
 void MouseInputFilter::set_input_size(const SkISize& size) {
-  input_size_ = size;
+  input_max_ = SkISize::Make(size.width() - 1, size.height() - 1);
 }
 
 void MouseInputFilter::set_output_size(const SkISize& size) {
-  output_size_ = size;
+  output_max_ = SkISize::Make(size.width() - 1, size.height() - 1);
 }
 
 }  // namespace remoting
