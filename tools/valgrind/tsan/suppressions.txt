@@ -720,3 +720,27 @@
    fun:scoped_ptr::reset
    fun:ProfileSyncServiceAutofillTest::TearDown
 }
+{
+  bug_108408
+  ThreadSanitizer:Race
+  fun:base::subtle::RefCountedBase::AddRef
+  fun:base::RefCounted::AddRef
+  fun:net::HttpCache::Transaction::DoCacheWriteData
+  fun:net::HttpCache::Transaction::DoLoop
+  fun:net::HttpCache::Transaction::ReadFromNetwork
+  fun:net::HttpCache::Transaction::Read
+  fun:net::URLRequestHttpJob::ReadRawData
+  fun:net::URLRequestJob::ReadRawDataHelper
+  fun:net::URLRequestJob::Read
+  fun:net::URLRequest::Read
+  fun:ResourceDispatcherHost::Read
+  fun:ResourceDispatcherHost::StartReading
+  fun:ResourceDispatcherHost::ResumeRequest
+  fun:base::internal::RunnableAdapter::Run
+}
+{
+  bug_108411
+  ThreadSanitizer:Race
+  ...
+  fun:pa_rtpoll_run
+}

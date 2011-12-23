@@ -5180,10 +5180,7 @@
    Memcheck:Leak
    fun:malloc
    fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF16VectorBufferBaseIPN7WebCore19PropertyWrapperBaseEE14allocateBufferEm
-   fun:_ZN3WTF6VectorIPN7WebCore19PropertyWrapperBaseELm0EE15reserveCapacityEm
-   fun:_ZN3WTF6VectorIPN7WebCore19PropertyWrapperBaseELm0EE14expandCapacityEm
-   fun:_ZN3WTF6VectorIPN7WebCore19PropertyWrapperBaseELm0EE14expandCapacityIKPNS1_25FillLayersPropertyWrapperEEEPT_mSA_
+   ...
    fun:_ZN7WebCore13AnimationBase17ensurePropertyMapEv
    fun:_ZN7WebCore13AnimationBase16getNumPropertiesEv
    fun:_ZN7WebCore18CompositeAnimation17updateTransitionsEPNS_12RenderObjectEPNS_11RenderStyleES4_
