@@ -267,7 +267,7 @@ class ThumbnailDatabase {
   // initialization after the table is created. This is a separate function
   // because it is used by SwapFaviconTables to create an index over the
   // newly-renamed favicons table (formerly the temporary table with no index).
-  void InitFaviconsIndex();
+  bool InitFaviconsIndex();
 
   // Creates the icon_map table, return true if the table already exists or was
   // successfully created.
@@ -278,7 +278,7 @@ class ThumbnailDatabase {
   // because it is used by CommitTemporaryIconMappingTable to create an index
   // over the newly-renamed icon_mapping table (formerly the temporary table
   // with no index).
-  void InitIconMappingIndex();
+  bool InitIconMappingIndex();
 
   // Adds a mapping between the given page_url and icon_id; The mapping will be
   // added to temp_icon_mapping table if is_temporary is true.

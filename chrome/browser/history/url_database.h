@@ -252,13 +252,13 @@ class URLDatabase {
   bool CreateURLTable(bool is_temporary);
   // We have two tiers of indices for the URL table. The main tier is used by
   // all URL databases, and is an index over the URL itself.
-  void CreateMainURLIndex();
+  bool CreateMainURLIndex();
 
   // Ensures the keyword search terms table exists.
   bool InitKeywordSearchTermsTable();
 
   // Creates the indices used for keyword search terms.
-  void CreateKeywordSearchTermsIndices();
+  bool CreateKeywordSearchTermsIndices();
 
   // Deletes the keyword search terms table.
   bool DropKeywordSearchTermsTable();

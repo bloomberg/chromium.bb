@@ -29,10 +29,10 @@ bool InMemoryDatabase::InitDB() {
   }
 
   // No reason to leave data behind in memory when rows are removed.
-  db_.Execute("PRAGMA auto_vacuum=1");
+  ignore_result(db_.Execute("PRAGMA auto_vacuum=1"));
 
   // Ensure this is really an in-memory-only cache.
-  db_.Execute("PRAGMA temp_store=MEMORY");
+  ignore_result(db_.Execute("PRAGMA temp_store=MEMORY"));
 
   // Create the URL table, but leave it empty for now.
   if (!CreateURLTable(false)) {

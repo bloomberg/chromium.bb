@@ -201,10 +201,8 @@ bool TextDatabase::CreateTables() {
       return false;
   }
 
-  // Create the index. This will fail when the index already exists, so we just
-  // ignore the error.
-  db_.Execute("CREATE INDEX info_time ON info(time)");
-  return true;
+  // Create the index.
+  return db_.Execute("CREATE INDEX IF NOT EXISTS info_time ON info(time)");
 }
 
 bool TextDatabase::AddPageData(base::Time time,

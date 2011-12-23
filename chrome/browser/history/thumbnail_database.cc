@@ -85,12 +85,12 @@ sql::InitStatus ThumbnailDatabase::Init(
                         kCompatibleVersionNumber) ||
       !InitThumbnailTable() ||
       !InitFaviconsTable(&db_, false) ||
-      !InitIconMappingTable(&db_, false)) {
+      !InitFaviconsIndex() ||
+      !InitIconMappingTable(&db_, false) ||
+      !InitIconMappingIndex()) {
     db_.Close();
     return sql::INIT_FAILURE;
   }
-  InitFaviconsIndex();
-  InitIconMappingIndex();
 
   // Version check. We should not encounter a database too old for us to handle
   // in the wild, so we try to continue in that case.
@@ -219,10 +219,10 @@ bool ThumbnailDatabase::InitFaviconsTable(sql::Connection* db,
   return true;
 }
 
-void ThumbnailDatabase::InitFaviconsIndex() {
-  // Add an index on the url column. We ignore errors. Since this is always
-  // called during startup, the index will normally already exist.
-  db_.Execute("CREATE INDEX favicons_url ON favicons(url)");
+bool ThumbnailDatabase::InitFaviconsIndex() {
+  // Add an index on the url column.
+  return
+      db_.Execute("CREATE INDEX IF NOT EXISTS favicons_url ON favicons(url)");
 }
 
 void ThumbnailDatabase::BeginTransaction() {
@@ -236,7 +236,7 @@ void ThumbnailDatabase::CommitTransaction() {
 void ThumbnailDatabase::Vacuum() {
   DCHECK(db_.transaction_nesting() == 0) <<
       "Can not have a transaction when vacuuming.";
-  db_.Execute("VACUUM");
+  ignore_result(db_.Execute("VACUUM"));
 }
 
 void ThumbnailDatabase::SetPageThumbnail(
@@ -605,9 +605,7 @@ bool ThumbnailDatabase::CommitTemporaryIconMappingTable() {
     return false;
 
   // The renamed table needs the index (the temporary table doesn't have one).
-  InitIconMappingIndex();
-
-  return true;
+  return InitIconMappingIndex();
 }
 
 FaviconID ThumbnailDatabase::CopyToTemporaryFaviconTable(FaviconID source) {
@@ -635,8 +633,7 @@ bool ThumbnailDatabase::CommitTemporaryFaviconTable() {
     return false;
 
   // The renamed table needs the index (the temporary table doesn't have one).
-  InitFaviconsIndex();
-  return true;
+  return InitFaviconsIndex();
 }
 
 bool ThumbnailDatabase::NeedsMigrationToTopSites() {
@@ -713,7 +710,8 @@ bool ThumbnailDatabase::RenameAndDropThumbnails(const FilePath& old_db_file,
   if (!meta_table_.Init(&db_, kCurrentVersionNumber, kCompatibleVersionNumber))
     return false;
 
-  InitFaviconsIndex();
+  if (!InitFaviconsIndex())
+    return false;
 
   // Reopen the transaction.
   BeginTransaction();
@@ -738,12 +736,13 @@ bool ThumbnailDatabase::InitIconMappingTable(sql::Connection* db,
   return true;
 }
 
-void ThumbnailDatabase::InitIconMappingIndex() {
-  // Add an index on the url column. We ignore errors. Since this is always
-  // called during startup, the index will normally already exist.
-  db_.Execute("CREATE INDEX icon_mapping_page_url_idx"
-              " ON icon_mapping(page_url)");
-  db_.Execute("CREATE INDEX icon_mapping_icon_id_idx ON icon_mapping(icon_id)");
+bool ThumbnailDatabase::InitIconMappingIndex() {
+  // Add an index on the url column.
+  return
+      db_.Execute("CREATE INDEX IF NOT EXISTS icon_mapping_page_url_idx"
+                  " ON icon_mapping(page_url)") &&
+      db_.Execute("CREATE INDEX IF NOT EXISTS icon_mapping_icon_id_idx"
+                  " ON icon_mapping(icon_id)");
 }
 
 IconMappingID ThumbnailDatabase::AddIconMapping(const GURL& page_url,

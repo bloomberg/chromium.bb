@@ -60,7 +60,9 @@ bool VisitSegmentDatabase::InitSegmentTables() {
 
   // This was added later, so we need to try to create it even if the table
   // already exists.
-  GetDB().Execute("CREATE INDEX segments_url_id ON segments(url_id)");
+  if (!GetDB().Execute("CREATE INDEX IF NOT EXISTS segments_url_id ON "
+                       "segments(url_id)"))
+    return false;
 
   // Segment usage table.
   if (!GetDB().DoesTableExist("segment_usage")) {
@@ -81,8 +83,9 @@ bool VisitSegmentDatabase::InitSegmentTables() {
   }
 
   // Added in a later version, so we always need to try to creat this index.
-  GetDB().Execute("CREATE INDEX segments_usage_seg_id "
-                  "ON segment_usage(segment_id)");
+  if (!GetDB().Execute("CREATE INDEX IF NOT EXISTS segments_usage_seg_id "
+                       "ON segment_usage(segment_id)"))
+    return false;
 
   // Presentation index table.
   //

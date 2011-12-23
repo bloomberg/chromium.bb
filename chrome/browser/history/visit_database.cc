@@ -62,26 +62,33 @@ bool VisitDatabase::InitVisitTable() {
         return false;
   }
 
-  // Index over url so we can quickly find visits for a page. This will just
-  // fail if it already exists and we'll ignore it.
-  GetDB().Execute("CREATE INDEX visits_url_index ON visits (url)");
+  // Index over url so we can quickly find visits for a page.
+  if (!GetDB().Execute(
+          "CREATE INDEX IF NOT EXISTS visits_url_index ON visits (url)"))
+    return false;
 
   // Create an index over from visits so that we can efficiently find
-  // referrers and redirects. Ignore failures because it likely already exists.
-  GetDB().Execute("CREATE INDEX visits_from_index ON visits (from_visit)");
+  // referrers and redirects.
+  if (!GetDB().Execute(
+          "CREATE INDEX IF NOT EXISTS visits_from_index ON "
+          "visits (from_visit)"))
+    return false;
 
   // Create an index over time so that we can efficiently find the visits in a
-  // given time range (most history views are time-based). Ignore failures
-  // because it likely already exists.
-  GetDB().Execute("CREATE INDEX visits_time_index ON visits (visit_time)");
+  // given time range (most history views are time-based).
+  if (!GetDB().Execute(
+          "CREATE INDEX IF NOT EXISTS visits_time_index ON "
+          "visits (visit_time)"))
+    return false;
 
   return true;
 }
 
 bool VisitDatabase::DropVisitTable() {
-  GetDB().Execute("DROP TABLE visit_source");
   // This will also drop the indices over the table.
-  return GetDB().Execute("DROP TABLE visits");
+  return
+      GetDB().Execute("DROP TABLE IF EXISTS visit_source") &&
+      GetDB().Execute("DROP TABLE visits");
 }
 
 // Must be in sync with HISTORY_VISIT_ROW_FIELDS.

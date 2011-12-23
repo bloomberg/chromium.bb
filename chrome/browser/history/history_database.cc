@@ -130,7 +130,7 @@ sql::InitStatus HistoryDatabase::Init(const FilePath& history_name,
 void HistoryDatabase::BeginExclusiveMode() {
   // We can't use set_exclusive_locking() since that only has an effect before
   // the DB is opened.
-  db_.Execute("PRAGMA locking_mode=EXCLUSIVE");
+  ignore_result(db_.Execute("PRAGMA locking_mode=EXCLUSIVE"));
 }
 
 // static
@@ -172,7 +172,7 @@ bool HistoryDatabase::RecreateAllTablesButURL() {
 void HistoryDatabase::Vacuum() {
   DCHECK_EQ(0, db_.transaction_nesting()) <<
       "Can not have a transaction when vacuuming.";
-  db_.Execute("VACUUM");
+  ignore_result(db_.Execute("VACUUM"));
 }
 
 void HistoryDatabase::ThumbnailMigrationDone() {
@@ -323,18 +323,18 @@ void HistoryDatabase::MigrateTimeEpoch() {
   // Update all the times in the URLs and visits table in the main database.
   // For visits, clear the indexed flag since we'll delete the FTS databases in
   // the next step.
-  db_.Execute(
+  ignore_result(db_.Execute(
       "UPDATE urls "
       "SET last_visit_time = last_visit_time + 11644473600000000 "
-      "WHERE id IN (SELECT id FROM urls WHERE last_visit_time > 0);");
-  db_.Execute(
+      "WHERE id IN (SELECT id FROM urls WHERE last_visit_time > 0);"));
+  ignore_result(db_.Execute(
       "UPDATE visits "
       "SET visit_time = visit_time + 11644473600000000, is_indexed = 0 "
-      "WHERE id IN (SELECT id FROM visits WHERE visit_time > 0);");
-  db_.Execute(
+      "WHERE id IN (SELECT id FROM visits WHERE visit_time > 0);"));
+  ignore_result(db_.Execute(
       "UPDATE segment_usage "
       "SET time_slot = time_slot + 11644473600000000 "
-      "WHERE id IN (SELECT id FROM segment_usage WHERE time_slot > 0);");
+      "WHERE id IN (SELECT id FROM segment_usage WHERE time_slot > 0);"));
 
   // Erase all the full text index files. These will take a while to update and
   // are less important, so we just blow them away. Same with the archived

@@ -168,17 +168,10 @@ bool ShortcutsDatabase::DeleteShortcutsWithUrl(
 }
 
 bool ShortcutsDatabase::DeleteAllShortcuts() {
-  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
-      "DROP TABLE " kShortcutsDBName));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
+  if (!db_.Execute("DELETE FROM " kShortcutsDBName))
     return false;
-  }
 
-  if (!s.Run())
-    return false;
-  EnsureTable();
-  db_.Execute("VACUUM");
+  ignore_result(db_.Execute("VACUUM"));
   return true;
 }
 

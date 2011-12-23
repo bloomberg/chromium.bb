@@ -406,14 +406,21 @@ bool URLDatabase::InitKeywordSearchTermsTable() {
   return true;
 }
 
-void URLDatabase::CreateKeywordSearchTermsIndices() {
+bool URLDatabase::CreateKeywordSearchTermsIndices() {
   // For searching.
-  GetDB().Execute("CREATE INDEX keyword_search_terms_index1 ON "
-                  "keyword_search_terms (keyword_id, lower_term)");
+  if (!GetDB().Execute(
+          "CREATE INDEX IF NOT EXISTS keyword_search_terms_index1 ON "
+          "keyword_search_terms (keyword_id, lower_term)")) {
+    return false;
+  }
 
   // For deletion.
-  GetDB().Execute("CREATE INDEX keyword_search_terms_index2 ON "
-                  "keyword_search_terms (url_id)");
+  if (!GetDB().Execute(
+          "CREATE INDEX IF NOT EXISTS keyword_search_terms_index2 ON "
+          "keyword_search_terms (url_id)")) {
+    return false;
+  }
+  return true;
 }
 
 bool URLDatabase::DropKeywordSearchTermsTable() {
@@ -569,10 +576,10 @@ bool URLDatabase::CreateURLTable(bool is_temporary) {
   return GetDB().Execute(sql.c_str());
 }
 
-void URLDatabase::CreateMainURLIndex() {
-  // Index over URLs so we can quickly look up based on URL.  Ignore errors as
-  // this likely already exists (and the same below).
-  GetDB().Execute("CREATE INDEX urls_url_index ON urls (url)");
+bool URLDatabase::CreateMainURLIndex() {
+  // Index over URLs so we can quickly look up based on URL.
+  return GetDB().Execute(
+      "CREATE INDEX IF NOT EXISTS urls_url_index ON urls (url)");
 }
 
 }  // namespace history
