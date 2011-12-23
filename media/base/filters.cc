@@ -75,6 +75,10 @@ VideoDecoder::VideoDecoder() {}
 
 VideoDecoder::~VideoDecoder() {}
 
+bool VideoDecoder::HasAlpha() const {
+  return false;
+}
+
 AudioDecoder::AudioDecoder() {}
 
 AudioDecoder::~AudioDecoder() {}

@@ -164,7 +164,9 @@ bool WebMediaPlayerImpl::Initialize(
   // Create proxy and default video renderer.
   proxy_ = new WebMediaPlayerProxy(main_loop_, this);
   scoped_refptr<VideoRendererImpl> video_renderer =
-      new VideoRendererImpl(base::Bind(&WebMediaPlayerProxy::Repaint, proxy_));
+      new VideoRendererImpl(
+          base::Bind(&WebMediaPlayerProxy::Repaint, proxy_.get()),
+          base::Bind(&WebMediaPlayerProxy::SetOpaque, proxy_.get()));
   filter_collection_->AddVideoRenderer(video_renderer);
   proxy_->SetVideoRenderer(video_renderer);
 
@@ -868,6 +870,12 @@ void WebMediaPlayerImpl::OnDemuxerOpened() {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
   GetClient()->sourceOpened();
+}
+
+void WebMediaPlayerImpl::SetOpaque(bool opaque) {
+  DCHECK_EQ(main_loop_, MessageLoop::current());
+
+  GetClient()->setOpaque(opaque);
 }
 
 void WebMediaPlayerImpl::SetNetworkState(

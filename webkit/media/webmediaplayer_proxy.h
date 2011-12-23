@@ -40,6 +40,7 @@ class WebMediaPlayerProxy
 
   // Methods for Filter -> WebMediaPlayerImpl communication.
   void Repaint();
+  void SetOpaque(bool opaque);
   void SetVideoRenderer(const scoped_refptr<VideoRendererImpl>& video_renderer);
   WebDataSourceBuildObserverHack GetBuildObserver();
 
@@ -99,6 +100,9 @@ class WebMediaPlayerProxy
 
   // Notify |webmediaplayer_| that there's a network event.
   void NetworkEventTask(media::NetworkEvent type);
+
+  // Inform |webmediaplayer_| whether the video content is opaque.
+  void SetOpaqueTask(bool opaque);
 
   // The render message loop where WebKit lives.
   MessageLoop* render_loop_;

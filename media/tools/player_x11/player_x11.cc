@@ -78,6 +78,9 @@ bool InitX11() {
   return true;
 }
 
+void SetOpaque(bool /*opaque*/) {
+}
+
 typedef base::Callback<void(media::VideoFrame*)> PaintCB;
 void Paint(MessageLoop* message_loop, const PaintCB& paint_cb) {
   if (message_loop != MessageLoop::current()) {
@@ -118,8 +121,9 @@ bool InitPipeline(MessageLoop* message_loop,
       message_loop_factory->GetMessageLoop("VideoDecoderThread")));
 
   // Create our video renderer and save a reference to it for painting.
-  g_video_renderer = new media::VideoRendererBase(base::Bind(
-      &Paint, paint_message_loop, paint_cb));
+  g_video_renderer = new media::VideoRendererBase(
+      base::Bind(&Paint, paint_message_loop, paint_cb),
+      base::Bind(&SetOpaque));
   collection->AddVideoRenderer(g_video_renderer);
 
   if (enable_audio) {

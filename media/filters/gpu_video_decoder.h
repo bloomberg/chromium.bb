@@ -66,6 +66,7 @@ class MEDIA_EXPORT GpuVideoDecoder
                           const StatisticsCallback& stats_callback) OVERRIDE;
   virtual void Read(const ReadCB& callback) OVERRIDE;
   virtual const gfx::Size& natural_size() OVERRIDE;
+  virtual bool HasAlpha() const OVERRIDE;
 
   // VideoDecodeAccelerator::Client implementation.
   virtual void NotifyInitializeDone() OVERRIDE;

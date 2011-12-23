@@ -148,6 +148,11 @@ class MEDIA_EXPORT VideoDecoder : public Filter {
   // get dimensions?
   virtual const gfx::Size& natural_size() = 0;
 
+  // Returns true if the output format has an alpha channel. Most formats do not
+  // have alpha so the default is false. Override and return true for decoders
+  // that return formats with an alpha channel.
+  virtual bool HasAlpha() const;
+
  protected:
   VideoDecoder();
   virtual ~VideoDecoder();

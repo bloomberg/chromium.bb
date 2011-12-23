@@ -215,6 +215,10 @@ const gfx::Size& GpuVideoDecoder::natural_size() {
   return natural_size_;
 }
 
+bool GpuVideoDecoder::HasAlpha() const {
+  return true;
+}
+
 void GpuVideoDecoder::NotifyInitializeDone() {
   NOTREACHED() << "GpuVideoDecodeAcceleratorHost::Initialize is synchronous!";
 }

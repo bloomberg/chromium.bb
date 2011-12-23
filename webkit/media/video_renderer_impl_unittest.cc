@@ -65,8 +65,11 @@ class VideoRendererImplTest : public testing::Test {
 
     // Initialize the renderer.
     base::WaitableEvent event(false, false);
-    renderer_ = new VideoRendererImpl(base::Bind(
-        &VideoRendererImplTest::OnPaint, base::Unretained(this)));
+    renderer_ = new VideoRendererImpl(
+        base::Bind(
+            &VideoRendererImplTest::OnPaint, base::Unretained(this)),
+        base::Bind(
+            &VideoRendererImplTest::SetOpaque, base::Unretained(this)));
     renderer_->set_host(&host_);
     renderer_->SetPlaybackRate(1.0f);
     renderer_->Initialize(
@@ -117,6 +120,7 @@ class VideoRendererImplTest : public testing::Test {
 
  private:
   void OnPaint() {}
+  void SetOpaque(bool) {}
   void OnStatistics(const PipelineStatistics&) {}
 
   void StartPrerolling() {

@@ -45,6 +45,11 @@ void WebMediaPlayerProxy::Repaint() {
   }
 }
 
+void WebMediaPlayerProxy::SetOpaque(bool opaque) {
+  render_loop_->PostTask(FROM_HERE, base::Bind(
+      &WebMediaPlayerProxy::SetOpaqueTask, this, opaque));
+}
+
 void WebMediaPlayerProxy::SetVideoRenderer(
     const scoped_refptr<VideoRendererImpl>& video_renderer) {
   video_renderer_ = video_renderer;
@@ -169,6 +174,12 @@ void WebMediaPlayerProxy::NetworkEventTask(NetworkEvent type) {
   DCHECK(MessageLoop::current() == render_loop_);
   if (webmediaplayer_)
     webmediaplayer_->OnNetworkEvent(type);
+}
+
+void WebMediaPlayerProxy::SetOpaqueTask(bool opaque) {
+  DCHECK(MessageLoop::current() == render_loop_);
+  if (webmediaplayer_)
+    webmediaplayer_->SetOpaque(opaque);
 }
 
 void WebMediaPlayerProxy::GetCurrentFrame(

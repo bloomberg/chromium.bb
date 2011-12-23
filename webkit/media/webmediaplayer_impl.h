@@ -189,6 +189,7 @@ class WebMediaPlayerImpl
   void OnPipelineError(media::PipelineStatus error);
   void OnNetworkEvent(media::NetworkEvent type);
   void OnDemuxerOpened();
+  void SetOpaque(bool);
 
  private:
   // Helpers that set the network/ready state and notifies the client if

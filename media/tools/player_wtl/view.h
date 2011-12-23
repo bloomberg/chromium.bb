@@ -44,7 +44,9 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
     view_rotate_ = media::ROTATE_0;
     view_filter_ = media::FILTER_NONE;
     renderer_ = new media::VideoRendererBase(base::Bind(
-        &WtlVideoWindow::InvalidateWrapper, base::Unretained(this)));
+        &WtlVideoWindow::InvalidateWrapper, base::Unretained(this)),
+                                             base::Bind(
+        &WtlVideoWindow::SetOpaque, base::Unretained(this)));
     last_frame_ = NULL;
     hbmp_ = NULL;
   }
@@ -52,6 +54,9 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
   // Drops the bool return so we can use base::Bind().
   void InvalidateWrapper() {
     Invalidate();
+  }
+
+  void SetOpaque(bool /*opaque*/) {
   }
 
   BOOL PreTranslateMessage(MSG* /*msg*/)  {

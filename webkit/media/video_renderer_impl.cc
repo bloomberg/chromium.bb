@@ -231,8 +231,10 @@ static void ConvertVideoFrameToBitmap(
   bitmap->unlockPixels();
 }
 
-VideoRendererImpl::VideoRendererImpl(const base::Closure& paint_cb)
-    : media::VideoRendererBase(paint_cb),
+VideoRendererImpl::VideoRendererImpl(
+    const base::Closure& paint_cb,
+    const SetOpaqueCB& set_opaque_cb)
+    : media::VideoRendererBase(paint_cb, set_opaque_cb),
       bitmap_timestamp_(media::kNoTimestamp) {
 }
 

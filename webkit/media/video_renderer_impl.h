@@ -25,7 +25,10 @@ namespace webkit_media {
 class VideoRendererImpl : public media::VideoRendererBase {
  public:
   // |paint_cb| is executed whenever a new frame is available for painting.
-  explicit VideoRendererImpl(const base::Closure& paint_cb);
+  // |set_opaque_cb| is used to imform the player whether the video is opaque.
+  VideoRendererImpl(
+      const base::Closure& paint_cb,
+      const SetOpaqueCB& set_opaque_cb);
   virtual ~VideoRendererImpl();
 
   // Paint the current front frame on the |canvas| stretching it to fit the
