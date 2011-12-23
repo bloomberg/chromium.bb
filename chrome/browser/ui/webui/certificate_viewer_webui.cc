@@ -137,11 +137,6 @@ bool CertificateViewerDialog::ShouldShowDialogTitle() const {
   return true;
 }
 
-bool CertificateViewerDialog::HandleContextMenu(
-    const ContextMenuParams& params) {
-  return true;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // CertificateViewerDialogHandler
 

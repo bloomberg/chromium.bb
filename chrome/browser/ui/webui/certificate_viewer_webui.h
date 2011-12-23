@@ -49,7 +49,6 @@ class CertificateViewerDialog : private HtmlDialogUIDelegate {
   virtual void OnCloseContents(
       TabContents* source, bool* out_close_dialog) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
-  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
 
   // The certificate being viewed.
   scoped_refptr<net::X509Certificate> cert_;

@@ -68,6 +68,8 @@ class HtmlDialogUIDelegate {
 
   // A callback to allow the delegate to inhibit context menu or show
   // customized menu.
+  // Returns true iff you do NOT want the standard context menu to be
+  // shown (because you want to handle it yourself).
   virtual bool HandleContextMenu(const ContextMenuParams& params);
 
   // Stores the dialog bounds.
