@@ -273,10 +273,10 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
       tab_contents->GetDelegate()->TabContentsCreated(new_contents);
 
     RetargetingDetails details;
-    details.source_tab_contents = tab_contents;
+    details.source_web_contents = tab_contents;
     details.source_frame_id = params.opener_frame_id;
     details.target_url = params.target_url;
-    details.target_tab_contents = new_contents;
+    details.target_web_contents = new_contents;
     details.not_yet_in_tabstrip = true;
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_RETARGETING,

@@ -31,6 +31,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
+using content::WebContents;
+
 namespace {
 // We only support showing one of these at a time per app.  The
 // controller owns itself and is released when its window is closed.
@@ -50,7 +52,7 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE {
     [controller_ renderViewGone];
   }
-  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE {
+  virtual void WebContentsDestroyed(WebContents* tab) OVERRIDE {
     [controller_ renderViewGone];
   }
 

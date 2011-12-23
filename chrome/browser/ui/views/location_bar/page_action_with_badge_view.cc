@@ -8,6 +8,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 
+using content::WebContents;
+
 PageActionWithBadgeView::PageActionWithBadgeView(
     PageActionImageView* image_view) {
   image_view_ = image_view;
@@ -34,7 +36,7 @@ void PageActionWithBadgeView::Layout() {
   image_view_->SetBounds(0, y, width(), height());
 }
 
-void PageActionWithBadgeView::UpdateVisibility(TabContents* contents,
+void PageActionWithBadgeView::UpdateVisibility(WebContents* contents,
                                                const GURL& url) {
   image_view_->UpdateVisibility(contents, url);
   SetVisible(image_view_->visible());

@@ -19,12 +19,16 @@ class DictionaryValue;
 class ListValue;
 }
 
+namespace content {
+class WebContents;
+}
+
 // Provides various utility functions that help manipulate tabs.
 class ExtensionTabUtil {
  public:
   static int GetWindowId(const Browser* browser);
   static int GetWindowIdOfTabStripModel(const TabStripModel* tab_strip_model);
-  static int GetTabId(const TabContents* tab_contents);
+  static int GetTabId(const content::WebContents* web_contents);
   static bool GetTabIdFromArgument(const base::ListValue &args,
                                    int argument_index,
                                    int *tab_id, std::string* error_message);

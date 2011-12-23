@@ -12,7 +12,10 @@
 
 class GURL;
 class PageActionImageView;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // A container for the PageActionImageView plus its badge.
 class PageActionWithBadgeView : public views::View {
@@ -25,7 +28,7 @@ class PageActionWithBadgeView : public views::View {
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
-  void UpdateVisibility(TabContents* contents, const GURL& url);
+  void UpdateVisibility(content::WebContents* contents, const GURL& url);
 
  private:
   virtual void Layout() OVERRIDE;

@@ -16,6 +16,10 @@
 #include "ui/views/controls/image_view.h"
 
 class LocationBarView;
+
+namespace content {
+class WebContents;
+}
 namespace views {
 class MenuRunner;
 }
@@ -67,7 +71,7 @@ class PageActionImageView : public views::ImageView,
   // Called to notify the PageAction that it should determine whether to be
   // visible or hidden. |contents| is the TabContents that is active, |url| is
   // the current page URL.
-  void UpdateVisibility(TabContents* contents, const GURL& url);
+  void UpdateVisibility(content::WebContents* contents, const GURL& url);
 
   // Either notify listeners or show a popup depending on the page action.
   void ExecuteAction(int button, bool inspect_with_devtools);

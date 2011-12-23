@@ -38,7 +38,7 @@ class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
   virtual void RegisterReplyNotification(const base::Closure& closure) OVERRIDE;
 
   // content::WebContentsObserver implementation.
-  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
+  virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 
  private:
   webkit_glue::WebIntentData intent_;

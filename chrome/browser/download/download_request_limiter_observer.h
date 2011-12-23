@@ -10,7 +10,7 @@
 // Watches for user gesture notifications.
 class DownloadRequestLimiterObserver : public content::WebContentsObserver {
  public:
-  explicit DownloadRequestLimiterObserver(TabContents* tab_contents);
+  explicit DownloadRequestLimiterObserver(content::WebContents* web_contents);
   virtual ~DownloadRequestLimiterObserver();
 
   // content::WebContentsObserver overrides.

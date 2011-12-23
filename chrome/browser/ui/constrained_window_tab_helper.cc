@@ -14,6 +14,8 @@
 #include "content/public/browser/navigation_details.h"
 #include "net/base/registry_controlled_domain.h"
 
+using content::WebContents;
+
 ConstrainedWindowTabHelper::ConstrainedWindowTabHelper(
     TabContentsWrapper* wrapper)
     : content::WebContentsObserver(wrapper->tab_contents()),
@@ -101,7 +103,7 @@ void ConstrainedWindowTabHelper::DidGetIgnoredUIEvent() {
   }
 }
 
-void ConstrainedWindowTabHelper::TabContentsDestroyed(TabContents* tab) {
+void ConstrainedWindowTabHelper::WebContentsDestroyed(WebContents* tab) {
   // First cleanly close all child windows.
   // TODO(mpcomplete): handle case if MaybeCloseChildWindows() already asked
   // some of these to close.  CloseWindows is async, so it might get called

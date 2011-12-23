@@ -14,7 +14,7 @@ class TabContentsWrapper;
 // Per-tab class to handle snapshot functionality.
 class SnapshotTabHelper : public content::WebContentsObserver {
  public:
-  explicit SnapshotTabHelper(TabContentsWrapper* wrapper);
+  explicit SnapshotTabHelper(content::WebContents* tab);
   virtual ~SnapshotTabHelper();
 
   // Captures a snapshot of the page.
@@ -28,9 +28,6 @@ class SnapshotTabHelper : public content::WebContentsObserver {
 
   // Message handler.
   void OnSnapshot(const SkBitmap& bitmap);
-
-  // Our owning TabContentsWrapper.
-  TabContentsWrapper* wrapper_;
 
   DISALLOW_COPY_AND_ASSIGN(SnapshotTabHelper);
 };

@@ -90,9 +90,9 @@ class TabContentsWrapper : public content::WebContentsObserver {
   // general case, please do NOT use this; plumb TabContentsWrapper through the
   // chrome/ code instead of TabContents.
   static TabContentsWrapper* GetCurrentWrapperForContents(
-      TabContents* contents);
+      content::WebContents* contents);
   static const TabContentsWrapper* GetCurrentWrapperForContents(
-      const TabContents* contents);
+      const content::WebContents* contents);
 
   // Returns the TabContents that this wraps.
   TabContents* tab_contents() const { return tab_contents_.get(); }
@@ -187,7 +187,7 @@ class TabContentsWrapper : public content::WebContentsObserver {
   // Overrides -----------------------------------------------------------------
 
   // content::WebContentsObserver overrides:
-  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
+  virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(

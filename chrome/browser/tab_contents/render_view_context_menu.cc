@@ -1834,10 +1834,10 @@ void RenderViewContextMenu::OpenURL(
 
   if (new_contents) {
     RetargetingDetails details;
-    details.source_tab_contents = source_tab_contents_;
+    details.source_web_contents = source_tab_contents_;
     details.source_frame_id = frame_id;
     details.target_url = url;
-    details.target_tab_contents = new_contents;
+    details.target_web_contents = new_contents;
     details.not_yet_in_tabstrip = false;
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_RETARGETING,

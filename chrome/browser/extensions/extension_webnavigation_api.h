@@ -21,7 +21,6 @@
 #include "googleurl/src/gurl.h"
 
 struct RetargetingDetails;
-class TabContents;
 
 // Tracks the navigation state of all frames in a given tab currently known to
 // the webNavigation API. It is mainly used to track in which frames an error
@@ -117,11 +116,13 @@ class FrameNavigationState {
 // Tab contents observer that forwards navigation events to the event router.
 class ExtensionWebNavigationTabObserver : public content::WebContentsObserver {
  public:
-  explicit ExtensionWebNavigationTabObserver(TabContents* tab_contents);
+  explicit ExtensionWebNavigationTabObserver(
+      content::WebContents* web_contents);
   virtual ~ExtensionWebNavigationTabObserver();
 
   // Returns the object for the given |tab_contents|.
-  static ExtensionWebNavigationTabObserver* Get(TabContents* tab_contents);
+  static ExtensionWebNavigationTabObserver* Get(
+      content::WebContents* web_contents);
 
   const FrameNavigationState& frame_navigation_state() const {
     return navigation_state_;
@@ -149,13 +150,13 @@ class ExtensionWebNavigationTabObserver : public content::WebContentsObserver {
   virtual void DidFinishLoad(int64 frame_id,
                              const GURL& validated_url,
                              bool is_main_frame) OVERRIDE;
-  virtual void DidOpenRequestedURL(TabContents* new_contents,
+  virtual void DidOpenRequestedURL(content::WebContents* new_contents,
                                    const GURL& url,
                                    const content::Referrer& referrer,
                                    WindowOpenDisposition disposition,
                                    content::PageTransition transition,
                                    int64 source_frame_id) OVERRIDE;
-  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
+  virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 
  private:
   // True if the transition and target url correspond to a reference fragment
@@ -180,20 +181,20 @@ class ExtensionWebNavigationEventRouter : public content::NotificationObserver {
   void Init();
 
  private:
-  // Used to cache the information about newly created TabContents objects.
-  struct PendingTabContents {
-    PendingTabContents();
-    PendingTabContents(TabContents* source_tab_contents,
+  // Used to cache the information about newly created WebContents objects.
+  struct PendingWebContents{
+    PendingWebContents();
+    PendingWebContents(content::WebContents* source_web_contents,
                        int64 source_frame_id,
                        bool source_frame_is_main_frame,
-                       TabContents* target_tab_contents,
+                       content::WebContents* target_web_contents,
                        const GURL& target_url);
-    ~PendingTabContents();
+    ~PendingWebContents();
 
-    TabContents* source_tab_contents;
+    content::WebContents* source_web_contents;
     int64 source_frame_id;
     bool source_frame_is_main_frame;
-    TabContents* target_tab_contents;
+    content::WebContents* target_web_contents;
     GURL target_url;
   };
 
@@ -209,15 +210,15 @@ class ExtensionWebNavigationEventRouter : public content::NotificationObserver {
 
   // Handler for the NOTIFICATION_TAB_ADDED event. The method takes the details
   // of such an event and creates a JSON formated extension event from it.
-  void TabAdded(TabContents* tab_contents);
+  void TabAdded(content::WebContents* tab);
 
-  // Handler for NOTIFICATION_TAB_CONTENTS_DESTROYED. If |tab_contents| is
-  // in |pending_tab_contents_|, it is removed.
-  void TabDestroyed(TabContents* tab_contents);
+  // Handler for NOTIFICATION_TAB_CONTENTS_DESTROYED. If |tab| is in
+  // |pending_web_contents_|, it is removed.
+  void TabDestroyed(content::WebContents* tab);
 
-  // Mapping pointers to TabContents objects to information about how they got
+  // Mapping pointers to WebContents objects to information about how they got
   // created.
-  std::map<TabContents*, PendingTabContents> pending_tab_contents_;
+  std::map<content::WebContents*, PendingWebContents> pending_web_contents_;
 
   // Used for tracking registrations to navigation notifications.
   content::NotificationRegistrar registrar_;

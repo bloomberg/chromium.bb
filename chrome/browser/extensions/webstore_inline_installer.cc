@@ -26,6 +26,7 @@
 #include "net/url_request/url_request_status.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 const char kManifestKey[] = "manifest";
 const char kIconUrlKey[] = "icon_url";
@@ -144,12 +145,12 @@ class SafeWebstoreResponseParser : public UtilityProcessHost::Client {
   scoped_ptr<DictionaryValue> parsed_webstore_data_;
 };
 
-WebstoreInlineInstaller::WebstoreInlineInstaller(TabContents* tab_contents,
+WebstoreInlineInstaller::WebstoreInlineInstaller(WebContents* web_contents,
                                                  int install_id,
                                                  std::string webstore_item_id,
                                                  GURL requestor_url,
                                                  Delegate* delegate)
-    : content::WebContentsObserver(tab_contents),
+    : content::WebContentsObserver(web_contents),
       install_id_(install_id),
       id_(webstore_item_id),
       requestor_url_(requestor_url),
@@ -161,7 +162,7 @@ WebstoreInlineInstaller::~WebstoreInlineInstaller() {
 }
 
 void WebstoreInlineInstaller::BeginInstall() {
-  AddRef(); // Balanced in CompleteInstall or TabContentsDestroyed.
+  AddRef(); // Balanced in CompleteInstall or WebContentsDestroyed.
 
   if (!Extension::IdIsValid(id_)) {
     CompleteInstall(kInvalidWebstoreItemId);
@@ -189,8 +190,8 @@ void WebstoreInlineInstaller::BeginInstall() {
 void WebstoreInlineInstaller::OnURLFetchComplete(
     const content::URLFetcher* source) {
   CHECK_EQ(webstore_data_url_fetcher_.get(), source);
-  // We shouldn't be getting UrlFetcher callbacks if the TabContents has gone
-  // away; we stop any in in-progress fetches in TabContentsDestroyed.
+  // We shouldn't be getting UrlFetcher callbacks if the WebContents has gone
+  // away; we stop any in in-progress fetches in WebContentsDestroyed.
   CHECK(tab_contents());
 
   if (!webstore_data_url_fetcher_->GetStatus().is_success() ||
@@ -403,7 +404,7 @@ void WebstoreInlineInstaller::InstallUIAbort(bool user_initiated) {
   CompleteInstall(kUserCancelledError);
 }
 
-void WebstoreInlineInstaller::TabContentsDestroyed(TabContents* tab_contents) {
+void WebstoreInlineInstaller::WebContentsDestroyed(WebContents* web_contents) {
   // Abort any in-progress fetches.
   if (webstore_data_url_fetcher_.get()) {
     webstore_data_url_fetcher_.reset();

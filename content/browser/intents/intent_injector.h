@@ -37,10 +37,10 @@ class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
+  virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 
   // Used to notify the object that the source tab has been destroyed.
-  virtual void SourceTabContentsDestroyed(TabContents* tab);
+  void SourceWebContentsDestroyed(content::WebContents* tab);
 
   // Sets the intent data to be injected. Call after the user has selected a
   // service to pass the intent data to that service.

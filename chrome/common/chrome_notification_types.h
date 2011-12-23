@@ -58,7 +58,7 @@ enum NotificationType {
   NOTIFICATION_PAGE_TRANSLATED,
 
   // Sent after the renderer returns a snapshot of tab contents.
-  // The source (Source<TabContentsWrapper>) is the RenderViewHost for which
+  // The source (Source<content::WebContents>) is the RenderViewHost for which
   // the snapshot was generated and the details (Details<const SkBitmap>) is
   // the actual snapshot.
   NOTIFICATION_TAB_SNAPSHOT_TAKEN,

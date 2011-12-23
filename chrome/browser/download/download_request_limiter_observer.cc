@@ -7,9 +7,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_request_limiter.h"
 
+using content::WebContents;
+
 DownloadRequestLimiterObserver::DownloadRequestLimiterObserver(
-    TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents) {
+  WebContents* web_contents)
+    : content::WebContentsObserver(web_contents) {
 }
 
 DownloadRequestLimiterObserver::~DownloadRequestLimiterObserver() {

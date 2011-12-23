@@ -55,7 +55,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
 
  protected:
   // From content::WebContentsObserver.
-  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
+  virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 
  private:
   friend class ClientSideDetectionHostTest;

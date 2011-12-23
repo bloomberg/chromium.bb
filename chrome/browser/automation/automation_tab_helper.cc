@@ -11,8 +11,9 @@
 #include "chrome/common/automation_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-
 #include "ui/gfx/size.h"
+
+using content::WebContents;
 
 TabEventObserver::TabEventObserver() { }
 
@@ -91,17 +92,17 @@ void AutomationTabHelper::RenderViewGone(base::TerminationStatus status) {
   OnTabOrRenderViewDestroyed(tab_contents());
 }
 
-void AutomationTabHelper::TabContentsDestroyed(TabContents* tab_contents) {
-  OnTabOrRenderViewDestroyed(tab_contents);
+void AutomationTabHelper::WebContentsDestroyed(WebContents* web_contents) {
+  OnTabOrRenderViewDestroyed(web_contents);
 }
 
 void AutomationTabHelper::OnTabOrRenderViewDestroyed(
-    TabContents* tab_contents) {
+    WebContents* web_contents) {
   if (has_pending_loads()) {
     is_loading_ = false;
     pending_client_redirects_.clear();
     FOR_EACH_OBSERVER(TabEventObserver, observers_,
-                      OnNoMorePendingLoads(tab_contents));
+                      OnNoMorePendingLoads(web_contents));
   }
 }
 

@@ -28,6 +28,8 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
 
+using content::WebContents;
+
 namespace {
 
 // A wrapper class that represents the Gtk dialog.
@@ -53,7 +55,7 @@ class HungRendererDialogGtk {
     virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE {
       dialog_->Hide();
     }
-    virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE {
+    virtual void WebContentsDestroyed(WebContents* tab) OVERRIDE {
       dialog_->Hide();
     }
 

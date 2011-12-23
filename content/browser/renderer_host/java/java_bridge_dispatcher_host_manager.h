@@ -34,7 +34,8 @@ class JavaBridgeDispatcherHostManager : public content::WebContentsObserver {
   // content::WebContentsObserver overrides
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void TabContentsDestroyed(TabContents* tab_contents) OVERRIDE;
+  virtual void WebContentsDestroyed(
+      content::WebContents* tab_contents) OVERRIDE;
 
  private:
   typedef std::map<RenderViewHost*, scoped_refptr<JavaBridgeDispatcherHost> >

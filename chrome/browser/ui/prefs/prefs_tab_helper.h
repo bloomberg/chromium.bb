@@ -34,7 +34,7 @@ class PrefsTabHelper : public content::WebContentsObserver,
 
  private:
   // content::WebContentsObserver overrides:
-  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
+  virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,

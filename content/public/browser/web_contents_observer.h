@@ -17,6 +17,7 @@ class TabContents;
 
 namespace content {
 
+class WebContents;
 struct FrameNavigateParams;
 struct Referrer;
 
@@ -81,7 +82,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Channel::Listener,
                           WindowOpenDisposition disposition,
                           PageTransition transition) {}
 
-  virtual void DidOpenRequestedURL(TabContents* new_contents,
+  virtual void DidOpenRequestedURL(WebContents* new_contents,
                                    const GURL& url,
                                    const Referrer& referrer,
                                    WindowOpenDisposition disposition,
@@ -91,10 +92,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Channel::Listener,
   virtual void AppCacheAccessed(const GURL& manifest_url,
                                 bool blocked_by_policy) {}
 
-  // Invoked when the TabContents is being destroyed. Gives subclasses a chance
+  // Invoked when the WebContents is being destroyed. Gives subclasses a chance
   // to cleanup. At the time this is invoked |tab_contents()| returns NULL.
   // It is safe to delete 'this' from here.
-  virtual void TabContentsDestroyed(TabContents* tab) {}
+  virtual void WebContentsDestroyed(WebContents* tab) {}
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -104,9 +105,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Channel::Listener,
   int routing_id() const;
 
  protected:
-  // Use this constructor when the object is tied to a single TabContents for
+  // Use this constructor when the object is tied to a single WebContents for
   // its entire lifetime.
-  explicit WebContentsObserver(TabContents* tab_contents);
+  explicit WebContentsObserver(WebContents* web_contents);
 
   // Use this constructor when the object wants to observe a TabContents for
   // part of its lifetime.  It can then call Observe() to start and stop
@@ -115,13 +116,13 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Channel::Listener,
 
   virtual ~WebContentsObserver();
 
-  // Start observing a different TabContents; used with the default constructor.
-  void Observe(TabContents* tab_contents);
+  // Start observing a different WebContents; used with the default constructor.
+  void Observe(WebContents* web_contents);
 
   TabContents* tab_contents() const { return tab_contents_; }
 
  private:
-   friend class ::TabContents;
+  friend class ::TabContents;
 
   // Invoked from TabContents. Invokes TabContentsDestroyed and NULL out
   // |tab_contents_|.

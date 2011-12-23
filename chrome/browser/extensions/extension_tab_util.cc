@@ -16,6 +16,8 @@
 namespace keys = extension_tabs_module_constants;
 namespace errors = extension_manifest_errors;
 
+using content::WebContents;
+
 int ExtensionTabUtil::GetWindowId(const Browser* browser) {
   return browser->session_id().id();
 }
@@ -31,9 +33,9 @@ int ExtensionTabUtil::GetWindowIdOfTabStripModel(
 }
 
 // TODO(sky): this function should really take a TabContentsWrapper.
-int ExtensionTabUtil::GetTabId(const TabContents* tab_contents) {
+int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
   const TabContentsWrapper* tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
   return tab ? tab->restore_tab_helper()->session_id().id() : -1;
 }
 

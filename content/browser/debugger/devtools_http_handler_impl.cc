@@ -106,9 +106,9 @@ class TabContentsIDHelper : public content::WebContentsObserver {
 
   virtual ~TabContentsIDHelper() {}
 
-  virtual void TabContentsDestroyed(TabContents* tab) {
+  virtual void WebContentsDestroyed(WebContents* tab) OVERRIDE {
     id_to_tabcontents_.Get().erase(id_);
-    tabcontents_to_id_.Get().erase(tab);
+    tabcontents_to_id_.Get().erase(static_cast<TabContents*>(tab));
     delete this;
   }
 

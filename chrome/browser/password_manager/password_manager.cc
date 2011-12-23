@@ -20,6 +20,7 @@
 #include "grit/generated_resources.h"
 
 using content::UserMetricsAction;
+using content::WebContents;
 using webkit::forms::PasswordForm;
 using webkit::forms::PasswordFormMap;
 
@@ -55,9 +56,9 @@ static void ReportMetrics(bool password_manager_enabled) {
     content::RecordAction(UserMetricsAction("PasswordManager_Disabled"));
 }
 
-PasswordManager::PasswordManager(TabContents* tab_contents,
+PasswordManager::PasswordManager(WebContents* web_contents,
                                  PasswordManagerDelegate* delegate)
-    : content::WebContentsObserver(tab_contents),
+    : content::WebContentsObserver(web_contents),
       login_managers_deleter_(&pending_login_managers_),
       delegate_(delegate),
       observer_(NULL) {

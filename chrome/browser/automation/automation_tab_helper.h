@@ -14,12 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class TabContents;
 class AutomationTabHelper;
-
-namespace IPC {
-class Message;
-}
 
 // An observer API implemented by classes which are interested in various
 // tab events from AutomationTabHelper(s).
@@ -40,13 +35,13 @@ class TabEventObserver {
 
   // Called when the tab that had no pending loads now has a new pending
   // load. |tab_contents| will always be valid.
-  virtual void OnFirstPendingLoad(TabContents* tab_contents) { }
+  virtual void OnFirstPendingLoad(content::WebContents* web_contents) { }
 
   // Called when the tab that had one or more pending loads now has no
   // pending loads. |tab_contents| will always be valid.
   //
   // This method will always be called if |OnFirstPendingLoad| was called.
-  virtual void OnNoMorePendingLoads(TabContents* tab_contents) { }
+  virtual void OnNoMorePendingLoads(content::WebContents* web_contents) { }
 
   // Called as a result of a tab being snapshotted.
   virtual void OnSnapshotEntirePageACK(
@@ -109,12 +104,13 @@ class AutomationTabHelper
   virtual void DidStartLoading() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
-  virtual void TabContentsDestroyed(TabContents* tab_contents) OVERRIDE;
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnWillPerformClientRedirect(int64 frame_id, double delay_seconds);
   void OnDidCompleteOrCancelClientRedirect(int64 frame_id);
-  void OnTabOrRenderViewDestroyed(TabContents* tab_contents);
+  void OnTabOrRenderViewDestroyed(content::WebContents* web_contents);
 
   // True if the tab is currently loading. If a navigation is scheduled but not
   // yet loading, this will be false.

@@ -1658,8 +1658,9 @@ class AllViewsStoppedLoadingObserver : public TabEventObserver,
   virtual ~AllViewsStoppedLoadingObserver();
 
   // TabEventObserver implementation.
-  virtual void OnFirstPendingLoad(TabContents* tab_contents) OVERRIDE;
-  virtual void OnNoMorePendingLoads(TabContents* tab_contents) OVERRIDE;
+  virtual void OnFirstPendingLoad(content::WebContents* web_contents) OVERRIDE;
+  virtual void OnNoMorePendingLoads(
+      content::WebContents* web_contents) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -1667,7 +1668,7 @@ class AllViewsStoppedLoadingObserver : public TabEventObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  typedef std::set<TabContents*> TabSet;
+  typedef std::set<content::WebContents*> TabSet;
 
   // Checks if there are no pending loads. If none, it will send an automation
   // relpy and delete itself.

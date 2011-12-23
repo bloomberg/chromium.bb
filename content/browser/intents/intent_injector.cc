@@ -15,6 +15,8 @@
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
+using content::WebContents;
+
 IntentInjector::IntentInjector(TabContents* tab_contents)
     : content::WebContentsObserver(tab_contents),
       intents_dispatcher_(NULL) {
@@ -24,7 +26,7 @@ IntentInjector::IntentInjector(TabContents* tab_contents)
 IntentInjector::~IntentInjector() {
 }
 
-void IntentInjector::TabContentsDestroyed(TabContents* tab) {
+void IntentInjector::WebContentsDestroyed(content::WebContents* tab) {
   if (intents_dispatcher_) {
     intents_dispatcher_->SendReplyMessage(
         webkit_glue::WEB_INTENT_SERVICE_TAB_CLOSED, string16());
@@ -33,7 +35,7 @@ void IntentInjector::TabContentsDestroyed(TabContents* tab) {
   delete this;
 }
 
-void IntentInjector::SourceTabContentsDestroyed(TabContents* tab) {
+void IntentInjector::SourceWebContentsDestroyed(WebContents* tab) {
   intents_dispatcher_ = NULL;
 }
 

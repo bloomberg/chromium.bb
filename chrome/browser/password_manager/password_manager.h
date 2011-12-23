@@ -30,7 +30,7 @@ class PasswordManager : public LoginModel,
   static void RegisterUserPrefs(PrefService* prefs);
 
   // The delegate passed in is required to outlive the PasswordManager.
-  PasswordManager(TabContents* tab_contents,
+  PasswordManager(content::WebContents* web_contents,
                   PasswordManagerDelegate* delegate);
   virtual ~PasswordManager();
 

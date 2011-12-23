@@ -23,6 +23,8 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/screen.h"
 
+using content::WebContents;
+
 namespace {
 
 // Include things like browser frame and scrollbar and make sure we're bigger
@@ -82,7 +84,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
     ui_test_utils::RegisterAndWait(
         this,
         chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
-        content::Source<TabContentsWrapper>(wrapper));
+        content::Source<WebContents>(wrapper->tab_contents()));
     ASSERT_FALSE(snapshot_different_) << "Rendering didn't match, see result "
         "at " << snapshot_filename_.value().c_str();
   }

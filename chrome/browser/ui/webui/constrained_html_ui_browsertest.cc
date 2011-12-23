@@ -16,6 +16,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
+using content::WebContents;
+
 namespace {
 
 class ConstrainedHtmlDialogBrowserTestObserver
@@ -30,7 +32,7 @@ class ConstrainedHtmlDialogBrowserTestObserver
   bool tab_destroyed() { return tab_destroyed_; }
 
  private:
-  virtual void TabContentsDestroyed(TabContents* tab) {
+  virtual void WebContentsDestroyed(WebContents* tab) OVERRIDE {
     tab_destroyed_ = true;
   }
 

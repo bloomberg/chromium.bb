@@ -5,9 +5,12 @@
 #include "content/browser/intents/web_intents_dispatcher_impl.h"
 
 #include "content/browser/intents/intent_injector.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/intents_messages.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
+
+using content::WebContents;
 
 WebIntentsDispatcherImpl::WebIntentsDispatcherImpl(
     TabContents* source_tab,
@@ -49,9 +52,9 @@ void WebIntentsDispatcherImpl::RegisterReplyNotification(
   reply_notifier_ = closure;
 }
 
-void WebIntentsDispatcherImpl::TabContentsDestroyed(TabContents* tab) {
+void WebIntentsDispatcherImpl::WebContentsDestroyed(WebContents* tab) {
   if (intent_injector_)
-    intent_injector_->SourceTabContentsDestroyed(tab);
+    intent_injector_->SourceWebContentsDestroyed(tab);
 
   intent_injector_ = NULL;
 }

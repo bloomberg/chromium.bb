@@ -2683,18 +2683,18 @@ AllViewsStoppedLoadingObserver::~AllViewsStoppedLoadingObserver() {
 }
 
 void AllViewsStoppedLoadingObserver::OnFirstPendingLoad(
-    TabContents* tab_contents) {
-  pending_tabs_.insert(tab_contents);
+    content::WebContents* web_contents) {
+  pending_tabs_.insert(web_contents);
 }
 
 void AllViewsStoppedLoadingObserver::OnNoMorePendingLoads(
-    TabContents* tab_contents) {
+    content::WebContents* web_contents) {
   if (!automation_) {
     delete this;
     return;
   }
 
-  TabSet::iterator iter = pending_tabs_.find(tab_contents);
+  TabSet::iterator iter = pending_tabs_.find(web_contents);
   if (iter == pending_tabs_.end()) {
     LOG(ERROR) << "Received OnNoMorePendingLoads for tab without "
                << "OnFirstPendingLoad.";

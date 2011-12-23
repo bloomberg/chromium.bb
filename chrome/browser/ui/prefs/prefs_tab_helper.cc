@@ -23,6 +23,8 @@
 #include "grit/platform_locale_settings.h"
 #include "webkit/glue/webpreferences.h"
 
+using content::WebContents;
+
 namespace {
 
 const char* kPerTabPrefsToObserve[] = {
@@ -385,7 +387,7 @@ void PrefsTabHelper::RenderViewCreated(RenderViewHost* render_view_host) {
   UpdateWebPreferences();
 }
 
-void PrefsTabHelper::TabContentsDestroyed(TabContents* tab) {
+void PrefsTabHelper::WebContentsDestroyed(WebContents* tab) {
   per_tab_pref_change_registrar_.RemoveAll();
 }
 

@@ -18,6 +18,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
+using content::WebContents;
+
 namespace {
 
 class PrintPreviewTabControllerBrowserTest : public InProcessBrowserTest {
@@ -41,7 +43,7 @@ class TabDestroyedObserver : public content::WebContentsObserver {
   bool tab_destroyed() { return tab_destroyed_; }
 
  private:
-  virtual void TabContentsDestroyed(TabContents* tab) {
+  virtual void WebContentsDestroyed(WebContents* tab) OVERRIDE {
     tab_destroyed_ = true;
   }
 

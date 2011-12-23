@@ -24,6 +24,8 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
 
+using content::WebContents;
+
 class TabFinder::WebContentsObserverImpl : public content::WebContentsObserver {
  public:
   WebContentsObserverImpl(TabContents* tab, TabFinder* finder);
@@ -37,7 +39,7 @@ class TabFinder::WebContentsObserverImpl : public content::WebContentsObserver {
   virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
-  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
+  virtual void WebContentsDestroyed(WebContents* tab) OVERRIDE;
 
  private:
   TabFinder* finder_;
@@ -61,8 +63,8 @@ void TabFinder::WebContentsObserverImpl::DidNavigateAnyFrame(
   finder_->DidNavigateAnyFrame(tab_contents(), details, params);
 }
 
-void TabFinder::WebContentsObserverImpl::TabContentsDestroyed(
-    TabContents* tab) {
+void TabFinder::WebContentsObserverImpl::WebContentsDestroyed(
+    WebContents* tab) {
   finder_->TabDestroyed(this);
   delete this;
 }

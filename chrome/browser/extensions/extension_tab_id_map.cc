@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_types.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 //
 // ExtensionTabIdMap::TabObserver
@@ -98,12 +99,12 @@ void ExtensionTabIdMap::TabObserver::Observe(
     case chrome::NOTIFICATION_RETARGETING: {
       RetargetingDetails* retargeting_details =
           content::Details<RetargetingDetails>(details).ptr();
-      TabContents* contents = retargeting_details->target_tab_contents;
+      WebContents* contents = retargeting_details->target_web_contents;
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(contents);
       if (!tab)
         break;
-      RenderViewHost* host = tab->tab_contents()->GetRenderViewHost();
+      RenderViewHost* host = contents->GetRenderViewHost();
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(

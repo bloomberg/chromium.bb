@@ -47,6 +47,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
+using content::WebContents;
+
 namespace {
 
 static base::LazyInstance<base::PropertyAccessor<TabContentsWrapper*> >
@@ -97,7 +99,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   print_view_manager_.reset(new printing::PrintViewManager(this));
   restore_tab_helper_.reset(new RestoreTabHelper(contents));
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
-  snapshot_tab_helper_.reset(new SnapshotTabHelper(this));
+  snapshot_tab_helper_.reset(new SnapshotTabHelper(contents));
   ssl_helper_.reset(new TabContentsSSLHelper(this));
   synced_tab_delegate_.reset(new TabContentsWrapperSyncedTabDelegate(this));
   content_settings_.reset(new TabSpecificContentSettings(contents));
@@ -155,7 +157,7 @@ TabContentsWrapper* TabContentsWrapper::Clone() {
 
 // static
 TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
-    TabContents* contents) {
+    WebContents* contents) {
   TabContentsWrapper** wrapper =
       property_accessor()->GetProperty(contents->GetPropertyBag());
 
@@ -164,7 +166,7 @@ TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
 
 // static
 const TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
-    const TabContents* contents) {
+    const WebContents* contents) {
   TabContentsWrapper* const* wrapper =
       property_accessor()->GetProperty(contents->GetPropertyBag());
 
@@ -178,8 +180,8 @@ Profile* TabContentsWrapper::profile() const {
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsObserver overrides
 
-void TabContentsWrapper::TabContentsDestroyed(TabContents* tab) {
-  // Destruction of the TabContents should only be done by us from our
+void TabContentsWrapper::WebContentsDestroyed(WebContents* tab) {
+  // Destruction of the WebContents should only be done by us from our
   // destructor. Otherwise it's very likely we (or one of the helpers we own)
   // will attempt to access the TabContents and we'll crash.
   DCHECK(in_destructor_);

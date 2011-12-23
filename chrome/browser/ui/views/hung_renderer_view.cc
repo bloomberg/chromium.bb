@@ -35,6 +35,8 @@
 
 class HungRendererDialogView;
 
+using content::WebContents;
+
 namespace {
 // We only support showing one of these at a time per app.
 HungRendererDialogView* g_instance = NULL;
@@ -92,7 +94,7 @@ class HungPagesTableModel : public views::GroupTableModel {
 
     // WebContentsObserver overrides:
     virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
-    virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
+    virtual void WebContentsDestroyed(WebContents* tab) OVERRIDE;
 
    private:
     HungPagesTableModel* model_;
@@ -218,8 +220,8 @@ void HungPagesTableModel::WebContentsObserverImpl::RenderViewGone(
   model_->TabDestroyed(this);
 }
 
-void HungPagesTableModel::WebContentsObserverImpl::TabContentsDestroyed(
-    TabContents* tab) {
+void HungPagesTableModel::WebContentsObserverImpl::WebContentsDestroyed(
+    WebContents* tab) {
   model_->TabDestroyed(this);
 }
 

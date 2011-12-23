@@ -10,9 +10,9 @@
 
 namespace content {
 
-WebContentsObserver::WebContentsObserver(TabContents* tab_contents)
+WebContentsObserver::WebContentsObserver(WebContents* web_contents)
     : tab_contents_(NULL) {
-  Observe(tab_contents);
+  Observe(web_contents);
 }
 
 WebContentsObserver::WebContentsObserver()
@@ -24,10 +24,10 @@ WebContentsObserver::~WebContentsObserver() {
     tab_contents_->RemoveObserver(this);
 }
 
-void WebContentsObserver::Observe(TabContents* tab_contents) {
+void WebContentsObserver::Observe(WebContents* web_contents) {
   if (tab_contents_)
     tab_contents_->RemoveObserver(this);
-  tab_contents_ = tab_contents;
+  tab_contents_ = static_cast<TabContents*>(web_contents);
   if (tab_contents_) {
     tab_contents_->AddObserver(this);
   }
@@ -54,12 +54,11 @@ int WebContentsObserver::routing_id() const {
 }
 
 void WebContentsObserver::TabContentsDestroyed() {
-  // Do cleanup so that 'this' can safely be deleted from
-  // TabContentsDestroyed.
+  // Do cleanup so that 'this' can safely be deleted from WebContentsDestroyed.
   tab_contents_->RemoveObserver(this);
   TabContents* tab = tab_contents_;
   tab_contents_ = NULL;
-  TabContentsDestroyed(tab);
+  WebContentsDestroyed(tab);
 }
 
 }  // namespace content

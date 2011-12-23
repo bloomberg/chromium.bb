@@ -19,14 +19,13 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-class TabContents;
 class SafeWebstoreResponseParser;
 
 // Manages inline installs requested by a page (downloads and parses metadata
 // from the webstore, shows the install UI, starts the download once the user
 // confirms).  Clients must implement the WebstoreInlineInstaller::Delegate
 // interface to be notified when the inline install completes (successfully or
-// not). The client will not be notified if the TabContents that this install
+// not). The client will not be notified if the WebContents that this install
 // request is attached to goes away.
 class WebstoreInlineInstaller
     : public base::RefCountedThreadSafe<WebstoreInlineInstaller>,
@@ -43,7 +42,7 @@ class WebstoreInlineInstaller
                                         const std::string& error) = 0;
   };
 
-  WebstoreInlineInstaller(TabContents* tab_contents,
+  WebstoreInlineInstaller(content::WebContents* web_contents,
                           int install_id,
                           std::string webstore_item_id,
                           GURL requestor_url,
@@ -91,7 +90,8 @@ class WebstoreInlineInstaller
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
   // content::WebContentsObserver interface implementation.
-  virtual void TabContentsDestroyed(TabContents* tab_contents) OVERRIDE;
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE;
 
   // WebstoreInstaller::Delegate interface implementation.
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;

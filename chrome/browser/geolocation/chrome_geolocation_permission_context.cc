@@ -576,7 +576,8 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
   TabContents* tab_contents =
       tab_util::GetTabContentsByID(render_process_id, render_view_id);
   if (!tab_contents ||
-      tab_contents->GetRenderViewType() != content::VIEW_TYPE_TAB_CONTENTS) {
+      tab_contents->GetRenderViewHost()->delegate()->GetRenderViewType() !=
+          content::VIEW_TYPE_TAB_CONTENTS) {
     // The tab may have gone away, or the request may not be from a tab at all.
     // TODO(mpcomplete): the request could be from a background page or
     // extension popup (tab_contents will have a different ViewType). But why do

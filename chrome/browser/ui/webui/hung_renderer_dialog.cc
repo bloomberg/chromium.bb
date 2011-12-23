@@ -27,6 +27,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::WebContents;
+
 namespace {
 HungRendererDialog* g_instance = NULL;
 const int kHungRendererDialogWidth = 425;
@@ -89,8 +91,8 @@ void HungRendererDialog::WebContentsObserverImpl::RenderViewGone(
   dialog_->HideDialog(contents_);
 }
 
-void HungRendererDialog::WebContentsObserverImpl::TabContentsDestroyed(
-    TabContents* tab) {
+void HungRendererDialog::WebContentsObserverImpl::WebContentsDestroyed(
+    WebContents* tab) {
   dialog_->HideDialog(contents_);
 }
 

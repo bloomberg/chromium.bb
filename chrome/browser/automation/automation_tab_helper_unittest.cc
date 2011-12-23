@@ -41,7 +41,7 @@ class AutomationTabHelperTest : public TabContentsWrapperTestHarness {
   }
 
   void TabContentsDestroyed() {
-    tab_helper()->TabContentsDestroyed(contents_wrapper()->tab_contents());
+    tab_helper()->WebContentsDestroyed(contents_wrapper()->tab_contents());
   }
 
   void WillPerformClientRedirect(int64 frame_id) {

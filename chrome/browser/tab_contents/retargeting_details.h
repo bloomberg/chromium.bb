@@ -8,12 +8,14 @@
 
 #include "googleurl/src/gurl.h"
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 // Details sent for NOTIFICATION_RETARGETING.
 struct RetargetingDetails {
   // The source tab contents.
-  TabContents* source_tab_contents;
+  content::WebContents* source_web_contents;
 
   // The frame ID of the source tab from which the retargeting was triggered.
   int64 source_frame_id;
@@ -22,7 +24,7 @@ struct RetargetingDetails {
   GURL target_url;
 
   // The target tab contents.
-  TabContents* target_tab_contents;
+  content::WebContents* target_web_contents;
 
   // True if the target_tab_contents is not yet inserted into a tab strip.
   bool not_yet_in_tabstrip;

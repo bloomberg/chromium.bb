@@ -36,6 +36,7 @@
 #include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace safe_browsing {
 
@@ -357,7 +358,7 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
   }
 }
 
-void ClientSideDetectionHost::TabContentsDestroyed(TabContents* tab) {
+void ClientSideDetectionHost::WebContentsDestroyed(WebContents* tab) {
   DCHECK(tab);
   // Tell any pending classification request that it is being canceled.
   if (classification_request_.get()) {

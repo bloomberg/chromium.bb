@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/pdf/pdf_unsupported_feature.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 PDFTabObserver::PDFTabObserver(TabContentsWrapper* wrapper)
     : content::WebContentsObserver(wrapper->tab_contents()),

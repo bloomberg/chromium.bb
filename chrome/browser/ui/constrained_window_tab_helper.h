@@ -57,7 +57,7 @@ class ConstrainedWindowTabHelper : public content::WebContentsObserver {
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidGetIgnoredUIEvent() OVERRIDE;
-  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
+  virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 
   // Our owning TabContentsWrapper.
   TabContentsWrapper* wrapper_;

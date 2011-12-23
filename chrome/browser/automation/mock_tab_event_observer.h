@@ -20,8 +20,8 @@ class MockTabEventObserver : public TabEventObserver {
   void StartObserving(AutomationTabHelper* tab_helper);
   void StopObserving(AutomationTabHelper* tab_helper);
 
-  MOCK_METHOD1(OnFirstPendingLoad, void(TabContents* tab_contents));
-  MOCK_METHOD1(OnNoMorePendingLoads, void(TabContents* tab_contents));
+  MOCK_METHOD1(OnFirstPendingLoad, void(content::WebContents* tab_contents));
+  MOCK_METHOD1(OnNoMorePendingLoads, void(content::WebContents* tab_contents));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTabEventObserver);

@@ -24,6 +24,8 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
+using content::WebContents;
+
 PageActionImageView::PageActionImageView(LocationBarView* owner,
                                          ExtensionAction* page_action)
     : owner_(owner),
@@ -183,7 +185,7 @@ void PageActionImageView::OnImageLoaded(
     owner_->UpdatePageActions();
 }
 
-void PageActionImageView::UpdateVisibility(TabContents* contents,
+void PageActionImageView::UpdateVisibility(WebContents* contents,
                                            const GURL& url) {
   // Save this off so we can pass it back to the extension when the action gets
   // executed. See PageActionImageView::OnMousePressed.

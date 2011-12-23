@@ -34,7 +34,7 @@ class HungRendererDialog : private HtmlDialogUIDelegate {
 
     // content::WebContentsObserver overrides:
     virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
-    virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
+    virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 
    private:
     TabContents* contents_;  // weak
