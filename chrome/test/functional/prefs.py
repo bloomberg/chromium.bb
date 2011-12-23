@@ -158,6 +158,10 @@ class PrefsTest(pyauto.PyUITest):
 
     Checks for the geolocation infobar.
     """
+    # Fails on Win7 Chromium bot only.  crbug.com/89000
+    if (self.IsWin7() and
+        self.GetBrowserInfo()['properties']['branding'] == 'Chromium'):
+      return
     url = self.GetFileURLForPath(os.path.join(  # triggers geolocation
         self.DataDir(), 'geolocation', 'geolocation_on_load.html'))
     self.assertEqual(3,  # default state
