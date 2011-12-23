@@ -74,7 +74,7 @@ class NetworkStats {
   bool Start(net::HostResolver* host_resolver,
              const net::HostPortPair& server,
              uint32 bytes_to_send,
-             net::OldCompletionCallback* callback);
+             const net::CompletionCallback& callback);
 
  protected:
   // Constructs an NetworkStats object that collects metrics for network
@@ -86,7 +86,7 @@ class NetworkStats {
   // server. |finished_callback| is called when we are done with the test.
   // |finished_callback| is mainly useful for unittests.
   void Initialize(uint32 bytes_to_send,
-                  net::OldCompletionCallback* finished_callback);
+                  const net::CompletionCallback& finished_callback);
 
   // Called after host is resolved. UDPStatsClient and TCPStatsClient implement
   // this method. They create the socket and connect to the server.
@@ -179,7 +179,7 @@ class NetworkStats {
   // Callback to call when echo protocol is successefully finished or whenever
   // there is an error (this allows unittests to wait until echo protocol's
   // round trip is finished).
-  net::OldCompletionCallback* finished_callback_;
+  net::CompletionCallback finished_callback_;
 
   // The time when the session was started.
   base::TimeTicks start_time_;

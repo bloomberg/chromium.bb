@@ -82,7 +82,6 @@ NetworkStats::NetworkStats()
       bytes_to_read_(0),
       bytes_to_send_(0),
       encoded_message_(""),
-      finished_callback_(NULL),
       start_time_(base::TimeTicks::Now()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
@@ -94,7 +93,7 @@ NetworkStats::~NetworkStats() {
 bool NetworkStats::Start(net::HostResolver* host_resolver,
                          const net::HostPortPair& server_host_port_pair,
                          uint32 bytes_to_send,
-                         net::OldCompletionCallback* finished_callback) {
+                         const net::CompletionCallback& finished_callback) {
   DCHECK(bytes_to_send);   // We should have data to send.
 
   Initialize(bytes_to_send, finished_callback);
@@ -110,8 +109,8 @@ bool NetworkStats::Start(net::HostResolver* host_resolver,
   return DoConnect(rv);
 }
 
-void NetworkStats::Initialize(uint32 bytes_to_send,
-                              net::OldCompletionCallback* finished_callback) {
+void NetworkStats::Initialize(
+    uint32 bytes_to_send, const net::CompletionCallback& finished_callback) {
   DCHECK(bytes_to_send);   // We should have data to send.
 
   load_size_ = bytes_to_send;
@@ -152,10 +151,10 @@ bool NetworkStats::ConnectComplete(int result) {
 }
 
 void NetworkStats::DoFinishCallback(int result) {
-  if (finished_callback_ != NULL) {
-    net::OldCompletionCallback* callback = finished_callback_;
-    finished_callback_ = NULL;
-    callback->Run(result);
+  if (!finished_callback_.is_null()) {
+    net::CompletionCallback callback = finished_callback_;
+    finished_callback_.Reset();
+    callback.Run(result);
   }
 }
 
@@ -582,21 +581,25 @@ void CollectNetworkStats(const std::string& network_stats_server,
 
   UDPStatsClient* small_udp_stats = new UDPStatsClient();
   small_udp_stats->Start(
-      host_resolver, udp_server_address, kSmallTestBytesToSend, NULL);
+      host_resolver, udp_server_address, kSmallTestBytesToSend,
+      net::CompletionCallback());
 
   UDPStatsClient* large_udp_stats = new UDPStatsClient();
   large_udp_stats->Start(
-      host_resolver, udp_server_address, kLargeTestBytesToSend, NULL);
+      host_resolver, udp_server_address, kLargeTestBytesToSend,
+      net::CompletionCallback());
 
   net::HostPortPair tcp_server_address(network_stats_server, kTCPTestingPort);
 
   TCPStatsClient* small_tcp_client = new TCPStatsClient();
   small_tcp_client->Start(
-      host_resolver, tcp_server_address, kSmallTestBytesToSend, NULL);
+      host_resolver, tcp_server_address, kSmallTestBytesToSend,
+      net::CompletionCallback());
 
   TCPStatsClient* large_tcp_client = new TCPStatsClient();
   large_tcp_client->Start(
-      host_resolver, tcp_server_address, kLargeTestBytesToSend, NULL);
+      host_resolver, tcp_server_address, kLargeTestBytesToSend,
+      net::CompletionCallback());
 }
 
 }  // namespace chrome_browser_net

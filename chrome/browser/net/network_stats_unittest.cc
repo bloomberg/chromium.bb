@@ -34,7 +34,7 @@ class NetworkStatsTestUDP : public NetworkStatsTest {
 
  protected:
   void RunUDPEchoTest(int bytes) {
-    TestOldCompletionCallback cb;
+    net::TestCompletionCallback cb;
 
     scoped_ptr<net::MockHostResolver> host_resolver(
         new net::MockHostResolver());
@@ -43,7 +43,7 @@ class NetworkStatsTestUDP : public NetworkStatsTest {
     EXPECT_TRUE(udp_stats_client->Start(host_resolver.get(),
                                         test_server_.host_port_pair(),
                                         bytes,
-                                        &cb));
+                                        cb.callback()));
     int rv = cb.WaitForResult();
     // Check there were no errors during connect/write/read to echo UDP server.
     EXPECT_EQ(0, rv);
@@ -61,7 +61,7 @@ class NetworkStatsTestTCP : public NetworkStatsTest {
 
  protected:
   void RunTCPEchoTest(int bytes) {
-    TestOldCompletionCallback cb;
+    net::TestCompletionCallback cb;
 
     scoped_ptr<net::MockHostResolver> host_resolver(
         new net::MockHostResolver());
@@ -70,7 +70,7 @@ class NetworkStatsTestTCP : public NetworkStatsTest {
     EXPECT_TRUE(tcp_stats_client->Start(host_resolver.get(),
                                         test_server_.host_port_pair(),
                                         bytes,
-                                        &cb));
+                                        cb.callback()));
     int rv = cb.WaitForResult();
     // Check there were no errors during connect/write/read to echo TCP server.
     EXPECT_EQ(0, rv);
