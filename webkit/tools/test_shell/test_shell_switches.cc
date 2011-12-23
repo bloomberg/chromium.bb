@@ -85,4 +85,7 @@ const char kEnableAccel2DCanvas[] = "enable-accelerated-2d-canvas";
 
 const char kEnableAccelCompositing[] = "enable-accelerated-compositing";
 
+// Options to pass to the Dart VM.
+const char kDartFlags[] = "dart-flags";
+
 }  // namespace test_shell

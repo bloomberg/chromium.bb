@@ -45,6 +45,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   int minimum_logical_font_size;
   std::string default_encoding;
   bool javascript_enabled;
+  bool dart_enabled;
   bool web_security_enabled;
   bool javascript_can_open_windows_automatically;
   bool loads_images_automatically;

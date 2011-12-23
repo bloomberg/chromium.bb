@@ -22,6 +22,7 @@ CONTENT_EXPORT extern const char kBrowserCrashTest[];
 CONTENT_EXPORT extern const char kBrowserSubprocessPath[];
 // TODO(jam): this doesn't belong in content.
 CONTENT_EXPORT extern const char kChromeFrame[];
+extern const char kDartFlags[];
 CONTENT_EXPORT extern const char kDisable3DAPIs[];
 CONTENT_EXPORT extern const char kDisableAccelerated2dCanvas[];
 CONTENT_EXPORT extern const char kDisableAcceleratedCompositing[];
@@ -32,6 +33,7 @@ CONTENT_EXPORT extern const char kDisableAltWinstation[];
 CONTENT_EXPORT extern const char kDisableApplicationCache[];
 extern const char kDisableAudio[];
 extern const char kDisableBackingStoreLimit[];
+extern const char kDisableDart[];
 CONTENT_EXPORT extern const char kDisableDatabases[];
 extern const char kDisableDataTransferItems[];
 extern const char kDisableDesktopNotifications[];

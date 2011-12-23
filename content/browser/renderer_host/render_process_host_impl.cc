@@ -631,6 +631,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kAuditAllHandles,
     switches::kAuditHandles,
     switches::kChromeFrame,
+    switches::kDartFlags,
     switches::kDisable3DAPIs,
     switches::kDisableAcceleratedCompositing,
     switches::kDisableApplicationCache,

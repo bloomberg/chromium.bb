@@ -286,6 +286,11 @@ int main(int argc, char* argv[]) {
         extensions_v8::HeapProfilerExtension::Get());
   }
 
+  if (parsed_command_line.HasSwitch(test_shell::kDartFlags)) {
+    webkit_glue::SetDartFlags(
+        parsed_command_line.GetSwitchValueASCII(test_shell::kDartFlags));
+  }
+
   // Load and initialize the stats table.  Attempt to construct a somewhat
   // unique name to isolate separate instances from each other.
 

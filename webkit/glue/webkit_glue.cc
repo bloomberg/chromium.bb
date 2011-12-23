@@ -85,6 +85,12 @@ void SetJavaScriptFlags(const std::string& str) {
 #endif
 }
 
+void SetDartFlags(const std::string& str) {
+#if WEBKIT_USING_DART
+  WebKit::setDartFlags(str.data(), static_cast<int>(str.size()));
+#endif
+}
+
 void EnableWebCoreLogChannels(const std::string& channels) {
   if (channels.empty())
     return;

@@ -37,6 +37,8 @@ namespace webkit_glue {
 
 WEBKIT_GLUE_EXPORT void SetJavaScriptFlags(const std::string& flags);
 
+WEBKIT_GLUE_EXPORT void SetDartFlags(const std::string& flags);
+
 // Turn on logging for flags in the provided comma delimited list.
 WEBKIT_GLUE_EXPORT void EnableWebCoreLogChannels(const std::string& channels);
 

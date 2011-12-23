@@ -38,6 +38,7 @@ WebPreferences::WebPreferences()
       minimum_logical_font_size(6),
       default_encoding("ISO-8859-1"),
       javascript_enabled(true),
+      dart_enabled(true),
       web_security_enabled(true),
       javascript_can_open_windows_automatically(true),
       loads_images_automatically(true),
@@ -182,6 +183,9 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setMinimumLogicalFontSize(minimum_logical_font_size);
   settings->setDefaultTextEncodingName(ASCIIToUTF16(default_encoding));
   settings->setJavaScriptEnabled(javascript_enabled);
+#if WEBKIT_USING_DART
+  settings->setDartEnabled(dart_enabled);
+#endif
   settings->setWebSecurityEnabled(web_security_enabled);
   settings->setJavaScriptCanOpenWindowsAutomatically(
       javascript_can_open_windows_automatically);
