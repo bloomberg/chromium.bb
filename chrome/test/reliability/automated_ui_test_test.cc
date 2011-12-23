@@ -256,6 +256,10 @@ TEST_F(AutomatedUITestBase, IncognitoWindow) {
 #if defined(OS_WIN)
 #define MAYBE_OpenCloseBrowserWindowWithAccelerator \
         FLAKY_OpenCloseBrowserWindowWithAccelerator
+#elif defined(USE_AURA)
+// See crbug.com/108496.
+#define MAYBE_OpenCloseBrowserWindowWithAccelerator \
+        DISABLED_OpenCloseBrowserWindowWithAccelerator
 #else
 #define MAYBE_OpenCloseBrowserWindowWithAccelerator \
         OpenCloseBrowserWindowWithAccelerator
