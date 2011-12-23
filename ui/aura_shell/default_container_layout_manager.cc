@@ -4,6 +4,7 @@
 
 #include "ui/aura_shell/default_container_layout_manager.h"
 
+#include "ash/wm/show_state_controller.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -11,7 +12,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura_shell/property_util.h"
-#include "ui/aura_shell/show_state_controller.h"
 #include "ui/aura_shell/window_util.h"
 #include "ui/aura_shell/workspace/workspace.h"
 #include "ui/aura_shell/workspace/workspace_manager.h"

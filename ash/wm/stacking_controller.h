@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_STACKING_CONTROLLER_H_
-#define UI_AURA_SHELL_STACKING_CONTROLLER_H_
+#ifndef ASH_WM_STACKING_CONTROLLER_H_
+#define ASH_WM_STACKING_CONTROLLER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -40,4 +40,4 @@ class StackingController : public aura::client::StackingClient {
 }  // namespace internal
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_STACKING_CONTROLLER_H_
+#endif  // ASH_WM_STACKING_CONTROLLER_H_

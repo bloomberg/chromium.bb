@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/modal_container_layout_manager.h"
+#include "ash/wm/modal_container_layout_manager.h"
 
 #include "base/compiler_specific.h"
 #include "ui/aura/root_window.h"

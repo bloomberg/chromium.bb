@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/shadow_controller.h"
+#include "ash/wm/shadow_controller.h"
 
 #include <algorithm>
 #include <vector>
 
+#include "ash/wm/shadow.h"
+#include "ash/wm/shadow_types.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/shadow.h"
-#include "ui/aura_shell/shadow_types.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/test/aura_shell_test_base.h"
 #include "ui/aura_shell/window_properties.h"

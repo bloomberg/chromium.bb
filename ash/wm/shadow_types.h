@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_SHADOW_TYPES_H_
-#define UI_AURA_SHELL_SHADOW_TYPES_H_
+#ifndef ASH_WM_SHADOW_TYPES_H_
+#define ASH_WM_SHADOW_TYPES_H_
 #pragma once
 
 #include "ui/aura_shell/aura_shell_export.h"
@@ -30,4 +30,4 @@ AURA_SHELL_EXPORT ShadowType GetShadowType(aura::Window* window);
 }  // namespace internal
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_SHADOW_TYPES_H_
+#endif  // ASH_WM_SHADOW_TYPES_H_

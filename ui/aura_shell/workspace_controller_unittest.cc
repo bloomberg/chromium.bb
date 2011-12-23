@@ -4,10 +4,10 @@
 
 #include "ui/aura_shell/workspace_controller.h"
 
+#include "ash/wm/activation_controller.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/activation_controller.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/window_util.h"
 #include "ui/aura_shell/workspace/workspace.h"

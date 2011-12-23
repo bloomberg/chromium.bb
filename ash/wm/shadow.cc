@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/shadow.h"
+#include "ash/wm/shadow.h"
 
+#include "ash/wm/image_grid.h"
 #include "grit/ui_resources.h"
-#include "ui/aura_shell/image_grid.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace aura_shell {

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_MODAL_CONTAINER_LAYOUT_MANAGER_H_
-#define UI_AURA_SHELL_MODAL_CONTAINER_LAYOUT_MANAGER_H_
+#ifndef ASH_WM_MODAL_CONTAINER_LAYOUT_MANAGER_H_
+#define ASH_WM_MODAL_CONTAINER_LAYOUT_MANAGER_H_
 #pragma once
 
 #include <vector>
 
+#include "ash/wm/modality_event_filter_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura_shell/aura_shell_export.h"
-#include "ui/aura_shell/modality_event_filter_delegate.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
 
 namespace aura {
@@ -99,4 +99,4 @@ class AURA_SHELL_EXPORT ModalContainerLayoutManager
 }  // namespace internal
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_MODAL_CONTAINER_LAYOUT_MANAGER_H_
+#endif  // ASH_WM_MODAL_CONTAINER_LAYOUT_MANAGER_H_

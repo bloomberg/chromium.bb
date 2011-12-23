@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/modality_event_filter.h"
+#include "ash/wm/modality_event_filter.h"
 
+#include "ash/wm/modality_event_filter_delegate.h"
 #include "ui/aura/event.h"
-#include "ui/aura_shell/modality_event_filter_delegate.h"
 
 namespace aura_shell {
 namespace internal {

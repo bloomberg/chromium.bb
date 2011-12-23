@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_SHADOW_H_
-#define UI_AURA_SHELL_SHADOW_H_
+#ifndef ASH_WM_SHADOW_H_
+#define ASH_WM_SHADOW_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -51,4 +51,4 @@ class AURA_SHELL_EXPORT Shadow {
 }  // namespace internal
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_SHADOW_H_
+#endif  // ASH_WM_SHADOW_H_

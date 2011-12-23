@@ -4,11 +4,11 @@
 
 #include "ui/aura_shell/window_util.h"
 
+#include "ash/wm/activation_controller.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/activation_controller.h"
 #include "ui/aura_shell/property_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"

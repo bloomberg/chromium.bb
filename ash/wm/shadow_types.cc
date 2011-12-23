@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/shadow_types.h"
+#include "ash/wm/shadow_types.h"
 
 #include "ui/aura/window.h"
 #include "ui/aura_shell/window_properties.h"

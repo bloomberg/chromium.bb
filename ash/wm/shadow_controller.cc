@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/shadow_controller.h"
+#include "ash/wm/shadow_controller.h"
 
 #include <utility>
 
+#include "ash/wm/shadow.h"
+#include "ash/wm/shadow_types.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/aura_shell_switches.h"
-#include "ui/aura_shell/shadow.h"
-#include "ui/aura_shell/shadow_types.h"
 #include "ui/aura_shell/window_properties.h"
 
 using std::make_pair;

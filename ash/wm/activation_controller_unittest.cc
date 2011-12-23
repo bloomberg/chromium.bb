@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/activation_controller.h"
+#include "ash/wm/activation_controller.h"
 
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"

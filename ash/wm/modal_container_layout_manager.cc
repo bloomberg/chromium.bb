@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/modal_container_layout_manager.h"
+#include "ash/wm/modal_container_layout_manager.h"
 
+#include "ash/wm/modality_event_filter.h"
 #include "base/bind.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/modality_event_filter.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/window_util.h"
 #include "ui/gfx/canvas.h"
