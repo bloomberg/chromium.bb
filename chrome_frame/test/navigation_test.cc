@@ -647,7 +647,8 @@ TEST_F(NavigationTest, DISABLED_DownloadInNewWindow) {
   LaunchIEAndNavigate(kDownloadFromNewWin);
 }
 
-TEST_P(FullTabNavigationTest, FormPostBackForward) {
+// Disabled, http://crbug.com/108508
+TEST_P(FullTabNavigationTest, DISABLED_FormPostBackForward) {
   bool in_cf = GetParam().invokes_cf();
   // Navigate to the form-get.html page:
   // - First set focus to chrome renderer window
@@ -992,7 +993,8 @@ ACTION(VerifySeleniumCoreTestResults) {
 }
 
 // Tests refreshing causes a page load.
-TEST_F(FullTabSeleniumTest, Core) {
+// Disabled, http://crbug.com/108508
+TEST_F(FullTabSeleniumTest, DISABLED_Core) {
   // Please see http://code.google.com/p/chromium/issues/detail?id=60987
   // for more information on why this test is disabled for Vista with IE7.
   if (base::win::GetVersion() == base::win::VERSION_VISTA &&

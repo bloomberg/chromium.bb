@@ -49,7 +49,8 @@ INSTANTIATE_TEST_CASE_P(CF, FullTabUITest,
                         testing::Values(CFInvocation::MetaTag()));
 
 // Tests keyboard input.
-TEST_P(FullTabUITest, KeyboardInput) {
+// Disabled, http://crbug.com/108508
+TEST_P(FullTabUITest, DISABLED_KeyboardInput) {
   if (!GetParam().invokes_cf()) {
     LOG(ERROR) << "Test not implemented for this configuration.";
     return;
