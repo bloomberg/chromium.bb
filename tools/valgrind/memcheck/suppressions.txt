@@ -4328,7 +4328,7 @@
    bug_99307
    Memcheck:Uninitialized
    fun:modp_b64_encode
-   fun:_ZN4base12Base64EncodeERKNS_11StringPieceEPSs
+   fun:_ZN4base12Base64Encode*
    fun:_ZN11web_ui_util15GetImageDataUrlERK8SkBitmap
    fun:_ZN12_GLOBAL__N_121NetworkInfoDictionary8set_iconERK8SkBitmap
 }
@@ -5007,17 +5007,6 @@
    fun:_ZN7WebCoreL13paintSkBitmapEPNS_19PlatformContextSkiaERKNS_15NativeImageSkiaERK7SkIRectRK6SkRectRKN10SkXfermode4ModeE
    fun:_ZN7WebCore11BitmapImage4drawEPNS_15GraphicsContextERKNS_9FloatRectES5_NS_10ColorSpaceENS_17CompositeOperatorE
    fun:_ZN7WebCore15GraphicsContext9drawImageEPNS_5ImageENS_10ColorSpaceERKNS_9FloatRectES6_NS_17CompositeOperatorEb
-   fun:_ZN7WebCore15GraphicsContext9drawImageEPNS_5ImageENS_10ColorSpaceERKNS_7IntRectES6_NS_17CompositeOperatorEb
-   fun:_ZN7WebCore15GraphicsContext9drawImageEPNS_5ImageENS_10ColorSpaceERKNS_7IntRectENS_17CompositeOperatorEb
-   fun:_ZN7WebCore11RenderImage13paintIntoRectEPNS_15GraphicsContextERKNS_7IntRectE
-   fun:_ZN7WebCore11RenderImage13paintReplacedERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore14RenderReplaced5paintERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderImage5paintERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore9InlineBox5paintERNS_9PaintInfoERKNS_8IntPointEii
-   fun:_ZN7WebCore13InlineFlowBox5paintERNS_9PaintInfoERKNS_8IntPointEii
-   fun:_ZN7WebCore13RootInlineBox5paintERNS_9PaintInfoERKNS_8IntPointEii
-   fun:_ZNK7WebCore17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_8IntPointE
-   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_8IntPointE
 }
 {
    bug_106104
@@ -5267,6 +5256,7 @@
    fun:_ZN5views4View14AddChildViewAtEPS0_i
    fun:_ZN5views4View12AddChildViewEPS0_
 }
+
 
 
 #-----------------------------------------------------------------------
