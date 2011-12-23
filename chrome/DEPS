@@ -1,10 +1,10 @@
 include_rules = [
+  "+ash",
   "+crypto",
   "+gpu",
   "+net",
   "+printing",
   "+sql",
-  "+views",
 
   # The subdirectories in chrome/ will manually allow their own include
   # directories in chrome/ so we disallow all of them.
