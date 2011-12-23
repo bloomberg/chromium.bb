@@ -44,8 +44,6 @@
 
 #include "compositor.h"
 
-#define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
-
 struct x11_compositor {
 	struct wlsc_compositor	 base;
 
@@ -244,7 +242,7 @@ x11_output_set_wm_protocols(struct x11_output *output)
 			     c->atom.wm_protocols,
 			     XCB_ATOM_ATOM,
 			     32,
-			     ARRAY_SIZE(list),
+			     ARRAY_LENGTH(list),
 			     list);
 }
 
@@ -700,19 +698,19 @@ x11_compositor_get_resources(struct x11_compositor *c)
 		{ "CARDINAL",		F(atom.cardinal) },
 	};
 
-	xcb_intern_atom_cookie_t cookies[ARRAY_SIZE(atoms)];
+	xcb_intern_atom_cookie_t cookies[ARRAY_LENGTH(atoms)];
 	xcb_intern_atom_reply_t *reply;
 	xcb_pixmap_t pixmap;
 	xcb_gc_t gc;
 	int i;
 	uint8_t data[] = { 0, 0, 0, 0 };
 
-	for (i = 0; i < ARRAY_SIZE(atoms); i++)
+	for (i = 0; i < ARRAY_LENGTH(atoms); i++)
 		cookies[i] = xcb_intern_atom (c->conn, 0,
 					      strlen(atoms[i].name),
 					      atoms[i].name);
 
-	for (i = 0; i < ARRAY_SIZE(atoms); i++) {
+	for (i = 0; i < ARRAY_LENGTH(atoms); i++) {
 		reply = xcb_intern_atom_reply (c->conn, cookies[i], NULL);
 		*(xcb_atom_t *) ((char *) c + atoms[i].offset) = reply->atom;
 		free(reply);
