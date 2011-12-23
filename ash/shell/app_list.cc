@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/app_list/app_list_item_group_model.h"
+#include "ash/app_list/app_list_item_model.h"
+#include "ash/app_list/app_list_item_view.h"
+#include "ash/app_list/app_list_model.h"
+#include "ash/app_list/app_list_view_delegate.h"
+#include "ash/app_list/app_list_view.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
 #include "base/basictypes.h"
-#include "ui/aura_shell/app_list/app_list_item_group_model.h"
-#include "ui/aura_shell/app_list/app_list_item_model.h"
-#include "ui/aura_shell/app_list/app_list_item_view.h"
-#include "ui/aura_shell/app_list/app_list_model.h"
-#include "ui/aura_shell/app_list/app_list_view_delegate.h"
-#include "ui/aura_shell/app_list/app_list_view.h"
 #include "ui/views/examples/examples_window.h"
 
 namespace ash {

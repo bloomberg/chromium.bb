@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/aura/app_list/extension_app_item.h"
 
+#include "ash/app_list/app_list_item_view.h"
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -15,7 +16,6 @@
 #include "grit/component_extension_resources_map.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/aura_shell/app_list/app_list_item_view.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"

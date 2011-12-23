@@ -108,11 +108,11 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(USE_AURA)
+#include "ash/launcher/launcher.h"
+#include "ash/launcher/launcher_model.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/aura/launcher_icon_updater.h"
-#include "ui/aura_shell/launcher/launcher.h"
-#include "ui/aura_shell/launcher/launcher_model.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/gfx/screen.h"
 #elif defined(OS_WIN)

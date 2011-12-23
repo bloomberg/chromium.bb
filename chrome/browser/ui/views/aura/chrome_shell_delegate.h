@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_UI_VIEWS_AURA_CHROME_SHELL_DELEGATE_H_
 #pragma once
 
+#include "ash/launcher/launcher_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura_shell/launcher/launcher_types.h"
 #include "ui/aura_shell/shell_delegate.h"
 
 class Browser;

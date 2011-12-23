@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/views/aura/launcher_icon_updater.h"
 
+#include "ash/launcher/launcher_model.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "grit/ui_resources.h"
-#include "ui/aura_shell/launcher/launcher_model.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 

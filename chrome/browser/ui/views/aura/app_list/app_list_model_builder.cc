@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/aura/app_list/app_list_model_builder.h"
 
+#include "ash/app_list/app_list_item_group_model.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -16,7 +17,6 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/aura_shell/app_list/app_list_item_group_model.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {

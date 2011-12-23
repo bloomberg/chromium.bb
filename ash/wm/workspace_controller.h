@@ -6,13 +6,13 @@
 #define UI_AURA_SHELL_WORKSPACE_CONTROLLER_H_
 #pragma once
 
+#include "ash/launcher/launcher_model_observer.h"
 #include "ash/wm/workspace/workspace_observer.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura_shell/aura_shell_export.h"
-#include "ui/aura_shell/launcher/launcher_model_observer.h"
 
 namespace aura {
 class Window;

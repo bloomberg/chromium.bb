@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/gtest_prod_util.h"
-#include "ui/aura_shell/app_list/app_list_model.h"
+#include "ash/app_list/app_list_model.h"
 
 class Profile;
 

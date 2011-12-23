@@ -69,7 +69,7 @@ bool EnableXInput() {
   // We have specified DELAYLOAD for xinput1_3.dll. If the DLL is not
   // installed (XP w/o DirectX redist installed), we disable functionality.
   __try {
-    XInputEnable(true);
+    ;//XInputEnable(true);
   } __except(DelayLoadDllExceptionFilter(GetExceptionInformation())) {
     return false;
   }

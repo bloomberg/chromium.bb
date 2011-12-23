@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 
+#include "ash/launcher/launcher_types.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/ui/views/aura/status_area_host_aura.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/launcher/launcher_types.h"
 
 // static
 ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;

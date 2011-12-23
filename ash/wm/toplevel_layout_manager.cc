@@ -4,10 +4,10 @@
 
 #include "ash/wm/toplevel_layout_manager.h"
 
+#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/shelf_layout_manager.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
 

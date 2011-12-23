@@ -4,11 +4,11 @@
 
 #include "ui/aura_shell/shell_accelerator_controller.h"
 
+#include "ash/launcher/launcher.h"
+#include "ash/launcher/launcher_model.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura_shell/launcher/launcher.h"
-#include "ui/aura_shell/launcher/launcher_model.h"
 #include "ui/aura_shell/screenshot_delegate.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/app_list/app_list_item_group_model.h"
+#include "ash/app_list/app_list_item_model.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/aura/app_list/app_list_model_builder.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura_shell/app_list/app_list_item_group_model.h"
-#include "ui/aura_shell/app_list/app_list_item_model.h"
 
 class AppListModelBuilderTest : public ExtensionServiceTestBase {
  public:
