@@ -59,7 +59,8 @@ Session::Session()
       thread_(id_.c_str()),
       async_script_timeout_(0),
       implicit_wait_(0),
-      has_alert_prompt_text_(false) {
+      has_alert_prompt_text_(false),
+      sticky_modifiers_(0) {
   SessionManager::GetInstance()->Add(this);
   logger_.AddHandler(session_log_.get());
   if (FileLog::Get())
@@ -281,6 +282,18 @@ Error* Session::SendKeys(const ElementId& element, const string16& keys) {
       &Session::SendKeysOnSessionThread,
       base::Unretained(this),
       keys,
+      true /* release_modifiers */,
+      &error));
+  return error;
+}
+
+Error* Session::SendKeys(const string16& keys) {
+  Error* error;
+  RunSessionTask(base::Bind(
+      &Session::SendKeysOnSessionThread,
+      base::Unretained(this),
+      keys,
+      false /* release_modifiers */,
       &error));
   return error;
 }
@@ -1301,10 +1314,12 @@ Error* Session::ExecuteScriptAndParseValue(const FrameId& frame_id,
   return NULL;
 }
 
-void Session::SendKeysOnSessionThread(const string16& keys, Error** error) {
+void Session::SendKeysOnSessionThread(const string16& keys,
+                                      bool release_modifiers, Error** error) {
   std::vector<WebKeyEvent> key_events;
   std::string error_msg;
-  if (!ConvertKeysToWebKeyEvents(keys, logger_, &key_events, &error_msg)) {
+  if (!ConvertKeysToWebKeyEvents(keys, logger_, release_modifiers,
+                                 &sticky_modifiers_, &key_events, &error_msg)) {
     *error = new Error(kUnknownError, error_msg);
     return;
   }

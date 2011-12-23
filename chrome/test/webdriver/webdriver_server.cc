@@ -37,6 +37,7 @@
 #include "chrome/test/webdriver/commands/execute_async_script_command.h"
 #include "chrome/test/webdriver/commands/execute_command.h"
 #include "chrome/test/webdriver/commands/find_element_commands.h"
+#include "chrome/test/webdriver/commands/keys_command.h"
 #include "chrome/test/webdriver/commands/log_command.h"
 #include "chrome/test/webdriver/commands/navigate_commands.h"
 #include "chrome/test/webdriver/commands/mouse_commands.h"
@@ -127,6 +128,7 @@ void InitCallbacks(Dispatcher* dispatcher,
                                         "/session/*/execute_async");
   dispatcher->Add<ForwardCommand>(      "/session/*/forward");
   dispatcher->Add<SwitchFrameCommand>(  "/session/*/frame");
+  dispatcher->Add<KeysCommand>(         "/session/*/keys");
   dispatcher->Add<RefreshCommand>(      "/session/*/refresh");
   dispatcher->Add<SourceCommand>(       "/session/*/source");
   dispatcher->Add<TitleCommand>(        "/session/*/title");

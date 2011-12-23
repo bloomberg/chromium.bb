@@ -180,16 +180,19 @@ WebKeyEvent CreateCharEvent(const std::string& unmodified_text,
 
 bool ConvertKeysToWebKeyEvents(const string16& client_keys,
                                const Logger& logger,
+                               bool release_modifiers,
+                               int* modifiers,
                                std::vector<WebKeyEvent>* client_key_events,
                                std::string* error_msg) {
   std::vector<WebKeyEvent> key_events;
 
+  string16 keys = client_keys;
   // Add an implicit NULL character to the end of the input to depress all
   // modifiers.
-  string16 keys = client_keys;
-  keys.push_back(kWebDriverNullKey);
+  if (release_modifiers)
+    keys.push_back(kWebDriverNullKey);
 
-  int sticky_modifiers = 0;
+  int sticky_modifiers = *modifiers;
   for (size_t i = 0; i < keys.size(); ++i) {
     char16 key = keys[i];
 
@@ -308,6 +311,7 @@ bool ConvertKeysToWebKeyEvents(const string16& client_keys,
     }
   }
   client_key_events->swap(key_events);
+  *modifiers = sticky_modifiers;
   return true;
 }
 

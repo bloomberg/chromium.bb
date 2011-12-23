@@ -12,6 +12,7 @@
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/third_party/icu/icu_utf.h"
 #include "chrome/common/automation_id.h"
 #include "chrome/test/automation/automation_json_requests.h"
 
@@ -154,6 +155,23 @@ bool StringToWebViewId(const std::string& string_id, WebViewId* view_id) {
     *view_id = WebViewId::ForView(id);
   }
   return true;
+}
+
+Error* FlattenStringArray(const ListValue* src, string16* dest) {
+  string16 keys;
+  for (size_t i = 0; i < src->GetSize(); ++i) {
+    string16 keys_list_part;
+    src->GetString(i, &keys_list_part);
+    for (size_t j = 0; j < keys_list_part.size(); ++j) {
+      if (CBU16_IS_SURROGATE(keys_list_part[j])) {
+        return new Error(kBadRequest,
+                         "ChromeDriver only supports characters in the BMP");
+      }
+    }
+    keys.append(keys_list_part);
+  }
+  *dest = keys;
+  return NULL;
 }
 
 ValueParser::ValueParser() { }

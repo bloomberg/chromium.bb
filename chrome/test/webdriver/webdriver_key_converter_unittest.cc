@@ -16,10 +16,15 @@ namespace webdriver {
 
 void CheckEvents(const string16& keys,
                  WebKeyEvent expected_events[],
-                 size_t expected_size) {
+                 bool release_modifiers,
+                 size_t expected_size,
+                 int expected_modifiers) {
+  int modifiers = 0;
   std::vector<WebKeyEvent> events;
   std::string error_msg;
-  EXPECT_TRUE(ConvertKeysToWebKeyEvents(keys, Logger(), &events, &error_msg));
+  EXPECT_TRUE(ConvertKeysToWebKeyEvents(keys, Logger(),
+                                        release_modifiers,
+                                        &modifiers, &events, &error_msg));
   EXPECT_EQ(expected_size, events.size());
   for (size_t i = 0; i < events.size() && i < expected_size; ++i) {
     EXPECT_EQ(expected_events[i].type, events[i].type);
@@ -28,21 +33,32 @@ void CheckEvents(const string16& keys,
     EXPECT_EQ(expected_events[i].modified_text, events[i].modified_text);
     EXPECT_EQ(expected_events[i].modifiers, events[i].modifiers);
   }
+  EXPECT_EQ(expected_modifiers, modifiers);
 }
 
-void CheckEvents(const std::string& keys,
-                 WebKeyEvent expected_events[],
-                 size_t expected_size) {
-  CheckEvents(UTF8ToUTF16(keys), expected_events, expected_size);
+void CheckEventsReleaseModifiers(const string16& keys,
+                                 WebKeyEvent expected_events[],
+                                 size_t expected_size) {
+  CheckEvents(keys, expected_events, true /* release_modifier */,
+      expected_size, 0 /* expected_modifiers */);
+}
+
+void CheckEventsReleaseModifiers(const std::string& keys,
+                                 WebKeyEvent expected_events[],
+                                 size_t expected_size) {
+  CheckEventsReleaseModifiers(UTF8ToUTF16(keys),
+      expected_events, expected_size);
 }
 
 void CheckNonShiftChar(ui::KeyboardCode key_code, char character) {
+  int modifiers = 0;
   std::string char_string;
   char_string.push_back(character);
   std::vector<WebKeyEvent> events;
   std::string error_msg;
   EXPECT_TRUE(ConvertKeysToWebKeyEvents(ASCIIToUTF16(char_string), Logger(),
-                                        &events, &error_msg));
+                                        true /* release_modifiers*/,
+                                        &modifiers, &events, &error_msg));
   ASSERT_EQ(3u, events.size()) << "Char: " << character;
   EXPECT_EQ(key_code, events[0].key_code) << "Char: " << character;
   ASSERT_EQ(1u, events[1].modified_text.length()) << "Char: " << character;
@@ -53,12 +69,14 @@ void CheckNonShiftChar(ui::KeyboardCode key_code, char character) {
 }
 
 void CheckShiftChar(ui::KeyboardCode key_code, char character, char lower) {
+  int modifiers = 0;
   std::string char_string;
   char_string.push_back(character);
   std::vector<WebKeyEvent> events;
   std::string error_msg;
   EXPECT_TRUE(ConvertKeysToWebKeyEvents(ASCIIToUTF16(char_string), Logger(),
-                                        &events, &error_msg));
+                                        true /* release_modifiers*/,
+                                        &modifiers, &events, &error_msg));
   ASSERT_EQ(5u, events.size()) << "Char: " << character;
   EXPECT_EQ(ui::VKEY_SHIFT, events[0].key_code) << "Char: " << character;
   EXPECT_EQ(key_code, events[1].key_code) << "Char: " << character;
@@ -75,7 +93,7 @@ TEST(WebDriverKeyConverter, SingleChar) {
       CreateKeyDownEvent(ui::VKEY_H, 0),
       CreateCharEvent("h", "h", 0),
       CreateKeyUpEvent(ui::VKEY_H, 0)};
-  CheckEvents("h", event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers("h", event_array, arraysize(event_array));
 }
 
 TEST(WebDriverKeyConverter, SingleNumber) {
@@ -83,7 +101,7 @@ TEST(WebDriverKeyConverter, SingleNumber) {
       CreateKeyDownEvent(ui::VKEY_1, 0),
       CreateCharEvent("1", "1", 0),
       CreateKeyUpEvent(ui::VKEY_1, 0)};
-  CheckEvents("1", event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers("1", event_array, arraysize(event_array));
 }
 
 TEST(WebDriverKeyConverter, MultipleChars) {
@@ -97,7 +115,7 @@ TEST(WebDriverKeyConverter, MultipleChars) {
       CreateKeyDownEvent(ui::VKEY_Y, 0),
       CreateCharEvent("y", "y", 0),
       CreateKeyUpEvent(ui::VKEY_Y, 0)};
-  CheckEvents("hey", event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers("hey", event_array, arraysize(event_array));
 }
 
 TEST(WebDriverKeyConverter, WebDriverSpecialChar) {
@@ -107,7 +125,7 @@ TEST(WebDriverKeyConverter, WebDriverSpecialChar) {
       CreateKeyUpEvent(ui::VKEY_SPACE, 0)};
   string16 keys;
   keys.push_back(static_cast<char16>(0xE00DU));
-  CheckEvents(keys, event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
 }
 
 TEST(WebDriverKeyConverter, WebDriverSpecialNonCharKey) {
@@ -116,7 +134,7 @@ TEST(WebDriverKeyConverter, WebDriverSpecialNonCharKey) {
       CreateKeyUpEvent(ui::VKEY_F1, 0)};
   string16 keys;
   keys.push_back(static_cast<char16>(0xE031U));
-  CheckEvents(keys, event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
 }
 
 TEST(WebDriverKeyConverter, FrenchKeyOnEnglishLayout) {
@@ -124,7 +142,8 @@ TEST(WebDriverKeyConverter, FrenchKeyOnEnglishLayout) {
       CreateKeyDownEvent(ui::VKEY_UNKNOWN, 0),
       CreateCharEvent(WideToUTF8(L"\u00E9"), WideToUTF8(L"\u00E9"), 0),
       CreateKeyUpEvent(ui::VKEY_UNKNOWN, 0)};
-  CheckEvents(WideToUTF16(L"\u00E9"), event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers(WideToUTF16(L"\u00E9"),
+      event_array, arraysize(event_array));
 }
 
 #if defined(OS_WIN)
@@ -140,7 +159,7 @@ TEST(WebDriverKeyConverter, NeedsCtrlAndAlt) {
       CreateKeyUpEvent(ui::VKEY_MENU, 0),
       CreateKeyUpEvent(ui::VKEY_CONTROL, 0)};
   ASSERT_TRUE(SwitchKeyboardLayout("00000407"));
-  CheckEvents("@", event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers("@", event_array, arraysize(event_array));
 }
 #endif
 
@@ -151,7 +170,7 @@ TEST(WebDriverKeyConverter, UppercaseCharDoesShift) {
       CreateCharEvent("a", "A", automation::kShiftKeyMask),
       CreateKeyUpEvent(ui::VKEY_A, automation::kShiftKeyMask),
       CreateKeyUpEvent(ui::VKEY_SHIFT, 0)};
-  CheckEvents("A", event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers("A", event_array, arraysize(event_array));
 }
 
 TEST(WebDriverKeyConverter, UppercaseSymbolCharDoesShift) {
@@ -161,7 +180,7 @@ TEST(WebDriverKeyConverter, UppercaseSymbolCharDoesShift) {
       CreateCharEvent("1", "!", automation::kShiftKeyMask),
       CreateKeyUpEvent(ui::VKEY_1, automation::kShiftKeyMask),
       CreateKeyUpEvent(ui::VKEY_SHIFT, 0)};
-  CheckEvents("!", event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers("!", event_array, arraysize(event_array));
 }
 
 TEST(WebDriverKeyConverter, UppercaseCharUsesShiftOnlyIfNecessary) {
@@ -180,7 +199,7 @@ TEST(WebDriverKeyConverter, UppercaseCharUsesShiftOnlyIfNecessary) {
   string16 keys;
   keys.push_back(static_cast<char16>(0xE008U));
   keys.append(UTF8ToUTF16("aBc"));
-  CheckEvents(keys, event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
 }
 
 TEST(WebDriverKeyConverter, ToggleModifiers) {
@@ -202,7 +221,7 @@ TEST(WebDriverKeyConverter, ToggleModifiers) {
   keys.push_back(static_cast<char16>(0xE00AU));
   keys.push_back(static_cast<char16>(0xE03DU));
   keys.push_back(static_cast<char16>(0xE03DU));
-  CheckEvents(keys, event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
 }
 
 TEST(WebDriverKeyConverter, AllShorthandKeys) {
@@ -220,7 +239,8 @@ TEST(WebDriverKeyConverter, AllShorthandKeys) {
       CreateKeyDownEvent(ui::VKEY_SPACE, 0),
       CreateCharEvent(" ", " ", 0),
       CreateKeyUpEvent(ui::VKEY_SPACE, 0)};
-  CheckEvents("\n\r\n\t\b ", event_array, arraysize(event_array));
+  CheckEventsReleaseModifiers("\n\r\n\t\b ",
+      event_array,arraysize(event_array));
 }
 
 TEST(WebDriverKeyConverter, AllEnglishKeyboardSymbols) {
@@ -277,17 +297,20 @@ TEST(WebDriverKeyConverter, AllSpecialWebDriverKeysOnEnglishKeyboard) {
     if (i > 0x29 && i < 0x31)
       continue;
     string16 keys;
+    int modifiers = 0;
     keys.push_back(0xE000U + i);
     std::vector<WebKeyEvent> events;
     std::string error_msg;
     if (i == 1) {
-      EXPECT_FALSE(ConvertKeysToWebKeyEvents(keys, Logger(), &events,
-                                             &error_msg))
+      EXPECT_FALSE(ConvertKeysToWebKeyEvents(keys, Logger(),
+                                             true /* release_modifiers*/,
+                                             &modifiers, &events, &error_msg))
           << "Index: " << i;
       EXPECT_EQ(0u, events.size()) << "Index: " << i;
     } else {
       EXPECT_TRUE(ConvertKeysToWebKeyEvents(keys, Logger(),
-                                            &events, &error_msg))
+                                            true /* release_modifiers */,
+                                            &modifiers, &events, &error_msg))
           << "Index: " << i;
       if (i == 0) {
         EXPECT_EQ(0u, events.size()) << "Index: " << i;
@@ -301,6 +324,41 @@ TEST(WebDriverKeyConverter, AllSpecialWebDriverKeysOnEnglishKeyboard) {
       }
     }
   }
+}
+
+TEST(WebDriverKeyConverter, ModifiersState) {
+  int shift_key_modifier = automation::kShiftKeyMask;
+  int control_key_modifier = shift_key_modifier | automation::kControlKeyMask;
+  int alt_key_modifier = control_key_modifier | automation::kAltKeyMask;
+  int meta_key_modifier = alt_key_modifier | automation::kMetaKeyMask;
+  WebKeyEvent event_array[] = {
+      CreateKeyDownEvent(ui::VKEY_SHIFT, shift_key_modifier),
+      CreateKeyDownEvent(ui::VKEY_CONTROL, control_key_modifier),
+      CreateKeyDownEvent(ui::VKEY_MENU, alt_key_modifier),
+      CreateKeyDownEvent(ui::VKEY_COMMAND, meta_key_modifier)};
+  string16 keys;
+  keys.push_back(static_cast<char16>(0xE008U));
+  keys.push_back(static_cast<char16>(0xE009U));
+  keys.push_back(static_cast<char16>(0xE00AU));
+  keys.push_back(static_cast<char16>(0xE03DU));
+
+  CheckEvents(keys, event_array, false /* release_modifiers */,
+      arraysize(event_array), meta_key_modifier);
+}
+
+TEST(WebDriverKeyConverter, ReleaseModifiers) {
+  WebKeyEvent event_array[] = {
+      CreateKeyDownEvent(ui::VKEY_SHIFT, automation::kShiftKeyMask),
+      CreateKeyDownEvent(ui::VKEY_CONTROL,
+          automation::kShiftKeyMask | automation::kControlKeyMask),
+      CreateKeyUpEvent(ui::VKEY_SHIFT, 0),
+      CreateKeyUpEvent(ui::VKEY_CONTROL, 0)};
+  string16 keys;
+  keys.push_back(static_cast<char16>(0xE008U));
+  keys.push_back(static_cast<char16>(0xE009U));
+
+  CheckEvents(keys, event_array, true /* release_modifiers */,
+      arraysize(event_array), 0);
 }
 
 }  // namespace webdriver

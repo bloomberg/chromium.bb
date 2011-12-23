@@ -110,6 +110,8 @@ class Session {
   // Send the given keys to the given element dictionary. This function takes
   // ownership of |element|.
   Error* SendKeys(const ElementId& element, const string16& keys);
+  // Send the given keys to the active element.
+  Error* SendKeys(const string16& keys);
 
   // Sets the file paths to the file upload control under the given location.
   Error* DragAndDropFilePaths(const Point& location,
@@ -367,7 +369,9 @@ class Session {
                                     const std::string& script,
                                     base::Value** value);
 
-  void SendKeysOnSessionThread(const string16& keys, Error** error);
+  void SendKeysOnSessionThread(const string16& keys,
+                               bool release_modifiers,
+                               Error** error);
   Error* SwitchToFrameWithJavaScriptLocatedFrame(
       const std::string& script,
       base::ListValue* args);
@@ -430,6 +434,9 @@ class Session {
   bool has_alert_prompt_text_;
 
   Capabilities capabilities_;
+
+  // Current state of all modifier keys.
+  int sticky_modifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(Session);
 };
