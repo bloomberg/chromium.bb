@@ -2027,23 +2027,19 @@ struct LoadInfo {
 // Map from ProcessID+ViewID pair to LoadState
 typedef std::map<std::pair<int, int>, LoadInfo> LoadInfoMap;
 
-// Used to marshall calls to LoadStateChanged from the IO to UI threads.  We do
-// them all as a single task to avoid spamming the UI thread.
-class LoadInfoUpdateTask : public Task {
- public:
-  virtual void Run() {
-    LoadInfoMap::const_iterator i;
-    for (i = info_map.begin(); i != info_map.end(); ++i) {
-      RenderViewHost* view =
-          RenderViewHost::FromID(i->first.first, i->first.second);
-      if (view)  // The view could be gone at this point.
-        view->LoadStateChanged(i->second.url, i->second.load_state,
-                               i->second.upload_position,
-                               i->second.upload_size);
-    }
+// Used to marshal calls to LoadStateChanged from the IO to UI threads.  We do
+// them all as a single callback to avoid spamming the UI thread.
+void LoadInfoUpdateCallback(const LoadInfoMap& info_map) {
+  LoadInfoMap::const_iterator i;
+  for (i = info_map.begin(); i != info_map.end(); ++i) {
+    RenderViewHost* view =
+        RenderViewHost::FromID(i->first.first, i->first.second);
+    if (view)  // The view could be gone at this point.
+      view->LoadStateChanged(i->second.url, i->second.load_state,
+                             i->second.upload_position,
+                             i->second.upload_size);
   }
-  LoadInfoMap info_map;
-};
+}
 
 }  // namespace
 
@@ -2102,9 +2098,9 @@ void ResourceDispatcherHost::UpdateLoadStates() {
   if (info_map.empty())
     return;
 
-  LoadInfoUpdateTask* task = new LoadInfoUpdateTask;
-  task->info_map.swap(info_map);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, task);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&LoadInfoUpdateCallback, info_map));
 }
 
 // Calls the ResourceHandler to send upload progress messages to the renderer.

@@ -1207,23 +1207,6 @@ const Capabilities& Session::capabilities() const {
   return capabilities_;
 }
 
-void Session::RunSessionTask(Task* task) {
-  base::WaitableEvent done_event(false, false);
-  thread_.message_loop_proxy()->PostTask(FROM_HERE, base::Bind(
-      &Session::RunSessionTaskOnSessionThread,
-      base::Unretained(this),
-      task,
-      &done_event));
-  done_event.Wait();
-}
-
-void Session::RunSessionTaskOnSessionThread(Task* task,
-                                            base::WaitableEvent* done_event) {
-  task->Run();
-  delete task;
-  done_event->Signal();
-}
-
 void Session::RunSessionTask(const base::Closure& task) {
   base::WaitableEvent done_event(false, false);
   thread_.message_loop_proxy()->PostTask(FROM_HERE, base::Bind(

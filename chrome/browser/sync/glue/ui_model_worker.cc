@@ -17,6 +17,7 @@ namespace browser_sync {
 
 namespace {
 
+// A simple callback to signal a waitable event after running a closure.
 void CallDoWorkAndSignalCallback(const WorkCallback& work,
                                  base::WaitableEvent* work_done,
                                  UIModelWorker* const scheduler,
@@ -32,6 +33,7 @@ void CallDoWorkAndSignalCallback(const WorkCallback& work,
     // actually gets destroyed.
     return;
   }
+
   *error_info = work.Run();
 
   // Notify the UIModelWorker that scheduled us that we have run
@@ -130,6 +132,5 @@ void UIModelWorker::Stop() {
 ModelSafeGroup UIModelWorker::GetModelSafeGroup() {
   return GROUP_UI;
 }
-
 
 }  // namespace browser_sync

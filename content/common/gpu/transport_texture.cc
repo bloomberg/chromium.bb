@@ -24,10 +24,10 @@ TransportTexture::~TransportTexture() {
 
 void TransportTexture::CreateTextures(
     int n, int width, int height, Format format, std::vector<int>* textures,
-    Task* done_task) {
+    const base::Closure& callback) {
   output_textures_ = textures;
-  DCHECK(!create_task_.get());
-  create_task_.reset(done_task);
+  DCHECK(create_callback_.is_null());
+  create_callback_ = callback;
 
   bool ret = sender_->Send(new GpuTransportTextureHostMsg_CreateTextures(
       host_id_, n, width, height, static_cast<int>(format)));
@@ -102,7 +102,7 @@ void TransportTexture::OnTexturesCreated(const std::vector<int>& textures) {
   }
 
   // Notify user that textures are ready.
-  create_task_->Run();
-  create_task_.reset();
+  create_callback_.Run();
+  create_callback_.Reset();
   output_textures_ = NULL;
 }

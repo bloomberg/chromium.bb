@@ -47,10 +47,12 @@ class TransportTexture : public IPC::Channel::Listener {
   virtual ~TransportTexture();
 
   // Create a set of textures of specified size and format. They will be
-  // stored in |textures| and |done_task| will be called.
+  // stored in |textures| and |callback| will be called.
   // Textures IDs stored in |textures| are in the system GL context.
   void CreateTextures(int n, int width, int height, Format format,
-                      std::vector<int>* textures, Task* done_task);
+                      std::vector<int>* textures,
+                      const base::Closure& callback);
+
 
   // Release all textures that have previously been allocated.
   void ReleaseTextures();
@@ -86,8 +88,8 @@ class TransportTexture : public IPC::Channel::Listener {
   // Output pointer to write generated textures.
   std::vector<int>* output_textures_;
 
-  // Task that gets called when textures are generated.
-  scoped_ptr<Task> create_task_;
+  // Callback that gets called when textures are generated.
+  base::Closure create_callback_;
 
   // Mapping between service (GPU) IDs to client (Renderer) IDs.
   TextureMap texture_map_;

@@ -66,6 +66,7 @@ void FakeSyncapiShutdownCallback(base::Thread* syncer_thread,
                                  base::WaitableEvent** jobs,
                                  size_t job_count) {
   base::WaitableEvent all_jobs_done(false, false);
+
   // In real life, we would try and close a sync directory, which would
   // result in the syncer calling it's own destructor, which results in
   // the SyncerThread::HaltSyncer being called, which sets the

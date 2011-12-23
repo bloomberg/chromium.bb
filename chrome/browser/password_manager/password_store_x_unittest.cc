@@ -231,7 +231,7 @@ void LoginDatabaseQueryCallback(LoginDatabase* login_db,
   mock_return->OnLoginDatabaseQueryDone(forms);
 }
 
-// Generate |count| expected logins, either autofillable or blacklisted.
+// Generate |count| expected logins, either auto-fillable or blacklisted.
 void InitExpectedForms(bool autofillable, size_t count, VectorOfForms* forms) {
   const char* domain = autofillable ? "example" : "blacklisted";
   for (size_t i = 0; i < count; ++i) {
@@ -695,7 +695,8 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
         .WillOnce(WithArg<0>(STLDeleteElements0()));
   }
 
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
       base::Bind(&LoginDatabaseQueryCallback, login_db, true, &ld_return));
 
   // Wait for the login DB methods to execute on the DB thread.
@@ -715,7 +716,8 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
         .WillOnce(WithArg<0>(STLDeleteElements0()));
   }
 
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
       base::Bind(&LoginDatabaseQueryCallback, login_db, false, &ld_return));
 
   // Wait for the login DB methods to execute on the DB thread.
