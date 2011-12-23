@@ -217,9 +217,22 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
       // toward 0.  When gestureAmount has reaches its final value, i.e. the
       // track animation is done, the handler is called with |isComplete| set
       // to |YES|.
+      // When starting a backwards navigation gesture (swipe from left to right,
+      // gestureAmount will go from 0 to 1), if the user swipes from left to
+      // right and then quickly back to the left, this call can send
+      // NSEventPhaseEnded and then animate to gestureAmount of -1. For a
+      // picture viewer, that makes sense, but for back/forward navigation users
+      // find it confusing. There are two ways to prevent this:
+      // 1. Set Options to NSEventSwipeTrackingLockDirection. This way,
+      //    gestureAmount will always stay > 0.
+      // 2. Pass min:0 max:1 (instead of min:-1 max:1). This way, gestureAmount
+      //    will become less than 0, but on the quick swipe back to the left,
+      //    NSEventPhaseCancelled is sent instead.
+      // The overshoot behavior of (2) looks nicer with the current UI, so let's
+      // do that for now.
       [theEvent trackSwipeEventWithOptions:0
-                  dampenAmountThresholdMin:-1
-                                       max:1
+                  dampenAmountThresholdMin:goForward ? -1 : 0
+                                       max:goForward ?  0 : 1
                               usingHandler:^(CGFloat gestureAmount,
                                              NSEventPhase phase,
                                              BOOL isComplete,
