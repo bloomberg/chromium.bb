@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
@@ -149,9 +150,8 @@ SkBitmap* VistaWindowResources::bitmaps_[];
 ////////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindowFrameView
 
-class ConstrainedWindowFrameView
-    : public views::NonClientFrameView,
-      public views::ButtonListener {
+class ConstrainedWindowFrameView : public views::NonClientFrameView,
+                                   public views::ButtonListener {
  public:
   explicit ConstrainedWindowFrameView(ConstrainedWindowViews* container);
   virtual ~ConstrainedWindowFrameView();
@@ -163,8 +163,8 @@ class ConstrainedWindowFrameView
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const OVERRIDE;
   virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
-  virtual void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask)
-      OVERRIDE;
+  virtual void GetWindowMask(const gfx::Size& size,
+                             gfx::Path* window_mask) OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE {}
   virtual void UpdateWindowIcon() OVERRIDE {}
 
@@ -174,8 +174,8 @@ class ConstrainedWindowFrameView
   virtual void OnThemeChanged() OVERRIDE;
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event)
-      OVERRIDE;
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
  private:
   // Returns the thickness of the entire nonclient left, right, and bottom
@@ -273,10 +273,10 @@ const SkColor kContentsBorderShadow = SkColorSetARGB(51, 0, 0, 0);
 
 ConstrainedWindowFrameView::ConstrainedWindowFrameView(
     ConstrainedWindowViews* container)
-        : NonClientFrameView(),
-          container_(container),
-          close_button_(new views::ImageButton(this)),
-          frame_background_(new views::FrameBackground()) {
+    : NonClientFrameView(),
+      container_(container),
+      close_button_(new views::ImageButton(this)),
+      frame_background_(new views::FrameBackground()) {
   InitClass();
   InitWindowResources();
 
@@ -429,8 +429,9 @@ gfx::Rect ConstrainedWindowFrameView::IconBounds() const {
 }
 
 void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  frame_background_->set_frame_color(ResourceBundle::frame_color);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  frame_background_->set_frame_color(ThemeService::GetDefaultColor(
+      ThemeService::COLOR_FRAME));
   SkBitmap* theme_frame = rb.GetBitmapNamed(IDR_THEME_FRAME);
   frame_background_->set_theme_bitmap(theme_frame);
   frame_background_->set_theme_overlay_bitmap(NULL);

@@ -104,9 +104,6 @@ const int kNewTabCaptionMaximizedSpacing = 16;
 // is no avatar icon.
 const int kTabStripIndent = 1;
 
-const SkColor kFrameColorIncognito = SkColorSetRGB(83, 106, 139);
-const SkColor kFrameColorIncognitoInactive = SkColorSetRGB(126, 139, 156);
-
 // Converts |bounds| from |src|'s coordinate system to |dst|, and checks if
 // |pt| is contained within.
 bool ConvertedContainsCheck(gfx::Rect bounds, const views::View* src,
@@ -879,10 +876,12 @@ SkColor OpaqueBrowserFrameView::GetFrameColor() const {
   }
   // Never theme app and popup windows.
   if (ShouldPaintAsActive()) {
-    return is_incognito ? kFrameColorIncognito : ResourceBundle::frame_color;
+    ThemeService::GetDefaultColor(is_incognito ?
+        ThemeService::COLOR_FRAME_INCOGNITO : ThemeService::COLOR_FRAME);
   }
-  return is_incognito ? kFrameColorIncognitoInactive
-                      : ResourceBundle::frame_color_inactive;
+  return ThemeService::GetDefaultColor(is_incognito ?
+      ThemeService::COLOR_FRAME_INCOGNITO_INACTIVE :
+      ThemeService::COLOR_FRAME_INACTIVE);
 }
 
 SkBitmap* OpaqueBrowserFrameView::GetFrameBitmap() const {
