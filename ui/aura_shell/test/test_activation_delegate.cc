@@ -4,9 +4,9 @@
 
 #include "ui/aura_shell/test/test_activation_delegate.h"
 
+#include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/window_util.h"
 
 namespace aura_shell {
 namespace test {

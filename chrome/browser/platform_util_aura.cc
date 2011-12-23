@@ -4,9 +4,9 @@
 
 #include "chrome/browser/platform_util.h"
 
+#include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/window_util.h"
 
 namespace platform_util {
 

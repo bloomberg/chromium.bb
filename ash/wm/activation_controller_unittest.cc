@@ -4,6 +4,7 @@
 
 #include "ash/wm/activation_controller.h"
 
+#include "ash/wm/window_util.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
@@ -11,7 +12,6 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura_shell/test/aura_shell_test_base.h"
 #include "ui/aura_shell/test/test_activation_delegate.h"
-#include "ui/aura_shell/window_util.h"
 
 #if defined(OS_WIN)
 // Windows headers define macros for these function names which screw with us.

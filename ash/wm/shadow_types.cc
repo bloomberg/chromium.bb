@@ -4,8 +4,8 @@
 
 #include "ash/wm/shadow_types.h"
 
+#include "ash/wm/window_properties.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/window_properties.h"
 
 namespace aura_shell {
 namespace internal {

@@ -4,11 +4,11 @@
 
 #include "ash/wm/show_state_controller.h"
 
+#include "ash/wm/property_util.h"
+#include "ash/wm/workspace/workspace.h"
+#include "ash/wm/workspace/workspace_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/property_util.h"
-#include "ui/aura_shell/workspace/workspace.h"
-#include "ui/aura_shell/workspace/workspace_manager.h"
 #include "ui/base/ui_base_types.h"
 
 namespace aura_shell {

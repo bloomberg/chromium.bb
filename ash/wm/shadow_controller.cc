@@ -8,12 +8,12 @@
 
 #include "ash/wm/shadow.h"
 #include "ash/wm/shadow_types.h"
+#include "ash/wm/window_properties.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/aura_shell_switches.h"
-#include "ui/aura_shell/window_properties.h"
 
 using std::make_pair;
 

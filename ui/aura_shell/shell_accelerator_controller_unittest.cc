@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/wm/window_util.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -11,7 +12,6 @@
 #include "ui/aura_shell/shell_accelerator_controller.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/test/aura_shell_test_base.h"
-#include "ui/aura_shell/window_util.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>

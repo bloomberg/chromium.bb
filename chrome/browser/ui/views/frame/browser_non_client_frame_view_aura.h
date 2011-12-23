@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_AURA_H_
 #pragma once
 
+#include "ash/wm/window_frame.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
-#include "ui/aura_shell/window_frame.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget.h"
 

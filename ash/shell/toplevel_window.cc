@@ -4,9 +4,9 @@
 
 #include "ash/shell/toplevel_window.h"
 
+#include "ash/wm/toplevel_frame_view.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/toplevel_frame_view.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
 

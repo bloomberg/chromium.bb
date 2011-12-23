@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/wm/toplevel_frame_view.h"
 #include "base/utf_string_conversions.h"  // ASCIIToUTF16
 #include "ui/aura/window.h"
-#include "ui/aura_shell/toplevel_frame_view.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/radio_button.h"
