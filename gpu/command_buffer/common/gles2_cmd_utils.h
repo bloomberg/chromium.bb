@@ -92,6 +92,8 @@ class GLES2Util {
     int width, int height, int format, int type, int unpack_alignment,
     uint32* size);
 
+  static size_t RenderbufferBytesPerPixel(int format);
+
   static uint32 GetGLDataTypeSizeForUniforms(int type);
 
   static size_t GetGLTypeSizeForTexturesAndBuffers(uint32 type);

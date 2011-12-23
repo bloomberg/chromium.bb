@@ -107,6 +107,23 @@ TEST_F(GLES2UtilTest, ComputeImageDataSizeUnpackAlignment) {
             kWidth * 3, size);
 }
 
+TEST_F(GLES2UtilTest, RenderbufferBytesPerPixel) {
+   EXPECT_EQ(1u, GLES2Util::RenderbufferBytesPerPixel(GL_STENCIL_INDEX8));
+   EXPECT_EQ(2u, GLES2Util::RenderbufferBytesPerPixel(GL_RGBA4));
+   EXPECT_EQ(2u, GLES2Util::RenderbufferBytesPerPixel(GL_RGB565));
+   EXPECT_EQ(2u, GLES2Util::RenderbufferBytesPerPixel(GL_RGB5_A1));
+   EXPECT_EQ(2u, GLES2Util::RenderbufferBytesPerPixel(GL_DEPTH_COMPONENT16));
+   EXPECT_EQ(4u, GLES2Util::RenderbufferBytesPerPixel(GL_RGB));
+   EXPECT_EQ(4u, GLES2Util::RenderbufferBytesPerPixel(GL_RGBA));
+   EXPECT_EQ(
+       4u, GLES2Util::RenderbufferBytesPerPixel(GL_DEPTH24_STENCIL8_OES));
+   EXPECT_EQ(4u, GLES2Util::RenderbufferBytesPerPixel(GL_RGB8_OES));
+   EXPECT_EQ(4u, GLES2Util::RenderbufferBytesPerPixel(GL_RGBA8_OES));
+   EXPECT_EQ(
+       4u, GLES2Util::RenderbufferBytesPerPixel(GL_DEPTH_COMPONENT24_OES));
+   EXPECT_EQ(0u, GLES2Util::RenderbufferBytesPerPixel(-1));
+}
+
 }  // namespace gles2
 }  // namespace gpu
 
