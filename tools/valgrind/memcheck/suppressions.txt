@@ -4934,7 +4934,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN12browser_sync26TypedUrlDataTypeController21StartAssociationAsync*
-   fun:_ZN12browser_sync29NonFrontendDataTypeController5StartEP14CallbackRunnerI6Tuple2INS_18DataTypeController11StartResultERK9SyncErrorEE
+   fun:_ZN12browser_sync29NonFrontendDataTypeController5Start*
    fun:_ZN12browser_sync19DataTypeManagerImpl13StartNextTypeEv
    fun:_ZN12browser_sync19DataTypeManagerImpl13DownloadReady*
 }
@@ -5244,6 +5244,33 @@
    fun:*WebSocketServerSocketImpl16ProcessHandshakeEv
    fun:*WebSocketServerSocketImpl6OnReadEi
 }
+{
+   bug_108531
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN21RenderProcessHostImpl4InitEb
+   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEEi
+   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
+   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
+   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
+   fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
+   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
+   fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
+   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
+   fun:_ZN20NavigationController7LoadURLERK4GURLRKN7content8ReferrerENS3_14PageTransitionERKSs
+   fun:_ZN11BalloonHost4InitEv
+   fun:_ZN15BalloonViewHost4InitEP10_GtkWidget
+   fun:_ZN19BalloonViewHostView20ViewHierarchyChangedEbPN5views4ViewES2_
+   fun:_ZN5views4View24ViewHierarchyChangedImplEbbPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View14AddChildViewAtEPS0_i
+   fun:_ZN5views4View12AddChildViewEPS0_
+}
+
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
