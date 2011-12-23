@@ -169,14 +169,12 @@ void RenderViewTest::TearDown() {
   // Run the loop so the release task from the renderwidget executes.
   ProcessPendingMessages();
 
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->Release();
+  render_thread_->SendCloseMessage();
   view_ = NULL;
-
   mock_process_.reset();
 
-  // After resetting the view_ and mock_process_ we may get some new tasks
-  // which need to be processed before shutting down WebKit
+  // After telling the view to close and resetting mock_process_ we may get
+  // some new tasks which need to be processed before shutting down WebKit
   // (http://crbug.com/21508).
   msg_loop_.RunAllPending();
 

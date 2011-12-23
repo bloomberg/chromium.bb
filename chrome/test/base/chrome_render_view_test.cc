@@ -84,8 +84,6 @@ void ChromeRenderViewTest::SetUp() {
 void ChromeRenderViewTest::TearDown() {
   content::RenderViewTest::TearDown();
 
-  render_thread_->SendCloseMessage();
-
   extension_dispatcher_->OnRenderProcessShutdown();
   extension_dispatcher_ = NULL;
 }

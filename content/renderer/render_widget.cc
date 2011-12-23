@@ -256,7 +256,7 @@ void RenderWidget::OnClose() {
   // now.  Post a task that only gets invoked when there are no nested message
   // loops.
   MessageLoop::current()->PostNonNestableTask(
-      FROM_HERE, NewRunnableMethod(this, &RenderWidget::Close));
+      FROM_HERE, base::Bind(&RenderWidget::Close, this));
 
   // Balances the AddRef taken when we called AddRoute.
   Release();
