@@ -62,8 +62,9 @@ TextureManager::~TextureManager() {
 
 void TextureManager::Destroy(bool have_context) {
   while (!texture_infos_.empty()) {
+    TextureInfo* info = texture_infos_.begin()->second;
+    mem_represented_ -= info->estimated_size();
     if (have_context) {
-      TextureInfo* info = texture_infos_.begin()->second;
       if (!info->IsDeleted() && info->owned_) {
         GLuint service_id = info->service_id();
         glDeleteTextures(1, &service_id);
@@ -72,15 +73,20 @@ void TextureManager::Destroy(bool have_context) {
     }
     texture_infos_.erase(texture_infos_.begin());
   }
+  GLuint ids[kNumDefaultTextures * 2];
+  for (int ii = 0; ii < kNumDefaultTextures; ++ii) {
+    TextureInfo* texture = default_textures_[ii].get();
+    mem_represented_ -= texture ? texture->estimated_size() : 0;
+    ids[ii * 2 + 0] = texture ? texture->service_id() : 0;
+    ids[ii * 2 + 1] = black_texture_ids_[ii];
+  }
+
   if (have_context) {
-    GLuint ids[] = {
-      black_2d_texture_id_,
-      black_cube_texture_id_,
-      default_texture_2d_->service_id(),
-      default_texture_cube_map_->service_id(),
-    };
     glDeleteTextures(arraysize(ids), ids);
   }
+
+  DCHECK_EQ(0u, mem_represented_);
+  UpdateMemRepresented();
 }
 
 bool TextureManager::TextureInfo::CanRender(
@@ -552,11 +558,10 @@ TextureManager::TextureManager(
       num_unsafe_textures_(0),
       num_uncleared_mips_(0),
       mem_represented_(0),
-      last_reported_mem_represented_(1),
-      black_2d_texture_id_(0),
-      black_cube_texture_id_(0),
-      black_oes_external_texture_id_(0),
-      black_arb_texture_rectangle_id_(0) {
+      last_reported_mem_represented_(1) {
+  for (int ii = 0; ii < kNumDefaultTextures; ++ii) {
+    black_texture_ids_[ii] = 0;
+  }
 }
 
 void TextureManager::UpdateMemRepresented() {
@@ -574,22 +579,21 @@ bool TextureManager::Initialize(const FeatureInfo* feature_info) {
   // texture because we simulate non shared resources on top of shared
   // resources and all contexts that share resource share the same default
   // texture.
-
-  default_texture_2d_ = CreateDefaultAndBlackTextures(
-      feature_info, GL_TEXTURE_2D, &black_2d_texture_id_);
-  default_texture_cube_map_ = CreateDefaultAndBlackTextures(
-      feature_info, GL_TEXTURE_CUBE_MAP, &black_cube_texture_id_);
+  default_textures_[kTexture2D] = CreateDefaultAndBlackTextures(
+      feature_info, GL_TEXTURE_2D, &black_texture_ids_[kTexture2D]);
+  default_textures_[kCubeMap] = CreateDefaultAndBlackTextures(
+      feature_info, GL_TEXTURE_CUBE_MAP, &black_texture_ids_[kCubeMap]);
 
   if (feature_info->feature_flags().oes_egl_image_external) {
-    default_texture_external_oes_ = CreateDefaultAndBlackTextures(
+    default_textures_[kExternalOES] = CreateDefaultAndBlackTextures(
         feature_info, GL_TEXTURE_EXTERNAL_OES,
-        &black_oes_external_texture_id_);
+        &black_texture_ids_[kExternalOES]);
   }
 
   if (feature_info->feature_flags().arb_texture_rectangle) {
-    default_texture_rectangle_arb_ = CreateDefaultAndBlackTextures(
+    default_textures_[kRectangleARB] = CreateDefaultAndBlackTextures(
         feature_info, GL_TEXTURE_RECTANGLE_ARB,
-        &black_arb_texture_rectangle_id_);
+        &black_texture_ids_[kRectangleARB]);
   }
 
   return true;
@@ -879,7 +883,7 @@ void TextureManager::RemoveTextureInfo(
     // TODO(gman): Unforunately the memory does not get de-allocated here as
     // resources are ref counted but for now there's no easy way to track this
     // info past this point.
-    mem_represented_ += info->estimated_size();
+    mem_represented_ -= info->estimated_size();
     UpdateMemRepresented();
     texture_infos_.erase(it);
   }

@@ -25,6 +25,14 @@ class GLES2Decoder;
 // shared by multiple GLES2Decoders.
 class TextureManager {
  public:
+  enum DefaultAndBlackTextures {
+    kTexture2D,
+    kCubeMap,
+    kExternalOES,
+    kRectangleARB,
+    kNumDefaultTextures
+  };
+
   // Info about Textures currently in the system.
   class TextureInfo : public base::RefCounted<TextureInfo> {
    public:
@@ -49,7 +57,8 @@ class TextureManager {
           framebuffer_attachment_count_(0),
           owned_(true),
           stream_texture_(false),
-          immutable_(false) {
+          immutable_(false),
+          estimated_size_(0) {
     }
 
     GLenum min_filter() const {
@@ -444,13 +453,13 @@ class TextureManager {
   TextureInfo* GetDefaultTextureInfo(GLenum target) {
     switch (target) {
       case GL_TEXTURE_2D:
-        return default_texture_2d_;
+        return default_textures_[kTexture2D];
       case GL_TEXTURE_CUBE_MAP:
-        return default_texture_cube_map_;
+        return default_textures_[kCubeMap];
       case GL_TEXTURE_EXTERNAL_OES:
-        return default_texture_external_oes_;
+        return default_textures_[kExternalOES];
       case GL_TEXTURE_RECTANGLE_ARB:
-        return default_texture_rectangle_arb_;
+        return default_textures_[kRectangleARB];
       default:
         NOTREACHED();
         return NULL;
@@ -472,13 +481,13 @@ class TextureManager {
   GLuint black_texture_id(GLenum target) const {
     switch (target) {
       case GL_SAMPLER_2D:
-        return black_2d_texture_id_;
+        return black_texture_ids_[kTexture2D];
       case GL_SAMPLER_CUBE:
-        return black_cube_texture_id_;
+        return black_texture_ids_[kCubeMap];
       case GL_SAMPLER_EXTERNAL_OES:
-        return black_oes_external_texture_id_;
+        return black_texture_ids_[kExternalOES];
       case GL_SAMPLER_2D_RECT_ARB:
-        return black_arb_texture_rectangle_id_;
+        return black_texture_ids_[kRectangleARB];
       default:
         NOTREACHED();
         return 0;
@@ -513,16 +522,10 @@ class TextureManager {
   // Black (0,0,0,1) textures for when non-renderable textures are used.
   // NOTE: There is no corresponding TextureInfo for these textures.
   // TextureInfos are only for textures the client side can access.
-  GLuint black_2d_texture_id_;
-  GLuint black_cube_texture_id_;
-  GLuint black_oes_external_texture_id_;
-  GLuint black_arb_texture_rectangle_id_;
+  GLuint black_texture_ids_[kNumDefaultTextures];
 
   // The default textures for each target (texture name = 0)
-  TextureInfo::Ref default_texture_2d_;
-  TextureInfo::Ref default_texture_cube_map_;
-  TextureInfo::Ref default_texture_external_oes_;
-  TextureInfo::Ref default_texture_rectangle_arb_;
+  TextureInfo::Ref default_textures_[kNumDefaultTextures];
 
   DISALLOW_COPY_AND_ASSIGN(TextureManager);
 };
