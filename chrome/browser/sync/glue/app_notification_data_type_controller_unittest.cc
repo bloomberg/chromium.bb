@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -25,7 +25,7 @@ using browser_sync::AppNotificationDataTypeController;
 using browser_sync::ChangeProcessorMock;
 using browser_sync::DataTypeController;
 using browser_sync::ModelAssociatorMock;
-using browser_sync::StartCallback;
+using browser_sync::StartCallbackMock;
 using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
@@ -135,10 +135,10 @@ class AppNotificationDataTypeControllerTest
   ProfileSyncServiceMock service_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
-  StartCallback start_callback_;
+  StartCallbackMock start_callback_;
 };
 
-// When notification manager is ready, sync assocation should happen
+// When notification manager is ready, sync association should happen
 // successfully.
 TEST_F(AppNotificationDataTypeControllerTest, StartManagerReady) {
   InitAndLoadManager();
@@ -146,7 +146,8 @@ TEST_F(AppNotificationDataTypeControllerTest, StartManagerReady) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, app_notif_dtc_->state());
   SetAssociateExpectations();
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  app_notif_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  app_notif_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::RUNNING, app_notif_dtc_->state());
 }
 
@@ -156,7 +157,8 @@ TEST_F(AppNotificationDataTypeControllerTest, StartManagerNotReady) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, app_notif_dtc_->state());
   SetAssociateExpectations();
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  app_notif_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  app_notif_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::MODEL_STARTING, app_notif_dtc_->state());
 
   // Unblock file thread and wait for it to finish all tasks.
@@ -175,7 +177,8 @@ TEST_F(AppNotificationDataTypeControllerTest, StartFirstRun) {
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(true)));
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _));
-  app_notif_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  app_notif_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
 TEST_F(AppNotificationDataTypeControllerTest, StartOk) {
@@ -184,7 +187,8 @@ TEST_F(AppNotificationDataTypeControllerTest, StartOk) {
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  app_notif_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  app_notif_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
 TEST_F(AppNotificationDataTypeControllerTest, StartAssociationFailed) {
@@ -200,8 +204,10 @@ TEST_F(AppNotificationDataTypeControllerTest, StartAssociationFailed) {
           browser_sync::SetSyncError(syncable::APP_NOTIFICATIONS),
           Return(false)));
 
-  EXPECT_CALL(start_callback_, Run(DataTypeController::ASSOCIATION_FAILED, _));
-  app_notif_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  EXPECT_CALL(start_callback_,
+              Run(DataTypeController::ASSOCIATION_FAILED, _));
+  app_notif_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::DISABLED, app_notif_dtc_->state());
 }
 
@@ -215,8 +221,10 @@ TEST_F(AppNotificationDataTypeControllerTest,
       WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
-  EXPECT_CALL(start_callback_, Run(DataTypeController::UNRECOVERABLE_ERROR, _));
-  app_notif_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  EXPECT_CALL(start_callback_,
+              Run(DataTypeController::UNRECOVERABLE_ERROR, _));
+  app_notif_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, app_notif_dtc_->state());
 }
 
@@ -228,7 +236,8 @@ TEST_F(AppNotificationDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, app_notif_dtc_->state());
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  app_notif_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  app_notif_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::RUNNING, app_notif_dtc_->state());
   app_notif_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, app_notif_dtc_->state());
@@ -245,7 +254,8 @@ TEST_F(AppNotificationDataTypeControllerTest, OnUnrecoverableError) {
   SetStopExpectations();
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  app_notif_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  app_notif_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   // This should cause app_notif_dtc_->Stop() to be called.
   app_notif_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
   PumpLoop();

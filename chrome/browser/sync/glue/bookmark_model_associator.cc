@@ -6,11 +6,11 @@
 
 #include <stack>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/hash_tables.h"
 #include "base/location.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
@@ -174,7 +174,7 @@ BookmarkModelAssociator::BookmarkModelAssociator(
     : bookmark_model_(bookmark_model),
       user_share_(user_share),
       unrecoverable_error_handler_(unrecoverable_error_handler),
-      ALLOW_THIS_IN_INITIALIZER_LIST(persist_associations_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       number_of_new_sync_nodes_created_at_association_(0) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(bookmark_model_);
@@ -481,12 +481,13 @@ bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
 
 void BookmarkModelAssociator::PostPersistAssociationsTask() {
   // No need to post a task if a task is already pending.
-  if (!persist_associations_.empty())
+  if (weak_factory_.HasWeakPtrs())
     return;
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      persist_associations_.NewRunnableMethod(
-          &BookmarkModelAssociator::PersistAssociations));
+      base::Bind(
+          &BookmarkModelAssociator::PersistAssociations,
+          weak_factory_.GetWeakPtr()));
 }
 
 void BookmarkModelAssociator::PersistAssociations() {

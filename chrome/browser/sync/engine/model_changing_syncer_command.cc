@@ -5,7 +5,8 @@
 #include "chrome/browser/sync/engine/model_changing_syncer_command.h"
 
 #include "base/basictypes.h"
-#include "base/callback_old.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "chrome/browser/sync/sessions/status_controller.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/util/unrecoverable_error_info.h"

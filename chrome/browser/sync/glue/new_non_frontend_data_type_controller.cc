@@ -29,12 +29,12 @@ NewNonFrontendDataTypeController::NewNonFrontendDataTypeController(
 
 NewNonFrontendDataTypeController::~NewNonFrontendDataTypeController() {}
 
-void NewNonFrontendDataTypeController::Start(StartCallback* start_callback) {
+void NewNonFrontendDataTypeController::Start(
+    const StartCallback& start_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(start_callback);
+  DCHECK(!start_callback.is_null());
   if (state() != NOT_RUNNING) {
-    start_callback->Run(BUSY, SyncError());
-    delete start_callback;
+    start_callback.Run(BUSY, SyncError());
     return;
   }
 

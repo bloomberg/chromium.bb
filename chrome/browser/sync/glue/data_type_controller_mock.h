@@ -12,10 +12,11 @@
 
 namespace browser_sync {
 
-class StartCallback {
+class StartCallbackMock {
  public:
-  StartCallback();
-  virtual ~StartCallback();
+  StartCallbackMock();
+  virtual ~StartCallbackMock();
+
   MOCK_METHOD2(Run, void(DataTypeController::StartResult result,
                          const SyncError& error));
 };
@@ -25,7 +26,7 @@ class DataTypeControllerMock : public DataTypeController {
   DataTypeControllerMock();
   virtual ~DataTypeControllerMock();
 
-  MOCK_METHOD1(Start, void(StartCallback* start_callback));
+  MOCK_METHOD1(Start, void(const StartCallback& start_callback));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(enabled, bool());
   MOCK_CONST_METHOD0(type, syncable::ModelType());

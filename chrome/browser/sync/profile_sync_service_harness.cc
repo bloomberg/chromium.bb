@@ -12,13 +12,13 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/sessions/session_state.h"

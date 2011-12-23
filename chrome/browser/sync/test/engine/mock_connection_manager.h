@@ -51,7 +51,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   virtual bool IsUserAuthenticated() OVERRIDE;
 
   // Control of commit response.
-  void SetMidCommitCallback(Callback0::Type* callback);
+  void SetMidCommitCallback(const base::Closure& callback);
   void SetMidCommitObserver(MidCommitObserver* observer);
 
   // Set this if you want commit to perform commit time rename. Will request
@@ -318,7 +318,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   // The updates we'll return to the next request.
   std::list<sync_pb::GetUpdatesResponse> update_queue_;
-  scoped_ptr<Callback0::Type> mid_commit_callback_;
+  base::Closure mid_commit_callback_;
   MidCommitObserver* mid_commit_observer_;
 
   // The clear data response we'll return in the next response

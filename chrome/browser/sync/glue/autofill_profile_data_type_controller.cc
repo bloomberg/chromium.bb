@@ -4,8 +4,8 @@
 
 #include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "base/task.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"

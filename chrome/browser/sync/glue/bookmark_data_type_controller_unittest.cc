@@ -4,10 +4,11 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
@@ -27,7 +28,7 @@ using browser_sync::BookmarkDataTypeController;
 using browser_sync::ChangeProcessorMock;
 using browser_sync::DataTypeController;
 using browser_sync::ModelAssociatorMock;
-using browser_sync::StartCallback;
+using browser_sync::StartCallbackMock;
 using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
@@ -90,7 +91,7 @@ class BookmarkDataTypeControllerTest : public testing::Test {
   ProfileSyncServiceMock service_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
-  StartCallback start_callback_;
+  StartCallbackMock start_callback_;
 
   void PumpLoop() {
     message_loop_.RunAllPending();
@@ -104,7 +105,8 @@ TEST_F(BookmarkDataTypeControllerTest, StartBookmarkModelReady) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  bookmark_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  bookmark_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::RUNNING, bookmark_dtc_->state());
 }
 
@@ -114,7 +116,8 @@ TEST_F(BookmarkDataTypeControllerTest, StartBookmarkModelNotReady) {
   SetAssociateExpectations();
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  bookmark_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  bookmark_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::MODEL_STARTING, bookmark_dtc_->state());
 
   // Send the notification that the bookmark model has started.
@@ -131,7 +134,8 @@ TEST_F(BookmarkDataTypeControllerTest, StartFirstRun) {
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(true)));
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _));
-  bookmark_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  bookmark_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
 TEST_F(BookmarkDataTypeControllerTest, StartBusy) {
@@ -139,8 +143,10 @@ TEST_F(BookmarkDataTypeControllerTest, StartBusy) {
   EXPECT_CALL(bookmark_model_, IsLoaded()).WillRepeatedly(Return(false));
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::BUSY, _));
-  bookmark_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
-  bookmark_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  bookmark_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
+  bookmark_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
 TEST_F(BookmarkDataTypeControllerTest, StartOk) {
@@ -150,7 +156,8 @@ TEST_F(BookmarkDataTypeControllerTest, StartOk) {
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  bookmark_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  bookmark_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
 TEST_F(BookmarkDataTypeControllerTest, StartAssociationFailed) {
@@ -165,8 +172,10 @@ TEST_F(BookmarkDataTypeControllerTest, StartAssociationFailed) {
       WillRepeatedly(DoAll(browser_sync::SetSyncError(syncable::BOOKMARKS),
                            Return(false)));
 
-  EXPECT_CALL(start_callback_, Run(DataTypeController::ASSOCIATION_FAILED, _));
-  bookmark_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  EXPECT_CALL(start_callback_,
+              Run(DataTypeController::ASSOCIATION_FAILED, _));
+  bookmark_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::DISABLED, bookmark_dtc_->state());
 }
 
@@ -179,8 +188,10 @@ TEST_F(BookmarkDataTypeControllerTest,
       WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
-  EXPECT_CALL(start_callback_, Run(DataTypeController::UNRECOVERABLE_ERROR, _));
-  bookmark_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  EXPECT_CALL(start_callback_,
+              Run(DataTypeController::UNRECOVERABLE_ERROR, _));
+  bookmark_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
 }
 
@@ -189,7 +200,8 @@ TEST_F(BookmarkDataTypeControllerTest, StartAborted) {
   EXPECT_CALL(bookmark_model_, IsLoaded()).WillRepeatedly(Return(false));
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED, _));
-  bookmark_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  bookmark_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   bookmark_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
 }
@@ -202,7 +214,8 @@ TEST_F(BookmarkDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  bookmark_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  bookmark_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::RUNNING, bookmark_dtc_->state());
   bookmark_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
@@ -219,7 +232,8 @@ TEST_F(BookmarkDataTypeControllerTest, OnUnrecoverableError) {
   SetStopExpectations();
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  bookmark_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  bookmark_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   // This should cause bookmark_dtc_->Stop() to be called.
   bookmark_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
   PumpLoop();

@@ -20,7 +20,6 @@
 #include "base/metrics/histogram.h"
 #include "base/string16.h"
 #include "base/stringprintf.h"
-#include "base/task.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
@@ -120,7 +119,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       wizard_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       signin_(signin_manager),
       unrecoverable_error_detected_(false),
-      scoped_runnable_method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       expect_sync_configuration_aborted_(false),
       clear_server_data_state_(CLEAR_NOT_STARTED),
       encrypted_types_(browser_sync::Cryptographer::SensitiveTypes()),
@@ -424,7 +423,7 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
     doomed_backend.reset();
   }
 
-  scoped_runnable_method_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 
   // Clear various flags.
   expect_sync_configuration_aborted_ = false;
@@ -555,8 +554,8 @@ void ProfileSyncService::OnUnrecoverableError(
 
   // Shut all data types down.
   MessageLoop::current()->PostTask(FROM_HERE,
-        scoped_runnable_method_factory_.NewRunnableMethod(
-        &ProfileSyncService::Shutdown, true));
+      base::Bind(&ProfileSyncService::Shutdown, weak_factory_.GetWeakPtr(),
+                 true));
 }
 
 void ProfileSyncService::OnBackendInitialized(
@@ -1385,8 +1384,8 @@ void ProfileSyncService::Observe(int type,
       }
 
       MessageLoop::current()->PostTask(FROM_HERE,
-            scoped_runnable_method_factory_.NewRunnableMethod(
-            &ProfileSyncService::OnSyncConfigureDone, *result));
+          base::Bind(&ProfileSyncService::OnSyncConfigureDone,
+                     weak_factory_.GetWeakPtr(), *result));
 
       // We should never get in a state where we have no encrypted datatypes
       // enabled, and yet we still think we require a passphrase for decryption.

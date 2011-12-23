@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
@@ -29,13 +30,13 @@ class BrowserThreadModelWorkerTest : public testing::Test {
       did_do_work_(false),
       db_thread_(BrowserThread::DB),
       io_thread_(BrowserThread::IO, &io_loop_),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
   bool did_do_work() { return did_do_work_; }
   BrowserThreadModelWorker* worker() { return worker_.get(); }
   OneShotTimer<BrowserThreadModelWorkerTest>* timer() { return &timer_; }
-  ScopedRunnableMethodFactory<BrowserThreadModelWorkerTest>* factory() {
-    return &method_factory_;
+  base::WeakPtrFactory<BrowserThreadModelWorkerTest>* factory() {
+    return &weak_factory_;
   }
 
   // Schedule DoWork to be executed on the DB thread and have the test fail if
@@ -90,12 +91,13 @@ class BrowserThreadModelWorkerTest : public testing::Test {
   MessageLoopForIO io_loop_;
   content::TestBrowserThread io_thread_;
 
-  ScopedRunnableMethodFactory<BrowserThreadModelWorkerTest> method_factory_;
+  base::WeakPtrFactory<BrowserThreadModelWorkerTest> weak_factory_;
 };
 
 TEST_F(BrowserThreadModelWorkerTest, DoesWorkOnDatabaseThread) {
-  MessageLoop::current()->PostTask(FROM_HERE, factory()->NewRunnableMethod(
-      &BrowserThreadModelWorkerTest::ScheduleWork));
+  MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&BrowserThreadModelWorkerTest::ScheduleWork,
+                 factory()->GetWeakPtr()));
   MessageLoop::current()->Run();
   EXPECT_TRUE(did_do_work());
 }

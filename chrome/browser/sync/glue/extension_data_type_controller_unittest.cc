@@ -4,10 +4,11 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "chrome/browser/sync/glue/change_processor_mock.h"
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
@@ -21,7 +22,7 @@ using browser_sync::ExtensionDataTypeController;
 using browser_sync::ChangeProcessorMock;
 using browser_sync::DataTypeController;
 using browser_sync::ModelAssociatorMock;
-using browser_sync::StartCallback;
+using browser_sync::StartCallbackMock;
 using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
@@ -81,7 +82,7 @@ class ExtensionDataTypeControllerTest : public testing::Test {
   ProfileSyncServiceMock service_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
-  StartCallback start_callback_;
+  StartCallbackMock start_callback_;
 };
 
 TEST_F(ExtensionDataTypeControllerTest, Start) {
@@ -90,7 +91,8 @@ TEST_F(ExtensionDataTypeControllerTest, Start) {
   SetActivateExpectations();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, extension_dtc_->state());
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  extension_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  extension_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::RUNNING, extension_dtc_->state());
 }
 
@@ -101,7 +103,8 @@ TEST_F(ExtensionDataTypeControllerTest, StartFirstRun) {
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(true)));
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _));
-  extension_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  extension_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
 TEST_F(ExtensionDataTypeControllerTest, StartOk) {
@@ -112,7 +115,8 @@ TEST_F(ExtensionDataTypeControllerTest, StartOk) {
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  extension_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  extension_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
 TEST_F(ExtensionDataTypeControllerTest, StartAssociationFailed) {
@@ -122,8 +126,10 @@ TEST_F(ExtensionDataTypeControllerTest, StartAssociationFailed) {
       WillRepeatedly(DoAll(browser_sync::SetSyncError(syncable::EXTENSIONS),
                            Return(false)));
 
-  EXPECT_CALL(start_callback_, Run(DataTypeController::ASSOCIATION_FAILED, _));
-  extension_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  EXPECT_CALL(start_callback_,
+              Run(DataTypeController::ASSOCIATION_FAILED, _));
+  extension_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::DISABLED, extension_dtc_->state());
 }
 
@@ -135,8 +141,10 @@ TEST_F(ExtensionDataTypeControllerTest,
       WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
-  EXPECT_CALL(start_callback_, Run(DataTypeController::UNRECOVERABLE_ERROR, _));
-  extension_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  EXPECT_CALL(start_callback_,
+              Run(DataTypeController::UNRECOVERABLE_ERROR, _));
+  extension_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, extension_dtc_->state());
 }
 
@@ -149,7 +157,8 @@ TEST_F(ExtensionDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, extension_dtc_->state());
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  extension_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  extension_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::RUNNING, extension_dtc_->state());
   extension_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, extension_dtc_->state());
@@ -168,7 +177,8 @@ TEST_F(ExtensionDataTypeControllerTest, OnUnrecoverableError) {
   SetStopExpectations();
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  extension_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  extension_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   // This should cause extension_dtc_->Stop() to be called.
   extension_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
   PumpLoop();

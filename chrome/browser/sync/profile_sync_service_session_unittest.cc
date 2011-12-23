@@ -14,7 +14,6 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"

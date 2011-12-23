@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "base/task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"

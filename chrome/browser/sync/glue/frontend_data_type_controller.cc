@@ -43,16 +43,15 @@ FrontendDataTypeController::~FrontendDataTypeController() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FrontendDataTypeController::Start(StartCallback* start_callback) {
+void FrontendDataTypeController::Start(const StartCallback& start_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(start_callback);
+  DCHECK(!start_callback.is_null());
   if (state_ != NOT_RUNNING) {
-    start_callback->Run(BUSY, SyncError());
-    delete start_callback;
+    start_callback.Run(BUSY, SyncError());
     return;
   }
 
-  start_callback_.reset(start_callback);
+  start_callback_ = start_callback;
 
   state_ = MODEL_STARTING;
   if (!StartModels()) {
@@ -134,8 +133,9 @@ void FrontendDataTypeController::StartFailed(StartResult result,
   // We have to release the callback before we call it, since it's possible
   // invoking the callback will trigger a call to STOP(), which will get
   // confused by the non-NULL start_callback_.
-  scoped_ptr<StartCallback> callback(start_callback_.release());
-  callback->Run(result, error);
+  StartCallback callback = start_callback_;
+  start_callback_.Reset();
+  callback.Run(result, error);
 }
 
 void FrontendDataTypeController::FinishStart(StartResult result) {
@@ -144,8 +144,9 @@ void FrontendDataTypeController::FinishStart(StartResult result) {
   // We have to release the callback before we call it, since it's possible
   // invoking the callback will trigger a call to STOP(), which will get
   // confused by the non-NULL start_callback_.
-  scoped_ptr<StartCallback> callback(start_callback_.release());
-  callback->Run(result, SyncError());
+  StartCallback callback = start_callback_;
+  start_callback_.Reset();
+  callback.Run(result, SyncError());
 }
 
 void FrontendDataTypeController::Stop() {
@@ -158,7 +159,7 @@ void FrontendDataTypeController::Stop() {
     // still in MODEL_STARTING.
     return;
   }
-  DCHECK(!start_callback_.get());
+  DCHECK(start_callback_.is_null());
 
   CleanUpState();
 

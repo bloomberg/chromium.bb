@@ -4,9 +4,8 @@
 
 #include "chrome/browser/sync/glue/password_model_worker.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/task.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/password_manager/password_store.h"
 

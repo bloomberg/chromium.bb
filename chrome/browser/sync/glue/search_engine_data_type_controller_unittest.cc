@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
@@ -23,7 +24,7 @@ using browser_sync::ChangeProcessorMock;
 using browser_sync::DataTypeController;
 using browser_sync::ModelAssociatorMock;
 using browser_sync::SearchEngineDataTypeController;
-using browser_sync::StartCallback;
+using browser_sync::StartCallbackMock;
 using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;
@@ -84,7 +85,7 @@ class SearchEngineDataTypeControllerTest : public testing::Test {
   ProfileSyncServiceMock service_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
-  StartCallback start_callback_;
+  StartCallbackMock start_callback_;
 };
 
 TEST_F(SearchEngineDataTypeControllerTest, StartURLServiceReady) {
@@ -95,7 +96,8 @@ TEST_F(SearchEngineDataTypeControllerTest, StartURLServiceReady) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  search_engine_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  search_engine_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::RUNNING, search_engine_dtc_->state());
 }
 
@@ -103,7 +105,8 @@ TEST_F(SearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
   SetAssociateExpectations();
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  search_engine_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  search_engine_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::MODEL_STARTING, search_engine_dtc_->state());
 
   // Send the notification that the TemplateURLService has started.
@@ -120,7 +123,8 @@ TEST_F(SearchEngineDataTypeControllerTest, StartFirstRun) {
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(true)));
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _));
-  search_engine_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  search_engine_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
 TEST_F(SearchEngineDataTypeControllerTest, StartOk) {
@@ -130,7 +134,8 @@ TEST_F(SearchEngineDataTypeControllerTest, StartOk) {
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  search_engine_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  search_engine_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
 TEST_F(SearchEngineDataTypeControllerTest, StartAssociationFailed) {
@@ -144,8 +149,10 @@ TEST_F(SearchEngineDataTypeControllerTest, StartAssociationFailed) {
       WillRepeatedly(DoAll(browser_sync::SetSyncError(syncable::SEARCH_ENGINES),
                            Return(false)));
 
-  EXPECT_CALL(start_callback_, Run(DataTypeController::ASSOCIATION_FAILED, _));
-  search_engine_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  EXPECT_CALL(start_callback_,
+              Run(DataTypeController::ASSOCIATION_FAILED, _));
+  search_engine_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::DISABLED, search_engine_dtc_->state());
 }
 
@@ -158,8 +165,10 @@ TEST_F(SearchEngineDataTypeControllerTest,
       WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
-  EXPECT_CALL(start_callback_, Run(DataTypeController::UNRECOVERABLE_ERROR, _));
-  search_engine_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  EXPECT_CALL(start_callback_,
+              Run(DataTypeController::UNRECOVERABLE_ERROR, _));
+  search_engine_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
 }
 
@@ -171,7 +180,8 @@ TEST_F(SearchEngineDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  search_engine_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  search_engine_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::RUNNING, search_engine_dtc_->state());
   search_engine_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
@@ -188,7 +198,8 @@ TEST_F(SearchEngineDataTypeControllerTest, OnUnrecoverableError) {
   SetStopExpectations();
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  search_engine_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  search_engine_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   // This should cause search_engine_dtc_->Stop() to be called.
   search_engine_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
 }

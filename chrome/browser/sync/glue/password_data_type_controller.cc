@@ -4,8 +4,8 @@
 
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "base/task.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"

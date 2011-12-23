@@ -17,7 +17,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/process_util.h"
-#include "base/task.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "net/base/mock_host_resolver.h"
@@ -321,7 +320,5 @@ class SyncTest : public InProcessBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(SyncTest);
 };
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(SyncTest);
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_SYNC_TEST_H_

@@ -5,7 +5,6 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 
 #include "base/bind.h"
-#include "base/task.h"
 #include "base/threading/thread.h"
 
 using content::BrowserThread;

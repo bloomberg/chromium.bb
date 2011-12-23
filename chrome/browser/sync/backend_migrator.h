@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/task.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "content/public/browser/notification_observer.h"

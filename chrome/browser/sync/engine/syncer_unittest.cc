@@ -12,6 +12,8 @@
 #include <set>
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
@@ -2135,8 +2137,8 @@ TEST_F(EntryCreatedInNewFolderTest, EntryCreatedInNewFolderMidSync) {
   }
 
   mock_server_->SetMidCommitCallback(
-      NewCallback<EntryCreatedInNewFolderTest>(this,
-          &EntryCreatedInNewFolderTest::CreateFolderInBob));
+      base::Bind(&EntryCreatedInNewFolderTest::CreateFolderInBob,
+                 base::Unretained(this)));
   syncer_->SyncShare(session_.get(), BUILD_COMMIT_REQUEST, SYNCER_END);
   EXPECT_EQ(1u, mock_server_->committed_ids().size());
   {
@@ -4159,8 +4161,7 @@ TEST_F(SyncerUndeletionTest, UndeleteDuringCommit) {
   Delete();
   ExpectUnsyncedDeletion();
   mock_server_->SetMidCommitCallback(
-      NewCallback<SyncerUndeletionTest>(this,
-          &SyncerUndeletionTest::Undelete));
+      base::Bind(&SyncerUndeletionTest::Undelete, base::Unretained(this)));
   SyncShareAsDelegate();
 
   // The item ought to exist as an unsynced undeletion (meaning,
@@ -4173,7 +4174,7 @@ TEST_F(SyncerUndeletionTest, UndeleteDuringCommit) {
   // the server.  The undeletion should prevail again and be committed.
   // None of this should trigger any conflict detection -- it is perfectly
   // normal to recieve updates from our own commits.
-  mock_server_->SetMidCommitCallback(NULL);
+  mock_server_->SetMidCommitCallback(base::Closure());
   mock_server_->AddUpdateTombstone(Get(metahandle_, ID));
   SyncShareAsDelegate();
   EXPECT_EQ(0, status.TotalNumConflictingItems());

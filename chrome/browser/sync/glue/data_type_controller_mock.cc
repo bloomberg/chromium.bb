@@ -6,9 +6,9 @@
 
 namespace browser_sync {
 
-StartCallback::StartCallback() {}
+StartCallbackMock::StartCallbackMock() {}
 
-StartCallback::~StartCallback() {}
+StartCallbackMock::~StartCallbackMock() {}
 
 DataTypeControllerMock::DataTypeControllerMock() {}
 

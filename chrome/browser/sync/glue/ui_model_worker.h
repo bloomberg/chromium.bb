@@ -10,13 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
-#include "base/task.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/util/unrecoverable_error_info.h"
-
-namespace base {
-class WaitableEvent;
-}
 
 class MessageLoop;
 
@@ -34,36 +29,6 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
  public:
   UIModelWorker();
   virtual ~UIModelWorker();
-
-  // A simple task to signal a waitable event after Run()ning a Closure.
-  class CallDoWorkAndSignalTask : public Task {
-   public:
-    CallDoWorkAndSignalTask(
-        const WorkCallback& work,
-        base::WaitableEvent* work_done,
-        UIModelWorker* scheduler,
-        UnrecoverableErrorInfo* error_info)
-        : work_(work), work_done_(work_done), scheduler_(scheduler),
-          error_info_(error_info) {
-    }
-    virtual ~CallDoWorkAndSignalTask() { }
-
-    // Task implementation.
-    virtual void Run() OVERRIDE;
-
-   private:
-    // Task data - a closure and a waitable event to signal after the work has
-    // been done.
-    WorkCallback work_;
-    base::WaitableEvent* work_done_;
-
-    // The UIModelWorker responsible for scheduling us.
-    UIModelWorker* const scheduler_;
-
-    UnrecoverableErrorInfo* error_info_;
-
-    DISALLOW_COPY_AND_ASSIGN(CallDoWorkAndSignalTask);
-  };
 
   // Called by the UI thread on shutdown of the sync service. Blocks until
   // the UIModelWorker has safely met termination conditions, namely that
@@ -84,7 +49,7 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
 
   // Callback from |pending_work_| to notify us that it has been run.
   // Called on ui loop.
-  void OnTaskCompleted() { pending_work_ = NULL; }
+  void OnTaskCompleted() { pending_work_.Reset(); }
 
  private:
   // The life-cycle of a UIModelWorker in three states.
@@ -109,7 +74,7 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
 
   // We keep a reference to any task we have scheduled so we can gracefully
   // force them to run if the syncer is trying to shutdown.
-  Task* pending_work_;
+  base::Closure pending_work_;
 
   // Set by the SyncCoreThread when Syncapi shutdown has completed and the
   // SyncerThread has terminated, so no more work will be scheduled. Read by

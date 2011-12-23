@@ -4,10 +4,11 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/sync/glue/change_processor_mock.h"
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
@@ -22,7 +23,7 @@ using browser_sync::ChangeProcessorMock;
 using browser_sync::DataTypeController;
 using browser_sync::ModelAssociatorMock;
 using browser_sync::PreferenceDataTypeController;
-using browser_sync::StartCallback;
+using browser_sync::StartCallbackMock;
 using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
@@ -83,7 +84,7 @@ class PreferenceDataTypeControllerTest : public testing::Test {
   ProfileSyncServiceMock service_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
-  StartCallback start_callback_;
+  StartCallbackMock start_callback_;
 };
 
 TEST_F(PreferenceDataTypeControllerTest, Start) {
@@ -92,7 +93,8 @@ TEST_F(PreferenceDataTypeControllerTest, Start) {
   SetActivateExpectations();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  preference_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  preference_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::RUNNING, preference_dtc_->state());
 }
 
@@ -103,7 +105,8 @@ TEST_F(PreferenceDataTypeControllerTest, StartFirstRun) {
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(true)));
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _));
-  preference_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  preference_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
 TEST_F(PreferenceDataTypeControllerTest, StartOk) {
@@ -114,7 +117,8 @@ TEST_F(PreferenceDataTypeControllerTest, StartOk) {
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  preference_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  preference_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
 }
 
 TEST_F(PreferenceDataTypeControllerTest, StartAssociationFailed) {
@@ -124,8 +128,10 @@ TEST_F(PreferenceDataTypeControllerTest, StartAssociationFailed) {
       WillRepeatedly(DoAll(browser_sync::SetSyncError(syncable::PREFERENCES),
                            Return(false)));
 
-  EXPECT_CALL(start_callback_, Run(DataTypeController::ASSOCIATION_FAILED, _));
-  preference_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  EXPECT_CALL(start_callback_,
+              Run(DataTypeController::ASSOCIATION_FAILED, _));
+  preference_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::DISABLED, preference_dtc_->state());
 }
 
@@ -137,8 +143,10 @@ TEST_F(PreferenceDataTypeControllerTest,
       WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
-  EXPECT_CALL(start_callback_, Run(DataTypeController::UNRECOVERABLE_ERROR, _));
-  preference_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  EXPECT_CALL(start_callback_,
+              Run(DataTypeController::UNRECOVERABLE_ERROR, _));
+  preference_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
 }
 
@@ -151,7 +159,8 @@ TEST_F(PreferenceDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  preference_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  preference_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   EXPECT_EQ(DataTypeController::RUNNING, preference_dtc_->state());
   preference_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
@@ -169,7 +178,8 @@ TEST_F(PreferenceDataTypeControllerTest, OnUnrecoverableError) {
   SetStopExpectations();
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  preference_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  preference_dtc_->Start(
+      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   // This should cause preference_dtc_->Stop() to be called.
   preference_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
   PumpLoop();

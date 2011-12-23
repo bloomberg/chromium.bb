@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/sync/backend_unrecoverable_error_handler.h"
@@ -648,8 +647,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   content::NotificationRegistrar registrar_;
 
-  ScopedRunnableMethodFactory<ProfileSyncService>
-      scoped_runnable_method_factory_;
+  base::WeakPtrFactory<ProfileSyncService> weak_factory_;
 
   // This allows us to gracefully handle an ABORTED return code from the
   // DataTypeManager in the event that the server informed us to cease and

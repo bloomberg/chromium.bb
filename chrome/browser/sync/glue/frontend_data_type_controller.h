@@ -47,7 +47,7 @@ class FrontendDataTypeController : public DataTypeController {
   virtual ~FrontendDataTypeController();
 
   // DataTypeController interface.
-  virtual void Start(StartCallback* start_callback) OVERRIDE;
+  virtual void Start(const StartCallback& start_callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual syncable::ModelType type() const = 0;
   virtual browser_sync::ModelSafeGroup model_safe_group() const OVERRIDE;
@@ -110,7 +110,7 @@ class FrontendDataTypeController : public DataTypeController {
 
   State state_;
 
-  scoped_ptr<StartCallback> start_callback_;
+  StartCallback start_callback_;
   // TODO(sync): transition all datatypes to SyncableService and deprecate
   // AssociatorInterface.
   scoped_ptr<AssociatorInterface> model_associator_;

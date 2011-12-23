@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
@@ -12,6 +14,33 @@
 using content::BrowserThread;
 
 namespace browser_sync {
+
+namespace {
+
+void CallDoWorkAndSignalCallback(const WorkCallback& work,
+                                 base::WaitableEvent* work_done,
+                                 UIModelWorker* const scheduler,
+                                 UnrecoverableErrorInfo* error_info) {
+  if (work.is_null()) {
+    // This can happen during tests or cases where there are more than just the
+    // default UIModelWorker in existence and it gets destroyed before
+    // the main UI loop has terminated.  There is no easy way to assert the
+    // loop is running / not running at the moment, so we just provide cancel
+    // semantics here and short-circuit.
+    // TODO(timsteele): Maybe we should have the message loop destruction
+    // observer fire when the loop has ended, just a bit before it
+    // actually gets destroyed.
+    return;
+  }
+  *error_info = work.Run();
+
+  // Notify the UIModelWorker that scheduled us that we have run
+  // successfully.
+  scheduler->OnTaskCompleted();
+  work_done->Signal();  // Unblock the syncer thread that scheduled us.
+}
+
+}  // namespace
 
 UnrecoverableErrorInfo UIModelWorker::DoWorkAndWaitUntilDone(
     const WorkCallback& work) {
@@ -36,13 +65,13 @@ UnrecoverableErrorInfo UIModelWorker::DoWorkAndWaitUntilDone(
     // could get Run() in Stop() and call OnTaskCompleted before we post).
     // The task is owned by the message loop as per usual.
     base::AutoLock lock(lock_);
-    DCHECK(!pending_work_);
+    DCHECK(pending_work_.is_null());
     UnrecoverableErrorInfo error_info;
-    pending_work_ = new CallDoWorkAndSignalTask(work, &work_done, this,
-                                                &error_info);
+    pending_work_ = base::Bind(&CallDoWorkAndSignalCallback, work, &work_done,
+                               base::Unretained(this), &error_info);
     if (!BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, pending_work_)) {
       LOG(WARNING) << "Could not post work to UI loop.";
-      pending_work_ = NULL;
+      pending_work_.Reset();
       syncapi_event_.Signal();
       return error_info;
     }
@@ -54,7 +83,6 @@ UnrecoverableErrorInfo UIModelWorker::DoWorkAndWaitUntilDone(
 
 UIModelWorker::UIModelWorker()
     : state_(WORKING),
-      pending_work_(NULL),
       syncapi_has_shutdown_(false),
       syncapi_event_(&lock_) {
 }
@@ -89,8 +117,8 @@ void UIModelWorker::Stop() {
   // Drain any final tasks manually until the SyncerThread tells us it has
   // totally finished. There should only ever be 0 or 1 tasks Run() here.
   while (!syncapi_has_shutdown_) {
-    if (pending_work_)
-      pending_work_->Run();  // OnTaskCompleted will set pending_work_ to NULL.
+    if (!pending_work_.is_null())
+      pending_work_.Run();  // OnTaskCompleted will set reset |pending_work_|.
 
     // Wait for either a new task or SyncerThread termination.
     syncapi_event_.Wait();
@@ -103,28 +131,5 @@ ModelSafeGroup UIModelWorker::GetModelSafeGroup() {
   return GROUP_UI;
 }
 
-void UIModelWorker::CallDoWorkAndSignalTask::Run() {
-  if (work_.is_null()) {
-    // This can happen during tests or cases where there are more than just the
-    // default UIModelWorker in existence and it gets destroyed before
-    // the main UI loop has terminated.  There is no easy way to assert the
-    // loop is running / not running at the moment, so we just provide cancel
-    // semantics here and short-circuit.
-    // TODO(timsteele): Maybe we should have the message loop destruction
-    // observer fire when the loop has ended, just a bit before it
-    // actually gets destroyed.
-    return;
-  }
-  *error_info_ = work_.Run();
-
-  // Sever ties with work_ to allow the sanity-checking above that we don't
-  // get run twice.
-  work_.Reset();
-
-  // Notify the UIModelWorker that scheduled us that we have run
-  // successfully.
-  scheduler_->OnTaskCompleted();
-  work_done_->Signal();  // Unblock the syncer thread that scheduled us.
-}
 
 }  // namespace browser_sync

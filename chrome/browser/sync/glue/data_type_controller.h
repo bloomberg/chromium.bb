@@ -57,7 +57,7 @@ class DataTypeController
     MAX_START_RESULT
   };
 
-  typedef Callback2<StartResult, const SyncError&>::Type StartCallback;
+  typedef base::Callback<void(StartResult, const SyncError&)> StartCallback;
 
   typedef std::map<syncable::ModelType,
                    scoped_refptr<DataTypeController> > TypeMap;
@@ -69,7 +69,7 @@ class DataTypeController
   // activation.  Upon completion, the start_callback will be invoked
   // on the UI thread.  See the StartResult enum above for details on the
   // possible start results.
-  virtual void Start(StartCallback* start_callback) = 0;
+  virtual void Start(const StartCallback& start_callback) = 0;
 
   // Synchronously stops the data type.  If called after Start() is
   // called but before the start callback is called, the start is

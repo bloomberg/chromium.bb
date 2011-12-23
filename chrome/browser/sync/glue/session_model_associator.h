@@ -465,7 +465,7 @@ class SessionModelAssociator
   // During integration tests, we sometimes need to block until a local change
   // is made.
   bool waiting_for_change_;
-  ScopedRunnableMethodFactory<SessionModelAssociator> test_method_factory_;
+  base::WeakPtrFactory<SessionModelAssociator> test_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionModelAssociator);
 };

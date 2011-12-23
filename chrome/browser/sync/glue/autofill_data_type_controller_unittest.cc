@@ -27,7 +27,6 @@
 using base::WaitableEvent;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::DataTypeController;
-using browser_sync::StartCallback;
 using content::BrowserThread;
 using testing::_;
 using testing::DoAll;

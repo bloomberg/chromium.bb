@@ -8,6 +8,7 @@
 #include <cstring>
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"

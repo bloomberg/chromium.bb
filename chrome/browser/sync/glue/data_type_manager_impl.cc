@@ -8,6 +8,7 @@
 #include <functional>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
@@ -298,8 +299,8 @@ void DataTypeManagerImpl::StartNextType() {
     DVLOG(1) << "Starting " << needs_start_[0]->name();
     TRACE_EVENT_BEGIN1("sync", "ModelAssociation",
                        "DataType", ModelTypeToString(needs_start_[0]->type()));
-    needs_start_[0]->Start(
-        NewCallback(this, &DataTypeManagerImpl::TypeStartCallback));
+    needs_start_[0]->Start(base::Bind(&DataTypeManagerImpl::TypeStartCallback,
+                                      base::Unretained(this)));
     return;
   }
 

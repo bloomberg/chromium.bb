@@ -18,7 +18,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync/notifier/state_writer.h"
 #include "google/cacheinvalidation/v2/system-resources.h"

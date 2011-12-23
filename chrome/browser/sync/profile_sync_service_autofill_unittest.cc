@@ -18,7 +18,6 @@
 #include "base/message_loop.h"
 #include "base/string16.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_common_test.h"

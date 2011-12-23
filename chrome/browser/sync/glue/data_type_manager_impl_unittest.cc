@@ -193,7 +193,7 @@ class DataTypeManagerImplTest : public testing::Test {
   void RunConfigureWhileOneInFlightTest(bool enable_nigori) {
     DataTypeControllerMock* bookmark_dtc = MakeBookmarkDTC();
     // Save the callback here so we can interrupt startup.
-    DataTypeController::StartCallback* callback;
+    DataTypeController::StartCallback callback;
     {
       InSequence seq;
       EXPECT_CALL(*bookmark_dtc, state()).
@@ -230,8 +230,7 @@ class DataTypeManagerImplTest : public testing::Test {
     types_.Put(syncable::PREFERENCES);
     Configure(&dtm, types_, sync_api::CONFIGURE_REASON_RECONFIGURATION,
               enable_nigori);
-    callback->Run(DataTypeController::OK, SyncError());
-    delete callback;
+    callback.Run(DataTypeController::OK, SyncError());
 
     MessageLoop::current()->Run();
 
@@ -470,7 +469,7 @@ TEST_F(DataTypeManagerImplTest, StopWhileInFlight) {
 
   DataTypeControllerMock* preference_dtc = MakePreferenceDTC();
   // Save the callback here so we can interrupt startup.
-  DataTypeController::StartCallback* callback;
+  DataTypeController::StartCallback callback;
   EXPECT_CALL(*preference_dtc, Start(_)).
       WillOnce(SaveArg<0>(&callback));
   EXPECT_CALL(*preference_dtc, state()).

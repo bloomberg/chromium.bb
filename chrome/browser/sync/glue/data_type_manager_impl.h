@@ -15,7 +15,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task.h"
 #include "base/time.h"
 
 namespace browser_sync {

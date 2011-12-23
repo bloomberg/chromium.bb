@@ -14,7 +14,6 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"

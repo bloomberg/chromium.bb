@@ -5,7 +5,6 @@
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 
 #include "base/metrics/histogram.h"
-#include "base/task.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"

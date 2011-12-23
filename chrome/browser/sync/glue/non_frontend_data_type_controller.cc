@@ -49,16 +49,15 @@ NonFrontendDataTypeController::~NonFrontendDataTypeController() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void NonFrontendDataTypeController::Start(StartCallback* start_callback) {
+void NonFrontendDataTypeController::Start(const StartCallback& start_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(start_callback);
+  DCHECK(!start_callback.is_null());
   if (state_ != NOT_RUNNING) {
-    start_callback->Run(BUSY, SyncError());
-    delete start_callback;
+    start_callback.Run(BUSY, SyncError());
     return;
   }
 
-  start_callback_.reset(start_callback);
+  start_callback_ = start_callback;
   abort_association_ = false;
 
   state_ = MODEL_STARTING;
@@ -158,7 +157,7 @@ void NonFrontendDataTypeController::StartDoneImpl(
   // (due to Stop being called) and then posted from the non-UI thread. In
   // this case, we drop the second call because we've already been stopped.
   if (state_ == NOT_RUNNING) {
-    DCHECK(!start_callback_.get());
+    DCHECK(start_callback_.is_null());
     return;
   }
 
@@ -172,8 +171,9 @@ void NonFrontendDataTypeController::StartDoneImpl(
   // We have to release the callback before we call it, since it's possible
   // invoking the callback will trigger a call to STOP(), which will get
   // confused by the non-NULL start_callback_.
-  scoped_ptr<StartCallback> callback(start_callback_.release());
-  callback->Run(result, error);
+  StartCallback callback = start_callback_;
+  start_callback_.Reset();
+  callback.Run(result, error);
 }
 
 // TODO(sync): Blocking the UI thread at shutdown is bad. The new API avoids
@@ -215,7 +215,7 @@ void NonFrontendDataTypeController::Stop() {
       StopModels();
       break;
   }
-  DCHECK(!start_callback_.get());
+  DCHECK(start_callback_.is_null());
 
   // Deactivate the change processor on the UI thread. We dont want to listen
   // for any more changes or process them from server.
@@ -292,8 +292,8 @@ ProfileSyncService* NonFrontendDataTypeController::profile_sync_service()
 }
 
 void NonFrontendDataTypeController::set_start_callback(
-    StartCallback* callback) {
-  start_callback_.reset(callback);
+    const StartCallback& callback) {
+  start_callback_ = callback;
 }
 void NonFrontendDataTypeController::set_state(State state) {
   state_ = state;

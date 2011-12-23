@@ -13,7 +13,6 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -52,8 +51,7 @@ class CacheInvalidationPacketHandler {
   void HandleChannelContextChange(const std::string& context);
 
   base::NonThreadSafe non_thread_safe_;
-  base::ScopedCallbackFactory<CacheInvalidationPacketHandler>
-      scoped_callback_factory_;
+  base::WeakPtrFactory<CacheInvalidationPacketHandler> weak_factory_;
 
   base::WeakPtr<buzz::XmppTaskParentInterface> base_task_;
 

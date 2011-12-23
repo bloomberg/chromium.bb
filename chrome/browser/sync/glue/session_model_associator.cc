@@ -63,7 +63,7 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service)
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       setup_for_test_(false),
       waiting_for_change_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(test_method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(test_weak_factory_(this)) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
 }
@@ -76,7 +76,7 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       setup_for_test_(setup_for_test),
       waiting_for_change_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(test_method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(test_weak_factory_(this)) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
 }
@@ -892,8 +892,8 @@ bool SessionModelAssociator::UpdateSyncModelDataFromClient() {
   // TODO(zea): the logic for determining if we want to sync and the loading of
   // the previous session should go here. We can probably reuse the code for
   // loading the current session from the old session implementation.
-  // SessionService::SessionCallback* callback =
-  //     NewCallback(this, &SessionModelAssociator::OnGotSession);
+  // SessionService::SessionCallback callback =
+  //     base::Bind(&SessionModelAssociator::OnGotSession, this);
   // GetSessionService()->GetCurrentSession(&consumer_, callback);
 
   // Associate all open windows and their tabs.
@@ -1080,20 +1080,20 @@ void SessionModelAssociator::QuitLoopForSubtleTesting() {
   if (waiting_for_change_) {
     DVLOG(1) << "Quitting MessageLoop for test.";
     waiting_for_change_ = false;
-    test_method_factory_.RevokeAll();
+    test_weak_factory_.InvalidateWeakPtrs();
     MessageLoop::current()->Quit();
   }
 }
 
 void SessionModelAssociator::BlockUntilLocalChangeForTest(
     int64 timeout_milliseconds) {
-  if (!test_method_factory_.empty())
+  if (test_weak_factory_.HasWeakPtrs())
     return;
   waiting_for_change_ = true;
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      test_method_factory_.NewRunnableMethod(
-          &SessionModelAssociator::QuitLoopForSubtleTesting),
+      base::Bind(&SessionModelAssociator::QuitLoopForSubtleTesting,
+                 test_weak_factory_.GetWeakPtr()),
       timeout_milliseconds);
 }
 

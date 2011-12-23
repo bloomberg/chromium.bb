@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/base64.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -50,8 +51,8 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
   // Takes ownership of callback.
   CacheInvalidationListenTask(
       buzz::XmppTaskParentInterface* parent,
-      Callback1<const std::string&>::Type* callback,
-      Callback1<const std::string&>::Type* context_change_callback)
+      const base::Callback<void(const std::string&)>& callback,
+      const base::Callback<void(const std::string&)>& context_change_callback)
       : XmppTask(parent, buzz::XmppEngine::HL_TYPE),
         callback_(callback),
         context_change_callback_(context_change_callback) {}
@@ -71,7 +72,7 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
     DVLOG(2) << "CacheInvalidationListenTask response received";
     std::string data;
     if (GetCacheInvalidationIqPacketData(stanza, &data)) {
-      callback_->Run(data);
+      callback_.Run(data);
     } else {
       LOG(ERROR) << "Could not get packet data";
     }
@@ -113,7 +114,7 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
     // Look for a channelContext attribute in the content of the stanza.  If
     // present, remember it so it can be echoed back.
     if (cache_invalidation_iq_packet->HasAttr(GetQnChannelContext())) {
-      context_change_callback_->Run(
+      context_change_callback_.Run(
           cache_invalidation_iq_packet->Attr(GetQnChannelContext()));
     }
     *data = cache_invalidation_iq_packet->BodyText();
@@ -121,8 +122,8 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
   }
 
   std::string* channel_context_;
-  scoped_ptr<Callback1<const std::string&>::Type> callback_;
-  scoped_ptr<Callback1<const std::string&>::Type> context_change_callback_;
+  base::Callback<void(const std::string&)> callback_;
+  base::Callback<void(const std::string&)> context_change_callback_;
   DISALLOW_COPY_AND_ASSIGN(CacheInvalidationListenTask);
 };
 
@@ -224,7 +225,7 @@ std::string MakeSid() {
 
 CacheInvalidationPacketHandler::CacheInvalidationPacketHandler(
     base::WeakPtr<buzz::XmppTaskParentInterface> base_task)
-    : scoped_callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       base_task_(base_task),
       seq_(0),
       sid_(MakeSid()) {
@@ -232,10 +233,12 @@ CacheInvalidationPacketHandler::CacheInvalidationPacketHandler(
   // Owned by base_task.  Takes ownership of the callback.
   CacheInvalidationListenTask* listen_task =
       new CacheInvalidationListenTask(
-          base_task_, scoped_callback_factory_.NewCallback(
-              &CacheInvalidationPacketHandler::HandleInboundPacket),
-          scoped_callback_factory_.NewCallback(
-              &CacheInvalidationPacketHandler::HandleChannelContextChange));
+          base_task_, base::Bind(
+              &CacheInvalidationPacketHandler::HandleInboundPacket,
+              weak_factory_.GetWeakPtr()),
+          base::Bind(
+              &CacheInvalidationPacketHandler::HandleChannelContextChange,
+              weak_factory_.GetWeakPtr()));
   listen_task->Start();
 }
 

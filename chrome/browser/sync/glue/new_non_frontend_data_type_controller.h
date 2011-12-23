@@ -22,7 +22,7 @@ class NewNonFrontendDataTypeController : public NonFrontendDataTypeController {
       Profile* profile);
   virtual ~NewNonFrontendDataTypeController();
 
-  virtual void Start(StartCallback* start_callback) OVERRIDE;
+  virtual void Start(const StartCallback& start_callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
 
  protected:

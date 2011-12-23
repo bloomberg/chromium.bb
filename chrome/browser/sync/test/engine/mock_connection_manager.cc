@@ -70,8 +70,9 @@ void MockConnectionManager::SetCommitTimeRename(string prepend) {
   commit_time_rename_prepended_string_ = prepend;
 }
 
-void MockConnectionManager::SetMidCommitCallback(Callback0::Type* callback) {
-  mid_commit_callback_.reset(callback);
+void MockConnectionManager::SetMidCommitCallback(
+    const base::Closure& callback) {
+  mid_commit_callback_ = callback;
 }
 
 void MockConnectionManager::SetMidCommitObserver(
@@ -158,8 +159,8 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
 
   response.SerializeToString(&params->buffer_out);
   if (post.message_contents() == ClientToServerMessage::COMMIT &&
-      mid_commit_callback_.get()) {
-    mid_commit_callback_->Run();
+      !mid_commit_callback_.is_null()) {
+    mid_commit_callback_.Run();
   }
   if (mid_commit_observer_) {
     mid_commit_observer_->Observe();
