@@ -118,6 +118,7 @@ WebUIScreenLocker::~WebUIScreenLocker() {
   // delegate set in ShowSigninScreen so that it no longer points to us.
   if (login_display_.get())
     static_cast<OobeUI*>(GetWebUI())->ResetSigninScreenHandlerDelegate();
+  SetStatusAreaEnabled(true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
