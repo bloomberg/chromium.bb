@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/accelerators/accelerator_controller.h"
+#include "ash/test/aura_shell_test_base.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -9,9 +11,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/shell.h"
-#include "ui/aura_shell/shell_accelerator_controller.h"
 #include "ui/aura_shell/shell_window_ids.h"
-#include "ui/aura_shell/test/aura_shell_test_base.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
@@ -49,19 +49,19 @@ bool TestTarget::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
 }  // namespace
 
-class ShellAcceleratorControllerTest : public AuraShellTestBase {
+class AcceleratorControllerTest : public AuraShellTestBase {
  public:
-  ShellAcceleratorControllerTest() {};
-  virtual ~ShellAcceleratorControllerTest() {};
+  AcceleratorControllerTest() {};
+  virtual ~AcceleratorControllerTest() {};
 
-  static ShellAcceleratorController* GetController();
+  static AcceleratorController* GetController();
 };
 
-ShellAcceleratorController* ShellAcceleratorControllerTest::GetController() {
+AcceleratorController* AcceleratorControllerTest::GetController() {
   return Shell::GetInstance()->accelerator_controller();
 }
 
-TEST_F(ShellAcceleratorControllerTest, Register) {
+TEST_F(AcceleratorControllerTest, Register) {
   const ui::Accelerator accelerator_a(ui::VKEY_A, false, false, false);
   TestTarget target;
   GetController()->Register(accelerator_a, &target);
@@ -71,7 +71,7 @@ TEST_F(ShellAcceleratorControllerTest, Register) {
   EXPECT_EQ(1, target.accelerator_pressed_count());
 }
 
-TEST_F(ShellAcceleratorControllerTest, RegisterMultipleTarget) {
+TEST_F(AcceleratorControllerTest, RegisterMultipleTarget) {
   const ui::Accelerator accelerator_a(ui::VKEY_A, false, false, false);
   TestTarget target1;
   GetController()->Register(accelerator_a, &target1);
@@ -85,7 +85,7 @@ TEST_F(ShellAcceleratorControllerTest, RegisterMultipleTarget) {
   EXPECT_EQ(1, target2.accelerator_pressed_count());
 }
 
-TEST_F(ShellAcceleratorControllerTest, Unregister) {
+TEST_F(AcceleratorControllerTest, Unregister) {
   const ui::Accelerator accelerator_a(ui::VKEY_A, false, false, false);
   TestTarget target;
   GetController()->Register(accelerator_a, &target);
@@ -105,7 +105,7 @@ TEST_F(ShellAcceleratorControllerTest, Unregister) {
   EXPECT_EQ(0, target.accelerator_pressed_count());
 }
 
-TEST_F(ShellAcceleratorControllerTest, UnregisterAll) {
+TEST_F(AcceleratorControllerTest, UnregisterAll) {
   const ui::Accelerator accelerator_a(ui::VKEY_A, false, false, false);
   TestTarget target1;
   GetController()->Register(accelerator_a, &target1);
@@ -126,7 +126,7 @@ TEST_F(ShellAcceleratorControllerTest, UnregisterAll) {
   EXPECT_EQ(1, target2.accelerator_pressed_count());
 }
 
-TEST_F(ShellAcceleratorControllerTest, Process) {
+TEST_F(AcceleratorControllerTest, Process) {
   const ui::Accelerator accelerator_a(ui::VKEY_A, false, false, false);
   TestTarget target1;
   GetController()->Register(accelerator_a, &target1);
@@ -141,7 +141,7 @@ TEST_F(ShellAcceleratorControllerTest, Process) {
 }
 
 #if defined(OS_WIN) || defined(USE_X11)
-TEST_F(ShellAcceleratorControllerTest, ProcessOnce) {
+TEST_F(AcceleratorControllerTest, ProcessOnce) {
   // A focused window must exist for accelerators to be processed.
   aura::Window* default_container =
       aura_shell::Shell::GetInstance()->GetContainer(
@@ -183,7 +183,7 @@ TEST_F(ShellAcceleratorControllerTest, ProcessOnce) {
 }
 #endif
 
-TEST_F(ShellAcceleratorControllerTest, GlobalAccelerators) {
+TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // A focused window must exist for accelerators to be processed.
   aura::Window* default_container =
       aura_shell::Shell::GetInstance()->GetContainer(
@@ -220,7 +220,7 @@ TEST_F(ShellAcceleratorControllerTest, GlobalAccelerators) {
 #endif
 }
 
-TEST_F(ShellAcceleratorControllerTest, HandleCycleWindow) {
+TEST_F(AcceleratorControllerTest, HandleCycleWindow) {
   aura::Window* default_container =
       aura_shell::Shell::GetInstance()->GetContainer(
           internal::kShellWindowId_DefaultContainer);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/status_area_view.h"
+#include "ash/status_area/status_area_view.h"
 
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"

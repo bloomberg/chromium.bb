@@ -31,16 +31,16 @@ class Size;
 
 namespace aura_shell {
 
+class AcceleratorController;
 class Launcher;
-class ShellAcceleratorController;
 class ShellDelegate;
 
 namespace internal {
 class ActivationController;
+class AcceleratorFilter;
 class AppList;
 class DragDropController;
 class ShadowController;
-class ShellAcceleratorFilter;
 class StackingController;
 class TooltipController;
 class WorkspaceController;
@@ -78,7 +78,7 @@ class AURA_SHELL_EXPORT Shell {
   // Returns true if the screen is locked.
   bool IsScreenLocked() const;
 
-  ShellAcceleratorController* accelerator_controller() {
+  AcceleratorController* accelerator_controller() {
     return accelerator_controller_.get();
   }
 
@@ -122,7 +122,7 @@ class AURA_SHELL_EXPORT Shell {
 
   base::WeakPtrFactory<Shell> method_factory_;
 
-  scoped_ptr<ShellAcceleratorController> accelerator_controller_;
+  scoped_ptr<AcceleratorController> accelerator_controller_;
 
   scoped_ptr<ShellDelegate> delegate_;
 
@@ -138,7 +138,7 @@ class AURA_SHELL_EXPORT Shell {
   scoped_ptr<internal::TooltipController> tooltip_controller_;
 
   // An event filter that pre-handles global accelerators.
-  scoped_ptr<internal::ShellAcceleratorFilter> accelerator_filter_;
+  scoped_ptr<internal::AcceleratorFilter> accelerator_filter_;
 
 
   DISALLOW_COPY_AND_ASSIGN(Shell);

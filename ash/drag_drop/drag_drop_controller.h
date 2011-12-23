@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_DRAG_DROP_CONTROLLER_H_
-#define UI_AURA_SHELL_DRAG_DROP_CONTROLLER_H_
+#ifndef ASH_DRAG_DROP_DRAG_DROP_CONTROLLER_H_
+#define ASH_DRAG_DROP_DRAG_DROP_CONTROLLER_H_
 #pragma once
 
 #include "ui/aura_shell/aura_shell_export.h"
@@ -80,4 +80,4 @@ class AURA_SHELL_EXPORT DragDropController
 }  // namespace internal
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_DRAG_DROP_CONTROLLER_H_
+#endif  // ASH_DRAG_DROP_DRAG_DROP_CONTROLLER_H_

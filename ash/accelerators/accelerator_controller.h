@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_SHELL_ACCELERATOR_CONTROLLER_H_
-#define UI_AURA_SHELL_SHELL_ACCELERATOR_CONTROLLER_H_
+#ifndef ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_H_
+#define ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_H_
 #pragma once
 
 #include <map>
@@ -22,14 +22,13 @@ namespace aura_shell {
 
 class ScreenshotDelegate;
 
-// ShellAcceleratorController provides functions for registering or
-// unregistering global keyboard accelerators, which are handled earlier than
-// any windows. It also implements several handlers as an accelerator target.
-class AURA_SHELL_EXPORT ShellAcceleratorController
-    : public ui::AcceleratorTarget {
+// AcceleratorController provides functions for registering or unregistering
+// global keyboard accelerators, which are handled earlier than any windows. It
+// also implements several handlers as an accelerator target.
+class AURA_SHELL_EXPORT AcceleratorController : public ui::AcceleratorTarget {
  public:
-  ShellAcceleratorController();
-  virtual ~ShellAcceleratorController();
+  AcceleratorController();
+  virtual ~AcceleratorController();
 
   // Register a global keyboard accelerator for the specified target. If
   // multiple targets are registered for an accelerator, a target registered
@@ -69,9 +68,9 @@ class AURA_SHELL_EXPORT ShellAcceleratorController
   // the implementation.
   std::map<ui::Accelerator, int> accelerators_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellAcceleratorController);
+  DISALLOW_COPY_AND_ASSIGN(AcceleratorController);
 };
 
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_SHELL_ACCELERATOR_CONTROLLER_H_
+#endif  // ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_H_

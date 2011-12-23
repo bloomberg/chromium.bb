@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/drag_drop_controller.h"
+#include "ash/drag_drop/drag_drop_controller.h"
 
+#include "ash/drag_drop/drag_image_view.h"
 #include "base/message_loop.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/drag_image_view.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"

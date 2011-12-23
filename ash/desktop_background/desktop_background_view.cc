@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/desktop_background_view.h"
+#include "ash/desktop_background/desktop_background_view.h"
 
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"

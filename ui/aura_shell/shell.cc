@@ -6,8 +6,12 @@
 
 #include <algorithm>
 
+#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_filter.h"
 #include "ash/app_list/app_list.h"
+#include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/launcher/launcher.h"
+#include "ash/tooltips/tooltip_controller.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/compact_layout_manager.h"
 #include "ash/wm/compact_status_area_layout_manager.h"
@@ -29,13 +33,9 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/aura_shell_switches.h"
-#include "ui/aura_shell/drag_drop_controller.h"
-#include "ui/aura_shell/shell_accelerator_controller.h"
-#include "ui/aura_shell/shell_accelerator_filter.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/aura_shell/shell_window_ids.h"
-#include "ui/aura_shell/tooltip_controller.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/screen.h"
@@ -125,7 +125,7 @@ Shell* Shell::instance_ = NULL;
 
 Shell::Shell(ShellDelegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      accelerator_controller_(new ShellAcceleratorController),
+      accelerator_controller_(new AcceleratorController),
       delegate_(delegate) {
   aura::RootWindow::GetInstance()->SetEventFilter(
       new internal::RootWindowEventFilter);
@@ -217,8 +217,8 @@ void Shell::Init() {
   // Force a layout.
   root_window->layout_manager()->OnWindowResized();
 
-  // Initialize ShellAcceleratorFilter
-  accelerator_filter_.reset(new internal::ShellAcceleratorFilter);
+  // Initialize AcceleratorFilter.
+  accelerator_filter_.reset(new internal::AcceleratorFilter);
   AddRootWindowEventFilter(accelerator_filter_.get());
 
   // Initialize TooltipController.

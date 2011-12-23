@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_DESKTOP_BACKGROUND_VIEW_H_
-#define UI_AURA_SHELL_DESKTOP_BACKGROUND_VIEW_H_
+#ifndef ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_VIEW_H_
+#define ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_VIEW_H_
 #pragma once
 
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -32,4 +32,4 @@ class DesktopBackgroundView : public views::WidgetDelegateView {
 }  // namespace internal
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_DESKTOP_BACKGROUND_VIEW_H_
+#endif  // ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_VIEW_H_

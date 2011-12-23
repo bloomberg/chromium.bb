@@ -4,8 +4,8 @@
 
 #include "ash/launcher/launcher.h"
 
+#include "ash/test/aura_shell_test_base.h"
 #include "ui/aura_shell/shell.h"
-#include "ui/aura_shell/test/aura_shell_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 

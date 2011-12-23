@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/test/aura_shell_test_base.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -10,7 +11,6 @@
 #include "ui/aura_shell/aura_shell_switches.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"
-#include "ui/aura_shell/test/aura_shell_test_base.h"
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_TEST_SUITE_H_
-#define UI_AURA_SHELL_TEST_SUITE_H_
+#ifndef ASH_TEST_TEST_SUITE_H_
+#define ASH_TEST_TEST_SUITE_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -25,4 +25,4 @@ class AuraShellTestSuite : public base::TestSuite {
 }  // namespace test
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_TEST_SUITE_H_
+#endif  // ASH_TEST_TEST_SUITE_H_

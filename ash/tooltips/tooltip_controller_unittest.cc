@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/test/aura_shell_test_base.h"
+#include "ash/tooltips/tooltip_controller.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura_shell/test/aura_shell_test_base.h"
-#include "ui/aura_shell/tooltip_controller.h"
 #include "ui/gfx/point.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"

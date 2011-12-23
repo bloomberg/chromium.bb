@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/shell_accelerator_controller.h"
+#include "ash/accelerators/accelerator_controller.h"
 
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
@@ -32,7 +32,7 @@ enum AcceleratorAction {
 #endif
 };
 
-// Acceleraters handled by ShellAcceleratorController.
+// Accelerators handled by AcceleratorController.
 struct AcceleratorData {
   ui::KeyboardCode keycode;
   bool shift;
@@ -123,17 +123,17 @@ bool HandlePrintLayerHierarchy() {
 namespace aura_shell {
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShellAcceleratorController, public:
+// AcceleratorController, public:
 
-ShellAcceleratorController::ShellAcceleratorController()
+AcceleratorController::AcceleratorController()
     : accelerator_manager_(new ui::AcceleratorManager) {
   Init();
 }
 
-ShellAcceleratorController::~ShellAcceleratorController() {
+AcceleratorController::~AcceleratorController() {
 }
 
-void ShellAcceleratorController::Init() {
+void AcceleratorController::Init() {
   for (size_t i = 0; i < arraysize(kAcceleratorData); ++i) {
     ui::Accelerator accelerator(kAcceleratorData[i].keycode,
                                 kAcceleratorData[i].shift,
@@ -145,36 +145,36 @@ void ShellAcceleratorController::Init() {
   }
 }
 
-void ShellAcceleratorController::Register(
+void AcceleratorController::Register(
     const ui::Accelerator& accelerator,
     ui::AcceleratorTarget* target) {
   accelerator_manager_->Register(accelerator, target);
 }
 
-void ShellAcceleratorController::Unregister(
+void AcceleratorController::Unregister(
     const ui::Accelerator& accelerator,
     ui::AcceleratorTarget* target) {
   accelerator_manager_->Unregister(accelerator, target);
 }
 
-void ShellAcceleratorController::UnregisterAll(
+void AcceleratorController::UnregisterAll(
     ui::AcceleratorTarget* target) {
   accelerator_manager_->UnregisterAll(target);
 }
 
-bool ShellAcceleratorController::Process(const ui::Accelerator& accelerator) {
+bool AcceleratorController::Process(const ui::Accelerator& accelerator) {
   return accelerator_manager_->Process(accelerator);
 }
 
-void ShellAcceleratorController::SetScreenshotDelegate(
+void AcceleratorController::SetScreenshotDelegate(
     ScreenshotDelegate* screenshot_delegate) {
   screenshot_delegate_.reset(screenshot_delegate);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShellAcceleratorController, ui::AcceleratorTarget implementation:
+// AcceleratorController, ui::AcceleratorTarget implementation:
 
-bool ShellAcceleratorController::AcceleratorPressed(
+bool AcceleratorController::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   std::map<ui::Accelerator, int>::const_iterator it =
       accelerators_.find(accelerator);

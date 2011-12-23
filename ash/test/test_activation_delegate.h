@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_TEST_TEST_ACTIVATION_DELEGATE_H_
-#define UI_AURA_SHELL_TEST_TEST_ACTIVATION_DELEGATE_H_
+#ifndef ASH_TEST_TEST_ACTIVATION_DELEGATE_H_
+#define ASH_TEST_TEST_ACTIVATION_DELEGATE_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -56,4 +56,4 @@ class TestActivationDelegate : public aura::client::ActivationDelegate {
 }  // namespace test
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_TEST_TEST_ACTIVATION_DELEGATE_H_
+#endif  // ASH_TEST_TEST_ACTIVATION_DELEGATE_H_

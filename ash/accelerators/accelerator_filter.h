@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_SHELL_ACCELERATOR_FILTER_H_
-#define UI_AURA_SHELL_SHELL_ACCELERATOR_FILTER_H_
+#ifndef ASH_ACCELERATORS_ACCELERATOR_FILTER_H_
+#define ASH_ACCELERATORS_ACCELERATOR_FILTER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -14,12 +14,12 @@
 namespace aura_shell {
 namespace internal {
 
-// ShellAcceleratorFilter filters key events for ShellAcceleratorControler
-// handling global keyboard accelerators.
-class AURA_SHELL_EXPORT ShellAcceleratorFilter : public aura::EventFilter {
+// AcceleratorFilter filters key events for AcceleratorControler handling global
+// keyboard accelerators.
+class AURA_SHELL_EXPORT AcceleratorFilter : public aura::EventFilter {
  public:
-  ShellAcceleratorFilter();
-  virtual ~ShellAcceleratorFilter();
+  AcceleratorFilter();
+  virtual ~AcceleratorFilter();
 
   // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
@@ -30,10 +30,10 @@ class AURA_SHELL_EXPORT ShellAcceleratorFilter : public aura::EventFilter {
                                               aura::TouchEvent* event) OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ShellAcceleratorFilter);
+  DISALLOW_COPY_AND_ASSIGN(AcceleratorFilter);
 };
 
 }  // namespace internal
 }  // namespace aura_shell
 
-#endif  // UI_AURA_SHELL_SHELL_ACCELERATOR_FILTER_H_
+#endif  // ASH_ACCELERATORS_ACCELERATOR_FILTER_H_

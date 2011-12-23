@@ -5,12 +5,12 @@
 #include "ash/wm/shelf_layout_manager.h"
 
 #include "ash/launcher/launcher.h"
+#include "ash/test/aura_shell_test_base.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"
-#include "ui/aura_shell/test/aura_shell_test_base.h"
 #include "ui/base/animation/animation_container_element.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/layer.h"

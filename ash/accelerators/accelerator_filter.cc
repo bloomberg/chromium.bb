@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/shell_accelerator_filter.h"
+#include "ash/accelerators/accelerator_filter.h"
 
+#include "ash/accelerators/accelerator_controller.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura_shell/shell.h"
-#include "ui/aura_shell/shell_accelerator_controller.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 
@@ -21,20 +21,20 @@ namespace aura_shell {
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShellAcceleratorFilter, public:
+// AcceleratorFilter, public:
 
-ShellAcceleratorFilter::ShellAcceleratorFilter()
+AcceleratorFilter::AcceleratorFilter()
     : EventFilter(aura::RootWindow::GetInstance()) {
 }
 
-ShellAcceleratorFilter::~ShellAcceleratorFilter() {
+AcceleratorFilter::~AcceleratorFilter() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShellAcceleratorFilter, EventFilter implementation:
+// AcceleratorFilter, EventFilter implementation:
 
-bool ShellAcceleratorFilter::PreHandleKeyEvent(aura::Window* target,
-                                               aura::KeyEvent* event) {
+bool AcceleratorFilter::PreHandleKeyEvent(aura::Window* target,
+                                          aura::KeyEvent* event) {
   if (event->type() == ui::ET_KEY_PRESSED && !event->is_char()) {
     return Shell::GetInstance()->accelerator_controller()->Process(
         ui::Accelerator(event->key_code(),
@@ -43,12 +43,12 @@ bool ShellAcceleratorFilter::PreHandleKeyEvent(aura::Window* target,
   return false;
 }
 
-bool ShellAcceleratorFilter::PreHandleMouseEvent(aura::Window* target,
-                                                 aura::MouseEvent* event) {
+bool AcceleratorFilter::PreHandleMouseEvent(aura::Window* target,
+                                            aura::MouseEvent* event) {
   return false;
 }
 
-ui::TouchStatus ShellAcceleratorFilter::PreHandleTouchEvent(
+ui::TouchStatus AcceleratorFilter::PreHandleTouchEvent(
     aura::Window* target,
     aura::TouchEvent* event) {
   return ui::TOUCH_STATUS_UNKNOWN;

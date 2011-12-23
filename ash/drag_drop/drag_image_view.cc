@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura_shell/drag_image_view.h"
+#include "ash/drag_drop/drag_image_view.h"
 
 #include "ui/views/widget/widget.h"
 
