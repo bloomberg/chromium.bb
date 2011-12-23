@@ -18,6 +18,7 @@ import tempfile
 
 from chromite.buildbot import portage_utilities, configure_repo
 from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import rewrite_git_alternates
 
 # File that marks a buildroot as being used by a trybot
 _TRYBOT_MARKER = '.trybot'
@@ -83,22 +84,72 @@ class RepoRepository(object):
   # Use our own repo, in case android.kernel.org (the default location) is down.
   _INIT_CMD = ['repo', 'init', '--repo-url', constants.REPO_URL]
 
-  def __init__(self, repo_url, directory, branch=None, stable_sync=False):
+  def __init__(self, repo_url, directory, branch=None, stable_sync=False,
+               referenced_repo=None):
     self.repo_url = repo_url
     self.directory = directory
     self.branch = branch
     self._stable_sync = stable_sync
+    self._referenced_repo = referenced_repo
 
-  def Initialize(self):
+  def Initialize(self, extra_args=()):
     """Initializes a repository."""
     assert not os.path.exists(os.path.join(self.directory, '.repo')), \
-        'Repo already initialized.'
+      'Repo already initialized.'
     # Base command.
     init_cmd = self._INIT_CMD + ['--manifest-url', self.repo_url]
+    if self._referenced_repo:
+      init_cmd.extend(['--reference', self._referenced_repo])
+    init_cmd.extend(extra_args)
 
     # Handle branch / manifest options.
     if self.branch: init_cmd.extend(['--manifest-branch', self.branch])
     cros_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n')
+
+  def _EnsureMirroring(self, post_sync=False):
+    """Ensure git is usable from w/in the chroot if --references is enabled
+
+    repo init --references hardcodes the abspath to parent; this pathway
+    however isn't usable from the chroot (it doesn't exist).  As such the
+    pathway is rewritten to use relative pathways pointing at the root of
+    the repo, which via I84988630 enter_chroot sets up a helper bind mount
+    allowing git/repo to access the actual referenced repo.
+
+    This has to be invoked prior to a repo sync of the target trybot to
+    fix any pathways that may have been broken by the parent repo moving
+    on disk, and needs to be invoked after the sync has completed to rewrite
+    any new project's abspath to relative.
+    """
+
+    if not self._referenced_repo:
+      return
+
+    proj_root = os.path.join(self.directory, '.repo', 'projects')
+    if not os.path.exists(proj_root):
+      # Not yet synced, nothing to be done.
+      return
+
+    rewrite_git_alternates.RebuildRepoCheckout(self.directory,
+                                               self._referenced_repo)
+
+    if post_sync:
+      chroot_path = os.path.join(constants.SOURCE_ROOT, '.repo', 'chroot',
+                                 'external')
+      chroot_path = cros_lib.ReinterpretPathForChroot(chroot_path)
+      rewrite_git_alternates.RebuildRepoCheckout(
+          self.directory, self._referenced_repo, chroot_path)
+
+    # Finally, force the git config marker that enter_chroot looks for
+    # to know when to do bind mounting trickery; this normally will exist,
+    # but if we're converting a pre-existing repo checkout, it's possible
+    # that it was invoked w/out the reference arg.  Note this must be
+    # an absolute path to the source repo- enter_chroot uses that to know
+    # what to bind mount into the chroot.
+    cros_lib.RunCommand(['git', 'config', '--file',
+                         '.repo/manifests.git/config',
+                         'repo.reference', self._referenced_repo],
+                         cwd=self.directory)
+
 
   def _ReinitializeIfNecessary(self, local_manifest):
     """Reinitializes the repository if the manifest has changed."""
@@ -116,10 +167,10 @@ class RepoRepository(object):
     logging.debug('Moving to manifest defined by %s' % local_manifest)
     # If no manifest passed in, assume default.
     if local_manifest == self.DEFAULT_MANIFEST:
-      cros_lib.RunCommand(self._INIT_CMD + ['--manifest-name=default.xml'],
-                          cwd=self.directory, input='\n\ny\n')
+      self.Initialize(['--manifest-name=default.xml'])
     else:
       # The 10x speed up magic.
+      # TODO: get documentation as to *why* this is supposedly 10x faster.
       os.unlink(manifest_path)
       shutil.copyfile(local_manifest, manifest_path)
 
@@ -169,6 +220,9 @@ class RepoRepository(object):
       if not do_self_update:
         self.Initialize()
 
+      # Fix existing broken mirroring configurations.
+      self._EnsureMirroring()
+
       self._ReinitializeIfNecessary(local_manifest)
 
       if do_self_update:
@@ -184,7 +238,13 @@ class RepoRepository(object):
                                          '--jobs', str(jobs)],
                                      cwd=self.directory)
 
+      # Fixup any new mirroring configurations.
       configure_repo.FixExternalRepoPushUrls(self.directory)
+
+      # We do a second run to fix any new repositories created by repo to
+      # use relative object pathways.  Note that cros_sdk also triggers the
+      # same cleanup- we however kick it erring on the side of caution.
+      self._EnsureMirroring(True)
 
     except cros_lib.RunCommandError, e:
       err_msg = 'Failed to sync sources %s' % e.message

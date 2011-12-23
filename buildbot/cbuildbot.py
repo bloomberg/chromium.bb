@@ -775,6 +775,14 @@ def _CreateParser():
   group.add_option('--nosync', action='store_false', dest='sync',
                     default=True,
                     help="Don't sync before building.")
+  group.add_option('--reference-repo', action='store', default=None,
+                    dest='reference_repo',
+                    help='Reuse git data stored in an existing repo '
+                         'checkout. This can drastically reduce the network '
+                         'time spent setting up the trybot checkout.  By '
+                         "default, if this option isn't given but cbuildbot "
+                         'is invoked from a repo checkout, cbuildbot will '
+                         'use the repo root.')
   group.add_option('--notests', action='store_false', dest='tests',
                     default=True,
                     help='Override values from buildconfig and run no tests.')
@@ -867,6 +875,13 @@ def main(argv=None):
     build_config = _GetConfig(bot_id)
   else:
     parser.error('Invalid usage.  Use -h to see usage.')
+
+  if options.reference_repo is None:
+    repo_path = os.path.join(constants.SOURCE_ROOT, '.repo')
+    # If we're ran from a repo checkout, reuse the repo's git pool to
+    # cut down on sync time.
+    if os.path.exists(repo_path):
+      options.reference_repo = constants.SOURCE_ROOT
 
   if options.dump_config:
     # This works, but option ordering is bad...

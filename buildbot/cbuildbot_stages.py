@@ -142,9 +142,19 @@ class SyncStage(bs.BuilderStage):
         read_only=read_only)
 
   def Initialize(self):
-    self.repo = repository.RepoRepository(
-        self._build_config['git_url'], self._build_root,
-        branch=self._tracking_branch)
+    self._InitializeRepo()
+
+  def _InitializeRepo(self, git_url=None, build_root=None, **kwds):
+    if build_root is None:
+      build_root = self._build_root
+
+    if git_url is None:
+      git_url = self._build_config['git_url']
+
+    kwds.setdefault('referenced_repo', self._options.reference_repo)
+    kwds.setdefault('branch', self._tracking_branch)
+
+    self.repo = repository.RepoRepository(git_url, build_root, **kwds)
 
   def GetNextManifest(self):
     """Returns the manifest to use."""
@@ -209,9 +219,9 @@ class ManifestVersionedSyncStage(SyncStage):
     increment = _BRANCH_INCREMENT_TYPE.get(self._tracking_branch, 'branch')
 
     dry_run = self._options.debug
-    self.repo = repository.RepoRepository(
-        self._build_config['git_url'], self._build_root,
-        branch=self._tracking_branch, stable_sync=True)
+
+    self._InitializeRepo(stable_sync=True)
+
     ManifestVersionedSyncStage.manifest_manager = \
         manifest_version.BuildSpecsManager(
             source_repo=self.repo,
@@ -254,9 +264,9 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
   def Initialize(self):
     """Override: Creates an LKGMManager rather than a ManifestManager."""
     dry_run = self._options.debug
-    self.repo = repository.RepoRepository(
-        self._build_config['git_url'], self._build_root,
-        branch=self._tracking_branch)
+
+    self._InitializeRepo()
+
     increment = 'build' if self._tracking_branch == 'master' else 'branch'
     ManifestVersionedSyncStage.manifest_manager = lkgm_manager.LKGMManager(
         source_repo=self.repo,
