@@ -566,7 +566,7 @@ class MutableEntry : public Entry {
 
   // Adjusts the successor and predecessor entries so that they no longer
   // refer to this entry.
-  void UnlinkFromOrder();
+  bool UnlinkFromOrder();
 
   // Kind of redundant. We should reduce the number of pointers
   // floating around if at all possible. Could we store this in Directory?
@@ -890,13 +890,15 @@ class Directory {
   EntryKernel* GetEntryByServerTag(const std::string& tag);
   virtual EntryKernel* GetEntryByClientTag(const std::string& tag);
   EntryKernel* GetRootEntry();
-  bool ReindexId(EntryKernel* const entry, const Id& new_id);
-  void ReindexParentId(EntryKernel* const entry, const Id& new_parent_id);
+  bool ReindexId(WriteTransaction* trans, EntryKernel* const entry,
+                 const Id& new_id);
+  bool ReindexParentId(WriteTransaction* trans, EntryKernel* const entry,
+                       const Id& new_parent_id);
   void ClearDirtyMetahandles();
 
   // These don't do semantic checking.
   // The semantic checking is implemented higher up.
-  void UnlinkEntryFromOrder(EntryKernel* entry,
+  bool UnlinkEntryFromOrder(EntryKernel* entry,
                             WriteTransaction* trans,
                             ScopedKernelLock* lock);
 
@@ -924,13 +926,13 @@ class Directory {
   // Returns the child meta handles (even those for deleted/unlinked
   // nodes) for given parent id.  Clears |result| if there are no
   // children.
-  void GetChildHandlesById(BaseTransaction*, const Id& parent_id,
+  bool GetChildHandlesById(BaseTransaction*, const Id& parent_id,
       ChildHandles* result);
 
   // Returns the child meta handles (even those for deleted/unlinked
   // nodes) for given meta handle.  Clears |result| if there are no
   // children.
-  void GetChildHandlesByHandle(BaseTransaction*, int64 handle,
+  bool GetChildHandlesByHandle(BaseTransaction*, int64 handle,
       ChildHandles* result);
 
   // Returns true iff |id| has children.
@@ -1001,13 +1003,13 @@ class Directory {
   // If full_scan is true, all entries will be pulled from the database.
   // No return value, CHECKs will be triggered if we're given bad
   // information.
-  void CheckTreeInvariants(syncable::BaseTransaction* trans,
+  bool CheckTreeInvariants(syncable::BaseTransaction* trans,
                            bool full_scan);
 
-  void CheckTreeInvariants(syncable::BaseTransaction* trans,
+  bool CheckTreeInvariants(syncable::BaseTransaction* trans,
                            const EntryKernelMutationMap& mutations);
 
-  void CheckTreeInvariants(syncable::BaseTransaction* trans,
+  bool CheckTreeInvariants(syncable::BaseTransaction* trans,
                            const MetahandleSet& handles,
                            const IdFilter& idfilter);
 
@@ -1033,19 +1035,21 @@ class Directory {
   // Purges from memory any unused, safe to remove entries that were
   // successfully deleted on disk as a result of the SaveChanges that processed
   // |snapshot|.  See SaveChanges() for more information.
-  void VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot);
+  bool VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot);
 
   // Rolls back dirty bits in the event that the SaveChanges that
   // processed |snapshot| failed, for example, due to no disk space.
   void HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot);
 
   // For new entry creation only
-  void InsertEntry(EntryKernel* entry, ScopedKernelLock* lock);
-  void InsertEntry(EntryKernel* entry);
+  bool InsertEntry(WriteTransaction* trans,
+                   EntryKernel* entry, ScopedKernelLock* lock);
+  bool InsertEntry(WriteTransaction* trans, EntryKernel* entry);
 
   // Used by CheckTreeInvariants
   void GetAllMetaHandles(BaseTransaction* trans, MetahandleSet* result);
-  bool SafeToPurgeFromMemory(const EntryKernel* const entry) const;
+  bool SafeToPurgeFromMemory(WriteTransaction* trans,
+                             const EntryKernel* const entry) const;
 
   // Internal setters that do not acquire a lock internally.  These are unsafe
   // on their own; caller must guarantee exclusive access manually by holding
@@ -1233,6 +1237,8 @@ class BaseTransaction {
   void OnUnrecoverableError(const tracked_objects::Location& location,
                             const std::string& message);
 
+  bool unrecoverable_error_set() const;
+
  protected:
   BaseTransaction(const tracked_objects::Location& from_here,
                   const char* name,
@@ -1316,7 +1322,7 @@ class WriteTransaction : public BaseTransaction {
 bool IsLegalNewParent(BaseTransaction* trans, const Id& id, const Id& parentid);
 
 // This function sets only the flags needed to get this entry to sync.
-void MarkForSyncing(syncable::MutableEntry* e);
+bool MarkForSyncing(syncable::MutableEntry* e);
 
 }  // namespace syncable
 
