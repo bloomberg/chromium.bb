@@ -273,7 +273,8 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
           filename.substr(test_name_.length() + 1);
       int64 revision = 0;
       bool converted = base::StringToInt64(revision_string, &revision);
-      CHECK(converted);
+      if (!converted)
+        continue;
       if (revision < ref_img_revision_no_older_than_ ||
           revision < max_revision) {
         outdated_ref_imgs.push_back(full_path);
