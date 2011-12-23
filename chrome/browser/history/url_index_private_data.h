@@ -11,9 +11,8 @@
 
 namespace history {
 
-// A structure describing the index's internal data. This structure is used
-// by the InMemoryURLIndex, InMemoryURLIndexBackend, and
-// InMemoryURLCacheDatabase classes.
+// A structure describing the InMemoryURLIndex's internal data and providing for
+// restoring, rebuilding and updating that internal data.
 class URLIndexPrivateData {
  public:
   URLIndexPrivateData();
