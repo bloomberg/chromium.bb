@@ -14,6 +14,10 @@
 #include "ui/aura/window_observer.h"
 #include "ui/aura_shell/aura_shell_export.h"
 
+namespace views {
+class Widget;
+}
+
 namespace aura_shell {
 namespace internal {
 
@@ -24,7 +28,7 @@ namespace internal {
 class AURA_SHELL_EXPORT CompactLayoutManager : public aura::LayoutManager,
                                                public aura::WindowObserver {
  public:
-  CompactLayoutManager();
+  explicit CompactLayoutManager(views::Widget* status_area_widget);
   virtual ~CompactLayoutManager();
 
   // LayoutManager overrides:
@@ -44,8 +48,14 @@ class AURA_SHELL_EXPORT CompactLayoutManager : public aura::LayoutManager,
  private:
   typedef std::set<aura::Window*> Windows;
 
+  // Hides the status area when full screen windows cover it.
+  void UpdateStatusAreaVisibility();
+
   // Set of windows we're listening to.
   Windows windows_;
+
+  // Weak pointer to status area with clock, network, battery, etc. icons.
+  views::Widget* status_area_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(CompactLayoutManager);
 };

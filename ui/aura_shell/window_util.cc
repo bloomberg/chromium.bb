@@ -66,4 +66,14 @@ void UpdateBoundsFromShowState(aura::Window* window) {
   }
 }
 
+bool HasFullscreenWindow(const WindowSet& windows) {
+  for (WindowSet::const_iterator i = windows.begin(); i != windows.end(); ++i) {
+    if ((*i)->GetIntProperty(aura::client::kShowStateKey)
+        == ui::SHOW_STATE_FULLSCREEN) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace aura_shell

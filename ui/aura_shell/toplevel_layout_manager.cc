@@ -70,16 +70,7 @@ void ToplevelLayoutManager::OnWindowPropertyChanged(aura::Window* window,
 void ToplevelLayoutManager::UpdateShelfVisibility() {
   if (!shelf_)
     return;
-
-  bool has_fullscreen_window = false;
-  for (Windows::const_iterator i = windows_.begin(); i != windows_.end(); ++i) {
-    if ((*i)->GetIntProperty(aura::client::kShowStateKey) ==
-        ui::SHOW_STATE_FULLSCREEN) {
-      has_fullscreen_window = true;
-      break;
-    }
-  }
-  shelf_->SetVisible(!has_fullscreen_window);
+  shelf_->SetVisible(!HasFullscreenWindow(windows_));
 }
 
 }  // namespace internal

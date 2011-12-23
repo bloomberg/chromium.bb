@@ -268,7 +268,7 @@ void Shell::InitLayoutManagers(aura::RootWindow* root_window) {
   // desktop background, shelf, etc.
   if (switches::IsAuraWindowModeCompact()) {
     default_container->SetLayoutManager(
-        new internal::CompactLayoutManager());
+        new internal::CompactLayoutManager(status_widget));
     internal::CompactStatusAreaLayoutManager* status_area_layout_manager =
         new internal::CompactStatusAreaLayoutManager(status_widget);
     GetContainer(internal::kShellWindowId_StatusContainer)->

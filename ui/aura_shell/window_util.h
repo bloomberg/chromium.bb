@@ -6,6 +6,8 @@
 #define UI_AURA_SHELL_WINDOW_UTIL_H_
 #pragma once
 
+#include <set>
+
 #include "ui/aura_shell/aura_shell_export.h"
 
 namespace aura {
@@ -34,6 +36,10 @@ AURA_SHELL_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
 
 // Update window bounds based on a change in show state.
 AURA_SHELL_EXPORT void UpdateBoundsFromShowState(aura::Window* window);
+
+// Returns true if the set of |windows| contains a full-screen window.
+typedef std::set<aura::Window*> WindowSet;
+AURA_SHELL_EXPORT bool HasFullscreenWindow(const WindowSet& windows);
 
 }  // namespace aura_shell
 
