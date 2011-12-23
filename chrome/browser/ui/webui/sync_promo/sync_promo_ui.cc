@@ -123,8 +123,15 @@ SyncPromoUI::SyncPromoUI(TabContents* contents) : ChromeWebUI(contents) {
   html_source->set_default_resource(IDR_SYNC_PROMO_HTML);
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 
-  if (sync_promo_trial::IsPartOfBrandTrialToEnable())
-    sync_promo_trial::RecordUserShownPromoWithTrialBrand();
+  if (sync_promo_trial::IsPartOfBrandTrialToEnable()) {
+    bool is_start_up = GetIsLaunchPageForSyncPromoURL(contents->GetURL());
+    sync_promo_trial::RecordUserShownPromoWithTrialBrand(is_start_up, profile);
+  }
+}
+
+// static
+bool SyncPromoUI::HasShownPromoAtStartup(Profile* profile) {
+  return profile->GetPrefs()->HasPrefPath(prefs::kSyncPromoStartupCount);
 }
 
 // static
@@ -161,8 +168,10 @@ void SyncPromoUI::RegisterUserPrefs(PrefService* prefs) {
   SyncPromoHandler::RegisterUserPrefs(prefs);
 }
 
+// static
 bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
                                                bool is_new_profile) {
+  DCHECK(profile);
   if (!ShouldShowSyncPromo(profile))
     return false;
 
@@ -170,9 +179,8 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
   if (command_line.HasSwitch(switches::kNoFirstRun))
     is_new_profile = false;
 
-  PrefService *prefs = profile->GetPrefs();
   if (!is_new_profile) {
-    if (!prefs->HasPrefPath(prefs::kSyncPromoStartupCount))
+    if (!HasShownPromoAtStartup(profile))
       return false;
   }
 
@@ -183,6 +191,7 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
   if (g_browser_process->GetApplicationLocale() == "zh-CN")
     return false;
 
+  PrefService *prefs = profile->GetPrefs();
   int show_count = prefs->GetInteger(prefs::kSyncPromoStartupCount);
   if (show_count >= kSyncPromoShowAtStartupMaximum)
     return false;

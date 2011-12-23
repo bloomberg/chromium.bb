@@ -9,6 +9,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "grit/generated_resources.h"
 
 namespace sync_promo_trial {
@@ -140,11 +141,18 @@ void RecordUserSawMessage() {
                             PROMO_MSG_MAX);
 }
 
-void RecordUserShownPromoWithTrialBrand() {
+void RecordUserShownPromoWithTrialBrand(bool is_at_startup, Profile* profile) {
   DCHECK(IsPartOfBrandTrialToEnable());
-  UMA_HISTOGRAM_ENUMERATION("SyncPromo.ShownPromoWithBrand",
-                            GetSyncPromoBrandUMABucketFromGroup(),
-                            SYNC_PROMO_AND_DEFAULT_APPS_BOUNDARY);
+  if (is_at_startup) {
+    DCHECK(SyncPromoUI::HasShownPromoAtStartup(profile));
+    UMA_HISTOGRAM_ENUMERATION("SyncPromo.ShownPromoWithBrandAtStartup",
+                              GetSyncPromoBrandUMABucketFromGroup(),
+                              SYNC_PROMO_AND_DEFAULT_APPS_BOUNDARY);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("SyncPromo.ShownPromoWithBrand",
+                              GetSyncPromoBrandUMABucketFromGroup(),
+                              SYNC_PROMO_AND_DEFAULT_APPS_BOUNDARY);
+  }
 }
 
 void RecordUserSignedIn() {
@@ -154,11 +162,18 @@ void RecordUserSignedIn() {
                             PROMO_MSG_MAX);
 }
 
-void RecordUserSignedInWithTrialBrand() {
+void RecordUserSignedInWithTrialBrand(bool is_at_startup, Profile* profile) {
   DCHECK(IsPartOfBrandTrialToEnable());
-  UMA_HISTOGRAM_ENUMERATION("SyncPromo.SignedInWithBrand",
-                            GetSyncPromoBrandUMABucketFromGroup(),
-                            SYNC_PROMO_AND_DEFAULT_APPS_BOUNDARY);
+  if (is_at_startup) {
+    DCHECK(SyncPromoUI::HasShownPromoAtStartup(profile));
+    UMA_HISTOGRAM_ENUMERATION("SyncPromo.SignedInWithBrandAtStartup",
+                              GetSyncPromoBrandUMABucketFromGroup(),
+                              SYNC_PROMO_AND_DEFAULT_APPS_BOUNDARY);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("SyncPromo.SignedInWithBrand",
+                              GetSyncPromoBrandUMABucketFromGroup(),
+                              SYNC_PROMO_AND_DEFAULT_APPS_BOUNDARY);
+  }
 }
 
 bool ShouldShowAtStartupBasedOnBrand() {

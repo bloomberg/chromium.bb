@@ -57,13 +57,6 @@ static bool IsValidUserFlowAction(int action) {
          action == SYNC_PROMO_LEFT_DURING_THROBBER;
 }
 
-static void RecordExperimentOutcomesOnSignIn() {
-  if (sync_promo_trial::IsExperimentActive())
-    sync_promo_trial::RecordUserSignedIn();
-  if (sync_promo_trial::IsPartOfBrandTrialToEnable())
-    sync_promo_trial::RecordUserSignedInWithTrialBrand();
-}
-
 }  // namespace
 
 SyncPromoHandler::SyncPromoHandler(ProfileManager* profile_manager)
@@ -285,6 +278,17 @@ int SyncPromoHandler::IncrementViewCountBy(size_t amount) {
   int adjusted = GetViewCount() + amount;
   prefs_->SetInteger(prefs::kSyncPromoViewCount, adjusted);
   return adjusted;
+}
+
+void SyncPromoHandler::RecordExperimentOutcomesOnSignIn() {
+  if (sync_promo_trial::IsExperimentActive())
+    sync_promo_trial::RecordUserSignedIn();
+  if (sync_promo_trial::IsPartOfBrandTrialToEnable()) {
+    bool is_start_up = SyncPromoUI::GetIsLaunchPageForSyncPromoURL(
+        web_ui_->tab_contents()->GetURL());
+    Profile* profile = Profile::FromWebUI(web_ui_);
+    sync_promo_trial::RecordUserSignedInWithTrialBrand(is_start_up, profile);
+  }
 }
 
 void SyncPromoHandler::RecordUserFlowAction(int action) {

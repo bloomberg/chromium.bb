@@ -7,6 +7,8 @@
 
 #include "base/basictypes.h"
 
+class Profile;
+
 // These helpers manage the Sync Promo field trial.
 //
 // The sync promo experiment involves changing the message body in the sign in
@@ -66,7 +68,7 @@ namespace sync_promo_trial {
 
   // Record that a user was shown the promo when tagged with an experimental
   // brand code.
-  void RecordUserShownPromoWithTrialBrand();
+  void RecordUserShownPromoWithTrialBrand(bool is_at_startup, Profile* profile);
 
   // Record the appropriate UMA stat for when a user successfully signs in to
   // GAIA.
@@ -74,7 +76,7 @@ namespace sync_promo_trial {
 
   // Record that a user signed in while tagged with a brand code currently being
   // used in a field trial.
-  void RecordUserSignedInWithTrialBrand();
+  void RecordUserSignedInWithTrialBrand(bool is_at_startup, Profile* profile);
 
   // If we've been tagged with any of the experimental brands to show the sync
   // promo.

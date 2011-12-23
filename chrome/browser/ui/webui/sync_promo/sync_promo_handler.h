@@ -72,11 +72,12 @@ class SyncPromoHandler : public SyncSetupHandler {
   // amount. Returns the new total view count.
   int IncrementViewCountBy(size_t amount);
 
+  // Record the outcome of the sync promo experiment (currently if the user
+  // signs in to sync or not).
+  void RecordExperimentOutcomesOnSignIn();
+
   // Record a user's flow through the promo to our histogram in UMA.
   void RecordUserFlowAction(int action);
-
-  // Load any experiments that run on the promo page.
-  void LoadPromoExperiments();
 
   // Use this to register for certain notifications (currently when tabs or
   // windows close).

@@ -30,6 +30,9 @@ class SyncPromoUI : public ChromeWebUI {
   // of the number of times we've displayed it.
   static void DidShowSyncPromoAtStartup(Profile* profile);
 
+  // Returns true if a user has seen the sync promo at startup previously.
+  static bool HasShownPromoAtStartup(Profile* profile);
+
   // Returns true if the user has previously skipped the sync promo.
   static bool HasUserSkippedSyncPromo(Profile* profile);
 
