@@ -4,27 +4,59 @@
 
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "base/logging.h"
+#include "base/debug/trace_event.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
 namespace gpu {
 namespace gles2 {
 
+static uint32 BytesPerPixel(GLenum format) {
+  switch (format) {
+    case GL_STENCIL_INDEX8:
+      return 1;
+    case GL_RGBA4:
+    case GL_RGB565:
+    case GL_RGB5_A1:
+    case GL_DEPTH_COMPONENT16:
+      return 2;
+    case GL_DEPTH24_STENCIL8:
+    case GL_RGB8_OES:
+    case GL_RGBA8_OES:
+    case GL_DEPTH_COMPONENT24:
+      return 4;
+    default:
+      return 0;
+  }
+}
+
 RenderbufferManager::RenderbufferManager(
     GLint max_renderbuffer_size, GLint max_samples)
     : max_renderbuffer_size_(max_renderbuffer_size),
       max_samples_(max_samples),
-      num_uncleared_renderbuffers_(0)  {
+      num_uncleared_renderbuffers_(0),
+      mem_represented_(0) {
+  UpdateMemRepresented();
 }
 
 RenderbufferManager::~RenderbufferManager() {
   DCHECK(renderbuffer_infos_.empty());
 }
 
+uint32 RenderbufferManager::RenderbufferInfo::EstimatedSize() {
+  return width_ * height_ * samples_ * BytesPerPixel(internal_format_);
+}
+
+void RenderbufferManager::UpdateMemRepresented() {
+  TRACE_COUNTER_ID1(
+      "RenderbufferManager", "RenderbufferMemory", this, mem_represented_);
+}
+
 void RenderbufferManager::Destroy(bool have_context) {
   while (!renderbuffer_infos_.empty()) {
+    RenderbufferInfo* info = renderbuffer_infos_.begin()->second;
+    mem_represented_ -= info->EstimatedSize();
     if (have_context) {
-      RenderbufferInfo* info = renderbuffer_infos_.begin()->second;
       if (!info->IsDeleted()) {
         GLuint service_id = info->service_id();
         glDeleteRenderbuffersEXT(1, &service_id);
@@ -33,6 +65,8 @@ void RenderbufferManager::Destroy(bool have_context) {
     }
     renderbuffer_infos_.erase(renderbuffer_infos_.begin());
   }
+  DCHECK_EQ(0u, mem_represented_);
+  UpdateMemRepresented();
 }
 
 void RenderbufferManager::SetInfo(
@@ -42,7 +76,10 @@ void RenderbufferManager::SetInfo(
   if (!renderbuffer->cleared()) {
     --num_uncleared_renderbuffers_;
   }
+  mem_represented_ -= renderbuffer->EstimatedSize();
   renderbuffer->SetInfo(samples, internalformat, width, height);
+  mem_represented_ += renderbuffer->EstimatedSize();
+  UpdateMemRepresented();
   if (!renderbuffer->cleared()) {
     ++num_uncleared_renderbuffers_;
   }
@@ -83,6 +120,8 @@ void RenderbufferManager::RemoveRenderbufferInfo(GLuint client_id) {
     if (!info->cleared()) {
       --num_uncleared_renderbuffers_;
     }
+    mem_represented_ -= info->EstimatedSize();
+    UpdateMemRepresented();
     info->MarkAsDeleted();
     renderbuffer_infos_.erase(it);
   }

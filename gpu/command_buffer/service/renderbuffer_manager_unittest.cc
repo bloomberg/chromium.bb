@@ -103,10 +103,11 @@ TEST_F(RenderbufferManagerTest, RenderbufferInfo) {
   EXPECT_EQ(0, info1->width());
   EXPECT_EQ(0, info1->height());
   EXPECT_TRUE(info1->cleared());
+  EXPECT_EQ(0u, info1->EstimatedSize());
 
   // Check if we set the info it gets marked as not cleared.
   const GLsizei kSamples = 4;
-  const GLenum kFormat = GL_RGBA;
+  const GLenum kFormat = GL_RGBA4;
   const GLsizei kWidth = 128;
   const GLsizei kHeight = 64;
   manager_.SetInfo(info1, kSamples, kFormat, kWidth, kHeight);
@@ -117,6 +118,7 @@ TEST_F(RenderbufferManagerTest, RenderbufferInfo) {
   EXPECT_FALSE(info1->cleared());
   EXPECT_FALSE(info1->IsDeleted());
   EXPECT_TRUE(manager_.HaveUnclearedRenderbuffers());
+  EXPECT_EQ(kWidth * kHeight * 4u * 2u, info1->EstimatedSize());
 
   manager_.SetCleared(info1);
   EXPECT_TRUE(info1->cleared());

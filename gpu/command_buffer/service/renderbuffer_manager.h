@@ -69,6 +69,8 @@ class RenderbufferManager {
       return has_been_bound_ && !IsDeleted();
     }
 
+    uint32 EstimatedSize();
+
    private:
     friend class RenderbufferManager;
     friend class base::RefCounted<RenderbufferInfo>;
@@ -149,10 +151,14 @@ class RenderbufferManager {
   bool GetClientId(GLuint service_id, GLuint* client_id) const;
 
  private:
+  void UpdateMemRepresented();
+
   GLint max_renderbuffer_size_;
   GLint max_samples_;
 
   int num_uncleared_renderbuffers_;
+
+  uint32 mem_represented_;
 
   // Info for each renderbuffer in the system.
   typedef base::hash_map<GLuint, RenderbufferInfo::Ref> RenderbufferInfoMap;
