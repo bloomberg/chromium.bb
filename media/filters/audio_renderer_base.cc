@@ -195,6 +195,7 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
   // FillBuffer().
   base::TimeDelta last_fill_buffer_time;
   size_t dest_written = 0;
+  base::Closure underflow_cb;
   {
     base::AutoLock auto_lock(lock_);
 
@@ -237,7 +238,7 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
         }
       } else if (state_ == kPlaying && !recieved_end_of_stream_) {
         state_ = kUnderflow;
-        underflow_callback_.Run();
+        underflow_cb = underflow_callback_;
       }
     } else {
       // Otherwise fill the buffer.
@@ -261,6 +262,9 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
     last_fill_buffer_time -= playback_delay;
     host()->SetTime(last_fill_buffer_time);
   }
+
+  if (!underflow_cb.is_null())
+    underflow_cb.Run();
 
   return dest_written;
 }

@@ -172,6 +172,10 @@ class AudioRendererBaseTest : public ::testing::Test {
     return buffer_capacity() - bytes_buffered();
   }
 
+  void CallResumeAfterUnderflow() {
+    renderer_->ResumeAfterUnderflow(false);
+  }
+
   // Fixture members.
   scoped_refptr<MockAudioRendererBase> renderer_;
   scoped_refptr<MockAudioDecoder> decoder_;
@@ -318,6 +322,35 @@ TEST_F(AudioRendererBaseTest, Underflow_EndOfStream) {
   DeliverEndOfStream();
   EXPECT_CALL(host_, NotifyEnded());
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, &muted));
+  EXPECT_FALSE(muted);
+}
+
+TEST_F(AudioRendererBaseTest, Underflow_ResumeFromCallback) {
+  Initialize();
+  Preroll();
+  Play();
+
+  // Drain internal buffer, we should have a pending read.
+  EXPECT_CALL(*decoder_, Read(_));
+  EXPECT_TRUE(ConsumeBufferedData(bytes_buffered(), NULL));
+
+  // Verify the next FillBuffer() call triggers the underflow callback
+  // since the decoder hasn't delivered any data after it was drained.
+  const size_t kDataSize = 1024;
+  EXPECT_CALL(*this, OnUnderflow())
+      .WillOnce(Invoke(this, &AudioRendererBaseTest::CallResumeAfterUnderflow));
+  EXPECT_FALSE(ConsumeBufferedData(kDataSize, NULL));
+
+  // Verify after resuming that we're still not getting data.
+  bool muted = false;
+  EXPECT_EQ(0u, bytes_buffered());
+  EXPECT_TRUE(ConsumeBufferedData(kDataSize, &muted));
+  EXPECT_TRUE(muted);
+
+  // Deliver data, we should get non-muted audio.
+  DeliverRemainingAudio();
+  EXPECT_CALL(*decoder_, Read(_));
+  EXPECT_TRUE(ConsumeBufferedData(kDataSize, &muted));
   EXPECT_FALSE(muted);
 }
 
