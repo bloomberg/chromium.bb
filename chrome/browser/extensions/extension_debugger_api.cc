@@ -27,6 +27,7 @@
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -204,7 +205,10 @@ void ExtensionDevToolsClientHost::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_EXTENSION_UNLOADED);
-  Close();
+  std::string id =
+      content::Details<UnloadedExtensionInfo>(details)->extension->id();
+  if (id == extension_id_)
+      Close();
 }
 
 void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
