@@ -276,6 +276,7 @@ void KeyUtilityClientImpl::StartUtilityProcessInternal() {
   client_ = new KeyUtilityClientImpl::Client(this);
   utility_process_host_ = new UtilityProcessHost(
       client_.get(), BrowserThread::IO);
+  utility_process_host_->set_use_linux_zygote(true);
   utility_process_host_->StartBatchMode();
   state_ = STATE_INITIALIZED;
   waitable_event_.Signal();

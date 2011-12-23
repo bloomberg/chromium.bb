@@ -99,6 +99,7 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     utility_process_host_ =
         new UtilityProcessHost(this, BrowserThread::IO);
+    utility_process_host_->set_use_linux_zygote(true);
     utility_process_host_->StartBatchMode();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             MessageLoop::QuitClosure());
