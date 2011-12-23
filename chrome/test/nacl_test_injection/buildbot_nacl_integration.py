@@ -47,6 +47,8 @@ def Main(args):
     tests_to_disable.append('run_pm_redir_stderr_bg_0_chrome_browser_test')
     tests_to_disable.append('run_pm_redir_stderr_bg_1000_chrome_browser_test')
     tests_to_disable.append('run_pm_redir_stderr_bg_1000000_chrome_browser_test')
+    # http://code.google.com/p/nativeclient/issues/detail?id=2511
+    tests_to_disable.append('run_ppapi_ppb_image_data_browser_test')
     # TODO(cdn): Reenable once we can pass
     # --disable-extensions-resource-whitelist to chrome for this test.
     # http://code.google.com/p/nativeclient/issues/detail?id=108131
