@@ -18,6 +18,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/test/compositor_test_support.h"
+#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -117,6 +118,10 @@ int main(int argc, char** argv) {
   // Create the message-loop here before creating the root window.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
   ui::CompositorTestSupport::Initialize();
+
+  // A ViewsDelegate is required.
+  if (!views::ViewsDelegate::views_delegate)
+    views::ViewsDelegate::views_delegate = new views::TestViewsDelegate;
 
   aura_shell::Shell::CreateInstance(new ShellDelegateImpl);
 

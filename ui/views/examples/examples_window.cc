@@ -34,7 +34,6 @@
 #include "ui/views/examples/widget_example.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/widget/widget.h"
 
 #if !defined(USE_AURA)
