@@ -22,6 +22,7 @@ extern const char kOnDetach[];
 
 // Errors.
 extern const char kAlreadyAttachedError[];
+extern const char kAttachToWebUIError[];
 extern const char kDebuggerExecuteFailedError[];
 extern const char kNoTabError[];
 extern const char kNotAttachedError[];

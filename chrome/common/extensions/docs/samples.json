@@ -1309,7 +1309,7 @@
         "background.html",
         "manifest.json"
       ],
-      "source_hash": "cd60498d3e2f00b369dc88df7d635247bab915e8",
+      "source_hash": "1451d74f3201ea8248e36e691892da2d83ac1d7a",
       "zip_path": "examples\/api\/debugger\/pause-resume.zip"
     },
     {
@@ -1377,7 +1377,7 @@
         "headers.html",
         "manifest.json"
       ],
-      "source_hash": "cb4f53521f2c2be1ede59fae34457c30da87129c",
+      "source_hash": "e27257a1987bc368490e1aeead33a85e72e16ed9",
       "zip_path": "examples\/api\/debugger\/live-headers.zip"
     },
     {

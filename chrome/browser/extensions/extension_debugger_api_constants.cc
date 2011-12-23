@@ -16,6 +16,8 @@ const char kOnDetach[] = "experimental.debugger.onDetach";
 
 const char kAlreadyAttachedError[] =
     "Another debugger is already attached to the tab with id: *.";
+const char kAttachToWebUIError[] =
+    "Can not attach to the page with the \"*://\" scheme.";
 const char kDebuggerExecuteFailedError[] = "Execute debugger failed.";
 const char kNoTabError[] = "No tab with given id *.";
 const char kNotAttachedError[] =

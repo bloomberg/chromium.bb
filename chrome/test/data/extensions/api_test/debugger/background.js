@@ -81,5 +81,15 @@ chrome.test.runTests([
         chrome.tabs.remove(tab.id);
       });
     });
+  },
+
+  function attachToWebUI() {
+    chrome.tabs.create({url:"chrome://version"}, function(tab) {
+      var debuggee = {tabId: tab.id};
+      chrome.experimental.debugger.attach(debuggee, protocolVersion,
+          fail("Can not attach to the page with the \"chrome://\" scheme."));
+      chrome.tabs.remove(tab.id);
+    });
   }
+
 ]);

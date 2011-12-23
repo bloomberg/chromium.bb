@@ -35,7 +35,7 @@ function actionClicked(tab) {
 
 function onAttach(debuggeeId) {
   if (chrome.extension.lastError) {
-    alert("Another debugger is already attached to this tab.");
+    alert(chrome.extension.lastError.message);
     return;
   }
 
