@@ -21,6 +21,8 @@ class SyncEntity;
 
 namespace browser_sync {
 
+class Cryptographer;
+
 // A syncer command for processing updates.
 //
 // Preconditions - updates in the SyncerSesssion have been downloaded
@@ -45,6 +47,7 @@ class ProcessUpdatesCommand : public ModelChangingSyncerCommand {
   ServerUpdateProcessingResult ProcessUpdate(
       const syncable::ScopedDirLookup& dir,
       const sync_pb::SyncEntity& proto_update,
+      const Cryptographer* cryptographer,
       syncable::WriteTransaction* const trans);
   DISALLOW_COPY_AND_ASSIGN(ProcessUpdatesCommand);
 };

@@ -256,21 +256,19 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
       client1_windows.GetMutable()));
 
   // At this point we enter the passphrase, triggering a resync, in which the
-  // local changes of client 1 get overwritten for now.
+  // local changes of client 1 get sent to client 0.
   GetClient(1)->service()->SetPassphrase(kValidPassphrase, true);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(1)->WaitForTypeEncryption(syncable::SESSIONS));
+  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
   ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
       num_conflicting_updates);
 
   ASSERT_TRUE(IsEncrypted(0, syncable::SESSIONS));
   ASSERT_TRUE(IsEncrypted(1, syncable::SESSIONS));
-  // The session data from client 1 got overwritten. As a result, client 0
-  // should have no foreign session data. TODO(zea): update this once bug 76596
-  // is resolved and we don't choose server wins on encryption conflicts.
   SyncedSessionVector sessions0;
   SyncedSessionVector sessions1;
-  ASSERT_FALSE(GetSessionData(0, &sessions0));
+  ASSERT_TRUE(GetSessionData(0, &sessions0));
   ASSERT_FALSE(GetSessionData(1, &sessions1));
 }
 

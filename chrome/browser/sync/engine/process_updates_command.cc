@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/util/cryptographer.h"
 
 using std::vector;
 
@@ -54,7 +55,9 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
 
     if (it->first != VERIFY_SUCCESS && it->first != VERIFY_UNDELETE)
       continue;
-    switch (ProcessUpdate(dir, update, &trans)) {
+    switch (ProcessUpdate(dir, update,
+        session->context()->directory_manager()->GetCryptographer(&trans),
+        &trans)) {
       case SUCCESS_PROCESSED:
       case SUCCESS_STORED:
         break;
@@ -91,6 +94,7 @@ bool ReverifyEntry(syncable::WriteTransaction* trans, const SyncEntity& entry,
 ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
     const syncable::ScopedDirLookup& dir,
     const sync_pb::SyncEntity& proto_update,
+    const Cryptographer* cryptographer,
     syncable::WriteTransaction* const trans) {
 
   const SyncEntity& update = *static_cast<const SyncEntity*>(&proto_update);
@@ -142,6 +146,39 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
     }
     // Force application of this update, no matter what.
     target_entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
+  }
+
+  // If this is a newly received undecryptable update, and the only thing that
+  // has changed are the specifics, store the original decryptable specifics,
+  // (on which any current or future local changes are based) before we
+  // overwrite SERVER_SPECIFICS.
+  // MTIME, CTIME, and NON_UNIQUE_NAME are not enforced.
+  if (!update.deleted() && !target_entry.Get(syncable::SERVER_IS_DEL) &&
+      (update.parent_id() == target_entry.Get(syncable::SERVER_PARENT_ID)) &&
+      (update.position_in_parent() ==
+          target_entry.Get(syncable::SERVER_POSITION_IN_PARENT)) &&
+      update.has_specifics() && update.specifics().has_encrypted() &&
+      !cryptographer->CanDecrypt(update.specifics().encrypted())) {
+    sync_pb::EntitySpecifics prev_specifics =
+        target_entry.Get(syncable::SERVER_SPECIFICS);
+    // We only store the old specifics if they were decryptable and applied and
+    // there is no BASE_SERVER_SPECIFICS already. Else do nothing.
+    if (!target_entry.Get(syncable::IS_UNAPPLIED_UPDATE) &&
+        !syncable::IsRealDataType(syncable::GetModelTypeFromSpecifics(
+            target_entry.Get(syncable::BASE_SERVER_SPECIFICS))) &&
+        (!prev_specifics.has_encrypted() ||
+         cryptographer->CanDecrypt(prev_specifics.encrypted()))) {
+      DVLOG(2) << "Storing previous server specifcs: "
+               << prev_specifics.SerializeAsString();
+      target_entry.Put(syncable::BASE_SERVER_SPECIFICS, prev_specifics);
+    }
+  } else if (syncable::IsRealDataType(syncable::GetModelTypeFromSpecifics(
+                 target_entry.Get(syncable::BASE_SERVER_SPECIFICS)))) {
+    // We have a BASE_SERVER_SPECIFICS, but a subsequent non-specifics-only
+    // change arrived. As a result, we can't use the specifics alone to detect
+    // changes, so we clear BASE_SERVER_SPECIFICS.
+    target_entry.Put(syncable::BASE_SERVER_SPECIFICS,
+                     sync_pb::EntitySpecifics());
   }
 
   SyncerUtil::UpdateServerFieldsFromUpdate(&target_entry, update, name);

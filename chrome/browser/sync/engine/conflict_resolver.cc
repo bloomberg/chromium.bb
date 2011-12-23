@@ -24,7 +24,9 @@ using std::set;
 using syncable::BaseTransaction;
 using syncable::Directory;
 using syncable::Entry;
+using syncable::GetModelTypeFromSpecifics;
 using syncable::Id;
+using syncable::IsRealDataType;
 using syncable::MutableEntry;
 using syncable::ScopedDirLookup;
 using syncable::WriteTransaction;
@@ -38,17 +40,6 @@ namespace {
 
 const int SYNC_CYCLES_BEFORE_ADMITTING_DEFEAT = 8;
 
-// Enumeration of different conflict resolutions. Used for histogramming.
-enum SimpleConflictResolutions {
-  OVERWRITE_LOCAL,           // Resolved by overwriting local changes.
-  OVERWRITE_SERVER,          // Resolved by overwriting server changes.
-  UNDELETE,                  // Resolved by undeleting local item.
-  IGNORE_ENCRYPTION,         // Resolved by ignoring an encryption-only server
-                             // change. TODO(zea): implement and use this.
-  NIGORI_MERGE,              // Resolved by merging nigori nodes.
-  CONFLICT_RESOLUTION_SIZE,
-};
-
 }  // namespace
 
 ConflictResolver::ConflictResolver() {
@@ -61,7 +52,6 @@ void ConflictResolver::IgnoreLocalChanges(MutableEntry* entry) {
   // An update matches local actions, merge the changes.
   // This is a little fishy because we don't actually merge them.
   // In the future we should do a 3-way merge.
-  DVLOG(1) << "Resolving conflict by ignoring local changes:" << entry;
   // With IS_UNSYNCED false, changes should be merged.
   entry->Put(syncable::IS_UNSYNCED, false);
 }
@@ -73,7 +63,6 @@ void ConflictResolver::OverwriteServerChanges(WriteTransaction* trans,
   // made our local client changes.
   // TODO(chron): This is really a general property clobber. We clobber
   // the server side property. Perhaps we should actually do property merging.
-  DVLOG(1) << "Resolving conflict by ignoring server changes:" << entry;
   entry->Put(syncable::BASE_VERSION, entry->Get(syncable::SERVER_VERSION));
   entry->Put(syncable::IS_UNAPPLIED_UPDATE, false);
 }
@@ -114,8 +103,30 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     return NO_SYNC_PROGRESS;
   }
 
+  // This logic determines "client wins" vs. "server wins" strategy picking.
+  // By the time we get to this point, we rely on the following to be true:
+  // a) We can decrypt both the local and server data (else we'd be in
+  //    conflict encryption and not attempting to resolve).
+  // b) All unsynced changes have been re-encrypted with the default key (
+  //    occurs either in AttemptToUpdateEntry, SetPassphrase, or
+  //    RefreshEncryption).
+  // c) Prev_server_specifics having a valid datatype means that we received
+  //    an undecryptable update that only changed specifics, and since then have
+  //    not received any further non-specifics-only or decryptable updates.
+  // d) If the server_specifics match specifics, server_specifics are
+  //    encrypted with the default key, and all other visible properties match,
+  //    then we can safely ignore the local changes as redundant.
+  // e) Otherwise if the base_server_specifics match the server_specifics, no
+  //    functional change must have been made server-side (else
+  //    base_server_specifics would have been cleared), and we can therefore
+  //    safely ignore the server changes as redundant.
+  // f) Otherwise, it's in general safer to ignore local changes, with the
+  //    exception of deletion conflicts (choose to undelete) and conflicts
+  //    where the non_unique_name or parent don't match.
+  // TODO(sync): We can't compare position here without performing the
+  // NEXT_ID/PREV_ID -> position_in_parent interpolation. Fix that, and take it
+  // into account.
   if (!entry.Get(syncable::SERVER_IS_DEL)) {
-    // This logic determines "client wins" vs. "server wins" strategy picking.
     // TODO(nick): The current logic is arbitrary; instead, it ought to be made
     // consistent with the ModelAssociator behavior for a datatype.  It would
     // be nice if we could route this back to ModelAssociator code to pick one
@@ -127,6 +138,49 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     bool parent_matches = entry.Get(syncable::PARENT_ID) ==
                                     entry.Get(syncable::SERVER_PARENT_ID);
     bool entry_deleted = entry.Get(syncable::IS_DEL);
+    const sync_pb::EntitySpecifics& specifics =
+        entry.Get(syncable::SPECIFICS);
+    const sync_pb::EntitySpecifics& server_specifics =
+        entry.Get(syncable::SERVER_SPECIFICS);
+    const sync_pb::EntitySpecifics& base_server_specifics =
+        entry.Get(syncable::BASE_SERVER_SPECIFICS);
+    std::string decrypted_specifics, decrypted_server_specifics;
+    bool specifics_match = false;
+    bool server_encrypted_with_default_key = false;
+    if (specifics.has_encrypted()) {
+      DCHECK(cryptographer->CanDecryptUsingDefaultKey(specifics.encrypted()));
+      decrypted_specifics = cryptographer->DecryptToString(
+          specifics.encrypted());
+    } else {
+      decrypted_specifics = specifics.SerializeAsString();
+    }
+    if (server_specifics.has_encrypted()) {
+      server_encrypted_with_default_key =
+          cryptographer->CanDecryptUsingDefaultKey(
+              server_specifics.encrypted());
+      decrypted_server_specifics = cryptographer->DecryptToString(
+          server_specifics.encrypted());
+    } else {
+      decrypted_server_specifics = server_specifics.SerializeAsString();
+    }
+    if (decrypted_server_specifics == decrypted_specifics &&
+        server_encrypted_with_default_key == specifics.has_encrypted()) {
+      specifics_match = true;
+    }
+    bool base_server_specifics_match = false;
+    if (server_specifics.has_encrypted() &&
+        IsRealDataType(GetModelTypeFromSpecifics(base_server_specifics))) {
+      std::string decrypted_base_server_specifics;
+      if (!base_server_specifics.has_encrypted()) {
+        decrypted_base_server_specifics =
+            base_server_specifics.SerializeAsString();
+      } else {
+        decrypted_base_server_specifics = cryptographer->DecryptToString(
+            base_server_specifics.encrypted());
+      }
+      if (decrypted_server_specifics == decrypted_base_server_specifics)
+          base_server_specifics_match = true;
+    }
 
     // We manually merge nigori data.
     if (entry.GetModelType() == syncable::NIGORI) {
@@ -154,6 +208,8 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
               .sync_tabs()) {
         nigori->set_sync_tabs(true);
       }
+      // We deliberately leave the server's device information. This client will
+      // add it's own device information on restart.
       entry.Put(syncable::SPECIFICS, specifics);
       DVLOG(1) << "Resovling simple conflict, merging nigori nodes: " << entry;
       status->increment_num_server_overwrites();
@@ -161,24 +217,47 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
       UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
                                 NIGORI_MERGE,
                                 CONFLICT_RESOLUTION_SIZE);
-    } else if (!entry_deleted && name_matches && parent_matches) {
-      // TODO(zea): We may prefer to choose the local changes over the server
-      // if we know the local changes happened before (or vice versa).
-      // See http://crbug.com/76596
-      DVLOG(1) << "Resolving simple conflict, ignoring local changes for:"
+    } else if (!entry_deleted && name_matches && parent_matches &&
+               specifics_match) {
+      DVLOG(1) << "Resolving simple conflict, everything matches, ignoring "
+               << "changes for: " << entry;
+      // This unsets both IS_UNSYNCED and IS_UNAPPLIED_UPDATE, and sets the
+      // BASE_VERSION to match the SERVER_VERSION. If we didn't also unset
+      // IS_UNAPPLIED_UPDATE, then we would lose unsynced positional data
+      // when the server update gets applied and the item is re-inserted into
+      // the PREV_ID/NEXT_ID linked list (see above TODO about comparing
+      // positional info).
+      OverwriteServerChanges(trans, &entry);
+      IgnoreLocalChanges(&entry);
+      UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
+                                CHANGES_MATCH,
+                                CONFLICT_RESOLUTION_SIZE);
+    } else if (base_server_specifics_match) {
+      DVLOG(1) << "Resolving simple conflict, ignoring server encryption "
+               << " changes for: " << entry;
+      status->increment_num_server_overwrites();
+      OverwriteServerChanges(trans, &entry);
+      UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
+                                IGNORE_ENCRYPTION,
+                                CONFLICT_RESOLUTION_SIZE);
+      // Now that we've resolved the conflict, clear the prev server
+      // specifics.
+      entry.Put(syncable::BASE_SERVER_SPECIFICS, sync_pb::EntitySpecifics());
+    } else if (entry_deleted || !name_matches || !parent_matches) {
+      OverwriteServerChanges(trans, &entry);
+      status->increment_num_server_overwrites();
+      DVLOG(1) << "Resolving simple conflict, overwriting server changes "
+               << "for: " << entry;
+      UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
+                                OVERWRITE_SERVER,
+                                CONFLICT_RESOLUTION_SIZE);
+    } else {
+      DVLOG(1) << "Resolving simple conflict, ignoring local changes for: "
                << entry;
       IgnoreLocalChanges(&entry);
       status->increment_num_local_overwrites();
       UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
                                 OVERWRITE_LOCAL,
-                                CONFLICT_RESOLUTION_SIZE);
-    } else {
-      DVLOG(1) << "Resolving simple conflict, overwriting server changes for:"
-               << entry;
-      OverwriteServerChanges(trans, &entry);
-      status->increment_num_server_overwrites();
-      UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
-                                OVERWRITE_SERVER,
                                 CONFLICT_RESOLUTION_SIZE);
     }
     return SYNC_PROGRESS;
@@ -205,6 +284,8 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
           "when server-deleted.";
       OverwriteServerChanges(trans, &entry);
       status->increment_num_server_overwrites();
+      DVLOG(1) << "Resolving simple conflict, undeleting server entry: "
+               << entry;
       UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
                                 OVERWRITE_SERVER,
                                 CONFLICT_RESOLUTION_SIZE);

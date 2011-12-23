@@ -42,7 +42,7 @@ static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
 extern const int32 kCurrentDBVersion;  // Global visibility for our unittest.
-const int32 kCurrentDBVersion = 77;
+const int32 kCurrentDBVersion = 78;
 
 namespace {
 
@@ -474,6 +474,12 @@ DirOpenResult DirectoryBackingStore::InitializeTables() {
   if (version_on_disk == 76) {
     if (MigrateVersion76To77())
       version_on_disk = 77;
+  }
+
+  // Version 78 added the column base_server_specifics to the metas table.
+  if (version_on_disk == 77) {
+    if (MigrateVersion77To78())
+      version_on_disk = 78;
   }
 
   // If one of the migrations requested it, drop columns that aren't current.
@@ -1115,6 +1121,17 @@ bool DirectoryBackingStore::MigrateVersion76To77() {
   if (update_timestamps.step() != SQLITE_DONE)
     return false;
   SetVersion(77);
+  return true;
+}
+
+bool DirectoryBackingStore::MigrateVersion77To78() {
+  // Version 78 added one column to table 'metas': base_server_specifics.
+  int result =
+      ExecQuery(load_dbhandle_,
+                "ALTER TABLE metas ADD COLUMN base_server_specifics BLOB");
+  if (result != SQLITE_DONE)
+    return false;
+  SetVersion(78);
   return true;
 }
 

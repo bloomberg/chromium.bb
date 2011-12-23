@@ -135,11 +135,12 @@ const char* GetStringFieldString(StringField string_field) {
 }
 
 const char* GetProtoFieldString(ProtoField proto_field) {
-  ASSERT_ENUM_BOUNDS(SPECIFICS, SERVER_SPECIFICS,
+  ASSERT_ENUM_BOUNDS(SPECIFICS, BASE_SERVER_SPECIFICS,
                      PROTO_FIELDS_BEGIN, PROTO_FIELDS_END - 1);
   switch (proto_field) {
     ENUM_CASE(SPECIFICS);
     ENUM_CASE(SERVER_SPECIFICS);
+    ENUM_CASE(BASE_SERVER_SPECIFICS);
     case PROTO_FIELDS_END: break;
   }
   NOTREACHED();

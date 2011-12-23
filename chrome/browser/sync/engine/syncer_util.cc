@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/location.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
+#include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/util/time.h"
 
 using syncable::BASE_VERSION;
@@ -33,6 +35,7 @@ using syncable::CREATE_NEW_UPDATE_ITEM;
 using syncable::CTIME;
 using syncable::Directory;
 using syncable::Entry;
+using syncable::GetModelTypeFromSpecifics;
 using syncable::GET_BY_HANDLE;
 using syncable::GET_BY_ID;
 using syncable::ID;
@@ -41,11 +44,13 @@ using syncable::IS_DIR;
 using syncable::IS_UNAPPLIED_UPDATE;
 using syncable::IS_UNSYNCED;
 using syncable::Id;
+using syncable::IsRealDataType;
 using syncable::META_HANDLE;
 using syncable::MTIME;
 using syncable::MutableEntry;
 using syncable::NEXT_ID;
 using syncable::NON_UNIQUE_NAME;
+using syncable::BASE_SERVER_SPECIFICS;
 using syncable::PARENT_ID;
 using syncable::PREV_ID;
 using syncable::ReadTransaction;
@@ -301,6 +306,33 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     }
   }
 
+  // Only apply updates that we can decrypt. If we can't decrypt the update, it
+  // is likely because the passphrase has not arrived yet. Because the
+  // passphrase may not arrive within this GetUpdates, we can't just return
+  // conflict, else we try to perform normal conflict resolution prematurely or
+  // the syncer may get stuck. As such, we return CONFLICT_ENCRYPTION, which is
+  // treated as a non-blocking conflict. See the description in syncer_types.h.
+  // This prevents any unsynced changes from commiting and postpones conflict
+  // resolution until all data can be decrypted.
+  if (specifics.has_encrypted() &&
+      !cryptographer->CanDecrypt(specifics.encrypted())) {
+    // We can't decrypt this node yet.
+    DVLOG(1) << "Received an undecryptable "
+             << syncable::ModelTypeToString(entry->GetServerModelType())
+             << " update, returning encryption_conflict.";
+    return CONFLICT_ENCRYPTION;
+  } else if (specifics.HasExtension(sync_pb::password) &&
+             entry->Get(UNIQUE_SERVER_TAG).empty()) {
+    // Passwords use their own legacy encryption scheme.
+    const sync_pb::PasswordSpecifics& password =
+        specifics.GetExtension(sync_pb::password);
+    if (!cryptographer->CanDecrypt(password.encrypted())) {
+      DVLOG(1) << "Received an undecryptable password update, returning "
+               << "encryption_conflict.";
+      return CONFLICT_ENCRYPTION;
+    }
+  }
+
   if (entry->Get(IS_UNSYNCED)) {
     DVLOG(1) << "Skipping update, returning conflict for: " << id
              << " ; it's unsynced.";
@@ -336,39 +368,14 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     }
   }
 
-  // Only apply updates that we can decrypt. If we can't decrypt the update, it
-  // is likely because the passphrase has not arrived yet. Because the
-  // passphrase may not arrive within this GetUpdates, we can't just return
-  // conflict, else the syncer gets stuck. As such, we return
-  // CONFLICT_ENCRYPTION, which is treated as a non-blocking conflict. See the
-  // description in syncer_types.h.
-  if (specifics.has_encrypted() &&
-      !cryptographer->CanDecrypt(specifics.encrypted())) {
-    // We can't decrypt this node yet.
-    DVLOG(1) << "Received an undecryptable "
+  if (specifics.has_encrypted()) {
+    DVLOG(2) << "Received a decryptable "
              << syncable::ModelTypeToString(entry->GetServerModelType())
-             << " update, returning encryption_conflict.";
-    return CONFLICT_ENCRYPTION;
-  } else if (specifics.HasExtension(sync_pb::password) &&
-             entry->Get(UNIQUE_SERVER_TAG).empty()) {
-    // Passwords use their own legacy encryption scheme.
-    const sync_pb::PasswordSpecifics& password =
-        specifics.GetExtension(sync_pb::password);
-    if (!cryptographer->CanDecrypt(password.encrypted())) {
-      DVLOG(1) << "Received an undecryptable password update, returning "
-               << "encryption_conflict.";
-      return CONFLICT_ENCRYPTION;
-    }
+             << " update, applying normally.";
   } else {
-    if (specifics.has_encrypted()) {
-      DVLOG(2) << "Received a decryptable "
-               << syncable::ModelTypeToString(entry->GetServerModelType())
-               << " update, applying normally.";
-    } else {
-      DVLOG(2) << "Received an unencrypted "
-               << syncable::ModelTypeToString(entry->GetServerModelType())
-               << " update, applying normally.";
-    }
+    DVLOG(2) << "Received an unencrypted "
+             << syncable::ModelTypeToString(entry->GetServerModelType())
+             << " update, applying normally.";
   }
 
   SyncerUtil::UpdateLocalDataFromServerData(trans, entry);
@@ -475,7 +482,7 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
 // static
 void SyncerUtil::CreateNewEntry(syncable::WriteTransaction *trans,
                                 const syncable::Id& id) {
-  syncable::MutableEntry entry(trans, syncable::GET_BY_ID, id);
+  syncable::MutableEntry entry(trans, GET_BY_ID, id);
   if (!entry.good()) {
     syncable::MutableEntry new_entry(trans, syncable::CREATE_NEW_UPDATE_ITEM,
                                      id);
@@ -510,6 +517,8 @@ void SyncerUtil::UpdateLocalDataFromServerData(
   DVLOG(2) << "Updating entry : " << *entry;
   // Start by setting the properties that determine the model_type.
   entry->Put(SPECIFICS, entry->Get(SERVER_SPECIFICS));
+  // Clear the previous server specifics now that we're applying successfully.
+  entry->Put(BASE_SERVER_SPECIFICS, sync_pb::EntitySpecifics());
   entry->Put(IS_DIR, entry->Get(SERVER_IS_DIR));
   // This strange dance around the IS_DEL flag avoids problems when setting
   // the name.

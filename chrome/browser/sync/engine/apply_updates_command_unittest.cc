@@ -20,6 +20,7 @@
 #include "chrome/browser/sync/test/engine/fake_model_worker.h"
 #include "chrome/browser/sync/test/engine/syncer_command_test.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
+#include "chrome/browser/sync/util/cryptographer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {

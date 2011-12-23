@@ -178,6 +178,7 @@ enum {
 enum ProtoField {
   SPECIFICS = PROTO_FIELDS_BEGIN,
   SERVER_SPECIFICS,
+  BASE_SERVER_SPECIFICS,
   PROTO_FIELDS_END,
 };
 
@@ -739,7 +740,6 @@ struct Index {
 // be held before acquiring the kernel lock.
 class ScopedKernelLock;
 class IdFilter;
-class DirectoryManager;
 
 class Directory {
   friend class BaseTransaction;

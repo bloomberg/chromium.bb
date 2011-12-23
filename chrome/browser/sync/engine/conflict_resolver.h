@@ -39,6 +39,19 @@ class ConflictResolver {
   FRIEND_TEST_ALL_PREFIXES(SyncerTest,
                            ConflictResolverMergeOverwritesLocalEntry);
  public:
+  // Enumeration of different conflict resolutions. Used for histogramming.
+  enum SimpleConflictResolutions {
+    OVERWRITE_LOCAL,           // Resolved by overwriting local changes.
+    OVERWRITE_SERVER,          // Resolved by overwriting server changes.
+    UNDELETE,                  // Resolved by undeleting local item.
+    IGNORE_ENCRYPTION,         // Resolved by ignoring an encryption-only server
+                               // change.
+    NIGORI_MERGE,              // Resolved by merging nigori nodes.
+    CHANGES_MATCH,             // Resolved by ignoring both local and server
+                               // changes because they matched.
+    CONFLICT_RESOLUTION_SIZE,
+  };
+
   ConflictResolver();
   ~ConflictResolver();
   // Called by the syncer at the end of a update/commit cycle.

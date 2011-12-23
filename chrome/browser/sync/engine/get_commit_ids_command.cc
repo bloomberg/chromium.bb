@@ -87,7 +87,6 @@ bool IsEntryReadyForCommit(syncable::ModelTypeSet encrypted_types,
     // The local and server versions don't match. The item must be in
     // conflict, so there's no point in attempting to commit.
     DCHECK(entry.Get(syncable::IS_UNAPPLIED_UPDATE));  // In conflict.
-    // TODO(zea): switch this to DVLOG once it's clear bug 100660 is fixed.
     DVLOG(1) << "Excluding entry from commit due to version mismatch "
              << entry;
     return false;
@@ -104,7 +103,6 @@ bool IsEntryReadyForCommit(syncable::ModelTypeSet encrypted_types,
     // This entry requires encryption but is not properly encrypted (possibly
     // due to the cryptographer not being initialized or the user hasn't
     // provided the most recent passphrase).
-    // TODO(zea): switch this to DVLOG once it's clear bug 100660 is fixed.
     DVLOG(1) << "Excluding entry from commit due to lack of encryption "
              << entry;
     return false;

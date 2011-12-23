@@ -53,6 +53,7 @@ class MigrationTest : public testing::TestWithParam<int> {
   void SetUpVersion74Database();
   void SetUpVersion75Database();
   void SetUpVersion76Database();
+  void SetUpVersion77Database();
 
   void SetUpCurrentDatabaseAndCheckVersion() {
     SetUpVersion70Database();  // Prepopulates data.
@@ -206,12 +207,18 @@ class DirectoryBackingStoreTest : public MigrationTest {};
 // functions.
 #define LEGACY_META_PROTO_TIMES(x) LEGACY_META_PROTO_TIMES_##x
 #define LEGACY_META_PROTO_TIMES_STR(x) LEGACY_META_PROTO_TIMES_STR_##x
-#define META_PROTO_TIMES(x) META_PROTO_TIMES_##x
 #define LEGACY_PROTO_TIME_VALS(x)    \
   LEGACY_META_PROTO_TIMES_STR(x) "," \
   LEGACY_META_PROTO_TIMES_STR(x) "," \
   LEGACY_META_PROTO_TIMES_STR(x) "," \
   LEGACY_META_PROTO_TIMES_STR(x)
+#define META_PROTO_TIMES(x) META_PROTO_TIMES_##x
+#define META_PROTO_TIMES_STR(x) META_PROTO_TIMES_STR_##x
+#define META_PROTO_TIMES_VALS(x)    \
+  META_PROTO_TIMES_STR(x) "," \
+  META_PROTO_TIMES_STR(x) "," \
+  META_PROTO_TIMES_STR(x) "," \
+  META_PROTO_TIMES_STR(x)
 
 namespace {
 
@@ -1434,6 +1441,98 @@ void MigrationTest::SetUpVersion76Database() {
   ASSERT_TRUE(connection.CommitTransaction());
 }
 
+void MigrationTest::SetUpVersion77Database() {
+  sql::Connection connection;
+  ASSERT_TRUE(connection.Open(GetDatabasePath()));
+  ASSERT_TRUE(connection.BeginTransaction());
+  ASSERT_TRUE(connection.Execute(
+      "CREATE TABLE share_version (id VARCHAR(128) primary key, data INT);"
+      "INSERT INTO 'share_version' VALUES('nick@chromium.org',77);"
+      "CREATE TABLE models (model_id BLOB primary key, progress_marker BLOB, in"
+          "itial_sync_ended BOOLEAN default 0);"
+      "INSERT INTO 'models' VALUES(X'C2881000',X'0888810218B605',1);"
+      "CREATE TABLE 'metas'(metahandle bigint primary key ON CONFLICT FAIL,base"
+          "_version bigint default -1,server_version bigint default 0,server_po"
+          "sition_in_parent bigint default 0,local_external_id bigint default 0"
+          ",mtime bigint default 0,server_mtime bigint default 0,ctime bigint d"
+          "efault 0,server_ctime bigint default 0,id varchar(255) default 'r',p"
+          "arent_id varchar(255) default 'r',server_parent_id varchar(255) defa"
+          "ult 'r',prev_id varchar(255) default 'r',next_id varchar(255) defaul"
+          "t 'r',is_unsynced bit default 0,is_unapplied_update bit default 0,is"
+          "_del bit default 0,is_dir bit default 0,server_is_dir bit default 0,"
+          "server_is_del bit default 0,non_unique_name varchar,server_non_uniqu"
+          "e_name varchar(255),unique_server_tag varchar,unique_client_tag varc"
+          "har,specifics blob,server_specifics blob);"
+      "INSERT INTO 'metas' VALUES(1,-1,0,0,0," META_PROTO_TIMES_VALS(1)
+          ",'r','r','r','r','r',0,0,0,1,0,0,NULL,NULL,NULL,NULL,X'',X'');"
+      "INSERT INTO 'metas' VALUES(2,669,669,-2097152,4,"
+          META_PROTO_TIMES_VALS(2) ",'s_ID_2','s_ID_9','s_ID_9','s_ID_2','s_ID_"
+          "2',0,0,1,0,0,1,'Deleted Item','Deleted Item',NULL,NULL,X'C28810220A1"
+          "6687474703A2F2F7777772E676F6F676C652E636F6D2F12084141534741534741',X"
+          "'C28810260A17687474703A2F2F7777772E676F6F676C652E636F6D2F32120B41534"
+          "14447414447414447');"
+      "INSERT INTO 'metas' VALUES(4,681,681,-3145728,3,"
+          META_PROTO_TIMES_VALS(4) ",'s_ID_4','s_ID_9','s_ID_9','s_ID_4','s_ID_"
+          "4',0,0,1,0,0,1,'Welcome to Chromium','Welcome to Chromium',NULL,NULL"
+          ",X'C28810350A31687474703A2F2F7777772E676F6F676C652E636F6D2F6368726F6"
+          "D652F696E746C2F656E2F77656C636F6D652E68746D6C1200',X'C28810350A31687"
+          "474703A2F2F7777772E676F6F676C652E636F6D2F6368726F6D652F696E746C2F656"
+          "E2F77656C636F6D652E68746D6C1200');"
+      "INSERT INTO 'metas' VALUES(5,677,677,1048576,7," META_PROTO_TIMES_VALS(5)
+          ",'s_ID_5','s_ID_9','s_ID_9','s_ID_5','s_ID_5',0,0,1,0,0,1,'Google','"
+          "Google',NULL,NULL,X'C28810220A16687474703A2F2F7777772E676F6F676C652E"
+          "636F6D2F12084147415347415347',X'C28810220A16687474703A2F2F7777772E67"
+          "6F6F676C652E636F6D2F12084147464447415347');"
+      "INSERT INTO 'metas' VALUES(6,694,694,-4194304,6,"
+          META_PROTO_TIMES_VALS(6) ",'s_ID_6','s_ID_9','s_ID_9','r','r',0,0,0,1"
+          ",1,0,'The Internet','The Internet',NULL,NULL,X'C2881000',X'C2881000'"
+          ");"
+      "INSERT INTO 'metas' VALUES(7,663,663,1048576,0," META_PROTO_TIMES_VALS(7)
+          ",'s_ID_7','r','r','r','r',0,0,0,1,1,0,'Google Chrome','Goo"
+          "gle Chrome','google_chrome',NULL,NULL,NULL);"
+      "INSERT INTO 'metas' VALUES(8,664,664,1048576,0," META_PROTO_TIMES_VALS(8)
+          ",'s_ID_8','s_ID_7','s_ID_7','r','r',0,0,0,1,1,0,'Bookmarks','Bookmar"
+          "ks','google_chrome_bookmarks',NULL,X'C2881000',X'C2881000');"
+      "INSERT INTO 'metas' VALUES(9,665,665,1048576,1," META_PROTO_TIMES_VALS(9)
+          ",'s_ID_9','s_ID_8','s_ID_8','r','s_ID_10',0,0,0,1,1,0,'Bookmark Bar'"
+          ",'Bookmark Bar','bookmark_bar',NULL,X'C2881000',X'C2881000');"
+      "INSERT INTO 'metas' VALUES(10,666,666,2097152,2,"
+          META_PROTO_TIMES_VALS(10) ",'s_ID_10','s_ID_8','s_ID_8','s_ID_9','r',"
+          "0,0,0,1,1,0,'Other Bookmarks','Other Bookmarks','other_bookmarks',NU"
+          "LL,X'C2881000',X'C2881000');"
+      "INSERT INTO 'metas' VALUES(11,683,683,-1048576,8,"
+          META_PROTO_TIMES_VALS(11) ",'s_ID_11','s_ID_6','s_ID_6','r','s_ID_13'"
+          ",0,0,0,0,0,0,'Home (The Chromium Projects)','Home (The Chromium Proj"
+          "ects)',NULL,NULL,X'C28810220A18687474703A2F2F6465762E6368726F6D69756"
+          "D2E6F72672F1206414741545741',X'C28810290A1D687474703A2F2F6465762E636"
+          "8726F6D69756D2E6F72672F6F7468657212084146414756415346');"
+      "INSERT INTO 'metas' VALUES(12,685,685,0,9," META_PROTO_TIMES_VALS(12)
+          ",'s_ID_12','s_ID_6','s_"
+          "ID_6','s_ID_13','s_ID_14',0,0,0,1,1,0,'Extra Bookmarks','Extra Bookm"
+          "arks',NULL,NULL,X'C2881000',X'C2881000');"
+      "INSERT INTO 'metas' VALUES(13,687,687,-917504,10,"
+          META_PROTO_TIMES_VALS(13) ",'s_ID_13','s_ID_6','s_ID_6','s_ID_11','s_"
+          "ID_12',0,0,0,0,0,0,'ICANN | Internet Corporation for Assigned Names "
+          "and Numbers','ICANN | Internet Corporation for Assigned Names and Nu"
+          "mbers',NULL,NULL,X'C28810240A15687474703A2F2F7777772E6963616E6E2E636"
+          "F6D2F120B504E474158463041414646',X'C28810200A15687474703A2F2F7777772"
+          "E6963616E6E2E636F6D2F120744414146415346');"
+      "INSERT INTO 'metas' VALUES(14,692,692,1048576,11,"
+          META_PROTO_TIMES_VALS(14) ",'s_ID_14','s_ID_6','s_ID_6','s_ID_12','r'"
+          ",0,0,0,0,0,0,'The WebKit Open Source Project','The WebKit Open Sourc"
+          "e Project',NULL,NULL,X'C288101A0A12687474703A2F2F7765626B69742E6F726"
+          "72F1204504E4758',X'C288101C0A13687474703A2F2F7765626B69742E6F72672F7"
+          "81205504E473259');"
+      "CREATE TABLE 'share_info' (id TEXT primary key, name TEXT, store_birthda"
+          "y TEXT, db_create_version TEXT, db_create_time INT, next_id INT defa"
+          "ult -2, cache_guid TEXT , notification_state BLOB);"
+      "INSERT INTO 'share_info' VALUES('nick@chromium.org','nick@chromium.org',"
+          "'c27e9f59-08ca-46f8-b0cc-f16a2ed778bb','Unknown',1263522064,-65542,'"
+          "9010788312004066376x-6609234393368420856x',NULL);"
+      ));
+  ASSERT_TRUE(connection.CommitTransaction());
+}
+
 TEST_F(DirectoryBackingStoreTest, MigrateVersion67To68) {
   SetUpVersion67Database();
 
@@ -1732,25 +1831,10 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion75To76) {
   ASSERT_FALSE(dbs->needs_column_refresh_);
   ASSERT_TRUE(dbs->MigrateVersion75To76());
   ASSERT_EQ(76, dbs->GetVersion());
-  ASSERT_TRUE(dbs->needs_column_refresh_);
-  dbs->RefreshColumns();
   dbs->EndLoad();
-
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
-  ASSERT_FALSE(
-      connection.DoesColumnExist("share_info", "autofill_migration_state"));
-  ASSERT_FALSE(
-      connection.DoesColumnExist("share_info",
-          "bookmarks_added_during_autofill_migration"));
-  ASSERT_FALSE(
-      connection.DoesColumnExist("share_info", "autofill_migration_time"));
-  ASSERT_FALSE(
-      connection.DoesColumnExist("share_info",
-          "autofill_entries_added_during_migration"));
-  ASSERT_FALSE(
-      connection.DoesColumnExist("share_info",
-          "autofill_profiles_added_during_migration"));
+  ASSERT_TRUE(dbs->needs_column_refresh_);
+  // Cannot actual refresh columns due to version 76 not containing all
+  // necessary columns.
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion76To77) {
@@ -1763,25 +1847,42 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion76To77) {
 
   EXPECT_EQ(GetExpectedLegacyMetaProtoTimes(),
             GetMetaProtoTimes(dbs->load_dbhandle_));
-  // Since we the proto times are expected to be in a legacy format,
-  // they may not be compatible with ProtoTimeToTime, so we don't call
-  // ExpectTimes().
+  // Since the proto times are expected to be in a legacy format, they may not
+  // be compatible with ProtoTimeToTime, so we don't call ExpectTimes().
 
   ASSERT_TRUE(dbs->MigrateVersion76To77());
   ASSERT_EQ(77, dbs->GetVersion());
 
   EXPECT_EQ(GetExpectedMetaProtoTimes(),
             GetMetaProtoTimes(dbs->load_dbhandle_));
-
-  {
-    MetahandlesIndex index;
-    STLElementDeleter<MetahandlesIndex> index_deleter(&index);
-    dbs->LoadEntries(&index);
-    ExpectTimes(index, GetExpectedMetaTimes());
-  }
-
+  // Cannot actually load entries due to version 77 not having all required
+  // columns.
   dbs->EndLoad();
   ASSERT_FALSE(dbs->needs_column_refresh_);
+}
+
+TEST_F(DirectoryBackingStoreTest, MigrateVersion77To78) {
+  SetUpVersion77Database();
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_FALSE(
+        connection.DoesColumnExist("metas", "BASE_SERVER_SPECIFICS"));
+  }
+
+  scoped_ptr<DirectoryBackingStore> dbs(
+      new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
+  dbs->BeginLoad();
+  ASSERT_FALSE(dbs->needs_column_refresh_);
+  ASSERT_TRUE(dbs->MigrateVersion77To78());
+  ASSERT_EQ(78, dbs->GetVersion());
+  dbs->EndLoad();
+  ASSERT_FALSE(dbs->needs_column_refresh_);
+
+  sql::Connection connection;
+  ASSERT_TRUE(connection.Open(GetDatabasePath()));
+  ASSERT_TRUE(
+      connection.DoesColumnExist("metas", "base_server_specifics"));
 }
 
 TEST_P(MigrationTest, ToCurrentVersion) {
@@ -1815,6 +1916,9 @@ TEST_P(MigrationTest, ToCurrentVersion) {
       break;
     case 76:
       SetUpVersion76Database();
+      break;
+    case 77:
+      SetUpVersion77Database();
       break;
     default:
       // If you see this error, it may mean that you've increased the
@@ -1893,6 +1997,9 @@ TEST_P(MigrationTest, ToCurrentVersion) {
           "autofill_entries_added_during_migration"));
     ASSERT_FALSE(connection.DoesColumnExist("share_info",
           "autofill_profiles_added_during_migration"));
+
+    // Column added in version 78
+    ASSERT_TRUE(connection.DoesColumnExist("metas", "base_server_specifics"));
   }
   {
     syncable::Directory::KernelLoadInfo dir_info;

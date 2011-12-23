@@ -57,6 +57,7 @@ static const ColumnSpec g_metas_columns[] = {
   // Blobs.
   {"specifics", "blob"},
   {"server_specifics", "blob"},
+  {"base_server_specifics", "blob"}
 };
 
 // At least enforce that there are equal number of column names and fields.
