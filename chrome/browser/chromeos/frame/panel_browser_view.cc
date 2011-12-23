@@ -107,7 +107,10 @@ void PanelBrowserView::SetCreatorView(PanelBrowserView* creator) {
 
 WindowOpenDisposition PanelBrowserView::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
-  return chromeos::BrowserView::DispositionForPopupBounds(bounds);
+  GdkScreen* screen = gdk_screen_get_default();
+  int width = gdk_screen_get_width(screen);
+  int height = gdk_screen_get_height(screen);
+  return browser::DispositionForPopupBounds(bounds, width, height);
 }
 
 bool PanelBrowserView::GetSavedWindowPlacement(
