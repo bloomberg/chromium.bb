@@ -12,6 +12,8 @@ import os
 import re
 import shutil
 import tempfile
+import itertools
+import operator
 
 from chromite.lib import cros_build_lib as cros_lib
 
@@ -26,9 +28,12 @@ def _RunCommand(cmd, dryrun):
     cros_lib.RunCommand(cmd, error_ok=True)
 
 
-class PatchException(Exception):
+class GerritException(Exception):
+  "Base exception, thrown for gerrit failures"""
+
+
+class PatchException(GerritException):
   """Exception thrown by GetGerritPatchInfo."""
-  pass
 
 
 class ApplyPatchException(Exception):
@@ -455,6 +460,128 @@ class LocalPatch(Patch):
     return '%s:%s' % (self.project, self.local_branch)
 
 
+def _QueryGerrit(server, port, or_parameters, sort=None, options=()):
+  """Freeform querying of a gerrit server
+
+  Args:
+   server: the hostname to query
+   port: the port to query
+   or_parameters: sequence of gerrit query chunks that are OR'd together
+   sort: if given, the key in the resultant json to sort on
+   options: any additional commandline options to pass to gerrit query
+
+  Returns:
+   a sequence of dictionaries from the gerrit server
+  Raises:
+   RunCommandException if the invocation fails, or GerritException if
+   there is something wrong w/ the query parameters given
+  """
+
+  cmd = ['ssh', '-p', port, server, 'gerrit', 'query', '--format=JSON']
+  cmd.extend(options)
+  cmd.extend(['--', ' OR '.join(or_parameters)])
+
+  result = cros_lib.RunCommand(cmd, redirect_stdout=True)
+  result = map(json.loads, result.output.splitlines())
+
+  status = result[-1]
+  if 'type' not in status:
+    raise GerritException('weird results from gerrit: asked %s, got %s' %
+      (or_parameters, result))
+
+  if status['type'] != 'stats':
+    raise GerritException('bad gerrit query: parameters %s, error %s' %
+      (or_parameters, status.get('message', status)))
+
+  result = result[:-1]
+
+  if sort:
+    return sorted(result, key=operator.itemgetter(sort))
+  return result
+
+
+def _QueryGerritMultipleCurrentPatchset(queries, internal=False):
+  """Query chromeos gerrit servers for the current patch for given changes
+
+  Args:
+   queries: sequence of Change-IDs (Ic04g2ab, 6 characters to 40),
+     or change numbers (12345 for example).
+     A change number can refer to the same change as a Change ID,
+     but Change IDs given should be unique, and the same goes for Change
+     Numbers.
+   internal: optional boolean; if the internal servers are to be queried,
+     set to True.  Defaults to False.
+
+  Returns:
+   an unordered sequence of GerritPatches for each requested query.
+
+  Raises:
+   GerritException: if a query fails to match, or isn't specific enough,
+    or a query is malformed.
+   RunCommandException: if for whatever reason, the ssh invocation to
+    gerrit fails.
+  """
+
+  if not queries:
+    return
+
+  if internal:
+    server, port = constants.GERRIT_INT_HOST, constants.GERRIT_INT_PORT
+  else:
+    server, port = constants.GERRIT_HOST, constants.GERRIT_PORT
+
+  # process the queries in two seperate streams; this is done so that
+  # we can identify exactly which patchset returned no results; it's
+  # basically impossible to do it if you query with mixed numeric/ID
+
+  numeric_queries = [x for x in queries if x.isdigit()]
+
+  if numeric_queries:
+    results = _QueryGerrit(server, port,
+                           ['change:%s' % x for x in numeric_queries],
+                           sort='number', options=('--current-patch-set',))
+
+    for query, result in itertools.izip_longest(numeric_queries, results):
+      if result is None or result['number'] != query:
+        raise PatchException('Change number %s not found on server %s.'
+                             % (query, server))
+
+      yield query, GerritPatch(result, internal)
+
+  id_queries = sorted(x.lower() for x in queries if not x.isdigit())
+
+  if not id_queries:
+    return
+
+  results = _QueryGerrit(server, port, ['change:%s' % x for x in id_queries],
+                        sort='id', options=('--current-patch-set',))
+
+  last_patch_id = None
+  for query, result in itertools.izip_longest(id_queries, results):
+
+    # case insensitivity to ensure that if someone queries for IABC
+    # and gerrit returns Iabc, we still properly match.
+    result_id = result.get('id', '') if result is not None else ''
+    result_id = result_id.lower()
+
+    if result is None or (query and not result_id.startswith(query)):
+      if last_patch_id and result_id.startswith(last_patch_id):
+        raise PatchException('While querying for change %s, we received '
+          'back multiple results.  Please be more specific.  Server=%s'
+          % (last_patch_id, server))
+
+      raise PatchException('Change-ID %s not found on server %s.'
+                           % (query, server))
+
+    if query is None:
+        raise PatchException('While querying for change %s, we received '
+          'back multiple results.  Please be more specific.  Server=%s'
+          % (last_patch_id, server))
+
+    yield query, GerritPatch(result, internal)
+    last_patch_id = query
+
+
 def GetGerritPatchInfo(patches):
   """Query Gerrit server for patch information.
 
@@ -462,34 +589,42 @@ def GetGerritPatchInfo(patches):
     patches: a list of patch ID's to query.  Internal patches start with a '*'.
 
   Returns:
-    A list of GerritPatch objects describing each patch.
+    A list of GerritPatch objects describing each patch.  Only the first
+    instance of a requested patch is returned.
 
   Raises:
     PatchException if a patch can't be found.
   """
-  parsed_patches = []
-  for patch in patches:
-    if patch.startswith('*'):
-      # Internal CL's have a '*' in front
-      internal = True
-      server, port = constants.GERRIT_INT_HOST, constants.GERRIT_INT_PORT
-      patch = patch[1:]
-    else:
-      internal = False
-      server, port = constants.GERRIT_HOST, constants.GERRIT_PORT
+  parsed_patches = {}
+  internal_patches = [x for x in patches if x.startswith('*')]
+  external_patches = [x for x in patches if not x.startswith('*')]
 
-    cmd = ['ssh', '-p', port, server, 'gerrit', 'query', '--current-patch-set',
-           '--format=JSON', patch]
+  if internal_patches:
+    # feed it id's w/ * stripped off, but bind them back
+    # so that we can return patches in the supplied ordering
+    # while this may seem silly; we do this to preclude the potential
+    # of a conflict between gerrit instances; since change-id is
+    # effectively user controlled, better safe than sorry.
+    raw_ids = [x[1:] for x in internal_patches]
+    parsed_patches.update(('*' + k, v) for k,v in
+        _QueryGerritMultipleCurrentPatchset(raw_ids, True))
 
-    result = cros_lib.RunCommand(cmd, redirect_stdout=True)
-    result_dict = json.loads(result.output.splitlines()[0])
-    if 'id' in result_dict:
-      parsed_patches.append(GerritPatch(result_dict, internal))
-    else:
-      raise PatchException('Change-ID %s not found on server %s.'
-                           % (patch, server))
+  if external_patches:
+    parsed_patches.update(
+        _QueryGerritMultipleCurrentPatchset(external_patches))
 
-  return parsed_patches
+  seen = set()
+  results = []
+  for query in patches:
+    # return a unique list, while maintaining the ordering of the first
+    # seen instance of each patch.  Do this to ensure whatever ordering
+    # the user is trying to enforce, we honor; lest it break on cherry-picking
+    gpatch = parsed_patches[query.lower()]
+    if gpatch.id not in seen:
+      results.append(gpatch)
+      seen.add(gpatch.id)
+
+  return results
 
 
 def _GetRemoteTrackingBranch(project_dir, branch):

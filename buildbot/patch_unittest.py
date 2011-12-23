@@ -25,7 +25,7 @@ class GerritQueryTests(mox.MoxTestBase):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
-    result = ('{"project":"chromiumos/chromite","branch":"master","id":'
+    raw_json = ('{"project":"chromiumos/chromite","branch":"master","id":'
              '"Icb8e1d315d465a077ffcddd7d1ab2307573017d5","number":"2144",'
              '"subject":"Add functionality to cbuildbot to patch in a set '
              'of Gerrit CL\u0027s","owner":{"name":"Ryan Cui","email":'
@@ -35,15 +35,17 @@ class GerritQueryTests(mox.MoxTestBase):
              '"NEW","currentPatchSet":{"number":"3",'
              '"revision":"b1c82d0f1c916b7f66cfece625d67fb5ecea9ea7","ref":'
              '"refs/changes/44/2144/3","uploader":{"name":"Ryan Cui","email":'
-             '"rcui@chromium.org"}}}\n'
-             '{"type":"stats","rowCount":1,"runTimeMilliseconds":4}')
+             '"rcui@chromium.org"}}}')
 
-    self.result = result
+    self.raw_json = raw_json
+    self.good_footer = \
+             '{"type":"stats","rowCount":1,"runTimeMilliseconds":4}'
+    self.result = raw_json + '\n' + self.good_footer
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
 
-  def testPatchInfoNotFound(self):
+  def testPatchNotFound1(self):
     """Test case where ChangeID isn't found on internal server."""
-    patches = ['1A3G2D1D2']
+    patches = ['Icb8e1d315d465a07']
 
     output_obj = cros_lib.CommandResult()
     output_obj.returncode = 0
@@ -55,48 +57,88 @@ class GerritQueryTests(mox.MoxTestBase):
 
     self.mox.ReplayAll()
 
-    self.assertRaises(cros_patch.PatchException, cros_patch.GetGerritPatchInfo,
+    self.assertRaises(cros_patch.GerritException, cros_patch.GetGerritPatchInfo,
                       patches)
     self.mox.VerifyAll()
 
-
-  def testGetInternalPatchInfo(self):
-    """Test case where ChangeID is for an internal CL."""
-    patches = ['*1A3G2D1D2']
-
+  def _test_missing(self, patches):
     output_obj = cros_lib.CommandResult()
     output_obj.returncode = 0
-    output_obj.output = self.result
-
-    cros_lib.RunCommand(mox.In('gerrit-int.chromium.org'),
-                        redirect_stdout=True).AndReturn(output_obj)
-
-    self.mox.ReplayAll()
-
-    patch_info = cros_patch.GetGerritPatchInfo(patches)
-    self.assertEquals(patch_info[0].internal, True)
-    self.mox.VerifyAll()
-
-  def testGetExternalPatchInfo(self):
-    """Test case where ChangeID is for an external CL."""
-    patches = ['1A3G2D1D2']
-
-    output_obj = cros_lib.CommandResult()
-    output_obj.returncode = 0
-    output_obj.output = self.result
-
+    output_obj.output = '%s\n%s\n%s' % \
+                        (self.raw_json, self.raw_json, self.good_footer)
     cros_lib.RunCommand(mox.In('gerrit.chromium.org'),
                         redirect_stdout=True).AndReturn(output_obj)
 
     self.mox.ReplayAll()
 
-    patch_info = cros_patch.GetGerritPatchInfo(patches)
-    self.assertEquals(patch_info[0].internal, False)
+    self.assertRaises(cros_patch.GerritException,
+                      cros_patch.GetGerritPatchInfo, patches)
+
     self.mox.VerifyAll()
+
+  def testLooseQuery(self):
+    """verify it complaints if an ID matches multiple"""
+    self._test_missing(['Icb8e1', 'ICeb8e1d'])
+
+  def testFirstNotFound(self):
+    """verify it complains if the previous ID didn't match, but second did"""
+    self._test_missing(['iab8e1d', 'iceb8e1d'])
+
+  def testLastNotFound(self):
+    """verify it complains if the last ID didn't match, but first did"""
+    self._test_missing(['icb8e1d', 'iceb8e1de'])
+
+  def testNumericFirstNotFound(self):
+    """verify it complains if the previous numeric didn't match, but second
+       did"""
+    self._test_missing(['2144', '21445'])
+
+  def testNumericLastNotFound(self):
+    """verify it complains if the last numeric didn't match, but first did"""
+    self._test_missing(['21445', '2144'])
+
+  def _common_test(self, patches, server='gerrit.chromium.org',
+    internal=False, calls_allowed=1):
+
+    output_obj = cros_lib.CommandResult()
+    output_obj.returncode = 0
+    output_obj.output = self.result
+
+    for x in xrange(calls_allowed):
+      cros_lib.RunCommand(mox.In(server),
+                          redirect_stdout=True).AndReturn(output_obj)
+
+    self.mox.ReplayAll()
+
+    patch_info = cros_patch.GetGerritPatchInfo(patches)
+    self.assertEquals(patch_info[0].internal, internal)
+    self.mox.VerifyAll()
+    return patch_info
+
+  def testInternalID(self):
+    self._common_test(['*Icb8e1d'], 'gerrit-int.chromium.org', True)
+
+  def testExternalID(self):
+    self._common_test(['Icb8e1d'])
+
+  def testExternalNumeric(self):
+    self._common_test(['2144'])
+
+  def testInternallNumeric(self):
+    self._common_test(['*2144'], 'gerrit-int.chromium.org', True)
+
+  def testInternalUnique(self):
+    self._common_test(['*2144', '*Icb8e1'], 'gerrit-int.chromium.org', True,
+                      calls_allowed=2)
+
+  def testExternalUnique(self):
+    """ensure that if two unique queries that point to the same cl, just one
+       patch is returned"""
+    self._common_test(['2144', 'Icb8e1'], calls_allowed=2)
 
   def testPatchInfoParsing(self):
     """Test parsing of the JSON results."""
-    patches = ['1A3G2D1D2']
+    patches = ['Icb8e1d315d465a07']
 
     output_obj = cros_lib.CommandResult()
     output_obj.returncode = 0
