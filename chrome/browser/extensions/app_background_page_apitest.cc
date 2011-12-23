@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoPagesWithManifest) {
 }
 
 // Times out occasionally -- see crbug.com/108493
-IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, FLAKY_OpenPopupFromBGPage) {
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenPopupFromBGPage) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
