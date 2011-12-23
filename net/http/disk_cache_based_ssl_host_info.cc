@@ -31,7 +31,7 @@ namespace net {
 // This is a hack. A better fix is to make it so that the disk_cache APIs
 // take a Callback to a mutator for setting the output value rather than
 // writing into a raw handle. Then the caller can just pass in a Callback
-// bound to WeakPtr for itself. This callback would correct "no-op" itself
+// bound to WeakPtr for itself. This callback would correctly "no-op" itself
 // when the DiskCacheBasedSSLHostInfo object is deleted.
 //
 // TODO(ajwong): Change disk_cache's API to return results via Callback.
@@ -111,8 +111,8 @@ std::string DiskCacheBasedSSLHostInfo::key() const {
   return "sslhostinfo:" + hostname_;
 }
 
-void DiskCacheBasedSSLHostInfo::OnIOComplete(
-    CacheOperationDataShim* unused, int rv) {
+void DiskCacheBasedSSLHostInfo::OnIOComplete(CacheOperationDataShim* unused,
+                                             int rv) {
   rv = DoLoop(rv);
   if (rv != ERR_IO_PENDING && !user_callback_.is_null()) {
     CompletionCallback callback = user_callback_;
@@ -171,7 +171,7 @@ int DiskCacheBasedSSLHostInfo::DoLoop(int rv) {
 
 int DiskCacheBasedSSLHostInfo::DoGetBackendComplete(int rv) {
   if (rv == OK) {
-    backend_ = data_shim_->backend,
+    backend_ = data_shim_->backend;
     state_ = OPEN;
   } else {
     state_ = WAIT_FOR_DATA_READY_DONE;
