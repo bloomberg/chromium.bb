@@ -25,6 +25,13 @@ void TestShellDelegate::RequestAppListWidget(
     const SetWidgetCallback& callback) {
 }
 
+void TestShellDelegate::BuildAppListModel(AppListModel* model) {
+}
+
+AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {
+  return NULL;
+}
+
 void TestShellDelegate::LauncherItemClicked(const LauncherItem& item) {
 }
 

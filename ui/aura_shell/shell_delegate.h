@@ -19,6 +19,8 @@ class Widget;
 
 namespace aura_shell {
 
+class AppListModel;
+class AppListViewDelegate;
 struct LauncherItem;
 
 // Delegate of the Shell.
@@ -39,9 +41,18 @@ class AURA_SHELL_EXPORT ShellDelegate {
 
   // Invoked to create app list widget. The Delegate calls the callback
   // when the widget is ready to show.
+  // Deprecated.
+  // TODO(xiyuan): Clean this up when switching to views app list.
   virtual void RequestAppListWidget(
       const gfx::Rect& bounds,
       const SetWidgetCallback& callback) = 0;
+
+  // Invoked to ask the delegate to populate the |model|.
+  virtual void BuildAppListModel(AppListModel* model) = 0;
+
+  // Invoked to create an AppListViewDelegate. Shell takes the ownership of
+  // the created delegate.
+  virtual AppListViewDelegate* CreateAppListViewDelegate() = 0;
 
   // Invoked when the user clicks on a window entry in the launcher.
   virtual void LauncherItemClicked(const LauncherItem& item) = 0;

@@ -6,6 +6,13 @@
 #define ASH_SHELL_EXAMPLE_FACTORY_H_
 #pragma once
 
+#include "ui/aura_shell/shell_delegate.h"
+
+namespace aura_shell {
+class AppListModel;
+class AppListViewDelegate;
+}
+
 namespace views {
 class View;
 }
@@ -19,6 +26,14 @@ void CreateLockScreen();
 
 // Creates a window showing samples of commonly used widgets.
 void CreateWidgetsWindow();
+
+void BuildAppListModel(aura_shell::AppListModel* model);
+
+aura_shell::AppListViewDelegate* CreateAppListViewDelegate();
+
+void CreateAppList(
+    const gfx::Rect& bounds,
+    const aura_shell::ShellDelegate::SetWidgetCallback& callback);
 
 }  // namespace shell
 }  // namespace ash

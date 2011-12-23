@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -24,34 +25,6 @@
 
 namespace {
 
-class AppListWindow : public views::WidgetDelegateView {
- public:
-  AppListWindow() {
-  }
-
-  // static
-  static views::Widget* Create(const gfx::Rect& bounds) {
-    AppListWindow* app_list = new AppListWindow;
-
-    views::Widget::InitParams widget_params(
-        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    widget_params.bounds = bounds;
-    widget_params.delegate = app_list;
-    widget_params.keep_on_top = true;
-    widget_params.transparent = true;
-
-    views::Widget* widget = new views::Widget;
-    widget->Init(widget_params);
-    widget->SetContentsView(app_list);
-    return widget;
-  }
-
-  // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRect(SkColorSetARGB(0x4F, 0xFF, 0, 0), bounds());
-  }
-};
-
 class ShellDelegateImpl : public aura_shell::ShellDelegate {
  public:
   ShellDelegateImpl() {
@@ -71,7 +44,19 @@ class ShellDelegateImpl : public aura_shell::ShellDelegate {
   virtual void RequestAppListWidget(
       const gfx::Rect& bounds,
       const SetWidgetCallback& callback) OVERRIDE {
-    callback.Run(AppListWindow::Create(bounds));
+    // TODO(xiyuan): Clean this up.
+    // The code below here is because we don't want to use
+    // --aura-views-applist. This function is deprecated and all code
+    // here will be removed when we clean it up.
+    ash::shell::CreateAppList(bounds, callback);
+  }
+
+  virtual void BuildAppListModel(aura_shell::AppListModel* model) {
+    ash::shell::BuildAppListModel(model);
+  }
+
+  virtual aura_shell::AppListViewDelegate* CreateAppListViewDelegate() {
+    return ash::shell::CreateAppListViewDelegate();
   }
 
   virtual void LauncherItemClicked(
