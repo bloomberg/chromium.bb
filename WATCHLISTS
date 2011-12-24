@@ -29,7 +29,7 @@
     },
     'aura': {
       'filepath': 'ui/aura/.*|'\
-                  'ui/aura_shell/.*',
+                  'ash/.*',
     },
     'views_core': {
       'filepath': 'ui/views/view.h|'\

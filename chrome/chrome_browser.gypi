@@ -4415,7 +4415,7 @@
           ],
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
-            '../ui/aura_shell/aura_shell.gyp:aura_shell',
+            '../ash/ash.gyp:ash',
             '../ui/gfx/compositor/compositor.gyp:compositor',
           ],
         }],
