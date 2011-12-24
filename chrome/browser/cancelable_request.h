@@ -18,9 +18,10 @@
 //
 //   class MyClass {
 //     void MakeRequest() {
-//       frontend_service->StartRequest(some_input1, some_input2,
+//       frontend_service->StartRequest(
+//           some_input1, some_input2,
 //           &callback_consumer_,
-//           NewCallback(this, &MyClass:RequestComplete));
+//           base::Bind(&MyClass:RequestComplete, base::Unretained(this)));
 //       // StartRequest() returns a Handle which may be retained for use with
 //       // CancelRequest() if required, e.g. in MyClass's destructor.
 //     }

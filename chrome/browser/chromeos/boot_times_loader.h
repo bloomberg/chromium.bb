@@ -62,7 +62,7 @@ class BootTimesLoader
   } BootTimes;
 
   // Signature
-  typedef Callback2<Handle, BootTimes>::Type GetBootTimesCallback;
+  typedef base::Callback<void(Handle, BootTimes)> GetBootTimesCallback;
 
   typedef CancelableRequest<GetBootTimesCallback> GetBootTimesRequest;
 
@@ -71,7 +71,7 @@ class BootTimesLoader
   // Asynchronously requests the info.
   Handle GetBootTimes(
       CancelableRequestConsumerBase* consumer,
-      GetBootTimesCallback* callback);
+      const GetBootTimesCallback& callback);
 
   // Add a time marker for login. A timeline will be dumped to
   // /tmp/login-times-sent after login is done. If |send_to_uma| is true

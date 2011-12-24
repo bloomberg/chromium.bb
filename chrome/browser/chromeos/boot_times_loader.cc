@@ -120,7 +120,7 @@ BootTimesLoader* BootTimesLoader::Get() {
 
 BootTimesLoader::Handle BootTimesLoader::GetBootTimes(
     CancelableRequestConsumerBase* consumer,
-    BootTimesLoader::GetBootTimesCallback* callback) {
+    const GetBootTimesCallback& callback) {
   if (!BrowserThread::IsMessageLoopValid(BrowserThread::FILE)) {
     // This should only happen if Chrome is shutting down, so we don't do
     // anything.
@@ -254,8 +254,7 @@ void BootTimesLoader::Backend::GetBootTimes(
 
   SendBootTimesToUMA(boot_times);
 
-  request->ForwardResult(
-      GetBootTimesCallback::TupleType(request->handle(), boot_times));
+  request->ForwardResult(request->handle(), boot_times);
 }
 
 // Appends the given buffer into the file. Returns the number of bytes

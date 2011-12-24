@@ -53,9 +53,9 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
             VersionLoader::VERSION_FULL);
     boot_times_loader_.GetBootTimes(
         &boot_times_consumer_,
-        NewCallback(this, is_official_build ?
-            &VersionInfoUpdater::OnBootTimesNoop :
-            &VersionInfoUpdater::OnBootTimes));
+        base::Bind(is_official_build ? &VersionInfoUpdater::OnBootTimesNoop :
+                                       &VersionInfoUpdater::OnBootTimes,
+                   base::Unretained(this)));
   } else {
     UpdateVersionLabel();
   }
