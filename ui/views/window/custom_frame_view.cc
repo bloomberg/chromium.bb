@@ -33,6 +33,7 @@ namespace views {
 gfx::Font* CustomFrameView::title_font_ = NULL;
 
 namespace {
+
 // The frame border is only visible in restored mode and is hardcoded to 4 px on
 // each side regardless of the system window border size.
 const int kFrameBorderThickness = 4;
@@ -61,7 +62,16 @@ const int kIconMinimumSize = 16;
 const int kIconTitleSpacing = 4;
 // There is a 5 px gap between the title text and the caption buttons.
 const int kTitleCaptionSpacing = 5;
-}
+
+#if defined(USE_AURA)
+const SkColor kDefaultColorFrame = SkColorSetRGB(109, 109, 109);
+const SkColor kDefaultColorFrameInactive = SkColorSetRGB(176, 176, 176);
+#else
+const SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
+const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
+#endif
+
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameView, public:
@@ -78,7 +88,7 @@ CustomFrameView::CustomFrameView(Widget* frame)
       frame_background_(new FrameBackground()) {
   InitClass();
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
@@ -314,7 +324,7 @@ gfx::Rect CustomFrameView::IconBounds() const {
 
 void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   // Window frame mode.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   frame_background_->set_frame_color(GetFrameColor());
   SkBitmap* frame_image = GetFrameBitmap();
@@ -347,7 +357,7 @@ void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 }
 
 void CustomFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   SkBitmap* frame_image = GetFrameBitmap();
   frame_background_->set_theme_bitmap(frame_image);
@@ -384,7 +394,7 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   gfx::Rect client_area_bounds = frame_->client_view()->bounds();
   int client_area_top = client_area_bounds.y();
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SkBitmap* top_left = rb.GetBitmapNamed(IDR_APP_TOP_LEFT);
   SkBitmap* top = rb.GetBitmapNamed(IDR_APP_TOP_CENTER);
   SkBitmap* top_right = rb.GetBitmapNamed(IDR_APP_TOP_RIGHT);
@@ -426,13 +436,11 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   // Draw the toolbar color to fill in the edges.
   canvas->DrawRect(gfx::Rect(client_area_bounds.x() - 1, client_area_top - 1,
       client_area_bounds.width() + 1, client_area_bottom - client_area_top + 1),
-      ResourceBundle::toolbar_color);
+      ui::ResourceBundle::toolbar_color);
 }
 
 SkColor CustomFrameView::GetFrameColor() const {
-  return frame_->IsActive() ?
-      ResourceBundle::frame_color :
-      ResourceBundle::frame_color_inactive;
+  return frame_->IsActive() ? kDefaultColorFrame : kDefaultColorFrameInactive;
 }
 
 SkBitmap* CustomFrameView::GetFrameBitmap() const {

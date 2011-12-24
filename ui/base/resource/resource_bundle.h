@@ -190,11 +190,6 @@ class UI_EXPORT ResourceBundle {
  public:
 #endif
 
-  // TODO(glen): Move these into theme provider (dialogs still depend on
-  //    ResourceBundle).
-  static const SkColor frame_color;
-  static const SkColor frame_color_inactive;
-
   // TODO(beng): These browser-specific concepts should move to ThemeProvider.
   static const SkColor toolbar_color;
   static const SkColor toolbar_separator_color;
