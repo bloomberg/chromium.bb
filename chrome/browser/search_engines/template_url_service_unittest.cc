@@ -500,9 +500,8 @@ TEST_F(TemplateURLServiceTest, GenerateSearchURLUsingTermsData) {
 
   test_util_.StartIOThread();
   BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)->PostTask(
-          FROM_HERE,
-          NewRunnableMethod(test_generate_search_url.get(),
-                            &TestGenerateSearchURL::RunTest));
+          FROM_HERE, base::Bind(&TestGenerateSearchURL::RunTest,
+                                test_generate_search_url.get()));
   TemplateURLServiceTestUtil::BlockTillIOThreadProcessesRequests();
   EXPECT_TRUE(test_generate_search_url->passed());
 }

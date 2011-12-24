@@ -356,8 +356,9 @@ void BootTimesLoader::LoginDone() {
   // Don't swamp the FILE thread right away.
   BrowserThread::PostDelayedTask(
       BrowserThread::FILE, FROM_HERE,
-      // This doesn't compile without std::string(...), as
-      // NewRunnableFunction doesn't accept arrays.
+      // This doesn't compile without std::string(...), as base::Bind doesn't
+      // accept arrays.
+      // TODO(jhawkins): Verify this is true for base::Bind.
       base::Bind(WriteTimes,
                  std::string(kLoginTimes),
                  std::string(kUmaLogin),

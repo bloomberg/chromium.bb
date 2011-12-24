@@ -48,8 +48,9 @@
 //       AddRequest(request, consumer);
 //
 //       // Send the parameters and the request to the backend thread.
-//       backend_thread_->PostTask(FROM_HERE,
-//           NewRunnableMethod(backend_, &Backend::DoRequest, request,
+//       backend_thread_->PostTask(
+//           FROM_HERE,
+//           base::Bind(&Backend::DoRequest, backend_, request,
 //                             some_input1, some_input2));
 //
 //       // The handle will have been set by AddRequest.
@@ -673,8 +674,9 @@ class CancelableRequest : public CancelableRequestBase {
         // We can do synchronous callbacks when we're on the same thread.
         ExecuteCallback(param);
       } else {
-        callback_thread_->PostTask(FROM_HERE, NewRunnableMethod(this,
-            &CancelableRequest<CB>::ExecuteCallback, param));
+        callback_thread_->PostTask(
+            FROM_HERE,
+            base::Bind(&CancelableRequest<CB>::ExecuteCallback, this, param));
       }
     }
   }
@@ -683,8 +685,9 @@ class CancelableRequest : public CancelableRequestBase {
   void ForwardResultAsync(const TupleType& param) {
     DCHECK(callback_.get());
     if (!canceled()) {
-      callback_thread_->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &CancelableRequest<CB>::ExecuteCallback, param));
+      callback_thread_->PostTask(
+          FROM_HERE,
+          base::Bind(&CancelableRequest<CB>::ExecuteCallback, this, param));
     }
   }
 

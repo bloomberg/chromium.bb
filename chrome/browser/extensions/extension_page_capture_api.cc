@@ -51,9 +51,9 @@ bool PageCaptureSaveAsMHTMLFunction::RunImpl() {
 
   AddRef();  // Balanced in ReturnFailure/ReturnSuccess()
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this,
-                        &PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile, this));
   return true;
 }
 
@@ -82,10 +82,10 @@ bool PageCaptureSaveAsMHTMLFunction::OnMessageReceivedFromRenderView(
 void PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   bool success = file_util::CreateTemporaryFile(&mhtml_path_);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-                        &PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated,
-                        success));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated, this,
+                 success));
 }
 
 void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated(bool success) {

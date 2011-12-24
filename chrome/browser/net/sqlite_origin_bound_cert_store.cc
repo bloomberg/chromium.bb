@@ -335,12 +335,12 @@ void SQLiteOriginBoundCertStore::Backend::BatchOperation(
     // We've gotten our first entry for this batch, fire off the timer.
     BrowserThread::PostDelayedTask(
         BrowserThread::DB, FROM_HERE,
-        NewRunnableMethod(this, &Backend::Commit), kCommitIntervalMs);
+        base::Bind(&Backend::Commit, this), kCommitIntervalMs);
   } else if (num_pending == kCommitAfterBatchSize) {
     // We've reached a big enough batch, fire off a commit now.
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        NewRunnableMethod(this, &Backend::Commit));
+        base::Bind(&Backend::Commit, this));
   }
 }
 
@@ -432,7 +432,7 @@ void SQLiteOriginBoundCertStore::Backend::Close() {
   // Must close the backend on the background thread.
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      NewRunnableMethod(this, &Backend::InternalBackgroundClose));
+      base::Bind(&Backend::InternalBackgroundClose, this));
 }
 
 void SQLiteOriginBoundCertStore::Backend::InternalBackgroundClose() {

@@ -221,9 +221,7 @@ bool HistoryFunctionWithCallback::RunImpl() {
 void HistoryFunctionWithCallback::SendAsyncResponse() {
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &HistoryFunctionWithCallback::SendResponseToCallback));
+      base::Bind(&HistoryFunctionWithCallback::SendResponseToCallback, this));
 }
 
 void HistoryFunctionWithCallback::SendResponseToCallback() {

@@ -258,9 +258,8 @@ void BurnManager::OnConfigFileDownloadedOnFileThread() {
   scoped_refptr<BurnManagerTaskProxy> task = new BurnManagerTaskProxy();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(task.get(),
-          &BurnManagerTaskProxy::ConfigFileFetched, success,
-          config_file_content));
+      base::Bind(&BurnManagerTaskProxy::ConfigFileFetched, task.get(), success,
+                 config_file_content));
 }
 
 void BurnManager::ModelChanged() {
@@ -403,9 +402,8 @@ void Downloader::DownloadFile(const GURL& url,
   scoped_refptr<DownloaderTaskProxy> task = new DownloaderTaskProxy();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(task.get(),
-          &DownloaderTaskProxy::CreateFileStream, url, file_path,
-              tab_contents));
+      base::Bind(&DownloaderTaskProxy::CreateFileStream, task.get(), url,
+                 file_path, tab_contents));
 }
 
 void Downloader::CreateFileStreamOnFileThread(
@@ -426,9 +424,8 @@ void Downloader::CreateFileStreamOnFileThread(
   // Call callback method on UI thread.
   BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(task.get(),
-            &DownloaderTaskProxy::OnFileStreamCreated,
-            url, file_path, tab_contents, file_stream.release()));
+        base::Bind(&DownloaderTaskProxy::OnFileStreamCreated, task.get(),
+                   url, file_path, tab_contents, file_stream.release()));
 }
 
 void Downloader::OnFileStreamCreatedOnUIThread(const GURL& url,

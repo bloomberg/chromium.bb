@@ -4,10 +4,10 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
-#include "base/task.h"
 #include "chrome/browser/download/download_test_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -107,10 +107,8 @@ void DownloadTestObserver::OnDownloadUpdated(content::DownloadItem* download) {
         // real UI would.
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            NewRunnableFunction(
-                &AcceptDangerousDownload,
-                download_manager_,
-                download->GetId()));
+            base::Bind(&AcceptDangerousDownload, download_manager_,
+                       download->GetId()));
         break;
 
       case ON_DANGEROUS_DOWNLOAD_DENY:
@@ -118,10 +116,8 @@ void DownloadTestObserver::OnDownloadUpdated(content::DownloadItem* download) {
         // real UI would.
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            NewRunnableFunction(
-                &DenyDangerousDownload,
-                download_manager_,
-                download->GetId()));
+            base::Bind(&DenyDangerousDownload, download_manager_,
+                       download->GetId()));
         break;
 
       case ON_DANGEROUS_DOWNLOAD_FAIL:
@@ -279,8 +275,7 @@ void DownloadTestFlushObserver::CheckDownloadsInProgress(
       // there's a self-task posting in the IO thread cancel path.
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(this,
-                            &DownloadTestFlushObserver::PingFileThread, 2));
+          base::Bind(&DownloadTestFlushObserver::PingFileThread, this, 2));
     }
   }
 }
@@ -288,16 +283,14 @@ void DownloadTestFlushObserver::CheckDownloadsInProgress(
 void DownloadTestFlushObserver::PingFileThread(int cycle) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &DownloadTestFlushObserver::PingIOThread,
-                        cycle));
+      base::Bind(&DownloadTestFlushObserver::PingIOThread, this, cycle));
 }
 
 void DownloadTestFlushObserver::PingIOThread(int cycle) {
   if (--cycle) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &DownloadTestFlushObserver::PingFileThread,
-                          cycle));
+        base::Bind(&DownloadTestFlushObserver::PingFileThread, this, cycle));
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());

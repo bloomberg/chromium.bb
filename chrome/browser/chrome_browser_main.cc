@@ -616,9 +616,9 @@ MetricsService* ChromeBrowserMainParts::SetupMetricsAndFieldTrials(
                        prefs::kMaxConnectionsPerProxy));
 
   // Initialize FieldTrialSynchronizer system. This is a singleton and is used
-  // for posting tasks via NewRunnableMethod. Its deleted when it goes out of
-  // scope. Even though NewRunnableMethod does AddRef and Release, the object
-  // will not be deleted after the Task is executed.
+  // for posting tasks via base::Bind. Its deleted when it goes out of scope.
+  // Even though base::Bind does AddRef and Release, the object will not be
+  // deleted after the Task is executed.
   field_trial_synchronizer_ = new FieldTrialSynchronizer();
 
   return metrics;
@@ -1279,9 +1279,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   InitializeURLRequestThrottlerManager(browser_process_->net_log());
 
   // Initialize histogram synchronizer system. This is a singleton and is used
-  // for posting tasks via NewRunnableMethod. Its deleted when it goes out of
-  // scope. Even though NewRunnableMethod does AddRef and Release, the object
-  // will not be deleted after the Task is executed.
+  // for posting tasks via base::Bind. Its deleted when it goes out of scope.
+  // Even though base::Bind does AddRef and Release, the object will not
+  // be deleted after the Task is executed.
   histogram_synchronizer_ = new HistogramSynchronizer();
   tracking_synchronizer_ = new chrome_browser_metrics::TrackingSynchronizer();
 

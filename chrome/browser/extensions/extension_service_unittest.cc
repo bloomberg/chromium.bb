@@ -2815,24 +2815,22 @@ class ExtensionCookieCallback {
  public:
   ExtensionCookieCallback()
     : result_(false),
-      message_loop_factory_(MessageLoop::current()) {}
+      weak_factory_(MessageLoop::current()) {}
 
   void SetCookieCallback(bool result) {
     MessageLoop::current()->PostTask(
-        FROM_HERE,
-        message_loop_factory_.NewRunnableMethod(&MessageLoop::Quit));
+        FROM_HERE, base::Bind(&MessageLoop::Quit, weak_factory_.GetWeakPtr()));
     result_ = result;
   }
 
   void GetAllCookiesCallback(const net::CookieList& list) {
     MessageLoop::current()->PostTask(
-        FROM_HERE,
-        message_loop_factory_.NewRunnableMethod(&MessageLoop::Quit));
+        FROM_HERE, base::Bind(&MessageLoop::Quit, weak_factory_.GetWeakPtr()));
     list_ = list;
   }
   net::CookieList list_;
   bool result_;
-  ScopedRunnableMethodFactory<MessageLoop> message_loop_factory_;
+  base::WeakPtrFactory<MessageLoop> weak_factory_;
 };
 
 // Verifies extension state is removed upon uninstall.

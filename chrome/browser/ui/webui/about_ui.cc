@@ -196,7 +196,7 @@ class ChromeOSTermsHandler
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &ChromeOSTermsHandler::LoadFileOnFileThread));
+        base::Bind(&ChromeOSTermsHandler::LoadFileOnFileThread, this));
   }
 
   void LoadFileOnFileThread() {
@@ -228,7 +228,7 @@ class ChromeOSTermsHandler
     }
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &ChromeOSTermsHandler::ResponseOnUIThread));
+        base::Bind(&ChromeOSTermsHandler::ResponseOnUIThread, this));
   }
 
   void ResponseOnUIThread() {
@@ -638,7 +638,7 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
         source_->profile()->GetNetworkPredictor();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &AboutDnsHandler::StartOnIOThread, predictor));
+        base::Bind(&AboutDnsHandler::StartOnIOThread, this, predictor));
   }
 
   void StartOnIOThread(chrome_browser_net::Predictor* predictor) {
@@ -652,7 +652,7 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &AboutDnsHandler::FinishOnUIThread, data));
+        base::Bind(&AboutDnsHandler::FinishOnUIThread, this, data));
   }
 
   void FinishOnUIThread(const std::string& data) {

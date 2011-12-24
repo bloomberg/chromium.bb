@@ -1064,8 +1064,9 @@ void HistoryBackend::QuerySegmentUsage(
     // entries.
     if (!segment_queried_) {
       segment_queried_ = true;
-      MessageLoop::current()->PostTask(FROM_HERE,
-          NewRunnableMethod(this, &HistoryBackend::DeleteOldSegmentData));
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&HistoryBackend::DeleteOldSegmentData, this));
     }
   }
   request->ForwardResult(request->handle(), &request->value.get());
@@ -1934,9 +1935,9 @@ void HistoryBackend::ScheduleCommit() {
   if (scheduled_commit_.get())
     return;
   scheduled_commit_ = new CommitLaterTask(this);
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      NewRunnableMethod(scheduled_commit_.get(),
-                        &CommitLaterTask::RunCommit),
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CommitLaterTask::RunCommit, scheduled_commit_.get()),
       kCommitIntervalMs);
 }
 
@@ -1974,8 +1975,8 @@ void HistoryBackend::ProcessDBTaskImpl() {
     // Tasks wants to run some more. Schedule it at the end of current tasks.
     db_task_requests_.push_back(request);
     // And process it after an invoke later.
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &HistoryBackend::ProcessDBTaskImpl));
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&HistoryBackend::ProcessDBTaskImpl, this));
   }
 }
 

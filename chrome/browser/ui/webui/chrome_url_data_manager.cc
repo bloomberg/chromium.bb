@@ -140,8 +140,8 @@ void ChromeURLDataManager::DataSource::SendResponse(int request_id,
   }
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &DataSource::SendResponseOnIOThread,
-                        request_id, bytes_ptr));
+      base::Bind(&DataSource::SendResponseOnIOThread, this, request_id,
+                 bytes_ptr));
 }
 
 MessageLoop* ChromeURLDataManager::DataSource::MessageLoopForRequestPath(

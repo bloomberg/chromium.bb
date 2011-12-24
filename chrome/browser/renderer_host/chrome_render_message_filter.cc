@@ -221,10 +221,9 @@ void ChromeRenderMessageFilter::OnOpenChannelToExtension(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this, &ChromeRenderMessageFilter::OpenChannelToExtensionOnUIThread,
-          render_process_id_, routing_id, port2_id, source_extension_id,
-          target_extension_id, channel_name));
+      base::Bind(&ChromeRenderMessageFilter::OpenChannelToExtensionOnUIThread,
+                 this, render_process_id_, routing_id, port2_id,
+                 source_extension_id, target_extension_id, channel_name));
 }
 
 void ChromeRenderMessageFilter::OpenChannelToExtensionOnUIThread(
@@ -247,10 +246,9 @@ void ChromeRenderMessageFilter::OnOpenChannelToTab(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this, &ChromeRenderMessageFilter::OpenChannelToTabOnUIThread,
-          render_process_id_, routing_id, port2_id, tab_id, extension_id,
-          channel_name));
+      base::Bind(&ChromeRenderMessageFilter::OpenChannelToTabOnUIThread, this,
+                 render_process_id_, routing_id, port2_id, tab_id, extension_id,
+                 channel_name));
 }
 
 void ChromeRenderMessageFilter::OpenChannelToTabOnUIThread(

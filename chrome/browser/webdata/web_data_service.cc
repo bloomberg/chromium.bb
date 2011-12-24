@@ -678,15 +678,16 @@ void WebDataService::InitializeDatabaseIfNecessary() {
     failed_init_ = true;
     delete db;
     if (main_loop_) {
-      main_loop_->PostTask(FROM_HERE,
-          NewRunnableMethod(this, &WebDataService::DBInitFailed, init_status));
+      main_loop_->PostTask(
+          FROM_HERE,
+          base::Bind(&WebDataService::DBInitFailed, this, init_status));
     }
     return;
   }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &WebDataService::NotifyDatabaseLoadedOnUIThread));
+      base::Bind(&WebDataService::NotifyDatabaseLoadedOnUIThread, this));
 
   db_ = db;
   db_->BeginTransaction();

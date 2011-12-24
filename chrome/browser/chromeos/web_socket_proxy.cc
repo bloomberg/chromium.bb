@@ -31,6 +31,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
@@ -554,7 +555,7 @@ class SSLChan : public MessageLoopForIO::Watcher {
         outbound_stream_(WebSocketProxy::kBufferLimit),
         read_pipe_(read_pipe),
         write_pipe_(write_pipe),
-        method_factory_(this) {
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
     if (!SetNonBlock(read_pipe_) || !SetNonBlock(write_pipe_)) {
       Shut(net::ERR_UNEXPECTED);
       return;
@@ -590,8 +591,9 @@ class SSLChan : public MessageLoopForIO::Watcher {
       };
       for (int i = arraysize(buf); i--;) {
         if (buf[i] && buf[i]->size() > 0) {
-          MessageLoop::current()->PostTask(FROM_HERE,
-              method_factory_.NewRunnableMethod(&SSLChan::Proceed));
+          MessageLoop::current()->PostTask(
+              FROM_HERE,
+              base::Bind(&SSLChan::Proceed, weak_factory_.GetWeakPtr()));
           return;
         }
       }
@@ -732,8 +734,9 @@ class SSLChan : public MessageLoopForIO::Watcher {
               base::Bind(&SSLChan::OnSocketRead, base::Unretained(this)));
           is_socket_read_pending_ = true;
           if (rv != net::ERR_IO_PENDING) {
-            MessageLoop::current()->PostTask(FROM_HERE,
-                method_factory_.NewRunnableMethod(&SSLChan::OnSocketRead, rv));
+            MessageLoop::current()->PostTask(
+                FROM_HERE, base::Bind(&SSLChan::OnSocketRead,
+                                      weak_factory_.GetWeakPtr(), rv));
           }
         }
       }
@@ -746,8 +749,9 @@ class SSLChan : public MessageLoopForIO::Watcher {
               base::Bind(&SSLChan::OnSocketWrite, base::Unretained(this)));
           is_socket_write_pending_ = true;
           if (rv != net::ERR_IO_PENDING) {
-            MessageLoop::current()->PostTask(FROM_HERE,
-                method_factory_.NewRunnableMethod(&SSLChan::OnSocketWrite, rv));
+            MessageLoop::current()->PostTask(
+                FROM_HERE, base::Bind(&SSLChan::OnSocketWrite,
+                                      weak_factory_.GetWeakPtr(), rv));
           }
         } else if (phase_ == PHASE_CLOSING) {
           Shut(0);
@@ -792,7 +796,7 @@ class SSLChan : public MessageLoopForIO::Watcher {
   bool is_socket_write_pending_;
   bool is_read_pipe_blocked_;
   bool is_write_pipe_blocked_;
-  ScopedRunnableMethodFactory<SSLChan> method_factory_;
+  base::WeakPtrFactory<SSLChan> weak_factory_;
   MessageLoopForIO::FileDescriptorWatcher read_pipe_controller_;
   MessageLoopForIO::FileDescriptorWatcher write_pipe_controller_;
 

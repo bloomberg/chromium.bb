@@ -7,6 +7,8 @@
 #include <functional>
 #include <set>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -220,9 +222,8 @@ CancelableRequestProvider::Handle SyslogsProviderImpl::RequestSyslogs(
   // callback on the calling thread (e.g. UI) when complete.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &SyslogsProviderImpl::ReadSyslogs, request,
-          compress_logs, context));
+      base::Bind(&SyslogsProviderImpl::ReadSyslogs, base::Unretained(this),
+                 request, compress_logs, context));
 
   return request->handle();
 }
@@ -378,7 +379,3 @@ SyslogsProvider* SyslogsProvider::GetInstance() {
 
 }  // namespace system
 }  // namespace chromeos
-
-// Allows InvokeLater without adding refcounting. SyslogsProviderImpl is a
-// Singleton and won't be deleted until it's last InvokeLater is run.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::system::SyslogsProviderImpl);

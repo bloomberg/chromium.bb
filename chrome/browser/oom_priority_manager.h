@@ -101,6 +101,4 @@ class OomPriorityManager : public content::NotificationObserver {
 
 }  // namespace browser
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(browser::OomPriorityManager);
-
 #endif  // CHROME_BROWSER_OOM_PRIORITY_MANAGER_H_

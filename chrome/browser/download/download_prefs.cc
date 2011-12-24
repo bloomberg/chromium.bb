@@ -81,7 +81,8 @@ void DownloadPrefs::RegisterUserPrefs(PrefService* prefs) {
   // Ensure that the download directory specified in the preferences exists.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&file_util::CreateDirectory, default_download_path));
+      base::Bind(base::IgnoreResult(&file_util::CreateDirectory),
+                 default_download_path));
 #endif  // defined(OS_CHROMEOS)
 
   // If the download path is dangerous we forcefully reset it. But if we do

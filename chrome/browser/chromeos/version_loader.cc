@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -58,9 +59,8 @@ VersionLoader::Handle VersionLoader::GetVersion(
   AddRequest(request, consumer);
 
   BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      NewRunnableMethod(backend_.get(), &Backend::GetVersion, request, format));
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&Backend::GetVersion, backend_.get(), request, format));
   return request->handle();
 }
 
@@ -77,9 +77,8 @@ VersionLoader::Handle VersionLoader::GetFirmware(
   AddRequest(request, consumer);
 
   BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      NewRunnableMethod(backend_.get(), &Backend::GetFirmware, request));
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&Backend::GetFirmware, backend_.get(), request));
   return request->handle();
 }
 
