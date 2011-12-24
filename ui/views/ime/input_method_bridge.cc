@@ -15,11 +15,12 @@ InputMethodBridge::InputMethodBridge(internal::InputMethodDelegate* delegate,
                                      ui::InputMethod* host)
     : host_(host),
       context_focused_(false) {
+  DCHECK(host_);
   set_delegate(delegate);
 }
 
 InputMethodBridge::~InputMethodBridge() {
-  if (host_ && host_->GetTextInputClient() == this)
+  if (host_->GetTextInputClient() == this)
     host_->SetFocusedTextInputClient(NULL);
 }
 
@@ -28,16 +29,12 @@ void InputMethodBridge::Init(Widget* widget) {
 }
 
 void InputMethodBridge::OnFocus() {
-  // Disabling the DCHECK for now since views_unittests seems to call
-  // views::InputMethod::OnFocus and OnBlur in a wrong way.
-  // TODO(yusukes): Reenable it once views_unittests are fixed.
-  // DCHECK(!widget_focused());
+  DCHECK(!widget_focused());
   InputMethodBase::OnFocus();
 
   // Ask the system-wide IME to send all TextInputClient messages to |this|
   // object.
-  if (host_)
-    host_->SetFocusedTextInputClient(this);
+  host_->SetFocusedTextInputClient(this);
 
   // TODO(yusukes): We don't need to call OnTextInputTypeChanged() once we move
   // text input type tracker code to ui::InputMethodBase.
@@ -46,12 +43,11 @@ void InputMethodBridge::OnFocus() {
 }
 
 void InputMethodBridge::OnBlur() {
-  // TODO(yusukes): Reenable it once views_unittests are fixed.
-  // DCHECK(widget_focused());
+  DCHECK(widget_focused());
 
   ConfirmCompositionText();
   InputMethodBase::OnBlur();
-  if (host_ && host_->GetTextInputClient() == this)
+  if (host_->GetTextInputClient() == this)
     host_->SetFocusedTextInputClient(NULL);
 }
 
@@ -65,31 +61,31 @@ void InputMethodBridge::DispatchKeyEvent(const KeyEvent& key) {
 }
 
 void InputMethodBridge::OnTextInputTypeChanged(View* view) {
-  if (host_ && IsViewFocused(view))
+  if (IsViewFocused(view))
     host_->OnTextInputTypeChanged(this);
   InputMethodBase::OnTextInputTypeChanged(view);
 }
 
 void InputMethodBridge::OnCaretBoundsChanged(View* view) {
-  if (host_ && IsViewFocused(view) && !IsTextInputTypeNone())
+  if (IsViewFocused(view) && !IsTextInputTypeNone())
     host_->OnCaretBoundsChanged(this);
 }
 
 void InputMethodBridge::CancelComposition(View* view) {
-  if (host_ && IsViewFocused(view))
+  if (IsViewFocused(view))
     host_->CancelComposition(this);
 }
 
 std::string InputMethodBridge::GetInputLocale() {
-  return host_ ? host_->GetInputLocale() : "";
+  return host_->GetInputLocale();
 }
 
 base::i18n::TextDirection InputMethodBridge::GetInputTextDirection() {
-  return host_ ? host_->GetInputTextDirection() : base::i18n::UNKNOWN_DIRECTION;
+  return host_->GetInputTextDirection();
 }
 
 bool InputMethodBridge::IsActive() {
-  return host_ ? host_->IsActive() : false;
+  return host_->IsActive();
 }
 
 // Overridden from TextInputClient. Forward an event from the system-wide IME
