@@ -14,7 +14,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ views::Widget* CreateDesktopBackground() {
   params.delegate = view;
   desktop_widget->Init(params);
   Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_DesktopBackgroundContainer)->
+      ash::internal::kShellWindowId_DesktopBackgroundContainer)->
       AddChild(desktop_widget->GetNativeView());
   desktop_widget->SetContentsView(view);
   desktop_widget->Show();
@@ -64,4 +64,4 @@ views::Widget* CreateDesktopBackground() {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

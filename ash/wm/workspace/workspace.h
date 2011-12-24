@@ -16,7 +16,7 @@ namespace aura {
 class Window;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class WorkspaceManager;
@@ -135,6 +135,6 @@ class ASH_EXPORT Workspace {
 typedef std::vector<Workspace*> Workspaces;
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_WORKSPACE_H_

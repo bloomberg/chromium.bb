@@ -14,7 +14,7 @@
 #include "ui/aura/window_observer.h"
 #include "ash/ash_export.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class ShelfLayoutManager;
@@ -61,7 +61,7 @@ class ASH_EXPORT ToplevelLayoutManager : public aura::LayoutManager,
   DISALLOW_COPY_AND_ASSIGN(ToplevelLayoutManager);
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 }  // namespace internal
 
 #endif  // ASH_WM_TOPLEVEL_LAYOUT_MANAGER_H_

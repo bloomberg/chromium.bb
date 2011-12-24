@@ -8,7 +8,7 @@
 #include "ash/app_list/app_list_item_view.h"
 #include "ui/views/layout/grid_layout.h"
 
-namespace aura_shell {
+namespace ash {
 
 AppListItemGroupView::AppListItemGroupView(AppListItemGroupModel* model,
                                            AppListItemViewListener* listener)
@@ -112,4 +112,4 @@ void AppListItemGroupView::ListItemsChanged(int start, int count) {
   NOTREACHED();
 }
 
-}  // namespace aura_shell
+}  // namespace ash

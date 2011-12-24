@@ -15,7 +15,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace aura_shell {
+namespace ash {
 
 namespace {
 
@@ -27,12 +27,12 @@ views::Widget* CreateTestWindow(const views::Widget::InitParams& params) {
 
 aura::Window* GetDefaultContainer() {
   return Shell::GetInstance()->GetContainer(
-        aura_shell::internal::kShellWindowId_DefaultContainer);
+        ash::internal::kShellWindowId_DefaultContainer);
 }
 
 aura::Window* GetAlwaysOnTopContainer() {
   return Shell::GetInstance()->GetContainer(
-        aura_shell::internal::kShellWindowId_AlwaysOnTopContainer);
+        ash::internal::kShellWindowId_AlwaysOnTopContainer);
 }
 
 void TestCreateWindow(views::Widget::InitParams::Type type,
@@ -163,7 +163,7 @@ TEST_F(ShellTest, CreateModalWindow) {
 
   // It should be in modal container.
   aura::Window* modal_container = Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_ModalContainer);
+      ash::internal::kShellWindowId_ModalContainer);
   EXPECT_EQ(modal_container, modal_widget->GetNativeWindow()->parent());
 
   modal_widget->Close();
@@ -183,14 +183,14 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 
   // Create a LockScreen window.
   views::Widget* lock_widget = CreateTestWindow(widget_params);
-  aura_shell::Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_LockScreenContainer)->
+  ash::Shell::GetInstance()->GetContainer(
+      ash::internal::kShellWindowId_LockScreenContainer)->
       AddChild(lock_widget->GetNativeView());
   lock_widget->Show();
 
   // It should be in LockScreen container.
   aura::Window* lock_screen = Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_LockScreenContainer);
+      ash::internal::kShellWindowId_LockScreenContainer);
   EXPECT_EQ(lock_screen, lock_widget->GetNativeWindow()->parent());
 
   // Create a modal window with a lock window as parent.
@@ -200,7 +200,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 
   // It should be in LockScreen modal container.
   aura::Window* lock_modal_container = Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_LockModalContainer);
+      ash::internal::kShellWindowId_LockModalContainer);
   EXPECT_EQ(lock_modal_container,
             lock_modal_widget->GetNativeWindow()->parent());
 
@@ -211,7 +211,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 
   // It should be in non-LockScreen modal container.
   aura::Window* modal_container = Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_ModalContainer);
+      ash::internal::kShellWindowId_ModalContainer);
   EXPECT_EQ(modal_container, modal_widget->GetNativeWindow()->parent());
 
   modal_widget->Close();
@@ -242,8 +242,8 @@ TEST_F(ShellTest, IsScreenLocked) {
 
   // A lock screen window locks the screen.
   views::Widget* lock_widget = CreateTestWindow(widget_params);
-  aura_shell::Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_LockScreenContainer)->
+  ash::Shell::GetInstance()->GetContainer(
+      ash::internal::kShellWindowId_LockScreenContainer)->
       AddChild(lock_widget->GetNativeView());
   lock_widget->Show();
   EXPECT_TRUE(Shell::GetInstance()->IsScreenLocked());
@@ -284,9 +284,9 @@ TEST_F(ShellTest, DefaultToCompactWindowMode) {
 
   // Even for a small screen, the user can force normal mode.
   monitor_size.SetSize(800, 600);
-  command_line.AppendSwitchASCII(aura_shell::switches::kAuraWindowMode,
-                                 aura_shell::switches::kAuraWindowModeNormal);
+  command_line.AppendSwitchASCII(ash::switches::kAuraWindowMode,
+                                 ash::switches::kAuraWindowModeNormal);
   EXPECT_FALSE(shell->DefaultToCompactWindowMode(monitor_size, &command_line));
 }
 
-}  // namespace aura_shell
+}  // namespace ash

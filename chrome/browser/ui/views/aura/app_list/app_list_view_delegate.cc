@@ -13,7 +13,7 @@ AppListViewDelegate::~AppListViewDelegate() {
 }
 
 void AppListViewDelegate::OnAppListItemActivated(
-    aura_shell::AppListItemModel* item,
+    ash::AppListItemModel* item,
     int event_flags) {
   static_cast<ChromeAppListItem*>(item)->Activate(event_flags);
 }

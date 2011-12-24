@@ -7,7 +7,7 @@
 #include "ash/wm/window_properties.h"
 #include "ui/aura/window.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 void SetShadowType(aura::Window* window, ShadowType shadow_type) {
@@ -19,4 +19,4 @@ ShadowType GetShadowType(aura::Window* window) {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

@@ -8,7 +8,7 @@
 
 #include "ash/ash_export.h"
 
-namespace aura_shell {
+namespace ash {
 namespace switches {
 
 // Please keep alphabetized.
@@ -24,6 +24,6 @@ ASH_EXPORT extern const char kAuraWorkspaceManager[];
 ASH_EXPORT bool IsAuraWindowModeCompact();
 
 }  // namespace switches
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_ASH_SWITCHES_H_

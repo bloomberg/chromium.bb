@@ -23,7 +23,7 @@
 #endif
 
 
-namespace aura_shell {
+namespace ash {
 namespace test {
 
 namespace {

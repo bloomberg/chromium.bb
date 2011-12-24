@@ -34,13 +34,13 @@ StatusAreaView* ChromeShellDelegate::GetStatusArea() {
 // static
 bool ChromeShellDelegate::ShouldCreateLauncherItemForBrowser(
     Browser* browser,
-    aura_shell::LauncherItemType* type) {
+    ash::LauncherItemType* type) {
   if (browser->type() == Browser::TYPE_TABBED) {
-    *type = aura_shell::TYPE_TABBED;
+    *type = ash::TYPE_TABBED;
     return true;
   }
   if (browser->is_app()) {
-    *type = aura_shell::TYPE_APP;
+    *type = ash::TYPE_APP;
     return true;
   }
   return false;
@@ -66,25 +66,25 @@ void ChromeShellDelegate::RequestAppListWidget(
   new AppListWindow(bounds, callback);
 }
 
-void ChromeShellDelegate::BuildAppListModel(aura_shell::AppListModel* model) {
+void ChromeShellDelegate::BuildAppListModel(ash::AppListModel* model) {
   AppListModelBuilder builder(ProfileManager::GetDefaultProfile(),
                               model);
   builder.Build();
 }
 
-aura_shell::AppListViewDelegate*
+ash::AppListViewDelegate*
 ChromeShellDelegate::CreateAppListViewDelegate() {
   // Shell will own the created delegate.
   return new AppListViewDelegate;
 }
 
 void ChromeShellDelegate::LauncherItemClicked(
-    const aura_shell::LauncherItem& item) {
-  aura_shell::ActivateWindow(item.window);
+    const ash::LauncherItem& item) {
+  ash::ActivateWindow(item.window);
 }
 
 bool ChromeShellDelegate::ConfigureLauncherItem(
-    aura_shell::LauncherItem* item) {
+    ash::LauncherItem* item) {
   BrowserView* view = BrowserView::GetBrowserViewForNativeWindow(item->window);
   return view &&
       ShouldCreateLauncherItemForBrowser(view->browser(), &(item->type));

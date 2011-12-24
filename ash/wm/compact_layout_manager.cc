@@ -11,7 +11,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 CompactLayoutManager::CompactLayoutManager(views::Widget* status_area_widget)
@@ -82,4 +82,4 @@ void CompactLayoutManager::UpdateStatusAreaVisibility() {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

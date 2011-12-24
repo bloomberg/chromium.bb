@@ -8,7 +8,7 @@
 
 #include "ash/ash_export.h"
 
-namespace aura_shell {
+namespace ash {
 
 class ASH_EXPORT AppListItemModelObserver {
  public:
@@ -22,6 +22,6 @@ class ASH_EXPORT AppListItemModelObserver {
   virtual ~AppListItemModelObserver() {}
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_APP_LIST_ITEM_MODEL_OBSERVER_H_

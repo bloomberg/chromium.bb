@@ -26,7 +26,7 @@ class AppListWindow : public views::WidgetDelegate,
  public:
   AppListWindow(
       const gfx::Rect& bounds,
-      const aura_shell::ShellDelegate::SetWidgetCallback& callback);
+      const ash::ShellDelegate::SetWidgetCallback& callback);
 
  private:
   virtual ~AppListWindow();
@@ -66,7 +66,7 @@ class AppListWindow : public views::WidgetDelegate,
   scoped_ptr<TabFirstRenderWatcher> tab_watcher_;
 
   // Callback to set app list widget when it's ready.
-  aura_shell::ShellDelegate::SetWidgetCallback callback_;
+  ash::ShellDelegate::SetWidgetCallback callback_;
 
   // True if webui is rendered.
   bool content_rendered_;

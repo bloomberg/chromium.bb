@@ -30,7 +30,7 @@ const float kMinOverviewScale = 0.3f;
 
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -273,4 +273,4 @@ void WorkspaceManager::UpdateContentsView() {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

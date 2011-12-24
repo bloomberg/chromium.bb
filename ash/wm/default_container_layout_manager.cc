@@ -19,7 +19,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/native_widget_aura.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -107,7 +107,7 @@ void DefaultContainerLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 
   Workspace* workspace = workspace_manager_->GetActiveWorkspace();
   if (workspace) {
-    aura::Window* active = aura_shell::GetActiveWindow();
+    aura::Window* active = ash::GetActiveWindow();
     // Active window may not be in the default container layer.
     if (!workspace->Contains(active))
       active = NULL;
@@ -187,4 +187,4 @@ void DefaultContainerLayoutManager::SetChildBounds(
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

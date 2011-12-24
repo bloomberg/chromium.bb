@@ -20,7 +20,7 @@ namespace views {
 class Widget;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // A layout manager for the root window.
@@ -53,6 +53,6 @@ class RootWindowLayoutManager : public aura::LayoutManager {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_ROOT_WINDOW_LAYOUT_MANAGER_H_

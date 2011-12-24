@@ -92,7 +92,7 @@ void ViewEventTestBase::SetUp() {
   ui::CompositorTestSupport::Initialize();
 #if defined(USE_AURA)
   aura::RootWindow::GetInstance();
-  aura_shell::Shell::CreateInstance(NULL);
+  ash::Shell::CreateInstance(NULL);
 #endif
   window_ = views::Widget::CreateWindow(this);
 }
@@ -108,7 +108,7 @@ void ViewEventTestBase::TearDown() {
     window_ = NULL;
   }
 #if defined(USE_AURA)
-  aura_shell::Shell::DeleteInstance();
+  ash::Shell::DeleteInstance();
   aura::RootWindow::DeleteInstance();
 #endif
   ui::CompositorTestSupport::Terminate();

@@ -123,7 +123,7 @@ string16 WidgetsWindow::GetWindowTitle() const {
 }
 
 views::NonClientFrameView* WidgetsWindow::CreateNonClientFrameView() {
-  return new aura_shell::internal::ToplevelFrameView;
+  return new ash::internal::ToplevelFrameView;
 }
 
 }  // namespace

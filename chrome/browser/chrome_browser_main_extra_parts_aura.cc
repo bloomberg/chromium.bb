@@ -42,17 +42,15 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
 #endif
 
   // Shell takes ownership of ChromeShellDelegate.
-  aura_shell::Shell* aura_shell =
-      aura_shell::Shell::CreateInstance(new ChromeShellDelegate);
-  // accelerator controller takes ownership of ScreenshotDelegate.
-  aura_shell->accelerator_controller()->SetScreenshotDelegate(
-      new ScreenshotTaker);
+  ash::Shell* shell = ash::Shell::CreateInstance(new ChromeShellDelegate);
+  // AcceleratorController takes ownership of ScreenshotDelegate.
+  shell->accelerator_controller()->SetScreenshotDelegate(new ScreenshotTaker);
 
   // Make sure the singleton ScreenOrientationListener object is created.
   ScreenOrientationListener::GetInstance();
 }
 
 void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {
-  aura_shell::Shell::DeleteInstance();
+  ash::Shell::DeleteInstance();
   aura::RootWindow::DeleteInstance();
 }

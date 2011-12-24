@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 
-namespace aura_shell {
+namespace ash {
 namespace switches {
 
 // Avoid drawing drop shadows under windows.
@@ -41,4 +41,4 @@ bool IsAuraWindowModeCompact() {
 }
 
 }  // namespace switches
-}  // namespace aura_shell
+}  // namespace ash

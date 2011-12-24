@@ -121,7 +121,7 @@ views::Widget* CreateTooltip() {
 
 }  // namespace
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // Displays a widget with tooltip using a views::Label.
@@ -293,4 +293,4 @@ void TooltipController::UpdateIfRequired() {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

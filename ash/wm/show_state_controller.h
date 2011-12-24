@@ -14,7 +14,7 @@ namespace aura {
 class Window;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class WorkspaceManager;
@@ -38,7 +38,7 @@ public:
   DISALLOW_COPY_AND_ASSIGN(ShowStateController);
 };
 
-}  // namepsace aura_shell
 }  // namepsace internal
+}  // namepsace ash
 
 #endif  // ASH_WM_SHOW_STATE_CONTROLLER_H_

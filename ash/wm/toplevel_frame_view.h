@@ -10,7 +10,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class FrameComponent;
@@ -80,6 +80,6 @@ class ASH_EXPORT ToplevelFrameView : public views::NonClientFrameView {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // #ifndef ASH_WM_TOPLEVEL_FRAME_VIEW_H_

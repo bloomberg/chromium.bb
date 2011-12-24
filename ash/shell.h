@@ -29,7 +29,7 @@ class Rect;
 class Size;
 }
 
-namespace aura_shell {
+namespace ash {
 
 class AcceleratorController;
 class Launcher;
@@ -144,6 +144,6 @@ class ASH_EXPORT Shell {
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_SHELL_H_

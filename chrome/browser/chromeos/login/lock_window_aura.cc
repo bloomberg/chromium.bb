@@ -44,8 +44,8 @@ void LockWindowAura::Init() {
   views::Widget::Init(params);
   // TODO(flackr): Use a property to specify this container rather than
   // depending on shell implementation.
-  aura_shell::Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_LockScreenContainer)->
+  ash::Shell::GetInstance()->GetContainer(
+      ash::internal::kShellWindowId_LockScreenContainer)->
       AddChild(GetNativeView());
 }
 

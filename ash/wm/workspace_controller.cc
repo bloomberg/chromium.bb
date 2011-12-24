@@ -16,7 +16,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 WorkspaceController::WorkspaceController(aura::Window* viewport)
@@ -68,7 +68,7 @@ void WorkspaceController::OnWindowPropertyChanged(aura::Window* window,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WorkspaceController, aura_shell::internal::WorkspaceObserver overrides:
+// WorkspaceController, ash::internal::WorkspaceObserver overrides:
 
 void WorkspaceController::WindowMoved(WorkspaceManager* manager,
                                       aura::Window* source,
@@ -95,7 +95,7 @@ void WorkspaceController::ActiveWorkspaceChanged(WorkspaceManager* manager,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WorkspaceController, aura_shell::LauncherModelObserver overrides:
+// WorkspaceController, ash::LauncherModelObserver overrides:
 
 void WorkspaceController::LauncherItemAdded(int index) {
 }
@@ -124,4 +124,4 @@ void WorkspaceController::LauncherItemImagesChanged(int index) {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

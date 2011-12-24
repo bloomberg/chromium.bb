@@ -11,7 +11,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 namespace {
 
@@ -91,4 +91,4 @@ aura::Window* StackingController::GetModalContainer(
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

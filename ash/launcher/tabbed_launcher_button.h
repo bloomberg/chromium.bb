@@ -17,7 +17,7 @@ namespace ui {
 class MultiAnimation;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class LauncherButtonHost;
@@ -101,6 +101,6 @@ class TabbedLauncherButton : public views::ImageButton {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_LAUNCHER_TABBED_LAUNCHER_BUTTON_H_

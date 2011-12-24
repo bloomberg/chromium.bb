@@ -15,7 +15,7 @@ class TabContentsWrapper;
 namespace aura {
 class Window;
 }
-namespace aura_shell {
+namespace ash {
 class LauncherModel;
 }
 
@@ -24,7 +24,7 @@ class LauncherModel;
 class LauncherIconUpdater : public TabStripModelObserver {
  public:
   LauncherIconUpdater(TabStripModel* tab_model,
-                      aura_shell::LauncherModel* launcher_model,
+                      ash::LauncherModel* launcher_model,
                       aura::Window* window);
   virtual ~LauncherIconUpdater();
 
@@ -44,7 +44,7 @@ class LauncherIconUpdater : public TabStripModelObserver {
 
   TabStripModel* tab_model_;
 
-  aura_shell::LauncherModel* launcher_model_;
+  ash::LauncherModel* launcher_model_;
 
   // Used to index into the model.
   aura::Window* window_;

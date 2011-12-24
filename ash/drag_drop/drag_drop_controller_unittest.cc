@@ -16,7 +16,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
+namespace ash {
 namespace test {
 
 namespace {

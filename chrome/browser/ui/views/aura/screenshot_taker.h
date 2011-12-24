@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
-class ScreenshotTaker : public aura_shell::ScreenshotDelegate {
+class ScreenshotTaker : public ash::ScreenshotDelegate {
  public:
   ScreenshotTaker();
 

@@ -13,7 +13,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // Returns the default cursor for a window component.
@@ -165,4 +165,4 @@ ui::TouchStatus RootWindowEventFilter::FilterTouchEvent(
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

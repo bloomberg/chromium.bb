@@ -16,7 +16,7 @@
 #include "ui/gfx/compositor/layer.h"
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 namespace {
@@ -29,14 +29,14 @@ void StepWidgetLayerAnimatorToEnd(views::Widget* widget) {
 }
 
 ShelfLayoutManager* GetShelfLayoutManager() {
-  aura::Window* window = aura_shell::Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_LauncherContainer);
+  aura::Window* window = ash::Shell::GetInstance()->GetContainer(
+      ash::internal::kShellWindowId_LauncherContainer);
   return static_cast<ShelfLayoutManager*>(window->layout_manager());
 }
 
 }  // namespace
 
-typedef aura_shell::test::AuraShellTestBase ShelfLayoutManagerTest;
+typedef ash::test::AuraShellTestBase ShelfLayoutManagerTest;
 
 // Makes sure SetVisible updates work area and widget appropriately.
 TEST_F(ShelfLayoutManagerTest, SetVisible) {
@@ -131,4 +131,4 @@ TEST_F(ShelfLayoutManagerTest, LauncherUpdatedWhenStatusAreaChangesSize) {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

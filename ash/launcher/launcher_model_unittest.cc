@@ -8,7 +8,7 @@
 #include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace aura_shell {
+namespace ash {
 
 namespace {
 
@@ -119,4 +119,4 @@ TEST(LauncherModel, BasicAssertions) {
   EXPECT_EQ(reinterpret_cast<void*>(2), model.items()[1].user_data);
 }
 
-}  // namespace aura_shell
+}  // namespace ash

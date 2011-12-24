@@ -16,7 +16,7 @@ namespace views {
 class View;
 }
 
-namespace aura_shell {
+namespace ash {
 
 // ViewModel is used to track an 'interesting' set of a views. Often times
 // during animations views are removed after a delay, which makes for tricky
@@ -77,6 +77,6 @@ class ASH_EXPORT ViewModel {
   DISALLOW_COPY_AND_ASSIGN(ViewModel);
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_LAUNCHER_VIEW_MODEL_H_

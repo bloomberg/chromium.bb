@@ -11,7 +11,7 @@
 #include "ash/ash_export.h"
 #include "ui/base/models/list_model.h"
 
-namespace aura_shell {
+namespace ash {
 
 // Model for AppListView. It is consisted of a list of AppListItemGroupModels,
 // which in turn owns a list of AppListItemModels.
@@ -36,6 +36,6 @@ class ASH_EXPORT AppListModel {
   DISALLOW_COPY_AND_ASSIGN(AppListModel);
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_APP_LIST_MODEL_H_

@@ -11,7 +11,7 @@
 #include "ui/aura/event_filter.h"
 #include "ash/ash_export.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // AcceleratorFilter filters key events for AcceleratorControler handling global
@@ -34,6 +34,6 @@ class ASH_EXPORT AcceleratorFilter : public aura::EventFilter {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_ACCELERATORS_ACCELERATOR_FILTER_H_

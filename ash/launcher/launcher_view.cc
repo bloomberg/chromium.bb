@@ -29,7 +29,7 @@
 using ui::Animation;
 using views::View;
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // Padding between each view.
@@ -594,4 +594,4 @@ void LauncherView::ButtonPressed(views::Button* sender,
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

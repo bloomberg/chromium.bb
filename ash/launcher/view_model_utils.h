@@ -13,7 +13,7 @@ namespace views {
 class View;
 }
 
-namespace aura_shell {
+namespace ash {
 
 class ViewModel;
 
@@ -31,6 +31,6 @@ class ASH_EXPORT ViewModelUtils {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ViewModelUtils);
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_LAUNCHER_VIEW_MODEL_UTILS_H_

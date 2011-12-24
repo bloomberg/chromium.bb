@@ -4,7 +4,7 @@
 
 #include "ash/wm/window_frame.h"
 
-namespace aura_shell {
+namespace ash {
 
 const char* const kWindowFrameKey = "WindowFrameKey";
 

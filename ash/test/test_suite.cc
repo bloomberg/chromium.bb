@@ -18,7 +18,7 @@
 #include "ui/gfx/test/gfx_test_utils.h"
 #endif
 
-namespace aura_shell {
+namespace ash {
 namespace test {
 
 AuraShellTestSuite::AuraShellTestSuite(int argc, char** argv)
@@ -49,4 +49,4 @@ void AuraShellTestSuite::Shutdown() {
 }
 
 }  // namespace test
-}  // namespace aura_shell
+}  // namespace ash

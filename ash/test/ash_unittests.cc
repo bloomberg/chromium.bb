@@ -5,5 +5,5 @@
 #include "ash/test/test_suite.h"
 
 int main(int argc, char** argv) {
-  return aura_shell::test::AuraShellTestSuite(argc, argv).Run();
+  return ash::test::AuraShellTestSuite(argc, argv).Run();
 }

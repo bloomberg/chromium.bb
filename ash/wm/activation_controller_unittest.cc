@@ -20,7 +20,7 @@
 #endif
 #endif
 
-namespace aura_shell {
+namespace ash {
 namespace test {
 
 typedef test::AuraShellTestBase ActivationControllerTest;
@@ -277,4 +277,4 @@ TEST_F(ActivationControllerTest, PreventFocusToNonActivatableWindow) {
 }
 
 }  // namespace test
-}  // namespace aura_shell
+}  // namespace ash

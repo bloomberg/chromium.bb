@@ -18,7 +18,7 @@ namespace views {
 class BoundsAnimator;
 }
 
-namespace aura_shell {
+namespace ash {
 
 class AppListItemGroupView;
 class AppListItemViewListener;
@@ -79,6 +79,6 @@ class ASH_EXPORT AppListGroupsView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(AppListGroupsView);
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_APP_LIST_GROUPS_VIEW_H_

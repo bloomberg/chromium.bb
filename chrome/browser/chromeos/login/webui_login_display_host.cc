@@ -134,8 +134,8 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
     login_view_->Init(login_window_);
 
 #if defined(USE_AURA)
-    aura_shell::Shell::GetInstance()->GetContainer(
-        aura_shell::internal::kShellWindowId_LockScreenContainer)->
+    ash::Shell::GetInstance()->GetContainer(
+        ash::internal::kShellWindowId_LockScreenContainer)->
         AddChild(login_window_->GetNativeView());
 #endif
 

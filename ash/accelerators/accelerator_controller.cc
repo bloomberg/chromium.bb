@@ -53,13 +53,13 @@ struct AcceleratorData {
 };
 
 bool HandleCycleWindow(bool forward) {
-  if (aura_shell::Shell::GetInstance()->IsScreenLocked())
+  if (ash::Shell::GetInstance()->IsScreenLocked())
     return false;
 
   // Use the same order of the windows in LauncherModel to cycle windows.
-  aura_shell::LauncherModel* model =
-      aura_shell::Shell::GetInstance()->launcher()->model();
-  aura::Window* active_window = aura_shell::GetActiveWindow();
+  ash::LauncherModel* model =
+      ash::Shell::GetInstance()->launcher()->model();
+  aura::Window* active_window = ash::GetActiveWindow();
   if (!active_window) {
     LOG(ERROR) << "No active window";
     return false;
@@ -71,7 +71,7 @@ bool HandleCycleWindow(bool forward) {
   }
   int next_index = (active_index + (forward ? 1 : -1) + model->item_count()) %
       model->item_count();
-  aura_shell::ActivateWindow(model->items()[next_index].window);
+  ash::ActivateWindow(model->items()[next_index].window);
   return true;
 }
 
@@ -120,7 +120,7 @@ bool HandlePrintLayerHierarchy() {
 
 }  // namespace
 
-namespace aura_shell {
+namespace ash {
 
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorController, public:
@@ -203,4 +203,4 @@ bool AcceleratorController::AcceleratorPressed(
   return false;
 }
 
-}  // namespace aura_shell
+}  // namespace ash

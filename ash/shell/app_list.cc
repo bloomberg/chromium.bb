@@ -18,7 +18,7 @@ namespace shell {
 
 namespace {
 
-class WindowTypeLauncherItem : public aura_shell::AppListItemModel {
+class WindowTypeLauncherItem : public ash::AppListItemModel {
  public:
   enum Type {
     TOPLEVEL_WINDOW = 0,
@@ -45,8 +45,8 @@ class WindowTypeLauncherItem : public aura_shell::AppListItemModel {
 
     SkBitmap icon;
     icon.setConfig(SkBitmap::kARGB_8888_Config,
-                   aura_shell::AppListItemView::kIconSize,
-                   aura_shell::AppListItemView::kIconSize);
+                   ash::AppListItemView::kIconSize,
+                   ash::AppListItemView::kIconSize);
     icon.allocPixels();
     icon.eraseColor(kColors[static_cast<int>(type) % arraysize(kColors)]);
     return icon;
@@ -104,12 +104,12 @@ class WindowTypeLauncherItem : public aura_shell::AppListItemModel {
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncherItem);
 };
 
-class ExampleAppListViewDelegate : public aura_shell::AppListViewDelegate {
+class ExampleAppListViewDelegate : public ash::AppListViewDelegate {
  public:
   ExampleAppListViewDelegate() {}
 
  private:
-  virtual void OnAppListItemActivated(aura_shell::AppListItemModel* item,
+  virtual void OnAppListItemActivated(ash::AppListItemModel* item,
                                       int event_flags) OVERRIDE {
     static_cast<WindowTypeLauncherItem*>(item)->Activate(event_flags);
   }
@@ -117,12 +117,12 @@ class ExampleAppListViewDelegate : public aura_shell::AppListViewDelegate {
   DISALLOW_COPY_AND_ASSIGN(ExampleAppListViewDelegate);
 };
 
-aura_shell::AppListItemGroupModel* CreateGroup(
+ash::AppListItemGroupModel* CreateGroup(
     const std::string& title,
     WindowTypeLauncherItem::Type start_type,
     WindowTypeLauncherItem::Type end_type) {
-  aura_shell::AppListItemGroupModel* group =
-      new aura_shell::AppListItemGroupModel(title);
+  ash::AppListItemGroupModel* group =
+      new ash::AppListItemGroupModel(title);
   for (int i = static_cast<int>(start_type);
        i < static_cast<int>(end_type);
        ++i) {
@@ -135,7 +135,7 @@ aura_shell::AppListItemGroupModel* CreateGroup(
 
 }  // namespace
 
-void BuildAppListModel(aura_shell::AppListModel* model) {
+void BuildAppListModel(ash::AppListModel* model) {
   model->AddGroup(CreateGroup("Windows",
       WindowTypeLauncherItem::TOPLEVEL_WINDOW,
       WindowTypeLauncherItem::WIDGETS_WINDOW));
@@ -144,18 +144,18 @@ void BuildAppListModel(aura_shell::AppListModel* model) {
       WindowTypeLauncherItem::LAST_TYPE));
 }
 
-aura_shell::AppListViewDelegate* CreateAppListViewDelegate() {
+ash::AppListViewDelegate* CreateAppListViewDelegate() {
   return new ExampleAppListViewDelegate;
 }
 
 // TODO(xiyuan): Remove this.
 void CreateAppList(
     const gfx::Rect& bounds,
-    const aura_shell::ShellDelegate::SetWidgetCallback& callback) {
-  aura_shell::AppListModel* model = new aura_shell::AppListModel;
+    const ash::ShellDelegate::SetWidgetCallback& callback) {
+  ash::AppListModel* model = new ash::AppListModel;
   BuildAppListModel(model);
 
-  new aura_shell::AppListView(
+  new ash::AppListView(
       model,
       CreateAppListViewDelegate(),
       bounds,

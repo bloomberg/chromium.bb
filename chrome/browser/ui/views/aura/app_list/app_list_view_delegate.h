@@ -10,14 +10,14 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
-class AppListViewDelegate : public aura_shell::AppListViewDelegate {
+class AppListViewDelegate : public ash::AppListViewDelegate {
  public:
   AppListViewDelegate();
   virtual ~AppListViewDelegate();
 
  private:
-  // Overridden from aura_shell::AppListViewDelegate:
-  virtual void OnAppListItemActivated(aura_shell::AppListItemModel* item,
+  // Overridden from ash::AppListViewDelegate:
+  virtual void OnAppListItemActivated(ash::AppListItemModel* item,
                                       int event_flags) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewDelegate);

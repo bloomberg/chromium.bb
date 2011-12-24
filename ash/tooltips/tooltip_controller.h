@@ -22,7 +22,7 @@ class TouchEvent;
 class Window;
 }
 
-namespace aura_shell {
+namespace ash {
 
 namespace test {
 class TooltipControllerTest;
@@ -53,7 +53,7 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
  private:
-  friend class aura_shell::test::TooltipControllerTest;
+  friend class ash::test::TooltipControllerTest;
 
   class Tooltip;
 
@@ -75,6 +75,6 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_TOOLTIPS_TOOLTIP_CONTROLLER_H_

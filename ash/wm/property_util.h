@@ -14,7 +14,7 @@ namespace gfx {
 class Rect;
 }
 
-namespace aura_shell {
+namespace ash {
 
 // Sets the restore bounds property on |window|. Deletes existing bounds value
 // if exists.

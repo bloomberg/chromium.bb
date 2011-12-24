@@ -39,9 +39,9 @@ StatusAreaView* StatusAreaHostAura::GetStatusArea() {
 }
 
 views::Widget* StatusAreaHostAura::CreateStatusArea() {
-  aura_shell::Shell* aura_shell = aura_shell::Shell::GetInstance();
-  aura::Window* status_window = aura_shell->GetContainer(
-      aura_shell::internal::kShellWindowId_StatusContainer);
+  ash::Shell* shell = ash::Shell::GetInstance();
+  aura::Window* status_window = shell->GetContainer(
+      ash::internal::kShellWindowId_StatusContainer);
 
   // Create status area view.
   status_area_view_ = new StatusAreaView();

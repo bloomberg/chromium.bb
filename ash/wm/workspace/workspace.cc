@@ -31,7 +31,7 @@ size_t g_max_windows_per_workspace = 2;
 // or the current bounds of the window of no animation is currently
 // in progress.
 gfx::Rect GetLayoutBounds(aura::Window* window) {
-  const gfx::Rect* restore_bounds = aura_shell::GetRestoreBounds(window);
+  const gfx::Rect* restore_bounds = ash::GetRestoreBounds(window);
   return restore_bounds ? *restore_bounds : window->GetTargetBounds();
 }
 
@@ -43,7 +43,7 @@ int GetLayoutWidth(aura::Window* window) {
 
 }  // namespace
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 Workspace::Workspace(WorkspaceManager* manager)
@@ -96,7 +96,7 @@ bool Workspace::Contains(aura::Window* window) const {
 
 aura::Window* Workspace::FindRotateWindowForLocation(
     const gfx::Point& position) {
-  aura::Window* active = aura_shell::GetActiveWindow();
+  aura::Window* active = ash::GetActiveWindow();
   if (GetTotalWindowsWidth() < bounds_.width()) {
     // If all windows fit to the width of the workspace, it returns the
     // window which contains |position|'s x coordinate.
@@ -283,4 +283,4 @@ size_t Workspace::SetMaxWindowsCount(size_t max) {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

@@ -18,7 +18,7 @@
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
+namespace ash {
 
 namespace {
 
@@ -102,7 +102,7 @@ Launcher::Launcher(aura::Window* window_container)
   params.create_texture_for_layer = true;
   params.transparent = true;
   params.parent = Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_LauncherContainer);
+      ash::internal::kShellWindowId_LauncherContainer);
   internal::LauncherView* launcher_view =
       new internal::LauncherView(model_.get());
   launcher_view->Init();
@@ -180,4 +180,4 @@ void Launcher::OnWindowVisibilityChanged(aura::Window* window,
     MaybeAdd(window);
 }
 
-}  // namespace aura_shell
+}  // namespace ash

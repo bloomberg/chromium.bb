@@ -4,7 +4,7 @@
 
 #include "ash/app_list/app_list_item_group_model.h"
 
-namespace aura_shell {
+namespace ash {
 
 AppListItemGroupModel::AppListItemGroupModel(const std::string& title)
     : title_(title) {
@@ -22,4 +22,4 @@ AppListItemModel* AppListItemGroupModel::GetItem(int index) {
   return items_.item_at(index);
 }
 
-}  // namespace aura_shell
+}  // namespace ash

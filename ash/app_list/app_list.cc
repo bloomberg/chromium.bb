@@ -16,7 +16,7 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 namespace {
@@ -192,4 +192,4 @@ void AppList::OnWidgetActivationChanged(views::Widget* widget, bool active) {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

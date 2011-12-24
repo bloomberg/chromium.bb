@@ -13,7 +13,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-using aura_shell::Shell;
+using ash::Shell;
 
 namespace ash {
 namespace shell {
@@ -63,7 +63,7 @@ void CreateLockScreen() {
   params.delegate = lock_view;
   widget->Init(params);
   Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_LockScreenContainer)->
+      ash::internal::kShellWindowId_LockScreenContainer)->
       AddChild(widget->GetNativeView());
   widget->SetContentsView(lock_view);
   widget->Show();

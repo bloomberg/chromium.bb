@@ -6,7 +6,7 @@
 #define ASH_WM_WINDOW_PROPERTIES_H_
 #pragma once
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // Shell-specific window property keys.
@@ -20,6 +20,6 @@ extern const char kShadowTypeKey[];
 // Alphabetical sort.
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_WINDOW_PROPERTIES_H_

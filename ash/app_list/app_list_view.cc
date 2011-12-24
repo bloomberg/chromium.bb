@@ -12,13 +12,13 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
+namespace ash {
 
 AppListView::AppListView(
     AppListModel* model,
     AppListViewDelegate* delegate,
     const gfx::Rect& bounds,
-    const aura_shell::ShellDelegate::SetWidgetCallback& callback)
+    const ash::ShellDelegate::SetWidgetCallback& callback)
     : model_(model),
       delegate_(delegate) {
   Init(bounds, callback);
@@ -77,4 +77,4 @@ void AppListView::AppListItemActivated(AppListItemView* sender,
   Close();
 }
 
-}  // namespace aura_shell
+}  // namespace ash

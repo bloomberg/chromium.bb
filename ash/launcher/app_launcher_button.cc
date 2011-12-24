@@ -9,7 +9,7 @@
 #include "ash/launcher/launcher_button_host.h"
 #include "ui/gfx/canvas_skia.h"
 
-namespace aura_shell {
+namespace ash {
 
 namespace internal {
 
@@ -77,4 +77,4 @@ bool AppLauncherButton::OnMouseDragged(const views::MouseEvent& event) {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

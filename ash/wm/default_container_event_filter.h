@@ -13,7 +13,7 @@ class MouseEvent;
 class Window;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class DefaultContainerEventFilter : public ToplevelWindowEventFilter {
@@ -50,6 +50,6 @@ class DefaultContainerEventFilter : public ToplevelWindowEventFilter {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  //  ASH_WM_DEFAULT_CONTAINER_EVENT_FILTER_H_

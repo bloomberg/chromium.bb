@@ -7,7 +7,7 @@
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/auto_reset.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,5 +58,5 @@ void StatusAreaLayoutManager::LayoutStatusArea() {
   shelf_->LayoutShelf();
 }
 
-}  // internal
-}  // aura_shell
+}  // namespace internal
+}  // namespace ash

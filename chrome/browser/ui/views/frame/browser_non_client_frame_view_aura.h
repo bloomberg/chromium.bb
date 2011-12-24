@@ -20,7 +20,7 @@ class WindowControlButton;
 class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
                                       public views::ButtonListener,
                                       public views::Widget::Observer,
-                                      public aura_shell::WindowFrame {
+                                      public ash::WindowFrame {
  public:
   BrowserNonClientFrameViewAura(BrowserFrame* frame, BrowserView* browser_view);
   virtual ~BrowserNonClientFrameViewAura();
@@ -77,7 +77,7 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   virtual void OnWidgetActivationChanged(views::Widget* widget,
                                          bool active) OVERRIDE;
 
-  // aura_shell::WindowFrame overrides:
+  // ash::WindowFrame overrides:
   virtual void OnWindowHoverChanged(bool hovered) OVERRIDE;
 
   int last_hittest_code_;

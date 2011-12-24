@@ -20,7 +20,7 @@ class MouseEvent;
 class Window;
 }
 
-namespace aura_shell {
+namespace ash {
 
 class ASH_EXPORT ToplevelWindowEventFilter : public aura::EventFilter {
  public:

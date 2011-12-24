@@ -11,7 +11,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 ShowStateController::ShowStateController(
@@ -44,4 +44,4 @@ void ShowStateController::OnWindowPropertyChanged(aura::Window* window,
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

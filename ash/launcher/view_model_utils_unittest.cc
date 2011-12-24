@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/view.h"
 
-namespace aura_shell {
+namespace ash {
 
 // Makes sure SetViewBoundsToIdealBounds updates the view appropriately.
 TEST(ViewModelUtils, SetViewBoundsToIdealBounds) {
@@ -43,4 +43,4 @@ TEST(ViewModelUtils, DetermineMoveIndex) {
   EXPECT_EQ(2, ViewModelUtils::DetermineMoveIndex(model, &v2, 12));
 }
 
-}  // namespace aura_shell
+}  // namespace ash

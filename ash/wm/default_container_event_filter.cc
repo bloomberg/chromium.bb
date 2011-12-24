@@ -18,9 +18,9 @@ namespace {
 void WindowHoverChanged(aura::Window* window, bool hovered) {
   if (!window)
     return;
-  aura_shell::WindowFrame* window_frame =
-      static_cast<aura_shell::WindowFrame*>(
-          window->GetProperty(aura_shell::kWindowFrameKey));
+  ash::WindowFrame* window_frame =
+      static_cast<ash::WindowFrame*>(
+          window->GetProperty(ash::kWindowFrameKey));
   if (!window_frame)
     return;
   window_frame->OnWindowHoverChanged(hovered);
@@ -28,7 +28,7 @@ void WindowHoverChanged(aura::Window* window, bool hovered) {
 
 }  // namespace
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 DefaultContainerEventFilter::DefaultContainerEventFilter(aura::Window* owner)
@@ -127,5 +127,5 @@ void DefaultContainerEventFilter::UpdateHoveredWindow(
   WindowHoverChanged(hovered_window_, true);
 }
 
-}  // internal
-}  // aura_shell
+}  // namespace internal
+}  // namespace ash

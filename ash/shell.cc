@@ -43,7 +43,7 @@
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
+namespace ash {
 
 namespace {
 
@@ -366,4 +366,4 @@ void Shell::EnableWorkspaceManager() {
           workspace_controller_->workspace_manager()));
 }
 
-}  // namespace aura_shell
+}  // namespace ash

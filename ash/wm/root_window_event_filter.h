@@ -12,7 +12,7 @@
 #include "ui/aura/event_filter.h"
 #include "ash/ash_export.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // RootWindowEventFilter gets all root window events first and can provide
@@ -64,6 +64,6 @@ class ASH_EXPORT RootWindowEventFilter : public aura::EventFilter {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_ROOT_WINDOW_EVENT_FILTER_H_

@@ -8,9 +8,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 
-using aura_shell::internal::ImageGrid;
+using ash::internal::ImageGrid;
 
-namespace aura_shell {
+namespace ash {
 namespace test {
 
 namespace {
@@ -24,7 +24,7 @@ gfx::Image* CreateImage(const gfx::Size& size) {
 
 }  // namespace
 
-typedef aura_shell::test::AuraShellTestBase ImageGridTest;
+typedef ash::test::AuraShellTestBase ImageGridTest;
 
 // Test that an ImageGrid's layers are transformed correctly when SetSize() is
 // called.
@@ -269,4 +269,4 @@ TEST_F(ImageGridTest, TooSmall) {
 }
 
 }  // namespace test
-}  // namespace aura_shell
+}  // namespace ash

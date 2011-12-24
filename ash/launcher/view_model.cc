@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "ui/views/view.h"
 
-namespace aura_shell {
+namespace ash {
 
 ViewModel::ViewModel() {
 }
@@ -52,4 +52,4 @@ int ViewModel::GetIndexOfView(views::View* view) const {
   return -1;
 }
 
-}  // namespace aura_shell
+}  // namespace ash

@@ -15,7 +15,7 @@
 using std::max;
 using std::min;
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 gfx::Rect ImageGrid::TestAPI::GetTransformedLayerBounds(
@@ -243,4 +243,4 @@ void ImageGrid::InitImage(const gfx::Image* image,
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

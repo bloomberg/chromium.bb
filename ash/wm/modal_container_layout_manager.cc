@@ -18,7 +18,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 namespace {
@@ -146,7 +146,7 @@ void ModalContainerLayoutManager::RemoveModalWindow(aura::Window* window) {
   if (modal_windows_.empty())
     HideModalScreen();
   else
-    aura_shell::ActivateWindow(modal_window());
+    ash::ActivateWindow(modal_window());
 }
 
 void ModalContainerLayoutManager::CreateModalScreen() {
@@ -187,4 +187,4 @@ void ModalContainerLayoutManager::HideModalScreen() {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

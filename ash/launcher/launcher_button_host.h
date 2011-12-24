@@ -11,7 +11,7 @@ class MouseEvent;
 class View;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // The launcher buttons communicate back to the host by way of this interface.
@@ -35,6 +35,6 @@ class LauncherButtonHost {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_LAUNCHER_LAUNCHER_BUTTON_HOST_H_

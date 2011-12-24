@@ -8,7 +8,7 @@
 
 #include "ash/ash_export.h"
 
-namespace aura_shell {
+namespace ash {
 
 // aura::Window property name for a pointer to the WindowFrame interface.
 ASH_EXPORT extern const char* const kWindowFrameKey;
@@ -23,6 +23,6 @@ class ASH_EXPORT WindowFrame {
   virtual void OnWindowHoverChanged(bool hovered) = 0;
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_WINDOW_FRAME_H_

@@ -10,7 +10,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class DesktopBackgroundView : public views::WidgetDelegateView {
@@ -30,6 +30,6 @@ class DesktopBackgroundView : public views::WidgetDelegateView {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_VIEW_H_

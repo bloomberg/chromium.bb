@@ -6,7 +6,7 @@
 
 #include "ash/app_list/app_list_item_model_observer.h"
 
-namespace aura_shell {
+namespace ash {
 
 AppListItemModel::AppListItemModel() {
 }
@@ -34,4 +34,4 @@ void AppListItemModel::RemoveObserver(AppListItemModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-}  // namespace aura_shell
+}  // namespace ash

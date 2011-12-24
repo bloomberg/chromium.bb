@@ -23,7 +23,7 @@ class Point;
 class Rect;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 class Workspace;
 class WorkspaceObserver;
@@ -130,6 +130,6 @@ class ASH_EXPORT WorkspaceManager {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_WORKSPACE_MANAGER_H_

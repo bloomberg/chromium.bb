@@ -84,7 +84,7 @@ const Extension* ExtensionAppItem::GetExtension() const {
 
 void ExtensionAppItem::LoadImage(const Extension* extension) {
   ExtensionResource icon = extension->GetIconResource(
-      aura_shell::AppListItemView::kIconSize,
+      ash::AppListItemView::kIconSize,
       ExtensionIconSet::MATCH_BIGGER);
   if (icon.relative_path().empty()) {
     LoadDefaultImage();
@@ -122,8 +122,8 @@ void ExtensionAppItem::LoadImage(const Extension* extension) {
   tracker_.reset(new ImageLoadingTracker(this));
   tracker_->LoadImage(extension,
                       icon,
-                      gfx::Size(aura_shell::AppListItemView::kIconSize,
-                                aura_shell::AppListItemView::kIconSize),
+                      gfx::Size(ash::AppListItemView::kIconSize,
+                                ash::AppListItemView::kIconSize),
                       ImageLoadingTracker::DONT_CACHE);
 }
 

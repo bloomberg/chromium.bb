@@ -7,7 +7,7 @@
 #include "ui/aura/window.h"
 #include "ash/launcher/launcher_model_observer.h"
 
-namespace aura_shell {
+namespace ash {
 
 LauncherModel::LauncherModel() {
 }
@@ -84,4 +84,4 @@ void LauncherModel::RemoveObserver(LauncherModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-}  // namespace aura_shell
+}  // namespace ash

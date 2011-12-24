@@ -33,7 +33,7 @@ TEST_F(AppListModelBuilderTest, GetExtensionApps) {
   const ExtensionSet* extensions = service_->extensions();
   ASSERT_EQ(static_cast<size_t>(4),  extensions->size());
 
-  scoped_ptr<aura_shell::AppListModel> model(new aura_shell::AppListModel());
+  scoped_ptr<ash::AppListModel> model(new ash::AppListModel());
   AppListModelBuilder builder(profile_.get(), model.get());
   builder.GetExtensionApps();
 
@@ -41,10 +41,10 @@ TEST_F(AppListModelBuilderTest, GetExtensionApps) {
   EXPECT_EQ(2, model->group_count());
 
   // Two packaged apps are on the first page and hosted app on the 2nd page.
-  aura_shell::AppListItemGroupModel* group1 = model->GetGroup(0);
+  ash::AppListItemGroupModel* group1 = model->GetGroup(0);
   EXPECT_EQ("Packaged App 1", group1->GetItem(0)->title());
   EXPECT_EQ("Packaged App 2", group1->GetItem(1)->title());
 
-  aura_shell::AppListItemGroupModel* group2 = model->GetGroup(1);
+  ash::AppListItemGroupModel* group2 = model->GetGroup(1);
   EXPECT_EQ("Hosted App", group2->GetItem(0)->title());
 }

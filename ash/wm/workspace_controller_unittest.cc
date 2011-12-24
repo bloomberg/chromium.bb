@@ -13,7 +13,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 using aura::Window;
@@ -29,7 +29,7 @@ class WorkspaceControllerTest : public aura::test::AuraTestBase {
     // Activatable windows need to be in a container the ActivationController
     // recognizes.
     contents_view_->set_id(
-        aura_shell::internal::kShellWindowId_DefaultContainer);
+        ash::internal::kShellWindowId_DefaultContainer);
     activation_controller_.reset(new ActivationController);
     activation_controller_->set_default_container_for_test(contents_view_);
     controller_.reset(new WorkspaceController(contents_view_));
@@ -81,7 +81,7 @@ TEST_F(WorkspaceControllerTest, Overview) {
   EXPECT_TRUE(ws2->AddWindowAfter(w2.get(), NULL));
 
   // Activating a window switches the active workspace.
-  aura_shell::ActivateWindow(w2.get());
+  ash::ActivateWindow(w2.get());
   EXPECT_EQ(ws2, workspace_manager()->GetActiveWorkspace());
 
   // The size of contents_view() is now ws1(500) + ws2(500) + margin(50).
@@ -95,7 +95,7 @@ TEST_F(WorkspaceControllerTest, Overview) {
 
   // Activating window w1 switches the active window and
   // the mode back to normal mode.
-  aura_shell::ActivateWindow(w1.get());
+  ash::ActivateWindow(w1.get());
   EXPECT_EQ(ws1, workspace_manager()->GetActiveWorkspace());
   EXPECT_FALSE(workspace_manager()->is_overview());
 
@@ -116,4 +116,4 @@ TEST_F(WorkspaceControllerTest, Overview) {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

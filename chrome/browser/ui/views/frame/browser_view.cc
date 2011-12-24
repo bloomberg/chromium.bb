@@ -1978,13 +1978,13 @@ void BrowserView::Init() {
 #if defined(USE_AURA)
   // Add launcher item if we're using the launcher and this type of browser
   // needs an item.
-  aura_shell::LauncherItemType type;
-  if (aura_shell::Shell::GetInstance()->launcher() &&
+  ash::LauncherItemType type;
+  if (ash::Shell::GetInstance()->launcher() &&
       ChromeShellDelegate::ShouldCreateLauncherItemForBrowser(browser_.get(),
                                                               &type)) {
     icon_updater_.reset(new LauncherIconUpdater(
         browser_->tabstrip_model(),
-        aura_shell::Shell::GetInstance()->launcher()->model(),
+        ash::Shell::GetInstance()->launcher()->model(),
         frame_->GetNativeWindow()));
   }
 #endif  // defined(USE_AURA)

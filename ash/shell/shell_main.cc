@@ -25,7 +25,7 @@
 
 namespace {
 
-class ShellDelegateImpl : public aura_shell::ShellDelegate {
+class ShellDelegateImpl : public ash::ShellDelegate {
  public:
   ShellDelegateImpl() {
   }
@@ -38,7 +38,7 @@ class ShellDelegateImpl : public aura_shell::ShellDelegate {
   }
 
   virtual views::Widget* CreateStatusArea() OVERRIDE {
-    return aura_shell::internal::CreateStatusArea();
+    return ash::internal::CreateStatusArea();
   }
 
   virtual void RequestAppListWidget(
@@ -51,20 +51,20 @@ class ShellDelegateImpl : public aura_shell::ShellDelegate {
     ash::shell::CreateAppList(bounds, callback);
   }
 
-  virtual void BuildAppListModel(aura_shell::AppListModel* model) {
+  virtual void BuildAppListModel(ash::AppListModel* model) {
     ash::shell::BuildAppListModel(model);
   }
 
-  virtual aura_shell::AppListViewDelegate* CreateAppListViewDelegate() {
+  virtual ash::AppListViewDelegate* CreateAppListViewDelegate() {
     return ash::shell::CreateAppListViewDelegate();
   }
 
   virtual void LauncherItemClicked(
-      const aura_shell::LauncherItem& item) OVERRIDE {
-    aura_shell::ActivateWindow(item.window);
+      const ash::LauncherItem& item) OVERRIDE {
+    ash::ActivateWindow(item.window);
   }
 
-  virtual bool ConfigureLauncherItem(aura_shell::LauncherItem* item) OVERRIDE {
+  virtual bool ConfigureLauncherItem(ash::LauncherItem* item) OVERRIDE {
     static int image_count = 0;
     item->tab_images.resize(image_count + 1);
     for (int i = 0; i < image_count + 1; ++i) {
@@ -108,13 +108,13 @@ int main(int argc, char** argv) {
   if (!views::ViewsDelegate::views_delegate)
     views::ViewsDelegate::views_delegate = new views::TestViewsDelegate;
 
-  aura_shell::Shell::CreateInstance(new ShellDelegateImpl);
+  ash::Shell::CreateInstance(new ShellDelegateImpl);
 
   ash::shell::InitWindowTypeLauncher();
 
   aura::RootWindow::GetInstance()->Run();
 
-  aura_shell::Shell::DeleteInstance();
+  ash::Shell::DeleteInstance();
 
   aura::RootWindow::DeleteInstance();
 

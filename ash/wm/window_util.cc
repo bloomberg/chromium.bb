@@ -13,7 +13,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
 
-namespace aura_shell {
+namespace ash {
 
 bool IsWindowMaximized(aura::Window* window) {
   return window->GetIntProperty(aura::client::kShowStateKey) ==
@@ -76,4 +76,4 @@ bool HasFullscreenWindow(const WindowSet& windows) {
   return false;
 }
 
-}  // namespace aura_shell
+}  // namespace ash

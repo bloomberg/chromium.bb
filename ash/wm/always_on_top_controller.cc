@@ -7,7 +7,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 AlwaysOnTopController::AlwaysOnTopController()
@@ -76,4 +76,4 @@ void AlwaysOnTopController::OnWindowDestroyed(aura::Window* window) {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

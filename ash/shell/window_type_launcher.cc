@@ -145,8 +145,8 @@ void InitWindowTypeLauncher() {
       views::Widget::CreateWindowWithBounds(new WindowTypeLauncher,
                                             gfx::Rect(120, 150, 400, 300));
   widget->GetNativeView()->SetName("WindowTypeLauncher");
-  aura_shell::internal::SetShadowType(widget->GetNativeView(),
-                                      aura_shell::internal::SHADOW_TYPE_NONE);
+  ash::internal::SetShadowType(widget->GetNativeView(),
+                                      ash::internal::SHADOW_TYPE_NONE);
   widget->Show();
 }
 
@@ -257,7 +257,7 @@ string16 WindowTypeLauncher::GetWindowTitle() const {
 }
 
 views::NonClientFrameView* WindowTypeLauncher::CreateNonClientFrameView() {
-  return new aura_shell::internal::ToplevelFrameView;
+  return new ash::internal::ToplevelFrameView;
 }
 
 void WindowTypeLauncher::ButtonPressed(views::Button* sender,

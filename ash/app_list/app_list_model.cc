@@ -4,7 +4,7 @@
 
 #include "ash/app_list/app_list_model.h"
 
-namespace aura_shell {
+namespace ash {
 
 AppListModel::AppListModel() {
 }
@@ -29,4 +29,4 @@ void AppListModel::RemoveObserver(ui::ListModelObserver* observer) {
   groups_.RemoveObserver(observer);
 }
 
-}  // namespace aura_shell
+}  // namespace ash

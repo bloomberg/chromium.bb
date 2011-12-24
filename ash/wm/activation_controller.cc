@@ -13,7 +13,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 namespace {
 
@@ -184,4 +184,4 @@ aura::Window* ActivationController::GetTopmostWindowToActivate(
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

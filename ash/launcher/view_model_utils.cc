@@ -9,7 +9,7 @@
 #include "ash/launcher/view_model.h"
 #include "ui/views/view.h"
 
-namespace aura_shell {
+namespace ash {
 
 // static
 void ViewModelUtils::SetViewBoundsToIdealBounds(const ViewModel& model) {
@@ -45,4 +45,4 @@ int ViewModelUtils::DetermineMoveIndex(const ViewModel& model,
   return model.view_size() - 1;
 }
 
-}  // namespace aura_shell
+}  // namespace ash

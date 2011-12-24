@@ -16,7 +16,7 @@ namespace views {
 class View;
 }
 
-namespace aura_shell {
+namespace ash {
 
 class AppListModel;
 class AppListViewDelegate;
@@ -56,6 +56,6 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   DISALLOW_COPY_AND_ASSIGN(AppListView);
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_APP_LIST_VIEW_H_

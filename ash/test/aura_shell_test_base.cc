@@ -7,7 +7,7 @@
 #include "ash/shell.h"
 #include "ash/test/test_shell_delegate.h"
 
-namespace aura_shell {
+namespace ash {
 namespace test {
 
 AuraShellTestBase::AuraShellTestBase() {
@@ -20,7 +20,7 @@ void AuraShellTestBase::SetUp() {
   aura::test::AuraTestBase::SetUp();
 
   // Creates Shell and hook with Desktop.
-  aura_shell::Shell::CreateInstance(new TestShellDelegate);
+  ash::Shell::CreateInstance(new TestShellDelegate);
 }
 
 void AuraShellTestBase::TearDown() {
@@ -28,10 +28,10 @@ void AuraShellTestBase::TearDown() {
   RunAllPendingInMessageLoop();
 
   // Tear down the shell.
-  aura_shell::Shell::DeleteInstance();
+  ash::Shell::DeleteInstance();
 
   aura::test::AuraTestBase::TearDown();
 }
 
 }  // namespace test
-}  // namespace aura_shell
+}  // namespace ash

@@ -4,7 +4,7 @@
 
 #include "ash/wm/window_properties.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // Alphabetical sort.
@@ -14,4 +14,4 @@ const char kShadowTypeKey[] = "ShadowType";
 // Alphabetical sort.
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

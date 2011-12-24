@@ -13,7 +13,7 @@ class Profile;
 
 class AppListModelBuilder {
  public:
-  AppListModelBuilder(Profile* profile, aura_shell::AppListModel* model);
+  AppListModelBuilder(Profile* profile, ash::AppListModel* model);
   virtual ~AppListModelBuilder();
 
   // Populates the model.
@@ -26,7 +26,7 @@ class AppListModelBuilder {
   void GetBrowserCommands();
 
   Profile* profile_;
-  aura_shell::AppListModel* model_;
+  ash::AppListModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListModelBuilder);
 };

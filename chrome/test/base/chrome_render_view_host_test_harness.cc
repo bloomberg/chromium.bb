@@ -31,7 +31,7 @@ void ChromeRenderViewHostTestHarness::SetUp() {
 void ChromeRenderViewHostTestHarness::TearDown() {
   RenderViewHostTestHarness::TearDown();
 #if defined(USE_AURA)
-  aura_shell::Shell::DeleteInstance();
+  ash::Shell::DeleteInstance();
   aura::RootWindow::DeleteInstance();
 #endif
 }

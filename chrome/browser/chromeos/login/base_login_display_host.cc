@@ -303,8 +303,8 @@ void BaseLoginDisplayHost::StartAnimation() {
     background_transition->AddElement(background_pause.release());
     background_transition->AddElement(background_transform_animation.release());
     ui::Layer* background_layer =
-        aura_shell::Shell::GetInstance()->GetContainer(
-            aura_shell::internal::kShellWindowId_DesktopBackgroundContainer)->
+        ash::Shell::GetInstance()->GetContainer(
+            ash::internal::kShellWindowId_DesktopBackgroundContainer)->
             layer();
     background_layer->GetAnimator()->StartAnimation(
         background_transition.release());
@@ -332,8 +332,8 @@ void BaseLoginDisplayHost::StartAnimation() {
     browser_transition->AddElement(browser_pause_animation.release());
     browser_transition->AddElement(browser_opacity_animation.release());
     ui::Layer* default_container_layer =
-        aura_shell::Shell::GetInstance()->GetContainer(
-            aura_shell::internal::kShellWindowId_DefaultContainer)->layer();
+        ash::Shell::GetInstance()->GetContainer(
+            ash::internal::kShellWindowId_DefaultContainer)->layer();
     default_container_layer->GetAnimator()->StartAnimation(
         browser_transition.release());
   }

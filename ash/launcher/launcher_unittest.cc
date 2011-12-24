@@ -9,9 +9,9 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-typedef aura_shell::test::AuraShellTestBase LauncherTest;
+typedef ash::test::AuraShellTestBase LauncherTest;
 
-namespace aura_shell {
+namespace ash {
 
 // Makes sure invoking SetStatusWidth on the launcher changes the size of the
 // LauncherView.
@@ -28,4 +28,4 @@ TEST_F(LauncherTest, SetStatusWidth) {
   EXPECT_EQ(total_width - total_width / 2, launcher_view->width());
 }
 
-}  // namespace aura_shell
+}  // namespace ash

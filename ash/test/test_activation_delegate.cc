@@ -8,7 +8,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 
-namespace aura_shell {
+namespace ash {
 namespace test {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,4 +50,4 @@ void TestActivationDelegate::OnLostActive() {
 }
 
 }  // namespace test
-}  // namespace aura_shell
+}  // namespace ash

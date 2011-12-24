@@ -18,7 +18,7 @@ namespace ui {
 class AcceleratorManager;
 }
 
-namespace aura_shell {
+namespace ash {
 
 class ScreenshotDelegate;
 
@@ -71,6 +71,6 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   DISALLOW_COPY_AND_ASSIGN(AcceleratorController);
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_ACCELERATORS_ACCELERATOR_CONTROLLER_H_

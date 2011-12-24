@@ -14,7 +14,7 @@
 #include "ui/aura/window_observer.h"
 #include "ash/ash_export.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // Exported for unit tests.
@@ -72,6 +72,6 @@ class ASH_EXPORT ActivationController
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_ACTIVATION_CONTROLLER_H_

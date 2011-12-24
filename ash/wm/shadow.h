@@ -15,7 +15,7 @@ namespace ui {
 class Layer;
 }  // namespace ui
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class ImageGrid;
@@ -49,6 +49,6 @@ class ASH_EXPORT Shadow {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_SHADOW_H_

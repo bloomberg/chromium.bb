@@ -18,7 +18,7 @@ namespace aura {
 class Window;
 }
 
-namespace aura_shell {
+namespace ash {
 
 namespace test {
 class DragDropControllerTest;
@@ -58,7 +58,7 @@ class ASH_EXPORT DragDropController
                                               aura::TouchEvent* event) OVERRIDE;
 
  private:
-  friend class aura_shell::test::DragDropControllerTest;
+  friend class ash::test::DragDropControllerTest;
 
   // Helper method to reset everything.
   void Cleanup();
@@ -78,6 +78,6 @@ class ASH_EXPORT DragDropController
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_DRAG_DROP_DRAG_DROP_CONTROLLER_H_

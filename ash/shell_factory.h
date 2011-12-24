@@ -14,14 +14,14 @@ class Widget;
 
 // Declarations of shell component factory functions.
 
-namespace aura_shell {
+namespace ash {
 
 namespace internal {
 views::Widget* CreateDesktopBackground();
 ASH_EXPORT views::Widget* CreateStatusArea();
 }  // namespace internal
 
-}  // namespace aura_shell
+}  // namespace ash
 
 
 #endif  // ASH_SHELL_FACTORY_H_

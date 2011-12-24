@@ -20,7 +20,7 @@ namespace views {
 class View;
 }
 
-class ChromeShellDelegate : public aura_shell::ShellDelegate {
+class ChromeShellDelegate : public ash::ShellDelegate {
  public:
   ChromeShellDelegate();
   virtual ~ChromeShellDelegate();
@@ -33,19 +33,19 @@ class ChromeShellDelegate : public aura_shell::ShellDelegate {
   // should be created |type| is set to the launcher type to create.
   static bool ShouldCreateLauncherItemForBrowser(
       Browser* browser,
-      aura_shell::LauncherItemType* type);
+      ash::LauncherItemType* type);
 
-  // aura_shell::ShellDelegate overrides;
+  // ash::ShellDelegate overrides;
   virtual void CreateNewWindow() OVERRIDE;
   virtual views::Widget* CreateStatusArea() OVERRIDE;
   virtual void RequestAppListWidget(
       const gfx::Rect& bounds,
       const SetWidgetCallback& callback) OVERRIDE;
-  virtual void BuildAppListModel(aura_shell::AppListModel* model) OVERRIDE;
-  virtual aura_shell::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
+  virtual void BuildAppListModel(ash::AppListModel* model) OVERRIDE;
+  virtual ash::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual void LauncherItemClicked(
-      const aura_shell::LauncherItem& item) OVERRIDE;
-  virtual bool ConfigureLauncherItem(aura_shell::LauncherItem* item) OVERRIDE;
+      const ash::LauncherItem& item) OVERRIDE;
+  virtual bool ConfigureLauncherItem(ash::LauncherItem* item) OVERRIDE;
 
  private:
   static ChromeShellDelegate* instance_;

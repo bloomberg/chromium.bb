@@ -19,11 +19,11 @@ gfx::NativeView GetParent(gfx::NativeView view) {
 }
 
 bool IsWindowActive(gfx::NativeWindow window) {
-  return aura_shell::IsActiveWindow(window);
+  return ash::IsActiveWindow(window);
 }
 
 void ActivateWindow(gfx::NativeWindow window) {
-  aura_shell::ActivateWindow(window);
+  ash::ActivateWindow(window);
 }
 
 bool IsVisible(gfx::NativeView view) {

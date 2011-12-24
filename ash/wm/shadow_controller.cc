@@ -17,7 +17,7 @@
 
 using std::make_pair;
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 namespace {
@@ -114,4 +114,4 @@ void ShadowController::CreateShadowForWindow(aura::Window* window) {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

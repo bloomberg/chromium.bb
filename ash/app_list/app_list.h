@@ -13,7 +13,7 @@
 #include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // AppList is a controller that manages app list UI for shell. To show the UI,
@@ -78,6 +78,6 @@ class AppList : public aura::EventFilter,
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  //  ASH_APP_LIST_APP_LIST_H_

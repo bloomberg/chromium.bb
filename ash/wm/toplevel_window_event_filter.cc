@@ -14,7 +14,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 
-namespace aura_shell {
+namespace ash {
 
 namespace {
 

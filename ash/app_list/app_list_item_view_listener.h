@@ -8,7 +8,7 @@
 
 #include "ash/ash_export.h"
 
-namespace aura_shell {
+namespace ash {
 
 class AppListItemView;
 
@@ -22,6 +22,6 @@ class ASH_EXPORT AppListItemViewListener {
   virtual ~AppListItemViewListener() {}
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_APP_LIST_ITEM_VIEW_LISTENER_H_

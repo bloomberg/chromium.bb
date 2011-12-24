@@ -9,7 +9,7 @@
 #include "ui/gfx/font.h"
 #include "ui/views/controls/label.h"
 
-namespace aura_shell {
+namespace ash {
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -49,6 +49,6 @@ class DropShadowLabel : public views::Label  {
   DISALLOW_COPY_AND_ASSIGN(DropShadowLabel);
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_DROP_SHADOW_LABEL_H_

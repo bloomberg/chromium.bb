@@ -19,7 +19,7 @@ class ImageButton;
 class MenuRunner;
 }
 
-namespace aura_shell {
+namespace ash {
 
 struct LauncherItem;
 class LauncherModel;
@@ -145,6 +145,6 @@ class LauncherView : public views::WidgetDelegateView,
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_LAUNCHER_LAUNCHER_VIEW_H_

@@ -18,13 +18,13 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/views/widget/native_widget_aura.h"
 
-namespace aura_shell {
+namespace ash {
 namespace test {
 
 namespace {
 
 using views::Widget;
-using aura_shell::internal::DefaultContainerLayoutManager;
+using ash::internal::DefaultContainerLayoutManager;
 
 class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
  public:
@@ -37,7 +37,7 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
     container_.reset(
         CreateTestWindow(gfx::Rect(0, 0, 500, 400), root_window));
     workspace_controller_.reset(
-        new aura_shell::internal::WorkspaceController(container_.get()));
+        new ash::internal::WorkspaceController(container_.get()));
     layout_manager_ = new DefaultContainerLayoutManager(
         workspace_controller_->workspace_manager());
     container_->SetLayoutManager(layout_manager_);
@@ -71,15 +71,15 @@ class DefaultContainerLayoutManagerTest : public aura::test::AuraTestBase {
   }
 
  protected:
-  aura_shell::internal::WorkspaceManager* workspace_manager() {
+  ash::internal::WorkspaceManager* workspace_manager() {
     return workspace_controller_->workspace_manager();
   }
 
  private:
   scoped_ptr<aura::Window> container_;
-  scoped_ptr<aura_shell::internal::WorkspaceController> workspace_controller_;
+  scoped_ptr<ash::internal::WorkspaceController> workspace_controller_;
   // LayoutManager is owned by |container|.
-  aura_shell::internal::DefaultContainerLayoutManager* layout_manager_;
+  ash::internal::DefaultContainerLayoutManager* layout_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultContainerLayoutManagerTest);
@@ -338,4 +338,4 @@ TEST_F(DefaultContainerLayoutManagerTest, MaximizeAfterRootWindowResize) {
 }
 
 }  // namespace test
-}  // namespace aura_shell
+}  // namespace ash

@@ -21,7 +21,7 @@ namespace views {
 class Widget;
 }
 
-namespace aura_shell {
+namespace ash {
 
 class LauncherModel;
 
@@ -69,6 +69,6 @@ class ASH_EXPORT Launcher : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(Launcher);
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_LAUNCHER_LAUNCHER_H_

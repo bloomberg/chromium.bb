@@ -79,8 +79,8 @@ const Experiment::Choice kPrerenderFromOmniboxChoices[] = {
 const Experiment::Choice kAuraWindowModeChoices[] = {
   { IDS_FLAGS_AURA_WINDOW_MODE_NORMAL, "", "" },
   { IDS_FLAGS_AURA_WINDOW_MODE_COMPACT,
-      aura_shell::switches::kAuraWindowMode,
-      aura_shell::switches::kAuraWindowModeCompact }
+      ash::switches::kAuraWindowMode,
+      ash::switches::kAuraWindowModeCompact }
 };
 #endif
 
@@ -468,14 +468,14 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_AURA_WORKSPACE_MANAGER_NAME,
     IDS_FLAGS_AURA_WORKSPACE_MANAGER_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(aura_shell::switches::kAuraWorkspaceManager)
+    SINGLE_VALUE_TYPE(ash::switches::kAuraWorkspaceManager)
   },
   {
     "aura-translucent-frames",
     IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_NAME,
     IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(aura_shell::switches::kAuraTranslucentFrames)
+    SINGLE_VALUE_TYPE(ash::switches::kAuraTranslucentFrames)
   },
 #endif  // defined(USE_AURA)
   {

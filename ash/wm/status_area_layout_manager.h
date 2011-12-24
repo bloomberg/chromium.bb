@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class ShelfLayoutManager;
@@ -47,6 +47,6 @@ class StatusAreaLayoutManager : public aura::LayoutManager {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_STATUS_AREA_LAYOUT_MANAGER_H_

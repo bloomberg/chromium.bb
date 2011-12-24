@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/test/aura_test_base.h"
 
-namespace aura_shell {
+namespace ash {
 namespace test {
 
 class AuraShellTestBase : public aura::test::AuraTestBase {
@@ -26,6 +26,6 @@ class AuraShellTestBase : public aura::test::AuraTestBase {
 };
 
 }  // namespace test
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_TEST_AURA_SHELL_TEST_BASE_H_

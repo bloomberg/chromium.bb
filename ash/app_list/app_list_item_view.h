@@ -17,7 +17,7 @@ class ImageView;
 class Label;
 }
 
-namespace aura_shell {
+namespace ash {
 
 class AppListItemModel;
 class AppListItemViewListener;
@@ -67,6 +67,6 @@ class ASH_EXPORT AppListItemView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(AppListItemView);
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_APP_LIST_ITEM_VIEW_H_

@@ -12,7 +12,7 @@ namespace aura {
 class Window;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class ASH_EXPORT ModalityEventFilterDelegate {
@@ -22,6 +22,6 @@ class ASH_EXPORT ModalityEventFilterDelegate {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_MODALITY_EVENT_FILTER_DELEGATE_H_

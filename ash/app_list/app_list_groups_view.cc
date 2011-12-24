@@ -15,7 +15,7 @@
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/layout/box_layout.h"
 
-namespace aura_shell {
+namespace ash {
 
 namespace {
 
@@ -240,4 +240,4 @@ void AppListGroupsView::ListItemsChanged(int start, int count) {
   NOTREACHED();
 }
 
-}  // namespace aura_shell
+}  // namespace ash

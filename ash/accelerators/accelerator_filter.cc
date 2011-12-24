@@ -17,7 +17,7 @@ const int kModifierFlagMask = (ui::EF_SHIFT_DOWN |
                                ui::EF_ALT_DOWN);
 }  // namespace
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,4 +55,4 @@ ui::TouchStatus AcceleratorFilter::PreHandleTouchEvent(
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

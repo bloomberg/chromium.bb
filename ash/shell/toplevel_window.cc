@@ -54,7 +54,7 @@ bool ToplevelWindow::CanMaximize() const {
 }
 
 views::NonClientFrameView* ToplevelWindow::CreateNonClientFrameView() {
-  return new aura_shell::internal::ToplevelFrameView;
+  return new ash::internal::ToplevelFrameView;
 }
 
 }  // namespace shell

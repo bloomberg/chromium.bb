@@ -20,7 +20,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
 
-namespace aura_shell {
+namespace ash {
 namespace test {
 
 class RootWindowEventFilterTest : public aura::test::AuraTestBase {
@@ -146,7 +146,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
   d2.Clear();
 
   // Activate window1.
-  aura_shell::ActivateWindow(w1.get());
+  ash::ActivateWindow(w1.get());
   EXPECT_TRUE(IsActiveWindow(w1.get()));
   EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());
@@ -221,7 +221,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
   d2.Clear();
 
   // Activate window1.
-  aura_shell::ActivateWindow(w1.get());
+  ash::ActivateWindow(w1.get());
   EXPECT_TRUE(IsActiveWindow(w1.get()));
   EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());
@@ -383,7 +383,7 @@ TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
   // Creates a window and make it active
   scoped_ptr<aura::Window> w1(aura::test::CreateTestWindow(
       SK_ColorWHITE, -1, gfx::Rect(0, 0, 100, 100), NULL));
-  aura_shell::ActivateWindow(w1.get());
+  ash::ActivateWindow(w1.get());
 
   // Creates two addition filters
   scoped_ptr<aura::test::TestEventFilter> f1(
@@ -448,4 +448,4 @@ TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
 }
 
 }  // namespace test
-}  // namespace aura_shell
+}  // namespace ash

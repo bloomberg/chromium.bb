@@ -8,7 +8,7 @@
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 Shadow::Shadow() {
@@ -51,4 +51,4 @@ void Shadow::SetContentBounds(const gfx::Rect& content_bounds) {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

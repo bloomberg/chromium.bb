@@ -15,7 +15,7 @@
 
 LauncherIconUpdater::LauncherIconUpdater(
     TabStripModel* tab_model,
-    aura_shell::LauncherModel* launcher_model,
+    ash::LauncherModel* launcher_model,
     aura::Window* window)
     : tab_model_(tab_model),
       launcher_model_(launcher_model),
@@ -67,7 +67,7 @@ void LauncherIconUpdater::UpdateLauncher(TabContentsWrapper* tab) {
   if (item_index == -1)
     return;
 
-  if (launcher_model_->items()[item_index].type == aura_shell::TYPE_APP) {
+  if (launcher_model_->items()[item_index].type == ash::TYPE_APP) {
     // Use the app icon if we can.
     SkBitmap image;
     if (tab->extension_tab_helper()->GetExtensionAppIcon())
@@ -78,7 +78,7 @@ void LauncherIconUpdater::UpdateLauncher(TabContentsWrapper* tab) {
     return;
   }
 
-  aura_shell::LauncherTabbedImages images;
+  ash::LauncherTabbedImages images;
   if (tab->favicon_tab_helper()->ShouldDisplayFavicon()) {
     images.resize(1);
     images[0].image = tab->favicon_tab_helper()->GetFavicon();

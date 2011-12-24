@@ -18,7 +18,7 @@ namespace views {
 class Widget;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // ShelfLayoutManager is the layout manager responsible for the launcher and
@@ -106,6 +106,6 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_SHELF_LAYOUT_MANAGER_H_

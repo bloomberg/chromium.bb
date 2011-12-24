@@ -15,19 +15,19 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace aura_shell {
+namespace ash {
 namespace test {
 
 namespace {
 
 aura::Window* GetModalContainer() {
   return Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_ModalContainer);
+      ash::internal::kShellWindowId_ModalContainer);
 }
 
 aura::Window* GetDefaultContainer() {
   return Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_DefaultContainer);
+      ash::internal::kShellWindowId_DefaultContainer);
 }
 
 class TestWindow : public views::WidgetDelegateView {
@@ -171,4 +171,4 @@ TEST_F(ModalContainerLayoutManagerTest, CanActivateAfterEndModalSession) {
 }
 
 }  // namespace test
-}  // namespace aura_shell
+}  // namespace ash

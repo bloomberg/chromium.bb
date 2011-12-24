@@ -15,7 +15,7 @@ namespace aura {
 class Window;
 }
 
-namespace aura_shell {
+namespace ash {
 
 // Type the LauncherItem represents.
 enum ASH_EXPORT LauncherItemType {
@@ -62,6 +62,6 @@ struct ASH_EXPORT LauncherItem {
 
 typedef std::vector<LauncherItem> LauncherItems;
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_LAUNCHER_LAUNCHER_TYPES_H_

@@ -185,8 +185,8 @@ KeyboardWidget::KeyboardWidget()
   params.bounds = GetKeyboardPosition(keyboard_height_);
   Init(params);
 #if defined(USE_AURA)
-  aura_shell::Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_MenusAndTooltipsContainer)->
+  ash::Shell::GetInstance()->GetContainer(
+      ash::internal::kShellWindowId_MenusAndTooltipsContainer)->
       AddChild(GetNativeView());
 #endif
 

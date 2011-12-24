@@ -12,7 +12,7 @@ namespace views {
 class Widget;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class DragImageView : public views::ImageView {
@@ -36,6 +36,6 @@ class DragImageView : public views::ImageView {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_DRAG_DROP_DRAG_IMAGE_VIEW_H_

@@ -16,7 +16,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/native_widget_aura.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 using aura::RootWindow;
@@ -173,4 +173,4 @@ void DragDropController::Cleanup() {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

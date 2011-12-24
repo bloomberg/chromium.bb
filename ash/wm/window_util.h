@@ -14,7 +14,7 @@ namespace aura {
 class Window;
 }
 
-namespace aura_shell {
+namespace ash {
 
 // TODO(jamescook): Put all these functions in namespace window_util.
 
@@ -41,6 +41,6 @@ ASH_EXPORT void UpdateBoundsFromShowState(aura::Window* window);
 typedef std::set<aura::Window*> WindowSet;
 ASH_EXPORT bool HasFullscreenWindow(const WindowSet& windows);
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_WINDOW_UTIL_H_

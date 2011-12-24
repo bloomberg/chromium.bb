@@ -16,11 +16,11 @@
 #include "ui/base/ui_base_types.h"
 
 namespace {
-using aura_shell::internal::Workspace;
-using aura_shell::internal::WorkspaceManager;
+using ash::internal::Workspace;
+using ash::internal::WorkspaceManager;
 using aura::Window;
 
-class TestWorkspaceObserver : public aura_shell::internal::WorkspaceObserver {
+class TestWorkspaceObserver : public ash::internal::WorkspaceObserver {
  public:
   explicit TestWorkspaceObserver(WorkspaceManager* manager)
       : manager_(manager),
@@ -73,7 +73,7 @@ class TestWorkspaceObserver : public aura_shell::internal::WorkspaceObserver {
 
 }  // namespace
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class WorkspaceManagerTestBase : public aura::test::AuraTestBase {
@@ -564,4 +564,4 @@ TEST_F(WorkspaceTest, ContainsFullscreenWindow) {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

@@ -13,7 +13,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/aura/window.h"
 
-namespace aura_shell {
+namespace ash {
 
 namespace {
 
@@ -77,4 +77,4 @@ TEST_F(ToplevelLayoutManagerTest, Fullscreen) {
   EXPECT_EQ(bounds, window->bounds());
 }
 
-}  // namespace aura_shell
+}  // namespace ash

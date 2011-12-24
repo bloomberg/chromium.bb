@@ -8,7 +8,7 @@
 
 // Declarations of ids of special shell windows.
 
-namespace aura_shell {
+namespace ash {
 
 namespace internal {
 
@@ -41,7 +41,7 @@ const int kShellWindowId_MenusAndTooltipsContainer = 8;
 
 }  // namespace internal
 
-}  // namespace aura_shell
+}  // namespace ash
 
 
 #endif  // ASH_SHELL_WINDOW_IDS_H_

@@ -6,7 +6,7 @@
 #define ASH_SCREENSHOT_DELEGATE_H_
 #pragma once
 
-namespace aura_shell {
+namespace ash {
 
 // Delegate for taking screenshots.
 class ScreenshotDelegate {
@@ -17,6 +17,6 @@ class ScreenshotDelegate {
   // when the user wants to take a screenshot manually.
   virtual void HandleTakeScreenshot() = 0;
 };
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_SCREENSHOT_DELEGATE_H_

@@ -7,7 +7,7 @@
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,4 +55,4 @@ void RootWindowLayoutManager::SetChildBounds(
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

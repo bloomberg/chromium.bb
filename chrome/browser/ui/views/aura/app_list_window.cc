@@ -15,7 +15,7 @@
 #include "ui/views/widget/widget.h"
 
 AppListWindow::AppListWindow(const gfx::Rect& bounds,
-    const aura_shell::ShellDelegate::SetWidgetCallback& callback)
+    const ash::ShellDelegate::SetWidgetCallback& callback)
     : widget_(NULL),
       contents_(NULL),
       callback_(callback),
@@ -80,7 +80,7 @@ void AppListWindow::OnTabMainFrameFirstRender() {
 
 void AppListWindow::Close() {
   // We should be visible when running here and toggle actually closes us.
-  aura_shell::Shell::GetInstance()->ToggleAppList();
+  ash::Shell::GetInstance()->ToggleAppList();
 }
 
 void AppListWindow::OnAppsLoaded() {

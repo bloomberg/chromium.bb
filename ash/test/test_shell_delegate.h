@@ -9,7 +9,7 @@
 #include "ash/shell_delegate.h"
 #include "base/compiler_specific.h"
 
-namespace aura_shell {
+namespace ash {
 namespace test {
 
 class TestShellDelegate : public ShellDelegate {
@@ -30,6 +30,6 @@ class TestShellDelegate : public ShellDelegate {
 };
 
 }  // namespace test
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_TEST_TEST_SHELL_DELEGATE_H_

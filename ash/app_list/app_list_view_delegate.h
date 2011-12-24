@@ -8,7 +8,7 @@
 
 #include "ash/ash_export.h"
 
-namespace aura_shell {
+namespace ash {
 
 class AppListItemModel;
 
@@ -22,6 +22,6 @@ class ASH_EXPORT AppListViewDelegate {
                                       int event_flags) = 0;
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_APP_LIST_VIEW_DELEGATE_H_

@@ -4,7 +4,7 @@
 
 #include "ash/test/test_shell_delegate.h"
 
-namespace aura_shell {
+namespace ash {
 namespace test {
 
 TestShellDelegate::TestShellDelegate() {
@@ -40,4 +40,4 @@ bool TestShellDelegate::ConfigureLauncherItem(LauncherItem* item) {
 }
 
 }  // namespace test
-}  // namespace aura_shell
+}  // namespace ash

@@ -11,7 +11,7 @@
 // Base class of all chrome app list items. Chrome's AppListViewDelegate assumes
 // all items are derived from this class and calls Activate when an item is
 // activated.
-class ChromeAppListItem : public aura_shell::AppListItemModel {
+class ChromeAppListItem : public ash::AppListItemModel {
  public:
   // Activates the item. |event_flags| holds flags of a mouse/keyboard event
   // associated with this activation.

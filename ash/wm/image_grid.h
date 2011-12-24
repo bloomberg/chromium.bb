@@ -19,7 +19,7 @@ namespace gfx {
 class Image;
 }  // namespace gfx
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // An ImageGrid is a 3x3 array of ui::Layers, each containing an image.
@@ -207,6 +207,6 @@ class ASH_EXPORT ImageGrid {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_IMAGE_GRID_H_

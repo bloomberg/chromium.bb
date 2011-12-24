@@ -11,7 +11,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 ToplevelLayoutManager::ToplevelLayoutManager() : shelf_(NULL) {
@@ -74,4 +74,4 @@ void ToplevelLayoutManager::UpdateShelfVisibility() {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

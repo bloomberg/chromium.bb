@@ -18,7 +18,7 @@ namespace views {
 class Widget;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // CompactLayoutManager is an alternate LayoutManager for the container that
@@ -60,7 +60,7 @@ class ASH_EXPORT CompactLayoutManager : public aura::LayoutManager,
   DISALLOW_COPY_AND_ASSIGN(CompactLayoutManager);
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 }  // namespace internal
 
 #endif  // ASH_WM_COMPACT_LAYOUT_MANAGER_H_

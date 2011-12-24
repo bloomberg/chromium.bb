@@ -322,7 +322,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
         SetScreenMode(chromeos::StatusAreaViewChromeos::LOGIN_MODE_WEBUI);
   }
 
-  // In Aura builds this will initialize aura_shell::Shell.
+  // In Aura builds this will initialize ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
 }
 

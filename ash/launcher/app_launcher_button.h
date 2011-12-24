@@ -8,7 +8,7 @@
 
 #include "ui/views/controls/button/image_button.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class LauncherButtonHost;
@@ -37,6 +37,6 @@ class AppLauncherButton : public views::ImageButton {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_LAUNCHER_APP_LAUNCHER_BUTTON_H_

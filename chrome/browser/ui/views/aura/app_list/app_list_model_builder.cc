@@ -23,18 +23,18 @@ namespace {
 
 // Gets or creates group for given |extension| in |model|. The created group
 // is added to |model| and owned by it.
-aura_shell::AppListItemGroupModel* GetOrCreateGroup(
+ash::AppListItemGroupModel* GetOrCreateGroup(
     int page_index,
     const ListValue* app_page_names,
-    aura_shell::AppListModel* model) {
+    ash::AppListModel* model) {
   if (page_index >= model->group_count()) {
     for (int i = model->group_count(); i <= page_index; ++i) {
       std::string title;
       if (!app_page_names->GetString(i, &title))
         title = l10n_util::GetStringUTF8(IDS_APP_DEFAULT_PAGE_NAME);
 
-      aura_shell::AppListItemGroupModel* group =
-          new aura_shell::AppListItemGroupModel(title);
+      ash::AppListItemGroupModel* group =
+          new ash::AppListItemGroupModel(title);
       model->AddGroup(group);
     }
   }
@@ -52,7 +52,7 @@ bool ExtensionAppPrecedes(const ExtensionAppItem* a,
 }  // namespace
 
 AppListModelBuilder::AppListModelBuilder(Profile* profile,
-                                         aura_shell::AppListModel* model)
+                                         ash::AppListModel* model)
     : profile_(profile),
       model_(model) {
 }
@@ -91,7 +91,7 @@ void AppListModelBuilder::GetExtensionApps() {
   for (size_t i = 0; i < items.size(); ++i) {
     ExtensionAppItem* item = items[i];
 
-    aura_shell::AppListItemGroupModel* group = GetOrCreateGroup(
+    ash::AppListItemGroupModel* group = GetOrCreateGroup(
         item->page_index(),
         app_page_names,
         model_);
@@ -107,8 +107,8 @@ void AppListModelBuilder::GetBrowserCommands() {
 
   // Uses the first group to put browser commands
   if (model_->group_count() == 0)
-    model_->AddGroup(new aura_shell::AppListItemGroupModel(""));
-  aura_shell::AppListItemGroupModel* group = model_->GetGroup(0);
+    model_->AddGroup(new ash::AppListItemGroupModel(""));
+  ash::AppListItemGroupModel* group = model_->GetGroup(0);
 
   group->AddItem(new BrowserCommandItem(browser,
                                         IDC_NEW_INCOGNITO_WINDOW,

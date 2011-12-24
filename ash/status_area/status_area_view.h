@@ -9,7 +9,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class StatusAreaView : public views::WidgetDelegateView {
@@ -29,6 +29,6 @@ class StatusAreaView : public views::WidgetDelegateView {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_STATUS_AREA_STATUS_AREA_VIEW_H_

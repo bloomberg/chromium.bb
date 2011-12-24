@@ -14,7 +14,7 @@ namespace views {
 class Widget;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // CompactStatusAreaLayoutManager places the status area in the top-right
@@ -43,6 +43,6 @@ class CompactStatusAreaLayoutManager : public aura::LayoutManager {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_COMPACT_STATUS_AREA_LAYOUT_MANAGER_H_

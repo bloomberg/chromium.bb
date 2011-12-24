@@ -7,7 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/view.h"
 
-namespace aura_shell {
+namespace ash {
 
 TEST(ViewModel, BasicAssertions) {
   views::View v1;
@@ -38,4 +38,4 @@ TEST(ViewModel, Move) {
   EXPECT_EQ(&v3, model.view_at(2));
 }
 
-}  // namespace aura_shell
+}  // namespace ash

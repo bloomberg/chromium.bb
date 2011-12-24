@@ -7,7 +7,7 @@
 #include "ash/wm/modality_event_filter_delegate.h"
 #include "ui/aura/event.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 ModalityEventFilter::ModalityEventFilter(aura::Window* container,
@@ -37,4 +37,4 @@ ui::TouchStatus ModalityEventFilter::PreHandleTouchEvent(
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

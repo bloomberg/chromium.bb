@@ -12,7 +12,7 @@
 
 using views::Label;
 
-namespace aura_shell {
+namespace ash {
 
 static const int kDefaultDropShadowSize = 2;
 
@@ -115,4 +115,4 @@ gfx::Size DropShadowLabel::GetTextSize() const {
   return text_size;
 }
 
-}  // namespace aura_shell
+}  // namespace ash

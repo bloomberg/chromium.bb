@@ -14,7 +14,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 StatusAreaView::StatusAreaView()
@@ -39,7 +39,7 @@ ASH_EXPORT views::Widget* CreateStatusArea() {
   gfx::Size ps = status_area_view->GetPreferredSize();
   params.bounds = gfx::Rect(0, 0, ps.width(), ps.height());
   params.parent = Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_StatusContainer);
+      ash::internal::kShellWindowId_StatusContainer);
   params.delegate = status_area_view;
   params.transparent = true;
   widget->Init(params);
@@ -50,4 +50,4 @@ ASH_EXPORT views::Widget* CreateStatusArea() {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

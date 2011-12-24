@@ -13,7 +13,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ash/ash_export.h"
 
-namespace aura_shell {
+namespace ash {
 
 class AppListItemModelObserver;
 
@@ -49,6 +49,6 @@ class ASH_EXPORT AppListItemModel {
   DISALLOW_COPY_AND_ASSIGN(AppListItemModel);
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // #define ASH_APP_LIST_APP_LIST_ITEM_MODEL_OBSERVER_H_

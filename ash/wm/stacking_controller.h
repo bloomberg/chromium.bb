@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/stacking_client.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class AlwaysOnTopController;
@@ -38,6 +38,6 @@ class StackingController : public aura::client::StackingClient {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_STACKING_CONTROLLER_H_

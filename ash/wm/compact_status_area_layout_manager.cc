@@ -13,7 +13,7 @@ namespace {
 const int kRightEdgePad = 3;
 }  // namespace
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -65,5 +65,5 @@ void CompactStatusAreaLayoutManager::LayoutStatusArea() {
   status_widget_->SetBounds(widget_bounds);
 }
 
-}  // internal
-}  // aura_shell
+}  // namespace internal
+}  // namespace ash

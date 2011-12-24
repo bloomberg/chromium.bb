@@ -18,7 +18,7 @@
 #include "ui/base/x/x11_util.h"
 #endif
 
-namespace aura_shell {
+namespace ash {
 namespace test {
 
 namespace {
@@ -144,7 +144,7 @@ TEST_F(AcceleratorControllerTest, Process) {
 TEST_F(AcceleratorControllerTest, ProcessOnce) {
   // A focused window must exist for accelerators to be processed.
   aura::Window* default_container =
-      aura_shell::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetInstance()->GetContainer(
           internal::kShellWindowId_DefaultContainer);
   aura::Window* window = aura::test::CreateTestWindowWithDelegate(
       new aura::test::TestWindowDelegate,
@@ -186,7 +186,7 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
 TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // A focused window must exist for accelerators to be processed.
   aura::Window* default_container =
-      aura_shell::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetInstance()->GetContainer(
           internal::kShellWindowId_DefaultContainer);
   aura::Window* window = aura::test::CreateTestWindowWithDelegate(
       new aura::test::TestWindowDelegate,
@@ -222,7 +222,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
 
 TEST_F(AcceleratorControllerTest, HandleCycleWindow) {
   aura::Window* default_container =
-      aura_shell::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetInstance()->GetContainer(
           internal::kShellWindowId_DefaultContainer);
   aura::Window* window0 = aura::test::CreateTestWindowWithDelegate(
       new aura::test::TestWindowDelegate,
@@ -259,7 +259,7 @@ TEST_F(AcceleratorControllerTest, HandleCycleWindow) {
   EXPECT_TRUE(IsActiveWindow(window0));
 
   aura::Window* modal_container =
-      aura_shell::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetInstance()->GetContainer(
           internal::kShellWindowId_AlwaysOnTopContainer);
   aura::Window* modal_window = aura::test::CreateTestWindowWithDelegate(
       new aura::test::TestWindowDelegate,
@@ -298,7 +298,7 @@ TEST_F(AcceleratorControllerTest, HandleCycleWindow) {
 
   // When a screen lock window is visible, cycling window does not take effect.
   aura::Window* lock_screen_container =
-      aura_shell::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetInstance()->GetContainer(
           internal::kShellWindowId_LockScreenContainer);
   aura::Window* lock_screen_window = aura::test::CreateTestWindowWithDelegate(
       new aura::test::TestWindowDelegate,
@@ -313,7 +313,7 @@ TEST_F(AcceleratorControllerTest, HandleCycleWindow) {
   // When a screen lock window is visible, cycling window does not take effect.
   // But otherwise, cycling window does take effect.
   aura::Window* lock_modal_container =
-      aura_shell::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetInstance()->GetContainer(
           internal::kShellWindowId_LockModalContainer);
   aura::Window* lock_modal_window = aura::test::CreateTestWindowWithDelegate(
       new aura::test::TestWindowDelegate,
@@ -330,4 +330,4 @@ TEST_F(AcceleratorControllerTest, HandleCycleWindow) {
 }
 
 }  // namespace test
-}  // namespace aura_shell
+}  // namespace ash

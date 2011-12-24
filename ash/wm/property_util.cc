@@ -9,7 +9,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
-namespace aura_shell {
+namespace ash {
 
 void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
   delete GetRestoreBounds(window);

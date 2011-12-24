@@ -12,7 +12,7 @@ namespace aura {
 class Window;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // Different types of drop shadows that can be drawn under a window by the
@@ -28,6 +28,6 @@ ASH_EXPORT void SetShadowType(aura::Window* window,
 ASH_EXPORT ShadowType GetShadowType(aura::Window* window);
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_SHADOW_TYPES_H_

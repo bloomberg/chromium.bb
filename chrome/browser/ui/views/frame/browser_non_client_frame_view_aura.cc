@@ -246,8 +246,8 @@ BrowserNonClientFrameViewAura::BrowserNonClientFrameViewAura(
   // Associate our WindowFrame interface with our owning window/widget so
   // we get callbacks from aura_shell.
   frame->AsWidget()->SetNativeWindowProperty(
-      aura_shell::kWindowFrameKey,
-      static_cast<aura_shell::WindowFrame*>(this));
+      ash::kWindowFrameKey,
+      static_cast<ash::WindowFrame*>(this));
 }
 
 BrowserNonClientFrameViewAura::~BrowserNonClientFrameViewAura() {
@@ -569,7 +569,7 @@ void BrowserNonClientFrameViewAura::OnWidgetActivationChanged(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// aura_shell::WindowFrame overrides:
+// ash::WindowFrame overrides:
 
 void BrowserNonClientFrameViewAura::OnWindowHoverChanged(bool hovered) {
   if (hovered) {

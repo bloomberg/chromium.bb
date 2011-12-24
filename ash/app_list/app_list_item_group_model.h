@@ -13,7 +13,7 @@
 #include "ash/ash_export.h"
 #include "ui/base/models/list_model.h"
 
-namespace aura_shell {
+namespace ash {
 
 // AppListItemGroupModel holds a list of AppListItemModels.
 class ASH_EXPORT AppListItemGroupModel {
@@ -41,6 +41,6 @@ class ASH_EXPORT AppListItemGroupModel {
   DISALLOW_COPY_AND_ASSIGN(AppListItemGroupModel);
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_APP_LIST_ITEM_GROUP_MODEL_H_

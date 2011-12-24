@@ -14,7 +14,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/insets.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // The images drawn inside the background tab are drawn at this offset from
@@ -193,4 +193,4 @@ TabbedLauncherButton::ImageSet* TabbedLauncherButton::CreateImageSet(
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

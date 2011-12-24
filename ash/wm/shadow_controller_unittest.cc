@@ -17,10 +17,10 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/compositor/layer.h"
 
-namespace aura_shell {
+namespace ash {
 namespace test {
 
-typedef aura_shell::test::AuraShellTestBase ShadowControllerTest;
+typedef ash::test::AuraShellTestBase ShadowControllerTest;
 
 // Tests that various methods in Window update the Shadow object as expected.
 TEST_F(ShadowControllerTest, Shadow) {
@@ -32,7 +32,7 @@ TEST_F(ShadowControllerTest, Shadow) {
   // We should create the shadow before the window is visible (the shadow's
   // layer won't get drawn yet since it's a child of the window's layer).
   internal::ShadowController::TestApi api(
-      aura_shell::Shell::GetInstance()->shadow_controller());
+      ash::Shell::GetInstance()->shadow_controller());
   const internal::Shadow* shadow = api.GetShadowForWindow(window.get());
   ASSERT_TRUE(shadow != NULL);
   EXPECT_TRUE(shadow->layer()->visible());
@@ -74,7 +74,7 @@ TEST_F(ShadowControllerTest, ShadowBounds) {
   // remain at the origin, since it's a child of the window's layer).
   internal::SetShadowType(window.get(), internal::SHADOW_TYPE_RECTANGULAR);
   internal::ShadowController::TestApi api(
-      aura_shell::Shell::GetInstance()->shadow_controller());
+      ash::Shell::GetInstance()->shadow_controller());
   const internal::Shadow* shadow = api.GetShadowForWindow(window.get());
   ASSERT_TRUE(shadow != NULL);
   EXPECT_EQ(gfx::Rect(kOldBounds.size()).ToString(),
@@ -88,4 +88,4 @@ TEST_F(ShadowControllerTest, ShadowBounds) {
 }
 
 }  // namespace test
-}  // namespace aura_shell
+}  // namespace ash

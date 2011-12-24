@@ -16,7 +16,7 @@ namespace aura {
 class Window;
 }
 
-namespace aura_shell {
+namespace ash {
 
 class LauncherModelObserver;
 
@@ -62,6 +62,6 @@ class ASH_EXPORT LauncherModel {
   DISALLOW_COPY_AND_ASSIGN(LauncherModel);
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_LAUNCHER_LAUNCHER_MODEL_H_

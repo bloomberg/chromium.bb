@@ -6,7 +6,7 @@
 
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 namespace {
@@ -57,4 +57,4 @@ void DragImageView::SetWidgetVisible(bool visible) {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

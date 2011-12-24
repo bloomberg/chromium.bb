@@ -10,7 +10,7 @@
 #include "ui/base/models/list_model_observer.h"
 #include "ui/views/view.h"
 
-namespace aura_shell {
+namespace ash {
 
 class AppListItemGroupModel;
 class AppListItemViewListener;
@@ -60,6 +60,6 @@ class ASH_EXPORT AppListItemGroupView
   DISALLOW_COPY_AND_ASSIGN(AppListItemGroupView);
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_APP_LIST_ITEM_GROUP_VIEW_H_

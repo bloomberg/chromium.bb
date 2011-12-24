@@ -12,7 +12,7 @@ namespace aura {
 class Window;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 class Workspace;
 class WorkspaceManager;
@@ -35,6 +35,6 @@ class ASH_EXPORT WorkspaceObserver {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_WORKSPACE_WORKSPACE_OBSERVER_H_

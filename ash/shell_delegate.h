@@ -17,7 +17,7 @@ namespace views {
 class Widget;
 }
 
-namespace aura_shell {
+namespace ash {
 
 class AppListModel;
 class AppListViewDelegate;
@@ -62,6 +62,6 @@ class ASH_EXPORT ShellDelegate {
   // return true.
   virtual bool ConfigureLauncherItem(LauncherItem* item) = 0;
 };
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_SHELL_DELEGATE_H_

@@ -21,7 +21,7 @@ namespace gfx {
 class Rect;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class ShowStateController;
@@ -72,6 +72,6 @@ class ASH_EXPORT DefaultContainerLayoutManager
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_DEFAULT_CONTAINER_LAYOUT_MANAGER_H_

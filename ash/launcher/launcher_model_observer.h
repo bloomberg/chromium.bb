@@ -8,7 +8,7 @@
 
 #include "ash/ash_export.h"
 
-namespace aura_shell {
+namespace ash {
 
 class ASH_EXPORT LauncherModelObserver {
  public:
@@ -34,6 +34,6 @@ class ASH_EXPORT LauncherModelObserver {
   virtual ~LauncherModelObserver() {}
 };
 
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_LAUNCHER_LAUNCHER_MODEL_OBSERVER_H_

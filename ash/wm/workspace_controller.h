@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_WORKSPACE_CONTROLLER_H_
-#define UI_AURA_SHELL_WORKSPACE_CONTROLLER_H_
+#ifndef ASH_WM_WORKSPACE_CONTROLLER_H_
+#define ASH_WM_WORKSPACE_CONTROLLER_H_
 #pragma once
 
 #include "ash/launcher/launcher_model_observer.h"
@@ -22,7 +22,7 @@ namespace gfx {
 class Size;
 }
 
-namespace aura_shell {
+namespace ash {
 class LauncherModel;
 
 namespace internal {
@@ -35,8 +35,8 @@ class WorkspaceManager;
 class ASH_EXPORT WorkspaceController :
       public aura::RootWindowObserver,
       public aura::WindowObserver,
-      public aura_shell::internal::WorkspaceObserver,
-      public aura_shell::LauncherModelObserver {
+      public ash::internal::WorkspaceObserver,
+      public ash::LauncherModelObserver {
  public:
   explicit WorkspaceController(aura::Window* workspace_viewport);
   virtual ~WorkspaceController();
@@ -86,6 +86,6 @@ class ASH_EXPORT WorkspaceController :
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
-#endif  // UI_AURA_SHELL_WORKSPACE_CONTROLLER_H_
+#endif  // ASH_WM_WORKSPACE_CONTROLLER_H_

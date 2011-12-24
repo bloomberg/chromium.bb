@@ -17,7 +17,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
+namespace ash {
 
 namespace {
 
@@ -159,4 +159,4 @@ void AppListItemView::OnPaintFocusBorder(gfx::Canvas* canvas) {
   // No focus border for AppListItemView.
 }
 
-}  // namespace aura_shell
+}  // namespace ash

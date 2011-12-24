@@ -8,7 +8,7 @@
 
 #include "ash/shell_delegate.h"
 
-namespace aura_shell {
+namespace ash {
 class AppListModel;
 class AppListViewDelegate;
 }
@@ -27,13 +27,13 @@ void CreateLockScreen();
 // Creates a window showing samples of commonly used widgets.
 void CreateWidgetsWindow();
 
-void BuildAppListModel(aura_shell::AppListModel* model);
+void BuildAppListModel(ash::AppListModel* model);
 
-aura_shell::AppListViewDelegate* CreateAppListViewDelegate();
+ash::AppListViewDelegate* CreateAppListViewDelegate();
 
 void CreateAppList(
     const gfx::Rect& bounds,
-    const aura_shell::ShellDelegate::SetWidgetCallback& callback);
+    const ash::ShellDelegate::SetWidgetCallback& callback);
 
 }  // namespace shell
 }  // namespace ash

@@ -14,7 +14,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 namespace {
@@ -484,4 +484,4 @@ gfx::NativeCursor ToplevelFrameView::GetCursor(const views::MouseEvent& event) {
 }
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash

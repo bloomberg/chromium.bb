@@ -12,7 +12,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
+namespace ash {
 namespace test {
 
 namespace {
@@ -64,8 +64,8 @@ void AddViewToWidgetAndResize(views::Widget* widget, views::View* view) {
   widget->SetBounds(contents_view_bounds);
 }
 
-aura_shell::internal::TooltipController* GetController() {
-  return static_cast<aura_shell::internal::TooltipController*>(
+ash::internal::TooltipController* GetController() {
+  return static_cast<ash::internal::TooltipController*>(
       aura::client::GetTooltipClient());
 }
 
@@ -176,4 +176,4 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
 }
 
 }  // namespace test
-}  // namespace aura_shell
+}  // namespace ash

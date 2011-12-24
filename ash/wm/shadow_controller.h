@@ -22,7 +22,7 @@ namespace gfx {
 class Rect;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class Shadow;
@@ -83,7 +83,7 @@ public:
   DISALLOW_COPY_AND_ASSIGN(ShadowController);
 };
 
-}  // namepsace aura_shell
 }  // namepsace internal
+}  // namepsace ash
 
 #endif  // ASH_WM_SHADOW_CONTROLLER_H_

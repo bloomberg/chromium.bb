@@ -28,7 +28,7 @@ namespace views {
 class Widget;
 }
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 // LayoutManager for the modal window container.
@@ -97,6 +97,6 @@ class ASH_EXPORT ModalContainerLayoutManager
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_MODAL_CONTAINER_LAYOUT_MANAGER_H_

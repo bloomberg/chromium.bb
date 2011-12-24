@@ -13,7 +13,7 @@
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/views/widget/widget.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 namespace {
@@ -155,5 +155,5 @@ void ShelfLayoutManager::OnLayerAnimationEnded(
       target_bounds.work_area_insets);
 }
 
-}  // internal
-}  // aura_shell
+}  // namespace internal
+}  // namespace ash

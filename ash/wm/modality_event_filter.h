@@ -10,7 +10,7 @@
 #include "ui/aura/event_filter.h"
 #include "ash/ash_export.h"
 
-namespace aura_shell {
+namespace ash {
 namespace internal {
 
 class ModalityEventFilterDelegate;
@@ -37,6 +37,6 @@ class ASH_EXPORT ModalityEventFilter : public aura::EventFilter {
 };
 
 }  // namespace internal
-}  // namespace aura_shell
+}  // namespace ash
 
 #endif  // ASH_WM_MODALITY_EVENT_FILTER_H_
