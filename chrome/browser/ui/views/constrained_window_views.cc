@@ -599,7 +599,7 @@ gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ConstrainedWindowViews, views::Window overrides:
+// ConstrainedWindowViews, views::Widget overrides:
 
 views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
   return new ConstrainedWindowFrameView(this);

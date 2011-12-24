@@ -103,21 +103,21 @@ class VIEWS_EXPORT NonClientFrameView : public View {
 //  portions of the window, and the ClientView, which is responsible for the
 //  same for the client area of the window:
 //
-//  +- views::Window ------------------------------------+
+//  +- views::Widget ------------------------------------+
 //  | +- views::RootView ------------------------------+ |
 //  | | +- views::NonClientView ---------------------+ | |
 //  | | | +- views::NonClientFrameView subclas  ---+ | | |
 //  | | | |                                        | | | |
 //  | | | | << all painting and event receiving >> | | | |
 //  | | | | << of the non-client areas of a     >> | | | |
-//  | | | | << views::Window.                   >> | | | |
+//  | | | | << views::Widget.                   >> | | | |
 //  | | | |                                        | | | |
 //  | | | +----------------------------------------+ | | |
 //  | | | +- views::ClientView or subclass --------+ | | |
 //  | | | |                                        | | | |
 //  | | | | << all painting and event receiving >> | | | |
 //  | | | | << of the client areas of a         >> | | | |
-//  | | | | << views::Window.                   >> | | | |
+//  | | | | << views::Widget.                   >> | | | |
 //  | | | |                                        | | | |
 //  | | | +----------------------------------------+ | | |
 //  | | +--------------------------------------------+ | |

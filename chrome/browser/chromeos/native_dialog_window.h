@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@ enum NativeDialogFlags {
   DIALOG_FLAG_MODAL      = 0x02,  // For modal dialog.
 };
 
-// Shows a |native_dialog| hosted in a views::Window. |flags| are combinations
+// Shows a |native_dialog| hosted in a views::Widget. |flags| are combinations
 // of the NativeDialogFlags. |size| is a default size. Zero width/height of
 // |size| means let gtk choose a proper size for that dimension. |min_size| is
 // the minimum size of the final host Window.
