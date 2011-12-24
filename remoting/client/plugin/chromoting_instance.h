@@ -38,6 +38,7 @@ class KeyEventTracker;
 class ChromotingClient;
 class ChromotingStats;
 class ClientContext;
+class FrameConsumerProxy;
 class MouseInputFilter;
 class PepperInputHandler;
 class PepperView;
@@ -119,6 +120,7 @@ class ChromotingInstance : public pp::InstancePrivate {
   // True if scale to fit is enabled.
   bool scale_to_fit_;
 
+  scoped_refptr<FrameConsumerProxy> consumer_proxy_;
   scoped_refptr<RectangleUpdateDecoder> rectangle_decoder_;
   scoped_ptr<MouseInputFilter> mouse_input_filter_;
   scoped_ptr<protocol::KeyEventTracker> key_event_tracker_;

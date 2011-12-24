@@ -24,6 +24,7 @@
 #include "remoting/base/util.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_client.h"
+#include "remoting/client/frame_consumer_proxy.h"
 #include "remoting/client/mouse_input_filter.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
@@ -86,6 +87,12 @@ ChromotingInstance::~ChromotingInstance() {
   // Stopping the context shuts down all chromoting threads.
   context_.Stop();
 
+  // Detach the |consumer_proxy_|, so that any queued tasks don't touch |view_|
+  // after we've deleted it.
+  if (consumer_proxy_.get()) {
+    consumer_proxy_->Detach();
+  }
+
   // Delete |thread_proxy_| before we detach |plugin_message_loop_|,
   // otherwise ScopedThreadProxy may DCHECK when being destroyed.
   thread_proxy_.reset();
@@ -112,9 +119,12 @@ bool ChromotingInstance::Init(uint32_t argc,
   context_.Start();
 
   // Create the chromoting objects that don't depend on the network connection.
+  // Because we decode on a separate thread we need a FrameConsumerProxy to
+  // bounce calls from the RectangleUpdateDecoder back to the plugin thread.
   view_.reset(new PepperView(this, &context_));
+  consumer_proxy_ = new FrameConsumerProxy(view_.get(), plugin_message_loop_);
   rectangle_decoder_ = new RectangleUpdateDecoder(
-      context_.decode_message_loop(), view_.get());
+      context_.decode_message_loop(), consumer_proxy_.get());
 
   // Default to a medium grey.
   view_->SetSolidFill(0xFFCDCDCD);
