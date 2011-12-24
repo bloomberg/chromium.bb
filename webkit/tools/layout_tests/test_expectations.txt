@@ -6,3 +6,13 @@
 // until the changes can be landed upstream.
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
+
+// The following two entries are VERY SUSPICIOUS!
+BUGCR107819 LINUX : http/tests/cache/history-only-cached-subresource-loads-max-age-https.html = MISSING
+BUGCR107819 LINUX : http/tests/cache/history-only-cached-subresource-loads.html = MISSING
+
+BUGRNIWA LEOPARD : fast/repaint/text-emphasis-h.html = IMAGE PASS 
+BUGRNIWA : media/track/track-cue-rendering.html = TEXT
+
+BUGRNIWA GPU GPU-CG : media/video-colorspace-yuv420.html = IMAGE
+BUGRNIWA GPU GPU-CG : media/video-colorspace-yuv422.html = IMAGE
