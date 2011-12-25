@@ -73,7 +73,7 @@ bool PluginInfoBarDelegate::Cancel() {
 }
 
 bool PluginInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  owner()->tab_contents()->OpenURL(
+  owner()->web_contents()->OpenURL(
       google_util::AppendGoogleLocaleParam(GURL(GetLearnMoreURL())), GURL(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK);
@@ -167,8 +167,8 @@ bool BlockedPluginInfoBarDelegate::Accept() {
 bool BlockedPluginInfoBarDelegate::Cancel() {
   content::RecordAction(
       UserMetricsAction("BlockedPluginInfobar.AlwaysAllow"));
-  content_settings_->AddExceptionForURL(owner()->tab_contents()->GetURL(),
-                                        owner()->tab_contents()->GetURL(),
+  content_settings_->AddExceptionForURL(owner()->web_contents()->GetURL(),
+                                        owner()->web_contents()->GetURL(),
                                         CONTENT_SETTINGS_TYPE_PLUGINS,
                                         std::string(),
                                         CONTENT_SETTING_ALLOW);
@@ -260,7 +260,7 @@ string16 OutdatedPluginInfoBarDelegate::GetButtonLabel(
 
 bool OutdatedPluginInfoBarDelegate::Accept() {
   content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Update"));
-  owner()->tab_contents()->OpenURL(update_url_, GURL(), NEW_FOREGROUND_TAB,
+  owner()->web_contents()->OpenURL(update_url_, GURL(), NEW_FOREGROUND_TAB,
                                    content::PAGE_TRANSITION_LINK);
   return false;
 }

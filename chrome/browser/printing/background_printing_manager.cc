@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_source.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace printing {
 
@@ -48,10 +49,10 @@ void BackgroundPrintingManager::OwnPrintPreviewTab(
   TabContents* preview_contents = preview_tab->tab_contents();
   if (!registrar_.IsRegistered(
           this,
-          content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-          content::Source<TabContents>(preview_contents))) {
-    registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                   content::Source<TabContents>(preview_contents));
+          content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+          content::Source<WebContents>(preview_contents))) {
+    registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                   content::Source<WebContents>(preview_contents));
   }
 
   // If a tab that is printing crashes, the user cannot destroy it since it is
@@ -96,10 +97,10 @@ void BackgroundPrintingManager::Observe(
       OnPrintJobReleased(content::Source<TabContentsWrapper>(source).ptr());
       break;
     }
-    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
       OnTabContentsDestroyed(
           TabContentsWrapper::GetCurrentWrapperForContents(
-              content::Source<TabContents>(source).ptr()));
+              content::Source<WebContents>(source).ptr()));
       break;
     }
     default: {
@@ -134,8 +135,8 @@ void BackgroundPrintingManager::OnPrintJobReleased(
 void BackgroundPrintingManager::OnTabContentsDestroyed(
     TabContentsWrapper* preview_tab) {
   // Always need to remove this notification since the tab is gone.
-  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                    content::Source<TabContents>(preview_tab->tab_contents()));
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                    content::Source<WebContents>(preview_tab->tab_contents()));
 
   if (!HasPrintPreviewTab(preview_tab)) {
     NOTREACHED();

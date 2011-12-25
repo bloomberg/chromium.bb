@@ -897,7 +897,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(
           Profile::FromBrowserContext(tab->GetBrowserContext()));
-  if (prerender_manager && prerender_manager->IsTabContentsPrerendering(tab)) {
+  if (prerender_manager && prerender_manager->IsWebContentsPrerendering(tab)) {
     if (prerender_manager->prerender_tracker()->TryCancel(
             handler->render_process_host_id(),
             handler->tab_contents_id(),

@@ -140,6 +140,7 @@
 
 using base::TimeDelta;
 using content::UserMetricsAction;
+using content::WebContents;
 using views::ColumnSet;
 using views::GridLayout;
 
@@ -1030,11 +1031,11 @@ void BrowserView::DisableInactiveFrame() {
 #endif  // No tricks are needed to get the right behavior on Linux.
 }
 
-void BrowserView::ConfirmSetDefaultSearchProvider(TabContents* tab_contents,
+void BrowserView::ConfirmSetDefaultSearchProvider(WebContents* web_contents,
                                                   TemplateURL* template_url,
                                                   Profile* profile) {
 #if defined(OS_WIN) && !defined(USE_AURA)
-  DefaultSearchView::Show(tab_contents, template_url, profile);
+  DefaultSearchView::Show(web_contents, template_url, profile);
 #else
   // TODO(levin): Implement for other platforms. Right now this is behind
   // a command line flag which is off. http://crbug.com/38475

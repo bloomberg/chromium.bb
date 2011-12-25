@@ -163,7 +163,7 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(profile);
   if (prerender_manager &&
-      prerender_manager->IsTabContentsPrerendering(base_tab_contents)) {
+      prerender_manager->IsWebContentsPrerendering(base_tab_contents)) {
     return NULL;
   }
 

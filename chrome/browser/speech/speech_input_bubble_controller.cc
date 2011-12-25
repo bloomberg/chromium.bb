@@ -14,6 +14,7 @@
 #include "ui/gfx/rect.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace speech_input {
 
@@ -112,11 +113,11 @@ void SpeechInputBubbleController::UpdateTabContentsSubscription(
   }
 
   if (action == BUBBLE_ADDED) {
-    registrar_->Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                    content::Source<TabContents>(tab_contents));
+    registrar_->Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                    content::Source<WebContents>(tab_contents));
   } else {
-    registrar_->Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                    content::Source<TabContents>(tab_contents));
+    registrar_->Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                    content::Source<WebContents>(tab_contents));
   }
 }
 
@@ -124,12 +125,12 @@ void SpeechInputBubbleController::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
+  if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
     // Cancel all bubbles and active recognition sessions for this tab.
-    TabContents* tab_contents = content::Source<TabContents>(source).ptr();
+    WebContents* web_contents = content::Source<WebContents>(source).ptr();
     BubbleCallerIdMap::iterator iter = bubbles_.begin();
     while (iter != bubbles_.end()) {
-      if (iter->second->tab_contents() == tab_contents) {
+      if (iter->second->tab_contents() == web_contents) {
         BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
             base::Bind(
                 &SpeechInputBubbleController::InvokeDelegateButtonClicked,

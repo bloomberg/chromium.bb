@@ -29,6 +29,8 @@ namespace events = extension_event_names;
 namespace tab_keys = extension_tabs_module_constants;
 namespace page_action_keys = extension_page_actions_module_constants;
 
+using content::WebContents;
+
 ExtensionBrowserEventRouter::TabEntry::TabEntry()
     : complete_waiting_on_load_(false),
       url_() {
@@ -149,16 +151,16 @@ void ExtensionBrowserEventRouter::RegisterForTabNotifications(
   // possible for tabs to be created, detached and then destroyed without
   // ever having been re-attached and closed. This happens in the case of
   // a devtools TabContents that is opened in window, docked, then closed.
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 content::Source<TabContents>(contents));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 content::Source<WebContents>(contents));
 }
 
 void ExtensionBrowserEventRouter::UnregisterForTabNotifications(
     TabContents* contents) {
   registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(&contents->GetController()));
-  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      content::Source<TabContents>(contents));
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<WebContents>(contents));
 }
 
 void ExtensionBrowserEventRouter::OnBrowserWindowReady(const Browser* browser) {
@@ -537,13 +539,13 @@ void ExtensionBrowserEventRouter::Observe(
     NavigationController* source_controller =
         content::Source<NavigationController>(source).ptr();
     TabUpdated(source_controller->tab_contents(), true);
-  } else if (type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
+  } else if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
     // Tab was destroyed after being detached (without being re-attached).
-    TabContents* contents = content::Source<TabContents>(source).ptr();
+    WebContents* contents = content::Source<WebContents>(source).ptr();
     registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<NavigationController>(&contents->GetController()));
-    registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-        content::Source<TabContents>(contents));
+    registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+        content::Source<WebContents>(contents));
   } else if (type == chrome::NOTIFICATION_BROWSER_WINDOW_READY) {
     const Browser* browser = content::Source<const Browser>(source).ptr();
     OnBrowserWindowReady(browser);

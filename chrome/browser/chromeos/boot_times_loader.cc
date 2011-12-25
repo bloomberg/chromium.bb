@@ -33,6 +33,7 @@
 #include "content/public/browser/notification_service.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -348,7 +349,7 @@ void BootTimesLoader::LoginDone() {
                     content::NotificationService::AllSources());
   registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP,
                     content::NotificationService::AllSources());
-  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                     content::NotificationService::AllSources());
   registrar_.Remove(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
                     content::NotificationService::AllSources());
@@ -412,7 +413,7 @@ void BootTimesLoader::RecordLoginAttempted() {
                    content::NotificationService::AllSources());
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                    content::NotificationService::AllSources());
-    registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+    registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                    content::NotificationService::AllSources());
     registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
                    content::NotificationService::AllSources());
@@ -472,10 +473,10 @@ void BootTimesLoader::Observe(
       }
       break;
     }
-    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
-      TabContents* tab_contents = content::Source<TabContents>(source).ptr();
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
+      WebContents* web_contents = content::Source<WebContents>(source).ptr();
       RenderWidgetHost* render_widget_host =
-          GetRenderWidgetHost(&tab_contents->GetController());
+          GetRenderWidgetHost(&web_contents->GetController());
       render_widget_hosts_loading_.erase(render_widget_host);
       break;
     }

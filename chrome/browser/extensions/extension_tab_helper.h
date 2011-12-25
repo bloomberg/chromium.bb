@@ -83,8 +83,8 @@ class ExtensionTabHelper
     return wrapper_;
   }
 
-  TabContents* tab_contents() const {
-    return content::WebContentsObserver::tab_contents();
+  content::WebContents* web_contents() const {
+    return content::WebContentsObserver::web_contents();
   }
 
   // Sets a non-extension app icon associated with TabContents and fires an
@@ -101,7 +101,7 @@ class ExtensionTabHelper
   // ExtensionFunctionDispatcher::Delegate overrides.
   virtual Browser* GetBrowser() OVERRIDE;
   virtual gfx::NativeView GetNativeViewOfHost() OVERRIDE;
-  virtual TabContents* GetAssociatedTabContents() const OVERRIDE;
+  virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
   // Message handlers.
   void OnDidGetApplicationInfo(int32 page_id, const WebApplicationInfo& info);

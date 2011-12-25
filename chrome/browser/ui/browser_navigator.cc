@@ -35,6 +35,8 @@
 #include "content/public/browser/notification_service.h"
 #include "net/http/http_util.h"
 
+using content::WebContents;
+
 namespace {
 
 // Returns true if the specified Browser can open tabs. Not all Browsers support
@@ -585,7 +587,7 @@ void Navigate(NavigateParams* params) {
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_TAB_ADDED,
         content::Source<content::WebContentsDelegate>(params->browser),
-        content::Details<TabContents>(params->target_contents->tab_contents()));
+        content::Details<WebContents>(params->target_contents->tab_contents()));
   }
 }
 

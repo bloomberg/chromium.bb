@@ -96,6 +96,7 @@ class TabContentsWrapper : public content::WebContentsObserver {
 
   // Returns the TabContents that this wraps.
   TabContents* tab_contents() const { return tab_contents_.get(); }
+  content::WebContents* web_contents() const;
 
   // Returns the Profile that is associated with this TabContentsWrapper.
   Profile* profile() const;

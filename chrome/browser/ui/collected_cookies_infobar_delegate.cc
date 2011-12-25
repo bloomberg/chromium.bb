@@ -41,6 +41,6 @@ string16 CollectedCookiesInfoBarDelegate::GetButtonLabel(
 }
 
 bool CollectedCookiesInfoBarDelegate::Accept() {
-  owner()->tab_contents()->GetController().Reload(true);
+  owner()->web_contents()->GetController().Reload(true);
   return true;
 }

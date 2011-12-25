@@ -65,6 +65,7 @@
 #include "ui/views/layout/grid_layout.h"
 
 using content::BrowserThread;
+using content::WebContents;
 using ui::ViewProp;
 using WebKit::WebCString;
 using WebKit::WebString;
@@ -131,6 +132,10 @@ ExternalTabContainer::~ExternalTabContainer() {
 
 TabContents* ExternalTabContainer::tab_contents() const {
   return tab_contents_.get() ? tab_contents_->tab_contents() : NULL;
+}
+
+WebContents * ExternalTabContainer::web_contents() const {
+  return tab_contents();
 }
 
 bool ExternalTabContainer::Init(Profile* profile,

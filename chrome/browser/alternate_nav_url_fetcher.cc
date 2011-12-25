@@ -76,7 +76,7 @@ string16 AlternateNavInfoBarDelegate::GetLinkText() const {
 
 bool AlternateNavInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  owner()->tab_contents()->OpenURL(
+  owner()->web_contents()->OpenURL(
       alternate_nav_url_, GURL(), disposition,
       // Pretend the user typed this URL, so that navigating to
       // it will be the default action when it's typed again in

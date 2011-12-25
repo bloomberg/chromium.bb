@@ -9,6 +9,7 @@ include_rules = [
   "+content/browser/javascript_dialogs.h",
   "+content/browser/tab_contents/navigation_controller.h",
   "+content/browser/tab_contents/navigation_entry.h",
+  "+content/browser/tab_contents/page_navigator.h",
   "+content/browser/tab_contents/tab_contents.h",
   "+content/browser/webui/web_ui.h",
 ]

@@ -19,6 +19,10 @@ class NavigationController;
 class TabContents;
 class TabContentsWrapper;
 
+namespace content {
+class WebContents;
+}
+
 // DownloadRequestLimiter is responsible for determining whether a download
 // should be allowed or not. It is designed to keep pages from downloading
 // multiple files without user interaction. DownloadRequestLimiter is invoked
@@ -184,7 +188,7 @@ class DownloadRequestLimiter
   // Invoked when the user presses the mouse, enter key or space bar. This may
   // change the download status for the page. See the class description for
   // details.
-  void OnUserGesture(TabContents* tab);
+  void OnUserGesture(content::WebContents* tab);
 
  private:
   friend class base::RefCountedThreadSafe<DownloadRequestLimiter>;

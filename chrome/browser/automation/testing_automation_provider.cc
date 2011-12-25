@@ -153,6 +153,7 @@ using content::ChildProcessHost;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::PluginService;
+using content::WebContents;
 
 namespace {
 
@@ -534,7 +535,7 @@ void TestingAutomationProvider::AppendTab(int handle,
         browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
     if (contents) {
       append_tab_response = GetIndexForNavigationController(
-          &contents->tab_contents()->GetController(), browser);
+          &contents->web_contents()->GetController(), browser);
     }
   }
 
@@ -1372,8 +1373,8 @@ void TestingAutomationProvider::ExecuteJavascript(
     const std::wstring& frame_xpath,
     const std::wstring& script,
     IPC::Message* reply_message) {
-  TabContents* tab_contents = GetTabContentsForHandle(handle, NULL);
-  if (!tab_contents) {
+  WebContents* web_contents = GetWebContentsForHandle(handle, NULL);
+  if (!web_contents) {
     AutomationMsg_DomOperation::WriteReplyParams(reply_message, std::string());
     Send(reply_message);
     return;
@@ -1382,7 +1383,7 @@ void TestingAutomationProvider::ExecuteJavascript(
   new DomOperationMessageSender(this, reply_message, false);
   ExecuteJavascriptInRenderViewFrame(WideToUTF16Hack(frame_xpath),
                                      WideToUTF16Hack(script), reply_message,
-                                     tab_contents->GetRenderViewHost());
+                                     web_contents->GetRenderViewHost());
 }
 
 void TestingAutomationProvider::GetConstrainedWindowCount(int handle,
@@ -1404,12 +1405,12 @@ void TestingAutomationProvider::GetConstrainedWindowCount(int handle,
 
 void TestingAutomationProvider::HandleInspectElementRequest(
     int handle, int x, int y, IPC::Message* reply_message) {
-  TabContents* tab_contents = GetTabContentsForHandle(handle, NULL);
-  if (tab_contents) {
+  WebContents* web_contents = GetWebContentsForHandle(handle, NULL);
+  if (web_contents) {
     DCHECK(!reply_message_);
     reply_message_ = reply_message;
 
-    DevToolsWindow::InspectElement(tab_contents->GetRenderViewHost(), x, y);
+    DevToolsWindow::InspectElement(web_contents->GetRenderViewHost(), x, y);
   } else {
     AutomationMsg_InspectElement::WriteReplyParams(reply_message, -1);
     Send(reply_message);
@@ -1535,9 +1536,9 @@ void TestingAutomationProvider::ShowInterstitialPage(
 void TestingAutomationProvider::HideInterstitialPage(int tab_handle,
                                                      bool* success) {
   *success = false;
-  TabContents* tab_contents = GetTabContentsForHandle(tab_handle, NULL);
-  if (tab_contents && tab_contents->GetInterstitialPage()) {
-    tab_contents->GetInterstitialPage()->DontProceed();
+  WebContents* web_contents = GetWebContentsForHandle(tab_handle, NULL);
+  if (web_contents && web_contents->GetInterstitialPage()) {
+    web_contents->GetInterstitialPage()->DontProceed();
     *success = true;
   }
 }
@@ -1660,15 +1661,15 @@ void TestingAutomationProvider::IsMenuCommandEnabled(int browser_handle,
 void TestingAutomationProvider::PrintNow(int tab_handle,
                                          IPC::Message* reply_message) {
   NavigationController* tab = NULL;
-  TabContents* tab_contents = GetTabContentsForHandle(tab_handle, &tab);
-  if (tab_contents) {
+  WebContents* web_contents = GetWebContentsForHandle(tab_handle, &tab);
+  if (web_contents) {
     FindAndActivateTab(tab);
 
     content::NotificationObserver* observer =
         new DocumentPrintedNotificationObserver(this, reply_message);
 
     TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+        TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
     if (!wrapper->print_view_manager()->PrintNow()) {
       // Clean up the observer. It will send the reply message.
       delete observer;

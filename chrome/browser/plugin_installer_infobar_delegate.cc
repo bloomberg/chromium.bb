@@ -73,7 +73,7 @@ bool PluginInstallerInfoBarDelegate::LinkClicked(
     url = google_util::AppendGoogleLocaleParam(GURL(
       "https://www.google.com/support/chrome/bin/answer.py?answer=142064"));
   }
-  owner()->tab_contents()->OpenURL(
+  owner()->web_contents()->OpenURL(
       url, GURL(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK);

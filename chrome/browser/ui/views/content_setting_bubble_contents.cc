@@ -50,6 +50,7 @@ const int kMaxContentsWidth = 500;
 const int kMinMultiLineContentsWidth = 250;
 
 using content::PluginService;
+using content::WebContents;
 
 class ContentSettingBubbleContents::Favicon : public views::ImageView {
  public:
@@ -108,18 +109,18 @@ gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursor(
 ContentSettingBubbleContents::ContentSettingBubbleContents(
     ContentSettingBubbleModel* content_setting_bubble_model,
     Profile* profile,
-    TabContents* tab_contents,
+    WebContents* web_contents,
     views::View* anchor_view,
     views::BubbleBorder::ArrowLocation arrow_location)
     : BubbleDelegateView(anchor_view, arrow_location),
       content_setting_bubble_model_(content_setting_bubble_model),
       profile_(profile),
-      tab_contents_(tab_contents),
+      web_contents_(web_contents),
       custom_link_(NULL),
       manage_link_(NULL),
       close_button_(NULL) {
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 content::Source<TabContents>(tab_contents));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 content::Source<WebContents>(web_contents));
 }
 
 ContentSettingBubbleContents::~ContentSettingBubbleContents() {
@@ -336,7 +337,7 @@ void ContentSettingBubbleContents::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED);
-  DCHECK(source == content::Source<TabContents>(tab_contents_));
-  tab_contents_ = NULL;
+  DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
+  DCHECK(source == content::Source<WebContents>(web_contents_));
+  web_contents_ = NULL;
 }

@@ -89,6 +89,7 @@
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::WebContents;
 
 // Holds onto start and stop timestamps for a particular tab
 class InitialLoadObserver::TabTime {
@@ -1208,7 +1209,7 @@ DomOperationObserver::DomOperationObserver() {
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
                  content::NotificationService::AllSources());
 }
 
@@ -1222,11 +1223,11 @@ void DomOperationObserver::Observe(
     OnDomOperationCompleted(dom_op_details->json());
   } else if (type == chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN) {
     OnModalDialogShown();
-  } else if (type == chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED) {
-    TabContents* tab_contents = content::Source<TabContents>(source).ptr();
-    if (tab_contents) {
+  } else if (type == chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED) {
+    WebContents* web_contents = content::Source<WebContents>(source).ptr();
+    if (web_contents) {
       TabContentsWrapper* wrapper =
-          TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+          TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
       if (wrapper &&
           wrapper->content_settings() &&
           wrapper->content_settings()->IsContentBlocked(

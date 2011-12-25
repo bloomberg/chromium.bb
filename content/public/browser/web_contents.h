@@ -11,7 +11,9 @@
 #include "base/string16.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/common/view_type.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -47,7 +49,7 @@ class WebContentsDelegate;
 struct RendererPreferences;
 
 // Describes what goes in the main content area of a tab.
-class WebContents {
+class WebContents : public PageNavigator {
  public:
   virtual ~WebContents() {}
 
@@ -73,6 +75,10 @@ class WebContents {
 
   // Allows overriding the type of this tab.
   virtual void SetViewType(content::ViewType type) = 0;
+  virtual content::ViewType GetViewType() const = 0;
+
+  // Gets the URL that is currently being displayed, if there is one.
+  virtual const GURL& GetURL() const = 0;
 
   // Return the currently active RenderProcessHost and RenderViewHost. Each of
   // these may change over time.

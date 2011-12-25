@@ -48,7 +48,7 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
     const content::FrameNavigateParams& params) {
   scoped_refptr<history::HistoryAddPageArgs> add_page_args(
       new history::HistoryAddPageArgs(
-          params.url, base::Time::Now(), tab_contents(), params.page_id,
+          params.url, base::Time::Now(), web_contents(), params.page_id,
           params.referrer.url, params.redirects, params.transition,
           history::SOURCE_BROWSED, details.did_replace_entry));
   if (content::PageTransitionIsMainFrame(params.transition) &&
@@ -97,9 +97,9 @@ void HistoryTabHelper::DidNavigateAnyFrame(
   // about: URL to the history db and keep the data: URL hidden. This is what
   // the TabContents' URL getter does.
   scoped_refptr<history::HistoryAddPageArgs> add_page_args(
-      CreateHistoryAddPageArgs(tab_contents()->GetURL(), details, params));
-  if (!tab_contents()->GetDelegate() ||
-      !tab_contents()->GetDelegate()->ShouldAddNavigationToHistory(
+      CreateHistoryAddPageArgs(web_contents()->GetURL(), details, params));
+  if (!web_contents()->GetDelegate() ||
+      !web_contents()->GetDelegate()->ShouldAddNavigationToHistory(
           *add_page_args, details.type))
     return;
 
@@ -147,7 +147,7 @@ void HistoryTabHelper::OnThumbnail(const GURL& url,
                                    const ThumbnailScore& score,
                                    const SkBitmap& bitmap) {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   if (profile->IsOffTheRecord())
     return;
 
@@ -161,7 +161,7 @@ void HistoryTabHelper::OnThumbnail(const GURL& url,
 
 HistoryService* HistoryTabHelper::GetHistoryService() {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   if (profile->IsOffTheRecord())
     return NULL;
 

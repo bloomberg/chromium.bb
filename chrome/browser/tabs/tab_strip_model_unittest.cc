@@ -41,6 +41,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::WebContents;
 using testing::_;
 
 namespace {
@@ -54,8 +55,8 @@ class DeleteTabContentsOnDestroyedObserver
       : source_(source),
         tab_to_delete_(tab_to_delete) {
     registrar_.Add(this,
-                   content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                   content::Source<TabContents>(source->tab_contents()));
+                   content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                   content::Source<WebContents>(source->tab_contents()));
   }
 
   virtual void Observe(int type,

@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "content/public/browser/notification_details.h"
@@ -28,6 +27,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -74,7 +74,7 @@ struct FileSelectHelper::ActiveDirectoryEnumeration {
 FileSelectHelper::FileSelectHelper(Profile* profile)
     : profile_(profile),
       render_view_host_(NULL),
-      tab_contents_(NULL),
+      web_contents_(NULL),
       select_file_dialog_(),
       select_file_types_(),
       dialog_type_(SelectFileDialog::SELECT_OPEN_FILE) {
@@ -263,19 +263,19 @@ SelectFileDialog::FileTypeInfo* FileSelectHelper::GetFileTypesFromAcceptType(
 
 void FileSelectHelper::RunFileChooser(
     RenderViewHost* render_view_host,
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     const content::FileChooserParams& params) {
   DCHECK(!render_view_host_);
-  DCHECK(!tab_contents_);
+  DCHECK(!web_contents_);
   render_view_host_ = render_view_host;
-  tab_contents_ = tab_contents;
+  web_contents_ = web_contents;
   notification_registrar_.RemoveAll();
   notification_registrar_.Add(
       this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
       content::Source<RenderWidgetHost>(render_view_host_));
   notification_registrar_.Add(
-      this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      content::Source<TabContents>(tab_contents_));
+      this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<WebContents>(web_contents_));
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -301,7 +301,7 @@ void FileSelectHelper::RunFileChooserOnFileThread(
 
 void FileSelectHelper::RunFileChooserOnUIThread(
     const content::FileChooserParams& params) {
-  if (!render_view_host_ || !tab_contents_) {
+  if (!render_view_host_ || !web_contents_) {
     // If the renderer was destroyed before we started, just cancel the
     // operation.
     RunFileChooserEnd();
@@ -342,7 +342,7 @@ void FileSelectHelper::RunFileChooserOnUIThread(
       select_file_types_.get(),
       select_file_types_.get() ? 1 : 0,  // 1-based index.
       FILE_PATH_LITERAL(""),
-      tab_contents_,
+      web_contents_,
       owning_window,
       NULL);
 
@@ -354,7 +354,7 @@ void FileSelectHelper::RunFileChooserOnUIThread(
 // in RunFileChooser().
 void FileSelectHelper::RunFileChooserEnd() {
   render_view_host_ = NULL;
-  tab_contents_ = NULL;
+  web_contents_ = NULL;
   Release();
 }
 
@@ -390,9 +390,9 @@ void FileSelectHelper::Observe(int type,
       break;
     }
 
-    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
-      DCHECK(content::Source<TabContents>(source).ptr() == tab_contents_);
-      tab_contents_ = NULL;
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
+      DCHECK(content::Source<WebContents>(source).ptr() == web_contents_);
+      web_contents_ = NULL;
       break;
     }
 

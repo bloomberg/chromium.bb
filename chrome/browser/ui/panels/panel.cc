@@ -27,6 +27,8 @@
 #include "ui/gfx/screen.h"
 #endif
 
+using content::WebContents;
+
 // static
 const Extension* Panel::GetExtensionFromBrowser(Browser* browser) {
   // Find the extension. When we create a panel from an extension, the extension
@@ -372,7 +374,7 @@ void Panel::DisableInactiveFrame() {
   NOTIMPLEMENTED();
 }
 
-void Panel::ConfirmSetDefaultSearchProvider(TabContents* tab_contents,
+void Panel::ConfirmSetDefaultSearchProvider(WebContents* web_contents,
                                             TemplateURL* template_url,
                                             Profile* profile) {
   NOTIMPLEMENTED();

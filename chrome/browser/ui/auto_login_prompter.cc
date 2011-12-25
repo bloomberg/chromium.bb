@@ -41,6 +41,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 // AutoLoginRedirector --------------------------------------------------------
 
@@ -219,17 +220,17 @@ bool AutoLoginInfoBarDelegate::Cancel() {
 // AutoLoginPrompter ----------------------------------------------------------
 
 AutoLoginPrompter::AutoLoginPrompter(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     const std::string& username,
     const std::string& args)
-    : tab_contents_(tab_contents),
+    : web_contents_(web_contents),
       username_(username),
       args_(args) {
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(
-                    &tab_contents_->GetController()));
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 content::Source<TabContents>(tab_contents_));
+                    &web_contents_->GetController()));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 content::Source<WebContents>(web_contents_));
 }
 
 AutoLoginPrompter::~AutoLoginPrompter() {
@@ -327,13 +328,13 @@ void AutoLoginPrompter::Observe(int type,
                                 const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_LOAD_STOP) {
     TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
+        TabContentsWrapper::GetCurrentWrapperForContents(web_contents_);
     // |wrapper| is NULL for TabContents hosted in HTMLDialog.
     if (wrapper) {
       InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
       Profile* profile = wrapper->profile();
       infobar_helper->AddInfoBar(new AutoLoginInfoBarDelegate(
-          infobar_helper, &tab_contents_->GetController(),
+          infobar_helper, &web_contents_->GetController(),
           profile->GetTokenService(), profile->GetPrefs(),
           username_, args_));
     }

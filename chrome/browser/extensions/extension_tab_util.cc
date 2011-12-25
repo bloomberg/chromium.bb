@@ -44,9 +44,9 @@ std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
 }
 
 // TODO(sky): this function should really take a TabContentsWrapper.
-int ExtensionTabUtil::GetWindowIdOfTab(const TabContents* tab_contents) {
+int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
   const TabContentsWrapper* tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
   return tab ? tab->restore_tab_helper()->window_id().id() : -1;
 }
 
@@ -71,8 +71,7 @@ std::string ExtensionTabUtil::GetWindowShowStateText(const Browser* browser) {
   return keys::kShowStateValueNormal;
 }
 
-DictionaryValue* ExtensionTabUtil::CreateTabValue(
-    const TabContents* contents) {
+DictionaryValue* ExtensionTabUtil::CreateTabValue(const WebContents* contents) {
   // Find the tab strip and index of this guy.
   TabStripModel* tab_strip = NULL;
   int tab_index;
@@ -94,7 +93,7 @@ ListValue* ExtensionTabUtil::CreateTabList(const Browser* browser) {
   return tab_list;
 }
 
-DictionaryValue* ExtensionTabUtil::CreateTabValue(const TabContents* contents,
+DictionaryValue* ExtensionTabUtil::CreateTabValue(const WebContents* contents,
                                                   TabStripModel* tab_strip,
                                                   int tab_index) {
   DictionaryValue* result = new DictionaryValue();
@@ -129,7 +128,7 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(const TabContents* contents,
 }
 
 DictionaryValue* ExtensionTabUtil::CreateTabValueActive(
-    const TabContents* contents,
+    const WebContents* contents,
     bool active) {
   DictionaryValue* result = ExtensionTabUtil::CreateTabValue(contents);
   result->SetBoolean(keys::kSelectedKey, active);
@@ -167,17 +166,17 @@ DictionaryValue* ExtensionTabUtil::CreateWindowValue(const Browser* browser,
   return result;
 }
 
-bool ExtensionTabUtil::GetTabStripModel(const TabContents* tab_contents,
+bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,
                                         TabStripModel** tab_strip_model,
                                         int* tab_index) {
-  DCHECK(tab_contents);
+  DCHECK(web_contents);
   DCHECK(tab_strip_model);
   DCHECK(tab_index);
 
   for (BrowserList::const_iterator it = BrowserList::begin();
       it != BrowserList::end(); ++it) {
     TabStripModel* tab_strip = (*it)->tabstrip_model();
-    int index = tab_strip->GetWrapperIndex(tab_contents);
+    int index = tab_strip->GetWrapperIndex(web_contents);
     if (index != -1) {
       *tab_strip_model = tab_strip;
       *tab_index = index;

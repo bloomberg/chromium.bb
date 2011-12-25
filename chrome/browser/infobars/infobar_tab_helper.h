@@ -58,8 +58,8 @@ class InfoBarTabHelper : public content::WebContentsObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Helper functions for infobars:
-  TabContents* tab_contents() {
-    return content::WebContentsObserver::tab_contents();
+  content::WebContents* web_contents() {
+    return content::WebContentsObserver::web_contents();
   }
 
  private:

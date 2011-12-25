@@ -34,6 +34,7 @@
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
+using content::WebContents;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 
@@ -205,8 +206,8 @@ void InterstitialPage::Show() {
   render_view_host_->NavigateToURL(GURL(data_url));
 
   notification_registrar_.Add(this,
-                              content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                              content::Source<TabContents>(tab_));
+                              content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                              content::Source<WebContents>(tab_));
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(&tab_->GetController()));
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
@@ -279,7 +280,7 @@ void InterstitialPage::Observe(int type,
         TakeActionOnResourceDispatcher(CANCEL);
       }
       break;
-    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED:
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
       if (action_taken_ == NO_ACTION) {
         // We are navigating away from the interstitial or closing a tab with an

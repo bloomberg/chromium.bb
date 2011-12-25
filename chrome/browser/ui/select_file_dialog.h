@@ -14,7 +14,9 @@
 #include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 // This function is declared extern such that it is accessible for unit tests
 // in /chrome/browser/ui/views/select_file_dialog_win_unittest.cc
@@ -135,7 +137,7 @@ class SelectFileDialog
                   const FileTypeInfo* file_types,
                   int file_type_index,
                   const FilePath::StringType& default_extension,
-                  TabContents* source_contents,
+                  content::WebContents* source_contents,
                   gfx::NativeWindow owning_window,
                   void* params);
   bool HasMultipleFileTypeChoices();

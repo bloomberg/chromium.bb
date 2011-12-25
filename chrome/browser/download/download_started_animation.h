@@ -8,11 +8,13 @@
 
 #include "base/basictypes.h"
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 class DownloadStartedAnimation {
  public:
-  static void Show(TabContents* tab_contents);
+  static void Show(content::WebContents* web_contents);
 
  private:
   DownloadStartedAnimation() { }

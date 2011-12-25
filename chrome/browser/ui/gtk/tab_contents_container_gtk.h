@@ -17,8 +17,11 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 class StatusBubbleGtk;
-class TabContents;
 class TabContentsWrapper;
+
+namespace content {
+class WebContents;
+}
 
 typedef struct _GtkFloatingContainer GtkFloatingContainer;
 
@@ -56,10 +59,10 @@ class TabContentsContainerGtk : public content::NotificationObserver,
   virtual GtkWidget* GetWidgetForViewID(ViewID id) OVERRIDE;
 
  private:
-  // Called when a TabContents is destroyed. This gives us a chance to clean
-  // up our internal state if the TabContents is somehow destroyed before we
+  // Called when a WebContents is destroyed. This gives us a chance to clean
+  // up our internal state if the WebContents is somehow destroyed before we
   // get notified.
-  void TabContentsDestroyed(TabContents* contents);
+  void WebContentsDestroyed(content::WebContents* contents);
 
   // Handler for |floating_|'s "set-floating-position" signal. During this
   // callback, we manually set the position of the status bubble.

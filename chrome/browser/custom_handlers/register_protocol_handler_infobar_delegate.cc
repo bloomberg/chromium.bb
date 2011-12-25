@@ -93,7 +93,7 @@ bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   content::RecordAction(
       UserMetricsAction("RegisterProtocolHandler.InfoBar_LearnMore"));
-  owner()->tab_contents()->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
+  owner()->web_contents()->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
       chrome::kLearnMoreRegisterProtocolHandlerURL)), GURL(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK);

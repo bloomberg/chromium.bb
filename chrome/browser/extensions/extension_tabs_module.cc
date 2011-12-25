@@ -60,6 +60,8 @@
 namespace keys = extension_tabs_module_constants;
 namespace errors = extension_manifest_errors;
 
+using content::WebContents;
+
 const int CaptureVisibleTabFunction::kDefaultQuality = 90;
 
 namespace {
@@ -965,7 +967,7 @@ bool GetTabFunction::RunImpl() {
 bool GetCurrentTabFunction::RunImpl() {
   DCHECK(dispatcher());
 
-  TabContents* contents = dispatcher()->delegate()->GetAssociatedTabContents();
+  WebContents* contents = dispatcher()->delegate()->GetAssociatedWebContents();
   if (contents)
     result_.reset(ExtensionTabUtil::CreateTabValue(contents));
 

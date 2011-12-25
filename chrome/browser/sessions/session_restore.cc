@@ -42,6 +42,8 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #endif
 
+using content::WebContents;
+
 // Are we in the process of restoring?
 static bool restoring = false;
 
@@ -248,14 +250,14 @@ void TabLoader::Observe(int type,
       render_widget_hosts_loading_.insert(render_widget_host);
       break;
     }
-    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
-      TabContents* tab_contents = content::Source<TabContents>(source).ptr();
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
+      WebContents* web_contents = content::Source<WebContents>(source).ptr();
       if (!got_first_paint_) {
         RenderWidgetHost* render_widget_host =
-            GetRenderWidgetHost(&tab_contents->GetController());
+            GetRenderWidgetHost(&web_contents->GetController());
         render_widget_hosts_loading_.erase(render_widget_host);
       }
-      HandleTabClosedOrLoaded(&tab_contents->GetController());
+      HandleTabClosedOrLoaded(&web_contents->GetController());
       break;
     }
     case content::NOTIFICATION_LOAD_STOP: {
@@ -326,8 +328,8 @@ void TabLoader::OnOnlineStateChanged(bool online) {
 }
 
 void TabLoader::RemoveTab(NavigationController* tab) {
-  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                    content::Source<TabContents>(tab->tab_contents()));
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                    content::Source<WebContents>(tab->tab_contents()));
   registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP,
                     content::Source<NavigationController>(tab));
   registrar_.Remove(this, content::NOTIFICATION_LOAD_START,
@@ -360,8 +362,8 @@ RenderWidgetHost* TabLoader::GetRenderWidgetHost(NavigationController* tab) {
 }
 
 void TabLoader::RegisterForNotifications(NavigationController* controller) {
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 content::Source<TabContents>(controller->tab_contents()));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 content::Source<WebContents>(controller->tab_contents()));
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,

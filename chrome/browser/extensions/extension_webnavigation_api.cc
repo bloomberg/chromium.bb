@@ -20,10 +20,11 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 
 namespace keys = extension_webnavigation_api_constants;
@@ -380,7 +381,7 @@ void ExtensionWebNavigationEventRouter::Init() {
                    content::NOTIFICATION_TAB_ADDED,
                    content::NotificationService::AllSources());
     registrar_.Add(this,
-                   content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+                   content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                    content::NotificationService::AllSources());
   }
 }
@@ -396,11 +397,11 @@ void ExtensionWebNavigationEventRouter::Observe(
       break;
 
     case content::NOTIFICATION_TAB_ADDED:
-      TabAdded(content::Details<TabContents>(details).ptr());
+      TabAdded(content::Details<WebContents>(details).ptr());
       break;
 
-    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED:
-      TabDestroyed(content::Source<TabContents>(source).ptr());
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
+      TabDestroyed(content::Source<WebContents>(source).ptr());
       break;
 
     default:
@@ -518,7 +519,7 @@ void ExtensionWebNavigationTabObserver::DidStartProvisionalLoadForFrame(
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
   DispatchOnBeforeNavigate(
-      tab_contents(), frame_id, is_main_frame, validated_url);
+      web_contents(), frame_id, is_main_frame, validated_url);
 }
 
 void ExtensionWebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
@@ -542,7 +543,7 @@ void ExtensionWebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
   if (is_reference_fragment_navigation) {
     DispatchOnCommitted(
         keys::kOnReferenceFragmentUpdated,
-        tab_contents(),
+        web_contents(),
         frame_id,
         is_main_frame,
         url,
@@ -551,7 +552,7 @@ void ExtensionWebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
   } else {
     DispatchOnCommitted(
         keys::kOnCommitted,
-        tab_contents(),
+        web_contents(),
         frame_id,
         is_main_frame,
         url,
@@ -569,14 +570,14 @@ void ExtensionWebNavigationTabObserver::DidFailProvisionalLoad(
     return;
   navigation_state_.SetErrorOccurredInFrame(frame_id);
   DispatchOnErrorOccurred(
-      tab_contents(), validated_url, frame_id, is_main_frame, error_code);
+      web_contents(), validated_url, frame_id, is_main_frame, error_code);
 }
 
 void ExtensionWebNavigationTabObserver::DocumentLoadedInFrame(
     int64 frame_id) {
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
-  DispatchOnDOMContentLoaded(tab_contents(),
+  DispatchOnDOMContentLoaded(web_contents(),
                              navigation_state_.GetUrl(frame_id),
                              navigation_state_.IsMainFrame(frame_id),
                              frame_id);
@@ -591,7 +592,7 @@ void ExtensionWebNavigationTabObserver::DidFinishLoad(
   navigation_state_.SetNavigationCompleted(frame_id);
   DCHECK_EQ(navigation_state_.GetUrl(frame_id), validated_url);
   DCHECK_EQ(navigation_state_.IsMainFrame(frame_id), is_main_frame);
-  DispatchOnCompleted(tab_contents(),
+  DispatchOnCompleted(web_contents(),
                       validated_url,
                       is_main_frame,
                       frame_id);
@@ -618,7 +619,7 @@ void ExtensionWebNavigationTabObserver::DidOpenRequestedURL(
     return;
 
   DispatchOnCreatedNavigationTarget(
-      tab_contents(),
+      web_contents(),
       new_contents->GetBrowserContext(),
       source_frame_id,
       navigation_state_.IsMainFrame(source_frame_id),
@@ -676,9 +677,9 @@ bool GetFrameFunction::RunImpl() {
     return true;
   }
 
-  TabContents* tab_contents = wrapper->tab_contents();
+  WebContents* web_contents = wrapper->web_contents();
   ExtensionWebNavigationTabObserver* observer =
-      ExtensionWebNavigationTabObserver::Get(tab_contents);
+      ExtensionWebNavigationTabObserver::Get(web_contents);
   DCHECK(observer);
 
   const FrameNavigationState& frame_navigation_state =
@@ -719,9 +720,9 @@ bool GetAllFramesFunction::RunImpl() {
     return true;
   }
 
-  TabContents* tab_contents = wrapper->tab_contents();
+  WebContents* web_contents = wrapper->web_contents();
   ExtensionWebNavigationTabObserver* observer =
-      ExtensionWebNavigationTabObserver::Get(tab_contents);
+      ExtensionWebNavigationTabObserver::Get(web_contents);
   DCHECK(observer);
 
   const FrameNavigationState& navigation_state =

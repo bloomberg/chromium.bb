@@ -86,9 +86,9 @@ class ExtensionHost : public content::WebContentsDelegate,
   const GURL& GetURL() const;
 
   // ExtensionFunctionDispatcher::Delegate
-  virtual TabContents* GetAssociatedTabContents() const OVERRIDE;
-  void set_associated_tab_contents(TabContents* associated_tab_contents) {
-    associated_tab_contents_ = associated_tab_contents;
+  virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
+  void set_associated_web_contents(content::WebContents* web_contents) {
+    associated_web_contents_ = web_contents;
   }
 
   // Returns true if the render view is initialized and didn't crash.
@@ -219,8 +219,8 @@ class ExtensionHost : public content::WebContentsDelegate,
   // are used here, others are not hosted by ExtensionHost.
   content::ViewType extension_host_type_;
 
-  // The relevant TabContents associated with this ExtensionHost, if any.
-  TabContents* associated_tab_contents_;
+  // The relevant WebContents associated with this ExtensionHost, if any.
+  content::WebContents* associated_web_contents_;
 
   // Used to measure how long it's been since the host was created.
   PerfTimer since_created_;

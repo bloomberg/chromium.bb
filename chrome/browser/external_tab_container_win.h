@@ -62,6 +62,7 @@ class ExternalTabContainer : public content::WebContentsDelegate,
                        AutomationResourceMessageFilter* filter);
 
   TabContents* tab_contents() const;
+  content::WebContents* web_contents() const;
   TabContentsWrapper* tab_contents_wrapper() { return tab_contents_.get(); }
 
   // Temporary hack so we can send notifications back

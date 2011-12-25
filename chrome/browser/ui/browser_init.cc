@@ -1311,7 +1311,7 @@ string16 LearnMoreInfoBar::GetLinkText() const {
 }
 
 bool LearnMoreInfoBar::LinkClicked(WindowOpenDisposition disposition) {
-  owner()->tab_contents()->OpenURL(learn_more_url_, GURL(), disposition,
+  owner()->web_contents()->OpenURL(learn_more_url_, GURL(), disposition,
                                    content::PAGE_TRANSITION_LINK);
   return false;
 }

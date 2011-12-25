@@ -31,6 +31,7 @@
 #include "webkit/fileapi/file_system_types.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 typedef std::list<TabSpecificContentSettings*> TabSpecificList;
@@ -80,7 +81,7 @@ TabSpecificContentSettings* TabSpecificContentSettings::Get(
   // latter will miss provisional RenderViewHosts.
   for (TabSpecificList::iterator i = g_tab_specific.Get().begin();
        i != g_tab_specific.Get().end(); ++i) {
-    if (view->delegate() == (*i)->tab_contents())
+    if (view->delegate()->GetAsTabContents() == (*i)->web_contents())
       return (*i);
   }
 
@@ -233,8 +234,8 @@ void TabSpecificContentSettings::OnContentBlocked(
     content_blocked_[type] = true;
     // TODO: it would be nice to have a way of mocking this in tests.
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
-        content::Source<TabContents>(tab_contents()),
+        chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+        content::Source<WebContents>(web_contents()),
         content::NotificationService::NoDetails());
   }
 }
@@ -245,8 +246,8 @@ void TabSpecificContentSettings::OnContentAccessed(ContentSettingsType type) {
   if (!content_accessed_[type]) {
     content_accessed_[type] = true;
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
-        content::Source<TabContents>(tab_contents()),
+        chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+        content::Source<WebContents>(web_contents()),
         content::NotificationService::NoDetails());
   }
 }
@@ -350,8 +351,8 @@ void TabSpecificContentSettings::OnGeolocationPermissionSet(
   geolocation_settings_state_.OnGeolocationPermissionSet(requesting_origin,
                                                          allowed);
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
-      content::Source<TabContents>(tab_contents()),
+      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+      content::Source<WebContents>(web_contents()),
       content::NotificationService::NoDetails());
 }
 
@@ -366,8 +367,8 @@ void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
   }
   load_plugins_link_enabled_ = true;
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
-      content::Source<TabContents>(tab_contents()),
+      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+      content::Source<WebContents>(web_contents()),
       content::NotificationService::NoDetails());
 }
 
@@ -378,8 +379,8 @@ void TabSpecificContentSettings::ClearCookieSpecificContentSettings() {
   content_accessed_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
   content_blockage_indicated_to_user_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
-      content::Source<TabContents>(tab_contents()),
+      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+      content::Source<WebContents>(web_contents()),
       content::NotificationService::NoDetails());
 }
 
@@ -387,8 +388,8 @@ void TabSpecificContentSettings::SetPopupsBlocked(bool blocked) {
   content_blocked_[CONTENT_SETTINGS_TYPE_POPUPS] = blocked;
   content_blockage_indicated_to_user_[CONTENT_SETTINGS_TYPE_POPUPS] = false;
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
-      content::Source<TabContents>(tab_contents()),
+      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+      content::Source<WebContents>(web_contents()),
       content::NotificationService::NoDetails());
 }
 
@@ -464,7 +465,7 @@ void TabSpecificContentSettings::Observe(
   DCHECK(type == chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED);
 
   content::Details<const ContentSettingsDetails> settings_details(details);
-  const NavigationController& controller = tab_contents()->GetController();
+  const NavigationController& controller = web_contents()->GetController();
   NavigationEntry* entry = controller.GetActiveEntry();
   GURL entry_url;
   if (entry)
@@ -474,7 +475,7 @@ void TabSpecificContentSettings::Observe(
       // Currently this should be matched by the |primary_pattern|.
       settings_details.ptr()->primary_pattern().Matches(entry_url)) {
     Profile* profile =
-        Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     RendererContentSettingRules rules;
     GetRendererContentSettingRules(profile->GetHostContentSettingsMap(),
                                    &rules);

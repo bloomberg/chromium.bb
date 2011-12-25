@@ -20,5 +20,5 @@ DownloadRequestLimiterObserver::~DownloadRequestLimiterObserver() {
 void DownloadRequestLimiterObserver::DidGetUserGesture() {
   if (!g_browser_process->download_request_limiter())
     return;  // NULL in unitests.
-  g_browser_process->download_request_limiter()->OnUserGesture(tab_contents());
+  g_browser_process->download_request_limiter()->OnUserGesture(web_contents());
 }

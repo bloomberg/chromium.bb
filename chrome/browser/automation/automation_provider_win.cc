@@ -25,10 +25,13 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/widget/root_view.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -189,10 +192,10 @@ void AutomationProvider::CreateExternalTab(
       settings.route_all_top_level_navigations);
 
   if (AddExternalTab(external_tab_container)) {
-    TabContents* tab_contents = external_tab_container->tab_contents();
+    WebContents* web_contents = external_tab_container->web_contents();
     *tab_handle = external_tab_container->tab_handle();
     *tab_container_window = external_tab_container->GetNativeView();
-    *tab_window = tab_contents->GetNativeView();
+    *tab_window = web_contents->GetNativeView();
     *session_id = external_tab_container->tab_contents_wrapper()->
         restore_tab_helper()->session_id().id();
   } else {
@@ -205,9 +208,9 @@ void AutomationProvider::CreateExternalTab(
 bool AutomationProvider::AddExternalTab(ExternalTabContainer* external_tab) {
   DCHECK(external_tab != NULL);
 
-  TabContents* tab_contents = external_tab->tab_contents();
-  if (tab_contents) {
-    int tab_handle = tab_tracker_->Add(&tab_contents->GetController());
+  WebContents* web_contents = external_tab->web_contents();
+  if (web_contents) {
+    int tab_handle = tab_tracker_->Add(&web_contents->GetController());
     external_tab->SetTabHandle(tab_handle);
     return true;
   }
@@ -235,12 +238,12 @@ void AutomationProvider::SetInitialFocus(const IPC::Message& message,
 }
 
 void AutomationProvider::PrintAsync(int tab_handle) {
-  TabContents* tab_contents = GetTabContentsForHandle(tab_handle, NULL);
-  if (!tab_contents)
+  WebContents* web_contents = GetWebContentsForHandle(tab_handle, NULL);
+  if (!web_contents)
     return;
 
   TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
   wrapper->print_view_manager()->PrintNow();
 }
 

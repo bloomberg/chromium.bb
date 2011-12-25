@@ -16,6 +16,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::WebContents;
+
 namespace {
 
 class TestFunctionDispatcherDelegate
@@ -34,7 +36,7 @@ class TestFunctionDispatcherDelegate
     return NULL;
   }
 
-  virtual TabContents* GetAssociatedTabContents() const OVERRIDE {
+  virtual WebContents* GetAssociatedWebContents() const OVERRIDE {
     return NULL;
   }
 

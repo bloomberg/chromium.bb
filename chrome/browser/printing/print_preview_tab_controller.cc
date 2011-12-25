@@ -36,6 +36,8 @@
 #include "content/public/browser/notification_types.h"
 #include "webkit/plugins/webplugininfo.h"
 
+using content::WebContents;
+
 namespace {
 
 void EnableInternalPDFPluginForTab(TabContentsWrapper* preview_tab) {
@@ -208,8 +210,8 @@ void PrintPreviewTabController::Observe(
           content::Source<content::RenderProcessHost>(source).ptr());
       break;
     }
-    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
-      TabContents* tab = content::Source<TabContents>(source).ptr();
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
+      WebContents* tab = content::Source<WebContents>(source).ptr();
       TabContentsWrapper* wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(tab);
       OnTabContentsDestroyed(wrapper);
@@ -406,8 +408,8 @@ void PrintPreviewTabController::SetInitiatorTabURLAndTitle(
 
 void PrintPreviewTabController::AddObservers(TabContentsWrapper* tab) {
   TabContents* contents = tab->tab_contents();
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 content::Source<TabContents>(contents));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 content::Source<WebContents>(contents));
   registrar_.Add(
       this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(&contents->GetController()));
@@ -426,8 +428,8 @@ void PrintPreviewTabController::AddObservers(TabContentsWrapper* tab) {
 
 void PrintPreviewTabController::RemoveObservers(TabContentsWrapper* tab) {
   TabContents* contents = tab->tab_contents();
-  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                    content::Source<TabContents>(contents));
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                    content::Source<WebContents>(contents));
   registrar_.Remove(
       this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(&contents->GetController()));

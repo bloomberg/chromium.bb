@@ -15,6 +15,8 @@
 #include "content/public/browser/notification_types.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 
+using content::WebContents;
+
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsContainer, public:
 
@@ -74,8 +76,8 @@ void TabContentsContainer::Observe(
         content::Details<RenderViewHostSwitchedDetails>(details).ptr();
     RenderViewHostChanged(switched_details->old_host,
                           switched_details->new_host);
-  } else if (type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
-    TabContentsDestroyed(content::Source<TabContents>(source).ptr());
+  } else if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
+    TabContentsDestroyed(content::Source<WebContents>(source).ptr());
   } else {
     NOTREACHED();
   }
@@ -167,8 +169,8 @@ void TabContentsContainer::AddObservers() {
 
   registrar_.Add(
       this,
-      content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      content::Source<TabContents>(tab_contents_));
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<WebContents>(tab_contents_));
 }
 
 void TabContentsContainer::RemoveObservers() {
@@ -182,7 +184,7 @@ void TabContentsContainer::RenderViewHostChanged(RenderViewHost* old_host,
   native_container_->RenderViewHostChanged(old_host, new_host);
 }
 
-void TabContentsContainer::TabContentsDestroyed(TabContents* contents) {
+void TabContentsContainer::TabContentsDestroyed(WebContents* contents) {
   // Sometimes, a TabContents is destroyed before we know about it. This allows
   // us to clean up our state in case this happens.
   DCHECK(contents == tab_contents_);

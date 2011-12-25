@@ -43,6 +43,8 @@
 #include "ui/aura/root_window_observer.h"
 #endif
 
+using content::WebContents;
+
 namespace {
 
 const int kDefaultKeyboardHeight = 300;
@@ -120,7 +122,7 @@ class KeyboardWidget
   // Overridden from ExtensionFunctionDispatcher::Delegate.
   virtual Browser* GetBrowser() OVERRIDE;
   virtual gfx::NativeView GetNativeViewOfHost() OVERRIDE;
-  virtual TabContents* GetAssociatedTabContents() const OVERRIDE;
+  virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
 #if defined(OS_CHROMEOS)
   // Overridden from input_method::InputMethodManager::VirtualKeyboardObserver.
@@ -426,7 +428,7 @@ gfx::NativeView KeyboardWidget::GetNativeViewOfHost() {
   return dom_view_->native_view();
 }
 
-TabContents* KeyboardWidget::GetAssociatedTabContents() const {
+content::WebContents* KeyboardWidget::GetAssociatedWebContents() const {
   return dom_view_->dom_contents() ?
       dom_view_->dom_contents()->tab_contents() : NULL;
 }

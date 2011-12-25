@@ -18,7 +18,10 @@
 
 class ContentSettingBubbleModel;
 class Profile;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // ContentSettingBubbleGtk is used when the user turns on different kinds of
 // content blocking (e.g. "block images"). An icon appears in the location bar,
@@ -31,7 +34,7 @@ class ContentSettingBubbleGtk : public BubbleDelegateGtk,
        GtkWidget* anchor,
        BubbleDelegateGtk* delegate,
        ContentSettingBubbleModel* content_setting_bubble_model,
-       Profile* profile, TabContents* tab_contents);
+       Profile* profile, content::WebContents* web_contents);
   virtual ~ContentSettingBubbleGtk();
 
   // Dismisses the bubble.
@@ -66,10 +69,10 @@ class ContentSettingBubbleGtk : public BubbleDelegateGtk,
   // The active profile.
   Profile* profile_;
 
-  // The active tab contents.
-  TabContents* tab_contents_;
+  // The active web contents.
+  content::WebContents* web_contents_;
 
-  // A registrar for listening for TAB_CONTENTS_DESTROYED notifications.
+  // A registrar for listening for WEB_CONTENTS_DESTROYED notifications.
   content::NotificationRegistrar registrar_;
 
   // Pass on delegate messages to this.

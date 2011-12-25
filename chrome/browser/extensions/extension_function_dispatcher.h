@@ -21,8 +21,11 @@ class Extension;
 class ExtensionFunction;
 class Profile;
 class RenderViewHost;
-class TabContents;
 struct ExtensionHostMsg_Request_Params;
+
+namespace content {
+class WebContents;
+}
 
 namespace extensions {
 class ProcessMap;
@@ -57,11 +60,11 @@ class ExtensionFunctionDispatcher
     // if the view is not visible.
     virtual gfx::NativeView GetNativeViewOfHost() = 0;
 
-    // Asks the delegate for any relevant TabContents associated with this
-    // context. For example, the TabContents in which an infobar or
+    // Asks the delegate for any relevant WebbContents associated with this
+    // context. For example, the WebbContents in which an infobar or
     // chrome-extension://<id> URL are being shown. Callers must check for a
     // NULL return value (as in the case of a background page).
-    virtual TabContents* GetAssociatedTabContents() const = 0;
+    virtual content::WebContents* GetAssociatedWebContents() const = 0;
 
    protected:
     virtual ~Delegate() {}

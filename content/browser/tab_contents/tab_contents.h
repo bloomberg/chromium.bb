@@ -19,8 +19,6 @@
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
-#include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents.h"
@@ -51,7 +49,6 @@ struct WebIntentData;
 
 class CONTENT_EXPORT TabContents
     : public NON_EXPORTED_BASE(content::WebContents),
-      public PageNavigator,
       public RenderViewHostDelegate,
       public RenderViewHostManager::Delegate,
       public content::JavaScriptDialogDelegate {
@@ -136,6 +133,7 @@ class CONTENT_EXPORT TabContents
   virtual const NavigationController& GetController() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual void SetViewType(content::ViewType type) OVERRIDE;
+  virtual content::ViewType GetViewType() const OVERRIDE;
   virtual content::RenderProcessHost* GetRenderProcessHost() const OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
   virtual RenderWidgetHostView* GetRenderWidgetHostView() const OVERRIDE;

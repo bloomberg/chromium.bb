@@ -34,6 +34,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 
 using content::UserMetricsAction;
+using content::WebContents;
 
 namespace {
 
@@ -69,7 +70,7 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
       order_controller_(NULL) {
   DCHECK(delegate_);
   registrar_.Add(this,
-                 content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+                 content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -374,7 +375,7 @@ int TabStripModel::GetIndexOfTabContents(
   return kNoTab;
 }
 
-int TabStripModel::GetWrapperIndex(const TabContents* contents) const {
+int TabStripModel::GetWrapperIndex(const WebContents* contents) const {
   int index = 0;
   TabContentsDataVector::const_iterator iter = contents_data_.begin();
   for (; iter != contents_data_.end(); ++iter, ++index) {
@@ -1001,11 +1002,11 @@ void TabStripModel::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
       // Sometimes, on qemu, it seems like a TabContents object can be destroyed
       // while we still have a reference to it. We need to break this reference
       // here so we don't crash later.
-      int index = GetWrapperIndex(content::Source<TabContents>(source).ptr());
+      int index = GetWrapperIndex(content::Source<WebContents>(source).ptr());
       if (index != TabStripModel::kNoTab) {
         // Note that we only detach the contents here, not close it - it's
         // already been closed. We just want to undo our bookkeeping.

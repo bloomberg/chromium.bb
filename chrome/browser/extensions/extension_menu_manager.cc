@@ -23,6 +23,8 @@
 #include "ui/gfx/favicon_size.h"
 #include "webkit/glue/context_menu.h"
 
+using content::WebContents;
+
 ExtensionMenuItem::ExtensionMenuItem(const Id& id,
                                      const std::string& title,
                                      bool checked,
@@ -373,7 +375,7 @@ static void AddURLProperty(DictionaryValue* dictionary,
 
 void ExtensionMenuManager::ExecuteCommand(
     Profile* profile,
-    TabContents* tab_contents,
+    WebContents* web_contents,
     const ContextMenuParams& params,
     const ExtensionMenuItem::Id& menuItemId) {
   ExtensionEventRouter* event_router = profile->GetExtensionEventRouter();
@@ -420,8 +422,8 @@ void ExtensionMenuManager::ExecuteCommand(
   args.Append(properties);
 
   // Add the tab info to the argument list.
-  if (tab_contents) {
-    args.Append(ExtensionTabUtil::CreateTabValue(tab_contents));
+  if (web_contents) {
+    args.Append(ExtensionTabUtil::CreateTabValue(web_contents));
   } else {
     args.Append(new DictionaryValue());
   }

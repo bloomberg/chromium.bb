@@ -50,6 +50,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace prerender {
 
@@ -520,9 +521,9 @@ void PrerenderManager::DeleteOldEntries() {
   MaybeStopSchedulingPeriodicCleanups();
 }
 
-PrerenderContents* PrerenderManager::GetEntryButNotSpecifiedTC(
+PrerenderContents* PrerenderManager::GetEntryButNotSpecifiedWC(
     const GURL& url,
-    TabContents *tc) {
+    WebContents* wc) {
   DCHECK(CalledOnValidThread());
   DeleteOldEntries();
   DeletePendingDeleteEntries();
@@ -532,8 +533,8 @@ PrerenderContents* PrerenderManager::GetEntryButNotSpecifiedTC(
     PrerenderContents* prerender_contents = it->contents_;
     if (prerender_contents->MatchesURL(url, NULL)) {
       if (!prerender_contents->prerender_contents() ||
-          !tc ||
-          prerender_contents->prerender_contents()->tab_contents() != tc) {
+          !wc ||
+          prerender_contents->prerender_contents()->tab_contents() != wc) {
         prerender_list_.erase(it);
         return prerender_contents;
       }
@@ -544,17 +545,17 @@ PrerenderContents* PrerenderManager::GetEntryButNotSpecifiedTC(
 }
 
 PrerenderContents* PrerenderManager::GetEntry(const GURL& url) {
-  return GetEntryButNotSpecifiedTC(url, NULL);
+  return GetEntryButNotSpecifiedWC(url, NULL);
 }
 
-bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
+bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
                                                const GURL& url,
                                                const GURL& opener_url) {
   DCHECK(CalledOnValidThread());
   RecordNavigation(url);
 
   scoped_ptr<PrerenderContents> prerender_contents(
-      GetEntryButNotSpecifiedTC(url, tab_contents));
+      GetEntryButNotSpecifiedWC(url, web_contents));
   if (prerender_contents.get() == NULL)
     return false;
 
@@ -578,22 +579,22 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
   }
 
   // If we are just in the control group (which can be detected by noticing
-  // that prerendering hasn't even started yet), record that |tab_contents| now
+  // that prerendering hasn't even started yet), record that |web_contents| now
   // would be showing a prerendered contents, but otherwise, don't do anything.
   if (!prerender_contents->prerendering_has_started()) {
-    MarkTabContentsAsWouldBePrerendered(tab_contents);
+    MarkWebContentsAsWouldBePrerendered(web_contents);
     return false;
   }
 
   if (prerender_contents->starting_page_id() <=
-      tab_contents->GetMaxPageID()) {
+      web_contents->GetMaxPageID()) {
     prerender_contents.release()->Destroy(FINAL_STATUS_PAGE_ID_CONFLICT);
     return false;
   }
 
   // Don't use prerendered pages if debugger is attached to the tab.
   // See http://crbug.com/98541
-  if (content::DevToolsAgentHostRegistry::IsDebuggerAttached(tab_contents)) {
+  if (content::DevToolsAgentHostRegistry::IsDebuggerAttached(web_contents)) {
     prerender_contents.release()->Destroy(FINAL_STATUS_DEVTOOLS_ATTACHED);
     return false;
   }
@@ -607,7 +608,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
   }
 
   // If the session storage namespaces don't match, cancel the prerender.
-  RenderViewHost* old_render_view_host = tab_contents->GetRenderViewHost();
+  RenderViewHost* old_render_view_host = web_contents->GetRenderViewHost();
   RenderViewHost* new_render_view_host =
       prerender_contents->prerender_contents()->tab_contents()->
           GetRenderViewHost();
@@ -624,7 +625,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
   // For bookkeeping purposes, we need to mark this TabContents to
   // reflect that it would have been prerendered.
   if (GetMode() == PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP) {
-    MarkTabContentsAsWouldBePrerendered(tab_contents);
+    MarkWebContentsAsWouldBePrerendered(web_contents);
     prerender_contents.release()->Destroy(FINAL_STATUS_NO_USE_GROUP);
     return false;
   }
@@ -656,11 +657,11 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
   TabContentsWrapper* new_tab_contents =
       prerender_contents->ReleasePrerenderContents();
   TabContentsWrapper* old_tab_contents =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
   DCHECK(new_tab_contents);
   DCHECK(old_tab_contents);
 
-  MarkTabContentsAsPrerendered(new_tab_contents->tab_contents());
+  MarkWebContentsAsPrerendered(new_tab_contents->tab_contents());
 
   // Merge the browsing history.
   new_tab_contents->tab_contents()->GetController().CopyStateFromAndPrune(
@@ -809,20 +810,20 @@ void PrerenderManager::DeletePendingDeleteEntries() {
 // static
 void PrerenderManager::RecordPerceivedPageLoadTime(
     base::TimeDelta perceived_page_load_time,
-    TabContents* tab_contents,
+    WebContents* web_contents,
     const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrerenderManager* prerender_manager =
       PrerenderManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(tab_contents->GetBrowserContext()));
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   if (!prerender_manager)
     return;
   if (!prerender_manager->is_enabled())
     return;
   bool was_prerender =
-      prerender_manager->IsTabContentsPrerendered(tab_contents);
+      prerender_manager->IsWebContentsPrerendered(web_contents);
   bool was_complete_prerender = was_prerender ||
-      prerender_manager->WouldTabContentsBePrerendered(tab_contents);
+      prerender_manager->WouldWebContentsBePrerendered(web_contents);
   prerender_manager->histograms_->RecordPerceivedPageLoadTime(
       perceived_page_load_time, was_prerender, was_complete_prerender, url);
 }
@@ -951,8 +952,8 @@ void PrerenderManager::PostCleanupTask() {
                  weak_factory_.GetWeakPtr()));
 }
 
-bool PrerenderManager::IsTabContentsPrerendering(
-    TabContents* tab_contents) const {
+bool PrerenderManager::IsWebContentsPrerendering(
+    WebContents* web_contents) const {
   DCHECK(CalledOnValidThread());
   for (std::list<PrerenderContentsData>::const_iterator it =
            prerender_list_.begin();
@@ -961,7 +962,7 @@ bool PrerenderManager::IsTabContentsPrerendering(
     TabContentsWrapper* prerender_tab_contents_wrapper =
         it->contents_->prerender_contents();
     if (prerender_tab_contents_wrapper &&
-        prerender_tab_contents_wrapper->tab_contents() == tab_contents) {
+        prerender_tab_contents_wrapper->tab_contents() == web_contents) {
       return true;
     }
   }
@@ -974,41 +975,41 @@ bool PrerenderManager::IsTabContentsPrerendering(
     TabContentsWrapper* prerender_tab_contents_wrapper =
         (*it)->prerender_contents();
     if (prerender_tab_contents_wrapper &&
-        prerender_tab_contents_wrapper->tab_contents() == tab_contents)
+        prerender_tab_contents_wrapper->tab_contents() == web_contents)
       return true;
   }
 
   return false;
 }
 
-void PrerenderManager::MarkTabContentsAsPrerendered(TabContents* tab_contents) {
+void PrerenderManager::MarkWebContentsAsPrerendered(WebContents* web_contents) {
   DCHECK(CalledOnValidThread());
-  prerendered_tab_contents_set_.insert(tab_contents);
+  prerendered_tab_contents_set_.insert(web_contents);
 }
 
-void PrerenderManager::MarkTabContentsAsWouldBePrerendered(
-    TabContents* tab_contents) {
+void PrerenderManager::MarkWebContentsAsWouldBePrerendered(
+    WebContents* web_contents) {
   DCHECK(CalledOnValidThread());
-  would_be_prerendered_tab_contents_set_.insert(tab_contents);
+  would_be_prerendered_tab_contents_set_.insert(web_contents);
 }
 
-void PrerenderManager::MarkTabContentsAsNotPrerendered(
-    TabContents* tab_contents) {
+void PrerenderManager::MarkWebContentsAsNotPrerendered(
+    WebContents* web_contents) {
   DCHECK(CalledOnValidThread());
-  prerendered_tab_contents_set_.erase(tab_contents);
-  would_be_prerendered_tab_contents_set_.erase(tab_contents);
+  prerendered_tab_contents_set_.erase(web_contents);
+  would_be_prerendered_tab_contents_set_.erase(web_contents);
 }
 
-bool PrerenderManager::IsTabContentsPrerendered(
-    TabContents* tab_contents) const {
+bool PrerenderManager::IsWebContentsPrerendered(
+    content::WebContents* web_contents) const {
   DCHECK(CalledOnValidThread());
-  return prerendered_tab_contents_set_.count(tab_contents) > 0;
+  return prerendered_tab_contents_set_.count(web_contents) > 0;
 }
 
-bool PrerenderManager::WouldTabContentsBePrerendered(
-    TabContents* tab_contents) const {
+bool PrerenderManager::WouldWebContentsBePrerendered(
+    WebContents* web_contents) const {
   DCHECK(CalledOnValidThread());
-  return would_be_prerendered_tab_contents_set_.count(tab_contents) > 0;
+  return would_be_prerendered_tab_contents_set_.count(web_contents) > 0;
 }
 
 bool PrerenderManager::HasRecentlyBeenNavigatedTo(const GURL& url) {

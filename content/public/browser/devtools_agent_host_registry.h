@@ -9,11 +9,11 @@
 #include "content/common/content_export.h"
 
 class RenderViewHost;
-class TabContents;
 
 namespace content {
 
 class DevToolsAgentHost;
+class WebContents;
 
 class CONTENT_EXPORT DevToolsAgentHostRegistry {
  public:
@@ -31,7 +31,7 @@ class CONTENT_EXPORT DevToolsAgentHostRegistry {
       int worker_process_id,
       int worker_route_id);
 
-  static bool IsDebuggerAttached(TabContents* tab_contents);
+  static bool IsDebuggerAttached(WebContents* web_contents);
 };
 
 }  // namespace content

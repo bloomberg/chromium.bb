@@ -22,6 +22,10 @@ class TabContentsWrapper;
 class TabStripModelDelegate;
 class TabStripModelOrderController;
 
+namespace content {
+class WebContents;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // TabStripModel
@@ -262,13 +266,13 @@ class TabStripModel : public content::NotificationObserver {
   // TabStripModel::kNoTab if the TabContents is not in this TabStripModel.
   int GetIndexOfTabContents(const TabContentsWrapper* contents) const;
 
-  // Returns the index of the specified TabContents wrapper given its raw
-  // TabContents, or TabStripModel::kNoTab if the TabContents is not in this
+  // Returns the index of the specified WebContents wrapper given its raw
+  // WebContents, or TabStripModel::kNoTab if the TabContents is not in this
   // TabStripModel.  Note: This is only needed in rare cases where the wrapper
   // is not already present (such as implementing WebContentsDelegate methods,
   // which don't know about the wrapper.  Returns NULL if |contents| is not
   // associated with any wrapper in the model.
-  int GetWrapperIndex(const TabContents* contents) const;
+  int GetWrapperIndex(const content::WebContents* contents) const;
 
   // Returns the index of the specified NavigationController, or kNoTab if it is
   // not in this TabStripModel.

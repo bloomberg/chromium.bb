@@ -53,7 +53,7 @@ const int InfoBarGtk::kEndOfLabelSpacing = 6;
 InfoBarGtk::InfoBarGtk(InfoBarTabHelper* owner, InfoBarDelegate* delegate)
     : InfoBar(owner, delegate),
       theme_service_(GtkThemeService::GetFrom(Profile::FromBrowserContext(
-          owner->tab_contents()->GetBrowserContext()))),
+          owner->web_contents()->GetBrowserContext()))),
       signals_(new ui::GtkSignalRegistrar) {
   DCHECK(delegate);
   // Create |hbox_| and pad the sides.

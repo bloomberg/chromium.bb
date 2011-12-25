@@ -46,13 +46,13 @@ bool DevToolsAgentHostRegistry::HasDevToolsAgentHost(RenderViewHost* rvh) {
   return it != g_instances.Get().end();
 }
 
-bool DevToolsAgentHostRegistry::IsDebuggerAttached(TabContents* tab_contents) {
+bool DevToolsAgentHostRegistry::IsDebuggerAttached(WebContents* web_contents) {
   if (g_instances == NULL)
     return false;
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
   if (!devtools_manager)
     return false;
-  RenderViewHostDelegate* delegate = tab_contents;
+  RenderViewHostDelegate* delegate = static_cast<TabContents*>(web_contents);
   for (Instances::iterator it = g_instances.Get().begin();
        it != g_instances.Get().end(); ++it) {
     if (it->first->delegate() != delegate)

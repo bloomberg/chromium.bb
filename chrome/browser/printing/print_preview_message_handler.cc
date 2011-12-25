@@ -81,7 +81,7 @@ TabContentsWrapper* PrintPreviewMessageHandler::GetPrintPreviewTab() {
 }
 
 TabContentsWrapper* PrintPreviewMessageHandler::tab_contents_wrapper() {
-  return TabContentsWrapper::GetCurrentWrapperForContents(tab_contents());
+  return TabContentsWrapper::GetCurrentWrapperForContents(web_contents());
 }
 
 PrintPreviewUI* PrintPreviewMessageHandler::OnFailure(int document_cookie) {

@@ -12,11 +12,11 @@
 void ShowCertSelectFileDialog(SelectFileDialog* select_file_dialog,
                               SelectFileDialog::Type type,
                               const FilePath& suggested_path,
-                              TabContents* tab_contents,
+                              content::WebContents* web_contents,
                               gfx::NativeWindow parent,
                               void* params);
 
-void ShowCertExportDialog(TabContents* tab_contents,
+void ShowCertExportDialog(content::WebContents* web_contents,
                           gfx::NativeWindow parent,
                           net::X509Certificate::OSCertHandle cert);
 

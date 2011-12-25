@@ -52,6 +52,7 @@
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
+using content::WebContents;
 
 // Helper class that rate-limits the creation of renderer processes for
 // ExtensionHosts, to avoid blocking the UI.
@@ -128,7 +129,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(profile_, this)),
       extension_host_type_(host_type),
-      associated_tab_contents_(NULL) {
+      associated_web_contents_(NULL) {
   host_contents_.reset(new TabContents(
       profile_, site_instance, MSG_ROUTING_NONE, NULL, NULL));
   content::WebContentsObserver::Observe(host_contents_.get());
@@ -157,7 +158,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(profile_, this)),
       extension_host_type_(host_type),
-      associated_tab_contents_(NULL) {
+      associated_web_contents_(NULL) {
 }
 
 ExtensionHost::~ExtensionHost() {
@@ -186,8 +187,8 @@ void ExtensionHost::CreateView(Browser* browser) {
 #endif
 }
 
-TabContents* ExtensionHost::GetAssociatedTabContents() const {
-  return associated_tab_contents_;
+WebContents* ExtensionHost::GetAssociatedWebContents() const {
+  return associated_web_contents_;
 }
 
 content::RenderProcessHost* ExtensionHost::render_process_host() const {
@@ -506,7 +507,7 @@ void ExtensionHost::AddNewContents(TabContents* source,
   // Note that we don't do this for popup windows, because we need to associate
   // those with their extension_app_id.
   if (disposition != NEW_POPUP) {
-    TabContents* associated_contents = GetAssociatedTabContents();
+    WebContents* associated_contents = GetAssociatedWebContents();
     if (associated_contents &&
         associated_contents->GetBrowserContext() ==
             new_contents->GetBrowserContext()) {

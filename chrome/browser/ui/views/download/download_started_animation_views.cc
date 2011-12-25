@@ -4,17 +4,19 @@
 
 #include "chrome/browser/download/download_started_animation.h"
 
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/linear_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
+
+using content::WebContents;
 
 // How long to spend moving downwards and fading out after waiting.
 static const int kMoveTimeMs = 600;
@@ -38,7 +40,7 @@ class DownloadStartedAnimationWin : public ui::LinearAnimation,
                                     public content::NotificationObserver,
                                     public views::ImageView {
  public:
-  explicit DownloadStartedAnimationWin(TabContents* tab_contents);
+  explicit DownloadStartedAnimationWin(WebContents* web_contents);
 
  private:
   // Move the animation to wherever it should currently be.
@@ -59,14 +61,14 @@ class DownloadStartedAnimationWin : public ui::LinearAnimation,
   views::Widget* popup_;
 
   // The content area holding us.
-  TabContents* tab_contents_;
+  WebContents* web_contents_;
 
   // The content area at the start of the animation. We store this so that the
   // download shelf's resizing of the content area doesn't cause the animation
   // to move around. This means that once started, the animation won't move
   // with the parent window, but it's so fast that this shouldn't cause too
   // much heartbreak.
-  gfx::Rect tab_contents_bounds_;
+  gfx::Rect web_contents_bounds_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
@@ -75,10 +77,10 @@ class DownloadStartedAnimationWin : public ui::LinearAnimation,
 };
 
 DownloadStartedAnimationWin::DownloadStartedAnimationWin(
-    TabContents* tab_contents)
+    WebContents* web_contents)
     : ui::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
       popup_(NULL),
-      tab_contents_(tab_contents) {
+      web_contents_(web_contents) {
   static SkBitmap* kDownloadImage = NULL;
   if (!kDownloadImage) {
     kDownloadImage = ResourceBundle::GetSharedInstance().GetBitmapNamed(
@@ -87,18 +89,18 @@ DownloadStartedAnimationWin::DownloadStartedAnimationWin(
 
   // If we're too small to show the download image, then don't bother -
   // the shelf will be enough.
-  tab_contents_->GetContainerBounds(&tab_contents_bounds_);
-  if (tab_contents_bounds_.height() < kDownloadImage->height())
+  web_contents_->GetContainerBounds(&web_contents_bounds_);
+  if (web_contents_bounds_.height() < kDownloadImage->height())
     return;
 
   registrar_.Add(
       this,
-      content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
-      content::Source<TabContents>(tab_contents_));
+      content::NOTIFICATION_WEB_CONTENTS_HIDDEN,
+      content::Source<WebContents>(web_contents_));
   registrar_.Add(
       this,
-      content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      content::Source<TabContents>(tab_contents_));
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<WebContents>(web_contents_));
 
   SetImage(kDownloadImage);
 
@@ -107,7 +109,7 @@ DownloadStartedAnimationWin::DownloadStartedAnimationWin(
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
   params.accept_events = false;
-  params.parent = tab_contents_->GetNativeView();
+  params.parent = web_contents_->GetNativeView();
   popup_->Init(params);
   popup_->SetOpacity(0x00);
   popup_->SetContentsView(this);
@@ -118,35 +120,35 @@ DownloadStartedAnimationWin::DownloadStartedAnimationWin(
 }
 
 void DownloadStartedAnimationWin::Reposition() {
-  if (!tab_contents_)
+  if (!web_contents_)
     return;
 
   // Align the image with the bottom left of the web contents (so that it
   // points to the newly created download).
   gfx::Size size = GetPreferredSize();
   int x = base::i18n::IsRTL() ?
-      tab_contents_bounds_.right() - size.width() : tab_contents_bounds_.x();
+      web_contents_bounds_.right() - size.width() : web_contents_bounds_.x();
   popup_->SetBounds(gfx::Rect(
       x,
-      static_cast<int>(tab_contents_bounds_.bottom() -
+      static_cast<int>(web_contents_bounds_.bottom() -
           size.height() - size.height() * (1 - GetCurrentValue())),
       size.width(),
       size.height()));
 }
 
 void DownloadStartedAnimationWin::Close() {
-  if (!tab_contents_)
+  if (!web_contents_)
     return;
 
   registrar_.Remove(
       this,
-      content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
-      content::Source<TabContents>(tab_contents_));
+      content::NOTIFICATION_WEB_CONTENTS_HIDDEN,
+      content::Source<WebContents>(web_contents_));
   registrar_.Remove(
       this,
-      content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      content::Source<TabContents>(tab_contents_));
-  tab_contents_ = NULL;
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<WebContents>(web_contents_));
+  web_contents_ = NULL;
   popup_->Close();
 }
 
@@ -177,8 +179,8 @@ void DownloadStartedAnimationWin::Observe(
 }  // namespace
 
 // static
-void DownloadStartedAnimation::Show(TabContents* tab_contents) {
+void DownloadStartedAnimation::Show(WebContents* web_contents) {
   // The animation will delete itself when it's finished or when the tab
   // contents is hidden or destroyed.
-  new DownloadStartedAnimationWin(tab_contents);
+  new DownloadStartedAnimationWin(web_contents);
 }

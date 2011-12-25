@@ -17,6 +17,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::WebContents;
+
 SelectFileDialog::FileTypeInfo::FileTypeInfo() : include_all_files(false) {}
 
 SelectFileDialog::FileTypeInfo::~FileTypeInfo() {}
@@ -47,7 +49,7 @@ void SelectFileDialog::SelectFile(Type type,
                                   const FileTypeInfo* file_types,
                                   int file_type_index,
                                   const FilePath::StringType& default_extension,
-                                  TabContents* source_contents,
+                                  WebContents* source_contents,
                                   gfx::NativeWindow owning_window,
                                   void* params) {
   DCHECK(listener_);

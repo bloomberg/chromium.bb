@@ -1150,6 +1150,11 @@ const FilePath::CharType* SavePackage::ExtensionForMimeType(
   return FILE_PATH_LITERAL("");
 }
 
+TabContents* SavePackage::tab_contents() const {
+  return
+      static_cast<TabContents*>(content::WebContentsObserver::web_contents());
+}
+
 void SavePackage::GetSaveInfo() {
   // Can't use tab_contents_ in the file thread, so get the data that we need
   // before calling to it.

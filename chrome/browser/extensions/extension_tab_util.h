@@ -33,23 +33,24 @@ class ExtensionTabUtil {
                                    int argument_index,
                                    int *tab_id, std::string* error_message);
   static std::string GetTabStatusText(bool is_loading);
-  static int GetWindowIdOfTab(const TabContents* tab_contents);
+  static int GetWindowIdOfTab(const content::WebContents* web_contents);
   static std::string GetWindowTypeText(const Browser* browser);
   static std::string GetWindowShowStateText(const Browser* browser);
   static base::ListValue* CreateTabList(const Browser* browser);
   static base::DictionaryValue* CreateTabValue(
-      const TabContents* tab_contents);
-  static base::DictionaryValue* CreateTabValue(const TabContents* tab_contents,
-                                               TabStripModel* tab_strip,
-                                               int tab_index);
+      const content::WebContents* web_contents);
+  static base::DictionaryValue* CreateTabValue(
+      const content::WebContents* web_contents,
+      TabStripModel* tab_strip,
+      int tab_index);
   // Create a tab value, overriding its kSelectedKey to the provided boolean.
   static base::DictionaryValue* CreateTabValueActive(
-      const TabContents* tab_contents,
+      const content::WebContents* web_contents,
       bool active);
   static base::DictionaryValue* CreateWindowValue(const Browser* browser,
                                                   bool populate_tabs);
-  // Gets the |tab_strip_model| and |tab_index| for the given |tab_contents|.
-  static bool GetTabStripModel(const TabContents* tab_contents,
+  // Gets the |tab_strip_model| and |tab_index| for the given |web_contents|.
+  static bool GetTabStripModel(const content::WebContents* web_contents,
                                TabStripModel** tab_strip_model,
                                int* tab_index);
   static bool GetDefaultTab(Browser* browser,

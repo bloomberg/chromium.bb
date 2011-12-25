@@ -9,8 +9,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/bug_report_ui.h"
 #include "chrome/browser/userfeedback/proto/extension.pb.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 
 AutofillFeedbackInfoBarDelegate::AutofillFeedbackInfoBarDelegate(
@@ -50,7 +50,7 @@ bool AutofillFeedbackInfoBarDelegate::LinkClicked(
 
   browser::ShowHtmlBugReportView(
       Browser::GetBrowserForController(
-          &owner()->tab_contents()->GetController(), NULL),
+          &owner()->web_contents()->GetController(), NULL),
       feedback_message_,
       issue_type);
   return true;

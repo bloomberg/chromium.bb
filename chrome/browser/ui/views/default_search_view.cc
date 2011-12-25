@@ -15,7 +15,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -29,6 +29,8 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -113,7 +115,7 @@ views::View* CreateProviderChoiceButton(
 }  // namespace
 
 // static
-void DefaultSearchView::Show(TabContents* tab_contents,
+void DefaultSearchView::Show(WebContents* web_contents,
                              TemplateURL* proposed_default_turl,
                              Profile* profile) {
   TemplateURLService* template_url_service =
@@ -121,7 +123,7 @@ void DefaultSearchView::Show(TabContents* tab_contents,
   if (template_url_service->CanMakeDefault(proposed_default_turl) &&
       !proposed_default_turl->url()->GetHost().empty()) {
     // When the window closes, it will delete itself.
-    new DefaultSearchView(tab_contents, proposed_default_turl,
+    new DefaultSearchView(web_contents, proposed_default_turl,
                           template_url_service, profile->GetPrefs());
   } else {
     delete proposed_default_turl;
@@ -187,7 +189,7 @@ const views::Widget* DefaultSearchView::GetWidget() const {
   return View::GetWidget();
 }
 
-DefaultSearchView::DefaultSearchView(TabContents* tab_contents,
+DefaultSearchView::DefaultSearchView(WebContents* web_contents,
                                      TemplateURL* proposed_default_turl,
                                      TemplateURLService* template_url_service,
                                      PrefService* prefs)
@@ -200,7 +202,7 @@ DefaultSearchView::DefaultSearchView(TabContents* tab_contents,
 
   // Show the dialog.
   new ConstrainedWindowViews(
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents), this);
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents), this);
 }
 
 void DefaultSearchView::SetupControls(PrefService* prefs) {

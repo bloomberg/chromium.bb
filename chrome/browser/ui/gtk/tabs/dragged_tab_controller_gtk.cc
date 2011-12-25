@@ -23,6 +23,8 @@
 #include "content/public/browser/notification_types.h"
 #include "ui/gfx/screen.h"
 
+using content::WebContents;
+
 namespace {
 
 // Delay, in ms, during dragging before we bring a window to front.
@@ -161,8 +163,8 @@ DraggedTabData DraggedTabControllerGtk::InitDraggedTabData(TabGtk* tab) {
                                   source_model_index, pinned, mini);
   registrar_.Add(
       this,
-      content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      content::Source<TabContents>(dragged_tab_data.contents_->tab_contents()));
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<WebContents>(dragged_tab_data.contents_->tab_contents()));
   return dragged_tab_data;
 }
 
@@ -223,8 +225,8 @@ void DraggedTabControllerGtk::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED);
-  TabContents* destroyed_contents = content::Source<TabContents>(source).ptr();
+  DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
+  WebContents* destroyed_contents = content::Source<WebContents>(source).ptr();
   for (size_t i = 0; i < drag_data_->size(); ++i) {
     if (drag_data_->get(i)->contents_->tab_contents() == destroyed_contents) {
       // One of the tabs we're dragging has been destroyed. Cancel the drag.
@@ -845,8 +847,8 @@ void DraggedTabControllerGtk::CleanUpDraggedTabs() {
     for (size_t i = 0; i < drag_data_->size(); ++i) {
       if (drag_data_->get(i)->contents_) {
         registrar_.Remove(
-            this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-            content::Source<TabContents>(
+            this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+            content::Source<WebContents>(
                 drag_data_->get(i)->contents_->tab_contents()));
       }
       source_tabstrip_->DestroyDraggedTab(drag_data_->get(i)->tab_);

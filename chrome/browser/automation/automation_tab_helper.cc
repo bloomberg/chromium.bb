@@ -6,9 +6,9 @@
 
 #include <algorithm>
 
-#include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "chrome/common/automation_messages.h"
+#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/size.h"
@@ -37,8 +37,8 @@ void TabEventObserver::StopObserving(AutomationTabHelper* tab_helper) {
     event_sources_.erase(iter);
 }
 
-AutomationTabHelper::AutomationTabHelper(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents),
+AutomationTabHelper::AutomationTabHelper(WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
       is_loading_(false) {
 }
 
@@ -72,7 +72,7 @@ void AutomationTabHelper::DidStartLoading() {
   is_loading_ = true;
   if (!had_pending_loads) {
     FOR_EACH_OBSERVER(TabEventObserver, observers_,
-                      OnFirstPendingLoad(tab_contents()));
+                      OnFirstPendingLoad(web_contents()));
   }
 }
 
@@ -84,12 +84,12 @@ void AutomationTabHelper::DidStopLoading() {
   is_loading_ = false;
   if (!has_pending_loads()) {
     FOR_EACH_OBSERVER(TabEventObserver, observers_,
-                      OnNoMorePendingLoads(tab_contents()));
+                      OnNoMorePendingLoads(web_contents()));
   }
 }
 
 void AutomationTabHelper::RenderViewGone(base::TerminationStatus status) {
-  OnTabOrRenderViewDestroyed(tab_contents());
+  OnTabOrRenderViewDestroyed(web_contents());
 }
 
 void AutomationTabHelper::WebContentsDestroyed(WebContents* web_contents) {
@@ -146,7 +146,7 @@ void AutomationTabHelper::OnWillPerformClientRedirect(
   pending_client_redirects_.insert(frame_id);
   if (first_pending_load) {
     FOR_EACH_OBSERVER(TabEventObserver, observers_,
-                      OnFirstPendingLoad(tab_contents()));
+                      OnFirstPendingLoad(web_contents()));
   }
 }
 
@@ -159,7 +159,7 @@ void AutomationTabHelper::OnDidCompleteOrCancelClientRedirect(int64 frame_id) {
     pending_client_redirects_.erase(iter);
     if (!has_pending_loads()) {
       FOR_EACH_OBSERVER(TabEventObserver, observers_,
-                        OnNoMorePendingLoads(tab_contents()));
+                        OnNoMorePendingLoads(web_contents()));
     }
   }
 }

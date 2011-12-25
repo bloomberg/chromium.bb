@@ -66,6 +66,7 @@
 #endif  // defined(OS_WIN)
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -251,7 +252,7 @@ bool TaskManagerTabContentsResource::IsPrerendering() const {
       prerender::PrerenderManagerFactory::GetForProfile(
           tab_contents_->profile());
   return prerender_manager &&
-         prerender_manager->IsTabContentsPrerendering(
+         prerender_manager->IsWebContentsPrerendering(
              tab_contents_->tab_contents());
 }
 
@@ -395,7 +396,7 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
   // resource.  This is an attempt at mitigating a crasher that seem to
   // indicate a resource is still referencing a deleted TabContents
   // (http://crbug.com/7321).
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_INSTANT_COMMITTED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -416,7 +417,7 @@ void TaskManagerTabContentsResourceProvider::StopUpdating() {
       this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
       content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Remove(
-      this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+      this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Remove(
       this, chrome::NOTIFICATION_INSTANT_COMMITTED,
@@ -499,6 +500,10 @@ void TaskManagerTabContentsResourceProvider::Observe(int type,
   TabContentsWrapper* tab_contents;
   if (type == chrome::NOTIFICATION_INSTANT_COMMITTED) {
     tab_contents = content::Source<TabContentsWrapper>(source).ptr();
+  } else if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
+    WebContents* web_contents = content::Source<WebContents>(source).ptr();
+    tab_contents = TabContentsWrapper::GetCurrentWrapperForContents(
+        web_contents);
   } else {
     tab_contents = TabContentsWrapper::GetCurrentWrapperForContents(
         content::Source<TabContents>(source).ptr());
@@ -514,7 +519,7 @@ void TaskManagerTabContentsResourceProvider::Observe(int type,
       Remove(tab_contents);
       Add(tab_contents);
       break;
-    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED:
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
       // If this DCHECK is triggered, it could explain http://crbug.com/7321 .
       DCHECK(resources_.find(tab_contents) ==
              resources_.end()) << "TAB_CONTENTS_DESTROYED with no associated "

@@ -17,6 +17,8 @@
 #include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 
+using content::WebContents;
+
 struct SidebarManager::SidebarStateForTab {
   // Sidebars linked to this tab.
   ContentIdToSidebarHostMap content_id_to_sidebar_host;
@@ -52,7 +54,7 @@ SidebarContainer* SidebarManager::GetActiveSidebarContainerFor(
 }
 
 SidebarContainer* SidebarManager::GetSidebarContainerFor(
-    TabContents* tab, const std::string& content_id) {
+    WebContents* tab, const std::string& content_id) {
   DCHECK(!content_id.empty());
   TabToSidebarHostMap::iterator it = tab_to_sidebar_host_.find(tab);
   if (it == tab_to_sidebar_host_.end())
@@ -165,7 +167,7 @@ void SidebarManager::CollapseSidebar(TabContents* tab,
   host->Collapse();
 }
 
-void SidebarManager::HideSidebar(TabContents* tab,
+void SidebarManager::HideSidebar(WebContents* tab,
                                  const std::string& content_id) {
   DCHECK(!content_id.empty());
   TabToSidebarHostMap::iterator it = tab_to_sidebar_host_.find(tab);
@@ -231,8 +233,8 @@ SidebarManager::~SidebarManager() {
 void SidebarManager::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
-    HideAllSidebars(content::Source<TabContents>(source).ptr());
+  if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
+    HideAllSidebars(content::Source<WebContents>(source).ptr());
   } else {
     NOTREACHED() << "Got a notification we didn't register for!";
   }
@@ -245,7 +247,7 @@ void SidebarManager::UpdateSidebar(SidebarContainer* host) {
       content::Details<SidebarContainer>(host));
 }
 
-void SidebarManager::HideAllSidebars(TabContents* tab) {
+void SidebarManager::HideAllSidebars(WebContents* tab) {
   TabToSidebarHostMap::iterator tab_it = tab_to_sidebar_host_.find(tab);
   if (tab_it == tab_to_sidebar_host_.end())
     return;
@@ -276,21 +278,21 @@ SidebarContainer* SidebarManager::FindSidebarContainerFor(
 }
 
 void SidebarManager::RegisterSidebarContainerFor(
-    TabContents* tab, SidebarContainer* sidebar_host) {
+    WebContents* tab, SidebarContainer* sidebar_host) {
   DCHECK(!GetSidebarContainerFor(tab, sidebar_host->content_id()));
 
   // If it's a first sidebar for this tab, register destroy notification.
   if (tab_to_sidebar_host_.find(tab) == tab_to_sidebar_host_.end()) {
     registrar_.Add(this,
-                   content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                   content::Source<TabContents>(tab));
+                   content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                   content::Source<WebContents>(tab));
   }
 
   BindSidebarHost(tab, sidebar_host);
 }
 
 void SidebarManager::UnregisterSidebarContainerFor(
-      TabContents* tab, const std::string& content_id) {
+      WebContents* tab, const std::string& content_id) {
   SidebarContainer* host = GetSidebarContainerFor(tab, content_id);
   DCHECK(host);
   if (!host)
@@ -301,8 +303,8 @@ void SidebarManager::UnregisterSidebarContainerFor(
   // If there's no more sidebars linked to this tab, unsubscribe.
   if (tab_to_sidebar_host_.find(tab) == tab_to_sidebar_host_.end()) {
     registrar_.Remove(this,
-                      content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                      content::Source<TabContents>(tab));
+                      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                      content::Source<WebContents>(tab));
   }
 
   // Issue tab closing event post unbound.
@@ -311,7 +313,7 @@ void SidebarManager::UnregisterSidebarContainerFor(
   delete host;
 }
 
-void SidebarManager::BindSidebarHost(TabContents* tab,
+void SidebarManager::BindSidebarHost(WebContents* tab,
                                      SidebarContainer* sidebar_host) {
   const std::string& content_id = sidebar_host->content_id();
 
@@ -324,7 +326,7 @@ void SidebarManager::BindSidebarHost(TabContents* tab,
   sidebar_host_to_tab_[sidebar_host] = tab;
 }
 
-void SidebarManager::UnbindSidebarHost(TabContents* tab,
+void SidebarManager::UnbindSidebarHost(WebContents* tab,
                                        SidebarContainer* sidebar_host) {
   const std::string& content_id = sidebar_host->content_id();
 

@@ -17,7 +17,7 @@ class SearchEngineTabHelperDelegate;
 // functionality.
 class SearchEngineTabHelper : public content::WebContentsObserver {
  public:
-  explicit SearchEngineTabHelper(TabContents* tab_contents);
+  explicit SearchEngineTabHelper(content::WebContents* web_contents);
   virtual ~SearchEngineTabHelper();
 
   SearchEngineTabHelperDelegate* delegate() const { return delegate_; }

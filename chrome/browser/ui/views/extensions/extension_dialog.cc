@@ -49,7 +49,7 @@ ExtensionDialog* ExtensionDialog::Show(
   ExtensionHost* host = CreateExtensionHost(url, browser);
   if (!host)
     return NULL;
-  host->set_associated_tab_contents(tab_contents);
+  host->set_associated_web_contents(tab_contents);
 
   ExtensionDialog* dialog = new ExtensionDialog(host, observer);
   dialog->set_title(title);

@@ -23,6 +23,8 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 
+using content::WebContents;
+
 ExtensionTabHelper::ExtensionTabHelper(TabContentsWrapper* wrapper)
     : content::WebContentsObserver(wrapper->tab_contents()),
       delegate_(NULL),
@@ -41,7 +43,7 @@ void ExtensionTabHelper::CopyStateFrom(const ExtensionTabHelper& source) {
 }
 
 void ExtensionTabHelper::PageActionStateChanged() {
-  tab_contents()->NotifyNavigationStateChanged(
+  web_contents()->NotifyNavigationStateChanged(
       TabContents::INVALIDATE_PAGE_ACTIONS);
 }
 
@@ -67,7 +69,7 @@ void ExtensionTabHelper::SetExtensionAppById(
     return;
 
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   ExtensionService* extension_service = profile->GetExtensionService();
   if (!extension_service || !extension_service->is_ready())
     return;
@@ -92,7 +94,7 @@ void ExtensionTabHelper::DidNavigateMainFrame(
     return;
 
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   ExtensionService* service = profile->GetExtensionService();
   if (!service)
     return;
@@ -153,7 +155,7 @@ void ExtensionTabHelper::OnInlineWebstoreInstall(
     const std::string& webstore_item_id,
     const GURL& requestor_url) {
   scoped_refptr<WebstoreInlineInstaller> installer(new WebstoreInlineInstaller(
-      tab_contents(), install_id, webstore_item_id, requestor_url, this));
+      web_contents(), install_id, webstore_item_id, requestor_url, this));
   installer->BeginInstall();
 }
 
@@ -165,7 +167,7 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
 
   // Check for permission first.
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   ExtensionService* extension_service = profile->GetExtensionService();
   extensions::ProcessMap* process_map = extension_service->process_map();
   content::RenderProcessHost* process =
@@ -208,7 +210,7 @@ void ExtensionTabHelper::AppNotifyChannelSetupComplete(
   // If the setup was successful, record that fact in ExtensionService.
   if (!channel_id.empty() && error.empty()) {
     Profile* profile =
-        Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     ExtensionService* service = profile->GetExtensionService();
     if (service->GetExtensionById(setup->extension_id(), true))
       service->SetAppNotificationSetupDone(setup->extension_id(),
@@ -222,7 +224,7 @@ void ExtensionTabHelper::AppNotifyChannelSetupComplete(
 void ExtensionTabHelper::OnRequest(
     const ExtensionHostMsg_Request_Params& request) {
   extension_function_dispatcher_.Dispatch(request,
-                                          tab_contents()->GetRenderViewHost());
+                                          web_contents()->GetRenderViewHost());
 }
 
 void ExtensionTabHelper::UpdateExtensionAppIcon(const Extension* extension) {
@@ -244,7 +246,7 @@ void ExtensionTabHelper::UpdateExtensionAppIcon(const Extension* extension) {
 
 void ExtensionTabHelper::SetAppIcon(const SkBitmap& app_icon) {
   extension_app_icon_ = app_icon;
-  tab_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
+  web_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
 }
 
 void ExtensionTabHelper::OnImageLoaded(SkBitmap* image,
@@ -252,12 +254,12 @@ void ExtensionTabHelper::OnImageLoaded(SkBitmap* image,
                                        int index) {
   if (image) {
     extension_app_icon_ = *image;
-    tab_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
+    web_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
   }
 }
 
 Browser* ExtensionTabHelper::GetBrowser() {
-  TabContents* contents = tab_contents();
+  content::WebContents* contents = web_contents();
   TabContentsIterator tab_iterator;
   for (; !tab_iterator.done(); ++tab_iterator) {
     if (contents == (*tab_iterator)->tab_contents())
@@ -278,11 +280,11 @@ void ExtensionTabHelper::OnInlineInstallFailure(int install_id,
       routing_id(), install_id, false, error));
 }
 
-TabContents* ExtensionTabHelper::GetAssociatedTabContents() const {
-  return tab_contents();
+WebContents* ExtensionTabHelper::GetAssociatedWebContents() const {
+  return web_contents();
 }
 
 gfx::NativeView ExtensionTabHelper::GetNativeViewOfHost() {
-  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = web_contents()->GetRenderWidgetHostView();
   return rwhv ? rwhv->GetNativeView() : NULL;
 }

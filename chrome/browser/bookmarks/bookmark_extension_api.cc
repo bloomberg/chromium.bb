@@ -42,6 +42,7 @@ namespace keys = bookmark_extension_api_constants;
 
 using base::TimeDelta;
 using content::BrowserThread;
+using content::WebContents;
 typedef QuotaLimitHeuristic::Bucket Bucket;
 typedef QuotaLimitHeuristic::Config Config;
 typedef QuotaLimitHeuristic::BucketList BucketList;
@@ -877,8 +878,8 @@ void BookmarksIOFunction::ShowSelectFileDialog(SelectFileDialog::Type type,
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("html"));
 
-  TabContents* tab_contents = dispatcher()->delegate()->
-      GetAssociatedTabContents();
+  WebContents* web_contents = dispatcher()->delegate()->
+      GetAssociatedWebContents();
 
   // |tab_contents| can be NULL (for background pages), which is fine. In such
   // a case if file-selection dialogs are forbidden by policy, we will not
@@ -889,7 +890,7 @@ void BookmarksIOFunction::ShowSelectFileDialog(SelectFileDialog::Type type,
                                   &file_type_info,
                                   0,
                                   FILE_PATH_LITERAL(""),
-                                  tab_contents,
+                                  web_contents,
                                   NULL,
                                   NULL);
 }

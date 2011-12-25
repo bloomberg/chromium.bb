@@ -56,7 +56,7 @@ void InfoBarTabHelper::AddInfoBar(InfoBarDelegate* delegate) {
     registrar_.Add(
         this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<NavigationController>(
-            &tab_contents()->GetController()));
+            &web_contents()->GetController()));
   }
 }
 
@@ -122,7 +122,7 @@ void InfoBarTabHelper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
     registrar_.Remove(
         this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<NavigationController>(
-            &tab_contents()->GetController()));
+            &web_contents()->GetController()));
   }
 }
 
@@ -179,7 +179,7 @@ void InfoBarTabHelper::Observe(int type,
                                const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      DCHECK(&tab_contents()->GetController() ==
+      DCHECK(&web_contents()->GetController() ==
              content::Source<NavigationController>(source).ptr());
 
       content::LoadCommittedDetails& committed_details =

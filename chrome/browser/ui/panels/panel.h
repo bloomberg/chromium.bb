@@ -126,9 +126,10 @@ class Panel : public BrowserWindow,
   virtual bool IsTabStripEditable() const OVERRIDE;
   virtual bool IsToolbarVisible() const OVERRIDE;
   virtual void DisableInactiveFrame() OVERRIDE;
-  virtual void ConfirmSetDefaultSearchProvider(TabContents* tab_contents,
-                                               TemplateURL* template_url,
-                                               Profile* profile) OVERRIDE;
+  virtual void ConfirmSetDefaultSearchProvider(
+      content::WebContents* web_contents,
+      TemplateURL* template_url,
+      Profile* profile) OVERRIDE;
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile) OVERRIDE;
   virtual void ToggleBookmarkBar() OVERRIDE;

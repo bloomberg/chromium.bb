@@ -30,6 +30,8 @@
 
 namespace keys = bookmark_extension_api_constants;
 
+using content::WebContents;
+
 namespace {
 
 // Returns a single bookmark node from the argument ID.
@@ -378,11 +380,11 @@ bool StartDragBookmarkManagerFunction::RunImpl() {
 
   if (render_view_host_->delegate()->GetRenderViewType() ==
       content::VIEW_TYPE_TAB_CONTENTS) {
-    TabContents* tab_contents =
-        dispatcher()->delegate()->GetAssociatedTabContents();
-    CHECK(tab_contents);
+    WebContents* web_contents =
+        dispatcher()->delegate()->GetAssociatedWebContents();
+    CHECK(web_contents);
     bookmark_utils::DragBookmarks(profile(), nodes,
-                                  tab_contents->GetNativeView());
+                                  web_contents->GetNativeView());
 
     return true;
   } else {
@@ -420,11 +422,11 @@ bool DropBookmarkManagerFunction::RunImpl() {
 
   if (render_view_host_->delegate()->GetRenderViewType() ==
       content::VIEW_TYPE_TAB_CONTENTS) {
-    TabContents* tab_contents =
-        dispatcher()->delegate()->GetAssociatedTabContents();
-    CHECK(tab_contents);
+    WebContents* web_contents =
+        dispatcher()->delegate()->GetAssociatedWebContents();
+    CHECK(web_contents);
     ExtensionWebUI* web_ui =
-        static_cast<ExtensionWebUI*>(tab_contents->GetWebUI());
+        static_cast<ExtensionWebUI*>(web_contents->GetWebUI());
     CHECK(web_ui);
     BookmarkManagerExtensionEventRouter* router =
         web_ui->bookmark_manager_extension_event_router();

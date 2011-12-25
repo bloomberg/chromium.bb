@@ -19,6 +19,10 @@ class SidebarContainer;
 class SkBitmap;
 class TabContents;
 
+namespace content {
+class WebContents;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // SidebarManager
 //
@@ -43,7 +47,7 @@ class SidebarManager : public content::NotificationObserver,
 
   // Returns SidebarContainer registered for |tab| and |content_id| or NULL if
   // there is no such SidebarContainer registered.
-  SidebarContainer* GetSidebarContainerFor(TabContents* tab,
+  SidebarContainer* GetSidebarContainerFor(content::WebContents* tab,
                                            const std::string& content_id);
 
   // Returns sidebar's TabContents registered for |tab| and |content_id|.
@@ -69,7 +73,7 @@ class SidebarManager : public content::NotificationObserver,
 
   // Hides sidebar identified by |tab| and |content_id| (removes sidebar's
   // mini tab).
-  void HideSidebar(TabContents* tab, const std::string& content_id);
+  void HideSidebar(content::WebContents* tab, const std::string& content_id);
 
   // Navigates sidebar identified by |tab| and |content_id| to |url|.
   void NavigateSidebar(TabContents* tab,
@@ -105,25 +109,27 @@ class SidebarManager : public content::NotificationObserver,
   virtual void UpdateSidebar(SidebarContainer* host) OVERRIDE;
 
   // Hides all sidebars registered for |tab|.
-  void HideAllSidebars(TabContents* tab);
+  void HideAllSidebars(content::WebContents* tab);
 
   // Returns SidebarContainer corresponding to |sidebar_contents|.
   SidebarContainer* FindSidebarContainerFor(TabContents* sidebar_contents);
 
   // Registers new SidebarContainer for |tab|. There must be no
   // other SidebarContainers registered for the RenderViewHost at the moment.
-  void RegisterSidebarContainerFor(TabContents* tab,
+  void RegisterSidebarContainerFor(content::WebContents* tab,
                                    SidebarContainer* container);
 
   // Unregisters SidebarContainer identified by |tab| and |content_id|.
-  void UnregisterSidebarContainerFor(TabContents* tab,
+  void UnregisterSidebarContainerFor(content::WebContents* tab,
                                      const std::string& content_id);
 
   // Records the link between |tab| and |sidebar_host|.
-  void BindSidebarHost(TabContents* tab, SidebarContainer* sidebar_host);
+  void BindSidebarHost(content::WebContents* tab,
+                       SidebarContainer* sidebar_host);
 
   // Forgets the link between |tab| and |sidebar_host|.
-  void UnbindSidebarHost(TabContents* tab, SidebarContainer* sidebar_host);
+  void UnbindSidebarHost(content::WebContents* tab,
+                         SidebarContainer* sidebar_host);
 
   content::NotificationRegistrar registrar_;
 
@@ -137,10 +143,12 @@ class SidebarManager : public content::NotificationObserver,
   // SidebarManager start listening to SidebarContainers when they are put
   // into these maps and removes them when they are closing.
   struct SidebarStateForTab;
-  typedef std::map<TabContents*, SidebarStateForTab> TabToSidebarHostMap;
+  typedef std::map<content::WebContents*, SidebarStateForTab>
+      TabToSidebarHostMap;
   TabToSidebarHostMap tab_to_sidebar_host_;
 
-  typedef std::map<SidebarContainer*, TabContents*> SidebarHostToTabMap;
+  typedef std::map<SidebarContainer*, content::WebContents*>
+      SidebarHostToTabMap;
   SidebarHostToTabMap sidebar_host_to_tab_;
 
   DISALLOW_COPY_AND_ASSIGN(SidebarManager);

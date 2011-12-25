@@ -18,8 +18,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/url_pattern.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/utility_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -174,7 +174,7 @@ void WebstoreInlineInstaller::BeginInstall() {
   webstore_data_url_fetcher_.reset(content::URLFetcher::Create(
       webstore_data_url, content::URLFetcher::GET, this));
   Profile* profile = Profile::FromBrowserContext(
-      tab_contents()->GetBrowserContext());
+      web_contents()->GetBrowserContext());
   webstore_data_url_fetcher_->SetRequestContext(
       profile->GetRequestContext());
   // Use the requesting page as the referrer both since that is more correct
@@ -192,7 +192,7 @@ void WebstoreInlineInstaller::OnURLFetchComplete(
   CHECK_EQ(webstore_data_url_fetcher_.get(), source);
   // We shouldn't be getting UrlFetcher callbacks if the WebContents has gone
   // away; we stop any in in-progress fetches in WebContentsDestroyed.
-  CHECK(tab_contents());
+  CHECK(web_contents());
 
   if (!webstore_data_url_fetcher_->GetStatus().is_success() ||
       webstore_data_url_fetcher_->GetResponseCode() != 200) {
@@ -214,7 +214,7 @@ void WebstoreInlineInstaller::OnURLFetchComplete(
 void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
     DictionaryValue* webstore_data) {
   // Check if the tab has gone away in the meantime.
-  if (!tab_contents()) {
+  if (!web_contents()) {
     CompleteInstall("");
     return;
   }
@@ -238,9 +238,9 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
       return;
     }
 
-    tab_contents()->OpenURL(OpenURLParams(
+    web_contents()->OpenURL(OpenURLParams(
         GURL(redirect_url),
-        content::Referrer(tab_contents()->GetURL(),
+        content::Referrer(web_contents()->GetURL(),
                           WebKit::WebReferrerPolicyDefault),
         NEW_FOREGROUND_TAB,
         content::PAGE_TRANSITION_AUTO_BOOKMARK,
@@ -320,7 +320,7 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
       manifest,
       "", // We don't have any icon data.
       icon_url,
-      Profile::FromBrowserContext(tab_contents()->GetBrowserContext())->
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext())->
           GetRequestContext());
   // The helper will call us back via OnWebstoreParseSucces or
   // OnWebstoreParseFailure.
@@ -337,7 +337,7 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
     const SkBitmap& icon,
     base::DictionaryValue* manifest) {
   // Check if the tab has gone away in the meantime.
-  if (!tab_contents()) {
+  if (!web_contents()) {
     CompleteInstall("");
     return;
   }
@@ -347,7 +347,7 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
   icon_ = icon;
 
   Profile* profile = Profile::FromBrowserContext(
-      tab_contents()->GetBrowserContext());
+      web_contents()->GetBrowserContext());
 
   ExtensionInstallUI::Prompt prompt(ExtensionInstallUI::INLINE_INSTALL_PROMPT);
   prompt.SetInlineInstallWebstoreData(localized_user_count_,
@@ -379,7 +379,7 @@ void WebstoreInlineInstaller::OnWebstoreParseFailure(
 
 void WebstoreInlineInstaller::InstallUIProceed() {
   // Check if the tab has gone away in the meantime.
-  if (!tab_contents()) {
+  if (!web_contents()) {
     CompleteInstall("");
     return;
   }
@@ -392,10 +392,10 @@ void WebstoreInlineInstaller::InstallUIProceed() {
   CrxInstaller::SetWhitelistEntry(id_, entry);
 
   Profile* profile = Profile::FromBrowserContext(
-      tab_contents()->GetBrowserContext());
+      web_contents()->GetBrowserContext());
 
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
-      profile, this, &(tab_contents()->GetController()), id_,
+      profile, this, &(web_contents()->GetController()), id_,
       WebstoreInstaller::FLAG_INLINE_INSTALL);
   installer->Start();
 }
@@ -426,7 +426,7 @@ void WebstoreInlineInstaller::OnExtensionInstallFailure(
 void WebstoreInlineInstaller::CompleteInstall(const std::string& error) {
   // Only bother responding if there's still a tab contents to send back the
   // response to.
-  if (tab_contents()) {
+  if (web_contents()) {
     if (error.empty()) {
       delegate_->OnInlineInstallSuccess(install_id_);
     } else {

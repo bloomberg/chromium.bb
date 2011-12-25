@@ -34,7 +34,7 @@ class FileSelectHelper
 
   // Show the file chooser dialog.
   void RunFileChooser(RenderViewHost* render_view_host,
-                      TabContents* tab_contents,
+                      content::WebContents* tab_contents,
                       const content::FileChooserParams& params);
 
   // Enumerates all the files in directory.
@@ -116,10 +116,10 @@ class FileSelectHelper
   // Profile used to set/retrieve the last used directory.
   Profile* profile_;
 
-  // The RenderViewHost and TabContents for the page showing a file dialog
+  // The RenderViewHost and WebContents for the page showing a file dialog
   // (may only be one such dialog).
   RenderViewHost* render_view_host_;
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
 
   // Dialog box used for choosing files to upload from file form fields.
   scoped_refptr<SelectFileDialog> select_file_dialog_;

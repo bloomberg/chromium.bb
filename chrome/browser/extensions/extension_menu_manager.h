@@ -26,7 +26,10 @@ struct ContextMenuParams;
 class Extension;
 class Profile;
 class SkBitmap;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // Represents a menu item added by an extension.
 class ExtensionMenuItem {
@@ -237,7 +240,7 @@ class ExtensionMenuManager : public content::NotificationObserver {
   ExtensionMenuItem* GetItemById(const ExtensionMenuItem::Id& id) const;
 
   // Called when a menu item is clicked on by the user.
-  void ExecuteCommand(Profile* profile, TabContents* tab_contents,
+  void ExecuteCommand(Profile* profile, content::WebContents* web_contents,
                       const ContextMenuParams& params,
                       const ExtensionMenuItem::Id& menuItemId);
 

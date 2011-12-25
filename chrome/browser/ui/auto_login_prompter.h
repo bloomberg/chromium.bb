@@ -10,7 +10,10 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class TabContents;
+namespace content {
+class WebContents;
+}
+
 namespace net {
 class URLRequest;
 }
@@ -21,7 +24,7 @@ class URLRequest;
 // tokens that would allow a one-click login.
 class AutoLoginPrompter : public content::NotificationObserver {
  public:
-  AutoLoginPrompter(TabContents* tab_contents,
+  AutoLoginPrompter(content::WebContents* web_contents,
                     const std::string& username,
                     const std::string& args);
 
@@ -46,7 +49,7 @@ class AutoLoginPrompter : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
   const std::string username_;
   const std::string args_;
   content::NotificationRegistrar registrar_;

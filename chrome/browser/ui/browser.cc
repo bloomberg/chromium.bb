@@ -209,6 +209,7 @@
 using base::TimeDelta;
 using content::PluginService;
 using content::UserMetricsAction;
+using content::WebContents;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -347,7 +348,7 @@ Browser::Browser(Type type, Profile* profile)
       this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
       content::Source<ThemeService>(
           ThemeServiceFactory::GetForProfile(profile_)));
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
                  content::NotificationService::AllSources());
 
   PrefService* local_state = g_browser_process->local_state();
@@ -4028,10 +4029,10 @@ void Browser::OnInstallApplication(TabContentsWrapper* source,
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, SearchEngineTabHelperDelegate implementation:
 
-void Browser::ConfirmSetDefaultSearchProvider(TabContents* tab_contents,
+void Browser::ConfirmSetDefaultSearchProvider(WebContents* web_contents,
                                               TemplateURL* template_url,
                                               Profile* profile) {
-  window()->ConfirmSetDefaultSearchProvider(tab_contents, template_url,
+  window()->ConfirmSetDefaultSearchProvider(web_contents, template_url,
                                             profile);
 }
 
@@ -4212,9 +4213,9 @@ void Browser::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED: {
-      TabContents* tab_contents = content::Source<TabContents>(source).ptr();
-      if (tab_contents == GetSelectedTabContents()) {
+    case chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED: {
+      WebContents* web_contents = content::Source<WebContents>(source).ptr();
+      if (web_contents == GetSelectedTabContents()) {
         LocationBar* location_bar = window()->GetLocationBar();
         if (location_bar)
           location_bar->UpdateContentSettingsIcons();

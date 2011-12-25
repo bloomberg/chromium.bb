@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 // TabDownloadState ------------------------------------------------------------
 
@@ -212,7 +213,7 @@ void DownloadRequestLimiter::CanDownloadOnIOThread(int render_process_host_id,
                  render_process_host_id, render_view_id, request_id, callback));
 }
 
-void DownloadRequestLimiter::OnUserGesture(TabContents* tab) {
+void DownloadRequestLimiter::OnUserGesture(WebContents* tab) {
   TabDownloadState* state =
       GetDownloadState(&tab->GetController(), NULL, false);
   if (!state)

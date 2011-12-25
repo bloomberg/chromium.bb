@@ -15,6 +15,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace content {
+class WebContents;
+}
+
 namespace extension_sidebar_constants {
 extern const char kActiveState[];
 extern const char kHiddenState[];
@@ -26,8 +30,8 @@ class ExtensionSidebarEventRouter {
  public:
   // Sidebar state changed.
   static void OnStateChanged(
-      Profile* profile, TabContents* tab, const std::string& content_id,
-      const std::string& state);
+      Profile* profile, content::WebContents* tab,
+      const std::string& content_id, const std::string& state);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionSidebarEventRouter);

@@ -29,6 +29,10 @@ class ToolbarView;
 #endif
 struct NativeWebKeyboardEvent;
 
+namespace content {
+class WebContents;
+}
+
 namespace gfx {
 class Rect;
 class Size;
@@ -202,9 +206,10 @@ class BrowserWindow {
 
   // Shows a confirmation dialog box for setting the default search engine
   // described by |template_url|. Takes ownership of |template_url|.
-  virtual void ConfirmSetDefaultSearchProvider(TabContents* tab_contents,
-                                               TemplateURL* template_url,
-                                               Profile* profile) {
+  virtual void ConfirmSetDefaultSearchProvider(
+      content::WebContents* web_contents,
+      TemplateURL* template_url,
+      Profile* profile) {
     // TODO(levin): Implement this for non-Windows platforms and make it pure.
     // http://crbug.com/38475
   }

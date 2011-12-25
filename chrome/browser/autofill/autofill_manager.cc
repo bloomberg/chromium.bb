@@ -45,10 +45,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_message_macros.h"
@@ -245,7 +245,7 @@ void CheckForPopularForms(const std::vector<FormStructure*>& forms,
 }  // namespace
 
 AutofillManager::AutofillManager(TabContentsWrapper* tab_contents)
-    : content::WebContentsObserver(tab_contents->tab_contents()),
+    : content::WebContentsObserver(tab_contents->web_contents()),
       tab_contents_wrapper_(tab_contents),
       personal_data_(NULL),
       download_manager_(tab_contents->profile(), this),
@@ -331,7 +331,7 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
   if (!IsAutofillEnabled())
     return false;
 
-  if (tab_contents()->GetBrowserContext()->IsOffTheRecord())
+  if (web_contents()->GetBrowserContext()->IsOffTheRecord())
     return false;
 
   // Don't save data that was submitted through JavaScript.
@@ -640,7 +640,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
 
 void AutofillManager::OnShowAutofillDialog() {
   Browser* browser = BrowserList::GetLastActiveWithProfile(
-      Profile::FromBrowserContext(tab_contents()->GetBrowserContext()));
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
   if (browser)
     browser->ShowOptionsTab(chrome::kAutofillSubPage);
 }
@@ -648,7 +648,7 @@ void AutofillManager::OnShowAutofillDialog() {
 void AutofillManager::OnDidPreviewAutofillFormData() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-      content::Source<RenderViewHost>(tab_contents()->GetRenderViewHost()),
+      content::Source<RenderViewHost>(web_contents()->GetRenderViewHost()),
       content::NotificationService::NoDetails());
 }
 
@@ -656,7 +656,7 @@ void AutofillManager::OnDidPreviewAutofillFormData() {
 void AutofillManager::OnDidFillAutofillFormData(const TimeTicks& timestamp) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-      content::Source<RenderViewHost>(tab_contents()->GetRenderViewHost()),
+      content::Source<RenderViewHost>(web_contents()->GetRenderViewHost()),
       content::NotificationService::NoDetails());
 
   metric_logger_->LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL);
@@ -672,7 +672,7 @@ void AutofillManager::OnDidFillAutofillFormData(const TimeTicks& timestamp) {
 void AutofillManager::OnDidShowAutofillSuggestions(bool is_new_popup) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS,
-      content::Source<RenderViewHost>(tab_contents()->GetRenderViewHost()),
+      content::Source<RenderViewHost>(web_contents()->GetRenderViewHost()),
       content::NotificationService::NoDetails());
 
   if (is_new_popup) {
@@ -709,7 +709,7 @@ void AutofillManager::OnDidEndTextFieldEditing() {
 
 bool AutofillManager::IsAutofillEnabled() const {
   Profile* profile = Profile::FromBrowserContext(
-      const_cast<AutofillManager*>(this)->tab_contents()->GetBrowserContext());
+      const_cast<AutofillManager*>(this)->web_contents()->GetBrowserContext());
   return profile->GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
 }
 
@@ -719,7 +719,7 @@ void AutofillManager::SendAutofillTypePredictions(
            switches::kShowAutofillTypePredictions))
     return;
 
-  RenderViewHost* host = tab_contents()->GetRenderViewHost();
+  RenderViewHost* host = web_contents()->GetRenderViewHost();
   if (!host)
     return;
 
@@ -737,7 +737,7 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   // If credit card information was submitted, show an infobar to offer to save
   // it.
   scoped_ptr<const CreditCard> scoped_credit_card(imported_credit_card);
-  if (imported_credit_card && tab_contents()) {
+  if (imported_credit_card && web_contents()) {
     InfoBarTabHelper* infobar_helper =
         tab_contents_wrapper_->infobar_tab_helper();
     infobar_helper->AddInfoBar(
@@ -802,7 +802,7 @@ void AutofillManager::Reset() {
 
 AutofillManager::AutofillManager(TabContentsWrapper* tab_contents,
                                  PersonalDataManager* personal_data)
-    : content::WebContentsObserver(tab_contents->tab_contents()),
+    : content::WebContentsObserver(tab_contents->web_contents()),
       tab_contents_wrapper_(tab_contents),
       personal_data_(personal_data),
       download_manager_(tab_contents->profile(), this),
@@ -832,7 +832,7 @@ bool AutofillManager::GetHost(const std::vector<AutofillProfile*>& profiles,
   if (profiles.empty() && credit_cards.empty())
     return false;
 
-  *host = tab_contents()->GetRenderViewHost();
+  *host = web_contents()->GetRenderViewHost();
   if (!*host)
     return false;
 

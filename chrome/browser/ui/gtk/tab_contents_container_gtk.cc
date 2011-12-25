@@ -13,9 +13,12 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/gtk/gtk_expanded_container.h"
 #include "ui/base/gtk/gtk_floating_container.h"
 #include "ui/gfx/native_widget_types.h"
+
+using content::WebContents;
 
 TabContentsContainerGtk::TabContentsContainerGtk(StatusBubbleGtk* status_bubble)
     : tab_(NULL),
@@ -65,8 +68,8 @@ void TabContentsContainerGtk::Init() {
 void TabContentsContainerGtk::SetTab(TabContentsWrapper* tab) {
   HideTab(tab_);
   if (tab_) {
-    registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                      content::Source<TabContents>(tab_->tab_contents()));
+    registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                      content::Source<WebContents>(tab_->tab_contents()));
   }
 
   tab_ = tab;
@@ -78,8 +81,8 @@ void TabContentsContainerGtk::SetTab(TabContentsWrapper* tab) {
   } else if (tab_) {
     // Otherwise we actually have to add it to the widget hierarchy.
     PackTab(tab);
-    registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                   content::Source<TabContents>(tab_->tab_contents()));
+    registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                   content::Source<WebContents>(tab_->tab_contents()));
   }
 }
 
@@ -96,8 +99,8 @@ void TabContentsContainerGtk::SetPreview(TabContentsWrapper* preview) {
   preview_ = preview;
 
   PackTab(preview);
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 content::Source<TabContents>(preview_->tab_contents()));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 content::Source<WebContents>(preview_->tab_contents()));
 }
 
 void TabContentsContainerGtk::RemovePreview() {
@@ -110,8 +113,8 @@ void TabContentsContainerGtk::RemovePreview() {
   if (preview_widget)
     gtk_container_remove(GTK_CONTAINER(expanded_), preview_widget);
 
-  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                    content::Source<TabContents>(preview_->tab_contents()));
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                    content::Source<WebContents>(preview_->tab_contents()));
   preview_ = NULL;
 }
 
@@ -173,13 +176,13 @@ void TabContentsContainerGtk::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED);
+  DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
 
-  TabContentsDestroyed(content::Source<TabContents>(source).ptr());
+  WebContentsDestroyed(content::Source<WebContents>(source).ptr());
 }
 
-void TabContentsContainerGtk::TabContentsDestroyed(TabContents* contents) {
-  // Sometimes, a TabContents is destroyed before we know about it. This allows
+void TabContentsContainerGtk::WebContentsDestroyed(WebContents* contents) {
+  // Sometimes, a WebContents is destroyed before we know about it. This allows
   // us to clean up our state in case this happens.
   if (preview_ && contents == preview_->tab_contents())
     PopPreview();

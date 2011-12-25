@@ -212,7 +212,7 @@ class ExtensionWebNavigationEventRouter : public content::NotificationObserver {
   // of such an event and creates a JSON formated extension event from it.
   void TabAdded(content::WebContents* tab);
 
-  // Handler for NOTIFICATION_TAB_CONTENTS_DESTROYED. If |tab| is in
+  // Handler for NOTIFICATION_WEB_CONTENTS_DESTROYED. If |tab| is in
   // |pending_web_contents_|, it is removed.
   void TabDestroyed(content::WebContents* tab);
 

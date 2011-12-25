@@ -7,15 +7,17 @@
 #include <gtk/gtk.h>
 
 #include "base/message_loop.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/linear_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -33,7 +35,7 @@ const double kMoveFraction = 1.0 / 3.0;
 class DownloadStartedAnimationGtk : public ui::LinearAnimation,
                                     public content::NotificationObserver {
  public:
-  explicit DownloadStartedAnimationGtk(TabContents* tab_contents);
+  explicit DownloadStartedAnimationGtk(WebContents* web_contents);
 
   // DownloadStartedAnimation will delete itself, but this is public so
   // that we can use DeleteSoon().
@@ -63,14 +65,14 @@ class DownloadStartedAnimationGtk : public ui::LinearAnimation,
   int height_;
 
   // The content area holding us.
-  TabContents* tab_contents_;
+  WebContents* web_contents_;
 
   // The content area at the start of the animation. We store this so that the
   // download shelf's resizing of the content area doesn't cause the animation
   // to move around. This means that once started, the animation won't move
   // with the parent window, but it's so fast that this shouldn't cause too
   // much heartbreak.
-  gfx::Rect tab_contents_bounds_;
+  gfx::Rect web_contents_bounds_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
@@ -79,10 +81,10 @@ class DownloadStartedAnimationGtk : public ui::LinearAnimation,
 };
 
 DownloadStartedAnimationGtk::DownloadStartedAnimationGtk(
-    TabContents* tab_contents)
+    WebContents* web_contents)
     : ui::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
       popup_(NULL),
-      tab_contents_(tab_contents) {
+      web_contents_(web_contents) {
   static GdkPixbuf* kDownloadImage = NULL;
   if (!kDownloadImage) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -94,18 +96,18 @@ DownloadStartedAnimationGtk::DownloadStartedAnimationGtk(
 
   // If we're too small to show the download image, then don't bother -
   // the shelf will be enough.
-  tab_contents_->GetContainerBounds(&tab_contents_bounds_);
-  if (tab_contents_bounds_.height() < height_)
+  web_contents_->GetContainerBounds(&web_contents_bounds_);
+  if (web_contents_bounds_.height() < height_)
     return;
 
   registrar_.Add(
       this,
-      content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
-      content::Source<TabContents>(tab_contents_));
+      content::NOTIFICATION_WEB_CONTENTS_HIDDEN,
+      content::Source<WebContents>(web_contents_));
   registrar_.Add(
       this,
-      content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      content::Source<TabContents>(tab_contents_));
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<WebContents>(web_contents_));
 
   // TODO(estade): don't show up on the wrong virtual desktop.
 
@@ -135,7 +137,7 @@ DownloadStartedAnimationGtk::~DownloadStartedAnimationGtk() {
 }
 
 void DownloadStartedAnimationGtk::Reposition() {
-  if (!tab_contents_)
+  if (!web_contents_)
     return;
 
   DCHECK(popup_);
@@ -143,33 +145,33 @@ void DownloadStartedAnimationGtk::Reposition() {
   // Align the image with the bottom left of the web contents (so that it
   // points to the newly created download).
   gtk_window_move(GTK_WINDOW(popup_),
-      tab_contents_bounds_.x(),
-      static_cast<int>(tab_contents_bounds_.bottom() -
+      web_contents_bounds_.x(),
+      static_cast<int>(web_contents_bounds_.bottom() -
           height_ - height_ * (1 - GetCurrentValue())));
 }
 
 void DownloadStartedAnimationGtk::Close() {
-  if (!tab_contents_)
+  if (!web_contents_)
     return;
 
   DCHECK(popup_);
 
   registrar_.Remove(
       this,
-      content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
-      content::Source<TabContents>(tab_contents_));
+      content::NOTIFICATION_WEB_CONTENTS_HIDDEN,
+      content::Source<WebContents>(web_contents_));
   registrar_.Remove(
       this,
-      content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      content::Source<TabContents>(tab_contents_));
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<WebContents>(web_contents_));
 
-  tab_contents_ = NULL;
+  web_contents_ = NULL;
   gtk_widget_destroy(popup_);
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void DownloadStartedAnimationGtk::AnimateToState(double state) {
-  if (!tab_contents_)
+  if (!web_contents_)
     return;
 
   if (state >= 1.0) {
@@ -196,7 +198,7 @@ void DownloadStartedAnimationGtk::Observe(
 }  // namespace
 
 // static
-void DownloadStartedAnimation::Show(TabContents* tab_contents) {
+void DownloadStartedAnimation::Show(WebContents* web_contents) {
   // The animation will delete itself.
-  new DownloadStartedAnimationGtk(tab_contents);
+  new DownloadStartedAnimationGtk(web_contents);
 }

@@ -40,6 +40,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
+using content::WebContents;
 using WebKit::WebSecurityOrigin;
 
 // GeolocationInfoBarQueueController ------------------------------------------
@@ -175,7 +176,7 @@ GeolocationConfirmInfoBarDelegate::GeolocationConfirmInfoBarDelegate(
       requesting_frame_url_(requesting_frame_url),
       display_languages_(display_languages) {
   const NavigationEntry* committed_entry =
-      infobar_helper->tab_contents()->GetController().GetLastCommittedEntry();
+      infobar_helper->web_contents()->GetController().GetLastCommittedEntry();
   committed_contents_unique_id_ = committed_entry ?
       committed_entry->GetUniqueID() : 0;
 }
@@ -218,13 +219,14 @@ string16 GeolocationConfirmInfoBarDelegate::GetButtonLabel(
 
 bool GeolocationConfirmInfoBarDelegate::Accept() {
   controller_->OnPermissionSet(render_process_id_, render_view_id_, bridge_id_,
-      requesting_frame_url_, owner()->tab_contents()->GetURL(), true);
+      requesting_frame_url_, owner()->web_contents()->GetURL(), true);
   return true;
 }
 
 bool GeolocationConfirmInfoBarDelegate::Cancel() {
   controller_->OnPermissionSet(render_process_id_, render_view_id_, bridge_id_,
-      requesting_frame_url_, owner()->tab_contents()->GetURL(), false);
+      requesting_frame_url_, owner()->web_contents()->GetURL(),
+      false);
   return true;
 }
 
@@ -241,7 +243,7 @@ bool GeolocationConfirmInfoBarDelegate::LinkClicked(
       "https://www.google.com/support/chrome/bin/answer.py?answer=142065";
 #endif
 
-  owner()->tab_contents()->OpenURL(
+  owner()->web_contents()->OpenURL(
       google_util::AppendGoogleLocaleParam(GURL(kGeolocationLearnMoreUrl)),
       GURL(), (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK);
@@ -458,13 +460,13 @@ void GeolocationInfoBarQueueController::OnPermissionSet(
 void GeolocationInfoBarQueueController::Observe(
     int type, const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                     source);
-  TabContents* tab_contents = content::Source<TabContents>(source).ptr();
+  WebContents* web_contents = content::Source<WebContents>(source).ptr();
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end();) {
     if (i->infobar_delegate == NULL &&
-        tab_contents == tab_util::GetTabContentsByID(i->render_process_id,
+        web_contents == tab_util::GetTabContentsByID(i->render_process_id,
                                                      i->render_view_id)) {
       i = pending_infobar_requests_.erase(i);
     } else {
@@ -490,10 +492,10 @@ void GeolocationInfoBarQueueController::ShowQueuedInfoBar(int render_process_id,
 
       if (!i->infobar_delegate) {
         if (!registrar_.IsRegistered(
-                this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                content::Source<TabContents>(tab_contents))) {
-          registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                         content::Source<TabContents>(tab_contents));
+                this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                content::Source<WebContents>(tab_contents))) {
+          registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                         content::Source<WebContents>(tab_contents));
         }
         i->infobar_delegate = new GeolocationConfirmInfoBarDelegate(
             wrapper->infobar_tab_helper(), this, render_process_id,
@@ -576,8 +578,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
 
   TabContents* tab_contents =
       tab_util::GetTabContentsByID(render_process_id, render_view_id);
-  if (!tab_contents ||
-      tab_contents->GetRenderViewHost()->delegate()->GetRenderViewType() !=
+  if (!tab_contents || tab_contents->GetViewType() !=
           content::VIEW_TYPE_TAB_CONTENTS) {
     // The tab may have gone away, or the request may not be from a tab at all.
     // TODO(mpcomplete): the request could be from a background page or

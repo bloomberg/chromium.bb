@@ -11,8 +11,10 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search_engines/template_url_fetcher_ui_callbacks.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -24,9 +26,9 @@ bool IsFormSubmit(const NavigationEntry* entry) {
 
 }  // namespace
 
-SearchEngineTabHelper::SearchEngineTabHelper(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents) {
-  DCHECK(tab_contents);
+SearchEngineTabHelper::SearchEngineTabHelper(WebContents* web_contents)
+    : content::WebContentsObserver(web_contents) {
+  DCHECK(web_contents);
 }
 
 SearchEngineTabHelper::~SearchEngineTabHelper() {
@@ -59,8 +61,8 @@ void SearchEngineTabHelper::OnPageHasOSDD(
   // Make sure page_id is the current page and other basic checks.
   DCHECK(doc_url.is_valid());
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
-  if (!tab_contents()->IsActiveEntry(page_id))
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  if (!web_contents()->IsActiveEntry(page_id))
     return;
   if (!profile->GetTemplateURLFetcher())
     return;
@@ -86,7 +88,7 @@ void SearchEngineTabHelper::OnPageHasOSDD(
       return;
   }
 
-  const NavigationController& controller = tab_contents()->GetController();
+  const NavigationController& controller = web_contents()->GetController();
   const NavigationEntry* entry = controller.GetLastCommittedEntry();
   DCHECK(entry);
 
@@ -122,7 +124,7 @@ void SearchEngineTabHelper::OnPageHasOSDD(
       keyword,
       doc_url,
       base_entry->favicon().url(),
-      new TemplateURLFetcherUICallbacks(this, tab_contents()),
+      new TemplateURLFetcherUICallbacks(this, web_contents()),
       provider_type);
 }
 
@@ -132,11 +134,11 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
     return;
 
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   if (profile->IsOffTheRecord())
     return;
 
-  const NavigationController& controller = tab_contents()->GetController();
+  const NavigationController& controller = web_contents()->GetController();
   int last_index = controller.last_committed_entry_index();
   // When there was no previous page, the last index will be 0. This is
   // normally due to a form submit that opened in a new tab.

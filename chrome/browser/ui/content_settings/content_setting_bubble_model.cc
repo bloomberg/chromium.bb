@@ -25,12 +25,14 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::UserMetricsAction;
+using content::WebContents;
 using content_settings::SettingInfo;
 using content_settings::SettingSource;
 using content_settings::SETTING_SOURCE_USER;
@@ -538,8 +540,8 @@ ContentSettingBubbleModel::ContentSettingBubbleModel(
     : tab_contents_(tab_contents),
       profile_(profile),
       content_type_(content_type) {
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 content::Source<TabContents>(tab_contents->tab_contents()));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 content::Source<WebContents>(tab_contents->tab_contents()));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::Source<Profile>(profile_));
 }
@@ -572,9 +574,9 @@ void ContentSettingBubbleModel::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED:
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
       DCHECK(source ==
-             content::Source<TabContents>(tab_contents_->tab_contents()));
+             content::Source<WebContents>(tab_contents_->tab_contents()));
       tab_contents_ = NULL;
       break;
     case chrome::NOTIFICATION_PROFILE_DESTROYED:

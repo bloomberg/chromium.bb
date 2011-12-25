@@ -27,7 +27,7 @@ namespace BaseBubbleControllerInternal {
 class Bridge : public content::NotificationObserver {
  public:
   explicit Bridge(BaseBubbleController* controller) : controller_(controller) {
-    registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
+    registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_HIDDEN,
         content::NotificationService::AllSources());
   }
 

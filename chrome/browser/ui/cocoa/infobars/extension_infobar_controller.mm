@@ -269,7 +269,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
 
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
   NSWindow* window =
-      [(NSView*)owner->tab_contents()->GetContentNativeView() window];
+      [(NSView*)owner->web_contents()->GetContentNativeView() window];
   ExtensionInfoBarController* controller =
       [[ExtensionInfoBarController alloc] initWithDelegate:this
                                                      owner:owner

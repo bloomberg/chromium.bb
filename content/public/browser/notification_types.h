@@ -205,7 +205,7 @@ enum NotificationType {
   // Tabs --------------------------------------------------------------------
 
   // Sent when a tab is added to a WebContentsDelegate. The source is the
-  // WebContentsDelegate and the details is the added TabContents.
+  // WebContentsDelegate and the details is the added content::WebContents.
   NOTIFICATION_TAB_ADDED,
 
   // This notification is sent after a tab has been appended to the tab_strip.
@@ -248,15 +248,15 @@ enum NotificationType {
   // is a Details<TitleUpdatedDetails> that contains more information.
   NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED,
 
-  // This notification is sent when a TabContents is being hidden, e.g. due
-  // to switching away from this tab.  The source is a Source<TabContents>.
-  NOTIFICATION_TAB_CONTENTS_HIDDEN,
+  // This notification is sent when a WebContents is being hidden, e.g. due
+  // to switching away from this tab.  The source is a Source<WebContents>.
+  NOTIFICATION_WEB_CONTENTS_HIDDEN,
 
-  // This notification is sent when a TabContents is being destroyed. Any
-  // object holding a reference to a TabContents can listen to that
+  // This notification is sent when a WebContents is being destroyed. Any
+  // object holding a reference to a WebContents can listen to that
   // notification to properly reset the reference. The source is a
-  // Source<TabContents>.
-  NOTIFICATION_TAB_CONTENTS_DESTROYED,
+  // Source<WebContents>.
+  NOTIFICATION_WEB_CONTENTS_DESTROYED,
 
   // This notification is sent when a WebContentsDelegate is being
   // destroyed. The source is a Source<WebContentsDelegate>.

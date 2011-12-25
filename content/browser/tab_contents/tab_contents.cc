@@ -112,6 +112,7 @@ using content::DevToolsManagerImpl;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::UserMetricsAction;
+using content::WebContents;
 using content::WebContentsObserver;
 
 namespace {
@@ -244,8 +245,8 @@ TabContents::~TabContents() {
 
   // Notify any observer that have a reference on this tab contents.
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      content::Source<TabContents>(this),
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<WebContents>(this),
       content::NotificationService::NoDetails());
 
   // TODO(brettw) this should be moved to the view.
@@ -345,6 +346,10 @@ content::BrowserContext* TabContents::GetBrowserContext() const {
 
 void TabContents::SetViewType(content::ViewType type) {
   view_type_ = type;
+}
+
+content::ViewType TabContents::GetViewType() const {
+  return view_type_;
 }
 
 const GURL& TabContents::GetURL() const {
@@ -572,8 +577,8 @@ void TabContents::WasHidden() {
   }
 
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
-      content::Source<TabContents>(this),
+      content::NOTIFICATION_WEB_CONTENTS_HIDDEN,
+      content::Source<WebContents>(this),
       content::NotificationService::NoDetails());
 }
 

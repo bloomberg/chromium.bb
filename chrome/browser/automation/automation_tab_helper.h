@@ -79,7 +79,7 @@ class AutomationTabHelper
     : public content::WebContentsObserver,
       public base::SupportsWeakPtr<AutomationTabHelper> {
  public:
-  explicit AutomationTabHelper(TabContents* tab_contents);
+  explicit AutomationTabHelper(content::WebContents* web_contents);
   virtual ~AutomationTabHelper();
 
   void AddObserver(TabEventObserver* observer);

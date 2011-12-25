@@ -13,9 +13,12 @@
 
 class PrefService;
 class Profile;
-class TabContents;
 class TemplateURL;
 class TemplateURLService;
+
+namespace content {
+class WebContents;
+}
 
 namespace gfx {
 class Canvas;
@@ -34,7 +37,7 @@ class DefaultSearchView : public views::View,
                           public views::DialogDelegate {
  public:
   // Takes ownership of |proposed_default_turl|.
-  static void Show(TabContents* tab_contents,
+  static void Show(content::WebContents* web_contents,
                    TemplateURL* proposed_default_turl,
                    Profile* profile);
 
@@ -61,7 +64,7 @@ class DefaultSearchView : public views::View,
 
  private:
   // Takes ownership of |proposed_default_turl|.
-  DefaultSearchView(TabContents* tab_contents,
+  DefaultSearchView(content::WebContents* web_contents,
                     TemplateURL* proposed_default_turl,
                     TemplateURLService* template_url_service,
                     PrefService* prefs);

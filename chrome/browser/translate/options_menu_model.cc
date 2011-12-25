@@ -10,10 +10,12 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -37,7 +39,7 @@ OptionsMenuModel::OptionsMenuModel(
 
   // Populate the menu.
   // Incognito mode does not get any preferences related items.
-  if (!translate_delegate->owner()->tab_contents()->
+  if (!translate_delegate->owner()->web_contents()->
       GetBrowserContext()->IsOffTheRecord()) {
     AddCheckItem(IDC_TRANSLATE_OPTIONS_ALWAYS,
         l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS_ALWAYS,
@@ -94,9 +96,9 @@ bool OptionsMenuModel::IsCommandIdEnabled(int command_id) const {
       // we don't report errors that happened on secure URLs.
       DCHECK(translate_infobar_delegate_ != NULL);
       DCHECK(translate_infobar_delegate_->owner() != NULL);
-      DCHECK(translate_infobar_delegate_->owner()->tab_contents() != NULL);
+      DCHECK(translate_infobar_delegate_->owner()->web_contents() != NULL);
       NavigationEntry* entry = translate_infobar_delegate_->owner()->
-          tab_contents()->GetController().GetActiveEntry();
+          web_contents()->GetController().GetActiveEntry();
       // Delegate and tab contents should never be NULL, but active entry
       // can be NULL when running tests. We want to return false if NULL.
       return (entry != NULL) && !entry->GetURL().SchemeIsSecure();
@@ -134,12 +136,12 @@ void OptionsMenuModel::ExecuteCommand(int command_id) {
       break;
 
     case IDC_TRANSLATE_OPTIONS_ABOUT: {
-      TabContents* tab_contents =
-          translate_infobar_delegate_->owner()->tab_contents();
-      if (tab_contents) {
+      WebContents* web_contents =
+          translate_infobar_delegate_->owner()->web_contents();
+      if (web_contents) {
         GURL about_url = google_util::AppendGoogleLocaleParam(
             GURL(kAboutGoogleTranslateUrl));
-        tab_contents->OpenURL(
+        web_contents->OpenURL(
             about_url, GURL(), NEW_FOREGROUND_TAB,
             content::PAGE_TRANSITION_LINK);
       }

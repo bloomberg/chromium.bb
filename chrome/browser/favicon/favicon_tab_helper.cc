@@ -20,6 +20,8 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
 
+using content::WebContents;
+
 FaviconTabHelper::FaviconTabHelper(TabContents* tab_contents)
     : content::WebContentsObserver(tab_contents),
       profile_(Profile::FromBrowserContext(tab_contents->GetBrowserContext())) {
@@ -42,7 +44,7 @@ void FaviconTabHelper::FetchFavicon(const GURL& url) {
 SkBitmap FaviconTabHelper::GetFavicon() const {
   // Like GetTitle(), we also want to use the favicon for the last committed
   // entry rather than a pending navigation entry.
-  const NavigationController& controller = tab_contents()->GetController();
+  const NavigationController& controller = web_contents()->GetController();
   NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
     return entry->favicon().bitmap();
@@ -54,7 +56,7 @@ SkBitmap FaviconTabHelper::GetFavicon() const {
 }
 
 bool FaviconTabHelper::FaviconIsValid() const {
-  const NavigationController& controller = tab_contents()->GetController();
+  const NavigationController& controller = web_contents()->GetController();
   NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
     return entry->favicon().is_valid();
@@ -68,18 +70,18 @@ bool FaviconTabHelper::FaviconIsValid() const {
 
 bool FaviconTabHelper::ShouldDisplayFavicon() {
   // Always display a throbber during pending loads.
-  const NavigationController& controller = tab_contents()->GetController();
+  const NavigationController& controller = web_contents()->GetController();
   if (controller.GetLastCommittedEntry() && controller.pending_entry())
     return true;
 
-  WebUI* web_ui = tab_contents()->GetWebUIForCurrentState();
+  WebUI* web_ui = web_contents()->GetWebUIForCurrentState();
   if (web_ui)
     return !web_ui->hide_favicon();
   return true;
 }
 
 void FaviconTabHelper::SaveFavicon() {
-  NavigationEntry* entry = tab_contents()->GetController().GetActiveEntry();
+  NavigationEntry* entry = web_contents()->GetController().GetActiveEntry();
   if (!entry || entry->GetURL().is_empty())
     return;
 
@@ -128,11 +130,11 @@ void FaviconTabHelper::OnUpdateFaviconURL(
 }
 
 NavigationEntry* FaviconTabHelper::GetActiveEntry() {
-  return tab_contents()->GetController().GetActiveEntry();
+  return web_contents()->GetController().GetActiveEntry();
 }
 
 void FaviconTabHelper::StartDownload(int id, const GURL& url, int image_size) {
-  RenderViewHost* host = tab_contents()->GetRenderViewHost();
+  RenderViewHost* host = web_contents()->GetRenderViewHost();
   host->Send(new IconMsg_DownloadFavicon(
                  host->routing_id(), id, url, image_size));
 }
@@ -140,9 +142,9 @@ void FaviconTabHelper::StartDownload(int id, const GURL& url, int image_size) {
 void FaviconTabHelper::NotifyFaviconUpdated() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_FAVICON_UPDATED,
-      content::Source<TabContents>(tab_contents()),
+      content::Source<WebContents>(web_contents()),
       content::NotificationService::NoDetails());
-  tab_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
+  web_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
 }
 
 void FaviconTabHelper::NavigateToPendingEntry(

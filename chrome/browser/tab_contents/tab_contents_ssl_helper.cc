@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
@@ -98,7 +99,8 @@ string16 SSLCertAddedInfoBarDelegate::GetButtonLabel(
 }
 
 bool SSLCertAddedInfoBarDelegate::Accept() {
-  ShowCertificateViewer(owner()->tab_contents()->GetDialogRootWindow(), cert_);
+  ShowCertificateViewer(
+      owner()->web_contents()->GetView()->GetTopLevelNativeWindow(), cert_);
   return false;  // Hiding the infobar just as the dialog opens looks weird.
 }
 

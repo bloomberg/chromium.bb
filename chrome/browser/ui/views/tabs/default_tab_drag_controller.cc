@@ -44,6 +44,7 @@
 #endif
 
 using content::UserMetricsAction;
+using content::WebContents;
 
 static const int kHorizontalMoveThreshold = 16;  // Pixels.
 
@@ -378,8 +379,8 @@ void DefaultTabDragController::InitTabDragData(BaseTab* tab,
   drag_data->pinned = source_tabstrip_->IsTabPinned(tab);
   registrar_.Add(
       this,
-      content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      content::Source<TabContents>(drag_data->contents->tab_contents()));
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<WebContents>(drag_data->contents->tab_contents()));
 
   // We need to be the delegate so we receive messages about stuff, otherwise
   // our dragged TabContents may be replaced and subsequently
@@ -485,8 +486,8 @@ void DefaultTabDragController::Observe(
       CHECK_NE(delegate, drag_data_[i].original_delegate);
     return;
   }
-  DCHECK_EQ(type, content::NOTIFICATION_TAB_CONTENTS_DESTROYED);
-  TabContents* destroyed_contents = content::Source<TabContents>(source).ptr();
+  DCHECK_EQ(type, content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
+  WebContents* destroyed_contents = content::Source<WebContents>(source).ptr();
   for (size_t i = 0; i < drag_data_.size(); ++i) {
     if (drag_data_[i].contents->tab_contents() == destroyed_contents) {
       // One of the tabs we're dragging has been destroyed. Cancel the drag.

@@ -50,6 +50,7 @@ using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
+using content::WebContents;
 
 // Prerender tests work as follows:
 //
@@ -1744,7 +1745,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
   ASSERT_TRUE(prerender_contents != NULL);
   ui_test_utils::WindowedNotificationObserver favicon_update_watcher(
       chrome::NOTIFICATION_FAVICON_UPDATED,
-      content::Source<TabContents>(prerender_contents->prerender_contents()->
+      content::Source<WebContents>(prerender_contents->prerender_contents()->
                           tab_contents()));
   NavigateToDestURL();
   favicon_update_watcher.Wait();

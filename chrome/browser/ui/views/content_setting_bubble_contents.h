@@ -29,7 +29,10 @@
 
 class ContentSettingBubbleModel;
 class Profile;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 namespace views {
 class TextButton;
@@ -44,7 +47,7 @@ class ContentSettingBubbleContents : public views::BubbleDelegateView,
   ContentSettingBubbleContents(
       ContentSettingBubbleModel* content_setting_bubble_model,
       Profile* profile,
-      TabContents* tab_contents,
+      content::WebContents* web_contents,
       views::View* anchor_view,
       views::BubbleBorder::ArrowLocation arrow_location);
   virtual ~ContentSettingBubbleContents();
@@ -81,10 +84,10 @@ class ContentSettingBubbleContents : public views::BubbleDelegateView,
   // The active profile.
   Profile* profile_;
 
-  // The active tab contents.
-  TabContents* tab_contents_;
+  // The active web contents.
+  content::WebContents* web_contents_;
 
-  // A registrar for listening for TAB_CONTENTS_DESTROYED notifications.
+  // A registrar for listening for WEB_CONTENTS_DESTROYED notifications.
   content::NotificationRegistrar registrar_;
 
   // Some of our controls, so we can tell what's been clicked when we get a

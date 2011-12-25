@@ -25,6 +25,8 @@
 #include "ipc/ipc_message_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+using content::WebContents;
+
 namespace {
 // Errors.
 const char kNoSidebarError[] =
@@ -54,7 +56,7 @@ const char kShownState[] = "shown";
 
 // static
 void ExtensionSidebarEventRouter::OnStateChanged(
-    Profile* profile, TabContents* tab, const std::string& content_id,
+    Profile* profile, WebContents* tab, const std::string& content_id,
     const std::string& state) {
   int tab_id = ExtensionTabUtil::GetTabId(tab);
   DictionaryValue* details = new DictionaryValue;

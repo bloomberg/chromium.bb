@@ -51,7 +51,7 @@ gfx::NativeView BalloonHost::GetNativeViewOfHost() {
   return NULL;
 }
 
-TabContents* BalloonHost::GetAssociatedTabContents() const {
+content::WebContents* BalloonHost::GetAssociatedWebContents() const {
   return NULL;
 }
 

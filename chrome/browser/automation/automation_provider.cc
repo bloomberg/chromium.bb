@@ -104,6 +104,7 @@ using WebKit::WebFindOptions;
 using base::Time;
 using content::BrowserThread;
 using content::DownloadItem;
+using content::WebContents;
 
 namespace {
 
@@ -598,7 +599,7 @@ void AutomationProvider::SetProxyConfig(const std::string& new_proxy_config) {
                  new_proxy_config));
 }
 
-TabContents* AutomationProvider::GetTabContentsForHandle(
+WebContents* AutomationProvider::GetWebContentsForHandle(
     int handle, NavigationController** tab) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* nav_controller = tab_tracker_->GetResource(handle);
@@ -1002,7 +1003,7 @@ void AutomationProvider::GetExtensionProperty(
 
 void AutomationProvider::SaveAsAsync(int tab_handle) {
   NavigationController* tab = NULL;
-  TabContents* tab_contents = GetTabContentsForHandle(tab_handle, &tab);
-  if (tab_contents)
-    tab_contents->OnSavePage();
+  WebContents* web_contents = GetWebContentsForHandle(tab_handle, &tab);
+  if (web_contents)
+    web_contents->OnSavePage();
 }

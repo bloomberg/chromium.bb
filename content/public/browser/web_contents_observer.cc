@@ -24,6 +24,10 @@ WebContentsObserver::~WebContentsObserver() {
     tab_contents_->RemoveObserver(this);
 }
 
+WebContents* WebContentsObserver::web_contents() const {
+  return tab_contents_;
+}
+
 void WebContentsObserver::Observe(WebContents* web_contents) {
   if (tab_contents_)
     tab_contents_->RemoveObserver(this);

@@ -27,6 +27,10 @@ class PrefService;
 class TabContents;
 class TranslateInfoBarDelegate;
 
+namespace content {
+class WebContents;
+}
+
 // The TranslateManager class is responsible for showing an info-bar when a page
 // in a language different than the user language is loaded.  It triggers the
 // page translation the user requests.
@@ -53,18 +57,18 @@ class TranslateManager : public content::NotificationObserver,
   // Translates the page contents from |source_lang| to |target_lang|.
   // The actual translation might be performed asynchronously if the translate
   // script is not yet available.
-  void TranslatePage(TabContents* tab_contents,
+  void TranslatePage(content::WebContents* web_contents,
                      const std::string& source_lang,
                      const std::string& target_lang);
 
-  // Reverts the contents of the page in |tab_contents| to its original
+  // Reverts the contents of the page in |web_contents| to its original
   // language.
-  void RevertTranslation(TabContents* tab_contents);
+  void RevertTranslation(content::WebContents* web_contents);
 
   // Reports to the Google translate server that a page language was incorrectly
   // detected.  This call is initiated by the user selecting the "report" menu
   // under options in the translate infobar.
-  void ReportLanguageDetectionError(TabContents* tab_contents);
+  void ReportLanguageDetectionError(content::WebContents* web_contents);
 
   // Clears the translate script, so it will be fetched next time we translate.
   void ClearTranslateScript() { translate_script_.clear(); }
@@ -139,7 +143,7 @@ class TranslateManager : public content::NotificationObserver,
                                  const std::string& page_lang);
 
   // Sends a translation request to the RenderView of |tab_contents|.
-  void DoTranslatePage(TabContents* tab_contents,
+  void DoTranslatePage(content::WebContents* web_contents,
                        const std::string& translate_script,
                        const std::string& source_lang,
                        const std::string& target_lang);
@@ -161,7 +165,8 @@ class TranslateManager : public content::NotificationObserver,
 
   // Shows the specified translate |infobar| in the given |tab|.  If a current
   // translate infobar is showing, it just replaces it with the new one.
-  void ShowInfoBar(TabContents* tab, TranslateInfoBarDelegate* infobar);
+  void ShowInfoBar(content::WebContents* tab,
+                   TranslateInfoBarDelegate* infobar);
 
   // Returns the language to translate to. The language returned is the
   // first language found in the following list that is supported by the
@@ -173,7 +178,7 @@ class TranslateManager : public content::NotificationObserver,
 
   // Returns the translate info bar showing in |tab| or NULL if none is showing.
   static TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(
-      TabContents* tab);
+      content::WebContents* tab);
 
   content::NotificationRegistrar notification_registrar_;
 

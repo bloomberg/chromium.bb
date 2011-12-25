@@ -13,14 +13,17 @@
 #include "content/public/browser/notification_registrar.h"
 
 class SearchEngineTabHelper;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // Callbacks which display UI for the TemplateURLFetcher.
 class TemplateURLFetcherUICallbacks : public TemplateURLFetcherCallbacks,
                                       public content::NotificationObserver {
  public:
   TemplateURLFetcherUICallbacks(SearchEngineTabHelper* tab_helper,
-                                TabContents* tab_contents);
+                                content::WebContents* tab_contents);
   virtual ~TemplateURLFetcherUICallbacks();
 
   // TemplateURLFetcherCallback implementation.
@@ -39,8 +42,8 @@ class TemplateURLFetcherUICallbacks : public TemplateURLFetcherCallbacks,
   // originating tab is closed. If NULL, the engine is not added.
   SearchEngineTabHelper* source_;
 
-  // The TabContents where this request originated.
-  TabContents* tab_contents_;
+  // The WebContents where this request originated.
+  content::WebContents* web_contents_;
 
   // Handles registering for our notifications.
   content::NotificationRegistrar registrar_;

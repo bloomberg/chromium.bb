@@ -51,6 +51,7 @@
 #include "webkit/fileapi/file_system_util.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -978,13 +979,13 @@ int32 FileBrowserFunction::GetTabId() const {
     LOG(WARNING) << "No delegate";
     return 0;
   }
-  TabContents* tab_contents =
-      dispatcher()->delegate()->GetAssociatedTabContents();
-  if (!tab_contents) {
+  WebContents* web_contents =
+      dispatcher()->delegate()->GetAssociatedWebContents();
+  if (!web_contents) {
     LOG(WARNING) << "No associated tab contents";
     return 0;
   }
-  return ExtensionTabUtil::GetTabId(tab_contents);
+  return ExtensionTabUtil::GetTabId(web_contents);
 }
 
 void FileBrowserFunction::GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(

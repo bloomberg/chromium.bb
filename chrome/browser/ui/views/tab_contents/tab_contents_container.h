@@ -16,6 +16,10 @@ class RenderViewHost;
 class RenderWidgetHostView;
 class TabContents;
 
+namespace content {
+class WebContents;
+}
+
 class TabContentsContainer : public views::View,
                              public content::NotificationObserver {
  public:
@@ -68,10 +72,10 @@ class TabContentsContainer : public views::View,
   void RenderViewHostChanged(RenderViewHost* old_host,
                              RenderViewHost* new_host);
 
-  // Called when a TabContents is destroyed. This gives us a chance to clean
+  // Called when a WebContents is destroyed. This gives us a chance to clean
   // up our internal state if the TabContents is somehow destroyed before we
   // get notified.
-  void TabContentsDestroyed(TabContents* contents);
+  void TabContentsDestroyed(content::WebContents* contents);
 
   // Called when the RenderWidgetHostView of the hosted TabContents has changed.
   void RenderWidgetHostViewChanged(RenderWidgetHostView* new_view);
