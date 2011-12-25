@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -48,11 +49,12 @@ namespace webkit_glue {
 struct WebIntentData;
 }
 
-class CONTENT_EXPORT TabContents : public content::WebContents,
-                                   public PageNavigator,
-                                   public RenderViewHostDelegate,
-                                   public RenderViewHostManager::Delegate,
-                                   public content::JavaScriptDialogDelegate {
+class CONTENT_EXPORT TabContents
+    : public NON_EXPORTED_BASE(content::WebContents),
+      public PageNavigator,
+      public RenderViewHostDelegate,
+      public RenderViewHostManager::Delegate,
+      public content::JavaScriptDialogDelegate {
  public:
   // Flags passed to the WebContentsDelegate.NavigationStateChanged to tell it
   // what has changed. Combine them to update more than one thing.
