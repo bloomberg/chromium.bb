@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/common/content_export.h"
@@ -19,7 +20,8 @@
 
 class SiteInstance;
 
-class CONTENT_EXPORT NavigationEntry : public content::NavigationEntry {
+class CONTENT_EXPORT NavigationEntry
+    : public NON_EXPORTED_BASE(content::NavigationEntry) {
  public:
   // SSL -----------------------------------------------------------------------
 
