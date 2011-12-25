@@ -366,8 +366,6 @@
         'widget/widget.h',
         'widget/widget_delegate.cc',
         'widget/widget_delegate.h',
-        'widget/window_manager.cc',
-        'widget/window_manager.h',
         'window/client_view.cc',
         'window/client_view.h',
         'window/custom_frame_view.cc',
