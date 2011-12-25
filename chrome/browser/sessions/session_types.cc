@@ -71,21 +71,21 @@ NavigationEntry* TabNavigation::ToNavigationEntry(int page_id,
       std::string(),
       profile);
 
-  entry->set_page_id(page_id);
-  entry->set_title(title_);
-  entry->set_content_state(state_);
-  entry->set_has_post_data(type_mask_ & TabNavigation::HAS_POST_DATA);
+  entry->SetPageID(page_id);
+  entry->SetTitle(title_);
+  entry->SetContentState(state_);
+  entry->SetHasPostData(type_mask_ & TabNavigation::HAS_POST_DATA);
 
   return entry;
 }
 
 void TabNavigation::SetFromNavigationEntry(const NavigationEntry& entry) {
-  virtual_url_ = entry.virtual_url();
-  referrer_ = entry.referrer();
-  title_ = entry.title();
-  state_ = entry.content_state();
-  transition_ = entry.transition_type();
-  type_mask_ = entry.has_post_data() ? TabNavigation::HAS_POST_DATA : 0;
+  virtual_url_ = entry.GetVirtualURL();
+  referrer_ = entry.GetReferrer();
+  title_ = entry.GetTitle();
+  state_ = entry.GetContentState();
+  transition_ = entry.GetTransitionType();
+  type_mask_ = entry.GetHasPostData() ? TabNavigation::HAS_POST_DATA : 0;
 }
 
 // static

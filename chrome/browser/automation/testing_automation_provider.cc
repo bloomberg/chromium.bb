@@ -1302,7 +1302,7 @@ void TestingAutomationProvider::GetTabURL(int handle,
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     // Return what the user would see in the location bar.
-    *url = tab->GetActiveEntry()->virtual_url();
+    *url = tab->GetActiveEntry()->GetVirtualURL();
     *success = true;
   }
 }

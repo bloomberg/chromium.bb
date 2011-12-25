@@ -339,7 +339,7 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
   // For security, we should transition between processes when one is a Web UI
   // page and one isn't.  If there's no cur_entry, check the current RVH's
   // site, which might already be committed to a Web UI URL (such as the NTP).
-  const GURL& current_url = (cur_entry) ? cur_entry->url() :
+  const GURL& current_url = (cur_entry) ? cur_entry->GetURL() :
       render_view_host_->site_instance()->site();
   content::BrowserContext* browser_context =
       delegate_->GetControllerForRenderManager().browser_context();
@@ -347,16 +347,16 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
   if (web_ui_factory->UseWebUIForURL(browser_context, current_url)) {
     // Force swap if it's not an acceptable URL for Web UI.
     if (!web_ui_factory->IsURLAcceptableForWebUI(browser_context,
-                                                 new_entry->url()))
+                                                 new_entry->GetURL()))
       return true;
   } else {
     // Force swap if it's a Web UI URL.
-    if (web_ui_factory->UseWebUIForURL(browser_context, new_entry->url()))
+    if (web_ui_factory->UseWebUIForURL(browser_context, new_entry->GetURL()))
       return true;
   }
 
   if (content::GetContentClient()->browser()->ShouldSwapProcessesForNavigation(
-          cur_entry ? cur_entry->url() : GURL(), new_entry->url())) {
+          cur_entry ? cur_entry->GetURL() : GURL(), new_entry->GetURL())) {
     return true;
   }
 
@@ -378,7 +378,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     SiteInstance* curr_instance) {
   // NOTE: This is only called when ShouldTransitionCrossSite is true.
 
-  const GURL& dest_url = entry.url();
+  const GURL& dest_url = entry.GetURL();
   NavigationController& controller = delegate_->GetControllerForRenderManager();
   content::BrowserContext* browser_context = controller.browser_context();
 
@@ -397,7 +397,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   //       RenderViews in response to a link click.
   //
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerSite) &&
-      entry.transition_type() == content::PAGE_TRANSITION_GENERATED)
+      entry.GetTransitionType() == content::PAGE_TRANSITION_GENERATED)
     return curr_instance;
 
   // If we haven't used our SiteInstance (and thus RVH) yet, then we can use it
@@ -461,7 +461,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   // to open a new tab to an interstitial-inducing URL, and then navigates
   // the page to a different same-site URL.  (This seems very unlikely in
   // practice.)
-  const GURL& current_url = (curr_entry) ? curr_entry->url() :
+  const GURL& current_url = (curr_entry) ? curr_entry->GetURL() :
       curr_instance->site();
 
   // Use the current SiteInstance for same site navigations, as long as the
@@ -493,7 +493,7 @@ bool RenderViewHostManager::CreatePendingRenderView(
   NavigationEntry* curr_entry =
       delegate_->GetControllerForRenderManager().GetLastCommittedEntry();
   if (curr_entry) {
-    DCHECK(!curr_entry->content_state().empty());
+    DCHECK(!curr_entry->GetContentState().empty());
     // TODO(creis): Should send a message to the RenderView to let it know
     // we're about to switch away, so that it sends an UpdateState message.
   }
@@ -651,7 +651,7 @@ RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
   // It must also happen after the above conditional call to CancelPending(),
   // otherwise CancelPending may clear the pending_web_ui_ and the page will
   // not have it's bindings set appropriately.
-  pending_web_ui_.reset(delegate_->CreateWebUIForRenderManager(entry.url()));
+  pending_web_ui_.reset(delegate_->CreateWebUIForRenderManager(entry.GetURL()));
 
   // render_view_host_ will not be deleted before the end of this method, so we
   // don't have to worry about this SiteInstance's ref count dropping to zero.

@@ -308,7 +308,7 @@ void RLZTracker::Observe(int type,
       const NavigationEntry* entry =
           content::Details<NavigationEntry>(details).ptr();
       if (entry != NULL &&
-          ((entry->transition_type() &
+          ((entry->GetTransitionType() &
             content::PAGE_TRANSITION_HOME_PAGE) != 0)) {
         point = rlz_lib::CHROME_HOME_PAGE;
         record_used = &homepage_used_;

@@ -98,7 +98,7 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame) {
     NOTREACHED();
     return true;
   }
-  tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
+  tab->ShowPageInfo(nav_entry->GetURL(), nav_entry->ssl(), true);
   return true;
 }
 

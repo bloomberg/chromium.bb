@@ -815,7 +815,7 @@ void ExternalTabContainer::Observe(int type,
       if (commit->http_status_code >= kHttpClientErrorStart &&
           commit->http_status_code <= kHttpServerErrorEnd) {
         automation_->Send(new AutomationMsg_NavigationFailed(
-            tab_handle_, commit->http_status_code, commit->entry->url()));
+            tab_handle_, commit->http_status_code, commit->entry->GetURL()));
 
         ignore_next_load_notification_ = true;
       } else {
@@ -957,9 +957,9 @@ bool ExternalTabContainer::InitNavigationInfo(NavigationInfo* nav_info,
   nav_info->relative_offset = relative_offset;
   nav_info->navigation_index =
       tab_contents_->tab_contents()->GetController().GetCurrentEntryIndex();
-  nav_info->url = entry->url();
-  nav_info->referrer = entry->referrer().url;
-  nav_info->title =  UTF16ToWideHack(entry->title());
+  nav_info->url = entry->GetURL();
+  nav_info->referrer = entry->GetReferrer().url;
+  nav_info->title =  UTF16ToWideHack(entry->GetTitle());
   if (nav_info->title.empty())
     nav_info->title = UTF8ToWide(nav_info->url.spec());
 

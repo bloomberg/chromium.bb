@@ -123,7 +123,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
     RenderViewHost* rvh = is_cross_site ?
         contents()->pending_rvh() :
         contents()->GetRenderViewHost();
-    contents()->TestDidNavigate(rvh, entry->page_id(), GURL(entry->url()),
+    contents()->TestDidNavigate(rvh, entry->GetPageID(), GURL(entry->GetURL()),
                                 content::PAGE_TRANSITION_TYPED);
   }
 
@@ -283,7 +283,7 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
   // We did not proceed, we should be back to the first page, the 2nd one should
   // have been removed from the navigation controller.
   ASSERT_EQ(1, controller().entry_count());
-  EXPECT_EQ(kGoogleURL, controller().GetActiveEntry()->url().spec());
+  EXPECT_EQ(kGoogleURL, controller().GetActiveEntry()->GetURL().spec());
 
   // A report should have been sent.
   EXPECT_EQ(1u, service_->GetDetails()->size());
@@ -314,7 +314,7 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceProceed) {
 
   // We did proceed, we should be back to showing the page.
   ASSERT_EQ(1, controller().entry_count());
-  EXPECT_EQ(kGoodURL, controller().GetActiveEntry()->url().spec());
+  EXPECT_EQ(kGoodURL, controller().GetActiveEntry()->GetURL().spec());
 
   // A report should have been sent.
   EXPECT_EQ(1u, service_->GetDetails()->size());
@@ -356,7 +356,7 @@ TEST_F(SafeBrowsingBlockingPageTest,
   // We did not proceed, we should be back to the first page, the 2nd one should
   // have been removed from the navigation controller.
   ASSERT_EQ(1, controller().entry_count());
-  EXPECT_EQ(kGoogleURL, controller().GetActiveEntry()->url().spec());
+  EXPECT_EQ(kGoogleURL, controller().GetActiveEntry()->GetURL().spec());
 
   // A report should have been sent.
   EXPECT_EQ(1u, service_->GetDetails()->size());
@@ -412,7 +412,7 @@ TEST_F(SafeBrowsingBlockingPageTest,
   // We did not proceed, we should be back to the first page, the 2nd one should
   // have been removed from the navigation controller.
   ASSERT_EQ(1, controller().entry_count());
-  EXPECT_EQ(kGoogleURL, controller().GetActiveEntry()->url().spec());
+  EXPECT_EQ(kGoogleURL, controller().GetActiveEntry()->GetURL().spec());
 
   // No report should have been sent -- we don't create a report the
   // second time.
@@ -463,7 +463,7 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
 
   // We did proceed, we should be back to the initial page.
   ASSERT_EQ(1, controller().entry_count());
-  EXPECT_EQ(kGoodURL, controller().GetActiveEntry()->url().spec());
+  EXPECT_EQ(kGoodURL, controller().GetActiveEntry()->GetURL().spec());
 
   // No report should have been sent -- we don't create a report the
   // second time.
@@ -498,7 +498,7 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_FALSE(sb_interstitial);
   ASSERT_EQ(2, controller().entry_count());
-  EXPECT_EQ(kGoodURL, controller().GetActiveEntry()->url().spec());
+  EXPECT_EQ(kGoodURL, controller().GetActiveEntry()->GetURL().spec());
 
   // Navigate forward to the malware URL.
   contents()->GetController().GoForward();
@@ -512,7 +512,7 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_FALSE(sb_interstitial);
   ASSERT_EQ(2, controller().entry_count());
-  EXPECT_EQ(kBadURL, controller().GetActiveEntry()->url().spec());
+  EXPECT_EQ(kBadURL, controller().GetActiveEntry()->GetURL().spec());
 
   // Two reports should have been sent.
   EXPECT_EQ(2u, service_->GetDetails()->size());

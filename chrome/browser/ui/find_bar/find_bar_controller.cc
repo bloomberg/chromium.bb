@@ -137,7 +137,7 @@ void FindBarController::Observe(int type,
       content::LoadCommittedDetails* commit_details =
           content::Details<content::LoadCommittedDetails>(details).ptr();
       content::PageTransition transition_type =
-          commit_details->entry->transition_type();
+          commit_details->entry->GetTransitionType();
       // We hide the FindInPage window when the user navigates away, except on
       // reload.
       if (find_bar_->IsFindBarVisible()) {

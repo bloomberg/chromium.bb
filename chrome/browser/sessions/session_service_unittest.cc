@@ -72,10 +72,10 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     NavigationEntry entry;
     entry.set_url(navigation.virtual_url());
     entry.set_referrer(navigation.referrer());
-    entry.set_title(navigation.title());
-    entry.set_content_state(navigation.state());
+    entry.SetTitle(navigation.title());
+    entry.SetContentState(navigation.state());
     entry.set_transition_type(navigation.transition());
-    entry.set_has_post_data(
+    entry.SetHasPostData(
         navigation.type_mask() & TabNavigation::HAS_POST_DATA);
     service()->UpdateTabNavigation(window_id, tab_id, index, entry);
     if (select)

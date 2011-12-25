@@ -702,7 +702,7 @@ static void WindowOpenHelper(Browser* browser, const GURL& start_url,
   GURL expected_url = start_url.Resolve(newtab_url);
   observer.Wait();
   EXPECT_EQ(expected_url,
-            newtab->GetController().GetLastCommittedEntry()->url());
+            newtab->GetController().GetLastCommittedEntry()->GetURL());
   if (newtab_result)
     *newtab_result = newtab;
 }

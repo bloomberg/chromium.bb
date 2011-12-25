@@ -315,7 +315,7 @@ void GoogleURLTracker::Observe(int type,
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {
       NavigationController* controller =
           content::Source<NavigationController>(source).ptr();
-      OnNavigationPending(source, controller->pending_entry()->url());
+      OnNavigationPending(source, controller->pending_entry()->GetURL());
       break;
     }
 

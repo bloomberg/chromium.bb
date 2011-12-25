@@ -1195,7 +1195,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       NavigationEntry* active_entry =
           source_tab_contents_->GetController().GetActiveEntry();
       return SavePackage::IsSavableURL(
-          (active_entry) ? active_entry->url() : GURL());
+          (active_entry) ? active_entry->GetURL() : GURL());
     }
 
     case IDC_CONTENT_CONTEXT_RELOADFRAME:
@@ -1565,7 +1565,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO: {
       NavigationEntry* nav_entry =
           source_tab_contents_->GetController().GetActiveEntry();
-      source_tab_contents_->ShowPageInfo(nav_entry->url(), nav_entry->ssl(),
+      source_tab_contents_->ShowPageInfo(nav_entry->GetURL(), nav_entry->ssl(),
                                          true);
       break;
     }

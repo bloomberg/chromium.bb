@@ -468,7 +468,7 @@ void TabSpecificContentSettings::Observe(
   NavigationEntry* entry = controller.GetActiveEntry();
   GURL entry_url;
   if (entry)
-    entry_url = entry->url();
+    entry_url = entry->GetURL();
   if (settings_details.ptr()->update_all() ||
       // The active NavigationEntry is the URL in the URL field of a tab.
       // Currently this should be matched by the |primary_pattern|.

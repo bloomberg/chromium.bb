@@ -49,6 +49,8 @@ struct RendererPreferences;
 // Describes what goes in the main content area of a tab.
 class WebContents {
  public:
+  virtual ~WebContents() {}
+
   // Intrinsic tab state -------------------------------------------------------
 
   // Returns the property bag for this tab contents, where callers can add
@@ -192,7 +194,7 @@ class WebContents {
 
   // Shows the page info.
   virtual void ShowPageInfo(const GURL& url,
-                            const NavigationEntry::SSLStatus& ssl,
+                            const ::NavigationEntry::SSLStatus& ssl,
                             bool show_history) = 0;
 
   // Window management ---------------------------------------------------------

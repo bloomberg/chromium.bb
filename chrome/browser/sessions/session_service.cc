@@ -362,7 +362,7 @@ void SessionService::UpdateTabNavigation(const SessionID& window_id,
                                          const SessionID& tab_id,
                                          int index,
                                          const NavigationEntry& entry) {
-  if (!ShouldTrackEntry(entry.virtual_url()) ||
+  if (!ShouldTrackEntry(entry.GetVirtualURL()) ||
       !ShouldTrackChangesToWindow(window_id)) {
     return;
   }
@@ -1142,7 +1142,7 @@ void SessionService::BuildCommandsForTab(
         tab->tab_contents()->GetController().pending_entry() :
         tab->tab_contents()->GetController().GetEntryAtIndex(i);
     DCHECK(entry);
-    if (ShouldTrackEntry(entry->virtual_url())) {
+    if (ShouldTrackEntry(entry->GetVirtualURL())) {
       commands->push_back(
           CreateUpdateTabNavigationCommand(
               kCommandUpdateTabNavigation, session_id.id(), i, *entry));

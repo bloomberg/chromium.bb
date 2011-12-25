@@ -283,8 +283,8 @@ static PageList GeneratePageList(
     TabContents* tab_contents = *it;
     NavigationController& controller = tab_contents->GetController();
 
-    NavigationEntry* entry = controller.GetActiveEntry();
-    if (entry == NULL || !entry->url().is_valid())
+    ::NavigationEntry* entry = controller.GetActiveEntry();
+    if (entry == NULL || !entry->GetURL().is_valid())
       continue;
 
     DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
@@ -294,9 +294,9 @@ static PageList GeneratePageList(
     PageInfo page_info;
     page_info.id = TabContentsIDHelper::GetID(tab_contents);
     page_info.attached = client_host != NULL;
-    page_info.url = entry->url().spec();
-    page_info.title = UTF16ToUTF8(net::EscapeForHTML(entry->title()));
-    page_info.thumbnail_url = "/thumb/" + entry->url().spec();
+    page_info.url = entry->GetURL().spec();
+    page_info.title = UTF16ToUTF8(net::EscapeForHTML(entry->GetTitle()));
+    page_info.thumbnail_url = "/thumb/" + entry->GetURL().spec();
     page_info.favicon_url = entry->favicon().url().spec();
     page_list.push_back(page_info);
   }

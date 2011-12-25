@@ -32,11 +32,11 @@ void GeolocationSettingsState::OnGeolocationPermissionSet(
 void GeolocationSettingsState::DidNavigate(
     const content::LoadCommittedDetails& details) {
   if (details.entry)
-    embedder_url_ = details.entry->url();
+    embedder_url_ = details.entry->GetURL();
   if (state_map_.empty())
     return;
   if (!details.entry ||
-      details.previous_url.GetOrigin() != details.entry->url().GetOrigin()) {
+      details.previous_url.GetOrigin() != details.entry->GetURL().GetOrigin()) {
     state_map_.clear();
     return;
   }

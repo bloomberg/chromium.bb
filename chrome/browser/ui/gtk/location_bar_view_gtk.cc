@@ -1049,7 +1049,7 @@ gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
       NOTREACHED();
       return FALSE;
     }
-    tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
+    tab->ShowPageInfo(nav_entry->GetURL(), nav_entry->ssl(), true);
     return TRUE;
   } else if (event->button == 2) {
     // When the user middle clicks on the location icon, try to open the

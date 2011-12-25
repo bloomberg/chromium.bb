@@ -92,7 +92,7 @@ void ConstrainedWindowTabHelper::DidNavigateMainFrame(
     const content::FrameNavigateParams& params) {
   // Close constrained windows if necessary.
   if (!net::RegistryControlledDomainService::SameDomainOrHost(
-          details.previous_url, details.entry->url()))
+          details.previous_url, details.entry->GetURL()))
     CloseConstrainedWindows();
 }
 

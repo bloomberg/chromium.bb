@@ -80,7 +80,7 @@ bool FaviconTabHelper::ShouldDisplayFavicon() {
 
 void FaviconTabHelper::SaveFavicon() {
   NavigationEntry* entry = tab_contents()->GetController().GetActiveEntry();
-  if (!entry || entry->url().is_empty())
+  if (!entry || entry->GetURL().is_empty())
     return;
 
   // Make sure the page is in history, otherwise adding the favicon does
@@ -89,7 +89,7 @@ void FaviconTabHelper::SaveFavicon() {
       GetOriginalProfile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
   if (!history)
     return;
-  history->AddPageNoVisitForBookmark(entry->url());
+  history->AddPageNoVisitForBookmark(entry->GetURL());
 
   FaviconService* service = profile_->
       GetOriginalProfile()->GetFaviconService(Profile::IMPLICIT_ACCESS);
@@ -103,7 +103,7 @@ void FaviconTabHelper::SaveFavicon() {
   std::vector<unsigned char> image_data;
   gfx::PNGCodec::EncodeBGRASkBitmap(favicon.bitmap(), false, &image_data);
   service->SetFavicon(
-      entry->url(), favicon.url(), image_data, history::FAVICON);
+      entry->GetURL(), favicon.url(), image_data, history::FAVICON);
 }
 
 int FaviconTabHelper::DownloadImage(const GURL& image_url,
@@ -161,7 +161,7 @@ void FaviconTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   // Get the favicon, either from history or request it from the net.
-  FetchFavicon(details.entry->url());
+  FetchFavicon(details.entry->GetURL());
 }
 
 bool FaviconTabHelper::OnMessageReceived(const IPC::Message& message) {

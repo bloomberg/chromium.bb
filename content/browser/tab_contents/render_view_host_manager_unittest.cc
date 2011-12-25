@@ -241,7 +241,7 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   pending_rvh()->SendNavigate(new_id, kUrl);
   EXPECT_EQ(controller().last_committed_entry_index(), 1);
   ASSERT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_TRUE(kUrl == controller().GetLastCommittedEntry()->url());
+  EXPECT_TRUE(kUrl == controller().GetLastCommittedEntry()->GetURL());
   EXPECT_FALSE(controller().pending_entry());
   // Because we're using TestTabContents and TestRenderViewHost in this
   // unittest, no one calls TabContents::RenderViewCreated(). So, we see no
@@ -612,5 +612,5 @@ TEST_F(RenderViewHostManagerTest, PageDoesBackAndReload) {
   // Also we should not have a pending navigation entry.
   NavigationEntry* entry = contents()->GetController().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
-  EXPECT_EQ(kUrl2, entry->url());
+  EXPECT_EQ(kUrl2, entry->GetURL());
 }

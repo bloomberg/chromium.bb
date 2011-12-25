@@ -339,11 +339,11 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
     const NavigationEntry* entry = (i == pending_index) ?
        tab.GetPendingEntry() : tab.GetEntryAtIndex(i);
     DCHECK(entry);
-    if (entry->virtual_url().is_valid()) {
+    if (entry->GetVirtualURL().is_valid()) {
       if (i == max_index - 1) {
         DVLOG(1) << "Associating tab " << tab_id << " with sync id " << sync_id
-                 << ", url " << entry->virtual_url().possibly_invalid_spec()
-                 << " and title " << entry->title();
+                 << ", url " << entry->GetVirtualURL().possibly_invalid_spec()
+                 << " and title " << entry->GetTitle();
       }
       TabNavigation tab_nav;
       tab_nav.SetFromNavigationEntry(*entry);
@@ -1067,8 +1067,9 @@ bool SessionModelAssociator::IsValidTab(const SyncedTabDelegate& tab) const {
     const NavigationEntry* entry = tab.GetActiveEntry();
     if (!entry)
       return false;
-    if (entry->virtual_url().is_valid() &&
-        (entry->virtual_url().GetOrigin() != GURL(chrome::kChromeUINewTabURL) ||
+    if (entry->GetVirtualURL().is_valid() &&
+        (entry->GetVirtualURL().GetOrigin() !=
+            GURL(chrome::kChromeUINewTabURL) ||
          tab.GetEntryCount() > 1)) {
       return true;
     }

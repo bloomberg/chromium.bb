@@ -17,7 +17,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"
 #include "grit/chromium_strings.h"

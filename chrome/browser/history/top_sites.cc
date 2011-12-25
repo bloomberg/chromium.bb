@@ -854,7 +854,7 @@ void TopSites::Observe(int type,
           content::Details<content::LoadCommittedDetails>(details).ptr();
       if (!load_details)
         return;
-      const GURL& url = load_details->entry->url();
+      const GURL& url = load_details->entry->GetURL();
       if (!cache_->IsKnownURL(url) && HistoryService::CanAddURL(url)) {
         // To avoid slamming history we throttle requests when the url updates.
         // To do otherwise negatively impacts perf tests.

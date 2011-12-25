@@ -400,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   nav_observer.Wait();
   ASSERT_TRUE(newtab->GetController().GetLastCommittedEntry());
   EXPECT_EQ(https_url.spec(),
-            newtab->GetController().GetLastCommittedEntry()->url().spec());
+            newtab->GetController().GetLastCommittedEntry()->GetURL().spec());
 
   // Popup window should not be in the opener's process.
   content::RenderProcessHost* popup_process =
@@ -434,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   nav_observer2.Wait();
   ASSERT_TRUE(newtab2->GetController().GetLastCommittedEntry());
   EXPECT_EQ(https_url.spec(),
-            newtab2->GetController().GetLastCommittedEntry()->url().spec());
+            newtab2->GetController().GetLastCommittedEntry()->GetURL().spec());
 
   // This popup window should also not be in the opener's process.
   content::RenderProcessHost* popup_process2 =
@@ -487,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   nav_observer.Wait();
   ASSERT_TRUE(newtab->GetController().GetLastCommittedEntry());
   EXPECT_EQ(https_url.spec(),
-            newtab->GetController().GetLastCommittedEntry()->url().spec());
+            newtab->GetController().GetLastCommittedEntry()->GetURL().spec());
 
   // Popup window should still be in the opener's process.
   content::RenderProcessHost* popup_process =
@@ -507,7 +507,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   nav_observer2.Wait();
   ASSERT_TRUE(oldtab->GetController().GetLastCommittedEntry());
   EXPECT_EQ(https_url.spec(),
-            oldtab->GetController().GetLastCommittedEntry()->url().spec());
+            oldtab->GetController().GetLastCommittedEntry()->GetURL().spec());
 
   // Original window should still be in the original process.
   content::RenderProcessHost* new_process = newtab->GetRenderProcessHost();

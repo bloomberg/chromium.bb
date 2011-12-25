@@ -95,15 +95,15 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
   // just have a standalong pending_entry that isn't in the list already).
   if (controller->pending_entry_index() >= 0) {
     test_rvh->SendNavigateWithTransition(
-        controller->pending_entry()->page_id(),
-        controller->pending_entry()->url(),
-        controller->pending_entry()->transition_type());
+        controller->pending_entry()->GetPageID(),
+        controller->pending_entry()->GetURL(),
+        controller->pending_entry()->GetTransitionType());
   } else {
     test_rvh->SendNavigateWithTransition(
         controller->tab_contents()->
             GetMaxPageIDForSiteInstance(test_rvh->site_instance()) + 1,
-        controller->pending_entry()->url(),
-        controller->pending_entry()->transition_type());
+        controller->pending_entry()->GetURL(),
+        controller->pending_entry()->GetTransitionType());
   }
 
   // Simulate the SwapOut_ACK that fires if you commit a cross-site navigation

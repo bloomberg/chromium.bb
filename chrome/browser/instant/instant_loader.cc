@@ -97,7 +97,7 @@ class InstantLoader::FrameLoadObserver : public content::NotificationObserver {
         text_(text),
         verbatim_(verbatim),
         unique_id_(
-            tab_contents_->GetController().pending_entry()->unique_id()) {
+            tab_contents_->GetController().pending_entry()->GetUniqueID()) {
     registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
                    content::Source<TabContents>(tab_contents_));
   }
@@ -143,8 +143,8 @@ void InstantLoader::FrameLoadObserver::Observe(
       int page_id = *(content::Details<int>(details).ptr());
       NavigationEntry* active_entry =
           tab_contents_->GetController().GetActiveEntry();
-      if (!active_entry || active_entry->page_id() != page_id ||
-          active_entry->unique_id() != unique_id_) {
+      if (!active_entry || active_entry->GetPageID() != page_id ||
+          active_entry->GetUniqueID() != unique_id_) {
         return;
       }
       loader_->SendBoundsToPage(true);
@@ -351,7 +351,7 @@ void InstantLoader::TabContentsDelegateImpl::CommitHistory(
     std::vector<unsigned char> image_data;
     gfx::PNGCodec::EncodeBGRASkBitmap(active_entry->favicon().bitmap(), false,
                                       &image_data);
-    favicon_service->SetFavicon(active_entry->url(),
+    favicon_service->SetFavicon(active_entry->GetURL(),
                                 active_entry->favicon().url(),
                                 image_data,
                                 history::FAVICON);
@@ -548,11 +548,10 @@ void InstantLoader::TabContentsDelegateImpl::OnSetSuggestions(
     const std::vector<std::string>& suggestions,
     InstantCompleteBehavior behavior) {
   TabContentsWrapper* source = loader_->preview_contents();
-  if (!source->tab_contents()->GetController().GetActiveEntry() ||
-      page_id !=
-          source->tab_contents()->GetController().GetActiveEntry()->page_id()) {
+  NavigationEntry* entry =
+      source->tab_contents()->GetController().GetActiveEntry();
+  if (! entry || page_id != entry->GetPageID())
     return;
-  }
 
   if (suggestions.empty())
     loader_->SetCompleteSuggestedText(string16(), behavior);
@@ -565,7 +564,7 @@ void InstantLoader::TabContentsDelegateImpl::OnInstantSupportDetermined(
     bool result) {
   TabContents* source = loader_->preview_contents()->tab_contents();
   if (!source->GetController().GetActiveEntry() ||
-      page_id != source->GetController().GetActiveEntry()->page_id())
+      page_id != source->GetController().GetActiveEntry()->GetPageID())
     return;
 
   content::Details<const bool> details(&result);
@@ -832,7 +831,7 @@ void InstantLoader::Observe(int type,
         content::Details<content::LoadCommittedDetails>(details).ptr();
     if (load_details->is_main_frame) {
       if (load_details->http_status_code == kHostBlacklistStatusCode) {
-        delegate_->AddToBlacklist(this, load_details->entry->url());
+        delegate_->AddToBlacklist(this, load_details->entry->GetURL());
       } else {
         SetHTTPStatusOK(load_details->http_status_code == 200);
       }

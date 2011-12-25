@@ -76,7 +76,7 @@ class BackFwdMenuModelTest : public ChromeRenderViewHostTestHarness {
 
   void LoadURLAndUpdateState(const char* url, const char* title) {
     NavigateAndCommit(GURL(url));
-    controller().GetLastCommittedEntry()->set_title(UTF8ToUTF16(title));
+    controller().GetLastCommittedEntry()->SetTitle(UTF8ToUTF16(title));
   }
 
   // Navigate back or forward the given amount and commits the entry (which

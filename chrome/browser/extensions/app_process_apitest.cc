@@ -57,7 +57,7 @@ static void WindowOpenHelper(Browser* browser,
   TabContents* newtab = last_active_browser->GetSelectedTabContents();
   EXPECT_TRUE(newtab);
   observer.Wait();
-  EXPECT_EQ(url, newtab->GetController().GetLastCommittedEntry()->url());
+  EXPECT_EQ(url, newtab->GetController().GetLastCommittedEntry()->GetURL());
   if (newtab_process_should_equal_opener)
     EXPECT_EQ(opener_host->process(), newtab->GetRenderProcessHost());
   else
@@ -79,7 +79,7 @@ static void NavigateTabHelper(TabContents* contents, const GURL& url) {
       &result));
   ASSERT_TRUE(result);
   observer.Wait();
-  EXPECT_EQ(url, contents->GetController().GetLastCommittedEntry()->url());
+  EXPECT_EQ(url, contents->GetController().GetLastCommittedEntry()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
@@ -375,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessRedirectBack) {
   ASSERT_EQ(3, browser()->tab_count());
   EXPECT_EQ("/files/extensions/api_test/app_process/path1/empty.html",
             browser()->GetTabContentsAt(2)->GetController().
-                GetLastCommittedEntry()->url().path());
+                GetLastCommittedEntry()->GetURL().path());
   EXPECT_EQ(browser()->GetTabContentsAt(1)->GetRenderProcessHost(),
             browser()->GetTabContentsAt(2)->GetRenderProcessHost());
 }
@@ -506,7 +506,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
   TabContents* newtab = last_active_browser->GetSelectedTabContents();
   EXPECT_TRUE(newtab);
   if (!newtab->GetController().GetLastCommittedEntry() ||
-      newtab->GetController().GetLastCommittedEntry()->url() != app_url) {
+      newtab->GetController().GetLastCommittedEntry()->GetURL() != app_url) {
     // TODO(gbillock): This still looks racy. Need to make a custom
     // observer to intercept new window creation and then look for
     // NAV_ENTRY_COMMITTED on the new tab there.

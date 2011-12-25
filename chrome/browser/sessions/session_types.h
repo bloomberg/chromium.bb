@@ -52,7 +52,7 @@ class TabNavigation {
   // Resets this TabNavigation from |entry|.
   void SetFromNavigationEntry(const NavigationEntry& entry);
 
-  // Virtual URL of the page. See NavigationEntry::virtual_url() for details.
+  // Virtual URL of the page. See NavigationEntry::GetVirtualURL() for details.
   void set_virtual_url(const GURL& url) { virtual_url_ = url; }
   const GURL& virtual_url() const { return virtual_url_; }
 

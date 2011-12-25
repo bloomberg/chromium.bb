@@ -314,7 +314,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
     NavigationEntry* entry =
         initiator_tab->tab_contents()->GetController().GetActiveEntry();
     if (entry)
-      url = entry->virtual_url().spec();
+      url = entry->GetVirtualURL().spec();
     settings->SetString(printing::kSettingHeaderFooterURL, url);
   }
 

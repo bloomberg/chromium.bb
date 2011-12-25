@@ -191,7 +191,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
   if (!entry) {
     return nil;
   }
-  const GURL& url = entry->virtual_url();
+  const GURL& url = entry->GetVirtualURL();
   return base::SysUTF8ToNSString(url.spec());
 }
 
@@ -215,7 +215,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
   if (!entry)
     return;
 
-  const GURL& previousURL = entry->virtual_url();
+  const GURL& previousURL = entry->GetVirtualURL();
   tabContents_->tab_contents()->OpenURL(OpenURLParams(
       url,
       content::Referrer(previousURL, WebKit::WebReferrerPolicyDefault),
@@ -232,7 +232,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 
   std::wstring title;
   if (entry != NULL) {
-    title = UTF16ToWideHack(entry->title());
+    title = UTF16ToWideHack(entry->GetTitle());
   }
 
   return base::SysWideToNSString(title);
@@ -392,7 +392,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
   if (entry) {
     tabContents_->tab_contents()->OpenURL(
         GURL(chrome::kViewSourceScheme + std::string(":") +
-             entry->url().spec()),
+             entry->GetURL().spec()),
         GURL(),
         NEW_FOREGROUND_TAB,
         content::PAGE_TRANSITION_LINK);

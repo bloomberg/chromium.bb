@@ -163,7 +163,7 @@ void WebstoreInstaller::StartDownload(FilePath file) {
   // checks in ExtensionService::IsDownloadFromGallery. We should instead pass
   // the real referrer, track if this is an inline install in the whitelist
   // entry and look that up when checking that this is a valid download.
-  GURL referrer = controller_->GetActiveEntry()->url();
+  GURL referrer = controller_->GetActiveEntry()->GetURL();
   if (flags_ & FLAG_INLINE_INSTALL)
     referrer = GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + id_);
 

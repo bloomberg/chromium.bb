@@ -220,9 +220,9 @@ class CONTENT_EXPORT WebContentsDelegate {
   // |url| is the url of the page/frame the info applies to, |ssl| is the SSL
   // information for that page/frame.  If |show_history| is true, a section
   // showing how many times that URL has been visited is added to the page info.
-  virtual void ShowPageInfo(BrowserContext* browser_context,
+  virtual void ShowPageInfo(content::BrowserContext* browser_context,
                             const GURL& url,
-                            const NavigationEntry::SSLStatus& ssl,
+                            const ::NavigationEntry::SSLStatus& ssl,
                             bool show_history) {}
 
   // Opens source view for given tab contents that is navigated to the given

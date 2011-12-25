@@ -282,9 +282,9 @@ TEST_F(TabRestoreServiceTest, RestorePinnedAndApp) {
 // Make sure we persist entries to disk that have post data.
 TEST_F(TabRestoreServiceTest, DontPersistPostData) {
   AddThreeNavigations();
-  controller().GetEntryAtIndex(0)->set_has_post_data(true);
-  controller().GetEntryAtIndex(1)->set_has_post_data(true);
-  controller().GetEntryAtIndex(2)->set_has_post_data(true);
+  controller().GetEntryAtIndex(0)->SetHasPostData(true);
+  controller().GetEntryAtIndex(1)->SetHasPostData(true);
+  controller().GetEntryAtIndex(2)->SetHasPostData(true);
 
   // Have the service record the tab.
   service_->CreateHistoricalTab(&controller(), -1);

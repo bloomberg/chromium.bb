@@ -186,7 +186,8 @@ class BackForwardMenuModel : public ui::MenuModel {
   ModelType model_type_;
 
   // Keeps track of which favicons have already been requested from the history
-  // to prevent duplicate requests, identified by NavigationEntry->unique_id().
+  // to prevent duplicate requests, identified by
+  // NavigationEntry->GetUniqueID().
   std::set<int> requested_favicons_;
 
   // Used for loading favicons from history.

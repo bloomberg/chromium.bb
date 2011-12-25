@@ -225,20 +225,20 @@ void BackForwardMenuModel::SetMenuModelDelegate(
 void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
   // If the favicon has already been requested for this menu, don't do
   // anything.
-  if (requested_favicons_.find(entry->unique_id()) !=
+  if (requested_favicons_.find(entry->GetUniqueID()) !=
       requested_favicons_.end()) {
     return;
   }
-  requested_favicons_.insert(entry->unique_id());
+  requested_favicons_.insert(entry->GetUniqueID());
   FaviconService* favicon_service =
       browser_->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (!favicon_service)
     return;
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
-      entry->url(), history::FAVICON, &load_consumer_,
+      entry->GetURL(), history::FAVICON, &load_consumer_,
       base::Bind(&BackForwardMenuModel::OnFavIconDataAvailable,
                  base::Unretained(this)));
-  load_consumer_.SetClientData(favicon_service, handle, entry->unique_id());
+  load_consumer_.SetClientData(favicon_service, handle, entry->GetUniqueID());
 }
 
 void BackForwardMenuModel::OnFavIconDataAvailable(
@@ -252,7 +252,7 @@ void BackForwardMenuModel::OnFavIconDataAvailable(
     for (int i = 0; i < GetItemCount() - 1; i++) {
       if (IsSeparator(i))
         continue;
-      if (GetNavigationEntry(i)->unique_id() == unique_id) {
+      if (GetNavigationEntry(i)->GetUniqueID() == unique_id) {
         model_index = i;
         entry = GetNavigationEntry(i);
         break;
@@ -348,14 +348,14 @@ int BackForwardMenuModel::GetIndexOfNextChapterStop(int start_from,
   }
 
   NavigationEntry* start_entry = controller.GetEntryAtIndex(start_from);
-  const GURL& url = start_entry->url();
+  const GURL& url = start_entry->GetURL();
 
   if (!forward) {
     // When going backwards we return the first entry we find that has a
     // different domain.
     for (int i = start_from - 1; i >= 0; --i) {
       if (!net::RegistryControlledDomainService::SameDomainOrHost(url,
-              controller.GetEntryAtIndex(i)->url()))
+              controller.GetEntryAtIndex(i)->GetURL()))
         return i;
     }
     // We have reached the beginning without finding a chapter stop.
@@ -365,7 +365,7 @@ int BackForwardMenuModel::GetIndexOfNextChapterStop(int start_from,
     // different domain.
     for (int i = start_from + 1; i < max_count; ++i) {
       if (!net::RegistryControlledDomainService::SameDomainOrHost(url,
-              controller.GetEntryAtIndex(i)->url()))
+              controller.GetEntryAtIndex(i)->GetURL()))
         return i - 1;
     }
     // Last entry is always considered a chapter stop.

@@ -18,7 +18,7 @@ namespace {
 
 // Returns true if the entry's transition type is FORM_SUBMIT.
 bool IsFormSubmit(const NavigationEntry* entry) {
-  return (content::PageTransitionStripQualifier(entry->transition_type()) ==
+  return (content::PageTransitionStripQualifier(entry->GetTransitionType()) ==
           content::PAGE_TRANSITION_FORM_SUBMIT);
 }
 
@@ -108,7 +108,7 @@ void SearchEngineTabHelper::OnPageHasOSDD(
   if (!base_entry)
     return;
   GURL keyword_url = base_entry->user_typed_url().is_valid() ?
-          base_entry->user_typed_url() : base_entry->url();
+          base_entry->user_typed_url() : base_entry->GetURL();
   if (!keyword_url.is_valid())
     return;
 
@@ -153,7 +153,7 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   }
 
   GURL keyword_url = previous_entry->user_typed_url().is_valid() ?
-          previous_entry->user_typed_url() : previous_entry->url();
+          previous_entry->user_typed_url() : previous_entry->GetURL();
   string16 keyword =
       TemplateURLService::GenerateKeyword(keyword_url, true);  // autodetected
   if (keyword.empty())

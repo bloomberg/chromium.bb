@@ -48,7 +48,7 @@ string16 ToolbarModel::GetText() const {
     if (!ShouldDisplayURL()) {
       url = GURL();
     } else if (entry) {
-      url = entry->virtual_url();
+      url = entry->GetVirtualURL();
     }
   }
   if (url.spec().length() > content::kMaxURLDisplayChars)
@@ -82,7 +82,7 @@ bool ToolbarModel::ShouldDisplayURL() const {
   if (tab_contents && tab_contents->GetWebUIForCurrentState())
     return !tab_contents->GetWebUIForCurrentState()->should_hide_url();
 
-  if (entry && entry->url().SchemeIs(chrome::kExtensionScheme))
+  if (entry && entry->GetURL().SchemeIs(chrome::kExtensionScheme))
     return false;
 
   return true;

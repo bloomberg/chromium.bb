@@ -6,15 +6,12 @@
 #define CONTENT_BROWSER_TAB_CONTENTS_NAVIGATION_ENTRY_H_
 #pragma once
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/common/content_export.h"
-#include "content/public/common/page_transition_types.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/common/page_type.h"
-#include "content/public/common/referrer.h"
 #include "content/public/common/security_style.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cert_status_flags.h"
@@ -22,17 +19,7 @@
 
 class SiteInstance;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// NavigationEntry class
-//
-// A NavigationEntry is a data structure that captures all the information
-// required to recreate a browsing state. This includes some opaque binary
-// state as provided by the TabContents as well as some clear text title and
-// URL which is used for our user interface.
-//
-////////////////////////////////////////////////////////////////////////////////
-class CONTENT_EXPORT NavigationEntry {
+class CONTENT_EXPORT NavigationEntry : public content::NavigationEntry {
  public:
   // SSL -----------------------------------------------------------------------
 
@@ -190,19 +177,33 @@ class CONTENT_EXPORT NavigationEntry {
                   const string16& title,
                   content::PageTransition transition_type,
                   bool is_renderer_initiated);
-  ~NavigationEntry();
+  virtual ~NavigationEntry();
 
-  // Page-related stuff --------------------------------------------------------
+  // content::NavigationEntry implementation:
+  virtual int GetUniqueID() const OVERRIDE;
+  virtual const GURL& GetURL() const OVERRIDE;
+  virtual const content::Referrer& GetReferrer() const OVERRIDE;
+  virtual void SetVirtualURL(const GURL& url) OVERRIDE;
+  virtual const GURL& GetVirtualURL() const OVERRIDE;
+  virtual void SetTitle(const string16& title) OVERRIDE;
+  virtual const string16& GetTitle() const OVERRIDE;
+  virtual void SetContentState(const std::string& state) OVERRIDE;
+  virtual const std::string& GetContentState() const OVERRIDE;
+  virtual void SetPageID(int page_id) OVERRIDE;
+  virtual int32 GetPageID() const OVERRIDE;
+  virtual const string16& GetTitleForDisplay(
+      const std::string& languages) const OVERRIDE;
+  virtual bool IsViewSourceMode() const OVERRIDE;
+  virtual content::PageTransition GetTransitionType() const OVERRIDE;
+  virtual void SetHasPostData(bool has_post_data) OVERRIDE;
+  virtual bool GetHasPostData() const OVERRIDE;
 
-  // A unique ID is preserved across commits and redirects, which means that
-  // sometimes a NavigationEntry's unique ID needs to be set (e.g. when
-  // creating a committed entry to correspond to a to-be-deleted pending entry,
-  // the pending entry's ID must be copied).
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
   }
-  int unique_id() const {
-    return unique_id_;
+
+  void set_transition_type(content::PageTransition transition_type) {
+    transition_type_ = transition_type;
   }
 
   // The SiteInstance tells us how to share sub-processes when the tab type is
@@ -226,41 +227,17 @@ class CONTENT_EXPORT NavigationEntry {
     return page_type_;
   }
 
-  // The actual URL of the page. For some about pages, this may be a scary
-  // data: URL or something like that. Use virtual_url() below for showing to
-  // the user.
   void set_url(const GURL& url) {
     url_ = url;
     cached_display_title_.clear();
   }
-  const GURL& url() const {
-    return url_;
-  }
 
-  // The referring URL. Can be empty.
   void set_referrer(const content::Referrer& referrer) {
     referrer_ = referrer;
   }
-  const content::Referrer& referrer() const {
-    return referrer_;
-  }
 
-  // The virtual URL, when nonempty, will override the actual URL of the page
-  // when we display it to the user. This allows us to have nice and friendly
-  // URLs that the user sees for things like about: URLs, but actually feed
-  // the renderer a data URL that results in the content loading.
-  //
-  // virtual_url() will return the URL to display to the user in all cases, so
-  // if there is no overridden display URL, it will return the actual one.
-  void set_virtual_url(const GURL& url) {
-    virtual_url_ = (url == url_) ? GURL() : url;
-    cached_display_title_.clear();
-  }
   bool has_virtual_url() const {
     return !virtual_url_.is_empty();
-  }
-  const GURL& virtual_url() const {
-    return virtual_url_.is_empty() ? url_ : virtual_url_;
   }
 
   bool update_virtual_url_with_url() const {
@@ -270,49 +247,12 @@ class CONTENT_EXPORT NavigationEntry {
     update_virtual_url_with_url_ = update;
   }
 
-  // The title as set by the page. This will be empty if there is no title set.
-  // The caller is responsible for detecting when there is no title and
-  // displaying the appropriate "Untitled" label if this is being displayed to
-  // the user.
-  void set_title(const string16& title) {
-    title_ = title;
-    cached_display_title_.clear();
-  }
-  const string16& title() const {
-    return title_;
-  }
-
   // The favicon data and tracking information. See FaviconStatus above.
   const FaviconStatus& favicon() const {
     return favicon_;
   }
   FaviconStatus& favicon() {
     return favicon_;
-  }
-
-  // Content state is an opaque blob created by WebKit that represents the
-  // state of the page. This includes form entries and scroll position for each
-  // frame. We store it so that we can supply it back to WebKit to restore form
-  // state properly when the user goes back and forward.
-  //
-  // WARNING: This state is saved to the file and used to restore previous
-  // states. If the format is modified in the future, we should still be able to
-  // deal with older versions.
-  void set_content_state(const std::string& state) {
-    content_state_ = state;
-  }
-  const std::string& content_state() const {
-    return content_state_;
-  }
-
-  // Describes the current page that the tab represents. For web pages
-  // (TAB_CONTENTS_WEB) this is the ID that the renderer generated for the page
-  // and is how we can tell new versus renavigations.
-  void set_page_id(int page_id) {
-    page_id_ = page_id;
-  }
-  int32 page_id() const {
-    return page_id_;
   }
 
   // All the SSL flags and state. See SSLStatus above.
@@ -329,29 +269,6 @@ class CONTENT_EXPORT NavigationEntry {
   }
   const std::string& extra_headers() const {
     return extra_headers_;
-  }
-
-  // Page-related helpers ------------------------------------------------------
-
-  // Returns the title to be displayed on the tab. This could be the title of
-  // the page if it is available or the URL. |languages| is the list of
-  // accpeted languages (e.g., prefs::kAcceptLanguages) or empty if proper
-  // URL formatting isn't needed (e.g., unit tests).
-  const string16& GetTitleForDisplay(const std::string& languages) const;
-
-  // Returns true if the current tab is in view source mode. This will be false
-  // if there is no navigation.
-  bool IsViewSourceMode() const;
-
-  // Tracking stuff ------------------------------------------------------------
-
-  // The transition type indicates what the user did to move to this page from
-  // the previous page.
-  void set_transition_type(content::PageTransition transition_type) {
-    transition_type_ = transition_type;
-  }
-  content::PageTransition transition_type() const {
-    return transition_type_;
   }
 
   // Whether this (pending) navigation is renderer-initiated.  Resets to false
@@ -377,19 +294,6 @@ class CONTENT_EXPORT NavigationEntry {
   }
   const GURL& user_typed_url() const {
     return user_typed_url_;
-  }
-
-  // Post data is form data that was posted to get to this page. The data will
-  // have to be reposted to reload the page properly. This flag indicates
-  // whether the page had post data.
-  //
-  // The actual post data is stored in the content_state and is extracted by
-  // WebKit to actually make the request.
-  void set_has_post_data(bool has_post_data) {
-    has_post_data_ = has_post_data;
-  }
-  bool has_post_data() const {
-    return has_post_data_;
   }
 
   // Enumerations of the possible restore types.

@@ -60,9 +60,9 @@ void NotifyPrunedEntries(NavigationController* nav_controller,
 // this one. We don't want that. To avoid this we create a valid state which
 // WebKit will not treat as a new navigation.
 void SetContentStateIfEmpty(NavigationEntry* entry) {
-  if (entry->content_state().empty()) {
-    entry->set_content_state(
-        webkit_glue::CreateHistoryStateForURL(entry->url()));
+  if (entry->GetContentState().empty()) {
+    entry->SetContentState(
+        webkit_glue::CreateHistoryStateForURL(entry->GetURL()));
   }
 }
 
@@ -185,7 +185,7 @@ void NavigationController::ReloadInternal(bool check_for_repost,
   }
 
   if (check_for_repost_ && check_for_repost &&
-      GetEntryAtIndex(current_index)->has_post_data()) {
+      GetEntryAtIndex(current_index)->GetHasPostData()) {
     // The user is asking to reload a page with POST data. Prompt to make sure
     // they really want to do this. If they do, the dialog will call us back
     // with check_for_repost = false.
@@ -249,7 +249,7 @@ NavigationEntry* NavigationController::CreateNavigationEntry(
       string16(),
       transition,
       is_renderer_initiated);
-  entry->set_virtual_url(url);
+  entry->SetVirtualURL(url);
   entry->set_user_typed_url(url);
   entry->set_update_virtual_url_with_url(reverse_on_redirect);
   entry->set_extra_headers(extra_headers);
@@ -268,10 +268,10 @@ void NavigationController::LoadEntry(NavigationEntry* entry) {
   // ChildProcessSecurityPolicy::CanRequestURL.
   ChildProcessSecurityPolicy *policy =
       ChildProcessSecurityPolicy::GetInstance();
-  if (policy->IsDisabledScheme(entry->url().scheme()) ||
-      policy->IsDisabledScheme(entry->virtual_url().scheme())) {
+  if (policy->IsDisabledScheme(entry->GetURL().scheme()) ||
+      policy->IsDisabledScheme(entry->GetVirtualURL().scheme())) {
     VLOG(1) << "URL not loaded because the scheme is blocked by policy: "
-            << entry->url();
+            << entry->GetURL();
     delete entry;
     return;
   }
@@ -306,7 +306,7 @@ NavigationEntry* NavigationController::GetVisibleEntry() const {
   // in a new tab), but an attacker can insert content into the about:blank
   // page while the pending URL loads in that case.
   if (pending_entry_ &&
-      pending_entry_->page_id() == -1 &&
+      pending_entry_->GetPageID() == -1 &&
       !pending_entry_->is_renderer_initiated())
     return pending_entry_;
   return GetLastCommittedEntry();
@@ -367,7 +367,7 @@ void NavigationController::GoBack() {
   pending_entry_index_ = current_index - 1;
   entries_[pending_entry_index_]->set_transition_type(
       content::PageTransitionFromInt(
-          entries_[pending_entry_index_]->transition_type() |
+          entries_[pending_entry_index_]->GetTransitionType() |
           content::PAGE_TRANSITION_FORWARD_BACK));
   NavigateToPendingEntry(NO_RELOAD);
 }
@@ -393,7 +393,7 @@ void NavigationController::GoForward() {
 
   entries_[pending_entry_index_]->set_transition_type(
       content::PageTransitionFromInt(
-          entries_[pending_entry_index_]->transition_type() |
+          entries_[pending_entry_index_]->GetTransitionType() |
           content::PAGE_TRANSITION_FORWARD_BACK));
   NavigateToPendingEntry(NO_RELOAD);
 }
@@ -420,7 +420,7 @@ void NavigationController::GoToIndex(int index) {
   pending_entry_index_ = index;
   entries_[pending_entry_index_]->set_transition_type(
       content::PageTransitionFromInt(
-          entries_[pending_entry_index_]->transition_type() |
+          entries_[pending_entry_index_]->GetTransitionType() |
           content::PAGE_TRANSITION_FORWARD_BACK));
   NavigateToPendingEntry(NO_RELOAD);
 }
@@ -446,8 +446,8 @@ void NavigationController::UpdateVirtualURLToURL(
     NavigationEntry* entry, const GURL& new_url) {
   GURL new_virtual_url(new_url);
   if (BrowserURLHandler::GetInstance()->ReverseURLRewrite(
-          &new_virtual_url, entry->virtual_url(), browser_context_)) {
-    entry->set_virtual_url(new_virtual_url);
+          &new_virtual_url, entry->GetVirtualURL(), browser_context_)) {
+    entry->SetVirtualURL(new_virtual_url);
   }
 }
 
@@ -523,7 +523,7 @@ bool NavigationController::RendererDidNavigate(
 
   // Save the previous state before we clobber it.
   if (GetLastCommittedEntry()) {
-    details->previous_url = GetLastCommittedEntry()->url();
+    details->previous_url = GetLastCommittedEntry()->GetURL();
     details->previous_entry_index = last_committed_entry_index();
   } else {
     details->previous_url = GURL();
@@ -580,7 +580,7 @@ bool NavigationController::RendererDidNavigate(
   // get confused when we go back to them (see the function for details).
   DCHECK(!params.content_state.empty());
   NavigationEntry* active_entry = GetActiveEntry();
-  active_entry->set_content_state(params.content_state);
+  active_entry->SetContentState(params.content_state);
 
   // Once committed, we do not need to track if the entry was initiated by
   // the renderer.
@@ -673,7 +673,7 @@ content::NavigationType NavigationController::ClassifyNavigation(
       //  3: page_id
       //  7: SiteInstance ID, or N for null
       //  x: appended if not from the current SiteInstance
-      temp.append(base::IntToString(entries_[i]->page_id()));
+      temp.append(base::IntToString(entries_[i]->GetPageID()));
       temp.append("_");
       if (entries_[i]->site_instance())
         temp.append(base::IntToString(entries_[i]->site_instance()->id()));
@@ -700,7 +700,7 @@ content::NavigationType NavigationController::ClassifyNavigation(
   // Anything below here we know is a main frame navigation.
   if (pending_entry_ &&
       existing_entry != pending_entry_ &&
-      pending_entry_->page_id() == -1 &&
+      pending_entry_->GetPageID() == -1 &&
       existing_entry == GetLastCommittedEntry()) {
     // In this case, we have a pending entry for a URL but WebCore didn't do a
     // new navigation. This happens when you press enter in the URL bar to
@@ -717,7 +717,7 @@ content::NavigationType NavigationController::ClassifyNavigation(
   // the time this doesn't matter since WebKit doesn't tell us about subframe
   // navigations that don't actually navigate, but it can happen when there is
   // an encoding override (it always sends a navigation request).
-  if (AreURLsInPageNavigation(existing_entry->url(), params.url))
+  if (AreURLsInPageNavigation(existing_entry->GetURL(), params.url))
     return content::NAVIGATION_TYPE_IN_PAGE;
 
   // Since we weeded out "new" navigations above, we know this is an existing
@@ -763,10 +763,10 @@ void NavigationController::RendererDidNavigateToNewPage(
   if (update_virtual_url)
     UpdateVirtualURLToURL(new_entry, params.url);
   new_entry->set_referrer(params.referrer);
-  new_entry->set_page_id(params.page_id);
+  new_entry->SetPageID(params.page_id);
   new_entry->set_transition_type(params.transition);
   new_entry->set_site_instance(tab_contents_->GetSiteInstance());
-  new_entry->set_has_post_data(params.is_post);
+  new_entry->SetHasPostData(params.is_post);
 
   InsertOrReplaceEntry(new_entry, *did_replace_entry);
 }
@@ -795,7 +795,7 @@ void NavigationController::RendererDidNavigateToExistingPage(
          entry->site_instance() == tab_contents_->GetSiteInstance());
   entry->set_site_instance(tab_contents_->GetSiteInstance());
 
-  entry->set_has_post_data(params.is_post);
+  entry->SetHasPostData(params.is_post);
 
   // The entry we found in the list might be pending if the user hit
   // back/forward/reload. This load should commit it (since it's already in the
@@ -827,7 +827,7 @@ void NavigationController::RendererDidNavigateToSamePage(
   // We assign the entry's unique ID to be that of the new one. Since this is
   // always the result of a user action, we want to dismiss infobars, etc. like
   // a regular user-initiated navigation.
-  existing_entry->set_unique_id(pending_entry_->unique_id());
+  existing_entry->set_unique_id(pending_entry_->GetUniqueID());
 
   // The URL may have changed due to redirects.
   if (existing_entry->update_virtual_url_with_url())
@@ -881,7 +881,7 @@ void NavigationController::RendererDidNavigateNewSubframe(
   DCHECK(GetLastCommittedEntry()) << "ClassifyNavigation should guarantee "
                                   << "that a last committed entry exists.";
   NavigationEntry* new_entry = new NavigationEntry(*GetLastCommittedEntry());
-  new_entry->set_page_id(params.page_id);
+  new_entry->SetPageID(params.page_id);
   InsertOrReplaceEntry(new_entry, false);
 }
 
@@ -924,7 +924,7 @@ bool NavigationController::IsURLInPageNavigation(const GURL& url) const {
   NavigationEntry* last_committed = GetLastCommittedEntry();
   if (!last_committed)
     return false;
-  return AreURLsInPageNavigation(last_committed->url(), url);
+  return AreURLsInPageNavigation(last_committed->GetURL(), url);
 }
 
 void NavigationController::CopyStateFrom(const NavigationController& source) {
@@ -949,7 +949,7 @@ void NavigationController::CopyStateFromAndPrune(NavigationController* source) {
   NavigationEntry* last_committed = GetLastCommittedEntry();
   SiteInstance* site_instance =
       last_committed ? last_committed->site_instance() : NULL;
-  int32 minimum_page_id = last_committed ? last_committed->page_id() : -1;
+  int32 minimum_page_id = last_committed ? last_committed->GetPageID() : -1;
 
   // This code is intended for use when the last entry is the active entry.
   DCHECK((transient_entry_index_ != -1 &&
@@ -1050,14 +1050,14 @@ void NavigationController::DiscardNonCommittedEntries() {
 
 void NavigationController::InsertOrReplaceEntry(NavigationEntry* entry,
                                                 bool replace) {
-  DCHECK(entry->transition_type() != content::PAGE_TRANSITION_AUTO_SUBFRAME);
+  DCHECK(entry->GetTransitionType() != content::PAGE_TRANSITION_AUTO_SUBFRAME);
 
   // Copy the pending entry's unique ID to the committed entry.
   // I don't know if pending_entry_index_ can be other than -1 here.
   const NavigationEntry* const pending_entry = (pending_entry_index_ == -1) ?
       pending_entry_ : entries_[pending_entry_index_].get();
   if (pending_entry)
-    entry->set_unique_id(pending_entry->unique_id());
+    entry->set_unique_id(pending_entry->GetUniqueID());
 
   DiscardNonCommittedEntriesInternal();
 
@@ -1092,7 +1092,7 @@ void NavigationController::InsertOrReplaceEntry(NavigationEntry* entry,
   last_committed_entry_index_ = static_cast<int>(entries_.size()) - 1;
 
   // This is a new page ID, so we need everybody to know about it.
-  tab_contents_->UpdateMaxPageID(entry->page_id());
+  tab_contents_->UpdateMaxPageID(entry->GetPageID());
 }
 
 void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
@@ -1108,7 +1108,7 @@ void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
       pending_entry_index_ == last_committed_entry_index_ &&
       (entries_[pending_entry_index_]->restore_type() ==
           NavigationEntry::RESTORE_NONE) &&
-      (entries_[pending_entry_index_]->transition_type() &
+      (entries_[pending_entry_index_]->GetTransitionType() &
           content::PAGE_TRANSITION_FORWARD_BACK)) {
     tab_contents_->Stop();
 
@@ -1241,7 +1241,7 @@ int NavigationController::GetEntryIndexWithPageID(
     SiteInstance* instance, int32 page_id) const {
   for (int i = static_cast<int>(entries_.size()) - 1; i >= 0; --i) {
     if ((entries_[i]->site_instance() == instance) &&
-        (entries_[i]->page_id() == page_id))
+        (entries_[i]->GetPageID() == page_id))
       return i;
   }
   return -1;

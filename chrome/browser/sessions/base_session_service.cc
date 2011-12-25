@@ -156,27 +156,28 @@ SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
   int bytes_written = 0;
 
   WriteStringToPickle(pickle, &bytes_written, max_state_size,
-                      entry.virtual_url().spec());
+                      entry.GetVirtualURL().spec());
 
-  WriteString16ToPickle(pickle, &bytes_written, max_state_size, entry.title());
+  WriteString16ToPickle(pickle, &bytes_written, max_state_size,
+                        entry.GetTitle());
 
-  if (entry.has_post_data()) {
+  if (entry.GetHasPostData()) {
     // Remove the form data, it may contain sensitive information.
     WriteStringToPickle(pickle, &bytes_written, max_state_size,
-        webkit_glue::RemoveFormDataFromHistoryState(entry.content_state()));
+        webkit_glue::RemoveFormDataFromHistoryState(entry.GetContentState()));
   } else {
     WriteStringToPickle(pickle, &bytes_written, max_state_size,
-                        entry.content_state());
+                        entry.GetContentState());
   }
 
-  pickle.WriteInt(entry.transition_type());
-  int type_mask = entry.has_post_data() ? TabNavigation::HAS_POST_DATA : 0;
+  pickle.WriteInt(entry.GetTransitionType());
+  int type_mask = entry.GetHasPostData() ? TabNavigation::HAS_POST_DATA : 0;
   pickle.WriteInt(type_mask);
 
   WriteStringToPickle(pickle, &bytes_written, max_state_size,
-      entry.referrer().url.is_valid() ?
-          entry.referrer().url.spec() : std::string());
-  pickle.WriteInt(entry.referrer().policy);
+      entry.GetReferrer().url.is_valid() ?
+          entry.GetReferrer().url.spec() : std::string());
+  pickle.WriteInt(entry.GetReferrer().policy);
 
   // Adding more data? Be sure and update TabRestoreService too.
   return new SessionCommand(command_id, pickle);

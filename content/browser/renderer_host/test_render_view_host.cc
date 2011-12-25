@@ -367,7 +367,7 @@ void RenderViewHostTestHarness::Reload() {
   NavigationEntry* entry = controller().GetLastCommittedEntry();
   DCHECK(entry);
   controller().Reload(false);
-  rvh()->SendNavigate(entry->page_id(), entry->url());
+  rvh()->SendNavigate(entry->GetPageID(), entry->GetURL());
 }
 
 void RenderViewHostTestHarness::SetUp() {

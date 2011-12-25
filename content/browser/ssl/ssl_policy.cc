@@ -110,7 +110,7 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
 
   InitializeEntryIfNeeded(entry);
 
-  if (!entry->url().SchemeIsSecure())
+  if (!entry->GetURL().SchemeIsSecure())
     return;
 
   // An HTTPS response may not have a certificate for some reason.  When that
@@ -124,7 +124,7 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
   if (!(entry->ssl().cert_status() & net::CERT_STATUS_COMMON_NAME_INVALID)) {
     // CAs issue certificates for intranet hosts to everyone.  Therefore, we
     // mark intranet hosts as being non-unique.
-    if (IsIntranetHost(entry->url().host())) {
+    if (IsIntranetHost(entry->GetURL().host())) {
       entry->ssl().set_cert_status(entry->ssl().cert_status() |
                                    net::CERT_STATUS_NON_UNIQUE_NAME);
     }
@@ -146,7 +146,7 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
   // possibly have insecure content.  See bug http://crbug.com/12423.
   if (site_instance &&
       backend_->DidHostRunInsecureContent(
-          entry->url().host(), site_instance->GetProcess()->GetID())) {
+          entry->GetURL().host(), site_instance->GetProcess()->GetID())) {
     entry->ssl().set_security_style(
         content::SECURITY_STYLE_AUTHENTICATION_BROKEN);
     entry->ssl().set_ran_insecure_content();
@@ -208,7 +208,7 @@ void SSLPolicy::InitializeEntryIfNeeded(NavigationEntry* entry) {
   if (entry->ssl().security_style() != content::SECURITY_STYLE_UNKNOWN)
     return;
 
-  entry->ssl().set_security_style(entry->url().SchemeIsSecure() ?
+  entry->ssl().set_security_style(entry->GetURL().SchemeIsSecure() ?
       content::SECURITY_STYLE_AUTHENTICATED :
       content::SECURITY_STYLE_UNAUTHENTICATED);
 }

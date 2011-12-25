@@ -144,7 +144,7 @@ void TabFinder::DidNavigateAnyFrame(
     // If this is a redirect, we need to go to the db to get the start.
     FetchRedirectStart(source);
   } else if (params.redirects.size() > 1 ||
-             params.redirects[0] != details.entry->url()) {
+             params.redirects[0] != details.entry->GetURL()) {
     tab_contents_to_url_[source] = params.redirects[0];
   }
 }
@@ -213,7 +213,7 @@ void TabFinder::FetchRedirectStart(TabContents* tab) {
 
   NavigationEntry* committed_entry =
       tab->GetController().GetLastCommittedEntry();
-  if (!committed_entry || committed_entry->url().is_empty())
+  if (!committed_entry || committed_entry->GetURL().is_empty())
     return;
 
   HistoryService* history = profile->GetHistoryService(
@@ -221,7 +221,7 @@ void TabFinder::FetchRedirectStart(TabContents* tab) {
   if (history) {
     CancelableRequestProvider::Handle request_handle =
         history->QueryRedirectsTo(
-            committed_entry->url(),
+            committed_entry->GetURL(),
             &callback_consumer_,
             base::Bind(&TabFinder::QueryRedirectsToComplete,
                        base::Unretained(this)));

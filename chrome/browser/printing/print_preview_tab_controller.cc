@@ -291,7 +291,7 @@ void PrintPreviewTabController::OnNavEntryCommitted(
     // Preview tab navigated.
     if (details) {
       content::PageTransition transition_type =
-          details->entry->transition_type();
+          details->entry->GetTransitionType();
       content::NavigationType nav_type = details->type;
 
       // New |preview_tab| is created. Don't update/erase map entry.

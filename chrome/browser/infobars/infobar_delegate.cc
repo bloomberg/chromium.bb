@@ -85,14 +85,15 @@ void InfoBarDelegate::StoreActiveEntryUniqueID(
     InfoBarTabHelper* infobar_helper) {
   NavigationEntry* active_entry =
       infobar_helper->tab_contents()->GetController().GetActiveEntry();
-  contents_unique_id_ = active_entry ? active_entry->unique_id() : 0;
+  contents_unique_id_ = active_entry ? active_entry->GetUniqueID() : 0;
 }
 
 bool InfoBarDelegate::ShouldExpireInternal(
     const content::LoadCommittedDetails& details) const {
-  return (contents_unique_id_ != details.entry->unique_id()) ||
+  return (contents_unique_id_ != details.entry->GetUniqueID()) ||
       (content::PageTransitionStripQualifier(
-          details.entry->transition_type()) == content::PAGE_TRANSITION_RELOAD);
+          details.entry->GetTransitionType()) ==
+              content::PAGE_TRANSITION_RELOAD);
 }
 
 void InfoBarDelegate::RemoveSelf() {

@@ -51,12 +51,12 @@ static void AddNavigationFeatures(const std::string& feature_prefix,
                                   const std::vector<GURL>& redirect_chain,
                                   ClientPhishingRequest* request) {
   NavigationEntry* entry = controller.GetEntryAtIndex(index);
-  bool is_secure_referrer = entry->referrer().url.SchemeIsSecure();
+  bool is_secure_referrer = entry->GetReferrer().url.SchemeIsSecure();
   if (!is_secure_referrer) {
     AddFeature(StringPrintf("%s%s=%s",
                             feature_prefix.c_str(),
                             features::kReferrer,
-                            entry->referrer().url.spec().c_str()),
+                            entry->GetReferrer().url.spec().c_str()),
                1.0,
                request);
   }
@@ -66,7 +66,7 @@ static void AddNavigationFeatures(const std::string& feature_prefix,
   AddFeature(feature_prefix + features::kPageTransitionType,
              static_cast<double>(
                  content::PageTransitionStripQualifier(
-                    entry->transition_type())),
+                    entry->GetTransitionType())),
              request);
   AddFeature(feature_prefix + features::kIsFirstNavigation,
              index == 0 ? 1.0 : 0.0,
@@ -77,13 +77,13 @@ static void AddNavigationFeatures(const std::string& feature_prefix,
     NOTREACHED();
     return;
   }
-  if (redirect_chain.back() != entry->url()) {
+  if (redirect_chain.back() != entry->GetURL()) {
     // I originally had this as a DCHECK but I saw a failure once that I
     // can't reproduce. It looks like it might be related to the
     // navigation controller only keeping a limited number of navigation
     // events. For now we'll just attach a feature specifying that this is
     // a mismatch and try and figure out what to do with it on the server.
-    DLOG(WARNING) << "Expected:" << entry->url()
+    DLOG(WARNING) << "Expected:" << entry->GetURL()
                  << " Actual:" << redirect_chain.back();
     AddFeature(feature_prefix + features::kRedirectUrlMismatch,
                1.0,
@@ -161,7 +161,7 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
   DCHECK_NE(index, -1);
   for (; index >= 0; index--) {
     NavigationEntry* entry = controller.GetEntryAtIndex(index);
-    if (url_index == -1 && entry->url() == request_url) {
+    if (url_index == -1 && entry->GetURL() == request_url) {
       // It's possible that we've been on the on the possibly phishy url before
       // in this tab, so make sure that we use the latest navigation for
       // features.
@@ -171,7 +171,7 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
       // be cautious.
       url_index = index;
     } else if (index < url_index) {
-      if (entry->url().host() == request_url.host()) {
+      if (entry->GetURL().host() == request_url.host()) {
         first_host_index = index;
       } else {
         // We have found the possibly phishing url, but we are no longer on the

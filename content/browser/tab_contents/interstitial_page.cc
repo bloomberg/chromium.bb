@@ -187,7 +187,7 @@ void InterstitialPage::Show() {
   if (new_navigation_) {
     NavigationEntry* entry = new NavigationEntry;
     entry->set_url(url_);
-    entry->set_virtual_url(url_);
+    entry->SetVirtualURL(url_);
     entry->set_page_type(content::PAGE_TYPE_INTERSTITIAL);
 
     // Give sub-classes a chance to set some states on the navigation entry.
@@ -239,7 +239,7 @@ void InterstitialPage::Hide() {
   // Let's revert to the original title if necessary.
   NavigationEntry* entry = tab_->GetController().GetActiveEntry();
   if (!new_navigation_ && should_revert_tab_title_) {
-    entry->set_title(original_tab_title_);
+    entry->SetTitle(original_tab_title_);
     tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
   }
 
@@ -386,12 +386,12 @@ void InterstitialPage::UpdateTitle(RenderViewHost* render_view_host,
   // If this interstitial is shown on an existing navigation entry, we'll need
   // to remember its title so we can revert to it when hidden.
   if (!new_navigation_ && !should_revert_tab_title_) {
-    original_tab_title_ = entry->title();
+    original_tab_title_ = entry->GetTitle();
     should_revert_tab_title_ = true;
   }
   // TODO(evan): make use of title_direction.
   // http://code.google.com/p/chromium/issues/detail?id=27094
-  entry->set_title(title);
+  entry->SetTitle(title);
   tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
 }
 

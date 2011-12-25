@@ -41,7 +41,7 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
   NavigationEntry* active_entry = originating_controller ?
       originating_controller->GetActiveEntry() : controller->GetActiveEntry();
   if (active_entry)
-    initial_page_host_ = active_entry->url().host();
+    initial_page_host_ = active_entry->GetURL().host();
 }
 
 DownloadRequestLimiter::TabDownloadState::~TabDownloadState() {
@@ -117,7 +117,7 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
       if (!entry)
         return;
 
-      if (content::PageTransitionIsRedirect(entry->transition_type())) {
+      if (content::PageTransitionIsRedirect(entry->GetTransitionType())) {
         // Redirects don't count.
         return;
       }
@@ -127,8 +127,8 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
         // User has either allowed all downloads or canceled all downloads. Only
         // reset the download state if the user is navigating to a different
         // host (or host is empty).
-        if (!initial_page_host_.empty() && !entry->url().host().empty() &&
-            entry->url().host() == initial_page_host_) {
+        if (!initial_page_host_.empty() && !entry->GetURL().host().empty() &&
+            entry->GetURL().host() == initial_page_host_) {
           return;
         }
       }

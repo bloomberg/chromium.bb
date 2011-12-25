@@ -50,6 +50,7 @@
     'public/browser/native_web_keyboard_event.h',
     'public/browser/navigation_details.cc',
     'public/browser/navigation_details.h',
+    'public/browser/navigation_entry.h',
     'public/browser/navigation_type.h',
     'public/browser/notification_details.h',
     'public/browser/notification_observer.h',

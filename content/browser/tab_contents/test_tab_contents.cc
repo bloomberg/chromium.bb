@@ -112,12 +112,12 @@ void TestTabContents::CommitPendingNavigation() {
 
   const NavigationEntry* entry = GetController().pending_entry();
   DCHECK(entry);
-  int page_id = entry->page_id();
+  int page_id = entry->GetPageID();
   if (page_id == -1) {
     // It's a new navigation, assign a never-seen page id to it.
     page_id = GetMaxPageIDForSiteInstance(rvh->site_instance()) + 1;
   }
-  rvh->SendNavigate(page_id, entry->url());
+  rvh->SendNavigate(page_id, entry->GetURL());
 
   // Simulate the SwapOut_ACK that fires if you commit a cross-site navigation
   // without making any network requests.

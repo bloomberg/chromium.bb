@@ -359,15 +359,15 @@ TEST_F(ProfileSyncServiceSessionTest, WriteFilledSessionToNode) {
   SessionModelAssociator::TabLinksMap::iterator iter = tab_map.begin();
   ASSERT_EQ(2, iter->second.tab()->GetEntryCount());
   ASSERT_EQ(GURL("http://foo/1"), iter->second.tab()->
-          GetEntryAtIndex(0)->virtual_url());
+          GetEntryAtIndex(0)->GetVirtualURL());
   ASSERT_EQ(GURL("http://foo/2"), iter->second.tab()->
-          GetEntryAtIndex(1)->virtual_url());
+          GetEntryAtIndex(1)->GetVirtualURL());
   iter++;
   ASSERT_EQ(2, iter->second.tab()->GetEntryCount());
   ASSERT_EQ(GURL("http://bar/1"), iter->second.tab()->
-      GetEntryAtIndex(0)->virtual_url());
+      GetEntryAtIndex(0)->GetVirtualURL());
   ASSERT_EQ(GURL("http://bar/2"), iter->second.tab()->
-      GetEntryAtIndex(1)->virtual_url());
+      GetEntryAtIndex(1)->GetVirtualURL());
 }
 
 // Test that we fail on a failed model association.

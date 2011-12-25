@@ -48,8 +48,9 @@ class ExtensionURLRewriteBrowserTest : public ExtensionBrowserTest {
   void TestExtensionURLOverride(const GURL& url) {
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_EQ(url, GetLocationBarTextAsURL());
-    EXPECT_EQ(url, GetNavigationEntry()->virtual_url());
-    EXPECT_TRUE(GetNavigationEntry()->url().SchemeIs(chrome::kExtensionScheme));
+    EXPECT_EQ(url, GetNavigationEntry()->GetVirtualURL());
+    EXPECT_TRUE(
+        GetNavigationEntry()->GetURL().SchemeIs(chrome::kExtensionScheme));
   }
 
   // Navigates to |url| and tests that the location bar is empty while the
@@ -57,7 +58,7 @@ class ExtensionURLRewriteBrowserTest : public ExtensionBrowserTest {
   void TestURLNotShown(const GURL& url) {
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_EQ("", GetLocationBarText());
-    EXPECT_EQ(url, GetNavigationEntry()->virtual_url());
+    EXPECT_EQ(url, GetNavigationEntry()->GetVirtualURL());
   }
 };
 
@@ -66,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, NewTabPageURL) {
   GURL url(chrome::kChromeUINewTabURL);
   TestURLNotShown(url);
   // Check that the actual URL corresponds to chrome://newtab.
-  EXPECT_EQ(url, GetNavigationEntry()->url());
+  EXPECT_EQ(url, GetNavigationEntry()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, NewTabPageURLOverride) {
@@ -75,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, NewTabPageURLOverride) {
   LoadExtension(GetTestExtensionPath("newtab"));
   TestURLNotShown(GURL(chrome::kChromeUINewTabURL));
   // Check that the internal URL uses the chrome-extension:// scheme.
-  EXPECT_TRUE(GetNavigationEntry()->url().SchemeIs(chrome::kExtensionScheme));
+  EXPECT_TRUE(GetNavigationEntry()->GetURL().SchemeIs(chrome::kExtensionScheme));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, BookmarksURL) {

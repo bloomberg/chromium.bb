@@ -99,7 +99,7 @@ bool OptionsMenuModel::IsCommandIdEnabled(int command_id) const {
           tab_contents()->GetController().GetActiveEntry();
       // Delegate and tab contents should never be NULL, but active entry
       // can be NULL when running tests. We want to return false if NULL.
-      return (entry != NULL) && !entry->url().SchemeIsSecure();
+      return (entry != NULL) && !entry->GetURL().SchemeIsSecure();
     }
     default:
       break;

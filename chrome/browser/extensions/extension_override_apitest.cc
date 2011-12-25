@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideNewtab) {
     ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab/"));
     TabContents* tab = browser()->GetSelectedTabContents();
     ASSERT_TRUE(tab->GetController().GetActiveEntry());
-    EXPECT_TRUE(tab->GetController().GetActiveEntry()->url().
+    EXPECT_TRUE(tab->GetController().GetActiveEntry()->GetURL().
                 SchemeIs(chrome::kExtensionScheme));
 
     ASSERT_TRUE(catcher.GetNextResult());
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, MAYBE_OverrideNewtabIncognito) {
       browser()->profile()->GetOffTheRecordProfile(), false);
   TabContents* tab = otr_browser->GetSelectedTabContents();
   ASSERT_TRUE(tab->GetController().GetActiveEntry());
-  EXPECT_FALSE(tab->GetController().GetActiveEntry()->url().
+  EXPECT_FALSE(tab->GetController().GetActiveEntry()->GetURL().
                SchemeIs(chrome::kExtensionScheme));
 }
 

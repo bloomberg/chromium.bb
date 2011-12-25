@@ -305,7 +305,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     params.media_flags = 0;
     params.spellcheck_enabled = false;
     params.is_editable = false;
-    params.page_url = tab_contents->GetController().GetActiveEntry()->url();
+    params.page_url = tab_contents->GetController().GetActiveEntry()->GetURL();
 #if defined(OS_MACOSX)
     params.writing_direction_default = 0;
     params.writing_direction_left_to_right = 0;

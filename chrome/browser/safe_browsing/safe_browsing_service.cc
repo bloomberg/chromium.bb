@@ -1056,7 +1056,7 @@ void SafeBrowsingService::DoDisplayBlockingPage(
     GURL referrer_url;
     NavigationEntry* entry = tab_contents->GetController().GetActiveEntry();
     if (entry)
-      referrer_url = entry->referrer().url;
+      referrer_url = entry->GetReferrer().url;
 
     // When the malicious url is on the main frame, and resource.original_url
     // is not the same as the resource.url, that means we have a redirect from

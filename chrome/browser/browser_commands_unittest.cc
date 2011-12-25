@@ -73,9 +73,9 @@ TEST_F(BrowserCommandsTest, DuplicateTab) {
       browser()->GetTabContentsAt(1)->GetController();
   ASSERT_EQ(3, controller.entry_count());
   ASSERT_EQ(2, controller.GetCurrentEntryIndex());
-  ASSERT_TRUE(url1 == controller.GetEntryAtIndex(0)->url());
-  ASSERT_TRUE(url2 == controller.GetEntryAtIndex(1)->url());
-  ASSERT_TRUE(url3 == controller.GetEntryAtIndex(2)->url());
+  ASSERT_TRUE(url1 == controller.GetEntryAtIndex(0)->GetURL());
+  ASSERT_TRUE(url2 == controller.GetEntryAtIndex(1)->GetURL());
+  ASSERT_TRUE(url3 == controller.GetEntryAtIndex(2)->GetURL());
 }
 
 TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {

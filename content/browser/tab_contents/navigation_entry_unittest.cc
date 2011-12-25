@@ -40,11 +40,11 @@ class NavigationEntryTest : public testing::Test {
 // Test unique ID accessors
 TEST_F(NavigationEntryTest, NavigationEntryUniqueIDs) {
   // Two entries should have different IDs by default
-  EXPECT_NE(entry1_.get()->unique_id(), entry2_.get()->unique_id());
+  EXPECT_NE(entry1_.get()->GetUniqueID(), entry2_.get()->GetUniqueID());
 
   // Can set an entry to have the same ID as another
-  entry2_.get()->set_unique_id(entry1_.get()->unique_id());
-  EXPECT_EQ(entry1_.get()->unique_id(), entry2_.get()->unique_id());
+  entry2_.get()->set_unique_id(entry1_.get()->GetUniqueID());
+  EXPECT_EQ(entry1_.get()->GetUniqueID(), entry2_.get()->GetUniqueID());
 }
 
 // Test URL accessors
@@ -53,14 +53,14 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
   EXPECT_FALSE(entry1_.get()->has_virtual_url());
   EXPECT_FALSE(entry2_.get()->has_virtual_url());
 
-  EXPECT_EQ(GURL(), entry1_.get()->url());
-  EXPECT_EQ(GURL(), entry1_.get()->virtual_url());
+  EXPECT_EQ(GURL(), entry1_.get()->GetURL());
+  EXPECT_EQ(GURL(), entry1_.get()->GetVirtualURL());
   EXPECT_TRUE(entry1_.get()->GetTitleForDisplay("").empty());
 
   // Setting URL affects virtual_url and GetTitleForDisplay
   entry1_.get()->set_url(GURL("http://www.google.com"));
-  EXPECT_EQ(GURL("http://www.google.com"), entry1_.get()->url());
-  EXPECT_EQ(GURL("http://www.google.com"), entry1_.get()->virtual_url());
+  EXPECT_EQ(GURL("http://www.google.com"), entry1_.get()->GetURL());
+  EXPECT_EQ(GURL("http://www.google.com"), entry1_.get()->GetVirtualURL());
   EXPECT_EQ(ASCIIToUTF16("www.google.com"),
             entry1_.get()->GetTitleForDisplay(""));
 
@@ -70,14 +70,14 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
             entry1_.get()->GetTitleForDisplay(""));
 
   // Title affects GetTitleForDisplay
-  entry1_.get()->set_title(ASCIIToUTF16("Google"));
+  entry1_.get()->SetTitle(ASCIIToUTF16("Google"));
   EXPECT_EQ(ASCIIToUTF16("Google"), entry1_.get()->GetTitleForDisplay(""));
 
   // Setting virtual_url doesn't affect URL
-  entry2_.get()->set_virtual_url(GURL("display:url"));
+  entry2_.get()->SetVirtualURL(GURL("display:url"));
   EXPECT_TRUE(entry2_.get()->has_virtual_url());
-  EXPECT_EQ(GURL("test:url"), entry2_.get()->url());
-  EXPECT_EQ(GURL("display:url"), entry2_.get()->virtual_url());
+  EXPECT_EQ(GURL("test:url"), entry2_.get()->GetURL());
+  EXPECT_EQ(GURL("display:url"), entry2_.get()->GetVirtualURL());
 
   // Having a title set in constructor overrides virtual URL
   EXPECT_EQ(ASCIIToUTF16("title"), entry2_.get()->GetTitleForDisplay(""));
@@ -152,35 +152,36 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_EQ(content::PAGE_TYPE_INTERSTITIAL, entry2_.get()->page_type());
 
   // Referrer
-  EXPECT_EQ(GURL(), entry1_.get()->referrer().url);
-  EXPECT_EQ(GURL("from"), entry2_.get()->referrer().url);
+  EXPECT_EQ(GURL(), entry1_.get()->GetReferrer().url);
+  EXPECT_EQ(GURL("from"), entry2_.get()->GetReferrer().url);
   entry2_.get()->set_referrer(
       content::Referrer(GURL("from2"), WebKit::WebReferrerPolicyDefault));
-  EXPECT_EQ(GURL("from2"), entry2_.get()->referrer().url);
+  EXPECT_EQ(GURL("from2"), entry2_.get()->GetReferrer().url);
 
   // Title
-  EXPECT_EQ(string16(), entry1_.get()->title());
-  EXPECT_EQ(ASCIIToUTF16("title"), entry2_.get()->title());
-  entry2_.get()->set_title(ASCIIToUTF16("title2"));
-  EXPECT_EQ(ASCIIToUTF16("title2"), entry2_.get()->title());
+  EXPECT_EQ(string16(), entry1_.get()->GetTitle());
+  EXPECT_EQ(ASCIIToUTF16("title"), entry2_.get()->GetTitle());
+  entry2_.get()->SetTitle(ASCIIToUTF16("title2"));
+  EXPECT_EQ(ASCIIToUTF16("title2"), entry2_.get()->GetTitle());
 
   // State
-  EXPECT_EQ(std::string(), entry1_.get()->content_state());
-  EXPECT_EQ(std::string(), entry2_.get()->content_state());
-  entry2_.get()->set_content_state("state");
-  EXPECT_EQ("state", entry2_.get()->content_state());
+  EXPECT_EQ(std::string(), entry1_.get()->GetContentState());
+  EXPECT_EQ(std::string(), entry2_.get()->GetContentState());
+  entry2_.get()->SetContentState("state");
+  EXPECT_EQ("state", entry2_.get()->GetContentState());
 
   // Page ID
-  EXPECT_EQ(-1, entry1_.get()->page_id());
-  EXPECT_EQ(3, entry2_.get()->page_id());
-  entry2_.get()->set_page_id(2);
-  EXPECT_EQ(2, entry2_.get()->page_id());
+  EXPECT_EQ(-1, entry1_.get()->GetPageID());
+  EXPECT_EQ(3, entry2_.get()->GetPageID());
+  entry2_.get()->SetPageID(2);
+  EXPECT_EQ(2, entry2_.get()->GetPageID());
 
   // Transition type
-  EXPECT_EQ(content::PAGE_TRANSITION_LINK, entry1_.get()->transition_type());
-  EXPECT_EQ(content::PAGE_TRANSITION_TYPED, entry2_.get()->transition_type());
+  EXPECT_EQ(content::PAGE_TRANSITION_LINK, entry1_.get()->GetTransitionType());
+  EXPECT_EQ(content::PAGE_TRANSITION_TYPED, entry2_.get()->GetTransitionType());
   entry2_.get()->set_transition_type(content::PAGE_TRANSITION_RELOAD);
-  EXPECT_EQ(content::PAGE_TRANSITION_RELOAD, entry2_.get()->transition_type());
+  EXPECT_EQ(content::PAGE_TRANSITION_RELOAD,
+            entry2_.get()->GetTransitionType());
 
   // Is renderer initiated
   EXPECT_FALSE(entry1_.get()->is_renderer_initiated());
@@ -189,10 +190,10 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_TRUE(entry2_.get()->is_renderer_initiated());
 
   // Post Data
-  EXPECT_FALSE(entry1_.get()->has_post_data());
-  EXPECT_FALSE(entry2_.get()->has_post_data());
-  entry2_.get()->set_has_post_data(true);
-  EXPECT_TRUE(entry2_.get()->has_post_data());
+  EXPECT_FALSE(entry1_.get()->GetHasPostData());
+  EXPECT_FALSE(entry2_.get()->GetHasPostData());
+  entry2_.get()->SetHasPostData(true);
+  EXPECT_TRUE(entry2_.get()->GetHasPostData());
 
   // Restored
   EXPECT_EQ(NavigationEntry::RESTORE_NONE, entry1_->restore_type());

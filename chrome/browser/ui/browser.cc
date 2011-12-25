@@ -254,13 +254,13 @@ bool HasInternalURL(const NavigationEntry* entry) {
 
   // Check the |virtual_url()| first. This catches regular chrome:// URLs
   // including URLs that were rewritten (such as chrome://bookmarks).
-  if (entry->virtual_url().SchemeIs(chrome::kChromeUIScheme))
+  if (entry->GetVirtualURL().SchemeIs(chrome::kChromeUIScheme))
     return true;
 
   // If the |virtual_url()| isn't a chrome:// URL, check if it's actually
   // view-source: of a chrome:// URL.
-  if (entry->virtual_url().SchemeIs(chrome::kViewSourceScheme))
-    return entry->url().SchemeIs(chrome::kChromeUIScheme);
+  if (entry->GetVirtualURL().SchemeIs(chrome::kViewSourceScheme))
+    return entry->GetURL().SchemeIs(chrome::kChromeUIScheme);
 
   return false;
 }
@@ -1546,7 +1546,8 @@ void Browser::ReloadInternal(WindowOpenDisposition disposition,
   if (current_tab && current_tab->ShowingInterstitialPage()) {
     NavigationEntry* entry = current_tab->GetController().GetActiveEntry();
     DCHECK(entry);  // Should exist if interstitial is showing.
-    OpenURL(entry->url(), GURL(), disposition, content::PAGE_TRANSITION_RELOAD);
+    OpenURL(
+        entry->GetURL(), GURL(), disposition, content::PAGE_TRANSITION_RELOAD);
     return;
   }
 
@@ -2071,7 +2072,7 @@ void Browser::OpenCreateShortcutsDialog() {
 
   // Start fetching web app info for CreateApplicationShortcut dialog and show
   // the dialog when the data is available in OnDidGetApplicationInfo.
-  current_tab->extension_tab_helper()->GetApplicationInfo(entry->page_id());
+  current_tab->extension_tab_helper()->GetApplicationInfo(entry->GetPageID());
 #else
   NOTIMPLEMENTED();
 #endif
@@ -2178,7 +2179,7 @@ void Browser::ShowBrokenPageTab(TabContents* contents) {
   NavigationEntry* entry = contents->GetController().GetActiveEntry();
   if (!entry)
     return;
-  std::string page_url = entry->url().spec();
+  std::string page_url = entry->GetURL().spec();
   std::vector<std::string> subst;
   subst.push_back(UTF16ToASCII(page_title));
   subst.push_back(page_url);
@@ -3547,7 +3548,7 @@ void Browser::LoadingStateChanged(TabContents* source) {
       NavigationEntry* entry = source->GetController().GetLastCommittedEntry();
       if (entry) {
         TabContentsWrapper::GetCurrentWrapperForContents(source)->
-            extension_tab_helper()->GetApplicationInfo(entry->page_id());
+            extension_tab_helper()->GetApplicationInfo(entry->GetPageID());
       } else {
         pending_web_app_action_ = NONE;
       }
@@ -3645,7 +3646,7 @@ bool Browser::IsApplication() const {
 }
 
 void Browser::ConvertContentsToApplication(TabContents* contents) {
-  const GURL& url = contents->GetController().GetActiveEntry()->url();
+  const GURL& url = contents->GetController().GetActiveEntry()->GetURL();
   std::string app_name = web_app::GenerateApplicationNameFromURL(url);
 
   DetachContents(contents);
@@ -3991,7 +3992,7 @@ void Browser::OnDidGetApplicationInfo(TabContentsWrapper* source,
 
   NavigationEntry* entry =
       source->tab_contents()->GetController().GetLastCommittedEntry();
-  if (!entry || (entry->page_id() != page_id))
+  if (!entry || (entry->GetPageID() != page_id))
     return;
 
   switch (pending_web_app_action_) {
@@ -5211,7 +5212,7 @@ void Browser::ViewSource(TabContentsWrapper* contents) {
   if (!active_entry)
     return;
 
-  ViewSource(contents, active_entry->url(), active_entry->content_state());
+  ViewSource(contents, active_entry->GetURL(), active_entry->GetContentState());
 }
 
 void Browser::ViewSource(TabContentsWrapper* contents,
@@ -5229,14 +5230,14 @@ void Browser::ViewSource(TabContentsWrapper* contents,
 
   GURL view_source_url = GURL(chrome::kViewSourceScheme + std::string(":") +
       url.spec());
-  active_entry->set_virtual_url(view_source_url);
+  active_entry->SetVirtualURL(view_source_url);
 
   // Do not restore scroller position.
-  active_entry->set_content_state(
+  active_entry->SetContentState(
       webkit_glue::RemoveScrollOffsetFromHistoryState(content_state));
 
   // Do not restore title, derive it from the url.
-  active_entry->set_title(string16());
+  active_entry->SetTitle(string16());
 
   // Now show view-source entry.
   if (CanSupportWindowFeature(FEATURE_TABSTRIP)) {
@@ -5280,7 +5281,8 @@ int Browser::GetContentRestrictionsForSelectedTab() {
     NavigationEntry* active_entry =
         current_tab->GetController().GetActiveEntry();
     // See comment in UpdateCommandsForTabState about why we call url().
-    if (!SavePackage::IsSavableURL(active_entry ? active_entry->url() : GURL())
+    if (!SavePackage::IsSavableURL(
+            active_entry ? active_entry->GetURL() : GURL())
         || current_tab->ShowingInterstitialPage())
       content_restrictions |= content::CONTENT_RESTRICTION_SAVE;
     if (current_tab->ShowingInterstitialPage())

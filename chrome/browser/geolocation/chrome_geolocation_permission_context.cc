@@ -177,7 +177,7 @@ GeolocationConfirmInfoBarDelegate::GeolocationConfirmInfoBarDelegate(
   const NavigationEntry* committed_entry =
       infobar_helper->tab_contents()->GetController().GetLastCommittedEntry();
   committed_contents_unique_id_ = committed_entry ?
-      committed_entry->unique_id() : 0;
+      committed_entry->GetUniqueID() : 0;
 }
 
 GeolocationConfirmInfoBarDelegate::~GeolocationConfirmInfoBarDelegate() {
@@ -189,9 +189,10 @@ bool GeolocationConfirmInfoBarDelegate::ShouldExpire(
     const content::LoadCommittedDetails& details) const {
   if (details.did_replace_entry || !details.is_navigation_to_different_page())
     return false;
-  return committed_contents_unique_id_ != details.entry->unique_id() ||
-      content::PageTransitionStripQualifier(details.entry->transition_type()) ==
-                    content::PAGE_TRANSITION_RELOAD;
+  return committed_contents_unique_id_ != details.entry->GetUniqueID() ||
+      content::PageTransitionStripQualifier(
+          details.entry->GetTransitionType()) ==
+              content::PAGE_TRANSITION_RELOAD;
 }
 
 gfx::Image* GeolocationConfirmInfoBarDelegate::GetIcon() const {

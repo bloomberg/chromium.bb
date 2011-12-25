@@ -280,7 +280,7 @@ void TranslateManager::Observe(int type,
         // infobar if the user already dismissed one in that case.
         return;
       }
-      if (entry->transition_type() != content::PAGE_TRANSITION_RELOAD &&
+      if (entry->GetTransitionType() != content::PAGE_TRANSITION_RELOAD &&
           load_details->type != content::NAVIGATION_TYPE_SAME_PAGE) {
         return;
       }
@@ -401,7 +401,7 @@ void TranslateManager::OnURLFetchComplete(const content::URLFetcher* source) {
         continue;
       }
       NavigationEntry* entry = tab->GetController().GetActiveEntry();
-      if (!entry || entry->page_id() != request.page_id) {
+      if (!entry || entry->GetPageID() != request.page_id) {
         // We navigated away from the page the translation was triggered on.
         continue;
       }
@@ -489,8 +489,8 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   // - similar languages (ex: en-US to en).
   // - any user black-listed URLs or user selected language combination.
   // - any language the user configured as accepted languages.
-  if (!IsTranslatableURL(entry->url()) || language_code == target_lang ||
-      !TranslatePrefs::CanTranslate(prefs, language_code, entry->url()) ||
+  if (!IsTranslatableURL(entry->GetURL()) || language_code == target_lang ||
+      !TranslatePrefs::CanTranslate(prefs, language_code, entry->GetURL()) ||
       IsAcceptLanguage(tab, language_code)) {
     return;
   }
@@ -575,7 +575,7 @@ void TranslateManager::TranslatePage(TabContents* tab_contents,
   PendingRequest request;
   request.render_process_id = rvh->process()->GetID();
   request.render_view_id = rvh->routing_id();
-  request.page_id = entry->page_id();
+  request.page_id = entry->GetPageID();
   request.source_lang = source_lang;
   request.target_lang = target_lang;
   pending_requests_.push_back(request);
@@ -589,7 +589,7 @@ void TranslateManager::RevertTranslation(TabContents* tab_contents) {
     return;
   }
   tab_contents->GetRenderViewHost()->Send(new ChromeViewMsg_RevertTranslation(
-      tab_contents->GetRenderViewHost()->routing_id(), entry->page_id()));
+      tab_contents->GetRenderViewHost()->routing_id(), entry->GetPageID()));
 
   TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
       tab_contents)->translate_tab_helper();
@@ -599,7 +599,7 @@ void TranslateManager::RevertTranslation(TabContents* tab_contents) {
 
 void TranslateManager::ReportLanguageDetectionError(TabContents* tab_contents) {
   UMA_HISTOGRAM_COUNTS("Translate.ReportLanguageDetectionError", 1);
-  GURL page_url = tab_contents->GetController().GetActiveEntry()->url();
+  GURL page_url = tab_contents->GetController().GetActiveEntry()->GetURL();
   // Report option should be disabled for secure URLs.
   DCHECK(!page_url.SchemeIsSecure());
   std::string report_error_url(kReportLanguageDetectionErrorURL);
@@ -643,7 +643,7 @@ void TranslateManager::DoTranslatePage(TabContents* tab,
   wrapper->translate_tab_helper()->language_state().set_translation_pending(
       true);
   tab->GetRenderViewHost()->Send(new ChromeViewMsg_TranslatePage(
-      tab->GetRenderViewHost()->routing_id(), entry->page_id(),
+      tab->GetRenderViewHost()->routing_id(), entry->GetPageID(),
       translate_script, source_lang, target_lang));
 }
 

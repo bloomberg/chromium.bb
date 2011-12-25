@@ -158,14 +158,14 @@ void MakeNavigateParams(const NavigationEntry& entry,
                         content::WebContentsDelegate* delegate,
                         NavigationController::ReloadType reload_type,
                         ViewMsg_Navigate_Params* params) {
-  params->page_id = entry.page_id();
+  params->page_id = entry.GetPageID();
   params->pending_history_list_offset = controller.GetIndexOfEntry(&entry);
   params->current_history_list_offset = controller.last_committed_entry_index();
   params->current_history_list_length = controller.entry_count();
-  params->url = entry.url();
-  params->referrer = entry.referrer();
-  params->transition = entry.transition_type();
-  params->state = entry.content_state();
+  params->url = entry.GetURL();
+  params->referrer = entry.GetReferrer();
+  params->transition = entry.GetTransitionType();
+  params->state = entry.GetContentState();
   params->navigation_type =
       GetNavigationType(controller.browser_context(), entry, reload_type);
   params->request_time = base::Time::Now();
@@ -350,7 +350,7 @@ void TabContents::SetViewType(content::ViewType type) {
 const GURL& TabContents::GetURL() const {
   // We may not have a navigation entry yet
   NavigationEntry* entry = controller_.GetActiveEntry();
-  return entry ? entry->virtual_url() : GURL::EmptyGURL();
+  return entry ? entry->GetVirtualURL() : GURL::EmptyGURL();
 }
 
 
@@ -774,7 +774,7 @@ bool TabContents::NavigateToEntry(
     NavigationController::ReloadType reload_type) {
   // The renderer will reject IPC messages with URLs longer than
   // this limit, so don't attempt to navigate with a longer URL.
-  if (entry.url().spec().size() > content::kMaxURLChars)
+  if (entry.GetURL().spec().size() > content::kMaxURLChars)
     return false;
 
   RenderViewHost* dest_render_view_host = render_manager_.Navigate(entry);
@@ -786,9 +786,9 @@ bool TabContents::NavigateToEntry(
   int enabled_bindings = dest_render_view_host->enabled_bindings();
   bool is_allowed_in_web_ui_renderer = content::GetContentClient()->
       browser()->GetWebUIFactory()->IsURLAcceptableForWebUI(GetBrowserContext(),
-                                                            entry.url());
+                                                            entry.GetURL());
 #if defined(OS_CHROMEOS)
-  is_allowed_in_web_ui_renderer |= entry.url().SchemeIs(chrome::kDataScheme);
+  is_allowed_in_web_ui_renderer |= entry.GetURL().SchemeIs(chrome::kDataScheme);
 #endif
   CHECK(!(enabled_bindings & content::BINDINGS_POLICY_WEB_UI) ||
         is_allowed_in_web_ui_renderer);
@@ -797,7 +797,7 @@ bool TabContents::NavigateToEntry(
   DevToolsManagerImpl::GetInstance()->OnNavigatingToPendingEntry(
       GetRenderViewHost(),
       dest_render_view_host,
-      entry.url());
+      entry.GetURL());
 
   // Used for page load time metrics.
   current_load_start_ = base::TimeTicks::Now();
@@ -808,20 +808,20 @@ bool TabContents::NavigateToEntry(
                      &navigate_params);
   dest_render_view_host->Navigate(navigate_params);
 
-  if (entry.page_id() == -1) {
+  if (entry.GetPageID() == -1) {
     // HACK!!  This code suppresses javascript: URLs from being added to
     // session history, which is what we want to do for javascript: URLs that
     // do not generate content.  What we really need is a message from the
     // renderer telling us that a new page was not created.  The same message
     // could be used for mailto: URLs and the like.
-    if (entry.url().SchemeIs(chrome::kJavaScriptScheme))
+    if (entry.GetURL().SchemeIs(chrome::kJavaScriptScheme))
       return false;
   }
 
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
-                    NavigateToPendingEntry(entry.url(), reload_type));
+                    NavigateToPendingEntry(entry.GetURL(), reload_type));
 
   if (delegate_)
     delegate_->DidNavigateToPendingEntry(this);
@@ -906,7 +906,7 @@ bool TabContents::IsActiveEntry(int32 page_id) {
   NavigationEntry* active_entry = controller_.GetActiveEntry();
   return (active_entry != NULL &&
           active_entry->site_instance() == GetSiteInstance() &&
-          active_entry->page_id() == page_id);
+          active_entry->GetPageID() == page_id);
 }
 
 const std::string& TabContents::GetContentsMimeType() const {
@@ -987,7 +987,7 @@ double TabContents::GetZoomLevel() const {
     NavigationEntry* active_entry = GetController().GetActiveEntry();
     // Since zoom map is updated using rewritten URL, use rewritten URL
     // to get the zoom level.
-    url = active_entry ? active_entry->url() : GURL::EmptyGURL();
+    url = active_entry ? active_entry->GetURL() : GURL::EmptyGURL();
     zoom_level = zoom_map->GetZoomLevel(net::GetHostOrSpecFromURL(url));
   }
   return zoom_level;
@@ -1013,7 +1013,7 @@ void TabContents::ViewSource() {
   if (!active_entry)
     return;
 
-  delegate_->ViewSourceForTab(this, active_entry->url());
+  delegate_->ViewSourceForTab(this, active_entry->GetURL());
 }
 
 void TabContents::ViewFrameSource(const GURL& url,
@@ -1091,7 +1091,7 @@ bool TabContents::FocusLocationBarByDefault() {
   if (web_ui)
     return web_ui->focus_location_bar_by_default();
   NavigationEntry* entry = controller_.GetActiveEntry();
-  if (entry && entry->url() == GURL(chrome::kAboutBlankURL))
+  if (entry && entry->GetURL() == GURL(chrome::kAboutBlankURL))
     return true;
   return false;
 }
@@ -1153,7 +1153,7 @@ void TabContents::OnDidRedirectProvisionalLoad(int32 page_id,
     entry = controller_.pending_entry();
   else
     entry = controller_.GetEntryWithPageID(GetSiteInstance(), page_id);
-  if (!entry || entry->url() != source_url)
+  if (!entry || entry->GetURL() != source_url)
     return;
 
   // Notify observers about the provisional change in the main frame URL.
@@ -1323,7 +1323,7 @@ void TabContents::OnGoToEntryAtOffset(int offset) {
     // http://crbug.com/51680).
     entry->set_transition_type(
         content::PageTransitionFromInt(
-            entry->transition_type() |
+            entry->GetTransitionType() |
             content::PAGE_TRANSITION_FORWARD_BACK));
     NavigateToEntry(*entry, NavigationController::NO_RELOAD);
 
@@ -1451,7 +1451,7 @@ void TabContents::DidNavigateMainFramePostCommit(
     // clicking on a link); see bugs 1184641 and 980803. We don't want to
     // clear the bubble when a user navigates to a named anchor in the same
     // page.
-    UpdateTargetURL(details.entry->page_id(), GURL());
+    UpdateTargetURL(details.entry->GetPageID(), GURL());
   }
 
   if (!details.is_in_page) {
@@ -1501,8 +1501,8 @@ bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
   // per page of the title to history."
   string16 final_title;
   bool explicit_set;
-  if (entry && entry->url().SchemeIsFile() && title.empty()) {
-    final_title = UTF8ToUTF16(entry->url().ExtractFileName());
+  if (entry && entry->GetURL().SchemeIsFile() && title.empty()) {
+    final_title = UTF8ToUTF16(entry->GetURL().ExtractFileName());
     explicit_set = false;  // Don't count synthetic titles toward the set limit.
   } else {
     TrimWhitespace(title, TRIM_ALL, &final_title);
@@ -1513,10 +1513,10 @@ bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
   // there will be no navigation entry. In this situation,
   // |page_title_when_no_navigaiton_entry_| will be used for page title.
   if (entry) {
-    if (final_title == entry->title())
+    if (final_title == entry->GetTitle())
       return false;  // Nothing changed, don't bother.
 
-    entry->set_title(final_title);
+    entry->SetTitle(final_title);
   } else {
     if (page_title_when_no_navigation_entry_ == final_title)
       return false;  // Nothing changed, don't bother.
@@ -1696,7 +1696,7 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
     // forward in the history is only stored in the navigation controller's
     // entry list.
     if (did_navigate &&
-        (controller_.GetActiveEntry()->transition_type() &
+        (controller_.GetActiveEntry()->GetTransitionType() &
             content::PAGE_TRANSITION_FORWARD_BACK)) {
       transition_type = content::PageTransitionFromInt(
           params.transition | content::PAGE_TRANSITION_FORWARD_BACK);
@@ -1743,9 +1743,9 @@ void TabContents::UpdateState(RenderViewHost* rvh,
     return;
   NavigationEntry* entry = controller_.GetEntryAtIndex(entry_index);
 
-  if (state == entry->content_state())
+  if (state == entry->GetContentState())
     return;  // Nothing to update.
-  entry->set_content_state(state);
+  entry->SetContentState(state);
   controller_.NotifyEntryChanged(entry, entry_index);
 }
 
@@ -1841,8 +1841,8 @@ void TabContents::DidStopLoading() {
     base::TimeDelta elapsed = base::TimeTicks::Now() - current_load_start_;
 
     details.reset(new LoadNotificationDetails(
-        entry->virtual_url(),
-        entry->transition_type(),
+        entry->GetVirtualURL(),
+        entry->GetTransitionType(),
         elapsed,
         &controller_,
         controller_.GetCurrentEntryIndex()));

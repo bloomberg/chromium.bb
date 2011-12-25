@@ -31,5 +31,5 @@ void ClickHandler::OnMouseReleased(const views::MouseEvent& event) {
     NOTREACHED();
     return;
   }
-  tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
+  tab->ShowPageInfo(nav_entry->GetURL(), nav_entry->ssl(), true);
 }

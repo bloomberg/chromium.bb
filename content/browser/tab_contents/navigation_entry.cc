@@ -15,7 +15,7 @@
 
 // Use this to get a new unique ID for a NavigationEntry during construction.
 // The returned ID is guaranteed to be nonzero (which is the "no ID" indicator).
-static int GetUniqueID() {
+static int GetUniqueIDInConstructor() {
   static int unique_id_counter = 0;
   return ++unique_id_counter;
 }
@@ -35,7 +35,7 @@ NavigationEntry::FaviconStatus::FaviconStatus() : valid_(false) {
 
 
 NavigationEntry::NavigationEntry()
-    : unique_id_(GetUniqueID()),
+    : unique_id_(GetUniqueIDInConstructor()),
       site_instance_(NULL),
       page_type_(content::PAGE_TYPE_NORMAL),
       update_virtual_url_with_url_(false),
@@ -53,7 +53,7 @@ NavigationEntry::NavigationEntry(SiteInstance* instance,
                                  const string16& title,
                                  content::PageTransition transition_type,
                                  bool is_renderer_initiated)
-    : unique_id_(GetUniqueID()),
+    : unique_id_(GetUniqueIDInConstructor()),
       site_instance_(instance),
       page_type_(content::PAGE_TYPE_NORMAL),
       url_(url),
@@ -68,6 +68,52 @@ NavigationEntry::NavigationEntry(SiteInstance* instance,
 }
 
 NavigationEntry::~NavigationEntry() {
+}
+
+int NavigationEntry::GetUniqueID() const {
+  return unique_id_;
+}
+
+const GURL& NavigationEntry::GetURL() const {
+  return url_;
+}
+
+const content::Referrer& NavigationEntry::GetReferrer() const {
+  return referrer_;
+}
+
+void NavigationEntry::SetVirtualURL(const GURL& url) {
+  virtual_url_ = (url == url_) ? GURL() : url;
+  cached_display_title_.clear();
+}
+
+const GURL& NavigationEntry::GetVirtualURL() const {
+  return virtual_url_.is_empty() ? url_ : virtual_url_;
+}
+
+void NavigationEntry::SetTitle(const string16& title) {
+  title_ = title;
+  cached_display_title_.clear();
+}
+
+const string16& NavigationEntry::GetTitle() const {
+  return title_;
+}
+
+void NavigationEntry::SetContentState(const std::string& state) {
+  content_state_ = state;
+}
+
+const std::string& NavigationEntry::GetContentState() const {
+  return content_state_;
+}
+
+void NavigationEntry::SetPageID(int page_id) {
+  page_id_ = page_id;
+}
+
+int32 NavigationEntry::GetPageID() const {
+  return page_id_;
 }
 
 void NavigationEntry::set_site_instance(SiteInstance* site_instance) {
@@ -107,4 +153,16 @@ const string16& NavigationEntry::GetTitleForDisplay(
 
 bool NavigationEntry::IsViewSourceMode() const {
   return virtual_url_.SchemeIs(chrome::kViewSourceScheme);
+}
+
+content::PageTransition NavigationEntry::GetTransitionType() const {
+  return transition_type_;
+}
+
+void NavigationEntry::SetHasPostData(bool has_post_data) {
+  has_post_data_ = has_post_data;
+}
+
+bool NavigationEntry::GetHasPostData() const {
+  return has_post_data_;
 }

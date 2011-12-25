@@ -350,7 +350,7 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
        resource.threat_type == SafeBrowsingService::URL_MALWARE) &&
       tab_contents()->GetController().GetActiveEntry()) {
     unsafe_unique_page_id_ =
-        tab_contents()->GetController().GetActiveEntry()->unique_id();
+        tab_contents()->GetController().GetActiveEntry()->GetUniqueID();
     // We also keep the resource around in order to be able to send the
     // malicious URL to the server.
     unsafe_resource_.reset(new SafeBrowsingService::UnsafeResource(resource));
@@ -476,7 +476,7 @@ bool ClientSideDetectionHost::DidShowSBInterstitial() {
   }
   const NavigationEntry* nav_entry =
       tab_contents()->GetController().GetActiveEntry();
-  return (nav_entry && nav_entry->unique_id() == unsafe_unique_page_id_);
+  return (nav_entry && nav_entry->GetUniqueID() == unsafe_unique_page_id_);
 }
 
 void ClientSideDetectionHost::set_client_side_detection_service(

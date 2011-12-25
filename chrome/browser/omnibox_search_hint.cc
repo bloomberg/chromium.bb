@@ -176,7 +176,7 @@ void OmniboxSearchHint::Observe(int type,
   if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     NavigationEntry* entry =
         tab_->tab_contents()->GetController().GetActiveEntry();
-    if (search_engine_urls_.find(entry->url().spec()) ==
+    if (search_engine_urls_.find(entry->GetURL().spec()) ==
         search_engine_urls_.end()) {
       // The search engine is not in our white-list, bail.
       return;
@@ -188,7 +188,7 @@ void OmniboxSearchHint::Observe(int type,
       return;
 
     const TemplateURLRef* const search_url = default_provider->url();
-    if (search_url->GetHost() == entry->url().host())
+    if (search_url->GetHost() == entry->GetURL().host())
       ShowInfoBar();
   } else if (type == chrome::NOTIFICATION_OMNIBOX_OPENED_URL) {
     AutocompleteLog* log = content::Details<AutocompleteLog>(details).ptr();
