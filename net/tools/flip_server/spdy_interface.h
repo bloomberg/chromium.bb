@@ -62,9 +62,10 @@ class SpdySM : public spdy::SpdyFramerVisitorInterface,
 
   // SpdyFramerVisitor interface.
   virtual void OnControl(const spdy::SpdyControlFrame* frame) OVERRIDE;
-  virtual bool OnControlFrameHeaderData(spdy::SpdyStreamId stream_id,
-                                        const char* header_data,
-                                        size_t len) OVERRIDE;
+  virtual bool OnControlFrameHeaderData(
+      const spdy::SpdyControlFrame* control_frame,
+      const char* header_data,
+      size_t len) OVERRIDE;
   virtual void OnDataFrameHeader(const spdy::SpdyDataFrame* frame) OVERRIDE;
   virtual void OnStreamFrameData(spdy::SpdyStreamId stream_id,
                                  const char* data, size_t len) OVERRIDE;
