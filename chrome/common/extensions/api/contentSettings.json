@@ -148,6 +148,7 @@
                 "type": "function",
                 "parameters": [
                   {
+                    "name": "resourceIdentifiers",
                     "type": "array",
                     "description": "A list of resource identifiers for this content type, or <var>undefined</var> if this content type does not use resource identifiers.",
                     "optional": true,

@@ -102,7 +102,7 @@
         "parameters": [
           {"type": "string", "name": "parentId", "description": "The ID of the folder to paste into"},
           {"type": "function", "name": "callback", "parameters": [
-            {"type": "boolean"}
+            {"name": "result", "type": "boolean"}
           ]}
         ]
       },
@@ -126,6 +126,7 @@
              "name": "callback",
              "parameters": [
               {
+                "name": "result",
                 "type": "object",
                 "properties": {},
                 "additionalProperties": {"type": "string"}
@@ -201,7 +202,7 @@
         "nodoc": "true",
         "parameters": [
           {"type": "function", "name": "callback", "parameters": [
-            {"type": "boolean"}
+            {"name": "result", "type": "boolean"}
           ]}
         ]
       }
@@ -212,7 +213,7 @@
         "type": "function",
         "description": "Fired when dragging bookmarks over the document",
         "parameters": [
-          {"$ref": "BookmarkNodeData"}
+          {"name": "bookmarkNodeData", "$ref": "BookmarkNodeData"}
         ]
       },
       {
@@ -220,7 +221,7 @@
         "type": "function",
         "description": "Fired when the drag and drop leaves the document",
         "parameters": [
-          {"$ref": "BookmarkNodeData"}
+          {"name": "bookmarkNodeData", "$ref": "BookmarkNodeData"}
         ]
       },
       {
@@ -228,7 +229,7 @@
         "type": "function",
         "description": "Fired when the user drops bookmarks on the document",
         "parameters": [
-          {"$ref": "BookmarkNodeData"}
+          {"name": "bookmarkNodeData", "$ref": "BookmarkNodeData"}
         ]
       }
     ]

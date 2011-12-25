@@ -98,7 +98,7 @@
       {
         "name": "onPlaylistChanged",
         "type": "function",
-        "descrition": "Notifies that playlist content or state has been changed. Data could be retrieved via 'getPlaylist'.",
+        "description": "Notifies that playlist content or state has been changed. Data could be retrieved via 'getPlaylist'.",
         "parameters": []
       }
     ]

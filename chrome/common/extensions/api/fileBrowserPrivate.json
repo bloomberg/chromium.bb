@@ -284,6 +284,7 @@
              "name": "callback",
              "parameters": [
               {
+                "name": "result",
                 "type": "object",
                 "properties": {},
                 "additionalProperties": {"type": "string"}
@@ -365,6 +366,7 @@
         "description": "Selects multiple files.",
         "parameters": [
           {
+            "name": "selectedPaths",
             "type": "array",
             "description": "Array of selected paths",
             "items": {"type": "string"}
@@ -377,10 +379,12 @@
         "description": "Selects a file.",
         "parameters": [
           {
+            "name": "selectedPath",
             "type": "string",
             "description": "A selected path"
           },
           {
+            "name": "index",
             "type": "integer",
             "description": "Index of Filter"
           }

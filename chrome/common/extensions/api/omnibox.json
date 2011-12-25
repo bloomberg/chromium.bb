@@ -29,6 +29,7 @@
         "parameters": [
           {"type": "integer", "name": "requestId"},
           {
+            "name": "suggestResults",
             "type": "array",
             "description": "Array of suggest results",
             "items": {
@@ -80,6 +81,7 @@
             "description": "A callback passed to the onInputChanged event used for sending suggestions back to the browser.",
             "parameters": [
               {
+                "name": "suggestResults",
                 "type": "array",
                 "description": "Array of suggest results",
                 "items": {

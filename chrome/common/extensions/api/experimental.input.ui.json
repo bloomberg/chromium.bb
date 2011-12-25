@@ -127,6 +127,7 @@
         "description": "Fired when lookup table is updated.",
         "parameters": [
           { "type": "object",
+            "name": "lookupTable",
             "properties": {
               "visible": { "type": "boolean" },
               "candidates": { "type": "array", "items": { "type": "string" } }

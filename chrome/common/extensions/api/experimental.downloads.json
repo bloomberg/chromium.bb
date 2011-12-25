@@ -8,7 +8,7 @@
         "type": "function",
         "description": "This event fires with the DownloadItem object when a download begins.",
         "parameters": [
-          {"$ref": "DownloadItem"}
+          {"name": "downloadItem", "$ref": "DownloadItem"}
         ]
       },
       {
@@ -16,7 +16,7 @@
         "type": "function",
         "description": "When any of a DownloadItem's properties except |bytesReceived| changes, this event fires with the download id and an object containing the properties that changed.",
         "parameters": [
-          {"$ref": "DownloadDelta"}
+          {"name": "downloadDelta", "$ref": "DownloadDelta"}
         ]
       },
       {
@@ -435,7 +435,7 @@
         "type": "function",
         "description": "Download a URL. If the URL uses the HTTP[S] protocol, then the request will include all cookies currently set for its hostname. If the download started successfully, |callback| will be called with the new DownloadItem’s |id|. If there was an error starting the download, then |callback| will be called with |downloadId|=undefined and chrome.extension.lastError will be set. If the URL’s hostname is not specified in the |permissions| section of the extension’s manifest, then the |chrome.extensions.lastError| object will indicate that the extension does not have permission to access that hostname.",
         "parameters": [
-          {"$ref": "DownloadOptions"},
+          {"name": "options", "$ref": "DownloadOptions"},
           {
             "name": "callback",
             "type": "function",
@@ -451,7 +451,7 @@
         "type": "function",
         "description": "Find DownloadItems. Set |query| to the empty object to get all DownloadItems. To get a specific DownloadItem, set only the |id| field.",
         "parameters": [
-          {"$ref": "DownloadQuery"},
+          {"name": "query", "$ref": "DownloadQuery"},
           {
             "name": "callback",
             "type": "function",
@@ -467,7 +467,7 @@
         "type": "function",
         "description": "Erase matching DownloadItems from history",
         "parameters": [
-          {"$ref": "DownloadQuery"},
+          {"name": "query", "$ref": "DownloadQuery"},
           {
             "name": "callback",
             "type": "function",

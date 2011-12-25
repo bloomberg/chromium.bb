@@ -272,6 +272,7 @@
             "name": "callback",
             "parameters": [
               {
+                "name": "result",
                 "type": "array",
                 "items": {
                   "$ref": "Tab"

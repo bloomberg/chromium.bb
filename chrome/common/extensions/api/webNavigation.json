@@ -55,6 +55,7 @@
           {
             "type": "function", "name": "callback", "parameters": [
               {
+                "name": "details",
                 "type": "array",
                 "description": "A list of frames in the given tab, null if the specified tab ID is invalid.",
                 "optional": true,
