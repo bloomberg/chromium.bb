@@ -5287,7 +5287,18 @@
    fun:_ZN5views4View14AddChildViewAtEPS0_i
    fun:_ZN5views4View12AddChildViewEPS0_
 }
-
+{
+   bug_108620
+   Memcheck:Uninitialized
+   fun:_ZN7WebCore13PlatformEventC2ENS0_4TypeEbbbbd
+   fun:_ZN7WebCore18PlatformMouseEventC1ERKNS_8IntPointES3_NS_11MouseButtonENS_13PlatformEvent4TypeEibbbbd
+   fun:_ZN7WebCore12EventHandler28fakeMouseMoveEventTimerFiredEPNS_5TimerIS0_EE
+   fun:_ZN7WebCore5TimerINS_12EventHandlerEE5firedEv
+   fun:_ZN7WebCore12ThreadTimers24sharedTimerFiredInternalEv
+   fun:_ZN7WebCore12ThreadTimers16sharedTimerFiredEv
+   fun:_ZN11webkit_glue25WebKitPlatformSupportImpl9DoTimeoutEv
+   fun:_ZN4base9BaseTimerIN11webkit_glue25WebKitPlatformSupportImplELb0EE9TimerTask3RunEv
+}
 
 
 #-----------------------------------------------------------------------
