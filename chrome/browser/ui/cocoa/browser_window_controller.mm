@@ -146,6 +146,8 @@
 // longer indicate that the window is shrinking from an apparent zoomed state)
 // and if it's set we continue to constrain the resize.
 
+using content::WebContents;
+
 @interface NSWindow (NSPrivateApis)
 // Note: These functions are private, use -[NSObject respondsToSelector:]
 // before calling them.
@@ -1750,11 +1752,11 @@ enum {
 - (void)openLearnMoreAboutCrashLink:(id)sender {
   if ([sender isKindOfClass:[SadTabController class]]) {
     SadTabController* sad_tab = static_cast<SadTabController*>(sender);
-    TabContents* tab_contents = [sad_tab tabContents];
-    if (tab_contents) {
+    WebContents* web_contents = [sad_tab webContents];
+    if (web_contents) {
       GURL helpUrl =
           google_util::AppendGoogleLocaleParam(GURL(chrome::kCrashReasonURL));
-      tab_contents->OpenURL(
+      web_contents->OpenURL(
           helpUrl, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_LINK);
     }
   }

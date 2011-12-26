@@ -84,8 +84,8 @@ class HungPagesTableModel : public views::GroupTableModel {
     WebContentsObserverImpl(HungPagesTableModel* model,
                             TabContentsWrapper* tab);
 
-    TabContents* tab_contents() const {
-      return content::WebContentsObserver::tab_contents();
+    WebContents* web_contents() const {
+      return content::WebContentsObserver::web_contents();
     }
 
     FaviconTabHelper* favicon_tab_helper() {
@@ -129,12 +129,12 @@ HungPagesTableModel::~HungPagesTableModel() {
 
 content::RenderProcessHost* HungPagesTableModel::GetRenderProcessHost() {
   return tab_observers_.empty() ? NULL :
-      tab_observers_[0]->tab_contents()->GetRenderProcessHost();
+      tab_observers_[0]->web_contents()->GetRenderProcessHost();
 }
 
 RenderViewHost* HungPagesTableModel::GetRenderViewHost() {
   return tab_observers_.empty() ? NULL :
-      tab_observers_[0]->tab_contents()->GetRenderViewHost();
+      tab_observers_[0]->web_contents()->GetRenderViewHost();
 }
 
 void HungPagesTableModel::InitForTabContents(TabContents* hung_contents) {
@@ -147,7 +147,7 @@ void HungPagesTableModel::InitForTabContents(TabContents* hung_contents) {
       tab_observers_.push_back(new WebContentsObserverImpl(this, hung_wrapper));
     for (TabContentsIterator it; !it.done(); ++it) {
       if (*it != hung_wrapper &&
-          it->tab_contents()->GetRenderProcessHost() ==
+          it->web_contents()->GetRenderProcessHost() ==
           hung_contents->GetRenderProcessHost())
         tab_observers_.push_back(new WebContentsObserverImpl(this, *it));
     }
@@ -166,7 +166,7 @@ int HungPagesTableModel::RowCount() {
 
 string16 HungPagesTableModel::GetText(int row, int column_id) {
   DCHECK(row >= 0 && row < RowCount());
-  string16 title = tab_observers_[row]->tab_contents()->GetTitle();
+  string16 title = tab_observers_[row]->web_contents()->GetTitle();
   if (title.empty())
     title = CoreTabHelper::GetDefaultTitle();
   // TODO(xji): Consider adding a special case if the title text is a URL,
@@ -210,7 +210,7 @@ void HungPagesTableModel::TabDestroyed(WebContentsObserverImpl* tab) {
 HungPagesTableModel::WebContentsObserverImpl::WebContentsObserverImpl(
     HungPagesTableModel* model,
     TabContentsWrapper* tab)
-    : content::WebContentsObserver(tab->tab_contents()),
+    : content::WebContentsObserver(tab->web_contents()),
       model_(model),
       tab_(tab) {
 }

@@ -12,26 +12,28 @@
 #import <Cocoa/Cocoa.h>
 #endif  // __OBJC__
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 #if defined(__OBJC__)
 
 // A controller class that manages the SadTabView (aka "Aw Snap" or crash page).
 @interface SadTabController : NSViewController {
  @private
-  TabContents* tabContents_;  // Weak reference.
+  content::WebContents* webContents_;  // Weak reference.
 }
 
 // Designated initializer.
-- (id)initWithTabContents:(TabContents*)tabContents;
+- (id)initWithWebContents:(content::WebContents*)webContents;
 
 // This action just calls the NSApp sendAction to get it into the standard
 // Cocoa action processing.
 - (IBAction)openLearnMoreAboutCrashLink:(id)sender;
 
-// Returns a weak reference to the TabContents whose TabContentsView created
+// Returns a weak reference to the WebContents whose WebContentsView created
 // this SadTabController.
-- (TabContents*)tabContents;
+- (content::WebContents*)webContents;
 
 @end
 
@@ -43,7 +45,7 @@ class SadTabController;
 
 // Functions that may be accessed from non-Objective-C C/C++ code.
 namespace sad_tab_controller_mac {
-SadTabController* CreateSadTabController(TabContents* tab_contents);
+SadTabController* CreateSadTabController(content::WebContents* web_contents);
 gfx::NativeView GetViewOfSadTabController(SadTabController* sad_tab);
 }
 

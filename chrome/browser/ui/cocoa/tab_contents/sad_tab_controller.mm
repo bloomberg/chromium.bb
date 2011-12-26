@@ -7,10 +7,12 @@
 #include "base/mac/mac_util.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_view.h"
 
+using content::WebContents;
+
 namespace sad_tab_controller_mac {
 
-SadTabController* CreateSadTabController(TabContents* tab_contents) {
-  return [[SadTabController alloc] initWithTabContents:tab_contents];
+SadTabController* CreateSadTabController(WebContents* web_contents) {
+  return [[SadTabController alloc] initWithWebContents:web_contents];
 }
 
 gfx::NativeView GetViewOfSadTabController(SadTabController* sad_tab) {
@@ -21,10 +23,10 @@ gfx::NativeView GetViewOfSadTabController(SadTabController* sad_tab) {
 
 @implementation SadTabController
 
-- (id)initWithTabContents:(TabContents*)tabContents {
+- (id)initWithWebContents:(WebContents*)webContents {
   if ((self = [super initWithNibName:@"SadTab"
                               bundle:base::mac::MainAppBundle()])) {
-    tabContents_ = tabContents;
+    webContents_ = webContents;
   }
 
   return self;
@@ -32,14 +34,14 @@ gfx::NativeView GetViewOfSadTabController(SadTabController* sad_tab) {
 
 - (void)awakeFromNib {
   // If tab_contents_ is nil, ask view to remove link.
-  if (!tabContents_) {
+  if (!webContents_) {
     SadTabView* sad_view = static_cast<SadTabView*>([self view]);
     [sad_view removeHelpText];
   }
 }
 
-- (TabContents*)tabContents {
-  return tabContents_;
+- (WebContents*)webContents {
+  return webContents_;
 }
 
 - (void)openLearnMoreAboutCrashLink:(id)sender {

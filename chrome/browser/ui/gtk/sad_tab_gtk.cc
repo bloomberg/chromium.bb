@@ -8,7 +8,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -16,6 +16,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -49,10 +51,10 @@ GtkWidget* MakeWhiteMarkupLabel(const char* format, const std::string& str) {
 
 }  // namespace
 
-SadTabGtk::SadTabGtk(TabContents* tab_contents, Kind kind)
-    : tab_contents_(tab_contents),
+SadTabGtk::SadTabGtk(WebContents* web_contents, Kind kind)
+    : web_contents_(web_contents),
       kind_(kind) {
-  DCHECK(tab_contents_);
+  DCHECK(web_contents_);
 
   // Use an event box to get the background painting correctly.
   event_box_.Own(gtk_event_box_new());
@@ -107,7 +109,7 @@ SadTabGtk::SadTabGtk(TabContents* tab_contents, Kind kind)
   spacer = gtk_label_new(" ");
   gtk_box_pack_start(GTK_BOX(vbox), spacer, FALSE, FALSE, 0);
 
-  if (tab_contents_ != NULL) {
+  if (web_contents_ != NULL) {
     // Create the help link and alignment.
     std::string link_text(l10n_util::GetStringUTF8(
         kind == CRASHED ? IDS_SAD_TAB_HELP_LINK : IDS_LEARN_MORE));
@@ -154,13 +156,13 @@ SadTabGtk::~SadTabGtk() {
 }
 
 void SadTabGtk::OnLinkButtonClick(GtkWidget* sender) {
-  if (tab_contents_ != NULL) {
+  if (web_contents_ != NULL) {
     GURL help_url =
         google_util::AppendGoogleLocaleParam(GURL(
             kind_ == CRASHED ?
             chrome::kCrashReasonURL :
             chrome::kKillReasonURL));
-    tab_contents_->OpenURL(OpenURLParams(
+    web_contents_->OpenURL(OpenURLParams(
         help_url, content::Referrer(), CURRENT_TAB,
         content::PAGE_TRANSITION_LINK, false));
   }

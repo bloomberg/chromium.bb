@@ -120,8 +120,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Channel::Listener,
   void Observe(WebContents* web_contents);
 
   WebContents* web_contents() const;
-  // TODO(jam): remove me
-  TabContents* tab_contents() const { return tab_contents_; }
 
  private:
   friend class ::TabContents;

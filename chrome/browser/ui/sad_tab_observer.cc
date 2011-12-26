@@ -61,7 +61,7 @@ void SadTabObserver::Observe(int type,
 gfx::NativeView SadTabObserver::AcquireSadTab(base::TerminationStatus status) {
 #if defined(OS_MACOSX)
   sad_tab_.reset(
-      sad_tab_controller_mac::CreateSadTabController(tab_contents()));
+      sad_tab_controller_mac::CreateSadTabController(web_contents()));
   return sad_tab_controller_mac::GetViewOfSadTabController(sad_tab_.get());
 #elif defined(TOOLKIT_VIEWS)
   SadTabView::Kind kind =
@@ -82,7 +82,7 @@ gfx::NativeView SadTabObserver::AcquireSadTab(base::TerminationStatus status) {
   return sad_tab_->GetNativeView();
 #elif defined(TOOLKIT_GTK)
   sad_tab_.reset(new SadTabGtk(
-      tab_contents(),
+      web_contents(),
       status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED
           ? SadTabGtk::KILLED
           : SadTabGtk::CRASHED));
