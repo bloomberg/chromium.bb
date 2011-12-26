@@ -697,6 +697,15 @@
    fun:_ZNK7WebCore4Font*
 }
 
+# Invalid frees from exit() and accept().
+{
+   bug_108618 (Third party)
+   Memcheck:Free
+   fun:free
+   fun:__libc_freeres
+   fun:_vgnU_freeres
+}
+
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
@@ -4374,6 +4383,28 @@
    fun:_ZNSt6vectorIN6webkit13WebPluginInfoESaIS1*
 }
 {
+   bug_101125
+   Memcheck:Uninitialized
+   fun:_ZN6SkRect3setEPK7SkPointi
+   fun:_ZL17compute_pt_boundsP6SkRectRK9SkTDArrayI7SkPointE
+   fun:_ZNK6SkPath13computeBoundsEv
+   fun:_ZNK6SkPath9getBoundsEv
+   fun:_ZN6SkScan12AntiFillPathERK6SkPathRK8SkRegionP9SkBlitterb
+   fun:_ZN6SkScan12AntiFillPathERK6SkPathRK12SkRasterClipP9SkBlitter
+   fun:_ZNK6SkDraw8drawPathERK6SkPathRK7SkPaintPK8SkMatrixb
+   fun:_ZN8SkDevice8drawPathERK6SkDrawRK6SkPathRK7SkPaintPK8SkMatrixb
+   fun:_ZNK6SkDraw14drawTextOnPathEPKcmRK6SkPathPK8SkMatrixRK7SkPaint
+   fun:_ZN8SkDevice14drawTextOnPathERK6SkDrawPKvmRK6SkPathPK8SkMatrixRK7SkPaint
+   fun:_ZN8SkCanvas14drawTextOnPathEPKvmRK6SkPathPK8SkMatrixRK7SkPaint
+   fun:_ZNK7WebCore4Font10drawGlyphsEPNS_15GraphicsContextEPKNS_14SimpleFontDataERKNS_11GlyphBufferEiiRKNS_10FloatPointE
+   fun:_ZNK7WebCore4Font15drawGlyphBufferEPNS_15GraphicsContextERKNS_7TextRunERKNS_11GlyphBufferERKNS_10FloatPointE
+   fun:_ZNK7WebCore4Font17drawEmphasisMarksEPNS_15GraphicsContextERKNS_7TextRunERKNS_11GlyphBufferERKN3WTF12AtomicStringERKNS_10FloatPointE
+   fun:_ZNK7WebCore4Font30drawEmphasisMarksForSimpleTextEPNS_15GraphicsContextERKNS_7TextRunERKN3WTF12AtomicStringERKNS_10FloatPointEii
+   fun:_ZNK7WebCore4Font17drawEmphasisMarksEPNS_15GraphicsContextERKNS_7TextRunERKN3WTF12AtomicStringERKNS_10FloatPointEii
+   fun:_ZN7WebCore15GraphicsContext17drawEmphasisMarksERKNS_4FontERKNS_7TextRunERKN3WTF12AtomicStringERKNS_10FloatPointEii
+   fun:_ZN7WebCoreL20paintTextWithShadowsEPNS_15GraphicsContextERKNS_4FontERKNS_7TextRunERKN3WTF12AtomicStringEiiiiRKNS_10FloatPointERKNS_9FloatRectEPKNS_10ShadowDataEbb
+}
+{
    bug_100133
    Memcheck:Leak
    fun:_Znw*
@@ -5261,15 +5292,7 @@
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
-{
-   bug_todo_freeres
-   Memcheck:Free
-   fun:free
-   fun:__libc_freeres
-   fun:_vgnU_freeres
-   fun:_Exit
-   fun:exit
-}
+
 {
    bug_todo_getdelim
    Memcheck:Leak
