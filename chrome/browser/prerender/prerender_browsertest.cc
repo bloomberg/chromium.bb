@@ -1305,14 +1305,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5AudioJsplay) {
   NavigateToDestUrlAndWaitForPassTitle();
 }
 
-#if defined(OS_MACOSX)
-// http://crbug.com/108629
-#define MAYBE_PrerenderHTML5Video DISABLED_PrerenderHTML5Video
-#else
-#define MAYBE_PrerenderHTML5Video PrerenderHTML5Video
-#endif
 // Checks that video loads are deferred on prerendering.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderHTML5Video) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Video) {
   PrerenderTestURL("files/prerender/prerender_html5_video.html",
                    FINAL_STATUS_USED,
                    1);
