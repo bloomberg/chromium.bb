@@ -395,10 +395,6 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
     case KeyPress: {
       KeyEvent keydown_event(xev, false);
       handled = root_window_->DispatchKeyEvent(&keydown_event);
-      if (ShouldSendCharEventForKeyboardCode(keydown_event.key_code())) {
-        KeyEvent char_event(xev, true);
-        handled |= root_window_->DispatchKeyEvent(&char_event);
-      }
       break;
     }
     case KeyRelease: {

@@ -61,6 +61,10 @@ void RootWindowEventFilter::RemoveFilter(aura::EventFilter* filter) {
   filters_.RemoveObserver(filter);
 }
 
+size_t RootWindowEventFilter::GetFilterCount() const {
+  return filters_.size();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowEventFilter, EventFilter implementation:
 

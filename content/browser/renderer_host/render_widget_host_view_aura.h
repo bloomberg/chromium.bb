@@ -12,6 +12,7 @@
 #include "content/common/content_export.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "webkit/glue/webcursor.h"
 
@@ -19,6 +20,10 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #endif
+
+namespace ui {
+class InputMethod;
+}
 
 namespace WebKit {
 class WebTouchEvent;
@@ -33,6 +38,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
       public ui::CompositorObserver,
 #endif
+      public ui::TextInputClient,
       public aura::WindowDelegate,
       public aura::client::ActivationDelegate {
  public:
@@ -76,6 +82,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                               int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
+  virtual void SelectionBoundsChanged(const gfx::Rect& start_rect,
+                                      const gfx::Rect& end_rect) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void AcceleratedSurfaceBuffersSwapped(
@@ -104,6 +112,27 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
+
+  // Overridden from ui::TextInputClient:
+  virtual void SetCompositionText(
+      const ui::CompositionText& composition) OVERRIDE;
+  virtual void ConfirmCompositionText() OVERRIDE;
+  virtual void ClearCompositionText() OVERRIDE;
+  virtual void InsertText(const string16& text) OVERRIDE;
+  virtual void InsertChar(char16 ch, int flags) OVERRIDE;
+  virtual ui::TextInputType GetTextInputType() const OVERRIDE;
+  virtual gfx::Rect GetCaretBounds() OVERRIDE;
+  virtual bool HasCompositionText() OVERRIDE;
+  virtual bool GetTextRange(ui::Range* range) OVERRIDE;
+  virtual bool GetCompositionTextRange(ui::Range* range) OVERRIDE;
+  virtual bool GetSelectionRange(ui::Range* range) OVERRIDE;
+  virtual bool SetSelectionRange(const ui::Range& range) OVERRIDE;
+  virtual bool DeleteRange(const ui::Range& range) OVERRIDE;
+  virtual bool GetTextFromRange(const ui::Range& range,
+                                string16* text) OVERRIDE;
+  virtual void OnInputMethodChanged() OVERRIDE;
+  virtual bool ChangeTextDirectionAndLayoutAlignment(
+      base::i18n::TextDirection direction) OVERRIDE;
 
   // Overridden from aura::WindowDelegate:
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
@@ -136,6 +165,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void UpdateCursorIfOverSelf();
   void UpdateExternalTexture();
+  ui::InputMethod* GetInputMethod() const;
+
+  // Confirm existing composition text in the webpage and ask the input method
+  // to cancel its ongoing composition session.
+  void FinishImeCompositionSession();
 
   // The model object.
   RenderWidgetHost* host_;
@@ -158,6 +192,16 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // touch-point is added from an ET_TOUCH_PRESSED event, and a touch-point is
   // removed from the list on an ET_TOUCH_RELEASED event.
   WebKit::WebTouchEvent touch_event_;
+
+  // The current text input type.
+  ui::TextInputType text_input_type_;
+
+  // Rectangles before and after the selection.
+  gfx::Rect selection_start_rect_;
+  gfx::Rect selection_end_rect_;
+
+  // Indicates if there is onging composition text.
+  bool has_composition_text_;
 
   // Current tooltip text.
   string16 tooltip_;

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 
 namespace aura {
@@ -16,7 +17,6 @@ class Window;
 namespace test {
 
 // EventGenerator is a tool that generates and dispatch events.
-// TODO(oshima): Support key events.
 class EventGenerator {
  public:
   // Creates an EventGenerator with the mouse/touch location (0,0).
@@ -93,9 +93,21 @@ class EventGenerator {
   // to the center of the window.
   void PressMoveAndReleaseTouchToCenterOf(Window* window);
 
+  // Generates a key press event. On platforms except Windows and X11, a key
+  // event without native_event() is generated.
+  // TODO(yusukes): Support native_event() on all platforms.
+  void PressKey(ui::KeyboardCode key_code, int flags);
+
+  // Generates a key release event. On platforms except Windows and X11, a key
+  // event without native_event() is generated.
+  // TODO(yusukes): Support native_event() on all platforms.
+  void ReleaseKey(ui::KeyboardCode key_code, int flags);
+
  private:
-  // Dispatch the |event| to the Desktop.
+  // Dispatch the |event| to the RootWindow.
   void Dispatch(Event& event);
+  // Dispatch a key event to the RootWindow.
+  void DispatchKeyEvent(bool is_press, ui::KeyboardCode key_code, int flags);
 
   int flags_;
   gfx::Point current_location_;

@@ -39,6 +39,9 @@ class AURA_EXPORT Event {
   bool IsCapsLockDown() const { return (flags_ & ui::EF_CAPS_LOCK_DOWN) != 0; }
   bool IsAltDown() const { return (flags_ & ui::EF_ALT_DOWN) != 0; }
 
+  // Returns true if the event has a valid |native_event_|.
+  bool HasNativeEvent() const;
+
  protected:
   Event(ui::EventType type, int flags);
   Event(const base::NativeEvent& native_event, ui::EventType type, int flags);

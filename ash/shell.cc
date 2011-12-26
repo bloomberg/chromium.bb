@@ -11,6 +11,7 @@
 #include "ash/app_list/app_list.h"
 #include "ash/ash_switches.h"
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/ime/input_method_event_filter.h"
 #include "ash/launcher/launcher.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
@@ -33,8 +34,9 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "ui/aura/root_window.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
@@ -132,6 +134,7 @@ Shell::Shell(ShellDelegate* delegate)
 }
 
 Shell::~Shell() {
+  RemoveRootWindowEventFilter(input_method_filter_.get());
   RemoveRootWindowEventFilter(accelerator_filter_.get());
 
   // TooltipController needs a valid shell instance. We delete it before
@@ -216,6 +219,12 @@ void Shell::Init() {
 
   // Force a layout.
   root_window->layout_manager()->OnWindowResized();
+
+  // Initialize InputMethodEventFilter. The filter must be added first since it
+  // has the highest priority.
+  DCHECK(!GetRootWindowEventFilterCount());
+  input_method_filter_.reset(new internal::InputMethodEventFilter);
+  AddRootWindowEventFilter(input_method_filter_.get());
 
   // Initialize AcceleratorFilter.
   accelerator_filter_.reset(new internal::AcceleratorFilter);
@@ -321,6 +330,11 @@ void Shell::AddRootWindowEventFilter(aura::EventFilter* filter) {
 void Shell::RemoveRootWindowEventFilter(aura::EventFilter* filter) {
   static_cast<internal::RootWindowEventFilter*>(
       aura::RootWindow::GetInstance()->event_filter())->RemoveFilter(filter);
+}
+
+size_t Shell::GetRootWindowEventFilterCount() const {
+  return static_cast<internal::RootWindowEventFilter*>(
+      aura::RootWindow::GetInstance()->event_filter())->GetFilterCount();
 }
 
 void Shell::ToggleOverview() {

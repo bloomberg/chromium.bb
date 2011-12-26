@@ -17,6 +17,10 @@ class TestActivationClient;
 }
 }
 
+namespace ui {
+class InputMethod;
+}
+
 namespace views {
 
 class TestViewsDelegate;
@@ -48,6 +52,7 @@ class ViewsTestBase : public testing::Test {
   scoped_ptr<TestViewsDelegate> views_delegate_;
 #if defined(USE_AURA)
   scoped_ptr<aura::test::TestActivationClient> test_activation_client_;
+  scoped_ptr<ui::InputMethod> test_input_method_;
 #endif
   bool setup_called_;
   bool teardown_called_;

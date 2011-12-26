@@ -40,6 +40,7 @@ class ActivationController;
 class AcceleratorFilter;
 class AppList;
 class DragDropController;
+class InputMethodEventFilter;
 class ShadowController;
 class StackingController;
 class TooltipController;
@@ -68,6 +69,7 @@ class ASH_EXPORT Shell {
   // Adds or removes |filter| from the RootWindowEventFilter.
   void AddRootWindowEventFilter(aura::EventFilter* filter);
   void RemoveRootWindowEventFilter(aura::EventFilter* filter);
+  size_t GetRootWindowEventFilterCount() const;
 
   // Toggles between overview mode and normal mode.
   void ToggleOverview();
@@ -137,6 +139,8 @@ class ASH_EXPORT Shell {
   scoped_ptr<internal::ShadowController> shadow_controller_;
   scoped_ptr<internal::TooltipController> tooltip_controller_;
 
+  // An event filter that pre-handles all key events to send them to an IME.
+  scoped_ptr<internal::InputMethodEventFilter> input_method_filter_;
   // An event filter that pre-handles global accelerators.
   scoped_ptr<internal::AcceleratorFilter> accelerator_filter_;
 

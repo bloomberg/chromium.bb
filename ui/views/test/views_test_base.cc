@@ -9,8 +9,48 @@
 #endif
 
 #if defined(USE_AURA)
+#include "base/compiler_specific.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_activation_client.h"
+#include "ui/base/ime/input_method.h"
+
+namespace {
+
+class DummyInputMethod : public ui::InputMethod {
+ public:
+  DummyInputMethod() {}
+  virtual ~DummyInputMethod() {}
+
+  // ui::InputMethod overrides:
+  virtual void SetDelegate(
+      ui::internal::InputMethodDelegate* delegate) OVERRIDE {}
+  virtual void Init(bool focused) OVERRIDE {}
+  virtual void OnFocus() OVERRIDE {}
+  virtual void OnBlur() OVERRIDE {}
+  virtual void SetFocusedTextInputClient(
+      ui::TextInputClient* client) OVERRIDE {}
+  virtual ui::TextInputClient* GetTextInputClient() const OVERRIDE {
+    return NULL;
+  }
+  virtual void DispatchKeyEvent(
+      const base::NativeEvent& native_key_event) OVERRIDE {}
+  virtual void OnTextInputTypeChanged(
+      const ui::TextInputClient* client) OVERRIDE {}
+  virtual void OnCaretBoundsChanged(
+      const ui::TextInputClient* client) OVERRIDE {}
+  virtual void CancelComposition(const ui::TextInputClient* client) OVERRIDE {}
+  virtual std::string GetInputLocale() OVERRIDE { return ""; }
+  virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE {
+    return base::i18n::UNKNOWN_DIRECTION;
+  }
+  virtual bool IsActive() OVERRIDE { return true; }
+  virtual ui::TextInputType GetTextInputType() const OVERRIDE {
+    return ui::TEXT_INPUT_TYPE_NONE;
+  }
+};
+
+}  // namespace
 #endif
 
 namespace views {
@@ -23,6 +63,10 @@ ViewsTestBase::ViewsTestBase()
 #endif
 #if defined(USE_AURA)
   test_activation_client_.reset(new aura::test::TestActivationClient);
+  test_input_method_.reset(new DummyInputMethod);
+  aura::RootWindow::GetInstance()->SetProperty(
+      aura::client::kRootWindowInputMethod,
+      test_input_method_.get());
 #endif
 }
 

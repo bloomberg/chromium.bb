@@ -146,6 +146,7 @@
         'test/test_suite.h',
         'root_window_unittest.cc',
         'event_filter_unittest.cc',
+        'event_unittest.cc',
         'window_unittest.cc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',

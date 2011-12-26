@@ -66,6 +66,10 @@
         'drag_drop/drag_drop_controller.h',
         'drag_drop/drag_image_view.cc',
         'drag_drop/drag_image_view.h',
+        'ime/event.cc',
+        'ime/event.h',
+        'ime/input_method_event_filter.cc',
+        'ime/input_method_event_filter.h',
         'launcher/app_launcher_button.cc',
         'launcher/app_launcher_button.h',
         'launcher/launcher.cc',
@@ -176,6 +180,7 @@
       'sources': [
         'accelerators/accelerator_controller_unittest.cc',
         'drag_drop/drag_drop_controller_unittest.cc',
+        'ime/input_method_event_filter_unittest.cc',
         'launcher/launcher_model_unittest.cc',
         'launcher/launcher_unittest.cc',
         'launcher/view_model_unittest.cc',
@@ -215,6 +220,11 @@
         }, { # use_webkit_compositor!=1
           'dependencies': [
             '../ui/gfx/compositor/compositor.gyp:test_compositor',
+          ],
+        }],
+        ['use_ibus==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:ibus',
           ],
         }],
       ],

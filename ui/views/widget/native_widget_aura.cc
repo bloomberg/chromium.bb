@@ -20,6 +20,7 @@
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_delegate.h"
 #include "ui/views/widget/tooltip_manager_aura.h"
@@ -29,12 +30,6 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#endif
-
-#if defined(HAVE_IBUS)
-#include "ui/views/ime/input_method_ibus.h"
-#else
-#include "ui/views/ime/mock_input_method.h"
 #endif
 
 namespace views {
@@ -311,11 +306,10 @@ bool NativeWidgetAura::HasMouseCapture() const {
 }
 
 InputMethod* NativeWidgetAura::CreateInputMethod() {
-#if defined(HAVE_IBUS)
-  InputMethod* input_method = new InputMethodIBus(this);
-#else
-  InputMethod* input_method = new MockInputMethod(this);
-#endif
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  ui::InputMethod* host = reinterpret_cast<ui::InputMethod*>(
+      root_window->GetProperty(aura::client::kRootWindowInputMethod));
+  InputMethod* input_method = new InputMethodBridge(this, host);
   input_method->Init(GetWidget());
   return input_method;
 }
@@ -637,15 +631,17 @@ void NativeWidgetAura::OnBlur() {
 }
 
 bool NativeWidgetAura::OnKeyEvent(aura::KeyEvent* event) {
-  // TODO(beng): Need an InputMethodAura to properly handle character events.
-  //             Right now, we just skip these.
-  if (event->is_char())
+  if (event->is_char()) {
+    // If a ui::InputMethod object is attched to the root window, character
+    // events are handled inside the object and are not passed to this function.
+    // If such object is not attached, character events might be sent (e.g. on
+    // Windows). In this case, we just skip these.
     return false;
+  }
 
   DCHECK(window_->IsVisible());
   InputMethod* input_method = GetWidget()->GetInputMethod();
   DCHECK(input_method);
-  // TODO(oshima): DispatchKeyEvent should return bool?
   KeyEvent views_event(event);
   input_method->DispatchKeyEvent(views_event);
   return true;

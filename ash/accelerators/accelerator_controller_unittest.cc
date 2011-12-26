@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/ime/event.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/aura_shell_test_base.h"
@@ -160,15 +161,15 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
   // The accelerator is processed only once.
 #if defined(OS_WIN)
   MSG msg1 = { NULL, WM_KEYDOWN, ui::VKEY_A, 0 };
-  aura::KeyEvent key_event1(msg1, false);
+  TranslatedKeyEvent key_event1(msg1, false);
   EXPECT_TRUE(aura::RootWindow::GetInstance()->DispatchKeyEvent(&key_event1));
 
   MSG msg2 = { NULL, WM_CHAR, L'A', 0 };
-  aura::KeyEvent key_event2(msg2, true);
+  TranslatedKeyEvent key_event2(msg2, true);
   EXPECT_FALSE(aura::RootWindow::GetInstance()->DispatchKeyEvent(&key_event2));
 
   MSG msg3 = { NULL, WM_KEYUP, ui::VKEY_A, 0 };
-  aura::KeyEvent key_event3(msg3, false);
+  TranslatedKeyEvent key_event3(msg3, false);
   EXPECT_FALSE(aura::RootWindow::GetInstance()->DispatchKeyEvent(&key_event3));
 #elif defined(USE_X11)
   XEvent key_event;
@@ -176,8 +177,18 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
                               ui::VKEY_A,
                               0,
                               &key_event);
-  EXPECT_TRUE(aura::RootWindow::GetInstance()->GetDispatcher()->Dispatch(
-      &key_event));
+  TranslatedKeyEvent key_event1(&key_event, false);
+  EXPECT_TRUE(aura::RootWindow::GetInstance()->DispatchKeyEvent(&key_event1));
+
+  TranslatedKeyEvent key_event2(&key_event, true);
+  EXPECT_FALSE(aura::RootWindow::GetInstance()->DispatchKeyEvent(&key_event2));
+
+  ui::InitXKeyEventForTesting(ui::ET_KEY_RELEASED,
+                              ui::VKEY_A,
+                              0,
+                              &key_event);
+  TranslatedKeyEvent key_event3(&key_event, false);
+  EXPECT_FALSE(aura::RootWindow::GetInstance()->DispatchKeyEvent(&key_event3));
 #endif
   EXPECT_EQ(1, target.accelerator_pressed_count());
 }

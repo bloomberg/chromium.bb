@@ -11,6 +11,7 @@ namespace client {
 const char kAlwaysOnTopKey[] = "AlwaysOnTop";
 const char kModalKey[] = "Modal";
 const char kRestoreBoundsKey[] = "RestoreBounds";
+const char kRootWindowInputMethod[] = "RootWindowInputMethod";
 const char kShowStateKey[] = "ShowState";
 // Alphabetical sort.
 

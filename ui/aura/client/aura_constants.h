@@ -23,6 +23,10 @@ AURA_EXPORT extern const char kModalKey[];
 // of the value is |gfx::Rect*|.
 AURA_EXPORT extern const char kRestoreBoundsKey[];
 
+// A property key to store an input method object that handles a key event. The
+// type of the value is |ui::InputMethod*|.
+AURA_EXPORT extern const char kRootWindowInputMethod[];
+
 // A property key to store ui::WindowShowState for a window.
 // See ui/base/ui_base_types.h for its definition.
 AURA_EXPORT extern const char kShowStateKey[];

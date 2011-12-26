@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "ui/base/events.h"
 #include "ui/gfx/native_widget_types.h"
 
 // Owns a platform specific event; used to pass own and pass event through
@@ -20,7 +21,13 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
   NativeWebKeyboardEvent();
 
   explicit NativeWebKeyboardEvent(gfx::NativeEvent native_event);
-#if defined(OS_MACOSX) || defined(TOOLKIT_USES_GTK)
+#if defined(USE_AURA)
+  NativeWebKeyboardEvent(ui::EventType type,
+                         bool is_char,
+                         wchar_t character,
+                         int state,
+                         double time_stamp_seconds);
+#elif defined(OS_MACOSX) || defined(TOOLKIT_USES_GTK)
   // TODO(suzhe): Limit these constructors to Linux native Gtk port.
   // For Linux Views port, after using RenderWidgetHostViewViews to replace
   // RenderWidgetHostViewGtk, we can use constructors for TOOLKIT_VIEWS defined

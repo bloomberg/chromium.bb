@@ -8,6 +8,8 @@
 #include <X11/Xlib.h>
 #endif
 
+#include <cstring>
+
 #include "ui/aura/window.h"
 #include "ui/base/keycodes/keyboard_code_conversion.h"
 #include "ui/gfx/point3.h"
@@ -61,6 +63,12 @@ Event::~Event() {
 #endif
 }
 
+bool Event::HasNativeEvent() const {
+  base::NativeEvent null_event;
+  std::memset(&null_event, 0, sizeof(null_event));
+  return !!std::memcmp(&native_event_, &null_event, sizeof(null_event));
+}
+
 Event::Event(ui::EventType type, int flags)
     : type_(type),
       time_stamp_(base::Time::NowFromSystemTime()),
@@ -88,7 +96,7 @@ Event::Event(const Event& copy)
 }
 
 void Event::Init() {
-  memset(&native_event_, 0, sizeof(native_event_));
+  std::memset(&native_event_, 0, sizeof(native_event_));
 }
 
 void Event::InitWithNativeEvent(const base::NativeEvent& native_event) {

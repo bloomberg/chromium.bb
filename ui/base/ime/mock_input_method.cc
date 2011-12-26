@@ -36,8 +36,7 @@ namespace ui {
 
 MockInputMethod::MockInputMethod(internal::InputMethodDelegate* delegate)
     : delegate_(NULL),
-      text_input_client_(NULL),
-      consume_next_key_(false) {
+      text_input_client_(NULL) {
   SetDelegate(delegate);
 }
 
@@ -57,35 +56,38 @@ TextInputClient* MockInputMethod::GetTextInputClient() const {
 }
 
 void MockInputMethod::DispatchKeyEvent(const base::NativeEvent& native_event) {
-#if defined(USE_X11)
+#if defined(OS_WIN)
+  if (native_event.message == WM_CHAR) {
+    if (text_input_client_) {
+      text_input_client_->InsertChar(ui::KeyboardCodeFromNative(native_event),
+                                     ui::EventFlagsFromNative(native_event));
+    }
+  } else {
+    delegate_->DispatchKeyEventPostIME(native_event);
+  }
+#elif defined(USE_X11)
   DCHECK(native_event);
   if (native_event->type == KeyRelease) {
     // On key release, just dispatch it.
     delegate_->DispatchKeyEventPostIME(native_event);
   } else {
     const uint32 state = EventFlagsFromXFlags(native_event->xkey.state);
-    if (consume_next_key_) {
-      // Send the VKEY_PROCESSKEY RawKeyDown event.
-      SendFakeProcessKeyEvent(true, state);
-    } else {
-      // Send a RawKeyDown event first,
-      delegate_->DispatchKeyEventPostIME(native_event);
-      if (text_input_client_) {
-        // then send a Char event via ui::TextInputClient.
-        const KeyboardCode key_code = ui::KeyboardCodeFromNative(native_event);
-        uint16 ch = 0;
-        if (!(state & ui::EF_CONTROL_DOWN))
-          ch = ui::GetCharacterFromXEvent(native_event);
-        if (!ch)
-          ch = ui::GetCharacterFromKeyCode(key_code, state);
-        if (ch)
-          text_input_client_->InsertChar(ch, state);
-      }
+    // Send a RawKeyDown event first,
+    delegate_->DispatchKeyEventPostIME(native_event);
+    if (text_input_client_) {
+      // then send a Char event via ui::TextInputClient.
+      const KeyboardCode key_code = ui::KeyboardCodeFromNative(native_event);
+      uint16 ch = 0;
+      if (!(state & ui::EF_CONTROL_DOWN))
+        ch = ui::GetCharacterFromXEvent(native_event);
+      if (!ch)
+        ch = ui::GetCharacterFromKeyCode(key_code, state);
+      if (ch)
+        text_input_client_->InsertChar(ch, state);
     }
   }
-  consume_next_key_ = false;
 #else
-  // TODO(yusukes): Support Windows.
+  // TODO(yusukes): Support other platforms. Call InsertChar() when necessary.
   delegate_->DispatchKeyEventPostIME(native_event);
 #endif
 }
@@ -111,15 +113,6 @@ bool MockInputMethod::IsActive() {
 
 ui::TextInputType MockInputMethod::GetTextInputType() const {
   return ui::TEXT_INPUT_TYPE_NONE;
-}
-
-void MockInputMethod::ConsumeNextKey() {
-  consume_next_key_ = true;
-}
-
-void MockInputMethod::SendFakeProcessKeyEvent(bool pressed, int flags) const {
-  delegate_->DispatchFabricatedKeyEventPostIME(
-      pressed ? ET_KEY_PRESSED : ET_KEY_RELEASED, VKEY_PROCESSKEY, flags);
 }
 
 }  // namespace ui

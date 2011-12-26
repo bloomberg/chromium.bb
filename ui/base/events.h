@@ -36,6 +36,8 @@ enum EventType {
   ET_DROP_TARGET_EVENT,
   ET_FOCUS_CHANGE,
   ET_SCROLL,
+  ET_TRANSLATED_KEY_PRESS,
+  ET_TRANSLATED_KEY_RELEASE,
 };
 
 // Event flags currently supported

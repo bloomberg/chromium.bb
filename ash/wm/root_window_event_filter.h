@@ -31,6 +31,7 @@ class ASH_EXPORT RootWindowEventFilter : public aura::EventFilter {
   // Adds/removes additional event filters.
   void AddFilter(aura::EventFilter* filter);
   void RemoveFilter(aura::EventFilter* filter);
+  size_t GetFilterCount() const;
 
   // Overridden from EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,

@@ -4,8 +4,14 @@
 
 #include "ui/aura/test/event_generator.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
+
+#if defined(USE_X11)
+#include <X11/Xlib.h>
+#include "ui/base/x/x11_util.h"
+#endif
 
 namespace {
 
@@ -119,6 +125,14 @@ void EventGenerator::PressMoveAndReleaseTouchToCenterOf(Window* window) {
   PressMoveAndReleaseTouchTo(CenterOfWindowInRootWindowCoordinate(window));
 }
 
+void EventGenerator::PressKey(ui::KeyboardCode key_code, int flags) {
+  DispatchKeyEvent(true, key_code, flags);
+}
+
+void EventGenerator::ReleaseKey(ui::KeyboardCode key_code, int flags) {
+  DispatchKeyEvent(false, key_code, flags);
+}
+
 void EventGenerator::Dispatch(Event& event) {
   switch (event.type()) {
     case ui::ET_KEY_PRESSED:
@@ -148,6 +162,26 @@ void EventGenerator::Dispatch(Event& event) {
       NOTIMPLEMENTED();
       break;
   }
+}
+
+void EventGenerator::DispatchKeyEvent(bool is_press,
+                                      ui::KeyboardCode key_code,
+                                      int flags) {
+#if defined(OS_WIN)
+  MSG native_event =
+      { NULL, (is_press ? WM_KEYDOWN : WM_KEYUP), key_code, flags };
+  KeyEvent keyev(native_event, false /* is_char */);
+#else
+  ui::EventType type = is_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED;
+#if defined(USE_X11)
+  scoped_ptr<XEvent> native_event(new XEvent);
+  ui::InitXKeyEventForTesting(type, key_code, flags, native_event.get());
+  KeyEvent keyev(native_event.get(), false);
+#else
+  KeyEvent keyev(type, key_code, flags);
+#endif  // USE_X11
+#endif  // OS_WIN
+  Dispatch(keyev);
 }
 
 }  // namespace test
