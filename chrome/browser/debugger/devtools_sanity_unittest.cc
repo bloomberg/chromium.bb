@@ -254,6 +254,13 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
   FilePath test_extensions_dir_;
 };
 
+class DevToolsExperimentalExtensionTest : public DevToolsExtensionTest {
+ public:
+  void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+  }
+};
+
 class WorkerDevToolsSanityTest : public InProcessBrowserTest {
  public:
   WorkerDevToolsSanityTest() : window_(NULL) {
@@ -437,10 +444,18 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
           kDebuggerTestPage);
 }
 
-// Tests that a content script is in the scripts list.
+// Tests that chrome.devtools extension is correctly exposed.
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       DISABLED_TestDevToolsExtensionAPI) {
+                       TestDevToolsExtensionAPI) {
   LoadExtension("devtools_extension");
+  RunTest("waitForTestResultsInConsole", "");
+}
+
+// Tests that chrome.experimental.devtools extension is correctly exposed
+// when the extension has experimental permission.
+IN_PROC_BROWSER_TEST_F(DevToolsExperimentalExtensionTest,
+                       TestDevToolsExperimentalExtensionAPI) {
+  LoadExtension("devtools_experimental");
   RunTest("waitForTestResultsInConsole", "");
 }
 

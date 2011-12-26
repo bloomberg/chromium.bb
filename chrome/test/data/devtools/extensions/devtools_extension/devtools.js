@@ -1,10 +1,10 @@
 function output(msg) {
-  webInspector.console.addMessage(webInspector.console.Severity.Log, msg);
+  chrome.devtools.inspectedWindow.eval("console.log(unescape('" +
+      escape(msg) + "'));")
 }
 
 function test() {
   var expectedAPIs = [
-    "console",
     "inspectedWindow",
     "network",
     "panels"
@@ -12,13 +12,17 @@ function test() {
 
   for (var i = 0; i < expectedAPIs.length; ++i) {
     var api = expectedAPIs[i];
-    if (typeof chrome.experimental.devtools[api] !== "object") {
+    if (typeof chrome.devtools[api] !== "object") {
       output("FAIL: API " + api + " is missing");
       return;
     }
   }
-  if (typeof chrome.experimental.devtools.inspectedWindow.tabId !== "number") {
-    output("FAIL: chrome.experimental.inspectedWindow.tabId is not a number");
+  if (typeof chrome.devtools.inspectedWindow.tabId !== "number") {
+    output("FAIL: chrome.inspectedWindow.tabId is not a number");
+    return;
+  }
+  if (chrome.experimental && chrome.experimental.devtools) {
+    output("FAIL: chrome.experimental.devtools should not be defined");
     return;
   }
   output("PASS");
