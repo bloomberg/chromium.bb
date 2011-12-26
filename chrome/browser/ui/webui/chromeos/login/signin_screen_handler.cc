@@ -293,8 +293,6 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_BROWSE_WITHOUT_SIGNING_IN_HTML));
   localized_strings->SetString("removeUser",
       l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE));
-
-  localized_strings->SetString("authType", "ext");
 }
 
 void SigninScreenHandler::Show(bool oobe_ui) {

@@ -261,9 +261,8 @@ cr.define('login', function() {
       // Gaia signin is performed if we are using gaia extenstion for signin,
       // the user has an invalid oauth token and device is online and the
       // user is not currently signed in (i.e. not the lock screen).
-      return localStrings.getString('authType') == 'ext' &&
-          this.user.oauthTokenStatus != OAuthTokenStatus.VALID &&
-          window.navigator.onLine && !this.user.signedIn;
+      return this.user.oauthTokenStatus != OAuthTokenStatus.VALID &&
+             window.navigator.onLine && !this.user.signedIn;
     },
 
     /**

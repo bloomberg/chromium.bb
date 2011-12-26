@@ -305,11 +305,7 @@ cr.define('cr.ui.login', function() {
   DisplayManager.resetSigninUI = function() {
     var currentScreenId = Oobe.getInstance().currentScreen.id;
 
-    if (localStrings.getString('authType') == 'webui')
-      $(SCREEN_SIGNIN).reset(currentScreenId == SCREEN_SIGNIN);
-    else
-      $(SCREEN_GAIA_SIGNIN).reset(currentScreenId == SCREEN_GAIA_SIGNIN);
-
+    $(SCREEN_GAIA_SIGNIN).reset(currentScreenId == SCREEN_GAIA_SIGNIN);
     $('login-header-bar').disabled = false;
     $('pod-row').reset(currentScreenId == SCREEN_ACCOUNT_PICKER);
   };
