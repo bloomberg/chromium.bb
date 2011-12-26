@@ -115,7 +115,7 @@ class ThumbnailGenerator : public content::NotificationObserver,
                                    ClipResult* clip_result);
 
   // Update the thumbnail of the given tab contents if necessary.
-  void UpdateThumbnailIfNecessary(TabContents* tab_contents);
+  void UpdateThumbnailIfNecessary(content::WebContents* webb_contents);
 
   // Returns true if we should update the thumbnail of the given URL.
   static bool ShouldUpdateThumbnail(Profile* profile,

@@ -42,22 +42,22 @@ BookmarkTabHelper::~BookmarkTabHelper() {
 }
 
 bool BookmarkTabHelper::ShouldShowBookmarkBar() {
-  if (tab_contents()->ShowingInterstitialPage())
+  if (web_contents()->ShowingInterstitialPage())
     return false;
 
   // See TabContents::GetWebUIForCurrentState() comment for more info. This case
   // is very similar, but for non-first loads, we want to use the committed
   // entry. This is so the bookmarks bar disappears at the same time the page
   // does.
-  if (tab_contents()->GetController().GetLastCommittedEntry()) {
+  if (web_contents()->GetController().GetLastCommittedEntry()) {
     // Not the first load, always use the committed Web UI.
-    return CanShowBookmarkBar(tab_contents()->GetCommittedWebUI());
+    return CanShowBookmarkBar(web_contents()->GetCommittedWebUI());
   }
 
   // When it's the first load, we know either the pending one or the committed
   // one will have the Web UI in it (see GetWebUIForCurrentState), and only one
   // of them will be valid, so we can just check both.
-  return CanShowBookmarkBar(tab_contents()->GetWebUI());
+  return CanShowBookmarkBar(web_contents()->GetWebUI());
 }
 
 void BookmarkTabHelper::DidNavigateMainFrame(
@@ -101,10 +101,10 @@ BookmarkTabHelper::BookmarkDrag*
 
 void BookmarkTabHelper::UpdateStarredStateForCurrentURL() {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   BookmarkModel* model = profile->GetBookmarkModel();
   const bool old_state = is_starred_;
-  is_starred_ = (model && model->IsBookmarked(tab_contents()->GetURL()));
+  is_starred_ = (model && model->IsBookmarked(web_contents()->GetURL()));
 
   if (is_starred_ != old_state && delegate())
     delegate()->URLStarredChanged(tab_contents_wrapper_, is_starred_);

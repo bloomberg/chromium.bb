@@ -224,7 +224,7 @@ GURL SavePackage::GetUrlToBeSaved() {
   // rather than the displayed one (returned by GetURL) which may be
   // different (like having "view-source:" on the front).
   NavigationEntry* active_entry =
-      tab_contents()->GetController().GetActiveEntry();
+      web_contents()->GetController().GetActiveEntry();
   return active_entry->GetURL();
 }
 
@@ -251,7 +251,7 @@ void SavePackage::InternalInit() {
   file_manager_ = rdh->save_file_manager();
   DCHECK(file_manager_);
 
-  download_manager_ = tab_contents()->GetBrowserContext()->GetDownloadManager();
+  download_manager_ = web_contents()->GetBrowserContext()->GetDownloadManager();
   DCHECK(download_manager_);
 }
 
@@ -264,7 +264,7 @@ bool SavePackage::Init() {
 
   // Initialize the request context and resource dispatcher.
   content::BrowserContext* browser_context =
-      tab_contents()->GetBrowserContext();
+      web_contents()->GetBrowserContext();
   if (!browser_context) {
     NOTREACHED();
     return false;
@@ -652,8 +652,8 @@ void SavePackage::CheckFinish() {
                  file_manager_,
                  final_names,
                  dir,
-                 tab_contents()->GetRenderProcessHost()->GetID(),
-                 tab_contents()->GetRenderViewHost()->routing_id(),
+                 web_contents()->GetRenderProcessHost()->GetID(),
+                 web_contents()->GetRenderViewHost()->routing_id(),
                  id()));
 }
 
@@ -784,7 +784,7 @@ void SavePackage::SaveCanceled(SaveItem* save_item) {
 // the save source. Parameter process_all_remaining_items indicates whether
 // we need to save all remaining items.
 void SavePackage::SaveNextFile(bool process_all_remaining_items) {
-  DCHECK(tab_contents());
+  DCHECK(web_contents());
   DCHECK(waiting_item_queue_.size());
 
   do {
@@ -800,11 +800,11 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
     save_item->Start();
     file_manager_->SaveURL(save_item->url(),
                            save_item->referrer(),
-                           tab_contents()->GetRenderProcessHost()->GetID(),
+                           web_contents()->GetRenderProcessHost()->GetID(),
                            routing_id(),
                            save_item->save_source(),
                            save_item->full_path(),
-                           tab_contents()->
+                           web_contents()->
                                GetBrowserContext()->GetResourceContext(),
                            this);
   } while (process_all_remaining_items && waiting_item_queue_.size());
@@ -1162,10 +1162,10 @@ void SavePackage::GetSaveInfo() {
   DCHECK(download_manager_);
   download_manager_->delegate()->GetSaveDir(
       tab_contents(), &website_save_dir, &download_save_dir);
-  std::string mime_type = tab_contents()->GetContentsMimeType();
+  std::string mime_type = web_contents()->GetContentsMimeType();
   std::string accept_languages =
       content::GetContentClient()->browser()->GetAcceptLangs(
-          tab_contents()->GetBrowserContext());
+          web_contents()->GetBrowserContext());
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -1223,7 +1223,7 @@ void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
   // The TabContents which owns this SavePackage may have disappeared during
   // the UI->FILE->UI thread hop of
   // GetSaveInfo->CreateDirectoryOnFileThread->ContinueGetSaveInfo.
-  if (!tab_contents())
+  if (!web_contents())
     return;
 
   download_manager_->delegate()->ChooseSavePath(
@@ -1237,7 +1237,7 @@ void SavePackage::OnPathPicked(const FilePath& final_name,
   saved_main_file_path_ = final_name;
   // TODO(asanka): This call may block on IO and shouldn't be made
   // from the UI thread.  See http://crbug.com/61827.
-  net::GenerateSafeFileName(tab_contents()->GetContentsMimeType(), false,
+  net::GenerateSafeFileName(web_contents()->GetContentsMimeType(), false,
                             &saved_main_file_path_);
 
   saved_main_directory_path_ = saved_main_file_path_.DirName();

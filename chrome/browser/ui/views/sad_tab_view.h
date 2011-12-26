@@ -12,7 +12,9 @@
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/view.h"
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 namespace gfx {
 class Font;
@@ -42,7 +44,7 @@ class SadTabView : public views::View,
     KILLED        // Tab killed.  Display the "He's dead, Jim!" tab page.
   };
 
-  SadTabView(TabContents* tab_contents, Kind kind);
+  SadTabView(content::WebContents* web_contents, Kind kind);
   virtual ~SadTabView();
 
   // Overridden from views::View:
@@ -66,7 +68,7 @@ class SadTabView : public views::View,
   views::Label* CreateLabel(const string16& text);
   views::Link* CreateLink(const string16& text);
 
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
   Kind kind_;
   bool painted_;
   const gfx::Font& base_font_;

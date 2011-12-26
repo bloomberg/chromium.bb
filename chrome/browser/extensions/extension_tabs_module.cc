@@ -1630,7 +1630,7 @@ bool DetectTabLanguageFunction::RunImpl() {
   // The tab contents does not know its language yet.  Let's  wait until it
   // receives it, or until the tab is closed/navigates to some other page.
   registrar_.Add(this, chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-                 content::Source<TabContents>(contents->tab_contents()));
+                 content::Source<WebContents>(contents->tab_contents()));
   registrar_.Add(
       this, content::NOTIFICATION_TAB_CLOSING,
       content::Source<NavigationController>(

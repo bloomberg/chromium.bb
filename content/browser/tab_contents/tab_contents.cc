@@ -1590,6 +1590,10 @@ TabContents* TabContents::GetAsTabContents() {
   return this;
 }
 
+WebContents* TabContents::GetAsWebContents() {
+  return this;
+}
+
 content::ViewType TabContents::GetRenderViewType() const {
   return view_type_;
 }

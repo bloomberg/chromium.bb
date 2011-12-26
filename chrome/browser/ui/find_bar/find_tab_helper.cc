@@ -16,6 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 
 using WebKit::WebFindOptions;
+using content::WebContents;
 
 // static
 int FindTabHelper::find_request_id_counter_ = -1;
@@ -39,7 +40,7 @@ void FindTabHelper::StartFinding(string16 search_string,
   // shortcut so unless we have something to search for we return early.
   if (search_string.empty() && find_text_.empty()) {
     Profile* profile =
-        Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     string16 last_search_prepopulate_text =
         FindBarState::GetLastPrepopulateText(profile);
 
@@ -76,7 +77,7 @@ void FindTabHelper::StartFinding(string16 search_string,
 
   // Keep track of what the last search was across the tabs.
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   FindBarState* find_bar_state = profile->GetFindBarState();
   find_bar_state->set_last_prepopulate_text(find_text_);
 
@@ -84,7 +85,7 @@ void FindTabHelper::StartFinding(string16 search_string,
   options.forward = forward_direction;
   options.matchCase = case_sensitive;
   options.findNext = find_next;
-  tab_contents()->GetRenderViewHost()->Find(current_find_request_id_,
+  web_contents()->GetRenderViewHost()->Find(current_find_request_id_,
                                             find_text_, options);
 }
 
@@ -119,7 +120,7 @@ void FindTabHelper::StopFinding(
       NOTREACHED();
       action = content::STOP_FIND_ACTION_KEEP_SELECTION;
   }
-  tab_contents()->GetRenderViewHost()->StopFinding(action);
+  web_contents()->GetRenderViewHost()->StopFinding(action);
 }
 
 void FindTabHelper::HandleFindReply(int request_id,
@@ -148,7 +149,7 @@ void FindTabHelper::HandleFindReply(int request_id,
         final_update);
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
-        content::Source<TabContents>(tab_contents()),
+        content::Source<WebContents>(web_contents()),
         content::Details<FindNotificationDetails>(&last_search_result_));
   }
 }

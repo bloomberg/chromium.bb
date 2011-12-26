@@ -302,7 +302,7 @@ void TranslateManager::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED: {
-      TabContents* tab = content::Source<TabContents>(source).ptr();
+      WebContents* tab = content::Source<WebContents>(source).ptr();
       // We may get this notifications multiple times.  Make sure to translate
       // only once.
       TabContentsWrapper* wrapper =
@@ -325,7 +325,7 @@ void TranslateManager::Observe(int type,
       // Only add translate infobar if it doesn't exist; if it already exists,
       // just update the state, the actual infobar would have received the same
       //  notification and update the visual display accordingly.
-      TabContents* tab = content::Source<TabContents>(source).ptr();
+      WebContents* tab = content::Source<WebContents>(source).ptr();
       PageTranslatedDetails* page_translated_details =
           content::Details<PageTranslatedDetails>(details).ptr();
       PageTranslated(tab, page_translated_details);
@@ -440,7 +440,7 @@ void TranslateManager::OnURLFetchComplete(const content::URLFetcher* source) {
 }
 
 // static
-bool TranslateManager::IsShowingTranslateInfobar(TabContents* tab) {
+bool TranslateManager::IsShowingTranslateInfobar(WebContents* tab) {
   return GetTranslateInfoBarDelegate(tab) != NULL;
 }
 
@@ -456,7 +456,7 @@ TranslateManager::TranslateManager()
                               content::NotificationService::AllSources());
 }
 
-void TranslateManager::InitiateTranslation(TabContents* tab,
+void TranslateManager::InitiateTranslation(WebContents* tab,
                                            const std::string& page_lang) {
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   PrefService* prefs = profile->GetOriginalProfile()->GetPrefs();
@@ -649,7 +649,7 @@ void TranslateManager::DoTranslatePage(WebContents* tab,
       translate_script, source_lang, target_lang));
 }
 
-void TranslateManager::PageTranslated(TabContents* tab,
+void TranslateManager::PageTranslated(WebContents* tab,
                                       PageTranslatedDetails* details) {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
@@ -681,7 +681,7 @@ void TranslateManager::PageTranslated(TabContents* tab,
   ShowInfoBar(tab, infobar);
 }
 
-bool TranslateManager::IsAcceptLanguage(TabContents* tab,
+bool TranslateManager::IsAcceptLanguage(WebContents* tab,
                                         const std::string& language) {
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   profile = profile->GetOriginalProfile();

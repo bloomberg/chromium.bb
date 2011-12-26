@@ -60,6 +60,8 @@
 #include "chrome/browser/browser_process.h"
 #endif
 
+using content::WebContents;
+
 namespace {
 
 const char* kBeforeUnloadHTML =
@@ -788,7 +790,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
   TabContents* current_tab = browser()->GetSelectedTabContents();
   TabContentsWrapper* wrapper = browser()->GetSelectedTabContentsWrapper();
   TranslateTabHelper* helper = wrapper->translate_tab_helper();
-  content::Source<TabContents> source(current_tab);
+  content::Source<WebContents> source(current_tab);
 
   ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
       en_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,

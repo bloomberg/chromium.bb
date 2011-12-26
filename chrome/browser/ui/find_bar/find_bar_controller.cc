@@ -20,6 +20,8 @@
 #include "content/public/browser/notification_source.h"
 #include "ui/gfx/rect.h"
 
+using content::WebContents;
+
 // The minimum space between the FindInPage window and the search result.
 static const int kMinFindWndDistanceFromSelection = 5;
 
@@ -88,7 +90,7 @@ void FindBarController::ChangeTabContents(TabContentsWrapper* contents) {
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
-                 content::Source<TabContents>(tab_contents_->tab_contents()));
+                 content::Source<WebContents>(tab_contents_->tab_contents()));
   registrar_.Add(
       this,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -119,7 +121,7 @@ void FindBarController::Observe(int type,
   if (type == chrome::NOTIFICATION_FIND_RESULT_AVAILABLE) {
     // Don't update for notifications from TabContentses other than the one we
     // are actively tracking.
-    if (content::Source<TabContents>(source).ptr() ==
+    if (content::Source<WebContents>(source).ptr() ==
         tab_contents_->tab_contents()) {
       UpdateFindBarForCurrentResult();
       if (find_tab_helper->find_result().final_update() &&

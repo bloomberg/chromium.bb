@@ -24,6 +24,8 @@
 #include "ui/views/view.h"
 #include "ui/views/views_delegate.h"
 
+using content::WebContents;
+
 namespace {
 
 // The delay waited after sending an OS simulated event.
@@ -350,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_PasteWithoutTextChange) {
 
   // Press Ctrl-V to paste the content back, it should start finding even if the
   // content is not changed.
-  content::Source<TabContents> notification_source(
+  content::Source<WebContents> notification_source(
       browser()->GetSelectedTabContents());
   ui_test_utils::WindowedNotificationObserverWithDetails
       <FindNotificationDetails> observer(

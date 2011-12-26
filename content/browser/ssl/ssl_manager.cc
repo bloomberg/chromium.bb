@@ -23,6 +23,7 @@
 #include "net/base/cert_status_flags.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 // static
 void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
@@ -107,10 +108,10 @@ SSLManager::SSLManager(NavigationController* controller)
                  content::Source<NavigationController>(controller_));
   registrar_.Add(
       this, content::NOTIFICATION_RESOURCE_RESPONSE_STARTED,
-      content::Source<RenderViewHostDelegate>(controller_->tab_contents()));
+      content::Source<WebContents>(controller_->tab_contents()));
   registrar_.Add(
       this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-      content::Source<RenderViewHostDelegate>(controller_->tab_contents()));
+      content::Source<WebContents>(controller_->tab_contents()));
   registrar_.Add(
       this, content::NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
       content::Source<NavigationController>(controller_));

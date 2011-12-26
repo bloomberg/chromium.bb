@@ -21,12 +21,13 @@
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/browser/cancelable_request.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace safe_browsing {
 
@@ -107,7 +108,7 @@ static void AddNavigationFeatures(const std::string& feature_prefix,
 }
 
 BrowserFeatureExtractor::BrowserFeatureExtractor(
-    TabContents* tab,
+    WebContents* tab,
     ClientSideDetectionService* service)
     : tab_(tab),
       service_(service),

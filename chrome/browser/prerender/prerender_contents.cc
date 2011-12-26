@@ -38,6 +38,7 @@
 #endif
 
 using content::DownloadItem;
+using content::WebContents;
 
 namespace prerender {
 
@@ -330,7 +331,7 @@ void PrerenderContents::StartPrerendering(
   // Register for redirect notifications sourced from |this|.
   notification_registrar_.Add(
       this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-      content::Source<RenderViewHostDelegate>(GetRenderViewHostDelegate()));
+      content::Source<WebContents>(GetWebContents()));
 
   // Register for new windows from any source.
   notification_registrar_.Add(
@@ -424,8 +425,7 @@ void PrerenderContents::Observe(int type,
       // to be remembered for future matching, and if it redirects to
       // an https resource, it needs to be canceled. If a subresource
       // is redirected, nothing changes.
-      DCHECK(content::Source<RenderViewHostDelegate>(source).ptr() ==
-             GetRenderViewHostDelegate());
+      DCHECK(content::Source<WebContents>(source).ptr() == GetWebContents());
       ResourceRedirectDetails* resource_redirect_details =
           content::Details<ResourceRedirectDetails>(details).ptr();
       CHECK(resource_redirect_details);
@@ -659,7 +659,7 @@ TabContentsWrapper* PrerenderContents::ReleasePrerenderContents() {
   return prerender_contents_.release();
 }
 
-RenderViewHostDelegate* PrerenderContents::GetRenderViewHostDelegate() {
+WebContents* PrerenderContents::GetWebContents() {
   if (!prerender_contents_.get())
     return NULL;
   return prerender_contents_->tab_contents();

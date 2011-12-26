@@ -85,7 +85,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   blocked_content_tab_helper_.reset(new BlockedContentTabHelper(this));
   bookmark_tab_helper_.reset(new BookmarkTabHelper(this));
   constrained_window_tab_helper_.reset(new ConstrainedWindowTabHelper(this));
-  core_tab_helper_.reset(new CoreTabHelper(this));
+  core_tab_helper_.reset(new CoreTabHelper(contents));
   extension_tab_helper_.reset(new ExtensionTabHelper(this));
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
@@ -109,7 +109,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
 
   // Create the per-tab observers.
   alternate_error_page_tab_observer_.reset(
-      new AlternateErrorPageTabObserver(this));
+      new AlternateErrorPageTabObserver(contents));
   download_request_limiter_observer_.reset(
       new DownloadRequestLimiterObserver(contents));
   webnavigation_observer_.reset(
@@ -145,7 +145,7 @@ base::PropertyAccessor<TabContentsWrapper*>*
 }
 
 TabContentsWrapper* TabContentsWrapper::Clone() {
-  TabContents* new_contents = tab_contents()->Clone();
+  TabContents* new_contents = web_contents()->Clone();
   TabContentsWrapper* new_wrapper = new TabContentsWrapper(new_contents);
 
   // TODO(avi): Can we generalize this so that knowledge of the functionings of
@@ -178,7 +178,7 @@ WebContents* TabContentsWrapper::web_contents() const {
 }
 
 Profile* TabContentsWrapper::profile() const {
-  return Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
+  return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

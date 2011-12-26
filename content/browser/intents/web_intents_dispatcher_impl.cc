@@ -38,7 +38,7 @@ void WebIntentsDispatcherImpl::SendReplyMessage(
     const string16& data) {
   intent_injector_ = NULL;
 
-  if (!tab_contents())
+  if (!web_contents())
     return;
 
   Send(new IntentsMsg_WebIntentReply(

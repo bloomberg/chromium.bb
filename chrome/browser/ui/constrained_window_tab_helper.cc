@@ -70,7 +70,7 @@ void ConstrainedWindowTabHelper::WillClose(ConstrainedWindow* window) {
 }
 
 void ConstrainedWindowTabHelper::BlockTabContent(bool blocked) {
-  TabContents* contents = tab_contents();
+  WebContents* contents = web_contents();
   if (!contents) {
     // The TabContents has already disconnected.
     return;

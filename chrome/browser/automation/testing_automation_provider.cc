@@ -4103,7 +4103,7 @@ void TestingAutomationProvider::GetTranslateInfo(
   std::string language = helper->language_state().original_language();
   if (!language.empty()) {
     observer->Observe(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-                      content::Source<TabContents>(tab_contents),
+                      content::Source<WebContents>(tab_contents),
                       content::Details<std::string>(&language));
   }
 }

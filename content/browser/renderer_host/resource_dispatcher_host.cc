@@ -86,6 +86,7 @@ using base::TimeDelta;
 using base::TimeTicks;
 using content::BrowserThread;
 using content::ResourceResponse;
+using content::WebContents;
 using webkit_blob::DeletableFileReference;
 
 // ----------------------------------------------------------------------------
@@ -1987,7 +1988,7 @@ void ResourceDispatcherHost::NotifyOnUI(int type,
   if (rvh) {
     RenderViewHostDelegate* rvhd = rvh->delegate();
     content::NotificationService::current()->Notify(
-        type, content::Source<RenderViewHostDelegate>(rvhd),
+        type, content::Source<WebContents>(rvhd->GetAsWebContents()),
         content::Details<T>(detail));
   }
   delete detail;

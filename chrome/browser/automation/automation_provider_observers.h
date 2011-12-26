@@ -74,12 +74,16 @@ namespace chromeos {
 }
 #endif  // defined(OS_CHROMEOS)
 
-namespace history {
-class TopSites;
-}
-
 namespace IPC {
 class Message;
+}
+
+namespace content {
+class WebContents;
+}
+
+namespace history {
+class TopSites;
 }
 
 namespace policy {
@@ -686,7 +690,7 @@ class PageTranslatedObserver : public content::NotificationObserver {
  public:
   PageTranslatedObserver(AutomationProvider* automation,
                          IPC::Message* reply_message,
-                         TabContents* tab_contents);
+                         content::WebContents* web_contents);
   virtual ~PageTranslatedObserver();
 
   // content::NotificationObserver interface.

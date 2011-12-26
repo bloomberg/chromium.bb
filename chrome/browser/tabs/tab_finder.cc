@@ -28,11 +28,11 @@ using content::WebContents;
 
 class TabFinder::WebContentsObserverImpl : public content::WebContentsObserver {
  public:
-  WebContentsObserverImpl(TabContents* tab, TabFinder* finder);
+  WebContentsObserverImpl(WebContents* tab, TabFinder* finder);
   virtual ~WebContentsObserverImpl();
 
-  TabContents* tab_contents() {
-    return content::WebContentsObserver::tab_contents();
+  WebContents* web_contents() {
+    return content::WebContentsObserver::web_contents();
   }
 
   // content::WebContentsObserver overrides:
@@ -48,7 +48,7 @@ class TabFinder::WebContentsObserverImpl : public content::WebContentsObserver {
 };
 
 TabFinder::WebContentsObserverImpl::WebContentsObserverImpl(
-    TabContents* tab,
+    WebContents* tab,
     TabFinder* finder)
     : content::WebContentsObserver(tab),
       finder_(finder) {
@@ -60,7 +60,7 @@ TabFinder::WebContentsObserverImpl::~WebContentsObserverImpl() {
 void TabFinder::WebContentsObserverImpl::DidNavigateAnyFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  finder_->DidNavigateAnyFrame(tab_contents(), details, params);
+  finder_->DidNavigateAnyFrame(web_contents(), details, params);
 }
 
 void TabFinder::WebContentsObserverImpl::WebContentsDestroyed(
@@ -122,7 +122,7 @@ void TabFinder::Observe(int type,
 
   // The tab was added to a browser. Query for its state now.
   TabContentsWrapper* tab = content::Source<TabContentsWrapper>(source).ptr();
-  TrackTab(tab->tab_contents());
+  TrackTab(tab->web_contents());
 }
 
 TabFinder::TabFinder() {
@@ -135,7 +135,7 @@ TabFinder::~TabFinder() {
 }
 
 void TabFinder::DidNavigateAnyFrame(
-    TabContents* source,
+    WebContents* source,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   CancelRequestsFor(source);
@@ -145,17 +145,17 @@ void TabFinder::DidNavigateAnyFrame(
     FetchRedirectStart(source);
   } else if (params.redirects.size() > 1 ||
              params.redirects[0] != details.entry->GetURL()) {
-    tab_contents_to_url_[source] = params.redirects[0];
+    web_contents_to_url_[source] = params.redirects[0];
   }
 }
 
-bool TabFinder::TabMatchesURL(TabContents* tab_contents, const GURL& url) {
+bool TabFinder::TabMatchesURL(WebContents* tab_contents, const GURL& url) {
   if (tab_contents->GetURL() == url)
     return true;
 
-  TabContentsToURLMap::const_iterator i =
-      tab_contents_to_url_.find(tab_contents);
-  return i != tab_contents_to_url_.end() && i->second == url;
+  WebContentsToURLMap::const_iterator i =
+      web_contents_to_url_.find(tab_contents);
+  return i != web_contents_to_url_.end() && i->second == url;
 }
 
 TabContents* TabFinder::FindTabInBrowser(Browser* browser, const GURL& url) {
@@ -169,10 +169,10 @@ TabContents* TabFinder::FindTabInBrowser(Browser* browser, const GURL& url) {
   return NULL;
 }
 
-void TabFinder::TrackTab(TabContents* tab) {
+void TabFinder::TrackTab(WebContents* tab) {
   for (WebContentsObservers::const_iterator i = tab_contents_observers_.begin();
        i != tab_contents_observers_.end(); ++i) {
-    if ((*i)->tab_contents() == tab) {
+    if ((*i)->web_contents() == tab) {
       // Already tracking the tab.
       return;
     }
@@ -187,26 +187,26 @@ void TabFinder::TabDestroyed(WebContentsObserverImpl* observer) {
   tab_contents_observers_.erase(observer);
 }
 
-void TabFinder::CancelRequestsFor(TabContents* tab_contents) {
+void TabFinder::CancelRequestsFor(WebContents* web_contents) {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (profile->IsOffTheRecord())
     return;
 
-  tab_contents_to_url_.erase(tab_contents);
+  web_contents_to_url_.erase(web_contents);
 
   HistoryService* history = profile->GetHistoryService(
       Profile::EXPLICIT_ACCESS);
   if (history) {
     CancelableRequestProvider::Handle request_handle;
-    if (callback_consumer_.GetFirstHandleForClientData(tab_contents,
+    if (callback_consumer_.GetFirstHandleForClientData(web_contents,
                                                        &request_handle)) {
       history->CancelRequest(request_handle);
     }
   }
 }
 
-void TabFinder::FetchRedirectStart(TabContents* tab) {
+void TabFinder::FetchRedirectStart(WebContents* tab) {
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   if (profile->IsOffTheRecord())
     return;
@@ -234,9 +234,9 @@ void TabFinder::QueryRedirectsToComplete(HistoryService::Handle handle,
                                          bool success,
                                          history::RedirectList* redirects) {
   if (success && !redirects->empty()) {
-    TabContents* tab_contents =
+    WebContents* web_contents =
         callback_consumer_.GetClientDataForCurrentRequest();
-    DCHECK(tab_contents);
-    tab_contents_to_url_[tab_contents] = redirects->back();
+    DCHECK(web_contents);
+    web_contents_to_url_[web_contents] = redirects->back();
   }
 }

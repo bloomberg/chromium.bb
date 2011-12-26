@@ -10,6 +10,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 
+using content::WebContents;
+
 TranslateTabHelper::TranslateTabHelper(TabContents* tab_contents)
     : content::WebContentsObserver(tab_contents),
       language_state_(&tab_contents->GetController()) {
@@ -44,7 +46,7 @@ void TranslateTabHelper::OnLanguageDetermined(const std::string& language,
   std::string lang = language;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-      content::Source<TabContents>(tab_contents()),
+      content::Source<WebContents>(web_contents()),
       content::Details<std::string>(&lang));
 }
 
@@ -57,6 +59,6 @@ void TranslateTabHelper::OnPageTranslated(int32 page_id,
   PageTranslatedDetails details(original_lang, translated_lang, error_type);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PAGE_TRANSLATED,
-      content::Source<TabContents>(tab_contents()),
+      content::Source<WebContents>(web_contents()),
       content::Details<PageTranslatedDetails>(&details));
 }

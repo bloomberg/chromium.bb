@@ -24,7 +24,6 @@ template <typename T> struct DefaultSingletonTraits;
 class GURL;
 struct PageTranslatedDetails;
 class PrefService;
-class TabContents;
 class TranslateInfoBarDelegate;
 
 namespace content {
@@ -88,7 +87,7 @@ class TranslateManager : public content::NotificationObserver,
   }
 
   // Convenience method to know if a tab is showing a translate infobar.
-  static bool IsShowingTranslateInfobar(TabContents* tab);
+  static bool IsShowingTranslateInfobar(content::WebContents* tab);
 
   // Returns true if the URL can be translated.
   static bool IsTranslatableURL(const GURL& url);
@@ -134,7 +133,8 @@ class TranslateManager : public content::NotificationObserver,
 
   // Starts the translation process on |tab| containing the page in the
   // |page_lang| language.
-  void InitiateTranslation(TabContents* tab, const std::string& page_lang);
+  void InitiateTranslation(content::WebContents* tab,
+                           const std::string& page_lang);
 
   // If the tab identified by |process_id| and |render_id| has been closed, this
   // does nothing, otherwise it calls InitiateTranslation.
@@ -149,11 +149,12 @@ class TranslateManager : public content::NotificationObserver,
                        const std::string& target_lang);
 
   // Shows the after translate or error infobar depending on the details.
-  void PageTranslated(TabContents* tab, PageTranslatedDetails* details);
+  void PageTranslated(content::WebContents* tab,
+                      PageTranslatedDetails* details);
 
   // Returns true if the passed language has been configured by the user as an
   // accept language.
-  bool IsAcceptLanguage(TabContents* tab, const std::string& language);
+  bool IsAcceptLanguage(content::WebContents* tab, const std::string& language);
 
   // Initializes the |accept_languages_| language table based on the associated
   // preference in |prefs|.

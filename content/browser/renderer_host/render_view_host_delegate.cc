@@ -7,6 +7,8 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/webpreferences.h"
 
+using content::WebContents;
+
 RenderViewHostDelegate::View* RenderViewHostDelegate::GetViewDelegate() {
   return NULL;
 }
@@ -25,6 +27,10 @@ const GURL& RenderViewHostDelegate::GetURL() const {
 }
 
 TabContents* RenderViewHostDelegate::GetAsTabContents() {
+  return NULL;
+}
+
+WebContents* RenderViewHostDelegate::GetAsWebContents() {
   return NULL;
 }
 

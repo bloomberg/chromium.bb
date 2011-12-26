@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/webui/bug_report_ui.h"
 #include "chrome/browser/userfeedback/proto/extension.pb.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -22,6 +22,8 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"
+
+using content::WebContents;
 
 static const int kPadding = 20;
 static const float kMessageSize = 0.65f;
@@ -38,8 +40,8 @@ static const int kTitleFontSizeDelta = 2;
 static const int kMessageFontSizeDelta = 1;
 #endif
 
-SadTabView::SadTabView(TabContents* tab_contents, Kind kind)
-    : tab_contents_(tab_contents),
+SadTabView::SadTabView(WebContents* web_contents, Kind kind)
+    : web_contents_(web_contents),
       kind_(kind),
       painted_(false),
       base_font_(ResourceBundle::GetSharedInstance().GetFont(
@@ -48,7 +50,7 @@ SadTabView::SadTabView(TabContents* tab_contents, Kind kind)
       help_link_(NULL),
       feedback_link_(NULL),
       reload_button_(NULL) {
-  DCHECK(tab_contents);
+  DCHECK(web_contents);
 
   // Sometimes the user will never see this tab, so keep track of the total
   // number of creation events to compare to display events.
@@ -62,13 +64,13 @@ SadTabView::SadTabView(TabContents* tab_contents, Kind kind)
 SadTabView::~SadTabView() {}
 
 void SadTabView::LinkClicked(views::Link* source, int event_flags) {
-  DCHECK(tab_contents_);
+  DCHECK(web_contents_);
   if (source == help_link_) {
     GURL help_url =
         google_util::AppendGoogleLocaleParam(GURL(kind_ == CRASHED ?
                                                   chrome::kCrashReasonURL :
                                                   chrome::kKillReasonURL));
-    tab_contents_->OpenURL(OpenURLParams(
+    web_contents_->OpenURL(OpenURLParams(
         help_url,
         content::Referrer(),
         CURRENT_TAB,
@@ -76,7 +78,7 @@ void SadTabView::LinkClicked(views::Link* source, int event_flags) {
         false /* is renderer initiated */));
   } else if (source == feedback_link_) {
     browser::ShowHtmlBugReportView(
-        Browser::GetBrowserForController(&tab_contents_->GetController(), NULL),
+        Browser::GetBrowserForController(&web_contents_->GetController(), NULL),
         l10n_util::GetStringUTF8(IDS_KILLED_TAB_FEEDBACK_MESSAGE),
         userfeedback::ChromeOsData_ChromeOsCategory_CRASH);
   }
@@ -84,9 +86,9 @@ void SadTabView::LinkClicked(views::Link* source, int event_flags) {
 
 void SadTabView::ButtonPressed(views::Button* source,
                                const views::Event& event) {
-  DCHECK(tab_contents_);
+  DCHECK(web_contents_);
   DCHECK(source == reload_button_);
-  tab_contents_->GetController().Reload(true);
+  web_contents_->GetController().Reload(true);
 }
 
 void SadTabView::Layout() {
@@ -129,7 +131,7 @@ void SadTabView::ViewHierarchyChanged(bool is_add,
   layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
   layout->AddView(message_);
 
-  if (tab_contents_) {
+  if (web_contents_) {
     layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
     reload_button_ = new views::TextButton(
         this,

@@ -21,6 +21,7 @@ class GURL;
 class TabContents;
 
 namespace content {
+class WebContents;
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
 }
@@ -55,7 +56,7 @@ class TabFinder : public content::NotificationObserver {
 
   class WebContentsObserverImpl;
 
-  typedef std::map<TabContents*, GURL> TabContentsToURLMap;
+  typedef std::map<content::WebContents*, GURL> WebContentsToURLMap;
   typedef std::set<WebContentsObserverImpl*> WebContentsObservers;
 
   TabFinder();
@@ -63,13 +64,13 @@ class TabFinder : public content::NotificationObserver {
 
   // Forwarded from WebContentsObserverImpl.
   void DidNavigateAnyFrame(
-      TabContents* source,
+    content::WebContents* source,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params);
 
   // Returns true if the tab's current url is |url|, or the start of the
   // redirect chain for the tab is |url|.
-  bool TabMatchesURL(TabContents* tab_contents, const GURL& url);
+  bool TabMatchesURL(content::WebContents* web_contents, const GURL& url);
 
   // Returns the first tab in the specified browser that matches the specified
   // url.  Returns NULL if there are no tabs matching the specified url.
@@ -77,17 +78,17 @@ class TabFinder : public content::NotificationObserver {
 
   // If we're not currently tracking |tab| this creates a
   // WebContentsObserverImpl to listen for navigations.
-  void TrackTab(TabContents* tab);
+  void TrackTab(content::WebContents* tab);
 
   // Invoked when a TabContents is being destroyed.
   void TabDestroyed(WebContentsObserverImpl* observer);
 
   // Cancels any pending requests for the specified tabs redirect chain.
-  void CancelRequestsFor(TabContents* tab_contents);
+  void CancelRequestsFor(content::WebContents* web_contents);
 
-  // Starts the fetch for the redirect chain of the specified TabContents.
+  // Starts the fetch for the redirect chain of the specified WebContents.
   // QueryRedirectsToComplete is invoked when the redirect chain is retrieved.
-  void FetchRedirectStart(TabContents* tab);
+  void FetchRedirectStart(content::WebContents* tab);
 
   // Callback when we get the redirect list for a tab.
   void QueryRedirectsToComplete(CancelableRequestProvider::Handle handle,
@@ -95,10 +96,10 @@ class TabFinder : public content::NotificationObserver {
                                 bool success,
                                 history::RedirectList* redirects);
 
-  // Maps from TabContents to the start of the redirect chain.
-  TabContentsToURLMap tab_contents_to_url_;
+  // Maps from WebContents to the start of the redirect chain.
+  WebContentsToURLMap web_contents_to_url_;
 
-  CancelableRequestConsumerTSimple<TabContents*> callback_consumer_;
+  CancelableRequestConsumerTSimple<content::WebContents*> callback_consumer_;
 
   content::NotificationRegistrar registrar_;
 

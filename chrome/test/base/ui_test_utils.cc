@@ -68,6 +68,8 @@
 #include "ui/aura/root_window.h"
 #endif
 
+using content::WebContents;
+
 static const int kDefaultWsPort = 8880;
 
 namespace ui_test_utils {
@@ -123,7 +125,7 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
     current_find_request_id_ =
         parent_tab->find_tab_helper()->current_find_request_id();
     registrar_.Add(this, chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
-                   content::Source<TabContents>(parent_tab_->tab_contents()));
+                   content::Source<WebContents>(parent_tab_->tab_contents()));
     ui_test_utils::RunMessageLoop();
   }
 

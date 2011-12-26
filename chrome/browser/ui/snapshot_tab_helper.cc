@@ -7,8 +7,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 
 using content::WebContents;
 
@@ -41,6 +41,6 @@ bool SnapshotTabHelper::OnMessageReceived(const IPC::Message& message) {
 void SnapshotTabHelper::OnSnapshot(const SkBitmap& bitmap) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
-      content::Source<WebContents>(tab_contents()),
+      content::Source<WebContents>(web_contents()),
       content::Details<const SkBitmap>(&bitmap));
 }

@@ -18,7 +18,7 @@ struct WebPreferences;
 class PrefsTabHelper : public content::WebContentsObserver,
                        public content::NotificationObserver {
  public:
-  explicit PrefsTabHelper(TabContents* contents);
+  explicit PrefsTabHelper(content::WebContents* contents);
   virtual ~PrefsTabHelper();
 
   static void RegisterUserPrefs(PrefService* prefs);
@@ -45,9 +45,6 @@ class PrefsTabHelper : public content::WebContentsObserver,
   void UpdateRendererPreferences();
 
   Profile* GetProfile();
-
-  // Our owning TabContents.
-  TabContents* contents_;
 
   content::NotificationRegistrar registrar_;
 

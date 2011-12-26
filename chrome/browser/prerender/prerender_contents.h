@@ -223,7 +223,7 @@ class PrerenderContents : public content::NotificationObserver,
   void OnUpdateFaviconURL(int32 page_id, const std::vector<FaviconURL>& urls);
 
   // Returns the RenderViewHost Delegate for this prerender.
-  RenderViewHostDelegate* GetRenderViewHostDelegate();
+  content::WebContents* GetWebContents();
 
   // Returns the ProcessMetrics for the render process, if it exists.
   base::ProcessMetrics* MaybeGetProcessMetrics();

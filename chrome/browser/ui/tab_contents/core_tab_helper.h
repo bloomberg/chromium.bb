@@ -9,12 +9,11 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class CoreTabHelperDelegate;
-class TabContentsWrapper;
 
 // Per-tab class to handle functionality that is core to the operation of tabs.
 class CoreTabHelper : public content::WebContentsObserver {
  public:
-  explicit CoreTabHelper(TabContentsWrapper* wrapper);
+  explicit CoreTabHelper(content::WebContents* web_contents);
   virtual ~CoreTabHelper();
 
   CoreTabHelperDelegate* delegate() const { return delegate_; }
@@ -32,9 +31,6 @@ class CoreTabHelper : public content::WebContentsObserver {
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   CoreTabHelperDelegate* delegate_;
-
-  // Our owning TabContentsWrapper.
-  TabContentsWrapper* wrapper_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreTabHelper);
 };

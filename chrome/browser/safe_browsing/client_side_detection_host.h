@@ -34,8 +34,8 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
                                 public SafeBrowsingService::Observer {
  public:
   // The caller keeps ownership of the tab object and is responsible for
-  // ensuring that it stays valid until TabContentsDestroyed is called.
-  static ClientSideDetectionHost* Create(TabContents* tab);
+  // ensuring that it stays valid until WebContentsDestroyed is called.
+  static ClientSideDetectionHost* Create(content::WebContents* tab);
   virtual ~ClientSideDetectionHost();
 
   // From content::WebContentsObserver.
@@ -62,7 +62,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   class ShouldClassifyUrlRequest;
   friend class ShouldClassifyUrlRequest;
 
-  explicit ClientSideDetectionHost(TabContents* tab);
+  explicit ClientSideDetectionHost(content::WebContents* tab);
 
   // Verdict is an encoded ClientPhishingRequest protocol message.
   void OnPhishingDetectionDone(const std::string& verdict);

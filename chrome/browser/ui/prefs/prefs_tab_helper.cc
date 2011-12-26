@@ -16,9 +16,10 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/locale_settings.h"
 #include "grit/platform_locale_settings.h"
 #include "webkit/glue/webpreferences.h"
@@ -212,9 +213,8 @@ const size_t kPerScriptFontDefaultsLength = arraysize(kPerScriptFontDefaults);
 
 }  // namespace
 
-PrefsTabHelper::PrefsTabHelper(TabContents* contents)
-    : content::WebContentsObserver(contents),
-      contents_(contents) {
+PrefsTabHelper::PrefsTabHelper(WebContents* contents)
+    : content::WebContentsObserver(contents) {
   PrefService* prefs = GetProfile()->GetPrefs();
   pref_change_registrar_.Init(prefs);
   if (prefs) {
@@ -244,7 +244,7 @@ PrefsTabHelper::PrefsTabHelper(TabContents* contents)
   }
 
   renderer_preferences_util::UpdateFromSystemSettings(
-      tab_contents()->GetMutableRendererPrefs(), GetProfile());
+      web_contents()->GetMutableRendererPrefs(), GetProfile());
 
   registrar_.Add(this, chrome::NOTIFICATION_USER_STYLE_SHEET_UPDATED,
                  content::NotificationService::AllSources());
@@ -426,19 +426,20 @@ void PrefsTabHelper::Observe(int type,
 }
 
 void PrefsTabHelper::UpdateWebPreferences() {
-  RenderViewHostDelegate* rvhd = tab_contents();
+  RenderViewHostDelegate* rvhd =
+      web_contents()->GetRenderViewHost()->delegate();
   WebPreferences prefs = rvhd->GetWebkitPrefs();
   prefs.javascript_enabled =
       per_tab_prefs_->GetBoolean(prefs::kWebKitJavascriptEnabled);
-  tab_contents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+  web_contents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
 }
 
 void PrefsTabHelper::UpdateRendererPreferences() {
   renderer_preferences_util::UpdateFromSystemSettings(
-      tab_contents()->GetMutableRendererPrefs(), GetProfile());
-  tab_contents()->GetRenderViewHost()->SyncRendererPrefs();
+      web_contents()->GetMutableRendererPrefs(), GetProfile());
+  web_contents()->GetRenderViewHost()->SyncRendererPrefs();
 }
 
 Profile* PrefsTabHelper::GetProfile() {
-  return Profile::FromBrowserContext(contents_->GetBrowserContext());
+  return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 }

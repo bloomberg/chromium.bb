@@ -28,7 +28,10 @@
 #include "googleurl/src/gurl.h"
 
 class HistoryService;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 namespace safe_browsing {
 class ClientPhishingRequest;
@@ -69,7 +72,7 @@ class BrowserFeatureExtractor {
   // The caller keeps ownership of the tab and service objects and is
   // responsible for ensuring that they stay valid for the entire
   // lifetime of this object.
-  BrowserFeatureExtractor(TabContents* tab,
+  BrowserFeatureExtractor(content::WebContents* tab,
                           ClientSideDetectionService* service);
 
   // The destructor will cancel any pending requests.
@@ -146,7 +149,7 @@ class BrowserFeatureExtractor {
   // is set it will return true and false otherwise.
   bool GetHistoryService(HistoryService** history);
 
-  TabContents* tab_;
+  content::WebContents* tab_;
   ClientSideDetectionService* service_;
   CancelableRequestConsumer request_consumer_;
   base::WeakPtrFactory<BrowserFeatureExtractor> weak_factory_;

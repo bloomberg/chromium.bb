@@ -26,6 +26,7 @@
 #include "content/test/test_browser_thread.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 // A SafeBrowingService class that allows us to inject the malicious URLs.
 class FakeSafeBrowsingService :  public SafeBrowsingService {
@@ -102,9 +103,9 @@ class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
 class FakeMalwareDetails : public MalwareDetails {
  public:
   FakeMalwareDetails(SafeBrowsingService* sb_service,
-                     TabContents* tab_contents,
+                     WebContents* web_contents,
                      const SafeBrowsingService::UnsafeResource& unsafe_resource)
-      : MalwareDetails(sb_service, tab_contents, unsafe_resource) { }
+      : MalwareDetails(sb_service, web_contents, unsafe_resource) { }
 
   virtual ~FakeMalwareDetails() {}
 
@@ -161,9 +162,9 @@ class TestMalwareDetailsFactory : public MalwareDetailsFactory {
 
   virtual MalwareDetails* CreateMalwareDetails(
       SafeBrowsingService* sb_service,
-      TabContents* tab_contents,
+      WebContents* web_contents,
       const SafeBrowsingService::UnsafeResource& unsafe_resource) {
-    details_ = new FakeMalwareDetails(sb_service, tab_contents,
+    details_ = new FakeMalwareDetails(sb_service, web_contents,
                                       unsafe_resource);
     return details_;
   }

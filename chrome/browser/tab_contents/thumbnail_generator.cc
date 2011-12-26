@@ -50,6 +50,8 @@
 // We'll likely revise the algorithm to improve quality of thumbnails this
 // service generates.
 
+using content::WebContents;
+
 namespace {
 
 static const int kThumbnailWidth = 212;
@@ -360,12 +362,12 @@ void ThumbnailGenerator::Observe(int type,
 }
 
 void ThumbnailGenerator::WidgetHidden(RenderWidgetHost* widget) {
-  // tab_contents_ can be NULL, if StartThumbnailing() is not called, but
+  // web_contents() can be NULL, if StartThumbnailing() is not called, but
   // MonitorRenderer() is called. The use case is found in
   // chrome/test/base/ui_test_utils.cc.
-  if (!tab_contents())
+  if (!web_contents())
     return;
-  UpdateThumbnailIfNecessary(tab_contents());
+  UpdateThumbnailIfNecessary(web_contents());
 }
 
 void ThumbnailGenerator::TabContentsDisconnected(TabContents* contents) {
@@ -446,10 +448,10 @@ SkBitmap ThumbnailGenerator::GetClippedBitmap(const SkBitmap& bitmap,
 }
 
 void ThumbnailGenerator::UpdateThumbnailIfNecessary(
-    TabContents* tab_contents) {
-  const GURL& url = tab_contents->GetURL();
+    WebContents* web_contents) {
+  const GURL& url = web_contents->GetURL();
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   history::TopSites* top_sites = profile->GetTopSites();
   // Skip if we don't need to update the thumbnail.
   if (!ShouldUpdateThumbnail(profile, top_sites, url))
@@ -458,7 +460,7 @@ void ThumbnailGenerator::UpdateThumbnailIfNecessary(
   const int options = ThumbnailGenerator::kClippedThumbnail;
   ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
   SkBitmap thumbnail = GetThumbnailForRendererWithOptions(
-      tab_contents->GetRenderViewHost(), options, &clip_result);
+      web_contents->GetRenderViewHost(), options, &clip_result);
   // Failed to generate a thumbnail. Maybe the tab is in the background?
   if (thumbnail.isNull())
     return;
@@ -466,12 +468,12 @@ void ThumbnailGenerator::UpdateThumbnailIfNecessary(
   // Compute the thumbnail score.
   ThumbnailScore score;
   score.at_top =
-      (tab_contents->GetRenderViewHost()->last_scroll_offset().y() == 0);
+      (web_contents->GetRenderViewHost()->last_scroll_offset().y() == 0);
   score.boring_score = ThumbnailGenerator::CalculateBoringScore(&thumbnail);
   score.good_clipping =
       (clip_result == ThumbnailGenerator::kTallerThanWide ||
        clip_result == ThumbnailGenerator::kNotClipped);
-  score.load_completed = (!load_interrupted_ && !tab_contents->IsLoading());
+  score.load_completed = (!load_interrupted_ && !web_contents->IsLoading());
 
   gfx::Image image(new SkBitmap(thumbnail));
   top_sites->SetPageThumbnail(url, &image, score);

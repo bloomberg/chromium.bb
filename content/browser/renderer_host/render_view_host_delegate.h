@@ -42,6 +42,7 @@ class ListValue;
 
 namespace content {
 class BrowserContext;
+class WebContents;
 struct FileChooserParams;
 struct Referrer;
 struct RendererPreferences;
@@ -193,9 +194,10 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   virtual const GURL& GetURL() const;
 
   // Return this object cast to a TabContents, if it is one. If the object is
-  // not a TabContents, returns NULL. DEPRECATED: Be sure to include brettw and
+  // not a TabContents, returns NULL. DEPRECATED: Be sure to include brettw or
   // jam as reviewers before you use this method. http://crbug.com/82582
   virtual TabContents* GetAsTabContents();
+  virtual content::WebContents* GetAsWebContents();
 
   // Return type of RenderView which is attached with this object.
   virtual content::ViewType GetRenderViewType() const = 0;

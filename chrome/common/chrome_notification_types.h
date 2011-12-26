@@ -48,11 +48,11 @@ enum NotificationType {
 
   // Sent when the language (English, French...) for a page has been detected.
   // The details Details<std::string> contain the ISO 639-1 language code and
-  // the source is Source<TabContents>.
+  // the source is Source<WebContents>.
   NOTIFICATION_TAB_LANGUAGE_DETERMINED,
 
   // Sent when a page has been translated. The source is the tab for that page
-  // (Source<TabContents>) and the details are the language the page was
+  // (Source<WebContents>) and the details are the language the page was
   // originally in and the language it was translated to
   // (std::pair<std::string, std::string>).
   NOTIFICATION_PAGE_TRANSLATED,

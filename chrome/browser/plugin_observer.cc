@@ -352,9 +352,9 @@ void PluginObserver::DidNotFindMissingPlugin(int placeholder_id,
 
 void PluginObserver::InstallMissingPlugin(PluginInstaller* installer) {
   if (installer->url_for_display()) {
-    tab_contents()->OpenURL(OpenURLParams(
+    web_contents()->OpenURL(OpenURLParams(
         installer->plugin_url(),
-        content::Referrer(tab_contents()->GetURL(),
+        content::Referrer(web_contents()->GetURL(),
                           WebKit::WebReferrerPolicyDefault),
         NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED, false));
   } else {

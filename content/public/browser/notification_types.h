@@ -109,15 +109,14 @@ enum NotificationType {
   NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
 
   // A response has been received for a resource request.  The source will be
-  // a Source<RenderViewHostDelegate> corresponding to the tab in which the
-  // request was issued.  Details in the form of a ResourceRequestDetails
-  // object are provided.
+  // a Source<WebContents> corresponding to the tab in which the request was
+  // issued.  Details in the form of a ResourceRequestDetails object are
+  // provided.
   NOTIFICATION_RESOURCE_RESPONSE_STARTED,
 
   // A redirect was received while requesting a resource.  The source will be
-  // a Source<RenderViewHostDelegate> corresponding to the tab in which the
-  // request was issued.  Details in the form of a ResourceRedirectDetails
-  // are provided.
+  // a Source<WebContents> corresponding to the tab in which the request was
+  // issued.  Details in the form of a ResourceRedirectDetails are provided.
   NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
 
   // A new window was requested but was not created. The source will be a

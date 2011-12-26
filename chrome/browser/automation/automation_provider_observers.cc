@@ -1150,7 +1150,7 @@ FindInPageNotificationObserver::FindInPageNotificationObserver(
       reply_with_json_(reply_with_json),
       reply_message_(reply_message) {
   registrar_.Add(this, chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
-                 content::Source<TabContents>(parent_tab));
+                 content::Source<WebContents>(parent_tab));
 }
 
 FindInPageNotificationObserver::~FindInPageNotificationObserver() {
@@ -1363,11 +1363,11 @@ void MetricEventDurationObserver::Observe(
 
 PageTranslatedObserver::PageTranslatedObserver(AutomationProvider* automation,
                                                IPC::Message* reply_message,
-                                               TabContents* tab_contents)
+                                               WebContents* web_contents)
   : automation_(automation->AsWeakPtr()),
     reply_message_(reply_message) {
   registrar_.Add(this, chrome::NOTIFICATION_PAGE_TRANSLATED,
-                 content::Source<TabContents>(tab_contents));
+                 content::Source<WebContents>(web_contents));
 }
 
 PageTranslatedObserver::~PageTranslatedObserver() {}
@@ -1402,7 +1402,7 @@ TabLanguageDeterminedObserver::TabLanguageDeterminedObserver(
       tab_contents_(tab_contents),
       translate_bar_(translate_bar) {
   registrar_.Add(this, chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-                 content::Source<TabContents>(tab_contents));
+                 content::Source<WebContents>(tab_contents));
 }
 
 TabLanguageDeterminedObserver::~TabLanguageDeterminedObserver() {}
