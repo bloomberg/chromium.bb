@@ -26,12 +26,7 @@ class SingleClientPasswordsSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientPasswordsSyncTest);
 };
 
-// TODO(sync): Enable after MockKeychain is fixed. http://crbug.com/89808.
-#if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest, DISABLED_Sanity) {
-#else
 IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest, Sanity) {
-#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   PasswordForm form = CreateTestPasswordForm(0);

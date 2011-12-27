@@ -59,9 +59,7 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
 
 #if defined(OS_MACOSX)
   // Use mock keychain on mac to prevent blocking permissions dialogs.
-  // TODO(sync): Re-enable when mock keyring works with sync integration tests.
-  // See crbug.com/89808.
-  // command_line->AppendSwitch(switches::kUseMockKeychain);
+  command_line->AppendSwitch(switches::kUseMockKeychain);
 #endif
 
   // Disable the Instant field trial, which may cause unexpected page loads.

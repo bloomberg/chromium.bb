@@ -6,6 +6,7 @@
 
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_form_data.h"
 #include "chrome/browser/password_manager/password_store.h"
@@ -162,7 +163,7 @@ bool ProfilesContainSamePasswordForms(int index_a, int index_b) {
 bool AllProfilesContainSamePasswordFormsAsVerifier() {
   for (int i = 0; i < test()->num_clients(); ++i) {
     if (!ProfileContainsSamePasswordFormsAsVerifier(i)) {
-      LOG(ERROR) << "Profile " << i << " does not contain the same password "
+      LOG(ERROR) << "Profile " << i << " does not contain the same password"
                                        " forms as the verifier.";
       return false;
     }
@@ -173,7 +174,7 @@ bool AllProfilesContainSamePasswordFormsAsVerifier() {
 bool AllProfilesContainSamePasswordForms() {
   for (int i = 1; i < test()->num_clients(); ++i) {
     if (!ProfilesContainSamePasswordForms(0, i)) {
-      LOG(ERROR) << "Profile " << i << " does not contain the same password "
+      LOG(ERROR) << "Profile " << i << " does not contain the same password"
                                        " forms as Profile 0.";
       return false;
     }
@@ -199,6 +200,7 @@ PasswordForm CreateTestPasswordForm(int index) {
   form.origin = GURL(base::StringPrintf(kIndexedFakeOrigin, index));
   form.username_value = ASCIIToUTF16(base::StringPrintf("username%d", index));
   form.password_value = ASCIIToUTF16(base::StringPrintf("password%d", index));
+  form.date_created = base::Time::Now();
   return form;
 }
 

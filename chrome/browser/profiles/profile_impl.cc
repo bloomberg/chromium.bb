@@ -152,11 +152,6 @@ namespace {
 // Delay, in milliseconds, before we explicitly create the SessionService.
 static const int kCreateSessionServiceDelayMS = 500;
 
-#if defined(OS_MACOSX)
-// Capacity for mock keychain used for testing.
-static const int kMockKeychainSize = 1000;
-#endif
-
 // Helper method needed because PostTask cannot currently take a Callback
 // function with non-void return type.
 // TODO(jhawkins): Remove once IgnoreReturn is fixed.
@@ -1063,7 +1058,7 @@ void ProfileImpl::CreatePasswordStore() {
                             GetWebDataService(Profile::IMPLICIT_ACCESS));
 #elif defined(OS_MACOSX)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseMockKeychain)) {
-    ps = new PasswordStoreMac(new MockKeychain(kMockKeychainSize), login_db);
+    ps = new PasswordStoreMac(new MockKeychain(), login_db);
   } else {
     ps = new PasswordStoreMac(new MacKeychain(), login_db);
   }

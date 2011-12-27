@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MOCK_KEYCHAIN_MAC_H_
 #pragma once
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -14,17 +15,15 @@
 #include "chrome/browser/keychain_mac.h"
 
 // Mock Keychain wrapper for testing code that interacts with the OS Keychain.
-// The basic idea of this mock is that it has a static array of data, and
-// SecKeychainItemRef values are just indexes into that array (offset by 1 to
-// prevent problems with clients that null-check refs), cast to pointers.
+// Implemented by storing SecKeychainAttributeList and KeychainPasswordData
+// values in separate mutable containers and mapping them to integer keys.
 //
 // Note that "const" is pretty much meaningless for this class; the const-ness
 // of MacKeychain doesn't apply to the actual keychain data, so all of the Mock
 // data is mutable; don't assume that it won't change over the life of tests.
 class MockKeychain : public MacKeychain {
  public:
-  // Create a Mock Keychain capable of holding item_capacity keychain items.
-  explicit MockKeychain(unsigned int item_capacity);
+  MockKeychain();
   virtual ~MockKeychain();
   virtual OSStatus ItemCopyAttributesAndData(
       SecKeychainItemRef itemRef, SecKeychainAttributeInfo *info,
@@ -43,8 +42,6 @@ class MockKeychain : public MacKeychain {
       SecKeychainSearchRef *searchRef) const OVERRIDE;
   virtual OSStatus SearchCopyNext(SecKeychainSearchRef searchRef,
                                   SecKeychainItemRef *itemRef) const OVERRIDE;
-  // If there are unused slots in the Mock Keychain's capacity, the new item
-  // will use the first free one, otherwise it will stomp the last item.
   // Pass "some.domain.com" as the serverName to get errSecDuplicateItem.
   virtual OSStatus AddInternetPassword(
       SecKeychainRef keychain,
@@ -127,6 +124,17 @@ class MockKeychain : public MacKeychain {
   int password_data_count() const { return password_data_count_; }
 
  private:
+  // Returns true if the keychain already contains a password that matches the
+  // attributes provided.
+  bool AlreadyContainsInternetPassword(
+      UInt32 serverNameLength, const char *serverName,
+      UInt32 securityDomainLength, const char *securityDomain,
+      UInt32 accountNameLength, const char *accountName,
+      UInt32 pathLength, const char *path,
+      UInt16 port, SecProtocolType protocol,
+      SecAuthenticationType authenticationType) const;
+  // Initializes storage for keychain data at |key|.
+  void InitializeKeychainData(unsigned int key) const;
   // Sets the data and length of |tag| in the item-th test item.
   void SetTestDataBytes(int item, UInt32 tag, const void* data, size_t length);
   // Sets the data and length of |tag| in the item-th test item based on
@@ -154,15 +162,17 @@ class MockKeychain : public MacKeychain {
 
   static const int kDummySearchRef = 1000;
 
-  typedef struct  {
+  typedef struct KeychainPasswordData {
+    KeychainPasswordData() : data(NULL), length(0) {}
     void* data;
     UInt32 length;
   } KeychainPasswordData;
 
-  SecKeychainAttributeList* keychain_attr_list_;
-  KeychainPasswordData* keychain_data_;
-  unsigned int item_capacity_;
-  mutable unsigned int item_count_;
+  // Mutable because the MockKeychain API requires its internal keychain storage
+  // to be modifiable by users of this class.
+  mutable std::map<unsigned int, SecKeychainAttributeList> keychain_attr_list_;
+  mutable std::map<unsigned int, KeychainPasswordData> keychain_data_;
+  mutable unsigned int next_item_key_;
 
   // Tracks the items that should be returned in subsequent calls to
   // SearchCopyNext, based on the last call to SearchCreateFromAttributes.
@@ -177,7 +187,7 @@ class MockKeychain : public MacKeychain {
   mutable int keychain_item_copy_count_;
   mutable int attribute_data_copy_count_;
 
-  // Tracks which items (by index) were added with AddInternetPassword.
+  // Tracks which items (by key) were added with AddInternetPassword.
   mutable std::set<unsigned int> added_via_api_;
 
   // Result code for the |FindGenericPassword()| method.

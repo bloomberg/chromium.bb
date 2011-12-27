@@ -90,9 +90,7 @@ class PasswordStoreMacInternalsTest : public testing::Test {
         "abc", "123", false },
     };
 
-    // Save some extra slots for use by AddInternetPassword.
-    unsigned int capacity = arraysize(test_data) + 3;
-    keychain_ = new MockKeychain(capacity);
+    keychain_ = new MockKeychain();
 
     for (unsigned int i = 0; i < arraysize(test_data); ++i) {
       keychain_->AddTestItem(test_data[i]);
@@ -907,7 +905,7 @@ class PasswordStoreMacTest : public testing::Test {
     FilePath db_file = db_dir_.path().AppendASCII("login.db");
     ASSERT_TRUE(login_db_->Init(db_file));
 
-    keychain_ = new MockKeychain(3);
+    keychain_ = new MockKeychain();
 
     store_ = new PasswordStoreMac(keychain_, login_db_);
     ASSERT_TRUE(store_->Init());
