@@ -387,7 +387,7 @@ class ExtensionsTest(pyauto.PyUITest):
 
   def testDisableEnableExtension(self):
     """Tests that an extension can be disabled and enabled with the UI."""
-    ext_id = self._InstallExtensionCheckDefaults('adblock.crx')
+    ext_id = self._InstallExtensionCheckDefaults('good.crx')
 
     # Disable extension.
     driver = self.NewWebDriver()
@@ -409,7 +409,7 @@ class ExtensionsTest(pyauto.PyUITest):
 
   def testAllowIncognitoExtension(self):
     """Tests allowing and disallowing an extension in incognito mode."""
-    ext_id = self._InstallExtensionCheckDefaults('adblock.crx')
+    ext_id = self._InstallExtensionCheckDefaults('good.crx')
 
     # Allow in incognito.
     driver = self.NewWebDriver()
