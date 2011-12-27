@@ -41,15 +41,6 @@
 #include "xserver-server-protocol.h"
 #include "hash.h"
 
-/*
- * TODO:
- *  - Clean X socket and lock file on exit
- *  - Nuke lock file if process doesn't exist.
- *
- * WM TODO:
- *  - Send take focus, hook into wlsc_surface_activate.
- */
-
 struct xserver {
 	struct wl_resource resource;
 };
