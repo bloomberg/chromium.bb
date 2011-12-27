@@ -2627,6 +2627,7 @@
         'browser/policy/enterprise_metrics_browsertest.cc',
         'browser/policy/enterprise_metrics_enrollment_browsertest.cc',
         'browser/popup_blocker_browsertest.cc',
+        'browser/prerender/prefetch_browsertest.cc',
         'browser/prerender/prerender_browsertest.cc',
         'browser/printing/print_dialog_cloud_uitest.cc',
         'browser/printing/print_preview_tab_controller_browsertest.cc',
