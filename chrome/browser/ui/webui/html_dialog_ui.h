@@ -21,6 +21,10 @@ class ListValue;
 template<class T> class PropertyAccessor;
 }
 
+namespace content {
+class WebContents;
+}
+
 namespace gfx {
 class Size;
 }
@@ -60,7 +64,8 @@ class HtmlDialogUIDelegate {
   // away. Only relevant if your dialog hosts code that calls
   // windows.close() and you've allowed that.  If the output parameter
   // is set to true, then the dialog is closed.  The default is false.
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) = 0;
+  virtual void OnCloseContents(content::WebContents* source,
+                               bool* out_close_dialog) = 0;
 
   // A callback to allow the delegate to dictate that the window should not
   // have a title bar.  This is useful when presenting branded interfaces.

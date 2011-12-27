@@ -105,7 +105,7 @@ class DevToolsWindow : private content::NotificationObserver,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;
-  virtual void CloseContents(TabContents* source) OVERRIDE {}
+  virtual void CloseContents(content::WebContents* source) OVERRIDE {}
   virtual bool CanReloadContents(TabContents* source) const OVERRIDE;
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut) OVERRIDE;

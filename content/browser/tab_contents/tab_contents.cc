@@ -182,6 +182,21 @@ void MakeNavigateParams(const NavigationEntry& entry,
 
 }  // namespace
 
+namespace content {
+
+WebContents* WebContents::Create(
+    BrowserContext* browser_context,
+    SiteInstance* site_instance,
+    int routing_id,
+    const WebContents* base_tab_contents,
+    SessionStorageNamespace* session_storage_namespace) {
+  return new TabContents(browser_context,
+                         site_instance,
+                         routing_id,
+                         static_cast<const TabContents*>(base_tab_contents),
+                         session_storage_namespace);
+}
+}
 
 // TabContents ----------------------------------------------------------------
 

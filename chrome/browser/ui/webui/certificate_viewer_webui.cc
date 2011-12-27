@@ -29,6 +29,8 @@
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 #endif
 
+using content::WebContents;
+
 namespace {
 
 // Default width/height of the dialog.
@@ -127,7 +129,7 @@ void CertificateViewerDialog::OnDialogClosed(const std::string& json_retval) {
   delete this;
 }
 
-void CertificateViewerDialog::OnCloseContents(TabContents* source,
+void CertificateViewerDialog::OnCloseContents(WebContents* source,
                                               bool* out_close_dialog) {
   if (out_close_dialog)
     *out_close_dialog = true;

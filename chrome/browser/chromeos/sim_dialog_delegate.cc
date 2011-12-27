@@ -15,6 +15,8 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+using content::WebContents;
+
 namespace {
 
 // Default width/height of the dialog.
@@ -113,8 +115,8 @@ void SimDialogDelegate::OnDialogClosed(const std::string& json_retval) {
   delete this;
 }
 
-void SimDialogDelegate::OnCloseContents(TabContents* source,
-                                              bool* out_close_dialog) {
+void SimDialogDelegate::OnCloseContents(WebContents* source,
+                                        bool* out_close_dialog) {
   if (out_close_dialog)
     *out_close_dialog = true;
 }

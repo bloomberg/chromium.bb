@@ -18,6 +18,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
+using content::WebContents;
+
 namespace browser {
 
 gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent, Profile* profile,
@@ -131,13 +133,13 @@ void HtmlDialogGtk::OnDialogClosed(const std::string& json_retval) {
   delete this;
 }
 
-void HtmlDialogGtk::OnCloseContents(TabContents* source,
+void HtmlDialogGtk::OnCloseContents(WebContents* source,
                                     bool* out_close_dialog) {
   if (delegate_)
     delegate_->OnCloseContents(source, out_close_dialog);
 }
 
-void HtmlDialogGtk::CloseContents(TabContents* source) {
+void HtmlDialogGtk::CloseContents(WebContents* source) {
   DCHECK(dialog_);
 
   bool close_dialog = false;

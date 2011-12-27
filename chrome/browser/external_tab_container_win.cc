@@ -494,7 +494,7 @@ void ExternalTabContainer::TabContentsCreated(TabContents* new_contents) {
   RegisterRenderViewHostForAutomation(rvh, true);
 }
 
-void ExternalTabContainer::CloseContents(TabContents* source) {
+void ExternalTabContainer::CloseContents(content::WebContents* source) {
   if (!automation_)
     return;
 

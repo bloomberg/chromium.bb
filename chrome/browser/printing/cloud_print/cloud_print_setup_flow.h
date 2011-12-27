@@ -75,8 +75,8 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog)
-      OVERRIDE;
+  virtual void OnCloseContents(content::WebContents* source,
+                               bool* out_close_dialog) OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual bool IsDialogModal() const OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;

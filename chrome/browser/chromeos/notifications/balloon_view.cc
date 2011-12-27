@@ -235,9 +235,9 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
 void BalloonViewImpl::Update() {
   stale_ = false;
-  if (!html_contents_->tab_contents())
+  if (!html_contents_->web_contents())
     return;
-  html_contents_->tab_contents()->GetController().LoadURL(
+  html_contents_->web_contents()->GetController().LoadURL(
       balloon_->notification().content_url(), content::Referrer(),
       content::PAGE_TRANSITION_LINK, std::string());
 }
@@ -271,9 +271,9 @@ void BalloonViewImpl::Layout() {
   SetBounds(x(), y(), size.width(), size.height());
 
   html_contents_->view()->SetBounds(0, 0, size.width(), size.height());
-  if (html_contents_->tab_contents()) {
+  if (html_contents_->web_contents()) {
     RenderWidgetHostView* view =
-        html_contents_->tab_contents()->GetRenderViewHost()->view();
+        html_contents_->web_contents()->GetRenderViewHost()->view();
     if (view)
       view->SetSize(size);
   }
@@ -364,7 +364,7 @@ void BalloonViewImpl::DenyPermission() {
 
 gfx::NativeView BalloonViewImpl::GetParentNativeView() {
   RenderWidgetHostView* view =
-      html_contents_->tab_contents()->GetRenderViewHost()->view();
+      html_contents_->web_contents()->GetRenderViewHost()->view();
   DCHECK(view);
   return view->GetNativeView();
 }

@@ -1010,7 +1010,7 @@ void Browser::FormatTitleForDisplay(string16* title) {
 bool Browser::TabsNeedBeforeUnloadFired() {
   if (tabs_needing_before_unload_fired_.empty()) {
     for (int i = 0; i < tab_count(); ++i) {
-      TabContents* contents = GetTabContentsAt(i);
+      WebContents* contents = GetTabContentsWrapperAt(i)->web_contents();
       if (contents->NeedToFireBeforeUnload())
         tabs_needing_before_unload_fired_.insert(contents);
     }
@@ -3557,7 +3557,7 @@ void Browser::LoadingStateChanged(TabContents* source) {
   }
 }
 
-void Browser::CloseContents(TabContents* source) {
+void Browser::CloseContents(WebContents* source) {
   if (is_attempting_to_close_browser_) {
     // If we're trying to close the browser, just clear the state related to
     // waiting for unload to fire. Don't actually try to close the tab as it
@@ -4920,7 +4920,7 @@ void Browser::ProcessPendingTabs() {
   // Process beforeunload tabs first. When that queue is empty, process
   // unload tabs.
   if (!tabs_needing_before_unload_fired_.empty()) {
-    TabContents* tab = *(tabs_needing_before_unload_fired_.begin());
+    WebContents* tab = *(tabs_needing_before_unload_fired_.begin());
     // Null check render_view_host here as this gets called on a PostTask and
     // the tab's render_view_host may have been nulled out.
     if (tab->GetRenderViewHost()) {
@@ -4937,7 +4937,7 @@ void Browser::ProcessPendingTabs() {
     // TODO(ojan): We can probably fire all the unload events in parallel and
     // get a perf benefit from that in the cases where the tab hangs in it's
     // unload handler or takes a long time to page in.
-    TabContents* tab = *(tabs_needing_unload_fired_.begin());
+    WebContents* tab = *(tabs_needing_unload_fired_.begin());
     // Null check render_view_host here as this gets called on a PostTask and
     // the tab's render_view_host may have been nulled out.
     if (tab->GetRenderViewHost()) {
@@ -4972,7 +4972,7 @@ void Browser::CancelWindowClose() {
     watcher->OnWindowCloseCanceled(this);
 }
 
-bool Browser::RemoveFromSet(UnloadListenerSet* set, TabContents* tab) {
+bool Browser::RemoveFromSet(UnloadListenerSet* set, WebContents* tab) {
   DCHECK(is_attempting_to_close_browser_);
 
   UnloadListenerSet::iterator iter = std::find(set->begin(), set->end(), tab);
@@ -4983,7 +4983,7 @@ bool Browser::RemoveFromSet(UnloadListenerSet* set, TabContents* tab) {
   return false;
 }
 
-void Browser::ClearUnloadState(TabContents* tab, bool process_now) {
+void Browser::ClearUnloadState(WebContents* tab, bool process_now) {
   // Closing of browser could be canceled (via IsClosingPermitted) between the
   // time when request was initiated and when this method is called, so check
   // for is_attempting_to_close_browser_ flag before proceeding.

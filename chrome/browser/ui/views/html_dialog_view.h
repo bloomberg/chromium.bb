@@ -73,8 +73,8 @@ class HtmlDialogView
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog)
-      OVERRIDE;
+  virtual void OnCloseContents(content::WebContents* source,
+                               bool* out_close_dialog) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
 
@@ -82,7 +82,7 @@ class HtmlDialogView
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) OVERRIDE;
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event)
       OVERRIDE;
-  virtual void CloseContents(TabContents* source) OVERRIDE;
+  virtual void CloseContents(content::WebContents* source) OVERRIDE;
 
  protected:
   // Register accelerators for this dialog.

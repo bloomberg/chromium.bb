@@ -26,7 +26,6 @@ class CannedBrowsingDataFileSystemHelper;
 class CannedBrowsingDataIndexedDBHelper;
 class CannedBrowsingDataLocalStorageHelper;
 class CookiesTreeModel;
-class TabContents;
 class Profile;
 
 namespace net {
@@ -37,7 +36,7 @@ class CookieOptions;
 class TabSpecificContentSettings : public content::WebContentsObserver,
                                    public content::NotificationObserver {
  public:
-  explicit TabSpecificContentSettings(TabContents* tab);
+  explicit TabSpecificContentSettings(content::WebContents* tab);
 
   virtual ~TabSpecificContentSettings();
 

@@ -16,7 +16,7 @@ class InfoBarDelegate;
 class InfoBarTabHelper : public content::WebContentsObserver,
                          public content::NotificationObserver {
  public:
-  explicit InfoBarTabHelper(TabContents* tab_contents);
+  explicit InfoBarTabHelper(content::WebContents* web_contents);
   virtual ~InfoBarTabHelper();
 
   // Adds an InfoBar for the specified |delegate|.

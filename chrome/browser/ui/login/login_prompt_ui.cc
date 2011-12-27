@@ -27,6 +27,7 @@
 #include "ui/gfx/size.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 class LoginHandlerSource : public ChromeURLDataManager::DataSource {
  public:
@@ -115,7 +116,7 @@ class LoginHandlerHtmlDelegate : public HtmlDialogUIDelegate,
 
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
 
-  virtual void OnCloseContents(TabContents* source,
+  virtual void OnCloseContents(WebContents* source,
                                bool* out_close_dialog) OVERRIDE {}
 
   virtual bool ShouldShowDialogTitle() const OVERRIDE {

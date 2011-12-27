@@ -18,6 +18,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 class MobileSetupDialogDelegate : public HtmlDialogUIDelegate {
  public:
@@ -41,7 +42,7 @@ class MobileSetupDialogDelegate : public HtmlDialogUIDelegate {
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
-  virtual void OnCloseContents(TabContents* source,
+  virtual void OnCloseContents(WebContents* source,
                                bool* out_close_dialog) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
@@ -107,8 +108,8 @@ std::string MobileSetupDialogDelegate::GetDialogArgs() const {
 void MobileSetupDialogDelegate::OnDialogClosed(const std::string& json_retval) {
 }
 
-void MobileSetupDialogDelegate::OnCloseContents(TabContents* source,
-                                        bool* out_close_dialog) {
+void MobileSetupDialogDelegate::OnCloseContents(WebContents* source,
+                                                bool* out_close_dialog) {
   *out_close_dialog = true;
 }
 

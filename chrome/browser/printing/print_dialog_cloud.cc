@@ -103,6 +103,7 @@
 // bringing up the dialog) isn't what we want.
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace internal_cloud_print_helpers {
 
@@ -546,7 +547,7 @@ void CloudPrintHtmlDialogDelegate::OnDialogClosed(
   delete this;
 }
 
-void CloudPrintHtmlDialogDelegate::OnCloseContents(TabContents* source,
+void CloudPrintHtmlDialogDelegate::OnCloseContents(WebContents* source,
                                                    bool* out_close_dialog) {
   if (out_close_dialog)
     *out_close_dialog = true;

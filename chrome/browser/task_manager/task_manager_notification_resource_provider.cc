@@ -37,7 +37,7 @@ TaskManagerNotificationResource::TaskManagerNotificationResource(
     default_icon_ = rb.GetBitmapNamed(IDR_PLUGIN);
   }
   process_handle_ =
-      balloon_host_->tab_contents()->GetRenderProcessHost()->GetHandle();
+      balloon_host_->web_contents()->GetRenderProcessHost()->GetHandle();
   pid_ = base::GetProcId(process_handle_);
   title_ = l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_NOTIFICATION_PREFIX,
                                       balloon_host_->GetSource());
@@ -72,7 +72,7 @@ bool TaskManagerNotificationResource::CanInspect() const {
 
 void TaskManagerNotificationResource::Inspect() const {
   DevToolsWindow::OpenDevToolsWindow(
-      balloon_host_->tab_contents()->GetRenderViewHost());
+      balloon_host_->web_contents()->GetRenderViewHost());
 }
 
 bool TaskManagerNotificationResource::SupportNetworkUsage() const {

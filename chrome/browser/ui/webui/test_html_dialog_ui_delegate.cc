@@ -6,6 +6,8 @@
 
 #include "base/utf_string_conversions.h"
 
+using content::WebContents;
+
 namespace test {
 
 TestHtmlDialogUIDelegate::TestHtmlDialogUIDelegate(const GURL& url)
@@ -43,7 +45,7 @@ std::string TestHtmlDialogUIDelegate::GetDialogArgs() const {
 void TestHtmlDialogUIDelegate::OnDialogClosed(const std::string& json_retval) {
 }
 
-void TestHtmlDialogUIDelegate::OnCloseContents(TabContents* source,
+void TestHtmlDialogUIDelegate::OnCloseContents(WebContents* source,
     bool* out_close_dialog) {
   if (out_close_dialog)
     *out_close_dialog = true;

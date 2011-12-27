@@ -15,41 +15,6 @@ namespace {
 class MockWebContentsDelegate : public content::WebContentsDelegate {
  public:
   virtual ~MockWebContentsDelegate() {}
-
-  virtual TabContents* OpenURLFromTab(TabContents* source,
-                              const OpenURLParams& params) OVERRIDE {
-    return NULL;
-  }
-
-  virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags) OVERRIDE {}
-
-  virtual void AddNavigationHeaders(
-      const GURL& url, std::string* headers) OVERRIDE {
-  }
-
-  virtual void AddNewContents(TabContents* source,
-                              TabContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture) OVERRIDE {}
-
-  virtual void ActivateContents(TabContents* contents) OVERRIDE {}
-
-  virtual void DeactivateContents(TabContents* contents) OVERRIDE {}
-
-  virtual void LoadingStateChanged(TabContents* source) OVERRIDE {}
-
-  virtual void LoadProgressChanged(double progress) OVERRIDE {}
-
-  virtual void CloseContents(TabContents* source) OVERRIDE {}
-
-  virtual void MoveContents(TabContents* source,
-                            const gfx::Rect& pos) OVERRIDE {
-  }
-
-  virtual void UpdateTargetURL(TabContents* source, int32 page_id,
-                               const GURL& url) {}
 };
 
 TEST(WebContentsDelegateTest, UnregisterInDestructor) {

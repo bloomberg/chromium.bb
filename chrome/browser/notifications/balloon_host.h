@@ -40,7 +40,7 @@ class BalloonHost : public content::WebContentsDelegate,
 
   const string16& GetSource() const;
 
-  TabContents* tab_contents() const { return tab_contents_.get(); }
+  content::WebContents* web_contents() const { return web_contents_.get(); }
 
   // Enable Web UI. This has to be called before renderer is created.
   void EnableWebUI();
@@ -51,11 +51,11 @@ class BalloonHost : public content::WebContentsDelegate,
  protected:
   virtual ~BalloonHost();
 
-  scoped_ptr<TabContents> tab_contents_;
+  scoped_ptr<content::WebContents> web_contents_;
 
  private:
   // content::WebContentsDelegate implementation:
-  virtual void CloseContents(TabContents* source) OVERRIDE;
+  virtual void CloseContents(content::WebContents* source) OVERRIDE;
   virtual void HandleMouseDown() OVERRIDE;
   virtual void UpdatePreferredSize(TabContents* source,
                                    const gfx::Size& pref_size) OVERRIDE;

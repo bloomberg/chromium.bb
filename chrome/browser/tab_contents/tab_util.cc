@@ -24,6 +24,16 @@ TabContents* GetTabContentsByID(int render_process_id, int render_view_id) {
   return render_view_host->delegate()->GetAsTabContents();
 }
 
+content::WebContents* GetWebContentsByID(int render_process_id,
+                                         int render_view_id) {
+  RenderViewHost* render_view_host =
+      RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!render_view_host)
+    return NULL;
+
+  return render_view_host->delegate()->GetAsWebContents();
+}
+
 SiteInstance* GetSiteInstanceForNewTab(TabContents* source_contents,
                                        Profile* profile,
                                        const GURL& url) {

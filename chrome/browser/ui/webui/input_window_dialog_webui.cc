@@ -20,6 +20,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::WebContents;
+
 namespace {
 
 const int kInputWindowDialogWidth = 300;
@@ -131,7 +133,7 @@ void InputWindowDialogWebUI::OnDialogClosed(const std::string& json_retval) {
   closed_ = true;
 }
 
-void InputWindowDialogWebUI::OnCloseContents(TabContents* source,
+void InputWindowDialogWebUI::OnCloseContents(WebContents* source,
                                              bool* out_close_dialog) {
 }
 

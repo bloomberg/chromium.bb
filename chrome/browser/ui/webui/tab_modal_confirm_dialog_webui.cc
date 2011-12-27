@@ -29,6 +29,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
 
+using content::WebContents;
+
 namespace browser {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
@@ -93,7 +95,7 @@ class TabModalConfirmDialogHtmlDelegate : public HtmlDialogUIDelegate {
     delete this;
   }
 
-  virtual void OnCloseContents(TabContents* source,
+  virtual void OnCloseContents(WebContents* source,
                                bool* out_close_dialog) OVERRIDE {}
 
   virtual bool ShouldShowDialogTitle() const OVERRIDE {

@@ -20,8 +20,7 @@
 #include "content/public/browser/notification_service.h"
 #include "ui/gfx/rect.h"
 
-////////////////
-// BackgroundContents
+using content::WebContents;
 
 BackgroundContents::BackgroundContents(SiteInstance* site_instance,
                                        int routing_id,
@@ -67,7 +66,7 @@ const GURL& BackgroundContents::GetURL() const {
   return tab_contents_.get() ? tab_contents_->GetURL() : GURL::EmptyGURL();
 }
 
-void BackgroundContents::CloseContents(TabContents* source) {
+void BackgroundContents::CloseContents(WebContents* source) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_CLOSED,
       content::Source<Profile>(profile_),

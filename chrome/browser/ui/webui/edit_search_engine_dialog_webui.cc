@@ -24,6 +24,8 @@
 #include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::WebContents;
+
 namespace {
 const int kEditSearchEngineDialogWidth = 440;
 const int kEditSearchEngineDialogHeight = 196;
@@ -96,8 +98,8 @@ void EditSearchEngineDialogWebUI::OnDialogClosed(
   delete this;
 }
 
-void EditSearchEngineDialogWebUI::OnCloseContents(TabContents* source,
-                                             bool* out_close_dialog) {
+void EditSearchEngineDialogWebUI::OnCloseContents(WebContents* source,
+                                                  bool* out_close_dialog) {
   NOTIMPLEMENTED();
 }
 

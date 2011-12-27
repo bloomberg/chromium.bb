@@ -20,6 +20,8 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/size.h"
 
+using content::WebContents;
+
 // Thin bridge that routes notifications to
 // HtmlDialogWindowController's member variables.
 class HtmlDialogWindowDelegateBridge : public HtmlDialogUIDelegate,
@@ -45,14 +47,14 @@ public:
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog)
-      OVERRIDE;
-  virtual void CloseContents(TabContents* source) OVERRIDE;
+  virtual void OnCloseContents(WebContents* source,
+                               bool* out_close_dialog) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE { return true; }
 
   // HtmlDialogTabContentsDelegate declarations.
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual void CloseContents(WebContents* source) OVERRIDE;
 
 private:
   HtmlDialogWindowController* controller_;  // weak
@@ -180,13 +182,13 @@ void HtmlDialogWindowDelegateBridge::OnDialogClosed(
   controller_ = nil;
 }
 
-void HtmlDialogWindowDelegateBridge::OnCloseContents(TabContents* source,
+void HtmlDialogWindowDelegateBridge::OnCloseContents(WebContents* source,
                                                      bool* out_close_dialog) {
   if (out_close_dialog)
     *out_close_dialog = true;
 }
 
-void HtmlDialogWindowDelegateBridge::CloseContents(TabContents* source) {
+void HtmlDialogWindowDelegateBridge::CloseContents(WebContents* source) {
   bool close_dialog = false;
   OnCloseContents(source, &close_dialog);
   if (close_dialog)

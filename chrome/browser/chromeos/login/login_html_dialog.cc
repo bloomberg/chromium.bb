@@ -17,6 +17,8 @@
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget.h"
 
+using content::WebContents;
+
 namespace chromeos {
 
 namespace {
@@ -124,7 +126,7 @@ void LoginHtmlDialog::OnDialogClosed(const std::string& json_retval) {
     delegate_->OnDialogClosed();
 }
 
-void LoginHtmlDialog::OnCloseContents(TabContents* source,
+void LoginHtmlDialog::OnCloseContents(WebContents* source,
                                       bool* out_close_dialog) {
   if (out_close_dialog)
     *out_close_dialog = true;

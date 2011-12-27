@@ -196,8 +196,8 @@ void HungRendererDialog::OnDialogClosed(const std::string& json_retval) {
   delete this;
 }
 
-void HungRendererDialog::OnCloseContents(TabContents* source,
-                     bool* out_close_dialog) {
+void HungRendererDialog::OnCloseContents(WebContents* source,
+                                         bool* out_close_dialog) {
   NOTIMPLEMENTED();
 }
 

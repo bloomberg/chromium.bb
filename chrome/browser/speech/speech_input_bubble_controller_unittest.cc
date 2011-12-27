@@ -6,6 +6,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/speech/speech_input_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
@@ -13,6 +14,7 @@
 #include "ui/gfx/rect.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 class SkBitmap;
 
@@ -28,10 +30,10 @@ class MockSpeechInputBubble : public SpeechInputBubbleBase {
     BUBBLE_TEST_CLICK_TRY_AGAIN,
   };
 
-  MockSpeechInputBubble(TabContents* tab_contents,
+  MockSpeechInputBubble(WebContents* web_contents,
                         Delegate* delegate,
                         const gfx::Rect&)
-      : SpeechInputBubbleBase(tab_contents) {
+      : SpeechInputBubbleBase(web_contents) {
     VLOG(1) << "MockSpeechInputBubble created";
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&InvokeDelegate, delegate));
@@ -133,7 +135,7 @@ class SpeechInputBubbleControllerTest
     }
   }
 
-  static SpeechInputBubble* CreateBubble(TabContents* tab_contents,
+  static SpeechInputBubble* CreateBubble(WebContents* web_contents,
                                          SpeechInputBubble::Delegate* delegate,
                                          const gfx::Rect& element_rect) {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -145,11 +147,14 @@ class SpeechInputBubbleControllerTest
 
     // The |tab_contents| parameter would be NULL since the dummy caller id
     // passed to CreateBubble would not have matched any active tab. So get a
-    // real TabContents pointer from the test fixture and pass that, because
+    // real WebContents pointer from the test fixture and pass that, because
     // the bubble controller registers for tab close notifications which need
-    // a valid TabContents.
-    tab_contents = test_fixture_->browser()->GetSelectedTabContents();
-    return new MockSpeechInputBubble(tab_contents, delegate, element_rect);
+    // a valid WebContents.
+    TabContentsWrapper* wrapper =
+        test_fixture_->browser()->GetSelectedTabContentsWrapper();
+    if (wrapper) 
+      web_contents = wrapper->web_contents();
+    return new MockSpeechInputBubble(web_contents, delegate, element_rect);
   }
 
  protected:

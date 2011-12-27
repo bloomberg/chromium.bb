@@ -46,7 +46,7 @@ class BackgroundContents : public content::WebContentsDelegate,
   virtual const GURL& GetURL() const;
 
   // content::WebContentsDelegate implementation:
-  virtual void CloseContents(TabContents* source) OVERRIDE;
+  virtual void CloseContents(content::WebContents* source) OVERRIDE;
   virtual bool ShouldSuppressDialogs() OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(TabContents* tab) OVERRIDE;
   virtual void AddNewContents(TabContents* source,

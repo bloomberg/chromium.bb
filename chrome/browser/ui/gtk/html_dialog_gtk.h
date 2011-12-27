@@ -34,7 +34,7 @@ class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
   // Initializes the contents of the dialog (the DOMView and the callbacks).
   gfx::NativeWindow InitDialog();
 
-  // Overridden from HtmlDialogUI::Delegate:
+  // Overridden from HtmlDialogUIDelegate:
   virtual bool IsDialogModal() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
@@ -43,14 +43,14 @@ class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog)
-      OVERRIDE;
-  virtual void CloseContents(TabContents* source) OVERRIDE;
+  virtual void OnCloseContents(content::WebContents* source,
+                               bool* out_close_dialog) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
 
   // Overridden from content::WebContentsDelegate:
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual void CloseContents(content::WebContents* source) OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_1(HtmlDialogGtk, void, OnResponse, int);

@@ -27,6 +27,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/size.h"
 
+using content::WebContents;
+
 namespace {
 
 const int kDialogWidth = 460;
@@ -219,7 +221,7 @@ void SSLClientCertificateSelectorWebUI::Unlocked(SSLClientAuthHandler* delegate,
 }
 
 
-void SSLClientCertificateSelectorWebUI::OnCloseContents(TabContents* source,
+void SSLClientCertificateSelectorWebUI::OnCloseContents(WebContents* source,
     bool* out_close_dialog) {
   NOTIMPLEMENTED();
 }

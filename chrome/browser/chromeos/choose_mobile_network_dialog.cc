@@ -14,6 +14,8 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+using content::WebContents;
+
 namespace {
 
 // Default width/height of the dialog.
@@ -72,7 +74,7 @@ void ChooseMobileNetworkDialog::OnDialogClosed(const std::string& json_retval) {
   delete this;
 }
 
-void ChooseMobileNetworkDialog::OnCloseContents(TabContents* source,
+void ChooseMobileNetworkDialog::OnCloseContents(WebContents* source,
                                                 bool* out_close_dialog) {
   if (out_close_dialog)
     *out_close_dialog = true;

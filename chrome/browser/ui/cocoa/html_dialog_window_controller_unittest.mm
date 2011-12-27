@@ -23,6 +23,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
 
+using content::WebContents;
+
 namespace {
 
 class MockDelegate : public HtmlDialogUIDelegate {
@@ -36,7 +38,7 @@ public:
   MOCK_CONST_METHOD0(GetDialogArgs, std::string());
   MOCK_METHOD1(OnDialogClosed, void(const std::string& json_retval));
   MOCK_METHOD2(OnCloseContents,
-               void(TabContents* source, bool* out_close_dialog));
+               void(WebContents* source, bool* out_close_dialog));
   MOCK_CONST_METHOD0(ShouldShowDialogTitle, bool());
 };
 

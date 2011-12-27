@@ -134,7 +134,7 @@ class ExtensionHost : public content::WebContentsDelegate,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;
-  virtual void CloseContents(TabContents* contents) OVERRIDE;
+  virtual void CloseContents(content::WebContents* contents) OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,

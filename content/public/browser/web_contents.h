@@ -13,8 +13,8 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/public/common/view_type.h"
 #include "content/common/content_export.h"
+#include "content/public/common/view_type.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -23,6 +23,7 @@ class NavigationController;
 class RenderViewHost;
 class RenderViewHostManager;
 class RenderWidgetHostView;
+class SessionStorageNamespace;
 class SiteInstance;
 // TODO(jam): of course we will have to rename TabContentsView etc to use
 // WebContents.
@@ -51,6 +52,20 @@ struct RendererPreferences;
 // Describes what goes in the main content area of a tab.
 class WebContents : public PageNavigator {
  public:
+  // |base_tab_contents| is used if we want to size the new tab contents view
+  // based on an existing tab contents view.  This can be NULL if not needed.
+  //
+  // The session storage namespace parameter allows multiple render views and
+  // tab contentses to share the same session storage (part of the WebStorage
+  // spec) space. This is useful when restoring tabs, but most callers should
+  // pass in NULL which will cause a new SessionStorageNamespace to be created.
+  CONTENT_EXPORT static WebContents* Create(
+      BrowserContext* browser_context,
+      SiteInstance* site_instance,
+      int routing_id,
+      const WebContents* base_tab_contents,
+      SessionStorageNamespace* session_storage_namespace);
+
   virtual ~WebContents() {}
 
   // Intrinsic tab state -------------------------------------------------------

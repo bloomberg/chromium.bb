@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/gfx/rect.h"
 
 using content::BrowserThread;
@@ -41,11 +41,11 @@ void SpeechInputBubbleController::CreateBubble(int caller_id,
     return;
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  TabContents* tab_contents = tab_util::GetTabContentsByID(render_process_id,
+  WebContents* web_contents = tab_util::GetWebContentsByID(render_process_id,
                                                            render_view_id);
 
   DCHECK_EQ(0u, bubbles_.count(caller_id));
-  SpeechInputBubble* bubble = SpeechInputBubble::Create(tab_contents, this,
+  SpeechInputBubble* bubble = SpeechInputBubble::Create(web_contents, this,
                                                         element_rect);
   if (!bubble) {
     // Could be null if tab or display rect were invalid.
@@ -101,10 +101,10 @@ void SpeechInputBubbleController::UpdateTabContentsSubscription(
   // If there are any other bubbles existing for the same TabContents, we would
   // have subscribed to tab close notifications on their behalf and we need to
   // stay registered. So we don't change the subscription in such cases.
-  TabContents* tab_contents = bubbles_[caller_id]->tab_contents();
+  WebContents* web_contents = bubbles_[caller_id]->web_contents();
   for (BubbleCallerIdMap::iterator iter = bubbles_.begin();
        iter != bubbles_.end(); ++iter) {
-    if (iter->second->tab_contents() == tab_contents &&
+    if (iter->second->web_contents() == web_contents &&
         iter->first != caller_id) {
       // At least one other bubble exists for the same TabContents. So don't
       // make any change to the subscription.
@@ -114,10 +114,10 @@ void SpeechInputBubbleController::UpdateTabContentsSubscription(
 
   if (action == BUBBLE_ADDED) {
     registrar_->Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                    content::Source<WebContents>(tab_contents));
+                    content::Source<WebContents>(web_contents));
   } else {
     registrar_->Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                    content::Source<WebContents>(tab_contents));
+                    content::Source<WebContents>(web_contents));
   }
 }
 
@@ -130,7 +130,7 @@ void SpeechInputBubbleController::Observe(
     WebContents* web_contents = content::Source<WebContents>(source).ptr();
     BubbleCallerIdMap::iterator iter = bubbles_.begin();
     while (iter != bubbles_.end()) {
-      if (iter->second->tab_contents() == web_contents) {
+      if (iter->second->web_contents() == web_contents) {
         BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
             base::Bind(
                 &SpeechInputBubbleController::InvokeDelegateButtonClicked,

@@ -28,6 +28,8 @@
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/layout_constants.h"
 
+using content::WebContents;
+
 namespace {
 
 const int kBubbleHorizMargin = 6;
@@ -45,7 +47,7 @@ class SpeechInputBubbleView
   SpeechInputBubbleView(SpeechInputBubbleDelegate* delegate,
                         views::View* anchor_view,
                         const gfx::Rect& element_rect,
-                        TabContents* tab_contents);
+                        WebContents* web_contents);
 
   void UpdateLayout(SpeechInputBubbleBase::DisplayMode mode,
                     const string16& message_text,
@@ -71,7 +73,7 @@ class SpeechInputBubbleView
  private:
   SpeechInputBubbleDelegate* delegate_;
   gfx::Rect element_rect_;
-  TabContents* tab_contents_;
+  WebContents* web_contents_;
   views::ImageView* icon_;
   views::Label* heading_;
   views::Label* message_;
@@ -88,11 +90,11 @@ SpeechInputBubbleView::SpeechInputBubbleView(
     SpeechInputBubbleDelegate* delegate,
     views::View* anchor_view,
     const gfx::Rect& element_rect,
-    TabContents* tab_contents)
+    WebContents* web_contents)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       delegate_(delegate),
       element_rect_(element_rect),
-      tab_contents_(tab_contents),
+      web_contents_(web_contents),
       icon_(NULL),
       heading_(NULL),
       message_(NULL),
@@ -117,7 +119,7 @@ void SpeechInputBubbleView::OnWidgetActivationChanged(views::Widget* widget,
 
 gfx::Rect SpeechInputBubbleView::GetAnchorRect() {
   gfx::Rect container_rect;
-  tab_contents_->GetContainerBounds(&container_rect);
+  web_contents_->GetContainerBounds(&container_rect);
   gfx::Rect anchor(element_rect_);
   anchor.Offset(container_rect.origin());
   if (!container_rect.Intersects(anchor))
@@ -212,7 +214,7 @@ void SpeechInputBubbleView::ButtonPressed(views::Button* source,
 void SpeechInputBubbleView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK_EQ(source, mic_settings_);
   speech_input::SpeechInputManager::ShowAudioInputSettingsFromUI(
-      &tab_contents_->GetBrowserContext()->GetResourceContext());
+      &web_contents_->GetBrowserContext()->GetResourceContext());
 }
 
 gfx::Size SpeechInputBubbleView::GetPreferredSize() {
@@ -302,7 +304,7 @@ void SpeechInputBubbleView::Layout() {
 // Implementation of SpeechInputBubble.
 class SpeechInputBubbleImpl : public SpeechInputBubbleBase {
  public:
-  SpeechInputBubbleImpl(TabContents* tab_contents,
+  SpeechInputBubbleImpl(WebContents* web_contents,
                         Delegate* delegate,
                         const gfx::Rect& element_rect);
   virtual ~SpeechInputBubbleImpl();
@@ -323,10 +325,10 @@ class SpeechInputBubbleImpl : public SpeechInputBubbleBase {
   DISALLOW_COPY_AND_ASSIGN(SpeechInputBubbleImpl);
 };
 
-SpeechInputBubbleImpl::SpeechInputBubbleImpl(TabContents* tab_contents,
+SpeechInputBubbleImpl::SpeechInputBubbleImpl(WebContents* web_contents,
                                              Delegate* delegate,
                                              const gfx::Rect& element_rect)
-    : SpeechInputBubbleBase(tab_contents),
+    : SpeechInputBubbleBase(web_contents),
       delegate_(delegate),
       bubble_(NULL),
       element_rect_(element_rect) {
@@ -342,13 +344,13 @@ void SpeechInputBubbleImpl::Show() {
 
   // Anchor to the location icon view, in case |element_rect| is offscreen.
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   views::View* icon = browser_view->GetLocationBarView() ?
       browser_view->GetLocationBarView()->location_icon_view() : NULL;
   bubble_ = new SpeechInputBubbleView(delegate_, icon, element_rect_,
-                                      tab_contents());
+                                      web_contents());
   browser::CreateViewsBubble(bubble_);
   UpdateLayout();
   bubble_->Show();
@@ -377,8 +379,8 @@ void SpeechInputBubbleImpl::UpdateImage() {
 }  // namespace
 
 SpeechInputBubble* SpeechInputBubble::CreateNativeBubble(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     SpeechInputBubble::Delegate* delegate,
     const gfx::Rect& element_rect) {
-  return new SpeechInputBubbleImpl(tab_contents, delegate, element_rect);
+  return new SpeechInputBubbleImpl(web_contents, delegate, element_rect);
 }

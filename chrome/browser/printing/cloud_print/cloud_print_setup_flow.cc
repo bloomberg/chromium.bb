@@ -36,6 +36,8 @@
 #include "ui/base/l10n/l10n_font_util.h"
 #include "ui/gfx/font.h"
 
+using content::WebContents;
+
 namespace {
 
 string16 SetupIframeXPath() {
@@ -178,7 +180,7 @@ std::string CloudPrintSetupFlow::GetDialogArgs() const {
   return dialog_start_args_;
 }
 
-void CloudPrintSetupFlow::OnCloseContents(TabContents* source,
+void CloudPrintSetupFlow::OnCloseContents(WebContents* source,
                                           bool* out_close_dialog) {
 }
 

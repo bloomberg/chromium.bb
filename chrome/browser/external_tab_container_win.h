@@ -130,7 +130,7 @@ class ExternalTabContainer : public content::WebContentsDelegate,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;
-  virtual void CloseContents(TabContents* source) OVERRIDE;
+  virtual void CloseContents(content::WebContents* source) OVERRIDE;
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) OVERRIDE;
   virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
   virtual void UpdateTargetURL(TabContents* source, int32 page_id,

@@ -29,6 +29,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::WebContents;
 using testing::A;
 using testing::AtLeast;
 using testing::Eq;
@@ -121,7 +122,7 @@ class MockCloudPrintHtmlDialogDelegate : public CloudPrintHtmlDialogDelegate {
   MOCK_METHOD1(OnDialogClosed,
       void(const std::string& json_retval));
   MOCK_METHOD2(OnCloseContents,
-      void(TabContents* source, bool *out_close_dialog));
+      void(WebContents* source, bool *out_close_dialog));
 };
 
 }  // namespace internal_cloud_print_helpers

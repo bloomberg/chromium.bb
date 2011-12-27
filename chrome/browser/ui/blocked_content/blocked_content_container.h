@@ -68,7 +68,7 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
                               bool user_gesture) OVERRIDE;
 
   // Removes |source| from our internal list of blocked contents.
-  virtual void CloseContents(TabContents* source) OVERRIDE;
+  virtual void CloseContents(content::WebContents* source) OVERRIDE;
 
   // Changes the opening rectangle associated with |source|.
   virtual void MoveContents(TabContents* source,

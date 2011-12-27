@@ -32,6 +32,7 @@ namespace content {
 class BrowserContext;
 class DownloadItem;
 class JavaScriptDialogCreator;
+class WebContents;
 class WebIntentsDispatcher;
 struct FileChooserParams;
 }
@@ -112,7 +113,7 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Request the delegate to close this tab contents, and do whatever cleanup
   // it needs to do.
-  virtual void CloseContents(TabContents* source) {}
+  virtual void CloseContents(WebContents* source) {}
 
   // Informs the delegate that the underlying RenderViewHost has been swapped
   // out so it can perform any cleanup necessary.

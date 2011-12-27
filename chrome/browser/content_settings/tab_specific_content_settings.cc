@@ -24,9 +24,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "webkit/fileapi/file_system_types.h"
 
@@ -49,7 +50,7 @@ bool TabSpecificContentSettings::LocalSharedObjectsContainer::empty() const {
       session_storages_->empty();
 }
 
-TabSpecificContentSettings::TabSpecificContentSettings(TabContents* tab)
+TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
     : content::WebContentsObserver(tab),
       profile_(Profile::FromBrowserContext(tab->GetBrowserContext())),
       allowed_local_shared_objects_(profile_),
@@ -81,7 +82,7 @@ TabSpecificContentSettings* TabSpecificContentSettings::Get(
   // latter will miss provisional RenderViewHosts.
   for (TabSpecificList::iterator i = g_tab_specific.Get().begin();
        i != g_tab_specific.Get().end(); ++i) {
-    if (view->delegate()->GetAsTabContents() == (*i)->web_contents())
+    if (view->delegate()->GetAsWebContents() == (*i)->web_contents())
       return (*i);
   }
 

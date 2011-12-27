@@ -214,7 +214,7 @@ void BalloonViewImpl::RepositionToBalloon() {
     html_container_->SetBounds(contents_rect);
     html_contents_->SetPreferredSize(contents_rect.size());
     RenderWidgetHostView* view =
-        html_contents_->tab_contents()->GetRenderWidgetHostView();
+        html_contents_->web_contents()->GetRenderWidgetHostView();
     if (view)
       view->SetSize(contents_rect.size());
     return;
@@ -230,9 +230,9 @@ void BalloonViewImpl::RepositionToBalloon() {
 
 void BalloonViewImpl::Update() {
   DCHECK(html_contents_.get()) << "BalloonView::Update called before Show";
-  if (!html_contents_->tab_contents())
+  if (!html_contents_->web_contents())
     return;
-  html_contents_->tab_contents()->GetController().LoadURL(
+  html_contents_->web_contents()->GetController().LoadURL(
       balloon_->notification().content_url(), content::Referrer(),
       content::PAGE_TRANSITION_LINK, std::string());
 }
@@ -263,7 +263,7 @@ void BalloonViewImpl::AnimationProgressed(const ui::Animation* animation) {
 
   html_contents_->SetPreferredSize(contents_rect.size());
   RenderWidgetHostView* view =
-      html_contents_->tab_contents()->GetRenderWidgetHostView();
+      html_contents_->web_contents()->GetRenderWidgetHostView();
   if (view)
     view->SetSize(contents_rect.size());
 }

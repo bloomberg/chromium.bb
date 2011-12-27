@@ -16,6 +16,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
 
+using content::WebContents;
+
 static const int kBaseWidth = 1252;
 static const int kBaseHeight = 516;
 static const int kHorizontalMargin = 28;
@@ -69,7 +71,7 @@ void KeyboardOverlayDelegate::OnDialogClosed(
   return;
 }
 
-void KeyboardOverlayDelegate::OnCloseContents(TabContents* source,
+void KeyboardOverlayDelegate::OnCloseContents(WebContents* source,
                                               bool* out_close_dialog) {
 }
 

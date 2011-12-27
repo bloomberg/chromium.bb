@@ -16,6 +16,8 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_delegate.h"
 
+using content::WebContents;
+
 class ConstrainedHtmlDelegateViews : public TabContentsContainer,
                                      public ConstrainedHtmlUIDelegate,
                                      public views::WidgetDelegate,
@@ -58,7 +60,7 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
 
   // HtmlDialogTabContentsDelegate interface.
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) OVERRIDE {}
-  virtual void CloseContents(TabContents* source) OVERRIDE {
+  virtual void CloseContents(WebContents* source) OVERRIDE {
     window_->CloseConstrainedWindow();
   }
 

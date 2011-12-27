@@ -10,12 +10,14 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/notification_service.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 
-InfoBarTabHelper::InfoBarTabHelper(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents),
+using content::WebContents;
+
+InfoBarTabHelper::InfoBarTabHelper(WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
       infobars_enabled_(true) {
-  DCHECK(tab_contents);
+  DCHECK(web_contents);
 }
 
 InfoBarTabHelper::~InfoBarTabHelper() {

@@ -346,9 +346,9 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
 void BalloonViewImpl::Update() {
   DCHECK(html_contents_.get()) << "BalloonView::Update called before Show";
-  if (!html_contents_->tab_contents())
+  if (!html_contents_->web_contents())
     return;
-  html_contents_->tab_contents()->GetController().LoadURL(
+  html_contents_->web_contents()->GetController().LoadURL(
       balloon_->notification().content_url(), content::Referrer(),
       content::PAGE_TRANSITION_LINK, std::string());
 }

@@ -27,6 +27,7 @@
 #include "content/public/browser/notification_types.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 // This module implements a sign in dialog for cloud print.
 // it is based heavily off "chrome/browser/printing/print_dialog_cloud.cc".
@@ -114,7 +115,7 @@ class CloudPrintSigninDelegate : public HtmlDialogUIDelegate {
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
   virtual void OnCloseContents(
-      TabContents* source, bool* out_close_dialog) OVERRIDE;
+      WebContents* source, bool* out_close_dialog) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
  private:
   TabContents* parent_tab_;
@@ -168,7 +169,7 @@ std::string CloudPrintSigninDelegate::GetDialogArgs() const {
 void CloudPrintSigninDelegate::OnDialogClosed(const std::string& json_retval) {
 }
 
-void CloudPrintSigninDelegate::OnCloseContents(TabContents* source,
+void CloudPrintSigninDelegate::OnCloseContents(WebContents* source,
                                                bool* out_close_dialog) {
   if (out_close_dialog)
     *out_close_dialog = true;

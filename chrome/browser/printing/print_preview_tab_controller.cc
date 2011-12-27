@@ -62,7 +62,7 @@ class PrintPreviewTabDelegate : public HtmlDialogUIDelegate {
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
-  virtual void OnCloseContents(TabContents* source,
+  virtual void OnCloseContents(WebContents* source,
                                bool* out_close_dialog) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
 
@@ -126,7 +126,7 @@ void PrintPreviewTabDelegate::OnDialogClosed(
   delete this;
 }
 
-void PrintPreviewTabDelegate::OnCloseContents(TabContents* /* source */,
+void PrintPreviewTabDelegate::OnCloseContents(WebContents* /* source */,
                                               bool* /* out_close_dialog */) {
   // Not used, returning dummy value.
   NOTREACHED();

@@ -29,7 +29,7 @@ class ChooseMobileNetworkDialog : private HtmlDialogUIDelegate {
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
   virtual void OnCloseContents(
-      TabContents* source, bool* out_close_dialog) OVERRIDE;
+      content::WebContents* source, bool* out_close_dialog) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
 

@@ -26,6 +26,7 @@
 #endif
 
 using content::BrowserThread;
+using content::WebContents;
 
 class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
  public:
@@ -84,7 +85,7 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE {
     OnCloseDialog();
   }
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog)
+  virtual void OnCloseContents(WebContents* source, bool* out_close_dialog)
       OVERRIDE {
     *out_close_dialog = true;
   }

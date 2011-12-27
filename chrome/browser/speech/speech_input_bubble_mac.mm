@@ -12,9 +12,11 @@
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/speech_input_window_controller.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/web_contents.h"
 #include "skia/ext/skia_utils_mac.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -23,7 +25,7 @@ namespace {
 // more information on how this gets used.
 class SpeechInputBubbleImpl : public SpeechInputBubbleBase {
  public:
-  SpeechInputBubbleImpl(TabContents* tab_contents,
+  SpeechInputBubbleImpl(WebContents* web_contents,
                         Delegate* delegate,
                         const gfx::Rect& element_rect);
   virtual ~SpeechInputBubbleImpl();
@@ -38,10 +40,10 @@ class SpeechInputBubbleImpl : public SpeechInputBubbleBase {
   gfx::Rect element_rect_;
 };
 
-SpeechInputBubbleImpl::SpeechInputBubbleImpl(TabContents* tab_contents,
+SpeechInputBubbleImpl::SpeechInputBubbleImpl(WebContents* web_contents,
                                              Delegate* delegate,
                                              const gfx::Rect& element_rect)
-    : SpeechInputBubbleBase(tab_contents),
+    : SpeechInputBubbleBase(web_contents),
       delegate_(delegate),
       element_rect_(element_rect) {
 }
@@ -66,8 +68,8 @@ void SpeechInputBubbleImpl::Show() {
   // arrow anchor point inside that to point at the bottom-left of the html
   // input element rect if the position is valid, otherwise point it towards
   // the page icon in the omnibox.
-  gfx::NativeView view = tab_contents()->GetView()->GetNativeView();
-  NSWindow* parentWindow = tab_contents()->GetView()->GetTopLevelNativeWindow();
+  gfx::NativeView view = web_contents()->GetView()->GetNativeView();
+  NSWindow* parentWindow = web_contents()->GetView()->GetTopLevelNativeWindow();
   NSRect tab_bounds = [view bounds];
   int anchor_x = tab_bounds.origin.x + element_rect_.x() +
                  element_rect_.width() - kBubbleTargetOffsetX;
@@ -115,9 +117,9 @@ void SpeechInputBubbleImpl::UpdateLayout() {
 }  // namespace
 
 SpeechInputBubble* SpeechInputBubble::CreateNativeBubble(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     Delegate* delegate,
     const gfx::Rect& element_rect) {
-  return new SpeechInputBubbleImpl(tab_contents, delegate, element_rect);
+  return new SpeechInputBubbleImpl(web_contents, delegate, element_rect);
 }
 

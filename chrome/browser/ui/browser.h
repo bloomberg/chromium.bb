@@ -930,7 +930,7 @@ class Browser : public TabHandlerDelegate,
   virtual void ActivateContents(TabContents* contents) OVERRIDE;
   virtual void DeactivateContents(TabContents* contents) OVERRIDE;
   virtual void LoadingStateChanged(TabContents* source) OVERRIDE;
-  virtual void CloseContents(TabContents* source) OVERRIDE;
+  virtual void CloseContents(content::WebContents* source) OVERRIDE;
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) OVERRIDE;
   virtual void DetachContents(TabContents* source) OVERRIDE;
   virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
@@ -1165,7 +1165,7 @@ class Browser : public TabHandlerDelegate,
 
   // OnBeforeUnload handling //////////////////////////////////////////////////
 
-  typedef std::set<TabContents*> UnloadListenerSet;
+  typedef std::set<content::WebContents*> UnloadListenerSet;
 
   // Processes the next tab that needs it's beforeunload/unload event fired.
   void ProcessPendingTabs();
@@ -1180,7 +1180,7 @@ class Browser : public TabHandlerDelegate,
   // Removes |tab| from the passed |set|.
   // Returns whether the tab was in the set in the first place.
   // TODO(beng): this method needs a better name!
-  bool RemoveFromSet(UnloadListenerSet* set, TabContents* tab);
+  bool RemoveFromSet(UnloadListenerSet* set, content::WebContents* tab);
 
   // Cleans up state appropriately when we are trying to close the browser and
   // the tab has finished firing its unload handler. We also use this in the
@@ -1191,7 +1191,7 @@ class Browser : public TabHandlerDelegate,
   // Typically you'll want to pass in true for |process_now|. Passing in true
   // may result in deleting |tab|. If you know that shouldn't happen (because of
   // the state of the stack), pass in false.
-  void ClearUnloadState(TabContents* tab, bool process_now);
+  void ClearUnloadState(content::WebContents* tab, bool process_now);
 
   // In-progress download termination handling /////////////////////////////////
 

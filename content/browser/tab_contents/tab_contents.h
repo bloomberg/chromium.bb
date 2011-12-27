@@ -64,13 +64,7 @@ class CONTENT_EXPORT TabContents
     INVALIDATE_TITLE           = 1 << 4,  // The title changed.
   };
 
-  // |base_tab_contents| is used if we want to size the new tab contents view
-  // based on an existing tab contents view.  This can be NULL if not needed.
-  //
-  // The session storage namespace parameter allows multiple render views and
-  // tab contentses to share the same session storage (part of the WebStorage
-  // spec) space. This is useful when restoring tabs, but most callers should
-  // pass in NULL which will cause a new SessionStorageNamespace to be created.
+  // See WebContents::Create for a description of these parameters.
   TabContents(content::BrowserContext* browser_context,
               SiteInstance* site_instance,
               int routing_id,

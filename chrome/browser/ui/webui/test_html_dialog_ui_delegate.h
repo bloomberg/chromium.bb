@@ -32,8 +32,8 @@ class TestHtmlDialogUIDelegate : public HtmlDialogUIDelegate {
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog)
-      OVERRIDE;
+  virtual void OnCloseContents(content::WebContents* source,
+                               bool* out_close_dialog) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
 
  protected:

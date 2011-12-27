@@ -26,6 +26,8 @@
 
 class RenderWidgetHost;
 
+using content::WebContents;
+
 namespace browser {
 
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
@@ -187,7 +189,7 @@ void HtmlDialogView::OnDialogClosed(const std::string& json_retval) {
   GetWidget()->Close();
 }
 
-void HtmlDialogView::OnCloseContents(TabContents* source,
+void HtmlDialogView::OnCloseContents(WebContents* source,
                                      bool* out_close_dialog) {
   if (delegate_)
     delegate_->OnCloseContents(source, out_close_dialog);
@@ -235,7 +237,7 @@ void HtmlDialogView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 #endif
 }
 
-void HtmlDialogView::CloseContents(TabContents* source) {
+void HtmlDialogView::CloseContents(WebContents* source) {
   bool close_dialog = false;
   OnCloseContents(source, &close_dialog);
   if (close_dialog)
