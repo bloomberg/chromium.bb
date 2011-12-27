@@ -170,6 +170,27 @@ var util = {
     reader.readEntries(onReadSome, onError);
   },
 
+  readDirectory: function(root, path, callback) {
+    function onError(e) {
+      callback([], e);
+    }
+    root.getDirectory(path, {create: false}, function(entry) {
+      var reader = entry.createReader();
+      var r = [];
+      function readNext() {
+        reader.readEntries(function(results) {
+          if (results.length == 0) {
+            callback(r, null);
+            return;
+          }
+          r.push.apply(r, results);
+          readNext();
+        }, onError);
+      }
+      readNext();
+    }, onError);
+  },
+
   /**
    * Utility function to resolve multiple directories with a single call.
    *

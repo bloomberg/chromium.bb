@@ -7,10 +7,6 @@
 const EMPTY_IMAGE_URI = 'data:image/gif;base64,'
         + 'R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw%3D%3D';
 
-// If directory files changes too often, don't rescan directory more than once
-// per specified interval
-const SIMULTANEOUS_RESCAN_INTERVAL = 1000;
-
 /**
  * FileManager constructor.
  *
@@ -25,7 +21,6 @@ const SIMULTANEOUS_RESCAN_INTERVAL = 1000;
  */
 function FileManager(dialogDom) {
   this.dialogDom_ = dialogDom;
-  this.rootEntries_ = null;
   this.filesystem_ = null;
   this.params_ = location.search ?
                  JSON.parse(decodeURIComponent(location.search.substr(1))) :
@@ -43,8 +38,6 @@ function FileManager(dialogDom) {
   // True if we should filter out files that start with a dot.
   this.filterFiles_ = true;
   this.subscribedOnDirectoryChanges_ = false;
-  this.pendingRescanQueue_ = [];
-  this.rescanRunning_ = false;
 
   this.commands_ = {};
 
@@ -82,33 +75,10 @@ FileManager.prototype = {
   const RIGHT_TRIANGLE = '\u25b8';
 
   /**
-   * The DirectoryEntry.fullPath value of the directory containing externally
-   * mounted removable storage volumes.
-   */
-  const REMOVABLE_DIRECTORY = '/removable';
-
-  /**
-   * The DirectoryEntry.fullPath value of the directory containing externally
-   * mounted archive file volumes.
-   */
-  const ARCHIVE_DIRECTORY = '/archive';
-
-  /**
-   * The DirectoryEntry.fullPath value of the downloads directory.
-   */
-  const DOWNLOADS_DIRECTORY = '/Downloads';
-
-  /**
    * Location of the FAQ about the downloads directory.
    */
   const DOWNLOADS_FAQ_URL = 'http://www.google.com/support/chromeos/bin/' +
       'answer.py?hl=en&answer=1061547';
-
-  /**
-   * Mnemonics for the second parameter of the changeDirectory method.
-   */
-  const CD_WITH_HISTORY = true;
-  const CD_NO_HISTORY = false;
 
   /**
    * Mnemonics for the recurse parameter of the copyFiles method.
@@ -455,8 +425,8 @@ FileManager.prototype = {
 
   function isSystemDirEntry(dirEntry) {
     return dirEntry.fullPath == '/' ||
-        dirEntry.fullPath == REMOVABLE_DIRECTORY ||
-        dirEntry.fullPath == ARCHIVE_DIRECTORY;
+        dirEntry.fullPath == '/' + DirectoryModel.REMOVABLE_DIRECTORY ||
+        dirEntry.fullPath == '/' + DirectoryModel.ARCHIVE_DIRECTORY;
   }
 
   function removeChildren(element) {
@@ -516,87 +486,15 @@ FileManager.prototype = {
     });
 
     function onDone() {
-      if (self.mountPoints_ && self.rootEntries_)
+      if (self.mountPoints_ && self.filesystem_)
         self.init_();
     }
 
     chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
       metrics.recordInterval('Load.FileSystem');
-
       self.filesystem_ = filesystem;
-      self.resolveRoots_(function(rootEntries) {
-        self.rootEntries_ = rootEntries;
-        onDone();
-      });
+      onDone();
     });
-  };
-
-  /**
-   * Get root entries asynchronously. Invokes callback
-   * when have finished.
-   */
-  FileManager.prototype.resolveRoots_ = function(callback) {
-    var rootPaths = [DOWNLOADS_DIRECTORY, ARCHIVE_DIRECTORY,
-        REMOVABLE_DIRECTORY].map(function(s) { return s.substring(1); });
-    var rootEntries = [];
-
-    // The number of entries left to enumerate to get all roots.
-    // When equals to zero, we are done.
-    var entriesToEnumerate = 0;
-    // Entries may be enumerated faster than next one appears, so we have this
-    // guard to not finish too early.
-    var allEntriesFound = false;
-    var done = false;
-
-    function onDone() {
-      if (done) return;
-      done = true;
-      metrics.recordInterval('Load.Roots');
-      callback(rootEntries);
-    }
-
-    function onPathError(path, err) {
-      console.error('Error locating root path: ' + path + ': ' + err);
-    }
-
-    function onRootFound(root) {
-      if (root) {
-        rootEntries.push(root);
-      } else {
-        entriesToEnumerate--;
-        if (entriesToEnumerate == 0 && allEntriesFound)
-          onDone();
-      }
-    }
-
-    function onEntryFound(entry) {
-      if (entry) {
-        entriesToEnumerate++;
-        var path = entry.fullPath;
-        if (path == ARCHIVE_DIRECTORY || path == REMOVABLE_DIRECTORY) {
-          // All removable devices and mounted archives are considered
-          // roots, and are shown in the sidebar.
-          util.forEachDirEntry(entry, onRootFound);
-        } else {
-          onRootFound(entry);
-          onRootFound(null);
-        }
-      } else {
-        allEntriesFound = true;
-        if (entriesToEnumerate == 0)
-          onDone();
-      }
-    }
-
-    metrics.startInterval('Load.Roots');
-    if (this.filesystem_.name.match(/^chrome-extension_\S+:external/i)) {
-      // We've been handed the local filesystem, whose root directory
-      // cannot be enumerated.
-      util.getDirectories(this.filesystem_.root, {create: false}, rootPaths,
-                          onEntryFound, onPathError);
-    } else {
-      util.forEachDirEntry(this.filesystem_.root, onEntryFound);
-    }
   };
 
   /**
@@ -647,9 +545,6 @@ FileManager.prototype = {
     this.initFileList_();
     this.initDialogs_();
 
-    // DirectoryEntry representing the current directory of the dialog.
-    this.currentDirEntry_ = null;
-
     this.copyManager_ = new FileCopyManager();
     this.copyManager_.addEventListener('copy-progress',
                                        this.onCopyProgress_.bind(this));
@@ -657,8 +552,8 @@ FileManager.prototype = {
     window.addEventListener('popstate', this.onPopState_.bind(this));
     window.addEventListener('unload', this.onUnload_.bind(this));
 
-    this.addEventListener('directory-changed',
-                          this.onDirectoryChanged_.bind(this));
+    this.directoryModel_.addEventListener('directory-changed',
+                                          this.onDirectoryChanged_.bind(this));
     this.addEventListener('selection-summarized',
                           this.onSelectionSummarized_.bind(this));
 
@@ -682,7 +577,7 @@ FileManager.prototype = {
 
     this.summarizeSelection_();
 
-    this.dataModel_.sort('cachedMtime_', 'desc');
+    this.directoryModel_.fileList.sort('cachedMtime_', 'desc');
 
     this.refocus();
 
@@ -808,30 +703,45 @@ FileManager.prototype = {
     // them.  Instead we maintain this bogus data model, and hook it up to the
     // view that is not in use.
     this.emptyDataModel_ = new cr.ui.ArrayDataModel([]);
+    this.emptySelectionModel_ = new cr.ui.ListSelectionModel();
 
-    this.dataModel_ = new cr.ui.ArrayDataModel([]);
+    var sigleSelection =
+        this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE ||
+        this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FOLDER ||
+        this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE;
+
+    this.directoryModel_ = new DirectoryModel(this.filesystem_.root,
+                                              sigleSelection);
+
+    var dataModel = this.directoryModel_.fileList;
     var collator = this.collator_;
-    this.dataModel_.setCompareFunction('name', function(a, b) {
+    dataModel.setCompareFunction('name', function(a, b) {
       return collator.compare(a.name, b.name);
     });
-    this.dataModel_.setCompareFunction('cachedMtime_',
-                                       this.compareMtime_.bind(this));
-    this.dataModel_.setCompareFunction('cachedSize_',
-                                       this.compareSize_.bind(this));
-    this.dataModel_.setCompareFunction('type',
-                                       this.compareType_.bind(this));
-    this.dataModel_.prepareSort = this.prepareSort_.bind(this);
+    dataModel.setCompareFunction('cachedMtime_',
+                                 this.compareMtime_.bind(this));
+    dataModel.setCompareFunction('cachedSize_',
+                                 this.compareSize_.bind(this));
+    dataModel.setCompareFunction('type',
+                                 this.compareType_.bind(this));
 
-    if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE ||
-        this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FOLDER ||
-        this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
-      this.selectionModelClass_ = cr.ui.ListSingleSelectionModel;
-    } else {
-      this.selectionModelClass_ = cr.ui.ListSelectionModel;
-    }
+    dataModel.addEventListener('splice',
+                               this.onDataModelSplice_.bind(this));
 
-    this.dataModel_.addEventListener('splice',
-                                     this.onDataModelSplice_.bind(this));
+    this.directoryModel_.fileListSelection.addEventListener(
+        'change', this.onSelectionChanged_.bind(this));
+
+    this.directoryModel_.autoSelectIndex =
+        this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE ? -1 : 0;
+
+    // TODO(serya): temporary solution.
+    this.directoryModel_.cacheEntryDate = cacheEntryDate;
+    this.directoryModel_.cacheEntrySize = cacheEntrySize;
+    this.directoryModel_.cacheEntryFileType =
+        this.cacheEntryFileType.bind(this);
+    this.directoryModel_.cacheEntryIconType =
+        this.cacheEntryIconType.bind(this);
+
 
     this.initTable_();
     this.initGrid_();
@@ -856,23 +766,72 @@ FileManager.prototype = {
         'change', this.onRootsSelectionChanged_.bind(this));
 
     // TODO(dgozman): add "Add a drive" item.
-    this.rootsList_.dataModel = new cr.ui.ArrayDataModel(this.rootEntries_);
+    this.rootsList_.dataModel = new cr.ui.ArrayDataModel([]);
+    this.updateRoots_();
   };
 
   FileManager.prototype.updateRoots_ = function(opt_changeDirectoryTo) {
     var self = this;
     this.resolveRoots_(function(rootEntries) {
-      self.rootEntries_ = rootEntries;
-
       var dataModel = self.rootsList_.dataModel;
       var args = [0, dataModel.length].concat(rootEntries);
       dataModel.splice.apply(dataModel, args);
 
       self.updateRootsListSelection_();
+      // Breadcrumbs depend on roots and current directory.
+      self.updateBreadcrumbs_();
 
       if (opt_changeDirectoryTo)
-        self.changeDirectory(opt_changeDirectoryTo);
+        self.directoryModel_.changeDirectory(opt_changeDirectoryTo);
     });
+  };
+
+  /**
+   * Get root entries asynchronously. Invokes callback
+   * when have finished.
+   */
+  FileManager.prototype.resolveRoots_ = function(callback) {
+    var groups = {
+      downloads: null,
+      archives: null,
+      removables: null
+    };
+
+    var root = this.filesystem_.root;
+
+    metrics.startInterval('Load.Roots');
+    function done() {
+      for (var i in groups)
+        if (!groups[i])
+          return;
+
+      callback(groups.downloads.
+               concat(groups.archives).
+               concat(groups.removables));
+      metrics.recordInterval('Load.Roots');
+    }
+
+    function append(index, values, opt_error) {
+      groups[index] = values;
+      done();
+    }
+
+    function onDownloads(entry) {
+      groups.downloads = [entry];
+      done();
+    }
+
+    function onDownloadsError(error) {
+      groups.downloads = [];
+      done();
+    }
+
+    root.getDirectory(DirectoryModel.DOWNLOADS_DIRECTORY, { create: false },
+                      onDownloads, onDownloadsError);
+    util.readDirectory(root, DirectoryModel.ARCHIVE_DIRECTORY,
+                       append.bind(this, 'archives'));
+    util.readDirectory(root, DirectoryModel.REMOVABLE_DIRECTORY,
+                       append.bind(this, 'removables'));
   };
 
   /**
@@ -1174,40 +1133,39 @@ FileManager.prototype = {
    *                   selection.
    */
   FileManager.prototype.canExecute_ = function(commandId) {
+    var dir = this.directoryModel_.currentEntry;
     switch (commandId) {
       case 'cut':
-        return (this.currentDirEntry_ &&
-               !isSystemDirEntry(this.currentDirEntry_));
+        return (dir && !isSystemDirEntry(dir));
 
       case 'copy':
-        return (this.currentDirEntry_ &&
-                this.currentDirEntry_.fullPath != '/');
+        return (dir && dir.fullPath != '/');
 
       case 'paste':
         return (this.clipboard_ &&
-               !isSystemDirEntry(this.currentDirEntry_));
+               !isSystemDirEntry(dir));
 
       case 'rename':
         return (// Initialized to the point where we have a current directory
-                this.currentDirEntry_ &&
+                dir &&
                 // Rename not in progress.
                 !this.renameInput_.currentEntry &&
                 // Only one file selected.
                 this.selection &&
                 this.selection.totalCount == 1 &&
-                !isSystemDirEntry(this.currentDirEntry_));
+                !isSystemDirEntry(dir));
 
       case 'delete':
         return (// Initialized to the point where we have a current directory
-                this.currentDirEntry_ &&
+                dir &&
                 // Rename not in progress.
                 !this.renameInput_.currentEntry &&
-                !isSystemDirEntry(this.currentDirEntry_)) &&
+                !isSystemDirEntry(dir)) &&
                 this.selection &&
                 this.selection.totalCount > 0;
 
       case 'newfolder':
-        return this.currentDirEntry_ &&
+        return dir &&
                (this.dialogType_ == 'saveas-file' ||
                 this.dialogType_ == 'full-page');
     }
@@ -1230,27 +1188,29 @@ FileManager.prototype = {
     // style and only then set dataModel.
 
     if (type == FileManager.ListType.DETAIL) {
-      var selectedIndexes = this.grid_.selectionModel.selectedIndexes;
+      this.table_.dataModel = this.directoryModel_.fileList;
+      this.table_.selectionModel = this.directoryModel_.fileListSelection;
+      this.table_.style.display = '';
       this.grid_.style.display = 'none';
+      this.grid_.selectionModel = this.emptySelectionModel_;
       this.grid_.dataModel = this.emptyDataModel_;
       this.table_.style.display = '';
-      this.table_.dataModel = this.dataModel_;
       /** @type {cr.ui.List} */
       this.currentList_ = this.table_.list;
       this.dialogDom_.querySelector('button.detail-view').disabled = true;
       this.dialogDom_.querySelector('button.thumbnail-view').disabled = false;
-      this.table_.selectionModel.selectedIndexes = selectedIndexes;
     } else if (type == FileManager.ListType.THUMBNAIL) {
-      var selectedIndexes = this.table_.selectionModel.selectedIndexes;
+      this.grid_.dataModel = this.directoryModel_.fileList;
+      this.grid_.selectionModel = this.directoryModel_.fileListSelection;
+      this.grid_.style.display = '';
       this.table_.style.display = 'none';
+      this.table_.selectionModel = this.emptySelectionModel_;
       this.table_.dataModel = this.emptyDataModel_;
       this.grid_.style.display = '';
-      this.grid_.dataModel = this.dataModel_;
       /** @type {cr.ui.List} */
       this.currentList_ = this.grid_;
       this.dialogDom_.querySelector('button.thumbnail-view').disabled = true;
       this.dialogDom_.querySelector('button.detail-view').disabled = false;
-      this.grid_.selectionModel.selectedIndexes = selectedIndexes;
     } else {
       throw new Error('Unknown list type: ' + type);
     }
@@ -1269,12 +1229,8 @@ FileManager.prototype = {
     var self = this;
     this.grid_.itemConstructor = GridItem.bind(null, this);
 
-    this.grid_.selectionModel = new this.selectionModelClass_();
-
     this.grid_.addEventListener(
         'dblclick', this.onDetailDoubleClick_.bind(this));
-    this.grid_.selectionModel.addEventListener(
-        'change', this.onSelectionChanged_.bind(this));
     cr.ui.contextMenuHandler.addContextMenuProperty(this.grid_);
     this.grid_.contextMenu = this.fileContextMenu_;
     this.grid_.addEventListener('mousedown',
@@ -1306,13 +1262,12 @@ FileManager.prototype = {
           this.renderNameColumnHeader_.bind(this, columns[0].name);
     }
 
-    this.table_.selectionModel = new this.selectionModelClass_();
     this.table_.columnModel = new cr.ui.table.TableColumnModel(columns);
 
     this.table_.addEventListener(
         'dblclick', this.onDetailDoubleClick_.bind(this));
-    this.table_.selectionModel.addEventListener(
-        'change', this.onSelectionChanged_.bind(this));
+
+    this.table_.columnModel = new cr.ui.table.TableColumnModel(columns);
 
     cr.ui.contextMenuHandler.addContextMenuProperty(this.table_);
     this.table_.contextMenu = this.fileContextMenu_;
@@ -1425,8 +1380,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.onPopState_ = function(event) {
     // TODO(serya): We should restore selected items here.
-    if (this.rootEntries_)
-      this.setupCurrentDirectory_();
+    this.setupCurrentDirectory_();
   };
 
   FileManager.prototype.requestResize_ = function(timeout) {
@@ -1477,89 +1431,20 @@ FileManager.prototype = {
     if (location.hash) {
       // Location hash has the highest priority.
       var path = decodeURI(location.hash.substr(1));
-      this.changeDirectory(path, CD_NO_HISTORY);
+      this.directoryModel_.setupPath(path);
       return;
     } else if (this.params_.defaultPath) {
-      this.setupPath_(this.params_.defaultPath);
+      var pathResolvedCallback;
+      if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
+        pathResolvedCallback = function(basePath, leafName) {
+          this.filenameInput_.value = leafName;
+          this.selectDefaultPathInFilenameInput_();
+        }.bind(this);
+      }
+      this.directoryModel_.setupPath(this.params_.defaultPath,
+                                     pathResolvedCallback);
     } else {
-      this.setupDefaultPath_();
-    }
-  };
-
-  FileManager.prototype.setupDefaultPath_ = function() {
-    // No preset given, find a good place to start.
-    // Check for removable devices, if there are none, go to Downloads.
-    var removableDirectoryEntry = this.rootEntries_.filter(function(rootEntry) {
-      return isParentPath(REMOVABLE_DIRECTORY, rootEntry.fullPath);
-    })[0];
-    var path = removableDirectoryEntry && removableDirectoryEntry.fullPath ||
-        DOWNLOADS_DIRECTORY;
-    this.changeDirectory(path, CD_NO_HISTORY);
-  };
-
-  FileManager.prototype.setupPath_ = function(path) {
-    // Split the dirname from the basename.
-    var ary = path.match(/^(?:(.*)\/)?([^\/]*)$/);
-    if (!ary) {
-      console.warn('Unable to split default path: ' + path);
-      self.changeDirectory('/', CD_NO_HISTORY);
-      return;
-    }
-
-    var baseName = ary[1];
-    var leafName = ary[2];
-
-    var self = this;
-
-    function onBaseFound(baseDirEntry) {
-      if (!leafName) {
-        // Default path is just a directory, cd to it and we're done.
-        self.changeDirectoryEntry(baseDirEntry, CD_NO_HISTORY);
-        return;
-      }
-
-      function onLeafFound(leafEntry) {
-        if (leafEntry.isDirectory) {
-          self.changeDirectoryEntry(leafEntry, CD_NO_HISTORY);
-          return;
-        }
-
-        // Leaf is an existing file, cd to its parent directory and select it.
-        self.changeDirectoryEntry(baseDirEntry, CD_NO_HISTORY, function() {
-          self.selectEntry(leafEntry.name);
-        });
-      }
-
-      function onLeafError(err) {
-        // Set filename first so OK button will update in changeDirectoryEntry.
-        self.filenameInput_.value = leafName;
-        self.selectDefaultPathInFilenameInput_();
-        if (err = FileError.NOT_FOUND_ERR) {
-          // Leaf does not exist, it's just a suggested file name.
-          self.changeDirectoryEntry(baseDirEntry, CD_NO_HISTORY);
-        } else {
-          console.log('Unexpected error resolving default leaf: ' + err);
-          self.changeDirectoryEntry('/', CD_NO_HISTORY);
-        }
-      }
-
-      self.resolvePath(path, onLeafFound, onLeafError);
-    }
-
-    function onBaseError(err) {
-      // Set filename first so OK button will update in changeDirectory.
-      self.filenameInput_.value = leafName;
-      self.selectDefaultPathInFilenameInput_();
-      console.log('Unexpected error resolving default base "' +
-                  baseName + '": ' + err);
-      self.changeDirectory('/', CD_NO_HISTORY);
-    }
-
-    if (baseName) {
-      this.filesystem_.root.getDirectory(
-          baseName, {create: false}, onBaseFound, onBaseError);
-    } else {
-      onBaseFound(this.filesystem_.root);
+      this.directoryModel_.setupDefaultPath();
     }
   };
 
@@ -1601,55 +1486,6 @@ FileManager.prototype = {
     dialogTitle = this.params_.title || defaultTitle;
     this.dialogDom_.querySelector('.dialog-title').textContent = dialogTitle;
   };
-
-  /**
-   * Cache necessary data before a sort happens.
-   *
-   * This is called by the table code before a sort happens, so that we can
-   * go fetch data for the sort field that we may not have yet.
-   */
-  FileManager.prototype.prepareSort_ = function(field, callback) {
-    this.prepareSortEntries_(this.dataModel_.slice(), field, callback);
-  };
-
-  FileManager.prototype.prepareSortEntries_ = function(entries, field,
-                                                       callback) {
-    var cacheFunction;
-
-    if (field == 'name' || field == 'cachedMtime_') {
-      // Mtime is the tie-breaker for a name sort, so we need to resolve
-      // it for both mtime and name sorts.
-      cacheFunction = cacheEntryDate;
-    } else if (field == 'cachedSize_') {
-      cacheFunction = cacheEntrySize;
-    } else if (field == 'type') {
-      cacheFunction = this.cacheEntryFileType.bind(this);
-    } else if (field == 'cachedIconType_') {
-      cacheFunction = this.cacheEntryIconType.bind(this);
-    } else {
-      setTimeout(callback, 0);
-      return;
-    }
-
-    // Start one fake wait to prevent calling the callback twice.
-    var waitCount = 1;
-    for (var i = 0; i < entries.length ; i++) {
-      var entry = entries[i];
-      if (!(field in entry)) {
-        waitCount++;
-        cacheFunction(entry, onCacheDone)
-      }
-    }
-    onCacheDone();  // Finish the fake callback.
-
-    function onCacheDone() {
-      waitCount--;
-      // If all caching functions finished synchronously or entries.length = 0
-      // call the callback synchronously.
-      if (waitCount == 0)
-        setTimeout(callback, 0);
-    }
-  }
 
   /**
    * Render (and wire up) a checkbox to be used in either a detail or a
@@ -1703,9 +1539,10 @@ FileManager.prototype = {
    * Update check and disable states of the 'Select all' checkbox.
    */
   FileManager.prototype.updateSelectAllCheckboxState_ = function(checkbox) {
-    checkbox.checked = this.selection && this.dataModel_.length > 0 &&
-                       this.dataModel_.length == this.selection.totalCount;
-    checkbox.disabled = this.dataModel_.length == 0;
+    var dm = this.directoryModel_.fileList;
+    checkbox.checked = this.selection && dm.length > 0 &&
+                       dm.length == this.selection.totalCount;
+    checkbox.disabled = dm.length == 0;
   };
 
   /**
@@ -1811,18 +1648,18 @@ FileManager.prototype = {
    * @return {string} The localized name.
    */
   FileManager.prototype.getRootLabel_ = function(path) {
-    if (path == DOWNLOADS_DIRECTORY)
+    if (path == '/' + DirectoryModel.DOWNLOADS_DIRECTORY)
       return str('CHROMEBOOK_DIRECTORY_LABEL');
 
-    if (path == ARCHIVE_DIRECTORY)
+    if (path == '/' + DirectoryModel.ARCHIVE_DIRECTORY)
       return str('ARCHIVE_DIRECTORY_LABEL');
-    if (isParentPath(ARCHIVE_DIRECTORY, path))
-      return path.substring(ARCHIVE_DIRECTORY.length + 1);
+    if (isParentPath('/' + DirectoryModel.ARCHIVE_DIRECTORY, path))
+      return path.substring(DirectoryModel.ARCHIVE_DIRECTORY.length + 2);
 
-    if (path == REMOVABLE_DIRECTORY)
+    if (path == '/' + DirectoryModel.REMOVABLE_DIRECTORY)
       return str('REMOVABLE_DIRECTORY_LABEL');
-    if (isParentPath(REMOVABLE_DIRECTORY, path))
-      return path.substring(REMOVABLE_DIRECTORY.length + 1);
+    if (isParentPath('/' + DirectoryModel.REMOVABLE_DIRECTORY, path))
+      return path.substring(DirectoryModel.REMOVABLE_DIRECTORY.length + 2);
 
     return path;
   };
@@ -1830,9 +1667,9 @@ FileManager.prototype = {
   FileManager.prototype.getRootIconUrl_ = function(path, opt_small) {
     var iconUrl = opt_small ? 'images/chromebook_28x28.png' :
         'images/chromebook_24x24.png';
-    if (isParentPath(REMOVABLE_DIRECTORY, path))
+    if (isParentPath('/' + DirectoryModel.REMOVABLE_DIRECTORY, path))
       iconUrl = 'images/filetype_device.png';
-    else if (isParentPath(ARCHIVE_DIRECTORY, path))
+    else if (isParentPath('/' + DirectoryModel.ARCHIVE_DIRECTORY, path))
       iconUrl = 'images/icon_mount_archive_16x16.png';
     return chrome.extension.getURL(iconUrl);
   };
@@ -1850,8 +1687,10 @@ FileManager.prototype = {
     div.textContent = this.getRootLabel_(entry.fullPath);
     li.appendChild(div);
 
-    if (isParentPath(REMOVABLE_DIRECTORY, entry.fullPath) ||
-        isParentPath(ARCHIVE_DIRECTORY, entry.fullPath)) {
+    if (isParentPath('/' + DirectoryModel.REMOVABLE_DIRECTORY,
+                     entry.fullPath) ||
+        isParentPath('/' + DirectoryModel.ARCHIVE_DIRECTORY,
+                     entry.fullPath)) {
       var spacer = this.document_.createElement('div');
       spacer.className = 'spacer';
       li.appendChild(spacer);
@@ -1908,8 +1747,8 @@ FileManager.prototype = {
     // work of inplace renaming.
     var fileName = this.document_.createElement('div');
     fileName.className = 'filename-label';
-    fileName.textContent = this.currentDirEntry_.name == '' ?
-        this.getLabelForRootPath_(entry.name) : entry.name;
+    fileName.textContent = this.directoryModel_.currentEntry.name == '' ?
+        this.getRootLabel_(entry.name) : entry.name;
     return fileName;
   };
 
@@ -1973,7 +1812,7 @@ FileManager.prototype = {
 
     var self = this;
     cacheEntryDate(entry, function(entry) {
-      if (isSystemDirEntry(self.currentDirEntry_) &&
+      if (isSystemDirEntry(self.directoryModel_.currentEntry) &&
           entry.cachedMtime_.getTime() == 0) {
         // Mount points for FAT volumes have this time associated with them.
         // We'd rather display nothing than this bogus date.
@@ -2022,7 +1861,7 @@ FileManager.prototype = {
     var thumbnailCount = 0;
 
     for (var i = 0; i < selection.indexes.length; i++) {
-      var entry = this.dataModel_.item(selection.indexes[i]);
+      var entry = this.directoryModel_.fileList.item(selection.indexes[i]);
       if (!entry)
         continue;
 
@@ -2419,9 +2258,9 @@ FileManager.prototype = {
       }
 
       if (event.eventType == 'unmount' && event.status == 'success' &&
-          self.currentDirEntry_ &&
-          isParentPath(event.mountPath, self.currentDirEntry_.fullPath)) {
-        changeDirectoryTo = getParentPath(event.mountPath);
+          isParentPath(event.mountPath, self.getCurrentDirectory())) {
+        // Current durectory just unmounted. Move to the 'Downloads'.
+        changeDirectoryTo = '/' + DirectoryModel.DOWNLOADS_DIRECTORY;
       }
 
       // In the case of success, roots are changed and should be rescanned.
@@ -2485,8 +2324,9 @@ FileManager.prototype = {
       selectedUrl = urls[0];
       // Pass every image in the directory so that it shows up in the ribbon.
       urls = [];
-      for (var i = 0; i != this.dataModel_.length; i++) {
-        var entry = this.dataModel_.item(i);
+      var dm = this.directoryModel_.fileList;
+      for (var i = 0; i != dm.length; i++) {
+        var entry = dm.item(i);
         if (this.getFileType(entry).type == 'image') {
           urls.push(entry.toURL());
         }
@@ -2500,13 +2340,13 @@ FileManager.prototype = {
       self.document_.title = str('GALLERY');
       galleryFrame.contentWindow.ImageUtil.metrics = metrics;
       galleryFrame.contentWindow.Gallery.open(
-          self.currentDirEntry_,
+          self.directoryModel_.currentEntry,
           urls,
           selectedUrl,
           function () {
             // TODO(kaznacheev): keep selection.
             self.dialogDom_.removeChild(galleryFrame);
-            self.document_.title = self.currentDirEntry_.fullPath;
+            self.document_.title = self.directoryModel_.currentEntry.fullPath;
             self.refocus();
           },
           self.metadataProvider_,
@@ -2520,8 +2360,9 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.getRootForPath_ = function(path) {
-    for (var index = 0; index < this.rootEntries_.length; index++) {
-      if (isParentPath(this.rootEntries_[index].fullPath, path)) {
+    var roots = this.rootsList_.dataModel;
+    for (var index = 0; index < roots.length; index++) {
+      if (isParentPath(roots.item(index).fullPath, path)) {
         return index;
       }
     }
@@ -2535,13 +2376,12 @@ FileManager.prototype = {
     var bc = this.dialogDom_.querySelector('.breadcrumbs');
     removeChildren(bc);
 
-    var fullPath = this.currentDirEntry_.fullPath;
+    var fullPath = this.getCurrentDirectory().replace(/\/$/, '');
     var rootIndex = this.getRootForPath_(fullPath);
-    if (rootIndex == -1) {
-      console.error('Not root for: ' + fullPath);
+    if (rootIndex == -1)
       return;
-    }
-    var root = this.rootEntries_[rootIndex];
+
+    var root = this.rootsList_.dataModel.item(rootIndex);
 
     var icon = this.document_.createElement('img');
     icon.className = 'breadcrumb-icon';
@@ -2664,32 +2504,12 @@ FileManager.prototype = {
     });
   };
 
-  FileManager.prototype.selectEntry = function(name) {
-    for (var i = 0; i < this.dataModel_.length; i++) {
-      if (this.dataModel_.item(i).name == name) {
-        this.selectIndex(i);
-        return;
-      }
-    }
-  };
-
   FileManager.prototype.updateRootsListSelection_ = function() {
-    if (!this.currentDirEntry_) return;
-    var index = this.getRootForPath_(this.currentDirEntry_.fullPath);
-    if (index == -1) {
-      this.rootsList_.selectionModel.selectedIndex = 0;
-    } else {
-      if (this.rootsList_.selectionModel.selectedIndex != index)
-        this.rootsList_.selectionModel.selectedIndex = index;
-    }
-  };
-
-  FileManager.prototype.selectIndex = function(index) {
-    this.focusCurrentList_();
-    if (index >= this.dataModel_.length)
-      return;
-    this.currentList_.selectionModel.selectedIndex = index;
-    this.currentList_.scrollIndexIntoView(index);
+    var currentDirectory = this.getCurrentDirectory();
+    if (!currentDirectory) return;
+    var index = this.getRootForPath_(currentDirectory);
+    if (this.rootsList_.selectionModel.selectedIndex != index)
+      this.rootsList_.selectionModel.selectedIndex = index;
   };
 
   /**
@@ -2700,8 +2520,9 @@ FileManager.prototype = {
    */
   FileManager.prototype.addItemToSelection = function(name) {
     var entryExists = false;
-    for (var i = 0; i < this.dataModel_.length; i++) {
-      if (this.dataModel_.item(i).name == name) {
+    var dm = this.directoryModel_.fileList;
+    for (var i = 0; i < dm.length; i++) {
+      if (dm.item(i).name == name) {
         this.currentList_.selectionModel.setIndexSelected(i, true);
         this.currentList_.scrollIndexIntoView(i);
         this.focusCurrentList_();
@@ -2726,8 +2547,9 @@ FileManager.prototype = {
    */
   FileManager.prototype.listDirectory = function() {
     var list = []
-    for (var i = 0; i < this.dataModel_.length; i++) {
-      list.push(this.dataModel_.item(i).name);
+    var dm = this.directoryModel_.fileList;
+    for (var i = 0; i < dm.length; i++) {
+      list.push(dm.item(i).name);
     }
     return list;
   }
@@ -2766,7 +2588,7 @@ FileManager.prototype = {
    * Return full path of the current directory
    */
   FileManager.prototype.getCurrentDirectory = function() {
-    return this.currentDirEntry_.fullPath;
+    return this.directoryModel_.currentEntry.fullPath;
   }
 
   /**
@@ -2791,113 +2613,7 @@ FileManager.prototype = {
     return initialized;
   }
 
-  /**
-   * Change the current directory to the directory represented by a
-   * DirectoryEntry.
-   *
-   * Dispatches the 'directory-changed' event when the directory is successfully
-   * changed.
-   *
-   * @param {string} path The absolute path to the new directory.
-   * @param {bool} opt_saveHistory Save this in the history stack (defaults
-   *     to true).
-   * @param {function} opt_action Action executed when the directory loaded.
-   *                              By default selects the first item
-   *                              (unless it's a save dialog).
-   */
-  FileManager.prototype.changeDirectoryEntry = function(dirEntry,
-                                                        opt_saveHistory,
-                                                        opt_action) {
-    if (typeof opt_saveHistory == 'undefined') {
-      opt_saveHistory = true;
-    } else {
-      opt_saveHistory = !!opt_saveHistory;
-    }
-
-    // Some directories are above roots, so we instead show the first root.
-    // There may be request to change directory above the roots. For example,
-    // when usb-dirve is removed, we try to change to the parent directory,
-    // which is REMOVABLE_DIRECTORY.
-    if (!dirEntry || dirEntry.fullPath == '/' ||
-        dirEntry.fullPath == REMOVABLE_DIRECTORY ||
-        dirEntry.fullPath == ARCHIVE_DIRECTORY) {
-      dirEntry = this.rootEntries_[0] || dirEntry;
-    }
-
-    var action = opt_action ||
-        (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE ?
-            undefined : this.selectIndex.bind(this, 0));
-
-    var location = document.location.origin + document.location.pathname + '#' +
-                   encodeURI(dirEntry.fullPath);
-    if (opt_saveHistory) {
-      history.pushState(undefined, dirEntry.fullPath, location);
-    } else if (window.location.hash != location) {
-      // If the user typed URL manually that is not canonical it would be fixed
-      // here. However it seems history.replaceState doesn't work properly
-      // with rewritable URLs (while does with history.pushState). It changes
-      // window.location but doesn't change content of the ombibox.
-      history.replaceState(undefined, dirEntry.fullPath, location);
-    }
-
-    if (this.currentDirEntry_ &&
-        this.currentDirEntry_.fullPath == dirEntry.fullPath) {
-      // Directory didn't actually change.
-      if (opt_action)
-        opt_action();
-      return;
-    }
-
-    var e = new cr.Event('directory-changed');
-    e.previousDirEntry = this.currentDirEntry_;
-    e.newDirEntry = dirEntry;
-    e.saveHistory = opt_saveHistory;
-    e.opt_callback = action;
-    this.currentDirEntry_ = dirEntry;
-    this.dispatchEvent(e);
-  }
-
-  /**
-   * Change the current directory to the directory represented by a string
-   * path.
-   *
-   * Dispatches the 'directory-changed' event when the directory is successfully
-   * changed.
-   *
-   * @param {string} path The absolute path to the new directory.
-   * @param {bool} opt_saveHistory Save this in the history stack (defaults
-   *     to true).
-   * @param {string} opt_selectedEntry The name of the file to select after
-   *     changing directories.
-   */
-  FileManager.prototype.changeDirectory = function(path,
-                                                   opt_saveHistory) {
-    if (path == '/')
-      return this.changeDirectoryEntry(this.filesystem_.root,
-                                       opt_saveHistory);
-
-    var self = this;
-    this.filesystem_.root.getDirectory(
-        path, {create: false},
-        function(dirEntry) {
-          self.changeDirectoryEntry(dirEntry, opt_saveHistory);
-        },
-        function(err) {
-          console.error('Error changing directory to: ' + path + ', ' + err);
-          if (self.currentDirEntry_) {
-            var location = '#' + encodeURI(self.currentDirEntry_.fullPath);
-            history.replaceState(undefined,
-                                 self.currentDirEntry_.fullPath,
-                                 location);
-          } else {
-            // If we've never successfully changed to a directory, force them
-            // to the root.
-            self.changeDirectory('/', CD_NO_HISTORY);
-          }
-        });
-  };
-
-  FileManager.prototype.deleteEntries = function(entries, force, opt_callback) {
+  FileManager.prototype.deleteEntries = function(entries, force) {
     if (!force) {
       var self = this;
       var msg;
@@ -2908,33 +2624,11 @@ FileManager.prototype = {
       }
 
       this.confirm.show(msg,
-                        function() { self.deleteEntries(entries, true); });
+                        this.deleteEntries.bind(this, entries, true));
       return;
     }
 
-    var count = entries.length;
-
-    var self = this;
-    function onDelete() {
-      if (--count == 0)
-        self.rescanDirectory_(function() {
-          if (opt_callback)
-            opt_callback();
-        });
-    }
-
-    for (var i = 0; i < entries.length; i++) {
-      var entry = entries[i];
-      if (entry.isFile) {
-        entry.remove(
-            onDelete,
-            util.flog('Error deleting file: ' + entry.fullPath, onDelete));
-      } else {
-        entry.removeRecursively(
-            onDelete,
-            util.flog('Error deleting folder: ' + entry.fullPath, onDelete));
-      }
-    }
+    this.directoryModel_.deleteEntries(entries);
   };
 
   /**
@@ -2948,7 +2642,7 @@ FileManager.prototype = {
 
     this.clipboard_ = {
       isCut: false,
-      sourceDirEntry: this.currentDirEntry_,
+      sourceDirEntry: this.directoryModel_.currentEntry,
       entries: [].concat(this.selection.entries)
     };
 
@@ -2968,7 +2662,7 @@ FileManager.prototype = {
 
     this.clipboard_ = {
       isCut: true,
-      sourceDirEntry: this.currentDirEntry_,
+      sourceDirEntry: this.directoryModel_.currentEntry,
       entries: [].concat(this.selection.entries)
     };
 
@@ -2987,7 +2681,7 @@ FileManager.prototype = {
 
     this.pasteSuccessCallbacks_.push(successCallback);
     this.copyManager_.queueCopy(this.clipboard_.sourceDirEntry,
-                                this.currentDirEntry_,
+                                this.directoryModel_.currentEntry,
                                 this.clipboard_.entries,
                                 this.clipboard_.isCut);
   };
@@ -3021,7 +2715,7 @@ FileManager.prototype = {
    * @param {Event} event The click event.
    */
   FileManager.prototype.onBreadcrumbClick_ = function(event) {
-    this.changeDirectory(event.srcElement.path);
+    this.directoryModel_.changeDirectory(event.srcElement.path);
   };
 
   FileManager.prototype.onCheckboxMouseDownUp_ = function(event) {
@@ -3059,10 +2753,10 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onRootsSelectionChanged_ = function(event) {
-    var root = this.rootEntries_[this.rootsList_.selectionModel.selectedIndex];
-    if (!this.currentDirEntry_ ||
-        !isParentPath(root.fullPath, this.currentDirEntry_.fullPath))
-      this.changeDirectoryEntry(root);
+    var root = this.rootsList_.selectedItem;
+    var current = this.getCurrentDirectory();
+    if (!isParentPath(root.fullPath, current))
+      this.directoryModel_.changeDirectory(root.fullPath);
   };
 
   FileManager.prototype.selectDefaultPathInFilenameInput_ = function() {
@@ -3096,8 +2790,6 @@ FileManager.prototype = {
           this.selection.entries[0].isFile &&
           this.filenameInput_.value != this.selection.entries[0].name) {
         this.filenameInput_.value = this.selection.entries[0].name;
-        if (this.params_.defaultPath == this.selection.entries[0].fullPath)
-          this.selectDefaultPathInFilenameInput_();
       }
     }
 
@@ -3164,7 +2856,7 @@ FileManager.prototype = {
       selectable = (this.selection.directoryCount == 0 &&
                     this.selection.fileCount >= 1);
     } else if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
-      if (isSystemDirEntry(this.currentDirEntry_)) {
+      if (isSystemDirEntry(this.directoryModel_.currentEntry)) {
         // Nothing can be saved in to the root or media/ directories.
         selectable = false;
       } else {
@@ -3218,7 +2910,7 @@ FileManager.prototype = {
                'unsupported_filesystem') {
       return this.showButter(str('UNSUPPORTED_FILESYSTEM_WARNING'));
     } else {
-      return this.changeDirectory(entry.fullPath);
+      return this.directoryModel_.changeDirectory(entry.fullPath);
     }
   };
 
@@ -3248,11 +2940,26 @@ FileManager.prototype = {
   FileManager.prototype.onDirectoryChanged_ = function(event) {
     this.updateCommands_();
     this.updateOkButton_();
+    this.updateBreadcrumbs_();
+    this.updateRootsListSelection_();
 
-    this.checkFreeSpace_(this.currentDirEntry_.fullPath);
+    // Updated when a user clicks on the label of a file, used to detect
+    // when a click is eligible to trigger a rename.  Can be null, or
+    // an object with 'path' and 'date' properties.
+    this.lastLabelClick_ = null;
+
+    var dirEntry = event.newDirEntry;
+    var location = document.location.origin + document.location.pathname + '#' +
+                   encodeURI(dirEntry.fullPath);
+    if (event.initial)
+      history.replaceState(undefined, dirEntry.fullPath, location);
+    else
+      history.pushState(undefined, dirEntry.fullPath, location);
+
+    this.checkFreeSpace_(this.getCurrentDirectory());
 
     // TODO(dgozman): title may be better than this.
-    this.document_.title = this.currentDirEntry_.fullPath;
+    this.document_.title = this.getCurrentDirectory();
 
     var self = this;
 
@@ -3273,182 +2980,6 @@ FileManager.prototype = {
             console.log('Failed to add file watch');
           }
       });
-    }
-
-    this.rescanDirectory_(function() {
-        if (event.opt_callback) {
-          try {
-            event.opt_callback();
-          } catch (ex) {
-            console.error('Caught exception while inovking callback: ', ex);
-          }
-        }
-        // For tests that open the dialog to empty directories, everything
-        // is loaded at this point.
-        chrome.test.sendMessage('directory-change-complete');
-        // PyAuto tests monitor this state by polling this variable
-        self.directoryChanged_ = true;
-      });
-  };
-
-  /**
-   * Rescans directory later.
-   * This method should be used if we just want rescan but not actually now.
-   * This helps us not to flood queue with rescan requests.
-   *
-   * @param opt_callback
-   * @param opt_onError
-   */
-   FileManager.prototype.rescanDirectoryLater_ = function(opt_callback,
-                                                          opt_onError) {
-    // It might be massive change, so let's note somehow, that we need
-    // rescanning and then wait some time
-
-    if (this.pendingRescanQueue_.length == 0) {
-      this.pendingRescanQueue_.push({onSuccess:opt_callback,
-                                     onError:opt_onError});
-
-      // If rescan isn't going to run without
-      // our interruption, then say that we need to run it
-      if (!this.rescanRunning_) {
-        setTimeout(this.rescanDirectory_.bind(this),
-            SIMULTANEOUS_RESCAN_INTERVAL);
-      }
-    }
-   }
-
-
-  /**
-   * Rescans the current directory, refreshing the list. It decreases the
-   * probability that two such calls are pending simultaneously.
-   *
-   * This method tries to queue request if rescan is already running, and
-   * processes this request later. Anyway callback would be called after
-   * processing.
-   *
-   * If no rescan is running, then method starts rescanning immediately.
-   *
-   * @param {function()} opt_callback Optional function to invoke when the
-   *     rescan is complete.
-   *
-   * @param {function()} opt_onError Optional function to invoke when the
-   *     rescan fails.
-   */
-  FileManager.prototype.rescanDirectory_ = function(opt_callback, opt_onError) {
-    // Updated when a user clicks on the label of a file, used to detect
-    // when a click is eligible to trigger a rename.  Can be null, or
-    // an object with 'path' and 'date' properties.
-    this.lastLabelClick_ = null;
-
-    // Clear the table first.
-    this.dataModel_.splice(0, this.dataModel_.length);
-    this.currentList_.selectionModel.clear();
-
-    this.updateBreadcrumbs_();
-    this.updateRootsListSelection_();
-
-    // Add current request to pending result list
-    this.pendingRescanQueue_.push({
-          onSuccess:opt_callback,
-          onError:opt_onError
-        });
-
-    if (this.rescanRunning_)
-      return;
-
-    this.rescanRunning_ = true;
-
-    // The current list of callbacks is saved and reset.  Subsequent
-    // calls to rescanDirectory_ while we're still pending will be
-    // saved and will cause an additional rescan to happen after a delay.
-    var callbacks = this.pendingRescanQueue_;
-
-    this.pendingRescanQueue_ = [];
-
-    var self = this;
-    var reader;
-
-    function onError() {
-      if (self.pendingRescanQueue_.length > 0) {
-        setTimeout(self.rescanDirectory_.bind(self),
-            SIMULTANEOUS_RESCAN_INTERVAL);
-      }
-
-      self.rescanRunning_ = false;
-
-      for (var i= 0; i < callbacks.length; i++) {
-        if (callbacks[i].onError)
-          try {
-            callbacks[i].onError();
-          } catch (ex) {
-            console.error('Caught exception while notifying about error: ' +
-                        name, ex);
-          }
-      }
-    }
-
-    function onReadSome(entries) {
-      if (entries.length == 0) {
-        metrics.recordInterval('DirectoryScan');
-        if (self.currentDirEntry_.fullPath == DOWNLOADS_DIRECTORY) {
-          metrics.recordMediumCount("DownloadsCount", self.dataModel_.length);
-        }
-
-        if (self.pendingRescanQueue_.length > 0) {
-          setTimeout(self.rescanDirectory_.bind(self),
-              SIMULTANEOUS_RESCAN_INTERVAL);
-        }
-
-        self.rescanRunning_ = false;
-        for (var i= 0; i < callbacks.length; i++) {
-          if (callbacks[i].onSuccess)
-            try {
-              callbacks[i].onSuccess();
-            } catch (ex) {
-              console.error('Caught exception while notifying about error: ' +
-                          name, ex);
-            }
-        }
-
-        return;
-      }
-
-      // Splice takes the to-be-spliced-in array as individual parameters,
-      // rather than as an array, so we need to perform some acrobatics...
-      var spliceArgs = [].slice.call(entries);
-
-      // Hide files that start with a dot ('.').
-      // TODO(rginda): User should be able to override this. Support for other
-      // commonly hidden patterns might be nice too.
-      if (self.filterFiles_) {
-        spliceArgs = spliceArgs.filter(function(e) {
-            return e.name.substr(0, 1) != '.';
-          });
-      }
-
-      self.prefetchCacheForSorting_(spliceArgs, function() {
-        spliceArgs.unshift(0, 0);  // index, deleteCount
-        self.dataModel_.splice.apply(self.dataModel_, spliceArgs);
-
-        // Keep reading until entries.length is 0.
-        reader.readEntries(onReadSome, onError);
-      });
-    };
-
-    metrics.startInterval('DirectoryScan');
-
-    // If not the root directory, just read the contents.
-    reader = this.currentDirEntry_.createReader();
-    reader.readEntries(onReadSome, onError);
-  };
-
-  FileManager.prototype.prefetchCacheForSorting_ = function(entries, callback) {
-    var field = this.dataModel_.sortStatus.field;
-    if (field) {
-      this.prepareSortEntries_(entries, field, callback);
-    } else {
-      callback();
-      return;
     }
   };
 
@@ -3487,7 +3018,8 @@ FileManager.prototype = {
   FileManager.prototype.onUnload_ = function() {
     if (this.subscribedOnDirectoryChanges_) {
       this.subscribedOnDirectoryChanges_ = false;
-      chrome.fileBrowserPrivate.removeFileWatch(this.currentDirEntry_.toURL(),
+      chrome.fileBrowserPrivate.removeFileWatch(
+          this.directoryModel_.currentEntry.toURL(),
           function(result) {
             if (!result) {
               console.log('Failed to remove file watch');
@@ -3498,8 +3030,8 @@ FileManager.prototype = {
 
   FileManager.prototype.onFileChanged_ = function(event) {
     // We receive a lot of events even in folders we are not interested in.
-    if (event.fileUrl == this.currentDirEntry_.toURL())
-      this.rescanDirectoryLater_();
+    if (event.fileUrl == this.directoryModel_.currentEntry.toURL())
+      this.directoryModel_.rescanLater();
   };
 
   /**
@@ -3511,9 +3043,10 @@ FileManager.prototype = {
    * @param {cr.ui.ListItem} item Clicked item.
    */
   FileManager.prototype.allowRenameClick_ = function(event, item) {
+    var dir = this.directoryModel_.currentEntry;
     if (this.dialogType_ != FileManager.DialogType.FULL_PAGE ||
-        this.currentDirEntry_ == null || this.currentDirEntry_.name == '' ||
-        isSystemDirEntry(this.currentDirEntry_)) {
+        dir == null || dir.name == '' ||
+        isSystemDirEntry(dir)) {
       // Renaming only enabled for full-page mode, outside of the root
       // directory.
       return false;
@@ -3598,41 +3131,16 @@ FileManager.prototype = {
       this.cancelRename_();
   };
 
-  FileManager.prototype.renameEntry = function(entry, newName, opt_callback) {
-    var self = this;
-    function onSuccess() {
-      self.rescanDirectory_(function() {
-        self.selectEntry(newName);
-        if (opt_callback)
-          opt_callback();
-      });
-    }
-
-    function onError(err) {
-      self.alert.show(strf('ERROR_RENAMING', entry.name,
-                           util.getFileErrorMnemonic(err.code)));
-    }
-
-    function resolveCallback(victim) {
-      if (victim instanceof FileError) {
-        entry.moveTo(self.currentDirEntry_, newName, onSuccess, onError);
-      } else {
-        var message = victim.isFile ?
-            'FILE_ALREADY_EXISTS':
-            'DIRECTORY_ALREADY_EXISTS';
-        self.alert.show(strf(message, newName));
-      }
-    }
-
-    this.resolvePath(this.currentDirEntry_.fullPath + '/' + newName,
-        resolveCallback, resolveCallback);
-  };
-
   FileManager.prototype.commitRename_ = function() {
     var entry = this.renameInput_.currentEntry;
     var newName = this.renameInput_.value;
     if (!this.validateFileName_(newName))
       return;
+
+    function onError(err) {
+      this.alert.show(strf('ERROR_RENAMING', entry.name,
+                           util.getFileErrorMnemonic(err.code)));
+    }
 
     this.renameInput_.currentEntry = null;
     this.lastLabelClick_ = null;
@@ -3640,8 +3148,16 @@ FileManager.prototype = {
     if (this.renameInput_.parentNode)
       this.renameInput_.parentNode.removeChild(this.renameInput_);
 
-    this.refocus();
-    this.renameEntry(entry, newName);
+    this.directoryModel_.doesExist(newName, function(exists, isFile) {
+      if (!exists) {
+        this.refocus();
+        this.directoryModel_.renameEntry(entry, newName, onError.bind(this));
+      } else {
+        var message = isFile ? 'FILE_ALREADY_EXISTS' :
+                               'DIRECTORY_ALREADY_EXISTS';
+        this.alert.show(strf(message, newName));
+      }
+    }.bind(this));
   };
 
   FileManager.prototype.cancelRename_ = function(event) {
@@ -3715,21 +3231,13 @@ FileManager.prototype = {
 
     var self = this;
 
-    function onSuccess(dirEntry) {
-      self.rescanDirectory_(function() {
-        self.selectEntry(name);
-        if (opt_callback)
-          opt_callback();
-      });
-    }
-
     function onError(err) {
       self.alert.show(strf('ERROR_CREATING_FOLDER', name,
                            util.getFileErrorMnemonic(err.code)));
     }
 
-    this.currentDirEntry_.getDirectory(name, {create: true, exclusive: true},
-                                       onSuccess, onError);
+    var onSuccess = opt_callback || function() {};
+    this.directoryModel_.createDirectory(name, onSuccess, onError);
   };
 
   FileManager.prototype.onDetailViewButtonClick_ = function(event) {
@@ -3795,10 +3303,10 @@ FileManager.prototype = {
     switch (event.keyCode) {
       case 8:  // Backspace => Up one directory.
         event.preventDefault();
-        var path = this.currentDirEntry_.fullPath;
+        var path = this.getCurrentDirectory();
         if (path && path != '/') {
           var path = path.replace(/\/[^\/]+$/, '');
-          this.changeDirectory(path || '/');
+          this.directoryModel_.changeDirectory(path || '/');
         }
         break;
 
@@ -3857,7 +3365,7 @@ FileManager.prototype = {
       case 46:  // Delete.
         if (this.dialogType_ == FileManager.DialogType.FULL_PAGE &&
             this.selection && this.selection.totalCount > 0 &&
-            !isSystemDirEntry(this.currentDirEntry_)) {
+            !isSystemDirEntry(this.directoryModel_.currentEntry)) {
           event.preventDefault();
           this.deleteEntries(this.selection.entries);
         }
@@ -3895,8 +3403,9 @@ FileManager.prototype = {
     if (!text)
       return;
 
-    for (var index = 0; index < this.dataModel_.length; ++index) {
-      var name = this.dataModel_.item(index).name;
+    var dm = this.directoryModel_.fileList;
+    for (var index = 0; index < dm.length; ++index) {
+      var name = dm.item(index).name;
       if (name.substring(0, text.length).toLowerCase() == text) {
         this.currentList_.selectionModel.selectedIndexes = [index];
         return;
@@ -3952,7 +3461,7 @@ FileManager.prototype = {
    * @param {Event} event The click event.
    */
   FileManager.prototype.onOk_ = function(event) {
-    var currentDirUrl = this.currentDirEntry_.toURL();
+    var currentDirUrl = this.directoryModel_.currentEntry.toURL();
 
     if (currentDirUrl.charAt(currentDirUrl.length - 1) != '/')
       currentDirUrl += '/';
@@ -3990,7 +3499,7 @@ FileManager.prototype = {
         return;
       }
 
-      this.resolvePath(this.currentDirEntry_.fullPath + '/' + filename,
+      this.resolvePath(this.getCurrentDirectory() + '/' + filename,
           resolveCallback, resolveCallback);
       return;
     }
@@ -4004,8 +3513,9 @@ FileManager.prototype = {
     if (!selectedIndexes.length)
       throw new Error('Nothing selected!');
 
+    var dm = this.directoryModel_.fileList;
     for (var i = 0; i < selectedIndexes.length; i++) {
-      var entry = this.dataModel_.item(selectedIndexes[i]);
+      var entry = dm.item(selectedIndexes[i]);
       if (!entry) {
         console.log('Error locating selected file at index: ' + i);
         continue;
@@ -4026,7 +3536,7 @@ FileManager.prototype = {
       if (this.galleryTask_) {
         var urls = [];
         for (i = 0; i < selectedIndexes.length; i++) {
-          var entry = this.dataModel_.item(selectedIndexes[i]);
+          var entry = dm.item(selectedIndexes[i]);
           if (this.getFileType(entry).type != 'image')
             break;
           urls.push(entry.toURL());
@@ -4069,7 +3579,7 @@ FileManager.prototype = {
     if (files.length > 1)
       throw new Error('Too many files selected!');
 
-    var selectedEntry = this.dataModel_.item(selectedIndexes[0]);
+    var selectedEntry = dm.item(selectedIndexes[0]);
 
     if (this.dialogType_ == FileManager.DialogType.SELECT_FOLDER) {
       if (!selectedEntry.isDirectory)
@@ -4124,8 +3634,8 @@ FileManager.prototype = {
    * @param {string} currentPath New path to the current directory.
    */
   FileManager.prototype.checkFreeSpace_ = function(currentPath) {
-    if (currentPath.substr(0, DOWNLOADS_DIRECTORY.length) ==
-        DOWNLOADS_DIRECTORY) {
+    var dir = DirectoryModel.DOWNLOADS_DIRECTORY;
+    if (currentPath.substr(1, dir.length) == dir) {
       // Setup short timeout if currentPath just changed.
       if (this.checkFreeSpaceTimer_)
         clearTimeout(this.checkFreeSpaceTimer_);
@@ -4146,7 +3656,8 @@ FileManager.prototype = {
 
     var self = this;
     function doCheck() {
-      self.resolvePath(DOWNLOADS_DIRECTORY, function(downloadsDirEntry) {
+      var path = '/' + DirectoryModel.DOWNLOADS_DIRECTORY;
+      self.resolvePath(path, function(downloadsDirEntry) {
         chrome.fileBrowserPrivate.getSizeStats(downloadsDirEntry.toURL(),
           function(sizeStats) {
             // sizeStats is undefined if some error occur.
