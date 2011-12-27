@@ -145,7 +145,11 @@ static void ProfilerFree(void* p) {
 }
 
 // We use buffers of this size in DoGetHeapProfile.
-static const int kProfileBufferSize = 1 << 20;
+// The size is 1 << 20 in the original google-perftools.  Changed it to
+// 5 << 20 since a larger buffer is requried for deeper profiling in Chromium.
+// The buffer is allocated only when the environment variable HEAPPROFILE is
+// specified to dump heap information.
+static const int kProfileBufferSize = 5 << 20;
 
 // This is a last-ditch buffer we use in DumpProfileLocked in case we
 // can't allocate more memory from ProfilerMalloc.  We expect this
