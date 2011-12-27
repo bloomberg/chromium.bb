@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_CONSUMER_H_
 #pragma once
 
-#include "content/browser/cancelable_request.h"
+#include "chrome/browser/cancelable_request.h"
 
 namespace webkit {
 namespace forms {

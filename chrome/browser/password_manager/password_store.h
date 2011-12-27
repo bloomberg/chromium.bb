@@ -13,7 +13,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
-#include "content/browser/cancelable_request.h"
+#include "chrome/browser/cancelable_request.h"
 
 class PasswordStore;
 class PasswordStoreConsumer;

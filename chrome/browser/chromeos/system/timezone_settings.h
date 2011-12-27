@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback_old.h"
-#include "content/browser/cancelable_request.h"
+#include "chrome/browser/cancelable_request.h"
 #include "unicode/timezone.h"
 
 namespace chromeos {

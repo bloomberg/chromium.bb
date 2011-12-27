@@ -9,10 +9,10 @@
 #include <string>
 
 #include "base/string16.h"
+#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
-#include "content/browser/cancelable_request.h"
 #include "content/public/browser/notification_registrar.h"
 
 class GURL;

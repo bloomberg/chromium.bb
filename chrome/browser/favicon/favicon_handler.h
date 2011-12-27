@@ -11,11 +11,11 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/common/favicon_url.h"
 #include "chrome/common/ref_counted_util.h"
-#include "content/browser/cancelable_request.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/favicon_size.h"
 

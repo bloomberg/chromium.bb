@@ -22,9 +22,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "content/browser/cancelable_request.h"
 #include "googleurl/src/gurl.h"
 
 class HistoryService;

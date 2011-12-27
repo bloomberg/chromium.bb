@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history.h"
-#include "content/browser/cancelable_request.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image.h"

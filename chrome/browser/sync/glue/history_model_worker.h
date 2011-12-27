@@ -13,7 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/cancelable_request.h"
+#include "chrome/browser/cancelable_request.h"
 
 class HistoryService;
 

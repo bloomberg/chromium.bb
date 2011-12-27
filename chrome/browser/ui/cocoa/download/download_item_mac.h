@@ -10,8 +10,8 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/icon_manager.h"
-#include "content/browser/cancelable_request.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 

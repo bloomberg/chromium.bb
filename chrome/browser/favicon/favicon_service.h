@@ -12,9 +12,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/task.h"
+#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/common/ref_counted_util.h"
-#include "content/browser/cancelable_request.h"
 
 class GURL;
 class Profile;

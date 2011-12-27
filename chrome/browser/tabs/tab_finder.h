@@ -11,8 +11,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
-#include "content/browser/cancelable_request.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

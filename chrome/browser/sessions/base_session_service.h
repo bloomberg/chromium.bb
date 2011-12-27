@@ -8,13 +8,13 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/location.h"
 #include "base/file_path.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "content/browser/cancelable_request.h"
 #include "googleurl/src/gurl.h"
 
 class NavigationEntry;

@@ -10,10 +10,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/certificate_manager_model.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "content/browser/cancelable_request.h"
 #include "net/base/cert_database.h"
 #include "ui/gfx/native_widget_types.h"
 

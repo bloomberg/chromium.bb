@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history.h"
-#include "content/browser/cancelable_request.h"
 
 class Profile;
 

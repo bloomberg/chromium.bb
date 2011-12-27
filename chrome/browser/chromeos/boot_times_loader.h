@@ -13,7 +13,7 @@
 #include "base/callback_old.h"
 #include "base/compiler_specific.h"
 #include "base/time.h"
-#include "content/browser/cancelable_request.h"
+#include "chrome/browser/cancelable_request.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
