@@ -13,14 +13,14 @@ chrome.test.runTests([
 
   function attachMalformedVersion() {
     chrome.tabs.getSelected(null, function(tab) {
-      chrome.experimental.debugger.attach({tabId: tab.id}, "malformed-version",
+      chrome.debugger.attach({tabId: tab.id}, "malformed-version",
           fail("Requested protocol version is not supported: malformed-version."));
     });
   },
 
   function attachUnsupportedVersion() {
     chrome.tabs.getSelected(null, function(tab) {
-      chrome.experimental.debugger.attach({tabId: tab.id}, "1.0",
+      chrome.debugger.attach({tabId: tab.id}, "1.0",
           fail("Requested protocol version is not supported: 1.0."));
     });
   },
@@ -29,12 +29,12 @@ chrome.test.runTests([
     chrome.tabs.getSelected(null, function(tab) {
       tabId = tab.id;
       debuggee = {tabId: tab.id};
-      chrome.experimental.debugger.attach(debuggee, protocolVersion, pass());
+      chrome.debugger.attach(debuggee, protocolVersion, pass());
     });
   },
 
   function attachAgain() {
-    chrome.experimental.debugger.attach(debuggee, protocolVersion,
+    chrome.debugger.attach(debuggee, protocolVersion,
         fail("Another debugger is already attached to the tab with id: " +
                  tabId + "."));
   },
@@ -47,23 +47,23 @@ chrome.test.runTests([
       else
         chrome.test.fail();
     }
-    chrome.experimental.debugger.sendCommand(debuggee,
+    chrome.debugger.sendCommand(debuggee,
                                "invalidMethod",
                                null,
                                onResponse);
   },
 
   function detach() {
-    chrome.experimental.debugger.detach(debuggee, pass());
+    chrome.debugger.detach(debuggee, pass());
   },
 
   function sendCommandAfterDetach() {
-    chrome.experimental.debugger.sendCommand(debuggee, "Foo", null,
+    chrome.debugger.sendCommand(debuggee, "Foo", null,
         fail("Debugger is not attached to the tab with id: " + tabId + "."));
   },
 
   function detachAgain() {
-    chrome.experimental.debugger.detach(debuggee,
+    chrome.debugger.detach(debuggee,
         fail("Debugger is not attached to the tab with id: " + tabId + "."));
   },
 
@@ -71,13 +71,13 @@ chrome.test.runTests([
     chrome.tabs.create({url:"inspected.html"}, function(tab) {
       function onDetach(debuggee) {
         chrome.test.assertEq(tab.id, debuggee.tabId);
-        chrome.experimental.debugger.onDetach.removeListener(onDetach);
+        chrome.debugger.onDetach.removeListener(onDetach);
         chrome.test.succeed();
       }
 
       var debuggee2 = {tabId: tab.id};
-      chrome.experimental.debugger.attach(debuggee2, protocolVersion, function() {
-        chrome.experimental.debugger.onDetach.addListener(onDetach);
+      chrome.debugger.attach(debuggee2, protocolVersion, function() {
+        chrome.debugger.onDetach.addListener(onDetach);
         chrome.tabs.remove(tab.id);
       });
     });
@@ -86,7 +86,7 @@ chrome.test.runTests([
   function attachToWebUI() {
     chrome.tabs.create({url:"chrome://version"}, function(tab) {
       var debuggee = {tabId: tab.id};
-      chrome.experimental.debugger.attach(debuggee, protocolVersion,
+      chrome.debugger.attach(debuggee, protocolVersion,
           fail("Can not attach to the page with the \"chrome://\" scheme."));
       chrome.tabs.remove(tab.id);
     });

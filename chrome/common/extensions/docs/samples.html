@@ -360,9 +360,9 @@
   "2020d72f2577f53caf8e94e3dbac0fb849ceaa4d": "IDLE - SIMPLE EXAMPLE DEMONSTRATES THE IDLE API BACKGROUND_PAGE BROWSER_ACTION IDLE CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.IDLE.ONSTATECHANGED CHROME.IDLE.QUERYSTATE",
   "0ea1588bd07b20338fc21f725de1542a5fdf9726": "IGOOGLE NEW TAB PAGE  CHROME_URL_OVERRIDES",
   "646325c25f572a1d15edc73d057f821d847a4fbe": "IMAGEINFO GET IMAGE INFO FOR IMAGES, INCLUDING EXIF DATA BACKGROUND_PAGE CONTEXTMENUS TABS CHROME.CONTEXTMENUS.CREATE CHROME.TABS.GET CHROME.TABS.GETCURRENT CHROME.WINDOWS.CREATE CHROME.WINDOWS.UPDATE",
-  "8f52a8a59c6fc16cb0d1ed0680b7f005be033d58": "JAVASCRIPT PAUSE/RESUME PAUSES / RESUMES JAVASCRIPT EXECUTION BACKGROUND_PAGE BROWSER_ACTION DEBUGGER EXPERIMENTAL TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.BROWSERACTION.SETTITLE CHROME.EXPERIMENTAL.DEBUGGER.ATTACH CHROME.EXPERIMENTAL.DEBUGGER.DETACH CHROME.EXPERIMENTAL.DEBUGGER.ONDETACH CHROME.EXPERIMENTAL.DEBUGGER.ONEVENT CHROME.EXPERIMENTAL.DEBUGGER.SENDCOMMAND CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT",
+  "8f52a8a59c6fc16cb0d1ed0680b7f005be033d58": "JAVASCRIPT PAUSE/RESUME PAUSES / RESUMES JAVASCRIPT EXECUTION BACKGROUND_PAGE BROWSER_ACTION DEBUGGER TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.BROWSERACTION.SETTITLE CHROME.DEBUGGER.ATTACH CHROME.DEBUGGER.DETACH CHROME.DEBUGGER.ONDETACH CHROME.DEBUGGER.ONEVENT CHROME.DEBUGGER.SENDCOMMAND CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT",
   "65b2fe595b7ac38dddd89cca50f5efd0017b0bd4": "KEYBOARD PIN CREATES A KEYBOARD SHORTCUT (C + SHIFT + P) TO TOGGLE THE PINNED STATE OF THE CURRENTLY SELECTED TAB BACKGROUND_PAGE TABS CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE",
-  "cc8563a6666add797264184a960c7b7c8bd3e64d": "LIVE HTTP HEADERS DISPLAYS THE LIVE LOG WITH THE HTTP REQUESTS HEADERS BACKGROUND_PAGE BROWSER_ACTION DEBUGGER EXPERIMENTAL TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXPERIMENTAL.DEBUGGER.ATTACH CHROME.EXPERIMENTAL.DEBUGGER.DETACH CHROME.EXPERIMENTAL.DEBUGGER.ONEVENT CHROME.EXPERIMENTAL.DEBUGGER.SENDCOMMAND CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.WINDOWS.CREATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT",
+  "cc8563a6666add797264184a960c7b7c8bd3e64d": "LIVE HTTP HEADERS DISPLAYS THE LIVE LOG WITH THE HTTP REQUESTS HEADERS BACKGROUND_PAGE BROWSER_ACTION DEBUGGER TABS CHROME.BROWSERACTION.ONCLICKED CHROME.DEBUGGER.ATTACH CHROME.DEBUGGER.DETACH CHROME.DEBUGGER.ONEVENT CHROME.DEBUGGER.SENDCOMMAND CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.WINDOWS.CREATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT",
   "ec97ec20ca2f095d081e39f1565fc12af09ef067": "MAPPY FINDS ADDRESSES IN THE WEB PAGE YOURE ON AND POPS UP A MAP WINDOW. BACKGROUND_PAGE PAGE_ACTION POPUP TABS CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.ONREQUEST CHROME.PAGEACTION.HIDE CHROME.PAGEACTION.SETTITLE CHROME.PAGEACTION.SHOW CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONSELECTIONCHANGED CHROME.TABS.ONUPDATED CHROME.TABS.SENDREQUEST",
   "b2f5f8a790e16f091a7e4e0a39b2d0a6d32e3a6d": "MERGE WINDOWS MERGES ALL OF THE BROWSERS WINDOWS INTO THE CURRENT WINDOW BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.MOVE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT",
   "51a83d2ba3a32e3ff1bdb624d4e18ccec4c4038e": "MESSAGE TIMER TIMES HOW LONG IT TAKES TO SEND A MESSAGE TO A CONTENT SCRIPT AND BACK. BROWSER_ACTION POPUP TABS CHROME.EXTENSION.ONCONNECT CHROME.EXTENSION.ONREQUEST CHROME.TABS.CONNECT CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.SENDREQUEST",
@@ -421,6 +421,8 @@
         <a href="javascript:void(0);" onclick="setFilter('chrome.contextMenus', this)">chrome.contextMenus</a><span>, </span>
       </span><span>
         <a href="javascript:void(0);" onclick="setFilter('chrome.cookies', this)">chrome.cookies</a><span>, </span>
+      </span><span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.debugger', this)">chrome.debugger</a><span>, </span>
       </span><span>
         <a href="javascript:void(0);" onclick="setFilter('chrome.experimental', this)">chrome.experimental</a><span>, </span>
       </span><span>
@@ -2326,10 +2328,7 @@
       <strong>browser_action</strong><span>, </span>
       <span style="display: none; "> and</span>
     </span><span>
-      <strong>debugger</strong><span>, </span>
-      <span style="display: none; "> and</span>
-    </span><span>
-      <strong>experimental</strong><span style="display: none; ">, </span>
+      <strong>debugger</strong><span style="display: none; ">, </span>
       <span> and</span>
     </span><span>
       <strong>tabs</strong><span style="display: none; ">, </span>
@@ -2346,15 +2345,15 @@
       </li><li>
         <code><a href="browserAction.html#method-setTitle">chrome.browserAction.setTitle</a></code>
       </li><li>
-        <code><a href="experimental.debugger.html#method-attach">chrome.experimental.debugger.attach</a></code>
+        <code><a href="debugger.html#method-attach">chrome.debugger.attach</a></code>
       </li><li>
-        <code><a href="experimental.debugger.html#method-detach">chrome.experimental.debugger.detach</a></code>
+        <code><a href="debugger.html#method-detach">chrome.debugger.detach</a></code>
       </li><li>
-        <code><a href="experimental.debugger.html#event-onDetach">chrome.experimental.debugger.onDetach</a></code>
+        <code><a href="debugger.html#event-onDetach">chrome.debugger.onDetach</a></code>
       </li><li>
-        <code><a href="experimental.debugger.html#event-onEvent">chrome.experimental.debugger.onEvent</a></code>
+        <code><a href="debugger.html#event-onEvent">chrome.debugger.onEvent</a></code>
       </li><li>
-        <code><a href="experimental.debugger.html#method-sendCommand">chrome.experimental.debugger.sendCommand</a></code>
+        <code><a href="debugger.html#method-sendCommand">chrome.debugger.sendCommand</a></code>
       </li><li>
         <code><a href="tabs.html#method-get">chrome.tabs.get</a></code>
       </li><li>
@@ -2447,10 +2446,7 @@
       <strong>browser_action</strong><span>, </span>
       <span style="display: none; "> and</span>
     </span><span>
-      <strong>debugger</strong><span>, </span>
-      <span style="display: none; "> and</span>
-    </span><span>
-      <strong>experimental</strong><span style="display: none; ">, </span>
+      <strong>debugger</strong><span style="display: none; ">, </span>
       <span> and</span>
     </span><span>
       <strong>tabs</strong><span style="display: none; ">, </span>
@@ -2463,13 +2459,13 @@
       <li>
         <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
       </li><li>
-        <code><a href="experimental.debugger.html#method-attach">chrome.experimental.debugger.attach</a></code>
+        <code><a href="debugger.html#method-attach">chrome.debugger.attach</a></code>
       </li><li>
-        <code><a href="experimental.debugger.html#method-detach">chrome.experimental.debugger.detach</a></code>
+        <code><a href="debugger.html#method-detach">chrome.debugger.detach</a></code>
       </li><li>
-        <code><a href="experimental.debugger.html#event-onEvent">chrome.experimental.debugger.onEvent</a></code>
+        <code><a href="debugger.html#event-onEvent">chrome.debugger.onEvent</a></code>
       </li><li>
-        <code><a href="experimental.debugger.html#method-sendCommand">chrome.experimental.debugger.sendCommand</a></code>
+        <code><a href="debugger.html#method-sendCommand">chrome.debugger.sendCommand</a></code>
       </li><li>
         <code><a href="tabs.html#method-get">chrome.tabs.get</a></code>
       </li><li>
@@ -2497,8 +2493,8 @@
   <div>
     <a href="examples/api/debugger/live-headers.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
-    <span style="display: none; ">
-    - <a>Install extension</a>
+    <span>
+    - <a href="examples/api/debugger/live-headers.crx">Install extension</a>
     </span>
   </div>
 </div><div class="sample" id="ec97ec20ca2f095d081e39f1565fc12af09ef067">

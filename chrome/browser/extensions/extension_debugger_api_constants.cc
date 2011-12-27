@@ -11,8 +11,8 @@ const char kDataKey[] = "data";
 const char kTabIdKey[] = "tabId";
 const char kVersionIdKey[] = "requiredVersion";
 
-const char kOnEvent[] = "experimental.debugger.onEvent";
-const char kOnDetach[] = "experimental.debugger.onDetach";
+const char kOnEvent[] = "debugger.onEvent";
+const char kOnDetach[] = "debugger.onDetach";
 
 const char kAlreadyAttachedError[] =
     "Another debugger is already attached to the tab with id: *.";

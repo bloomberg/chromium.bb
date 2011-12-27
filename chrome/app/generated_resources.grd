@@ -4054,7 +4054,7 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         Your tabs and browsing activity
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_DEBUGGER" desc="Permission string for access to debugger.">
-        Your data on all websites
+        Page debugger backend
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD" desc="Permission string for access to clipboard.">
         Data you copy and paste

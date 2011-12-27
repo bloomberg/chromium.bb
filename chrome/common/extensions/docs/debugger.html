@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <meta name="description" content="Documentation for the chrome.experimental.debugger module, which is part of the Google Chrome  extension APIs."><title>chrome.experimental.debugger - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.debugger module, which is part of the Google Chrome  extension APIs."><title>chrome.debugger - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -294,7 +294,7 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.debugger</h1>
+        <h1 class="page_title">chrome.debugger</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -323,7 +323,7 @@
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.debugger</a>
+                <a href="#apiReference">API reference: chrome.debugger</a>
                 <ol>
                   <li style="display: none; ">
             <a href="#properties">Properties</a>
@@ -388,7 +388,7 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary">
+        <p id="classSummary" style="display: none; ">
           For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
         </p>
 
@@ -400,7 +400,7 @@
 <p>
 Debugger API serves as an alternate transport for Chrome's
 <a href="http://code.google.com/chrome/devtools/docs/remote-debugging.html">
-remote debugging protocol</a>. Use <code>chrome.experimental.debugger</code>
+remote debugging protocol</a>. Use <code>chrome.debugger</code>
 to attach to one or more tabs to instrument network interaction, debug
 JavaScript, mutate the DOM  and CSS, etc. Use the Debuggee tabId to target tabs
 with sendCommand and route events by <code>tabId</code> from onEvent callbacks. 
@@ -417,8 +417,7 @@ debugging session is terminated. Extension can re-establish it later.
 
 <p>
 You must declare the "debugger" permission in your extension's manifest
-to use this API. The debugger API is currently experimental, so you must
-declare the "experimental" permission to use it as well.
+to use this API.
 </p>
 
 <pre>{
@@ -426,7 +425,6 @@ declare the "experimental" permission to use it as well.
   ...
 <b>  "permissions": [
     "debugger",
-    "experimental"
   ]</b>,
   ...
 }</pre>
@@ -445,7 +443,7 @@ You can find samples of this API in
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.debugger</h2>
+        <h2>API reference: chrome.debugger</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup" style="display: none; ">
@@ -477,7 +475,7 @@ You can find samples of this API in
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.debugger.attach</span>(<span class="null"><span style="display: none; ">, </span><span>Debuggee</span>
+                  <span>chrome.debugger.attach</span>(<span class="null"><span style="display: none; ">, </span><span>Debuggee</span>
                       <var><span>target</span></var></span><span class="null"><span>, </span><span>string</span>
                       <var><span>requiredVersion</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
@@ -502,7 +500,7 @@ You can find samples of this API in
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.debugger.html#type-Debuggee">Debuggee</a>
+                        <a href="debugger.html#type-Debuggee">Debuggee</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -744,7 +742,7 @@ You can find samples of this API in
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.debugger.detach</span>(<span class="null"><span style="display: none; ">, </span><span>Debuggee</span>
+                  <span>chrome.debugger.detach</span>(<span class="null"><span style="display: none; ">, </span><span>Debuggee</span>
                       <var><span>target</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
@@ -768,7 +766,7 @@ You can find samples of this API in
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.debugger.html#type-Debuggee">Debuggee</a>
+                        <a href="debugger.html#type-Debuggee">Debuggee</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -942,7 +940,7 @@ You can find samples of this API in
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.debugger.sendCommand</span>(<span class="null"><span style="display: none; ">, </span><span>Debuggee</span>
+                  <span>chrome.debugger.sendCommand</span>(<span class="null"><span style="display: none; ">, </span><span>Debuggee</span>
                       <var><span>target</span></var></span><span class="null"><span>, </span><span>string</span>
                       <var><span>method</span></var></span><span class="optional"><span>, </span><span>object</span>
                       <var><span>params</span></var></span><span class="optional"><span>, </span><span>function</span>
@@ -968,7 +966,7 @@ You can find samples of this API in
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.debugger.html#type-Debuggee">Debuggee</a>
+                        <a href="debugger.html#type-Debuggee">Debuggee</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1352,7 +1350,7 @@ You can find samples of this API in
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.debugger.</span><span>onDetach</span><span class="subdued">.addListener</span>(function(<span>Debuggee source</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.debugger.</span><span>onDetach</span><span class="subdued">.addListener</span>(function(<span>Debuggee source</span>) <span class="subdued">{...}</span><span></span>);
               </div>
 
               <div class="description">
@@ -1376,7 +1374,7 @@ You can find samples of this API in
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.debugger.html#type-Debuggee">Debuggee</a>
+                        <a href="debugger.html#type-Debuggee">Debuggee</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1462,7 +1460,7 @@ You can find samples of this API in
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.debugger.</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Debuggee source, string method, object params</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.debugger.</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Debuggee source, string method, object params</span>) <span class="subdued">{...}</span><span></span>);
               </div>
 
               <div class="description">
@@ -1486,7 +1484,7 @@ You can find samples of this API in
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.debugger.html#type-Debuggee">Debuggee</a>
+                        <a href="debugger.html#type-Debuggee">Debuggee</a>
                       </span>
                       <span style="display: none; ">
                         <span>

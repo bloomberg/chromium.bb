@@ -7,8 +7,5 @@
 #include "chrome/common/chrome_switches.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Debugger) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   ASSERT_TRUE(RunExtensionTest("debugger")) << message_;
 }

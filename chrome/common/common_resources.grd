@@ -17,12 +17,12 @@
       <include name="IDR_EXTENSION_API_JSON_CONTENTSETTINGS" file="extensions\api\contentSettings.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_CONTEXTMENUS" file="extensions\api\contextMenus.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_COOKIES" file="extensions\api\cookies.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_DEBUGGER" file="extensions\api\debugger.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_DEVTOOLS" file="extensions\api\devtools.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_ACCESSIBILITY" file="extensions\api\experimental.accessibility.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP" file="extensions\api\experimental.app.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_BOOKMARKMANAGER" file="extensions\api\experimental.bookmarkManager.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_CLEAR" file="extensions\api\experimental.clear.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_DEBUGGER" file="extensions\api\experimental.debugger.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_DOWNLOADS" file="extensions\api\experimental.downloads.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INFOBARS" file="extensions\api\experimental.infobars.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_IME" file="extensions\api\experimental.input.ime.json" type="BINDATA" />

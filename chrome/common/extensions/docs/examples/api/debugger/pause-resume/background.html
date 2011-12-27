@@ -11,8 +11,8 @@ found in the LICENSE file.
 var attachedTabs = {};
 var version = "0.1";
 
-chrome.experimental.debugger.onEvent.addListener(onEvent);
-chrome.experimental.debugger.onDetach.addListener(onDetach);
+chrome.debugger.onEvent.addListener(onEvent);
+chrome.debugger.onDetach.addListener(onDetach);
 
 chrome.browserAction.onClicked.addListener(function() {
   chrome.windows.getCurrent(function(win) {
@@ -28,9 +28,9 @@ function actionClicked(tab) {
     return;
 
   if (!attachedTabs[tabId])
-    chrome.experimental.debugger.attach(debuggeeId, version, onAttach.bind(null, debuggeeId));
+    chrome.debugger.attach(debuggeeId, version, onAttach.bind(null, debuggeeId));
   else if (attachedTabs[tabId])
-    chrome.experimental.debugger.detach(debuggeeId, onDetach.bind(null, debuggeeId));
+    chrome.debugger.detach(debuggeeId, onDetach.bind(null, debuggeeId));
 }
 
 function onAttach(debuggeeId) {
@@ -43,13 +43,13 @@ function onAttach(debuggeeId) {
   chrome.browserAction.setIcon({tabId: tabId, path:"debuggerPausing.png"});
   chrome.browserAction.setTitle({tabId: tabId, title:"Pausing JavaScript"});
   attachedTabs[tabId] = "pausing";
-  chrome.experimental.debugger.sendCommand(
+  chrome.debugger.sendCommand(
       debuggeeId, "Debugger.enable", {},
       onDebuggerEnabled.bind(null, debuggeeId));
 }
 
 function onDebuggerEnabled(debuggeeId) {
-  chrome.experimental.debugger.sendCommand(debuggeeId, "Debugger.pause");
+  chrome.debugger.sendCommand(debuggeeId, "Debugger.pause");
 }
 
 function onEvent(debuggeeId, method) {

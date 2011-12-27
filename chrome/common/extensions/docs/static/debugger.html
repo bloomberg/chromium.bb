@@ -5,7 +5,7 @@
 <p>
 Debugger API serves as an alternate transport for Chrome's
 <a href="http://code.google.com/chrome/devtools/docs/remote-debugging.html">
-remote debugging protocol</a>. Use <code>chrome.experimental.debugger</code>
+remote debugging protocol</a>. Use <code>chrome.debugger</code>
 to attach to one or more tabs to instrument network interaction, debug
 JavaScript, mutate the DOM  and CSS, etc. Use the Debuggee tabId to target tabs
 with sendCommand and route events by <code>tabId</code> from onEvent callbacks. 
@@ -22,8 +22,7 @@ debugging session is terminated. Extension can re-establish it later.
 
 <p>
 You must declare the "debugger" permission in your extension's manifest
-to use this API. The debugger API is currently experimental, so you must
-declare the "experimental" permission to use it as well.
+to use this API.
 </p>
 
 <pre>{
@@ -31,7 +30,6 @@ declare the "experimental" permission to use it as well.
   ...
 <b>  "permissions": [
     "debugger",
-    "experimental"
   ]</b>,
   ...
 }</pre>

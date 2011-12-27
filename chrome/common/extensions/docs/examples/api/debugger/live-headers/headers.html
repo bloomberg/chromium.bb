@@ -28,12 +28,12 @@ body {
 var tabId = parseInt(window.location.search.substring(1));
 
 window.addEventListener("load", function() {
-  chrome.experimental.debugger.sendCommand({tabId:tabId}, "Network.enable");
-  chrome.experimental.debugger.onEvent.addListener(onEvent);
+  chrome.debugger.sendCommand({tabId:tabId}, "Network.enable");
+  chrome.debugger.onEvent.addListener(onEvent);
 });
 
 window.addEventListener("unload", function() {
-  chrome.experimental.debugger.detach({tabId:tabId});
+  chrome.debugger.detach({tabId:tabId});
 });
 
 var requests = {};

@@ -5,7 +5,6 @@
   "background_page": "background.html",
   "permissions": [
     "tabs",
-    "experimental",
-    "http://*/*"
+    "debugger"
   ]
 }

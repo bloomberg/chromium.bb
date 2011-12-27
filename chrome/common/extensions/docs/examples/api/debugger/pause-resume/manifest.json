@@ -4,9 +4,7 @@
   "version": "0.5",
   "permissions": [
     "tabs",
-    "debugger",
-    "experimental",
-    "http://*/*"
+    "debugger"
   ],
   "background_page": "background.html",
   "browser_action": {

@@ -1,6 +1,6 @@
 [
   {
-    "namespace": "experimental.debugger",
+    "namespace": "debugger",
     "types": [
       {
         "id": "Debuggee",

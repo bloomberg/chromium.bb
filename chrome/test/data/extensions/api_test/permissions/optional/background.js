@@ -116,7 +116,7 @@ chrome.test.getConfig(function(config) {
     // defined in "optional_permissions".
     function requestNonOptional() {
       chrome.permissions.request(
-          {permissions: ['debugger']}, fail(NOT_OPTIONAL_ERROR));
+          {permissions: ['bookmarks']}, fail(NOT_OPTIONAL_ERROR));
       chrome.permissions.request(
           {origins: ['http://*.b.com/*']}, fail(NOT_OPTIONAL_ERROR));
       chrome.permissions.request(

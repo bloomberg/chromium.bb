@@ -232,10 +232,6 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       ExtensionPermissionMessage::kNone, kFlagSupportsOptional,
       kTypeDefault - kTypePlatformApp);
   info->RegisterPermission(
-      kDebugger, "debugger", IDS_EXTENSION_PROMPT_WARNING_DEBUGGER,
-      ExtensionPermissionMessage::kDebugger,
-      kFlagSupportsOptional, kTypeDefault);
-  info->RegisterPermission(
       kFileBrowserHandler, "fileBrowserHandler", 0,
       ExtensionPermissionMessage::kNone, kFlagNone, kTypeDefault);
   info->RegisterPermission(
@@ -312,6 +308,11 @@ void ExtensionAPIPermission::RegisterAllPermissions(
   // Full url access permissions.
   info->RegisterPermission(
       kProxy, "proxy", 0, ExtensionPermissionMessage::kNone,
+      kFlagImpliesFullURLAccess, kTypeDefault);
+
+  info->RegisterPermission(
+      kDebugger, "debugger", IDS_EXTENSION_PROMPT_WARNING_DEBUGGER,
+      ExtensionPermissionMessage::kDebugger,
       kFlagImpliesFullURLAccess, kTypeDefault);
 
   info->RegisterPermission(
