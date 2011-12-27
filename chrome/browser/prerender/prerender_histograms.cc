@@ -167,7 +167,7 @@ base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
 // Helper macro for histograms.
 #define RECORD_PLT(tag, perceived_page_load_time) { \
   PREFIXED_HISTOGRAM( \
-    base::FieldTrial::MakeName(tag, "Prefetch"), \
+    base::FieldTrial::MakeName(tag, "Prerender"), \
     UMA_HISTOGRAM_CUSTOM_TIMES( \
         name, \
         perceived_page_load_time, \

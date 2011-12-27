@@ -313,37 +313,37 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     }
   }
 
-  // Histograms to determine if content prefetching has an impact on PLT.
+  // Histograms to determine if prerendering has an impact on PLT.
   // TODO(gavinp): Right now the prerendering and the prefetching field trials
   // are mixed together.  If we continue to launch prerender with
   // link rel=prerender, then we should separate them.
-  static const bool prefetching_fieldtrial =
-      base::FieldTrialList::TrialExists("Prefetch");
-  if (prefetching_fieldtrial) {
+  static const bool prerendering_fieldtrial =
+      base::FieldTrialList::TrialExists("Prerender");
+  if (prerendering_fieldtrial) {
     if (document_state->was_prefetcher()) {
       PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.BeginToFinishDoc_ContentPrefetcher", "Prefetch"),
+          "PLT.BeginToFinishDoc_ContentPrefetcher", "Prerender"),
           begin_to_finish_doc);
       PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.BeginToFinish_ContentPrefetcher", "Prefetch"),
+          "PLT.BeginToFinish_ContentPrefetcher", "Prerender"),
           begin_to_finish_all_loads);
     }
     if (document_state->was_referred_by_prefetcher()) {
       PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.BeginToFinishDoc_ContentPrefetcherReferrer", "Prefetch"),
+          "PLT.BeginToFinishDoc_ContentPrefetcherReferrer", "Prerender"),
           begin_to_finish_doc);
       PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.BeginToFinish_ContentPrefetcherReferrer", "Prefetch"),
+          "PLT.BeginToFinish_ContentPrefetcherReferrer", "Prerender"),
           begin_to_finish_all_loads);
     }
     UMA_HISTOGRAM_ENUMERATION(base::FieldTrial::MakeName(
-        "PLT.Abandoned", "Prefetch"),
+        "PLT.Abandoned", "Prerender"),
         abandoned_page ? 1 : 0, 2);
     PLT_HISTOGRAM(base::FieldTrial::MakeName(
-        "PLT.BeginToFinishDoc", "Prefetch"),
+        "PLT.BeginToFinishDoc", "Prerender"),
         begin_to_finish_doc);
     PLT_HISTOGRAM(base::FieldTrial::MakeName(
-        "PLT.BeginToFinish", "Prefetch"),
+        "PLT.BeginToFinish", "Prerender"),
         begin_to_finish_all_loads);
   }
 

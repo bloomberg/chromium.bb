@@ -40,6 +40,65 @@ const char* NameFromOmniboxHeuristic(OmniboxHeuristic heuristic) {
   return kOmniboxHeuristicNames[heuristic];
 }
 
+void SetupPrerenderFieldTrial() {
+  base::FieldTrial::Probability divisor = 1000;
+  base::FieldTrial::Probability exp1_probability = 200;
+  base::FieldTrial::Probability control1_probability = 200;
+  base::FieldTrial::Probability no_use1_probability = 100;
+  base::FieldTrial::Probability exp2_probability = 200;
+  base::FieldTrial::Probability control2_probability = 200;
+  base::FieldTrial::Probability no_use2_probability = 100;
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
+    exp1_probability = 495;
+    control1_probability = 5;
+    no_use1_probability = 0;
+    exp2_probability = 495;
+    control2_probability = 5;
+    no_use2_probability = 0;
+  }
+  CHECK_EQ(divisor, exp1_probability + control1_probability +
+           no_use1_probability + exp2_probability +
+           control2_probability + no_use2_probability);
+  scoped_refptr<base::FieldTrial> trial(
+      new base::FieldTrial("Prerender", divisor,
+                           "ContentPrefetchPrerender1", 2012, 6, 30));
+
+  const int kPrerenderExperiment1Group = trial->kDefaultGroupNumber;
+  const int kPrerenderControl1Group =
+      trial->AppendGroup("ContentPrefetchPrerenderControl1",
+                         control1_probability);
+  const int kPrerenderNoUse1Group =
+      trial->AppendGroup("ContentPrefetchPrerenderNoUse1",
+                         no_use1_probability);
+  const int kPrerenderExperiment2Group =
+      trial->AppendGroup("ContentPrefetchPrerender2",
+                         exp2_probability);
+  const int kPrerenderControl2Group =
+      trial->AppendGroup("ContentPrefetchPrerenderControl2",
+                         control2_probability);
+  const int kPrerenderNoUse2Group =
+      trial->AppendGroup("ContentPrefetchPrerenderNoUse2",
+                         no_use2_probability);
+  const int trial_group = trial->group();
+  if (trial_group == kPrerenderExperiment1Group ||
+      trial_group == kPrerenderExperiment2Group) {
+    PrerenderManager::SetMode(
+        PrerenderManager::PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP);
+  } else if (trial_group == kPrerenderControl1Group ||
+             trial_group == kPrerenderControl2Group) {
+    PrerenderManager::SetMode(
+        PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
+  } else if (trial_group == kPrerenderNoUse1Group ||
+             trial_group == kPrerenderNoUse2Group) {
+    PrerenderManager::SetMode(
+        PrerenderManager::PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP);
+  } else {
+    NOTREACHED();
+  }
+}
+
 }  // end namespace
 
 void ConfigurePrerenderFromOmnibox();
@@ -78,68 +137,9 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
   }
 
   switch (prerender_option) {
-    case PRERENDER_OPTION_AUTO: {
-      base::FieldTrial::Probability divisor = 1000;
-      base::FieldTrial::Probability exp1_probability = 200;
-      base::FieldTrial::Probability control1_probability = 200;
-      base::FieldTrial::Probability no_use1_probability = 100;
-      base::FieldTrial::Probability exp2_probability = 200;
-      base::FieldTrial::Probability control2_probability = 200;
-      base::FieldTrial::Probability no_use2_probability = 100;
-      chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-      if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
-          channel == chrome::VersionInfo::CHANNEL_BETA) {
-        exp1_probability = 495;
-        control1_probability = 5;
-        no_use1_probability = 0;
-        exp2_probability = 495;
-        control2_probability = 5;
-        no_use2_probability = 0;
-      }
-      CHECK_EQ(divisor, exp1_probability + control1_probability +
-               no_use1_probability + exp2_probability +
-               control2_probability + no_use2_probability);
-      scoped_refptr<base::FieldTrial> trial(
-          new base::FieldTrial("Prefetch", divisor,
-                               "ContentPrefetchPrerender1", 2012, 6, 30));
-
-      const int kPrerenderExperiment1Group = trial->kDefaultGroupNumber;
-      const int kPrerenderControl1Group =
-          trial->AppendGroup("ContentPrefetchPrerenderControl1",
-                             control1_probability);
-      const int kPrerenderNoUse1Group =
-          trial->AppendGroup("ContentPrefetchPrerenderNoUse1",
-                             no_use1_probability);
-      const int kPrerenderExperiment2Group =
-          trial->AppendGroup("ContentPrefetchPrerender2",
-                             exp2_probability);
-      const int kPrerenderControl2Group =
-          trial->AppendGroup("ContentPrefetchPrerenderControl2",
-                             control2_probability);
-      const int kPrerenderNoUse2Group =
-          trial->AppendGroup("ContentPrefetchPrerenderNoUse2",
-                             no_use2_probability);
-      const int trial_group = trial->group();
-      if (trial_group == kPrerenderExperiment1Group ||
-                 trial_group == kPrerenderExperiment2Group) {
-        ResourceDispatcherHost::set_is_prefetch_enabled(false);
-        PrerenderManager::SetMode(
-            PrerenderManager::PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP);
-      } else if (trial_group == kPrerenderControl1Group ||
-                 trial_group == kPrerenderControl2Group) {
-        ResourceDispatcherHost::set_is_prefetch_enabled(false);
-        PrerenderManager::SetMode(
-            PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
-      } else if (trial_group == kPrerenderNoUse1Group ||
-                 trial_group == kPrerenderNoUse2Group) {
-        ResourceDispatcherHost::set_is_prefetch_enabled(false);
-        PrerenderManager::SetMode(
-            PrerenderManager::PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP);
-      } else {
-        NOTREACHED();
-      }
+    case PRERENDER_OPTION_AUTO:
+      SetupPrerenderFieldTrial();
       break;
-    }
     case PRERENDER_OPTION_DISABLED:
       ResourceDispatcherHost::set_is_prefetch_enabled(false);
       PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
