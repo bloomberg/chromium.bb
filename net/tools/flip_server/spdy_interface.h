@@ -69,6 +69,8 @@ class SpdySM : public spdy::SpdyFramerVisitorInterface,
   virtual void OnDataFrameHeader(const spdy::SpdyDataFrame* frame) OVERRIDE;
   virtual void OnStreamFrameData(spdy::SpdyStreamId stream_id,
                                  const char* data, size_t len) OVERRIDE;
+  virtual bool OnCredentialFrameData(const char* frame_data,
+                                     size_t len) OVERRIDE;
 
  public:
   virtual size_t ProcessReadInput(const char* data, size_t len) OVERRIDE;

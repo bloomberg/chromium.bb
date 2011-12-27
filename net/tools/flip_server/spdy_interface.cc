@@ -309,6 +309,11 @@ void SpdySM::OnStreamFrameData(SpdyStreamId stream_id,
     interface->ProcessWriteInput(data, len);
 }
 
+bool SpdySM::OnCredentialFrameData(const char* frame_data,
+                                     size_t len) {
+  return false;
+}
+
 size_t SpdySM::ProcessReadInput(const char* data, size_t len) {
   return spdy_framer_->ProcessInput(data, len);
 }
@@ -611,4 +616,3 @@ void SpdySM::GetOutput() {
 }
 
 }  // namespace net
-
