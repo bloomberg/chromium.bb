@@ -27,7 +27,9 @@ if ENABLE_XSERVER_LAUNCHER
 xserver_launcher_sources =			\
 	xserver-launcher.c			\
 	xserver-protocol.c			\
-	xserver-server-protocol.h
+	xserver-server-protocol.h		\
+	hash.c					\
+	hash.h
 endif
 
 moduledir = @libdir@/wayland

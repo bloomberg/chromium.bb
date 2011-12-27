@@ -39,6 +39,7 @@
 
 #include "compositor.h"
 #include "xserver-server-protocol.h"
+#include "hash.h"
 
 /*
  * TODO:
@@ -74,7 +75,7 @@ struct wlsc_wm {
 	const xcb_query_extension_reply_t *xfixes;
 	struct wl_event_source *source;
 	xcb_screen_t *screen;
-	struct wl_hash_table *window_hash;
+	struct hash_table *window_hash;
 	struct wlsc_xserver *server;
 
 	xcb_window_t selection_window;
@@ -552,7 +553,7 @@ wlsc_wm_handle_map_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 
 	wlsc_wm_get_properties(wm, map_notify->window);
 
-	window = wl_hash_table_lookup(wm->window_hash, map_notify->window);
+	window = hash_table_lookup(wm->window_hash, map_notify->window);
 	wlsc_wm_activate(wm, window, XCB_TIME_CURRENT_TIME);
 }
 
@@ -606,7 +607,7 @@ wlsc_wm_handle_create_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 	}
 
 	window->id = create_notify->window;
-	wl_hash_table_insert(wm->window_hash, window->id, window);
+	hash_table_insert(wm->window_hash, window->id, window);
 
 	fprintf(stderr, "created window %p\n", window);
 }
@@ -621,7 +622,7 @@ wlsc_wm_handle_destroy_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 	fprintf(stderr, "XCB_DESTROY_NOTIFY, win %d\n",
 		destroy_notify->window);
 
-	window = wl_hash_table_lookup(wm->window_hash, destroy_notify->window);
+	window = hash_table_lookup(wm->window_hash, destroy_notify->window);
 	if (window == NULL) {
 		fprintf(stderr, "destroy notify for unknow window %d\n",
 			destroy_notify->window);
@@ -629,7 +630,7 @@ wlsc_wm_handle_destroy_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 	}
 
 	fprintf(stderr, "destroy window %p\n", window);
-	wl_hash_table_remove(wm->window_hash, window->id);
+	hash_table_remove(wm->window_hash, window->id);
 	free(window);
 }
 
@@ -805,7 +806,7 @@ wlsc_wm_create(struct wlsc_xserver *wxs)
 		return NULL;
 
 	wm->server = wxs;
-	wm->window_hash = wl_hash_table_create();
+	wm->window_hash = hash_table_create();
 	if (wm->window_hash == NULL) {
 		free(wm);
 		return NULL;
@@ -813,7 +814,7 @@ wlsc_wm_create(struct wlsc_xserver *wxs)
 
 	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv) < 0) {
 		fprintf(stderr, "socketpair failed\n");
-		wl_hash_table_destroy(wm->window_hash);
+		hash_table_destroy(wm->window_hash);
 		free(wm);
 		return NULL;
 	}
@@ -827,7 +828,7 @@ wlsc_wm_create(struct wlsc_xserver *wxs)
 	if (xcb_connection_has_error(wm->conn)) {
 		fprintf(stderr, "xcb_connect_to_fd failed\n");
 		close(sv[0]);
-		wl_hash_table_destroy(wm->window_hash);
+		hash_table_destroy(wm->window_hash);
 		free(wm);
 		return NULL;
 	}
@@ -883,7 +884,7 @@ static void
 wlsc_wm_destroy(struct wlsc_wm *wm)
 {
 	/* FIXME: Free windows in hash. */
-	wl_hash_table_destroy(wm->window_hash);
+	hash_table_destroy(wm->window_hash);
 	xcb_disconnect(wm->conn);
 	wl_event_source_remove(wm->source);
 	free(wm);
@@ -1042,7 +1043,7 @@ xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 	if (client != wxs->client)
 		return;
 
-	window = wl_hash_table_lookup(wm->window_hash, id);
+	window = hash_table_lookup(wm->window_hash, id);
 	if (window == NULL) {
 		fprintf(stderr, "set_window_id for unknown window %d\n", id);
 		return;
