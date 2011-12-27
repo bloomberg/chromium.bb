@@ -891,9 +891,7 @@ void LoginUtilsImpl::StartSync(
   if (!initialized) {
     initialized = true;
 
-    // Set the CrOS user by getting this constructor run with the
-    // user's email on first retrieval.
-    std::string email = UserManager::Get()->logged_in_user().email();
+    std::string email = UserManager::Get()->logged_in_user().display_email();
     user_profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername, email);
 
     ProfileSyncService* service = user_profile->GetProfileSyncService();
