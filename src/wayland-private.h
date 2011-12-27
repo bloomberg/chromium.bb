@@ -39,6 +39,8 @@ struct wl_map {
 	uint32_t free_list;
 };
 
+typedef void (*wl_iterator_func_t)(void *element, void *data);
+
 void wl_map_init(struct wl_map *map);
 void wl_map_release(struct wl_map *map);
 uint32_t wl_map_insert_new(struct wl_map *map, uint32_t side, void *data);
