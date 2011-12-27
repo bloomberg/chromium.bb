@@ -202,8 +202,9 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   // Returns NULL if we fail to find the cookie in the map.
   static scoped_refptr<ExternalTabContainer> RemovePendingTab(uintptr_t cookie);
 
-  // Handles the specified |accelerator| being pressed.
-  bool AcceleratorPressed(const ui::Accelerator& accelerator);
+  // ui::AcceleratorTarget
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  bool CanHandleAccelerators() const OVERRIDE;
 
   bool pending() const {
     return pending_;

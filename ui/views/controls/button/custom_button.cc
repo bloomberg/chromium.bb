@@ -194,9 +194,6 @@ bool CustomButton::OnKeyReleased(const KeyEvent& event) {
 }
 
 bool CustomButton::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  if (!enabled())
-    return false;
-
   SetState(BS_NORMAL);
   KeyEvent key_event(ui::ET_KEY_RELEASED, accelerator.key_code(),
                      accelerator.modifiers());

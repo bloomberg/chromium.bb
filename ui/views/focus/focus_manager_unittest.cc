@@ -195,18 +195,29 @@ TEST_F(FocusManagerTest, ContainsView) {
 class TestAcceleratorTarget : public ui::AcceleratorTarget {
  public:
   explicit TestAcceleratorTarget(bool process_accelerator)
-      : accelerator_count_(0), process_accelerator_(process_accelerator) {}
+      : accelerator_count_(0),
+        process_accelerator_(process_accelerator),
+        can_handle_accelerators_(true) {}
 
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) {
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE {
     ++accelerator_count_;
     return process_accelerator_;
   }
 
+  virtual bool CanHandleAccelerators() const OVERRIDE {
+    return can_handle_accelerators_;
+  }
+
   int accelerator_count() const { return accelerator_count_; }
+
+  void set_can_handle_accelerators(bool can_handle_accelerators) {
+    can_handle_accelerators_ = can_handle_accelerators;
+  }
 
  private:
   int accelerator_count_;  // number of times that the accelerator is activated
   bool process_accelerator_;  // return value of AcceleratorPressed
+  bool can_handle_accelerators_; // return value of CanHandleAccelerators
 
   DISALLOW_COPY_AND_ASSIGN(TestAcceleratorTarget);
 };
@@ -303,6 +314,40 @@ TEST_F(FocusManagerTest, CallsNormalAcceleratorTarget) {
   EXPECT_EQ(escape_target.accelerator_count(), 1);
 }
 
+TEST_F(FocusManagerTest, CallsEnabledAcceleratorTargetsOnly) {
+  FocusManager* focus_manager = GetFocusManager();
+  ui::Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
+
+  TestAcceleratorTarget return_target1(true);
+  TestAcceleratorTarget return_target2(true);
+
+  focus_manager->RegisterAccelerator(return_accelerator, &return_target1);
+  focus_manager->RegisterAccelerator(return_accelerator, &return_target2);
+  EXPECT_TRUE(focus_manager->ProcessAccelerator(return_accelerator));
+  EXPECT_EQ(0, return_target1.accelerator_count());
+  EXPECT_EQ(1, return_target2.accelerator_count());
+
+  // If CanHandleAccelerators() return false, FocusManager shouldn't call
+  // AcceleratorPressed().
+  return_target2.set_can_handle_accelerators(false);
+  EXPECT_TRUE(focus_manager->ProcessAccelerator(return_accelerator));
+  EXPECT_EQ(1, return_target1.accelerator_count());
+  EXPECT_EQ(1, return_target2.accelerator_count());
+
+  // If no accelerator targets are enabled, ProcessAccelerator() should fail.
+  return_target1.set_can_handle_accelerators(false);
+  EXPECT_FALSE(focus_manager->ProcessAccelerator(return_accelerator));
+  EXPECT_EQ(1, return_target1.accelerator_count());
+  EXPECT_EQ(1, return_target2.accelerator_count());
+
+  // Enabling the target again causes the accelerators to be processed again.
+  return_target1.set_can_handle_accelerators(true);
+  return_target2.set_can_handle_accelerators(true);
+  EXPECT_TRUE(focus_manager->ProcessAccelerator(return_accelerator));
+  EXPECT_EQ(1, return_target1.accelerator_count());
+  EXPECT_EQ(2, return_target2.accelerator_count());
+}
+
 // Unregisters itself when its accelerator is invoked.
 class SelfUnregisteringAcceleratorTarget : public ui::AcceleratorTarget {
  public:
@@ -313,9 +358,13 @@ class SelfUnregisteringAcceleratorTarget : public ui::AcceleratorTarget {
         accelerator_count_(0) {
   }
 
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) {
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE {
     ++accelerator_count_;
     focus_manager_->UnregisterAccelerator(accelerator, this);
+    return true;
+  }
+
+  virtual bool CanHandleAccelerators() const OVERRIDE {
     return true;
   }
 

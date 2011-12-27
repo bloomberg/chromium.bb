@@ -53,6 +53,7 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
 
   // Overridden from ui::AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual bool CanHandleAccelerators() const OVERRIDE;
 
   void SetScreenshotDelegate(ScreenshotDelegate* screenshot_delegate);
 

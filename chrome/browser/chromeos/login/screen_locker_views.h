@@ -93,6 +93,7 @@ class ScreenLockerViews : public ScreenLockerDelegate,
 
   // Overridden from ui::AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual bool CanHandleAccelerators() const OVERRIDE;
 
   // Event handler for client-event.
   CHROMEGTK_CALLBACK_1(ScreenLockerViews, void, OnClientEvent, GdkEventClient*);

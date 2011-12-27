@@ -891,6 +891,10 @@ bool ScreenLockerViews::AcceleratorPressed(
   return false;
 }
 
+bool ScreenLockerViews::CanHandleAccelerators() const {
+  return true;
+}
+
 void ScreenLockerViews::OnClientEvent(GtkWidget* widge, GdkEventClient* event) {
 #if defined(TOOLKIT_USES_GTK)
   WmIpc::Message msg;

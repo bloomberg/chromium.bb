@@ -870,6 +870,10 @@ bool View::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return false;
 }
 
+bool View::CanHandleAccelerators() const {
+  return enabled() && IsDrawn() && GetWidget() && GetWidget()->IsVisible();
+}
+
 // Focus -----------------------------------------------------------------------
 
 bool View::HasFocus() const {
@@ -1587,10 +1591,6 @@ void View::PropagateVisibilityNotifications(View* start, bool is_visible) {
 }
 
 void View::VisibilityChangedImpl(View* starting_from, bool is_visible) {
-  if (is_visible)
-    RegisterPendingAccelerators();
-  else
-    UnregisterAccelerators(true);
   VisibilityChanged(starting_from, is_visible);
 }
 
@@ -1929,9 +1929,6 @@ void View::RegisterPendingAccelerators() {
 #endif
     return;
   }
-  // Only register accelerators if we are visible.
-  if (!IsDrawn() || !GetWidget()->IsVisible())
-    return;
   for (std::vector<ui::Accelerator>::const_iterator i(
            accelerators_->begin() + registered_accelerator_count_);
        i != accelerators_->end(); ++i) {

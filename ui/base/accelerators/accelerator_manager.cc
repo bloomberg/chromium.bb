@@ -59,7 +59,8 @@ bool AcceleratorManager::Process(const Accelerator& accelerator) {
     AcceleratorTargetList targets(map_iter->second);
     for (AcceleratorTargetList::iterator iter = targets.begin();
          iter != targets.end(); ++iter) {
-      if ((*iter)->AcceleratorPressed(accelerator))
+      if ((*iter)->CanHandleAccelerators() &&
+          (*iter)->AcceleratorPressed(accelerator))
         return true;
     }
   }

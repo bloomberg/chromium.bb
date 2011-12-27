@@ -103,8 +103,13 @@ class UI_EXPORT Accelerator {
 // should implement.
 class UI_EXPORT AcceleratorTarget {
  public:
-  // This method should return true if the accelerator was processed.
+  // Should return true if the accelerator was processed.
   virtual bool AcceleratorPressed(const Accelerator& accelerator) = 0;
+
+  // Should return true if the target can handle the accelerator events. The
+  // AcceleratorPressed method is inovked only for targets for which
+  // CanHandleAccelerators returns true.
+  virtual bool CanHandleAccelerators() const = 0;
 
  protected:
   virtual ~AcceleratorTarget() {}

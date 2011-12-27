@@ -119,11 +119,6 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   views::FocusManager* focus_manager = window1->GetFocusManager();
   ASSERT_TRUE(focus_manager);
 
-  // old_target should be the OK button for test_dialog1.
-  ui::AcceleratorTarget* old_target =
-      focus_manager->GetCurrentTargetForAccelerator(
-          ui::Accelerator(ui::VKEY_RETURN, false, false, false));
-  ASSERT_TRUE(old_target != NULL);
   // test_dialog1's text field should be focused.
   EXPECT_EQ(test_dialog1->GetInitiallyFocusedView(),
             focus_manager->GetFocusedView());
@@ -136,14 +131,6 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
       new ConstrainedWindowViews(tab_contents, test_dialog2.get());
   // Should be the same focus_manager.
   ASSERT_EQ(focus_manager, window2->GetFocusManager());
-
-  // new_target should be the same as old_target since test_dialog2 is still
-  // hidden.
-  ui::AcceleratorTarget* new_target =
-      focus_manager->GetCurrentTargetForAccelerator(
-          ui::Accelerator(ui::VKEY_RETURN, false, false, false));
-  ASSERT_TRUE(new_target != NULL);
-  EXPECT_EQ(old_target, new_target);
 
   // test_dialog1's text field should still be the view that has focus.
   EXPECT_EQ(test_dialog1->GetInitiallyFocusedView(),
@@ -161,6 +148,21 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   EXPECT_EQ(1u, constrained_window_helper->constrained_window_count());
 
   // test_dialog2 will be shown.  Focus should be on test_dialog2's text field.
+  EXPECT_EQ(test_dialog2->GetInitiallyFocusedView(),
+            focus_manager->GetFocusedView());
+
+  int tab_with_constrained_window = browser()->active_index();
+
+  // Create a new tab.
+  browser()->NewTab();
+
+  // The constrained dialog should no longer be selected.
+  EXPECT_NE(test_dialog2->GetInitiallyFocusedView(),
+            focus_manager->GetFocusedView());
+
+  browser()->ActivateTabAt(tab_with_constrained_window, false);
+
+  // Activating the previous tab should bring focus to the constrained window.
   EXPECT_EQ(test_dialog2->GetInitiallyFocusedView(),
             focus_manager->GetFocusedView());
 

@@ -630,7 +630,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Sets a keyboard accelerator for that view. When the user presses the
   // accelerator key combination, the AcceleratorPressed method is invoked.
   // Note that you can set multiple accelerators for a view by invoking this
-  // method several times.
+  // method several times. Note also that AcceleratorPressed is invoked only
+  // when CanHandleAccelerators() is true.
   virtual void AddAccelerator(const ui::Accelerator& accelerator);
 
   // Removes the specified accelerator for this view.
@@ -641,6 +642,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Overridden from AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+
+  // Returns whether accelerators are enabled for this view. Accelerators are
+  // enabled if the containing widget is visible and the view is enabled() and
+  // IsDrawn()
+  virtual bool CanHandleAccelerators() const OVERRIDE;
 
   // Focus ---------------------------------------------------------------------
 

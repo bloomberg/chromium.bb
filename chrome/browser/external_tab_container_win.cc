@@ -1049,6 +1049,10 @@ bool ExternalTabContainer::AcceleratorPressed(
   return true;
 }
 
+bool ExternalTabContainer::CanHandleAccelerators() const {
+  return true;
+}
+
 void ExternalTabContainer::Navigate(const GURL& url, const GURL& referrer) {
   if (!tab_contents_.get()) {
     NOTREACHED();

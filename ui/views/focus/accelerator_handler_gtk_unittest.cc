@@ -66,6 +66,9 @@ class AcceleratorHandlerGtkTest
       home_pressed_ = true;
     return true;
   }
+  virtual bool CanHandleAccelerators() const {
+    return true;
+  }
 
   // WidgetDelegate Implementation.
   virtual View* GetContentsView() {

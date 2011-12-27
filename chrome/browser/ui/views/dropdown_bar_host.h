@@ -79,6 +79,7 @@ class DropdownBarHost : public ui::AcceleratorTarget,
 
   // Overridden from ui::AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) = 0;
+  virtual bool CanHandleAccelerators() const = 0;
 
   // ui::AnimationDelegate implementation:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;

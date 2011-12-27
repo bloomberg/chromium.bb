@@ -68,6 +68,7 @@ class FindBarHost : public DropdownBarHost,
 
   // Overridden from ui::AcceleratorTarget in DropdownBarHost class:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual bool CanHandleAccelerators() const OVERRIDE;
 
   // FindBarTesting implementation:
   virtual bool GetFindBarWindowInfo(gfx::Point* position,

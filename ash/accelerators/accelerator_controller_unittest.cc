@@ -38,6 +38,7 @@ class TestTarget : public ui::AcceleratorTarget {
 
   // Overridden from ui::AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual bool CanHandleAccelerators() const OVERRIDE;
 
  private:
   int accelerator_pressed_count_;
@@ -45,6 +46,10 @@ class TestTarget : public ui::AcceleratorTarget {
 
 bool TestTarget::AcceleratorPressed(const ui::Accelerator& accelerator) {
   ++accelerator_pressed_count_;
+  return true;
+}
+
+bool TestTarget::CanHandleAccelerators() const {
   return true;
 }
 

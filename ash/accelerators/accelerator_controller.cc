@@ -203,4 +203,8 @@ bool AcceleratorController::AcceleratorPressed(
   return false;
 }
 
+bool AcceleratorController::CanHandleAccelerators() const {
+  return true;
+}
+
 }  // namespace ash

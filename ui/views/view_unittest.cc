@@ -1058,12 +1058,10 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
   ASSERT_TRUE(focus_manager);
 
   view->SetVisible(false);
-  EXPECT_EQ(NULL,
-            focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
+  EXPECT_FALSE(focus_manager->ProcessAccelerator(return_accelerator));
 
   view->SetVisible(true);
-  EXPECT_EQ(view,
-            focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
+  EXPECT_TRUE(focus_manager->ProcessAccelerator(return_accelerator));
 
   widget->CloseNow();
 }
@@ -1088,16 +1086,16 @@ TEST_F(ViewTest, ViewInHiddenWidgetWithAccelerator) {
   FocusManager* focus_manager = widget->GetFocusManager();
   ASSERT_TRUE(focus_manager);
 
-  EXPECT_EQ(NULL,
-            focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
+  EXPECT_FALSE(focus_manager->ProcessAccelerator(return_accelerator));
+  EXPECT_EQ(0, view->accelerator_count_map_[return_accelerator]);
 
   widget->Show();
-  EXPECT_EQ(view,
-            focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
+  EXPECT_TRUE(focus_manager->ProcessAccelerator(return_accelerator));
+  EXPECT_EQ(1, view->accelerator_count_map_[return_accelerator]);
 
   widget->Hide();
-  EXPECT_EQ(NULL,
-            focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
+  EXPECT_FALSE(focus_manager->ProcessAccelerator(return_accelerator));
+  EXPECT_EQ(1, view->accelerator_count_map_[return_accelerator]);
 
   widget->CloseNow();
 }

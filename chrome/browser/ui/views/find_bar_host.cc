@@ -188,6 +188,10 @@ bool FindBarHost::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return true;
 }
 
+bool FindBarHost::CanHandleAccelerators() const {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // FindBarTesting implementation:
 
