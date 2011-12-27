@@ -7,7 +7,11 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
+#include "content/browser/download/download_types.h"
 #include "content/public/browser/download_manager_delegate.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 class DownloadManager;
@@ -17,41 +21,40 @@ class MockDownloadManagerDelegate : public content::DownloadManagerDelegate {
  public:
   MockDownloadManagerDelegate();
   virtual ~MockDownloadManagerDelegate();
-  void SetDownloadManager(content::DownloadManager* dm);
-  virtual void Shutdown() OVERRIDE;
-  virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;
-  virtual void ChooseDownloadPath(TabContents* tab_contents,
-                                  const FilePath& suggested_path,
-                                  void* data) OVERRIDE;
-  virtual bool OverrideIntermediatePath(content::DownloadItem* item,
-                                        FilePath* intermediate_path) OVERRIDE;
-  virtual TabContents* GetAlternativeTabContentsToNotifyForDownload() OVERRIDE;
-  virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
-  virtual bool ShouldCompleteDownload(content::DownloadItem* item) OVERRIDE;
-  virtual bool ShouldOpenDownload(content::DownloadItem* item) OVERRIDE;
-  virtual bool GenerateFileHash() OVERRIDE;
-  virtual void OnResponseCompleted(content::DownloadItem* item) OVERRIDE;
-  virtual void AddItemToPersistentStore(content::DownloadItem* item) OVERRIDE;
-  virtual void UpdateItemInPersistentStore(
-      content::DownloadItem* item) OVERRIDE;
-  virtual void UpdatePathForItemInPersistentStore(
-      content::DownloadItem* item,
-      const FilePath& new_path) OVERRIDE;
-  virtual void RemoveItemFromPersistentStore(
-      content::DownloadItem* item) OVERRIDE;
-  virtual void RemoveItemsFromPersistentStoreBetween(
-      const base::Time remove_begin,
-      const base::Time remove_end) OVERRIDE;
-  virtual void GetSaveDir(TabContents* tab_contents,
-                          FilePath* website_save_dir,
-                          FilePath* download_save_dir) OVERRIDE;
-  virtual void ChooseSavePath(const base::WeakPtr<SavePackage>& save_package,
-                              const FilePath& suggested_path,
-                              bool can_save_as_complete) OVERRIDE;
-  virtual void DownloadProgressUpdated() OVERRIDE;
 
- private:
-  scoped_refptr<content::DownloadManager> download_manager_;
+  // DownloadManagerDelegate functions:
+  MOCK_METHOD1(SetDownloadManager, void(content::DownloadManager* dm));
+  MOCK_METHOD0(Shutdown, void());
+  MOCK_METHOD1(ShouldStartDownload, bool(int32 download_id));
+  MOCK_METHOD3(ChooseDownloadPath, void(TabContents* tab_contents,
+                                        const FilePath& suggested_path,
+                                        void* data));
+  MOCK_METHOD2(OverrideIntermediatePath, bool(content::DownloadItem* item,
+                                              FilePath* intermediate_path));
+  MOCK_METHOD0(GetAlternativeTabContentsToNotifyForDownload, TabContents*());
+  MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const FilePath& path));
+  MOCK_METHOD1(ShouldCompleteDownload, bool(content::DownloadItem* item));
+  MOCK_METHOD1(ShouldOpenDownload, bool(content::DownloadItem* item));
+  MOCK_METHOD0(GenerateFileHash, bool());
+  MOCK_METHOD1(OnResponseCompleted, void(content::DownloadItem* item));
+  MOCK_METHOD1(AddItemToPersistentStore, void(content::DownloadItem* item));
+  MOCK_METHOD1(UpdateItemInPersistentStore, void(content::DownloadItem* item));
+  MOCK_METHOD2(UpdatePathForItemInPersistentStore, void(
+      content::DownloadItem* item,
+      const FilePath& new_path));
+  MOCK_METHOD1(RemoveItemFromPersistentStore,
+      void(content::DownloadItem* item));
+  MOCK_METHOD2(RemoveItemsFromPersistentStoreBetween, void(
+      base::Time remove_begin,
+      base::Time remove_end));
+  MOCK_METHOD3(GetSaveDir, void(TabContents* tab_contents,
+                                FilePath* website_save_dir,
+                                FilePath* download_save_dir));
+  MOCK_METHOD3(ChooseSavePath, void(
+      const base::WeakPtr<SavePackage>& save_package,
+      const FilePath& suggested_path,
+      bool can_save_as_complete));
+  MOCK_METHOD0(DownloadProgressUpdated, void());
 };
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_MANAGER_DELEGATE_H_

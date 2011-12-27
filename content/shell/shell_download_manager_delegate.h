@@ -44,8 +44,8 @@ class ShellDownloadManagerDelegate
       const FilePath& new_path) OVERRIDE;
   virtual void RemoveItemFromPersistentStore(DownloadItem* item) OVERRIDE;
   virtual void RemoveItemsFromPersistentStoreBetween(
-      const base::Time remove_begin,
-      const base::Time remove_end) OVERRIDE;
+      base::Time remove_begin,
+      base::Time remove_end) OVERRIDE;
   virtual void GetSaveDir(TabContents* tab_contents,
                           FilePath* website_save_dir,
                           FilePath* download_save_dir) OVERRIDE;

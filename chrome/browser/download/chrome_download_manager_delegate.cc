@@ -270,8 +270,8 @@ void ChromeDownloadManagerDelegate::RemoveItemFromPersistentStore(
 }
 
 void ChromeDownloadManagerDelegate::RemoveItemsFromPersistentStoreBetween(
-    const base::Time remove_begin,
-    const base::Time remove_end) {
+    base::Time remove_begin,
+    base::Time remove_end) {
   download_history_->RemoveEntriesBetween(remove_begin, remove_end);
 }
 

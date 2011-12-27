@@ -98,8 +98,8 @@ class DownloadManagerDelegate {
 
   // Notifies the delegate to remove downloads from the given time range.
   virtual void RemoveItemsFromPersistentStoreBetween(
-      const base::Time remove_begin,
-      const base::Time remove_end) = 0;
+      base::Time remove_begin,
+      base::Time remove_end) = 0;
 
   // Retrieve the directories to save html pages and downloads to.
   virtual void GetSaveDir(TabContents* tab_contents,

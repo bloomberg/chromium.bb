@@ -185,8 +185,8 @@ void ShellDownloadManagerDelegate::RemoveItemFromPersistentStore(
 }
 
 void ShellDownloadManagerDelegate::RemoveItemsFromPersistentStoreBetween(
-    const base::Time remove_begin,
-    const base::Time remove_end) {
+    base::Time remove_begin,
+    base::Time remove_end) {
 }
 
 void ShellDownloadManagerDelegate::GetSaveDir(
