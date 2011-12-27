@@ -5391,7 +5391,32 @@
    fun:_ZN7WebCore11EventTarget18fireEventListenersEPNS_5EventE
    fun:_ZN7WebCore11EventTarget13dispatchEventEN3WTF10PassRefPtrINS_5EventEEE
 }
-
+{
+   bug_98716
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12SiteInstance10GetProcessEv
+   fun:_ZN14RenderViewHostC1EP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
+   fun:_ZN21RenderViewHostFactory6CreateEP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
+   fun:_ZN21RenderViewHostManager4InitEPN7content14BrowserContextEP12SiteInstancei
+   fun:_ZN11TabContentsC1EPN7content14BrowserContextEP12SiteInstanceiPKS_P23SessionStorageNamespace
+   fun:_ZN7content11WebContents6CreateEPNS_14BrowserContextEP12SiteInstanceiPKS0_P23SessionStorageNamespace
+   fun:_ZN11BalloonHost4InitEv
+   fun:_ZN15BalloonViewHost4InitEP10_GtkWidget
+   fun:_ZN19BalloonViewHostView20ViewHierarchyChangedEbPN5views4ViewES2_
+   fun:_ZN5views4View24ViewHierarchyChangedImplEbbPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View14AddChildViewAtEPS0_i
+   fun:_ZN5views4View12AddChildViewEPS0_
+   fun:_ZN5views8internal8RootView15SetContentsViewEPNS_4ViewE
+   fun:_ZN5views6Widget15SetContentsViewEPNS_4ViewE
+   fun:_ZN8chromeos17NotificationPanel4ShowEv
+   fun:_ZN8chromeos17NotificationPanel3AddEP7Balloon
+   fun:_ZN8chromeos21BalloonCollectionImpl21AddSystemNotificationERK12NotificationP7Profilebb
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
