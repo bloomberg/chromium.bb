@@ -27,23 +27,12 @@
 
 #include "compositor.h"
 
-struct wlsc_data_source {
-	struct wl_resource resource;
-	struct wl_array mime_types;
-	int refcount;
-};
-
-static void
+void
 wlsc_data_source_unref(struct wlsc_data_source *source)
 {
 	source->refcount--;
-
-	if (source->refcount == 1 && source->resource.object.id != 0) {
-		wl_resource_post_event(&source->resource,
-				       WL_DATA_SOURCE_CANCELLED);
-	} else if (source->refcount == 0) {
+	if (source->refcount == 0)
 		free(source);
-	}
 }
 
 static void
@@ -93,17 +82,33 @@ static const struct wl_data_offer_interface data_offer_interface = {
 };
 
 static struct wl_resource *
-wlsc_data_source_send_offer(struct wlsc_data_source *source,
-			    struct wl_resource *target)
+data_source_create_offer(struct wlsc_data_source *source, 
+			 struct wl_resource *target)
 {
 	struct wl_resource *resource;
-	char **p, **end;
 
 	resource = wl_client_new_object(target->client,
 					&wl_data_offer_interface,
 					&data_offer_interface, source);
 	resource->destroy = destroy_data_offer;
 
+	return resource;
+}
+
+static void
+data_source_cancel(struct wlsc_data_source *source)
+{
+	wl_resource_post_event(&source->resource, WL_DATA_SOURCE_CANCELLED);
+}
+
+static struct wl_resource *
+wlsc_data_source_send_offer(struct wlsc_data_source *source,
+			    struct wl_resource *target)
+{
+	struct wl_resource *resource;
+	char **p, **end;
+
+	resource = source->create_offer(source, target);
 	source->refcount++;
 
 	wl_resource_post_event(target, WL_DATA_DEVICE_DATA_OFFER, resource);
@@ -111,7 +116,6 @@ wlsc_data_source_send_offer(struct wlsc_data_source *source,
 	end = source->mime_types.data + source->mime_types.size;
 	for (p = source->mime_types.data; p < end; p++)
 		wl_resource_post_event(resource, WL_DATA_OFFER_OFFER, *p);
-
 
 	return resource;
 }
@@ -302,18 +306,14 @@ destroy_selection_data_source(struct wl_listener *listener,
 	}
 }
 
-static void
-data_device_set_selection(struct wl_client *client,
-			  struct wl_resource *resource,
-			  struct wl_resource *source_resource, uint32_t time)
+void
+wlsc_input_device_set_selection(struct wlsc_input_device *device,
+				struct wlsc_data_source *source, uint32_t time)
 {
-	struct wlsc_input_device *device = resource->data;
 	struct wl_resource *data_device, *focus, *offer;
 
-	if (!source_resource)
-		return;
-
 	if (device->selection_data_source) {
+		device->selection_data_source->cancel(device->selection_data_source);
 		/* FIXME: All non-active clients will probably hold a
 		 * reference to the selection data source, and thus it
 		 * won't get destroyed until every client has been
@@ -323,23 +323,38 @@ data_device_set_selection(struct wl_client *client,
 		device->selection_data_source = NULL;
 	}
 
-	device->selection_data_source = source_resource->data;
-	device->selection_data_source->refcount++;
+	device->selection_data_source = source;
+	source->refcount++;
 
 	focus = device->input_device.keyboard_focus_resource;
 	if (focus) {
 		data_device = find_resource(&device->drag_resource_list,
 					    focus->client);
-		offer = wlsc_data_source_send_offer(device->selection_data_source,
-						    data_device);
-		wl_resource_post_event(data_device,
-				       WL_DATA_DEVICE_SELECTION, offer);
+		if (data_device) {
+			offer = wlsc_data_source_send_offer(device->selection_data_source,
+							    data_device);
+			wl_resource_post_event(data_device,
+					       WL_DATA_DEVICE_SELECTION,
+					       offer);
+		}
 	}
 
 	device->selection_data_source_listener.func =
 		destroy_selection_data_source;
-	wl_list_insert(source_resource->destroy_listener_list.prev,
+	wl_list_insert(source->resource.destroy_listener_list.prev,
 		       &device->selection_data_source_listener.link);
+}
+
+static void
+data_device_set_selection(struct wl_client *client,
+			  struct wl_resource *resource,
+			  struct wl_resource *source_resource, uint32_t time)
+{
+	if (!source_resource)
+		return;
+
+	wlsc_input_device_set_selection(resource->data,
+					source_resource->data, time);
 }
 
 static const struct wl_data_device_interface data_device_interface = {
@@ -383,6 +398,8 @@ create_data_source(struct wl_client *client,
 	source->resource.object.implementation =
 		(void (**)(void)) &data_source_interface;
 	source->resource.data = source;
+	source->create_offer = data_source_create_offer;
+	source->cancel = data_source_cancel;
 	source->refcount = 1;
 
 	wl_array_init(&source->mime_types);

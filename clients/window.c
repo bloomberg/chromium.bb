@@ -1748,6 +1748,15 @@ input_receive_selection_data(struct input *input, const char *mime_type,
 	return 0;
 }
 
+int
+input_receive_selection_data_to_fd(struct input *input,
+				   const char *mime_type, int fd)
+{
+	wl_data_offer_receive(input->selection_offer->offer, mime_type, fd);
+
+	return 0;
+}
+
 void
 window_move(struct window *window, struct input *input, uint32_t time)
 {

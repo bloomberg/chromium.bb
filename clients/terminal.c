@@ -2053,14 +2053,6 @@ static const struct wl_data_source_listener data_source_listener = {
 	data_source_cancelled
 };
 
-static void selection_receive_func(void *data, size_t len,
-				   int32_t x, int32_t y, void *user_data)
-{
-	struct terminal *terminal = user_data;
-
-	write(terminal->master, data, len);
-}
-
 static int
 handle_bound_key(struct terminal *terminal,
 		 struct input *input, uint32_t sym, uint32_t time)
@@ -2073,15 +2065,16 @@ handle_bound_key(struct terminal *terminal,
 		terminal->selection =
 			display_create_data_source(terminal->display);
 		wl_data_source_offer(terminal->selection,
-				     "text/plain; charset=utf-8");
+				     "text/plain;charset=utf-8");
 		wl_data_source_add_listener(terminal->selection,
 					    &data_source_listener, terminal);
 		input_set_selection(input, terminal->selection, time);
 		return 1;
 	case XK_V:
-		input_receive_selection_data(input,
-					     "text/plain; charset=utf-8",
-					     selection_receive_func, terminal);
+		input_receive_selection_data_to_fd(input,
+						   "text/plain;charset=utf-8",
+						   terminal->master);
+
 		return 1;
 	default:
 		return 0;

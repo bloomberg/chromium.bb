@@ -33,6 +33,7 @@
 #include <signal.h>
 
 #include <xcb/xcb.h>
+#include <xcb/xfixes.h>
 
 #include <wayland-server.h>
 
@@ -64,14 +65,25 @@ struct wlsc_xserver {
 	struct wlsc_process process;
 	struct wl_resource *resource;
 	struct wl_client *client;
+	struct wlsc_compositor *compositor;
 	struct wlsc_wm *wm;
 };
 
 struct wlsc_wm {
 	xcb_connection_t *conn;
+	const xcb_query_extension_reply_t *xfixes;
 	struct wl_event_source *source;
 	xcb_screen_t *screen;
 	struct wl_hash_table *window_hash;
+	struct wlsc_xserver *server;
+
+	xcb_window_t selection_window;
+	int incr;
+	int data_source_fd;
+	struct wl_event_source *property_source;
+	xcb_get_property_reply_t *property_reply;
+	int property_start;
+
 	struct {
 		xcb_atom_t		 wm_protocols;
 		xcb_atom_t		 wm_take_focus;
@@ -82,7 +94,18 @@ struct wlsc_wm {
 		xcb_atom_t		 net_wm_state_fullscreen;
 		xcb_atom_t		 net_wm_user_time;
 		xcb_atom_t		 net_wm_icon_name;
+		xcb_atom_t		 clipboard;
+		xcb_atom_t		 targets;
 		xcb_atom_t		 utf8_string;
+		xcb_atom_t		 wl_selection;
+		xcb_atom_t		 incr;
+		xcb_atom_t		 timestamp;
+		xcb_atom_t		 multiple;
+		xcb_atom_t		 compound_text;
+		xcb_atom_t		 text;
+		xcb_atom_t		 string;
+		xcb_atom_t		 text_plain_utf8;
+		xcb_atom_t		 text_plain;
 	} atom;
 };
 
@@ -94,6 +117,313 @@ struct wlsc_wm_window {
 
 static struct wlsc_wm_window *
 get_wm_window(struct wlsc_surface *surface);
+
+static const char *
+get_atom_name(xcb_connection_t *c, xcb_atom_t atom)
+{
+	xcb_get_atom_name_cookie_t cookie;
+	xcb_get_atom_name_reply_t *reply;
+	xcb_generic_error_t *e;
+	static char buffer[64];
+
+	if (atom == XCB_ATOM_NONE)
+		return "None";
+
+	cookie = xcb_get_atom_name (c, atom);
+	reply = xcb_get_atom_name_reply (c, cookie, &e);
+	snprintf(buffer, sizeof buffer, "%.*s",
+		 xcb_get_atom_name_name_length (reply),
+		 xcb_get_atom_name_name (reply));
+	free(reply);
+
+	return buffer;
+}
+
+static void
+dump_property(struct wlsc_wm *wm, xcb_atom_t property,
+	      xcb_get_property_reply_t *reply)
+{
+	int32_t *incr_value;
+	const char *text_value, *name;
+	xcb_atom_t *atom_value;
+	int i, width;
+
+	width = fprintf(stderr, "property %s: ",
+			get_atom_name(wm->conn, property));
+	width += fprintf(stderr,
+			 "type %s, format %d, length %d (value_len %d): ",
+			 get_atom_name(wm->conn, reply->type),
+			 reply->format,
+			 xcb_get_property_value_length(reply),
+			 reply->value_len);
+
+	if (reply->type == wm->atom.incr) {
+		incr_value = xcb_get_property_value(reply);
+		fprintf(stderr, "%d\n", *incr_value);
+	} if (reply->type == wm->atom.utf8_string ||
+	      reply->type == wm->atom.string) {
+		text_value = xcb_get_property_value(reply);
+		fprintf(stderr, "\"%.100s\"\n", text_value);
+	} if (reply->type == XCB_ATOM_ATOM) {
+		atom_value = xcb_get_property_value(reply);
+		for (i = 0; i < reply->value_len; i++) {
+			name = get_atom_name(wm->conn, atom_value[i]);
+			if (width + strlen(name) + 2 > 78) {
+				fprintf(stderr, "\n  ");
+				width = 2;
+			} else if (i > 0) {
+				width += fprintf(stderr, ", ");
+			}
+
+			width += fprintf(stderr, "%s", name);
+		}
+		fprintf(stderr, "\n");
+	} else {
+		fprintf(stderr, "huh?\n");
+	}
+}
+
+static void
+data_offer_accept(struct wl_client *client, struct wl_resource *resource,
+		  uint32_t time, const char *mime_type)
+{
+	struct wlsc_data_source *source = resource->data;
+
+	wl_resource_post_event(&source->resource,
+			       WL_DATA_SOURCE_TARGET, mime_type);
+}
+
+static void
+data_offer_receive(struct wl_client *client, struct wl_resource *resource,
+		   const char *mime_type, int32_t fd)
+{
+	struct wlsc_data_source *source = resource->data;
+	struct wlsc_wm *wm = source->data;
+
+	if (strcmp(mime_type, "text/plain;charset=utf-8") == 0) {
+		/* Get data for the utf8_string target */
+		xcb_convert_selection(wm->conn,
+				      wm->selection_window,
+				      wm->atom.clipboard,
+				      wm->atom.utf8_string,
+				      wm->atom.wl_selection,
+				      XCB_TIME_CURRENT_TIME);
+
+		xcb_flush(wm->conn);
+
+		fcntl(fd, F_SETFL, O_WRONLY | O_NONBLOCK);
+		wm->data_source_fd = fd;
+	} else {
+		close(fd);
+	}
+}
+
+static void
+data_offer_destroy(struct wl_client *client, struct wl_resource *resource)
+{
+	wl_resource_destroy(resource, wlsc_compositor_get_time());
+}
+
+static void
+destroy_data_offer(struct wl_resource *resource)
+{
+	struct wlsc_data_source *source = resource->data;
+
+	wlsc_data_source_unref(source);
+	free(resource);
+}
+
+static const struct wl_data_offer_interface data_offer_interface = {
+	data_offer_accept,
+	data_offer_receive,
+	data_offer_destroy,
+};
+
+static struct wl_resource *
+data_source_create_offer(struct wlsc_data_source *source, 
+			 struct wl_resource *target)
+{
+	struct wl_resource *resource;
+
+	resource = wl_client_new_object(target->client,
+					&wl_data_offer_interface,
+					&data_offer_interface, source);
+	resource->destroy = destroy_data_offer;
+
+	return resource;
+}
+
+static void
+data_source_cancel(struct wlsc_data_source *source)
+{
+}
+
+static void
+wlsc_wm_get_selection_targets(struct wlsc_wm *wm)
+{
+	struct wlsc_data_source *source;
+	struct wlsc_input_device *device;
+	xcb_get_property_cookie_t cookie;
+	xcb_get_property_reply_t *reply;
+	xcb_atom_t *value;
+	char **p;
+	int i;
+
+	cookie = xcb_get_property(wm->conn,
+				  1, /* delete */
+				  wm->selection_window,
+				  wm->atom.wl_selection,
+				  XCB_GET_PROPERTY_TYPE_ANY,
+				  0, /* offset */
+				  4096 /* length */);
+
+	reply = xcb_get_property_reply(wm->conn, cookie, NULL);
+
+	dump_property(wm, wm->atom.wl_selection, reply);
+
+	if (reply->type != XCB_ATOM_ATOM) {
+		free(reply);
+		return;
+	}
+
+	source = malloc(sizeof *source);
+	if (source == NULL)
+		return;
+
+	wl_list_init(&source->resource.destroy_listener_list);
+	source->create_offer = data_source_create_offer;
+	source->cancel = data_source_cancel;
+	source->data = wm;
+	source->refcount = 1;
+
+	wl_array_init(&source->mime_types);
+	value = xcb_get_property_value(reply);
+	for (i = 0; i < reply->value_len; i++) {
+		if (value[i] == wm->atom.utf8_string) {
+			p = wl_array_add(&source->mime_types, sizeof *p);
+			if (p)
+				*p = strdup("text/plain;charset=utf-8");
+		}
+	}
+
+	device = (struct wlsc_input_device *)
+		wm->server->compositor->input_device;
+	wlsc_input_device_set_selection(device, source,
+					wlsc_compositor_get_time());
+
+	wlsc_data_source_unref(source);
+	free(reply);
+}
+
+static int
+wlsc_wm_write_property(int fd, uint32_t mask, void *data)
+{
+	struct wlsc_wm *wm = data;
+	unsigned char *property;
+	int len, remainder;
+
+	property = xcb_get_property_value(wm->property_reply);
+	remainder = xcb_get_property_value_length(wm->property_reply) -
+		wm->property_start;
+
+	len = write(fd, property + wm->property_start, remainder);
+	if (len == -1) {
+		free(wm->property_reply);
+		wl_event_source_remove(wm->property_source);
+		close(fd);
+		fprintf(stderr, "write error to target fd: %m\n");
+		return 1;
+	}
+
+	fprintf(stderr, "wrote %d (chunk size %d) of %d bytes\n",
+		wm->property_start + len,
+		len, xcb_get_property_value_length(wm->property_reply));
+
+	wm->property_start += len;
+	if (len == remainder) {
+		free(wm->property_reply);
+		wl_event_source_remove(wm->property_source);
+
+		if (wm->incr) {
+			xcb_delete_property(wm->conn,
+					    wm->selection_window,
+					    wm->atom.wl_selection);
+		} else {
+			fprintf(stderr, "transfer complete\n");
+			close(fd);
+		}
+	}
+
+	return 1;
+}
+
+static void
+wlsc_wm_get_selection_data(struct wlsc_wm *wm)
+{
+	xcb_get_property_cookie_t cookie;
+	xcb_get_property_reply_t *reply;
+
+	cookie = xcb_get_property(wm->conn,
+				  1, /* delete */
+				  wm->selection_window,
+				  wm->atom.wl_selection,
+				  XCB_GET_PROPERTY_TYPE_ANY,
+				  0, /* offset */
+				  0x1fffffff /* length */);
+
+	reply = xcb_get_property_reply(wm->conn, cookie, NULL);
+
+	if (reply->type == wm->atom.incr) {
+		dump_property(wm, wm->atom.wl_selection, reply);
+		wm->incr = 1;
+		free(reply);
+	} else {
+		dump_property(wm, wm->atom.wl_selection, reply);
+		wm->incr = 0;
+		wm->property_start = 0;
+		wm->property_source =
+			wl_event_loop_add_fd(wm->server->loop,
+					     wm->data_source_fd,
+					     WL_EVENT_WRITEABLE,
+					     wlsc_wm_write_property,
+					     wm);
+		wm->property_reply = reply;
+	}
+}
+
+static void
+wlsc_wm_get_incr_chunk(struct wlsc_wm *wm)
+{
+	xcb_get_property_cookie_t cookie;
+	xcb_get_property_reply_t *reply;
+
+	cookie = xcb_get_property(wm->conn,
+				  0, /* delete */
+				  wm->selection_window,
+				  wm->atom.wl_selection,
+				  XCB_GET_PROPERTY_TYPE_ANY,
+				  0, /* offset */
+				  0x1fffffff /* length */);
+
+	reply = xcb_get_property_reply(wm->conn, cookie, NULL);
+
+	dump_property(wm, wm->atom.wl_selection, reply);
+
+	if (xcb_get_property_value_length(reply) > 0) {
+		wm->property_start = 0;
+		wm->property_source =
+			wl_event_loop_add_fd(wm->server->loop,
+					     wm->data_source_fd,
+					     WL_EVENT_WRITEABLE,
+					     wlsc_wm_write_property,
+					     wm);
+		wm->property_reply = reply;
+	} else {
+		fprintf(stderr, "transfer complete\n");
+		close(wm->data_source_fd);
+		free(reply);
+	}
+}
 
 static void
 wlsc_wm_handle_configure_request(struct wlsc_wm *wm, xcb_generic_event_t *event)
@@ -125,30 +455,11 @@ wlsc_wm_handle_configure_request(struct wlsc_wm *wm, xcb_generic_event_t *event)
 			     configure_request->value_mask, values);
 }
 
-static const char *
-get_atom_name(xcb_connection_t *c, xcb_atom_t atom)
-{
-	xcb_get_atom_name_cookie_t cookie;
-	xcb_get_atom_name_reply_t *reply;
-	xcb_generic_error_t *e;
-	static char buffer[64];
-
-	cookie = xcb_get_atom_name (c, atom);
-	reply = xcb_get_atom_name_reply (c, cookie, &e);
-	snprintf(buffer, sizeof buffer, "%.*s",
-		 xcb_get_atom_name_name_length (reply),
-		 xcb_get_atom_name_name (reply));
-	free(reply);
-
-	return buffer;
-}
-
 static void
 wlsc_wm_get_properties(struct wlsc_wm *wm, xcb_window_t window)
 {
 	xcb_generic_error_t *e;
 	xcb_get_property_reply_t *reply;
-	void *value;
 	int i;
 
 	struct {
@@ -172,16 +483,7 @@ wlsc_wm_get_properties(struct wlsc_wm *wm, xcb_window_t window)
 
 	for (i = 0; i < ARRAY_LENGTH(props); i++)  {
 		reply = xcb_get_property_reply(wm->conn, props[i].cookie, &e);
-		value = xcb_get_property_value(reply);
-
-		fprintf(stderr, "property %s, type %d, format %d, "
-			"length %d (value_len %d), value \"%.*s\"\n",
-			get_atom_name(wm->conn, props[i].atom),
-			reply->type, reply->format,
-			xcb_get_property_value_length(reply),
-			reply->value_len, reply->value_len,
-			reply->type ? (char *) value : "(nil)");
-
+		dump_property(wm, props[i].atom, reply);
 		free(reply);
 	}
 }
@@ -260,7 +562,12 @@ wlsc_wm_handle_property_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 	xcb_property_notify_event_t *property_notify =
 		(xcb_property_notify_event_t *) event;
 
-	if (property_notify->atom == XCB_ATOM_WM_CLASS) {
+	if (property_notify->window == wm->selection_window) {
+		if (property_notify->state == XCB_PROPERTY_NEW_VALUE &&
+		    property_notify->atom == wm->atom.wl_selection &&
+		    wm->incr)
+			wlsc_wm_get_incr_chunk(wm);
+	} else if (property_notify->atom == XCB_ATOM_WM_CLASS) {
 		fprintf(stderr, "wm_class changed\n");
 	} else if (property_notify->atom == XCB_ATOM_WM_TRANSIENT_FOR) {
 		fprintf(stderr, "wm_transient_for changed\n");
@@ -326,6 +633,41 @@ wlsc_wm_handle_destroy_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 	free(window);
 }
 
+static void
+wlsc_wm_handle_selection_notify(struct wlsc_wm *wm,
+				xcb_generic_event_t *event)
+{
+	xcb_selection_notify_event_t *selection_notify =
+		(xcb_selection_notify_event_t *) event;
+
+	if (selection_notify->property == XCB_ATOM_NONE) {
+		/* convert selection failed */
+	} else if (selection_notify->target == wm->atom.targets) {
+		wlsc_wm_get_selection_targets(wm);
+	} else {
+		wlsc_wm_get_selection_data(wm);
+	}
+}
+
+static void
+wlsc_wm_handle_xfixes_selection_notify(struct wlsc_wm *wm,
+				       xcb_generic_event_t *event)
+{
+	xcb_xfixes_selection_notify_event_t *xfixes_selection_notify =
+		(xcb_xfixes_selection_notify_event_t *) event;
+
+	printf("xfixes selection notify event: owner %d\n",
+	       xfixes_selection_notify->owner);
+
+	xcb_convert_selection(wm->conn, wm->selection_window,
+			      wm->atom.clipboard,
+			      wm->atom.targets,
+			      wm->atom.wl_selection,
+			      XCB_TIME_CURRENT_TIME);
+
+	xcb_flush(wm->conn);
+}
+
 static int
 wlsc_wm_handle_event(int fd, uint32_t mask, void *data)
 {
@@ -334,7 +676,7 @@ wlsc_wm_handle_event(int fd, uint32_t mask, void *data)
 	int count = 0;
 
 	while (event = xcb_poll_for_event(wm->conn), event != NULL) {
-		switch (event->response_type) {
+		switch (event->response_type & ~0x80) {
 		case XCB_CREATE_NOTIFY:
 			wlsc_wm_handle_create_notify(wm, event);
 			break;
@@ -362,11 +704,18 @@ wlsc_wm_handle_event(int fd, uint32_t mask, void *data)
 		case XCB_PROPERTY_NOTIFY:
 			wlsc_wm_handle_property_notify(wm, event);
 			break;
-		default:
-			fprintf(stderr, "Unhandled event %d\n",
-				event->response_type);
+		case XCB_SELECTION_NOTIFY:
+			wlsc_wm_handle_selection_notify(wm, event);
 			break;
 		}
+
+		switch (event->response_type - wm->xfixes->first_event) {
+		case XCB_XFIXES_SELECTION_NOTIFY:
+			wlsc_wm_handle_xfixes_selection_notify(wm, event);
+			break;
+		}
+
+
 		free(event);
 		count++;
 	}
@@ -392,12 +741,28 @@ wxs_wm_get_resources(struct wlsc_wm *wm)
 		{ "_NET_WM_STATE_FULLSCREEN", F(atom.net_wm_state_fullscreen) },
 		{ "_NET_WM_USER_TIME", F(atom.net_wm_user_time) },
 		{ "_NET_WM_ICON_NAME", F(atom.net_wm_icon_name) },
+		{ "CLIPBOARD",		F(atom.clipboard) },
+		{ "TARGETS",		F(atom.targets) },
 		{ "UTF8_STRING",	F(atom.utf8_string) },
+		{ "_WL_SELECTION",	F(atom.wl_selection) },
+		{ "INCR",		F(atom.incr) },
+		{ "TIMESTAMP",		F(atom.timestamp) },
+		{ "MULTIPLE",		F(atom.multiple) },
+		{ "UTF8_STRING"	,	F(atom.utf8_string) },
+		{ "COMPOUND_TEXT",	F(atom.compound_text) },
+		{ "TEXT",		F(atom.text) },
+		{ "STRING",		F(atom.string) },
+		{ "text/plain;charset=utf-8",	F(atom.text_plain_utf8) },
+		{ "text/plain",		F(atom.text_plain) },
 	};
 
+	xcb_xfixes_query_version_cookie_t xfixes_cookie;
+	xcb_xfixes_query_version_reply_t *xfixes_reply;
 	xcb_intern_atom_cookie_t cookies[ARRAY_LENGTH(atoms)];
 	xcb_intern_atom_reply_t *reply;
 	int i;
+
+	xcb_prefetch_extension_data (wm->conn, &xcb_xfixes_id);
 
 	for (i = 0; i < ARRAY_LENGTH(atoms); i++)
 		cookies[i] = xcb_intern_atom (wm->conn, 0,
@@ -409,6 +774,21 @@ wxs_wm_get_resources(struct wlsc_wm *wm)
 		*(xcb_atom_t *) ((char *) wm + atoms[i].offset) = reply->atom;
 		free(reply);
 	}
+
+	wm->xfixes = xcb_get_extension_data(wm->conn, &xcb_xfixes_id);
+	if (!wm->xfixes || !wm->xfixes->present)
+		fprintf(stderr, "xfixes not available\n");
+
+	xfixes_cookie = xcb_xfixes_query_version(wm->conn,
+						 XCB_XFIXES_MAJOR_VERSION,
+						 XCB_XFIXES_MINOR_VERSION);
+	xfixes_reply = xcb_xfixes_query_version_reply(wm->conn,
+						      xfixes_cookie, NULL);
+
+	printf("xfixes version: %d.%d\n",
+	       xfixes_reply->major_version, xfixes_reply->minor_version);
+
+	free(xfixes_reply);
 }
 
 static struct wlsc_wm *
@@ -417,13 +797,14 @@ wlsc_wm_create(struct wlsc_xserver *wxs)
 	struct wlsc_wm *wm;
 	struct wl_event_loop *loop;
 	xcb_screen_iterator_t s;
-	uint32_t values[1];
+	uint32_t values[1], mask;
 	int sv[2];
 
 	wm = malloc(sizeof *wm);
 	if (wm == NULL)
 		return NULL;
 
+	wm->server = wxs;
 	wm->window_hash = wl_hash_table_create();
 	if (wm->window_hash == NULL) {
 		free(wm);
@@ -471,6 +852,26 @@ wlsc_wm_create(struct wlsc_xserver *wxs)
 		XCB_EVENT_MASK_PROPERTY_CHANGE;
 	xcb_change_window_attributes(wm->conn, wm->screen->root,
 				     XCB_CW_EVENT_MASK, values);
+
+	wm->selection_window = xcb_generate_id(wm->conn);
+	xcb_create_window(wm->conn,
+			  XCB_COPY_FROM_PARENT,
+			  wm->selection_window,
+			  wm->screen->root,
+			  0, 0,
+			  10, 10,
+			  0,
+			  XCB_WINDOW_CLASS_INPUT_OUTPUT,
+			  wm->screen->root_visual,
+			  XCB_CW_EVENT_MASK, values);
+
+	mask =
+		XCB_XFIXES_SELECTION_EVENT_MASK_SET_SELECTION_OWNER |
+		XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_WINDOW_DESTROY |
+		XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_CLIENT_CLOSE;
+
+	xcb_xfixes_select_selection_input(wm->conn, wm->selection_window,
+					  wm->atom.clipboard, mask);
 
 	xcb_flush(wm->conn);
 	fprintf(stderr, "created wm\n");
@@ -558,10 +959,14 @@ wlsc_xserver_shutdown(struct wlsc_xserver *wxs)
 	unlink(path);
 	snprintf(path, sizeof path, "/tmp/.X11-unix/X%d", wxs->display);
 	unlink(path);
+	if (wxs->process.pid == 0) {
+		wl_event_source_remove(wxs->abstract_source);
+		wl_event_source_remove(wxs->unix_source);
+	}
 	close(wxs->abstract_fd);
-	wl_event_source_remove(wxs->abstract_source);
 	close(wxs->unix_fd);
-	wl_event_source_remove(wxs->unix_source);
+	if (wxs->wm)
+		wlsc_wm_destroy(wxs->wm);
 	wxs->loop = NULL;
 }
 
@@ -813,6 +1218,7 @@ wlsc_xserver_init(struct wlsc_compositor *compositor)
 
 	mxs->process.cleanup = wlsc_xserver_cleanup;
 	mxs->wl_display = display;
+	mxs->compositor = compositor;
 
 	mxs->display = 0;
 

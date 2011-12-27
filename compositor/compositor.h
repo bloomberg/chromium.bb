@@ -265,6 +265,26 @@ struct wlsc_surface {
 	struct wl_listener buffer_destroy_listener;
 };
 
+struct wlsc_data_source {
+	struct wl_resource resource;
+	struct wl_array mime_types;
+	int refcount;
+	void *data;
+
+	struct wl_resource *(*create_offer)(struct wlsc_data_source *source, 
+					    struct wl_resource *target);
+
+	void (*cancel)(struct wlsc_data_source *source);
+};
+
+void
+wlsc_data_source_unref(struct wlsc_data_source *source);
+
+void
+wlsc_input_device_set_selection(struct wlsc_input_device *device,
+				struct wlsc_data_source *source,
+				uint32_t time);
+
 void
 wlsc_spring_init(struct wlsc_spring *spring,
 		 double k, double current, double target);
