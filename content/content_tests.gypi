@@ -221,6 +221,7 @@
         'browser/renderer_host/media/video_capture_manager_unittest.cc',
         'browser/renderer_host/render_view_host_unittest.cc',
         'browser/renderer_host/render_widget_host_unittest.cc',
+        'browser/renderer_host/render_widget_host_view_aura_unittest.cc',
         'browser/renderer_host/render_widget_host_view_mac_editcommand_helper_unittest.mm',
         'browser/renderer_host/render_widget_host_view_mac_unittest.mm',
         'browser/renderer_host/resource_dispatcher_host_unittest.cc',
@@ -319,6 +320,11 @@
         ['OS == "win" or (toolkit_uses_gtk == 1 and selinux == 0)', {
           'dependencies': [
             '../sandbox/sandbox.gyp:sandbox',
+          ],
+        }],
+        ['use_aura==1', {
+          'dependencies': [
+            '../ui/aura/aura.gyp:aura',
           ],
         }],
       ],

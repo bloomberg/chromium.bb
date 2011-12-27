@@ -797,7 +797,7 @@ void RenderWidgetHostViewAura::OnWindowVisibilityChanged(bool visible) {
 // RenderWidgetHostViewAura, aura::client::ActivationDelegate implementation:
 
 bool RenderWidgetHostViewAura::ShouldActivate(aura::Event* event) {
-  return false;
+  return is_fullscreen_;
 }
 
 void RenderWidgetHostViewAura::OnActivated() {
