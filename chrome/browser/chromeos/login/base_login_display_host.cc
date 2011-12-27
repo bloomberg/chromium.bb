@@ -444,7 +444,7 @@ void BaseLoginDisplayHost::OnAutoEnrollmentClientDone() {
   // decision in local_state.
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetBoolean(kShouldAutoEnroll, auto_enroll);
-  local_state->SavePersistentPrefs();
+  local_state->CommitPendingWrite();
 
   if (auto_enroll)
     ForceAutoEnrollment();
