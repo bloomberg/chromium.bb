@@ -1067,7 +1067,6 @@ void LoginUtilsImpl::SetFirstLoginPrefs(PrefService* prefs) {
   language_preferred_languages.Init(prefs::kLanguagePreferredLanguages,
                                     prefs, NULL);
   language_preferred_languages.SetValue(JoinString(language_codes, ','));
-  prefs->ScheduleSavePersistentPrefs();
 }
 
 scoped_refptr<Authenticator> LoginUtilsImpl::CreateAuthenticator(

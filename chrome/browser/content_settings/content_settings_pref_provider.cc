@@ -201,7 +201,6 @@ bool PrefProvider::SetWebsiteSetting(
                content_type,
                resource_identifier,
                value.get());
-    prefs_->ScheduleSavePersistentPrefs();
   }
 
   NotifyObservers(
@@ -229,7 +228,6 @@ void PrefProvider::ClearAllContentSettingsRules(
       rules_to_delete.push_back(rule_iterator->Next());
 
     map_to_modify->DeleteValues(content_type, "");
-    prefs_->ScheduleSavePersistentPrefs();
   }
 
   for (std::vector<Rule>::const_iterator it = rules_to_delete.begin();
@@ -276,7 +274,6 @@ void PrefProvider::Observe(
         return;
       }
     }
-    prefs_->ScheduleSavePersistentPrefs();
     ReadContentSettingsFromPref(true);
 
     NotifyObservers(ContentSettingsPattern(),

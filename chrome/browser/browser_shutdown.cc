@@ -154,7 +154,7 @@ bool ShutdownPreThreadsStop() {
     prefs->ClearPref(prefs::kRestartLastSessionOnShutdown);
   }
 
-  prefs->SavePersistentPrefs();
+  prefs->CommitPendingWrite();
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   // Cleanup any statics created by RLZ. Must be done before NotificationService

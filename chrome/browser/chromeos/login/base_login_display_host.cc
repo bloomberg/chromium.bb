@@ -125,7 +125,7 @@ void DetermineAndSaveHardwareKeyboard(const std::string& locale,
     // The latest values of Local State reside in memory so we can safely
     // get the value of kHardwareKeyboardLayout even if the data is not
     // yet saved to disk.
-    prefs->SavePersistentPrefs();
+    prefs->CommitPendingWrite();
   }
 }
 

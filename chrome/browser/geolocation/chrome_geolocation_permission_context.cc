@@ -426,7 +426,6 @@ void GeolocationInfoBarQueueController::OnPermissionSet(
       CONTENT_SETTINGS_TYPE_GEOLOCATION,
       std::string(),
       content_setting);
-  profile_->GetPrefs()->ScheduleSavePersistentPrefs();
 
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ) {

@@ -107,10 +107,8 @@ void LocaleChangeGuard::Observe(int type,
           }
           std::string owner_locale =
               prefs->GetString(prefs::kApplicationLocale);
-          if (!owner_locale.empty()) {
+          if (!owner_locale.empty())
             local_state->SetString(prefs::kOwnerLocale, owner_locale);
-            local_state->ScheduleSavePersistentPrefs();
-          }
         }
       }
       break;
@@ -198,7 +196,6 @@ void LocaleChangeGuard::AcceptLocaleChange() {
   content::RecordAction(UserMetricsAction("LanguageChange_Accept"));
   prefs->SetString(prefs::kApplicationLocaleBackup, to_locale_);
   prefs->SetString(prefs::kApplicationLocaleAccepted, to_locale_);
-  prefs->ScheduleSavePersistentPrefs();
 }
 
 void LocaleChangeGuard::PrepareChangingLocale(

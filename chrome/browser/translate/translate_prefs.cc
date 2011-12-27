@@ -74,7 +74,6 @@ void TranslatePrefs::WhitelistLanguagePair(
     return;
   }
   dict->SetString(original_language, target_language);
-  prefs_->ScheduleSavePersistentPrefs();
 }
 
 void TranslatePrefs::RemoveLanguagePairFromWhitelist(
@@ -86,8 +85,7 @@ void TranslatePrefs::RemoveLanguagePairFromWhitelist(
     NOTREACHED() << "Unregistered translate whitelist pref";
     return;
   }
-  if (dict->Remove(original_language, NULL))
-    prefs_->ScheduleSavePersistentPrefs();
+  dict->Remove(original_language, NULL);
 }
 
 int TranslatePrefs::GetTranslationDeniedCount(const std::string& language) {
@@ -193,13 +191,11 @@ void TranslatePrefs::MigrateTranslateWhitelists(PrefService* user_prefs) {
   DictionaryValue* dict = update.Get();
   if (!dict || dict->empty())
     return;
-  bool save_prefs = false;
   for (DictionaryValue::key_iterator iter(dict->begin_keys());
        iter != dict->end_keys(); ++iter) {
     ListValue* list = NULL;
     if (!dict->GetList(*iter, &list) || !list)
       break;  // Dictionary has either been migrated or new format.
-    save_prefs = true;
     std::string target_lang;
     if (list->empty() || !list->GetString(list->GetSize() - 1, &target_lang) ||
         target_lang.empty())
@@ -207,9 +203,6 @@ void TranslatePrefs::MigrateTranslateWhitelists(PrefService* user_prefs) {
      else
       dict->SetString(*iter, target_lang);
   }
-  if (!save_prefs)
-    return;
-  user_prefs->ScheduleSavePersistentPrefs();
 }
 
 // TranslatePrefs: private: ----------------------------------------------------
@@ -241,24 +234,18 @@ void TranslatePrefs::BlacklistValue(const char* pref_id,
     }
     blacklist->Append(new StringValue(value));
   }
-  prefs_->ScheduleSavePersistentPrefs();
 }
 
 void TranslatePrefs::RemoveValueFromBlacklist(const char* pref_id,
     const std::string& value) {
-  bool schedule_save = false;
-  {
-    ListPrefUpdate update(prefs_, pref_id);
-    ListValue* blacklist = update.Get();
-    if (!blacklist) {
-      NOTREACHED() << "Unregistered translate blacklist pref";
-      return;
-    }
-    StringValue string_value(value);
-    schedule_save = blacklist->Remove(string_value, NULL);
+  ListPrefUpdate update(prefs_, pref_id);
+  ListValue* blacklist = update.Get();
+  if (!blacklist) {
+    NOTREACHED() << "Unregistered translate blacklist pref";
+    return;
   }
-  if (schedule_save)
-    prefs_->ScheduleSavePersistentPrefs();
+  StringValue string_value(value);
+  blacklist->Remove(string_value, NULL);
 }
 
 bool TranslatePrefs::IsLanguageWhitelisted(

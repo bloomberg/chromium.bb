@@ -2587,7 +2587,6 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
 
     // Blacklist this extension.
     blacklist->Append(Value::CreateStringValue(good_crx));
-    prefs->ScheduleSavePersistentPrefs();
   }
 
   // Extension should not be running now.
@@ -3183,7 +3182,6 @@ void ExtensionServiceTest::TestExternalProvider(
 
     // Now clear the preference and reinstall.
     SetPrefInteg(good_crx, "state", Extension::ENABLED);
-    profile_->GetPrefs()->ScheduleSavePersistentPrefs();
 
     loaded_.clear();
     service_->CheckForExternalUpdates();

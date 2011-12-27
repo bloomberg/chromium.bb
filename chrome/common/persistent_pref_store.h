@@ -80,12 +80,6 @@ class PersistentPrefStore : public PrefStore {
   // Owns |error_delegate|.
   virtual void ReadPrefsAsync(ReadErrorDelegate* error_delegate) = 0;
 
-  // Writes the preferences to disk immediately.
-  virtual bool WritePrefs() = 0;
-
-  // Schedules an asynchronous write operation.
-  virtual void ScheduleWritePrefs() = 0;
-
   // Lands any pending writes to disk.
   virtual void CommitPendingWrite() = 0;
 };

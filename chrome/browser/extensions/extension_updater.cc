@@ -830,7 +830,6 @@ void ExtensionUpdater::ProcessBlacklist(const std::string& data) {
   // Update the pref value for blacklist version
   prefs_->SetString(kExtensionBlacklistUpdateVersion,
                     current_extension_fetch_.version);
-  prefs_->ScheduleSavePersistentPrefs();
 }
 
 void ExtensionUpdater::OnCRXFetchComplete(
@@ -959,7 +958,6 @@ void ExtensionUpdater::ScheduleNextCheck(const TimeDelta& target_delay) {
   // Save the time of next check.
   Time next = Time::Now() + actual_delay;
   prefs_->SetInt64(kNextExtensionsUpdateCheck, next.ToInternalValue());
-  prefs_->ScheduleSavePersistentPrefs();
 
   timer_.Start(FROM_HERE, actual_delay, this, &ExtensionUpdater::TimerFired);
 }

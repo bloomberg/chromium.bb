@@ -502,7 +502,6 @@ void BackgroundContentsService::RegisterBackgroundContents(
   dict->SetString(kUrlKey, background_contents->GetURL().spec());
   dict->SetString(kFrameNameKey, contents_map_[appid].frame_name);
   pref->SetWithoutPathExpansion(UTF16ToUTF8(appid), dict);
-  prefs_->ScheduleSavePersistentPrefs();
 }
 
 void BackgroundContentsService::UnregisterBackgroundContents(
@@ -513,7 +512,6 @@ void BackgroundContentsService::UnregisterBackgroundContents(
   const string16 appid = GetParentApplicationId(background_contents);
   DictionaryPrefUpdate update(prefs_, prefs::kRegisteredBackgroundContents);
   update.Get()->RemoveWithoutPathExpansion(UTF16ToUTF8(appid), NULL);
-  prefs_->ScheduleSavePersistentPrefs();
 }
 
 void BackgroundContentsService::ShutdownAssociatedBackgroundContents(

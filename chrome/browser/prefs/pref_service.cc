@@ -273,16 +273,6 @@ bool PrefService::ReloadPersistentPrefs() {
              PersistentPrefStore::PREF_READ_ERROR_NONE;
 }
 
-bool PrefService::SavePersistentPrefs() {
-  DCHECK(CalledOnValidThread());
-  return user_pref_store_->WritePrefs();
-}
-
-void PrefService::ScheduleSavePersistentPrefs() {
-  DCHECK(CalledOnValidThread());
-  user_pref_store_->ScheduleWritePrefs();
-}
-
 void PrefService::CommitPendingWrite() {
   DCHECK(CalledOnValidThread());
   user_pref_store_->CommitPendingWrite();

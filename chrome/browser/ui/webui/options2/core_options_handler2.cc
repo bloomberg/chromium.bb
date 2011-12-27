@@ -210,8 +210,6 @@ void CoreOptionsHandler::SetPref(const std::string& pref_name,
       return;
   }
 
-  pref_service->ScheduleSavePersistentPrefs();
-
   ProcessUserMetric(value, metric);
 }
 
@@ -219,7 +217,6 @@ void CoreOptionsHandler::ClearPref(const std::string& pref_name,
                                    const std::string& metric) {
   PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
   pref_service->ClearPref(pref_name.c_str());
-  pref_service->ScheduleSavePersistentPrefs();
 
   if (!metric.empty())
     content::RecordComputedAction(metric);

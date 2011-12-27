@@ -748,7 +748,6 @@ bool BrowserInit::WasRestarted() {
     PrefService* pref_service = g_browser_process->local_state();
     was_restarted = pref_service->GetBoolean(prefs::kWasRestarted);
     pref_service->SetBoolean(prefs::kWasRestarted, false);
-    pref_service->ScheduleSavePersistentPrefs();
     was_restarted_read = true;
   }
   return was_restarted;

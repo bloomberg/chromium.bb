@@ -257,7 +257,6 @@ void ProtocolHandlerRegistry::Save() {
   profile_->GetPrefs()->Set(prefs::kIgnoredProtocolHandlers,
       *ignored_protocol_handlers);
   profile_->GetPrefs()->Set(prefs::kCustomHandlersEnabled, *enabled);
-  profile_->GetPrefs()->ScheduleSavePersistentPrefs();
 }
 
 bool ProtocolHandlerRegistry::CanSchemeBeOverridden(

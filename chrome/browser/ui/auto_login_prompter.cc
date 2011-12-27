@@ -212,7 +212,6 @@ bool AutoLoginInfoBarDelegate::Accept() {
 
 bool AutoLoginInfoBarDelegate::Cancel() {
   pref_service_->SetBoolean(prefs::kAutologinEnabled, false);
-  pref_service_->ScheduleSavePersistentPrefs();
   return true;
 }
 

@@ -422,13 +422,11 @@ void InputMethodMenu::PreferenceUpdateNeeded(
       // Sometimes (e.g. initial boot) |previous_input_method.id()| is empty.
       previous_input_method_pref_.SetValue(previous_input_method.id());
       current_input_method_pref_.SetValue(current_input_method.id());
-      pref_service_->ScheduleSavePersistentPrefs();
     }
   } else if (StatusAreaViewChromeos::IsLoginMode()) {
     if (g_browser_process && g_browser_process->local_state()) {
       g_browser_process->local_state()->SetString(
           language_prefs::kPreferredKeyboardLayout, current_input_method.id());
-      g_browser_process->local_state()->ScheduleSavePersistentPrefs();
     }
   }
 }

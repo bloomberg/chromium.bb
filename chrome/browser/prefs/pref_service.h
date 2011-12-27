@@ -165,17 +165,8 @@ class PrefService : public base::NonThreadSafe {
   // and is managed.
   bool IsManagedPreference(const char* pref_name) const;
 
-  // Writes the data to disk. The return value only reflects whether
-  // serialization was successful; we don't know whether the data actually made
-  // it on disk (since it's on a different thread).  This should only be used if
-  // we need to save immediately (basically, during shutdown).  Otherwise, you
-  // should use ScheduleSavePersistentPrefs.
-  bool SavePersistentPrefs();
-
-  // Serializes the data and schedules save using ImportantFileWriter.
-  void ScheduleSavePersistentPrefs();
-
-  // Lands pending writes to disk.
+  // Lands pending writes to disk. This should only be used if we need to save
+  // immediately (basically, during shutdown).
   void CommitPendingWrite();
 
   // Make the PrefService aware of a pref.

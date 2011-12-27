@@ -152,7 +152,7 @@ void RunBasicJsonPrefStoreTest(JsonPrefStore *pref_store,
 
   // Serialize and compare to expected output.
   ASSERT_TRUE(file_util::PathExists(golden_output_file));
-  ASSERT_TRUE(pref_store->WritePrefs());
+  pref_store->CommitPendingWrite();
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(file_util::TextContentsEqual(golden_output_file, output_file));
   ASSERT_TRUE(file_util::Delete(output_file, false));

@@ -777,7 +777,6 @@ void MetricsService::SaveLocalState() {
   }
 
   RecordCurrentState(pref);
-  pref->ScheduleSavePersistentPrefs();
 
   // TODO(jar): Does this run down the batteries????
   ScheduleNextStateSave();
@@ -1132,11 +1131,6 @@ void MetricsService::OnURLFetchComplete(const content::URLFetcher* source) {
     }
 
     log_manager_.DiscardStagedLog();
-    // Since we sent a log, make sure our in-memory state is recorded to disk.
-    PrefService* local_state = g_browser_process->local_state();
-    DCHECK(local_state);
-    if (local_state)
-      local_state->ScheduleSavePersistentPrefs();
 
     if (log_manager_.has_unsent_logs())
       DCHECK(state_ < SENDING_CURRENT_LOGS);
@@ -1304,7 +1298,7 @@ void MetricsService::LogCleanShutdown() {
   // Redundant hack to write pref ASAP.
   PrefService* pref = g_browser_process->local_state();
   pref->SetBoolean(prefs::kStabilityExitedCleanly, true);
-  pref->SavePersistentPrefs();
+  pref->CommitPendingWrite();
   // Hack: TBD: Remove this wait.
   // We are so concerned that the pref gets written, we are now willing to stall
   // the UI thread until we get assurance that a pref-writing task has

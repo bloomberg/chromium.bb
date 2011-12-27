@@ -53,8 +53,6 @@ void SyncPrefs::ClearPreferences() {
   // e.g. prefs::kSyncBookmarks.  Is that really what we want?
 
   pref_service_->ClearPref(prefs::kSyncMaxInvalidationVersions);
-
-  pref_service_->ScheduleSavePersistentPrefs();
 }
 
 bool SyncPrefs::HasSyncSetupCompleted() const {
@@ -69,7 +67,6 @@ void SyncPrefs::SetSyncSetupCompleted() {
   CHECK(pref_service_);
   pref_service_->SetBoolean(prefs::kSyncHasSetupCompleted, true);
   SetStartSuppressed(false);
-  pref_service_->ScheduleSavePersistentPrefs();
 }
 
 bool SyncPrefs::IsStartSuppressed() const {
@@ -83,7 +80,6 @@ void SyncPrefs::SetStartSuppressed(bool is_suppressed) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   CHECK(pref_service_);
   pref_service_->SetBoolean(prefs::kSyncSuppressStart, is_suppressed);
-  pref_service_->ScheduleSavePersistentPrefs();
 }
 
 std::string SyncPrefs::GetGoogleServicesUsername() const {
@@ -105,7 +101,6 @@ void SyncPrefs::SetLastSyncedTime(base::Time time) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   CHECK(pref_service_);
   pref_service_->SetInt64(prefs::kSyncLastSyncedTime, time.ToInternalValue());
-  pref_service_->ScheduleSavePersistentPrefs();
 }
 
 bool SyncPrefs::HasKeepEverythingSynced() const {
@@ -120,7 +115,6 @@ void SyncPrefs::SetKeepEverythingSynced(bool keep_everything_synced) {
   CHECK(pref_service_);
   pref_service_->SetBoolean(prefs::kSyncKeepEverythingSynced,
                             keep_everything_synced);
-  pref_service_->ScheduleSavePersistentPrefs();
 }
 
 syncable::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
@@ -241,7 +235,6 @@ void SyncPrefs::SetEncryptionBootstrapToken(const std::string& token) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   CHECK(pref_service_);
   pref_service_->SetString(prefs::kSyncEncryptionBootstrapToken, token);
-  pref_service_->ScheduleSavePersistentPrefs();
 }
 
 sync_notifier::InvalidationVersionMap SyncPrefs::GetAllMaxVersions() const {
@@ -326,7 +319,6 @@ void SyncPrefs::AcknowledgeSyncedTypes(
   scoped_ptr<ListValue> value(
       syncable::ModelTypeSetToValue(acknowledged_types));
   pref_service_->Set(prefs::kSyncAcknowledgedSyncTypes, *value);
-  pref_service_->ScheduleSavePersistentPrefs();
 }
 
 void SyncPrefs::Observe(int type,
@@ -354,7 +346,6 @@ void SyncPrefs::SetManagedForTest(bool is_managed) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   CHECK(pref_service_);
   pref_service_->SetBoolean(prefs::kSyncManaged, is_managed);
-  pref_service_->ScheduleSavePersistentPrefs();
 }
 
 syncable::ModelTypeSet SyncPrefs::GetAcknowledgeSyncedTypesForTest() const {
@@ -518,7 +509,6 @@ void SyncPrefs::SetDataTypePreferred(
     return;
   }
   pref_service_->SetBoolean(pref_name, is_preferred);
-  pref_service_->ScheduleSavePersistentPrefs();
 }
 
 }  // namespace browser_sync

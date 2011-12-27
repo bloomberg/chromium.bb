@@ -174,11 +174,9 @@ class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
   ScopedExtensionPrefUpdate(PrefService* service,
                             const std::string& extension_id) :
     DictionaryPrefUpdate(service, ExtensionPrefs::kExtensionsPref),
-    prefs_(service),
     extension_id_(extension_id) {}
 
   virtual ~ScopedExtensionPrefUpdate() {
-    prefs_->ScheduleSavePersistentPrefs();
   }
 
   virtual DictionaryValue* Get() {
@@ -193,7 +191,6 @@ class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
   }
 
  private:
-  PrefService* prefs_;
   const std::string extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedExtensionPrefUpdate);
@@ -210,12 +207,10 @@ class ScopedExtensionControlledPrefUpdate : public DictionaryPrefUpdate {
       const std::string& extension_id,
       const std::string& incognito_or_regular_path) :
     DictionaryPrefUpdate(service, ExtensionPrefs::kExtensionsPref),
-    prefs_(service),
     extension_id_(extension_id),
     incognito_or_regular_path_(incognito_or_regular_path) {}
 
   virtual ~ScopedExtensionControlledPrefUpdate() {
-    prefs_->ScheduleSavePersistentPrefs();
   }
 
   virtual DictionaryValue* Get() {
@@ -231,7 +226,6 @@ class ScopedExtensionControlledPrefUpdate : public DictionaryPrefUpdate {
   }
 
  private:
-  PrefService* prefs_;
   const std::string extension_id_;
   const std::string incognito_or_regular_path_;
 
@@ -325,7 +319,6 @@ void ExtensionPrefs::MakePathsRelative() {
     extension_dict->SetString(kPrefPath,
         MakePathRelative(install_directory_, path));
   }
-  SavePrefs();
 }
 
 void ExtensionPrefs::MakePathsAbsolute(DictionaryValue* dict) {
@@ -540,10 +533,6 @@ void ExtensionPrefs::SetExtensionPrefPermissionSet(
                                   JoinPrefs(pref_key, kPrefScriptableHosts),
                                   new_value->scriptable_hosts());
   }
-}
-
-void ExtensionPrefs::SavePrefs() {
-  prefs_->ScheduleSavePersistentPrefs();
 }
 
 // static
@@ -1178,7 +1167,6 @@ void ExtensionPrefs::SetToolbarOrder(
        iter != extension_ids.end(); ++iter) {
     toolbar_order->Append(new StringValue(*iter));
   }
-  SavePrefs();
 }
 
 void ExtensionPrefs::OnExtensionInstalled(
@@ -1372,10 +1360,7 @@ void ExtensionPrefs::DeleteExtensionPrefs(const std::string& extension_id) {
   content_settings_store_->UnregisterExtension(extension_id);
   DictionaryPrefUpdate update(prefs_, kExtensionsPref);
   DictionaryValue* dict = update.Get();
-  if (dict->HasKey(extension_id)) {
-    dict->Remove(extension_id, NULL);
-    SavePrefs();
-  }
+  dict->Remove(extension_id, NULL);
 }
 
 const DictionaryValue* ExtensionPrefs::GetExtensionPref(
@@ -1582,7 +1567,6 @@ bool ExtensionPrefs::GetWebStoreLogin(std::string* result) {
 
 void ExtensionPrefs::SetWebStoreLogin(const std::string& login) {
   prefs_->SetString(kWebStoreLogin, login);
-  SavePrefs();
 }
 
 StringOrdinal ExtensionPrefs::GetMinOrMaxAppLaunchOrdinalsOnPage(

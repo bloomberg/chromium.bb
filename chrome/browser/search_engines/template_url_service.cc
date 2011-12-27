@@ -1214,8 +1214,6 @@ void TemplateURLService::SaveDefaultSearchProviderToPrefs(
   prefs->SetString(prefs::kDefaultSearchProviderKeyword, keyword);
   prefs->SetString(prefs::kDefaultSearchProviderID, id_string);
   prefs->SetString(prefs::kDefaultSearchProviderPrepopulateID, prepopulate_id);
-
-  prefs->ScheduleSavePersistentPrefs();
 }
 
 bool TemplateURLService::LoadDefaultSearchProviderFromPrefs(

@@ -78,14 +78,14 @@ static int kShowDelayMs = 400;
 void SaveBoolPreferenceForced(const char* pref_name, bool value) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(pref_name, value);
-  prefs->SavePersistentPrefs();
+  prefs->CommitPendingWrite();
 }
 
 // Saves integer "Local State" preference and forces its persistence to disk.
 void SaveIntegerPreferenceForced(const char* pref_name, int value) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetInteger(pref_name, value);
-  prefs->SavePersistentPrefs();
+  prefs->CommitPendingWrite();
 }
 
 // Saves string "Local State" preference and forces its persistence to disk.
@@ -93,7 +93,7 @@ void SaveStringPreferenceForced(const char* pref_name,
                                 const std::string& value) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetString(pref_name, value);
-  prefs->SavePersistentPrefs();
+  prefs->CommitPendingWrite();
 }
 
 }  // namespace

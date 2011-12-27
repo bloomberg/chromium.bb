@@ -373,7 +373,6 @@ PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
         local_state->GetString(prefs::kApplicationLocale) != owner_locale &&
         !local_state->IsManagedPreference(prefs::kApplicationLocale)) {
       local_state->SetString(prefs::kApplicationLocale, owner_locale);
-      local_state->ScheduleSavePersistentPrefs();
     }
   }
 #endif

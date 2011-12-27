@@ -114,16 +114,6 @@ void OverlayUserPrefStore::ReadPrefsAsync(
   OnInitializationCompleted(true);
 }
 
-bool OverlayUserPrefStore::WritePrefs() {
-  // We do not write our content intentionally.
-  return true;
-}
-
-void OverlayUserPrefStore::ScheduleWritePrefs() {
-  underlay_->ScheduleWritePrefs();
-  // We do not write our content intentionally.
-}
-
 void OverlayUserPrefStore::CommitPendingWrite() {
   underlay_->CommitPendingWrite();
   // We do not write our content intentionally.

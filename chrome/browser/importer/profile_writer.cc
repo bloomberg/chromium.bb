@@ -55,12 +55,7 @@ string16 GenerateUniqueFolderName(BookmarkModel* model,
 
 // Shows the bookmarks toolbar.
 void ShowBookmarkBar(Profile* profile) {
-  PrefService* prefs = profile->GetPrefs();
-  // Check whether the bookmark bar is shown in current pref.
-  if (!prefs->GetBoolean(prefs::kShowBookmarkBar)) {
-    prefs->SetBoolean(prefs::kShowBookmarkBar, true);
-    prefs->ScheduleSavePersistentPrefs();
-  }
+  profile->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
 }
 
 }  // namespace
@@ -115,7 +110,6 @@ void ProfileWriter::AddHomepage(const GURL& home_page) {
   const PrefService::Preference* pref = prefs->FindPreference(prefs::kHomePage);
   if (pref && !pref->IsManaged()) {
     prefs->SetString(prefs::kHomePage, home_page.spec());
-    prefs->ScheduleSavePersistentPrefs();
   }
 }
 

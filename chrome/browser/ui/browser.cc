@@ -4707,7 +4707,6 @@ void Browser::UpdateCommandsForBookmarkBar() {
 
 void Browser::MarkHomePageAsChanged(PrefService* pref_service) {
   pref_service->SetBoolean(prefs::kHomePageChanged, true);
-  pref_service->ScheduleSavePersistentPrefs();
 }
 
 void Browser::UpdateSaveAsState(int content_restrictions) {

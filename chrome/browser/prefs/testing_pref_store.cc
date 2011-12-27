@@ -65,11 +65,6 @@ void TestingPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate_raw) {
   NotifyInitializationCompleted();
 }
 
-bool TestingPrefStore::WritePrefs() {
-  prefs_written_ = true;
-  return prefs_written_;
-}
-
 void TestingPrefStore::SetInitializationCompleted() {
   init_complete_ = true;
   NotifyInitializationCompleted();
@@ -127,12 +122,4 @@ bool TestingPrefStore::GetBoolean(const std::string& key, bool* value) const {
 
 void TestingPrefStore::set_read_only(bool read_only) {
   read_only_ = read_only;
-}
-
-void TestingPrefStore::set_prefs_written(bool status) {
-  prefs_written_ = status;
-}
-
-bool TestingPrefStore::get_prefs_written() {
-  return prefs_written_;
 }

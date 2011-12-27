@@ -118,11 +118,8 @@ bool LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
     // future..
     g_browser_process->SetApplicationLocale(locale);
 
-    // Force preferences save, otherwise they won't be saved on
-    // shutdown from login screen. http://crosbug.com/20747
     PrefService* prefs = g_browser_process->local_state();
     prefs->SetString(prefs::kApplicationLocale, locale);
-    prefs->ScheduleSavePersistentPrefs();
 
     return true;
   }

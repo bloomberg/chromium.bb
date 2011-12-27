@@ -19,7 +19,7 @@ void ServiceProcessPrefs::ReadPrefs() {
 }
 
 void ServiceProcessPrefs::WritePrefs() {
-  prefs_->WritePrefs();
+  prefs_->CommitPendingWrite();
 }
 
 void ServiceProcessPrefs::GetString(const std::string& key,

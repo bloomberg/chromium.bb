@@ -38,8 +38,6 @@ class TestingPrefStore : public PersistentPrefStore {
   virtual bool ReadOnly() const OVERRIDE;
   virtual PersistentPrefStore::PrefReadError ReadPrefs() OVERRIDE;
   virtual void ReadPrefsAsync(ReadErrorDelegate* error_delegate) OVERRIDE;
-  virtual bool WritePrefs() OVERRIDE;
-  virtual void ScheduleWritePrefs() OVERRIDE {}
   virtual void CommitPendingWrite() OVERRIDE {}
 
   // Marks the store as having completed initialization.
@@ -61,8 +59,6 @@ class TestingPrefStore : public PersistentPrefStore {
   // Getter and Setter methods for setting and getting the state of the
   // |TestingPrefStore|.
   virtual void set_read_only(bool read_only);
-  virtual void set_prefs_written(bool status);
-  virtual bool get_prefs_written();
 
  private:
   // Stores the preference values.

@@ -95,7 +95,7 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
 
   g_browser_process->local_state()->SetBoolean(
       prefs::kSpokenFeedbackEnabled, enabled);
-  g_browser_process->local_state()->ScheduleSavePersistentPrefs();
+  g_browser_process->local_state()->CommitPendingWrite();
   ExtensionAccessibilityEventRouter::GetInstance()->
       SetAccessibilityEnabled(enabled);
   BrowserAccessibilityState::GetInstance()->OnAccessibilityEnabledManually();

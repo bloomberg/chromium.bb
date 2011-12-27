@@ -366,7 +366,7 @@ void BrowserProcessImpl::EndSession() {
     metrics->RecordStartOfSessionEnd();
 
     // MetricsService lazily writes to prefs, force it to write now.
-    local_state()->SavePersistentPrefs();
+    local_state()->CommitPendingWrite();
   }
 
   // We must write that the profile and metrics service shutdown cleanly,

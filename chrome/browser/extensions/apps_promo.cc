@@ -296,7 +296,6 @@ int AppsPromo::GetPromoCounter() const {
 
 void AppsPromo::SetPromoCounter(int val) {
   prefs_->SetInteger(prefs::kAppsPromoCounter, val);
-  prefs_->ScheduleSavePersistentPrefs();
 }
 
 bool AppsPromo::GetDefaultAppsInstalled() const {

@@ -108,7 +108,6 @@ void PinnedTabCodec::WritePinnedTabs(Profile* profile) {
     }
   }
   prefs->Set(prefs::kPinnedTabs, values);
-  prefs->ScheduleSavePersistentPrefs();
 }
 
 // static

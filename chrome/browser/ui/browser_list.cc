@@ -494,7 +494,7 @@ void BrowserList::AttemptUserExit() {
         state->GetString(prefs::kApplicationLocale) != owner_locale &&
         !state->IsManagedPreference(prefs::kApplicationLocale)) {
       state->SetString(prefs::kApplicationLocale, owner_locale);
-      state->SavePersistentPrefs();
+      state->CommitPendingWrite();
     }
   }
   g_session_manager_requested_shutdown = false;
@@ -520,7 +520,6 @@ void BrowserList::AttemptRestart() {
 
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kWasRestarted, true);
-  pref_service->ScheduleSavePersistentPrefs();
 
 #if defined(OS_CHROMEOS)
   // For CrOS instead of browser restart (which is not supported) perform a full

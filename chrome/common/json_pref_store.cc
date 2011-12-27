@@ -282,26 +282,6 @@ PersistentPrefStore::PrefReadError JsonPrefStore::ReadPrefs() {
   return error;
 }
 
-bool JsonPrefStore::WritePrefs() {
-  std::string data;
-  if (!SerializeData(&data))
-    return false;
-
-  // Don't actually write prefs if we're read-only or don't have any pending
-  // writes.
-  // TODO(bauerb): Make callers of this method call CommitPendingWrite directly.
-  if (writer_.HasPendingWrite() && !read_only_)
-    writer_.WriteNow(data);
-
-  return true;
-}
-
-void JsonPrefStore::ScheduleWritePrefs() {
-  // Writing prefs should be scheduled automatically, so this is a no-op
-  // for now.
-  // TODO(bauerb): Remove calls to this method.
-}
-
 void JsonPrefStore::CommitPendingWrite() {
   if (writer_.HasPendingWrite() && !read_only_)
     writer_.DoScheduledWrite();

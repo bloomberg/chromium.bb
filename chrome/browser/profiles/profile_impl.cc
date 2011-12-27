@@ -758,8 +758,6 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
       prefs_->GetBoolean(prefs::kSessionExitedCleanly);
   // Mark the session as open.
   prefs_->SetBoolean(prefs::kSessionExitedCleanly, false);
-  // Make sure we save to disk that the session has opened.
-  prefs_->ScheduleSavePersistentPrefs();
 
   bool extensions_disabled =
       prefs_->GetBoolean(prefs::kDisableExtensions) ||
@@ -1291,7 +1289,7 @@ void ProfileImpl::MarkAsCleanShutdown() {
 
     // NOTE: If you change what thread this writes on, be sure and update
     // ChromeFrame::EndSession().
-    prefs_->SavePersistentPrefs();
+    prefs_->CommitPendingWrite();
   }
 }
 
@@ -1533,9 +1531,6 @@ void ProfileImpl::ChangeAppLocale(
 
   if (chromeos::UserManager::Get()->current_user_is_owner())
     local_state->SetString(prefs::kOwnerLocale, new_locale);
-
-  GetPrefs()->ScheduleSavePersistentPrefs();
-  local_state->ScheduleSavePersistentPrefs();
 }
 
 void ProfileImpl::OnLogin() {

@@ -529,11 +529,6 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
       const std::string& id,
       bool incognito) const;
 
-  // Serializes the data and schedules a persistent save via the |PrefService|.
-  // TODO(andybons): Fire an EXTENSION_PREF_CHANGED notification to be more
-  // granular than PREF_CHANGED.
-  void SavePrefs();
-
   // Checks if kPrefBlacklist is set to true in the DictionaryValue.
   // Return false if the value is false or kPrefBlacklist does not exist.
   // This is used to decide if an extension is blacklisted.

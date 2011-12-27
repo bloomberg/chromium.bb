@@ -102,7 +102,6 @@ static bool ShouldInstallInProfile(Profile* profile) {
       profile->GetPrefs()->SetInteger(prefs::kDefaultAppsInstallState,
                                       default_apps::kNeverProvideDefaultApps);
     }
-    profile->GetPrefs()->ScheduleSavePersistentPrefs();
   }
 
   return install_apps;

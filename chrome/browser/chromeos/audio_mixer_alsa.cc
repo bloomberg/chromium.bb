@@ -142,7 +142,6 @@ void AudioMixerAlsa::SetVolumeDb(double volume_db) {
   }
 
   prefs_->SetDouble(prefs::kAudioVolume, volume_db);
-  prefs_->ScheduleSavePersistentPrefs();
 
   base::AutoLock lock(lock_);
   volume_db_ = volume_db;
@@ -159,7 +158,6 @@ bool AudioMixerAlsa::IsMuted() {
 void AudioMixerAlsa::SetMuted(bool muted) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   prefs_->SetInteger(prefs::kAudioMute, muted ? kPrefMuteOn : kPrefMuteOff);
-  prefs_->ScheduleSavePersistentPrefs();
   base::AutoLock lock(lock_);
   is_muted_ = muted;
   if (!apply_is_pending_)

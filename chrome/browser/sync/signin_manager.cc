@@ -185,7 +185,6 @@ void SigninManager::SignOut() {
   authenticated_username_.clear();
   profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
   profile_->GetPrefs()->ClearPref(prefs::kSyncUsingOAuth);
-  profile_->GetPrefs()->ScheduleSavePersistentPrefs();
   profile_->GetTokenService()->ResetCredentialsInMemory();
   profile_->GetTokenService()->EraseTokensFromDB();
 }
@@ -209,7 +208,6 @@ void SigninManager::OnGetUserInfoSuccess(const std::string& key,
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                   authenticated_username_);
   profile_->GetPrefs()->SetBoolean(prefs::kSyncUsingOAuth, false);
-  profile_->GetPrefs()->ScheduleSavePersistentPrefs();
 
   GoogleServiceSigninSuccessDetails details(authenticated_username_,
                                             password_);
@@ -313,7 +311,6 @@ void SigninManager::OnUserInfoSuccess(const std::string& email) {
   profile_->GetPrefs()->SetString(
       prefs::kGoogleServicesUsername, authenticated_username_);
   profile_->GetPrefs()->SetBoolean(prefs::kSyncUsingOAuth, true);
-  profile_->GetPrefs()->ScheduleSavePersistentPrefs();
 
   DCHECK(password_.empty());
   GoogleServiceSigninSuccessDetails details(authenticated_username_, "");
