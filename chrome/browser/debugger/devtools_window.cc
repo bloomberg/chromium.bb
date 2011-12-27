@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -530,13 +531,18 @@ GURL DevToolsWindow::GetDevToolsUrl(Profile* profile, bool docked,
   SkColor color_tab_text =
       tp->GetColor(ThemeService::COLOR_BOOKMARK_TEXT);
 
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  bool experiments_enabled =
+      command_line.HasSwitch(switches::kEnableDevToolsExperiments);
+
   std::string url_string = StringPrintf(
-      "%sdevtools.html?docked=%s&toolbarColor=%s&textColor=%s%s",
+      "%sdevtools.html?docked=%s&toolbarColor=%s&textColor=%s%s%s",
       chrome::kChromeUIDevToolsURL,
       docked ? "true" : "false",
       SkColorToRGBAString(color_toolbar).c_str(),
       SkColorToRGBAString(color_tab_text).c_str(),
-      shared_worker_frontend ? "&isSharedWorker=true" : "");
+      shared_worker_frontend ? "&isSharedWorker=true" : "",
+      experiments_enabled ? "&experiments=true" : "");
   return GURL(url_string);
 }
 

@@ -473,6 +473,9 @@ const char kEnableCRLSets[]                 = "enable-crl-sets";
 // Enables web developers to create apps for Chrome without using crx packages.
 const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
 
+// If true devtools experimental settings are enabled.
+const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
+
 // Enables extension APIs that are in development.
 const char kEnableExperimentalExtensionApis[] =
     "enable-experimental-extension-apis";

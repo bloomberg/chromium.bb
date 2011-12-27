@@ -138,6 +138,7 @@ extern const char kEnableCompositeToTexture[];
 extern const char kEnableConnectBackupJobs[];
 extern const char kEnableCRLSets[];
 extern const char kEnableCrxlessWebApps[];
+extern const char kEnableDevToolsExperiments[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionAlerts[];

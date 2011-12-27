@@ -324,11 +324,13 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
                            base::StringPrintf("ws://%s/devtools/page/%d",
                                               host.c_str(),
                                               i->id));
-      page_info->SetString("devtoolsFrontendUrl",
-                           base::StringPrintf("%s?host=%s&page=%d",
-                                              overridden_frontend_url_.c_str(),
-                                              host.c_str(),
-                                              i->id));
+      std::string devtools_frontend_url = base::StringPrintf(
+          "%s%shost=%s&page=%d",
+          overridden_frontend_url_.c_str(),
+          overridden_frontend_url_.find("?") == std::string::npos ? "?" : "&",
+          host.c_str(),
+          i->id);
+      page_info->SetString("devtoolsFrontendUrl", devtools_frontend_url);
     }
   }
 
