@@ -330,8 +330,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
       bool has_sni = net::SSLConfigService::IsSNIAvailable(
           context->ssl_config_service());
       if (state->GetDomainState(
-              &domain_state, request->url().host(), has_sni) &&
-          domain_state.ShouldMixedScriptingBeBlocked()) {
+              &domain_state, request->url().host(), has_sni)) {
         filter->Send(new ChromeViewMsg_AddStrictSecurityHost(
             info->route_id(), request->url().host()));
       }
