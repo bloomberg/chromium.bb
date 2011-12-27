@@ -313,10 +313,37 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     }
   }
 
-  // Histograms to determine if prerendering has an impact on PLT.
-  // TODO(gavinp): Right now the prerendering and the prefetching field trials
-  // are mixed together.  If we continue to launch prerender with
-  // link rel=prerender, then we should separate them.
+  // Histograms to determine if prefetch & prerender has an impact on PLT.
+  static const bool prefetching_fieldtrial =
+      base::FieldTrialList::TrialExists("Prefetch");
+  if (prefetching_fieldtrial) {
+    if (document_state->was_prefetcher()) {
+      PLT_HISTOGRAM(base::FieldTrial::MakeName(
+          "PLT.BeginToFinishDoc_ContentPrefetcher", "Prefetch"),
+          begin_to_finish_doc);
+      PLT_HISTOGRAM(base::FieldTrial::MakeName(
+          "PLT.BeginToFinish_ContentPrefetcher", "Prefetch"),
+          begin_to_finish_all_loads);
+    }
+    if (document_state->was_referred_by_prefetcher()) {
+      PLT_HISTOGRAM(base::FieldTrial::MakeName(
+          "PLT.BeginToFinishDoc_ContentPrefetcherReferrer", "Prefetch"),
+          begin_to_finish_doc);
+      PLT_HISTOGRAM(base::FieldTrial::MakeName(
+          "PLT.BeginToFinish_ContentPrefetcherReferrer", "Prefetch"),
+          begin_to_finish_all_loads);
+    }
+    UMA_HISTOGRAM_ENUMERATION(base::FieldTrial::MakeName(
+        "PLT.Abandoned", "Prefetch"),
+        abandoned_page ? 1 : 0, 2);
+    PLT_HISTOGRAM(base::FieldTrial::MakeName(
+        "PLT.BeginToFinishDoc", "Prefetch"),
+        begin_to_finish_doc);
+    PLT_HISTOGRAM(base::FieldTrial::MakeName(
+        "PLT.BeginToFinish", "Prefetch"),
+        begin_to_finish_all_loads);
+  }
+
   static const bool prerendering_fieldtrial =
       base::FieldTrialList::TrialExists("Prerender");
   if (prerendering_fieldtrial) {

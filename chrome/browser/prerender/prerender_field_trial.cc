@@ -40,6 +40,29 @@ const char* NameFromOmniboxHeuristic(OmniboxHeuristic heuristic) {
   return kOmniboxHeuristicNames[heuristic];
 }
 
+void SetupPrefetchFieldTrial() {
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
+    return;
+  }
+
+  const base::FieldTrial::Probability divisor = 1000;
+  const base::FieldTrial::Probability prefetch_probability = 500;
+  scoped_refptr<base::FieldTrial> trial(
+      new base::FieldTrial("Prefetch", divisor,
+                           "ContentPrefetchPrefetchOff", 2012, 6, 30));
+  const int kPrefetchOnGroup = trial->AppendGroup("ContentPrefetchPrefetchOn",
+                                                  prefetch_probability);
+  const int trial_group = trial->group();
+
+  if (trial_group == kPrefetchOnGroup) {
+    ResourceDispatcherHost::set_is_prefetch_enabled(true);
+  } else {
+    ResourceDispatcherHost::set_is_prefetch_enabled(false);
+  }
+}
+
 void SetupPrerenderFieldTrial() {
   base::FieldTrial::Probability divisor = 1000;
   base::FieldTrial::Probability exp1_probability = 200;
@@ -138,6 +161,7 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
 
   switch (prerender_option) {
     case PRERENDER_OPTION_AUTO:
+      SetupPrefetchFieldTrial();
       SetupPrerenderFieldTrial();
       break;
     case PRERENDER_OPTION_DISABLED:
@@ -145,7 +169,7 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
       PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
       break;
     case PRERENDER_OPTION_ENABLED:
-      ResourceDispatcherHost::set_is_prefetch_enabled(false);
+      ResourceDispatcherHost::set_is_prefetch_enabled(true);
       PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_ENABLED);
       break;
     case PRERENDER_OPTION_PREFETCH_ONLY:
