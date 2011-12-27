@@ -175,7 +175,7 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
   if (!ShouldShowSyncPromo(profile))
     return false;
 
-  const CommandLine& command_line  = *CommandLine::ForCurrentProcess();
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kNoFirstRun))
     is_new_profile = false;
 
@@ -191,7 +191,7 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
   if (g_browser_process->GetApplicationLocale() == "zh-CN")
     return false;
 
-  PrefService *prefs = profile->GetPrefs();
+  PrefService* prefs = profile->GetPrefs();
   int show_count = prefs->GetInteger(prefs::kSyncPromoStartupCount);
   if (show_count >= kSyncPromoShowAtStartupMaximum)
     return false;
