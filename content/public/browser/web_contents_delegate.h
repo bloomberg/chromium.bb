@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "base/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/common/page_transition_types.h"
@@ -35,6 +35,7 @@ class JavaScriptDialogCreator;
 class WebContents;
 class WebIntentsDispatcher;
 struct FileChooserParams;
+struct SSLStatus;
 }
 
 namespace gfx {
@@ -223,7 +224,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // showing how many times that URL has been visited is added to the page info.
   virtual void ShowPageInfo(content::BrowserContext* browser_context,
                             const GURL& url,
-                            const ::NavigationEntry::SSLStatus& ssl,
+                            const SSLStatus& ssl,
                             bool show_history) {}
 
   // Opens source view for given tab contents that is navigated to the given

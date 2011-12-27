@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/views/view.h"
 
@@ -31,5 +32,5 @@ void ClickHandler::OnMouseReleased(const views::MouseEvent& event) {
     NOTREACHED();
     return;
   }
-  tab->ShowPageInfo(nav_entry->GetURL(), nav_entry->ssl(), true);
+  tab->ShowPageInfo(nav_entry->GetURL(), nav_entry->GetSSL(), true);
 }

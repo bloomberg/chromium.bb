@@ -12,6 +12,7 @@
 #include "chrome/common/icon_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/public/browser/navigation_details.h"
@@ -20,6 +21,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
 
+using content::FaviconStatus;
 using content::WebContents;
 
 FaviconTabHelper::FaviconTabHelper(TabContents* tab_contents)
@@ -47,11 +49,11 @@ SkBitmap FaviconTabHelper::GetFavicon() const {
   const NavigationController& controller = web_contents()->GetController();
   NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
-    return entry->favicon().bitmap();
+    return entry->GetFavicon().bitmap;
 
   entry = controller.GetLastCommittedEntry();
   if (entry)
-    return entry->favicon().bitmap();
+    return entry->GetFavicon().bitmap;
   return SkBitmap();
 }
 
@@ -59,11 +61,11 @@ bool FaviconTabHelper::FaviconIsValid() const {
   const NavigationController& controller = web_contents()->GetController();
   NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
-    return entry->favicon().is_valid();
+    return entry->GetFavicon().valid;
 
   entry = controller.GetLastCommittedEntry();
   if (entry)
-    return entry->favicon().is_valid();
+    return entry->GetFavicon().valid;
 
   return false;
 }
@@ -97,15 +99,15 @@ void FaviconTabHelper::SaveFavicon() {
       GetOriginalProfile()->GetFaviconService(Profile::IMPLICIT_ACCESS);
   if (!service)
     return;
-  const NavigationEntry::FaviconStatus& favicon(entry->favicon());
-  if (!favicon.is_valid() || favicon.url().is_empty() ||
-      favicon.bitmap().empty()) {
+  const FaviconStatus& favicon(entry->GetFavicon());
+  if (!favicon.valid || favicon.url.is_empty() ||
+      favicon.bitmap.empty()) {
     return;
   }
   std::vector<unsigned char> image_data;
-  gfx::PNGCodec::EncodeBGRASkBitmap(favicon.bitmap(), false, &image_data);
+  gfx::PNGCodec::EncodeBGRASkBitmap(favicon.bitmap, false, &image_data);
   service->SetFavicon(
-      entry->GetURL(), favicon.url(), image_data, history::FAVICON);
+      entry->GetURL(), favicon.url, image_data, history::FAVICON);
 }
 
 int FaviconTabHelper::DownloadImage(const GURL& image_url,

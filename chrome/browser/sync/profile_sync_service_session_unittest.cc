@@ -42,6 +42,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/profile_mock.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"

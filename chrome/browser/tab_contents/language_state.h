@@ -9,7 +9,12 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+
+class NavigationController;
+
+namespace content {
+struct LoadCommittedDetails;
+}
 
 // This class holds the language state of the current page.
 // There is one LanguageState instance per TabContents.

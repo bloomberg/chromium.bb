@@ -19,12 +19,15 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/common/content_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using content::SSLStatus;
 
 ToolbarModel::ToolbarModel(Browser* browser)
     : browser_(browser),
@@ -100,8 +103,8 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
   if (!entry)
     return NONE;
 
-  const NavigationEntry::SSLStatus& ssl = entry->ssl();
-  switch (ssl.security_style()) {
+  const SSLStatus& ssl = entry->GetSSL();
+  switch (ssl.security_style) {
     case content::SECURITY_STYLE_UNKNOWN:
     case content::SECURITY_STYLE_UNAUTHENTICATED:
       return NONE;
@@ -110,14 +113,14 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
       return SECURITY_ERROR;
 
     case content::SECURITY_STYLE_AUTHENTICATED:
-      if (ssl.displayed_insecure_content())
+      if (!!(ssl.content_status & SSLStatus::DISPLAYED_INSECURE_CONTENT))
         return SECURITY_WARNING;
-      if (net::IsCertStatusError(ssl.cert_status())) {
-        DCHECK(net::IsCertStatusMinorError(ssl.cert_status()));
+      if (net::IsCertStatusError(ssl.cert_status)) {
+        DCHECK(net::IsCertStatusMinorError(ssl.cert_status));
         return SECURITY_WARNING;
       }
-      if ((ssl.cert_status() & net::CERT_STATUS_IS_EV) &&
-          CertStore::GetInstance()->RetrieveCert(ssl.cert_id(), NULL))
+      if ((ssl.cert_status & net::CERT_STATUS_IS_EV) &&
+          CertStore::GetInstance()->RetrieveCert(ssl.cert_id, NULL))
         return EV_SECURE;
       return SECURE;
 
@@ -145,7 +148,7 @@ string16 ToolbarModel::GetEVCertName() const {
   // Note: Navigation controller and active entry are guaranteed non-NULL or
   // the security level would be NONE.
   CertStore::GetInstance()->RetrieveCert(
-      GetNavigationController()->GetVisibleEntry()->ssl().cert_id(), &cert);
+      GetNavigationController()->GetVisibleEntry()->GetSSL().cert_id, &cert);
   return GetEVCertName(*cert);
 }
 

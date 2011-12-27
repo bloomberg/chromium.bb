@@ -27,6 +27,7 @@
 #include "ui/gfx/screen.h"
 #endif
 
+using content::SSLStatus;
 using content::WebContents;
 
 // static
@@ -459,7 +460,7 @@ void Panel::TabContentsFocused(TabContents* tab_contents) {
 
 void Panel::ShowPageInfo(Profile* profile,
                          const GURL& url,
-                         const NavigationEntry::SSLStatus& ssl,
+                         const SSLStatus& ssl,
                          bool show_history) {
   NOTIMPLEMENTED();
 }

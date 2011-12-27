@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "chrome/common/content_settings_types.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -31,6 +30,7 @@ struct NativeWebKeyboardEvent;
 
 namespace content {
 class WebContents;
+struct SSLStatus;
 }
 
 namespace gfx {
@@ -273,7 +273,7 @@ class BrowserWindow {
   // showing how many times that URL has been visited is added to the page info.
   virtual void ShowPageInfo(Profile* profile,
                             const GURL& url,
-                            const NavigationEntry::SSLStatus& ssl,
+                            const content::SSLStatus& ssl,
                             bool show_history) = 0;
 
   // Shows the app menu (for accessibility).

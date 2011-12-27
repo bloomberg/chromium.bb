@@ -11,165 +11,18 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/common/page_type.h"
-#include "content/public/common/security_style.h"
-#include "googleurl/src/gurl.h"
-#include "net/base/cert_status_flags.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 class SiteInstance;
 
 class CONTENT_EXPORT NavigationEntry
     : public NON_EXPORTED_BASE(content::NavigationEntry) {
  public:
-  // SSL -----------------------------------------------------------------------
 
-  // Collects the SSL information for this NavigationEntry.
-  class SSLStatus {
-   public:
-    // Flags used for the page security content status.
-    enum ContentStatusFlags {
-      // HTTP page, or HTTPS page with no insecure content.
-      NORMAL_CONTENT             = 0,
-
-      // HTTPS page containing "displayed" HTTP resources (e.g. images, CSS).
-      DISPLAYED_INSECURE_CONTENT = 1 << 0,
-
-      // HTTPS page containing "executed" HTTP resources (i.e. script).
-      // Also currently used for HTTPS page containing broken-HTTPS resources;
-      // this is wrong and should be fixed (see comments in
-      // SSLPolicy::OnRequestStarted()).
-      RAN_INSECURE_CONTENT       = 1 << 1,
-    };
-
-    CONTENT_EXPORT SSLStatus();
-
-    bool Equals(const SSLStatus& status) const {
-      return security_style_ == status.security_style_ &&
-             cert_id_ == status.cert_id_ &&
-             cert_status_ == status.cert_status_ &&
-             security_bits_ == status.security_bits_ &&
-             content_status_ == status.content_status_;
-    }
-
-    void set_security_style(content::SecurityStyle security_style) {
-      security_style_ = security_style;
-    }
-    content::SecurityStyle security_style() const {
-      return security_style_;
-    }
-
-    void set_cert_id(int ssl_cert_id) {
-      cert_id_ = ssl_cert_id;
-    }
-    int cert_id() const {
-      return cert_id_;
-    }
-
-    void set_cert_status(net::CertStatus ssl_cert_status) {
-      cert_status_ = ssl_cert_status;
-    }
-    net::CertStatus cert_status() const {
-      return cert_status_;
-    }
-
-    void set_security_bits(int security_bits) {
-      security_bits_ = security_bits;
-    }
-    int security_bits() const {
-      return security_bits_;
-    }
-
-    void set_displayed_insecure_content() {
-      content_status_ |= DISPLAYED_INSECURE_CONTENT;
-    }
-    bool displayed_insecure_content() const {
-      return (content_status_ & DISPLAYED_INSECURE_CONTENT) != 0;
-    }
-
-    void set_ran_insecure_content() {
-      content_status_ |= RAN_INSECURE_CONTENT;
-    }
-    bool ran_insecure_content() const {
-      return (content_status_ & RAN_INSECURE_CONTENT) != 0;
-    }
-
-    void set_connection_status(int connection_status) {
-        connection_status_ = connection_status;
-    }
-    int connection_status() const {
-      return connection_status_;
-    }
-
-    // Raw accessors for all the content status flags. This contains a
-    // combination of any of the ContentStatusFlags defined above. It is used
-    // by some tests for checking and for certain copying. Use the per-status
-    // functions for normal usage.
-    void set_content_status(int content_status) {
-      content_status_ = content_status;
-    }
-    int content_status() const {
-      return content_status_;
-    }
-
-   private:
-    // See the accessors above for descriptions.
-    content::SecurityStyle security_style_;
-    int cert_id_;
-    net::CertStatus cert_status_;
-    int security_bits_;
-    int connection_status_;
-    int content_status_;
-
-    // Copy and assignment is explicitly allowed for this class.
-  };
-
-  // Favicon -------------------------------------------------------------------
-
-  // Collects the favicon related information for a NavigationEntry.
-  class FaviconStatus {
-   public:
-    FaviconStatus();
-
-    // Indicates whether we've gotten an official favicon for the page, or are
-    // just using the default favicon.
-    void set_is_valid(bool is_valid) {
-      valid_ = is_valid;
-    }
-    bool is_valid() const {
-      return valid_;
-    }
-
-    // The URL of the favicon which was used to load it off the web.
-    void set_url(const GURL& favicon_url) {
-      url_ = favicon_url;
-    }
-    const GURL& url() const {
-      return url_;
-    }
-
-    // The favicon bitmap for the page. If the favicon has not been explicitly
-    // set or it empty, it will return the default favicon. Note that this is
-    // loaded asynchronously, so even if the favicon URL is valid we may return
-    // the default favicon if we haven't gotten the data yet.
-    void set_bitmap(const SkBitmap& bitmap) {
-      bitmap_ = bitmap;
-    }
-    const SkBitmap& bitmap() const {
-      return bitmap_;
-    }
-
-   private:
-    // See the accessors above for descriptions.
-    bool valid_;
-    GURL url_;
-    SkBitmap bitmap_;
-
-    // Copy and assignment is explicitly allowed for this class.
-  };
-
-  // ---------------------------------------------------------------------------
+  NavigationEntry* FromNavigationEntry(content::NavigationEntry* entry);
 
   NavigationEntry();
   NavigationEntry(SiteInstance* instance,
@@ -199,6 +52,10 @@ class CONTENT_EXPORT NavigationEntry
   virtual content::PageTransition GetTransitionType() const OVERRIDE;
   virtual void SetHasPostData(bool has_post_data) OVERRIDE;
   virtual bool GetHasPostData() const OVERRIDE;
+  virtual const content::FaviconStatus& GetFavicon() const OVERRIDE;
+  virtual content::FaviconStatus& GetFavicon() OVERRIDE;
+  virtual const content::SSLStatus& GetSSL() const OVERRIDE;
+  virtual content::SSLStatus& GetSSL() OVERRIDE;
 
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
@@ -247,22 +104,6 @@ class CONTENT_EXPORT NavigationEntry
   }
   void set_update_virtual_url_with_url(bool update) {
     update_virtual_url_with_url_ = update;
-  }
-
-  // The favicon data and tracking information. See FaviconStatus above.
-  const FaviconStatus& favicon() const {
-    return favicon_;
-  }
-  FaviconStatus& favicon() {
-    return favicon_;
-  }
-
-  // All the SSL flags and state. See SSLStatus above.
-  const SSLStatus& ssl() const {
-    return ssl_;
-  }
-  SSLStatus& ssl() {
-    return ssl_;
   }
 
   // Extra headers (separated by \n) to send during the request.
@@ -345,10 +186,10 @@ class CONTENT_EXPORT NavigationEntry
   GURL virtual_url_;
   bool update_virtual_url_with_url_;
   string16 title_;
-  FaviconStatus favicon_;
+  content::FaviconStatus favicon_;
   std::string content_state_;
   int32 page_id_;
-  SSLStatus ssl_;
+  content::SSLStatus ssl_;
   content::PageTransition transition_type_;
   GURL user_typed_url_;
   bool has_post_data_;

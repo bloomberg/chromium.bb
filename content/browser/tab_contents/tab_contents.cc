@@ -111,6 +111,7 @@ using content::DevToolsAgentHostRegistry;
 using content::DevToolsManagerImpl;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;
 using content::WebContentsObserver;
@@ -642,7 +643,7 @@ TabContents* TabContents::Clone() {
 }
 
 void TabContents::ShowPageInfo(const GURL& url,
-                               const NavigationEntry::SSLStatus& ssl,
+                               const SSLStatus& ssl,
                                bool show_history) {
   if (!delegate_)
     return;

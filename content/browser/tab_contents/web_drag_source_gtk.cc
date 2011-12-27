@@ -20,6 +20,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_compat.h"

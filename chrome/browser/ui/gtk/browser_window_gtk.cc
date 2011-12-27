@@ -102,6 +102,8 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_utils_gtk.h"
 
+using content::SSLStatus;
+
 namespace {
 
 // The number of milliseconds between loading animation frames.
@@ -1070,7 +1072,7 @@ void BrowserWindowGtk::TabContentsFocused(TabContents* tab_contents) {
 
 void BrowserWindowGtk::ShowPageInfo(Profile* profile,
                                     const GURL& url,
-                                    const NavigationEntry::SSLStatus& ssl,
+                                    const SSLStatus& ssl,
                                     bool show_history) {
   browser::ShowPageInfoBubble(window_, profile, url, ssl, show_history);
 }

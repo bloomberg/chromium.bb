@@ -18,6 +18,7 @@
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "content/browser/cert_store.h"
 #include "content/browser/ssl/ssl_manager.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -29,9 +30,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::SSLStatus;
+
 PageInfoModel::PageInfoModel(Profile* profile,
                              const GURL& url,
-                             const NavigationEntry::SSLStatus& ssl,
+                             const SSLStatus& ssl,
                              bool show_history,
                              PageInfoModelObserver* observer)
     : observer_(observer) {
@@ -60,12 +63,12 @@ PageInfoModel::PageInfoModel(Profile* profile,
     empty_subject_name = true;
   }
 
-  if (ssl.cert_id() &&
-      CertStore::GetInstance()->RetrieveCert(ssl.cert_id(), &cert) &&
-      (!net::IsCertStatusError(ssl.cert_status()) ||
-       net::IsCertStatusMinorError(ssl.cert_status()))) {
+  if (ssl.cert_id &&
+      CertStore::GetInstance()->RetrieveCert(ssl.cert_id, &cert) &&
+      (!net::IsCertStatusError(ssl.cert_status) ||
+       net::IsCertStatusMinorError(ssl.cert_status))) {
     // There are no major errors. Check for minor errors.
-    if (net::IsCertStatusMinorError(ssl.cert_status())) {
+    if (net::IsCertStatusMinorError(ssl.cert_status)) {
       string16 issuer_name(UTF8ToUTF16(cert->issuer().GetDisplayName()));
       if (issuer_name.empty()) {
         issuer_name.assign(l10n_util::GetStringUTF16(
@@ -75,17 +78,17 @@ PageInfoModel::PageInfoModel(Profile* profile,
           IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY, issuer_name));
 
       description += ASCIIToUTF16("\n\n");
-      if (ssl.cert_status() & net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION) {
+      if (ssl.cert_status & net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION) {
         description += l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_UNABLE_TO_CHECK_REVOCATION);
-      } else if (ssl.cert_status() & net::CERT_STATUS_NO_REVOCATION_MECHANISM) {
+      } else if (ssl.cert_status & net::CERT_STATUS_NO_REVOCATION_MECHANISM) {
         description += l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_NO_REVOCATION_MECHANISM);
       } else {
         NOTREACHED() << "Need to specify string for this warning";
       }
       icon_id = ICON_STATE_WARNING_MINOR;
-    } else if (ssl.cert_status() & net::CERT_STATUS_IS_EV) {
+    } else if (ssl.cert_status & net::CERT_STATUS_IS_EV) {
       // EV HTTPS page.
       DCHECK(!cert->subject().organization_names.empty());
       headline =
@@ -115,7 +118,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
           UTF8ToUTF16(cert->subject().organization_names[0]),
           locality,
           UTF8ToUTF16(cert->issuer().GetDisplayName())));
-    } else if (ssl.cert_status() & net::CERT_STATUS_IS_DNSSEC) {
+    } else if (ssl.cert_status & net::CERT_STATUS_IS_DNSSEC) {
       // DNSSEC authenticated page.
       if (empty_subject_name)
         headline.clear();  // Don't display any title.
@@ -141,19 +144,19 @@ PageInfoModel::PageInfoModel(Profile* profile,
     // HTTP or HTTPS with errors (not warnings).
     description.assign(l10n_util::GetStringUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
-    icon_id = ssl.security_style() == content::SECURITY_STYLE_UNAUTHENTICATED ?
+    icon_id = ssl.security_style == content::SECURITY_STYLE_UNAUTHENTICATED ?
         ICON_STATE_WARNING_MAJOR : ICON_STATE_ERROR;
 
     const string16 bullet = UTF8ToUTF16("\n • ");
     std::vector<SSLErrorInfo> errors;
-    SSLErrorInfo::GetErrorsForCertStatus(ssl.cert_id(), ssl.cert_status(),
+    SSLErrorInfo::GetErrorsForCertStatus(ssl.cert_id, ssl.cert_status,
                                          url, &errors);
     for (size_t i = 0; i < errors.size(); ++i) {
       description += bullet;
       description += errors[i].short_description();
     }
 
-    if (ssl.cert_status() & net::CERT_STATUS_NON_UNIQUE_NAME) {
+    if (ssl.cert_status & net::CERT_STATUS_NON_UNIQUE_NAME) {
       description += ASCIIToUTF16("\n\n");
       description += l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_NON_UNIQUE_NAME);
@@ -172,24 +175,24 @@ PageInfoModel::PageInfoModel(Profile* profile,
   icon_id = ICON_STATE_OK;
   headline.clear();
   description.clear();
-  if (!ssl.cert_id()) {
+  if (!ssl.cert_id) {
     // Not HTTPS.
-    DCHECK_EQ(ssl.security_style(), content::SECURITY_STYLE_UNAUTHENTICATED);
-    icon_id = ssl.security_style() == content::SECURITY_STYLE_UNAUTHENTICATED ?
+    DCHECK_EQ(ssl.security_style, content::SECURITY_STYLE_UNAUTHENTICATED);
+    icon_id = ssl.security_style == content::SECURITY_STYLE_UNAUTHENTICATED ?
         ICON_STATE_WARNING_MAJOR : ICON_STATE_ERROR;
     description.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
         subject_name));
-  } else if (ssl.security_bits() < 0) {
+  } else if (ssl.security_bits < 0) {
     // Security strength is unknown.  Say nothing.
     icon_id = ICON_STATE_ERROR;
-  } else if (ssl.security_bits() == 0) {
-    DCHECK_NE(ssl.security_style(), content::SECURITY_STYLE_UNAUTHENTICATED);
+  } else if (ssl.security_bits == 0) {
+    DCHECK_NE(ssl.security_style, content::SECURITY_STYLE_UNAUTHENTICATED);
     icon_id = ICON_STATE_ERROR;
     description.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
         subject_name));
-  } else if (ssl.security_bits() < 80) {
+  } else if (ssl.security_bits < 80) {
     icon_id = ICON_STATE_ERROR;
     description.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_WEAK_ENCRYPTION_CONNECTION_TEXT,
@@ -198,24 +201,26 @@ PageInfoModel::PageInfoModel(Profile* profile,
     description.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_CONNECTION_TEXT,
         subject_name,
-        base::IntToString16(ssl.security_bits())));
-    if (ssl.displayed_insecure_content() || ssl.ran_insecure_content()) {
-      icon_id = ssl.ran_insecure_content() ?
+        base::IntToString16(ssl.security_bits)));
+    if (ssl.content_status) {
+      bool ran_insecure_content =
+          !!(ssl.content_status & SSLStatus::RAN_INSECURE_CONTENT);
+      icon_id = ran_insecure_content ?
           ICON_STATE_ERROR : ICON_STATE_WARNING_MINOR;
       description.assign(l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
           description,
-          l10n_util::GetStringUTF16(ssl.ran_insecure_content() ?
+          l10n_util::GetStringUTF16(ran_insecure_content ?
               IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_ERROR :
               IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING)));
     }
   }
 
   uint16 cipher_suite =
-      net::SSLConnectionStatusToCipherSuite(ssl.connection_status());
-  if (ssl.security_bits() > 0 && cipher_suite) {
+      net::SSLConnectionStatusToCipherSuite(ssl.connection_status);
+  if (ssl.security_bits > 0 && cipher_suite) {
     int ssl_version =
-        net::SSLConnectionStatusToVersion(ssl.connection_status());
+        net::SSLConnectionStatusToVersion(ssl.connection_status);
     const char* ssl_version_str;
     net::SSLVersionToString(&ssl_version_str, ssl_version);
     description += ASCIIToUTF16("\n\n");
@@ -223,10 +228,10 @@ PageInfoModel::PageInfoModel(Profile* profile,
         IDS_PAGE_INFO_SECURITY_TAB_SSL_VERSION,
         ASCIIToUTF16(ssl_version_str));
 
-    bool did_fallback = (ssl.connection_status() &
+    bool did_fallback = (ssl.connection_status &
                          net::SSL_CONNECTION_SSL3_FALLBACK) != 0;
     bool no_renegotiation =
-        (ssl.connection_status() &
+        (ssl.connection_status &
         net::SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION) != 0;
     const char *key_exchange, *cipher, *mac;
     net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, cipher_suite);
@@ -238,7 +243,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
 
     description += ASCIIToUTF16("\n\n");
     uint8 compression_id =
-        net::SSLConnectionStatusToCompression(ssl.connection_status());
+        net::SSLConnectionStatusToCompression(ssl.connection_status);
     if (compression_id) {
       const char* compression;
       net::SSLCompressionToString(&compression, compression_id);

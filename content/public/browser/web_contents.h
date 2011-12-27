@@ -10,7 +10,6 @@
 #include "base/process_util.h"
 #include "base/string16.h"
 #include "content/browser/download/save_package.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/common/content_export.h"
@@ -48,6 +47,7 @@ class BrowserContext;
 class RenderProcessHost;
 class WebContentsDelegate;
 struct RendererPreferences;
+struct SSLStatus;
 
 // Describes what goes in the main content area of a tab.
 class WebContents : public PageNavigator {
@@ -215,7 +215,7 @@ class WebContents : public PageNavigator {
 
   // Shows the page info.
   virtual void ShowPageInfo(const GURL& url,
-                            const ::NavigationEntry::SSLStatus& ssl,
+                            const SSLStatus& ssl,
                             bool show_history) = 0;
 
   // Window management ---------------------------------------------------------

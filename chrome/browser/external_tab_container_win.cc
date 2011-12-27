@@ -42,6 +42,7 @@
 #include "content/browser/load_notification_details.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_details.h"
@@ -65,6 +66,7 @@
 #include "ui/views/layout/grid_layout.h"
 
 using content::BrowserThread;
+using content::SSLStatus;
 using content::WebContents;
 using ui::ViewProp;
 using WebKit::WebCString;
@@ -968,10 +970,12 @@ bool ExternalTabContainer::InitNavigationInfo(NavigationInfo* nav_info,
   if (nav_info->title.empty())
     nav_info->title = UTF8ToWide(nav_info->url.spec());
 
-  nav_info->security_style = entry->ssl().security_style();
+  nav_info->security_style = entry->GetSSL().security_style;
+  int content_status = entry->GetSSL().content_status;
   nav_info->displayed_insecure_content =
-      entry->ssl().displayed_insecure_content();
-  nav_info->ran_insecure_content = entry->ssl().ran_insecure_content();
+      !!(content_status & SSLStatus::DISPLAYED_INSECURE_CONTENT);
+  nav_info->ran_insecure_content =
+      !!(content_status & SSLStatus::RAN_INSECURE_CONTENT);
   return true;
 }
 

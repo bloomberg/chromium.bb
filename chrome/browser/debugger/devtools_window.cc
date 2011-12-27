@@ -189,8 +189,8 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
   // Wipe out page icon so that the default application icon is used.
   NavigationEntry* entry =
       tab_contents_->tab_contents()->GetController().GetActiveEntry();
-  entry->favicon().set_bitmap(SkBitmap());
-  entry->favicon().set_is_valid(true);
+  entry->GetFavicon().bitmap = SkBitmap();
+  entry->GetFavicon().valid = true;
 
   // Register on-load actions.
   registrar_.Add(

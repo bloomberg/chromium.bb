@@ -50,6 +50,8 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/rect.h"
 
+using content::SSLStatus;
+
 // Replicate specific 10.7 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
@@ -461,7 +463,7 @@ void BrowserWindowCocoa::TabContentsFocused(TabContents* tab_contents) {
 
 void BrowserWindowCocoa::ShowPageInfo(Profile* profile,
                                       const GURL& url,
-                                      const NavigationEntry::SSLStatus& ssl,
+                                      const SSLStatus& ssl,
                                       bool show_history) {
   browser::ShowPageInfoBubble(window(), profile, url, ssl, show_history);
 }

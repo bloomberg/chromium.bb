@@ -7,11 +7,13 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/site_instance.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "ui/base/text/text_elider.h"
+
+using content::FaviconStatus;
+using content::SSLStatus;
 
 // Use this to get a new unique ID for a NavigationEntry during construction.
 // The returned ID is guaranteed to be nonzero (which is the "no ID" indicator).
@@ -20,19 +22,10 @@ static int GetUniqueIDInConstructor() {
   return ++unique_id_counter;
 }
 
-NavigationEntry::SSLStatus::SSLStatus()
-    : security_style_(content::SECURITY_STYLE_UNKNOWN),
-      cert_id_(0),
-      cert_status_(0),
-      security_bits_(-1),
-      connection_status_(0),
-      content_status_(NORMAL_CONTENT) {
+NavigationEntry* NavigationEntry::FromNavigationEntry(
+    content::NavigationEntry* entry) {
+  return static_cast<NavigationEntry*>(entry);
 }
-
-NavigationEntry::FaviconStatus::FaviconStatus() : valid_(false) {
-  bitmap_ = *content::GetContentClient()->browser()->GetDefaultFavicon();
-}
-
 
 NavigationEntry::NavigationEntry()
     : unique_id_(GetUniqueIDInConstructor()),
@@ -165,4 +158,20 @@ void NavigationEntry::SetHasPostData(bool has_post_data) {
 
 bool NavigationEntry::GetHasPostData() const {
   return has_post_data_;
+}
+
+const FaviconStatus& NavigationEntry::GetFavicon() const {
+  return favicon_;
+}
+
+FaviconStatus& NavigationEntry::GetFavicon() {
+  return favicon_;
+}
+
+const SSLStatus& NavigationEntry::GetSSL() const {
+  return ssl_;
+}
+
+SSLStatus& NavigationEntry::GetSSL() {
+  return ssl_;
 }

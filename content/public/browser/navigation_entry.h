@@ -16,6 +16,9 @@ class GURL;
 
 namespace content {
 
+struct FaviconStatus;
+struct SSLStatus;
+
 // A NavigationEntry is a data structure that captures all the information
 // required to recreate a browsing state. This includes some opaque binary
 // state as provided by the TabContents as well as some clear text title and
@@ -101,6 +104,14 @@ class NavigationEntry {
   // WebKit to actually make the request.
   virtual void SetHasPostData(bool has_post_data) = 0;
   virtual bool GetHasPostData() const = 0;
+
+  // The favicon data and tracking information. See content::FaviconStatus.
+  virtual const FaviconStatus& GetFavicon() const = 0;
+  virtual FaviconStatus& GetFavicon() = 0;
+
+  // All the SSL flags and state. See content::SSLStatus.
+  virtual const SSLStatus& GetSSL() const = 0;
+  virtual SSLStatus& GetSSL() = 0;
 };
 
 }  // namespace content

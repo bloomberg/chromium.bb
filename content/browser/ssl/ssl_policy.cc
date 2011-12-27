@@ -18,10 +18,13 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/ssl_info.h"
 #include "webkit/glue/resource_type.h"
+
+using content::SSLStatus;
 
 namespace {
 
@@ -116,26 +119,25 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
   // An HTTPS response may not have a certificate for some reason.  When that
   // happens, use the unauthenticated (HTTP) rather than the authentication
   // broken security style so that we can detect this error condition.
-  if (!entry->ssl().cert_id()) {
-    entry->ssl().set_security_style(content::SECURITY_STYLE_UNAUTHENTICATED);
+  if (!entry->GetSSL().cert_id) {
+    entry->GetSSL().security_style = content::SECURITY_STYLE_UNAUTHENTICATED;
     return;
   }
 
-  if (!(entry->ssl().cert_status() & net::CERT_STATUS_COMMON_NAME_INVALID)) {
+  if (!(entry->GetSSL().cert_status & net::CERT_STATUS_COMMON_NAME_INVALID)) {
     // CAs issue certificates for intranet hosts to everyone.  Therefore, we
     // mark intranet hosts as being non-unique.
     if (IsIntranetHost(entry->GetURL().host())) {
-      entry->ssl().set_cert_status(entry->ssl().cert_status() |
-                                   net::CERT_STATUS_NON_UNIQUE_NAME);
+      entry->GetSSL().cert_status |= net::CERT_STATUS_NON_UNIQUE_NAME;
     }
   }
 
-  if (net::IsCertStatusError(entry->ssl().cert_status())) {
+  if (net::IsCertStatusError(entry->GetSSL().cert_status)) {
     // Minor errors don't lower the security style to
     // SECURITY_STYLE_AUTHENTICATION_BROKEN.
-    if (!net::IsCertStatusMinorError(entry->ssl().cert_status())) {
-      entry->ssl().set_security_style(
-          content::SECURITY_STYLE_AUTHENTICATION_BROKEN);
+    if (!net::IsCertStatusMinorError(entry->GetSSL().cert_status)) {
+      entry->GetSSL().security_style =
+          content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
     }
     return;
   }
@@ -147,14 +149,14 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
   if (site_instance &&
       backend_->DidHostRunInsecureContent(
           entry->GetURL().host(), site_instance->GetProcess()->GetID())) {
-    entry->ssl().set_security_style(
-        content::SECURITY_STYLE_AUTHENTICATION_BROKEN);
-    entry->ssl().set_ran_insecure_content();
+    entry->GetSSL().security_style =
+        content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
+    entry->GetSSL().content_status |= SSLStatus::RAN_INSECURE_CONTENT;
     return;
   }
 
   if (tab_contents->DisplayedInsecureContent())
-    entry->ssl().set_displayed_insecure_content();
+    entry->GetSSL().content_status |= SSLStatus::DISPLAYED_INSECURE_CONTENT;
 }
 
 void SSLPolicy::OnAllowCertificate(SSLCertErrorHandler* handler, bool allow) {
@@ -205,12 +207,12 @@ void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
 }
 
 void SSLPolicy::InitializeEntryIfNeeded(NavigationEntry* entry) {
-  if (entry->ssl().security_style() != content::SECURITY_STYLE_UNKNOWN)
+  if (entry->GetSSL().security_style != content::SECURITY_STYLE_UNKNOWN)
     return;
 
-  entry->ssl().set_security_style(entry->GetURL().SchemeIsSecure() ?
+  entry->GetSSL().security_style = entry->GetURL().SchemeIsSecure() ?
       content::SECURITY_STYLE_AUTHENTICATED :
-      content::SECURITY_STYLE_UNAUTHENTICATED);
+      content::SECURITY_STYLE_UNAUTHENTICATED;
 }
 
 void SSLPolicy::OriginRanInsecureContent(const std::string& origin, int pid) {

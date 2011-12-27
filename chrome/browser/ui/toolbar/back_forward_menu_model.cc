@@ -135,8 +135,8 @@ bool BackForwardMenuModel::GetIconAt(int index, SkBitmap* icon) {
         IDR_HISTORY_FAVICON);
   } else {
     NavigationEntry* entry = GetNavigationEntry(index);
-    *icon = entry->favicon().bitmap();
-    if (!entry->favicon().is_valid() && menu_model_delegate()) {
+    *icon = entry->GetFavicon().bitmap;
+    if (!entry->GetFavicon().valid && menu_model_delegate()) {
       FetchFavicon(entry);
     }
   }
@@ -271,11 +271,11 @@ void BackForwardMenuModel::OnFavIconDataAvailable(
     if (gfx::PNGCodec::Decode(favicon.image_data->front(),
                               favicon.image_data->size(),
                               &fav_icon)) {
-      entry->favicon().set_is_valid(true);
-      entry->favicon().set_url(favicon.icon_url);
+      entry->GetFavicon().valid = true;
+      entry->GetFavicon().url = favicon.icon_url;
       if (fav_icon.empty())
         return;
-      entry->favicon().set_bitmap(fav_icon);
+      entry->GetFavicon().bitmap = fav_icon;
       if (menu_model_delegate()) {
         menu_model_delegate()->OnIconChanged(model_index);
       }

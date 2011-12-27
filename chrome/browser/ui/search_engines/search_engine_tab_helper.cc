@@ -11,6 +11,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search_engines/template_url_fetcher_ui_callbacks.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 
@@ -123,7 +124,7 @@ void SearchEngineTabHelper::OnPageHasOSDD(
   profile->GetTemplateURLFetcher()->ScheduleDownload(
       keyword,
       doc_url,
-      base_entry->favicon().url(),
+      base_entry->GetFavicon().url,
       new TemplateURLFetcherUICallbacks(this, web_contents()),
       provider_type);
 }
@@ -191,7 +192,7 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   new_url->add_input_encoding(params.searchable_form_encoding);
   DCHECK(controller.GetLastCommittedEntry());
   const GURL& favicon_url =
-      controller.GetLastCommittedEntry()->favicon().url();
+      controller.GetLastCommittedEntry()->GetFavicon().url;
   if (favicon_url.is_valid()) {
     new_url->SetFaviconURL(favicon_url);
   } else {

@@ -136,7 +136,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void TabContentsFocused(TabContents* tab_contents) OVERRIDE;
   virtual void ShowPageInfo(Profile* profile,
                             const GURL& url,
-                            const NavigationEntry::SSLStatus& ssl,
+                            const content::SSLStatus& ssl,
                             bool show_history) OVERRIDE;
   virtual void ShowAppMenu() OVERRIDE;
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,

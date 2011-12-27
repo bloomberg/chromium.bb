@@ -139,6 +139,7 @@
 #endif
 
 using base::TimeDelta;
+using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;
 using views::ColumnSet;
@@ -1175,7 +1176,7 @@ void BrowserView::TabContentsFocused(TabContents* tab_contents) {
 
 void BrowserView::ShowPageInfo(Profile* profile,
                                const GURL& url,
-                               const NavigationEntry::SSLStatus& ssl,
+                               const SSLStatus& ssl,
                                bool show_history) {
   browser::ShowPageInfoBubble(GetLocationBarView()->location_icon_view(),
                               profile, url, ssl, show_history);

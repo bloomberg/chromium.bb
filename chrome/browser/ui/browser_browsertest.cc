@@ -44,6 +44,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -665,7 +666,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
 
   NavigationEntry* entry = browser()->GetSelectedTabContents()->
       GetController().GetActiveEntry();
-  EXPECT_EQ(expected_favicon_url.spec(), entry->favicon().url().spec());
+  EXPECT_EQ(expected_favicon_url.spec(), entry->GetFavicon().url.spec());
 }
 
 #if defined(OS_MACOSX) || defined(OS_LINUX)
@@ -690,7 +691,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_FaviconChange) {
   GURL expected_favicon_url(
       ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                          FilePath(kIcon)));
-  EXPECT_EQ(expected_favicon_url.spec(), entry->favicon().url().spec());
+  EXPECT_EQ(expected_favicon_url.spec(), entry->GetFavicon().url.spec());
 }
 
 // Makes sure TabClosing is sent when uninstalling an extension that is an app

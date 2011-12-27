@@ -13,6 +13,10 @@
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/link_listener.h"
 
+namespace content {
+struct SSLStatus;
+}
+
 class PageInfoBubbleView : public views::BubbleDelegateView,
                            public PageInfoModelObserver,
                            public views::LinkListener {
@@ -20,7 +24,7 @@ class PageInfoBubbleView : public views::BubbleDelegateView,
   PageInfoBubbleView(views::View* anchor_view,
                      Profile* profile,
                      const GURL& url,
-                     const NavigationEntry::SSLStatus& ssl,
+                     const content::SSLStatus& ssl,
                      bool show_history);
   virtual ~PageInfoBubbleView();
 

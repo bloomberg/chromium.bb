@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/ssl_status.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -28,6 +29,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 class Profile;
+
+using content::SSLStatus;
 
 namespace {
 
@@ -37,7 +40,7 @@ class PageInfoBubbleGtk : public PageInfoModelObserver,
   PageInfoBubbleGtk(gfx::NativeWindow parent,
                     Profile* profile,
                     const GURL& url,
-                    const NavigationEntry::SSLStatus& ssl,
+                    const SSLStatus& ssl,
                     bool show_history);
   virtual ~PageInfoBubbleGtk();
 
@@ -89,12 +92,12 @@ class PageInfoBubbleGtk : public PageInfoModelObserver,
 PageInfoBubbleGtk::PageInfoBubbleGtk(gfx::NativeWindow parent,
                                      Profile* profile,
                                      const GURL& url,
-                                     const NavigationEntry::SSLStatus& ssl,
+                                     const SSLStatus& ssl,
                                      bool show_history)
     : ALLOW_THIS_IN_INITIALIZER_LIST(model_(profile, url, ssl,
                                             show_history, this)),
       url_(url),
-      cert_id_(ssl.cert_id()),
+      cert_id_(ssl.cert_id),
       parent_(parent),
       contents_(NULL),
       theme_service_(GtkThemeService::GetFrom(profile)),
@@ -241,7 +244,7 @@ namespace browser {
 void ShowPageInfoBubble(gfx::NativeWindow parent,
                         Profile* profile,
                         const GURL& url,
-                        const NavigationEntry::SSLStatus& ssl,
+                        const SSLStatus& ssl,
                         bool show_history) {
   new PageInfoBubbleGtk(parent, profile, url, ssl, show_history);
 }

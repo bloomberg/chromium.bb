@@ -117,6 +117,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
@@ -153,6 +154,7 @@ using content::ChildProcessHost;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::PluginService;
+using content::SSLStatus;
 using content::WebContents;
 
 namespace {
@@ -1567,9 +1569,9 @@ void TestingAutomationProvider::GetSecurityState(
     NavigationController* tab = tab_tracker_->GetResource(handle);
     NavigationEntry* entry = tab->GetActiveEntry();
     *success = true;
-    *security_style = entry->ssl().security_style();
-    *ssl_cert_status = entry->ssl().cert_status();
-    *insecure_content_status = entry->ssl().content_status();
+    *security_style = entry->GetSSL().security_style;
+    *ssl_cert_status = entry->GetSSL().cert_status;
+    *insecure_content_status = entry->GetSSL().content_status;
   } else {
     *success = false;
     *security_style = content::SECURITY_STYLE_UNKNOWN;
@@ -2978,12 +2980,13 @@ void TestingAutomationProvider::GetNavigationInfo(
   style_to_string[content::SECURITY_STYLE_AUTHENTICATED] =
       "SECURITY_STYLE_AUTHENTICATED";
 
-  NavigationEntry::SSLStatus ssl_status = nav_entry->ssl();
+  SSLStatus ssl_status = nav_entry->GetSSL();
   ssl->SetString("security_style",
-                 style_to_string[ssl_status.security_style()]);
-  ssl->SetBoolean("ran_insecure_content", ssl_status.ran_insecure_content());
+                 style_to_string[ssl_status.security_style]);
+  ssl->SetBoolean("ran_insecure_content",
+      !!(ssl_status.content_status & SSLStatus::RAN_INSECURE_CONTENT));
   ssl->SetBoolean("displayed_insecure_content",
-                  ssl_status.displayed_insecure_content());
+      !!(ssl_status.content_status & SSLStatus::DISPLAYED_INSECURE_CONTENT));
   return_value->Set("ssl", ssl);
 
   // Page type.
@@ -2995,7 +2998,7 @@ void TestingAutomationProvider::GetNavigationInfo(
   return_value->SetString("page_type",
                           pagetype_to_string[nav_entry->page_type()]);
 
-  return_value->SetString("favicon_url", nav_entry->favicon().url().spec());
+  return_value->SetString("favicon_url", nav_entry->GetFavicon().url.spec());
   reply.SendSuccess(return_value.get());
 }
 

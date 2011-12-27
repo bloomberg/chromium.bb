@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/cert_store.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -27,6 +28,8 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
+
+using content::SSLStatus;
 
 namespace {
 
@@ -101,12 +104,12 @@ class Section : public views::View,
 PageInfoBubbleView::PageInfoBubbleView(views::View* anchor_view,
                                        Profile* profile,
                                        const GURL& url,
-                                       const NavigationEntry::SSLStatus& ssl,
+                                       const SSLStatus& ssl,
                                        bool show_history)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       ALLOW_THIS_IN_INITIALIZER_LIST(model_(profile, url, ssl,
                                             show_history, this)),
-      cert_id_(ssl.cert_id()),
+      cert_id_(ssl.cert_id),
       help_center_link_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(resize_animation_(this)),
       animation_start_height_(0) {
@@ -472,7 +475,7 @@ namespace browser {
 void ShowPageInfoBubble(views::View* anchor_view,
                         Profile* profile,
                         const GURL& url,
-                        const NavigationEntry::SSLStatus& ssl,
+                        const SSLStatus& ssl,
                         bool show_history) {
   PageInfoBubbleView* page_info_bubble =
       new PageInfoBubbleView(anchor_view, profile, url, ssl, show_history);

@@ -165,7 +165,7 @@ class CONTENT_EXPORT TabContents
   virtual void Stop() OVERRIDE;
   virtual TabContents* Clone() OVERRIDE;
   virtual void ShowPageInfo(const GURL& url,
-                            const NavigationEntry::SSLStatus& ssl,
+                            const content::SSLStatus& ssl,
                             bool show_history) OVERRIDE;
   virtual void AddNewContents(TabContents* new_contents,
                               WindowOpenDisposition disposition,

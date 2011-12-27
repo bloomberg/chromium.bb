@@ -346,13 +346,13 @@ void InstantLoader::TabContentsDelegateImpl::CommitHistory(
   FaviconService* favicon_service =
       tab->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
 
-  if (favicon_service && active_entry->favicon().is_valid() &&
-      !active_entry->favicon().bitmap().empty()) {
+  if (favicon_service && active_entry->GetFavicon().valid &&
+      !active_entry->GetFavicon().bitmap.empty()) {
     std::vector<unsigned char> image_data;
-    gfx::PNGCodec::EncodeBGRASkBitmap(active_entry->favicon().bitmap(), false,
+    gfx::PNGCodec::EncodeBGRASkBitmap(active_entry->GetFavicon().bitmap, false,
                                       &image_data);
     favicon_service->SetFavicon(active_entry->GetURL(),
-                                active_entry->favicon().url(),
+                                active_entry->GetFavicon().url,
                                 image_data,
                                 history::FAVICON);
     if (supports_instant && !add_page_vector_.empty()) {
@@ -361,7 +361,7 @@ void InstantLoader::TabContentsDelegateImpl::CommitHistory(
       // url we're adding to history (see comment in ReleasePreviewContents
       // for details).
       favicon_service->SetFavicon(add_page_vector_.back()->url,
-                                  active_entry->favicon().url(),
+                                  active_entry->GetFavicon().url,
                                   image_data,
                                   history::FAVICON);
     }

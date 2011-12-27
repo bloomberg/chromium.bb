@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "chrome/common/automation_messages.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"

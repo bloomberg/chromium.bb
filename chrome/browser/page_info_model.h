@@ -11,12 +11,15 @@
 #include "base/string16.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image.h"
 
 class PageInfoModelObserver;
 class Profile;
+
+namespace content {
+struct SSLStatus;
+}
 
 // The model that provides the information that should be displayed in the page
 // info dialog/bubble.
@@ -75,7 +78,7 @@ class PageInfoModel {
 
   PageInfoModel(Profile* profile,
                 const GURL& url,
-                const NavigationEntry::SSLStatus& ssl,
+                const content::SSLStatus& ssl,
                 bool show_history,
                 PageInfoModelObserver* observer);
   ~PageInfoModel();

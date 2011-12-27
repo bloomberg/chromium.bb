@@ -337,8 +337,8 @@ TEST_F(FaviconHandlerTest, GetFaviconFromHistory) {
   // Send history response.
   history_handler->InvokeCallback();
   // Verify FaviconHandler status
-  EXPECT_TRUE(helper.GetEntry()->favicon().is_valid());
-  EXPECT_EQ(icon_url, helper.GetEntry()->favicon().url());
+  EXPECT_TRUE(helper.GetEntry()->GetFavicon().valid);
+  EXPECT_EQ(icon_url, helper.GetEntry()->GetFavicon().url);
 
   // Simulates update favicon url.
   std::vector<FaviconURL> urls;
@@ -382,8 +382,8 @@ TEST_F(FaviconHandlerTest, DownloadFavicon) {
   // Send history response.
   history_handler->InvokeCallback();
   // Verify FaviconHandler status
-  EXPECT_TRUE(helper.GetEntry()->favicon().is_valid());
-  EXPECT_EQ(icon_url, helper.GetEntry()->favicon().url());
+  EXPECT_TRUE(helper.GetEntry()->GetFavicon().valid);
+  EXPECT_EQ(icon_url, helper.GetEntry()->GetFavicon().url);
 
   // Simulates update favicon url.
   std::vector<FaviconURL> urls;
@@ -418,9 +418,9 @@ TEST_F(FaviconHandlerTest, DownloadFavicon) {
   EXPECT_EQ(page_url, history_handler->page_url_);
 
   // Verify NavigationEntry.
-  EXPECT_EQ(icon_url, helper.GetEntry()->favicon().url());
-  EXPECT_TRUE(helper.GetEntry()->favicon().is_valid());
-  EXPECT_FALSE(helper.GetEntry()->favicon().bitmap().empty());
+  EXPECT_EQ(icon_url, helper.GetEntry()->GetFavicon().url);
+  EXPECT_TRUE(helper.GetEntry()->GetFavicon().valid);
+  EXPECT_FALSE(helper.GetEntry()->GetFavicon().bitmap.empty());
 }
 
 TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
@@ -454,8 +454,8 @@ TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
   // Send history response.
   history_handler->InvokeCallback();
   // Verify FaviconHandler status.
-  EXPECT_TRUE(helper.GetEntry()->favicon().is_valid());
-  EXPECT_EQ(icon_url, helper.GetEntry()->favicon().url());
+  EXPECT_TRUE(helper.GetEntry()->GetFavicon().valid);
+  EXPECT_EQ(icon_url, helper.GetEntry()->GetFavicon().url);
 
   // Reset the history_handler to verify whether new icon is requested from
   // history.
@@ -472,7 +472,7 @@ TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
   ASSERT_EQ(new_icon_url, helper.current_candidate()->icon_url);
   ASSERT_EQ(FaviconURL::FAVICON, helper.current_candidate()->icon_type);
   // The favicon status's url should be updated.
-  ASSERT_EQ(new_icon_url, helper.GetEntry()->favicon().url());
+  ASSERT_EQ(new_icon_url, helper.GetEntry()->GetFavicon().url);
 
   // Favicon should be requested from history.
   history_handler = helper.history_handler();
@@ -507,9 +507,9 @@ TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
   EXPECT_EQ(page_url, history_handler->page_url_);
 
   // Verify NavigationEntry.
-  EXPECT_EQ(new_icon_url, helper.GetEntry()->favicon().url());
-  EXPECT_TRUE(helper.GetEntry()->favicon().is_valid());
-  EXPECT_FALSE(helper.GetEntry()->favicon().bitmap().empty());
+  EXPECT_EQ(new_icon_url, helper.GetEntry()->GetFavicon().url);
+  EXPECT_TRUE(helper.GetEntry()->GetFavicon().valid);
+  EXPECT_FALSE(helper.GetEntry()->GetFavicon().bitmap.empty());
 }
 
 TEST_F(FaviconHandlerTest, UpdateFavicon) {
@@ -543,8 +543,8 @@ TEST_F(FaviconHandlerTest, UpdateFavicon) {
   // Send history response.
   history_handler->InvokeCallback();
   // Verify FaviconHandler status.
-  EXPECT_TRUE(helper.GetEntry()->favicon().is_valid());
-  EXPECT_EQ(icon_url, helper.GetEntry()->favicon().url());
+  EXPECT_TRUE(helper.GetEntry()->GetFavicon().valid);
+  EXPECT_EQ(icon_url, helper.GetEntry()->GetFavicon().url);
 
   // Reset the history_handler to verify whether new icon is requested from
   // history.
@@ -561,7 +561,7 @@ TEST_F(FaviconHandlerTest, UpdateFavicon) {
   ASSERT_EQ(new_icon_url, helper.current_candidate()->icon_url);
   ASSERT_EQ(FaviconURL::FAVICON, helper.current_candidate()->icon_type);
   // The favicon status's url should be updated.
-  ASSERT_EQ(new_icon_url, helper.GetEntry()->favicon().url());
+  ASSERT_EQ(new_icon_url, helper.GetEntry()->GetFavicon().url);
 
   // Favicon should be requested from history.
   history_handler = helper.history_handler();
@@ -582,9 +582,9 @@ TEST_F(FaviconHandlerTest, UpdateFavicon) {
   EXPECT_FALSE(helper.download_handler());
 
   // Verify the favicon status.
-  EXPECT_EQ(new_icon_url, helper.GetEntry()->favicon().url());
-  EXPECT_TRUE(helper.GetEntry()->favicon().is_valid());
-  EXPECT_FALSE(helper.GetEntry()->favicon().bitmap().empty());
+  EXPECT_EQ(new_icon_url, helper.GetEntry()->GetFavicon().url);
+  EXPECT_TRUE(helper.GetEntry()->GetFavicon().valid);
+  EXPECT_FALSE(helper.GetEntry()->GetFavicon().bitmap.empty());
 }
 
 TEST_F(FaviconHandlerTest, Download2ndFaviconURLCandidate) {
@@ -612,8 +612,8 @@ TEST_F(FaviconHandlerTest, Download2ndFaviconURLCandidate) {
   // Send history response.
   history_handler->InvokeCallback();
   // Verify FaviconHandler status.
-  EXPECT_FALSE(helper.GetEntry()->favicon().is_valid());
-  EXPECT_EQ(GURL(), helper.GetEntry()->favicon().url());
+  EXPECT_FALSE(helper.GetEntry()->GetFavicon().valid);
+  EXPECT_EQ(GURL(), helper.GetEntry()->GetFavicon().url);
 
   // Reset the history_handler to verify whether new icon is requested from
   // history.
@@ -730,8 +730,8 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
   // Send history response.
   history_handler->InvokeCallback();
   // Verify FaviconHandler status.
-  EXPECT_FALSE(helper.GetEntry()->favicon().is_valid());
-  EXPECT_EQ(GURL(), helper.GetEntry()->favicon().url());
+  EXPECT_FALSE(helper.GetEntry()->GetFavicon().valid);
+  EXPECT_EQ(GURL(), helper.GetEntry()->GetFavicon().url);
 
   // Reset the history_handler to verify whether new icon is requested from
   // history.

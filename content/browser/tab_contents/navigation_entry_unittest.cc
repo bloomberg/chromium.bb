@@ -7,7 +7,10 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "content/public/browser/ssl_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using content::SSLStatus;
 
 class NavigationEntryTest : public testing::Test {
  public:
@@ -89,52 +92,25 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
   EXPECT_EQ(GURL("typedurl"), entry2_.get()->user_typed_url());
 }
 
-// Test Favicon inner class
+// Test Favicon inner class construction.
 TEST_F(NavigationEntryTest, NavigationEntryFavicons) {
-  EXPECT_EQ(GURL(), entry1_.get()->favicon().url());
-  entry1_.get()->favicon().set_url(GURL("icon"));
-  EXPECT_EQ(GURL("icon"), entry1_.get()->favicon().url());
-
-  // Validity not affected by setting URL
-  EXPECT_FALSE(entry1_.get()->favicon().is_valid());
-  entry1_.get()->favicon().set_is_valid(true);
-  EXPECT_TRUE(entry1_.get()->favicon().is_valid());
+  EXPECT_EQ(GURL(), entry1_.get()->GetFavicon().url);
+  EXPECT_FALSE(entry1_.get()->GetFavicon().valid);
 }
 
 // Test SSLStatus inner class
 TEST_F(NavigationEntryTest, NavigationEntrySSLStatus) {
   // Default (unknown)
   EXPECT_EQ(content::SECURITY_STYLE_UNKNOWN,
-            entry1_.get()->ssl().security_style());
+            entry1_.get()->GetSSL().security_style);
   EXPECT_EQ(content::SECURITY_STYLE_UNKNOWN,
-            entry2_.get()->ssl().security_style());
-  EXPECT_EQ(0, entry1_.get()->ssl().cert_id());
-  EXPECT_EQ(0U, entry1_.get()->ssl().cert_status());
-  EXPECT_EQ(-1, entry1_.get()->ssl().security_bits());
-  EXPECT_FALSE(entry1_.get()->ssl().displayed_insecure_content());
-  EXPECT_FALSE(entry1_.get()->ssl().ran_insecure_content());
-
-  // Change from the defaults
-  entry2_.get()->ssl().set_security_style(
-      content::SECURITY_STYLE_AUTHENTICATED);
-  entry2_.get()->ssl().set_cert_id(4);
-  entry2_.get()->ssl().set_cert_status(net::CERT_STATUS_COMMON_NAME_INVALID);
-  entry2_.get()->ssl().set_security_bits(0);
-  entry2_.get()->ssl().set_displayed_insecure_content();
-  EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
-            entry2_.get()->ssl().security_style());
-  EXPECT_EQ(4, entry2_.get()->ssl().cert_id());
-  EXPECT_EQ(net::CERT_STATUS_COMMON_NAME_INVALID,
-            entry2_.get()->ssl().cert_status());
-  EXPECT_EQ(0, entry2_.get()->ssl().security_bits());
-  EXPECT_TRUE(entry2_.get()->ssl().displayed_insecure_content());
-
-  entry2_.get()->ssl().set_security_style(
-      content::SECURITY_STYLE_AUTHENTICATION_BROKEN);
-  entry2_.get()->ssl().set_ran_insecure_content();
-  EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATION_BROKEN,
-            entry2_.get()->ssl().security_style());
-  EXPECT_TRUE(entry2_.get()->ssl().ran_insecure_content());
+            entry2_.get()->GetSSL().security_style);
+  EXPECT_EQ(0, entry1_.get()->GetSSL().cert_id);
+  EXPECT_EQ(0U, entry1_.get()->GetSSL().cert_status);
+  EXPECT_EQ(-1, entry1_.get()->GetSSL().security_bits);
+  int content_status = entry1_.get()->GetSSL().content_status;
+  EXPECT_FALSE(!!(content_status & SSLStatus::DISPLAYED_INSECURE_CONTENT));
+  EXPECT_FALSE(!!(content_status & SSLStatus::RAN_INSECURE_CONTENT));
 }
 
 // Test other basic accessors

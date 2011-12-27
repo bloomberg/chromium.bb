@@ -4,6 +4,7 @@
 
 #include "chrome/browser/tab_contents/language_state.h"
 
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/navigation_details.h"
 

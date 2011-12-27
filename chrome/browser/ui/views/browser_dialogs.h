@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "ui/gfx/native_widget_types.h"
 
 // This file contains functions for running a variety of browser dialogs and
@@ -27,6 +26,10 @@ class Profile;
 class TabContents;
 class TabContentsWrapper;
 class TemplateURL;
+
+namespace content {
+struct SSLStatus;
+}
 
 namespace gfx {
 class Size;
@@ -51,7 +54,7 @@ bool IsBookmarkBubbleViewShowing();
 void ShowPageInfoBubble(views::View* anchor_view,
                         Profile* profile,
                         const GURL& url,
-                        const NavigationEntry::SSLStatus& ssl,
+                        const content::SSLStatus& ssl,
                         bool show_history);
 
 // Shows the about dialog. See AboutChromeView.

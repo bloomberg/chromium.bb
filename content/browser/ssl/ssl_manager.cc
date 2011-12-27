@@ -16,13 +16,15 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/ssl_status.h"
 #include "net/base/cert_status_flags.h"
 
 using content::BrowserThread;
+using content::SSLStatus;
 using content::WebContents;
 
 // static
@@ -145,11 +147,11 @@ void SSLManager::DidCommitProvisionalLoad(
 
       // We may not have an entry if this is a navigation to an initial blank
       // page. Reset the SSL information and add the new data we have.
-      entry->ssl() = NavigationEntry::SSLStatus();
-      entry->ssl().set_cert_id(ssl_cert_id);
-      entry->ssl().set_cert_status(ssl_cert_status);
-      entry->ssl().set_security_bits(ssl_security_bits);
-      entry->ssl().set_connection_status(ssl_connection_status);
+      entry->GetSSL() = SSLStatus();
+      entry->GetSSL().cert_id = ssl_cert_id;
+      entry->GetSSL().cert_status = ssl_cert_status;
+      entry->GetSSL().security_bits = ssl_security_bits;
+      entry->GetSSL().connection_status = ssl_connection_status;
     }
   }
 
@@ -168,7 +170,7 @@ bool SSLManager::ProcessedSSLErrorFromRequest() const {
     return false;
   }
 
-  return net::IsCertStatusError(entry->ssl().cert_status());
+  return net::IsCertStatusError(entry->GetSSL().cert_status);
 }
 
 void SSLManager::Observe(int type,
@@ -248,11 +250,11 @@ void SSLManager::UpdateEntry(NavigationEntry* entry) {
   if (!entry)
     return;
 
-  NavigationEntry::SSLStatus original_ssl_status = entry->ssl();  // Copy!
+  SSLStatus original_ssl_status = entry->GetSSL();  // Copy!
 
   policy()->UpdateEntry(entry, controller_->tab_contents());
 
-  if (!entry->ssl().Equals(original_ssl_status)) {
+  if (!entry->GetSSL().Equals(original_ssl_status)) {
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
         content::Source<NavigationController>(controller_),

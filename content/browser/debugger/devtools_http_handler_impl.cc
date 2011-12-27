@@ -17,6 +17,7 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -297,7 +298,7 @@ static PageList GeneratePageList(
     page_info.url = entry->GetURL().spec();
     page_info.title = UTF16ToUTF8(net::EscapeForHTML(entry->GetTitle()));
     page_info.thumbnail_url = "/thumb/" + entry->GetURL().spec();
-    page_info.favicon_url = entry->favicon().url().spec();
+    page_info.favicon_url = entry->GetFavicon().url.spec();
     page_list.push_back(page_info);
   }
   return page_list;

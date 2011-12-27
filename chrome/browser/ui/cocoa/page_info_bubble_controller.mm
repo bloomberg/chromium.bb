@@ -22,6 +22,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/cert_store.h"
+#include "content/public/browser/ssl_status.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/cert_status_flags.h"
@@ -30,6 +31,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
+
+using content::SSLStatus;
 
 @interface PageInfoBubbleController (Private)
 - (PageInfoModel*)model;
@@ -153,7 +156,7 @@ namespace browser {
 void ShowPageInfoBubble(gfx::NativeWindow parent,
                         Profile* profile,
                         const GURL& url,
-                        const NavigationEntry::SSLStatus& ssl,
+                        const SSLStatus& ssl,
                         bool show_history) {
   PageInfoModelBubbleBridge* bridge = new PageInfoModelBubbleBridge();
   PageInfoModel* model =
@@ -163,7 +166,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
                                                 modelObserver:bridge
                                                  parentWindow:parent];
   bridge->set_controller(controller);
-  [controller setCertID:ssl.cert_id()];
+  [controller setCertID:ssl.cert_id];
   [controller showWindow:nil];
 }
 

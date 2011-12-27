@@ -9,6 +9,7 @@
 #include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
 #include "content/shell/resource.h"
+#include "googleurl/src/gurl.h"
 
 // Receives notification that the window is closing so that it can start the
 // tear-down process. Is responsible for deleting itself when done.

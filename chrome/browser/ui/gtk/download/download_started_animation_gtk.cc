@@ -4,6 +4,8 @@
 
 #include "chrome/browser/download/download_started_animation.h"
 
+#include <math.h>
+
 #include <gtk/gtk.h>
 
 #include "base/message_loop.h"

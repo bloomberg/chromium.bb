@@ -22,6 +22,8 @@
 #include "net/base/cert_status_flags.h"
 #include "net/test/test_server.h"
 
+using content::SSLStatus;
+
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
 class SSLUITest : public InProcessBrowserTest {
@@ -51,11 +53,13 @@ class SSLUITest : public InProcessBrowserTest {
     ASSERT_TRUE(entry);
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->page_type());
     EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
-              entry->ssl().security_style());
-    EXPECT_EQ(0U, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
+              entry->GetSSL().security_style);
+    EXPECT_EQ(0U, entry->GetSSL().cert_status & net::CERT_STATUS_ALL_ERRORS);
     EXPECT_EQ(displayed_insecure_content,
-              entry->ssl().displayed_insecure_content());
-    EXPECT_FALSE(entry->ssl().ran_insecure_content());
+              !!(entry->GetSSL().content_status &
+                 SSLStatus::DISPLAYED_INSECURE_CONTENT));
+    EXPECT_FALSE(
+        !!(entry->GetSSL().content_status & SSLStatus::RAN_INSECURE_CONTENT));
   }
 
   void CheckUnauthenticatedState(TabContents* tab) {
@@ -64,10 +68,12 @@ class SSLUITest : public InProcessBrowserTest {
     ASSERT_TRUE(entry);
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->page_type());
     EXPECT_EQ(content::SECURITY_STYLE_UNAUTHENTICATED,
-              entry->ssl().security_style());
-    EXPECT_EQ(0U, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
-    EXPECT_FALSE(entry->ssl().displayed_insecure_content());
-    EXPECT_FALSE(entry->ssl().ran_insecure_content());
+              entry->GetSSL().security_style);
+    EXPECT_EQ(0U, entry->GetSSL().cert_status & net::CERT_STATUS_ALL_ERRORS);
+    EXPECT_FALSE(!!(entry->GetSSL().content_status &
+                    SSLStatus::DISPLAYED_INSECURE_CONTENT));
+    EXPECT_FALSE(
+        !!(entry->GetSSL().content_status & SSLStatus::RAN_INSECURE_CONTENT));
   }
 
   void CheckAuthenticationBrokenState(TabContents* tab,
@@ -81,13 +87,16 @@ class SSLUITest : public InProcessBrowserTest {
                   content::PAGE_TYPE_INTERSTITIAL : content::PAGE_TYPE_NORMAL,
               entry->page_type());
     EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATION_BROKEN,
-              entry->ssl().security_style());
+              entry->GetSSL().security_style);
     // CERT_STATUS_UNABLE_TO_CHECK_REVOCATION doesn't lower the security style
     // to SECURITY_STYLE_AUTHENTICATION_BROKEN.
     ASSERT_NE(net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION, error);
-    EXPECT_EQ(error, entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS);
-    EXPECT_FALSE(entry->ssl().displayed_insecure_content());
-    EXPECT_EQ(ran_insecure_content, entry->ssl().ran_insecure_content());
+    EXPECT_EQ(error,
+              entry->GetSSL().cert_status & net::CERT_STATUS_ALL_ERRORS);
+    EXPECT_FALSE(!!(entry->GetSSL().content_status &
+                    SSLStatus::DISPLAYED_INSECURE_CONTENT));
+    EXPECT_EQ(ran_insecure_content, 
+        !!(entry->GetSSL().content_status & SSLStatus::RAN_INSECURE_CONTENT));
   }
 
   void CheckWorkerLoadResult(TabContents* tab, bool expectLoaded) {

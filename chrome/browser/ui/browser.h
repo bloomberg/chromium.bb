@@ -954,7 +954,7 @@ class Browser : public TabHandlerDelegate,
                               content::DownloadItem* download) OVERRIDE;
   virtual void ShowPageInfo(content::BrowserContext* browser_context,
                             const GURL& url,
-                            const NavigationEntry::SSLStatus& ssl,
+                            const content::SSLStatus& ssl,
                             bool show_history) OVERRIDE;
   virtual void ViewSourceForTab(TabContents* source,
                                 const GURL& page_url) OVERRIDE;

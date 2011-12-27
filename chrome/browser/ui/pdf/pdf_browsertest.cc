@@ -19,6 +19,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_observer.h"
 #include "net/test/test_server.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/screen.h"

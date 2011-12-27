@@ -70,6 +70,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_restriction.h"
 #include "grit/generated_resources.h"
@@ -87,6 +88,7 @@
 #endif
 
 using content::DownloadManager;
+using content::SSLStatus;
 using content::UserMetricsAction;
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;
@@ -1565,8 +1567,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO: {
       NavigationEntry* nav_entry =
           source_tab_contents_->GetController().GetActiveEntry();
-      source_tab_contents_->ShowPageInfo(nav_entry->GetURL(), nav_entry->ssl(),
-                                         true);
+      source_tab_contents_->ShowPageInfo(nav_entry->GetURL(),
+                                         nav_entry->GetSSL(), true);
       break;
     }
 
@@ -1607,7 +1609,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO: {
       // Deserialize the SSL info.
-      NavigationEntry::SSLStatus ssl;
+      SSLStatus ssl;
       if (!params_.security_info.empty()) {
         int cert_id;
         net::CertStatus cert_status;
@@ -1618,10 +1620,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
                                             &cert_status,
                                             &security_bits,
                                             &connection_status);
-        ssl.set_cert_id(cert_id);
-        ssl.set_cert_status(cert_status);
-        ssl.set_security_bits(security_bits);
-        ssl.set_connection_status(connection_status);
+        ssl.cert_id = cert_id;
+        ssl.cert_status = cert_status;
+        ssl.security_bits = security_bits;
+        ssl.connection_status = connection_status;
       }
       source_tab_contents_->ShowPageInfo(params_.frame_url, ssl,
                                          false);  // Don't show the history.
