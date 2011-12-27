@@ -111,6 +111,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     enum Type {
       TYPE_WINDOW,      // A decorated Window, like a frame window.
                         // Widgets of TYPE_WINDOW will have a NonClientView.
+      TYPE_PANEL,       // Always on top window managed by PanelManager.
+                        // Widgets of TYPE_PANEL will have a NonClientView.
       TYPE_WINDOW_FRAMELESS,
                         // An undecorated Window.
       TYPE_CONTROL,     // A control, like a button.
@@ -211,8 +213,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   static Widget* GetWidgetForNativeWindow(gfx::NativeWindow native_window);
 
   // Retrieves the top level widget in a native view hierarchy
-  // starting at |native_view|. Top level widget is a widget with
-  // TYPE_WINDOW, TYPE_WINDOW_FRAMELESS, POPUP or MENU and has its own
+  // starting at |native_view|. Top level widget is a widget with TYPE_WINDOW,
+  // TYPE_PANEL, TYPE_WINDOW_FRAMELESS, POPUP or MENU and has its own
   // focus manager. This may be itself if the |native_view| is top level,
   // or NULL if there is no toplevel in a native view hierarchy.
   static Widget* GetTopLevelWidgetForNativeView(gfx::NativeView native_view);
@@ -251,7 +253,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Returns the gfx::NativeWindow associated with this Widget. This may return
   // NULL on some platforms if the widget was created with a type other than
-  // TYPE_WINDOW.
+  // TYPE_WINDOW or TYPE_PANEL.
   gfx::NativeWindow GetNativeWindow() const;
 
   // Add/remove observer.
@@ -556,9 +558,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual View* GetChildViewParent();
 
   // True if the widget is considered top level widget. Top level widget
-  // is a widget of TYPE_WINDOW, TYPE_WINDOW_FRAMELESS, BUBBLE, POPUP or MENU,
-  // and has a focus manager and input method object associated with it.
-  // TYPE_CONTROL and TYPE_TOOLTIP is not considered top level.
+  // is a widget of TYPE_WINDOW, TYPE_PANEL, TYPE_WINDOW_FRAMELESS, BUBBLE,
+  // POPUP or MENU, and has a focus manager and input method object associated
+  // with it. TYPE_CONTROL and TYPE_TOOLTIP is not considered top level.
   bool is_top_level() const { return is_top_level_; }
 
   // Returns the bounds of work area in the screen that Widget belongs to.

@@ -68,7 +68,6 @@ class ScrollView;
 class Widget;
 
 namespace internal {
-class NativeWidgetView;
 class RootView;
 }
 
@@ -1086,7 +1085,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 #endif
 
  private:
-  friend class internal::NativeWidgetView;
   friend class internal::RootView;
   friend class FocusManager;
   friend class ViewStorage;

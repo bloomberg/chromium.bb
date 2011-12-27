@@ -41,6 +41,8 @@ aura::client::WindowType GetAuraWindowTypeForWidgetType(
   switch (type) {
     case Widget::InitParams::TYPE_WINDOW:
       return aura::client::WINDOW_TYPE_NORMAL;
+    case Widget::InitParams::TYPE_PANEL:
+      return aura::client::WINDOW_TYPE_PANEL;
     case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
     case Widget::InitParams::TYPE_CONTROL:
     case Widget::InitParams::TYPE_POPUP:

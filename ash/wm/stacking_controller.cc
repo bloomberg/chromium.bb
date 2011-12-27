@@ -50,6 +50,8 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* window) {
       if (IsWindowModal(window))
         return GetModalContainer(window);
       return always_on_top_controller_->GetContainer(window);
+    case aura::client::WINDOW_TYPE_PANEL:
+      return GetContainer(internal::kShellWindowId_PanelContainer);
     case aura::client::WINDOW_TYPE_MENU:
     case aura::client::WINDOW_TYPE_TOOLTIP:
       return GetContainer(internal::kShellWindowId_MenusAndTooltipsContainer);

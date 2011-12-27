@@ -2132,6 +2132,9 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
 
   // Set type-dependent style attributes.
   switch (params.type) {
+    case Widget::InitParams::TYPE_PANEL:
+      ex_style |= WS_EX_TOPMOST;
+      // No break. Fall through to TYPE_WINDOW.
     case Widget::InitParams::TYPE_WINDOW: {
       style |= WS_SYSMENU | WS_CAPTION;
       bool can_resize = GetWidget()->widget_delegate()->CanResize();

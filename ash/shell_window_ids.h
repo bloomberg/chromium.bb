@@ -21,23 +21,26 @@ const int kShellWindowId_DefaultContainer = 1;
 // The container for top-level windows with the 'always-on-top' flag set.
 const int kShellWindowId_AlwaysOnTopContainer = 2;
 
+// The container for panel windows.
+const int kShellWindowId_PanelContainer = 3;
+
 // The container for the launcher.
-const int kShellWindowId_LauncherContainer = 3;
+const int kShellWindowId_LauncherContainer = 4;
 
 // The container for user-specific modal windows.
-const int kShellWindowId_ModalContainer = 4;
+const int kShellWindowId_ModalContainer = 5;
 
 // The container for the lock screen.
-const int kShellWindowId_LockScreenContainer = 5;
+const int kShellWindowId_LockScreenContainer = 6;
 
 // The container for the lock screen modal windows.
-const int kShellWindowId_LockModalContainer = 6;
+const int kShellWindowId_LockModalContainer = 7;
 
 // The container for the status area.
-const int kShellWindowId_StatusContainer = 7;
+const int kShellWindowId_StatusContainer = 8;
 
 // The container for menus and tooltips.
-const int kShellWindowId_MenusAndTooltipsContainer = 8;
+const int kShellWindowId_MenusAndTooltipsContainer = 9;
 
 }  // namespace internal
 

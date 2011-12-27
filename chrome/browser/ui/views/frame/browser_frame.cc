@@ -62,7 +62,7 @@ void BrowserFrame::InitBrowserFrame() {
     // There is a Windows bug/feature that would very likely prevent the window
     // from being changed to top-most after the window is created without
     // activation.
-    params.keep_on_top = true;
+    params.type = views::Widget::InitParams::TYPE_PANEL;
   }
 #if defined(USE_AURA)
   CommandLine* command_line = CommandLine::ForCurrentProcess();

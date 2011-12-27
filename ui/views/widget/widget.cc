@@ -297,7 +297,9 @@ bool Widget::IsDebugPaintEnabled() {
 
 // static
 bool Widget::RequiresNonClientView(InitParams::Type type) {
-  return type == InitParams::TYPE_WINDOW || type == InitParams::TYPE_BUBBLE;
+  return type == InitParams::TYPE_WINDOW ||
+         type == InitParams::TYPE_PANEL ||
+         type == InitParams::TYPE_BUBBLE;
 }
 
 void Widget::Init(const InitParams& params) {

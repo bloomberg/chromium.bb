@@ -39,7 +39,6 @@ typedef base::NativeEvent NativeEvent;
 class View;
 
 namespace internal {
-class NativeWidgetView;
 class RootView;
 }
 
@@ -226,7 +225,6 @@ class VIEWS_EXPORT MouseEvent : public LocatedEvent {
   }
 
  private:
-  friend class internal::NativeWidgetView;
   friend class internal::RootView;
 
   DISALLOW_COPY_AND_ASSIGN(MouseEvent);
@@ -269,7 +267,6 @@ class VIEWS_EXPORT TouchEvent : public LocatedEvent {
   float force() const { return force_; }
 
  private:
-  friend class internal::NativeWidgetView;
   friend class internal::RootView;
 
   TouchEvent(const TouchEvent& model, View* root);
@@ -365,7 +362,6 @@ class VIEWS_EXPORT MouseWheelEvent : public MouseEvent {
 
  private:
   friend class internal::RootView;
-  friend class internal::NativeWidgetView;
 
   MouseWheelEvent(const MouseWheelEvent& model, View* root)
       : MouseEvent(model, root),

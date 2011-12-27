@@ -81,6 +81,10 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
       internal::kShellWindowId_AlwaysOnTopContainer);
   containers->push_back(always_on_top_container);
 
+  aura::Window* panel_container = new aura::Window(NULL);
+  panel_container->set_id(internal::kShellWindowId_PanelContainer);
+  containers->push_back(panel_container);
+
   aura::Window* launcher_container = new aura::Window(NULL);
   launcher_container->set_id(internal::kShellWindowId_LauncherContainer);
   containers->push_back(launcher_container);

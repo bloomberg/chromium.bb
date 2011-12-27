@@ -25,6 +25,7 @@ namespace {
 ShadowType GetShadowTypeFromWindowType(aura::Window* window) {
   switch (window->type()) {
     case aura::client::WINDOW_TYPE_NORMAL:
+    case aura::client::WINDOW_TYPE_PANEL:
       return CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAuraTranslucentFrames) ?
               SHADOW_TYPE_NONE : SHADOW_TYPE_RECTANGULAR;

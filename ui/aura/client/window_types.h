@@ -18,7 +18,10 @@ enum WindowType {
   // Regular windows that should be laid out by the client.
   WINDOW_TYPE_NORMAL,
 
-  // Miscellaneous windows that should not be laid out by the client.
+  // Always on top windows aligned to bottom right of screen.
+  WINDOW_TYPE_PANEL,
+
+  // Miscellaneous windows that should not be laid out by the shell.
   WINDOW_TYPE_POPUP,
 
   WINDOW_TYPE_MENU,
