@@ -130,32 +130,20 @@ void Layer::StackAtTop(Layer* child) {
   if (children_.size() <= 1 || child == children_.back())
     return;  // Already in front.
   StackAbove(child, children_.back());
-
-  SetNeedsToRecomputeHole();
 }
 
 void Layer::StackAbove(Layer* child, Layer* other) {
-  DCHECK_NE(child, other);
-  DCHECK_EQ(this, child->parent());
-  DCHECK_EQ(this, other->parent());
+  StackRelativeTo(child, other, true);
+}
 
-  const size_t child_i =
-      std::find(children_.begin(), children_.end(), child) - children_.begin();
-  const size_t other_i =
-      std::find(children_.begin(), children_.end(), other) - children_.begin();
-  if (child_i == other_i + 1)
-    return;
+void Layer::StackAtBottom(Layer* child) {
+  if (children_.size() <= 1 || child == children_.front())
+    return;  // Already on bottom.
+  StackBelow(child, children_.front());
+}
 
-  const size_t dest_i = child_i < other_i ? other_i : other_i + 1;
-  children_.erase(children_.begin() + child_i);
-  children_.insert(children_.begin() + dest_i, child);
-
-  SetNeedsToRecomputeHole();
-
-#if defined(USE_WEBKIT_COMPOSITOR)
-  child->web_layer_.removeFromParent();
-  web_layer_.insertChild(child->web_layer_, dest_i);
-#endif
+void Layer::StackBelow(Layer* child, Layer* other) {
+  StackRelativeTo(child, other, false);
 }
 
 bool Layer::Contains(const Layer* other) const {
@@ -459,6 +447,33 @@ void Layer::UpdateLayerCanvas() {
   canvas->Translate(gfx::Point().Subtract(draw_rect.origin()));
   delegate_->OnPaintLayer(canvas.get());
   SetCanvas(*canvas->GetSkCanvas(), draw_rect.origin());
+#endif
+}
+
+void Layer::StackRelativeTo(Layer* child, Layer* other, bool above) {
+  DCHECK_NE(child, other);
+  DCHECK_EQ(this, child->parent());
+  DCHECK_EQ(this, other->parent());
+
+  const size_t child_i =
+      std::find(children_.begin(), children_.end(), child) - children_.begin();
+  const size_t other_i =
+      std::find(children_.begin(), children_.end(), other) - children_.begin();
+  if ((above && child_i == other_i + 1) || (!above && child_i + 1 == other_i))
+    return;
+
+  const size_t dest_i =
+      above ?
+      (child_i < other_i ? other_i : other_i + 1) :
+      (child_i < other_i ? other_i - 1 : other_i);
+  children_.erase(children_.begin() + child_i);
+  children_.insert(children_.begin() + dest_i, child);
+
+  SetNeedsToRecomputeHole();
+
+#if defined(USE_WEBKIT_COMPOSITOR)
+  child->web_layer_.removeFromParent();
+  web_layer_.insertChild(child->web_layer_, dest_i);
 #endif
 }
 

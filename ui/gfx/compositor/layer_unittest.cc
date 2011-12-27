@@ -1105,6 +1105,30 @@ TEST_F(LayerWithNullDelegateTest, Stacking) {
 
   root->StackAbove(l2.get(), l1.get());
   EXPECT_EQ("3,1,2", GetLayerChildrenNames(*root.get()));
+
+  root->StackAtBottom(l2.get());
+  EXPECT_EQ("2,3,1", GetLayerChildrenNames(*root.get()));
+
+  root->StackAtBottom(l3.get());
+  EXPECT_EQ("3,2,1", GetLayerChildrenNames(*root.get()));
+
+  root->StackAtBottom(l3.get());
+  EXPECT_EQ("3,2,1", GetLayerChildrenNames(*root.get()));
+
+  root->StackBelow(l2.get(), l3.get());
+  EXPECT_EQ("2,3,1", GetLayerChildrenNames(*root.get()));
+
+  root->StackBelow(l1.get(), l3.get());
+  EXPECT_EQ("2,1,3", GetLayerChildrenNames(*root.get()));
+
+  root->StackBelow(l3.get(), l2.get());
+  EXPECT_EQ("3,2,1", GetLayerChildrenNames(*root.get()));
+
+  root->StackBelow(l3.get(), l2.get());
+  EXPECT_EQ("3,2,1", GetLayerChildrenNames(*root.get()));
+
+  root->StackBelow(l3.get(), l1.get());
+  EXPECT_EQ("2,3,1", GetLayerChildrenNames(*root.get()));
 }
 
 // Checks that the invalid rect assumes correct values when setting bounds.

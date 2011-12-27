@@ -77,6 +77,13 @@ class COMPOSITOR_EXPORT Layer :
   // method will result in |child| being lowered in the stacking order.
   void StackAbove(Layer* child, Layer* other);
 
+  // Stacks |child| below all other children.
+  void StackAtBottom(Layer* child);
+
+  // Stacks |child| directly below |other|.  Both must be children of this
+  // layer.
+  void StackBelow(Layer* child, Layer* other);
+
   // Returns the child Layers.
   const std::vector<Layer*>& children() const { return children_; }
 
@@ -209,6 +216,10 @@ class COMPOSITOR_EXPORT Layer :
   // Called during the Draw() pass to freshen the Layer's contents from the
   // delegate.
   void UpdateLayerCanvas();
+
+  // Stacks |child| above or below |other|.  Helper method for StackAbove() and
+  // StackBelow().
+  void StackRelativeTo(Layer* child, Layer* other, bool above);
 
   // Called to indicate that a layer's properties have changed and that the
   // holes for the layers must be recomputed.
