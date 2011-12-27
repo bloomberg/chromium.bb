@@ -85,11 +85,17 @@ class EnterpriseOAuthEnrollmentScreenHandler
   void HandleCompleteLogin(const base::ListValue* args);
   void HandleRetry(const base::ListValue* args);
 
+  // Proceeds with the enrollment process after a successful login.
+  void EnrollAfterLogin();
+
   // Shows a given enrollment step.
   void ShowStep(const char* step);
 
   // Display the given i18n string as error message.
   void ShowError(int message_id, bool retry);
+
+  // Display the given i18n string as a progress message.
+  void ShowWorking(int message_id);
 
   // Resets the authentication machinery and clears cookies. Will invoke
   // |action_on_browsing_data_removed_| once cookies are cleared.
@@ -101,11 +107,19 @@ class EnterpriseOAuthEnrollmentScreenHandler
   // Shows the screen.
   void DoShow();
 
-  // Closes the screen.
-  void DoClose();
+  // Closes the screen. |back_to_signin| is true if the user should go back to
+  // the sign-in screen when the enrollment screen is closed. Otherwise, a
+  // pending sign-in will be resumed.
+  void DoClose(bool back_to_signin);
 
   bool editable_user_;
   bool show_on_init_;
+
+  // Whether this is an auto-enrollment screen.
+  bool is_auto_enrollment_;
+
+  // Whether an enrollment attempt has failed.
+  bool enrollment_failed_once_;
 
   // Username of the user signing in.
   std::string user_;

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -61,6 +62,13 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Creates and shows login UI for known users.
   void Init(const UserList& users);
+
+  // Tells the controller to enter the Enterprise Enrollment screen when
+  // appropriate.
+  void DoAutoEnrollment();
+
+  // Tells the controller to resume a pending login.
+  void ResumeLogin();
 
   // LoginDisplay::Delegate: implementation
   virtual void CreateAccount() OVERRIDE;
@@ -143,6 +151,16 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void OnEnrollmentOwnershipCheckCompleted(OwnershipService::Status status,
                                            bool current_user_is_owner);
 
+  // Enters the enterprise enrollment screen. |forced| is true if this is the
+  // result of an auto-enrollment check, and the user shouldn't be able to
+  // easily cancel the enrollment. In that case, |user| is the user name that
+  // first logged in.
+  void ShowEnrollmentScreen(bool forced, const std::string& user);
+
+  // Invoked to complete login. Login might be suspended if auto-enrollment
+  // has to be performed, and will resume once auto-enrollment completes.
+  void CompleteLoginInternal(std::string username, std::string password);
+
   void set_login_performer_delegate(LoginPerformer::Delegate* d) {
     login_performer_delegate_.reset(d);
   }
@@ -209,6 +227,16 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // The displayed email for the next login attempt set by |SetDisplayEmail|.
   std::string display_email_;
+
+  // True if auto-enrollment should be performed before starting the user's
+  // session.
+  bool do_auto_enrollment_;
+
+  // The username used for auto-enrollment, if it was triggered.
+  std::string auto_enrollment_username_;
+
+  // Callback to invoke to resume login, after auto-enrollment has completed.
+  base::Closure resume_login_callback_;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, NewUserLogin);
 

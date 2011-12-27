@@ -26,6 +26,7 @@ EnterpriseEnrollmentScreen::EnterpriseEnrollmentScreen(
     EnterpriseEnrollmentScreenActor* actor)
     : WizardScreen(observer),
       actor_(actor),
+      is_auto_enrollment_(false),
       is_showing_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   actor_->SetController(this);
@@ -43,6 +44,12 @@ EnterpriseEnrollmentScreen::EnterpriseEnrollmentScreen(
 }
 
 EnterpriseEnrollmentScreen::~EnterpriseEnrollmentScreen() {}
+
+void EnterpriseEnrollmentScreen::SetParameters(bool is_auto_enrollment,
+                                               const std::string& user) {
+  is_auto_enrollment_ = is_auto_enrollment;
+  user_ = user;
+}
 
 void EnterpriseEnrollmentScreen::PrepareToShow() {
   actor_->PrepareToShow();
@@ -104,10 +111,11 @@ void EnterpriseEnrollmentScreen::OnAuthCancelled() {
       ScreenObserver::ENTERPRISE_ENROLLMENT_CANCELLED);
 }
 
-void EnterpriseEnrollmentScreen::OnConfirmationClosed() {
+void EnterpriseEnrollmentScreen::OnConfirmationClosed(bool go_back_to_signin) {
   auth_fetcher_.reset();
-  get_screen_observer()->OnExit(
-      ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED);
+  get_screen_observer()->OnExit(go_back_to_signin ?
+      ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED :
+      ScreenObserver::ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED);
 }
 
 bool EnterpriseEnrollmentScreen::GetInitialUser(std::string* user) {
@@ -131,6 +139,12 @@ bool EnterpriseEnrollmentScreen::GetInitialUser(std::string* user) {
                << "been locked already but does not contain valid data.";
   }
   return false;
+}
+
+bool EnterpriseEnrollmentScreen::IsAutoEnrollment(std::string* user) {
+  if (is_auto_enrollment_)
+    *user = user_;
+  return is_auto_enrollment_;
 }
 
 void EnterpriseEnrollmentScreen::OnClientLoginSuccess(

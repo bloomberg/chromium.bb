@@ -48,6 +48,10 @@ class LoginUtils {
   static void DoBrowserLaunch(Profile* profile,
                               LoginDisplayHost* login_host);
 
+  // Checks if the given username is whitelisted and allowed to sign-in to
+  // this device.
+  static bool IsWhitelisted(const std::string& username);
+
   virtual ~LoginUtils() {}
 
   // Loads and prepares profile for the session. Fires |delegate| in the end.

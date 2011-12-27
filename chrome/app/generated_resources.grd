@@ -14573,6 +14573,9 @@ Battery full
       <message name="IDS_ENTERPRISE_ENROLLMENT_WORKING" desc="Status message to show while enterprise enrollment is underway.">
         Enrolling the device. Please wait...
       </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_RESUMING_LOGIN" desc="Status message to show after enterprise enrollment is complete and the first user login is prepared.">
+        Preparing for first enterprise login...
+      </message>
     </if>
 
     <!-- Fullscreen Strings -->

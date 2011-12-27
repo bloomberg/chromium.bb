@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
+#include "chrome/browser/chromeos/login/ownership_status_checker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
@@ -19,6 +20,12 @@
 #if defined(USE_AURA)
 #include "ui/gfx/compositor/layer_animation_observer.h"
 #endif
+
+class PrefService;
+
+namespace policy {
+class AutoEnrollmentClient;
+}  // namespace policy
 
 namespace chromeos {
 
@@ -41,12 +48,17 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
     return default_host_;
   }
 
+  // Registers preferences in local state.
+  static void RegisterPrefs(PrefService* local_state);
+
   // LoginDisplayHost implementation:
   virtual void OnSessionStart() OVERRIDE;
   virtual void StartWizard(
       const std::string& first_screen_name,
-      const GURL& start_url) OVERRIDE;
+      DictionaryValue* screen_parameters) OVERRIDE;
   virtual void StartSignInScreen() OVERRIDE;
+  virtual void ResumeSignInScreen() OVERRIDE;
+  virtual void CheckForAutoEnrollment() OVERRIDE;
 
   // Creates specific WizardController.
   virtual WizardController* CreateWizardController() = 0;
@@ -76,6 +88,16 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
   // Start sign in transition animation.
   void StartAnimation();
 
+  // Callback for completion of the |ownership_status_checker_|.
+  void OnOwnershipStatusCheckDone(OwnershipService::Status status,
+                                  bool current_user_is_owner);
+
+  // Callback for completion of the |auto_enrollment_client_|.
+  void OnAutoEnrollmentClientDone();
+
+  // Forces auto-enrollment on the appropriate controller.
+  void ForceAutoEnrollment();
+
   // Used to calculate position of the screens and background.
   gfx::Rect background_bounds_;
 
@@ -89,6 +111,12 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
 
   // OOBE and some screens (camera, recovery) controller.
   scoped_ptr<WizardController> wizard_controller_;
+
+  // Client for enterprise auto-enrollment check.
+  scoped_ptr<policy::AutoEnrollmentClient> auto_enrollment_client_;
+
+  // Used to verify if the device has already been owned.
+  scoped_ptr<OwnershipStatusChecker> ownership_status_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseLoginDisplayHost);
 };

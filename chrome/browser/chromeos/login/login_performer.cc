@@ -274,22 +274,15 @@ void LoginPerformer::CompleteLogin(const std::string& username,
     }
   }
 
-  bool allow_new_user = false;
-  cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
-  if (ScreenLocker::default_screen_locker() || allow_new_user) {
+  bool is_whitelisted = LoginUtils::IsWhitelisted(username);
+  if (ScreenLocker::default_screen_locker() || is_whitelisted) {
     // Starts authentication if guest login is allowed or online auth pending.
     StartLoginCompletion();
   } else {
-    // Otherwise, do whitelist check first.
-    if (cros_settings->FindEmailInList(
-            kAccountsPrefUsers, Authenticator::Canonicalize(username))) {
-      StartLoginCompletion();
-    } else {
-      if (delegate_)
-        delegate_->WhiteListCheckFailed(username);
-      else
-        NOTREACHED();
-    }
+    if (delegate_)
+      delegate_->WhiteListCheckFailed(username);
+    else
+      NOTREACHED();
   }
 }
 
@@ -318,20 +311,15 @@ void LoginPerformer::Login(const std::string& username,
     }
   }
 
-  bool allow_new_user = false;
-  cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
-  if (ScreenLocker::default_screen_locker() || allow_new_user) {
+  bool is_whitelisted = LoginUtils::IsWhitelisted(username);
+  if (ScreenLocker::default_screen_locker() || is_whitelisted) {
     // Starts authentication if guest login is allowed or online auth pending.
     StartAuthentication();
   } else {
-    if (cros_settings->FindEmailInList(kAccountsPrefUsers, username)) {
-      StartAuthentication();
-    } else {
-      if (delegate_)
-        delegate_->WhiteListCheckFailed(username);
-      else
-        NOTREACHED();
-    }
+    if (delegate_)
+      delegate_->WhiteListCheckFailed(username);
+    else
+      NOTREACHED();
   }
 }
 

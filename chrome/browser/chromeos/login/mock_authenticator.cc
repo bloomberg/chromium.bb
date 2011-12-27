@@ -31,6 +31,9 @@ void MockAuthenticator::AuthenticateToLogin(Profile* profile,
 void MockAuthenticator::CompleteLogin(Profile* profile,
                                       const std::string& username,
                                       const std::string& password) {
+  CHECK_EQ(expected_username_, username);
+  CHECK_EQ(expected_password_, password);
+  OnLoginSuccess(GaiaAuthConsumer::ClientLoginResult(), false);
 }
 
 void MockAuthenticator::AuthenticateToUnlock(const std::string& username,

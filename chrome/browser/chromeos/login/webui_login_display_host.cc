@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 
 #include "base/command_line.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
@@ -84,7 +85,8 @@ void WebUILoginDisplayHost::ShowBackground() {
 }
 
 void WebUILoginDisplayHost::StartWizard(const std::string& first_screen_name,
-                                        const GURL& start_url) {
+                                        DictionaryValue* screen_parameters) {
+  scoped_ptr<DictionaryValue> scoped_parameters(screen_parameters);
   // This is a special case for WebUI. We don't want to go through the
   // OOBE WebUI page loading. Since we already have the browser we just
   // show the corresponding page.
@@ -109,7 +111,8 @@ void WebUILoginDisplayHost::StartWizard(const std::string& first_screen_name,
   if (!login_window_)
     LoadURL(GURL(kOobeURL));
 
-  BaseLoginDisplayHost::StartWizard(first_screen_name, start_url);
+  BaseLoginDisplayHost::StartWizard(first_screen_name,
+                                    scoped_parameters.release());
 }
 
 void WebUILoginDisplayHost::StartSignInScreen() {

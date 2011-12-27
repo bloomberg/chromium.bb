@@ -24,6 +24,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
@@ -1309,14 +1311,17 @@ void LoginUtilsImpl::OnOnlineStateChanged(bool online) {
   }
 }
 
+// static
 LoginUtils* LoginUtils::Get() {
   return LoginUtilsWrapper::GetInstance()->get();
 }
 
+// static
 void LoginUtils::Set(LoginUtils* mock) {
   LoginUtilsWrapper::GetInstance()->reset(mock);
 }
 
+// static
 void LoginUtils::DoBrowserLaunch(Profile* profile,
                                  LoginDisplayHost* login_host) {
   if (browser_shutdown::IsTryingToQuit())
@@ -1346,6 +1351,16 @@ void LoginUtils::DoBrowserLaunch(Profile* profile,
     login_host->SetStatusAreaEnabled(true);
     login_host = NULL;
   }
+}
+
+// static
+bool LoginUtils::IsWhitelisted(const std::string& username) {
+  CrosSettings* cros_settings = CrosSettings::Get();
+  bool allow_new_user = false;
+  cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
+  if (allow_new_user)
+    return true;
+  return cros_settings->FindEmailInList(kAccountsPrefUsers, username);
 }
 
 }  // namespace chromeos

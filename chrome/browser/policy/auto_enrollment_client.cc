@@ -79,17 +79,29 @@ AutoEnrollmentClient::AutoEnrollmentClient(const base::Closure& callback,
 AutoEnrollmentClient::~AutoEnrollmentClient() {}
 
 // static
+bool AutoEnrollmentClient::IsDisabled() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return
+      !command_line->HasSwitch(switches::kEnterpriseEnrollmentInitialModulus) &&
+      !command_line->HasSwitch(switches::kEnterpriseEnrollmentModulusLimit);
+}
+
+// static
 AutoEnrollmentClient* AutoEnrollmentClient::Create(
     const base::Closure& completion_callback) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-  std::string url =
-      command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl);
+  // The client won't do anything if |service| is NULL.
   DeviceManagementService* service = NULL;
-  // This client won't do anything if there's no device management service  url.
-  if (!url.empty()) {
-    service = new DeviceManagementService(url);
-    service->ScheduleInitialization(0);
+  if (IsDisabled()) {
+    VLOG(1) << "Auto-enrollment is disabled";
+  } else {
+    std::string url =
+        command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl);
+    if (!url.empty()) {
+      service = new DeviceManagementService(url);
+      service->ScheduleInitialization(0);
+    }
   }
 
   int power_initial = GetSanitizedArg(

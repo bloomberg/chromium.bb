@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
+#include "chrome/browser/policy/auto_enrollment_client.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
@@ -75,6 +77,21 @@ const int kBackgroundTranslate = -50;
 // after the login screen is initialized. This makes sure that device policy
 // network requests are made while the system is idle waiting for user input.
 const int64 kPolicyServiceInitializationDelayMilliseconds = 100;
+
+// A boolean pref of the auto-enrollment decision. This pref only exists if the
+// auto-enrollment check has been done once and completed.
+const char kShouldAutoEnroll[] = "ShouldAutoEnroll";
+
+// Returns true if an auto-enrollment decision has been made and is cached in
+// local state. If so, the decision is stored in |auto_enroll|.
+bool GetAutoEnrollmentDecision(bool* auto_enroll) {
+  const PrefService::Preference* pref =
+      g_browser_process->local_state()->FindPreference(kShouldAutoEnroll);
+  if (pref && !pref->IsDefaultValue())
+    return pref->GetValue()->GetAsBoolean(auto_enroll);
+  else
+    return false;
+}
 
 // Determines the hardware keyboard from the given locale code
 // and the OEM layout information, and saves it to "Locale State".
@@ -155,10 +172,18 @@ BaseLoginDisplayHost::~BaseLoginDisplayHost() {
   default_host_ = NULL;
 }
 
+// static
+void BaseLoginDisplayHost::RegisterPrefs(PrefService* local_state) {
+  local_state->RegisterBooleanPref(kShouldAutoEnroll,
+                                   false,
+                                   PrefService::UNSYNCABLE_PREF);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
-// BaseLoginDisplayHost, LoginDisplayHost  implementation:
+// BaseLoginDisplayHost, LoginDisplayHost implementation:
 
 void BaseLoginDisplayHost::OnSessionStart() {
+  DVLOG(1) << "Session starting";
   // In Aura case wait for first tab starting loading (NOTIFICATION_LOAD_START),
   // then start transition animation. Display host is deleted once animation
   // completes since sign in screen widget has to stay alive.
@@ -174,7 +199,7 @@ void BaseLoginDisplayHost::OnSessionStart() {
 
 void BaseLoginDisplayHost::StartWizard(
     const std::string& first_screen_name,
-    const GURL& start_url) {
+    DictionaryValue* screen_parameters) {
   DVLOG(1) << "Starting wizard, first_screen_name: " << first_screen_name;
   // Create and show the wizard.
   // Note, dtor of the old WizardController should be called before ctor of the
@@ -183,11 +208,10 @@ void BaseLoginDisplayHost::StartWizard(
   wizard_controller_.reset();
   wizard_controller_.reset(CreateWizardController());
 
-  wizard_controller_->set_start_url(start_url);
   ShowBackground();
   if (!WizardController::IsDeviceRegistered())
     SetOobeProgressBarVisible(true);
-  wizard_controller_->Init(first_screen_name);
+  wizard_controller_->Init(first_screen_name, screen_parameters);
 }
 
 void BaseLoginDisplayHost::StartSignInScreen() {
@@ -213,6 +237,11 @@ void BaseLoginDisplayHost::StartSignInScreen() {
   SetShutdownButtonEnabled(true);
   sign_in_controller_->Init(users);
 
+  // We might be here after a reboot that was triggered after OOBE was complete,
+  // so check for auto-enrollment again. This might catch a cached decision from
+  // a previous oobe flow, or might start a new check with the server.
+  CheckForAutoEnrollment();
+
   // Initiate services customization manifest fetching.
   ServicesCustomizationDocument::GetInstance()->StartFetching();
 
@@ -222,6 +251,36 @@ void BaseLoginDisplayHost::StartSignInScreen() {
   // Initiate device policy fetching.
   g_browser_process->browser_policy_connector()->ScheduleServiceInitialization(
       kPolicyServiceInitializationDelayMilliseconds);
+}
+
+void BaseLoginDisplayHost::ResumeSignInScreen() {
+  // We only get here after a previous call the StartSignInScreen. That sign-in
+  // was successful but was interrupted by an auto-enrollment execution; once
+  // auto-enrollment is complete we resume the normal login flow from here.
+  DVLOG(1) << "Resuming sign in screen";
+  CHECK(sign_in_controller_.get());
+  ShowBackground();
+  SetOobeProgressBarVisible(true);
+  SetOobeProgress(chromeos::BackgroundView::SIGNIN);
+  SetShutdownButtonEnabled(true);
+  sign_in_controller_->ResumeLogin();
+}
+
+void BaseLoginDisplayHost::CheckForAutoEnrollment() {
+  // This method is called when the controller determines that the
+  // auto-enrollment check can start. This happens either after the EULA is
+  // accepted, or right after a reboot if the EULA has already been accepted.
+
+  if (policy::AutoEnrollmentClient::IsDisabled()) {
+    VLOG(1) << "CheckForAutoEnrollment: auto-enrollment disabled";
+    return;
+  }
+
+  // Start by checking if the device has already been owned.
+  ownership_status_checker_.reset(new OwnershipStatusChecker);
+  ownership_status_checker_->Check(base::Bind(
+      &BaseLoginDisplayHost::OnOwnershipStatusCheckDone,
+      base::Unretained(this)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -340,10 +399,66 @@ void BaseLoginDisplayHost::StartAnimation() {
 #endif
 }
 
+void BaseLoginDisplayHost::OnOwnershipStatusCheckDone(
+    OwnershipService::Status status,
+    bool current_user_is_owner) {
+  if (status != OwnershipService::OWNERSHIP_NONE) {
+    // The device is already owned. No need for auto-enrollment checks.
+    VLOG(1) << "CheckForAutoEnrollment: device already owned";
+    return;
+  }
+
+  bool auto_enroll = false;
+  if (GetAutoEnrollmentDecision(&auto_enroll)) {
+    // The auto-enrollment protocol has executed before and reached a decision,
+    // which has been stored in |auto_enroll|.
+    VLOG(1) << "CheckForAutoEnrollment: got cached decision: " << auto_enroll;
+    if (auto_enroll)
+      ForceAutoEnrollment();
+    return;
+  }
+
+  // Kick off the auto-enrollment client.
+  if (auto_enrollment_client_.get()) {
+    // They client might have been started after the EULA screen, but we made
+    // it to the login screen before it finished. In that case let the current
+    // client proceed.
+    //
+    // CheckForAutoEnrollment() is also called when we reach the sign-in screen,
+    // because that's what happens after an auto-update.
+    VLOG(1) << "CheckForAutoEnrollment: client already started";
+  } else {
+    VLOG(1) << "CheckForAutoEnrollment: starting auto-enrollment client";
+    auto_enrollment_client_.reset(policy::AutoEnrollmentClient::Create(
+        base::Bind(&BaseLoginDisplayHost::OnAutoEnrollmentClientDone,
+                   base::Unretained(this))));
+    auto_enrollment_client_->Start();
+  }
+}
+
+void BaseLoginDisplayHost::OnAutoEnrollmentClientDone() {
+  bool auto_enroll = auto_enrollment_client_->should_auto_enroll();
+  VLOG(1) << "OnAutoEnrollmentClientDone, decision is " << auto_enroll;
+
+  // Auto-update might be in progress and might force a reboot. Cache the
+  // decision in local_state.
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetBoolean(kShouldAutoEnroll, auto_enroll);
+  local_state->SavePersistentPrefs();
+
+  if (auto_enroll)
+    ForceAutoEnrollment();
+}
+
+void BaseLoginDisplayHost::ForceAutoEnrollment() {
+  if (sign_in_controller_.get())
+    sign_in_controller_->DoAutoEnrollment();
+}
+
 }  // namespace chromeos
 
 ////////////////////////////////////////////////////////////////////////////////
-// browser::ShowLoginWizard implementation
+// browser::ShowLoginWizard implementation:
 
 namespace browser {
 
@@ -464,7 +579,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
     }
   }
 
-  display_host->StartWizard(first_screen_name, GURL());
+  display_host->StartWizard(first_screen_name, NULL);
 
   chromeos::LoginUtils::Get()->PrewarmAuthentication();
   chromeos::DBusThreadManager::Get()->GetSessionManagerClient()

@@ -149,9 +149,11 @@ WizardController::~WizardController() {
       UnregisterNotifications();
 }
 
-void WizardController::Init(const std::string& first_screen_name) {
+void WizardController::Init(const std::string& first_screen_name,
+                            DictionaryValue* screen_parameters) {
   VLOG(1) << "Starting OOBE wizard with screen: " << first_screen_name;
   first_screen_name_ = first_screen_name;
+  screen_parameters_.reset(screen_parameters);
 
   bool oobe_complete = IsOobeCompleted();
   if (!oobe_complete || first_screen_name == kOutOfBoxScreenName) {
@@ -254,6 +256,15 @@ void WizardController::ShowLoginScreen() {
   oobe_display_ = NULL;
 }
 
+void WizardController::ResumeLoginScreen() {
+  VLOG(1) << "Resuming login screen.";
+  SetStatusAreaVisible(true);
+  host_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
+  host_->ResumeSignInScreen();
+  smooth_show_timer_.Stop();
+  oobe_display_ = NULL;
+}
+
 void WizardController::ShowUpdateScreen() {
   VLOG(1) << "Showing update screen.";
   SetStatusAreaVisible(true);
@@ -308,7 +319,17 @@ void WizardController::ShowHTMLPageScreen() {
 void WizardController::ShowEnterpriseEnrollmentScreen() {
   SetStatusAreaVisible(true);
   host_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
-  SetCurrentScreen(GetEnterpriseEnrollmentScreen());
+
+  bool is_auto_enrollment = false;
+  std::string user;
+  if (screen_parameters_.get()) {
+    screen_parameters_->GetBoolean("is_auto_enrollment", &is_auto_enrollment);
+    screen_parameters_->GetString("user", &user);
+  }
+
+  EnterpriseEnrollmentScreen* screen = GetEnterpriseEnrollmentScreen();
+  screen->SetParameters(is_auto_enrollment, user);
+  SetCurrentScreen(screen);
 }
 
 void WizardController::SkipRegistration() {
@@ -426,7 +447,13 @@ void WizardController::OnUserImageSkipped() {
 void WizardController::OnRegistrationSuccess() {
   MarkDeviceRegistered();
   if (chromeos::UserManager::Get()->IsLoggedInAsGuest()) {
-    chromeos::LoginUtils::Get()->CompleteOffTheRecordLogin(start_url_);
+    std::string spec;
+    GURL start_url;
+    if (screen_parameters_.get() &&
+        screen_parameters_->GetString("start_url", &spec)) {
+      start_url = GURL(spec);
+    }
+    chromeos::LoginUtils::Get()->CompleteOffTheRecordLogin(start_url);
   } else {
     ShowUserImageScreen();
   }
@@ -441,12 +468,18 @@ void WizardController::OnEnterpriseEnrollmentDone() {
   ShowLoginScreen();
 }
 
+void WizardController::OnEnterpriseAutoEnrollmentDone() {
+  VLOG(1) << "Automagic enrollment done, resuming previous signin";
+  ResumeLoginScreen();
+}
+
 void WizardController::OnOOBECompleted() {
   MarkOobeCompleted();
   ShowLoginScreen();
 }
 
 void WizardController::InitiateOOBEUpdate() {
+  host_->CheckForAutoEnrollment();
   GetUpdateScreen()->StartUpdate();
   SetCurrentScreenSmooth(GetUpdateScreen(), true);
 }
@@ -662,6 +695,9 @@ void WizardController::OnExit(ExitCodes exit_code) {
     case ENTERPRISE_ENROLLMENT_CANCELLED:
     case ENTERPRISE_ENROLLMENT_COMPLETED:
       OnEnterpriseEnrollmentDone();
+      break;
+    case ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED:
+      OnEnterpriseAutoEnrollmentDone();
       break;
     default:
       NOTREACHED();

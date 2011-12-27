@@ -39,6 +39,15 @@ cr.define('oobe', function() {
     $('oauth-enrollment').showError(message, retry);
   };
 
+  /**
+   * Sets a progressing message and switches to the working screen.
+   * @param message {string} the progress message.
+   */
+
+  OAuthEnrollmentScreen.showWorking = function(message) {
+    $('oauth-enrollment').showWorking(message);
+  };
+
   OAuthEnrollmentScreen.prototype = {
     __proto__: HTMLDivElement.prototype,
 
@@ -46,6 +55,11 @@ cr.define('oobe', function() {
      * URL to load in the sign in frame.
      */
     signin_url_ : null,
+
+    /**
+     * Whether this is a manual or auto enrollment.
+     */
+    is_auto_enrollment_: false,
 
     /**
      * Enrollment steps with names and buttons to show.
@@ -116,6 +130,7 @@ cr.define('oobe', function() {
       if (data.gaiaOrigin)
         url += '?gaiaOrigin=' + encodeURIComponent(data.gaiaOrigin);
       this.signin_url_ = url;
+      this.is_auto_enrollment_ = data.is_auto_enrollment;
       $('oauth-enroll-signin-frame').contentWindow.location.href =
           this.signin_url_;
       this.showStep('signin');
@@ -147,6 +162,9 @@ cr.define('oobe', function() {
             button.focus();
         }
       }
+      // TODO(joaodasilva): handle auto-enrollment in a proper way.
+      if (this.is_auto_enrollment_)
+        $('oauth-enroll-cancel-button').hidden = true;
     },
 
     /**
@@ -158,6 +176,15 @@ cr.define('oobe', function() {
       $('oauth-enroll-error-message').textContent = message;
       $('oauth-enroll-error-retry').hidden = !retry;
       this.showStep('error');
+    },
+
+    /**
+     * Sets a progressing message and switches to the working screen.
+     * @param message {string} the progress message.
+     */
+    showWorking: function(message) {
+      $('oauth-enroll-working-message').textContent = message;
+      this.showStep('working');
     },
 
     /**

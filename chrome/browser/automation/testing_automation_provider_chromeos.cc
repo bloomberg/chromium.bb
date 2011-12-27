@@ -917,7 +917,7 @@ void TestingAutomationProvider::EnrollEnterpriseDevice(
   }
   user_controller->login_display_host()->StartWizard(
       chromeos::WizardController::kEnterpriseEnrollmentScreenName,
-      GURL());
+      NULL);
   chromeos::WizardController* wizard_controller =
       chromeos::WizardController::default_controller();
   if (!wizard_controller) {

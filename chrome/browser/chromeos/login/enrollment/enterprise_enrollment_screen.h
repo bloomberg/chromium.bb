@@ -35,6 +35,9 @@ class EnterpriseEnrollmentScreen
                              EnterpriseEnrollmentScreenActor* actor);
   virtual ~EnterpriseEnrollmentScreen();
 
+  void SetParameters(bool is_auto_enrollment,
+                     const std::string& enrollment_user);
+
   // WizardScreen implementation:
   virtual void PrepareToShow() OVERRIDE;
   virtual void Show() OVERRIDE;
@@ -48,8 +51,9 @@ class EnterpriseEnrollmentScreen
   virtual void OnOAuthTokenAvailable(const std::string& user,
                                      const std::string& token) OVERRIDE;
   virtual void OnAuthCancelled() OVERRIDE;
-  virtual void OnConfirmationClosed() OVERRIDE;
+  virtual void OnConfirmationClosed(bool go_back_to_signin) OVERRIDE;
   virtual bool GetInitialUser(std::string* user) OVERRIDE;
+  virtual bool IsAutoEnrollment(std::string* user) OVERRIDE;
 
   // GaiaAuthConsumer implementation:
   virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
@@ -84,6 +88,7 @@ class EnterpriseEnrollmentScreen
       policy::BrowserPolicyConnector::TokenType token_type);
 
   EnterpriseEnrollmentScreenActor* actor_;
+  bool is_auto_enrollment_;
   bool is_showing_;
   scoped_ptr<GaiaAuthFetcher> auth_fetcher_;
   std::string user_;

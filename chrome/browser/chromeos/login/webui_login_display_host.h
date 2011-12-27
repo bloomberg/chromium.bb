@@ -39,7 +39,7 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost {
   virtual void SetStatusAreaVisible(bool visible) OVERRIDE;
   virtual void ShowBackground() OVERRIDE;
   virtual void StartWizard(const std::string& first_screen_name,
-                           const GURL& start_url) OVERRIDE;
+                           DictionaryValue* screen_parameters) OVERRIDE;
   virtual void StartSignInScreen() OVERRIDE;
 
   // BaseLoginDisplayHost overrides:

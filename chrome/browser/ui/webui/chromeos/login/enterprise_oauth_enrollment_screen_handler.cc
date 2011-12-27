@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -79,6 +80,8 @@ EnterpriseOAuthEnrollmentScreenHandler::EnterpriseOAuthEnrollmentScreenHandler()
     : controller_(NULL),
       editable_user_(true),
       show_on_init_(false),
+      is_auto_enrollment_(false),
+      enrollment_failed_once_(false),
       browsing_data_remover_(NULL) {
 }
 
@@ -122,11 +125,13 @@ void EnterpriseOAuthEnrollmentScreenHandler::Show() {
     return;
   }
 
-  // Trigger browsing data removal to make sure we start from a clean slate.
-  action_on_browsing_data_removed_ =
-      base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::DoShow,
-                 base::Unretained(this));
-  ResetAuth();
+  std::string user;
+  is_auto_enrollment_ = controller_ && controller_->IsAutoEnrollment(&user);
+  if (is_auto_enrollment_)
+    user_ = user;
+  enrollment_failed_once_ = false;
+
+  DoShow();
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::Hide() {
@@ -138,7 +143,8 @@ void EnterpriseOAuthEnrollmentScreenHandler::SetEditableUser(bool editable) {
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowConfirmationScreen() {
   ShowStep(kEnrollmentStepSuccess);
-  ResetAuth();
+  if (!is_auto_enrollment_ || enrollment_failed_once_)
+    ResetAuth();
   NotifyObservers(true);
 }
 
@@ -153,20 +159,20 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowAuthError(
     case GoogleServiceAuthError::REQUEST_CANCELED:
       LOG(ERROR) << "Auth error " << error.state();
       ShowFatalAuthError();
-      break;
+      return;
     case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
       LOG(ERROR) << "Account error " << error.state();
       ShowAccountError();
-      break;
+      return;
     case GoogleServiceAuthError::CONNECTION_FAILED:
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
       LOG(WARNING) << "Network error " << error.state();
       ShowNetworkEnrollmentError();
-      break;
+      return;
   }
-  NotifyObservers(false);
+  NOTREACHED();
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowAccountError() {
@@ -213,9 +219,6 @@ void EnterpriseOAuthEnrollmentScreenHandler::GetLocalizedStrings(
   localized_strings->SetString(
       "oauthEnrollSuccess",
       l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_SUCCESS));
-  localized_strings->SetString(
-      "oauthEnrollWorking",
-      l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_WORKING));
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::OnGetOAuthTokenFailure(
@@ -289,10 +292,31 @@ void EnterpriseOAuthEnrollmentScreenHandler::Initialize() {
 void EnterpriseOAuthEnrollmentScreenHandler::HandleClose(
     const base::ListValue* value) {
   RevokeTokens();
-  action_on_browsing_data_removed_ =
-      base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::DoClose,
-                 base::Unretained(this));
-  ResetAuth();
+
+  // If the user account used for enrollment is not whitelisted, send the user
+  // back to the login screen. In that case, clear the profile data too.
+  bool is_whitelisted = !user_.empty() && LoginUtils::IsWhitelisted(user_);
+
+  // If enrollment failed at least once, the profile was cleared and the user
+  // had to retry with another account, or even cancelled the whole thing.
+  // In that case, go back to the sign-in screen; otherwise, if this was an
+  // auto-enrollment, resume the pending signin.
+  bool back_to_signin = !is_auto_enrollment_ ||
+                        enrollment_failed_once_ ||
+                        !is_whitelisted;
+
+  if (back_to_signin) {
+    // Clean the profile before going back to signin.
+    action_on_browsing_data_removed_ =
+        base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::DoClose,
+                   base::Unretained(this),
+                   true);
+    ResetAuth();
+  } else {
+    // Not going back to sign-in, letting the initial sign-in resume instead.
+    // In that case, keep the profile data.
+    DoClose(false);
+  }
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::HandleCompleteLogin(
@@ -307,6 +331,20 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleCompleteLogin(
     return;
   }
 
+  EnrollAfterLogin();
+}
+
+void EnterpriseOAuthEnrollmentScreenHandler::HandleRetry(
+    const base::ListValue* value) {
+  // Trigger browsing data removal to make sure we start from a clean slate.
+  action_on_browsing_data_removed_ =
+      base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::DoShow,
+                 base::Unretained(this));
+  ResetAuth();
+}
+
+void EnterpriseOAuthEnrollmentScreenHandler::EnrollAfterLogin() {
+  DCHECK(!user_.empty());
   Profile* profile =
       Profile::FromBrowserContext(web_ui_->tab_contents()->GetBrowserContext());
   oauth_fetcher_.reset(
@@ -318,12 +356,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleCompleteLogin(
       GaiaOAuthFetcher::OAUTH2_SERVICE_ACCESS_TOKEN);
   oauth_fetcher_->StartGetOAuthTokenRequest();
 
-  ShowStep(kEnrollmentStepWorking);
-}
-
-void EnterpriseOAuthEnrollmentScreenHandler::HandleRetry(
-    const base::ListValue* value) {
-  Show();
+  ShowWorking(IDS_ENTERPRISE_ENROLLMENT_WORKING);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowStep(const char* step) {
@@ -337,6 +370,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowStep(const char* step) {
 void EnterpriseOAuthEnrollmentScreenHandler::ShowError(int message_id,
                                                        bool retry) {
   RevokeTokens();
+  enrollment_failed_once_ = true;
 
   const std::string message(l10n_util::GetStringUTF8(message_id));
   base::StringValue message_value(message);
@@ -344,6 +378,13 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowError(int message_id,
   web_ui_->CallJavascriptFunction("oobe.OAuthEnrollmentScreen.showError",
                                   message_value,
                                   retry_value);
+}
+
+void EnterpriseOAuthEnrollmentScreenHandler::ShowWorking(int message_id) {
+  const std::string message(l10n_util::GetStringUTF8(message_id));
+  base::StringValue message_value(message);
+  web_ui_->CallJavascriptFunction("oobe.OAuthEnrollmentScreen.showWorking",
+                                  message_value);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ResetAuth() {
@@ -382,16 +423,24 @@ void EnterpriseOAuthEnrollmentScreenHandler::DoShow() {
   screen_data.SetString("signin_url", kGaiaExtStartPage);
   screen_data.SetString("gaiaOrigin",
                         GaiaUrls::GetInstance()->gaia_origin_url());
+  screen_data.SetBoolean("is_auto_enrollment", is_auto_enrollment_);
   ShowScreen("oauth-enrollment", &screen_data);
+
+  if (is_auto_enrollment_ && !enrollment_failed_once_)
+    EnrollAfterLogin();
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::DoClose() {
+void EnterpriseOAuthEnrollmentScreenHandler::DoClose(bool back_to_signin) {
   if (!controller_) {
     NOTREACHED();
     return;
   }
 
-  controller_->OnConfirmationClosed();
+  if (!back_to_signin) {
+    // Show a progress spinner while profile creation is resuming.
+    ShowWorking(IDS_ENTERPRISE_ENROLLMENT_RESUMING_LOGIN);
+  }
+  controller_->OnConfirmationClosed(back_to_signin);
 }
 
 }  // namespace chromeos

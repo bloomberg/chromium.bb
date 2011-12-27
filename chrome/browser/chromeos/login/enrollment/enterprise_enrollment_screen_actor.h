@@ -30,8 +30,9 @@ class EnterpriseEnrollmentScreenActor {
     virtual void OnOAuthTokenAvailable(const std::string& user,
                                        const std::string& oauth_token) = 0;
     virtual void OnAuthCancelled() = 0;
-    virtual void OnConfirmationClosed() = 0;
+    virtual void OnConfirmationClosed(bool go_back_to_signin) = 0;
     virtual bool GetInitialUser(std::string* user) = 0;
+    virtual bool IsAutoEnrollment(std::string* user) = 0;
   };
 
   // Used in PyAuto testing.

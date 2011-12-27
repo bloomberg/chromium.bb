@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -87,7 +88,8 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
       num_login_attempts_(0),
       cros_settings_(CrosSettings::Get()),
       weak_factory_(this),
-      is_owner_login_(false) {
+      is_owner_login_(false),
+      do_auto_enrollment_(false) {
   DCHECK(current_controller_ == NULL);
   current_controller_ = this;
 
@@ -115,15 +117,10 @@ void ExistingUserController::UpdateLoginDisplay(const UserList& users,
   cros_settings_->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
                              &show_users_on_signin);
   if (show_users_on_signin) {
-    bool allow_new_user = false;
-    cros_settings_->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
     for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
       // TODO(xiyuan): Clean user profile whose email is not in whitelist.
-      if (allow_new_user ||
-          cros_settings_->FindEmailInList(kAccountsPrefUsers,
-                                          (*it)->email())) {
+      if (LoginUtils::IsWhitelisted((*it)->email()))
         filtered_users.push_back(*it);
-      }
     }
   }
 
@@ -142,6 +139,16 @@ void ExistingUserController::UpdateLoginDisplay(const UserList& users,
     login_display_->PreferencesChanged(
         filtered_users, show_guest, show_users, show_new_user);
   }
+}
+
+void ExistingUserController::DoAutoEnrollment() {
+  do_auto_enrollment_ = true;
+}
+
+void ExistingUserController::ResumeLogin() {
+  // This means the user signed-in, then auto-enrollment used his credentials
+  // to enroll and succeeded.
+  resume_login_callback_.Run();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -202,6 +209,26 @@ void ExistingUserController::SetDisplayEmail(const std::string& email) {
 
 void ExistingUserController::CompleteLogin(const std::string& username,
                                            const std::string& password) {
+  // Auto-enrollment must have made a decision by now. It's too late to enroll
+  // if the protocol isn't done at this point.
+  if (do_auto_enrollment_) {
+    VLOG(1) << "Forcing auto-enrollment before completing login";
+    auto_enrollment_username_ = username;
+    resume_login_callback_ = base::Bind(
+        &ExistingUserController::CompleteLoginInternal,
+        base::Unretained(this),
+        username,
+        password);
+    ShowEnrollmentScreen(true, username);
+  } else {
+    CompleteLoginInternal(username, password);
+  }
+}
+
+void ExistingUserController::CompleteLoginInternal(std::string username,
+                                                   std::string password) {
+  resume_login_callback_.Reset();
+
   SetOwnerUserInCryptohome();
 
   GaiaAuthConsumer::ClientLoginResult credentials;
@@ -310,12 +337,21 @@ void ExistingUserController::OnStartEnterpriseEnrollment() {
 void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
     OwnershipService::Status status,
     bool current_user_is_owner) {
-  if (status == OwnershipService::OWNERSHIP_NONE) {
-    host_->StartWizard(WizardController::kEnterpriseEnrollmentScreenName,
-                       GURL());
-    login_display_->OnFadeOut();
-  }
+  if (status == OwnershipService::OWNERSHIP_NONE)
+    ShowEnrollmentScreen(false, std::string());
   ownership_checker_.reset();
+}
+
+void ExistingUserController::ShowEnrollmentScreen(bool is_auto_enrollment,
+                                                  const std::string& user) {
+  DictionaryValue* params = NULL;
+  if (is_auto_enrollment) {
+    params = new DictionaryValue;
+    params->SetBoolean("is_auto_enrollment", true);
+    params->SetString("user", user);
+  }
+  host_->StartWizard(WizardController::kEnterpriseEnrollmentScreenName, params);
+  login_display_->OnFadeOut();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -594,10 +630,12 @@ void ExistingUserController::ResyncEncryptedData() {
 // ExistingUserController, private:
 
 void ExistingUserController::ActivateWizard(const std::string& screen_name) {
-  GURL start_url;
-  if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
-    start_url = guest_mode_url_;
-  host_->StartWizard(screen_name, start_url);
+  DictionaryValue* params = NULL;
+  if (chromeos::UserManager::Get()->IsLoggedInAsGuest()) {
+    params = new DictionaryValue;
+    params->SetString("start_url", guest_mode_url_.spec());
+  }
+  host_->StartWizard(screen_name, params);
 }
 
 gfx::NativeWindow ExistingUserController::GetNativeWindow() const {

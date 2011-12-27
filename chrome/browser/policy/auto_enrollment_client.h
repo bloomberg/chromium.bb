@@ -37,6 +37,10 @@ class AutoEnrollmentClient
                        int power_limit);
   virtual ~AutoEnrollmentClient();
 
+  // Returns true if auto-enrollment is disabled in this device. In that case,
+  // instances returned by Create() fail immediately once Start() is invoked.
+  static bool IsDisabled();
+
   // Convenience method to create instances of this class.
   static AutoEnrollmentClient* Create(const base::Closure& completion_callback);
 

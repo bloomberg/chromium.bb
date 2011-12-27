@@ -8,10 +8,10 @@
 
 #include <string>
 
+#include "base/values.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/login_display.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace views {
@@ -61,15 +61,23 @@ class LoginDisplayHost {
   // Creates and shows a background window.
   virtual void ShowBackground() = 0;
 
+  // Signals the LoginDisplayHost that it can proceed with the Enterprise
+  // Auto-Enrollment checks now.
+  virtual void CheckForAutoEnrollment() = 0;
+
   // Starts out-of-box-experience flow or shows other screen handled by
   // Wizard controller i.e. camera, recovery.
   // One could specify start screen with |first_screen_name|.
+  // Takes ownership of |screen_parameters|, which can also be NULL.
   virtual void StartWizard(
       const std::string& first_screen_name,
-      const GURL& start_url) = 0;
+      DictionaryValue* screen_parameters) = 0;
 
   // Starts sign in screen.
   virtual void StartSignInScreen() = 0;
+
+  // Resumes a previously started sign in screen.
+  virtual void ResumeSignInScreen() = 0;
 };
 
 }  // namespace chromeos

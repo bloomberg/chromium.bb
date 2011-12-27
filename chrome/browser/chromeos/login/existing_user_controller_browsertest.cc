@@ -27,9 +27,9 @@
 namespace chromeos {
 
 using ::testing::AnyNumber;
-using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::ReturnNull;
+using ::testing::_;
 
 const char kUsername[] = "test_user@gmail.com";
 const char kPassword[] = "test_password";
@@ -70,9 +70,10 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD1(SetStatusAreaEnabled, void(bool));
   MOCK_METHOD1(SetStatusAreaVisible, void(bool));
   MOCK_METHOD0(ShowBackground, void(void));
-  MOCK_METHOD2(StartWizard, void(const std::string&,
-                                 const GURL&));
+  MOCK_METHOD0(CheckForAutoEnrollment, void(void));
+  MOCK_METHOD2(StartWizard, void(const std::string&, DictionaryValue*));
   MOCK_METHOD0(StartSignInScreen, void(void));
+  MOCK_METHOD0(ResumeSignInScreen, void(void));
 
  private:
  DISALLOW_COPY_AND_ASSIGN(MockLoginDisplayHost);
@@ -84,10 +85,11 @@ class MockLoginPerformerDelegate : public LoginPerformer::Delegate {
       : controller_(controller) {
   }
 
-  void OnLoginSuccess(const std::string&,
-                      const std::string&,
-                      const GaiaAuthConsumer::ClientLoginResult&,
-                      bool, bool) {
+  virtual void OnLoginSuccess(const std::string& username,
+                              const std::string& password,
+                              const GaiaAuthConsumer::ClientLoginResult& result,
+                              bool pending_requests,
+                              bool using_oauth) OVERRIDE {
     ignore_result(controller_->login_performer_.release());
     controller_->ActivateWizard(WizardController::kUserImageScreenName);
   }
@@ -155,7 +157,7 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
         new ExistingUserController(mock_login_display_host_.get());
     controller->Init(UserList());
     MockLoginPerformerDelegate* mock_delegate =
-          new MockLoginPerformerDelegate(controller);
+        new MockLoginPerformerDelegate(controller);
     existing_user_controller()->set_login_performer_delegate(mock_delegate);
   }
 
@@ -181,10 +183,29 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, NewUserLogin) {
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
       .Times(1);
   EXPECT_CALL(*mock_login_display_host_,
-              StartWizard(WizardController::kUserImageScreenName,
-                          GURL()))
+              StartWizard(WizardController::kUserImageScreenName, NULL))
       .Times(1);
   existing_user_controller()->Login(kUsername, kPassword);
+}
+
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, AutoEnrollAfterSignIn) {
+  EXPECT_CALL(*mock_login_display_host_,
+              StartWizard(WizardController::kEnterpriseEnrollmentScreenName, _))
+      .Times(1);
+  EXPECT_CALL(*mock_cryptohome_library_, AsyncSetOwnerUser(_, _)).Times(0);
+  existing_user_controller()->DoAutoEnrollment();
+  existing_user_controller()->CompleteLogin(kUsername, kPassword);
+}
+
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, DontAutoEnrollAfterSignIn) {
+  EXPECT_CALL(*mock_login_display_host_,
+              StartWizard(WizardController::kEnterpriseEnrollmentScreenName, _))
+      .Times(0);
+  EXPECT_CALL(*mock_login_display_host_,
+              StartWizard(WizardController::kUserImageScreenName, _))
+      .Times(1);
+  EXPECT_CALL(*mock_cryptohome_library_, AsyncSetOwnerUser(_, _)).Times(1);
+  existing_user_controller()->CompleteLogin(kUsername, kPassword);
 }
 
 }  // namespace chromeos
