@@ -173,9 +173,9 @@ void AutoEnrollmentClient::SendRequest(int power) {
 
 void AutoEnrollmentClient::HandleAutoEnrollmentResponse(
     const em::DeviceAutoEnrollmentResponse& response) {
-  if (response.has_modulus()) {
+  if (response.has_expected_modulus()) {
     // Server is asking us to retry with a different modulus.
-    int64 modulus = response.modulus();
+    int64 modulus = response.expected_modulus();
     int64 last_modulus_used = 1 << last_power_used_;
     int power = NextPowerOf2(modulus);
     if ((1 << power) != modulus) {
@@ -204,7 +204,7 @@ void AutoEnrollmentClient::HandleAutoEnrollmentResponse(
     }
   } else {
     // Server should have sent down a list of hashes to try.
-    should_auto_enroll_ = IsSerialInProtobuf(response.hashes());
+    should_auto_enroll_ = IsSerialInProtobuf(response.hash());
     LOG(INFO) << "Auto enrollment complete, should_auto_enroll = "
               << should_auto_enroll_;
   }

@@ -77,17 +77,17 @@ class AutoEnrollmentClientTest : public testing::Test {
   void ServerWillReply(int64 modulus, bool with_hashes, bool with_serial_hash) {
     em::DeviceAutoEnrollmentResponse response;
     if (modulus >= 0)
-      response.set_modulus(modulus);
+      response.set_expected_modulus(modulus);
     if (with_hashes) {
       for (size_t i = 0; i < 10; ++i) {
         std::string serial = "serial X";
         serial[7] = '0' + i;
         std::string hash = crypto::SHA256HashString(serial);
-        response.mutable_hashes()->Add()->assign(hash);
+        response.mutable_hash()->Add()->assign(hash);
       }
     }
     if (with_serial_hash) {
-      response.mutable_hashes()->Add()->assign(kSerialHash,
+      response.mutable_hash()->Add()->assign(kSerialHash,
                                                crypto::kSHA256Length);
     }
     EXPECT_CALL(backend_, ProcessAutoEnrollmentRequest(_, _, _))

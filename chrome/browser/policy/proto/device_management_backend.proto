@@ -298,7 +298,11 @@ message DeviceAutoEnrollmentRequest {
   // Should always be present.
   optional int64 remainder = 1;
 
-  // Modulus of the hash used by the client. Should always be present.
+  // Modulus of the hash used by the client. Should always be present. This
+  // is the number of buckets the client thinks the server has. For now,
+  // it is a power of 2, but due to the strict constraint on how many serial
+  // numbers a bucket can contain, it may become non power of 2. If that
+  // happens, client-side needs to change its assumption.
   optional int64 modulus = 2;
 }
 
@@ -308,13 +312,16 @@ message DeviceAutoEnrollmentResponse {
   // should send a new DeviceAutoEnrollmentRequest with a new |remainder|
   // computed using this new |modulus|. If this field is empty, the client's
   // request was accepted.
-  optional int64 modulus = 1;
+  // DMServer guarantees that if the modulus sent by client in
+  // DeviceAutoEnrollmentRequest matches server's expectation, this field
+  // is unset.
+  optional int64 expected_modulus = 1;
 
   // List of hashes in the client's hash bucket. If the client's hash matches
   // any in this list, the client device should do enterprise enrollment.
   // If it matches none, enrollment should be optional.
   // Each entry has exactly 256 bits (32 bytes).
-  repeated bytes hashes = 2;
+  repeated bytes hash = 2;
 }
 
 // Request from the DMAgent on the device to the DMServer.  This is

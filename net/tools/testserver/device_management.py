@@ -285,11 +285,11 @@ class RequestHandler(object):
     auto_enrollment_response = dm.DeviceAutoEnrollmentResponse()
 
     if msg.modulus == 1:
-      auto_enrollment_response.hashes.append(SHA256_0)
+      auto_enrollment_response.hash.append(SHA256_0)
     elif msg.modulus == 2:
-      auto_enrollment_response.modulus = 4
+      auto_enrollment_response.expected_modulus = 4
     elif msg.modulus == 4:
-      auto_enrollment_response.modulus = 2
+      auto_enrollment_response.expected_modulus = 2
     elif msg.modulus == 8:
       return (400, 'Server error')
 
