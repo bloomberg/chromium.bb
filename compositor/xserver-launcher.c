@@ -201,6 +201,9 @@ dump_window_properties(struct wlsc_wm *wm, xcb_window_t window)
 
 	list_cookie = xcb_list_properties(wm->conn, window);
 	list_reply = xcb_list_properties_reply(wm->conn, list_cookie, NULL);
+	if (!list_reply)
+		/* Bad window, typically */
+		return;
 
 	length = xcb_list_properties_atoms_length(list_reply);
 	atoms = xcb_list_properties_atoms(list_reply);
@@ -608,6 +611,10 @@ wlsc_wm_handle_map_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 
 	for (i = 0; i < ARRAY_LENGTH(props); i++)  {
 		reply = xcb_get_property_reply(wm->conn, cookie[i], NULL);
+		if (!reply)
+			/* Bad window, typically */
+			continue;
+
 		p = ((char *) window + props[i].offset);
 
 		switch (props[i].type) {
