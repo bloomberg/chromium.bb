@@ -1,17 +1,17 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_AUDIO_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_AUDIO_H_
 
-#include <nacl/nacl_srpc.h>
 #include <pthread.h>
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/ref_counted.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_audio.h"
 

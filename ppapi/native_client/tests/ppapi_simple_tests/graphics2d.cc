@@ -9,8 +9,8 @@
 #include <limits>
 #include <string>
 
-#include <nacl/nacl_check.h>
-#include <nacl/nacl_log.h>
+#include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_bool.h"

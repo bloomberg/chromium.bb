@@ -10,7 +10,9 @@
 #include <string>
 #include <queue>
 
-#include <nacl/nacl_check.h>
+#include "native_client/src/shared/platform/nacl_check.h"
+
+
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
