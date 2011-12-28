@@ -32,7 +32,7 @@ class SrcCheckOutException(Exception):
 def FixExternalRepoPushUrls(buildroot):
   """Set up SSH push for public repo's."""
   shell_code = ('git config --remove-section "url.%(host)s" 2> /dev/null;' +
-               '[ "${REPO_REMOTE}" = "cros" ] && ' +
+               '[ "${REPO_REMOTE}" = "cros" ] || exit 0; ' +
                'git config "remote.${REPO_REMOTE}.pushurl" ' +
                '"%(host)s/${REPO_PROJECT}"')
   cros_lib.RunCommand(['repo', 'forall', '-c',
