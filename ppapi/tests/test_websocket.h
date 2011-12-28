@@ -11,6 +11,7 @@
 
 struct PPB_Core;
 struct PPB_Var;
+struct PPB_VarArrayBuffer_Dev;
 struct PPB_WebSocket_Dev;
 
 class TestWebSocket : public TestCase {
@@ -22,9 +23,13 @@ class TestWebSocket : public TestCase {
   virtual bool Init();
   virtual void RunTests(const std::string& filter);
 
-  PP_Var CreateVar(const char* string);
+  PP_Var CreateVarString(const char* string);
+  PP_Var CreateVarBinary(const uint8_t* data, uint32_t size);
   void ReleaseVar(const PP_Var& var);
-  bool AreEqual(const PP_Var& var, const char* string);
+  bool AreEqualWithString(const PP_Var& var, const char* string);
+  bool AreEqualWithBinary(const PP_Var& var,
+                          const uint8_t* data,
+                          uint32_t size);
 
   PP_Resource Connect(const char* url, int32_t* result, const char* protocol);
 
@@ -38,12 +43,14 @@ class TestWebSocket : public TestCase {
   std::string TestValidClose();
   std::string TestGetProtocol();
   std::string TestTextSendReceive();
+  std::string TestBinarySendReceive();
 
   std::string TestCcInterfaces();
 
   // Used by the tests that access the C API directly.
   const PPB_WebSocket_Dev* websocket_interface_;
   const PPB_Var* var_interface_;
+  const PPB_VarArrayBuffer_Dev* arraybuffer_interface_;
   const PPB_Core* core_interface_;
 };
 

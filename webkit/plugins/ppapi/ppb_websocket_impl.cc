@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+#include "ppapi/c/dev/ppb_var_array_buffer_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_var.h"
@@ -28,6 +29,7 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
+using ppapi::ArrayBufferVar;
 using ppapi::PpapiGlobals;
 using ppapi::StringVar;
 using ppapi::thunk::PPB_WebSocket_API;
@@ -54,9 +56,6 @@ uint64_t SaturateAdd(uint64_t a, uint64_t b) {
 }
 
 uint64_t GetFrameSize(uint64_t payload_size) {
-  if (!payload_size)
-    return 0;
-
   uint64_t overhead = kHybiBaseFramingOverhead + kHybiMaskingKeyLength;
   if (payload_size > kMinimumPayloadSizeWithEightByteExtendedPayloadLength)
     overhead += 8;
@@ -285,8 +284,10 @@ int32_t PPB_WebSocket_Impl::ReceiveMessage(PP_Var* message,
     return PP_ERROR_BADARGUMENT;
 
   // Just return received message if any received message is queued.
-  if (!received_messages_.empty())
+  if (!received_messages_.empty()) {
+    receive_callback_var_ = message;
     return DoReceive();
+  }
 
   // Check state again. In CLOSED state, no more messages will be received.
   if (state_ == PP_WEBSOCKETREADYSTATE_CLOSED_DEV)
@@ -327,8 +328,15 @@ int32_t PPB_WebSocket_Impl::SendMessage(PP_Var message) {
       scoped_refptr<StringVar> message_string = StringVar::FromPPVar(message);
       if (message_string)
         payload_size += message_string->value().length();
+    } else if (message.type == PP_VARTYPE_ARRAY_BUFFER) {
+      scoped_refptr<ArrayBufferVar> message_array_buffer =
+          ArrayBufferVar::FromPPVar(message);
+      if (message_array_buffer)
+        payload_size += message_array_buffer->ByteLength();
+    } else {
+      // TODO(toyoshim): Support Blob.
+      return PP_ERROR_NOTSUPPORTED;
     }
-    // TODO(toyoshim): Support binary data.
 
     buffered_amount_after_close_ =
         SaturateAdd(buffered_amount_after_close_, GetFrameSize(payload_size));
@@ -336,18 +344,32 @@ int32_t PPB_WebSocket_Impl::SendMessage(PP_Var message) {
     return PP_ERROR_FAILED;
   }
 
-  if (message.type != PP_VARTYPE_STRING) {
-    // TODO(toyoshim): Support binary data.
+  // Send the message.
+  if (message.type == PP_VARTYPE_STRING) {
+    // Convert message to WebString.
+    scoped_refptr<StringVar> message_string = StringVar::FromPPVar(message);
+    if (!message_string)
+      return PP_ERROR_BADARGUMENT;
+    WebString web_message = WebString::fromUTF8(message_string->value());
+    if (!websocket_->sendText(web_message))
+      return PP_ERROR_BADARGUMENT;
+  } else if (message.type == PP_VARTYPE_ARRAY_BUFFER) {
+    // Convert message to WebData.
+    // TODO(toyoshim): Must add a WebKit interface which handles WebArrayBuffer
+    // directly.
+    scoped_refptr<ArrayBufferVar> message_array_buffer =
+        ArrayBufferVar::FromPPVar(message);
+    if (!message_array_buffer)
+      return PP_ERROR_BADARGUMENT;
+    WebData web_message = WebData(
+        static_cast<const char*>(message_array_buffer->Map()),
+        static_cast<size_t>(message_array_buffer->ByteLength()));
+    if (!websocket_->sendBinary(web_message))
+      return PP_ERROR_BADARGUMENT;
+  } else {
+    // TODO(toyoshim): Support Blob.
     return PP_ERROR_NOTSUPPORTED;
   }
-
-  // Convert message to WebString.
-  scoped_refptr<StringVar> message_string = StringVar::FromPPVar(message);
-  if (!message_string)
-    return PP_ERROR_BADARGUMENT;
-  WebString web_message = WebString::fromUTF8(message_string->value());
-  if (!websocket_->sendText(web_message))
-    return PP_ERROR_BADARGUMENT;
 
   return PP_OK;
 }
@@ -424,8 +446,18 @@ void PPB_WebSocket_Impl::didReceiveBinaryData(const WebData& binaryData) {
   if (error_was_received_ || !InValidStateToReceive(state_))
     return;
 
-  // TODO(toyoshim): Support to receive binary data.
-  DLOG(INFO) << "didReceiveBinaryData is not implemented yet.";
+  // Append received data to queue.
+  PP_Var var = PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
+      binaryData.size());
+  scoped_refptr<ArrayBufferVar> arraybuffer = ArrayBufferVar::FromPPVar(var);
+  void* data = arraybuffer->Map();
+  memcpy(data, binaryData.data(), binaryData.size());
+  received_messages_.push(var);
+
+  if (!wait_for_receive_)
+    return;
+
+  PP_RunAndClearCompletionCallback(&receive_callback_, DoReceive());
 }
 
 void PPB_WebSocket_Impl::didReceiveMessageError() {

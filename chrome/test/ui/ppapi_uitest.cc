@@ -643,6 +643,7 @@ TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_InvalidClose)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_ValidClose)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_GetProtocol)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_TextSendReceive)
+TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_BinarySendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_CcInterfaces)
 
 TEST_PPAPI_IN_PROCESS(AudioConfig_ValidConfigs)
