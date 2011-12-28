@@ -461,7 +461,9 @@ class DistributedBuilder(SimpleBuilder):
 def _ConfirmBuildRoot(buildroot):
   """Confirm with user the inferred buildroot, and mark it as confirmed."""
   warning = 'Using default directory %s as buildroot' % buildroot
-  if commands.YesNoPrompt(default="no", warning=warning, full=True) == "no":
+  response = cros_lib.YesNoPrompt(default=cros_lib.NO, warning=warning,
+                                  full=True)
+  if response == cros_lib.NO:
     print('Please specify a buildroot with the --buildroot option.')
     sys.exit(0)
 

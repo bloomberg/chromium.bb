@@ -174,10 +174,10 @@ class InterfaceTest(mox.MoxTestBase):
   def testValidateClobberUserDeclines_1(self):
     """Test case where user declines in prompt."""
     self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(commands, 'GetInput')
+    self.mox.StubOutWithMock(cros_lib, 'GetInput')
 
     os.path.exists(self._BUILD_ROOT).AndReturn(True)
-    commands.GetInput(mox.IgnoreArg()).AndReturn('No')
+    cros_lib.GetInput(mox.IgnoreArg()).AndReturn('No')
 
     self.mox.ReplayAll()
     self.assertFalse(commands.ValidateClobber(self._BUILD_ROOT))
@@ -186,11 +186,11 @@ class InterfaceTest(mox.MoxTestBase):
   def testValidateClobberUserDeclines_2(self):
     """Test case where user does not enter the full 'yes' pattern."""
     self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(commands, 'GetInput')
+    self.mox.StubOutWithMock(cros_lib, 'GetInput')
 
     os.path.exists(self._BUILD_ROOT).AndReturn(True)
-    commands.GetInput(mox.IgnoreArg()).AndReturn('y')
-    commands.GetInput(mox.IgnoreArg()).AndReturn('No')
+    cros_lib.GetInput(mox.IgnoreArg()).AndReturn('y')
+    cros_lib.GetInput(mox.IgnoreArg()).AndReturn('No')
 
     self.mox.ReplayAll()
     self.assertFalse(commands.ValidateClobber(self._BUILD_ROOT))
@@ -315,7 +315,7 @@ class FullInterfaceTest(unittest.TestCase):
     self.mox.StubOutWithMock(cros_lib, 'IsInsideChroot')
     self.mox.StubOutWithMock(cbuildbot, '_CreateParser')
     self.mox.StubOutWithMock(sys, 'exit')
-    self.mox.StubOutWithMock(commands, 'GetInput')
+    self.mox.StubOutWithMock(cros_lib, 'GetInput')
     self.mox.StubOutWithMock(cros_lib, 'FindRepoDir')
     self.mox.StubOutWithMock(cbuildbot, '_RunBuildStagesWrapper')
     self.mox.StubOutWithMock(cbuildbot, '_RunBuildStagesWithSudoProcess')
@@ -373,7 +373,7 @@ class FullInterfaceTest(unittest.TestCase):
   def testInferBuildRootPromptNo(self):
     """Test that a 'no' answer on the prompt halts execution."""
     os.path.exists(self.external_marker).InAnyOrder().AndReturn(False)
-    commands.GetInput(mox.IgnoreArg()).InAnyOrder().AndReturn('no')
+    cros_lib.GetInput(mox.IgnoreArg()).InAnyOrder().AndReturn('no')
 
     self.mox.ReplayAll()
     self.assertRaises(TestExitedException, cbuildbot.main,
@@ -382,7 +382,7 @@ class FullInterfaceTest(unittest.TestCase):
   def testInferBuildRootExists(self):
     """Test that we don't prompt the user if buildroot already exists."""
     os.path.exists(self.external_marker).InAnyOrder().AndReturn(True)
-    (commands.GetInput(mox.IgnoreArg()).InAnyOrder()
+    (cros_lib.GetInput(mox.IgnoreArg()).InAnyOrder()
         .AndRaise(TestFailedException()))
 
     self.mox.ReplayAll()

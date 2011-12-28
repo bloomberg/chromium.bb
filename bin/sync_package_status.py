@@ -15,6 +15,7 @@ import gdata.projecthosting.client
 import gdata.spreadsheet.service
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+import chromite.lib.cros_build_lib as cros_lib
 import chromite.lib.gdata_lib as gdata_lib
 import chromite.lib.operation as operation
 import chromite.lib.upgrade_table as utable
@@ -546,6 +547,12 @@ def _CreateOptParser():
             'in that column then a tracker issue is created.  If it '
             'does not need an upgrade then that column is cleared.\n'
             '\n'
+            'Credentials must be specified using --cred-file or '
+            '--email.  The former has a default value which you can\n'
+            'rely on if valid, the latter will prompt for your password.  '
+            'If you specify --email you will be given a chance to save\n'
+            'your email/password out as a credentials file for next time.\n'
+            '\n'
             'Uses spreadsheet key %s (worksheet "%s").\n'
             '\n'
             'Use the --team and --owner options to operate only on '
@@ -565,6 +572,9 @@ def _CreateOptParser():
   parser.add_option('--cred-file', dest='cred_file', type='string',
                     action='store', default=gdata_lib.CRED_FILE,
                     help='Path to gdata credentials file [default: "%default"]')
+  parser.add_option('--email', dest='email', type='string',
+                    action='store', default=None,
+                    help="Email for Google Doc/Tracker user")
   parser.add_option('--pretend', dest='pretend', action='store_true',
                     default=False,
                     help='Do not make any actual changes.')
@@ -580,7 +590,6 @@ def _CreateOptParser():
 
   return parser
 
-
 def main():
   """Main function."""
   parser = _CreateOptParser()
@@ -588,7 +597,7 @@ def main():
 
   oper.verbose = options.verbose
 
-  creds = gdata_lib.Creds(cred_file=options.cred_file)
+  creds = gdata_lib.Creds(cred_file=options.cred_file, user=options.email)
   tcomm = TrackerComm(creds)
   scomm = SpreadsheetComm(creds, SS_KEY, PKGS_WS_NAME)
 
@@ -604,6 +613,17 @@ def main():
     syncer.Sync()
   except SyncError as ex:
     oper.Die(str(ex))
+
+  # If --email, which is only effective when run interactively (because the
+  # password must be entered), give the option of saving to a creds file for
+  # next time.
+  if options.email and options.cred_file:
+    prompt = 'Do you want to save credentials to %r?' % options.cred_file
+    if 'yes' == cros_lib.YesNoPrompt(default='no', prompt=prompt):
+      creds.StoreCreds(options.cred_file)
+      oper.Notice('Be sure to save the creds file to the same location'
+                  ' outside your chroot so it will also be used with'
+                  ' future chroots.')
 
 if __name__ == '__main__':
   main()

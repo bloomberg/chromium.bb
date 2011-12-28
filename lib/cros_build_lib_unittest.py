@@ -12,10 +12,13 @@ import subprocess
 import tempfile
 import unittest
 import cros_build_lib
+import cros_test_lib
 import mox
 
+import __builtin__
 
 # pylint: disable=W0212,R0904
+
 class TestRunCommandNoMock(unittest.TestCase):
   """Class that tests RunCommand by not mocking subprocess.Popen"""
 
@@ -426,6 +429,107 @@ class HelperMethodSimpleTests(unittest.TestCase):
 
   def testGetChromeosVersionWithNoneInputReturnsDefault(self):
     self._TestChromeosVersion(None)
+
+
+class YNInteraction():
+  """Class to hold a list of responses and expected reault of YN prompt."""
+  def __init__(self, responses, expected_result):
+    self.responses = responses
+    self.expected_result = expected_result
+
+
+class InputTest(cros_test_lib.MoxTestCase):
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+
+  def testGetInput(self):
+    self.mox.StubOutWithMock(__builtin__, 'raw_input')
+
+    prompt = 'Some prompt'
+    response = 'Some response'
+    __builtin__.raw_input(prompt).AndReturn(response)
+    self.mox.ReplayAll()
+
+    self.assertEquals(response, cros_build_lib.GetInput(prompt))
+    self.mox.VerifyAll()
+
+  def _TestYesNoPrompt(self, interactions, prompt_suffix, default, full):
+    self.mox.StubOutWithMock(__builtin__, 'raw_input')
+
+    prompt = 'Continue' # Not important
+    actual_prompt = '\n%s %s? ' % (prompt, prompt_suffix)
+
+    for interaction in interactions:
+      for response in interaction.responses:
+        __builtin__.raw_input(actual_prompt).AndReturn(response)
+    self.mox.ReplayAll()
+
+    for interaction in interactions:
+      retval = cros_build_lib.YesNoPrompt(default, prompt=prompt, full=full)
+      msg = ('A %s prompt with %r responses expected result %r, but got %r' %
+             (prompt_suffix, interaction.responses,
+              interaction.expected_result, retval))
+      self.assertEquals(interaction.expected_result, retval, msg=msg)
+    self.mox.VerifyAll()
+
+  def testYesNoDefaultNo(self):
+    tests = [YNInteraction([''], cros_build_lib.NO),
+             YNInteraction(['n'], cros_build_lib.NO),
+             YNInteraction(['no'], cros_build_lib.NO),
+             YNInteraction(['foo', ''], cros_build_lib.NO),
+             YNInteraction(['foo', 'no'], cros_build_lib.NO),
+             YNInteraction(['y'], cros_build_lib.YES),
+             YNInteraction(['ye'], cros_build_lib.YES),
+             YNInteraction(['yes'], cros_build_lib.YES),
+             YNInteraction(['foo', 'yes'], cros_build_lib.YES),
+             YNInteraction(['foo', 'bar', 'x', 'y'], cros_build_lib.YES),
+             ]
+    self._TestYesNoPrompt(tests, '(y/N)', cros_build_lib.NO, False)
+
+  def testYesNoDefaultYes(self):
+    tests = [YNInteraction([''], cros_build_lib.YES),
+             YNInteraction(['n'], cros_build_lib.NO),
+             YNInteraction(['no'], cros_build_lib.NO),
+             YNInteraction(['foo', ''], cros_build_lib.YES),
+             YNInteraction(['foo', 'no'], cros_build_lib.NO),
+             YNInteraction(['y'], cros_build_lib.YES),
+             YNInteraction(['ye'], cros_build_lib.YES),
+             YNInteraction(['yes'], cros_build_lib.YES),
+             YNInteraction(['foo', 'yes'], cros_build_lib.YES),
+             YNInteraction(['foo', 'bar', 'x', 'y'], cros_build_lib.YES),
+             ]
+    self._TestYesNoPrompt(tests, '(Y/n)', cros_build_lib.YES, False)
+
+  def testYesNoDefaultNoFull(self):
+    tests = [YNInteraction([''], cros_build_lib.NO),
+             YNInteraction(['n', ''], cros_build_lib.NO),
+             YNInteraction(['no'], cros_build_lib.NO),
+             YNInteraction(['foo', ''], cros_build_lib.NO),
+             YNInteraction(['foo', 'no'], cros_build_lib.NO),
+             YNInteraction(['y', 'yes'], cros_build_lib.YES),
+             YNInteraction(['ye', ''], cros_build_lib.NO),
+             YNInteraction(['yes'], cros_build_lib.YES),
+             YNInteraction(['foo', 'yes'], cros_build_lib.YES),
+             YNInteraction(['foo', 'bar', 'y', ''], cros_build_lib.NO),
+             YNInteraction(['n', 'y', 'no'], cros_build_lib.NO),
+            ]
+    self._TestYesNoPrompt(tests, '(yes/No)', cros_build_lib.NO, True)
+
+  def testYesNoDefaultYesFull(self):
+    tests = [YNInteraction([''], cros_build_lib.YES),
+             YNInteraction(['n', ''], cros_build_lib.YES),
+             YNInteraction(['no'], cros_build_lib.NO),
+             YNInteraction(['foo', ''], cros_build_lib.YES),
+             YNInteraction(['foo', 'no'], cros_build_lib.NO),
+             YNInteraction(['y', 'yes'], cros_build_lib.YES),
+             YNInteraction(['n', ''], cros_build_lib.YES),
+             YNInteraction(['yes'], cros_build_lib.YES),
+             YNInteraction(['foo', 'yes'], cros_build_lib.YES),
+             YNInteraction(['foo', 'bar', 'n', ''], cros_build_lib.YES),
+             YNInteraction(['n', 'y', 'no'], cros_build_lib.NO),
+            ]
+    self._TestYesNoPrompt(tests, '(Yes/no)', cros_build_lib.YES, True)
 
 
 if __name__ == '__main__':

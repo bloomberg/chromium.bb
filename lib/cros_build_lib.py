@@ -16,7 +16,8 @@ import xml.sax
 
 
 _STDOUT_IS_TTY = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
-
+YES = 'yes'
+NO = 'no'
 
 class DebugLevel(object):
   """Object that controls the verbosity of program output.
@@ -788,3 +789,61 @@ def OldRunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                (GetCallerName(), cmd, cwd))
 
   return output
+
+def GetInput(prompt):
+  """Helper function to grab input from a user.   Makes testing easier."""
+  return raw_input(prompt)
+
+
+def YesNoPrompt(default, prompt="Do you want to continue", warning="",
+                full=False):
+  """Helper function for processing yes/no inputs from user.
+
+  Args:
+    default: Answer selected if the user hits "enter" without typing anything.
+    prompt: The question to present to the user.
+    warning: An optional warning to issue before the prompt.
+    full: If True, user has to type "yes" or "no", otherwise "y" or "n" is OK.
+
+  Returns:
+    What the user entered, normalized to "yes" or "no".
+  """
+  if warning:
+    Warning(warning)
+
+  if full:
+    if default == NO:
+      # ('yes', 'No')
+      yes, no = YES, NO[0].upper() + NO[1:]
+    else:
+      # ('Yes', 'no')
+      yes, no = YES[0].upper() + YES[1:], NO
+    expy = [YES]
+    expn = [NO]
+  else:
+    if default == NO:
+      # ('y', 'N')
+      yes, no = YES[0].lower(), NO[0].upper()
+    else:
+      # ('Y', 'n')
+      yes, no = YES[0].upper(), NO[0].lower()
+    # expy = ['y', 'ye', 'yes'], expn = ['n', 'no']
+    expy = [YES[0:i + 1] for i in xrange(len(YES))]
+    expn = [NO[0:i + 1] for i in xrange(len(NO))]
+
+  prompt = ('\n%s (%s/%s)? ' % (prompt, yes, no))
+  while True:
+    response = GetInput(prompt).lower()
+    if not response:
+      response = default
+    if response in expy:
+      return YES
+    elif response in expn:
+      return NO
+
+# Support having this module test itself if run as __main__, by leveraging
+# the corresponding unittest module.
+# Also, the unittests serve as extra documentation.
+if __name__ == '__main__':
+  import cros_build_lib_unittest
+  cros_build_lib_unittest.unittest.main(cros_build_lib_unittest)

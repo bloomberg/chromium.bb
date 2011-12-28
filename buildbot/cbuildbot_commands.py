@@ -112,48 +112,6 @@ def GetInput(prompt):
   return raw_input(prompt)
 
 
-def YesNoPrompt(default, prompt="Do you want to continue", warning="",
-                full=False):
-  """Helper function for processing yes/no inputs from user.
-
-  Args:
-    default: Answer selected if the user hits "enter" without typing anything.
-    prompt: The question to present to the user.
-    warning: An optional warning to issue before the prompt.
-    full: If True, user has to type "yes" or "no", otherwise "y" or "n" is OK.
-
-  Returns:
-    What the user entered, normalized to "yes" or "no".
-  """
-  if warning:
-    cros_lib.Warning(warning)
-
-  if full:
-    if default == "no":
-      (yes, no) = ("yes", "No")
-    else:
-      (yes, no) = ("Yes", "no")
-    expy = ["yes"]
-    expn = ["no"]
-  else:
-    if default == "no":
-      (yes, no) = ("y", "N")
-    else:
-      (yes, no) = ("Y", "n")
-    expy = ["n", "no"]
-    expn = ["y", "ye", "yes"]
-
-  prompt = ('\n%s (%s/%s)? ' % (prompt, yes, no))
-  while True:
-    response = GetInput(prompt).lower()
-    if not response:
-      response = default
-    if response in expy:
-      return "yes"
-    elif response in expn:
-      return "no"
-
-
 def ValidateClobber(buildroot):
   """Do due diligence if user wants to clobber buildroot.
 
@@ -166,7 +124,9 @@ def ValidateClobber(buildroot):
 
   if os.path.exists(buildroot):
     warning = 'This will delete %s' % buildroot
-    return YesNoPrompt(default="no", warning=warning, full=True) == "yes"
+    response = cros_lib.YesNoPrompt(default=cros_lib.NO, warning=warning,
+                                    full=True)
+    return response == cros_lib.YES
 
 
 # =========================== Main Commands ===================================
