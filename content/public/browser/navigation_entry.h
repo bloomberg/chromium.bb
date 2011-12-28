@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/string16.h"
+#include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/referrer.h"
@@ -28,8 +29,8 @@ class NavigationEntry {
  public:
   virtual ~NavigationEntry() {}
 
-  static NavigationEntry* Create();
-  static NavigationEntry* Create(const NavigationEntry& copy);
+  CONTENT_EXPORT static NavigationEntry* Create();
+  CONTENT_EXPORT static NavigationEntry* Create(const NavigationEntry& copy);
 
   // Page-related stuff --------------------------------------------------------
 
