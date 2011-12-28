@@ -615,10 +615,10 @@ of HTTP redirection or HTTP authentication.</p>
 <p>To register an event listener for a web request, you use a variation on the
 <a href="events.html">usual <code>addListener()</code> function</a>.
 In addition to specifying a callback function,
-you can also specify two optional arguments:
-a filter and extra info.</p><p>
+you have to specify a filter argument and you may specify an optional extra info
+argument.</p>
 
-</p><p>The three arguments to the web request API's <code>addListener()</code> have
+<p>The three arguments to the web request API's <code>addListener()</code> have
 the following definitions:</p>
 <pre>var callback = function(details) {...};
 var filter = {...};
@@ -1060,7 +1060,7 @@ samples</a>.</p>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when an authentication failure was received. The listener has three options: it can provide authentication credentials, it can cancel the request and display the error page, or it can take no action on the challenge. If bad user credentials are provided, this may be called multiple times for the same request.</p>
+                <p>Fired when an authentication failure is received. The listener has three options: it can provide authentication credentials, it can cancel the request and display the error page, or it can take no action on the challenge. If bad user credentials are provided, this may be called multiple times for the same request.</p>
 
                 <!-- LISTENER PARAMETERS -->
                 <div>
@@ -1350,7 +1350,7 @@ samples</a>.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
+          <dd>The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2167,7 +2167,7 @@ samples</a>.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>HTTP status line of the response</dd>
+          <dd>HTTP status line of the response.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2539,7 +2539,7 @@ samples</a>.</p>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when a server initiated redirect is about to occur.</p>
+                <p>Fired when a server-initiated redirect is about to occur.</p>
 
                 <!-- LISTENER PARAMETERS -->
                 <div>
@@ -2829,7 +2829,7 @@ samples</a>.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
+          <dd>The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -3509,7 +3509,7 @@ samples</a>.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>HTTP status line of the response</dd>
+          <dd>HTTP status line of the response.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -4036,7 +4036,7 @@ samples</a>.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
+          <dd>The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -4900,7 +4900,7 @@ samples</a>.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
+          <dd>The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -5832,7 +5832,7 @@ samples</a>.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
+          <dd>The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -6444,7 +6444,7 @@ samples</a>.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>HTTP status line of the response</dd>
+          <dd>HTTP status line of the response.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -6971,7 +6971,7 @@ samples</a>.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
+          <dd>The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -7605,7 +7605,7 @@ samples</a>.</p>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when HTTP response headers of a request have been received</p>
+                <p>Fired when HTTP response headers of a request have been received.</p>
 
                 <!-- LISTENER PARAMETERS -->
                 <div>
@@ -7895,7 +7895,7 @@ samples</a>.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
+          <dd>The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -8235,7 +8235,7 @@ samples</a>.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>HTTP status line of the response</dd>
+          <dd>HTTP status line of the response.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -8895,7 +8895,7 @@ samples</a>.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
+          <dd>The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -9507,7 +9507,7 @@ samples</a>.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>HTTP status line of the response</dd>
+          <dd>HTTP status line of the response.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -9744,7 +9744,7 @@ samples</a>.</p>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired just before a request is going to be sent to the server (modifications of prvious onBeforeSendHeaders callbacks are visible by the time onSendHeaders is fired).</p>
+                <p>Fired just before a request is going to be sent to the server (modifications of previous onBeforeSendHeaders callbacks are visible by the time onSendHeaders is fired).</p>
 
                 <!-- LISTENER PARAMETERS -->
                 <div>
@@ -10034,7 +10034,7 @@ samples</a>.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
+          <dd>The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -11555,7 +11555,7 @@ samples</a>.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Only used as a response to the onHeadersReceived event. If set, the server is assumed to have responsed with these response headers instead. Only return <code>responseHeaders</code> if you really want to modify the headers in order to limit the number of conflicts (only one extension may modify <code>responseHeaders</code> for each request).</dd>
+          <dd>Only used as a response to the onHeadersReceived event. If set, the server is assumed to have responded with these response headers instead. Only return <code>responseHeaders</code> if you really want to modify the headers in order to limit the number of conflicts (only one extension may modify <code>responseHeaders</code> for each request).</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
