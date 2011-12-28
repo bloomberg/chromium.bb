@@ -17,7 +17,8 @@ class SiteInstance;
 
 namespace content {
 
-class NavigationEntryImpl : public NavigationEntry {
+class CONTENT_EXPORT NavigationEntryImpl
+    : public NON_EXPORTED_BASE(NavigationEntry) {
  public:
   static NavigationEntryImpl* FromNavigationEntry(NavigationEntry* entry);
 
