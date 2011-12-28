@@ -278,8 +278,6 @@
         'ime/input_method_gtk.cc',
         'ime/input_method_gtk.h',
         'ime/input_method.h',
-        'ime/input_method_ibus.cc',
-        'ime/input_method_ibus.h',
         'ime/input_method_win.cc',
         'ime/input_method_win.h',
         'ime/mock_input_method.cc',
@@ -444,20 +442,6 @@
             'controls/tabbed_pane/native_tabbed_pane_views.cc',
             'controls/tabbed_pane/native_tabbed_pane_views.h',
             'widget/tooltip_manager_views.cc',
-          ],
-        }],
-        ['use_ibus==1', {
-          'dependencies': [
-            '../../build/linux/system.gyp:ibus',
-          ],
-          'sources/': [
-            ['exclude', 'ime/mock_input_method.cc'],
-            ['exclude', 'ime/mock_input_method.h'],
-          ],
-        }, { # else: use_ibus != 1
-          'sources/': [
-            ['exclude', 'ime/input_method_ibus.cc'],
-            ['exclude', 'ime/input_method_ibus.h'],
           ],
         }],
         ['OS=="win"', {

@@ -45,10 +45,6 @@
 #include "ui/views/widget/tooltip_manager_gtk.h"
 #include "ui/views/widget/widget_delegate.h"
 
-#if defined(HAVE_IBUS)
-#include "ui/views/ime/input_method_ibus.h"
-#endif
-
 using ui::OSExchangeData;
 using ui::OSExchangeDataProviderGtk;
 using ui::ActiveWindowWatcherX;
@@ -950,17 +946,8 @@ bool NativeWidgetGtk::HasMouseCapture() const {
 
 InputMethod* NativeWidgetGtk::CreateInputMethod() {
   // Create input method when pure views is enabled but not on views desktop.
-  // TODO(suzhe): Always enable input method when we start to use
-  // RenderWidgetHostViewViews in normal ChromeOS.
   if (views::Widget::IsPureViews()) {
-#if defined(HAVE_IBUS)
-    InputMethod* input_method =
-        InputMethodIBus::IsInputMethodIBusEnabled() ?
-        static_cast<InputMethod*>(new InputMethodIBus(this)) :
-        static_cast<InputMethod*>(new InputMethodGtk(this));
-#else
     InputMethod* input_method = new InputMethodGtk(this);
-#endif
     input_method->Init(GetWidget());
     return input_method;
   }
