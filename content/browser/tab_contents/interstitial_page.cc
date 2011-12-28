@@ -136,7 +136,7 @@ InterstitialPage::InterstitialPage(TabContents* tab,
   // (which is the case when the interstitial was triggered by a sub-resource on
   // a page) when we have a pending entry (in the process of loading a new top
   // frame).
-  DCHECK(new_navigation || !tab->GetController().pending_entry());
+  DCHECK(new_navigation || !tab->GetController().GetPendingEntry());
 }
 
 InterstitialPage::~InterstitialPage() {

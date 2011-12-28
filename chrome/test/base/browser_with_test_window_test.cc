@@ -14,8 +14,8 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/common/page_transition_types.h"
 
 using content::BrowserThread;
@@ -71,7 +71,7 @@ void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
 
 void BrowserWithTestWindowTest::CommitPendingLoad(
     NavigationController* controller) {
-  if (!controller->pending_entry())
+  if (!controller->GetPendingEntry())
     return;  // Nothing to commit.
 
   TestRenderViewHost* old_rvh =
@@ -95,15 +95,15 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
   // just have a standalong pending_entry that isn't in the list already).
   if (controller->pending_entry_index() >= 0) {
     test_rvh->SendNavigateWithTransition(
-        controller->pending_entry()->GetPageID(),
-        controller->pending_entry()->GetURL(),
-        controller->pending_entry()->GetTransitionType());
+        controller->GetPendingEntry()->GetPageID(),
+        controller->GetPendingEntry()->GetURL(),
+        controller->GetPendingEntry()->GetTransitionType());
   } else {
     test_rvh->SendNavigateWithTransition(
         controller->tab_contents()->
             GetMaxPageIDForSiteInstance(test_rvh->site_instance()) + 1,
-        controller->pending_entry()->GetURL(),
-        controller->pending_entry()->GetTransitionType());
+        controller->GetPendingEntry()->GetURL(),
+        controller->GetPendingEntry()->GetTransitionType());
   }
 
   // Simulate the SwapOut_ACK that fires if you commit a cross-site navigation

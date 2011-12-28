@@ -13,8 +13,8 @@
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
@@ -99,9 +99,10 @@ class TabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     session_service->SetSelectedTabInWindow(window_id, 0);
     if (pinned)
       session_service->SetPinnedState(window_id, tab_id, true);
-    NavigationEntry entry;
-    entry.SetURL(url1_);
-    session_service->UpdateTabNavigation(window_id, tab_id, 0, entry);
+    scoped_ptr<content::NavigationEntry> entry(
+        content::NavigationEntry::Create());;
+    entry->SetURL(url1_);
+    session_service->UpdateTabNavigation(window_id, tab_id, 0, *entry.get());
   }
 
   // Creates a SessionService and assigns it to the Profile. The SessionService

@@ -121,13 +121,11 @@ class CONTENT_EXPORT NavigationController {
     return static_cast<int>(entries_.size());
   }
 
-  NavigationEntry* GetEntryAtIndex(int index) const {
-    return entries_.at(index).get();
-  }
+  content::NavigationEntry* GetEntryAtIndex(int index) const;
 
   // Returns the entry at the specified offset from current.  Returns NULL
   // if out of bounds.
-  NavigationEntry* GetEntryAtOffset(int offset) const;
+  content::NavigationEntry* GetEntryAtOffset(int offset) const;
 
   // Returns the index of the specified entry, or -1 if entry is not contained
   // in this NavigationController.
@@ -150,9 +148,7 @@ class CONTENT_EXPORT NavigationController {
 
   // Returns the pending entry corresponding to the navigation that is
   // currently in progress, or null if there is none.
-  NavigationEntry* pending_entry() const {
-    return pending_entry_;
-  }
+  content::NavigationEntry* GetPendingEntry() const;
 
   // Returns the index of the pending entry or -1 if the pending entry
   // corresponds to a new navigation (created via LoadURL).
@@ -173,7 +169,7 @@ class CONTENT_EXPORT NavigationController {
 
   // Returns the transient entry if any.  Note that the returned entry is owned
   // by the navigation controller and may be deleted at any time.
-  NavigationEntry* GetTransientEntry() const;
+  content::NavigationEntry* GetTransientEntry() const;
 
   // New navigations -----------------------------------------------------------
 
@@ -273,7 +269,7 @@ class CONTENT_EXPORT NavigationController {
   // Broadcasts the NOTIFY_NAV_ENTRY_CHANGED notification for the given entry
   // (which must be at the given index). This will keep things in sync like
   // the saved session.
-  void NotifyEntryChanged(const NavigationEntry* entry, int index);
+  void NotifyEntryChanged(const content::NavigationEntry* entry, int index);
 
   // Returns true if the given URL would be an in-page navigation (i.e. only
   // the reference fragment is different) from the "last committed entry". We do
@@ -351,7 +347,14 @@ class CONTENT_EXPORT NavigationController {
   // Creates navigation entry and translates the virtual url to a real one.
   // Used when navigating to a new URL using LoadURL.  Extra headers are
   // separated by \n.
-  static NavigationEntry* CreateNavigationEntry(
+  static content::NavigationEntry* CreateNavigationEntry(
+      const GURL& url,
+      const content::Referrer& referrer,
+      content::PageTransition transition,
+      bool is_renderer_initiated,
+      const std::string& extra_headers,
+      content::BrowserContext* browser_context);
+  static NavigationEntry* CreateNavigationEntryImpl(
       const GURL& url,
       const content::Referrer& referrer,
       content::PageTransition transition,

@@ -19,7 +19,6 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
-class NavigationEntry;
 class Profile;
 
 namespace content {
@@ -51,7 +50,8 @@ class TabNavigation {
 
   // Converts this TabNavigation into a NavigationEntry with a page id of
   // |page_id|. The caller owns the returned NavigationEntry.
-  NavigationEntry* ToNavigationEntry(int page_id, Profile* profile) const;
+  content::NavigationEntry* ToNavigationEntry(int page_id,
+                                              Profile* profile) const;
 
   // Resets this TabNavigation from |entry|.
   void SetFromNavigationEntry(const content::NavigationEntry& entry);

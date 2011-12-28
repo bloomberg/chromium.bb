@@ -37,6 +37,7 @@ class CONTENT_EXPORT NavigationEntry
   virtual content::PageType GetPageType() const OVERRIDE;
   virtual void SetURL(const GURL& url) OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
+  virtual void SetReferrer(const content::Referrer& referrer) OVERRIDE;
   virtual const content::Referrer& GetReferrer() const OVERRIDE;
   virtual void SetVirtualURL(const GURL& url) OVERRIDE;
   virtual const GURL& GetVirtualURL() const OVERRIDE;
@@ -49,6 +50,8 @@ class CONTENT_EXPORT NavigationEntry
   virtual const string16& GetTitleForDisplay(
       const std::string& languages) const OVERRIDE;
   virtual bool IsViewSourceMode() const OVERRIDE;
+  virtual void SetTransitionType(
+      content::PageTransition transition_type) OVERRIDE;
   virtual content::PageTransition GetTransitionType() const OVERRIDE;
   virtual const GURL& GetUserTypedURL() const OVERRIDE;
   virtual void SetHasPostData(bool has_post_data) OVERRIDE;
@@ -60,10 +63,6 @@ class CONTENT_EXPORT NavigationEntry
 
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
-  }
-
-  void set_transition_type(content::PageTransition transition_type) {
-    transition_type_ = transition_type;
   }
 
   // The SiteInstance tells us how to share sub-processes when the tab type is
@@ -80,10 +79,6 @@ class CONTENT_EXPORT NavigationEntry
 
   void set_page_type(content::PageType page_type) {
     page_type_ = page_type;
-  }
-
-  void set_referrer(const content::Referrer& referrer) {
-    referrer_ = referrer;
   }
 
   bool has_virtual_url() const {

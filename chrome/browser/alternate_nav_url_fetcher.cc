@@ -125,7 +125,7 @@ void AlternateNavURLFetcher::Observe(
         delete this;
       } else if (!controller_) {
         // Start listening for the commit notification.
-        DCHECK(controller->pending_entry());
+        DCHECK(controller->GetPendingEntry());
         registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                        content::Source<NavigationController>(controller));
         StartFetch(controller);

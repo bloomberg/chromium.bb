@@ -21,8 +21,8 @@
 #include "chrome/browser/safe_browsing/browser_features.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
@@ -52,7 +52,7 @@ static void AddNavigationFeatures(const std::string& feature_prefix,
                                   int index,
                                   const std::vector<GURL>& redirect_chain,
                                   ClientPhishingRequest* request) {
-  NavigationEntry* entry = controller.GetEntryAtIndex(index);
+  content::NavigationEntry* entry = controller.GetEntryAtIndex(index);
   bool is_secure_referrer = entry->GetReferrer().url.SchemeIsSecure();
   if (!is_secure_referrer) {
     AddFeature(StringPrintf("%s%s=%s",
@@ -162,7 +162,7 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
   // The url that we are extracting features for should already be commited.
   DCHECK_NE(index, -1);
   for (; index >= 0; index--) {
-    NavigationEntry* entry = controller.GetEntryAtIndex(index);
+    content::NavigationEntry* entry = controller.GetEntryAtIndex(index);
     if (url_index == -1 && entry->GetURL() == request_url) {
       // It's possible that we've been on the on the possibly phishy url before
       // in this tab, so make sure that we use the latest navigation for

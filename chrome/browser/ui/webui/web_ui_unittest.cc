@@ -35,7 +35,7 @@ class WebUITest : public TabContentsWrapperTestHarness {
                         std::string());
 
     // The navigation entry should be pending with no committed entry.
-    ASSERT_TRUE(controller->pending_entry());
+    ASSERT_TRUE(controller->GetPendingEntry());
     ASSERT_FALSE(controller->GetLastCommittedEntry());
 
     // Check the things the pending Web UI should have set.

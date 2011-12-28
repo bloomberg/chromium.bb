@@ -92,6 +92,10 @@ const GURL& NavigationEntry::GetURL() const {
   return url_;
 }
 
+void NavigationEntry::SetReferrer(const content::Referrer& referrer) {
+  referrer_ = referrer;
+}
+
 const content::Referrer& NavigationEntry::GetReferrer() const {
   return referrer_;
 }
@@ -167,6 +171,11 @@ const string16& NavigationEntry::GetTitleForDisplay(
 
 bool NavigationEntry::IsViewSourceMode() const {
   return virtual_url_.SchemeIs(chrome::kViewSourceScheme);
+}
+
+void NavigationEntry::SetTransitionType(
+    content::PageTransition transition_type) {
+  transition_type_ = transition_type;
 }
 
 content::PageTransition NavigationEntry::GetTransitionType() const {

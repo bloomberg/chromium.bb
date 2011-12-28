@@ -242,7 +242,7 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   EXPECT_EQ(controller().last_committed_entry_index(), 1);
   ASSERT_TRUE(controller().GetLastCommittedEntry());
   EXPECT_TRUE(kUrl == controller().GetLastCommittedEntry()->GetURL());
-  EXPECT_FALSE(controller().pending_entry());
+  EXPECT_FALSE(controller().GetPendingEntry());
   // Because we're using TestTabContents and TestRenderViewHost in this
   // unittest, no one calls TabContents::RenderViewCreated(). So, we see no
   // EnableViewSourceMode message, here.
@@ -257,7 +257,7 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   EXPECT_TRUE(last_rvh == rvh());
   rvh()->SendNavigate(new_id, kUrl);  // The same page_id returned.
   EXPECT_EQ(controller().last_committed_entry_index(), 1);
-  EXPECT_FALSE(controller().pending_entry());
+  EXPECT_FALSE(controller().GetPendingEntry());
   // New message should be sent out to make sure to enter view-source mode.
   EXPECT_TRUE(process()->sink().GetUniqueMessageMatching(
       ViewMsg_EnableViewSourceMode::ID));

@@ -34,11 +34,12 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -97,7 +98,7 @@ class InstantLoader::FrameLoadObserver : public content::NotificationObserver {
         text_(text),
         verbatim_(verbatim),
         unique_id_(
-            tab_contents_->GetController().pending_entry()->GetUniqueID()) {
+            tab_contents_->GetController().GetPendingEntry()->GetUniqueID()) {
     registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
                    content::Source<TabContents>(tab_contents_));
   }
@@ -550,7 +551,7 @@ void InstantLoader::TabContentsDelegateImpl::OnSetSuggestions(
   TabContentsWrapper* source = loader_->preview_contents();
   content::NavigationEntry* entry =
       source->tab_contents()->GetController().GetActiveEntry();
-  if (! entry || page_id != entry->GetPageID())
+  if (!entry || page_id != entry->GetPageID())
     return;
 
   if (suggestions.empty())
@@ -811,7 +812,7 @@ void InstantLoader::MaybeLoadInstantURL(TabContentsWrapper* tab_contents,
 
 bool InstantLoader::IsNavigationPending() const {
   return preview_contents_.get() &&
-      preview_contents_->tab_contents()->GetController().pending_entry();
+      preview_contents_->tab_contents()->GetController().GetPendingEntry();
 }
 
 void InstantLoader::Observe(int type,

@@ -130,7 +130,7 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   // Referrer
   EXPECT_EQ(GURL(), entry1_.get()->GetReferrer().url);
   EXPECT_EQ(GURL("from"), entry2_.get()->GetReferrer().url);
-  entry2_.get()->set_referrer(
+  entry2_.get()->SetReferrer(
       content::Referrer(GURL("from2"), WebKit::WebReferrerPolicyDefault));
   EXPECT_EQ(GURL("from2"), entry2_.get()->GetReferrer().url);
 
@@ -155,7 +155,7 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   // Transition type
   EXPECT_EQ(content::PAGE_TRANSITION_LINK, entry1_.get()->GetTransitionType());
   EXPECT_EQ(content::PAGE_TRANSITION_TYPED, entry2_.get()->GetTransitionType());
-  entry2_.get()->set_transition_type(content::PAGE_TRANSITION_RELOAD);
+  entry2_.get()->SetTransitionType(content::PAGE_TRANSITION_RELOAD);
   EXPECT_EQ(content::PAGE_TRANSITION_RELOAD,
             entry2_.get()->GetTransitionType());
 

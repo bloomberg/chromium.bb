@@ -50,6 +50,7 @@ class NavigationEntry {
   virtual const GURL& GetURL() const = 0;
 
   // The referring URL. Can be empty.
+  virtual void SetReferrer(const content::Referrer& referrer) = 0;
   virtual const content::Referrer& GetReferrer() const = 0;
 
   // The virtual URL, when nonempty, will override the actual URL of the page
@@ -103,6 +104,7 @@ class NavigationEntry {
 
   // The transition type indicates what the user did to move to this page from
   // the previous page.
+  virtual void SetTransitionType(content::PageTransition transition_type) = 0;
   virtual content::PageTransition GetTransitionType() const = 0;
 
   // The user typed URL was the URL that the user initiated the navigation

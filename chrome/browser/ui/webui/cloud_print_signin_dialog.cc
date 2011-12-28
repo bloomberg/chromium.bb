@@ -20,9 +20,9 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -64,7 +64,7 @@ void CloudPrintSigninFlowHandler::RegisterMessages() {
   if (web_ui_ && web_ui_->tab_contents()) {
     NavigationController* controller =
         &web_ui_->tab_contents()->GetController();
-    NavigationEntry* pending_entry = controller->pending_entry();
+    content::NavigationEntry* pending_entry = controller->GetPendingEntry();
     if (pending_entry)
       pending_entry->SetURL(CloudPrintURL(
           Profile::FromWebUI(web_ui_)).GetCloudPrintSigninURL());

@@ -13,9 +13,9 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -114,7 +114,7 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
       // request. If this happens we may let a download through that we
       // shouldn't have. But this is rather rare, and it is difficult to get
       // 100% right, so we don't deal with it.
-      NavigationEntry* entry = controller_->pending_entry();
+      content::NavigationEntry* entry = controller_->GetPendingEntry();
       if (!entry)
         return;
 

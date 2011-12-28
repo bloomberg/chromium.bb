@@ -17,7 +17,7 @@
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -237,11 +237,13 @@ void RlzLibTest::SimulateOmniboxUsage() {
 }
 
 void RlzLibTest::SimulateHomepageUsage() {
-  NavigationEntry entry(NULL, 0, GURL(), content::Referrer(), string16(),
-                        content::PAGE_TRANSITION_HOME_PAGE, false);
+  scoped_ptr<content::NavigationEntry> entry(
+      content::NavigationEntry::Create());
+  entry->SetPageID(0);
+  entry->SetTransitionType(content::PAGE_TRANSITION_HOME_PAGE);
   tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
                    content::NotificationService::AllSources(),
-                   content::Details<NavigationEntry>(&entry));
+                   content::Details<content::NavigationEntry>(entry.get()));
 }
 
 void RlzLibTest::InvokeDelayedInit() {
@@ -580,14 +582,16 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
 }
 
 TEST_F(RlzLibTest, ObserveHandlesBadArgs) {
-  NavigationEntry entry(NULL, 0, GURL(), content::Referrer(), string16(),
-                        content::PAGE_TRANSITION_LINK, false);
+  scoped_ptr<content::NavigationEntry> entry(
+      content::NavigationEntry::Create());
+  entry->SetPageID(0);
+  entry->SetTransitionType(content::PAGE_TRANSITION_LINK);
   tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
                    content::NotificationService::AllSources(),
-                   content::Details<NavigationEntry>(NULL));
+                   content::Details<content::NavigationEntry>(NULL));
   tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
                    content::NotificationService::AllSources(),
-                   content::Details<NavigationEntry>(&entry));
+                   content::Details<content::NavigationEntry>(entry.get()));
 }
 
 TEST_F(RlzLibTest, ReactivationNonOrganicNonOrganic) {

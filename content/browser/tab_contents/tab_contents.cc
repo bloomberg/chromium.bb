@@ -778,7 +778,9 @@ WebContents* TabContents::OpenURL(const OpenURLParams& params) {
 
 bool TabContents::NavigateToPendingEntry(
     NavigationController::ReloadType reload_type) {
-  return NavigateToEntry(*controller_.pending_entry(), reload_type);
+  return NavigateToEntry(
+      *NavigationEntry::FromNavigationEntry(controller_.GetPendingEntry()),
+      reload_type);
 }
 
 bool TabContents::NavigateToEntry(
@@ -1087,7 +1089,7 @@ WebUI* TabContents::GetWebUIForCurrentState() {
   //
   //  - Normal state with no load: committed nav entry + no pending nav entry:
   //    -> Use committed Web UI.
-  if (controller_.pending_entry() &&
+  if (controller_.GetPendingEntry() &&
       (controller_.GetLastCommittedEntry() ||
        render_manager_.pending_web_ui()))
     return render_manager_.pending_web_ui();
@@ -1161,9 +1163,9 @@ void TabContents::OnDidRedirectProvisionalLoad(int32 page_id,
   // TODO(creis): Remove this method and have the pre-rendering code listen to
   // the ResourceDispatcherHost's RESOURCE_RECEIVED_REDIRECT notification
   // instead.  See http://crbug.com/78512.
-  NavigationEntry* entry;
+  content::NavigationEntry* entry;
   if (page_id == -1)
-    entry = controller_.pending_entry();
+    entry = controller_.GetPendingEntry();
   else
     entry = controller_.GetEntryWithPageID(GetSiteInstance(), page_id);
   if (!entry || entry->GetURL() != source_url)
@@ -1220,8 +1222,7 @@ void TabContents::OnDidFailProvisionalLoadWithError(
     // entry if the user started a new navigation.  As a result, the navigation
     // controller may not remember that a load is in progress, but the
     // navigation will still commit even if there is no pending entry.
-    NavigationEntry* pending_entry = controller_.pending_entry();
-    if (pending_entry)
+    if (controller_.GetPendingEntry())
       DidCancelLoading();
 
     render_manager_.RendererAbortedProvisionalLoad(GetRenderViewHost());
@@ -1328,13 +1329,14 @@ void TabContents::OnUpdateContentRestrictions(int restrictions) {
 
 void TabContents::OnGoToEntryAtOffset(int offset) {
   if (!delegate_ || delegate_->OnGoToEntryOffset(offset)) {
-    NavigationEntry* entry = controller_.GetEntryAtOffset(offset);
+    NavigationEntry* entry = NavigationEntry::FromNavigationEntry(
+        controller_.GetEntryAtOffset(offset));
     if (!entry)
       return;
     // Note that we don't call NavigationController::GotToOffset() as we don't
     // want to create a pending navigation entry (it might end up lingering
     // http://crbug.com/51680).
-    entry->set_transition_type(
+    entry->SetTransitionType(
         content::PageTransitionFromInt(
             entry->GetTransitionType() |
             content::PAGE_TRANSITION_FORWARD_BACK));
@@ -1758,7 +1760,7 @@ void TabContents::UpdateState(RenderViewHost* rvh,
       rvh->site_instance(), page_id);
   if (entry_index < 0)
     return;
-  NavigationEntry* entry = controller_.GetEntryAtIndex(entry_index);
+  content::NavigationEntry* entry = controller_.GetEntryAtIndex(entry_index);
 
   if (state == entry->GetContentState())
     return;  // Nothing to update.

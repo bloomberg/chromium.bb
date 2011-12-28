@@ -6,7 +6,6 @@
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "chrome/browser/renderer_host/offline_resource_handler.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/test/test_browser_thread.h"
 
@@ -155,7 +154,7 @@ TEST_F(OfflineLoadPageTest, OfflinePageDontProceed) {
   EXPECT_EQ(CANCEL, user_response());
   EXPECT_FALSE(GetOfflineLoadPage());
   // We did not proceed, the pending entry should be gone.
-  EXPECT_FALSE(controller().pending_entry());
+  EXPECT_FALSE(controller().GetPendingEntry());
   // the URL is set back to kURL1.
   EXPECT_EQ(kURL1, contents()->GetURL().spec());
 }

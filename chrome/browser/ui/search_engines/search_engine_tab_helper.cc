@@ -11,7 +11,8 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search_engines/template_url_fetcher_ui_callbacks.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 
@@ -147,7 +148,7 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   //              happen in new tabs.
   if (last_index <= 0)
     return;
-  const NavigationEntry* previous_entry =
+  const content::NavigationEntry* previous_entry =
       controller.GetEntryAtIndex(last_index - 1);
   if (IsFormSubmit(previous_entry)) {
     // Only generate a keyword if the previous page wasn't itself a form

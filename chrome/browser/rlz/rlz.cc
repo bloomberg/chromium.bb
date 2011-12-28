@@ -32,8 +32,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 
 using content::BrowserThread;
@@ -305,8 +305,8 @@ void RLZTracker::Observe(int type,
                         content::NotificationService::AllSources());
       break;
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {
-      const NavigationEntry* entry =
-          content::Details<NavigationEntry>(details).ptr();
+      const content::NavigationEntry* entry =
+          content::Details<content::NavigationEntry>(details).ptr();
       if (entry != NULL &&
           ((entry->GetTransitionType() &
             content::PAGE_TRANSITION_HOME_PAGE) != 0)) {

@@ -9,8 +9,8 @@
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/test/test_browser_thread.h"
 
 using content::BrowserThread;
@@ -115,7 +115,8 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
   }
 
   void GoBack(bool is_cross_site) {
-    NavigationEntry* entry = contents()->GetController().GetEntryAtOffset(-1);
+    content::NavigationEntry* entry =
+        contents()->GetController().GetEntryAtOffset(-1);
     ASSERT_TRUE(entry);
     contents()->GetController().GoBack();
 
@@ -217,7 +218,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
   EXPECT_FALSE(GetSafeBrowsingBlockingPage());
 
   // We did not proceed, the pending entry should be gone.
-  EXPECT_FALSE(controller().pending_entry());
+  EXPECT_FALSE(controller().GetPendingEntry());
 
   // A report should have been sent.
   EXPECT_EQ(1u, service_->GetDetails()->size());
@@ -581,7 +582,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
   EXPECT_FALSE(GetSafeBrowsingBlockingPage());
 
   // We did not proceed, the pending entry should be gone.
-  EXPECT_FALSE(controller().pending_entry());
+  EXPECT_FALSE(controller().GetPendingEntry());
 
   // No report should have been sent.
   EXPECT_EQ(0u, service_->GetDetails()->size());

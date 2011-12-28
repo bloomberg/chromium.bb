@@ -8,8 +8,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,10 +33,11 @@ TEST_F(GeolocationSettingsStateTests, ClearOnNewOrigin) {
   GeolocationSettingsState state(&profile);
   GURL url_0("http://www.example.com");
 
-  NavigationEntry entry;
-  entry.SetURL(url_0);
+  scoped_ptr<content::NavigationEntry> entry(
+      content::NavigationEntry::Create());
+  entry->SetURL(url_0);
   content::LoadCommittedDetails load_committed_details;
-  load_committed_details.entry = &entry;
+  load_committed_details.entry = entry.get();
   state.DidNavigate(load_committed_details);
 
   profile.GetHostContentSettingsMap()->SetContentSetting(
@@ -121,7 +122,7 @@ TEST_F(GeolocationSettingsStateTests, ClearOnNewOrigin) {
   EXPECT_EQ(state_map.size(), new_state_map.size());
 
   GURL different_url("http://foo.com");
-  entry.SetURL(different_url);
+  entry->SetURL(different_url);
   state.DidNavigate(load_committed_details);
 
   EXPECT_TRUE(state.state_map().empty());
@@ -138,10 +139,11 @@ TEST_F(GeolocationSettingsStateTests, ShowPortOnSameHost) {
   GeolocationSettingsState state(&profile);
   GURL url_0("http://www.example.com");
 
-  NavigationEntry entry;
-  entry.SetURL(url_0);
+  scoped_ptr<content::NavigationEntry> entry(
+      content::NavigationEntry::Create());
+  entry->SetURL(url_0);
   content::LoadCommittedDetails load_committed_details;
-  load_committed_details.entry = &entry;
+  load_committed_details.entry = entry.get();
   state.DidNavigate(load_committed_details);
 
   profile.GetHostContentSettingsMap()->SetContentSetting(

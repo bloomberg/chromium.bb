@@ -21,8 +21,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_fetcher.h"
 #include "grit/generated_resources.h"
@@ -324,7 +324,7 @@ void GoogleURLTracker::Observe(int type,
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {
       NavigationController* controller =
           content::Source<NavigationController>(source).ptr();
-      OnNavigationPending(source, controller->pending_entry()->GetURL());
+      OnNavigationPending(source, controller->GetPendingEntry()->GetURL());
       break;
     }
 

@@ -32,9 +32,9 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 
@@ -1139,8 +1139,8 @@ void SessionService::BuildCommandsForTab(
             wrapper->extension_tab_helper()->extension_app()->id()));
   }
   for (int i = min_index; i < max_index; ++i) {
-    const NavigationEntry* entry = (i == pending_index) ?
-        tab->tab_contents()->GetController().pending_entry() :
+    const content::NavigationEntry* entry = (i == pending_index) ?
+        tab->tab_contents()->GetController().GetPendingEntry() :
         tab->tab_contents()->GetController().GetEntryAtIndex(i);
     DCHECK(entry);
     if (ShouldTrackEntry(entry->GetVirtualURL())) {

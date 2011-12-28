@@ -111,7 +111,7 @@ void TestTabContents::CommitPendingNavigation() {
   if (!rvh)
     rvh = static_cast<TestRenderViewHost*>(old_rvh);
 
-  const NavigationEntry* entry = GetController().pending_entry();
+  const content::NavigationEntry* entry = GetController().GetPendingEntry();
   DCHECK(entry);
   int page_id = entry->GetPageID();
   if (page_id == -1) {

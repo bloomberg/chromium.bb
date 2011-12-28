@@ -716,13 +716,13 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   // Go back within the site.
   controller().GoBack();
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(entry2, controller().pending_entry());
+  EXPECT_EQ(entry2, controller().GetPendingEntry());
 
   // Before that commits, go back again.
   controller().GoBack();
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_TRUE(contents()->pending_rvh());
-  EXPECT_EQ(entry1, controller().pending_entry());
+  EXPECT_EQ(entry1, controller().GetPendingEntry());
 
   // Simulate beforeunload approval.
   EXPECT_TRUE(google_rvh->is_waiting_for_beforeunload_ack());
@@ -734,7 +734,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
 
   // We should commit this page and forget about the second back.
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_FALSE(controller().pending_entry());
+  EXPECT_FALSE(controller().GetPendingEntry());
   EXPECT_EQ(google_rvh, contents()->GetRenderViewHost());
   EXPECT_EQ(url2, controller().GetLastCommittedEntry()->GetURL());
 
@@ -1680,7 +1680,8 @@ TEST_F(TabContentsTest, NewInterstitialDoesNotCancelPendingEntry) {
   interstitial2->TestDidNavigate(1, kGURL);
 
   // Make sure we still have an entry.
-  NavigationEntry* entry = contents()->GetController().pending_entry();
+  content::NavigationEntry* entry =
+      contents()->GetController().GetPendingEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(kUrl, entry->GetURL().spec());
 
@@ -1756,7 +1757,8 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneSourceInterstitial) {
   NavigationController& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
   other_contents->ExpectSetHistoryLengthAndPrune(
-      other_controller.GetEntryAtIndex(0)->site_instance(), 1,
+      NavigationEntry::FromNavigationEntry(
+          other_controller.GetEntryAtIndex(0))->site_instance(), 1,
       other_controller.GetEntryAtIndex(0)->GetPageID());
   other_controller.CopyStateFromAndPrune(&controller());
 
@@ -1799,7 +1801,8 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneTargetInterstitial) {
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_EQ(2, other_controller.entry_count());
   other_contents->ExpectSetHistoryLengthAndPrune(
-      other_controller.GetEntryAtIndex(0)->site_instance(), 1,
+      NavigationEntry::FromNavigationEntry(
+          other_controller.GetEntryAtIndex(0))->site_instance(), 1,
       other_controller.GetEntryAtIndex(0)->GetPageID());
   other_controller.CopyStateFromAndPrune(&controller());
 

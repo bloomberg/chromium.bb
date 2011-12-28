@@ -22,7 +22,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -69,15 +69,16 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
                         const TabNavigation& navigation,
                         int index,
                         bool select) {
-    NavigationEntry entry;
-    entry.SetURL(navigation.virtual_url());
-    entry.set_referrer(navigation.referrer());
-    entry.SetTitle(navigation.title());
-    entry.SetContentState(navigation.state());
-    entry.set_transition_type(navigation.transition());
-    entry.SetHasPostData(
+    scoped_ptr<content::NavigationEntry> entry(
+        content::NavigationEntry::Create());
+    entry->SetURL(navigation.virtual_url());
+    entry->SetReferrer(navigation.referrer());
+    entry->SetTitle(navigation.title());
+    entry->SetContentState(navigation.state());
+    entry->SetTransitionType(navigation.transition());
+    entry->SetHasPostData(
         navigation.type_mask() & TabNavigation::HAS_POST_DATA);
-    service()->UpdateTabNavigation(window_id, tab_id, index, entry);
+    service()->UpdateTabNavigation(window_id, tab_id, index, *entry.get());
     if (select)
       service()->SetSelectedNavigationIndex(window_id, tab_id, index);
   }

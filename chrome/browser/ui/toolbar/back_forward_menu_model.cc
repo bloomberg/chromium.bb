@@ -16,8 +16,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -89,7 +90,7 @@ string16 BackForwardMenuModel::GetLabelAt(int index) const {
 
   // Return the entry title, escaping any '&' characters and eliding it if it's
   // super long.
-  NavigationEntry* entry = GetNavigationEntry(index);
+  content::NavigationEntry* entry = GetNavigationEntry(index);
   Profile* profile =
       Profile::FromBrowserContext(GetTabContents()->GetBrowserContext());
   string16 menu_text(entry->GetTitleForDisplay(
@@ -134,7 +135,7 @@ bool BackForwardMenuModel::GetIconAt(int index, SkBitmap* icon) {
     *icon = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_HISTORY_FAVICON);
   } else {
-    NavigationEntry* entry = GetNavigationEntry(index);
+    content::NavigationEntry* entry = GetNavigationEntry(index);
     *icon = entry->GetFavicon().bitmap;
     if (!entry->GetFavicon().valid && menu_model_delegate()) {
       FetchFavicon(entry);
@@ -222,7 +223,7 @@ void BackForwardMenuModel::SetMenuModelDelegate(
   menu_model_delegate_ = menu_model_delegate;
 }
 
-void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
+void BackForwardMenuModel::FetchFavicon(content::NavigationEntry* entry) {
   // If the favicon has already been requested for this menu, don't do
   // anything.
   if (requested_favicons_.find(entry->GetUniqueID()) !=
@@ -247,7 +248,7 @@ void BackForwardMenuModel::OnFavIconDataAvailable(
   if (favicon.is_valid()) {
     int unique_id = load_consumer_.GetClientDataForCurrentRequest();
     // Find the current model_index for the unique_id.
-    NavigationEntry* entry = NULL;
+    content::NavigationEntry* entry = NULL;
     int model_index = -1;
     for (int i = 0; i < GetItemCount() - 1; i++) {
       if (IsSeparator(i))
@@ -347,7 +348,8 @@ int BackForwardMenuModel::GetIndexOfNextChapterStop(int start_from,
     }
   }
 
-  NavigationEntry* start_entry = controller.GetEntryAtIndex(start_from);
+  content::NavigationEntry* start_entry =
+      controller.GetEntryAtIndex(start_from);
   const GURL& url = start_entry->GetURL();
 
   if (!forward) {
@@ -438,7 +440,8 @@ int BackForwardMenuModel::MenuIndexToNavEntryIndex(int index) const {
   return index;
 }
 
-NavigationEntry* BackForwardMenuModel::GetNavigationEntry(int index) const {
+content::NavigationEntry* BackForwardMenuModel::GetNavigationEntry(
+    int index) const {
   int controller_index = MenuIndexToNavEntryIndex(index);
   NavigationController& controller = GetTabContents()->GetController();
   if (controller_index >= 0 && controller_index < controller.entry_count())

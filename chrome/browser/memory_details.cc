@@ -19,9 +19,9 @@
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/process_type.h"
@@ -284,8 +284,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         // last committed entry.
         //
         // Either the pending or last committed entries can be NULL.
-        const NavigationEntry* pending_entry =
-            contents->GetController().pending_entry();
+        const content::NavigationEntry* pending_entry =
+            contents->GetController().GetPendingEntry();
         const content::NavigationEntry* last_committed_entry =
             contents->GetController().GetLastCommittedEntry();
         if ((last_committed_entry &&

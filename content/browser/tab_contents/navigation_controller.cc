@@ -75,7 +75,7 @@ void ConfigureEntriesForRestore(
   for (size_t i = 0; i < entries->size(); ++i) {
     // Use a transition type of reload so that we don't incorrectly increase
     // the typed count.
-    (*entries)[i]->set_transition_type(content::PAGE_TRANSITION_RELOAD);
+    (*entries)[i]->SetTransitionType(content::PAGE_TRANSITION_RELOAD);
     (*entries)[i]->set_restore_type(from_last_session ?
         NavigationEntry::RESTORE_LAST_SESSION :
         NavigationEntry::RESTORE_CURRENT_SESSION);
@@ -151,7 +151,7 @@ void NavigationController::Restore(
     bool from_last_session,
     std::vector<content::NavigationEntry*>* entries) {
   // Verify that this controller is unused and that the input is valid.
-  DCHECK(entry_count() == 0 && !pending_entry());
+  DCHECK(entry_count() == 0 && !GetPendingEntry());
   DCHECK(selected_navigation >= 0 &&
          selected_navigation < static_cast<int>(entries->size()));
 
@@ -205,7 +205,7 @@ void NavigationController::ReloadInternal(bool check_for_repost,
     DiscardNonCommittedEntriesInternal();
 
     pending_entry_index_ = current_index;
-    entries_[pending_entry_index_]->set_transition_type(
+    entries_[pending_entry_index_]->SetTransitionType(
         content::PAGE_TRANSITION_RELOAD);
     NavigateToPendingEntry(reload_type);
   }
@@ -230,7 +230,20 @@ bool NavigationController::IsInitialNavigation() {
 }
 
 // static
-NavigationEntry* NavigationController::CreateNavigationEntry(
+content::NavigationEntry* NavigationController::CreateNavigationEntry(
+      const GURL& url,
+      const content::Referrer& referrer,
+      content::PageTransition transition,
+      bool is_renderer_initiated,
+      const std::string& extra_headers,
+      content::BrowserContext* browser_context) {
+  return CreateNavigationEntryImpl(
+      url, referrer, transition, is_renderer_initiated, extra_headers,
+      browser_context);
+}
+
+// static
+NavigationEntry* NavigationController::CreateNavigationEntryImpl(
     const GURL& url, const content::Referrer& referrer,
     content::PageTransition transition,
     bool is_renderer_initiated, const std::string& extra_headers,
@@ -288,7 +301,7 @@ void NavigationController::LoadEntry(NavigationEntry* entry) {
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_PENDING,
       content::Source<NavigationController>(this),
-      content::Details<NavigationEntry>(entry));
+      content::Details<content::NavigationEntry>(entry));
   NavigateToPendingEntry(NO_RELOAD);
 }
 
@@ -338,7 +351,13 @@ bool NavigationController::CanViewSource() const {
     is_supported_mime_type && !tab_contents_->GetInterstitialPage();
 }
 
-NavigationEntry* NavigationController::GetEntryAtOffset(int offset) const {
+content::NavigationEntry* NavigationController::GetEntryAtIndex(
+    int index) const {
+  return entries_.at(index).get();
+}
+
+content::NavigationEntry* NavigationController::GetEntryAtOffset(
+    int offset) const {
   int index = (transient_entry_index_ != -1) ?
                   transient_entry_index_ + offset :
                   last_committed_entry_index_ + offset;
@@ -369,7 +388,7 @@ void NavigationController::GoBack() {
   DiscardNonCommittedEntries();
 
   pending_entry_index_ = current_index - 1;
-  entries_[pending_entry_index_]->set_transition_type(
+  entries_[pending_entry_index_]->SetTransitionType(
       content::PageTransitionFromInt(
           entries_[pending_entry_index_]->GetTransitionType() |
           content::PAGE_TRANSITION_FORWARD_BACK));
@@ -395,7 +414,7 @@ void NavigationController::GoForward() {
   if (!transient)
     pending_entry_index_++;
 
-  entries_[pending_entry_index_]->set_transition_type(
+  entries_[pending_entry_index_]->SetTransitionType(
       content::PageTransitionFromInt(
           entries_[pending_entry_index_]->GetTransitionType() |
           content::PAGE_TRANSITION_FORWARD_BACK));
@@ -422,7 +441,7 @@ void NavigationController::GoToIndex(int index) {
   DiscardNonCommittedEntries();
 
   pending_entry_index_ = index;
-  entries_[pending_entry_index_]->set_transition_type(
+  entries_[pending_entry_index_]->SetTransitionType(
       content::PageTransitionFromInt(
           entries_[pending_entry_index_]->GetTransitionType() |
           content::PAGE_TRANSITION_FORWARD_BACK));
@@ -476,10 +495,10 @@ void NavigationController::TransferURL(
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
-  NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition,
-                                                 is_renderer_initiated,
-                                                 extra_headers,
-                                                 browser_context_);
+  NavigationEntry* entry = CreateNavigationEntryImpl(url, referrer, transition,
+                                                     is_renderer_initiated,
+                                                     extra_headers,
+                                                     browser_context_);
   entry->set_transferred_global_request_id(transferred_global_request_id);
 
   LoadEntry(entry);
@@ -493,10 +512,10 @@ void NavigationController::LoadURL(
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
-  NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition,
-                                                 false,
-                                                 extra_headers,
-                                                 browser_context_);
+  NavigationEntry* entry = CreateNavigationEntryImpl(url, referrer, transition,
+                                                     false,
+                                                     extra_headers,
+                                                     browser_context_);
 
   LoadEntry(entry);
 }
@@ -509,10 +528,10 @@ void NavigationController::LoadURLFromRenderer(
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
-  NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition,
-                                                 true,
-                                                 extra_headers,
-                                                 browser_context_);
+  NavigationEntry* entry = CreateNavigationEntryImpl(url, referrer, transition,
+                                                     true,
+                                                     extra_headers,
+                                                     browser_context_);
 
   LoadEntry(entry);
 }
@@ -767,9 +786,9 @@ void NavigationController::RendererDidNavigateToNewPage(
   new_entry->SetURL(params.url);
   if (update_virtual_url)
     UpdateVirtualURLToURL(new_entry, params.url);
-  new_entry->set_referrer(params.referrer);
+  new_entry->SetReferrer(params.referrer);
   new_entry->SetPageID(params.page_id);
-  new_entry->set_transition_type(params.transition);
+  new_entry->SetTransitionType(params.transition);
   new_entry->set_site_instance(tab_contents_->GetSiteInstance());
   new_entry->SetHasPostData(params.is_post);
 
@@ -935,7 +954,7 @@ bool NavigationController::IsURLInPageNavigation(const GURL& url) const {
 
 void NavigationController::CopyStateFrom(const NavigationController& source) {
   // Verify that we look new.
-  DCHECK(entry_count() == 0 && !pending_entry());
+  DCHECK(entry_count() == 0 && !GetPendingEntry());
 
   if (source.entry_count() == 0)
     return;  // Nothing new to do.
@@ -1053,6 +1072,10 @@ void NavigationController::DiscardNonCommittedEntries() {
   if (transient) {
     tab_contents_->NotifyNavigationStateChanged(kInvalidateAll);
   }
+}
+
+content::NavigationEntry* NavigationController::GetPendingEntry() const {
+  return pending_entry_;
 }
 
 void NavigationController::InsertOrReplaceEntry(NavigationEntry* entry,
@@ -1205,8 +1228,8 @@ void NavigationController::LoadIfNecessary() {
   NavigateToPendingEntry(NO_RELOAD);
 }
 
-void NavigationController::NotifyEntryChanged(const NavigationEntry* entry,
-                                              int index) {
+void NavigationController::NotifyEntryChanged(
+    const content::NavigationEntry* entry, int index) {
   content::EntryChangedDetails det;
   det.changed_entry = entry;
   det.index = index;
@@ -1254,7 +1277,7 @@ int NavigationController::GetEntryIndexWithPageID(
   return -1;
 }
 
-NavigationEntry* NavigationController::GetTransientEntry() const {
+content::NavigationEntry* NavigationController::GetTransientEntry() const {
   if (transient_entry_index_ == -1)
     return NULL;
   return entries_[transient_entry_index_].get();

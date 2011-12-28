@@ -28,8 +28,8 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/navigation_entry.h"
 
 using base::Time;
 
@@ -492,7 +492,7 @@ void TabRestoreService::PopulateTab(Tab* tab,
   tab->navigations.resize(static_cast<int>(entry_count));
   for (int i = 0; i < entry_count; ++i) {
     content::NavigationEntry* entry = (i == pending_index) ?
-        controller->pending_entry() : controller->GetEntryAtIndex(i);
+        controller->GetPendingEntry() : controller->GetEntryAtIndex(i);
     tab->navigations[i].SetFromNavigationEntry(*entry);
   }
   tab->timestamp = TimeNow();
@@ -657,7 +657,7 @@ void TabRestoreService::ScheduleCommandsForTab(const Tab& tab,
       // Creating a NavigationEntry isn't the most efficient way to go about
       // this, but it simplifies the code and makes it less error prone as we
       // add new data to NavigationEntry.
-      scoped_ptr<NavigationEntry> entry(
+      scoped_ptr<content::NavigationEntry> entry(
           navigations[i].ToNavigationEntry(wrote_count, profile()));
       ScheduleCommand(
           CreateUpdateTabNavigationCommand(kCommandUpdateTabNavigation, tab.id,

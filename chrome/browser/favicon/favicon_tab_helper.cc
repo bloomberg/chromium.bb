@@ -12,10 +12,11 @@
 #include "chrome/common/icon_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -73,7 +74,7 @@ bool FaviconTabHelper::FaviconIsValid() const {
 bool FaviconTabHelper::ShouldDisplayFavicon() {
   // Always display a throbber during pending loads.
   const NavigationController& controller = web_contents()->GetController();
-  if (controller.GetLastCommittedEntry() && controller.pending_entry())
+  if (controller.GetLastCommittedEntry() && controller.GetPendingEntry())
     return true;
 
   WebUI* web_ui = web_contents()->GetWebUIForCurrentState();

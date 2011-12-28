@@ -19,7 +19,10 @@
 class Browser;
 class SkBitmap;
 class TabContents;
+
+namespace content {
 class NavigationEntry;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -85,7 +88,7 @@ class BackForwardMenuModel : public ui::MenuModel {
 
   // Requests a favicon from the FaviconService. Called by GetIconAt if the
   // NavigationEntry has an invalid favicon.
-  void FetchFavicon(NavigationEntry* entry);
+  void FetchFavicon(content::NavigationEntry* entry);
 
   // Callback from the favicon service.
   void OnFavIconDataAvailable(FaviconService::Handle handle,
@@ -163,7 +166,7 @@ class BackForwardMenuModel : public ui::MenuModel {
   string16 GetShowFullHistoryLabel() const;
 
   // Looks up a NavigationEntry by menu id.
-  NavigationEntry* GetNavigationEntry(int index) const;
+  content::NavigationEntry* GetNavigationEntry(int index) const;
 
   // Retrieves the TabContents pointer to use, which is either the one that
   // the unit test sets (using SetTabContentsForUnitTest) or the one from
