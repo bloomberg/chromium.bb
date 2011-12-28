@@ -144,7 +144,7 @@ bool KeystonePromotionInfoBarDelegate::Cancel() {
   // nagged about the update check.  (Automated testers, I'm thinking of
   // you...)
   CommandLine* commandLine = CommandLine::ForCurrentProcess();
-  if (FirstRun::IsChromeFirstRun() ||
+  if (first_run::IsChromeFirstRun() ||
       !profile->GetPrefs()->GetBoolean(prefs::kShowUpdatePromotionInfoBar) ||
       commandLine->HasSwitch(switches::kNoDefaultBrowserCheck)) {
     return;

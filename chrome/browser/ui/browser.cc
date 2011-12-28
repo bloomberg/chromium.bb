@@ -572,7 +572,7 @@ void Browser::InitBrowserWindow() {
   }
 
   // Permanently dismiss ntp4 bubble for new users.
-  if (FirstRun::IsChromeFirstRun())
+  if (first_run::IsChromeFirstRun())
     NewTabPageHandler::DismissIntroMessage(local_state);
 }
 

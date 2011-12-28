@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/browser/first_run/first_run_import_observer.h"
+#include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_host.h"
@@ -43,9 +44,6 @@
 using content::UserMetricsAction;
 
 namespace {
-
-// The kSentinelFile file absence will tell us it is a first run.
-const char kSentinelFile[] = "First Run";
 
 FilePath GetDefaultPrefFilePath(bool create_profile_dir,
                                 const FilePath& user_data_dir) {
@@ -112,9 +110,48 @@ void SetImportItem(PrefService* user_prefs,
 
 }  // namespace
 
-// FirstRun -------------------------------------------------------------------
+namespace first_run {
+namespace internal {
 
-FirstRun::FirstRunState FirstRun::first_run_ = FIRST_RUN_UNKNOWN;
+const char* const kSentinelFile = "First Run";
+FirstRunState first_run_ = FIRST_RUN_UNKNOWN;
+
+}  // namespace internal
+}  // namespace first_run
+
+namespace first_run {
+
+bool IsChromeFirstRun() {
+  if (internal::first_run_ != internal::FIRST_RUN_UNKNOWN)
+    return internal::first_run_ == internal::FIRST_RUN_TRUE;
+
+  FilePath first_run_sentinel;
+  if (!internal::GetFirstRunSentinelFilePath(&first_run_sentinel) ||
+      file_util::PathExists(first_run_sentinel)) {
+    internal::first_run_ = internal::FIRST_RUN_FALSE;
+    return false;
+  }
+  internal::first_run_ = internal::FIRST_RUN_TRUE;
+  return true;
+}
+
+bool CreateSentinel() {
+  FilePath first_run_sentinel;
+  if (!internal::GetFirstRunSentinelFilePath(&first_run_sentinel))
+    return false;
+  return file_util::WriteFile(first_run_sentinel, "", 0) != -1;
+}
+
+bool RemoveSentinel() {
+  FilePath first_run_sentinel;
+  if (!internal::GetFirstRunSentinelFilePath(&first_run_sentinel))
+    return false;
+  return file_util::Delete(first_run_sentinel, false);
+}
+
+}  // namespace first_run
+
+// FirstRun -------------------------------------------------------------------
 
 FirstRun::MasterPrefs::MasterPrefs()
     : ping_delay(0),
@@ -307,7 +344,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   // We need to be able to create the first run sentinel or else we cannot
   // proceed because ImportSettings will launch the importer process which
   // would end up here if the sentinel is not present.
-  if (!FirstRun::CreateSentinel())
+  if (!first_run::CreateSentinel())
     return false;
 
   if (prefs.GetBool(installer::master_preferences::kDistroShowWelcomePage,
@@ -379,37 +416,6 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   }
 
   return false;
-}
-
-// static
-bool FirstRun::IsChromeFirstRun() {
-  if (first_run_ != FIRST_RUN_UNKNOWN)
-    return first_run_ == FIRST_RUN_TRUE;
-
-  FilePath first_run_sentinel;
-  if (!GetFirstRunSentinelFilePath(&first_run_sentinel) ||
-      file_util::PathExists(first_run_sentinel)) {
-    first_run_ = FIRST_RUN_FALSE;
-    return false;
-  }
-  first_run_ = FIRST_RUN_TRUE;
-  return true;
-}
-
-// static
-bool FirstRun::RemoveSentinel() {
-  FilePath first_run_sentinel;
-  if (!GetFirstRunSentinelFilePath(&first_run_sentinel))
-    return false;
-  return file_util::Delete(first_run_sentinel, false);
-}
-
-// static
-bool FirstRun::CreateSentinel() {
-  FilePath first_run_sentinel;
-  if (!GetFirstRunSentinelFilePath(&first_run_sentinel))
-    return false;
-  return file_util::WriteFile(first_run_sentinel, "", 0) != -1;
 }
 
 // static
@@ -503,29 +509,6 @@ int FirstRun::ImportFromFile(Profile* profile, const CommandLine& cmdline) {
 
   importer_observer.RunLoop();
   return importer_observer.import_result();
-}
-
-// static
-bool FirstRun::GetFirstRunSentinelFilePath(FilePath* path) {
-  FilePath first_run_sentinel;
-
-#if defined(OS_WIN)
-  FilePath exe_path;
-  if (!PathService::Get(base::DIR_EXE, &exe_path))
-    return false;
-  if (InstallUtil::IsPerUserInstall(exe_path.value().c_str())) {
-    first_run_sentinel = exe_path;
-  } else {
-    if (!PathService::Get(chrome::DIR_USER_DATA, &first_run_sentinel))
-      return false;
-  }
-#else
-  if (!PathService::Get(chrome::DIR_USER_DATA, &first_run_sentinel))
-    return false;
-#endif
-
-  *path = first_run_sentinel.AppendASCII(kSentinelFile);
-  return true;
 }
 
 // static
@@ -646,7 +629,7 @@ void FirstRun::AutoImport(
   FirstRun::SetPersonalDataManagerFirstRunPref();
 
   process_singleton->Unlock();
-  FirstRun::CreateSentinel();
+  first_run::CreateSentinel();
 #endif
 }
 

@@ -750,7 +750,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
 
-  BrowserInit::IsFirstRun first_run = FirstRun::IsChromeFirstRun() ?
+  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
   BrowserInit::LaunchWithProfile launch(FilePath(), command_line, first_run);
   ASSERT_TRUE(launch.OpenApplicationWindow(browser()->profile()));
@@ -1010,7 +1010,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
 
   // Simulate launching again.
   CommandLine dummy(CommandLine::NO_PROGRAM);
-  BrowserInit::IsFirstRun first_run = FirstRun::IsChromeFirstRun() ?
+  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
   BrowserInit::LaunchWithProfile launch(FilePath(), dummy, first_run);
   launch.profile_ = browser()->profile();

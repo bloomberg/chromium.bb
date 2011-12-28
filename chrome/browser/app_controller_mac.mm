@@ -1059,7 +1059,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   }
 
   CommandLine dummy(CommandLine::NO_PROGRAM);
-  BrowserInit::IsFirstRun first_run = FirstRun::IsChromeFirstRun() ?
+  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
   BrowserInit::LaunchWithProfile launch(FilePath(), dummy, first_run);
   launch.OpenURLsInBrowser(browser, false, urls);

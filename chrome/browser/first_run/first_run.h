@@ -23,6 +23,33 @@ class Profile;
 class ProcessSingleton;
 class TemplateURLService;
 
+// TODO(jennyz): All FirstRun class code will be refactored to first_run
+// namespace progressively with several changelists to be landed. Therefore,
+// we keep first_run namespace and FirstRun in the same file temporarily.
+
+// This namespace contains the chrome first-run installation actions needed to
+// fully test the custom installer. It also contains the opposite actions to
+// execute during uninstall. When the first run UI is ready we won't
+// do the actions unconditionally. Currently the only action is to create a
+// desktop shortcut.
+//
+// The way we detect first-run is by looking at a 'sentinel' file.
+// If it does not exist we understand that we need to do the first time
+// install work for this user. After that the sentinel file is created.
+namespace first_run {
+
+// Returns true if this is the first time chrome is run for this user.
+bool IsChromeFirstRun();
+
+// Creates the sentinel file that signals that chrome has been configured.
+bool CreateSentinel();
+
+// Removes the sentinel file created in ConfigDone(). Returns false if the
+// sentinel file could not be removed.
+bool RemoveSentinel();
+
+}  // namespace first_run
+
 // This class contains the chrome first-run installation actions needed to
 // fully test the custom installer. It also contains the opposite actions to
 // execute during uninstall. When the first run UI is ready we won't
@@ -90,16 +117,6 @@ class FirstRun {
   // 'master_preferences' file.
   static bool ProcessMasterPreferences(const FilePath& user_data_dir,
                                        MasterPrefs* out_prefs);
-
-  // Returns true if this is the first time chrome is run for this user.
-  static bool IsChromeFirstRun();
-
-  // Creates the sentinel file that signals that chrome has been configured.
-  static bool CreateSentinel();
-
-  // Removes the sentinel file created in ConfigDone(). Returns false if the
-  // sentinel file could not be removed.
-  static bool RemoveSentinel();
 
   // Sets the kShouldShowFirstRunBubble local state pref so that the browser
   // shows the bubble once the main message loop gets going (or refrains from
@@ -197,15 +214,6 @@ class FirstRun {
 #else
   static bool ImportBookmarks(const FilePath& import_bookmarks_path);
 #endif
-
-  enum FirstRunState {
-    FIRST_RUN_UNKNOWN,  // The state is not tested or set yet.
-    FIRST_RUN_TRUE,
-    FIRST_RUN_FALSE
-  };
-
-  // This variable should only be accessed through IsChromeFirstRun().
-  static FirstRunState first_run_;
 
   // This class is for scoping purposes.
   DISALLOW_IMPLICIT_CONSTRUCTORS(FirstRun);

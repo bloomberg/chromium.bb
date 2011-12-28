@@ -23,11 +23,13 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/first_run/first_run_import_observer.h"
+#include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/worker_thread_ticker.h"
@@ -298,6 +300,31 @@ bool DecodeImportParams(const std::string& encoded,
 }
 
 }  // namespace
+
+namespace first_run {
+
+namespace internal{
+
+bool GetFirstRunSentinelFilePath(FilePath* path) {
+  FilePath first_run_sentinel;
+
+  FilePath exe_path;
+  if (!PathService::Get(base::DIR_EXE, &exe_path))
+    return false;
+  if (InstallUtil::IsPerUserInstall(exe_path.value().c_str())) {
+    first_run_sentinel = exe_path;
+  } else {
+    if (!PathService::Get(chrome::DIR_USER_DATA, &first_run_sentinel))
+      return false;
+  }
+
+  *path = first_run_sentinel.AppendASCII(kSentinelFile);
+  return true;
+}
+
+}  // namespace internal
+
+}  // namespace first_run
 
 // static
 void FirstRun::PlatformSetup() {

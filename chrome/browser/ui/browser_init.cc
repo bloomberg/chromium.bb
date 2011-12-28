@@ -1472,7 +1472,7 @@ bool BrowserInit::LaunchWithProfile::CheckIfAutoLaunched(Profile* profile) {
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kAutoLaunchAtStartup) ||
-      FirstRun::IsChromeFirstRun()) {
+      first_run::IsChromeFirstRun()) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(&CheckAutoLaunchCallback));
     return true;
@@ -1668,7 +1668,7 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
   if (!silent_launch) {
     IsProcessStartup is_process_startup = process_startup ?
         IS_PROCESS_STARTUP : IS_NOT_PROCESS_STARTUP;
-    IsFirstRun is_first_run = FirstRun::IsChromeFirstRun() ?
+    IsFirstRun is_first_run = first_run::IsChromeFirstRun() ?
         IS_FIRST_RUN : IS_NOT_FIRST_RUN;
     return browser_init->LaunchBrowser(command_line, profile, cur_dir,
         is_process_startup, is_first_run, return_code);

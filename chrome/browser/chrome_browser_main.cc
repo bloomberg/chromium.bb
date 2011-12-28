@@ -1134,7 +1134,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   process_singleton_.reset(new ProcessSingleton(user_data_dir_));
 
-  is_first_run_ = FirstRun::IsChromeFirstRun() ||
+  is_first_run_ = first_run::IsChromeFirstRun() ||
       parsed_command_line().HasSwitch(switches::kFirstRun);
 
   if (parsed_command_line().HasSwitch(switches::kImport) ||
@@ -1249,6 +1249,10 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
          parsed_command_line().HasSwitch(switches::kAppId) ||
          parsed_command_line().HasSwitch(switches::kNoFirstRun)))
       first_run_ui_bypass_ = true;
+
+    // Create Sentinel if no-first-run argument is passed in.
+    if (parsed_command_line().HasSwitch(switches::kNoFirstRun))
+      first_run::CreateSentinel();
   }
 
   // TODO(viettrungluu): why don't we run this earlier?

@@ -1332,7 +1332,7 @@ void LoginUtils::DoBrowserLaunch(Profile* profile,
   VLOG(1) << "Launching browser...";
   BrowserInit browser_init;
   int return_code;
-  BrowserInit::IsFirstRun first_run = FirstRun::IsChromeFirstRun() ?
+  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       BrowserInit::IS_FIRST_RUN: BrowserInit::IS_NOT_FIRST_RUN;
   browser_init.LaunchBrowser(*CommandLine::ForCurrentProcess(),
                              profile,

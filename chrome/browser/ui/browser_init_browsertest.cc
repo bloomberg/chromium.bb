@@ -104,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
   ASSERT_EQ(popup, observer.added_browser_);
 
   CommandLine dummy(CommandLine::NO_PROGRAM);
-  BrowserInit::IsFirstRun first_run = FirstRun::IsChromeFirstRun() ?
+  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
   BrowserInit::LaunchWithProfile launch(FilePath(), dummy, first_run);
   // This should create a new window, but re-use the profile from |popup|. If
@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest,
 
   // Do a simple non-process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
-  BrowserInit::IsFirstRun first_run = FirstRun::IsChromeFirstRun() ?
+  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
   BrowserInit::LaunchWithProfile launch(FilePath(), dummy, first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
@@ -176,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest,
 
   // Do a simple non-process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
-  BrowserInit::IsFirstRun first_run = FirstRun::IsChromeFirstRun() ?
+  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
   BrowserInit::LaunchWithProfile launch(FilePath(), dummy, first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
@@ -200,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutNoPref) {
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
 
-  BrowserInit::IsFirstRun first_run = FirstRun::IsChromeFirstRun() ?
+  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
   BrowserInit::LaunchWithProfile launch(FilePath(), command_line, first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
@@ -228,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutWindowPref) {
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
-  BrowserInit::IsFirstRun first_run = FirstRun::IsChromeFirstRun() ?
+  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
   BrowserInit::LaunchWithProfile launch(FilePath(), command_line, first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutTabPref) {
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
-  BrowserInit::IsFirstRun first_run = FirstRun::IsChromeFirstRun() ?
+  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
   BrowserInit::LaunchWithProfile launch(FilePath(), command_line, first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutPanel) {
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
-  BrowserInit::IsFirstRun first_run = FirstRun::IsChromeFirstRun() ?
+  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
   BrowserInit::LaunchWithProfile launch(FilePath(), command_line, first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));

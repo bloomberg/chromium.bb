@@ -123,7 +123,7 @@ void ShowFirstRun(Profile* profile) {
   // We don't show the dialog in Chromium.
 #endif  // GOOGLE_CHROME_BUILD
 
-  FirstRun::CreateSentinel();
+  first_run::CreateSentinel();
 
   // Set preference to show first run bubble and welcome page.
   // Don't display the minimal bubble if there is no default search provider.

@@ -404,7 +404,7 @@ void FirstRunDialog::OnResponseDialog(GtkWidget* widget, int response) {
   *response_ = response;
 
   // Mark that first run has ran.
-  FirstRun::CreateSentinel();
+  first_run::CreateSentinel();
 
   // Check if user has opted into reporting.
   if (report_crashes_ &&

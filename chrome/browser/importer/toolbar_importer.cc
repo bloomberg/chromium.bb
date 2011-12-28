@@ -526,7 +526,7 @@ bool Toolbar5Importer::ExtractFoldersFromXmlReader(
   }
 
   if (0 == label_vector.size()) {
-    if (!FirstRun::IsChromeFirstRun()) {
+    if (!first_run::IsChromeFirstRun()) {
       bookmark_folders->resize(1);
       (*bookmark_folders)[0].push_back(bookmark_group_string);
     }
@@ -539,7 +539,7 @@ bool Toolbar5Importer::ExtractFoldersFromXmlReader(
   for (size_t index = 0; index < label_vector.size(); ++index) {
     // If this is the first run then we place favorites with no labels
     // in the title bar.  Else they are placed in the "Google Toolbar" folder.
-    if (!FirstRun::IsChromeFirstRun() || !label_vector[index].empty()) {
+    if (!first_run::IsChromeFirstRun() || !label_vector[index].empty()) {
       (*bookmark_folders)[index].push_back(bookmark_group_string);
     }
 

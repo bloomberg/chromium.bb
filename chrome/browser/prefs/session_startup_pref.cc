@@ -55,7 +55,7 @@ void SessionStartupPref::RegisterUserPrefs(PrefService* prefs) {
 #ifdef OS_MACOSX
   // During first run the calling code relies on |DEFAULT| session preference
   // value to avoid session restore.  That is respected here.
-  if (!FirstRun::IsChromeFirstRun()) {
+  if (!first_run::IsChromeFirstRun()) {
     // |DEFAULT| really means "Don't restore".  The actual default value could
     // change, so explicitly set both.
     if (restore_utils::IsWindowRestoreEnabled())

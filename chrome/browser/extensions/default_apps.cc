@@ -43,7 +43,7 @@ static bool ShouldInstallInProfile(Profile* profile) {
       // However, this means that multi-profile support is broken: secondary
       // profiles will not get default apps.
       // TODO(rogerta): add support for multiple profiles.
-      if (!FirstRun::IsChromeFirstRun())
+      if (!first_run::IsChromeFirstRun())
         install_apps = false;
       break;
     }

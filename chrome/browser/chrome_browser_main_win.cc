@@ -137,7 +137,7 @@ int DoUninstallTasks(bool chrome_still_running) {
   if (ret != chrome::RESULT_CODE_UNINSTALL_USER_CANCEL) {
     // The following actions are just best effort.
     VLOG(1) << "Executing uninstall actions";
-    if (!FirstRun::RemoveSentinel())
+    if (!first_run::RemoveSentinel())
       VLOG(1) << "Failed to delete sentinel file.";
     // We want to remove user level shortcuts and we only care about the ones
     // created by us and not by the installer so |alternate| is false.
