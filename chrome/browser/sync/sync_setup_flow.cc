@@ -428,7 +428,8 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
     service_->EnableEncryptEverything();
 
   bool set_new_decryption_passphrase = false;
-  if (configuration.set_gaia_passphrase) {
+  if (configuration.set_gaia_passphrase &&
+      !configuration.gaia_passphrase.empty()) {
     // Caller passed a gaia passphrase. This is illegal if we are currently
     // using a secondary passphrase.
     DCHECK(!service_->IsUsingSecondaryPassphrase());
@@ -457,7 +458,8 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
 
   // Set the secondary passphrase, either as a decryption passphrase, or
   // as an attempt to encrypt the user's data using this new passphrase.
-  if (configuration.set_secondary_passphrase) {
+  if (configuration.set_secondary_passphrase &&
+      !configuration.secondary_passphrase.empty()) {
     service_->SetPassphrase(configuration.secondary_passphrase, true);
     if (service_->IsUsingSecondaryPassphrase()) {
       user_tried_setting_passphrase_ = true;
