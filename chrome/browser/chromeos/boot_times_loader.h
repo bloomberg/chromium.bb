@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/atomic_sequence_num.h"
-#include "base/callback_old.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/time.h"
 #include "chrome/browser/cancelable_request.h"
@@ -120,7 +120,7 @@ class BootTimesLoader
    public:
     Backend() {}
 
-    void GetBootTimes(scoped_refptr<GetBootTimesRequest> request);
+    void GetBootTimes(const scoped_refptr<GetBootTimesRequest>& request);
 
    private:
     friend class base::RefCountedThreadSafe<Backend>;

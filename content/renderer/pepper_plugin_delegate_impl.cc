@@ -248,8 +248,7 @@ bool PlatformAudioImpl::Initialize(
 
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &PlatformAudioImpl::InitializeOnIOThread,
-                        params));
+      base::Bind(&PlatformAudioImpl::InitializeOnIOThread, this, params));
   return true;
 }
 
@@ -257,7 +256,7 @@ bool PlatformAudioImpl::StartPlayback() {
   if (filter_) {
     ChildProcess::current()->io_message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &PlatformAudioImpl::StartPlaybackOnIOThread));
+        base::Bind(&PlatformAudioImpl::StartPlaybackOnIOThread, this));
     return true;
   }
   return false;
@@ -267,7 +266,7 @@ bool PlatformAudioImpl::StopPlayback() {
   if (filter_) {
     ChildProcess::current()->io_message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &PlatformAudioImpl::StopPlaybackOnIOThread));
+        base::Bind(&PlatformAudioImpl::StopPlaybackOnIOThread, this));
     return true;
   }
   return false;
@@ -329,8 +328,8 @@ void PlatformAudioImpl::OnLowLatencyCreated(
       client_->StreamCreated(handle, length, socket_handle);
   } else {
     main_message_loop_proxy_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &PlatformAudioImpl::OnLowLatencyCreated,
-                          handle, socket_handle, length));
+        base::Bind(&PlatformAudioImpl::OnLowLatencyCreated, this, handle,
+                   socket_handle, length));
   }
 }
 
@@ -415,24 +414,21 @@ bool PlatformAudioInputImpl::Initialize(
 
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &PlatformAudioInputImpl::InitializeOnIOThread,
-                        params));
+      base::Bind(&PlatformAudioInputImpl::InitializeOnIOThread, this, params));
   return true;
 }
 
 bool PlatformAudioInputImpl::StartCapture() {
   ChildProcess::current()->io_message_loop()->PostTask(
     FROM_HERE,
-    NewRunnableMethod(this,
-        &PlatformAudioInputImpl::StartCaptureOnIOThread));
+    base::Bind(&PlatformAudioInputImpl::StartCaptureOnIOThread, this));
   return true;
 }
 
 bool PlatformAudioInputImpl::StopCapture() {
   ChildProcess::current()->io_message_loop()->PostTask(
     FROM_HERE,
-    NewRunnableMethod(this,
-        &PlatformAudioInputImpl::StopCaptureOnIOThread));
+    base::Bind(&PlatformAudioInputImpl::StopCaptureOnIOThread, this));
   return true;
 }
 
@@ -495,9 +491,10 @@ void PlatformAudioInputImpl::OnLowLatencyCreated(
     if (client_)
       client_->StreamCreated(handle, length, socket_handle);
   } else {
-    main_message_loop_proxy_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &PlatformAudioInputImpl::OnLowLatencyCreated,
-                          handle, socket_handle, length));
+    main_message_loop_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&PlatformAudioInputImpl::OnLowLatencyCreated, this,
+                   handle, socket_handle, length));
   }
 }
 

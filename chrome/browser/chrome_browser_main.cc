@@ -415,7 +415,8 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
   // http://code.google.com/p/chromium/issues/detail?id=11510
   FilePath new_user_data_dir = UserDataDirDialog::RunUserDataDirDialog(
       user_data_dir);
-  if (!parameters.ui_task && browser_shutdown::delete_resources_on_shutdown) {
+  if (parameters.ui_task.is_null() &&
+      browser_shutdown::delete_resources_on_shutdown) {
     // Only delete the resources if we're not running tests. If we're running
     // tests the resources need to be reused as many places in the UI cache
     // SkBitmaps from the ResourceBundle.
@@ -586,7 +587,7 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       local_state_(NULL),
       restart_last_session_(false) {
   // If we're running tests (ui_task is non-null).
-  if (parameters.ui_task)
+  if (!parameters.ui_task.is_null())
     browser_defaults::enable_help_app = false;
 }
 
@@ -615,9 +616,9 @@ MetricsService* ChromeBrowserMainParts::SetupMetricsAndFieldTrials(
                        prefs::kMaxConnectionsPerProxy));
 
   // Initialize FieldTrialSynchronizer system. This is a singleton and is used
-  // for posting tasks via base::Bind. Its deleted when it goes out of scope.
-  // Even though base::Bind does AddRef and Release, the object will not be
-  // deleted after the Task is executed.
+  // for posting tasks via base::Bind(). Its deleted when it goes out of
+  // scope. Even though base::Bind() does AddRef and Release, the object
+  // will not be deleted after the Task is executed.
   field_trial_synchronizer_ = new FieldTrialSynchronizer();
 
   return metrics;
@@ -1166,7 +1167,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   // If we're running tests (ui_task is non-null), then the ResourceBundle
   // has already been initialized.
-  if (parameters().ui_task) {
+  if (!parameters().ui_task.is_null()) {
     g_browser_process->SetApplicationLocale("en-US");
   } else {
     // Mac starts it earlier in |PreMainMessageLoopStart()| (because it is
@@ -1282,9 +1283,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   InitializeURLRequestThrottlerManager(browser_process_->net_log());
 
   // Initialize histogram synchronizer system. This is a singleton and is used
-  // for posting tasks via base::Bind. Its deleted when it goes out of scope.
-  // Even though base::Bind does AddRef and Release, the object will not
-  // be deleted after the Task is executed.
+  // for posting tasks via base::Bind(). Its deleted when it goes out of
+  // scope. Even though base::Bind() does AddRef and Release, the object
+  // will not be deleted after the Task is executed.
   histogram_synchronizer_ = new HistogramSynchronizer();
   tracking_synchronizer_ = new chrome_browser_metrics::TrackingSynchronizer();
 
@@ -1358,7 +1359,7 @@ void ChromeBrowserMainParts::PreMainMessageLoopRun() {
 //   PostProfileInit()
 //   ... additional setup
 //   PreBrowserStart()
-//   ... browser_init_->Start (OR parameters().ui_task->Run())
+//   ... browser_init_->Start (OR parameters().ui_task.Run())
 //   PostBrowserStart()
 
 void ChromeBrowserMainParts::PreProfileInit() {
@@ -1751,14 +1752,13 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // http://crbug.com/105065.
   g_browser_process->notification_ui_manager();
 
-  if (parameters().ui_task) {
+  if (!parameters().ui_task.is_null()) {
     // We are in test mode. Run one task and enter the main message loop.
 #if defined(OS_MACOSX)
     if (parameters().autorelease_pool)
       parameters().autorelease_pool->Recycle();
 #endif
-    parameters().ui_task->Run();
-    delete parameters().ui_task;
+    parameters().ui_task.Run();
     run_message_loop_ = false;
   } else {
     // Most general initialization is behind us, but opening a
@@ -1804,7 +1804,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #if !defined(OS_CHROMEOS)
       // If we're running tests (ui_task is non-null), then we don't want to
       // call FetchLanguageListFromTranslateServer
-      if (parameters().ui_task == NULL && translate_manager_ != NULL) {
+      if (parameters().ui_task.is_null() && translate_manager_ != NULL) {
         // TODO(willchan): Get rid of this after TranslateManager doesn't use
         // the default request context. http://crbug.com/89396.
         // This is necessary to force |default_request_context_| to be
@@ -1912,7 +1912,7 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Some tests don't set parameters.ui_task, so they started translate
   // language fetch that was never completed so we need to cleanup here
   // otherwise it will be done by the destructor in a wrong thread.
-  if (parameters().ui_task == NULL && translate_manager_ != NULL)
+  if (parameters().ui_task.is_null() && translate_manager_ != NULL)
     translate_manager_->CleanupPendingUlrFetcher();
 
   if (notify_result_ == ProcessSingleton::PROCESS_NONE)

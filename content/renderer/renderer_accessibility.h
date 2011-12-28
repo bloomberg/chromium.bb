@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/hash_tables.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityNotification.h"
 
@@ -97,7 +97,7 @@ class RendererAccessibility : public content::RenderViewObserver {
   WebKit::WebDocument GetMainDocument();
 
   // So we can queue up tasks to be executed later.
-  ScopedRunnableMethodFactory<RendererAccessibility> method_factory_;
+  base::WeakPtrFactory<RendererAccessibility> weak_factory_;
 
   // Notifications from WebKit are collected until they are ready to be
   // sent to the browser.

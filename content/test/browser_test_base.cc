@@ -4,8 +4,8 @@
 
 #include "content/test/browser_test_base.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/task.h"
 #include "content/public/common/main_function_params.h"
 #include "sandbox/src/dep.h"
 
@@ -29,7 +29,7 @@ BrowserTestBase::~BrowserTestBase() {
 void BrowserTestBase::SetUp() {
   content::MainFunctionParams params(*CommandLine::ForCurrentProcess());
   params.ui_task =
-      NewRunnableMethod(this, &BrowserTestBase::ProxyRunTestOnMainThreadLoop);
+      base::Bind(&BrowserTestBase::ProxyRunTestOnMainThreadLoop, this);
 
   SetUpInProcessBrowserTestFixture();
   BrowserMain(params);

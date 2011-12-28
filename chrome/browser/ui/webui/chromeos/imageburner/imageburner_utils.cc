@@ -466,5 +466,4 @@ void Downloader::DownloadStarted(bool success, const GURL& url) {
   listeners_.erase(listener_range.first, listener_range.second);
 }
 
-}  // namespace imageburner.
-
+}  // namespace imageburner

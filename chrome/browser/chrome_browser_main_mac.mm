@@ -75,7 +75,7 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
 
   // If ui_task is not NULL, the app is actually a browser_test, so startup is
   // handled outside of BrowserMain (which is what called this).
-  if (!parameters().ui_task) {
+  if (parameters().ui_task.is_null()) {
     // The browser process only wants to support the language Cocoa will use,
     // so force the app locale to be overriden with that value.
     l10n_util::OverrideLocaleWithCocoaLocale();

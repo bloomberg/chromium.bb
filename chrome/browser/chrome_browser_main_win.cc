@@ -174,7 +174,7 @@ void ChromeBrowserMainPartsWin::ToolkitInitialized() {
 
 void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
   ChromeBrowserMainParts::PreMainMessageLoopStart();
-  if (!parameters().ui_task) {
+  if (parameters().ui_task.is_null()) {
     // Make sure that we know how to handle exceptions from the message loop.
     InitializeWindowProcExceptions();
   }

@@ -222,7 +222,7 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
 
   chromeos::DBusThreadManager::Shutdown();
 
-  if (!parameters().ui_task && chromeos::CrosLibrary::Get())
+  if (parameters().ui_task.is_null() && chromeos::CrosLibrary::Get())
     chromeos::CrosLibrary::Shutdown();
 
   // To be precise, logout (browser shutdown) is not yet done, but the
@@ -249,7 +249,7 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
   // Initialize CrosLibrary only for the browser, unless running tests
   // (which do their own CrosLibrary setup).
-  if (!parameters().ui_task) {
+  if (parameters().ui_task.is_null()) {
     bool use_stub = parameters().command_line.HasSwitch(switches::kStubCros);
     chromeos::CrosLibrary::Initialize(use_stub);
   }
@@ -341,7 +341,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   // Tests should be able to tune login manager before showing it.
   // Thus only show login manager in normal (non-testing) mode.
-  if (!parameters().ui_task)
+  if (parameters().ui_task.is_null())
     OptionallyRunChromeOSLoginManager(parsed_command_line(), profile());
 
   ChromeBrowserMainPartsLinux::PostProfileInit();
@@ -359,8 +359,10 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
   // Listen for system key events so that the user will be able to adjust the
   // volume on the login screen, if Chrome is running on Chrome OS
   // (i.e. not Linux desktop), and in non-test mode.
+  //
+  // ui_task is non-NULL when running tests.
   if (chromeos::system::runtime_environment::IsRunningOnChromeOS() &&
-      !parameters().ui_task) {  // ui_task is non-NULL when running tests.
+      parameters().ui_task.is_null()) {
     chromeos::SystemKeyEventListener::Initialize();
   }
 
