@@ -50,7 +50,7 @@ def main():
   params = ('{"data":{' +
             '"hostId": "%(hostId)s",' +
             '"hostName": "%(hostName)s",' +
-            '"publicKey": "%(publicKey)s"}}') %
+            '"publicKey": "%(publicKey)s"}}') % \
             {'hostId': host_id, 'hostName': host_name,
             'publicKey': public_key}
   headers = {"Authorization": "GoogleLogin auth=" + auth_token,
