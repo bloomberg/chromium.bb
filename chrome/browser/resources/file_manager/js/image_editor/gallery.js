@@ -382,7 +382,7 @@ Gallery.prototype.openImage = function(id, content, metadata, slide, callback) {
   }
 
   var self = this;
-  function loadDone() {
+  function loadDone(loadType) {
     ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('View'));
 
     function toMillions(number) { return Math.round(number / (1000 * 1000)) }
@@ -401,7 +401,7 @@ Gallery.prototype.openImage = function(id, content, metadata, slide, callback) {
     ImageUtil.metrics.recordEnum(
         ImageUtil.getMetricName('FileType'), ext, ImageUtil.FILE_TYPES);
 
-    callback(arguments);
+    callback(loadType);
   }
 
   this.editor_.openSession(id, content, metadata, slide, loadDone);

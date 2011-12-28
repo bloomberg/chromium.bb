@@ -150,8 +150,7 @@ ImageView.prototype.cancelLoad = function() {
  * @param {string|HTMLCanvasElement} source
  * @param {Object} metadata
  * @param {Object} slide Slide-in animation direction.
- * @param {function(boolean} opt_callback The parameter is true if the image
- *    was loaded instantly (from the cache of the canvas source).
+ * @param {function(number} opt_callback The parameter is the load type.
  */
 ImageView.prototype.load = function(
     id, source, metadata, slide, opt_callback) {

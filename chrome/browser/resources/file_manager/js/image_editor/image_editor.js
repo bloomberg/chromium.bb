@@ -93,14 +93,14 @@ ImageEditor.prototype.openSession = function(
   this.lockUI(true);
 
   var self = this;
-  this.imageView_.load(id, source, metadata, slide, function() {
+  this.imageView_.load(id, source, metadata, slide, function(loadType) {
     self.lockUI(false);
     self.commandQueue_ = new CommandQueue(
         self.container_.ownerDocument, self.imageView_.getCanvas());
     self.commandQueue_.attachUI(
         self.getImageView(), self.getPrompt(), self.lockUI.bind(self));
     self.updateUndoRedo();
-    if (opt_callback) opt_callback(arguments);
+    if (opt_callback) opt_callback(loadType);
   });
 };
 
