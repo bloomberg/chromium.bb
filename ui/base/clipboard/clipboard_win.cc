@@ -487,8 +487,8 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
       html_start == std::string::npos)
     return;
 
-  DCHECK(start_index - html_start >= 0);
-  DCHECK(end_index - html_start >= 0);
+  DCHECK_GE(start_index, html_start);
+  DCHECK_GE(end_index, html_start);
   DCHECK((start_index - html_start) <= kuint32max);
   DCHECK((end_index - html_start) <= kuint32max);
 
