@@ -4,6 +4,7 @@
 
 #include "ash/wm/compact_status_area_layout_manager.h"
 
+#include "base/auto_reset.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -21,7 +22,8 @@ namespace internal {
 
 CompactStatusAreaLayoutManager::CompactStatusAreaLayoutManager(
     views::Widget* status_widget)
-    : status_widget_(status_widget) {
+    : in_layout_(false),
+      status_widget_(status_widget) {
 }
 
 CompactStatusAreaLayoutManager::~CompactStatusAreaLayoutManager() {
@@ -50,12 +52,15 @@ void CompactStatusAreaLayoutManager::OnChildWindowVisibilityChanged(
 void CompactStatusAreaLayoutManager::SetChildBounds(
     aura::Window* child, const gfx::Rect& requested_bounds) {
   SetChildBoundsDirect(child, requested_bounds);
+  if (!in_layout_)
+    LayoutStatusArea();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // CompactStatusAreaLayoutManager, private:
 
 void CompactStatusAreaLayoutManager::LayoutStatusArea() {
+  AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
   // Place the widget in the top-right corner of the screen.
   gfx::Rect monitor_bounds = gfx::Screen::GetPrimaryMonitorBounds();
   gfx::Rect widget_bounds = status_widget_->GetRestoredBounds();

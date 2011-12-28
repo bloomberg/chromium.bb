@@ -37,6 +37,7 @@ class CompactStatusAreaLayoutManager : public aura::LayoutManager {
   // Place the status area widget in the corner of the screen.
   void LayoutStatusArea();
 
+  bool in_layout_;
   views::Widget* status_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(CompactStatusAreaLayoutManager);
