@@ -22,7 +22,50 @@ namespace keys = extension_manifest_keys;
 
 namespace {
 
-TEST(ExtensionL10nUtil, DISABLED_GetValidLocalesEmptyLocaleFolder) {
+// crbug.com/108429: Crashing on Windows Vista bots.
+#if defined(OS_WIN)
+#define GetValidLocalesEmptyLocaleFolder \
+  DISABLED_GetValidLocalesEmptyLocaleFolder
+#define GetValidLocalesWithValidLocaleNoMessagesFile \
+  DISABLED_GetValidLocalesWithValidLocaleNoMessagesFile
+#define GetValidLocalesWithUnsupportedLocale \
+  DISABLED_GetValidLocalesWithUnsupportedLocale
+#define GetValidLocalesWithValidLocalesAndMessagesFile \
+  DISABLED_GetValidLocalesWithValidLocalesAndMessagesFile
+#define LoadMessageCatalogsValidFallback \
+  DISABLED_LoadMessageCatalogsValidFallback
+#define LoadMessageCatalogsMissingFiles DISABLED_LoadMessageCatalogsMissingFiles
+#define LoadMessageCatalogsBadJSONFormat \
+  DISABLED_LoadMessageCatalogsBadJSONFormat
+#define LoadMessageCatalogsDuplicateKeys \
+  DISABLED_LoadMessageCatalogsDuplicateKeys
+#define LocalizeEmptyManifest DISABLED_LocalizeEmptyManifest
+#define LocalizeManifestWithoutNameMsgAndEmptyDescription \
+  DISABLED_LocalizeManifestWithoutNameMsgAndEmptyDescription
+#define LocalizeManifestWithNameMsgAndEmptyDescription \
+  DISABLED_LocalizeManifestWithNameMsgAndEmptyDescription
+#define LocalizeManifestWithBadNameMsg DISABLED_LocalizeManifestWithBadNameMsg
+#define LocalizeManifestWithNameDescriptionDefaultTitleMsgs \
+  DISABLED_LocalizeManifestWithNameDescriptionDefaultTitleMsgs
+#define LocalizeManifestWithNameDescriptionOmniboxMsgs \
+  DISABLED_LocalizeManifestWithNameDescriptionOmniboxMsgs
+#define LocalizeManifestWithNameDescriptionFileHandlerTitle \
+  DISABLED_LocalizeManifestWithNameDescriptionFileHandlerTitle
+#define ShouldRelocalizeManifestWithNullManifest \
+  DISABLED_ShouldRelocalizeManifestWithNullManifest
+#define ShouldRelocalizeManifestEmptyManifest \
+  DISABLED_ShouldRelocalizeManifestEmptyManifest
+#define ShouldRelocalizeManifestWithDefaultLocale \
+  DISABLED_ShouldRelocalizeManifestWithDefaultLocale
+#define ShouldRelocalizeManifestWithCurrentLocale \
+  DISABLED_ShouldRelocalizeManifestWithCurrentLocale
+#define ShouldRelocalizeManifestSameCurrentLocale \
+  DISABLED_ShouldRelocalizeManifestSameCurrentLocale
+#define ShouldRelocalizeManifestDifferentCurrentLocale \
+  DISABLED_ShouldRelocalizeManifestDifferentCurrentLocale
+#endif
+
+TEST(ExtensionL10nUtil, GetValidLocalesEmptyLocaleFolder) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
@@ -38,7 +81,7 @@ TEST(ExtensionL10nUtil, DISABLED_GetValidLocalesEmptyLocaleFolder) {
   EXPECT_TRUE(locales.empty());
 }
 
-TEST(ExtensionL10nUtil, DISABLED_GetValidLocalesWithValidLocaleNoMessagesFile) {
+TEST(ExtensionL10nUtil, GetValidLocalesWithValidLocaleNoMessagesFile) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
@@ -55,7 +98,7 @@ TEST(ExtensionL10nUtil, DISABLED_GetValidLocalesWithValidLocaleNoMessagesFile) {
   EXPECT_TRUE(locales.empty());
 }
 
-TEST(ExtensionL10nUtil, DISABLED_GetValidLocalesWithUnsupportedLocale) {
+TEST(ExtensionL10nUtil, GetValidLocalesWithUnsupportedLocale) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
@@ -82,7 +125,7 @@ TEST(ExtensionL10nUtil, DISABLED_GetValidLocalesWithUnsupportedLocale) {
   EXPECT_FALSE(locales.find("xxx_yyy") != locales.end());
 }
 
-TEST(ExtensionL10nUtil, DISABLED_GetValidLocalesWithValidLocalesAndMessagesFile) {
+TEST(ExtensionL10nUtil, GetValidLocalesWithValidLocalesAndMessagesFile) {
   FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
@@ -103,7 +146,7 @@ TEST(ExtensionL10nUtil, DISABLED_GetValidLocalesWithValidLocalesAndMessagesFile)
   EXPECT_TRUE(locales.find("en_US") != locales.end());
 }
 
-TEST(ExtensionL10nUtil, DISABLED_LoadMessageCatalogsValidFallback) {
+TEST(ExtensionL10nUtil, LoadMessageCatalogsValidFallback) {
   FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
@@ -128,7 +171,7 @@ TEST(ExtensionL10nUtil, DISABLED_LoadMessageCatalogsValidFallback) {
   EXPECT_EQ("Not in the US or GB.", bundle->GetL10nMessage("not_in_US_or_GB"));
 }
 
-TEST(ExtensionL10nUtil, DISABLED_LoadMessageCatalogsMissingFiles) {
+TEST(ExtensionL10nUtil, LoadMessageCatalogsMissingFiles) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
@@ -147,7 +190,7 @@ TEST(ExtensionL10nUtil, DISABLED_LoadMessageCatalogsMissingFiles) {
   EXPECT_FALSE(error.empty());
 }
 
-TEST(ExtensionL10nUtil, DISABLED_LoadMessageCatalogsBadJSONFormat) {
+TEST(ExtensionL10nUtil, LoadMessageCatalogsBadJSONFormat) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
@@ -174,7 +217,7 @@ TEST(ExtensionL10nUtil, DISABLED_LoadMessageCatalogsBadJSONFormat) {
   EXPECT_EQ("Line: 1, column: 10, Syntax error.", error);
 }
 
-TEST(ExtensionL10nUtil, DISABLED_LoadMessageCatalogsDuplicateKeys) {
+TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
@@ -250,7 +293,7 @@ ExtensionMessageBundle* CreateManifestBundle() {
   return bundle;
 }
 
-TEST(ExtensionL10nUtil, DISABLED_LocalizeEmptyManifest) {
+TEST(ExtensionL10nUtil, LocalizeEmptyManifest) {
   DictionaryValue manifest;
   std::string error;
   scoped_ptr<ExtensionMessageBundle> messages(CreateManifestBundle());
@@ -260,7 +303,7 @@ TEST(ExtensionL10nUtil, DISABLED_LocalizeEmptyManifest) {
   EXPECT_EQ(std::string(errors::kInvalidName), error);
 }
 
-TEST(ExtensionL10nUtil, DISABLED_LocalizeManifestWithoutNameMsgAndEmptyDescription) {
+TEST(ExtensionL10nUtil, LocalizeManifestWithoutNameMsgAndEmptyDescription) {
   DictionaryValue manifest;
   manifest.SetString(keys::kName, "no __MSG");
   std::string error;
@@ -278,7 +321,7 @@ TEST(ExtensionL10nUtil, DISABLED_LocalizeManifestWithoutNameMsgAndEmptyDescripti
   EXPECT_TRUE(error.empty());
 }
 
-TEST(ExtensionL10nUtil, DISABLED_LocalizeManifestWithNameMsgAndEmptyDescription) {
+TEST(ExtensionL10nUtil, LocalizeManifestWithNameMsgAndEmptyDescription) {
   DictionaryValue manifest;
   manifest.SetString(keys::kName, "__MSG_name__");
   std::string error;
@@ -296,7 +339,7 @@ TEST(ExtensionL10nUtil, DISABLED_LocalizeManifestWithNameMsgAndEmptyDescription)
   EXPECT_TRUE(error.empty());
 }
 
-TEST(ExtensionL10nUtil, DISABLED_LocalizeManifestWithBadNameMsg) {
+TEST(ExtensionL10nUtil, LocalizeManifestWithBadNameMsg) {
   DictionaryValue manifest;
   manifest.SetString(keys::kName, "__MSG_name_is_bad__");
   manifest.SetString(keys::kDescription, "__MSG_description__");
@@ -316,7 +359,7 @@ TEST(ExtensionL10nUtil, DISABLED_LocalizeManifestWithBadNameMsg) {
   EXPECT_EQ("Variable __MSG_name_is_bad__ used but not defined.", error);
 }
 
-TEST(ExtensionL10nUtil, DISABLED_LocalizeManifestWithNameDescriptionDefaultTitleMsgs) {
+TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionDefaultTitleMsgs) {
   DictionaryValue manifest;
   manifest.SetString(keys::kName, "__MSG_name__");
   manifest.SetString(keys::kDescription, "__MSG_description__");
@@ -344,7 +387,7 @@ TEST(ExtensionL10nUtil, DISABLED_LocalizeManifestWithNameDescriptionDefaultTitle
   EXPECT_TRUE(error.empty());
 }
 
-TEST(ExtensionL10nUtil, DISABLED_LocalizeManifestWithNameDescriptionOmniboxMsgs) {
+TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionOmniboxMsgs) {
   DictionaryValue manifest;
   manifest.SetString(keys::kName, "__MSG_name__");
   manifest.SetString(keys::kDescription, "__MSG_description__");
@@ -369,7 +412,7 @@ TEST(ExtensionL10nUtil, DISABLED_LocalizeManifestWithNameDescriptionOmniboxMsgs)
   EXPECT_TRUE(error.empty());
 }
 
-TEST(ExtensionL10nUtil, DISABLED_LocalizeManifestWithNameDescriptionFileHandlerTitle) {
+TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionFileHandlerTitle) {
   DictionaryValue manifest;
   manifest.SetString(keys::kName, "__MSG_name__");
   manifest.SetString(keys::kDescription, "__MSG_description__");
@@ -400,14 +443,14 @@ TEST(ExtensionL10nUtil, DISABLED_LocalizeManifestWithNameDescriptionFileHandlerT
 }
 
 // Try with NULL manifest.
-TEST(ExtensionL10nUtil, DISABLED_ShouldRelocalizeManifestWithNullManifest) {
+TEST(ExtensionL10nUtil, ShouldRelocalizeManifestWithNullManifest) {
   ExtensionInfo info(NULL, "", FilePath(), Extension::LOAD);
 
   EXPECT_FALSE(extension_l10n_util::ShouldRelocalizeManifest(info));
 }
 
 // Try with default and current locales missing.
-TEST(ExtensionL10nUtil, DISABLED_ShouldRelocalizeManifestEmptyManifest) {
+TEST(ExtensionL10nUtil, ShouldRelocalizeManifestEmptyManifest) {
   DictionaryValue manifest;
   ExtensionInfo info(&manifest, "", FilePath(), Extension::LOAD);
 
@@ -415,7 +458,7 @@ TEST(ExtensionL10nUtil, DISABLED_ShouldRelocalizeManifestEmptyManifest) {
 }
 
 // Try with missing current_locale.
-TEST(ExtensionL10nUtil, DISABLED_ShouldRelocalizeManifestWithDefaultLocale) {
+TEST(ExtensionL10nUtil, ShouldRelocalizeManifestWithDefaultLocale) {
   DictionaryValue manifest;
   manifest.SetString(keys::kDefaultLocale, "en_US");
 
@@ -425,7 +468,7 @@ TEST(ExtensionL10nUtil, DISABLED_ShouldRelocalizeManifestWithDefaultLocale) {
 }
 
 // Try with missing default_locale.
-TEST(ExtensionL10nUtil, DISABLED_ShouldRelocalizeManifestWithCurrentLocale) {
+TEST(ExtensionL10nUtil, ShouldRelocalizeManifestWithCurrentLocale) {
   DictionaryValue manifest;
   manifest.SetString(keys::kCurrentLocale,
                      extension_l10n_util::CurrentLocaleOrDefault());
@@ -436,7 +479,7 @@ TEST(ExtensionL10nUtil, DISABLED_ShouldRelocalizeManifestWithCurrentLocale) {
 }
 
 // Try with all data present, but with same current_locale as system locale.
-TEST(ExtensionL10nUtil, DISABLED_ShouldRelocalizeManifestSameCurrentLocale) {
+TEST(ExtensionL10nUtil, ShouldRelocalizeManifestSameCurrentLocale) {
   DictionaryValue manifest;
   manifest.SetString(keys::kDefaultLocale, "en_US");
   manifest.SetString(keys::kCurrentLocale,
@@ -448,7 +491,7 @@ TEST(ExtensionL10nUtil, DISABLED_ShouldRelocalizeManifestSameCurrentLocale) {
 }
 
 // Try with all data present, but with different current_locale.
-TEST(ExtensionL10nUtil, DISABLED_ShouldRelocalizeManifestDifferentCurrentLocale) {
+TEST(ExtensionL10nUtil, ShouldRelocalizeManifestDifferentCurrentLocale) {
   DictionaryValue manifest;
   manifest.SetString(keys::kDefaultLocale, "en_US");
   manifest.SetString(keys::kCurrentLocale, "sr");
