@@ -222,8 +222,9 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
   if (!websocket_.get())
     return PP_ERROR_FAILED;
 
-  // Validate |code|.
-  if (code != WebSocket::CloseEventCodeNotSpecified) {
+  // Validate |code|. Need to cast |CloseEventCodeNotSpecified| which is -1 to
+  // uint16_t for the comparison to work.
+  if (code != static_cast<uint16_t>(WebSocket::CloseEventCodeNotSpecified)) {
     if (!(code == WebSocket::CloseEventCodeNormalClosure ||
         (WebSocket::CloseEventCodeMinimumUserDefined <= code &&
         code <= WebSocket::CloseEventCodeMaximumUserDefined)))
