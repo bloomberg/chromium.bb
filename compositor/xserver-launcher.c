@@ -691,6 +691,7 @@ wlsc_wm_handle_create_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 		return;
 	}
 
+	memset(window, 0, sizeof *window);
 	window->id = create_notify->window;
 	hash_table_insert(wm->window_hash, window->id, window);
 }
@@ -714,6 +715,8 @@ wlsc_wm_handle_destroy_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 
 	fprintf(stderr, "destroy window %p\n", window);
 	hash_table_remove(wm->window_hash, window->id);
+	if (window->surface)
+		wl_list_remove(&window->surface_destroy_listener.link);
 	free(window);
 }
 
