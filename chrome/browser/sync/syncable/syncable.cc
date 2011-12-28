@@ -13,6 +13,7 @@
 #include <set>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/debug/trace_event.h"
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/sync/syncable/syncable_enum_conversions.h"
 #include "chrome/browser/sync/syncable/transaction_observer.h"
 #include "chrome/browser/sync/util/logging.h"
+#include "chrome/common/chrome_constants.h"
 #include "net/base/escape.h"
 
 namespace {
@@ -1395,6 +1397,18 @@ void BaseTransaction::OnUnrecoverableError(
   // Note: We dont call the Directory's OnUnrecoverableError method right
   // away. Instead we wait to unwind the stack and in the destructor of the
   // transaction we would call the OnUnrecoverableError method.
+
+  // TODO(lipalani): Add this for other platforms as well.
+#if defined(OS_WIN)
+  // Get the breakpad pointer from chrome.exe
+  typedef void (__cdecl *DumpProcessFunction)();
+  DumpProcessFunction DumpProcess = reinterpret_cast<DumpProcessFunction>(
+      ::GetProcAddress(::GetModuleHandle(
+                       chrome::kBrowserProcessExecutableName),
+                       "DumpProcessWithoutCrash"));
+  if (DumpProcess)
+    DumpProcess();
+#endif  // OS_WIN
 }
 
 bool BaseTransaction::unrecoverable_error_set() const {

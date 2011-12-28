@@ -61,6 +61,7 @@ const wchar_t kChromePipeName[] = L"\\\\.\\pipe\\ChromeCrashServices";
 const wchar_t kSystemPrincipalSid[] =L"S-1-5-18";
 
 google_breakpad::ExceptionHandler* g_breakpad = NULL;
+google_breakpad::ExceptionHandler* g_dumphandler_no_crash = NULL;
 
 // A pointer to the custom entries that we send in the event of a crash. We need
 // this pointer, along with the offsets into it below, so that we can keep the
@@ -82,6 +83,13 @@ const size_t kMaxPluginPathLength = 256;
 extern "C" void __declspec(dllexport) __cdecl DumpProcess() {
   if (g_breakpad)
     g_breakpad->WriteMinidump();
+}
+
+// Used for dumping a process state when there is no crash.
+extern "C" void __declspec(dllexport) __cdecl DumpProcessWithoutCrash() {
+  if (g_dumphandler_no_crash) {
+    g_dumphandler_no_crash->WriteMinidump();
+  }
 }
 
 // Reduces the size of the string |str| to a max of 64 chars. Required because
@@ -325,6 +333,14 @@ struct CrashReporterInfo {
   std::wstring process_type;
 };
 
+// This callback is used when we want to get a dump without crashing the
+// process.
+bool DumpDoneCallbackWhenNoCrash(const wchar_t*, const wchar_t*, void*,
+                                 EXCEPTION_POINTERS* ex_info,
+                                 MDRawAssertionInfo*, bool) {
+  return true;
+}
+
 // This callback is executed when the browser process has crashed, after
 // the crash dump has been created. We need to minimize the amount of work
 // done here since we have potentially corrupted process. Our job is to
@@ -361,6 +377,14 @@ bool DumpDoneCallback(const wchar_t*, const wchar_t*, void*,
 
 // flag to indicate that we are already handling an exception.
 volatile LONG handling_exception = 0;
+
+// This callback is used when there is no crash. Note: Unlike the
+// |FilterCallback| below this does not do dupe detection. It is upto the caller
+// to implement it.
+bool FilterCallbackWhenNoCrash(
+    void*, EXCEPTION_POINTERS*, MDRawAssertionInfo*) {
+  return true;
+}
 
 // This callback is executed when the Chrome process has crashed and *before*
 // the crash dump is created. To prevent duplicate crash reports we
@@ -691,6 +715,17 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
                    callback, NULL,
                    google_breakpad::ExceptionHandler::HANDLER_ALL,
                    dump_type, pipe_name.c_str(), info->custom_info);
+
+  // Now initialize the non crash dump handler.
+  g_dumphandler_no_crash = new google_breakpad::ExceptionHandler(temp_dir,
+      &FilterCallbackWhenNoCrash,
+      &DumpDoneCallbackWhenNoCrash,
+      NULL,
+      // Set the handler to none so this handler would not be added to
+      // |handler_stack_| in |ExceptionHandler| which is a list of exception
+      // handlers.
+      google_breakpad::ExceptionHandler::HANDLER_NONE,
+      dump_type, pipe_name.c_str(), info->custom_info);
 
   if (!g_breakpad->IsOutOfProcess()) {
     // The out-of-process handler is unavailable.

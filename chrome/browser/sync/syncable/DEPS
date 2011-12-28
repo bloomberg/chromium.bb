@@ -20,5 +20,7 @@ include_rules = [
 
   "-chrome/browser/sync/internal_api",
   "+chrome/browser/sync/internal_api/includes",
+
+  "+chrome/common/chrome_constants.h",
 ]
 
