@@ -43,6 +43,10 @@ TEST(ExtensionResourceTest, CreateWithMissingResourceOnDisk) {
   EXPECT_TRUE(resource.GetFilePath().empty());
 }
 
+// crbug.com/108721. Disabled on Windows due to crashing on Vista.
+#if defined(OS_WIN)
+#define CreateWithAllResourcesOnDisk DISABLED_CreateWithAllResourcesOnDisk
+#endif
 TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
