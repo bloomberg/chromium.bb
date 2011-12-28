@@ -410,7 +410,7 @@ WebContents* ExternalTabContainer::OpenURLFromTab(WebContents* source,
   return NULL;
 }
 
-void ExternalTabContainer::NavigationStateChanged(const TabContents* source,
+void ExternalTabContainer::NavigationStateChanged(const WebContents* source,
                                                   unsigned changed_flags) {
   if (automation_) {
     NavigationInfo nav_info;
@@ -420,11 +420,11 @@ void ExternalTabContainer::NavigationStateChanged(const TabContents* source,
   }
 }
 
-void ExternalTabContainer::AddNewContents(TabContents* source,
-                            TabContents* new_contents,
-                            WindowOpenDisposition disposition,
-                            const gfx::Rect& initial_pos,
-                            bool user_gesture) {
+void ExternalTabContainer::AddNewContents(WebContents* source,
+                                          WebContents* new_contents,
+                                          WindowOpenDisposition disposition,
+                                          const gfx::Rect& initial_pos,
+                                          bool user_gesture) {
   if (!automation_) {
     DCHECK(pending_);
     LOG(ERROR) << "Invalid automation provider. Dropping new contents notify";
@@ -451,7 +451,8 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
 
   // Make sure that ExternalTabContainer instance is initialized with
   // an unwrapped Profile.
-  scoped_ptr<TabContentsWrapper> wrapper(new TabContentsWrapper(new_contents));
+  scoped_ptr<TabContentsWrapper> wrapper(new TabContentsWrapper(
+      static_cast<TabContents*>(new_contents)));
   bool result = new_container->Init(
       wrapper->profile()->GetOriginalProfile(),
       NULL,
@@ -489,7 +490,7 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
   }
 }
 
-void ExternalTabContainer::TabContentsCreated(TabContents* new_contents) {
+void ExternalTabContainer::WebContentsCreated(WebContents* new_contents) {
   RenderViewHost* rvh = new_contents->GetRenderViewHost();
   DCHECK(rvh != NULL);
 
@@ -513,7 +514,7 @@ void ExternalTabContainer::CloseContents(content::WebContents* source) {
   }
 }
 
-void ExternalTabContainer::MoveContents(TabContents* source,
+void ExternalTabContainer::MoveContents(WebContents* source,
                                         const gfx::Rect& pos) {
   if (automation_ && is_popup_window_)
     automation_->Send(new AutomationMsg_MoveWindow(tab_handle_, pos));
@@ -524,11 +525,11 @@ TabContentsWrapper* ExternalTabContainer::GetConstrainingContentsWrapper(
   return source;
 }
 
-bool ExternalTabContainer::IsPopupOrPanel(const TabContents* source) const {
+bool ExternalTabContainer::IsPopupOrPanel(const WebContents* source) const {
   return is_popup_window_;
 }
 
-void ExternalTabContainer::UpdateTargetURL(TabContents* source,
+void ExternalTabContainer::UpdateTargetURL(WebContents* source,
                                            int32 page_id,
                                            const GURL& url) {
   Browser::UpdateTargetURLHelper(source, page_id, url);
@@ -555,7 +556,7 @@ bool ExternalTabContainer::TakeFocus(bool reverse) {
   return true;
 }
 
-bool ExternalTabContainer::CanDownload(TabContents* source, int request_id) {
+bool ExternalTabContainer::CanDownload(WebContents* source, int request_id) {
   if (load_requests_via_automation_) {
     if (automation_) {
       // In case the host needs to show UI that needs to take the focus.
@@ -682,7 +683,7 @@ void ExternalTabContainer::HandleKeyboardEvent(
                             event.os_event.wParam, event.os_event.lParam);
 }
 
-void ExternalTabContainer::BeforeUnloadFired(TabContents* tab,
+void ExternalTabContainer::BeforeUnloadFired(WebContents* tab,
                                              bool proceed,
                                              bool* proceed_to_fire_unload) {
   *proceed_to_fire_unload = true;
@@ -708,34 +709,34 @@ void ExternalTabContainer::BeforeUnloadFired(TabContents* tab,
 }
 
 void ExternalTabContainer::ShowRepostFormWarningDialog(
-    TabContents* tab_contents) {
+    WebContents* source) {
   browser::ShowTabModalConfirmDialog(
-      new RepostFormWarningController(tab_contents),
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents));
+      new RepostFormWarningController(source),
+      TabContentsWrapper::GetCurrentWrapperForContents(source));
 }
 
 void ExternalTabContainer::RunFileChooser(
-    TabContents* tab, const content::FileChooserParams& params) {
+    WebContents* tab, const content::FileChooserParams& params) {
   Browser::RunFileChooserHelper(tab, params);
 }
 
-void ExternalTabContainer::EnumerateDirectory(TabContents* tab, int request_id,
+void ExternalTabContainer::EnumerateDirectory(WebContents* tab, int request_id,
                                               const FilePath& path) {
   Browser::EnumerateDirectoryHelper(tab, request_id, path);
 }
 
-void ExternalTabContainer::JSOutOfMemory(TabContents* tab) {
+void ExternalTabContainer::JSOutOfMemory(WebContents* tab) {
   Browser::JSOutOfMemoryHelper(tab);
 }
 
-void ExternalTabContainer::RegisterProtocolHandler(TabContents* tab,
+void ExternalTabContainer::RegisterProtocolHandler(WebContents* tab,
                                                    const std::string& protocol,
                                                    const GURL& url,
                                                    const string16& title) {
   Browser::RegisterProtocolHandlerHelper(tab, protocol, url, title);
 }
 
-void ExternalTabContainer::RegisterIntentHandler(TabContents* tab,
+void ExternalTabContainer::RegisterIntentHandler(WebContents* tab,
                                                  const string16& action,
                                                  const string16& type,
                                                  const string16& href,
@@ -746,14 +747,14 @@ void ExternalTabContainer::RegisterIntentHandler(TabContents* tab,
 }
 
 void ExternalTabContainer::WebIntentDispatch(
-    TabContents* tab,
+    WebContents* tab,
     content::WebIntentsDispatcher* intents_dispatcher) {
   // TODO(binji) How do we want to display the WebIntentPicker bubble if there
   // is no BrowserWindow?
   delete intents_dispatcher;
 }
 
-void ExternalTabContainer::FindReply(TabContents* tab,
+void ExternalTabContainer::FindReply(WebContents* tab,
                                      int request_id,
                                      int number_of_matches,
                                      const gfx::Rect& selection_rect,
@@ -763,7 +764,7 @@ void ExternalTabContainer::FindReply(TabContents* tab,
                            active_match_ordinal, final_update);
 }
 
-void ExternalTabContainer::CrashedPlugin(TabContents* tab,
+void ExternalTabContainer::CrashedPlugin(WebContents* tab,
                                          const FilePath& plugin_path) {
   Browser::CrashedPluginHelper(tab, plugin_path);
 }
@@ -1129,7 +1130,7 @@ void ExternalTabContainer::OnReinitialize() {
     }
   }
 
-  NavigationStateChanged(tab_contents(), 0);
+  NavigationStateChanged(web_contents(), 0);
   ServicePendingOpenURLRequests();
 }
 

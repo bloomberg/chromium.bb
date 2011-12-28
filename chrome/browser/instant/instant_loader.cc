@@ -52,6 +52,7 @@
 #include "ui/gfx/codec/png_codec.h"
 
 using content::NavigationEntry;
+using content::WebContents;
 
 namespace {
 
@@ -204,12 +205,12 @@ class InstantLoader::TabContentsDelegateImpl
                        const content::NotificationDetails& details) OVERRIDE;
 
   // content::WebContentsDelegate:
-  virtual void NavigationStateChanged(const TabContents* source,
+  virtual void NavigationStateChanged(const WebContents* source,
                                       unsigned changed_flags) OVERRIDE;
   virtual void AddNavigationHeaders(const GURL& url,
                                     std::string* headers) OVERRIDE;
   virtual bool ShouldSuppressDialogs() OVERRIDE;
-  virtual void BeforeUnloadFired(TabContents* tab,
+  virtual void BeforeUnloadFired(content::WebContents* tab,
                                  bool proceed,
                                  bool* proceed_to_fire_unload) OVERRIDE;
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
@@ -219,7 +220,8 @@ class InstantLoader::TabContentsDelegateImpl
   // instant result when the drag ends, so that during the drag the page won't
   // move around.
   virtual void DragEnded() OVERRIDE;
-  virtual bool CanDownload(TabContents* source, int request_id) OVERRIDE;
+  virtual bool CanDownload(content::WebContents* source,
+                           int request_id) OVERRIDE;
   virtual void HandleMouseUp() OVERRIDE;
   virtual void HandleMouseActivate() OVERRIDE;
   virtual bool OnGoToEntryOffset(int offset) OVERRIDE;
@@ -425,7 +427,7 @@ void InstantLoader::TabContentsDelegateImpl::Observe(
 }
 
 void InstantLoader::TabContentsDelegateImpl::NavigationStateChanged(
-    const TabContents* source,
+    const WebContents* source,
     unsigned changed_flags) {
   if (!loader_->ready() && !registered_render_widget_host_ &&
       source->GetController().entry_count()) {
@@ -455,7 +457,7 @@ bool InstantLoader::TabContentsDelegateImpl::ShouldSuppressDialogs() {
 }
 
 void InstantLoader::TabContentsDelegateImpl::BeforeUnloadFired(
-    TabContents* tab,
+    WebContents* tab,
     bool proceed,
     bool* proceed_to_fire_unload) {
 }
@@ -476,7 +478,7 @@ void InstantLoader::TabContentsDelegateImpl::DragEnded() {
   CommitFromMouseReleaseIfNecessary();
 }
 
-bool InstantLoader::TabContentsDelegateImpl::CanDownload(TabContents* source,
+bool InstantLoader::TabContentsDelegateImpl::CanDownload(WebContents* source,
                                                          int request_id) {
   // Downloads are disabled.
   return false;

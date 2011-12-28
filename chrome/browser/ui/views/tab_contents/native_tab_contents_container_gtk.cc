@@ -13,6 +13,8 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/views/focus/focus_manager.h"
 
+using content::WebContents;
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsContainerGtk, public:
 
@@ -29,11 +31,11 @@ NativeTabContentsContainerGtk::~NativeTabContentsContainerGtk() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsContainerGtk, NativeTabContentsContainer overrides:
 
-void NativeTabContentsContainerGtk::AttachContents(TabContents* contents) {
+void NativeTabContentsContainerGtk::AttachContents(WebContents* contents) {
   Attach(contents->GetNativeView());
 }
 
-void NativeTabContentsContainerGtk::DetachContents(TabContents* contents) {
+void NativeTabContentsContainerGtk::DetachContents(WebContents* contents) {
   gtk_widget_hide(contents->GetNativeView());
 
   // Now detach the TabContents.
@@ -66,8 +68,7 @@ views::View* NativeTabContentsContainerGtk::GetView() {
   return this;
 }
 
-void NativeTabContentsContainerGtk::TabContentsFocused(
-    TabContents* tab_contents) {
+void NativeTabContentsContainerGtk::WebContentsFocused(WebContents* contents) {
   // Called when the tab contents native view gets focused (typically through a
   // user click).  We make ourself the focused view, so the focus is restored
   // properly when the browser window is deactivated/reactivated.

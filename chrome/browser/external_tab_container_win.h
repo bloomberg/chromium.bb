@@ -123,62 +123,67 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
-  virtual void NavigationStateChanged(const TabContents* source,
+  virtual void NavigationStateChanged(const content::WebContents* source,
                                       unsigned changed_flags) OVERRIDE;
-  virtual void AddNewContents(TabContents* source,
-                              TabContents* new_contents,
+  virtual void AddNewContents(content::WebContents* source,
+                              content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
-  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) OVERRIDE;
-  virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
-  virtual void UpdateTargetURL(TabContents* source, int32 page_id,
+  virtual void MoveContents(content::WebContents* source,
+                            const gfx::Rect& pos) OVERRIDE;
+  virtual bool IsPopupOrPanel(
+      const content::WebContents* source) const OVERRIDE;
+  virtual void UpdateTargetURL(content::WebContents* source, int32 page_id,
                                const GURL& url) OVERRIDE;
   virtual void ContentsZoomChange(bool zoom_in) OVERRIDE;
   virtual gfx::NativeWindow GetFrameNativeWindow() OVERRIDE;
+  virtual void WebContentsCreated(content::WebContents* new_contents);
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool TakeFocus(bool reverse) OVERRIDE;
-  virtual bool CanDownload(TabContents* source, int request_id) OVERRIDE;
+  virtual bool CanDownload(content::WebContents* source,
+                           int request_id) OVERRIDE;
   virtual bool OnGoToEntryOffset(int offset) OVERRIDE;
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual bool ExecuteContextMenuCommand(int command) OVERRIDE;
-  virtual void BeforeUnloadFired(TabContents* tab,
+  virtual void BeforeUnloadFired(content::WebContents* tab,
                                  bool proceed,
                                  bool* proceed_to_fire_unload) OVERRIDE;
   virtual content::JavaScriptDialogCreator*
       GetJavaScriptDialogCreator() OVERRIDE;
-  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) OVERRIDE;
+  virtual void ShowRepostFormWarningDialog(
+      content::WebContents* source) OVERRIDE;
   virtual void RunFileChooser(
-      TabContents* tab,
+      content::WebContents* tab,
       const content::FileChooserParams& params) OVERRIDE;
-  virtual void EnumerateDirectory(TabContents* tab,
+  virtual void EnumerateDirectory(content::WebContents* tab,
                                   int request_id,
                                   const FilePath& path) OVERRIDE;
-  virtual void JSOutOfMemory(TabContents* tab);
-  virtual void RegisterProtocolHandler(TabContents* tab,
+  virtual void JSOutOfMemory(content::WebContents* tab);
+  virtual void RegisterProtocolHandler(content::WebContents* tab,
                                        const std::string& protocol,
                                        const GURL& url,
                                        const string16& title) OVERRIDE;
-  virtual void RegisterIntentHandler(TabContents* tab,
+  virtual void RegisterIntentHandler(content::WebContents* tab,
                                      const string16& action,
                                      const string16& type,
                                      const string16& href,
                                      const string16& title,
                                      const string16& disposition) OVERRIDE;
   virtual void WebIntentDispatch(
-      TabContents* tab,
+      content::WebContents* tab,
       content::WebIntentsDispatcher* intents_dispatcher) OVERRIDE;
-  virtual void FindReply(TabContents* tab,
+  virtual void FindReply(content::WebContents* tab,
                          int request_id,
                          int number_of_matches,
                          const gfx::Rect& selection_rect,
                          int active_match_ordinal,
                          bool final_update) OVERRIDE;
-  virtual void CrashedPlugin(TabContents* tab,
+  virtual void CrashedPlugin(content::WebContents* tab,
                              const FilePath& plugin_path) OVERRIDE;
 
   void RegisterRenderViewHost(RenderViewHost* render_view_host);
@@ -222,8 +227,6 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   virtual SkColor GetInfoBarSeparatorColor() const OVERRIDE;
   virtual void InfoBarContainerStateChanged(bool is_animating) OVERRIDE;
   virtual bool DrawInfoBarArrows(int* x) const OVERRIDE;
-
-  virtual void TabContentsCreated(TabContents* new_contents);
 
   void RunUnloadHandlers(IPC::Message* reply_message);
 
@@ -372,7 +375,7 @@ class TemporaryPopupExternalTabContainer : public ExternalTabContainer {
     content::WebContents* source,
     const content::OpenURLParams& params) OVERRIDE;
 
-  virtual void NavigationStateChanged(const TabContents* source,
+  virtual void NavigationStateChanged(const content::WebContents* source,
                                       unsigned changed_flags) {
     NOTREACHED();
   }
@@ -381,7 +384,7 @@ class TemporaryPopupExternalTabContainer : public ExternalTabContainer {
     NOTREACHED();
   }
 
-  virtual void UpdateTargetURL(TabContents* source, int32 page_id,
+  virtual void UpdateTargetURL(content::WebContents* source, int32 page_id,
                                const GURL& url) {
     NOTREACHED();
   }
@@ -402,7 +405,7 @@ class TemporaryPopupExternalTabContainer : public ExternalTabContainer {
     return false;
   }
 
-  virtual void BeforeUnloadFired(TabContents* tab, bool proceed,
+  virtual void BeforeUnloadFired(content::WebContents* tab, bool proceed,
                                  bool* proceed_to_fire_unload) {
     NOTREACHED();
   }

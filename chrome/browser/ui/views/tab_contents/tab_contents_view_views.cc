@@ -277,7 +277,7 @@ void TabContentsViewViews::UpdateDragCursor(WebDragOperation operation) {
 
 void TabContentsViewViews::GotFocus() {
   if (tab_contents_->GetDelegate())
-    tab_contents_->GetDelegate()->TabContentsFocused(tab_contents_);
+    tab_contents_->GetDelegate()->WebContentsFocused(tab_contents_);
 }
 
 void TabContentsViewViews::TakeFocus(bool reverse) {

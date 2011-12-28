@@ -38,6 +38,7 @@
 
 using content::BrowserThread;
 using content::DownloadItem;
+using content::WebContents;
 
 namespace {
 
@@ -986,7 +987,7 @@ void DownloadManagerImpl::OnDownloadItemAddedToPersistentStore(
 void DownloadManagerImpl::ShowDownloadInBrowser(DownloadItem* download) {
   // The 'contents' may no longer exist if the user closed the tab before we
   // get this start completion event.
-  TabContents* content = download->GetTabContents();
+  WebContents* content = download->GetTabContents();
 
   // If the contents no longer exists, we ask the embedder to suggest another
   // tab.

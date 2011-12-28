@@ -52,7 +52,7 @@ public:
   virtual bool ShouldShowDialogTitle() const OVERRIDE { return true; }
 
   // HtmlDialogTabContentsDelegate declarations.
-  virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
+  virtual void MoveContents(WebContents* source, const gfx::Rect& pos);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void CloseContents(WebContents* source) OVERRIDE;
 
@@ -195,7 +195,7 @@ void HtmlDialogWindowDelegateBridge::CloseContents(WebContents* source) {
     OnDialogClosed(std::string());
 }
 
-void HtmlDialogWindowDelegateBridge::MoveContents(TabContents* source,
+void HtmlDialogWindowDelegateBridge::MoveContents(WebContents* source,
                                                   const gfx::Rect& pos) {
   // TODO(akalin): Actually set the window bounds.
 }

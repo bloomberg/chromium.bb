@@ -42,6 +42,8 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
 
+using content::WebContents;
+
 namespace {
 
 // The width in pixels of the area between the icon on the left and the close
@@ -315,7 +317,7 @@ WebIntentPickerGtk::InlineDispositionDelegate::~InlineDispositionDelegate() {}
 
 
 bool WebIntentPickerGtk::InlineDispositionDelegate::IsPopupOrPanel(
-    const TabContents* source) const {
+    const WebContents* source) const {
   return true;
 }
 

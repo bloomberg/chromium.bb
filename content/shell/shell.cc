@@ -112,15 +112,15 @@ gfx::NativeView Shell::GetContentView() {
   return tab_contents_->GetNativeView();
 }
 
-void Shell::LoadingStateChanged(TabContents* source) {
+void Shell::LoadingStateChanged(WebContents* source) {
   UpdateNavigationControls();
 }
 
-void Shell::DidNavigateMainFramePostCommit(TabContents* tab) {
+void Shell::DidNavigateMainFramePostCommit(WebContents* tab) {
   PlatformSetAddressBarURL(tab->GetURL());
 }
 
-void Shell::UpdatePreferredSize(TabContents* source,
+void Shell::UpdatePreferredSize(WebContents* source,
                                 const gfx::Size& pref_size) {
   PlatformSizeTo(pref_size.width(), pref_size.height());
 }

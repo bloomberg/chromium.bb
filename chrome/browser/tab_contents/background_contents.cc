@@ -78,7 +78,7 @@ bool BackgroundContents::ShouldSuppressDialogs() {
   return true;
 }
 
-void BackgroundContents::DidNavigateMainFramePostCommit(TabContents* tab) {
+void BackgroundContents::DidNavigateMainFramePostCommit(WebContents* tab) {
   // Note: because BackgroundContents are only available to extension apps,
   // navigation is limited to urls within the app's extent. This is enforced in
   // RenderView::decidePolicyForNavigation. If BackgroundContents become
@@ -93,12 +93,12 @@ void BackgroundContents::DidNavigateMainFramePostCommit(TabContents* tab) {
 }
 
 // Forward requests to add a new TabContents to our delegate.
-void BackgroundContents::AddNewContents(TabContents* source,
-                                        TabContents* new_contents,
+void BackgroundContents::AddNewContents(WebContents* source,
+                                        WebContents* new_contents,
                                         WindowOpenDisposition disposition,
                                         const gfx::Rect& initial_pos,
                                         bool user_gesture) {
-  delegate_->AddTabContents(
+  delegate_->AddWebContents(
       new_contents, disposition, initial_pos, user_gesture);
 }
 

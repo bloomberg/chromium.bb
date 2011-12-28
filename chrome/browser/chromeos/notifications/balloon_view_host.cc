@@ -13,6 +13,8 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 
+using content::WebContents;
+
 namespace chromeos {
 
 BalloonViewHost::BalloonViewHost(Balloon* balloon)
@@ -30,7 +32,7 @@ bool BalloonViewHost::AddWebUIMessageCallback(
   return ret.second;
 }
 
-void BalloonViewHost::WebUISend(TabContents* tab,
+void BalloonViewHost::WebUISend(WebContents* tab,
                                 const GURL& source_url,
                                 const std::string& name,
                                 const ListValue& args) {

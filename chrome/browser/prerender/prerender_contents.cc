@@ -115,13 +115,13 @@ class PrerenderContents::TabContentsDelegateImpl
     return false;
   }
 
-  virtual bool CanDownload(TabContents* source, int request_id) OVERRIDE {
+  virtual bool CanDownload(WebContents* source, int request_id) OVERRIDE {
     prerender_contents_->Destroy(FINAL_STATUS_DOWNLOAD);
     // Cancel the download.
     return false;
   }
 
-  virtual void OnStartDownload(TabContents* source,
+  virtual void OnStartDownload(WebContents* source,
                                DownloadItem* download) OVERRIDE {
     // Prerendered pages should never be able to download files.
     NOTREACHED();
@@ -136,7 +136,7 @@ class PrerenderContents::TabContentsDelegateImpl
     return false;
   }
 
-  virtual void JSOutOfMemory(TabContents* tab) OVERRIDE {
+  virtual void JSOutOfMemory(WebContents* tab) OVERRIDE {
     prerender_contents_->OnJSOutOfMemory();
   }
 

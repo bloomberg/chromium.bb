@@ -41,7 +41,8 @@ class AppListWindow : public views::WidgetDelegate,
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
+  virtual bool IsPopupOrPanel(
+      const content::WebContents* source) const OVERRIDE;
   virtual bool TakeFocus(bool reverse) OVERRIDE;
 
   // TabFirstRenderWatcher::Delegate implementation:

@@ -18,14 +18,14 @@ class NativeTabContentsContainerGtk : public NativeTabContentsContainer,
   virtual ~NativeTabContentsContainerGtk();
 
   // Overridden from NativeTabContentsContainer:
-  virtual void AttachContents(TabContents* contents) OVERRIDE;
-  virtual void DetachContents(TabContents* contents) OVERRIDE;
+  virtual void AttachContents(content::WebContents* contents) OVERRIDE;
+  virtual void DetachContents(content::WebContents* contents) OVERRIDE;
   virtual void SetFastResize(bool fast_resize) OVERRIDE;
   virtual bool GetFastResize() const OVERRIDE;
   virtual bool FastResizeAtLastLayout() const OVERRIDE;
   virtual void RenderViewHostChanged(RenderViewHost* old_host,
                                      RenderViewHost* new_host) OVERRIDE;
-  virtual void TabContentsFocused(TabContents* tab_contents) OVERRIDE;
+  virtual void WebContentsFocused(content::WebContents* contents) OVERRIDE;
   virtual views::View* GetView() OVERRIDE;
 
   // Overridden from views::View:

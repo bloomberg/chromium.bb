@@ -51,6 +51,7 @@
 #include "ui/gfx/rect.h"
 
 using content::SSLStatus;
+using content::WebContents;
 
 // Replicate specific 10.7 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
@@ -457,7 +458,7 @@ int BrowserWindowCocoa::GetExtraRenderViewHeight() const {
   return 0;
 }
 
-void BrowserWindowCocoa::TabContentsFocused(TabContents* tab_contents) {
+void BrowserWindowCocoa::WebContentsFocused(WebContents* contents) {
   NOTIMPLEMENTED();
 }
 

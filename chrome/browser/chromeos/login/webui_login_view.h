@@ -111,7 +111,8 @@ class WebUILoginView : public views::WidgetDelegateView,
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
+  virtual bool IsPopupOrPanel(
+      const content::WebContents* source) const OVERRIDE;
   virtual bool TakeFocus(bool reverse) OVERRIDE;
 
   // Called when focus is returned from status area.

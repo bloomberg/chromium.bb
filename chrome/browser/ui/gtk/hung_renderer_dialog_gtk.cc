@@ -38,16 +38,16 @@ class HungRendererDialogGtk {
  public:
   HungRendererDialogGtk();
   ~HungRendererDialogGtk() {}
-  void ShowForTabContents(TabContents* hung_contents);
+  void ShowForWebContents(WebContents* hung_contents);
   void Hide();
-  void EndForTabContents(TabContents* hung_contents);
+  void EndForWebContents(WebContents* hung_contents);
 
  private:
   // Dismiss the panel if |contents_| is closed or its renderer exits.
   class WebContentsObserverImpl : public content::WebContentsObserver {
    public:
     WebContentsObserverImpl(HungRendererDialogGtk* dialog,
-                            TabContents* contents)
+                            WebContents* contents)
         : content::WebContentsObserver(contents),
           dialog_(dialog) {
     }
@@ -80,7 +80,7 @@ class HungRendererDialogGtk {
 
   GtkDialog* dialog_;
   GtkListStore* model_;
-  TabContents* contents_;
+  WebContents* contents_;
   scoped_ptr<WebContentsObserverImpl> contents_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(HungRendererDialogGtk);
@@ -176,7 +176,7 @@ void HungRendererDialogGtk::Init() {
   gtk_container_add(GTK_CONTAINER(scroll_list), tree_view);
 }
 
-void HungRendererDialogGtk::ShowForTabContents(TabContents* hung_contents) {
+void HungRendererDialogGtk::ShowForWebContents(WebContents* hung_contents) {
   DCHECK(hung_contents && dialog_);
   contents_ = hung_contents;
   contents_observer_.reset(new WebContentsObserverImpl(this, contents_));
@@ -208,12 +208,12 @@ void HungRendererDialogGtk::ShowForTabContents(TabContents* hung_contents) {
 
 void HungRendererDialogGtk::Hide() {
   gtk_widget_hide(GTK_WIDGET(dialog_));
-  // Since we're closing, we no longer need this TabContents.
+  // Since we're closing, we no longer need this WebContents.
   contents_observer_.reset();
   contents_ = NULL;
 }
 
-void HungRendererDialogGtk::EndForTabContents(TabContents* contents) {
+void HungRendererDialogGtk::EndForWebContents(WebContents* contents) {
   DCHECK(contents);
   if (contents_ && contents_->GetRenderProcessHost() ==
       contents->GetRenderProcessHost()) {
@@ -253,17 +253,17 @@ void HungRendererDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
 
 namespace browser {
 
-void ShowNativeHungRendererDialog(TabContents* contents) {
+void ShowNativeHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed()) {
     if (!g_instance)
       g_instance = new HungRendererDialogGtk();
-    g_instance->ShowForTabContents(contents);
+    g_instance->ShowForWebContents(contents);
   }
 }
 
-void HideNativeHungRendererDialog(TabContents* contents) {
+void HideNativeHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed() && g_instance)
-    g_instance->EndForTabContents(contents);
+    g_instance->EndForWebContents(contents);
 }
 
 }  // namespace browser

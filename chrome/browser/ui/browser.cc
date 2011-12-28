@@ -1249,7 +1249,7 @@ TabContents* Browser::AddTab(TabContentsWrapper* tab_contents,
   return tab_contents->tab_contents();
 }
 
-void Browser::AddTabContents(TabContents* new_contents,
+void Browser::AddWebContents(WebContents* new_contents,
                              WindowOpenDisposition disposition,
                              const gfx::Rect& initial_pos,
                              bool user_gesture) {
@@ -2540,7 +2540,7 @@ Browser* Browser::GetBrowserForController(
 
 // static
 void Browser::RunFileChooserHelper(
-    TabContents* tab, const content::FileChooserParams& params) {
+    WebContents* tab, const content::FileChooserParams& params) {
   Profile* profile =
       Profile::FromBrowserContext(tab->GetBrowserContext());
   // FileSelectHelper adds a reference to itself and only releases it after
@@ -2552,7 +2552,7 @@ void Browser::RunFileChooserHelper(
 }
 
 // static
-void Browser::EnumerateDirectoryHelper(TabContents* tab, int request_id,
+void Browser::EnumerateDirectoryHelper(WebContents* tab, int request_id,
                                        const FilePath& path) {
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
@@ -2572,21 +2572,22 @@ void Browser::EnumerateDirectoryHelper(TabContents* tab, int request_id,
 }
 
 // static
-void Browser::JSOutOfMemoryHelper(TabContents* tab) {
+void Browser::JSOutOfMemoryHelper(WebContents* tab) {
   TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
       tab);
-  if (tcw) {
-    InfoBarTabHelper* infobar_helper = tcw->infobar_tab_helper();
-    infobar_helper->AddInfoBar(new SimpleAlertInfoBarDelegate(
-        infobar_helper,
-        NULL,
-        l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT),
-        true));
-  }
+  if (!tcw)
+    return;
+
+  InfoBarTabHelper* infobar_helper = tcw->infobar_tab_helper();
+  infobar_helper->AddInfoBar(new SimpleAlertInfoBarDelegate(
+      infobar_helper,
+      NULL,
+      l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT),
+      true));
 }
 
 // static
-void Browser::RegisterProtocolHandlerHelper(TabContents* tab,
+void Browser::RegisterProtocolHandlerHelper(WebContents* tab,
                                             const std::string& protocol,
                                             const GURL& url,
                                             const string16& title) {
@@ -2618,7 +2619,7 @@ void Browser::RegisterProtocolHandlerHelper(TabContents* tab,
 }
 
 // static
-void Browser::RegisterIntentHandlerHelper(TabContents* tab,
+void Browser::RegisterIntentHandlerHelper(WebContents* tab,
                                           const string16& action,
                                           const string16& type,
                                           const string16& href,
@@ -2658,7 +2659,7 @@ void Browser::RegisterIntentHandlerHelper(TabContents* tab,
 }
 
 // static
-void Browser::FindReplyHelper(TabContents* tab,
+void Browser::FindReplyHelper(WebContents* tab,
                               int request_id,
                               int number_of_matches,
                               const gfx::Rect& selection_rect,
@@ -2675,7 +2676,7 @@ void Browser::FindReplyHelper(TabContents* tab,
 }
 
 // static
-void Browser::CrashedPluginHelper(TabContents* tab,
+void Browser::CrashedPluginHelper(WebContents* tab,
                                   const FilePath& plugin_path) {
   TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
       tab);
@@ -2710,7 +2711,7 @@ void Browser::CrashedPluginHelper(TabContents* tab,
 }
 
 // static
-void Browser::UpdateTargetURLHelper(TabContents* tab, int32 page_id,
+void Browser::UpdateTargetURLHelper(WebContents* tab, int32 page_id,
                                     const GURL& url) {
   TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
       tab);
@@ -3077,7 +3078,7 @@ Browser* Browser::CreateNewStripWithContents(
   browser->tabstrip_model()->AppendTabContents(detached_contents, true);
   // Make sure the loading state is updated correctly, otherwise the throbber
   // won't start if the page is loading.
-  browser->LoadingStateChanged(detached_contents->tab_contents());
+  browser->LoadingStateChanged(detached_contents->web_contents());
   return browser;
 }
 
@@ -3192,7 +3193,7 @@ bool Browser::RunUnloadListenerBeforeClosing(TabContentsWrapper* contents) {
   return Browser::RunUnloadEventsHelper(contents->tab_contents());
 }
 
-bool Browser::CanReloadContents(TabContents* source) const {
+bool Browser::CanReloadContents(WebContents* source) const {
   return !is_devtools();
 }
 
@@ -3254,7 +3255,7 @@ void Browser::TabInsertedAt(TabContentsWrapper* contents,
 
   // Make sure the loading state is updated correctly, otherwise the throbber
   // won't start if the page is loading.
-  LoadingStateChanged(contents->tab_contents());
+  LoadingStateChanged(contents->web_contents());
 
   // If the tab crashes in the beforeunload or unload handler, it won't be
   // able to ack. But we know we can close it.
@@ -3443,7 +3444,7 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
       nav_params.target_contents->tab_contents() : NULL;
 }
 
-void Browser::NavigationStateChanged(const TabContents* source,
+void Browser::NavigationStateChanged(const WebContents* source,
                                      unsigned changed_flags) {
   // Only update the UI when something visible has changed.
   if (changed_flags)
@@ -3458,8 +3459,8 @@ void Browser::NavigationStateChanged(const TabContents* source,
     UpdateCommandsForTabState();
 }
 
-void Browser::AddNewContents(TabContents* source,
-                             TabContents* new_contents,
+void Browser::AddNewContents(WebContents* source,
+                             WebContents* new_contents,
                              WindowOpenDisposition disposition,
                              const gfx::Rect& initial_pos,
                              bool user_gesture) {
@@ -3472,8 +3473,10 @@ void Browser::AddNewContents(TabContents* source,
   BlockedContentTabHelper* source_blocked_content = NULL;
   TabContentsWrapper* new_wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(new_contents);
-  if (!new_wrapper)
-    new_wrapper = new TabContentsWrapper(new_contents);
+  if (!new_wrapper) {
+    new_wrapper = new TabContentsWrapper(
+        static_cast<TabContents*>(new_contents));
+  }
   if (source) {
     source_wrapper = TabContentsWrapper::GetCurrentWrapperForContents(source);
     source_blocked_content = source_wrapper->blocked_content_tab_helper();
@@ -3516,22 +3519,22 @@ void Browser::AddNewContents(TabContents* source,
   browser::Navigate(&params);
 }
 
-void Browser::ActivateContents(TabContents* contents) {
+void Browser::ActivateContents(WebContents* contents) {
   tab_handler_->GetTabStripModel()->ActivateTabAt(
       tab_handler_->GetTabStripModel()->GetWrapperIndex(contents), false);
   window_->Activate();
 }
 
-void Browser::DeactivateContents(TabContents* contents) {
+void Browser::DeactivateContents(WebContents* contents) {
   window_->Deactivate();
 }
 
-void Browser::LoadingStateChanged(TabContents* source) {
+void Browser::LoadingStateChanged(WebContents* source) {
   window_->UpdateLoadingAnimations(
       tab_handler_->GetTabStripModel()->TabsAreLoading());
   window_->UpdateTitleBar();
 
-  TabContents* selected_contents = GetSelectedTabContents();
+  WebContents* selected_contents = GetSelectedTabContents();
   if (source == selected_contents) {
     bool is_loading = source->IsLoading();
     UpdateReloadStopState(is_loading, false);
@@ -3576,7 +3579,7 @@ void Browser::CloseContents(WebContents* source) {
       TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 }
 
-void Browser::MoveContents(TabContents* source, const gfx::Rect& pos) {
+void Browser::MoveContents(WebContents* source, const gfx::Rect& pos) {
   if (!IsPopupOrPanel(source)) {
     NOTREACHED() << "moving invalid browser type";
     return;
@@ -3584,19 +3587,19 @@ void Browser::MoveContents(TabContents* source, const gfx::Rect& pos) {
   window_->SetBounds(pos);
 }
 
-void Browser::DetachContents(TabContents* source) {
+void Browser::DetachContents(WebContents* source) {
   int index = tab_handler_->GetTabStripModel()->GetWrapperIndex(source);
   if (index >= 0)
     tab_handler_->GetTabStripModel()->DetachTabContentsAt(index);
 }
 
-bool Browser::IsPopupOrPanel(const TabContents* source) const {
+bool Browser::IsPopupOrPanel(const WebContents* source) const {
   // A non-tabbed BROWSER is an unconstrained popup.
   return is_type_popup() || is_type_panel();
 }
 
 void Browser::ContentsMouseEvent(
-    TabContents* source, const gfx::Point& location, bool motion) {
+    WebContents* source, const gfx::Point& location, bool motion) {
   if (!GetStatusBubble())
     return;
 
@@ -3607,7 +3610,7 @@ void Browser::ContentsMouseEvent(
   }
 }
 
-void Browser::UpdateTargetURL(TabContents* source, int32 page_id,
+void Browser::UpdateTargetURL(WebContents* source, int32 page_id,
                               const GURL& url) {
   Browser::UpdateTargetURLHelper(source, page_id, url);
 
@@ -3629,8 +3632,8 @@ void Browser::ContentsZoomChange(bool zoom_in) {
   ExecuteCommand(zoom_in ? IDC_ZOOM_PLUS : IDC_ZOOM_MINUS);
 }
 
-void Browser::TabContentsFocused(TabContents* tab_content) {
-  window_->TabContentsFocused(tab_content);
+void Browser::WebContentsFocused(WebContents* contents) {
+  window_->WebContentsFocused(contents);
 }
 
 bool Browser::TakeFocus(bool reverse) {
@@ -3645,7 +3648,7 @@ bool Browser::IsApplication() const {
   return is_app();
 }
 
-void Browser::ConvertContentsToApplication(TabContents* contents) {
+void Browser::ConvertContentsToApplication(WebContents* contents) {
   const GURL& url = contents->GetController().GetActiveEntry()->GetURL();
   std::string app_name = web_app::GenerateApplicationNameFromURL(url);
 
@@ -3655,7 +3658,7 @@ void Browser::ConvertContentsToApplication(TabContents* contents) {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(contents);
   if (!wrapper)
-    wrapper = new TabContentsWrapper(contents);
+    wrapper = new TabContentsWrapper(static_cast<TabContents*>(contents));
   app_browser->tabstrip_model()->AppendTabContents(wrapper, true);
 
   contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
@@ -3663,7 +3666,7 @@ void Browser::ConvertContentsToApplication(TabContents* contents) {
   app_browser->window()->Show();
 }
 
-void Browser::BeforeUnloadFired(TabContents* tab,
+void Browser::BeforeUnloadFired(WebContents* tab,
                                 bool proceed,
                                 bool* proceed_to_fire_unload) {
   if (!is_attempting_to_close_browser_) {
@@ -3723,7 +3726,7 @@ bool DisplayOldDownloadsUI() {
 
 }  // anonymous namespace
 
-void Browser::OnStartDownload(TabContents* source,
+void Browser::OnStartDownload(WebContents* source,
                               content::DownloadItem* download) {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(source);
@@ -3776,14 +3779,14 @@ void Browser::ShowPageInfo(content::BrowserContext* browser_context,
   window()->ShowPageInfo(profile, url, ssl, show_history);
 }
 
-void Browser::ViewSourceForTab(TabContents* source, const GURL& page_url) {
+void Browser::ViewSourceForTab(WebContents* source, const GURL& page_url) {
   DCHECK(source);
   int index = tabstrip_model()->GetWrapperIndex(source);
   TabContentsWrapper* wrapper = tabstrip_model()->GetTabContentsAt(index);
   ViewSource(wrapper);
 }
 
-void Browser::ViewSourceForFrame(TabContents* source,
+void Browser::ViewSourceForFrame(WebContents* source,
                                  const GURL& frame_url,
                                  const std::string& frame_content_state) {
   DCHECK(source);
@@ -3807,10 +3810,10 @@ void Browser::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   window()->HandleKeyboardEvent(event);
 }
 
-void Browser::ShowRepostFormWarningDialog(TabContents *tab_contents) {
+void Browser::  ShowRepostFormWarningDialog(WebContents* source) {
   browser::ShowTabModalConfirmDialog(
-      new RepostFormWarningController(tab_contents),
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents));
+      new RepostFormWarningController(source),
+      TabContentsWrapper::GetCurrentWrapperForContents(source));
 }
 
 void Browser::ShowContentSettingsPage(ContentSettingsType content_type) {
@@ -3830,20 +3833,20 @@ bool Browser::ShouldAddNavigationToHistory(
   return !IsApplication();
 }
 
-void Browser::TabContentsCreated(TabContents* new_contents) {
+void Browser::WebContentsCreated(WebContents* new_contents) {
   // Create a TabContentsWrapper now, so all observers are in place, as the
   // network requests for its initial navigation will start immediately. The
   // TabContents will later be inserted into this browser using
   // Browser::Navigate via AddNewContents. The latter will retrieve the newly
   // created TabContentsWrapper from TabContents object.
-  new TabContentsWrapper(new_contents);
+  new TabContentsWrapper(static_cast<TabContents*>(new_contents));
 }
 
-void Browser::ContentRestrictionsChanged(TabContents* source) {
+void Browser::ContentRestrictionsChanged(WebContents* source) {
   UpdateCommandsForContentRestrictionState();
 }
 
-void Browser::RendererUnresponsive(TabContents* source) {
+void Browser::RendererUnresponsive(WebContents* source) {
   // Ignore hangs if print preview is open.
   TabContentsWrapper* source_wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(source);
@@ -3862,11 +3865,11 @@ void Browser::RendererUnresponsive(TabContents* source) {
   browser::ShowHungRendererDialog(source);
 }
 
-void Browser::RendererResponsive(TabContents* source) {
+void Browser::RendererResponsive(WebContents* source) {
   browser::HideHungRendererDialog(source);
 }
 
-void Browser::WorkerCrashed(TabContents* source) {
+void Browser::WorkerCrashed(WebContents* source) {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(source);
   InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
@@ -3877,12 +3880,12 @@ void Browser::WorkerCrashed(TabContents* source) {
       true));
 }
 
-void Browser::DidNavigateMainFramePostCommit(TabContents* tab) {
+void Browser::DidNavigateMainFramePostCommit(WebContents* tab) {
   if (tab == GetSelectedTabContents())
     UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
 }
 
-void Browser::DidNavigateToPendingEntry(TabContents* tab) {
+void Browser::DidNavigateToPendingEntry(WebContents* tab) {
   if (tab == GetSelectedTabContents())
     UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
 }
@@ -3891,37 +3894,37 @@ content::JavaScriptDialogCreator* Browser::GetJavaScriptDialogCreator() {
   return GetJavaScriptDialogCreatorInstance();
 }
 
-void Browser::RunFileChooser(TabContents* tab,
+void Browser::RunFileChooser(WebContents* tab,
                              const content::FileChooserParams& params) {
   RunFileChooserHelper(tab, params);
 }
 
-void Browser::EnumerateDirectory(TabContents* tab, int request_id,
+void Browser::EnumerateDirectory(WebContents* tab, int request_id,
                                  const FilePath& path) {
   EnumerateDirectoryHelper(tab, request_id, path);
 }
 
-void Browser::ToggleFullscreenModeForTab(TabContents* tab,
+void Browser::ToggleFullscreenModeForTab(WebContents* tab,
                                          bool enter_fullscreen) {
   fullscreen_controller_->ToggleFullscreenModeForTab(tab, enter_fullscreen);
 }
 
-bool Browser::IsFullscreenForTab(const TabContents* tab) const {
+bool Browser::IsFullscreenForTab(const WebContents* tab) const {
   return fullscreen_controller_->IsFullscreenForTab(tab);
 }
 
-void Browser::JSOutOfMemory(TabContents* tab) {
+void Browser::JSOutOfMemory(WebContents* tab) {
   JSOutOfMemoryHelper(tab);
 }
 
-void Browser::RegisterProtocolHandler(TabContents* tab,
+void Browser::RegisterProtocolHandler(WebContents* tab,
                                       const std::string& protocol,
                                       const GURL& url,
                                       const string16& title) {
   RegisterProtocolHandlerHelper(tab, protocol, url, title);
 }
 
-void Browser::RegisterIntentHandler(TabContents* tab,
+void Browser::RegisterIntentHandler(WebContents* tab,
                                     const string16& action,
                                     const string16& type,
                                     const string16& href,
@@ -3931,7 +3934,7 @@ void Browser::RegisterIntentHandler(TabContents* tab,
 }
 
 void Browser::WebIntentDispatch(
-    TabContents* tab, content::WebIntentsDispatcher* intents_dispatcher) {
+    WebContents* tab, content::WebIntentsDispatcher* intents_dispatcher) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
     return;
 
@@ -3944,7 +3947,7 @@ void Browser::WebIntentDispatch(
       intents_dispatcher->GetIntent().type);
 }
 
-void Browser::FindReply(TabContents* tab,
+void Browser::FindReply(WebContents* tab,
                         int request_id,
                         int number_of_matches,
                         const gfx::Rect& selection_rect,
@@ -3954,16 +3957,16 @@ void Browser::FindReply(TabContents* tab,
                   active_match_ordinal, final_update);
 }
 
-void Browser::CrashedPlugin(TabContents* tab, const FilePath& plugin_path) {
+void Browser::CrashedPlugin(WebContents* tab, const FilePath& plugin_path) {
   CrashedPluginHelper(tab, plugin_path);
 }
 
-void Browser::UpdatePreferredSize(TabContents* source,
+void Browser::UpdatePreferredSize(WebContents* source,
                                   const gfx::Size& pref_size) {
   window_->UpdatePreferredSize(source, pref_size);
 }
 
-void Browser::RequestToLockMouse(TabContents* tab) {
+void Browser::RequestToLockMouse(WebContents* tab) {
   fullscreen_controller_->RequestToLockMouse(tab);
 }
 
@@ -4737,7 +4740,7 @@ void Browser::UpdateToolbar(bool should_restore_state) {
   window_->UpdateToolbar(GetSelectedTabContentsWrapper(), should_restore_state);
 }
 
-void Browser::ScheduleUIUpdate(const TabContents* source,
+void Browser::ScheduleUIUpdate(const WebContents* source,
                                unsigned changed_flags) {
   if (!source)
     return;
@@ -4815,7 +4818,7 @@ void Browser::ProcessPendingUIUpdates() {
   for (UpdateMap::const_iterator i = scheduled_updates_.begin();
        i != scheduled_updates_.end(); ++i) {
     // Do not dereference |contents|, it may be out-of-date!
-    const TabContents* contents = i->first;
+    const WebContents* contents = i->first;
     unsigned flags = i->second;
 
     if (contents == GetSelectedTabContents()) {

@@ -221,7 +221,7 @@ class WebContents : public PageNavigator {
   // Window management ---------------------------------------------------------
 
   // Adds a new tab or window with the given already-created contents.
-  virtual void AddNewContents(TabContents* new_contents,
+  virtual void AddNewContents(WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) = 0;

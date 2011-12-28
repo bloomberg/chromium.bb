@@ -12,17 +12,21 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class ConstrainedWindow;
+
+namespace content {
+class WebContents;
+}
+
 namespace gfx {
 class Image;
 }
-class ConstrainedWindow;
-class TabContents;
 
 // This class acts as the delegate for a simple tab-modal dialog confirming
 // whether the user wants to execute a certain action.
 class TabModalConfirmDialogDelegate : public content::NotificationObserver {
  public:
-  explicit TabModalConfirmDialogDelegate(TabContents* tab_contents);
+  explicit TabModalConfirmDialogDelegate(content::WebContents* web_contents);
   virtual ~TabModalConfirmDialogDelegate();
 
   void set_window(ConstrainedWindow* window) { window_ = window; }

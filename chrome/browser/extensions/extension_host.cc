@@ -279,7 +279,7 @@ void ExtensionHost::Observe(int type,
   }
 }
 
-void ExtensionHost::UpdatePreferredSize(TabContents* source,
+void ExtensionHost::UpdatePreferredSize(WebContents* source,
                                         const gfx::Size& pref_size) {
   if (view_.get())
     view_->UpdatePreferredSize(pref_size);
@@ -489,13 +489,13 @@ content::JavaScriptDialogCreator* ExtensionHost::GetJavaScriptDialogCreator() {
   return GetJavaScriptDialogCreatorInstance();
 }
 
-void ExtensionHost::RunFileChooser(TabContents* tab,
+void ExtensionHost::RunFileChooser(WebContents* tab,
                                    const content::FileChooserParams& params) {
   Browser::RunFileChooserHelper(tab, params);
 }
 
-void ExtensionHost::AddNewContents(TabContents* source,
-                                   TabContents* new_contents,
+void ExtensionHost::AddNewContents(WebContents* source,
+                                   WebContents* new_contents,
                                    WindowOpenDisposition disposition,
                                    const gfx::Rect& initial_pos,
                                    bool user_gesture) {
@@ -524,7 +524,8 @@ void ExtensionHost::AddNewContents(TabContents* source,
       Profile::FromBrowserContext(new_contents->GetBrowserContext());
   Browser* browser = BrowserList::FindTabbedBrowser(
       profile, false);  // Match incognito exactly.
-  TabContentsWrapper* wrapper = new TabContentsWrapper(new_contents);
+  TabContentsWrapper* wrapper = new TabContentsWrapper(
+      static_cast<TabContents*>(new_contents));
   browser::NavigateParams params(browser, wrapper);
 
   // The extension_app_id parameter ends up as app_name in the Browser

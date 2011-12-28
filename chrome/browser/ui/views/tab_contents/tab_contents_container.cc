@@ -47,8 +47,8 @@ void TabContentsContainer::ChangeTabContents(TabContents* contents) {
   }
 }
 
-void TabContentsContainer::TabContentsFocused(TabContents* tab_contents) {
-  native_container_->TabContentsFocused(tab_contents);
+void TabContentsContainer::WebContentsFocused(WebContents* contents) {
+  native_container_->WebContentsFocused(contents);
 }
 
 void TabContentsContainer::SetFastResize(bool fast_resize) {

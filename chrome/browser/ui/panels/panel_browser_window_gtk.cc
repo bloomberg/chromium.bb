@@ -15,6 +15,8 @@
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/x/work_area_watcher_x.h"
 
+using content::WebContents;
+
 namespace {
 
 // RGB values for titlebar in draw attention state. A shade of orange.
@@ -325,8 +327,8 @@ void PanelBrowserWindowGtk::NotifyPanelOnUserChangedTheme() {
   UserChangedTheme();
 }
 
-void PanelBrowserWindowGtk::PanelTabContentsFocused(TabContents* tab_contents) {
-  TabContentsFocused(tab_contents);
+void PanelBrowserWindowGtk::PanelWebContentsFocused(WebContents* contents) {
+  WebContentsFocused(contents);
 }
 
 void PanelBrowserWindowGtk::PanelCut() {

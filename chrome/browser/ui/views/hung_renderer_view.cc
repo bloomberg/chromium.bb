@@ -47,7 +47,7 @@ HungRendererDialogView* g_instance = NULL;
 
 class HungPagesTableModel : public views::GroupTableModel {
  public:
-  // The Delegate is notified any time a TabContents the model is listening to
+  // The Delegate is notified any time a WebContents the model is listening to
   // is destroyed.
   class Delegate {
    public:
@@ -60,13 +60,13 @@ class HungPagesTableModel : public views::GroupTableModel {
   explicit HungPagesTableModel(Delegate* delegate);
   virtual ~HungPagesTableModel();
 
-  void InitForTabContents(TabContents* hung_contents);
+  void InitForWebContents(WebContents* hung_contents);
 
   // Returns the first RenderProcessHost, or NULL if there aren't any
-  // TabContents.
+  // WebContents.
   content::RenderProcessHost* GetRenderProcessHost();
 
-  // Returns the first RenderViewHost, or NULL if there aren't any TabContents.
+  // Returns the first RenderViewHost, or NULL if there aren't any WebContents.
   RenderViewHost* GetRenderViewHost();
 
   // Overridden from views::GroupTableModel:
@@ -77,7 +77,7 @@ class HungPagesTableModel : public views::GroupTableModel {
   virtual void GetGroupRangeForItem(int item, views::GroupRange* range);
 
  private:
-  // Used to track a single TabContents. If the TabContents is destroyed
+  // Used to track a single WebContents. If the WebContents is destroyed
   // TabDestroyed() is invoked on the model.
   class WebContentsObserverImpl : public content::WebContentsObserver {
    public:
@@ -103,7 +103,7 @@ class HungPagesTableModel : public views::GroupTableModel {
     DISALLOW_COPY_AND_ASSIGN(WebContentsObserverImpl);
   };
 
-  // Invoked when a TabContents is destroyed. Cleans up |tab_observers_| and
+  // Invoked when a WebContents is destroyed. Cleans up |tab_observers_| and
   // notifies the observer and delegate.
   void TabDestroyed(WebContentsObserverImpl* tab);
 
@@ -137,7 +137,7 @@ RenderViewHost* HungPagesTableModel::GetRenderViewHost() {
       tab_observers_[0]->web_contents()->GetRenderViewHost();
 }
 
-void HungPagesTableModel::InitForTabContents(TabContents* hung_contents) {
+void HungPagesTableModel::InitForWebContents(WebContents* hung_contents) {
   tab_observers_.reset();
   if (hung_contents) {
     // Force hung_contents to be first.
@@ -235,8 +235,8 @@ class HungRendererDialogView : public views::DialogDelegateView,
   HungRendererDialogView();
   ~HungRendererDialogView();
 
-  void ShowForTabContents(TabContents* contents);
-  void EndForTabContents(TabContents* contents);
+  void ShowForWebContents(WebContents* contents);
+  void EndForWebContents(WebContents* contents);
 
   // views::DialogDelegateView overrides:
   virtual string16 GetWindowTitle() const OVERRIDE;
@@ -266,8 +266,8 @@ class HungRendererDialogView : public views::DialogDelegateView,
   void CreateKillButtonView();
 
   // Returns the bounds the dialog should be displayed at to be meaningfully
-  // associated with the specified TabContents.
-  gfx::Rect GetDisplayBounds(TabContents* contents);
+  // associated with the specified WebContents.
+  gfx::Rect GetDisplayBounds(WebContents* contents);
 
   static void InitClass();
 
@@ -323,7 +323,7 @@ HungRendererDialogView::~HungRendererDialogView() {
   hung_pages_table_->SetModel(NULL);
 }
 
-void HungRendererDialogView::ShowForTabContents(TabContents* contents) {
+void HungRendererDialogView::ShowForWebContents(WebContents* contents) {
   DCHECK(contents && GetWidget());
 
   // Don't show the warning unless the foreground window is the frame, or this
@@ -345,17 +345,17 @@ void HungRendererDialogView::ShowForTabContents(TabContents* contents) {
       GetWidget()->StackAboveWidget(insert_after);
 
     // We only do this if the window isn't active (i.e. hasn't been shown yet,
-    // or is currently shown but deactivated for another TabContents). This is
+    // or is currently shown but deactivated for another WebContents). This is
     // because this window is a singleton, and it's possible another active
     // renderer may hang while this one is showing, and we don't want to reset
     // the list of hung pages for a potentially unrelated renderer while this
     // one is showing.
-    hung_pages_table_model_->InitForTabContents(contents);
+    hung_pages_table_model_->InitForWebContents(contents);
     GetWidget()->Show();
   }
 }
 
-void HungRendererDialogView::EndForTabContents(TabContents* contents) {
+void HungRendererDialogView::EndForWebContents(WebContents* contents) {
   DCHECK(contents);
   if (hung_pages_table_model_->RowCount() == 0 ||
       hung_pages_table_model_->GetRenderProcessHost() ==
@@ -363,7 +363,7 @@ void HungRendererDialogView::EndForTabContents(TabContents* contents) {
     GetWidget()->Close();
     // Close is async, make sure we drop our references to the tab immediately
     // (it may be going away).
-    hung_pages_table_model_->InitForTabContents(NULL);
+    hung_pages_table_model_->InitForWebContents(NULL);
   }
 }
 
@@ -523,7 +523,7 @@ void HungRendererDialogView::CreateKillButtonView() {
 }
 
 gfx::Rect HungRendererDialogView::GetDisplayBounds(
-    TabContents* contents) {
+    WebContents* contents) {
   HWND contents_hwnd = contents->GetNativeView();
   RECT contents_bounds_rect;
   GetWindowRect(contents_hwnd, &contents_bounds_rect);
@@ -555,17 +555,17 @@ static HungRendererDialogView* CreateHungRendererDialogView() {
 
 namespace browser {
 
-void ShowNativeHungRendererDialog(TabContents* contents) {
+void ShowNativeHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed()) {
     if (!g_instance)
       g_instance = CreateHungRendererDialogView();
-    g_instance->ShowForTabContents(contents);
+    g_instance->ShowForWebContents(contents);
   }
 }
 
-void HideNativeHungRendererDialog(TabContents* contents) {
+void HideNativeHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed() && g_instance)
-    g_instance->EndForTabContents(contents);
+    g_instance->EndForWebContents(contents);
 }
 
 }  // namespace browser

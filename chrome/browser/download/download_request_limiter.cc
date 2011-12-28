@@ -275,7 +275,7 @@ void DownloadRequestLimiter::CanDownloadImpl(
   // FYI: Chrome Frame overrides CanDownload in ExternalTabContainer in order
   // to cancel the download operation in chrome and let the host browser
   // take care of it.
-  TabContents* tab = originating_tab->tab_contents();
+  WebContents* tab = originating_tab->web_contents();
   if (tab->GetDelegate() && !tab->GetDelegate()->CanDownload(tab, request_id)) {
     ScheduleNotification(callback, false);
     return;

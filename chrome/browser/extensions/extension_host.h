@@ -124,14 +124,15 @@ class ExtensionHost : public content::WebContentsDelegate,
                                       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event)
       OVERRIDE;
-  virtual void UpdatePreferredSize(TabContents* source,
+  virtual void UpdatePreferredSize(content::WebContents* source,
                                    const gfx::Size& pref_size) OVERRIDE;
   virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator()
       OVERRIDE;
   virtual void RunFileChooser(
-      TabContents* tab, const content::FileChooserParams& params) OVERRIDE;
-  virtual void AddNewContents(TabContents* source,
-                              TabContents* new_contents,
+      content::WebContents* tab,
+      const content::FileChooserParams& params) OVERRIDE;
+  virtual void AddNewContents(content::WebContents* source,
+                              content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;

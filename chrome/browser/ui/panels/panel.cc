@@ -454,8 +454,8 @@ int Panel::GetExtraRenderViewHeight() const {
   return 0;
 }
 
-void Panel::TabContentsFocused(TabContents* tab_contents) {
-  native_panel_->PanelTabContentsFocused(tab_contents);
+void Panel::WebContentsFocused(WebContents* contents) {
+  native_panel_->PanelWebContentsFocused(contents);
 }
 
 void Panel::ShowPageInfo(Profile* profile,
@@ -562,7 +562,7 @@ void Panel::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
 }
 #endif
 
-void Panel::UpdatePreferredSize(TabContents* tab_contents,
+void Panel::UpdatePreferredSize(WebContents* web_contents,
                                 const gfx::Size& pref_size) {
   if (auto_resizable_) {
     return manager()->OnPreferredWindowSizeChanged(this,

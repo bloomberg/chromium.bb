@@ -1170,8 +1170,8 @@ int BrowserView::GetExtraRenderViewHeight() const {
   return 0;
 }
 
-void BrowserView::TabContentsFocused(TabContents* tab_contents) {
-  contents_container_->TabContentsFocused(tab_contents);
+void BrowserView::WebContentsFocused(WebContents* contents) {
+  contents_container_->WebContentsFocused(contents);
 }
 
 void BrowserView::ShowPageInfo(Profile* profile,

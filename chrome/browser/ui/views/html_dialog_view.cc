@@ -210,7 +210,7 @@ bool HtmlDialogView::HandleContextMenu(const ContextMenuParams& params) {
 ////////////////////////////////////////////////////////////////////////////////
 // content::WebContentsDelegate implementation:
 
-void HtmlDialogView::MoveContents(TabContents* source, const gfx::Rect& pos) {
+void HtmlDialogView::MoveContents(WebContents* source, const gfx::Rect& pos) {
   // The contained web page wishes to resize itself. We let it do this because
   // if it's a dialog we know about, we trust it not to be mean to the user.
   GetWidget()->SetBounds(pos);

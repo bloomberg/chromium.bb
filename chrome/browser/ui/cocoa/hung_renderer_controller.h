@@ -12,11 +12,11 @@
 //
 // The dialog itself displays a list of frozen tabs, all of which
 // share a render process.  Since there can only be a single dialog
-// open at a time, if showForTabContents is called for a different
+// open at a time, if showForWebContents is called for a different
 // tab, the dialog is repurposed to show a warning for the new tab.
 //
-// The caller is required to call endForTabContents before deleting
-// any TabContents object.
+// The caller is required to call endForWebContents before deleting
+// any WebContents object.
 
 #import <Cocoa/Cocoa.h>
 
@@ -25,8 +25,11 @@
 #import "base/memory/scoped_ptr.h"
 
 @class MultiKeyEquivalentButton;
-class TabContents;
 class WebContentsObserverBridge;
+
+namespace content {
+class WebContents;
+}
 
 @interface HungRendererController : NSWindowController<NSTableViewDataSource> {
  @private
@@ -36,18 +39,18 @@ class WebContentsObserverBridge;
   IBOutlet NSImageView* imageView_;
   IBOutlet NSTextField* messageView_;
 
-  // The TabContents for which this dialog is open.  Should never be
+  // The WebContents for which this dialog is open.  Should never be
   // NULL while this dialog is open.
-  TabContents* hungContents_;
+  content::WebContents* hungContents_;
 
   // Observes |hungContents_| in case it closes while the panel is up.
   scoped_ptr<WebContentsObserverBridge> hungContentsObserver_;
 
-  // Backing data for |tableView_|.  Titles of each TabContents that
+  // Backing data for |tableView_|.  Titles of each WebContents that
   // shares a renderer process with |hungContents_|.
   scoped_nsobject<NSArray> hungTitles_;
 
-  // Favicons of each TabContents that shares a renderer process with
+  // Favicons of each WebContents that shares a renderer process with
   // |hungContents_|.
   scoped_nsobject<NSArray> hungFavicons_;
 }
@@ -61,14 +64,14 @@ class WebContentsObserverBridge;
 // Modifies the dialog to show a warning for the given tab contents.
 // The dialog will contain a list of all tabs that share a renderer
 // process with |contents|.  The caller must not delete any tab
-// contents without first calling endForTabContents.
-- (void)showForTabContents:(TabContents*)contents;
+// contents without first calling endForWebContents.
+- (void)showForWebContents:(content::WebContents*)contents;
 
 // Notifies the dialog that |contents| is either responsive or closed.
 // If |contents| shares the same render process as the tab contents
 // this dialog was created for, this function will close the dialog.
 // If |contents| has a different process, this function does nothing.
-- (void)endForTabContents:(TabContents*)contents;
+- (void)endForWebContents:(content::WebContents*)contents;
 
 // Called by |hungContentsObserver_| to indicate that |hungContents_|
 // has gone away.

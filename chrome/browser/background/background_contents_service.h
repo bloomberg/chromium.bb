@@ -59,7 +59,7 @@ class BackgroundContentsService : private content::NotificationObserver,
   std::vector<BackgroundContents*> GetBackgroundContents() const;
 
   // BackgroundContents::Delegate implementation.
-  virtual void AddTabContents(TabContents* new_contents,
+  virtual void AddWebContents(content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;

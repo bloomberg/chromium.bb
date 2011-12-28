@@ -186,14 +186,14 @@ WebContents* DraggedTabControllerGtk::OpenURLFromTab(
   return NULL;
 }
 
-void DraggedTabControllerGtk::NavigationStateChanged(const TabContents* source,
+void DraggedTabControllerGtk::NavigationStateChanged(const WebContents* source,
                                                      unsigned changed_flags) {
   if (dragged_view_.get())
     dragged_view_->Update();
 }
 
-void DraggedTabControllerGtk::AddNewContents(TabContents* source,
-                                             TabContents* new_contents,
+void DraggedTabControllerGtk::AddNewContents(WebContents* source,
+                                             WebContents* new_contents,
                                              WindowOpenDisposition disposition,
                                              const gfx::Rect& initial_pos,
                                              bool user_gesture) {
@@ -207,7 +207,7 @@ void DraggedTabControllerGtk::AddNewContents(TabContents* source,
   }
 }
 
-void DraggedTabControllerGtk::LoadingStateChanged(TabContents* source) {
+void DraggedTabControllerGtk::LoadingStateChanged(WebContents* source) {
   // TODO(jhawkins): It would be nice to respond to this message by changing the
   // screen shot in the dragged tab.
   if (dragged_view_.get())

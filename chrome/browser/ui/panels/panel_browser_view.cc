@@ -20,6 +20,8 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
+using content::WebContents;
+
 namespace {
 // The threshold to differentiate the short click and long click.
 const int kShortClickThresholdMs = 200;
@@ -299,8 +301,8 @@ void PanelBrowserView::NotifyPanelOnUserChangedTheme() {
   UserChangedTheme();
 }
 
-void PanelBrowserView::PanelTabContentsFocused(TabContents* tab_contents) {
-  TabContentsFocused(tab_contents);
+void PanelBrowserView::PanelWebContentsFocused(WebContents* contents) {
+  WebContentsFocused(contents);
 }
 
 void PanelBrowserView::PanelCut() {

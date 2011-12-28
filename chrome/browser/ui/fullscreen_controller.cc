@@ -19,6 +19,7 @@
 #include "content/public/browser/user_metrics.h"
 
 using content::UserMetricsAction;
+using content::WebContents;
 
 FullscreenController::FullscreenController(BrowserWindow* window,
                                            Profile* profile,
@@ -38,7 +39,7 @@ bool FullscreenController::IsFullscreenForTab() const {
   return fullscreened_tab_ != NULL;
 }
 
-bool FullscreenController::IsFullscreenForTab(const TabContents* tab) const {
+bool FullscreenController::IsFullscreenForTab(const WebContents* tab) const {
   const TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
   if (!wrapper || (wrapper != fullscreened_tab_))
@@ -48,7 +49,7 @@ bool FullscreenController::IsFullscreenForTab(const TabContents* tab) const {
   return true;
 }
 
-void FullscreenController::RequestToLockMouse(TabContents* tab) {
+void FullscreenController::RequestToLockMouse(WebContents* tab) {
   // Mouse Lock is only permitted when browser is in tab fullscreen.
   if (!IsFullscreenForTab(tab)) {
     tab->GotResponseToLockMouseRequest(false);
@@ -82,7 +83,7 @@ void FullscreenController::RequestToLockMouse(TabContents* tab) {
   UpdateFullscreenExitBubbleContent();
 }
 
-void FullscreenController::ToggleFullscreenModeForTab(TabContents* tab,
+void FullscreenController::ToggleFullscreenModeForTab(WebContents* tab,
                                                       bool enter_fullscreen) {
   if (tab != browser_->GetSelectedTabContents())
     return;

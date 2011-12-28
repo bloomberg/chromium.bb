@@ -103,6 +103,7 @@
 #include "ui/gfx/skia_utils_gtk.h"
 
 using content::SSLStatus;
+using content::WebContents;
 
 namespace {
 
@@ -1066,7 +1067,7 @@ int BrowserWindowGtk::GetExtraRenderViewHeight() const {
   return sum;
 }
 
-void BrowserWindowGtk::TabContentsFocused(TabContents* tab_contents) {
+void BrowserWindowGtk::WebContentsFocused(WebContents* contents) {
   NOTIMPLEMENTED();
 }
 

@@ -15,6 +15,8 @@
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/views_delegate.h"
 
+using content::WebContents;
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsContainerAura, public:
 
@@ -30,7 +32,7 @@ NativeTabContentsContainerAura::~NativeTabContentsContainerAura() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsContainerAura, NativeTabContentsContainer overrides:
 
-void NativeTabContentsContainerAura::AttachContents(TabContents* contents) {
+void NativeTabContentsContainerAura::AttachContents(WebContents* contents) {
   // We need to register the tab contents window with the BrowserContainer so
   // that the BrowserContainer is the focused view when the focus is on the
   // TabContents window (for the TabContents case).
@@ -39,7 +41,7 @@ void NativeTabContentsContainerAura::AttachContents(TabContents* contents) {
   Attach(contents->GetNativeView());
 }
 
-void NativeTabContentsContainerAura::DetachContents(TabContents* contents) {
+void NativeTabContentsContainerAura::DetachContents(WebContents* contents) {
   // Detach the TabContents.  Do this before we unparent the
   // TabContentsViewViews so that the window hierarchy is intact for any
   // cleanup during Detach().
@@ -70,8 +72,7 @@ views::View* NativeTabContentsContainerAura::GetView() {
   return this;
 }
 
-void NativeTabContentsContainerAura::TabContentsFocused(
-    TabContents* tab_contents) {
+void NativeTabContentsContainerAura::WebContentsFocused(WebContents* contents) {
   views::FocusManager* focus_manager = GetFocusManager();
   if (!focus_manager) {
     NOTREACHED();

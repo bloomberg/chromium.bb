@@ -56,7 +56,7 @@ WebContents* HtmlDialogTabContentsDelegate::OpenURLFromTab(
 }
 
 void HtmlDialogTabContentsDelegate::AddNewContents(
-    TabContents* source, TabContents* new_contents,
+    WebContents* source, WebContents* new_contents,
     WindowOpenDisposition disposition, const gfx::Rect& initial_pos,
     bool user_gesture) {
   if (profile_) {
@@ -64,7 +64,8 @@ void HtmlDialogTabContentsDelegate::AddNewContents(
     // to find a browser matching params.profile or create a new one.
     Browser* browser = NULL;
 
-    TabContentsWrapper* wrapper = new TabContentsWrapper(new_contents);
+    TabContentsWrapper* wrapper = new TabContentsWrapper(
+        static_cast<TabContents*>(new_contents));
     browser::NavigateParams params(browser, wrapper);
     params.profile = profile_;
     // TODO(pinkerton): no way to get a wrapper for this.
@@ -78,7 +79,7 @@ void HtmlDialogTabContentsDelegate::AddNewContents(
 }
 
 bool HtmlDialogTabContentsDelegate::IsPopupOrPanel(
-    const TabContents* source) const {
+    const WebContents* source) const {
   // This needs to return true so that we are allowed to be resized by our
   // contents.
   return true;

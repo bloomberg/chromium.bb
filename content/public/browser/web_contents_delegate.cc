@@ -8,9 +8,9 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "content/browser/javascript_dialogs.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/url_constants.h"
 #include "ui/gfx/rect.h"
@@ -26,13 +26,13 @@ WebContents* WebContentsDelegate::OpenURLFromTab(WebContents* source,
   return NULL;
 }
 
-bool WebContentsDelegate::IsPopupOrPanel(const TabContents* source) const {
+bool WebContentsDelegate::IsPopupOrPanel(const WebContents* source) const {
   return false;
 }
 
 bool WebContentsDelegate::IsApplication() const { return false; }
 
-bool WebContentsDelegate::CanReloadContents(TabContents* source) const {
+bool WebContentsDelegate::CanReloadContents(WebContents* source) const {
   return true;
 }
 
@@ -40,7 +40,7 @@ bool WebContentsDelegate::ShouldSuppressDialogs() {
   return false;
 }
 
-void WebContentsDelegate::BeforeUnloadFired(TabContents* tab,
+void WebContentsDelegate::BeforeUnloadFired(WebContents* tab,
                                             bool proceed,
                                             bool* proceed_to_fire_unload) {
   *proceed_to_fire_unload = true;
@@ -58,7 +58,7 @@ int WebContentsDelegate::GetExtraRenderViewHeight() const {
   return 0;
 }
 
-bool WebContentsDelegate::CanDownload(TabContents* source, int request_id) {
+bool WebContentsDelegate::CanDownload(WebContents* source, int request_id) {
   return true;
 }
 
@@ -70,7 +70,7 @@ bool WebContentsDelegate::ExecuteContextMenuCommand(int command) {
   return false;
 }
 
-void WebContentsDelegate::ViewSourceForTab(TabContents* source,
+void WebContentsDelegate::ViewSourceForTab(WebContents* source,
                                            const GURL& page_url) {
   // Fall back implementation based entirely on the view-source scheme.
   // It suffers from http://crbug.com/523 and that is why browser overrides
@@ -82,7 +82,7 @@ void WebContentsDelegate::ViewSourceForTab(TabContents* source,
                                        PAGE_TRANSITION_LINK, false));
 }
 
-void WebContentsDelegate::ViewSourceForFrame(TabContents* source,
+void WebContentsDelegate::ViewSourceForFrame(WebContents* source,
                                              const GURL& frame_url,
                                              const std::string& content_state) {
   // Same as ViewSourceForTab, but for given subframe.
@@ -150,12 +150,12 @@ JavaScriptDialogCreator* WebContentsDelegate::GetJavaScriptDialogCreator() {
   return JavaScriptDialogCreatorStub::GetInstance();
 }
 
-bool WebContentsDelegate::IsFullscreenForTab(const TabContents* tab) const {
+bool WebContentsDelegate::IsFullscreenForTab(const WebContents* tab) const {
   return false;
 }
 
 void WebContentsDelegate::WebIntentDispatch(
-    TabContents* tab,
+    WebContents* tab,
     WebIntentsDispatcher* intents_dispatcher) {
   // The caller passes this method ownership of the |intents_dispatcher|, but
   // this empty implementation will not use it, so we delete it immediately.
@@ -164,8 +164,8 @@ void WebContentsDelegate::WebIntentDispatch(
 
 WebContentsDelegate::~WebContentsDelegate() {
   while (!attached_contents_.empty()) {
-    TabContents* tab_contents = *attached_contents_.begin();
-    tab_contents->SetDelegate(NULL);
+    WebContents* web_contents = *attached_contents_.begin();
+    web_contents->SetDelegate(NULL);
   }
   DCHECK(attached_contents_.empty());
   NotificationService::current()->Notify(
@@ -174,14 +174,14 @@ WebContentsDelegate::~WebContentsDelegate() {
       NotificationService::NoDetails());
 }
 
-void WebContentsDelegate::Attach(TabContents* tab_contents) {
-  DCHECK(attached_contents_.find(tab_contents) == attached_contents_.end());
-  attached_contents_.insert(tab_contents);
+void WebContentsDelegate::Attach(WebContents* web_contents) {
+  DCHECK(attached_contents_.find(web_contents) == attached_contents_.end());
+  attached_contents_.insert(web_contents);
 }
 
-void WebContentsDelegate::Detach(TabContents* tab_contents) {
-  DCHECK(attached_contents_.find(tab_contents) != attached_contents_.end());
-  attached_contents_.erase(tab_contents);
+void WebContentsDelegate::Detach(WebContents* web_contents) {
+  DCHECK(attached_contents_.find(web_contents) != attached_contents_.end());
+  attached_contents_.erase(web_contents);
 }
 
 }  // namespace content

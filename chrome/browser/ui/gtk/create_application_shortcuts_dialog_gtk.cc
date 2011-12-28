@@ -295,7 +295,7 @@ CreateWebApplicationShortcutsDialogGtk::CreateWebApplicationShortcutsDialogGtk(
 void CreateWebApplicationShortcutsDialogGtk::OnCreatedShortcut() {
   if (tab_contents_->tab_contents()->GetDelegate())
     tab_contents_->tab_contents()->GetDelegate()->ConvertContentsToApplication(
-        tab_contents_->tab_contents());
+        tab_contents_->web_contents());
 }
 
 CreateChromeApplicationShortcutsDialogGtk::

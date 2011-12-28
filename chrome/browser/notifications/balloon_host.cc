@@ -70,7 +70,7 @@ void BalloonHost::HandleMouseDown() {
   balloon_->OnClick();
 }
 
-void BalloonHost::UpdatePreferredSize(TabContents* source,
+void BalloonHost::UpdatePreferredSize(WebContents* source,
                                       const gfx::Size& pref_size) {
   balloon_->SetContentPreferredSize(pref_size);
 }

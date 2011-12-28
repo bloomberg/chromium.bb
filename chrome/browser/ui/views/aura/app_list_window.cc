@@ -14,6 +14,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/views/widget/widget.h"
 
+using content::WebContents;
+
 AppListWindow::AppListWindow(const gfx::Rect& bounds,
     const ash::ShellDelegate::SetWidgetCallback& callback)
     : widget_(NULL),
@@ -63,7 +65,7 @@ bool AppListWindow::TakeFocus(bool reverse) {
   return true;
 }
 
-bool AppListWindow::IsPopupOrPanel(const TabContents* source) const {
+bool AppListWindow::IsPopupOrPanel(const WebContents* source) const {
   return true;
 }
 

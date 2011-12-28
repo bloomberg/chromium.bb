@@ -22,6 +22,7 @@ using content::DevToolsAgentHostRegistry;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
 using content::DevToolsManagerImpl;
+using content::WebContents;
 
 namespace {
 
@@ -80,7 +81,7 @@ class TestWebContentsDelegate : public content::WebContentsDelegate {
   TestWebContentsDelegate() : renderer_unresponsive_received_(false) {}
 
   // Notification that the tab is hung.
-  virtual void RendererUnresponsive(TabContents* source) {
+  virtual void RendererUnresponsive(WebContents* source) {
     renderer_unresponsive_received_ = true;
   }
 

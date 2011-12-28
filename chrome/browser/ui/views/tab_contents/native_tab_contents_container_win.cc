@@ -14,6 +14,8 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/widget_focus_manager.h"
 
+using content::WebContents;
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsContainerWin, public:
 
@@ -29,7 +31,7 @@ NativeTabContentsContainerWin::~NativeTabContentsContainerWin() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsContainerWin, NativeTabContentsContainer overrides:
 
-void NativeTabContentsContainerWin::AttachContents(TabContents* contents) {
+void NativeTabContentsContainerWin::AttachContents(WebContents* contents) {
   // We need to register the tab contents window with the BrowserContainer so
   // that the BrowserContainer is the focused view when the focus is on the
   // TabContents window (for the TabContents case).
@@ -38,7 +40,7 @@ void NativeTabContentsContainerWin::AttachContents(TabContents* contents) {
   Attach(contents->GetNativeView());
 }
 
-void NativeTabContentsContainerWin::DetachContents(TabContents* contents) {
+void NativeTabContentsContainerWin::DetachContents(WebContents* contents) {
   // Detach the TabContents.  Do this before we unparent the
   // TabContentsViewViews so that the window hierarchy is intact for any
   // cleanup during Detach().
@@ -81,8 +83,7 @@ views::View* NativeTabContentsContainerWin::GetView() {
   return this;
 }
 
-void NativeTabContentsContainerWin::TabContentsFocused(
-    TabContents* tab_contents) {
+void NativeTabContentsContainerWin::WebContentsFocused(WebContents* contents) {
   views::FocusManager* focus_manager = GetFocusManager();
   if (!focus_manager) {
     NOTREACHED();

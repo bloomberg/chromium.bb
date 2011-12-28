@@ -21,23 +21,22 @@ class HungRendererDialogHandler;
 class HungRendererDialog : private HtmlDialogUIDelegate {
  public:
   // Shows a hung renderer dialog.
-  static void ShowHungRendererDialog(TabContents* contents);
+  static void ShowHungRendererDialog(content::WebContents* contents);
 
   // Hides a hung renderer dialog.
-  static void HideHungRendererDialog(TabContents* contents);
+  static void HideHungRendererDialog(content::WebContents* contents);
 
  private:
   class WebContentsObserverImpl : public content::WebContentsObserver {
    public:
     WebContentsObserverImpl(HungRendererDialog* dialog,
-                            TabContents* contents);
+                            content::WebContents* contents);
 
     // content::WebContentsObserver overrides:
     virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
     virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 
    private:
-    TabContents* contents_;  // weak
     HungRendererDialog* dialog_;  // weak
 
     DISALLOW_COPY_AND_ASSIGN(WebContentsObserverImpl);
@@ -50,14 +49,14 @@ class HungRendererDialog : private HtmlDialogUIDelegate {
 
   // Shows a hung renderer dialog that, if not enabled, won't kill processes
   // or restart hang timers.
-  static void ShowHungRendererDialogInternal(TabContents* contents,
+  static void ShowHungRendererDialogInternal(content::WebContents* contents,
                                              bool is_enabled);
 
   // Shows the hung renderer dialog.
-  void ShowDialog(TabContents* contents);
+  void ShowDialog(content::WebContents* contents);
 
   // Hides the hung renderer dialog.
-  void HideDialog(TabContents* contents);
+  void HideDialog(content::WebContents* contents);
 
   // HtmlDialogUIDelegate methods
   virtual bool IsDialogModal() const OVERRIDE;
@@ -72,8 +71,8 @@ class HungRendererDialog : private HtmlDialogUIDelegate {
                                bool* out_close_dialog) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
 
-  // The tab contents.
-  TabContents* contents_;
+  // The web contents.
+  content::WebContents* contents_;
 
   // The dialog handler.
   HungRendererDialogHandler* handler_;
@@ -96,7 +95,7 @@ class HungRendererDialog : private HtmlDialogUIDelegate {
 // of the list of frozen tabs.
 class HungRendererDialogHandler : public WebUIMessageHandler {
  public:
-  explicit HungRendererDialogHandler(TabContents* contents);
+  explicit HungRendererDialogHandler(content::WebContents* contents);
 
   void CloseDialog();
 
@@ -106,8 +105,8 @@ class HungRendererDialogHandler : public WebUIMessageHandler {
  private:
   void RequestTabContentsList(const base::ListValue* args);
 
-  // The tab contents.
-  TabContents* contents_;
+  // The web contents.
+  content::WebContents* contents_;
 
   DISALLOW_COPY_AND_ASSIGN(HungRendererDialogHandler);
 };

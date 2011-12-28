@@ -41,9 +41,9 @@ HungRendererController* g_instance = NULL;
 
 class WebContentsObserverBridge : public content::WebContentsObserver {
  public:
-  WebContentsObserverBridge(TabContents* tab_contents,
+  WebContentsObserverBridge(WebContents* web_contents,
                             HungRendererController* controller)
-    : content::WebContentsObserver(tab_contents),
+    : content::WebContentsObserver(web_contents),
       controller_(controller) {
   }
 
@@ -165,7 +165,7 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
 // Tabs closed by their renderer will close the dialog (that's
 // activity!), so it would not add much value.  Also, the views
 // implementation only monitors the initiating tab.
-- (void)showForTabContents:(TabContents*)contents {
+- (void)showForWebContents:(WebContents*)contents {
   DCHECK(contents);
   hungContents_ = contents;
   hungContentsObserver_.reset(new WebContentsObserverBridge(contents, self));
@@ -189,7 +189,7 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
   [self showWindow:self];
 }
 
-- (void)endForTabContents:(TabContents*)contents {
+- (void)endForWebContents:(WebContents*)contents {
   DCHECK(contents);
   DCHECK(hungContents_);
   if (hungContents_ && hungContents_->GetRenderProcessHost() ==
@@ -218,18 +218,18 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
 
 namespace browser {
 
-void ShowNativeHungRendererDialog(TabContents* contents) {
+void ShowNativeHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed()) {
     if (!g_instance)
       g_instance = [[HungRendererController alloc]
                      initWithWindowNibName:@"HungRendererDialog"];
-    [g_instance showForTabContents:contents];
+    [g_instance showForWebContents:contents];
   }
 }
 
-void HideNativeHungRendererDialog(TabContents* contents) {
+void HideNativeHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed() && g_instance)
-    [g_instance endForTabContents:contents];
+    [g_instance endForWebContents:contents];
 }
 
 }  // namespace browser

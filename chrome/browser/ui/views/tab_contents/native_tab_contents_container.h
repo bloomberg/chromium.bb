@@ -9,23 +9,28 @@
 class RenderViewHost;
 class TabContents;
 class TabContentsContainer;
+
+namespace content {
+class WebContents;
+}
+
 namespace views {
 class View;
 }
 
 // An interface that the TabContentsContainer uses to talk to a platform-
-// specific view that hosts the native handle of the TabContents' view.
+// specific view that hosts the native handle of the WebContents' view.
 class NativeTabContentsContainer {
  public:
   // Creates an appropriate native container for the current platform.
   static NativeTabContentsContainer* CreateNativeContainer(
       TabContentsContainer* container);
 
-  // Attaches the new TabContents to the native container.
-  virtual void AttachContents(TabContents* contents) = 0;
+  // Attaches the new WebContents to the native container.
+  virtual void AttachContents(content::WebContents* contents) = 0;
 
-  // Detaches the old TabContents from the native container.
-  virtual void DetachContents(TabContents* contents) = 0;
+  // Detaches the old WebContents from the native container.
+  virtual void DetachContents(content::WebContents* contents) = 0;
 
   // Tells the container to update less frequently during resizing operations
   // so performance is better.
@@ -35,13 +40,13 @@ class NativeTabContentsContainer {
   // Returns the value of GetFastResize() the last time layout occurred.
   virtual bool FastResizeAtLastLayout() const = 0;
 
-  // Tells the container that the RenderViewHost for the attached TabContents
+  // Tells the container that the RenderViewHost for the attached WebContents
   // has changed and it should update focus.
   virtual void RenderViewHostChanged(RenderViewHost* old_host,
                                      RenderViewHost* new_host) = 0;
 
-  // Tells the container that |tab_contents| got the focus.
-  virtual void TabContentsFocused(TabContents* tab_contents) = 0;
+  // Tells the container that |contents| got the focus.
+  virtual void WebContentsFocused(content::WebContents* contents) = 0;
 
   // Retrieves the views::View that hosts the TabContents.
   virtual views::View* GetView() = 0;

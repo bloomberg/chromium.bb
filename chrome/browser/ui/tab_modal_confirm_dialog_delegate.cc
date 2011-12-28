@@ -11,11 +11,13 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::WebContents;
+
 TabModalConfirmDialogDelegate::TabModalConfirmDialogDelegate(
-    TabContents* tab_contents)
+    WebContents* web_contents)
     : window_(NULL),
       closing_(false) {
-  NavigationController* controller = &tab_contents->GetController();
+  NavigationController* controller = &web_contents->GetController();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                  content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,

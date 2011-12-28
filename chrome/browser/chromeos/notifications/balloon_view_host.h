@@ -39,7 +39,7 @@ class BalloonViewHost : public ::BalloonViewHost {
 
  private:
   // WebContentsDelegate
-  virtual void WebUISend(TabContents* tab,
+  virtual void WebUISend(content::WebContents* tab,
                          const GURL& source_url,
                          const std::string& name,
                          const base::ListValue& args) OVERRIDE;

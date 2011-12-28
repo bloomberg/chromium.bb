@@ -95,7 +95,7 @@ void BlockedContentTabHelper::AddPopup(TabContentsWrapper* new_contents,
           creator,
           CONTENT_SETTINGS_TYPE_POPUPS,
           "") == CONTENT_SETTING_ALLOW) {
-    web_contents()->AddNewContents(new_contents->tab_contents(),
+    web_contents()->AddNewContents(new_contents->web_contents(),
                                    NEW_POPUP,
                                    initial_pos,
                                    true);  // user_gesture

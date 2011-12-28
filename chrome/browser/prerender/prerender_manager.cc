@@ -121,8 +121,8 @@ class PrerenderManager::OnCloseTabContentsDeleter
     ScheduleTabContentsForDeletion(false);
   }
 
-  virtual void SwappedOut(TabContents* source) OVERRIDE {
-    DCHECK_EQ(tab_->tab_contents(), source);
+  virtual void SwappedOut(WebContents* source) OVERRIDE {
+    DCHECK_EQ(tab_->web_contents(), source);
     ScheduleTabContentsForDeletion(false);
   }
 

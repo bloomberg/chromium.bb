@@ -312,7 +312,7 @@ class BrowserView : public BrowserWindow,
   virtual void ConfirmBrowserCloseWithPendingDownloads() OVERRIDE;
   virtual void UserChangedTheme() OVERRIDE;
   virtual int GetExtraRenderViewHeight() const OVERRIDE;
-  virtual void TabContentsFocused(TabContents* source) OVERRIDE;
+  virtual void WebContentsFocused(content::WebContents* contents) OVERRIDE;
   virtual void ShowPageInfo(Profile* profile,
                             const GURL& url,
                             const content::SSLStatus& ssl,

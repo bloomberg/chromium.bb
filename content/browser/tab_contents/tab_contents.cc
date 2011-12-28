@@ -655,7 +655,7 @@ void TabContents::ShowPageInfo(const GURL& url,
   delegate_->ShowPageInfo(GetBrowserContext(), url, ssl, show_history);
 }
 
-void TabContents::AddNewContents(TabContents* new_contents,
+void TabContents::AddNewContents(WebContents* new_contents,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
                                  bool user_gesture) {

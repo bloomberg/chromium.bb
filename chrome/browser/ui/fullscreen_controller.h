@@ -19,6 +19,10 @@ class Profile;
 class TabContents;
 class TabContentsWrapper;
 
+namespace content {
+class WebContents;
+}
+
 // There are two different kinds of fullscreen mode - "tab fullscreen" and
 // "browser fullscreen". "Tab fullscreen" refers to when a tab enters
 // fullscreen mode via the JS fullscreen API, and "browser fullscreen" refers
@@ -39,11 +43,12 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
 
   // Querying.
   bool IsFullscreenForTab() const;
-  bool IsFullscreenForTab(const TabContents* tab) const;
+  bool IsFullscreenForTab(const content::WebContents* tab) const;
 
   // Requests.
-  void RequestToLockMouse(TabContents* tab);
-  void ToggleFullscreenModeForTab(TabContents* tab, bool enter_fullscreen);
+  void RequestToLockMouse(content::WebContents* tab);
+  void ToggleFullscreenModeForTab(content::WebContents* tab,
+                                  bool enter_fullscreen);
 #if defined(OS_MACOSX)
   void TogglePresentationMode(bool for_tab);
 #endif

@@ -85,9 +85,9 @@ class Shell : public WebContentsDelegate {
   gfx::NativeView GetContentView();
 
   // content::WebContentsDelegate
-  virtual void LoadingStateChanged(TabContents* source) OVERRIDE;
-  virtual void DidNavigateMainFramePostCommit(TabContents* tab) OVERRIDE;
-  virtual void UpdatePreferredSize(TabContents* source,
+  virtual void LoadingStateChanged(WebContents* source) OVERRIDE;
+  virtual void DidNavigateMainFramePostCommit(WebContents* tab) OVERRIDE;
+  virtual void UpdatePreferredSize(WebContents* source,
                                    const gfx::Size& pref_size) OVERRIDE;
 
 #if defined(OS_WIN)

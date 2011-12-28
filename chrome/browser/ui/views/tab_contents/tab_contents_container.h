@@ -34,8 +34,8 @@ class TabContentsContainer : public views::View,
   // Accessor for |tab_contents_|.
   TabContents* tab_contents() const { return tab_contents_; }
 
-  // Called by the BrowserView to notify that |tab_contents| got the focus.
-  void TabContentsFocused(TabContents* tab_contents);
+  // Called by the BrowserView to notify that |contents| got the focus.
+  void WebContentsFocused(content::WebContents* contents);
 
   // Tells the container to update less frequently during resizing operations
   // so performance is better.

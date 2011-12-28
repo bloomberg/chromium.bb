@@ -434,14 +434,14 @@ WebContents* DefaultTabDragController::OpenURLFromTab(
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultTabDragController, content::WebContentsDelegate implementation:
 
-void DefaultTabDragController::NavigationStateChanged(const TabContents* source,
+void DefaultTabDragController::NavigationStateChanged(const WebContents* source,
                                                       unsigned changed_flags) {
   if (view_.get())
     view_->Update();
 }
 
-void DefaultTabDragController::AddNewContents(TabContents* source,
-                                              TabContents* new_contents,
+void DefaultTabDragController::AddNewContents(WebContents* source,
+                                              WebContents* new_contents,
                                               WindowOpenDisposition disposition,
                                               const gfx::Rect& initial_pos,
                                               bool user_gesture) {
@@ -455,7 +455,7 @@ void DefaultTabDragController::AddNewContents(TabContents* source,
   }
 }
 
-void DefaultTabDragController::LoadingStateChanged(TabContents* source) {
+void DefaultTabDragController::LoadingStateChanged(WebContents* source) {
   // It would be nice to respond to this message by changing the
   // screen shot in the dragged tab.
   if (view_.get())

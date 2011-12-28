@@ -90,7 +90,7 @@ class PanelBrowserView : public BrowserView,
   virtual void ShowTaskManagerForPanel() OVERRIDE;
   virtual FindBar* CreatePanelFindBar() OVERRIDE;
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
-  virtual void PanelTabContentsFocused(TabContents* tab_contents) OVERRIDE;
+  virtual void PanelWebContentsFocused(content::WebContents* contents) OVERRIDE;
   virtual void PanelCut() OVERRIDE;
   virtual void PanelCopy() OVERRIDE;
   virtual void PanelPaste() OVERRIDE;

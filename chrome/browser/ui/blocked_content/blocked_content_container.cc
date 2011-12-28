@@ -76,7 +76,7 @@ void BlockedContentContainer::LaunchForContents(
       // We needn't call WasRestored to change its status because the
       // TabContents::AddNewContents will do it.
       owner_->web_contents()->AddNewContents(
-          tab_contents->tab_contents(),
+          tab_contents->web_contents(),
           content.disposition,
           content.bounds,
           content.user_gesture);
@@ -116,8 +116,8 @@ WebContents* BlockedContentContainer::OpenURLFromTab(
   return owner_->web_contents()->OpenURL(params);
 }
 
-void BlockedContentContainer::AddNewContents(TabContents* source,
-                                             TabContents* new_contents,
+void BlockedContentContainer::AddNewContents(WebContents* source,
+                                             WebContents* new_contents,
                                              WindowOpenDisposition disposition,
                                              const gfx::Rect& initial_position,
                                              bool user_gesture) {
@@ -139,18 +139,18 @@ void BlockedContentContainer::CloseContents(WebContents* source) {
   }
 }
 
-void BlockedContentContainer::MoveContents(TabContents* source,
+void BlockedContentContainer::MoveContents(WebContents* source,
                                            const gfx::Rect& new_bounds) {
   for (BlockedContents::iterator i(blocked_contents_.begin());
        i != blocked_contents_.end(); ++i) {
-    if (i->tab_contents->tab_contents() == source) {
+    if (i->tab_contents->web_contents() == source) {
       i->bounds = new_bounds;
       break;
     }
   }
 }
 
-bool BlockedContentContainer::IsPopupOrPanel(const TabContents* source) const {
+bool BlockedContentContainer::IsPopupOrPanel(const WebContents* source) const {
   // Assume everything added is a popup. This may turn out to be wrong, but
   // callers don't cache this information so it should be fine if the value ends
   // up changing.

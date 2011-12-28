@@ -167,7 +167,7 @@ class CONTENT_EXPORT TabContents
   virtual void ShowPageInfo(const GURL& url,
                             const content::SSLStatus& ssl,
                             bool show_history) OVERRIDE;
-  virtual void AddNewContents(TabContents* new_contents,
+  virtual void AddNewContents(content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;

@@ -40,6 +40,8 @@
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
 #endif
 
+using content::WebContents;
+
 namespace {
 
 const char kViewClassName[] = "browser/chromeos/login/WebUILoginView";
@@ -381,7 +383,7 @@ bool WebUILoginView::HandleContextMenu(const ContextMenuParams& params) {
 #endif
 }
 
-bool WebUILoginView::IsPopupOrPanel(const TabContents* source) const {
+bool WebUILoginView::IsPopupOrPanel(const WebContents* source) const {
   return true;
 }
 

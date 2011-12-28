@@ -440,11 +440,11 @@ class Browser : public TabHandlerDelegate,
                               bool pin,
                               bool from_last_session,
                               SessionStorageNamespace* storage_namespace);
-  // Creates a new tab with the already-created TabContents 'new_contents'.
+  // Creates a new tab with the already-created WebContents 'new_contents'.
   // The window for the added contents will be reparented correctly when this
   // method returns.  If |disposition| is NEW_POPUP, |pos| should hold the
   // initial position.
-  void AddTabContents(TabContents* new_contents,
+  void AddWebContents(content::WebContents* new_contents,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_pos,
                       bool user_gesture);
@@ -679,23 +679,24 @@ class Browser : public TabHandlerDelegate,
 
   // Helper function to display the file selection dialog.
   static void RunFileChooserHelper(
-      TabContents* tab, const content::FileChooserParams& params);
+      content::WebContents* tab, const content::FileChooserParams& params);
 
   // Helper function to enumerate a directory.
-  static void EnumerateDirectoryHelper(TabContents* tab, int request_id,
+  static void EnumerateDirectoryHelper(content::WebContents* tab,
+                                       int request_id,
                                        const FilePath& path);
 
   // Helper function to handle JS out of memory notifications
-  static void JSOutOfMemoryHelper(TabContents* tab);
+  static void JSOutOfMemoryHelper(content::WebContents* tab);
 
   // Helper function to register a protocol handler.
-  static void RegisterProtocolHandlerHelper(TabContents* tab,
+  static void RegisterProtocolHandlerHelper(content::WebContents* tab,
                                             const std::string& protocol,
                                             const GURL& url,
                                             const string16& title);
 
   // Helper function to register an intent handler.
-  static void RegisterIntentHandlerHelper(TabContents* tab,
+  static void RegisterIntentHandlerHelper(content::WebContents* tab,
                                           const string16& action,
                                           const string16& type,
                                           const string16& href,
@@ -703,7 +704,7 @@ class Browser : public TabHandlerDelegate,
                                           const string16& disposition);
 
   // Helper function to handle find results.
-  static void FindReplyHelper(TabContents* tab,
+  static void FindReplyHelper(content::WebContents* tab,
                               int request_id,
                               int number_of_matches,
                               const gfx::Rect& selection_rect,
@@ -711,11 +712,11 @@ class Browser : public TabHandlerDelegate,
                               bool final_update);
 
   // Helper function to handle crashed plugin notifications.
-  static void CrashedPluginHelper(TabContents* tab,
+  static void CrashedPluginHelper(content::WebContents* tab,
                                   const FilePath& plugin_path);
 
   // Helper function to handle url update notifications.
-  static void UpdateTargetURLHelper(TabContents* tab, int32 page_id,
+  static void UpdateTargetURLHelper(content::WebContents* tab, int32 page_id,
                                     const GURL& url);
 
   // Calls ExecuteCommandWithDisposition with the given disposition.
@@ -916,101 +917,109 @@ class Browser : public TabHandlerDelegate,
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
-  virtual void NavigationStateChanged(const TabContents* source,
+  virtual void NavigationStateChanged(const content::WebContents* source,
                                       unsigned changed_flags) OVERRIDE;
-  virtual void AddNewContents(TabContents* source,
-                              TabContents* new_contents,
+  virtual void AddNewContents(content::WebContents* source,
+                              content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;
-  virtual void ActivateContents(TabContents* contents) OVERRIDE;
-  virtual void DeactivateContents(TabContents* contents) OVERRIDE;
-  virtual void LoadingStateChanged(TabContents* source) OVERRIDE;
+  virtual void ActivateContents(content::WebContents* contents) OVERRIDE;
+  virtual void DeactivateContents(content::WebContents* contents) OVERRIDE;
+  virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
-  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) OVERRIDE;
-  virtual void DetachContents(TabContents* source) OVERRIDE;
-  virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
-  virtual bool CanReloadContents(TabContents* source) const OVERRIDE;
-  virtual void UpdateTargetURL(TabContents* source, int32 page_id,
+  virtual void MoveContents(content::WebContents* source,
+                            const gfx::Rect& pos) OVERRIDE;
+  virtual void DetachContents(content::WebContents* source) OVERRIDE;
+  virtual bool IsPopupOrPanel(
+      const content::WebContents* source) const OVERRIDE;
+  virtual bool CanReloadContents(content::WebContents* source) const OVERRIDE;
+  virtual void UpdateTargetURL(content::WebContents* source, int32 page_id,
                                const GURL& url) OVERRIDE;
-  virtual void ContentsMouseEvent(
-      TabContents* source, const gfx::Point& location, bool motion) OVERRIDE;
+  virtual void ContentsMouseEvent(content::WebContents* source,
+                                  const gfx::Point& location,
+                                  bool motion) OVERRIDE;
   virtual void ContentsZoomChange(bool zoom_in) OVERRIDE;
-  virtual void TabContentsFocused(TabContents* tab_content) OVERRIDE;
+  virtual void WebContentsFocused(content::WebContents* content) OVERRIDE;
   virtual bool TakeFocus(bool reverse) OVERRIDE;
   virtual bool IsApplication() const OVERRIDE;
-  virtual void ConvertContentsToApplication(TabContents* source) OVERRIDE;
-  virtual void BeforeUnloadFired(TabContents* source,
+  virtual void ConvertContentsToApplication(
+      content::WebContents* source) OVERRIDE;
+  virtual void BeforeUnloadFired(content::WebContents* source,
                                  bool proceed,
                                  bool* proceed_to_fire_unload) OVERRIDE;
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
   virtual void RenderWidgetShowing() OVERRIDE;
   virtual int GetExtraRenderViewHeight() const OVERRIDE;
-  virtual void OnStartDownload(TabContents* source,
-                              content::DownloadItem* download) OVERRIDE;
+  virtual void OnStartDownload(content::WebContents* source,
+                               content::DownloadItem* download) OVERRIDE;
   virtual void ShowPageInfo(content::BrowserContext* browser_context,
                             const GURL& url,
                             const content::SSLStatus& ssl,
                             bool show_history) OVERRIDE;
-  virtual void ViewSourceForTab(TabContents* source,
+  virtual void ViewSourceForTab(content::WebContents* source,
                                 const GURL& page_url) OVERRIDE;
   virtual void ViewSourceForFrame(
-      TabContents* source,
+      content::WebContents* source,
       const GURL& frame_url,
       const std::string& frame_content_state) OVERRIDE;
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) OVERRIDE;
+  virtual void ShowRepostFormWarningDialog(
+      content::WebContents* source) OVERRIDE;
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
       content::NavigationType navigation_type) OVERRIDE;
-  virtual void TabContentsCreated(TabContents* new_contents) OVERRIDE;
-  virtual void ContentRestrictionsChanged(TabContents* source) OVERRIDE;
-  virtual void RendererUnresponsive(TabContents* source) OVERRIDE;
-  virtual void RendererResponsive(TabContents* source) OVERRIDE;
-  virtual void WorkerCrashed(TabContents* source) OVERRIDE;
-  virtual void DidNavigateMainFramePostCommit(TabContents* tab) OVERRIDE;
-  virtual void DidNavigateToPendingEntry(TabContents* tab) OVERRIDE;
+  virtual void WebContentsCreated(content::WebContents* new_contents) OVERRIDE;
+  virtual void ContentRestrictionsChanged(
+      content::WebContents* source) OVERRIDE;
+  virtual void RendererUnresponsive(content::WebContents* source) OVERRIDE;
+  virtual void RendererResponsive(content::WebContents* source) OVERRIDE;
+  virtual void WorkerCrashed(content::WebContents* source) OVERRIDE;
+  virtual void DidNavigateMainFramePostCommit(
+      content::WebContents* tab) OVERRIDE;
+  virtual void DidNavigateToPendingEntry(content::WebContents* tab) OVERRIDE;
   virtual content::JavaScriptDialogCreator*
-  GetJavaScriptDialogCreator() OVERRIDE;
+      GetJavaScriptDialogCreator() OVERRIDE;
   virtual void RunFileChooser(
-      TabContents* tab,
+      content::WebContents* tab,
       const content::FileChooserParams& params) OVERRIDE;
-  virtual void EnumerateDirectory(TabContents* tab, int request_id,
-                                const FilePath& path) OVERRIDE;
-  virtual void ToggleFullscreenModeForTab(TabContents* tab,
+  virtual void EnumerateDirectory(content::WebContents* tab, int request_id,
+                                  const FilePath& path) OVERRIDE;
+  virtual void ToggleFullscreenModeForTab(content::WebContents* tab,
       bool enter_fullscreen) OVERRIDE;
-  virtual bool IsFullscreenForTab(const TabContents* tab) const OVERRIDE;
-  virtual void JSOutOfMemory(TabContents* tab) OVERRIDE;
-  virtual void RegisterProtocolHandler(TabContents* tab,
+  virtual bool IsFullscreenForTab(
+      const content::WebContents* tab) const OVERRIDE;
+  virtual void JSOutOfMemory(content::WebContents* tab) OVERRIDE;
+  virtual void RegisterProtocolHandler(content::WebContents* tab,
                                        const std::string& protocol,
                                        const GURL& url,
                                        const string16& title) OVERRIDE;
-  virtual void RegisterIntentHandler(TabContents* tab,
+  virtual void RegisterIntentHandler(content::WebContents* tab,
                                      const string16& action,
                                      const string16& type,
                                      const string16& href,
                                      const string16& title,
                                      const string16& disposition) OVERRIDE;
   virtual void WebIntentDispatch(
-      TabContents* tab,
+      content::WebContents* tab,
       content::WebIntentsDispatcher* intents_dispatcher) OVERRIDE;
-  virtual void UpdatePreferredSize(TabContents* source,
+  virtual void UpdatePreferredSize(content::WebContents* source,
                                    const gfx::Size& pref_size) OVERRIDE;
 
-  virtual void FindReply(TabContents* tab,
+  virtual void FindReply(content::WebContents* tab,
                          int request_id,
                          int number_of_matches,
                          const gfx::Rect& selection_rect,
                          int active_match_ordinal,
                          bool final_update) OVERRIDE;
 
-  virtual void CrashedPlugin(TabContents* tab,
+  virtual void CrashedPlugin(content::WebContents* tab,
                              const FilePath& plugin_path) OVERRIDE;
 
-  virtual void RequestToLockMouse(TabContents* tab) OVERRIDE;
+  virtual void RequestToLockMouse(content::WebContents* tab) OVERRIDE;
   virtual void LostMouseLock() OVERRIDE;
 
   // Overridden from CoreTabHelperDelegate:
@@ -1131,7 +1140,8 @@ class Browser : public TabHandlerDelegate,
   //   updates), then scheduled_updates_ is updated for the |source| and update
   //   pair and a task is scheduled (assuming it isn't running already)
   //   that invokes ProcessPendingUIUpdates.
-  void ScheduleUIUpdate(const TabContents* source, unsigned changed_flags);
+  void ScheduleUIUpdate(const content::WebContents* source,
+                        unsigned changed_flags);
 
   // Processes all pending updates to the UI that have been scheduled by
   // ScheduleUIUpdate in scheduled_updates_.
@@ -1309,7 +1319,7 @@ class Browser : public TabHandlerDelegate,
 
   // UI update coalescing and handling ////////////////////////////////////////
 
-  typedef std::map<const TabContents*, int> UpdateMap;
+  typedef std::map<const content::WebContents*, int> UpdateMap;
 
   // Maps from TabContents to pending UI updates that need to be processed.
   // We don't update things like the URL or tab title right away to avoid

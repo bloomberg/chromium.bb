@@ -270,7 +270,7 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
 
   if (new_contents) {
     if (tab_contents->GetDelegate())
-      tab_contents->GetDelegate()->TabContentsCreated(new_contents);
+      tab_contents->GetDelegate()->WebContentsCreated(new_contents);
 
     RetargetingDetails details;
     details.source_web_contents = tab_contents;

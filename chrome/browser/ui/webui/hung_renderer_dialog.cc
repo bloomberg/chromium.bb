@@ -37,7 +37,7 @@ const int kHungRendererDialogHeight = 200;
 
 namespace browser {
 
-void ShowHungRendererDialog(TabContents* contents) {
+void ShowHungRendererDialog(WebContents* contents) {
 #if defined(OS_CHROMEOS) || defined(USE_AURA)
   HungRendererDialog::ShowHungRendererDialog(contents);
 #else
@@ -50,7 +50,7 @@ void ShowHungRendererDialog(TabContents* contents) {
 #endif
 }
 
-void HideHungRendererDialog(TabContents* contents) {
+void HideHungRendererDialog(WebContents* contents) {
 #if defined(OS_CHROMEOS) || defined(USE_AURA)
   HungRendererDialog::HideHungRendererDialog(contents);
 #else
@@ -66,11 +66,11 @@ void HideHungRendererDialog(TabContents* contents) {
 ////////////////////////////////////////////////////////////////////////////////
 // HungRendererDialog public static methods
 
-void HungRendererDialog::ShowHungRendererDialog(TabContents* contents) {
+void HungRendererDialog::ShowHungRendererDialog(WebContents* contents) {
   ShowHungRendererDialogInternal(contents, true);
 }
 
-void HungRendererDialog::HideHungRendererDialog(TabContents* contents) {
+void HungRendererDialog::HideHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed() && g_instance)
     g_instance->HideDialog(contents);
 }
@@ -80,20 +80,19 @@ void HungRendererDialog::HideHungRendererDialog(TabContents* contents) {
 
 HungRendererDialog::WebContentsObserverImpl::WebContentsObserverImpl(
     HungRendererDialog* dialog,
-    TabContents* contents)
+    WebContents* contents)
     : content::WebContentsObserver(contents),
-      contents_(contents),
       dialog_(dialog) {
 }
 
 void HungRendererDialog::WebContentsObserverImpl::RenderViewGone(
     base::TerminationStatus status) {
-  dialog_->HideDialog(contents_);
+  dialog_->HideDialog(web_contents());
 }
 
 void HungRendererDialog::WebContentsObserverImpl::WebContentsDestroyed(
     WebContents* tab) {
-  dialog_->HideDialog(contents_);
+  dialog_->HideDialog(tab);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -109,7 +108,7 @@ HungRendererDialog::HungRendererDialog(bool is_enabled)
 HungRendererDialog::~HungRendererDialog() {
 }
 
-void HungRendererDialog::ShowHungRendererDialogInternal(TabContents* contents,
+void HungRendererDialog::ShowHungRendererDialogInternal(WebContents* contents,
                                                         bool is_enabled) {
   if (!logging::DialogsAreSuppressed()) {
     if (g_instance)
@@ -119,7 +118,7 @@ void HungRendererDialog::ShowHungRendererDialogInternal(TabContents* contents,
   }
 }
 
-void HungRendererDialog::ShowDialog(TabContents* contents) {
+void HungRendererDialog::ShowDialog(WebContents* contents) {
   DCHECK(contents);
   contents_ = contents;
   Browser* browser = BrowserList::GetLastActive();
@@ -129,9 +128,9 @@ void HungRendererDialog::ShowDialog(TabContents* contents) {
   contents_observer_.reset(new WebContentsObserverImpl(this, contents_));
 }
 
-void HungRendererDialog::HideDialog(TabContents* contents) {
+void HungRendererDialog::HideDialog(WebContents* contents) {
   DCHECK(contents);
-  // Don't close the dialog if it's a TabContents for some other renderer.
+  // Don't close the dialog if it's a WebContents for some other renderer.
   if (contents_ && contents_->GetRenderProcessHost() !=
       contents->GetRenderProcessHost())
     return;
@@ -209,7 +208,7 @@ bool HungRendererDialog::ShouldShowDialogTitle() const {
 // HungRendererDialogHandler methods
 
 HungRendererDialogHandler::HungRendererDialogHandler(
-    TabContents* contents)
+    WebContents* contents)
   : contents_(contents) {
 }
 

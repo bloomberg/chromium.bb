@@ -11,16 +11,18 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::WebContents;
+
 RepostFormWarningController::RepostFormWarningController(
-    TabContents* tab_contents)
-    : TabModalConfirmDialogDelegate(tab_contents),
-      navigation_controller_(&tab_contents->GetController()) {
+    WebContents* web_contents)
+    : TabModalConfirmDialogDelegate(web_contents),
+      navigation_controller_(&web_contents->GetController()) {
   registrar_.Add(this, content::NOTIFICATION_REPOST_WARNING_SHOWN,
                  content::Source<NavigationController>(navigation_controller_));
 }

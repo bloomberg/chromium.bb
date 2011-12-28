@@ -11,7 +11,10 @@
 
 class FindBar;
 class NativePanelTesting;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 namespace gfx {
 class Rect;
@@ -49,7 +52,7 @@ class NativePanel {
   virtual void ShowTaskManagerForPanel() = 0;
   virtual FindBar* CreatePanelFindBar() = 0;
   virtual void NotifyPanelOnUserChangedTheme() = 0;
-  virtual void PanelTabContentsFocused(TabContents* tab_contents) = 0;
+  virtual void PanelWebContentsFocused(content::WebContents* contents) = 0;
   virtual void PanelCut() = 0;
   virtual void PanelCopy() = 0;
   virtual void PanelPaste() = 0;

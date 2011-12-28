@@ -20,6 +20,10 @@ class TabContentsWrapper;
 class TabModalConfirmDialogDelegate;
 class TemplateURL;
 
+namespace content {
+class WebContents;
+}
+
 namespace browser {
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
@@ -50,15 +54,15 @@ void ShowExtensionInstalledBubble(const Extension* extension,
                                   const SkBitmap& icon,
                                   Profile* profile);
 
-// Shows or hide the hung renderer dialog for the given TabContents.
-// We need to pass the TabContents to the dialog, because multiple tabs can hang
+// Shows or hide the hung renderer dialog for the given WebContents.
+// We need to pass the WebContents to the dialog, because multiple tabs can hang
 // and it needs to keep track of which tabs are currently hung.
-void ShowHungRendererDialog(TabContents* contents);
-void HideHungRendererDialog(TabContents* contents);
+void ShowHungRendererDialog(content::WebContents* contents);
+void HideHungRendererDialog(content::WebContents* contents);
 
 // Native implementations of hung renderer dialogs.
-void ShowNativeHungRendererDialog(TabContents* contents);
-void HideNativeHungRendererDialog(TabContents* contents);
+void ShowNativeHungRendererDialog(content::WebContents* contents);
+void HideNativeHungRendererDialog(content::WebContents* contents);
 
 // Show the edit search engine dialog.
 void ConfirmAddSearchProvider(const TemplateURL* template_url,

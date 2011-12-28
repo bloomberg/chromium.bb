@@ -26,9 +26,9 @@ class BackgroundContents : public content::WebContentsDelegate,
   class Delegate {
    public:
     // Called by AddNewContents(). Asks the delegate to attach the opened
-    // TabContents to a suitable container (e.g. browser) or to show it if it's
+    // WebContents to a suitable container (e.g. browser) or to show it if it's
     // a popup window.
-    virtual void AddTabContents(TabContents* new_contents,
+    virtual void AddWebContents(content::WebContents* new_contents,
                                 WindowOpenDisposition disposition,
                                 const gfx::Rect& initial_pos,
                                 bool user_gesture) = 0;
@@ -48,9 +48,10 @@ class BackgroundContents : public content::WebContentsDelegate,
   // content::WebContentsDelegate implementation:
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
   virtual bool ShouldSuppressDialogs() OVERRIDE;
-  virtual void DidNavigateMainFramePostCommit(TabContents* tab) OVERRIDE;
-  virtual void AddNewContents(TabContents* source,
-                              TabContents* new_contents,
+  virtual void DidNavigateMainFramePostCommit(
+      content::WebContents* tab) OVERRIDE;
+  virtual void AddNewContents(content::WebContents* source,
+                              content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;

@@ -36,12 +36,13 @@ class HtmlDialogTabContentsDelegate : public content::WebContentsDelegate {
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
 
-  virtual void AddNewContents(TabContents* source,
-                              TabContents* new_contents,
+  virtual void AddNewContents(content::WebContents* source,
+                              content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;
-  virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
+  virtual bool IsPopupOrPanel(
+      const content::WebContents* source) const OVERRIDE;
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
       content::NavigationType navigation_type) OVERRIDE;

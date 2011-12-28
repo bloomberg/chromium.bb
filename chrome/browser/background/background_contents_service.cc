@@ -33,6 +33,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::WebContents;
+
 namespace {
 
 const char kNotificationPrefix[] = "app.background.crashed.";
@@ -566,8 +568,8 @@ const string16& BackgroundContentsService::GetParentApplicationId(
   return EmptyString16();
 }
 
-void BackgroundContentsService::AddTabContents(
-    TabContents* new_contents,
+void BackgroundContentsService::AddWebContents(
+    WebContents* new_contents,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_pos,
     bool user_gesture) {
@@ -575,5 +577,5 @@ void BackgroundContentsService::AddTabContents(
       Profile::FromBrowserContext(new_contents->GetBrowserContext()));
   if (!browser)
     return;
-  browser->AddTabContents(new_contents, disposition, initial_pos, user_gesture);
+  browser->AddWebContents(new_contents, disposition, initial_pos, user_gesture);
 }

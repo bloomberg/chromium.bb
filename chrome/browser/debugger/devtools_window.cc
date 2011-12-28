@@ -566,8 +566,8 @@ void DevToolsWindow::UpdateTheme() {
       ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(command));
 }
 
-void DevToolsWindow::AddNewContents(TabContents* source,
-                                    TabContents* new_contents,
+void DevToolsWindow::AddNewContents(WebContents* source,
+                                    WebContents* new_contents,
                                     WindowOpenDisposition disposition,
                                     const gfx::Rect& initial_pos,
                                     bool user_gesture) {
@@ -577,7 +577,7 @@ void DevToolsWindow::AddNewContents(TabContents* source,
   }
 }
 
-bool DevToolsWindow::CanReloadContents(TabContents* source) const {
+bool DevToolsWindow::CanReloadContents(WebContents* source) const {
   return false;
 }
 

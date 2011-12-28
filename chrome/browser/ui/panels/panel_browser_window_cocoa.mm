@@ -17,6 +17,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
+using content::WebContents;
+
 namespace {
 
 // Use this instead of 0 for minimum size of a window when doing opening and
@@ -181,8 +183,8 @@ void PanelBrowserWindowCocoa::NotifyPanelOnUserChangedTheme() {
   NOTIMPLEMENTED();
 }
 
-void PanelBrowserWindowCocoa::PanelTabContentsFocused(
-    TabContents* tab_contents) {
+void PanelBrowserWindowCocoa::PanelWebContentsFocused(
+    WebContents* contents) {
   // TODO(jianli): to be implemented.
 }
 

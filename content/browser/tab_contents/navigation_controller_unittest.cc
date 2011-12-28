@@ -36,6 +36,7 @@
 using base::Time;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
+using content::WebContents;
 
 // NavigationControllerTest ----------------------------------------------------
 
@@ -64,7 +65,7 @@ class TestWebContentsDelegate : public content::WebContentsDelegate {
   }
 
   // Keep track of whether the tab has notified us of a navigation state change.
-  virtual void NavigationStateChanged(const TabContents* source,
+  virtual void NavigationStateChanged(const WebContents* source,
                                       unsigned changed_flags) {
     navigation_state_change_count_++;
   }

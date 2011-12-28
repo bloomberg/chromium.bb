@@ -263,9 +263,9 @@ class BrowserWindow {
   // during infobar animations).
   virtual int GetExtraRenderViewHeight() const = 0;
 
-  // Notification that |tab_contents| got the focus through user action (click
+  // Notification that |contents| got the focus through user action (click
   // on the page).
-  virtual void TabContentsFocused(TabContents* tab_contents) = 0;
+  virtual void WebContentsFocused(content::WebContents* contents) = 0;
 
   // Shows the page info using the specified information.
   // |url| is the url of the page/frame the info applies to, |ssl| is the SSL
@@ -347,7 +347,7 @@ class BrowserWindow {
   // changed. We might choose to update the window size to accomodate this
   // change.
   // Note that this won't be fired if we change tabs.
-  virtual void UpdatePreferredSize(TabContents* tab_contents,
+  virtual void UpdatePreferredSize(content::WebContents* web_contents,
                                    const gfx::Size& pref_size) {}
 
   // Construct a BrowserWindow implementation for the specified |browser|.

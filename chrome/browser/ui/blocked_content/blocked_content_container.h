@@ -62,8 +62,8 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
       const content::OpenURLParams& params) OVERRIDE;
 
   // Forwards AddNewContents to our |owner_|.
-  virtual void AddNewContents(TabContents* source,
-                              TabContents* new_contents,
+  virtual void AddNewContents(content::WebContents* source,
+                              content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_position,
                               bool user_gesture) OVERRIDE;
@@ -72,10 +72,11 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
 
   // Changes the opening rectangle associated with |source|.
-  virtual void MoveContents(TabContents* source,
+  virtual void MoveContents(content::WebContents* source,
                             const gfx::Rect& new_bounds) OVERRIDE;
 
-  virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
+  virtual bool IsPopupOrPanel(
+      const content::WebContents* source) const OVERRIDE;
 
   // Always returns true.
   virtual bool ShouldSuppressDialogs() OVERRIDE;
