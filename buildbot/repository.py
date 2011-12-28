@@ -31,12 +31,10 @@ class SrcCheckOutException(Exception):
 
 def FixExternalRepoPushUrls(buildroot):
   """Set up SSH push for public repo's."""
-  shell_code = ('git config --remove-section "url.%(host)s" &> /dev/null;' +
-               '[ "${REPO_REMOTE}" = "cros" ] && ' +
-               'git config "remote.${REPO_REMOTE}.pushurl" ' +
-               '"%(host)s/${REPO_PROJECT}"')
   cros_lib.RunCommand(['repo', 'forall', '-c',
-                       shell_code % {'host': constants.GERRIT_SSH_URL},
+                       'git', 'config',
+                       'url.%s.pushinsteadof' % constants.GERRIT_SSH_URL,
+                       'http://git.chromium.org'
                       ], cwd=buildroot)
 
 

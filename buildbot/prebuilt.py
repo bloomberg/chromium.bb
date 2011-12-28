@@ -152,17 +152,26 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST', dryrun=False):
   cwd = os.path.abspath(os.path.dirname(filename))
   commit = cros_build_lib.RunCommand(['git', 'rev-parse', 'HEAD'], cwd=cwd,
                                      redirect_stdout=True).output.rstrip()
-
-  # We want to push our changes to this file to tip of tree, thus force
-  # remotes to update; repo start always starts from HEAD of the manifest
-  # defined branch thus no need to do a reset.
+  git_ssh_config_cmd = [
+      'git',
+      'config',
+      'url.ssh://gerrit.chromium.org:29418.pushinsteadof',
+      'http://git.chromium.org']
+  cros_build_lib.RunCommand(git_ssh_config_cmd, cwd=cwd)
   _RetryRun(['git', 'remote', 'update'], cwd=cwd)
   cros_build_lib.RunCommand(['repo', 'start', prebuilt_branch, '.'], cwd=cwd)
+
+  # We want to push our changes to this file to tip of tree, so we should
+  # make sure the branch is at tip of tree before we apply our change.
+  push_branch = '%s/%s' % cros_build_lib.GetPushBranch(prebuilt_branch, cwd)
+  cros_build_lib.RunCommand(['git', 'reset', '--hard', push_branch], cwd=cwd)
 
   description = 'Update %s="%s" in %s' % (key, value, filename)
   print description
   try:
     UpdateLocalFile(filename, value, key)
+    cros_build_lib.RunCommand(['git', 'config', 'push.default', 'tracking'],
+                              cwd=cwd)
     cros_build_lib.RunCommand(['git', 'add', filename], cwd=cwd)
     cros_build_lib.RunCommand(['git', 'commit', '-m', description], cwd=cwd)
     cros_build_lib.GitPushWithRetry(prebuilt_branch, cwd=cwd, dryrun=dryrun)
