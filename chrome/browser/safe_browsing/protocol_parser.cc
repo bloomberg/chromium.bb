@@ -10,15 +10,10 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/string_split.h"
+#include "base/sys_byteorder.h"
 #include "build/build_config.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
-
-#if defined(OS_WIN)
-#include <Winsock2.h>
-#elif defined(OS_POSIX)
-#include <arpa/inet.h>
-#endif
 
 namespace {
 // Helper function for quick scans of a line oriented protocol. Note that we use

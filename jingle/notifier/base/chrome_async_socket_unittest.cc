@@ -4,12 +4,6 @@
 
 #include "jingle/notifier/base/chrome_async_socket.h"
 
-#if defined(OS_WIN)
-#include <winsock2.h>
-#elif defined(OS_POSIX)
-#include <arpa/inet.h>
-#endif
-
 #include <deque>
 #include <string>
 
@@ -17,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/sys_byteorder.h"
 #include "jingle/notifier/base/resolving_client_socket_factory.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/net_errors.h"

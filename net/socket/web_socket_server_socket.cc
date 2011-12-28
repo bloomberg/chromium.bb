@@ -10,12 +10,6 @@
 #include <map>
 #include <vector>
 
-#if defined(OS_WIN)
-#include <winsock2.h>  // for htonl
-#else
-#include <arpa/inet.h>
-#endif
-
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -26,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/sys_byteorder.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"

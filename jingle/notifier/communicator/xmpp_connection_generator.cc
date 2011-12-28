@@ -12,18 +12,13 @@
 
 #include "jingle/notifier/communicator/xmpp_connection_generator.h"
 
-#if defined(OS_WIN)
-#include <winsock2.h>
-#elif defined(OS_POSIX)
-#include <arpa/inet.h>
-#endif
-
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/sys_byteorder.h"
 #include "jingle/notifier/base/server_information.h"
 #include "jingle/notifier/communicator/connection_options.h"
 #include "jingle/notifier/communicator/connection_settings.h"

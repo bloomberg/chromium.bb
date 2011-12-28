@@ -4,11 +4,11 @@
 
 #include "content/browser/renderer_host/p2p/socket_host_tcp.h"
 
+#include "base/sys_byteorder.h"
 #include "content/common/p2p_messages.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "net/base/sys_byteorder.h"
 #include "net/socket/tcp_client_socket.h"
 
 namespace {

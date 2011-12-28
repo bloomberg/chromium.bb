@@ -7,11 +7,11 @@
 #include <deque>
 #include <vector>
 
+#include "base/sys_byteorder.h"
 #include "content/browser/renderer_host/p2p/socket_host_test_utils.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/sys_byteorder.h"
 #include "net/udp/datagram_server_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

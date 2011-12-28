@@ -14,7 +14,6 @@
 #include <map>
 #include <vector>
 
-#include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
@@ -37,6 +36,7 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/sys_byteorder.h"
 #include "chrome/browser/chromeos/web_socket_proxy_helper.h"
 #include "chrome/browser/internal_auth.h"
 #include "chrome/common/chrome_notification_types.h"

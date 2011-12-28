@@ -6,8 +6,8 @@
 
 #include <deque>
 
+#include "base/sys_byteorder.h"
 #include "content/browser/renderer_host/p2p/socket_host_test_utils.h"
-#include "net/base/sys_byteorder.h"
 #include "net/socket/stream_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

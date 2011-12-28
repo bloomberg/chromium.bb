@@ -4,12 +4,6 @@
 
 #include "chrome/browser/sync/util/nigori.h"
 
-#if defined(OS_WIN)
-#include <winsock2.h>  // for htonl
-#else
-#include <arpa/inet.h>
-#endif
-
 #include <sstream>
 #include <vector>
 
@@ -17,6 +11,7 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
+#include "base/sys_byteorder.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
 

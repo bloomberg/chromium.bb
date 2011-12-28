@@ -5,8 +5,8 @@
 #include "content/renderer/p2p/ipc_network_manager.h"
 
 #include "base/bind.h"
+#include "base/sys_byteorder.h"
 #include "net/base/net_util.h"
-#include "net/base/sys_byteorder.h"
 
 namespace content {
 

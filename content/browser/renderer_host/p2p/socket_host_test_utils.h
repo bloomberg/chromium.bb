@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/sys_byteorder.h"
 #include "content/common/p2p_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
@@ -14,7 +15,6 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/base/sys_byteorder.h"
 #include "net/socket/stream_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
