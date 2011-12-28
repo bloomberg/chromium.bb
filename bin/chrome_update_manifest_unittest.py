@@ -95,7 +95,7 @@ class DEPSFileTest(mox.MoxTestBase):
                                                self.manifest_path,
                                                '/does/not/exist',
                                                internal=False, dryrun=True)
-    self._assertRaisesRegexp('.* begin marker .*',
+    self._assertRaisesRegexp('.* begin/end markers .*',
                             manifest.CreateNewManifest)
 
   def testNoEndMarker(self):
@@ -109,7 +109,7 @@ class DEPSFileTest(mox.MoxTestBase):
                                                '/does/not/exist',
                                                internal=False, dryrun=True)
 
-    self._assertRaisesRegexp('.* end marker .*',
+    self._assertRaisesRegexp('.* begin/end markers .*',
                             manifest.CreateNewManifest)
 
   def testNonChromeProjectOverwritten(self):
