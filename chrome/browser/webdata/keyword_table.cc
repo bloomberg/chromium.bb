@@ -239,6 +239,9 @@ TemplateURL* KeywordTable::GetDefaultSearchProviderBackup() {
 
   scoped_ptr<TemplateURL> template_url(new TemplateURL());
   GetURLFromStatement(s, template_url.get());
+  // ID has no meaning for the backup and should be 0 in case the TemplateURL
+  // will be added to keywords if missing.
+  template_url->set_id(0);
 
   if (!s.Succeeded()) {
     LOG(ERROR) << "Statement has not succeeded.";

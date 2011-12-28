@@ -7,15 +7,21 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/protector/base_setting_change.h"
 #include "chrome/browser/protector/histograms.h"
 #include "chrome/browser/protector/protector.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/webdata/keyword_table.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -28,20 +34,6 @@ namespace {
 
 // Maximum length of the search engine name to be displayed.
 const size_t kMaxDisplayedNameLength = 10;
-
-// Predicate that matches a TemplateURL with given ID.
-class TemplateURLHasId {
- public:
-  explicit TemplateURLHasId(TemplateURLID id) : id_(id) {
-  }
-
-  bool operator()(const TemplateURL* url) {
-    return url->id() == id_;
-  }
-
- private:
-  TemplateURLID id_;
-};
 
 // Matches TemplateURL with all fields set from the prepopulated data equal
 // to fields in another TemplateURL.
@@ -84,11 +76,13 @@ class TemplateURLIsSame {
 
 }  // namespace
 
+// Default search engine change tracked by Protector.
 class DefaultSearchProviderChange : public BaseSettingChange,
-                                    public TemplateURLServiceObserver {
+                                    public TemplateURLServiceObserver,
+                                    public content::NotificationObserver {
  public:
-  DefaultSearchProviderChange(const TemplateURL* old_url,
-                              const TemplateURL* new_url);
+  DefaultSearchProviderChange(const TemplateURL* new_search_provider,
+                              TemplateURL* backup_search_provider);
 
   // BaseSettingChange overrides:
   virtual bool Init(Protector* protector) OVERRIDE;
@@ -104,69 +98,72 @@ class DefaultSearchProviderChange : public BaseSettingChange,
   virtual string16 GetApplyButtonText() const OVERRIDE;
   virtual string16 GetDiscardButtonText() const OVERRIDE;
 
-  // TemplateURLServiceObserver overrides:
-  virtual void OnTemplateURLServiceChanged() OVERRIDE;
-
  private:
   virtual ~DefaultSearchProviderChange();
 
-  // Sets the given default search provider to profile that this change is
-  // related to. Returns the |TemplateURL| instance of the new default search
-  // provider. If no search provider with |id| exists and |allow_fallback| is
-  // true, sets one of the prepopulated search providers.
-  const TemplateURL* SetDefaultSearchProvider(int64 id,
-                                              bool allow_fallback);
+  // TemplateURLServiceObserver overrides:
+  virtual void OnTemplateURLServiceChanged() OVERRIDE;
+
+  // content::NotificationObserver overrides:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // Sets the default search provider to |*search_provider|. If a matching
+  // TemplateURL already exists, it is reused and |*search_provider| is reset.
+  // Otherwise, adds |*search_provider| to keywords and releases it.
+  // In both cases, |*search_provider| is NULL after this call.
+  // Returns the new default search provider (either |*search_provider| or the
+  // reused TemplateURL).
+  const TemplateURL* SetDefaultSearchProvider(
+      scoped_ptr<TemplateURL>* search_provider);
 
   // Opens the Search engine settings page in a new tab.
   void OpenSearchEngineSettings();
 
+  // Returns the TemplateURLService instance for the Profile this change is
+  // related to.
+  TemplateURLService* GetTemplateURLService();
+
   // Stops observing the TemplateURLService changes.
   void StopObservingTemplateURLService();
 
-  int64 old_id_;
-  int64 new_id_;
-  // ID of the search engine that we fall back to if the backup is lost.
-  int64 fallback_id_;
-  string16 old_name_;
-  string16 new_name_;
-  // Name of the search engine that we fall back to if the backup is lost.
-  string16 fallback_name_;
   // Histogram ID of the new search provider.
   int new_histogram_id_;
-  // Default search provider set by |Init| for the period until user makes a
-  // choice and either |Apply| or |Discard| is performed. Should only be used
-  // for comparison with the current default search provider and never
-  // dereferenced other than in |Init| because it may be deallocated by
-  // TemplateURLService at any time.
+  // Indicates that the default search was restored to the prepopulated default
+  // search engines.
+  bool is_fallback_;
+  // Indicates that the the prepopulated default search is the same as
+  // |new_search_provider_|.
+  bool fallback_is_new_;
+  // ID of |new_search_provider_|.
+  TemplateURLID new_id_;
+  // The default search at the moment the change was detected. Will be used to
+  // restore the new default search back if Apply is called. Will be set to
+  // |NULL| if removed from the TemplateURLService.
+  const TemplateURL* new_search_provider_;
+  // Default search provider set by Init for the period until user makes a
+  // choice and either Apply or Discard is performed. Never is |NULL| during
+  // that period since the change will dismiss itself if this provider gets
+  // deleted or stops being the default.
   const TemplateURL* default_search_provider_;
+  // Stores backup of the default search until it becomes owned by the
+  // TemplateURLService or deleted.
+  scoped_ptr<TemplateURL> backup_search_provider_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultSearchProviderChange);
 };
 
 DefaultSearchProviderChange::DefaultSearchProviderChange(
-    const TemplateURL* old_url,
-    const TemplateURL* new_url)
-    : old_id_(0),
-      new_id_(0),
-      fallback_id_(0),
-      new_histogram_id_(GetSearchProviderHistogramID(new_url)),
-      default_search_provider_(NULL) {
-  if (new_url) {
-    new_id_ = new_url->id();
-    new_name_ = new_url->short_name();
-  }
-  if (old_url) {
-    old_id_ = old_url->id();
-    old_name_ = old_url->short_name();
-  }
-  if (old_id_ == new_id_) {
-    // This means someone has tampered with the search providers list but not
-    // with the ID. Old ID is useless in this case so the prepopulated default
-    // search provider will be used.
-    old_id_ = 0;
-  }
-  // TODO(avayvod): Keep the URL and delete it later.
-  delete old_url;
+    const TemplateURL* new_search_provider,
+    TemplateURL* backup_search_provider)
+    : new_histogram_id_(GetSearchProviderHistogramID(new_search_provider)),
+      is_fallback_(false),
+      fallback_is_new_(false),
+      new_search_provider_(new_search_provider),
+      default_search_provider_(NULL),
+      backup_search_provider_(backup_search_provider) {
 }
 
 DefaultSearchProviderChange::~DefaultSearchProviderChange() {
@@ -176,7 +173,7 @@ bool DefaultSearchProviderChange::Init(Protector* protector) {
   if (!BaseSettingChange::Init(protector))
     return false;
 
-  if (old_id_) {
+  if (backup_search_provider_.get()) {
     UMA_HISTOGRAM_ENUMERATION(
         kProtectorHistogramSearchProviderHijacked,
         new_histogram_id_,
@@ -186,12 +183,21 @@ bool DefaultSearchProviderChange::Init(Protector* protector) {
         kProtectorHistogramSearchProviderCorrupt,
         new_histogram_id_,
         kProtectorMaxSearchProviderID);
+    // Fallback to a prepopulated default search provider, ignoring any
+    // overrides in Prefs.
+    backup_search_provider_.reset(
+        TemplateURLPrepopulateData::GetPrepopulatedDefaultSearch(NULL));
+    is_fallback_ = true;
+    VLOG(1) << "Fallback search provider: "
+            << backup_search_provider_->short_name();
   }
 
-  // Initially reset the search engine to its previous setting.
-  default_search_provider_ = SetDefaultSearchProvider(old_id_, true);
-  if (!default_search_provider_)
-    return false;
+  default_search_provider_ = SetDefaultSearchProvider(&backup_search_provider_);
+  DCHECK(default_search_provider_);
+  // |backup_search_provider_| should be |NULL| since now.
+  DCHECK(!backup_search_provider_.get());
+  if (is_fallback_ && default_search_provider_ == new_search_provider_)
+    fallback_is_new_ = true;
 
   int restored_histogram_id =
       GetSearchProviderHistogramID(default_search_provider_);
@@ -200,22 +206,25 @@ bool DefaultSearchProviderChange::Init(Protector* protector) {
       restored_histogram_id,
       kProtectorMaxSearchProviderID);
 
-  if (!old_id_ || default_search_provider_->id() != old_id_) {
-    // Old settings is lost or invalid, so we had to fall back to one of the
-    // prepopulated search engines.
-    fallback_id_ = default_search_provider_->id();
-    fallback_name_ = default_search_provider_->short_name();
-
-    VLOG(1) << "Fallback to search provider: " << fallback_name_;
+  if (is_fallback_) {
+    VLOG(1) << "Fallback to search provider: "
+            << default_search_provider_->short_name();
     UMA_HISTOGRAM_ENUMERATION(
         kProtectorHistogramSearchProviderFallback,
         restored_histogram_id,
         kProtectorMaxSearchProviderID);
   }
 
-  TemplateURLService* url_service = protector->GetTemplateURLService();
-  if (url_service)
-    url_service->AddObserver(this);
+  // Listen for the default search provider changes.
+  GetTemplateURLService()->AddObserver(this);
+
+  if (new_search_provider_) {
+    // Listen for removal of |new_search_provider_|.
+    new_id_ = new_search_provider_->id();
+    registrar_.Add(
+        this, chrome::NOTIFICATION_TEMPLATE_URL_REMOVED,
+        content::Source<Profile>(protector->profile()->GetOriginalProfile()));
+  }
 
   return true;
 }
@@ -227,11 +236,11 @@ void DefaultSearchProviderChange::Apply() {
       kProtectorMaxSearchProviderID);
 
   StopObservingTemplateURLService();
-  if (!new_id_) {
+  if (new_search_provider_) {
+    GetTemplateURLService()->SetDefaultSearchProvider(new_search_provider_);
+  } else {
     // Open settings page in case the new setting is invalid.
     OpenSearchEngineSettings();
-  } else {
-    SetDefaultSearchProvider(new_id_, false);
   }
 }
 
@@ -242,7 +251,7 @@ void DefaultSearchProviderChange::Discard() {
       kProtectorMaxSearchProviderID);
 
   StopObservingTemplateURLService();
-  if (!old_id_) {
+  if (is_fallback_) {
     // Open settings page in case the old setting is invalid.
     OpenSearchEngineSettings();
   }
@@ -278,32 +287,27 @@ string16 DefaultSearchProviderChange::GetBubbleTitle() const {
 }
 
 string16 DefaultSearchProviderChange::GetBubbleMessage() const {
-  if (fallback_name_.empty())
+  if (!is_fallback_) {
     return l10n_util::GetStringUTF16(IDS_SEARCH_ENGINE_CHANGE_MESSAGE);
-  else
+  } else {
     return l10n_util::GetStringFUTF16(
-        IDS_SEARCH_ENGINE_CHANGE_NO_BACKUP_MESSAGE, fallback_name_);
+        IDS_SEARCH_ENGINE_CHANGE_NO_BACKUP_MESSAGE,
+        default_search_provider_->short_name());
+  }
 }
 
 string16 DefaultSearchProviderChange::GetApplyButtonText() const {
-  if (new_id_) {
-    if (new_id_ == fallback_id_) {
-      // Old search engine is lost, the fallback search engine is the same as
-      // the new one so no need to show this button.
+  if (new_search_provider_) {
+    // If backup search engine is lost and fallback was made to the current
+    // search provider then there is no need to show this button.
+    if (fallback_is_new_)
       return string16();
-    }
-    if (!new_name_.empty() &&
-        new_name_ == fallback_name_) {
-      // The fallback and new search engines have the same name but different
-      // IDs, which most likely is some fraud attempt, so don't suggest to
-      // apply the new setting.
-      return string16();
-    }
-    if (new_name_.length() > kMaxDisplayedNameLength)
+    string16 name = new_search_provider_->short_name();
+    if (name.length() > kMaxDisplayedNameLength)
       return l10n_util::GetStringUTF16(IDS_CHANGE_SEARCH_ENGINE_NO_NAME);
     else
-      return l10n_util::GetStringFUTF16(IDS_CHANGE_SEARCH_ENGINE, new_name_);
-  } else if (old_id_) {
+      return l10n_util::GetStringFUTF16(IDS_CHANGE_SEARCH_ENGINE, name);
+  } else if (!is_fallback_) {
     // New setting is lost, offer to go to settings.
     return l10n_util::GetStringUTF16(IDS_SELECT_SEARCH_ENGINE);
   } else {
@@ -313,11 +317,12 @@ string16 DefaultSearchProviderChange::GetApplyButtonText() const {
 }
 
 string16 DefaultSearchProviderChange::GetDiscardButtonText() const {
-  if (old_id_) {
-    if (new_name_.length() > kMaxDisplayedNameLength)
+  if (!is_fallback_) {
+    string16 name = default_search_provider_->short_name();
+    if (name.length() > kMaxDisplayedNameLength)
       return l10n_util::GetStringUTF16(IDS_KEEP_SETTING);
     else
-      return l10n_util::GetStringFUTF16(IDS_KEEP_SEARCH_ENGINE, old_name_);
+      return l10n_util::GetStringFUTF16(IDS_KEEP_SEARCH_ENGINE, name);
   } else {
     // Old setting is lost, offer to go to settings.
     return l10n_util::GetStringUTF16(IDS_SELECT_SEARCH_ENGINE);
@@ -325,7 +330,7 @@ string16 DefaultSearchProviderChange::GetDiscardButtonText() const {
 }
 
 void DefaultSearchProviderChange::OnTemplateURLServiceChanged() {
-  TemplateURLService* url_service = protector()->GetTemplateURLService();
+  TemplateURLService* url_service = GetTemplateURLService();
   if (url_service->GetDefaultSearchProvider() != default_search_provider_) {
     VLOG(1) << "Default search provider has been changed by user";
     default_search_provider_ = NULL;
@@ -335,55 +340,50 @@ void DefaultSearchProviderChange::OnTemplateURLServiceChanged() {
   }
 }
 
+void DefaultSearchProviderChange::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_TEMPLATE_URL_REMOVED);
+  TemplateURLID id = *content::Details<TemplateURLID>(details).ptr();
+  if (id == new_id_)
+    new_search_provider_ = NULL;
+  registrar_.Remove(this, type, source);
+  // TODO(ivankr): should the change be dismissed as well? Probably not,
+  // since this may happend due to Sync or whatever. In that case, if user
+  // clicks on 'Change to...', the Search engine settings page will be opened.
+}
+
 const TemplateURL* DefaultSearchProviderChange::SetDefaultSearchProvider(
-    int64 id,
-    bool allow_fallback) {
-  TemplateURLService* url_service = protector()->GetTemplateURLService();
-  if (!url_service) {
-    NOTREACHED() << "Can't get TemplateURLService object.";
-    return NULL;
-  }
-
+    scoped_ptr<TemplateURL>* search_provider) {
+  TemplateURLService* url_service = GetTemplateURLService();
   TemplateURLService::TemplateURLVector urls = url_service->GetTemplateURLs();
-  const TemplateURL* url = NULL;
-  if (id) {
-    TemplateURLService::TemplateURLVector::const_iterator i =
-        find_if(urls.begin(), urls.end(), TemplateURLHasId(id));
-    if (i != urls.end())
-      url = *i;
-  }
-  if (!url && allow_fallback) {
-    // Fallback to the prepopulated default search provider.
-    scoped_ptr<TemplateURL> new_url(
-        TemplateURLPrepopulateData::GetPrepopulatedDefaultSearch(
-            NULL  // Ignore any overrides in prefs.
-        ));
-    DCHECK(new_url.get());
-    VLOG(1) << "Prepopulated search provider: " << new_url->short_name();
+  const TemplateURL* new_default_provider = NULL;
 
-    // Check if this provider already exists and add it otherwise.
-    TemplateURLService::TemplateURLVector::const_iterator i =
-        find_if(urls.begin(), urls.end(), TemplateURLIsSame(new_url.get()));
-    if (i != urls.end()) {
-      VLOG(1) << "Provider already exists";
-      url = *i;
-    } else {
-      VLOG(1) << "No match, adding new provider";
-      url = new_url.get();
-      url_service->Add(new_url.release());
-      UMA_HISTOGRAM_ENUMERATION(
-          kProtectorHistogramSearchProviderMissing,
-          GetSearchProviderHistogramID(url),
-          kProtectorMaxSearchProviderID);
-    }
-    // TODO(ivankr): handle keyword conflicts with existing providers.
+  // Check if this provider already exists and add it otherwise.
+  TemplateURLService::TemplateURLVector::const_iterator i =
+      find_if(urls.begin(), urls.end(),
+              TemplateURLIsSame(search_provider->get()));
+  if (i != urls.end()) {
+    VLOG(1) << "Provider already exists";
+    new_default_provider = *i;
+    search_provider->reset();
+  } else {
+    VLOG(1) << "No match, adding new provider";
+    new_default_provider = search_provider->get();
+    url_service->Add(search_provider->release());
+    UMA_HISTOGRAM_ENUMERATION(
+        kProtectorHistogramSearchProviderMissing,
+        GetSearchProviderHistogramID(new_default_provider),
+        kProtectorMaxSearchProviderID);
   }
 
-  if (url) {
-    VLOG(1) << "Default search provider set to: " << url->short_name();
-    url_service->SetDefaultSearchProvider(url);
-  }
-  return url;
+  // TODO(ivankr): handle keyword conflicts with existing providers.
+  DCHECK(new_default_provider);
+  VLOG(1) << "Default search provider set to: "
+          << new_default_provider->short_name();
+  url_service->SetDefaultSearchProvider(new_default_provider);
+  return new_default_provider;
 }
 
 void DefaultSearchProviderChange::OpenSearchEngineSettings() {
@@ -392,16 +392,21 @@ void DefaultSearchProviderChange::OpenSearchEngineSettings() {
            chrome::kSearchEnginesSubPage));
 }
 
+TemplateURLService* DefaultSearchProviderChange::GetTemplateURLService() {
+  TemplateURLService* url_service =
+      TemplateURLServiceFactory::GetForProfile(protector()->profile());
+  DCHECK(url_service);
+  return url_service;
+}
+
 void DefaultSearchProviderChange::StopObservingTemplateURLService() {
-  TemplateURLService* url_service = protector()->GetTemplateURLService();
-  if (url_service)
-    url_service->RemoveObserver(this);
+  GetTemplateURLService()->RemoveObserver(this);
 }
 
 BaseSettingChange* CreateDefaultSearchProviderChange(
     const TemplateURL* actual,
-    const TemplateURL* backup) {
-  return new DefaultSearchProviderChange(backup, actual);
+    TemplateURL* backup) {
+  return new DefaultSearchProviderChange(actual, backup);
 }
 
 }  // namespace protector

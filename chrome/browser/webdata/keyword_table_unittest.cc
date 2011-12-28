@@ -187,6 +187,8 @@ TEST_F(KeywordTableTest, KeywordMisc) {
 TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   WebDatabase db;
 
+  // TODO(ivankr): suppress keyword_table.cc ERROR logs.
+
   ASSERT_EQ(sql::INIT_OK, db.Init(file_));
 
   EXPECT_EQ(0, db.GetKeywordTable()->GetDefaultSearchProviderID());
@@ -210,7 +212,8 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
 
   scoped_ptr<TemplateURL> backup_url(
       db.GetKeywordTable()->GetDefaultSearchProviderBackup());
-  EXPECT_EQ(1, backup_url->id());
+  // Backup URL should have a zero ID.
+  EXPECT_EQ(0, backup_url->id());
   EXPECT_EQ(ASCIIToUTF16("short_name"), backup_url->short_name());
   EXPECT_EQ(ASCIIToUTF16("keyword"), backup_url->keyword());
   EXPECT_TRUE(favicon_url == backup_url->GetFaviconURL());
@@ -227,7 +230,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   EXPECT_EQ(2, db.GetKeywordTable()->GetDefaultSearchProviderID());
 
   backup_url.reset(db.GetKeywordTable()->GetDefaultSearchProviderBackup());
-  EXPECT_EQ(1, backup_url->id());
+  EXPECT_EQ(0, backup_url->id());
   EXPECT_EQ(ASCIIToUTF16("short_name"), backup_url->short_name());
   EXPECT_EQ(ASCIIToUTF16("keyword"), backup_url->keyword());
   EXPECT_TRUE(favicon_url == backup_url->GetFaviconURL());
@@ -266,7 +269,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   EXPECT_EQ(1, db.GetKeywordTable()->GetDefaultSearchProviderID());
 
   backup_url.reset(db.GetKeywordTable()->GetDefaultSearchProviderBackup());
-  EXPECT_EQ(1, backup_url->id());
+  EXPECT_EQ(0, backup_url->id());
   EXPECT_EQ(ASCIIToUTF16("short_name"), backup_url->short_name());
   EXPECT_EQ(ASCIIToUTF16("keyword"), backup_url->keyword());
   EXPECT_TRUE(favicon_url == backup_url->GetFaviconURL());

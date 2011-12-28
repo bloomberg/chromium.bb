@@ -6,11 +6,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/protector/settings_change_global_error.h"
 #include "chrome/browser/protector/keys.h"
-#include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,10 +33,6 @@ void Protector::OpenTab(const GURL& url) {
     return;
   }
   error_->browser()->ShowSingletonTab(url);
-}
-
-TemplateURLService* Protector::GetTemplateURLService() {
-  return TemplateURLServiceFactory::GetForProfile(profile_);
 }
 
 void Protector::ShowChange(BaseSettingChange* change) {

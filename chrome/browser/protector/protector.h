@@ -31,15 +31,15 @@ class Protector : public SettingsChangeGlobalErrorDelegate {
   // bubble for.
   void OpenTab(const GURL& url);
 
-  // Returns TemplateURLService for the profile we've shown error bubble for.
-  TemplateURLService* GetTemplateURLService();
-
   // Shows global error about the specified change. Owns |change|.
   void ShowChange(BaseSettingChange* change);
 
   // Silently discards any change previously shown (without calling Discard),
   // removes global error and deletes itself.
   void DismissChange();
+
+  // Returns the Profile instance we've shown error bubble for.
+  Profile* profile() { return profile_; }
 
   // SettingsChangeGlobalErrorDelegate implementation.
   virtual void OnApplyChange() OVERRIDE;
