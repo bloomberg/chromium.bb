@@ -39,7 +39,7 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
                  notification_source);
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED, notification_source);
 
-  NavigationEntry* active_entry = originating_controller ?
+  content::NavigationEntry* active_entry = originating_controller ?
       originating_controller->GetActiveEntry() : controller->GetActiveEntry();
   if (active_entry)
     initial_page_host_ = active_entry->GetURL().host();

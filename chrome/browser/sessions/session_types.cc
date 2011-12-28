@@ -79,7 +79,8 @@ NavigationEntry* TabNavigation::ToNavigationEntry(int page_id,
   return entry;
 }
 
-void TabNavigation::SetFromNavigationEntry(const NavigationEntry& entry) {
+void TabNavigation::SetFromNavigationEntry(
+    const content::NavigationEntry& entry) {
   virtual_url_ = entry.GetVirtualURL();
   referrer_ = entry.GetReferrer();
   title_ = entry.GetTitle();
@@ -92,7 +93,7 @@ void TabNavigation::SetFromNavigationEntry(const NavigationEntry& entry) {
 void TabNavigation::CreateNavigationEntriesFromTabNavigations(
     Profile* profile,
     const std::vector<TabNavigation>& navigations,
-    std::vector<NavigationEntry*>* entries) {
+    std::vector<content::NavigationEntry*>* entries) {
   int page_id = 0;
   for (std::vector<TabNavigation>::const_iterator i =
            navigations.begin(); i != navigations.end(); ++i, ++page_id) {

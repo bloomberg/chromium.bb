@@ -14,7 +14,6 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
-#include "content/public/common/page_type.h"
 
 class SiteInstance;
 
@@ -22,7 +21,7 @@ class CONTENT_EXPORT NavigationEntry
     : public NON_EXPORTED_BASE(content::NavigationEntry) {
  public:
 
-  NavigationEntry* FromNavigationEntry(content::NavigationEntry* entry);
+  static NavigationEntry* FromNavigationEntry(content::NavigationEntry* entry);
 
   NavigationEntry();
   NavigationEntry(SiteInstance* instance,
@@ -36,6 +35,8 @@ class CONTENT_EXPORT NavigationEntry
 
   // content::NavigationEntry implementation:
   virtual int GetUniqueID() const OVERRIDE;
+  virtual content::PageType GetPageType() const OVERRIDE;
+  virtual void SetURL(const GURL& url) OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
   virtual const content::Referrer& GetReferrer() const OVERRIDE;
   virtual void SetVirtualURL(const GURL& url) OVERRIDE;
@@ -50,6 +51,7 @@ class CONTENT_EXPORT NavigationEntry
       const std::string& languages) const OVERRIDE;
   virtual bool IsViewSourceMode() const OVERRIDE;
   virtual content::PageTransition GetTransitionType() const OVERRIDE;
+  virtual const GURL& GetUserTypedURL() const OVERRIDE;
   virtual void SetHasPostData(bool has_post_data) OVERRIDE;
   virtual bool GetHasPostData() const OVERRIDE;
   virtual const content::FaviconStatus& GetFavicon() const OVERRIDE;
@@ -77,18 +79,8 @@ class CONTENT_EXPORT NavigationEntry
     return site_instance_;
   }
 
-  // The page type tells us if this entry is for an interstitial or error page.
-  // See the PageType enum above.
   void set_page_type(content::PageType page_type) {
     page_type_ = page_type;
-  }
-  content::PageType page_type() const {
-    return page_type_;
-  }
-
-  void set_url(const GURL& url) {
-    url_ = url;
-    cached_display_title_.clear();
   }
 
   void set_referrer(const content::Referrer& referrer) {
@@ -123,20 +115,8 @@ class CONTENT_EXPORT NavigationEntry
     return is_renderer_initiated_;
   }
 
-  // The user typed URL was the URL that the user initiated the navigation
-  // with, regardless of any redirects. This is used to generate keywords, for
-  // example, based on "what the user thinks the site is called" rather than
-  // what it's actually called. For example, if the user types "foo.com", that
-  // may redirect somewhere arbitrary like "bar.com/foo", and we want to use
-  // the name that the user things of the site as having.
-  //
-  // This URL will be is_empty() if the URL was navigated to some other way.
-  // Callers should fall back on using the regular or display URL in this case.
   void set_user_typed_url(const GURL& user_typed_url) {
     user_typed_url_ = user_typed_url;
-  }
-  const GURL& user_typed_url() const {
-    return user_typed_url_;
   }
 
   // Enumerations of the possible restore types.

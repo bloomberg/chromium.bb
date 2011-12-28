@@ -29,9 +29,9 @@ class TabContentsWrapperSyncedTabDelegate
   virtual int GetCurrentEntryIndex() const OVERRIDE;
   virtual int GetEntryCount() const OVERRIDE;
   virtual int GetPendingEntryIndex() const OVERRIDE;
-  virtual NavigationEntry* GetPendingEntry() const OVERRIDE;
-  virtual NavigationEntry* GetEntryAtIndex(int i) const OVERRIDE;
-  virtual NavigationEntry* GetActiveEntry() const OVERRIDE;
+  virtual content::NavigationEntry* GetPendingEntry() const OVERRIDE;
+  virtual content::NavigationEntry* GetEntryAtIndex(int i) const OVERRIDE;
+  virtual content::NavigationEntry* GetActiveEntry() const OVERRIDE;
 
  private:
   TabContentsWrapper* tab_contents_wrapper_;

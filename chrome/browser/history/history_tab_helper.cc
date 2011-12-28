@@ -8,10 +8,10 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/title_updated_details.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -35,7 +35,8 @@ void HistoryTabHelper::UpdateHistoryForNavigation(
     GetHistoryService()->AddPage(*add_page_args);
 }
 
-void HistoryTabHelper::UpdateHistoryPageTitle(const NavigationEntry& entry) {
+void HistoryTabHelper::UpdateHistoryPageTitle(
+    const content::NavigationEntry& entry) {
   HistoryService* hs = GetHistoryService();
   if (hs)
     hs->SetPageTitle(entry.GetVirtualURL(), entry.GetTitleForDisplay(""));

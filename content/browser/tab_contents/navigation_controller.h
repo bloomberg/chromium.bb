@@ -29,6 +29,7 @@ struct ViewHostMsg_FrameNavigate_Params;
 
 namespace content {
 class BrowserContext;
+class NavigationEntry;
 struct LoadCommittedDetails;
 struct Referrer;
 }
@@ -73,7 +74,7 @@ class CONTENT_EXPORT NavigationController {
   // This is used for session restore.
   void Restore(int selected_navigation,
                bool from_last_session,
-               std::vector<NavigationEntry*>* entries);
+               std::vector<content::NavigationEntry*>* entries);
 
   // Active entry --------------------------------------------------------------
 
@@ -85,14 +86,14 @@ class CONTENT_EXPORT NavigationController {
   // this is the method you will typically want to call.  If you want to display
   // the active entry to the user (e.g., in the location bar), use
   // GetVisibleEntry instead.
-  NavigationEntry* GetActiveEntry() const;
+  content::NavigationEntry* GetActiveEntry() const;
 
   // Returns the same entry as GetActiveEntry, except that it ignores pending
   // history navigation entries.  This should be used when displaying info to
   // the user, so that the location bar and other indicators do not update for
   // a back/forward navigation until the pending entry commits.  This approach
   // guards against URL spoofs on slow history navigations.
-  NavigationEntry* GetVisibleEntry() const;
+  content::NavigationEntry* GetVisibleEntry() const;
 
   // Returns the index from which we would go back/forward or reload.  This is
   // the last_committed_entry_index_ if pending_entry_index_ is -1.  Otherwise,
@@ -101,7 +102,7 @@ class CONTENT_EXPORT NavigationController {
 
   // Returns the last committed entry, which may be null if there are no
   // committed entries.
-  NavigationEntry* GetLastCommittedEntry() const;
+  content::NavigationEntry* GetLastCommittedEntry() const;
 
   // Returns true if the source for the current entry can be viewed.
   bool CanViewSource() const;

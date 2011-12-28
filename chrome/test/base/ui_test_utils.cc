@@ -45,10 +45,10 @@
 #include "chrome/test/base/bookmark_load_observer.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -306,7 +306,8 @@ bool GetCurrentTabTitle(const Browser* browser, string16* title) {
   TabContents* tab_contents = browser->GetSelectedTabContents();
   if (!tab_contents)
     return false;
-  NavigationEntry* last_entry = tab_contents->GetController().GetActiveEntry();
+  content::NavigationEntry* last_entry =
+      tab_contents->GetController().GetActiveEntry();
   if (!last_entry)
     return false;
   title->assign(last_entry->GetTitleForDisplay(""));

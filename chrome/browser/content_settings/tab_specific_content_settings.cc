@@ -25,8 +25,8 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -468,7 +468,7 @@ void TabSpecificContentSettings::Observe(
 
   content::Details<const ContentSettingsDetails> settings_details(details);
   const NavigationController& controller = web_contents()->GetController();
-  NavigationEntry* entry = controller.GetActiveEntry();
+  content::NavigationEntry* entry = controller.GetActiveEntry();
   GURL entry_url;
   if (entry)
     entry_url = entry->GetURL();

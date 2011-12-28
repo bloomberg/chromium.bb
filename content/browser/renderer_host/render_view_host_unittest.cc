@@ -4,9 +4,9 @@
 
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/common/page_transition_types.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "webkit/glue/webdropdata.h"

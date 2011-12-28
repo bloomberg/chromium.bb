@@ -46,9 +46,9 @@
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "skia/ext/image_operations.h"
@@ -1377,7 +1377,8 @@ bool ReloadTabFunction::RunImpl() {
   TabContents* tab_contents = contents->tab_contents();
   if (tab_contents->ShowingInterstitialPage()) {
     // This does as same as Browser::ReloadInternal.
-    NavigationEntry* entry = tab_contents->GetController().GetActiveEntry();
+    content::NavigationEntry* entry =
+        tab_contents->GetController().GetActiveEntry();
     OpenURLParams params(entry->GetURL(), Referrer(), CURRENT_TAB,
                          content::PAGE_TRANSITION_RELOAD, false);
     GetCurrentBrowser()->OpenURL(params);

@@ -36,12 +36,13 @@
 #include "content/browser/load_notification_details.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_manager.h"
+#include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/bindings_policy.h"
 #include "grit/generated_resources.h"
@@ -189,7 +190,7 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
       this);
   g_instances.Get().push_back(this);
   // Wipe out page icon so that the default application icon is used.
-  NavigationEntry* entry =
+  content::NavigationEntry* entry =
       tab_contents_->tab_contents()->GetController().GetActiveEntry();
   entry->GetFavicon().bitmap = SkBitmap();
   entry->GetFavicon().valid = true;

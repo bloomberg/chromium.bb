@@ -65,10 +65,10 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/speech/speech_input_preferences.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/user_metrics.h"
@@ -1196,7 +1196,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       // the page) from the NavigationEntry because its reflects their origin
       // rather than the display one (returned by GetURL) which may be
       // different (like having "view-source:" on the front).
-      NavigationEntry* active_entry =
+      content::NavigationEntry* active_entry =
           source_tab_contents_->GetController().GetActiveEntry();
       return SavePackage::IsSavableURL(
           (active_entry) ? active_entry->GetURL() : GURL());
@@ -1567,7 +1567,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO: {
-      NavigationEntry* nav_entry =
+      content::NavigationEntry* nav_entry =
           source_tab_contents_->GetController().GetActiveEntry();
       source_tab_contents_->ShowPageInfo(nav_entry->GetURL(),
                                          nav_entry->GetSSL(), true);

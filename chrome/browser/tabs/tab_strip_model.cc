@@ -26,9 +26,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -216,13 +216,14 @@ TabContentsWrapper* TabStripModel::DiscardTabContentsAt(int index) {
                           NULL /* base_tab_contents */,
                           NULL /* session_storage_namespace */));
   TabContentsWrapper* old_contents = GetContentsAt(index);
-  NavigationEntry* old_nav_entry =
+  content::NavigationEntry* old_nav_entry =
       old_contents->tab_contents()->GetController().GetActiveEntry();
   if (old_nav_entry) {
     // Set the new tab contents to reload this URL when clicked.
     // This also allows the tab to keep drawing the favicon and page title.
-    NavigationEntry* new_nav_entry = new NavigationEntry(*old_nav_entry);
-    std::vector<NavigationEntry*> entries;
+    content::NavigationEntry* new_nav_entry =
+        content::NavigationEntry::Create(*old_nav_entry);
+    std::vector<content::NavigationEntry*> entries;
     entries.push_back(new_nav_entry);
     null_contents->tab_contents()->GetController().Restore(0, false, &entries);
   }

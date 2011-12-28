@@ -358,10 +358,11 @@ void SessionService::TabNavigationPathPrunedFromFront(
   ScheduleCommand(command);
 }
 
-void SessionService::UpdateTabNavigation(const SessionID& window_id,
-                                         const SessionID& tab_id,
-                                         int index,
-                                         const NavigationEntry& entry) {
+void SessionService::UpdateTabNavigation(
+    const SessionID& window_id,
+    const SessionID& tab_id,
+    int index,
+    const content::NavigationEntry& entry) {
   if (!ShouldTrackEntry(entry.GetVirtualURL()) ||
       !ShouldTrackChangesToWindow(window_id)) {
     return;

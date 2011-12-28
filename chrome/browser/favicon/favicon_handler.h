@@ -26,6 +26,10 @@ class RefCountedMemory;
 class SkBitmap;
 class TabContents;
 
+namespace content {
+class NavigationEntry;
+}
+
 namespace gfx {
 class Image;
 }
@@ -116,7 +120,7 @@ class FaviconHandler {
 
   // Return the NavigationEntry for the active entry, or NULL if the active
   // entries URL does not match that of the URL last passed to FetchFavicon.
-  virtual NavigationEntry* GetEntry();
+  virtual content::NavigationEntry* GetEntry();
 
   // Asks the render to download favicon, returns the request id.
   virtual int DownloadFavicon(const GURL& image_url, int image_size);
@@ -203,9 +207,9 @@ class FaviconHandler {
   // NavigationEntry.
   // If the TabContents has a delegate, it is notified of the new favicon
   // (INVALIDATE_FAVICON).
-  void UpdateFavicon(NavigationEntry* entry,
+  void UpdateFavicon(content::NavigationEntry* entry,
                      scoped_refptr<RefCountedMemory> data);
-  void UpdateFavicon(NavigationEntry* entry, const gfx::Image* image);
+  void UpdateFavicon(content::NavigationEntry* entry, const gfx::Image* image);
 
   // If the image is not already at its preferred size, scales the image such
   // that either the width and/or height is 16 pixels wide. Does nothing if the

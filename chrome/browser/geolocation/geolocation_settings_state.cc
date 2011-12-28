@@ -12,8 +12,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "net/base/net_util.h"
 
 GeolocationSettingsState::GeolocationSettingsState(Profile* profile)

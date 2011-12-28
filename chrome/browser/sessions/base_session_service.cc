@@ -13,8 +13,8 @@
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/common/referrer.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -138,7 +138,7 @@ SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
     SessionID::id_type command_id,
     SessionID::id_type tab_id,
     int index,
-    const NavigationEntry& entry) {
+    const content::NavigationEntry& entry) {
   // Use pickle to handle marshalling.
   Pickle pickle;
   pickle.WriteInt(tab_id);

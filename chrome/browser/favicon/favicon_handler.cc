@@ -14,7 +14,8 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/icon_messages.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_entry.h"
 #include "skia/ext/image_operations.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
@@ -139,20 +140,20 @@ void FaviconHandler::SetFavicon(
   }
 
   if (url == url_ && icon_type == history::FAVICON) {
-    NavigationEntry* entry = GetEntry();
+    content::NavigationEntry* entry = GetEntry();
     if (entry)
       UpdateFavicon(entry, &sized_image);
   }
 }
 
-void FaviconHandler::UpdateFavicon(NavigationEntry* entry,
-                                  scoped_refptr<RefCountedMemory> data) {
+void FaviconHandler::UpdateFavicon(content::NavigationEntry* entry,
+                                   scoped_refptr<RefCountedMemory> data) {
   scoped_ptr<gfx::Image> image(gfx::ImageFromPNGEncodedData(data->front(),
                                                             data->size()));
   UpdateFavicon(entry, image.get());
 }
 
-void FaviconHandler::UpdateFavicon(NavigationEntry* entry,
+void FaviconHandler::UpdateFavicon(content::NavigationEntry* entry,
                                    const gfx::Image* image) {
   // No matter what happens, we need to mark the favicon as being set.
   entry->GetFavicon().valid = true;
@@ -167,7 +168,7 @@ void FaviconHandler::UpdateFavicon(NavigationEntry* entry,
 void FaviconHandler::OnUpdateFaviconURL(
     int32 page_id,
     const std::vector<FaviconURL>& candidates) {
-  NavigationEntry* entry = GetEntry();
+  content::NavigationEntry* entry = GetEntry();
   if (!entry)
     return;
 
@@ -244,8 +245,8 @@ void FaviconHandler::OnDidDownloadFavicon(int id,
   download_requests_.erase(i);
 }
 
-NavigationEntry* FaviconHandler::GetEntry() {
-  NavigationEntry* entry = delegate_->GetActiveEntry();
+content::NavigationEntry* FaviconHandler::GetEntry() {
+  content::NavigationEntry* entry = delegate_->GetActiveEntry();
   if (entry && entry->GetURL() == url_)
     return entry;
 
@@ -312,7 +313,7 @@ bool FaviconHandler::ShouldSaveFavicon(const GURL& url) {
 void FaviconHandler::OnFaviconDataForInitialURL(
     FaviconService::Handle handle,
     history::FaviconData favicon) {
-  NavigationEntry* entry = GetEntry();
+  content::NavigationEntry* entry = GetEntry();
   if (!entry)
     return;
 
@@ -389,7 +390,7 @@ void FaviconHandler::DownloadFaviconOrAskHistory(
 
 void FaviconHandler::OnFaviconData(FaviconService::Handle handle,
                                   history::FaviconData favicon) {
-  NavigationEntry* entry = GetEntry();
+  content::NavigationEntry* entry = GetEntry();
   if (!entry)
     return;
 

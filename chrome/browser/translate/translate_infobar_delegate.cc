@@ -15,9 +15,9 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -399,7 +399,7 @@ TranslateInfoBarDelegate*
 }
 
 std::string TranslateInfoBarDelegate::GetPageHost() {
-  NavigationEntry* entry =
+  content::NavigationEntry* entry =
       owner()->web_contents()->GetController().GetActiveEntry();
   return entry ? entry->GetURL().HostNoBrackets() : std::string();
 }

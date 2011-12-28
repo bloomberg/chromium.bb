@@ -14,9 +14,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -211,7 +211,7 @@ void TabFinder::FetchRedirectStart(WebContents* tab) {
   if (profile->IsOffTheRecord())
     return;
 
-  NavigationEntry* committed_entry =
+  content::NavigationEntry* committed_entry =
       tab->GetController().GetLastCommittedEntry();
   if (!committed_entry || committed_entry->GetURL().is_empty())
     return;

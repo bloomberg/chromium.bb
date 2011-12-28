@@ -329,7 +329,7 @@ bool RenderViewHostManager::ShouldTransitionCrossSite() {
 }
 
 bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
-    const NavigationEntry* cur_entry,
+    const content::NavigationEntry* cur_entry,
     const NavigationEntry* new_entry) const {
   DCHECK(new_entry);
 
@@ -445,7 +445,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   // For now, though, we're in a hybrid model where you only switch
   // SiteInstances if you type in a cross-site URL.  This means we have to
   // compare the entry's URL to the last committed entry's URL.
-  NavigationEntry* curr_entry = controller.GetLastCommittedEntry();
+  content::NavigationEntry* curr_entry = controller.GetLastCommittedEntry();
   if (interstitial_page_) {
     // The interstitial is currently the last committed entry, but we want to
     // compare against the last non-interstitial entry.
@@ -490,7 +490,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
 
 bool RenderViewHostManager::CreatePendingRenderView(
     const NavigationEntry& entry, SiteInstance* instance) {
-  NavigationEntry* curr_entry =
+  content::NavigationEntry* curr_entry =
       delegate_->GetControllerForRenderManager().GetLastCommittedEntry();
   if (curr_entry) {
     DCHECK(!curr_entry->GetContentState().empty());

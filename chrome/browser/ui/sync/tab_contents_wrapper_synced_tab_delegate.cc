@@ -10,7 +10,7 @@
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
-
+#include "content/browser/tab_contents/navigation_entry.h"
 
 TabContentsWrapperSyncedTabDelegate::TabContentsWrapperSyncedTabDelegate(
     TabContentsWrapper* tab_contents_wrapper)
@@ -59,16 +59,19 @@ int TabContentsWrapperSyncedTabDelegate::GetPendingEntryIndex() const {
       pending_entry_index();
 }
 
-NavigationEntry* TabContentsWrapperSyncedTabDelegate::GetPendingEntry() const {
+content::NavigationEntry*
+    TabContentsWrapperSyncedTabDelegate::GetPendingEntry() const {
   return tab_contents_wrapper_->tab_contents()->GetController().pending_entry();
 }
 
-NavigationEntry* TabContentsWrapperSyncedTabDelegate::GetEntryAtIndex(int i)
+content::NavigationEntry*
+    TabContentsWrapperSyncedTabDelegate::GetEntryAtIndex(int i)
     const {
   return
       tab_contents_wrapper_->tab_contents()->GetController().GetEntryAtIndex(i);
 }
 
-NavigationEntry* TabContentsWrapperSyncedTabDelegate::GetActiveEntry() const {
+content::NavigationEntry*
+    TabContentsWrapperSyncedTabDelegate::GetActiveEntry() const {
   return tab_contents_wrapper_->tab_contents()->GetController().GetActiveEntry();
 }

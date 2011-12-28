@@ -54,7 +54,7 @@ static void EncodePinnedTab(TabStripModel* model,
     value->SetString(kURL, extension->GetFullLaunchURL().spec());
     values->Append(value.release());
   } else {
-    NavigationEntry* entry =
+content::NavigationEntry* entry =
         tab_contents->tab_contents()->GetController().GetActiveEntry();
     if (!entry && tab_contents->tab_contents()->GetController().entry_count())
       entry = tab_contents->tab_contents()->GetController().GetEntryAtIndex(0);

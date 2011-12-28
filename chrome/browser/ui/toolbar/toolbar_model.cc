@@ -16,9 +16,9 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/cert_store.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/content_constants.h"
 #include "grit/generated_resources.h"
@@ -47,7 +47,7 @@ string16 ToolbarModel::GetText() const {
     Profile* profile =
         Profile::FromBrowserContext(navigation_controller->browser_context());
     languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-    NavigationEntry* entry = navigation_controller->GetVisibleEntry();
+    content::NavigationEntry* entry = navigation_controller->GetVisibleEntry();
     if (!ShouldDisplayURL()) {
       url = GURL();
     } else if (entry) {
@@ -73,10 +73,11 @@ bool ToolbarModel::ShouldDisplayURL() const {
   //   of view-source:chrome://newtab, which should display its URL despite what
   //   chrome://newtab's WebUI says.
   NavigationController* controller = GetNavigationController();
-  NavigationEntry* entry = controller ? controller->GetVisibleEntry() : NULL;
+  content::NavigationEntry* entry =
+      controller ? controller->GetVisibleEntry() : NULL;
   if (entry) {
     if (entry->IsViewSourceMode() ||
-        entry->page_type() == content::PAGE_TYPE_INTERSTITIAL) {
+        entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
       return true;
     }
   }
@@ -99,7 +100,7 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
   if (!navigation_controller)  // We might not have a controller on init.
     return NONE;
 
-  NavigationEntry* entry = navigation_controller->GetVisibleEntry();
+  content::NavigationEntry* entry = navigation_controller->GetVisibleEntry();
   if (!entry)
     return NONE;
 

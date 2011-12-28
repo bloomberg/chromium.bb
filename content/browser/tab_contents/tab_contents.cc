@@ -372,7 +372,7 @@ content::ViewType TabContents::GetViewType() const {
 
 const GURL& TabContents::GetURL() const {
   // We may not have a navigation entry yet
-  NavigationEntry* entry = controller_.GetActiveEntry();
+  content::NavigationEntry* entry = controller_.GetActiveEntry();
   return entry ? entry->GetVirtualURL() : GURL::EmptyGURL();
 }
 
@@ -431,7 +431,7 @@ WebUI* TabContents::GetCommittedWebUI() const {
 const string16& TabContents::GetTitle() const {
   // Transient entries take precedence. They are used for interstitial pages
   // that are shown on top of existing pages.
-  NavigationEntry* entry = controller_.GetTransientEntry();
+  content::NavigationEntry* entry = controller_.GetTransientEntry();
   std::string accept_languages =
       content::GetContentClient()->browser()->GetAcceptLangs(
           GetBrowserContext());
@@ -915,7 +915,8 @@ bool TabContents::SavePage(const FilePath& main_file, const FilePath& dir_path,
 }
 
 bool TabContents::IsActiveEntry(int32 page_id) {
-  NavigationEntry* active_entry = controller_.GetActiveEntry();
+  NavigationEntry* active_entry =
+      NavigationEntry::FromNavigationEntry(controller_.GetActiveEntry());
   return (active_entry != NULL &&
           active_entry->site_instance() == GetSiteInstance() &&
           active_entry->GetPageID() == page_id);
@@ -996,7 +997,7 @@ double TabContents::GetZoomLevel() const {
         GetRenderProcessHost()->GetID(), GetRenderViewHost()->routing_id());
   } else {
     GURL url;
-    NavigationEntry* active_entry = GetController().GetActiveEntry();
+    content::NavigationEntry* active_entry = GetController().GetActiveEntry();
     // Since zoom map is updated using rewritten URL, use rewritten URL
     // to get the zoom level.
     url = active_entry ? active_entry->GetURL() : GURL::EmptyGURL();
@@ -1021,7 +1022,7 @@ void TabContents::ViewSource() {
   if (!delegate_)
     return;
 
-  NavigationEntry* active_entry = GetController().GetActiveEntry();
+  content::NavigationEntry* active_entry = GetController().GetActiveEntry();
   if (!active_entry)
     return;
 
@@ -1102,7 +1103,7 @@ bool TabContents::FocusLocationBarByDefault() {
   WebUI* web_ui = GetWebUIForCurrentState();
   if (web_ui)
     return web_ui->focus_location_bar_by_default();
-  NavigationEntry* entry = controller_.GetActiveEntry();
+  content::NavigationEntry* entry = controller_.GetActiveEntry();
   if (entry && entry->GetURL() == GURL(chrome::kAboutBlankURL))
     return true;
   return false;
@@ -1610,7 +1611,7 @@ void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
       content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
       content::Source<TabContents>(this),
       content::Details<RenderViewHost>(render_view_host));
-  NavigationEntry* entry = controller_.GetActiveEntry();
+  content::NavigationEntry* entry = controller_.GetActiveEntry();
   if (!entry)
     return;
 
@@ -1850,7 +1851,7 @@ void TabContents::DidStartLoading() {
 void TabContents::DidStopLoading() {
   scoped_ptr<LoadNotificationDetails> details;
 
-  NavigationEntry* entry = controller_.GetActiveEntry();
+  content::NavigationEntry* entry = controller_.GetActiveEntry();
   // An entry may not exist for a stop when loading an initial blank page or
   // if an iframe injected by script into a blank page finishes loading.
   if (entry) {
@@ -2160,7 +2161,7 @@ WebUI* TabContents::CreateWebUIForRenderManager(const GURL& url) {
   return content::WebUIFactory::Get()->CreateWebUIForURL(this, url);
 }
 
-NavigationEntry*
+content::NavigationEntry*
 TabContents::GetLastCommittedNavigationEntryForRenderManager() {
   return controller_.GetLastCommittedEntry();
 }

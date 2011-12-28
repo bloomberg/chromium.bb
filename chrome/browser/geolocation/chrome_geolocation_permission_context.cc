@@ -24,10 +24,10 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/geolocation/geolocation_provider.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -178,7 +178,7 @@ GeolocationConfirmInfoBarDelegate::GeolocationConfirmInfoBarDelegate(
       bridge_id_(bridge_id),
       requesting_frame_url_(requesting_frame_url),
       display_languages_(display_languages) {
-  const NavigationEntry* committed_entry =
+  const content::NavigationEntry* committed_entry =
       infobar_helper->web_contents()->GetController().GetLastCommittedEntry();
   committed_contents_unique_id_ = committed_entry ?
       committed_entry->GetUniqueID() : 0;

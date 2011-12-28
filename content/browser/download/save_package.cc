@@ -28,7 +28,6 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/resource_context.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -36,6 +35,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_manager_delegate.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
@@ -224,7 +224,7 @@ GURL SavePackage::GetUrlToBeSaved() {
   // from the NavigationEntry because it reflects its' origin
   // rather than the displayed one (returned by GetURL) which may be
   // different (like having "view-source:" on the front).
-  NavigationEntry* active_entry =
+  content::NavigationEntry* active_entry =
       web_contents()->GetController().GetActiveEntry();
   return active_entry->GetURL();
 }

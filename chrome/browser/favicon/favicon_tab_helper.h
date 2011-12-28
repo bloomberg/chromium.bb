@@ -74,7 +74,7 @@ class FaviconTabHelper : public content::WebContentsObserver,
                           const std::vector<FaviconURL>& candidates);
 
   // FaviconHandlerDelegate methods.
-  virtual NavigationEntry* GetActiveEntry() OVERRIDE;
+  virtual content::NavigationEntry* GetActiveEntry() OVERRIDE;
   virtual void StartDownload(int id, const GURL& url, int image_size) OVERRIDE;
   virtual void NotifyFaviconUpdated() OVERRIDE;
 

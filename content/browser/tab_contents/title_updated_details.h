@@ -8,21 +8,23 @@
 
 #include "base/basictypes.h"
 
+namespace content {
 class NavigationEntry;
+}
 
 class TitleUpdatedDetails {
  public:
-  TitleUpdatedDetails(const NavigationEntry* entry, bool explicit_set)
+   TitleUpdatedDetails(const content::NavigationEntry* entry, bool explicit_set)
       : entry_(entry),
         explicit_set_(explicit_set) {}
   ~TitleUpdatedDetails() {}
 
   // |entry()| may return null.
-  const NavigationEntry* entry() const { return entry_; }
+  const content::NavigationEntry* entry() const { return entry_; }
   bool explicit_set() const { return explicit_set_; }
 
  private:
-  const NavigationEntry* entry_;  // |entry_| may be null.
+  const content::NavigationEntry* entry_;  // |entry_| may be null.
   bool explicit_set_;  // If a synthesized title.
 
   TitleUpdatedDetails() {}

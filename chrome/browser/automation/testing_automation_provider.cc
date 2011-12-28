@@ -117,11 +117,13 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/common_param_traits.h"
 #include "net/base/cookie_store.h"
@@ -1282,7 +1284,7 @@ void TestingAutomationProvider::GetTabTitle(int handle,
   *title_string_size = -1;  // -1 is the error code
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    NavigationEntry* entry = tab->GetActiveEntry();
+    content::NavigationEntry* entry = tab->GetActiveEntry();
     if (entry != NULL) {
       *title = UTF16ToWideHack(entry->GetTitleForDisplay(""));
     } else {
@@ -1571,7 +1573,7 @@ void TestingAutomationProvider::GetSecurityState(
     int* insecure_content_status) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    NavigationEntry* entry = tab->GetActiveEntry();
+    content::NavigationEntry* entry = tab->GetActiveEntry();
     *success = true;
     *security_style = entry->GetSSL().security_style;
     *ssl_cert_status = entry->GetSSL().cert_status;
@@ -1590,8 +1592,8 @@ void TestingAutomationProvider::GetPageType(
     content::PageType* page_type) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    NavigationEntry* entry = tab->GetActiveEntry();
-    *page_type = entry->page_type();
+    content::NavigationEntry* entry = tab->GetActiveEntry();
+    *page_type = entry->GetPageType();
     *success = true;
     // In order to return the proper result when an interstitial is shown and
     // no navigation entry were created for it we need to ask the TabContents.
@@ -1617,8 +1619,8 @@ void TestingAutomationProvider::ActionOnSSLBlockingPage(
     IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    NavigationEntry* entry = tab->GetActiveEntry();
-    if (entry->page_type() == content::PAGE_TYPE_INTERSTITIAL) {
+    content::NavigationEntry* entry = tab->GetActiveEntry();
+    if (entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
       TabContents* tab_contents = tab->tab_contents();
       InterstitialPage* ssl_blocking_page =
           InterstitialPage::GetInterstitialPage(tab_contents);
@@ -2970,7 +2972,7 @@ void TestingAutomationProvider::GetNavigationInfo(
   }
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   const NavigationController& controller = tab_contents->GetController();
-  NavigationEntry* nav_entry = controller.GetActiveEntry();
+  content::NavigationEntry* nav_entry = controller.GetActiveEntry();
   DCHECK(nav_entry);
 
   // Security info.
@@ -3000,7 +3002,7 @@ void TestingAutomationProvider::GetNavigationInfo(
   pagetype_to_string[content::PAGE_TYPE_INTERSTITIAL] =
       "INTERSTITIAL_PAGE";
   return_value->SetString("page_type",
-                          pagetype_to_string[nav_entry->page_type()]);
+                          pagetype_to_string[nav_entry->GetPageType()]);
 
   return_value->SetString("favicon_url", nav_entry->GetFavicon().url.spec());
   reply.SendSuccess(return_value.get());

@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
 // InfoBarDelegate ------------------------------------------------------------
@@ -83,7 +83,7 @@ InfoBarDelegate::InfoBarDelegate(InfoBarTabHelper* infobar_helper)
 
 void InfoBarDelegate::StoreActiveEntryUniqueID(
     InfoBarTabHelper* infobar_helper) {
-  NavigationEntry* active_entry =
+  content::NavigationEntry* active_entry =
       infobar_helper->web_contents()->GetController().GetActiveEntry();
   contents_unique_id_ = active_entry ? active_entry->GetUniqueID() : 0;
 }

@@ -24,6 +24,7 @@ class WebUI;
 
 namespace content {
 class BrowserContext;
+class NavigationEntry;
 }
 
 // Manages RenderViewHosts for a TabContents. Normally there is only one and
@@ -71,7 +72,7 @@ class CONTENT_EXPORT RenderViewHostManager
 
     // Returns the navigation entry of the current navigation, or NULL if there
     // is none.
-    virtual NavigationEntry*
+    virtual content::NavigationEntry*
         GetLastCommittedNavigationEntryForRenderManager() = 0;
 
     // Returns true if the location bar should be focused by default rather than
@@ -213,7 +214,7 @@ class CONTENT_EXPORT RenderViewHostManager
   // As part of this, we'll also force new SiteInstances and BrowsingInstances.
   // Either of the entries may be NULL.
   bool ShouldSwapProcessesForNavigation(
-      const NavigationEntry* cur_entry,
+      const content::NavigationEntry* cur_entry,
       const NavigationEntry* new_entry) const;
 
   // Returns an appropriate SiteInstance object for the given NavigationEntry,

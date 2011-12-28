@@ -61,14 +61,14 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
   EXPECT_TRUE(entry1_.get()->GetTitleForDisplay("").empty());
 
   // Setting URL affects virtual_url and GetTitleForDisplay
-  entry1_.get()->set_url(GURL("http://www.google.com"));
+  entry1_.get()->SetURL(GURL("http://www.google.com"));
   EXPECT_EQ(GURL("http://www.google.com"), entry1_.get()->GetURL());
   EXPECT_EQ(GURL("http://www.google.com"), entry1_.get()->GetVirtualURL());
   EXPECT_EQ(ASCIIToUTF16("www.google.com"),
             entry1_.get()->GetTitleForDisplay(""));
 
   // file:/// URLs should only show the filename.
-  entry1_.get()->set_url(GURL("file:///foo/bar baz.txt"));
+  entry1_.get()->SetURL(GURL("file:///foo/bar baz.txt"));
   EXPECT_EQ(ASCIIToUTF16("bar baz.txt"),
             entry1_.get()->GetTitleForDisplay(""));
 
@@ -86,10 +86,10 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
   EXPECT_EQ(ASCIIToUTF16("title"), entry2_.get()->GetTitleForDisplay(""));
 
   // User typed URL is independent of the others
-  EXPECT_EQ(GURL(), entry1_.get()->user_typed_url());
-  EXPECT_EQ(GURL(), entry2_.get()->user_typed_url());
+  EXPECT_EQ(GURL(), entry1_.get()->GetUserTypedURL());
+  EXPECT_EQ(GURL(), entry2_.get()->GetUserTypedURL());
   entry2_.get()->set_user_typed_url(GURL("typedurl"));
-  EXPECT_EQ(GURL("typedurl"), entry2_.get()->user_typed_url());
+  EXPECT_EQ(GURL("typedurl"), entry2_.get()->GetUserTypedURL());
 }
 
 // Test Favicon inner class construction.
@@ -122,10 +122,10 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_EQ(instance_, entry1_.get()->site_instance());
 
   // Page type
-  EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry1_.get()->page_type());
-  EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry2_.get()->page_type());
+  EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry1_.get()->GetPageType());
+  EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry2_.get()->GetPageType());
   entry2_.get()->set_page_type(content::PAGE_TYPE_INTERSTITIAL);
-  EXPECT_EQ(content::PAGE_TYPE_INTERSTITIAL, entry2_.get()->page_type());
+  EXPECT_EQ(content::PAGE_TYPE_INTERSTITIAL, entry2_.get()->GetPageType());
 
   // Referrer
   EXPECT_EQ(GURL(), entry1_.get()->GetReferrer().url);

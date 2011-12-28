@@ -17,7 +17,6 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -25,6 +24,8 @@
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
 #include "content/public/browser/devtools_manager.h"
+#include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
@@ -284,7 +285,7 @@ static PageList GeneratePageList(
     TabContents* tab_contents = *it;
     NavigationController& controller = tab_contents->GetController();
 
-    ::NavigationEntry* entry = controller.GetActiveEntry();
+    NavigationEntry* entry = controller.GetActiveEntry();
     if (entry == NULL || !entry->GetURL().is_valid())
       continue;
 

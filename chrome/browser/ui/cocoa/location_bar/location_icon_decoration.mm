@@ -7,8 +7,8 @@
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/navigation_entry.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
@@ -95,7 +95,7 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame) {
     return true;
 
   TabContents* tab = owner_->GetTabContents();
-  NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
+  content::NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
   if (!nav_entry) {
     NOTREACHED();
     return true;

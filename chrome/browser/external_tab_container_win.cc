@@ -42,13 +42,14 @@
 #include "content/browser/load_notification_details.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_details.h"
-#include "content/public/browser/web_intents_dispatcher.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/ssl_status.h"
+#include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
@@ -955,7 +956,7 @@ bool ExternalTabContainer::InitNavigationInfo(NavigationInfo* nav_info,
                                               content::NavigationType nav_type,
                                               int relative_offset) {
   DCHECK(nav_info);
-  NavigationEntry* entry =
+  content::NavigationEntry* entry =
       tab_contents_->tab_contents()->GetController().GetActiveEntry();
   // If this is very early in the game then we may not have an entry.
   if (!entry)

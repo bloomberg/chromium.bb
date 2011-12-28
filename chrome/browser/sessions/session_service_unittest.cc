@@ -70,7 +70,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
                         int index,
                         bool select) {
     NavigationEntry entry;
-    entry.set_url(navigation.virtual_url());
+    entry.SetURL(navigation.virtual_url());
     entry.set_referrer(navigation.referrer());
     entry.SetTitle(navigation.title());
     entry.SetContentState(navigation.state());

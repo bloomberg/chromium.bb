@@ -304,7 +304,9 @@ TEST_F(TabContentsTest, SimpleNavigation) {
   EXPECT_EQ(instance1, orig_rvh->site_instance());
   // Controller's pending entry will have a NULL site instance until we assign
   // it in DidNavigate.
-  EXPECT_TRUE(controller().GetActiveEntry()->site_instance() == NULL);
+  EXPECT_TRUE(
+      NavigationEntry::FromNavigationEntry(controller().GetActiveEntry())->
+          site_instance() == NULL);
 
   // DidNavigate from the page
   contents()->TestDidNavigate(orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
@@ -313,7 +315,10 @@ TEST_F(TabContentsTest, SimpleNavigation) {
   EXPECT_EQ(instance1, orig_rvh->site_instance());
   // Controller's entry should now have the SiteInstance, or else we won't be
   // able to find it later.
-  EXPECT_EQ(instance1, controller().GetActiveEntry()->site_instance());
+  EXPECT_EQ(
+      instance1,
+      NavigationEntry::FromNavigationEntry(controller().GetActiveEntry())->
+          site_instance());
 }
 
 // Test that we reject NavigateToEntry if the url is over content::kMaxURLChars.
@@ -653,13 +658,14 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
       url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   TestRenderViewHost* ntp_rvh = rvh();
   contents()->TestDidNavigate(ntp_rvh, 1, url1, content::PAGE_TRANSITION_TYPED);
-  NavigationEntry* entry1 = controller().GetLastCommittedEntry();
+  content::NavigationEntry* entry1 = controller().GetLastCommittedEntry();
   SiteInstance* instance1 = contents()->GetSiteInstance();
 
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(ntp_rvh, contents()->GetRenderViewHost());
   EXPECT_EQ(url1, entry1->GetURL());
-  EXPECT_EQ(instance1, entry1->site_instance());
+  EXPECT_EQ(instance1,
+            NavigationEntry::FromNavigationEntry(entry1)->site_instance());
   EXPECT_TRUE(ntp_rvh->enabled_bindings() & content::BINDINGS_POLICY_WEB_UI);
 
   // Navigate to new site.
@@ -676,7 +682,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   // DidNavigate from the pending page.
   contents()->TestDidNavigate(
       google_rvh, 1, url2, content::PAGE_TRANSITION_TYPED);
-  NavigationEntry* entry2 = controller().GetLastCommittedEntry();
+  content::NavigationEntry* entry2 = controller().GetLastCommittedEntry();
   SiteInstance* instance2 = contents()->GetSiteInstance();
 
   EXPECT_FALSE(contents()->cross_navigation_pending());
@@ -684,7 +690,8 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   EXPECT_NE(instance1, instance2);
   EXPECT_FALSE(contents()->pending_rvh());
   EXPECT_EQ(url2, entry2->GetURL());
-  EXPECT_EQ(instance2, entry2->site_instance());
+  EXPECT_EQ(instance2,
+            NavigationEntry::FromNavigationEntry(entry2)->site_instance());
   EXPECT_FALSE(google_rvh->enabled_bindings() &
       content::BINDINGS_POLICY_WEB_UI);
 
@@ -695,7 +702,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   contents()->TestDidNavigate(
       google_rvh, 2, url3, content::PAGE_TRANSITION_TYPED);
-  NavigationEntry* entry3 = controller().GetLastCommittedEntry();
+  content::NavigationEntry* entry3 = controller().GetLastCommittedEntry();
   SiteInstance* instance3 = contents()->GetSiteInstance();
 
   EXPECT_FALSE(contents()->cross_navigation_pending());
@@ -703,7 +710,8 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   EXPECT_EQ(instance2, instance3);
   EXPECT_FALSE(contents()->pending_rvh());
   EXPECT_EQ(url3, entry3->GetURL());
-  EXPECT_EQ(instance3, entry3->site_instance());
+  EXPECT_EQ(instance3,
+            NavigationEntry::FromNavigationEntry(entry3)->site_instance());
 
   // Go back within the site.
   controller().GoBack();
@@ -731,9 +739,12 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   EXPECT_EQ(url2, controller().GetLastCommittedEntry()->GetURL());
 
   // We should not have corrupted the NTP entry.
-  EXPECT_EQ(instance3, entry3->site_instance());
-  EXPECT_EQ(instance2, entry2->site_instance());
-  EXPECT_EQ(instance1, entry1->site_instance());
+  EXPECT_EQ(instance3,
+            NavigationEntry::FromNavigationEntry(entry3)->site_instance());
+  EXPECT_EQ(instance2,
+            NavigationEntry::FromNavigationEntry(entry2)->site_instance());
+  EXPECT_EQ(instance1,
+            NavigationEntry::FromNavigationEntry(entry1)->site_instance());
   EXPECT_EQ(url1, entry1->GetURL());
 }
 
@@ -910,7 +921,7 @@ TEST_F(TabContentsTest, NavigationEntryContentState) {
   const GURL url("http://www.google.com");
   controller().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
-  NavigationEntry* entry = controller().GetLastCommittedEntry();
+  content::NavigationEntry* entry = controller().GetLastCommittedEntry();
   EXPECT_TRUE(entry == NULL);
 
   // Committed entry should have content state after DidNavigate.
@@ -950,7 +961,7 @@ TEST_F(TabContentsTest, NavigationEntryContentStateNewWindow) {
   contents()->TestDidNavigate(orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
 
   // Should have a content state here.
-  NavigationEntry* entry = controller().GetLastCommittedEntry();
+  content::NavigationEntry* entry = controller().GetLastCommittedEntry();
   EXPECT_FALSE(entry->GetContentState().empty());
 }
 
@@ -990,7 +1001,7 @@ TEST_F(TabContentsTest,
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  content::NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url2);
 
@@ -1035,7 +1046,7 @@ TEST_F(TabContentsTest,
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  content::NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url2);
 
@@ -1078,7 +1089,7 @@ TEST_F(TabContentsTest, ShowInterstitialNoNewNavigationDontProceed) {
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  content::NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   // The URL specified to the interstitial should have been ignored.
   EXPECT_TRUE(entry->GetURL() == url1);
@@ -1127,7 +1138,7 @@ TEST_F(TabContentsTest,
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  content::NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url2);
 
@@ -1182,7 +1193,7 @@ TEST_F(TabContentsTest,
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  content::NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url2);
 
@@ -1236,7 +1247,7 @@ TEST_F(TabContentsTest, ShowInterstitialNoNewNavigationProceed) {
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  content::NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   // The URL specified to the interstitial should have been ignored.
   EXPECT_TRUE(entry->GetURL() == url1);
@@ -1304,7 +1315,7 @@ TEST_F(TabContentsTest, ShowInterstitialThenGoBack) {
   // gone.
   EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  content::NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(url1.spec(), entry->GetURL().spec());
 }
@@ -1342,7 +1353,7 @@ TEST_F(TabContentsTest, ShowInterstitialCrashRendererThenGoBack) {
   // gone.
   EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  content::NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(url1.spec(), entry->GetURL().spec());
 }
@@ -1471,7 +1482,7 @@ TEST_F(TabContentsTest, ShowInterstitialOnInterstitial) {
   EXPECT_TRUE(deleted2);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  content::NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == landing_url);
   EXPECT_EQ(2, controller().entry_count());
@@ -1526,7 +1537,7 @@ TEST_F(TabContentsTest, ShowInterstitialProceedShowInterstitial) {
   EXPECT_TRUE(deleted2);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
-  NavigationEntry* entry = controller().GetActiveEntry();
+  content::NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == landing_url);
   EXPECT_EQ(2, controller().entry_count());

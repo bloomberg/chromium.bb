@@ -305,7 +305,7 @@ void CloudPrintFlowHandler::RegisterMessages() {
   NavigationEntry* pending_entry = controller->pending_entry();
   if (pending_entry) {
     Profile* profile = Profile::FromWebUI(web_ui_);
-    pending_entry->set_url(
+    pending_entry->SetURL(
         CloudPrintURL(profile).GetCloudPrintServiceDialogURL());
   }
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,

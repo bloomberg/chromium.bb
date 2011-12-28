@@ -20,7 +20,7 @@ using content::WebContents;
 namespace {
 
 // Returns true if the entry's transition type is FORM_SUBMIT.
-bool IsFormSubmit(const NavigationEntry* entry) {
+bool IsFormSubmit(const content::NavigationEntry* entry) {
   return (content::PageTransitionStripQualifier(entry->GetTransitionType()) ==
           content::PAGE_TRANSITION_FORM_SUBMIT);
 }
@@ -90,10 +90,10 @@ void SearchEngineTabHelper::OnPageHasOSDD(
   }
 
   const NavigationController& controller = web_contents()->GetController();
-  const NavigationEntry* entry = controller.GetLastCommittedEntry();
+  const content::NavigationEntry* entry = controller.GetLastCommittedEntry();
   DCHECK(entry);
 
-  const NavigationEntry* base_entry = entry;
+  const content::NavigationEntry* base_entry = entry;
   if (IsFormSubmit(base_entry)) {
     // If the current page is a form submit, find the last page that was not
     // a form submit and use its url to generate the keyword from.
@@ -110,8 +110,8 @@ void SearchEngineTabHelper::OnPageHasOSDD(
   // the user typed to get here, and fall back on the regular URL if not.
   if (!base_entry)
     return;
-  GURL keyword_url = base_entry->user_typed_url().is_valid() ?
-          base_entry->user_typed_url() : base_entry->GetURL();
+  GURL keyword_url = base_entry->GetUserTypedURL().is_valid() ?
+          base_entry->GetUserTypedURL() : base_entry->GetURL();
   if (!keyword_url.is_valid())
     return;
 
@@ -155,8 +155,8 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
     return;
   }
 
-  GURL keyword_url = previous_entry->user_typed_url().is_valid() ?
-          previous_entry->user_typed_url() : previous_entry->GetURL();
+  GURL keyword_url = previous_entry->GetUserTypedURL().is_valid() ?
+          previous_entry->GetUserTypedURL() : previous_entry->GetURL();
   string16 keyword =
       TemplateURLService::GenerateKeyword(keyword_url, true);  // autodetected
   if (keyword.empty())

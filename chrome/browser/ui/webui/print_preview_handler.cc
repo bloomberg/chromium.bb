@@ -41,9 +41,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "printing/backend/print_backend.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
@@ -314,7 +314,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
     settings->SetString(printing::kSettingHeaderFooterTitle,
                         initiator_tab->tab_contents()->GetTitle());
     std::string url;
-    NavigationEntry* entry =
+    content::NavigationEntry* entry =
         initiator_tab->tab_contents()->GetController().GetActiveEntry();
     if (entry)
       url = entry->GetVirtualURL().spec();

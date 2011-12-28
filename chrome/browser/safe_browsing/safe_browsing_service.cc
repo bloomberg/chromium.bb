@@ -33,9 +33,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "net/base/registry_controlled_domain.h"
@@ -1055,7 +1055,8 @@ void SafeBrowsingService::DoDisplayBlockingPage(
       CanReportStats()) {
     GURL page_url = tab_contents->GetURL();
     GURL referrer_url;
-    NavigationEntry* entry = tab_contents->GetController().GetActiveEntry();
+    content::NavigationEntry* entry =
+        tab_contents->GetController().GetActiveEntry();
     if (entry)
       referrer_url = entry->GetReferrer().url;
 

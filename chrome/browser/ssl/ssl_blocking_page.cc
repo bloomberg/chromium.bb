@@ -17,10 +17,11 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/ssl_status.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -108,7 +109,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
   return jstemplate_builder::GetI18nTemplateHtml(html, &strings);
 }
 
-void SSLBlockingPage::UpdateEntry(NavigationEntry* entry) {
+void SSLBlockingPage::UpdateEntry(content::NavigationEntry* entry) {
   const net::SSLInfo& ssl_info = handler_->ssl_info();
   int cert_id = CertStore::GetInstance()->StoreCert(
       ssl_info.cert, tab()->GetRenderProcessHost()->GetID());

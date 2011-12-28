@@ -47,7 +47,7 @@ SkBitmap FaviconTabHelper::GetFavicon() const {
   // Like GetTitle(), we also want to use the favicon for the last committed
   // entry rather than a pending navigation entry.
   const NavigationController& controller = web_contents()->GetController();
-  NavigationEntry* entry = controller.GetTransientEntry();
+  content::NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
     return entry->GetFavicon().bitmap;
 
@@ -59,7 +59,7 @@ SkBitmap FaviconTabHelper::GetFavicon() const {
 
 bool FaviconTabHelper::FaviconIsValid() const {
   const NavigationController& controller = web_contents()->GetController();
-  NavigationEntry* entry = controller.GetTransientEntry();
+  content::NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
     return entry->GetFavicon().valid;
 
@@ -83,7 +83,8 @@ bool FaviconTabHelper::ShouldDisplayFavicon() {
 }
 
 void FaviconTabHelper::SaveFavicon() {
-  NavigationEntry* entry = web_contents()->GetController().GetActiveEntry();
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetActiveEntry();
   if (!entry || entry->GetURL().is_empty())
     return;
 
@@ -131,7 +132,7 @@ void FaviconTabHelper::OnUpdateFaviconURL(
     touch_icon_handler_->OnUpdateFaviconURL(page_id, candidates);
 }
 
-NavigationEntry* FaviconTabHelper::GetActiveEntry() {
+content::NavigationEntry* FaviconTabHelper::GetActiveEntry() {
   return web_contents()->GetController().GetActiveEntry();
 }
 

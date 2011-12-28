@@ -28,9 +28,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -175,7 +175,7 @@ void OmniboxSearchHint::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    NavigationEntry* entry =
+    content::NavigationEntry* entry =
         tab_->tab_contents()->GetController().GetActiveEntry();
     if (search_engine_urls_.find(entry->GetURL().spec()) ==
         search_engine_urls_.end()) {

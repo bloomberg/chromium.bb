@@ -25,9 +25,9 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_request_details.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -475,7 +475,7 @@ bool ClientSideDetectionHost::DidShowSBInterstitial() {
   if (unsafe_unique_page_id_ <= 0 || !web_contents()) {
     return false;
   }
-  const NavigationEntry* nav_entry =
+  const content::NavigationEntry* nav_entry =
       web_contents()->GetController().GetActiveEntry();
   return (nav_entry && nav_entry->GetUniqueID() == unsafe_unique_page_id_);
 }

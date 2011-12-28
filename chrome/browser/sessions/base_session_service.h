@@ -17,11 +17,14 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "googleurl/src/gurl.h"
 
-class NavigationEntry;
 class Profile;
 class SessionBackend;
 class SessionCommand;
 class TabNavigation;
+
+namespace content {
+class NavigationEntry;
+}
 
 // BaseSessionService is the super class of both tab restore service and
 // session service. It contains commonality needed by both, in particular
@@ -113,7 +116,7 @@ class BaseSessionService : public CancelableRequestProvider,
       SessionID::id_type command_id,
       SessionID::id_type tab_id,
       int index,
-      const NavigationEntry& entry);
+      const content::NavigationEntry& entry);
 
   // Creates a SessionCommand that represents marking a tab as an application.
   SessionCommand* CreateSetTabExtensionAppIDCommand(

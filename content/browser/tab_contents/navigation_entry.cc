@@ -22,6 +22,18 @@ static int GetUniqueIDInConstructor() {
   return ++unique_id_counter;
 }
 
+namespace content {
+
+NavigationEntry* NavigationEntry::Create() {
+  return new ::NavigationEntry();
+}
+
+NavigationEntry* NavigationEntry::Create(const NavigationEntry& copy) {
+  return new ::NavigationEntry(static_cast<const ::NavigationEntry&>(copy));
+}
+
+}
+
 NavigationEntry* NavigationEntry::FromNavigationEntry(
     content::NavigationEntry* entry) {
   return static_cast<NavigationEntry*>(entry);
@@ -65,6 +77,15 @@ NavigationEntry::~NavigationEntry() {
 
 int NavigationEntry::GetUniqueID() const {
   return unique_id_;
+}
+
+content::PageType NavigationEntry::GetPageType() const {
+  return page_type_;
+}
+
+void NavigationEntry::SetURL(const GURL& url) {
+  url_ = url;
+  cached_display_title_.clear();
 }
 
 const GURL& NavigationEntry::GetURL() const {
@@ -150,6 +171,10 @@ bool NavigationEntry::IsViewSourceMode() const {
 
 content::PageTransition NavigationEntry::GetTransitionType() const {
   return transition_type_;
+}
+
+const GURL& NavigationEntry::GetUserTypedURL() const {
+  return user_typed_url_;
 }
 
 void NavigationEntry::SetHasPostData(bool has_post_data) {

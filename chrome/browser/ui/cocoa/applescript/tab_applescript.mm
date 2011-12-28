@@ -21,8 +21,8 @@
 #include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "googleurl/src/gurl.h"
 
@@ -189,7 +189,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
     return nil;
   }
 
-  NavigationEntry* entry =
+  content::NavigationEntry* entry =
       tabContents_->tab_contents()->GetController().GetActiveEntry();
   if (!entry) {
     return nil;
@@ -213,7 +213,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
     return;
   }
 
-  NavigationEntry* entry =
+  content::NavigationEntry* entry =
       tabContents_->tab_contents()->GetController().GetActiveEntry();
   if (!entry)
     return;
@@ -228,7 +228,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (NSString*)title {
-  NavigationEntry* entry =
+  content::NavigationEntry* entry =
       tabContents_->tab_contents()->GetController().GetActiveEntry();
   if (!entry)
     return nil;
@@ -390,7 +390,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesViewSourceScriptCommand:(NSScriptCommand*)command {
-  NavigationEntry* entry =
+  content::NavigationEntry* entry =
       tabContents_->tab_contents()->GetController().GetLastCommittedEntry();
   if (entry) {
     tabContents_->tab_contents()->OpenURL(OpenURLParams(

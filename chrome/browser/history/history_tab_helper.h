@@ -31,7 +31,7 @@ class HistoryTabHelper : public content::WebContentsObserver,
 
   // Sends the page title to the history service. This is called when we receive
   // the page title and we know we want to update history.
-  void UpdateHistoryPageTitle(const NavigationEntry& entry);
+  void UpdateHistoryPageTitle(const content::NavigationEntry& entry);
 
   // Returns the history::HistoryAddPageArgs to use for adding a page to
   // history.

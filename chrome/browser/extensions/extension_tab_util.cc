@@ -12,7 +12,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_entry.h"
 
 namespace keys = extension_tabs_module_constants;
 namespace errors = extension_manifest_errors;
@@ -118,7 +119,8 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(const WebContents* contents,
                      contents->GetBrowserContext()->IsOffTheRecord());
 
   if (!is_loading) {
-    NavigationEntry* entry = contents->GetController().GetActiveEntry();
+    content::NavigationEntry* entry =
+        contents->GetController().GetActiveEntry();
     if (entry) {
       if (entry->GetFavicon().valid)
         result->SetString(keys::kFaviconUrlKey, entry->GetFavicon().url.spec());

@@ -130,7 +130,8 @@ void SSLManager::DidCommitProvisionalLoad(
   content::LoadCommittedDetails* details =
       content::Details<content::LoadCommittedDetails>(in_details).ptr();
 
-  NavigationEntry* entry = controller_->GetActiveEntry();
+  NavigationEntry* entry =
+      NavigationEntry::FromNavigationEntry(controller_->GetActiveEntry());
 
   if (details->is_main_frame) {
     if (entry) {
@@ -159,12 +160,13 @@ void SSLManager::DidCommitProvisionalLoad(
 }
 
 void SSLManager::DidRunInsecureContent(const std::string& security_origin) {
-  policy()->DidRunInsecureContent(controller_->GetActiveEntry(),
-                                  security_origin);
+  policy()->DidRunInsecureContent(
+      NavigationEntry::FromNavigationEntry(controller_->GetActiveEntry()),
+      security_origin);
 }
 
 bool SSLManager::ProcessedSSLErrorFromRequest() const {
-  NavigationEntry* entry = controller_->GetActiveEntry();
+  content::NavigationEntry* entry = controller_->GetActiveEntry();
   if (!entry) {
     NOTREACHED();
     return false;
@@ -241,7 +243,8 @@ void SSLManager::DidReceiveResourceRedirect(ResourceRedirectDetails* details) {
 }
 
 void SSLManager::DidChangeSSLInternalState() {
-  UpdateEntry(controller_->GetActiveEntry());
+  UpdateEntry(
+      NavigationEntry::FromNavigationEntry(controller_->GetActiveEntry()));
 }
 
 void SSLManager::UpdateEntry(NavigationEntry* entry) {

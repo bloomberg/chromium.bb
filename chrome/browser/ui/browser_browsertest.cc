@@ -44,8 +44,9 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/page_transition_types.h"
@@ -667,7 +668,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  NavigationEntry* entry = browser()->GetSelectedTabContents()->
+  content::NavigationEntry* entry = browser()->GetSelectedTabContents()->
       GetController().GetActiveEntry();
   EXPECT_EQ(expected_favicon_url.spec(), entry->GetFavicon().url.spec());
 }
@@ -687,7 +688,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_FaviconChange) {
   ASSERT_TRUE(file_url.SchemeIs(chrome::kFileScheme));
   ui_test_utils::NavigateToURL(browser(), file_url);
 
-  NavigationEntry* entry = browser()->GetSelectedTabContents()->
+  content::NavigationEntry* entry = browser()->GetSelectedTabContents()->
       GetController().GetActiveEntry();
   static const FilePath::CharType* kIcon =
       FILE_PATH_LITERAL("test1.png");

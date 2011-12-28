@@ -7,7 +7,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 
 ExtensionNavigationObserver::ExtensionNavigationObserver(Profile* profile)
@@ -46,7 +46,7 @@ void ExtensionNavigationObserver::PromptToEnableExtensionIfNecessary(
   if (!in_progress_prompt_extension_id_.empty())
     return;
 
-  NavigationEntry* nav_entry = nav_controller->GetActiveEntry();
+  content::NavigationEntry* nav_entry = nav_controller->GetActiveEntry();
   if (!nav_entry)
     return;
 

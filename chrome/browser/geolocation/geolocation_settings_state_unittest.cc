@@ -34,7 +34,7 @@ TEST_F(GeolocationSettingsStateTests, ClearOnNewOrigin) {
   GURL url_0("http://www.example.com");
 
   NavigationEntry entry;
-  entry.set_url(url_0);
+  entry.SetURL(url_0);
   content::LoadCommittedDetails load_committed_details;
   load_committed_details.entry = &entry;
   state.DidNavigate(load_committed_details);
@@ -121,7 +121,7 @@ TEST_F(GeolocationSettingsStateTests, ClearOnNewOrigin) {
   EXPECT_EQ(state_map.size(), new_state_map.size());
 
   GURL different_url("http://foo.com");
-  entry.set_url(different_url);
+  entry.SetURL(different_url);
   state.DidNavigate(load_committed_details);
 
   EXPECT_TRUE(state.state_map().empty());
@@ -139,7 +139,7 @@ TEST_F(GeolocationSettingsStateTests, ShowPortOnSameHost) {
   GURL url_0("http://www.example.com");
 
   NavigationEntry entry;
-  entry.set_url(url_0);
+  entry.SetURL(url_0);
   content::LoadCommittedDetails load_committed_details;
   load_committed_details.entry = &entry;
   state.DidNavigate(load_committed_details);

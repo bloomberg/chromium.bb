@@ -10,6 +10,7 @@
 
 #include "base/string16.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/page_type.h"
 #include "content/public/common/referrer.h"
 
 class GURL;
@@ -27,6 +28,9 @@ class NavigationEntry {
  public:
   virtual ~NavigationEntry() {}
 
+  static NavigationEntry* Create();
+  static NavigationEntry* Create(const NavigationEntry& copy);
+
   // Page-related stuff --------------------------------------------------------
 
   // A unique ID is preserved across commits and redirects, which means that
@@ -35,9 +39,13 @@ class NavigationEntry {
   // the pending entry's ID must be copied).
   virtual int GetUniqueID() const = 0;
 
+  // The page type tells us if this entry is for an interstitial or error page.
+  virtual content::PageType GetPageType() const = 0;
+
   // The actual URL of the page. For some about pages, this may be a scary
   // data: URL or something like that. Use GetVirtualURL() below for showing to
   // the user.
+  virtual void SetURL(const GURL& url) = 0;
   virtual const GURL& GetURL() const = 0;
 
   // The referring URL. Can be empty.
@@ -95,6 +103,17 @@ class NavigationEntry {
   // The transition type indicates what the user did to move to this page from
   // the previous page.
   virtual content::PageTransition GetTransitionType() const = 0;
+
+  // The user typed URL was the URL that the user initiated the navigation
+  // with, regardless of any redirects. This is used to generate keywords, for
+  // example, based on "what the user thinks the site is called" rather than
+  // what it's actually called. For example, if the user types "foo.com", that
+  // may redirect somewhere arbitrary like "bar.com/foo", and we want to use
+  // the name that the user things of the site as having.
+  //
+  // This URL will be is_empty() if the URL was navigated to some other way.
+  // Callers should fall back on using the regular or display URL in this case.
+  virtual const GURL& GetUserTypedURL() const = 0;
 
   // Post data is form data that was posted to get to this page. The data will
   // have to be reposted to reload the page properly. This flag indicates

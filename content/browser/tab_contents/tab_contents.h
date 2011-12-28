@@ -325,7 +325,7 @@ class CONTENT_EXPORT TabContents
   virtual void NotifySwappedFromRenderManager() OVERRIDE;
   virtual NavigationController& GetControllerForRenderManager() OVERRIDE;
   virtual WebUI* CreateWebUIForRenderManager(const GURL& url) OVERRIDE;
-  virtual NavigationEntry*
+  virtual content::NavigationEntry*
       GetLastCommittedNavigationEntryForRenderManager() OVERRIDE;
   virtual bool FocusLocationBarByDefault() OVERRIDE;
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;

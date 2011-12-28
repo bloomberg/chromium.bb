@@ -21,12 +21,15 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/ui_base_types.h"
 
-class NavigationEntry;
 class Profile;
 class SessionCommand;
+class TabContentsWrapper;
 struct SessionTab;
 struct SessionWindow;
-class TabContentsWrapper;
+
+namespace content {
+class NavigationEntry;
+}
 
 // SessionService ------------------------------------------------------------
 
@@ -136,7 +139,7 @@ class SessionService : public BaseSessionService,
   void UpdateTabNavigation(const SessionID& window_id,
                            const SessionID& tab_id,
                            int index,
-                           const NavigationEntry& entry);
+                           const content::NavigationEntry& entry);
 
   // Notification that a tab has restored its entries or a closed tab is being
   // reused.

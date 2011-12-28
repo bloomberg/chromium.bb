@@ -29,7 +29,7 @@
 #include "chrome/browser/sync/util/get_session_name_task.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #if defined(OS_LINUX)
@@ -336,7 +336,7 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
     tab_s->set_extension_app_id(tab.GetExtensionAppId());
   }
   for (int i = min_index; i < max_index; ++i) {
-    const NavigationEntry* entry = (i == pending_index) ?
+    const content::NavigationEntry* entry = (i == pending_index) ?
        tab.GetPendingEntry() : tab.GetEntryAtIndex(i);
     DCHECK(entry);
     if (entry->GetVirtualURL().is_valid()) {
@@ -1064,7 +1064,7 @@ bool SessionModelAssociator::IsValidTab(const SyncedTabDelegate& tab) const {
             tab.GetWindowId());
     if (!window)
       return false;
-    const NavigationEntry* entry = tab.GetActiveEntry();
+    const content::NavigationEntry* entry = tab.GetActiveEntry();
     if (!entry)
       return false;
     if (entry->GetVirtualURL().is_valid() &&

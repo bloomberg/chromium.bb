@@ -19,9 +19,12 @@
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/size.h"
 
-class NavigationEntry;
 class TabContents;
 class TabContentsView;
+
+namespace content {
+class NavigationEntry;
+}
 
 // This class is a base class for interstitial pages, pages that show some
 // informative message asking for user validation before reaching the target
@@ -142,7 +145,7 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
   // Gives an opportunity to sub-classes to set states on the |entry|.
   // Note that this is only called if the InterstitialPage was constructed with
   // |create_navigation_entry| set to true.
-  virtual void UpdateEntry(NavigationEntry* entry) {}
+  virtual void UpdateEntry(content::NavigationEntry* entry) {}
 
   bool enabled() const { return enabled_; }
   TabContents* tab() const { return tab_; }

@@ -100,7 +100,7 @@ class TabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     if (pinned)
       session_service->SetPinnedState(window_id, tab_id, true);
     NavigationEntry entry;
-    entry.set_url(url1_);
+    entry.SetURL(url1_);
     session_service->UpdateTabNavigation(window_id, tab_id, 0, entry);
   }
 

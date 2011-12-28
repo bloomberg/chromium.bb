@@ -10,8 +10,11 @@
 
 #include "chrome/browser/sessions/session_id.h"
 
-class NavigationEntry;
 class Profile;
+
+namespace content {
+class NavigationEntry;
+}
 
 namespace browser_sync {
 
@@ -36,9 +39,9 @@ class SyncedTabDelegate {
   virtual int GetCurrentEntryIndex() const = 0;
   virtual int GetEntryCount() const = 0;
   virtual int GetPendingEntryIndex() const = 0;
-  virtual NavigationEntry* GetPendingEntry() const = 0;
-  virtual NavigationEntry* GetEntryAtIndex(int i) const = 0;
-  virtual NavigationEntry* GetActiveEntry() const = 0;
+  virtual content::NavigationEntry* GetPendingEntry() const = 0;
+  virtual content::NavigationEntry* GetEntryAtIndex(int i) const = 0;
+  virtual content::NavigationEntry* GetActiveEntry() const = 0;
 
  protected:
   virtual ~SyncedTabDelegate() {}

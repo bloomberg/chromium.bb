@@ -11,12 +11,11 @@
 #include "content/public/browser/navigation_type.h"
 #include "googleurl/src/gurl.h"
 
-class NavigationEntry;
-class TabContents;
-
 namespace content {
 
-// Provides the details for a NOTIFY_NAV_ENTRY_COMMITTED notification.
+class NavigationEntry;
+
+// Provides the details for a NOTIFICATION_NAV_ENTRY_COMMITTED notification.
 // TODO(brettw) this mostly duplicates ProvisionalLoadDetails, it would be
 // nice to unify these somehow.
 struct CONTENT_EXPORT LoadCommittedDetails {
@@ -68,10 +67,10 @@ struct CONTENT_EXPORT LoadCommittedDetails {
   int http_status_code;
 };
 
-// Provides the details for a NOTIFY_NAV_ENTRY_CHANGED notification.
+// Provides the details for a NOTIFICATION_NAV_ENTRY_CHANGED notification.
 struct EntryChangedDetails {
   // The changed navigation entry after it has been updated.
-  const ::NavigationEntry* changed_entry;
+  const NavigationEntry* changed_entry;
 
   // Indicates the current index in the back/forward list of the entry.
   int index;

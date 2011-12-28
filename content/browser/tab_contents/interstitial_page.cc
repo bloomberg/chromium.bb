@@ -187,7 +187,7 @@ void InterstitialPage::Show() {
 
   if (new_navigation_) {
     NavigationEntry* entry = new NavigationEntry;
-    entry->set_url(url_);
+    entry->SetURL(url_);
     entry->SetVirtualURL(url_);
     entry->set_page_type(content::PAGE_TYPE_INTERSTITIAL);
 
@@ -238,7 +238,7 @@ void InterstitialPage::Hide() {
   if (tab_->GetInterstitialPage())
     tab_->remove_interstitial_page();
   // Let's revert to the original title if necessary.
-  NavigationEntry* entry = tab_->GetController().GetActiveEntry();
+  content::NavigationEntry* entry = tab_->GetController().GetActiveEntry();
   if (!new_navigation_ && should_revert_tab_title_) {
     entry->SetTitle(original_tab_title_);
     tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
@@ -370,7 +370,7 @@ void InterstitialPage::UpdateTitle(RenderViewHost* render_view_host,
                                    const string16& title,
                                    base::i18n::TextDirection title_direction) {
   DCHECK(render_view_host == render_view_host_);
-  NavigationEntry* entry = tab_->GetController().GetActiveEntry();
+  content::NavigationEntry* entry = tab_->GetController().GetActiveEntry();
   if (!entry) {
     // Crash reports from the field indicate this can be NULL.
     // This is unexpected as InterstitialPages constructed with the

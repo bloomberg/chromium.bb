@@ -22,6 +22,10 @@
 class NavigationEntry;
 class Profile;
 
+namespace content {
+class NavigationEntry;
+}
+
 // TabNavigation  -------------------------------------------------------------
 
 // TabNavigation corresponds to the parts of NavigationEntry needed to restore
@@ -50,7 +54,7 @@ class TabNavigation {
   NavigationEntry* ToNavigationEntry(int page_id, Profile* profile) const;
 
   // Resets this TabNavigation from |entry|.
-  void SetFromNavigationEntry(const NavigationEntry& entry);
+  void SetFromNavigationEntry(const content::NavigationEntry& entry);
 
   // Virtual URL of the page. See NavigationEntry::GetVirtualURL() for details.
   void set_virtual_url(const GURL& url) { virtual_url_ = url; }
@@ -90,7 +94,7 @@ class TabNavigation {
   static void CreateNavigationEntriesFromTabNavigations(
       Profile* profile,
       const std::vector<TabNavigation>& navigations,
-      std::vector<NavigationEntry*>* entries);
+      std::vector<content::NavigationEntry*>* entries);
 
  private:
   friend class BaseSessionService;

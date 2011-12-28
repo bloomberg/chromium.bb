@@ -149,15 +149,18 @@ NavigationController::~NavigationController() {
 void NavigationController::Restore(
     int selected_navigation,
     bool from_last_session,
-    std::vector<NavigationEntry*>* entries) {
+    std::vector<content::NavigationEntry*>* entries) {
   // Verify that this controller is unused and that the input is valid.
   DCHECK(entry_count() == 0 && !pending_entry());
   DCHECK(selected_navigation >= 0 &&
          selected_navigation < static_cast<int>(entries->size()));
 
   needs_reload_ = true;
-  for (size_t i = 0; i < entries->size(); ++i)
-    entries_.push_back(linked_ptr<NavigationEntry>((*entries)[i]));
+  for (size_t i = 0; i < entries->size(); ++i) {
+    NavigationEntry* entry =
+        NavigationEntry::FromNavigationEntry((*entries)[i]);
+    entries_.push_back(linked_ptr<NavigationEntry>(entry));
+  }
   entries->clear();
 
   // And finish the restore.
@@ -289,7 +292,7 @@ void NavigationController::LoadEntry(NavigationEntry* entry) {
   NavigateToPendingEntry(NO_RELOAD);
 }
 
-NavigationEntry* NavigationController::GetActiveEntry() const {
+content::NavigationEntry* NavigationController::GetActiveEntry() const {
   if (transient_entry_index_ != -1)
     return entries_[transient_entry_index_].get();
   if (pending_entry_)
@@ -297,7 +300,7 @@ NavigationEntry* NavigationController::GetActiveEntry() const {
   return GetLastCommittedEntry();
 }
 
-NavigationEntry* NavigationController::GetVisibleEntry() const {
+content::NavigationEntry* NavigationController::GetVisibleEntry() const {
   if (transient_entry_index_ != -1)
     return entries_[transient_entry_index_].get();
   // Only return the pending_entry for new (non-history), browser-initiated
@@ -321,7 +324,7 @@ int NavigationController::GetCurrentEntryIndex() const {
   return last_committed_entry_index_;
 }
 
-NavigationEntry* NavigationController::GetLastCommittedEntry() const {
+content::NavigationEntry* NavigationController::GetLastCommittedEntry() const {
   if (last_committed_entry_index_ == -1)
     return NULL;
   return entries_[last_committed_entry_index_].get();
@@ -330,7 +333,7 @@ NavigationEntry* NavigationController::GetLastCommittedEntry() const {
 bool NavigationController::CanViewSource() const {
   bool is_supported_mime_type = net::IsSupportedNonImageMimeType(
       tab_contents_->GetContentsMimeType().c_str());
-  NavigationEntry* active_entry = GetActiveEntry();
+  content::NavigationEntry* active_entry = GetActiveEntry();
   return active_entry && !active_entry->IsViewSourceMode() &&
     is_supported_mime_type && !tab_contents_->GetInterstitialPage();
 }
@@ -580,7 +583,8 @@ bool NavigationController::RendererDidNavigate(
   // All committed entries should have nonempty content state so WebKit doesn't
   // get confused when we go back to them (see the function for details).
   DCHECK(!params.content_state.empty());
-  NavigationEntry* active_entry = GetActiveEntry();
+  NavigationEntry* active_entry =
+      NavigationEntry::FromNavigationEntry(GetActiveEntry());
   active_entry->SetContentState(params.content_state);
 
   // Once committed, we do not need to track if the entry was initiated by
@@ -760,7 +764,7 @@ void NavigationController::RendererDidNavigateToNewPage(
     update_virtual_url = true;
   }
 
-  new_entry->set_url(params.url);
+  new_entry->SetURL(params.url);
   if (update_virtual_url)
     UpdateVirtualURLToURL(new_entry, params.url);
   new_entry->set_referrer(params.referrer);
@@ -789,7 +793,7 @@ void NavigationController::RendererDidNavigateToExistingPage(
   // The URL may have changed due to redirects. The site instance will normally
   // be the same except during session restore, when no site instance will be
   // assigned.
-  entry->set_url(params.url);
+  entry->SetURL(params.url);
   if (entry->update_virtual_url_with_url())
     UpdateVirtualURLToURL(entry, params.url);
   DCHECK(entry->site_instance() == NULL ||
@@ -833,7 +837,7 @@ void NavigationController::RendererDidNavigateToSamePage(
   // The URL may have changed due to redirects.
   if (existing_entry->update_virtual_url_with_url())
     UpdateVirtualURLToURL(existing_entry, params.url);
-  existing_entry->set_url(params.url);
+  existing_entry->SetURL(params.url);
 
   DiscardNonCommittedEntries();
 }
@@ -851,7 +855,7 @@ void NavigationController::RendererDidNavigateInPage(
   // entry and it will be the same page as the new navigation (minus the
   // reference fragments, of course).  We'll update the URL of the existing
   // entry without pruning the forward history.
-  existing_entry->set_url(params.url);
+  existing_entry->SetURL(params.url);
   if (existing_entry->update_virtual_url_with_url())
     UpdateVirtualURLToURL(existing_entry, params.url);
 
@@ -881,7 +885,8 @@ void NavigationController::RendererDidNavigateNewSubframe(
   // band with the actual navigations.
   DCHECK(GetLastCommittedEntry()) << "ClassifyNavigation should guarantee "
                                   << "that a last committed entry exists.";
-  NavigationEntry* new_entry = new NavigationEntry(*GetLastCommittedEntry());
+  NavigationEntry* new_entry = new NavigationEntry(
+      *NavigationEntry::FromNavigationEntry(GetLastCommittedEntry()));
   new_entry->SetPageID(params.page_id);
   InsertOrReplaceEntry(new_entry, false);
 }
@@ -922,7 +927,7 @@ int NavigationController::GetIndexOfEntry(
 }
 
 bool NavigationController::IsURLInPageNavigation(const GURL& url) const {
-  NavigationEntry* last_committed = GetLastCommittedEntry();
+  content::NavigationEntry* last_committed = GetLastCommittedEntry();
   if (!last_committed)
     return false;
   return AreURLsInPageNavigation(last_committed->GetURL(), url);
@@ -947,7 +952,8 @@ void NavigationController::CopyStateFromAndPrune(NavigationController* source) {
   // The SiteInstance and page_id of the last committed entry needs to be
   // remembered at this point, in case there is only one committed entry
   // and it is pruned.
-  NavigationEntry* last_committed = GetLastCommittedEntry();
+  NavigationEntry* last_committed =
+      NavigationEntry::FromNavigationEntry(GetLastCommittedEntry());
   SiteInstance* site_instance =
       last_committed ? last_committed->site_instance() : NULL;
   int32 minimum_page_id = last_committed ? last_committed->GetPageID() : -1;
@@ -1261,7 +1267,7 @@ void NavigationController::InsertEntriesFrom(
   size_t insert_index = 0;
   for (int i = 0; i < max_index; i++) {
     // When cloning a tab, copy all entries except interstitial pages
-    if (source.entries_[i].get()->page_type() !=
+    if (source.entries_[i].get()->GetPageType() !=
         content::PAGE_TYPE_INTERSTITIAL) {
       entries_.insert(entries_.begin() + insert_index++,
                       linked_ptr<NavigationEntry>(

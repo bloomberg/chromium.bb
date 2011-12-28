@@ -53,8 +53,8 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -1047,7 +1047,7 @@ gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
     if (event->x == 0 && event->y == 0)
       return FALSE;
 
-    NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
+    content::NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
     if (!nav_entry) {
       NOTREACHED();
       return FALSE;

@@ -727,8 +727,8 @@ TEST_F(NavigationControllerTest, Back_OtherBackPending) {
 
   // We know all the entries have the same site instance, so we can just grab
   // a random one for looking up other entries.
-  SiteInstance* site_instance =
-      controller().GetLastCommittedEntry()->site_instance();
+  SiteInstance* site_instance = NavigationEntry::FromNavigationEntry(
+      controller().GetLastCommittedEntry())->site_instance();
 
   // That second URL should be the last committed and it should have gotten the
   // new title.
@@ -1475,7 +1475,7 @@ TEST_F(NavigationControllerTest, EnforceMaxNavigationCount) {
 TEST_F(NavigationControllerTest, RestoreNavigate) {
   // Create a NavigationController with a restored set of tabs.
   GURL url("http://foo");
-  std::vector<NavigationEntry*> entries;
+  std::vector<content::NavigationEntry*> entries;
   NavigationEntry* entry = NavigationController::CreateNavigationEntry(
       url, content::Referrer(), content::PAGE_TRANSITION_RELOAD, false,
       std::string(), browser_context());
@@ -1525,7 +1525,9 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   EXPECT_EQ(0, our_controller.last_committed_entry_index());
   EXPECT_FALSE(our_controller.pending_entry());
   EXPECT_EQ(url,
-            our_controller.GetLastCommittedEntry()->site_instance()->site());
+            NavigationEntry::FromNavigationEntry(
+                our_controller.GetLastCommittedEntry())->site_instance()->
+                    site());
   EXPECT_EQ(NavigationEntry::RESTORE_NONE,
             our_controller.GetEntryAtIndex(0)->restore_type());
 }
@@ -1535,7 +1537,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
 TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   // Create a NavigationController with a restored set of tabs.
   GURL url("http://foo");
-  std::vector<NavigationEntry*> entries;
+  std::vector<content::NavigationEntry*> entries;
   NavigationEntry* entry = NavigationController::CreateNavigationEntry(
       url, content::Referrer(), content::PAGE_TRANSITION_RELOAD, false,
       std::string(), browser_context());
@@ -1598,7 +1600,9 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   EXPECT_EQ(0, our_controller.last_committed_entry_index());
   EXPECT_FALSE(our_controller.pending_entry());
   EXPECT_EQ(url,
-            our_controller.GetLastCommittedEntry()->site_instance()->site());
+            NavigationEntry::FromNavigationEntry(
+                our_controller.GetLastCommittedEntry())->site_instance()->
+                    site());
   EXPECT_EQ(NavigationEntry::RESTORE_NONE,
             our_controller.GetEntryAtIndex(0)->restore_type());
 }
@@ -1624,7 +1628,7 @@ TEST_F(NavigationControllerTest, Interstitial) {
   // The page should be a normal page again.
   EXPECT_EQ(url2, controller().GetLastCommittedEntry()->GetURL());
   EXPECT_EQ(content::PAGE_TYPE_NORMAL,
-            controller().GetLastCommittedEntry()->page_type());
+            controller().GetLastCommittedEntry()->GetPageType());
 }
 
 TEST_F(NavigationControllerTest, RemoveEntry) {
@@ -1703,7 +1707,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
 
   // Adding a transient with no pending entry.
   NavigationEntry* transient_entry = new NavigationEntry;
-  transient_entry->set_url(transient_url);
+  transient_entry->SetURL(transient_url);
   controller().AddTransientEntry(transient_entry);
 
   // We should not have received any notifications.
@@ -1731,7 +1735,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
 
   // Add a transient again, then navigate with no pending entry this time.
   transient_entry = new NavigationEntry;
-  transient_entry->set_url(transient_url);
+  transient_entry->SetURL(transient_url);
   controller().AddTransientEntry(transient_entry);
   EXPECT_EQ(transient_url, controller().GetActiveEntry()->GetURL());
   rvh()->SendNavigate(3, url3);
@@ -1743,7 +1747,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   controller().LoadURL(
       url4, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   transient_entry = new NavigationEntry;
-  transient_entry->set_url(transient_url);
+  transient_entry->SetURL(transient_url);
   controller().AddTransientEntry(transient_entry);
   EXPECT_EQ(transient_url, controller().GetActiveEntry()->GetURL());
   rvh()->SendNavigate(4, url4);
@@ -1752,7 +1756,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
 
   // Add a transient and go back.  This should simply remove the transient.
   transient_entry = new NavigationEntry;
-  transient_entry->set_url(transient_url);
+  transient_entry->SetURL(transient_url);
   controller().AddTransientEntry(transient_entry);
   EXPECT_EQ(transient_url, controller().GetActiveEntry()->GetURL());
   EXPECT_TRUE(controller().CanGoBack());
@@ -1765,7 +1769,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
 
   // Add a transient and go to an entry before the current one.
   transient_entry = new NavigationEntry;
-  transient_entry->set_url(transient_url);
+  transient_entry->SetURL(transient_url);
   controller().AddTransientEntry(transient_entry);
   EXPECT_EQ(transient_url, controller().GetActiveEntry()->GetURL());
   controller().GoToIndex(1);
@@ -1778,7 +1782,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
 
   // Add a transient and go to an entry after the current one.
   transient_entry = new NavigationEntry;
-  transient_entry->set_url(transient_url);
+  transient_entry->SetURL(transient_url);
   controller().AddTransientEntry(transient_entry);
   EXPECT_EQ(transient_url, controller().GetActiveEntry()->GetURL());
   controller().GoToIndex(3);
@@ -1792,7 +1796,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
 
   // Add a transient and go forward.
   transient_entry = new NavigationEntry;
-  transient_entry->set_url(transient_url);
+  transient_entry->SetURL(transient_url);
   controller().AddTransientEntry(transient_entry);
   EXPECT_EQ(transient_url, controller().GetActiveEntry()->GetURL());
   EXPECT_TRUE(controller().CanGoForward());
@@ -1844,7 +1848,9 @@ TEST_F(NavigationControllerTest, DontShowRendererURLUntilCommit) {
   rvh()->SendNavigate(1, url1);
   EXPECT_EQ(url1, controller().GetActiveEntry()->GetURL());
   EXPECT_EQ(url1, controller().GetVisibleEntry()->GetURL());
-  EXPECT_FALSE(controller().GetLastCommittedEntry()->is_renderer_initiated());
+  EXPECT_FALSE(
+      NavigationEntry::FromNavigationEntry(
+          controller().GetLastCommittedEntry())->is_renderer_initiated());
 
   notifications.Reset();
 }
@@ -2189,7 +2195,7 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForTransient) {
 
   // Adding a transient with no pending entry.
   NavigationEntry* transient_entry = new NavigationEntry;
-  transient_entry->set_url(transient_url);
+  transient_entry->SetURL(transient_url);
   controller().AddTransientEntry(transient_entry);
 
   controller().PruneAllButActive();

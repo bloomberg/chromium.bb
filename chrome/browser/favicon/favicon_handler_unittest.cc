@@ -5,8 +5,9 @@
 #include "chrome/browser/favicon/favicon_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/favicon_status.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
@@ -133,7 +134,7 @@ class TestFaviconHandlerDelegate : public FaviconHandlerDelegate {
       : tab_contents_(tab_contents) {
   }
 
-  virtual NavigationEntry* GetActiveEntry() {
+  virtual content::NavigationEntry* GetActiveEntry() {
     ADD_FAILURE() << "TestFaviconHandlerDelegate::GetActiveEntry() "
                   << "should never be called in tests.";
     return NULL;
@@ -162,8 +163,9 @@ class TestFaviconHandler : public FaviconHandler {
                      Type type)
       : FaviconHandler(profile, delegate, type),
         download_image_size_(0),
+        entry_(content::NavigationEntry::Create()),
         download_id_(0) {
-    entry_.set_url(page_url);
+    entry_->SetURL(page_url);
   }
 
   virtual ~TestFaviconHandler() {
@@ -187,8 +189,8 @@ class TestFaviconHandler : public FaviconHandler {
     download_handler_.reset(download_handler);
   }
 
-  virtual NavigationEntry* GetEntry() {
-    return &entry_;
+  virtual content::NavigationEntry* GetEntry() {
+    return entry_.get();
   }
 
   const std::vector<FaviconURL>& urls() {
@@ -271,7 +273,7 @@ class TestFaviconHandler : public FaviconHandler {
   int download_image_size_;
 
  private:
-  NavigationEntry entry_;
+  scoped_ptr<content::NavigationEntry> entry_;
 
   // The unique id of a download request. It will be returned to a
   // FaviconHandler.

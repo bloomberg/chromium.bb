@@ -491,7 +491,7 @@ void TabRestoreService::PopulateTab(Tab* tab,
     entry_count++;
   tab->navigations.resize(static_cast<int>(entry_count));
   for (int i = 0; i < entry_count; ++i) {
-    NavigationEntry* entry = (i == pending_index) ?
+    content::NavigationEntry* entry = (i == pending_index) ?
         controller->pending_entry() : controller->GetEntryAtIndex(i);
     tab->navigations[i].SetFromNavigationEntry(*entry);
   }

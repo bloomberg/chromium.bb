@@ -7,7 +7,10 @@
 #pragma once
 
 class GURL;
+
+namespace content {
 class NavigationEntry;
+}
 
 // This class provides a delegate interface for a FaviconHandler.  It allows the
 // FaviconHandler to ask its delegate for information or notify its delegate
@@ -15,7 +18,7 @@ class NavigationEntry;
 class FaviconHandlerDelegate {
  public:
   // Returns the current NavigationEntry.
-  virtual NavigationEntry* GetActiveEntry() = 0;
+  virtual content::NavigationEntry* GetActiveEntry() = 0;
 
   // Starts the download for the given favicon.  When finished, the delegate
   // will call |OnDidDownloadFavicon()| with the results.
