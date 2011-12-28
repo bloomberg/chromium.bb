@@ -141,13 +141,14 @@ def _IsIncrementalBuild(buildroot, clobber):
 def _RunSudoNoOp():
   """Run sudo with a noop, to reset the sudo timestamp."""
   # This resets the normal terminal-bound sudo.
-  proc = subprocess.Popen(['sudo', 'echo'], stdout=subprocess.PIPE, shell=False)
+  proc = subprocess.Popen(['sudo', 'true', 'keepalive'], stdout=subprocess.PIPE,
+      shell=False)
   proc.communicate()
   # This resets the terminal-less sudo. This is achieved by replacing all of
   # stdin,stdout,stderr with a PIPE, as that is what sudo uses to determine tty.
   # Without a tty, the timestamp will belong to a special /dev/null sudo. See
   # crosbug.com/18393 for details.
-  proc = subprocess.Popen(['sudo', 'su'], stdin=subprocess.PIPE,
+  proc = subprocess.Popen(['sudo', 'true', 'keepalive'], stdin=subprocess.PIPE,
       stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
   proc.communicate(input='')
 
