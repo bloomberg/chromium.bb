@@ -246,6 +246,9 @@ void PpapiThread::OnMsgCreateChannel(base::ProcessHandle host_process_handle,
   if (!library_.is_valid() ||  // Plugin couldn't be loaded.
       !SetupRendererChannel(host_process_handle, renderer_id,
                             &channel_handle)) {
+    // Add CHECK to investigate the root cause of crbug.com/103957.  Will remove
+    // after the bug is fixed.
+    CHECK(library_.is_valid());
     Send(new PpapiHostMsg_ChannelCreated(IPC::ChannelHandle()));
     return;
   }
