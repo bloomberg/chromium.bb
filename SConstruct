@@ -729,6 +729,9 @@ def GetPlatformString(env):
 
 
 tests_to_disable = set([
+    # http://code.google.com/p/chromium/issues/detail?id=108131
+    'run_ppapi_extension_mime_handler_browser_test',
+
     # these sel_universal tests are broken and it's won't fix
     # http://code.google.com/p/nativeclient/issues/detail?id=2390
     'run_ppapi_simple_audio_test',
