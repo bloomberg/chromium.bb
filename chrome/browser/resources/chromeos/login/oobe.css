@@ -337,9 +337,6 @@ html[dir=rtl] #user-image-preview {
   color: dimGray;
   font-size: smaller;
   margin: 8px 4px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 #footer {
