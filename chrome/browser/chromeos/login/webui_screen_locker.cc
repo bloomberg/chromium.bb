@@ -66,6 +66,9 @@ void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                  content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_LOCK_WEBUI_READY,
+                 content::NotificationService::AllSources());
 }
 
 void WebUIScreenLocker::ScreenLockReady() {
@@ -128,11 +131,21 @@ void WebUIScreenLocker::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type != chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED)
-    return;
-
-  const User& user = *content::Details<User>(details).ptr();
-  login_display_->OnUserImageChanged(user);
+  switch (type) {
+    case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {
+      const User& user = *content::Details<User>(details).ptr();
+      login_display_->OnUserImageChanged(user);
+      break;
+    }
+    case chrome::NOTIFICATION_LOCK_WEBUI_READY: {
+      webui_ready_ = true;
+      if (lock_ready_)
+        ScreenLockReady();
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -161,8 +174,6 @@ void WebUIScreenLocker::CompleteLogin(const std::string& username,
 
 void WebUIScreenLocker::Login(const std::string& username,
                               const std::string& password) {
-  DCHECK(username == chromeos::UserManager::Get()->logged_in_user().email());
-
   chromeos::ScreenLocker::default_screen_locker()->Authenticate(
       ASCIIToUTF16(password));
 }
@@ -189,13 +200,6 @@ void WebUIScreenLocker::OnLockWindowReady() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Overridden from WebUILoginView:
-
-void WebUIScreenLocker::OnTabMainFrameFirstRender() {
-  WebUILoginView::OnTabMainFrameFirstRender();
-  webui_ready_ = true;
-  if (lock_ready_)
-    ScreenLockReady();
-}
 
 views::Widget::InitParams::Type WebUIScreenLocker::GetStatusAreaWidgetType() {
   return views::Widget::InitParams::TYPE_POPUP;

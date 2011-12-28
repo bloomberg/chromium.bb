@@ -20,7 +20,7 @@ class ScreenLocker;
 class UserView;
 
 namespace test {
-class ScreenLockerTester;
+class ScreenLockerViewsTester;
 }  // namespace test
 
 // ScreenLockView creates view components necessary to authenticate
@@ -64,7 +64,7 @@ class ScreenLockView : public ThrobberHostView,
   views::Textfield* password_field() { return password_field_; }
 
  private:
-  friend class test::ScreenLockerTester;
+  friend class test::ScreenLockerViewsTester;
 
   UserView* user_view_;
 

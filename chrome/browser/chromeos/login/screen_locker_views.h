@@ -25,7 +25,7 @@ class ScreenLocker;
 class ScreenLockView;
 
 namespace test {
-class ScreenLockerTester;
+class ScreenLockerViewsTester;
 }
 
 // This version of ScreenLockerDelegate displays a views interface. This class
@@ -79,7 +79,7 @@ class ScreenLockerViews : public ScreenLockerDelegate,
 
  private:
   friend class LockerInputEventObserver;
-  friend class test::ScreenLockerTester;
+  friend class test::ScreenLockerViewsTester;
 
   virtual ~ScreenLockerViews();
 

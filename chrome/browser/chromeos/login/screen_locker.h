@@ -23,6 +23,8 @@ class User;
 
 namespace test {
 class ScreenLockerTester;
+class ScreenLockerViewsTester;
+class WebUIScreenLockerTester;
 }  // namespace test
 
 // ScreenLocker creates a ScreenLockerDelegate which will display the lock UI.
@@ -70,10 +72,8 @@ class ScreenLocker : public LoginStatusConsumer {
   // button is blocked.
   void ShowErrorMessage(const string16& message, bool sign_out_only);
 
-#if defined(TOOLKIT_USES_GTK)
   // Returns the user to authenticate.
   const User& user() const { return user_; }
-#endif
 
   // Allow a LoginStatusConsumer to listen for
   // the same login events that ScreenLocker does.
@@ -96,14 +96,14 @@ class ScreenLocker : public LoginStatusConsumer {
   // Notifies that PowerManager rejected UnlockScreen request.
   static void UnlockScreenFailed();
 
-#if defined(TOOLKIT_USES_GTK)
   // Returns the tester
   static test::ScreenLockerTester* GetTester();
-#endif
 
  private:
   friend class DeleteTask<ScreenLocker>;
   friend class test::ScreenLockerTester;
+  friend class test::ScreenLockerViewsTester;
+  friend class test::WebUIScreenLockerTester;
   friend class ScreenLockerDelegate;
 
   virtual ~ScreenLocker();

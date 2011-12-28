@@ -106,6 +106,9 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_network_library_, FindCellularDevice())
       .Times(AnyNumber())
       .WillRepeatedly((Return((const NetworkDevice*)(NULL))));
+  EXPECT_CALL(*mock_network_library_, FindEthernetDevice())
+      .Times(AnyNumber())
+      .WillRepeatedly((Return((const NetworkDevice*)(NULL))));
   EXPECT_CALL(*mock_network_library_, ethernet_available())
       .Times(AnyNumber())
       .WillRepeatedly((Return(true)));

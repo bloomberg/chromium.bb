@@ -14,6 +14,10 @@
 
 namespace chromeos {
 
+namespace test {
+class WebUIScreenLockerTester;
+}
+
 // A ScreenLock window that covers entire screen to keep the keyboard
 // focus/events inside the grab widget.
 class LockWindowGtk : public views::NativeWidgetGtk,
@@ -32,6 +36,7 @@ class LockWindowGtk : public views::NativeWidgetGtk,
   virtual void HandleGtkGrabBroke() OVERRIDE;
 
  private:
+  friend class test::WebUIScreenLockerTester;
   friend class LockWindow;
 
   LockWindowGtk();

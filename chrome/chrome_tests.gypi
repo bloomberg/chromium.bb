@@ -524,6 +524,7 @@
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libpng/libpng.gyp:libpng',
         '../third_party/zlib/zlib.gyp:zlib',
         '../testing/gmock.gyp:gmock',
@@ -647,6 +648,17 @@
           ],
         }],
         ['chromeos==1', {
+          'sources': [
+            'browser/chromeos/cros/cros_in_process_browser_test.cc',
+            'browser/chromeos/cros/cros_in_process_browser_test.h',
+            'browser/chromeos/cros/cros_mock.cc',
+            'browser/chromeos/cros/cros_mock.h',
+            'browser/chromeos/login/mock_authenticator.cc',
+            'browser/chromeos/login/mock_authenticator.h',
+            'browser/chromeos/login/screen_locker_browsertest.cc',
+            'browser/chromeos/login/screen_locker_tester.cc',
+            'browser/chromeos/login/screen_locker_tester.h',
+          ],
           'sources!': [
             'browser/ui/panels/panel_browsertest.cc',
             'browser/ui/panels/panel_overflow_browsertest.cc',
@@ -2477,9 +2489,6 @@
         'browser/chromeos/login/mock_update_screen.cc',
         'browser/chromeos/login/mock_update_screen.h',
         'browser/chromeos/login/network_screen_browsertest.cc',
-        'browser/chromeos/login/screen_locker_browsertest.cc',
-        'browser/chromeos/login/screen_locker_tester.cc',
-        'browser/chromeos/login/screen_locker_tester.h',
         'browser/chromeos/login/update_screen_browsertest.cc',
         'browser/chromeos/login/wizard_controller_browsertest.cc',
         'browser/chromeos/login/wizard_in_process_browser_test.cc',
@@ -2828,8 +2837,6 @@
           'conditions': [
             ['use_aura==1', {
               'sources/': [
-                ['exclude', '^browser/chromeos/login/screen_locker_browsertest.cc'],
-                ['exclude', '^browser/chromeos/login/screen_locker_tester.cc'],
                 ['exclude', '^browser/chromeos/notifications/'],
                 ['exclude', '^browser/chromeos/panels/panel_browsertest.cc'],
                 ['exclude', '^browser/ui/views/status_icons/status_tray_chromeos_browsertest.cc'],

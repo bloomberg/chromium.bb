@@ -23,6 +23,10 @@ namespace chromeos {
 class ScreenLocker;
 class WebUILoginDisplay;
 
+namespace test {
+class WebUIScreenLockerTester;
+}
+
 // This version of ScreenLockerDelegate displays a WebUI lock screen based on
 // the Oobe account picker screen.
 class WebUIScreenLocker : public WebUILoginView,
@@ -67,10 +71,11 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual void OnLockWindowReady() OVERRIDE;
 
   // Overridden from WebUILoginView.
-  virtual void OnTabMainFrameFirstRender() OVERRIDE;
   virtual views::Widget::InitParams::Type GetStatusAreaWidgetType() OVERRIDE;
 
  private:
+  friend class test::WebUIScreenLockerTester;
+
   virtual ~WebUIScreenLocker();
 
   // The screen locker window.

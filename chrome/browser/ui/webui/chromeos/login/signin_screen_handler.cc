@@ -700,6 +700,13 @@ void SigninScreenHandler::HandleAccountPickerReady(
   // loaded because it can affect the loading speed.
   if (is_first_attempt_ && !cookie_remover_ && !dns_clear_task_running_)
     LoadAuthExtension(true, true);
+
+  if (ScreenLocker::default_screen_locker()) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_LOCK_WEBUI_READY,
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
+  }
 }
 
 void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {

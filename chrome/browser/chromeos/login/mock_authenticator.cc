@@ -60,9 +60,6 @@ void MockAuthenticator::OnLoginSuccess(
 
 void MockAuthenticator::OnLoginFailure(const LoginFailure& failure) {
     consumer_->OnLoginFailure(failure);
-    VLOG(1) << "Posting a QuitTask to UI thread";
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

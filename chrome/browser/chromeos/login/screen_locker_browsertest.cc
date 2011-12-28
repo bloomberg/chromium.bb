@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
+#include "chrome/browser/chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/mock_power_manager_client.h"
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
@@ -23,7 +24,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/widget/widget.h"
+
+#if defined(TOOLKIT_USES_GTK)
 #include "ui/views/widget/native_widget_gtk.h"
+#endif
 
 namespace {
 
@@ -36,23 +41,32 @@ class Waiter : public content::NotificationObserver {
     registrar_.Add(this,
                    chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
                    content::NotificationService::AllSources());
+#if defined(TOOLKIT_USES_GTK)
     handler_id_ = g_signal_connect(
         G_OBJECT(browser_->window()->GetNativeHandle()),
         "window-state-event",
         G_CALLBACK(OnWindowStateEventThunk),
         this);
+#else
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+                   content::NotificationService::AllSources());
+#endif
   }
 
-  ~Waiter() {
+  virtual ~Waiter() {
+#if defined(TOOLKIT_USES_GTK)
     g_signal_handler_disconnect(
         G_OBJECT(browser_->window()->GetNativeHandle()),
         handler_id_);
+#endif
   }
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
-    DCHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
+    DCHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED ||
+           type == chrome::NOTIFICATION_FULLSCREEN_CHANGED);
     if (running_)
       MessageLoop::current()->Quit();
   }
@@ -71,12 +85,16 @@ class Waiter : public content::NotificationObserver {
     running_ = false;
   }
 
+#if defined(TOOLKIT_USES_GTK)
   CHROMEGTK_CALLBACK_1(Waiter, gboolean, OnWindowStateEvent,
                        GdkEventWindowState*);
+#endif
 
  private:
   Browser* browser_;
+#if defined(TOOLKIT_USES_GTK)
   gulong handler_id_;
+#endif
   content::NotificationRegistrar registrar_;
 
   // Are we currently running the message loop?
@@ -85,11 +103,13 @@ class Waiter : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(Waiter);
 };
 
+#if defined(TOOLKIT_USES_GTK)
 gboolean Waiter::OnWindowStateEvent(GtkWidget* widget,
                                     GdkEventWindowState* event) {
   MessageLoop::current()->Quit();
   return false;
 }
+#endif
 
 }  // namespace
 
@@ -97,19 +117,19 @@ namespace chromeos {
 
 class ScreenLockerTest : public CrosInProcessBrowserTest {
  public:
-  ScreenLockerTest() {
+  ScreenLockerTest() : mock_power_manager_client_(NULL) {
   }
 
  protected:
-  MockPowerManagerClient mock_power_manager_client_;
+  MockPowerManagerClient* mock_power_manager_client_;
 
   // Test the no password mode with different unlock scheme given by
   // |unlock| function.
   void TestNoPassword(void (unlock)(views::Widget*)) {
-    EXPECT_CALL(mock_power_manager_client_, NotifyScreenUnlockRequested())
+    EXPECT_CALL(*mock_power_manager_client_, NotifyScreenUnlockRequested())
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(mock_power_manager_client_, NotifyScreenLockCompleted())
+    EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
         .Times(1)
         .RetiresOnSaturation();
     UserManager::Get()->GuestUserLoggedIn();
@@ -150,11 +170,16 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
 
  private:
   virtual void SetUpInProcessBrowserTestFixture() {
+    MockDBusThreadManager* mock_dbus_thread_manager =
+        new MockDBusThreadManager;
+    DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
+    mock_power_manager_client_ = static_cast<MockPowerManagerClient*>(
+        DBusThreadManager::Get()->GetPowerManagerClient());
     cros_mock_->InitStatusAreaMocks();
-    EXPECT_CALL(mock_power_manager_client_, AddObserver(testing::_))
+    EXPECT_CALL(*mock_power_manager_client_, AddObserver(testing::_))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(mock_power_manager_client_, NotifyScreenUnlockCompleted())
+    EXPECT_CALL(*mock_power_manager_client_, NotifyScreenUnlockCompleted())
         .Times(1)
         .RetiresOnSaturation();
     // Expectations for the status are on the screen lock window.
@@ -173,11 +198,11 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
 
 // Temporarily disabling all screen locker tests while investigating the
 // issue crbug.com/78764.
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestBasic) {
-  EXPECT_CALL(mock_power_manager_client_, NotifyScreenUnlockRequested())
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
+  EXPECT_CALL(*mock_power_manager_client_, NotifyScreenUnlockRequested())
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(mock_power_manager_client_, NotifyScreenLockCompleted())
+  EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
       .Times(1)
       .RetiresOnSaturation();
   UserManager::Get()->UserLoggedIn("user");
@@ -214,11 +239,11 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestBasic) {
   EXPECT_FALSE(tester->IsLocked());
 }
 
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestFullscreenExit) {
-  EXPECT_CALL(mock_power_manager_client_, NotifyScreenUnlockRequested())
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
+  EXPECT_CALL(*mock_power_manager_client_, NotifyScreenUnlockRequested())
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(mock_power_manager_client_, NotifyScreenLockCompleted())
+  EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
       .Times(1)
       .RetiresOnSaturation();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
@@ -264,17 +289,21 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest,
   TestNoPassword(MouseClick);
 }
 
-void KeyPress(views::Widget* widget) {
-  ui_controls::SendKeyPress(GTK_WINDOW(widget->GetNativeView()),
-                            ui::VKEY_SPACE, false, false, false, false);
+void SimulateKeyPress(views::Widget* widget, ui::KeyboardCode key_code) {
+  ui_controls::SendKeyPress(widget->GetNativeWindow(),
+                            key_code, false, false, false, false);
+}
+
+void UnlockKeyPress(views::Widget* widget) {
+  SimulateKeyPress(widget, ui::VKEY_SPACE);
 }
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestNoPasswordWithKeyPress) {
-  TestNoPassword(KeyPress);
+  TestNoPassword(UnlockKeyPress);
 }
 
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestShowTwice) {
-  EXPECT_CALL(mock_power_manager_client_, NotifyScreenLockCompleted())
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
+  EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
       .Times(2)
       .RetiresOnSaturation();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
@@ -294,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestShowTwice) {
 }
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestEscape) {
-  EXPECT_CALL(mock_power_manager_client_, NotifyScreenLockCompleted())
+  EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
       .Times(1)
       .RetiresOnSaturation();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
@@ -306,8 +335,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestEscape) {
   tester->SetPassword("password");
   EXPECT_EQ("password", tester->GetPassword());
   // Escape clears the password.
-  ui_controls::SendKeyPress(GTK_WINDOW(tester->GetWidget()->GetNativeView()),
-                            ui::VKEY_ESCAPE, false, false, false, false);
+  SimulateKeyPress(tester->GetWidget(), ui::VKEY_ESCAPE);
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ("", tester->GetPassword());
 
