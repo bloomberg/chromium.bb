@@ -8,7 +8,6 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/common/chrome_view_type.h"
-#include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
 ExtensionHostMac::~ExtensionHostMac() {

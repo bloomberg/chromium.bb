@@ -31,7 +31,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/backing_store_mac.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_widget_host_view_mac.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
