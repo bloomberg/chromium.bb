@@ -922,6 +922,19 @@ bool SyncManager::SyncInternal::Init(
 
   sync_notifier_->AddObserver(this);
 
+  // Now check the command line to see if we need to simulate an
+  // unrecoverable error for testing purpose. Note the error is thrown
+  // only if the initialization succeeded. Also it makes sense to use this
+  // flag only when restarting the browser with an account already setup. If
+  // you use this before setting up the setup would not succeed as an error
+  // would be encountered.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncThrowUnrecoverableError)) {
+    ReadTransaction trans(FROM_HERE, GetUserShare());
+    trans.GetWrappedTrans()->OnUnrecoverableError(FROM_HERE,
+        "Simulating unrecoverable error for testing purpose.");
+  }
+
   return signed_in;
 }
 

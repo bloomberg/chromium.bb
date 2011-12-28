@@ -294,6 +294,7 @@ extern const char kSyncerThreadTimedStop[];
 extern const char kSyncNotificationMethod[];
 extern const char kSyncNotificationHost[];
 extern const char kSyncServiceURL[];
+extern const char kSyncThrowUnrecoverableError[];
 extern const char kSyncTrySsltcpFirstForXmpp[];
 extern const char kTestNaClSandbox[];
 extern const char kTestName[];
