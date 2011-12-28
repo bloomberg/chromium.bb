@@ -19,7 +19,7 @@ function CommandQueue(document, canvas) {
 
   this.busy_ = false;
 
-  this.UIContext_ = null;
+  this.UIContext_ = {};
 }
 
 /**
@@ -42,11 +42,15 @@ CommandQueue.prototype.attachUI = function(imageView, prompt, lock) {
  * Detach the UI. Further image modifications will not be displayed.
  */
 CommandQueue.prototype.detachUI = function() {
-  // Instead of nulling out this.UIContext_ we null out its fields so that
-  // the commands currently being executed see this change.
+  // The current this.UIContext_ object might be used by the command currently
+  // being executed. Null out its fields so that the command continues silently.
   this.UIContext_.imageView = null;
   this.UIContext_.prompt = null;
   this.UIContext_.lock = null;
+
+  // Now replace the object to guarantee that we do not interfere with the
+  // current command.
+  this.UIContext_ = {};
 };
 
 /**
@@ -76,7 +80,7 @@ CommandQueue.prototype.setBusy_ = function(on) {
     }
   }
 
-  if (this.UIContext_)
+  if (this.UIContext_.lock)
     this.UIContext_.lock(on);
 
   if (on) {
@@ -241,7 +245,7 @@ Command.Rotate.prototype.execute = function(
       (this.rotate90_ & 1) ? srcCanvas.width : srcCanvas.height);
   ImageUtil.drawImageTransformed(
       result, srcCanvas, 1, 1, this.rotate90_ * Math.PI / 2);
-  if (uiContext && uiContext.imageView) {
+  if (uiContext.imageView) {
     uiContext.imageView.replaceAndAnimate(result, null, this.rotate90_);
   }
   setTimeout(callback.bind(null, result), 0);
@@ -271,9 +275,8 @@ Command.Crop.prototype.execute = function(
   var result = this.createCanvas_(
       document, srcCanvas, this.imageRect_.width, this.imageRect_.height);
   Rect.drawImage(result.getContext("2d"), srcCanvas, null, this.imageRect_);
-  if (uiContext && uiContext.imageView) {
-    uiContext.imageView.
-        replaceAndAnimate(result, this.screenRect_, 0);
+  if (uiContext.imageView) {
+    uiContext.imageView.replaceAndAnimate(result, this.screenRect_, 0);
   }
   setTimeout(callback.bind(null, result), 0);
 };
