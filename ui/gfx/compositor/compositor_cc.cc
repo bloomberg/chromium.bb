@@ -23,8 +23,6 @@
 
 namespace {
 
-const double kDefaultRefreshRate = 60.0;
-
 webkit_glue::WebThreadImpl* g_compositor_thread = NULL;
 
 // If true a context is used that results in no rendering to the screen.
@@ -140,7 +138,6 @@ CompositorCC::CompositorCC(CompositorDelegate* delegate,
       command_line->HasSwitch(switches::kUIShowFPSCounter);
   settings.showPlatformLayerTree =
       command_line->HasSwitch(switches::kUIShowLayerTree);
-  settings.refreshRate = kDefaultRefreshRate;
   settings.partialSwapEnabled =
       command_line->HasSwitch(switches::kUIEnablePartialSwap);
 
