@@ -676,6 +676,8 @@ class Network {
 
   void SetSaveCredentials(bool save_credentials);
 
+  void ClearUIData();
+
   // Return a string representation of the state code.
   std::string GetStateString() const;
 

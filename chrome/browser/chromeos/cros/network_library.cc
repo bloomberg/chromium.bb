@@ -574,6 +574,11 @@ void Network::SetSaveCredentials(bool save_credentials) {
       flimflam::kSaveCredentialsProperty, save_credentials, &save_credentials_);
 }
 
+void Network::ClearUIData() {
+  ui_data_.Clear();
+  ClearProperty(flimflam::kUIDataProperty);
+}
+
 void Network::SetProfilePath(const std::string& profile_path) {
   VLOG(1) << "Setting profile for: " << name_ << " to: " << profile_path;
   SetOrClearStringProperty(
@@ -3159,6 +3164,7 @@ void NetworkLibraryImplBase::DeleteRememberedNetwork(
   if (network) {
     // Clear the stored credentials for any forgotten networks.
     network->EraseCredentials();
+    network->ClearUIData();
     SetProfileType(network, PROFILE_NONE);
     // Remove VPN from list of networks.
     if (network->type() == TYPE_VPN)
