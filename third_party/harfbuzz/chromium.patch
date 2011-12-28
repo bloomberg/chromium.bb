@@ -1,5 +1,5 @@
 diff --git a/contrib/harfbuzz-unicode.c b/contrib/harfbuzz-unicode.c
-index 049e0ca..86458d0 100644
+index ce4f8e2..eeff2b9 100644
 --- a/contrib/harfbuzz-unicode.c
 +++ b/contrib/harfbuzz-unicode.c
 @@ -120,7 +120,6 @@ hb_utf16_script_run_next(unsigned *num_code_points, HB_ScriptItem *output,
@@ -34,6 +34,20 @@ index 3837087..ce2ca6c 100644
  #ifndef NO_OPENTYPE
  
      if (HB_SelectScript(item, item->item.script == HB_Script_Arabic ? arabic_features : syriac_features)) {
+diff --git a/src/harfbuzz-myanmar.c b/src/harfbuzz-myanmar.c
+index 4b68e64..f4d6d78 100644
+--- a/src/harfbuzz-myanmar.c
++++ b/src/harfbuzz-myanmar.c
+@@ -359,7 +359,8 @@ static HB_Bool myanmar_shape_syllable(HB_Bool openType, HB_ShaperItem *item, HB_
+         if (kinzi >= 0 && i > base && (cc & Mymr_CF_AFTER_KINZI)) {
+             reordered[len] = Mymr_C_NGA;
+             reordered[len+1] = Mymr_C_VIRAMA;
+-            properties[len-1] = AboveForm;
++            if (len > 0)
++                properties[len-1] = AboveForm;
+             properties[len] = AboveForm;
+             len += 2;
+             kinzi = -1;
 diff --git a/src/harfbuzz-shaper.cpp b/src/harfbuzz-shaper.cpp
 index ce4d4ac..5999e08 100644
 --- a/src/harfbuzz-shaper.cpp
