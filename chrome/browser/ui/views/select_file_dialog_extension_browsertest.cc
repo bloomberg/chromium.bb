@@ -76,12 +76,21 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
     listener_.reset(new MockSelectFileDialogListener());
     dialog_ = new SelectFileDialogExtension(listener_.get());
 
+    // We have to provide at least one mount point.
+    // File manager looks for "Downloads" mount point, so use this name.
+    FilePath tmp_path;
+    PathService::Get(base::DIR_TEMP, &tmp_path);
+    ASSERT_TRUE(tmp_dir_.CreateUniqueTempDirUnderPath(tmp_path));
+    downloads_dir_ = tmp_dir_.path().Append("Downloads");
+    file_util::CreateDirectory(downloads_dir_);
+
     // Must run after our setup because it actually runs the test.
     ExtensionBrowserTest::SetUp();
   }
 
   virtual void TearDown() OVERRIDE {
     ExtensionBrowserTest::TearDown();
+
     // Delete the dialog first, as it holds a pointer to the listener.
     dialog_ = NULL;
     listener_.reset();
@@ -185,6 +194,9 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
 
   scoped_ptr<MockSelectFileDialogListener> second_listener_;
   scoped_refptr<SelectFileDialogExtension> second_dialog_;
+
+  ScopedTempDir tmp_dir_;
+  FilePath downloads_dir_;
 };
 
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, CreateAndDestroy) {
@@ -215,16 +227,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, DestroyListener) {
 #endif
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                        MAYBE_SelectFileAndCancel) {
-  // Add tmp mount point even though this test won't use it directly.
-  // We need this to make sure that at least one top-level directory exists
-  // in the file browser.
-  FilePath tmp_dir;
-  PathService::Get(base::DIR_TEMP, &tmp_dir);
-  ScopedTempDir downloads_dir;
-  ASSERT_TRUE(downloads_dir.CreateUniqueTempDirUnderPath(tmp_dir));
-  tmp_dir = downloads_dir.path().Append("Downloads");
-  ASSERT_TRUE(file_util::CreateDirectory(tmp_dir));
-  AddMountPoint(tmp_dir);
+  AddMountPoint(downloads_dir_);
 
   gfx::NativeWindow owning_window = browser()->window()->GetNativeHandle();
 
@@ -248,23 +251,9 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                        MAYBE_SelectFileAndOpen) {
-  // Allow the tmp directory to be mounted.  We explicitly use /tmp because
-  // it is whitelisted for file system access on Chrome OS.
-  // File manager looks for Downloads mount point, so use this name.
-  FilePath tmp_dir;
-  PathService::Get(base::DIR_TEMP, &tmp_dir);
-  ScopedTempDir downloads_dir;
-  ASSERT_TRUE(downloads_dir.CreateUniqueTempDirUnderPath(tmp_dir));
-  tmp_dir = downloads_dir.path().Append("Downloads");
-  ASSERT_TRUE(file_util::CreateDirectory(tmp_dir));
-  AddMountPoint(tmp_dir);
+  AddMountPoint(downloads_dir_);
 
-  // Create a directory with a single file in it.  ScopedTempDir will delete
-  // itself and our temp file when it goes out of scope.
-  ScopedTempDir scoped_temp_dir;
-  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDirUnderPath(tmp_dir));
-  FilePath temp_dir = scoped_temp_dir.path();
-  FilePath test_file = temp_dir.AppendASCII("file_manager_test.html");
+  FilePath test_file = downloads_dir_.AppendASCII("file_manager_test.html");
 
   // Create an empty file to give us something to select.
   FILE* fp = file_util::OpenFile(test_file, "w");
@@ -299,23 +288,9 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                        MAYBE_SelectFileAndSave) {
-  // Allow the tmp directory to be mounted.  We explicitly use /tmp because
-  // it is whitelisted for file system access on Chrome OS.
-  // File manager looks for Downloads mount point, so use this name.
-  FilePath tmp_dir;
-  PathService::Get(base::DIR_TEMP, &tmp_dir);
-  ScopedTempDir downloads_dir;
-  ASSERT_TRUE(downloads_dir.CreateUniqueTempDirUnderPath(tmp_dir));
-  tmp_dir = downloads_dir.path().Append("Downloads");
-  ASSERT_TRUE(file_util::CreateDirectory(tmp_dir));
-  AddMountPoint(tmp_dir);
+  AddMountPoint(downloads_dir_);
 
-  // Create a directory with a single file in it.  ScopedTempDir will delete
-  // itself and our temp file when it goes out of scope.
-  ScopedTempDir scoped_temp_dir;
-  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDirUnderPath(tmp_dir));
-  FilePath temp_dir = scoped_temp_dir.path();
-  FilePath test_file = temp_dir.AppendASCII("file_manager_test.html");
+  FilePath test_file = downloads_dir_.AppendASCII("file_manager_test.html");
 
   gfx::NativeWindow owning_window = browser()->window()->GetNativeHandle();
 
@@ -345,16 +320,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                        MAYBE_OpenSingletonTabAndCancel) {
-  // Add tmp mount point even though this test won't use it directly.
-  // We need this to make sure that at least one top-level directory exists
-  // in the file browser.
-  FilePath tmp_dir;
-  PathService::Get(base::DIR_TEMP, &tmp_dir);
-  ScopedTempDir downloads_dir;
-  ASSERT_TRUE(downloads_dir.CreateUniqueTempDirUnderPath(tmp_dir));
-  tmp_dir = downloads_dir.path().Append("Downloads");
-  ASSERT_TRUE(file_util::CreateDirectory(tmp_dir));
-  AddMountPoint(tmp_dir);
+  AddMountPoint(downloads_dir_);
 
   gfx::NativeWindow owning_window = browser()->window()->GetNativeHandle();
 
@@ -384,16 +350,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                        MAYBE_OpenTwoDialogs) {
-  // Add tmp mount point even though this test won't use it directly.
-  // We need this to make sure that at least one top-level directory exists
-  // in the file browser.
-  FilePath tmp_dir;
-  PathService::Get(base::DIR_TEMP, &tmp_dir);
-  ScopedTempDir downloads_dir;
-  ASSERT_TRUE(downloads_dir.CreateUniqueTempDirUnderPath(tmp_dir));
-  tmp_dir = downloads_dir.path().Append("Downloads");
-  ASSERT_TRUE(file_util::CreateDirectory(tmp_dir));
-  AddMountPoint(tmp_dir);
+  AddMountPoint(downloads_dir_);
 
   gfx::NativeWindow owning_window = browser()->window()->GetNativeHandle();
 
