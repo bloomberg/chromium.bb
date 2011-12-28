@@ -12,6 +12,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/navigation_entry.h"
 
+using content::NavigationEntry;
+
 TabContentsWrapperSyncedTabDelegate::TabContentsWrapperSyncedTabDelegate(
     TabContentsWrapper* tab_contents_wrapper)
         : tab_contents_wrapper_(tab_contents_wrapper) {}
@@ -59,21 +61,18 @@ int TabContentsWrapperSyncedTabDelegate::GetPendingEntryIndex() const {
       pending_entry_index();
 }
 
-content::NavigationEntry*
-    TabContentsWrapperSyncedTabDelegate::GetPendingEntry() const {
+NavigationEntry* TabContentsWrapperSyncedTabDelegate::GetPendingEntry() const {
   return
       tab_contents_wrapper_->tab_contents()->GetController().GetPendingEntry();
 }
 
-content::NavigationEntry*
-    TabContentsWrapperSyncedTabDelegate::GetEntryAtIndex(int i)
+NavigationEntry* TabContentsWrapperSyncedTabDelegate::GetEntryAtIndex(int i)
     const {
   return
       tab_contents_wrapper_->tab_contents()->GetController().GetEntryAtIndex(i);
 }
 
-content::NavigationEntry*
-    TabContentsWrapperSyncedTabDelegate::GetActiveEntry() const {
+NavigationEntry* TabContentsWrapperSyncedTabDelegate::GetActiveEntry() const {
   return
       tab_contents_wrapper_->tab_contents()->GetController().GetActiveEntry();
 }

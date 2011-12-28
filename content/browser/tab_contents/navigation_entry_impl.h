@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_NAVIGATION_ENTRY_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_NAVIGATION_ENTRY_H_
+#ifndef CONTENT_BROWSER_TAB_CONTENTS_NAVIGATION_ENTRY_IMPL_H_
+#define CONTENT_BROWSER_TAB_CONTENTS_NAVIGATION_ENTRY_IMPL_H_
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/global_request_id.h"
@@ -16,29 +15,29 @@
 
 class SiteInstance;
 
-class CONTENT_EXPORT NavigationEntry
-    : public NON_EXPORTED_BASE(content::NavigationEntry) {
+namespace content {
+
+class NavigationEntryImpl : public NavigationEntry {
  public:
+  static NavigationEntryImpl* FromNavigationEntry(NavigationEntry* entry);
 
-  static NavigationEntry* FromNavigationEntry(content::NavigationEntry* entry);
+  NavigationEntryImpl();
+  NavigationEntryImpl(SiteInstance* instance,
+                      int page_id,
+                      const GURL& url,
+                      const Referrer& referrer,
+                      const string16& title,
+                      PageTransition transition_type,
+                      bool is_renderer_initiated);
+  virtual ~NavigationEntryImpl();
 
-  NavigationEntry();
-  NavigationEntry(SiteInstance* instance,
-                  int page_id,
-                  const GURL& url,
-                  const content::Referrer& referrer,
-                  const string16& title,
-                  content::PageTransition transition_type,
-                  bool is_renderer_initiated);
-  virtual ~NavigationEntry();
-
-  // content::NavigationEntry implementation:
+  // NavigationEntry implementation:
   virtual int GetUniqueID() const OVERRIDE;
-  virtual content::PageType GetPageType() const OVERRIDE;
+  virtual PageType GetPageType() const OVERRIDE;
   virtual void SetURL(const GURL& url) OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
-  virtual void SetReferrer(const content::Referrer& referrer) OVERRIDE;
-  virtual const content::Referrer& GetReferrer() const OVERRIDE;
+  virtual void SetReferrer(const Referrer& referrer) OVERRIDE;
+  virtual const Referrer& GetReferrer() const OVERRIDE;
   virtual void SetVirtualURL(const GURL& url) OVERRIDE;
   virtual const GURL& GetVirtualURL() const OVERRIDE;
   virtual void SetTitle(const string16& title) OVERRIDE;
@@ -50,16 +49,15 @@ class CONTENT_EXPORT NavigationEntry
   virtual const string16& GetTitleForDisplay(
       const std::string& languages) const OVERRIDE;
   virtual bool IsViewSourceMode() const OVERRIDE;
-  virtual void SetTransitionType(
-      content::PageTransition transition_type) OVERRIDE;
-  virtual content::PageTransition GetTransitionType() const OVERRIDE;
+  virtual void SetTransitionType(PageTransition transition_type) OVERRIDE;
+  virtual PageTransition GetTransitionType() const OVERRIDE;
   virtual const GURL& GetUserTypedURL() const OVERRIDE;
   virtual void SetHasPostData(bool has_post_data) OVERRIDE;
   virtual bool GetHasPostData() const OVERRIDE;
-  virtual const content::FaviconStatus& GetFavicon() const OVERRIDE;
-  virtual content::FaviconStatus& GetFavicon() OVERRIDE;
-  virtual const content::SSLStatus& GetSSL() const OVERRIDE;
-  virtual content::SSLStatus& GetSSL() OVERRIDE;
+  virtual const FaviconStatus& GetFavicon() const OVERRIDE;
+  virtual FaviconStatus& GetFavicon() OVERRIDE;
+  virtual const SSLStatus& GetSSL() const OVERRIDE;
+  virtual SSLStatus& GetSSL() OVERRIDE;
 
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
@@ -77,7 +75,7 @@ class CONTENT_EXPORT NavigationEntry
     return site_instance_;
   }
 
-  void set_page_type(content::PageType page_type) {
+  void set_page_type(PageType page_type) {
     page_type_ = page_type;
   }
 
@@ -136,11 +134,11 @@ class CONTENT_EXPORT NavigationEntry
   }
 
   void set_transferred_global_request_id(
-      const content::GlobalRequestID& transferred_global_request_id) {
+      const GlobalRequestID& transferred_global_request_id) {
     transferred_global_request_id_ = transferred_global_request_id;
   }
 
-  content::GlobalRequestID transferred_global_request_id() const {
+  GlobalRequestID transferred_global_request_id() const {
     return transferred_global_request_id_;
   }
 
@@ -154,17 +152,17 @@ class CONTENT_EXPORT NavigationEntry
   // See the accessors above for descriptions.
   int unique_id_;
   scoped_refptr<SiteInstance> site_instance_;
-  content::PageType page_type_;
+  PageType page_type_;
   GURL url_;
-  content::Referrer referrer_;
+  Referrer referrer_;
   GURL virtual_url_;
   bool update_virtual_url_with_url_;
   string16 title_;
-  content::FaviconStatus favicon_;
+  FaviconStatus favicon_;
   std::string content_state_;
   int32 page_id_;
-  content::SSLStatus ssl_;
-  content::PageTransition transition_type_;
+  SSLStatus ssl_;
+  PageTransition transition_type_;
   GURL user_typed_url_;
   bool has_post_data_;
   RestoreType restore_type_;
@@ -190,9 +188,11 @@ class CONTENT_EXPORT NavigationEntry
   // carries this |transferred_global_request_id_| annotation. Once the request
   // is transferred to the new process, this is cleared and the request
   // continues as normal.
-  content::GlobalRequestID transferred_global_request_id_;
+  GlobalRequestID transferred_global_request_id_;
 
   // Copy and assignment is explicitly allowed for this class.
 };
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_NAVIGATION_ENTRY_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_TAB_CONTENTS_NAVIGATION_ENTRY_IMPL_H_

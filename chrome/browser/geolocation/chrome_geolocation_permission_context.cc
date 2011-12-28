@@ -42,6 +42,7 @@
 
 using WebKit::WebSecurityOrigin;
 using content::BrowserThread;
+using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
@@ -178,7 +179,7 @@ GeolocationConfirmInfoBarDelegate::GeolocationConfirmInfoBarDelegate(
       bridge_id_(bridge_id),
       requesting_frame_url_(requesting_frame_url),
       display_languages_(display_languages) {
-  const content::NavigationEntry* committed_entry =
+  const NavigationEntry* committed_entry =
       infobar_helper->web_contents()->GetController().GetLastCommittedEntry();
   committed_contents_unique_id_ = committed_entry ?
       committed_entry->GetUniqueID() : 0;

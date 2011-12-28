@@ -18,6 +18,8 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
 
+using content::NavigationEntry;
+
 HistoryTabHelper::HistoryTabHelper(TabContents* tab_contents)
     : content::WebContentsObserver(tab_contents),
       received_page_title_(false) {
@@ -35,8 +37,7 @@ void HistoryTabHelper::UpdateHistoryForNavigation(
     GetHistoryService()->AddPage(*add_page_args);
 }
 
-void HistoryTabHelper::UpdateHistoryPageTitle(
-    const content::NavigationEntry& entry) {
+void HistoryTabHelper::UpdateHistoryPageTitle(const NavigationEntry& entry) {
   HistoryService* hs = GetHistoryService();
   if (hs)
     hs->SetPageTitle(entry.GetVirtualURL(), entry.GetTitleForDisplay(""));

@@ -11,11 +11,13 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/page_transition_types.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/forms/password_form.h"
+
+using content::NavigationEntry;
 
 TestTabContents::TestTabContents(content::BrowserContext* browser_context,
                                  SiteInstance* instance)
@@ -111,7 +113,7 @@ void TestTabContents::CommitPendingNavigation() {
   if (!rvh)
     rvh = static_cast<TestRenderViewHost*>(old_rvh);
 
-  const content::NavigationEntry* entry = GetController().GetPendingEntry();
+  const NavigationEntry* entry = GetController().GetPendingEntry();
   DCHECK(entry);
   int page_id = entry->GetPageID();
   if (page_id == -1) {

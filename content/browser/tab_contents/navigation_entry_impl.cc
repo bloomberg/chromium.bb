@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/navigation_entry_impl.h"
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -11,9 +11,6 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "ui/base/text/text_elider.h"
-
-using content::FaviconStatus;
-using content::SSLStatus;
 
 // Use this to get a new unique ID for a NavigationEntry during construction.
 // The returned ID is guaranteed to be nonzero (which is the "no ID" indicator).
@@ -25,42 +22,40 @@ static int GetUniqueIDInConstructor() {
 namespace content {
 
 NavigationEntry* NavigationEntry::Create() {
-  return new ::NavigationEntry();
+  return new NavigationEntryImpl();
 }
 
 NavigationEntry* NavigationEntry::Create(const NavigationEntry& copy) {
-  return new ::NavigationEntry(static_cast<const ::NavigationEntry&>(copy));
+  return new NavigationEntryImpl(static_cast<const NavigationEntryImpl&>(copy));
 }
 
+NavigationEntryImpl* NavigationEntryImpl::FromNavigationEntry(
+    NavigationEntry* entry) {
+  return static_cast<NavigationEntryImpl*>(entry);
 }
 
-NavigationEntry* NavigationEntry::FromNavigationEntry(
-    content::NavigationEntry* entry) {
-  return static_cast<NavigationEntry*>(entry);
-}
-
-NavigationEntry::NavigationEntry()
+NavigationEntryImpl::NavigationEntryImpl()
     : unique_id_(GetUniqueIDInConstructor()),
       site_instance_(NULL),
-      page_type_(content::PAGE_TYPE_NORMAL),
+      page_type_(PAGE_TYPE_NORMAL),
       update_virtual_url_with_url_(false),
       page_id_(-1),
-      transition_type_(content::PAGE_TRANSITION_LINK),
+      transition_type_(PAGE_TRANSITION_LINK),
       has_post_data_(false),
       restore_type_(RESTORE_NONE),
       is_renderer_initiated_(false) {
 }
 
-NavigationEntry::NavigationEntry(SiteInstance* instance,
-                                 int page_id,
-                                 const GURL& url,
-                                 const content::Referrer& referrer,
-                                 const string16& title,
-                                 content::PageTransition transition_type,
-                                 bool is_renderer_initiated)
+NavigationEntryImpl::NavigationEntryImpl(SiteInstance* instance,
+                                         int page_id,
+                                         const GURL& url,
+                                         const Referrer& referrer,
+                                         const string16& title,
+                                         PageTransition transition_type,
+                                         bool is_renderer_initiated)
     : unique_id_(GetUniqueIDInConstructor()),
       site_instance_(instance),
-      page_type_(content::PAGE_TYPE_NORMAL),
+      page_type_(PAGE_TYPE_NORMAL),
       url_(url),
       referrer_(referrer),
       update_virtual_url_with_url_(false),
@@ -72,73 +67,73 @@ NavigationEntry::NavigationEntry(SiteInstance* instance,
       is_renderer_initiated_(is_renderer_initiated) {
 }
 
-NavigationEntry::~NavigationEntry() {
+NavigationEntryImpl::~NavigationEntryImpl() {
 }
 
-int NavigationEntry::GetUniqueID() const {
+int NavigationEntryImpl::GetUniqueID() const {
   return unique_id_;
 }
 
-content::PageType NavigationEntry::GetPageType() const {
+PageType NavigationEntryImpl::GetPageType() const {
   return page_type_;
 }
 
-void NavigationEntry::SetURL(const GURL& url) {
+void NavigationEntryImpl::SetURL(const GURL& url) {
   url_ = url;
   cached_display_title_.clear();
 }
 
-const GURL& NavigationEntry::GetURL() const {
+const GURL& NavigationEntryImpl::GetURL() const {
   return url_;
 }
 
-void NavigationEntry::SetReferrer(const content::Referrer& referrer) {
+void NavigationEntryImpl::SetReferrer(const Referrer& referrer) {
   referrer_ = referrer;
 }
 
-const content::Referrer& NavigationEntry::GetReferrer() const {
+const Referrer& NavigationEntryImpl::GetReferrer() const {
   return referrer_;
 }
 
-void NavigationEntry::SetVirtualURL(const GURL& url) {
+void NavigationEntryImpl::SetVirtualURL(const GURL& url) {
   virtual_url_ = (url == url_) ? GURL() : url;
   cached_display_title_.clear();
 }
 
-const GURL& NavigationEntry::GetVirtualURL() const {
+const GURL& NavigationEntryImpl::GetVirtualURL() const {
   return virtual_url_.is_empty() ? url_ : virtual_url_;
 }
 
-void NavigationEntry::SetTitle(const string16& title) {
+void NavigationEntryImpl::SetTitle(const string16& title) {
   title_ = title;
   cached_display_title_.clear();
 }
 
-const string16& NavigationEntry::GetTitle() const {
+const string16& NavigationEntryImpl::GetTitle() const {
   return title_;
 }
 
-void NavigationEntry::SetContentState(const std::string& state) {
+void NavigationEntryImpl::SetContentState(const std::string& state) {
   content_state_ = state;
 }
 
-const std::string& NavigationEntry::GetContentState() const {
+const std::string& NavigationEntryImpl::GetContentState() const {
   return content_state_;
 }
 
-void NavigationEntry::SetPageID(int page_id) {
+void NavigationEntryImpl::SetPageID(int page_id) {
   page_id_ = page_id;
 }
 
-int32 NavigationEntry::GetPageID() const {
+int32 NavigationEntryImpl::GetPageID() const {
   return page_id_;
 }
 
-void NavigationEntry::set_site_instance(SiteInstance* site_instance) {
+void NavigationEntryImpl::set_site_instance(SiteInstance* site_instance) {
   site_instance_ = site_instance;
 }
 
-const string16& NavigationEntry::GetTitleForDisplay(
+const string16& NavigationEntryImpl::GetTitleForDisplay(
     const std::string& languages) const {
   // Most pages have real titles. Don't even bother caching anything if this is
   // the case.
@@ -165,47 +160,49 @@ const string16& NavigationEntry::GetTitleForDisplay(
       title = title.substr(slashpos + 1);
   }
 
-  ui::ElideString(title, content::kMaxTitleChars, &cached_display_title_);
+  ui::ElideString(title, kMaxTitleChars, &cached_display_title_);
   return cached_display_title_;
 }
 
-bool NavigationEntry::IsViewSourceMode() const {
+bool NavigationEntryImpl::IsViewSourceMode() const {
   return virtual_url_.SchemeIs(chrome::kViewSourceScheme);
 }
 
-void NavigationEntry::SetTransitionType(
-    content::PageTransition transition_type) {
+void NavigationEntryImpl::SetTransitionType(
+    PageTransition transition_type) {
   transition_type_ = transition_type;
 }
 
-content::PageTransition NavigationEntry::GetTransitionType() const {
+PageTransition NavigationEntryImpl::GetTransitionType() const {
   return transition_type_;
 }
 
-const GURL& NavigationEntry::GetUserTypedURL() const {
+const GURL& NavigationEntryImpl::GetUserTypedURL() const {
   return user_typed_url_;
 }
 
-void NavigationEntry::SetHasPostData(bool has_post_data) {
+void NavigationEntryImpl::SetHasPostData(bool has_post_data) {
   has_post_data_ = has_post_data;
 }
 
-bool NavigationEntry::GetHasPostData() const {
+bool NavigationEntryImpl::GetHasPostData() const {
   return has_post_data_;
 }
 
-const FaviconStatus& NavigationEntry::GetFavicon() const {
+const FaviconStatus& NavigationEntryImpl::GetFavicon() const {
   return favicon_;
 }
 
-FaviconStatus& NavigationEntry::GetFavicon() {
+FaviconStatus& NavigationEntryImpl::GetFavicon() {
   return favicon_;
 }
 
-const SSLStatus& NavigationEntry::GetSSL() const {
+const SSLStatus& NavigationEntryImpl::GetSSL() const {
   return ssl_;
 }
 
-SSLStatus& NavigationEntry::GetSSL() {
+SSLStatus& NavigationEntryImpl::GetSSL() {
   return ssl_;
 }
+
+}  // namespace content

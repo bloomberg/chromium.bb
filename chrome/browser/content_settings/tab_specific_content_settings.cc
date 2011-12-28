@@ -33,6 +33,7 @@
 #include "webkit/fileapi/file_system_types.h"
 
 using content::BrowserThread;
+using content::NavigationEntry;
 using content::WebContents;
 
 namespace {
@@ -468,7 +469,7 @@ void TabSpecificContentSettings::Observe(
 
   content::Details<const ContentSettingsDetails> settings_details(details);
   const NavigationController& controller = web_contents()->GetController();
-  content::NavigationEntry* entry = controller.GetActiveEntry();
+  NavigationEntry* entry = controller.GetActiveEntry();
   GURL entry_url;
   if (entry)
     entry_url = entry->GetURL();

@@ -17,7 +17,6 @@
 #include "googleurl/src/gurl.h"
 
 class FaviconHandler;
-class NavigationEntry;
 class SkBitmap;
 
 // FaviconTabHelper works with FaviconHandlers to fetch the favicons.

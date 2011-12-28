@@ -46,6 +46,7 @@
 #endif
 
 using content::BrowserThread;
+using content::NavigationEntry;
 
 namespace {
 
@@ -1055,8 +1056,7 @@ void SafeBrowsingService::DoDisplayBlockingPage(
       CanReportStats()) {
     GURL page_url = tab_contents->GetURL();
     GURL referrer_url;
-    content::NavigationEntry* entry =
-        tab_contents->GetController().GetActiveEntry();
+    NavigationEntry* entry = tab_contents->GetController().GetActiveEntry();
     if (entry)
       referrer_url = entry->GetReferrer().url;
 

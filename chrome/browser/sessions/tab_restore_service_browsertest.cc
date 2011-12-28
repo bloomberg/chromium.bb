@@ -21,6 +21,8 @@
 
 typedef TabRestoreService::Tab Tab;
 
+using content::NavigationEntry;
+
 // Create subclass that overrides TimeNow so that we can control the time used
 // for closed tabs and windows.
 class TabRestoreTimeFactory : public TabRestoreService::TimeFactory {
@@ -99,8 +101,7 @@ class TabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     session_service->SetSelectedTabInWindow(window_id, 0);
     if (pinned)
       session_service->SetPinnedState(window_id, tab_id, true);
-    scoped_ptr<content::NavigationEntry> entry(
-        content::NavigationEntry::Create());;
+    scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());;
     entry->SetURL(url1_);
     session_service->UpdateTabNavigation(window_id, tab_id, 0, *entry.get());
   }

@@ -26,6 +26,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "googleurl/src/gurl.h"
 
+using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
 
@@ -189,7 +190,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
     return nil;
   }
 
-  content::NavigationEntry* entry =
+  NavigationEntry* entry =
       tabContents_->tab_contents()->GetController().GetActiveEntry();
   if (!entry) {
     return nil;
@@ -213,7 +214,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
     return;
   }
 
-  content::NavigationEntry* entry =
+  NavigationEntry* entry =
       tabContents_->tab_contents()->GetController().GetActiveEntry();
   if (!entry)
     return;
@@ -228,7 +229,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (NSString*)title {
-  content::NavigationEntry* entry =
+  NavigationEntry* entry =
       tabContents_->tab_contents()->GetController().GetActiveEntry();
   if (!entry)
     return nil;
@@ -390,7 +391,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesViewSourceScriptCommand:(NSScriptCommand*)command {
-  content::NavigationEntry* entry =
+  NavigationEntry* entry =
       tabContents_->tab_contents()->GetController().GetLastCommittedEntry();
   if (entry) {
     tabContents_->tab_contents()->OpenURL(OpenURLParams(

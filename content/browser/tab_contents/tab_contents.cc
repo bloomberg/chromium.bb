@@ -28,7 +28,7 @@
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/interstitial_page.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/tab_contents/title_updated_details.h"
@@ -112,6 +112,8 @@ using content::DevToolsManagerImpl;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::GlobalRequestID;
+using content::NavigationEntry;
+using content::NavigationEntryImpl;
 using content::OpenURLParams;
 using content::SSLStatus;
 using content::UserMetricsAction;
@@ -139,7 +141,7 @@ BOOL CALLBACK InvalidateWindow(HWND hwnd, LPARAM lparam) {
 #endif
 
 ViewMsg_Navigate_Type::Value GetNavigationType(
-    content::BrowserContext* browser_context, const NavigationEntry& entry,
+    content::BrowserContext* browser_context, const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type) {
   switch (reload_type) {
     case NavigationController::RELOAD:
@@ -150,14 +152,14 @@ ViewMsg_Navigate_Type::Value GetNavigationType(
       break;  // Fall through to rest of function.
   }
 
-  if (entry.restore_type() == NavigationEntry::RESTORE_LAST_SESSION &&
+  if (entry.restore_type() == NavigationEntryImpl::RESTORE_LAST_SESSION &&
       browser_context->DidLastSessionExitCleanly())
     return ViewMsg_Navigate_Type::RESTORE;
 
   return ViewMsg_Navigate_Type::NORMAL;
 }
 
-void MakeNavigateParams(const NavigationEntry& entry,
+void MakeNavigateParams(const NavigationEntryImpl& entry,
                         const NavigationController& controller,
                         content::WebContentsDelegate* delegate,
                         NavigationController::ReloadType reload_type,
@@ -372,7 +374,7 @@ content::ViewType TabContents::GetViewType() const {
 
 const GURL& TabContents::GetURL() const {
   // We may not have a navigation entry yet
-  content::NavigationEntry* entry = controller_.GetActiveEntry();
+  NavigationEntry* entry = controller_.GetActiveEntry();
   return entry ? entry->GetVirtualURL() : GURL::EmptyGURL();
 }
 
@@ -431,7 +433,7 @@ WebUI* TabContents::GetCommittedWebUI() const {
 const string16& TabContents::GetTitle() const {
   // Transient entries take precedence. They are used for interstitial pages
   // that are shown on top of existing pages.
-  content::NavigationEntry* entry = controller_.GetTransientEntry();
+  NavigationEntry* entry = controller_.GetTransientEntry();
   std::string accept_languages =
       content::GetContentClient()->browser()->GetAcceptLangs(
           GetBrowserContext());
@@ -779,12 +781,12 @@ WebContents* TabContents::OpenURL(const OpenURLParams& params) {
 bool TabContents::NavigateToPendingEntry(
     NavigationController::ReloadType reload_type) {
   return NavigateToEntry(
-      *NavigationEntry::FromNavigationEntry(controller_.GetPendingEntry()),
+      *NavigationEntryImpl::FromNavigationEntry(controller_.GetPendingEntry()),
       reload_type);
 }
 
 bool TabContents::NavigateToEntry(
-    const NavigationEntry& entry,
+    const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type) {
   // The renderer will reject IPC messages with URLs longer than
   // this limit, so don't attempt to navigate with a longer URL.
@@ -917,8 +919,8 @@ bool TabContents::SavePage(const FilePath& main_file, const FilePath& dir_path,
 }
 
 bool TabContents::IsActiveEntry(int32 page_id) {
-  NavigationEntry* active_entry =
-      NavigationEntry::FromNavigationEntry(controller_.GetActiveEntry());
+  NavigationEntryImpl* active_entry =
+      NavigationEntryImpl::FromNavigationEntry(controller_.GetActiveEntry());
   return (active_entry != NULL &&
           active_entry->site_instance() == GetSiteInstance() &&
           active_entry->GetPageID() == page_id);
@@ -999,7 +1001,7 @@ double TabContents::GetZoomLevel() const {
         GetRenderProcessHost()->GetID(), GetRenderViewHost()->routing_id());
   } else {
     GURL url;
-    content::NavigationEntry* active_entry = GetController().GetActiveEntry();
+    NavigationEntry* active_entry = GetController().GetActiveEntry();
     // Since zoom map is updated using rewritten URL, use rewritten URL
     // to get the zoom level.
     url = active_entry ? active_entry->GetURL() : GURL::EmptyGURL();
@@ -1024,7 +1026,7 @@ void TabContents::ViewSource() {
   if (!delegate_)
     return;
 
-  content::NavigationEntry* active_entry = GetController().GetActiveEntry();
+  NavigationEntry* active_entry = GetController().GetActiveEntry();
   if (!active_entry)
     return;
 
@@ -1105,7 +1107,7 @@ bool TabContents::FocusLocationBarByDefault() {
   WebUI* web_ui = GetWebUIForCurrentState();
   if (web_ui)
     return web_ui->focus_location_bar_by_default();
-  content::NavigationEntry* entry = controller_.GetActiveEntry();
+  NavigationEntry* entry = controller_.GetActiveEntry();
   if (entry && entry->GetURL() == GURL(chrome::kAboutBlankURL))
     return true;
   return false;
@@ -1163,7 +1165,7 @@ void TabContents::OnDidRedirectProvisionalLoad(int32 page_id,
   // TODO(creis): Remove this method and have the pre-rendering code listen to
   // the ResourceDispatcherHost's RESOURCE_RECEIVED_REDIRECT notification
   // instead.  See http://crbug.com/78512.
-  content::NavigationEntry* entry;
+  NavigationEntry* entry;
   if (page_id == -1)
     entry = controller_.GetPendingEntry();
   else
@@ -1329,7 +1331,7 @@ void TabContents::OnUpdateContentRestrictions(int restrictions) {
 
 void TabContents::OnGoToEntryAtOffset(int offset) {
   if (!delegate_ || delegate_->OnGoToEntryOffset(offset)) {
-    NavigationEntry* entry = NavigationEntry::FromNavigationEntry(
+    NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
         controller_.GetEntryAtOffset(offset));
     if (!entry)
       return;
@@ -1345,7 +1347,7 @@ void TabContents::OnGoToEntryAtOffset(int offset) {
     // If the entry is being restored and doesn't have a SiteInstance yet, fill
     // it in now that we know. This allows us to find the entry when it commits.
     if (!entry->site_instance() &&
-        entry->restore_type() != NavigationEntry::RESTORE_NONE) {
+        entry->restore_type() != NavigationEntryImpl::RESTORE_NONE) {
       entry->set_site_instance(GetPendingSiteInstance());
     }
   }
@@ -1509,7 +1511,7 @@ void TabContents::UpdateMaxPageIDIfNecessary(RenderViewHost* rvh) {
     UpdateMaxPageIDForSiteInstance(rvh->site_instance(), max_restored_page_id);
 }
 
-bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
+bool TabContents::UpdateTitleForEntry(NavigationEntryImpl* entry,
                                       const string16& title) {
   // For file URLs without a title, use the pathname instead. In the case of a
   // synthesized title, we don't want the update to count toward the "one set
@@ -1613,7 +1615,7 @@ void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
       content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
       content::Source<TabContents>(this),
       content::Details<RenderViewHost>(render_view_host));
-  content::NavigationEntry* entry = controller_.GetActiveEntry();
+  NavigationEntry* entry = controller_.GetActiveEntry();
   if (!entry)
     return;
 
@@ -1760,7 +1762,7 @@ void TabContents::UpdateState(RenderViewHost* rvh,
       rvh->site_instance(), page_id);
   if (entry_index < 0)
     return;
-  content::NavigationEntry* entry = controller_.GetEntryAtIndex(entry_index);
+  NavigationEntry* entry = controller_.GetEntryAtIndex(entry_index);
 
   if (state == entry->GetContentState())
     return;  // Nothing to update.
@@ -1777,8 +1779,8 @@ void TabContents::UpdateTitle(RenderViewHost* rvh,
   SetNotWaitingForResponse();
 
   DCHECK(rvh == GetRenderViewHost());
-  NavigationEntry* entry = controller_.GetEntryWithPageID(rvh->site_instance(),
-                                                          page_id);
+  NavigationEntryImpl* entry = controller_.GetEntryWithPageID(
+      rvh->site_instance(), page_id);
 
   // TODO(evan): make use of title_direction.
   // http://code.google.com/p/chromium/issues/detail?id=27094
@@ -1853,7 +1855,7 @@ void TabContents::DidStartLoading() {
 void TabContents::DidStopLoading() {
   scoped_ptr<LoadNotificationDetails> details;
 
-  content::NavigationEntry* entry = controller_.GetActiveEntry();
+  NavigationEntry* entry = controller_.GetActiveEntry();
   // An entry may not exist for a stop when loading an initial blank page or
   // if an iframe injected by script into a blank page finishes loading.
   if (entry) {
@@ -2163,8 +2165,8 @@ WebUI* TabContents::CreateWebUIForRenderManager(const GURL& url) {
   return content::WebUIFactory::Get()->CreateWebUIForURL(this, url);
 }
 
-content::NavigationEntry*
-TabContents::GetLastCommittedNavigationEntryForRenderManager() {
+NavigationEntry*
+    TabContents::GetLastCommittedNavigationEntryForRenderManager() {
   return controller_.GetLastCommittedEntry();
 }
 

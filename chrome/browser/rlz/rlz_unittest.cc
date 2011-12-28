@@ -24,6 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
+using content::NavigationEntry;
 using registry_util::RegistryOverrideManager;
 using testing::AssertionResult;
 using testing::AssertionSuccess;
@@ -237,13 +238,12 @@ void RlzLibTest::SimulateOmniboxUsage() {
 }
 
 void RlzLibTest::SimulateHomepageUsage() {
-  scoped_ptr<content::NavigationEntry> entry(
-      content::NavigationEntry::Create());
+  scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
   entry->SetPageID(0);
   entry->SetTransitionType(content::PAGE_TRANSITION_HOME_PAGE);
   tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
                    content::NotificationService::AllSources(),
-                   content::Details<content::NavigationEntry>(entry.get()));
+                   content::Details<NavigationEntry>(entry.get()));
 }
 
 void RlzLibTest::InvokeDelayedInit() {
@@ -582,16 +582,15 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
 }
 
 TEST_F(RlzLibTest, ObserveHandlesBadArgs) {
-  scoped_ptr<content::NavigationEntry> entry(
-      content::NavigationEntry::Create());
+  scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
   entry->SetPageID(0);
   entry->SetTransitionType(content::PAGE_TRANSITION_LINK);
   tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
                    content::NotificationService::AllSources(),
-                   content::Details<content::NavigationEntry>(NULL));
+                   content::Details<NavigationEntry>(NULL));
   tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
                    content::NotificationService::AllSources(),
-                   content::Details<content::NavigationEntry>(entry.get()));
+                   content::Details<NavigationEntry>(entry.get()));
 }
 
 TEST_F(RlzLibTest, ReactivationNonOrganicNonOrganic) {

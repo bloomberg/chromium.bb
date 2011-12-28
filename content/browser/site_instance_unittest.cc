@@ -13,7 +13,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/empty_web_ui_factory.h"
 #include "content/public/common/content_client.h"
@@ -25,6 +25,8 @@
 
 using content::BrowserThread;
 using content::BrowserThreadImpl;
+using content::NavigationEntry;
+using content::NavigationEntryImpl;
 
 namespace {
 
@@ -177,21 +179,18 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
                                                &browsingDeleteCounter);
   EXPECT_EQ(0, siteDeleteCounter);
 
-  NavigationEntry* e1 = new NavigationEntry(instance, 0, url,
-                                            content::Referrer(),
-                                            string16(),
-                                            content::PAGE_TRANSITION_LINK,
-                                            false);
+  NavigationEntryImpl* e1 = new NavigationEntryImpl(
+      instance, 0, url, content::Referrer(), string16(),
+      content::PAGE_TRANSITION_LINK, false);
 
   // Redundantly setting e1's SiteInstance shouldn't affect the ref count.
   e1->set_site_instance(instance);
   EXPECT_EQ(0, siteDeleteCounter);
 
   // Add a second reference
-  NavigationEntry* e2 = new NavigationEntry(instance, 0, url,
-                                            content::Referrer(), string16(),
-                                            content::PAGE_TRANSITION_LINK,
-                                            false);
+  NavigationEntryImpl* e2 = new NavigationEntryImpl(
+      instance, 0, url, content::Referrer(), string16(),
+      content::PAGE_TRANSITION_LINK, false);
 
   // Now delete both entries and be sure the SiteInstance goes away.
   delete e1;
@@ -244,12 +243,11 @@ TEST_F(SiteInstanceTest, CloneNavigationEntry) {
       TestSiteInstance::CreateTestSiteInstance(NULL, &siteDeleteCounter2,
                                                &browsingDeleteCounter);
 
-  NavigationEntry* e1 = new NavigationEntry(instance1, 0, url,
-                                            content::Referrer(), string16(),
-                                            content::PAGE_TRANSITION_LINK,
-                                            false);
+  NavigationEntryImpl* e1 = new NavigationEntryImpl(
+      instance1, 0, url, content::Referrer(), string16(),
+      content::PAGE_TRANSITION_LINK, false);
   // Clone the entry
-  NavigationEntry* e2 = new NavigationEntry(*e1);
+  NavigationEntryImpl* e2 = new NavigationEntryImpl(*e1);
 
   // Should be able to change the SiteInstance of the cloned entry.
   e2->set_site_instance(instance2);

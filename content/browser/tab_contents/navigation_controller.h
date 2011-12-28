@@ -21,7 +21,6 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 
-class NavigationEntry;
 class SessionStorageNamespace;
 class SiteInstance;
 class TabContents;
@@ -30,6 +29,7 @@ struct ViewHostMsg_FrameNavigate_Params;
 namespace content {
 class BrowserContext;
 class NavigationEntry;
+class NavigationEntryImpl;
 struct LoadCommittedDetails;
 struct Referrer;
 }
@@ -129,7 +129,7 @@ class CONTENT_EXPORT NavigationController {
 
   // Returns the index of the specified entry, or -1 if entry is not contained
   // in this NavigationController.
-  int GetIndexOfEntry(const NavigationEntry* entry) const;
+  int GetIndexOfEntry(const content::NavigationEntryImpl* entry) const;
 
   // Return the index of the entry with the corresponding instance and page_id,
   // or -1 if not found.
@@ -138,8 +138,8 @@ class CONTENT_EXPORT NavigationController {
 
   // Return the entry with the corresponding instance and page_id, or NULL if
   // not found.
-  NavigationEntry* GetEntryWithPageID(SiteInstance* instance,
-                                      int32 page_id) const;
+  content::NavigationEntryImpl* GetEntryWithPageID(SiteInstance* instance,
+                                                   int32 page_id) const;
 
   // Pending entry -------------------------------------------------------------
 
@@ -165,7 +165,7 @@ class CONTENT_EXPORT NavigationController {
   // represented as an entry, but should go away when the user navigates away
   // from them.
   // Note that adding a transient entry does not change the active contents.
-  void AddTransientEntry(NavigationEntry* entry);
+  void AddTransientEntry(content::NavigationEntryImpl* entry);
 
   // Returns the transient entry if any.  Note that the returned entry is owned
   // by the navigation controller and may be deleted at any time.
@@ -354,7 +354,7 @@ class CONTENT_EXPORT NavigationController {
       bool is_renderer_initiated,
       const std::string& extra_headers,
       content::BrowserContext* browser_context);
-  static NavigationEntry* CreateNavigationEntryImpl(
+  static content::NavigationEntryImpl* CreateNavigationEntryImpl(
       const GURL& url,
       const content::Referrer& referrer,
       content::PageTransition transition,
@@ -374,7 +374,7 @@ class CONTENT_EXPORT NavigationController {
   // Causes the controller to load the specified entry. The function assumes
   // ownership of the pointer since it is put in the navigation list.
   // NOTE: Do not pass an entry that the controller already owns!
-  void LoadEntry(NavigationEntry* entry);
+  void LoadEntry(content::NavigationEntryImpl* entry);
 
   // Handlers for the different types of navigation types. They will actually
   // handle the navigations corresponding to the different NavClasses above.
@@ -413,7 +413,8 @@ class CONTENT_EXPORT NavigationController {
 
   // Updates the virtual URL of an entry to match a new URL, for cases where
   // the real renderer URL is derived from the virtual URL, like view-source:
-  void UpdateVirtualURLToURL(NavigationEntry* entry, const GURL& new_url);
+  void UpdateVirtualURLToURL(content::NavigationEntryImpl* entry,
+                             const GURL& new_url);
 
   // Invoked after session/tab restore or cloning a tab. Resets the transition
   // type of the entries, updates the max page id and creates the active
@@ -422,7 +423,7 @@ class CONTENT_EXPORT NavigationController {
 
   // Inserts a new entry or replaces the current entry with a new one, removing
   // all entries after it. The new entry will become the active one.
-  void InsertOrReplaceEntry(NavigationEntry* entry, bool replace);
+  void InsertOrReplaceEntry(content::NavigationEntryImpl* entry, bool replace);
 
   // Removes the entry at |index|, as long as it is not the current entry.
   void RemoveEntryAtIndexInternal(int index);
@@ -452,7 +453,8 @@ class CONTENT_EXPORT NavigationController {
   content::BrowserContext* browser_context_;
 
   // List of NavigationEntry for this tab
-  typedef std::vector<linked_ptr<NavigationEntry> > NavigationEntries;
+  typedef std::vector<linked_ptr<content::NavigationEntryImpl> >
+      NavigationEntries;
   NavigationEntries entries_;
 
   // An entry we haven't gotten a response for yet.  This will be discarded
@@ -462,7 +464,7 @@ class CONTENT_EXPORT NavigationController {
   // This may refer to an item in the entries_ list if the pending_entry_index_
   // == -1, or it may be its own entry that should be deleted. Be careful with
   // the memory management.
-  NavigationEntry* pending_entry_;
+  content::NavigationEntryImpl* pending_entry_;
 
   // currently visible entry
   int last_committed_entry_index_;

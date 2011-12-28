@@ -38,10 +38,11 @@
 #include <windows.h>
 #endif
 
-namespace browser_sync {
-
 using content::BrowserThread;
+using content::NavigationEntry;
 using syncable::SESSIONS;
+
+namespace browser_sync {
 
 namespace {
 static const char kNoSessionsFolderError[] =
@@ -336,7 +337,7 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
     tab_s->set_extension_app_id(tab.GetExtensionAppId());
   }
   for (int i = min_index; i < max_index; ++i) {
-    const content::NavigationEntry* entry = (i == pending_index) ?
+    const NavigationEntry* entry = (i == pending_index) ?
        tab.GetPendingEntry() : tab.GetEntryAtIndex(i);
     DCHECK(entry);
     if (entry->GetVirtualURL().is_valid()) {
@@ -1064,7 +1065,7 @@ bool SessionModelAssociator::IsValidTab(const SyncedTabDelegate& tab) const {
             tab.GetWindowId());
     if (!window)
       return false;
-    const content::NavigationEntry* entry = tab.GetActiveEntry();
+    const NavigationEntry* entry = tab.GetActiveEntry();
     if (!entry)
       return false;
     if (entry->GetVirtualURL().is_valid() &&

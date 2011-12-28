@@ -32,6 +32,7 @@
 #include "content/public/browser/navigation_entry.h"
 
 using base::Time;
+using content::NavigationEntry;
 
 // TimeFactory-----------------------------------------------------------------
 
@@ -491,7 +492,7 @@ void TabRestoreService::PopulateTab(Tab* tab,
     entry_count++;
   tab->navigations.resize(static_cast<int>(entry_count));
   for (int i = 0; i < entry_count; ++i) {
-    content::NavigationEntry* entry = (i == pending_index) ?
+    NavigationEntry* entry = (i == pending_index) ?
         controller->GetPendingEntry() : controller->GetEntryAtIndex(i);
     tab->navigations[i].SetFromNavigationEntry(*entry);
   }
@@ -657,7 +658,7 @@ void TabRestoreService::ScheduleCommandsForTab(const Tab& tab,
       // Creating a NavigationEntry isn't the most efficient way to go about
       // this, but it simplifies the code and makes it less error prone as we
       // add new data to NavigationEntry.
-      scoped_ptr<content::NavigationEntry> entry(
+      scoped_ptr<NavigationEntry> entry(
           navigations[i].ToNavigationEntry(wrote_count, profile()));
       ScheduleCommand(
           CreateUpdateTabNavigationCommand(kCommandUpdateTabNavigation, tab.id,

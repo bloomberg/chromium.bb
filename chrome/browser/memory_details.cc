@@ -35,6 +35,7 @@
 #endif
 
 using content::BrowserThread;
+using content::NavigationEntry;
 
 // static
 std::string ProcessMemoryInformation::GetRendererTypeNameInEnglish(
@@ -284,9 +285,9 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         // last committed entry.
         //
         // Either the pending or last committed entries can be NULL.
-        const content::NavigationEntry* pending_entry =
+        const NavigationEntry* pending_entry =
             contents->GetController().GetPendingEntry();
-        const content::NavigationEntry* last_committed_entry =
+        const NavigationEntry* last_committed_entry =
             contents->GetController().GetLastCommittedEntry();
         if ((last_committed_entry &&
              LowerCaseEqualsASCII(last_committed_entry->GetVirtualURL().spec(),

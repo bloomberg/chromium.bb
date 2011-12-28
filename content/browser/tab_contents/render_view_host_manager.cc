@@ -13,7 +13,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/browser/webui/web_ui_factory.h"
@@ -24,9 +24,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 
-namespace base {
-class WaitableEvent;
-}
+using content::NavigationEntry;
+using content::NavigationEntryImpl;
 
 RenderViewHostManager::RenderViewHostManager(
     RenderViewHostDelegate* render_view_delegate,
@@ -79,7 +78,8 @@ RenderWidgetHostView* RenderViewHostManager::GetRenderWidgetHostView() const {
   return render_view_host_->view();
 }
 
-RenderViewHost* RenderViewHostManager::Navigate(const NavigationEntry& entry) {
+RenderViewHost* RenderViewHostManager::Navigate(
+    const NavigationEntryImpl& entry) {
   // Create a pending RenderViewHost. It will give us the one we should use
   RenderViewHost* dest_render_view_host = UpdateRendererStateForNavigate(entry);
   if (!dest_render_view_host)
@@ -329,8 +329,8 @@ bool RenderViewHostManager::ShouldTransitionCrossSite() {
 }
 
 bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
-    const content::NavigationEntry* cur_entry,
-    const NavigationEntry* new_entry) const {
+    const NavigationEntry* cur_entry,
+    const NavigationEntryImpl* new_entry) const {
   DCHECK(new_entry);
 
   // Check for reasons to swap processes even if we are in a process model that
@@ -374,7 +374,7 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
 }
 
 SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
-    const NavigationEntry& entry,
+    const NavigationEntryImpl& entry,
     SiteInstance* curr_instance) {
   // NOTE: This is only called when ShouldTransitionCrossSite is true.
 
@@ -429,7 +429,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     // In the case of session restore, as it loads all the pages immediately
     // we need to set the site first, otherwise after a restore none of the
     // pages would share renderers in process-per-site.
-    if (entry.restore_type() != NavigationEntry::RESTORE_NONE)
+    if (entry.restore_type() != NavigationEntryImpl::RESTORE_NONE)
       curr_instance->SetSite(dest_url);
 
     return curr_instance;
@@ -445,7 +445,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   // For now, though, we're in a hybrid model where you only switch
   // SiteInstances if you type in a cross-site URL.  This means we have to
   // compare the entry's URL to the last committed entry's URL.
-  content::NavigationEntry* curr_entry = controller.GetLastCommittedEntry();
+  NavigationEntry* curr_entry = controller.GetLastCommittedEntry();
   if (interstitial_page_) {
     // The interstitial is currently the last committed entry, but we want to
     // compare against the last non-interstitial entry.
@@ -489,8 +489,8 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
 }
 
 bool RenderViewHostManager::CreatePendingRenderView(
-    const NavigationEntry& entry, SiteInstance* instance) {
-  content::NavigationEntry* curr_entry =
+    const NavigationEntryImpl& entry, SiteInstance* instance) {
+  NavigationEntry* curr_entry =
       delegate_->GetControllerForRenderManager().GetLastCommittedEntry();
   if (curr_entry) {
     DCHECK(!curr_entry->GetContentState().empty());
@@ -531,7 +531,7 @@ bool RenderViewHostManager::CreatePendingRenderView(
 }
 
 bool RenderViewHostManager::InitRenderView(RenderViewHost* render_view_host,
-                                           const NavigationEntry& entry) {
+                                           const NavigationEntryImpl& entry) {
   // If the pending navigation is to a WebUI, tell the RenderView about any
   // bindings it will need enabled.
   if (pending_web_ui_.get())
@@ -636,7 +636,7 @@ void RenderViewHostManager::CommitPending() {
 }
 
 RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
-    const NavigationEntry& entry) {
+    const NavigationEntryImpl& entry) {
   // If we are cross-navigating, then we want to get back to normal and navigate
   // as usual.
   if (cross_navigation_pending_) {

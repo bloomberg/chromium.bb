@@ -207,6 +207,7 @@
 #endif
 
 using base::TimeDelta;
+using content::NavigationEntry;
 using content::OpenURLParams;
 using content::PluginService;
 using content::Referrer;
@@ -252,7 +253,7 @@ const int kUIUpdateCoalescingTimeMS = 200;
 const char kHashMark[] = "#";
 
 // Returns |true| if entry has an internal chrome:// URL, |false| otherwise.
-bool HasInternalURL(const content::NavigationEntry* entry) {
+bool HasInternalURL(const NavigationEntry* entry) {
   if (!entry)
     return false;
 
@@ -1306,7 +1307,7 @@ TabContents* Browser::AddRestoredTab(
       session_storage_namespace);
   TabContents* new_tab = wrapper->tab_contents();
   wrapper->extension_tab_helper()->SetExtensionAppById(extension_app_id);
-  std::vector<content::NavigationEntry*> entries;
+  std::vector<NavigationEntry*> entries;
   TabNavigation::CreateNavigationEntriesFromTabNavigations(
       profile_, navigations, &entries);
   new_tab->GetController().Restore(
@@ -1356,7 +1357,7 @@ void Browser::ReplaceRestoredTab(
       session_storage_namespace);
   wrapper->extension_tab_helper()->SetExtensionAppById(extension_app_id);
   TabContents* replacement = wrapper->tab_contents();
-  std::vector<content::NavigationEntry*> entries;
+  std::vector<NavigationEntry*> entries;
   TabNavigation::CreateNavigationEntriesFromTabNavigations(
       profile_, navigations, &entries);
   replacement->GetController().Restore(
@@ -1548,8 +1549,7 @@ void Browser::ReloadInternal(WindowOpenDisposition disposition,
   // If we are showing an interstitial, treat this as an OpenURL.
   TabContents* current_tab = GetSelectedTabContents();
   if (current_tab && current_tab->ShowingInterstitialPage()) {
-    content::NavigationEntry* entry =
-        current_tab->GetController().GetActiveEntry();
+    NavigationEntry* entry = current_tab->GetController().GetActiveEntry();
     DCHECK(entry);  // Should exist if interstitial is showing.
     OpenURL(OpenURLParams(
         entry->GetURL(), Referrer(), disposition,
@@ -2068,7 +2068,7 @@ void Browser::OpenCreateShortcutsDialog() {
       web_app::IsValidUrl(current_tab->tab_contents()->GetURL())) <<
           "Menu item should be disabled.";
 
-  content::NavigationEntry* entry =
+  NavigationEntry* entry =
       current_tab->tab_contents()->GetController().GetLastCommittedEntry();
   if (!entry)
     return;
@@ -2183,7 +2183,7 @@ void Browser::ShowAboutConflictsTab() {
 void Browser::ShowBrokenPageTab(TabContents* contents) {
   content::RecordAction(UserMetricsAction("ReportBug"));
   string16 page_title = contents->GetTitle();
-  content::NavigationEntry* entry = contents->GetController().GetActiveEntry();
+  NavigationEntry* entry = contents->GetController().GetActiveEntry();
   if (!entry)
     return;
   std::string page_url = entry->GetURL().spec();
@@ -3545,8 +3545,7 @@ void Browser::LoadingStateChanged(TabContents* source) {
       // last committed entry is not NULL. Last committed entry could be NULL
       // when an interstitial page is injected (e.g. bad https certificate,
       // malware site etc). When this happens, we abort the shortcut update.
-      content::NavigationEntry* entry =
-          source->GetController().GetLastCommittedEntry();
+      NavigationEntry* entry = source->GetController().GetLastCommittedEntry();
       if (entry) {
         TabContentsWrapper::GetCurrentWrapperForContents(source)->
             extension_tab_helper()->GetApplicationInfo(entry->GetPageID());
@@ -3991,7 +3990,7 @@ void Browser::OnDidGetApplicationInfo(TabContentsWrapper* source,
   if (GetSelectedTabContentsWrapper() != source)
     return;
 
-  content::NavigationEntry* entry =
+  NavigationEntry* entry =
       source->tab_contents()->GetController().GetLastCommittedEntry();
   if (!entry || (entry->GetPageID() != page_id))
     return;
@@ -5211,7 +5210,7 @@ void Browser::CreateInstantIfNecessary() {
 void Browser::ViewSource(TabContentsWrapper* contents) {
   DCHECK(contents);
 
-  content::NavigationEntry* active_entry =
+  NavigationEntry* active_entry =
       contents->tab_contents()->GetController().GetActiveEntry();
   if (!active_entry)
     return;
@@ -5227,7 +5226,7 @@ void Browser::ViewSource(TabContentsWrapper* contents,
 
   TabContentsWrapper* view_source_contents = contents->Clone();
   view_source_contents->tab_contents()->GetController().PruneAllButActive();
-  content::NavigationEntry* active_entry =
+  NavigationEntry* active_entry =
       view_source_contents->tab_contents()->GetController().GetActiveEntry();
   if (!active_entry)
     return;
@@ -5282,7 +5281,7 @@ int Browser::GetContentRestrictionsForSelectedTab() {
   TabContents* current_tab = GetSelectedTabContents();
   if (current_tab) {
     content_restrictions = current_tab->GetContentRestrictions();
-    content::NavigationEntry* active_entry =
+    NavigationEntry* active_entry =
         current_tab->GetController().GetActiveEntry();
     // See comment in UpdateCommandsForTabState about why we call url().
     if (!SavePackage::IsSavableURL(

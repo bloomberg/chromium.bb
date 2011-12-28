@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 
 using content::BrowserThread;
+using content::NavigationEntry;
 using content::WebContents;
 
 // TabDownloadState ------------------------------------------------------------
@@ -39,7 +40,7 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
                  notification_source);
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED, notification_source);
 
-  content::NavigationEntry* active_entry = originating_controller ?
+  NavigationEntry* active_entry = originating_controller ?
       originating_controller->GetActiveEntry() : controller->GetActiveEntry();
   if (active_entry)
     initial_page_host_ = active_entry->GetURL().host();
@@ -114,7 +115,7 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
       // request. If this happens we may let a download through that we
       // shouldn't have. But this is rather rare, and it is difficult to get
       // 100% right, so we don't deal with it.
-      content::NavigationEntry* entry = controller_->GetPendingEntry();
+      NavigationEntry* entry = controller_->GetPendingEntry();
       if (!entry)
         return;
 

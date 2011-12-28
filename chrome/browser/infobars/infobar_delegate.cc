@@ -11,6 +11,8 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
+using content::NavigationEntry;
+
 // InfoBarDelegate ------------------------------------------------------------
 
 InfoBarDelegate::~InfoBarDelegate() {
@@ -83,7 +85,7 @@ InfoBarDelegate::InfoBarDelegate(InfoBarTabHelper* infobar_helper)
 
 void InfoBarDelegate::StoreActiveEntryUniqueID(
     InfoBarTabHelper* infobar_helper) {
-  content::NavigationEntry* active_entry =
+  NavigationEntry* active_entry =
       infobar_helper->web_contents()->GetController().GetActiveEntry();
   contents_unique_id_ = active_entry ? active_entry->GetUniqueID() : 0;
 }

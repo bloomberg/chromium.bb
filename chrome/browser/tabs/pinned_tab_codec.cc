@@ -17,6 +17,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_entry.h"
 
+using content::NavigationEntry;
+
 typedef BrowserInit::LaunchWithProfile::Tab Tab;
 
 // Key used in dictionaries for the app id.
@@ -54,7 +56,7 @@ static void EncodePinnedTab(TabStripModel* model,
     value->SetString(kURL, extension->GetFullLaunchURL().spec());
     values->Append(value.release());
   } else {
-    content::NavigationEntry* entry =
+    NavigationEntry* entry =
         tab_contents->tab_contents()->GetController().GetActiveEntry();
     if (!entry && tab_contents->tab_contents()->GetController().entry_count())
       entry = tab_contents->tab_contents()->GetController().GetEntryAtIndex(0);

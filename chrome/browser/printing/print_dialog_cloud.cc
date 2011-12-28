@@ -104,6 +104,7 @@
 // bringing up the dialog) isn't what we want.
 
 using content::BrowserThread;
+using content::NavigationEntry;
 using content::WebContents;
 
 namespace internal_cloud_print_helpers {
@@ -302,7 +303,7 @@ void CloudPrintFlowHandler::RegisterMessages() {
   // to the real server URL, now that we've gotten an HTML dialog
   // going.
   NavigationController* controller = &web_ui_->tab_contents()->GetController();
-  content::NavigationEntry* pending_entry = controller->GetPendingEntry();
+  NavigationEntry* pending_entry = controller->GetPendingEntry();
   if (pending_entry) {
     Profile* profile = Profile::FromWebUI(web_ui_);
     pending_entry->SetURL(

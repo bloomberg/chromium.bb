@@ -15,7 +15,7 @@
 #include "content/browser/site_instance.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/ssl/ssl_request_info.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/ssl_status.h"
@@ -24,6 +24,7 @@
 #include "net/base/ssl_info.h"
 #include "webkit/glue/resource_type.h"
 
+using content::NavigationEntryImpl;
 using content::SSLStatus;
 
 namespace {
@@ -86,7 +87,7 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
   }
 }
 
-void SSLPolicy::DidRunInsecureContent(NavigationEntry* entry,
+void SSLPolicy::DidRunInsecureContent(NavigationEntryImpl* entry,
                                       const std::string& security_origin) {
   if (!entry)
     return;
@@ -108,7 +109,8 @@ void SSLPolicy::OnRequestStarted(SSLRequestInfo* info) {
     backend_->HostRanInsecureContent(info->url().host(), info->child_id());
 }
 
-void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
+void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
+                            TabContents* tab_contents) {
   DCHECK(entry);
 
   InitializeEntryIfNeeded(entry);
@@ -206,7 +208,7 @@ void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
       base::Bind(&SSLPolicy::OnAllowCertificate, base::Unretained(this)));
 }
 
-void SSLPolicy::InitializeEntryIfNeeded(NavigationEntry* entry) {
+void SSLPolicy::InitializeEntryIfNeeded(NavigationEntryImpl* entry) {
   if (entry->GetSSL().security_style != content::SECURITY_STYLE_UNKNOWN)
     return;
 

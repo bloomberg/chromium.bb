@@ -60,6 +60,7 @@
 namespace keys = extension_tabs_module_constants;
 namespace errors = extension_manifest_errors;
 
+using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
@@ -1377,8 +1378,7 @@ bool ReloadTabFunction::RunImpl() {
   TabContents* tab_contents = contents->tab_contents();
   if (tab_contents->ShowingInterstitialPage()) {
     // This does as same as Browser::ReloadInternal.
-    content::NavigationEntry* entry =
-        tab_contents->GetController().GetActiveEntry();
+    NavigationEntry* entry = tab_contents->GetController().GetActiveEntry();
     OpenURLParams params(entry->GetURL(), Referrer(), CURRENT_TAB,
                          content::PAGE_TRANSITION_RELOAD, false);
     GetCurrentBrowser()->OpenURL(params);

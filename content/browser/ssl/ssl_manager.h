@@ -20,11 +20,14 @@
 
 class LoadFromMemoryCacheDetails;
 class NavigationController;
-class NavigationEntry;
 class ResourceDispatcherHost;
 class ResourceRedirectDetails;
 class ResourceRequestDetails;
 class SSLPolicy;
+
+namespace content {
+class NavigationEntryImpl;
+}
 
 namespace net {
 class SSLInfo;
@@ -110,7 +113,7 @@ class SSLManager : public content::NotificationObserver {
   void DidChangeSSLInternalState();
 
   // Update the NavigationEntry with our current state.
-  void UpdateEntry(NavigationEntry* entry);
+  void UpdateEntry(content::NavigationEntryImpl* entry);
 
   // The backend for the SSLPolicy to actuate its decisions.
   SSLPolicyBackend backend_;

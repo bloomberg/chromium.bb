@@ -466,12 +466,13 @@ class CONTENT_EXPORT TabContents
   // This is used as the backend for state updates, which include a new title,
   // or the dedicated set title message. It returns true if the new title is
   // different and was therefore updated.
-  bool UpdateTitleForEntry(NavigationEntry* entry, const string16& title);
+  bool UpdateTitleForEntry(content::NavigationEntryImpl* entry,
+                           const string16& title);
 
   // Causes the TabContents to navigate in the right renderer to |entry|, which
   // must be already part of the entries in the navigation controller.
   // This does not change the NavigationController state.
-  bool NavigateToEntry(const NavigationEntry& entry,
+  bool NavigateToEntry(const content::NavigationEntryImpl& entry,
                        NavigationController::ReloadType reload_type);
 
   // Sets the history for this tab_contents to |history_length| entries, and

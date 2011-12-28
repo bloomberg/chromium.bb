@@ -15,6 +15,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+using content::NavigationEntry;
+
 // The info-bubble point should look like it points to the bottom of the lock
 // icon. Determined with Pixie.app.
 const CGFloat kBubblePointYOffset = 2.0;
@@ -95,7 +97,7 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame) {
     return true;
 
   TabContents* tab = owner_->GetTabContents();
-  content::NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
+  NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
   if (!nav_entry) {
     NOTREACHED();
     return true;

@@ -18,6 +18,7 @@
 namespace keys = extension_tabs_module_constants;
 namespace errors = extension_manifest_errors;
 
+using content::NavigationEntry;
 using content::WebContents;
 
 int ExtensionTabUtil::GetWindowId(const Browser* browser) {
@@ -119,8 +120,7 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(const WebContents* contents,
                      contents->GetBrowserContext()->IsOffTheRecord());
 
   if (!is_loading) {
-    content::NavigationEntry* entry =
-        contents->GetController().GetActiveEntry();
+    NavigationEntry* entry = contents->GetController().GetActiveEntry();
     if (entry) {
       if (entry->GetFavicon().valid)
         result->SetString(keys::kFaviconUrlKey, entry->GetFavicon().url.spec());

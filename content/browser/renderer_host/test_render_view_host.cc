@@ -8,7 +8,7 @@
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/dom_storage_common.h"
 #include "content/common/view_messages.h"
@@ -19,6 +19,7 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 
+using content::NavigationEntry;
 using webkit::forms::PasswordForm;
 
 void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
@@ -365,7 +366,7 @@ void RenderViewHostTestHarness::NavigateAndCommit(const GURL& url) {
 }
 
 void RenderViewHostTestHarness::Reload() {
-  content::NavigationEntry* entry = controller().GetLastCommittedEntry();
+  NavigationEntry* entry = controller().GetLastCommittedEntry();
   DCHECK(entry);
   controller().Reload(false);
   rvh()->SendNavigate(entry->GetPageID(), entry->GetURL());

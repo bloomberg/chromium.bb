@@ -70,6 +70,7 @@
 #include "ui/gfx/image/image.h"
 #include "webkit/glue/window_open_disposition.h"
 
+using content::NavigationEntry;
 using content::OpenURLParams;
 
 namespace {
@@ -1047,7 +1048,7 @@ gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
     if (event->x == 0 && event->y == 0)
       return FALSE;
 
-    content::NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
+    NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
     if (!nav_entry) {
       NOTREACHED();
       return FALSE;

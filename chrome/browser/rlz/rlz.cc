@@ -37,6 +37,7 @@
 #include "content/public/browser/notification_service.h"
 
 using content::BrowserThread;
+using content::NavigationEntry;
 
 namespace {
 
@@ -305,8 +306,8 @@ void RLZTracker::Observe(int type,
                         content::NotificationService::AllSources());
       break;
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {
-      const content::NavigationEntry* entry =
-          content::Details<content::NavigationEntry>(details).ptr();
+      const NavigationEntry* entry =
+          content::Details<NavigationEntry>(details).ptr();
       if (entry != NULL &&
           ((entry->GetTransitionType() &
             content::PAGE_TRANSITION_HOME_PAGE) != 0)) {

@@ -21,6 +21,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_entry.h"
 
+using content::NavigationEntry;
+
 namespace keys = extension_page_actions_module_constants;
 
 namespace {
@@ -80,7 +82,7 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
   }
 
   // Make sure the URL hasn't changed.
-  content::NavigationEntry* entry =
+  NavigationEntry* entry =
       contents->tab_contents()->GetController().GetActiveEntry();
   if (!entry || url != entry->GetURL().spec()) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(kUrlNotActiveError, url);

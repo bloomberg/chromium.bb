@@ -43,6 +43,7 @@
 #endif
 
 using base::Time;
+using content::NavigationEntry;
 
 // Identifier for commands written to file.
 static const SessionCommand::id_type kCommandSetTabWindow = 0;
@@ -362,7 +363,7 @@ void SessionService::UpdateTabNavigation(
     const SessionID& window_id,
     const SessionID& tab_id,
     int index,
-    const content::NavigationEntry& entry) {
+    const NavigationEntry& entry) {
   if (!ShouldTrackEntry(entry.GetVirtualURL()) ||
       !ShouldTrackChangesToWindow(window_id)) {
     return;
@@ -1139,7 +1140,7 @@ void SessionService::BuildCommandsForTab(
             wrapper->extension_tab_helper()->extension_app()->id()));
   }
   for (int i = min_index; i < max_index; ++i) {
-    const content::NavigationEntry* entry = (i == pending_index) ?
+    const NavigationEntry* entry = (i == pending_index) ?
         tab->tab_contents()->GetController().GetPendingEntry() :
         tab->tab_contents()->GetController().GetEntryAtIndex(i);
     DCHECK(entry);

@@ -51,6 +51,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 
+using content::NavigationEntry;
+
 namespace {
 
 // Number of ms to delay before updating the omnibox bounds. This is only used
@@ -142,7 +144,7 @@ void InstantLoader::FrameLoadObserver::Observe(
   switch (type) {
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
       int page_id = *(content::Details<int>(details).ptr());
-      content::NavigationEntry* active_entry =
+      NavigationEntry* active_entry =
           tab_contents_->GetController().GetActiveEntry();
       if (!active_entry || active_entry->GetPageID() != page_id ||
           active_entry->GetUniqueID() != unique_id_) {
@@ -332,7 +334,7 @@ void InstantLoader::TabContentsDelegateImpl::CommitHistory(
       add_page_vector_[i].get());
   }
 
-  content::NavigationEntry* active_entry =
+  NavigationEntry* active_entry =
       tab->tab_contents()->GetController().GetActiveEntry();
   if (!active_entry) {
     // It appears to be possible to get here with no active entry. This seems
@@ -549,7 +551,7 @@ void InstantLoader::TabContentsDelegateImpl::OnSetSuggestions(
     const std::vector<std::string>& suggestions,
     InstantCompleteBehavior behavior) {
   TabContentsWrapper* source = loader_->preview_contents();
-  content::NavigationEntry* entry =
+  NavigationEntry* entry =
       source->tab_contents()->GetController().GetActiveEntry();
   if (!entry || page_id != entry->GetPageID())
     return;

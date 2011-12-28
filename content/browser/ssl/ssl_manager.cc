@@ -13,7 +13,7 @@
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/ssl/ssl_policy.h"
 #include "content/browser/ssl/ssl_request_info.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,6 +24,8 @@
 #include "net/base/cert_status_flags.h"
 
 using content::BrowserThread;
+using content::NavigationEntry;
+using content::NavigationEntryImpl;
 using content::SSLStatus;
 using content::WebContents;
 
@@ -130,8 +132,8 @@ void SSLManager::DidCommitProvisionalLoad(
   content::LoadCommittedDetails* details =
       content::Details<content::LoadCommittedDetails>(in_details).ptr();
 
-  NavigationEntry* entry =
-      NavigationEntry::FromNavigationEntry(controller_->GetActiveEntry());
+  NavigationEntryImpl* entry =
+      NavigationEntryImpl::FromNavigationEntry(controller_->GetActiveEntry());
 
   if (details->is_main_frame) {
     if (entry) {
@@ -161,12 +163,12 @@ void SSLManager::DidCommitProvisionalLoad(
 
 void SSLManager::DidRunInsecureContent(const std::string& security_origin) {
   policy()->DidRunInsecureContent(
-      NavigationEntry::FromNavigationEntry(controller_->GetActiveEntry()),
+      NavigationEntryImpl::FromNavigationEntry(controller_->GetActiveEntry()),
       security_origin);
 }
 
 bool SSLManager::ProcessedSSLErrorFromRequest() const {
-  content::NavigationEntry* entry = controller_->GetActiveEntry();
+  NavigationEntry* entry = controller_->GetActiveEntry();
   if (!entry) {
     NOTREACHED();
     return false;
@@ -244,10 +246,10 @@ void SSLManager::DidReceiveResourceRedirect(ResourceRedirectDetails* details) {
 
 void SSLManager::DidChangeSSLInternalState() {
   UpdateEntry(
-      NavigationEntry::FromNavigationEntry(controller_->GetActiveEntry()));
+      NavigationEntryImpl::FromNavigationEntry(controller_->GetActiveEntry()));
 }
 
-void SSLManager::UpdateEntry(NavigationEntry* entry) {
+void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
   // We don't always have a navigation entry to update, for example in the
   // case of the Web Inspector.
   if (!entry)

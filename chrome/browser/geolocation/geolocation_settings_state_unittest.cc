@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::NavigationEntry;
 
 namespace {
 
@@ -33,8 +34,7 @@ TEST_F(GeolocationSettingsStateTests, ClearOnNewOrigin) {
   GeolocationSettingsState state(&profile);
   GURL url_0("http://www.example.com");
 
-  scoped_ptr<content::NavigationEntry> entry(
-      content::NavigationEntry::Create());
+  scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
   entry->SetURL(url_0);
   content::LoadCommittedDetails load_committed_details;
   load_committed_details.entry = entry.get();
@@ -139,8 +139,7 @@ TEST_F(GeolocationSettingsStateTests, ShowPortOnSameHost) {
   GeolocationSettingsState state(&profile);
   GURL url_0("http://www.example.com");
 
-  scoped_ptr<content::NavigationEntry> entry(
-      content::NavigationEntry::Create());
+  scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
   entry->SetURL(url_0);
   content::LoadCommittedDetails load_committed_details;
   load_committed_details.entry = entry.get();

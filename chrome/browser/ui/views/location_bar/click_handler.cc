@@ -11,6 +11,8 @@
 #include "content/public/browser/navigation_entry.h"
 #include "ui/views/view.h"
 
+using content::NavigationEntry;
+
 ClickHandler::ClickHandler(const views::View* owner,
                            LocationBarView* location_bar)
     : owner_(owner),
@@ -27,7 +29,7 @@ void ClickHandler::OnMouseReleased(const views::MouseEvent& event) {
     return;
 
   TabContents* tab = location_bar_->GetTabContentsWrapper()->tab_contents();
-  content::NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
+  NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
   if (!nav_entry) {
     NOTREACHED();
     return;

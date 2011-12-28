@@ -21,6 +21,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_util.h"
 
+using content::NavigationEntry;
+
 namespace {
 
 // Returns history::IconType the given icon_type corresponds to.
@@ -140,20 +142,20 @@ void FaviconHandler::SetFavicon(
   }
 
   if (url == url_ && icon_type == history::FAVICON) {
-    content::NavigationEntry* entry = GetEntry();
+    NavigationEntry* entry = GetEntry();
     if (entry)
       UpdateFavicon(entry, &sized_image);
   }
 }
 
-void FaviconHandler::UpdateFavicon(content::NavigationEntry* entry,
+void FaviconHandler::UpdateFavicon(NavigationEntry* entry,
                                    scoped_refptr<RefCountedMemory> data) {
   scoped_ptr<gfx::Image> image(gfx::ImageFromPNGEncodedData(data->front(),
                                                             data->size()));
   UpdateFavicon(entry, image.get());
 }
 
-void FaviconHandler::UpdateFavicon(content::NavigationEntry* entry,
+void FaviconHandler::UpdateFavicon(NavigationEntry* entry,
                                    const gfx::Image* image) {
   // No matter what happens, we need to mark the favicon as being set.
   entry->GetFavicon().valid = true;
@@ -168,7 +170,7 @@ void FaviconHandler::UpdateFavicon(content::NavigationEntry* entry,
 void FaviconHandler::OnUpdateFaviconURL(
     int32 page_id,
     const std::vector<FaviconURL>& candidates) {
-  content::NavigationEntry* entry = GetEntry();
+  NavigationEntry* entry = GetEntry();
   if (!entry)
     return;
 
@@ -245,8 +247,8 @@ void FaviconHandler::OnDidDownloadFavicon(int id,
   download_requests_.erase(i);
 }
 
-content::NavigationEntry* FaviconHandler::GetEntry() {
-  content::NavigationEntry* entry = delegate_->GetActiveEntry();
+NavigationEntry* FaviconHandler::GetEntry() {
+  NavigationEntry* entry = delegate_->GetActiveEntry();
   if (entry && entry->GetURL() == url_)
     return entry;
 
@@ -313,7 +315,7 @@ bool FaviconHandler::ShouldSaveFavicon(const GURL& url) {
 void FaviconHandler::OnFaviconDataForInitialURL(
     FaviconService::Handle handle,
     history::FaviconData favicon) {
-  content::NavigationEntry* entry = GetEntry();
+  NavigationEntry* entry = GetEntry();
   if (!entry)
     return;
 
@@ -390,7 +392,7 @@ void FaviconHandler::DownloadFaviconOrAskHistory(
 
 void FaviconHandler::OnFaviconData(FaviconService::Handle handle,
                                   history::FaviconData favicon) {
-  content::NavigationEntry* entry = GetEntry();
+  NavigationEntry* entry = GetEntry();
   if (!entry)
     return;
 

@@ -10,6 +10,8 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 
+using content::NavigationEntry;
+
 ExtensionNavigationObserver::ExtensionNavigationObserver(Profile* profile)
     : profile_(profile) {
   RegisterForNotifications();
@@ -46,7 +48,7 @@ void ExtensionNavigationObserver::PromptToEnableExtensionIfNecessary(
   if (!in_progress_prompt_extension_id_.empty())
     return;
 
-  content::NavigationEntry* nav_entry = nav_controller->GetActiveEntry();
+  NavigationEntry* nav_entry = nav_controller->GetActiveEntry();
   if (!nav_entry)
     return;
 

@@ -23,6 +23,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::NavigationEntry;
+
 // static
 const size_t TranslateInfoBarDelegate::kNoIndex = static_cast<size_t>(-1);
 
@@ -399,7 +401,7 @@ TranslateInfoBarDelegate*
 }
 
 std::string TranslateInfoBarDelegate::GetPageHost() {
-  content::NavigationEntry* entry =
+  NavigationEntry* entry =
       owner()->web_contents()->GetController().GetActiveEntry();
   return entry ? entry->GetURL().HostNoBrackets() : std::string();
 }

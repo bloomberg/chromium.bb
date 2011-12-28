@@ -68,6 +68,7 @@
 #include "ui/aura/root_window.h"
 #endif
 
+using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
@@ -306,8 +307,7 @@ bool GetCurrentTabTitle(const Browser* browser, string16* title) {
   TabContents* tab_contents = browser->GetSelectedTabContents();
   if (!tab_contents)
     return false;
-  content::NavigationEntry* last_entry =
-      tab_contents->GetController().GetActiveEntry();
+  NavigationEntry* last_entry = tab_contents->GetController().GetActiveEntry();
   if (!last_entry)
     return false;
   title->assign(last_entry->GetTitleForDisplay(""));

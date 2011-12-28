@@ -28,6 +28,7 @@
 #include "content/public/browser/notification_types.h"
 
 using content::BrowserThread;
+using content::NavigationEntry;
 using content::WebContents;
 
 // This module implements a sign in dialog for cloud print.
@@ -64,7 +65,7 @@ void CloudPrintSigninFlowHandler::RegisterMessages() {
   if (web_ui_ && web_ui_->tab_contents()) {
     NavigationController* controller =
         &web_ui_->tab_contents()->GetController();
-    content::NavigationEntry* pending_entry = controller->GetPendingEntry();
+    NavigationEntry* pending_entry = controller->GetPendingEntry();
     if (pending_entry)
       pending_entry->SetURL(CloudPrintURL(
           Profile::FromWebUI(web_ui_)).GetCloudPrintSigninURL());

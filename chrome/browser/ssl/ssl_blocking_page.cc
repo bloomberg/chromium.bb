@@ -27,6 +27,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::NavigationEntry;
+
 namespace {
 
 enum SSLBlockingPageEvent {
@@ -109,7 +111,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
   return jstemplate_builder::GetI18nTemplateHtml(html, &strings);
 }
 
-void SSLBlockingPage::UpdateEntry(content::NavigationEntry* entry) {
+void SSLBlockingPage::UpdateEntry(NavigationEntry* entry) {
   const net::SSLInfo& ssl_info = handler_->ssl_info();
   int cert_id = CertStore::GetInstance()->StoreCert(
       ssl_info.cert, tab()->GetRenderProcessHost()->GetID());

@@ -24,6 +24,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
 
+using content::NavigationEntry;
 using content::WebContents;
 
 class TabFinder::WebContentsObserverImpl : public content::WebContentsObserver {
@@ -211,7 +212,7 @@ void TabFinder::FetchRedirectStart(WebContents* tab) {
   if (profile->IsOffTheRecord())
     return;
 
-  content::NavigationEntry* committed_entry =
+  NavigationEntry* committed_entry =
       tab->GetController().GetLastCommittedEntry();
   if (!committed_entry || committed_entry->GetURL().is_empty())
     return;

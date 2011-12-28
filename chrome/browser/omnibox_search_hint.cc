@@ -39,6 +39,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::NavigationEntry;
+
 // The URLs of search engines for which we want to trigger the infobar.
 const char* const kSearchEngineURLs[] = {
     "http://www.google.com/",
@@ -175,7 +177,7 @@ void OmniboxSearchHint::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    content::NavigationEntry* entry =
+    NavigationEntry* entry =
         tab_->tab_contents()->GetController().GetActiveEntry();
     if (search_engine_urls_.find(entry->GetURL().spec()) ==
         search_engine_urls_.end()) {

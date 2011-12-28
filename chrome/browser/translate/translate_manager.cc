@@ -48,6 +48,7 @@
 #include "net/url_request/url_request_status.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::NavigationEntry;
 using content::WebContents;
 
 namespace {
@@ -262,7 +263,7 @@ void TranslateManager::Observe(int type,
           content::Source<NavigationController>(source).ptr();
       content::LoadCommittedDetails* load_details =
           content::Details<content::LoadCommittedDetails>(details).ptr();
-      content::NavigationEntry* entry = controller->GetActiveEntry();
+      NavigationEntry* entry = controller->GetActiveEntry();
       if (!entry) {
         NOTREACHED();
         return;
@@ -402,7 +403,7 @@ void TranslateManager::OnURLFetchComplete(const content::URLFetcher* source) {
         // The tab went away while we were retrieving the script.
         continue;
       }
-      content::NavigationEntry* entry = tab->GetController().GetActiveEntry();
+      NavigationEntry* entry = tab->GetController().GetActiveEntry();
       if (!entry || entry->GetPageID() != request.page_id) {
         // We navigated away from the page the translation was triggered on.
         continue;
@@ -468,7 +469,7 @@ void TranslateManager::InitiateTranslation(WebContents* tab,
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableTranslate))
     return;
 
-  content::NavigationEntry* entry = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry = tab->GetController().GetActiveEntry();
   if (!entry) {
     // This can happen for popups created with window.open("").
     return;
@@ -553,8 +554,7 @@ void TranslateManager::InitiateTranslationPosted(
 void TranslateManager::TranslatePage(WebContents* web_contents,
                                      const std::string& source_lang,
                                      const std::string& target_lang) {
-  content::NavigationEntry* entry =
-      web_contents->GetController().GetActiveEntry();
+  NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
   if (!entry) {
     NOTREACHED();
     return;
@@ -586,8 +586,7 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
 }
 
 void TranslateManager::RevertTranslation(WebContents* web_contents) {
-  content::NavigationEntry* entry =
-      web_contents->GetController().GetActiveEntry();
+  NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
   if (!entry) {
     NOTREACHED();
     return;
@@ -633,7 +632,7 @@ void TranslateManager::DoTranslatePage(WebContents* tab,
                                        const std::string& translate_script,
                                        const std::string& source_lang,
                                        const std::string& target_lang) {
-  content::NavigationEntry* entry = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry = tab->GetController().GetActiveEntry();
   if (!entry) {
     NOTREACHED();
     return;

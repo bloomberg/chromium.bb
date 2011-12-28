@@ -16,6 +16,7 @@
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
@@ -100,7 +101,7 @@ bool OptionsMenuModel::IsCommandIdEnabled(int command_id) const {
       DCHECK(translate_infobar_delegate_ != NULL);
       DCHECK(translate_infobar_delegate_->owner() != NULL);
       DCHECK(translate_infobar_delegate_->owner()->web_contents() != NULL);
-      content::NavigationEntry* entry = translate_infobar_delegate_->owner()->
+      NavigationEntry* entry = translate_infobar_delegate_->owner()->
           web_contents()->GetController().GetActiveEntry();
       // Delegate and tab contents should never be NULL, but active entry
       // can be NULL when running tests. We want to return false if NULL.

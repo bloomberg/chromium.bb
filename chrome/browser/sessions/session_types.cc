@@ -10,6 +10,8 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 
+using content::NavigationEntry;
+
 // TabNavigation --------------------------------------------------------------
 
 TabNavigation::TabNavigation()
@@ -58,9 +60,9 @@ TabNavigation& TabNavigation::operator=(const TabNavigation& tab) {
 }
 
 // static
-content::NavigationEntry* TabNavigation::ToNavigationEntry(
+NavigationEntry* TabNavigation::ToNavigationEntry(
     int page_id, Profile *profile) const {
-  content::NavigationEntry* entry = NavigationController::CreateNavigationEntry(
+  NavigationEntry* entry = NavigationController::CreateNavigationEntry(
       virtual_url_,
       referrer_,
       // Use a transition type of reload so that we don't incorrectly
@@ -79,8 +81,7 @@ content::NavigationEntry* TabNavigation::ToNavigationEntry(
   return entry;
 }
 
-void TabNavigation::SetFromNavigationEntry(
-    const content::NavigationEntry& entry) {
+void TabNavigation::SetFromNavigationEntry(const NavigationEntry& entry) {
   virtual_url_ = entry.GetVirtualURL();
   referrer_ = entry.GetReferrer();
   title_ = entry.GetTitle();
@@ -93,7 +94,7 @@ void TabNavigation::SetFromNavigationEntry(
 void TabNavigation::CreateNavigationEntriesFromTabNavigations(
     Profile* profile,
     const std::vector<TabNavigation>& navigations,
-    std::vector<content::NavigationEntry*>* entries) {
+    std::vector<NavigationEntry*>* entries) {
   int page_id = 0;
   for (std::vector<TabNavigation>::const_iterator i =
            navigations.begin(); i != navigations.end(); ++i, ++page_id) {

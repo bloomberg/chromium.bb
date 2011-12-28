@@ -58,6 +58,7 @@
 #endif
 
 using content::BrowserThread;
+using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
 using printing::Metafile;
@@ -314,7 +315,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
     settings->SetString(printing::kSettingHeaderFooterTitle,
                         initiator_tab->tab_contents()->GetTitle());
     std::string url;
-    content::NavigationEntry* entry =
+    NavigationEntry* entry =
         initiator_tab->tab_contents()->GetController().GetActiveEntry();
     if (entry)
       url = entry->GetVirtualURL().spec();

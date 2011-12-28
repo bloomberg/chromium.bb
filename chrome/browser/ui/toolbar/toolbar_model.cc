@@ -27,6 +27,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::NavigationEntry;
 using content::SSLStatus;
 
 ToolbarModel::ToolbarModel(Browser* browser)
@@ -47,7 +48,7 @@ string16 ToolbarModel::GetText() const {
     Profile* profile =
         Profile::FromBrowserContext(navigation_controller->browser_context());
     languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-    content::NavigationEntry* entry = navigation_controller->GetVisibleEntry();
+    NavigationEntry* entry = navigation_controller->GetVisibleEntry();
     if (!ShouldDisplayURL()) {
       url = GURL();
     } else if (entry) {
@@ -73,8 +74,7 @@ bool ToolbarModel::ShouldDisplayURL() const {
   //   of view-source:chrome://newtab, which should display its URL despite what
   //   chrome://newtab's WebUI says.
   NavigationController* controller = GetNavigationController();
-  content::NavigationEntry* entry =
-      controller ? controller->GetVisibleEntry() : NULL;
+  NavigationEntry* entry = controller ? controller->GetVisibleEntry() : NULL;
   if (entry) {
     if (entry->IsViewSourceMode() ||
         entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
@@ -100,7 +100,7 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
   if (!navigation_controller)  // We might not have a controller on init.
     return NONE;
 
-  content::NavigationEntry* entry = navigation_controller->GetVisibleEntry();
+  NavigationEntry* entry = navigation_controller->GetVisibleEntry();
   if (!entry)
     return NONE;
 

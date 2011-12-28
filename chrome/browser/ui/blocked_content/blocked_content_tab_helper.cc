@@ -15,6 +15,8 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
+using content::NavigationEntry;
+
 BlockedContentTabHelper::BlockedContentTabHelper(
     TabContentsWrapper* tab_contents)
         : content::WebContentsObserver(tab_contents->web_contents()),
@@ -81,7 +83,7 @@ void BlockedContentTabHelper::AddPopup(TabContentsWrapper* new_contents,
   // entry is the page to be loaded as we navigate away from the unloading
   // page.  For this reason, we can't use GetURL() to get the opener URL,
   // because it returns the active entry.
-  content::NavigationEntry* entry =
+  NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
   GURL creator = entry ? entry->GetVirtualURL() : GURL::EmptyGURL();
   Profile* profile =

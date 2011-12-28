@@ -155,6 +155,7 @@ using content::BrowserThread;
 using content::ChildProcessHost;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::NavigationEntry;
 using content::PluginService;
 using content::OpenURLParams;
 using content::Referrer;
@@ -1284,7 +1285,7 @@ void TestingAutomationProvider::GetTabTitle(int handle,
   *title_string_size = -1;  // -1 is the error code
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    content::NavigationEntry* entry = tab->GetActiveEntry();
+    NavigationEntry* entry = tab->GetActiveEntry();
     if (entry != NULL) {
       *title = UTF16ToWideHack(entry->GetTitleForDisplay(""));
     } else {
@@ -1573,7 +1574,7 @@ void TestingAutomationProvider::GetSecurityState(
     int* insecure_content_status) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    content::NavigationEntry* entry = tab->GetActiveEntry();
+    NavigationEntry* entry = tab->GetActiveEntry();
     *success = true;
     *security_style = entry->GetSSL().security_style;
     *ssl_cert_status = entry->GetSSL().cert_status;
@@ -1592,7 +1593,7 @@ void TestingAutomationProvider::GetPageType(
     content::PageType* page_type) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    content::NavigationEntry* entry = tab->GetActiveEntry();
+    NavigationEntry* entry = tab->GetActiveEntry();
     *page_type = entry->GetPageType();
     *success = true;
     // In order to return the proper result when an interstitial is shown and
@@ -1619,7 +1620,7 @@ void TestingAutomationProvider::ActionOnSSLBlockingPage(
     IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    content::NavigationEntry* entry = tab->GetActiveEntry();
+    NavigationEntry* entry = tab->GetActiveEntry();
     if (entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
       TabContents* tab_contents = tab->tab_contents();
       InterstitialPage* ssl_blocking_page =
@@ -2972,7 +2973,7 @@ void TestingAutomationProvider::GetNavigationInfo(
   }
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   const NavigationController& controller = tab_contents->GetController();
-  content::NavigationEntry* nav_entry = controller.GetActiveEntry();
+  NavigationEntry* nav_entry = controller.GetActiveEntry();
   DCHECK(nav_entry);
 
   // Security info.

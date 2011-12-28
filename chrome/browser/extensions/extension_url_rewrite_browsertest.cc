@@ -19,6 +19,8 @@
 #include "content/public/browser/navigation_entry.h"
 #include "googleurl/src/gurl.h"
 
+using content::NavigationEntry;
+
 class ExtensionURLRewriteBrowserTest : public ExtensionBrowserTest {
  protected:
   std::string GetLocationBarText() const {
@@ -34,7 +36,7 @@ class ExtensionURLRewriteBrowserTest : public ExtensionBrowserTest {
     return &browser()->GetSelectedTabContents()->GetController();
   }
 
-  content::NavigationEntry* GetNavigationEntry() const {
+  NavigationEntry* GetNavigationEntry() const {
     return GetNavigationController()->GetActiveEntry();
   }
 

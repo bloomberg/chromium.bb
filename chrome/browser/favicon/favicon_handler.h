@@ -20,7 +20,6 @@
 #include "ui/gfx/favicon_size.h"
 
 class FaviconHandlerDelegate;
-class NavigationEntry;
 class Profile;
 class RefCountedMemory;
 class SkBitmap;

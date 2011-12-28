@@ -6,11 +6,11 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/public/browser/ssl_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::SSLStatus;
+namespace content {
 
 class NavigationEntryTest : public testing::Test {
  public:
@@ -18,15 +18,15 @@ class NavigationEntryTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    entry1_.reset(new NavigationEntry);
+    entry1_.reset(new NavigationEntryImpl);
 
     instance_ = SiteInstance::CreateSiteInstance(NULL);
-    entry2_.reset(new NavigationEntry(
+    entry2_.reset(new NavigationEntryImpl(
           instance_, 3,
           GURL("test:url"),
-          content::Referrer(GURL("from"), WebKit::WebReferrerPolicyDefault),
+          Referrer(GURL("from"), WebKit::WebReferrerPolicyDefault),
           ASCIIToUTF16("title"),
-          content::PAGE_TRANSITION_TYPED,
+          PAGE_TRANSITION_TYPED,
           false));
   }
 
@@ -34,8 +34,8 @@ class NavigationEntryTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<NavigationEntry> entry1_;
-  scoped_ptr<NavigationEntry> entry2_;
+  scoped_ptr<NavigationEntryImpl> entry1_;
+  scoped_ptr<NavigationEntryImpl> entry2_;
   // SiteInstances are deleted when their NavigationEntries are gone.
   SiteInstance* instance_;
 };
@@ -101,10 +101,8 @@ TEST_F(NavigationEntryTest, NavigationEntryFavicons) {
 // Test SSLStatus inner class
 TEST_F(NavigationEntryTest, NavigationEntrySSLStatus) {
   // Default (unknown)
-  EXPECT_EQ(content::SECURITY_STYLE_UNKNOWN,
-            entry1_.get()->GetSSL().security_style);
-  EXPECT_EQ(content::SECURITY_STYLE_UNKNOWN,
-            entry2_.get()->GetSSL().security_style);
+  EXPECT_EQ(SECURITY_STYLE_UNKNOWN, entry1_.get()->GetSSL().security_style);
+  EXPECT_EQ(SECURITY_STYLE_UNKNOWN, entry2_.get()->GetSSL().security_style);
   EXPECT_EQ(0, entry1_.get()->GetSSL().cert_id);
   EXPECT_EQ(0U, entry1_.get()->GetSSL().cert_status);
   EXPECT_EQ(-1, entry1_.get()->GetSSL().security_bits);
@@ -122,16 +120,16 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_EQ(instance_, entry1_.get()->site_instance());
 
   // Page type
-  EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry1_.get()->GetPageType());
-  EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry2_.get()->GetPageType());
-  entry2_.get()->set_page_type(content::PAGE_TYPE_INTERSTITIAL);
-  EXPECT_EQ(content::PAGE_TYPE_INTERSTITIAL, entry2_.get()->GetPageType());
+  EXPECT_EQ(PAGE_TYPE_NORMAL, entry1_.get()->GetPageType());
+  EXPECT_EQ(PAGE_TYPE_NORMAL, entry2_.get()->GetPageType());
+  entry2_.get()->set_page_type(PAGE_TYPE_INTERSTITIAL);
+  EXPECT_EQ(PAGE_TYPE_INTERSTITIAL, entry2_.get()->GetPageType());
 
   // Referrer
   EXPECT_EQ(GURL(), entry1_.get()->GetReferrer().url);
   EXPECT_EQ(GURL("from"), entry2_.get()->GetReferrer().url);
   entry2_.get()->SetReferrer(
-      content::Referrer(GURL("from2"), WebKit::WebReferrerPolicyDefault));
+      Referrer(GURL("from2"), WebKit::WebReferrerPolicyDefault));
   EXPECT_EQ(GURL("from2"), entry2_.get()->GetReferrer().url);
 
   // Title
@@ -153,11 +151,10 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_EQ(2, entry2_.get()->GetPageID());
 
   // Transition type
-  EXPECT_EQ(content::PAGE_TRANSITION_LINK, entry1_.get()->GetTransitionType());
-  EXPECT_EQ(content::PAGE_TRANSITION_TYPED, entry2_.get()->GetTransitionType());
-  entry2_.get()->SetTransitionType(content::PAGE_TRANSITION_RELOAD);
-  EXPECT_EQ(content::PAGE_TRANSITION_RELOAD,
-            entry2_.get()->GetTransitionType());
+  EXPECT_EQ(PAGE_TRANSITION_LINK, entry1_.get()->GetTransitionType());
+  EXPECT_EQ(PAGE_TRANSITION_TYPED, entry2_.get()->GetTransitionType());
+  entry2_.get()->SetTransitionType(PAGE_TRANSITION_RELOAD);
+  EXPECT_EQ(PAGE_TRANSITION_RELOAD, entry2_.get()->GetTransitionType());
 
   // Is renderer initiated
   EXPECT_FALSE(entry1_.get()->is_renderer_initiated());
@@ -172,8 +169,10 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_TRUE(entry2_.get()->GetHasPostData());
 
   // Restored
-  EXPECT_EQ(NavigationEntry::RESTORE_NONE, entry1_->restore_type());
-  EXPECT_EQ(NavigationEntry::RESTORE_NONE, entry2_->restore_type());
-  entry2_->set_restore_type(NavigationEntry::RESTORE_LAST_SESSION);
-  EXPECT_EQ(NavigationEntry::RESTORE_LAST_SESSION, entry2_->restore_type());
+  EXPECT_EQ(NavigationEntryImpl::RESTORE_NONE, entry1_->restore_type());
+  EXPECT_EQ(NavigationEntryImpl::RESTORE_NONE, entry2_->restore_type());
+  entry2_->set_restore_type(NavigationEntryImpl::RESTORE_LAST_SESSION);
+  EXPECT_EQ(NavigationEntryImpl::RESTORE_LAST_SESSION, entry2_->restore_type());
 }
+
+}  // namespace content

@@ -58,6 +58,7 @@ using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
+using content::NavigationEntry;
 using content::OpenURLParams;
 using content::WebContents;
 
@@ -190,7 +191,7 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
       this);
   g_instances.Get().push_back(this);
   // Wipe out page icon so that the default application icon is used.
-  content::NavigationEntry* entry =
+  NavigationEntry* entry =
       tab_contents_->tab_contents()->GetController().GetActiveEntry();
   entry->GetFavicon().bitmap = SkBitmap();
   entry->GetFavicon().valid = true;

@@ -46,6 +46,7 @@
 using base::Time;
 using content::BrowserThread;
 using content::DownloadItem;
+using content::NavigationEntry;
 using WebKit::WebPageSerializerClient;
 
 namespace {
@@ -224,7 +225,7 @@ GURL SavePackage::GetUrlToBeSaved() {
   // from the NavigationEntry because it reflects its' origin
   // rather than the displayed one (returned by GetURL) which may be
   // different (like having "view-source:" on the front).
-  content::NavigationEntry* active_entry =
+  NavigationEntry* active_entry =
       web_contents()->GetController().GetActiveEntry();
   return active_entry->GetURL();
 }

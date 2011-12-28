@@ -88,6 +88,7 @@
 #endif
 
 using content::DownloadManager;
+using content::NavigationEntry;
 using content::OpenURLParams;
 using content::SSLStatus;
 using content::UserMetricsAction;
@@ -1196,7 +1197,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       // the page) from the NavigationEntry because its reflects their origin
       // rather than the display one (returned by GetURL) which may be
       // different (like having "view-source:" on the front).
-      content::NavigationEntry* active_entry =
+      NavigationEntry* active_entry =
           source_tab_contents_->GetController().GetActiveEntry();
       return SavePackage::IsSavableURL(
           (active_entry) ? active_entry->GetURL() : GURL());
@@ -1567,7 +1568,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO: {
-      content::NavigationEntry* nav_entry =
+      NavigationEntry* nav_entry =
           source_tab_contents_->GetController().GetActiveEntry();
       source_tab_contents_->ShowPageInfo(nav_entry->GetURL(),
                                          nav_entry->GetSSL(), true);

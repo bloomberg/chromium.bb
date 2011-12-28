@@ -24,6 +24,7 @@
 #include "net/base/cert_status_flags.h"
 #include "net/test/test_server.h"
 
+using content::NavigationEntry;
 using content::SSLStatus;
 
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
@@ -51,7 +52,7 @@ class SSLUITest : public InProcessBrowserTest {
   void CheckAuthenticatedState(TabContents* tab,
                                bool displayed_insecure_content) {
     ASSERT_FALSE(tab->IsCrashed());
-    content::NavigationEntry* entry = tab->GetController().GetActiveEntry();
+    NavigationEntry* entry = tab->GetController().GetActiveEntry();
     ASSERT_TRUE(entry);
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
     EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
@@ -66,7 +67,7 @@ class SSLUITest : public InProcessBrowserTest {
 
   void CheckUnauthenticatedState(TabContents* tab) {
     ASSERT_FALSE(tab->IsCrashed());
-    content::NavigationEntry* entry = tab->GetController().GetActiveEntry();
+    NavigationEntry* entry = tab->GetController().GetActiveEntry();
     ASSERT_TRUE(entry);
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
     EXPECT_EQ(content::SECURITY_STYLE_UNAUTHENTICATED,
@@ -83,7 +84,7 @@ class SSLUITest : public InProcessBrowserTest {
                                       bool ran_insecure_content,
                                       bool interstitial) {
     ASSERT_FALSE(tab->IsCrashed());
-    content::NavigationEntry* entry = tab->GetController().GetActiveEntry();
+    NavigationEntry* entry = tab->GetController().GetActiveEntry();
     ASSERT_TRUE(entry);
     EXPECT_EQ(interstitial ?
                   content::PAGE_TYPE_INTERSTITIAL : content::PAGE_TYPE_NORMAL,
@@ -328,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSExpiredCertAndDontProceed) {
                                https_server_.GetURL("files/ssl/google.html"));
 
   TabContents* tab = browser()->GetSelectedTabContents();
-  content::NavigationEntry* entry = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry = tab->GetController().GetActiveEntry();
   ASSERT_TRUE(entry);
 
   GURL cross_site_url =
@@ -373,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   ui_test_utils::NavigateToURL(browser(),
       test_server()->GetURL("files/ssl/google.html"));
   TabContents* tab = browser()->GetSelectedTabContents();
-  content::NavigationEntry* entry = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry = tab->GetController().GetActiveEntry();
   ASSERT_TRUE(entry);
 
   // Now go to a bad HTTPS page that shows an interstitial.
@@ -409,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoBackViaMenu) {
   ui_test_utils::NavigateToURL(browser(),
       test_server()->GetURL("files/ssl/google.html"));
   TabContents* tab = browser()->GetSelectedTabContents();
-  content::NavigationEntry* entry = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry = tab->GetController().GetActiveEntry();
   ASSERT_TRUE(entry);
 
   // Now go to a bad HTTPS page that shows an interstitial.
@@ -436,11 +437,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoForward) {
   ui_test_utils::NavigateToURL(browser(),
       test_server()->GetURL("files/ssl/google.html"));
   TabContents* tab = browser()->GetSelectedTabContents();
-  content::NavigationEntry* entry1 = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry1 = tab->GetController().GetActiveEntry();
   ASSERT_TRUE(entry1);
   ui_test_utils::NavigateToURL(browser(),
       test_server()->GetURL("files/ssl/blank_page.html"));
-  content::NavigationEntry* entry2 = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry2 = tab->GetController().GetActiveEntry();
   ASSERT_TRUE(entry2);
 
   // Now go back so that a page is in the forward history.
@@ -452,7 +453,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoForward) {
     observer.Wait();
   }
   ASSERT_TRUE(tab->GetController().CanGoForward());
-  content::NavigationEntry* entry3 = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry3 = tab->GetController().GetActiveEntry();
   ASSERT_TRUE(entry1 == entry3);
 
   // Now go to a bad HTTPS page that shows an interstitial.
@@ -474,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoForward) {
   EXPECT_FALSE(browser()->GetSelectedTabContents()->GetInterstitialPage());
   CheckUnauthenticatedState(tab);
   EXPECT_FALSE(tab->GetController().CanGoForward());
-  content::NavigationEntry* entry4 = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry4 = tab->GetController().GetActiveEntry();
   EXPECT_TRUE(entry2 == entry4);
 }
 

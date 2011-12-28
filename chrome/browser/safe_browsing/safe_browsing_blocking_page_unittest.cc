@@ -14,6 +14,7 @@
 #include "content/test/test_browser_thread.h"
 
 using content::BrowserThread;
+using content::NavigationEntry;
 
 static const char* kGoogleURL = "http://www.google.com/";
 static const char* kGoodURL = "http://www.goodguys.com/";
@@ -115,8 +116,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
   }
 
   void GoBack(bool is_cross_site) {
-    content::NavigationEntry* entry =
-        contents()->GetController().GetEntryAtOffset(-1);
+    NavigationEntry* entry = contents()->GetController().GetEntryAtOffset(-1);
     ASSERT_TRUE(entry);
     contents()->GetController().GoBack();
 

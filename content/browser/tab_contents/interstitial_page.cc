@@ -18,7 +18,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/dom_storage_common.h"
@@ -34,6 +34,8 @@
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
+using content::NavigationEntry;
+using content::NavigationEntryImpl;
 using content::WebContents;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
@@ -186,7 +188,7 @@ void InterstitialPage::Show() {
   (*tab_to_interstitial_page_)[tab_] = this;
 
   if (new_navigation_) {
-    NavigationEntry* entry = new NavigationEntry;
+    NavigationEntryImpl* entry = new NavigationEntryImpl;
     entry->SetURL(url_);
     entry->SetVirtualURL(url_);
     entry->set_page_type(content::PAGE_TYPE_INTERSTITIAL);
@@ -238,7 +240,7 @@ void InterstitialPage::Hide() {
   if (tab_->GetInterstitialPage())
     tab_->remove_interstitial_page();
   // Let's revert to the original title if necessary.
-  content::NavigationEntry* entry = tab_->GetController().GetActiveEntry();
+  NavigationEntry* entry = tab_->GetController().GetActiveEntry();
   if (!new_navigation_ && should_revert_tab_title_) {
     entry->SetTitle(original_tab_title_);
     tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
@@ -370,7 +372,7 @@ void InterstitialPage::UpdateTitle(RenderViewHost* render_view_host,
                                    const string16& title,
                                    base::i18n::TextDirection title_direction) {
   DCHECK(render_view_host == render_view_host_);
-  content::NavigationEntry* entry = tab_->GetController().GetActiveEntry();
+  NavigationEntry* entry = tab_->GetController().GetActiveEntry();
   if (!entry) {
     // Crash reports from the field indicate this can be NULL.
     // This is unexpected as InterstitialPages constructed with the

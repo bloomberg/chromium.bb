@@ -14,6 +14,8 @@
 
 class TestFaviconHandler;
 
+using content::NavigationEntry;
+
 namespace {
 
 // Fill the given bmp with valid png data.
@@ -134,7 +136,7 @@ class TestFaviconHandlerDelegate : public FaviconHandlerDelegate {
       : tab_contents_(tab_contents) {
   }
 
-  virtual content::NavigationEntry* GetActiveEntry() {
+  virtual NavigationEntry* GetActiveEntry() {
     ADD_FAILURE() << "TestFaviconHandlerDelegate::GetActiveEntry() "
                   << "should never be called in tests.";
     return NULL;
@@ -163,7 +165,7 @@ class TestFaviconHandler : public FaviconHandler {
                      Type type)
       : FaviconHandler(profile, delegate, type),
         download_image_size_(0),
-        entry_(content::NavigationEntry::Create()),
+        entry_(NavigationEntry::Create()),
         download_id_(0) {
     entry_->SetURL(page_url);
   }
@@ -189,7 +191,7 @@ class TestFaviconHandler : public FaviconHandler {
     download_handler_.reset(download_handler);
   }
 
-  virtual content::NavigationEntry* GetEntry() {
+  virtual NavigationEntry* GetEntry() {
     return entry_.get();
   }
 
@@ -273,7 +275,7 @@ class TestFaviconHandler : public FaviconHandler {
   int download_image_size_;
 
  private:
-  scoped_ptr<content::NavigationEntry> entry_;
+  scoped_ptr<NavigationEntry> entry_;
 
   // The unique id of a download request. It will be returned to a
   // FaviconHandler.

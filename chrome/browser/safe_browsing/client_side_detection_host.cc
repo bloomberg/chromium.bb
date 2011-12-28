@@ -37,6 +37,7 @@
 #include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
+using content::NavigationEntry;
 using content::WebContents;
 
 namespace safe_browsing {
@@ -475,7 +476,7 @@ bool ClientSideDetectionHost::DidShowSBInterstitial() {
   if (unsafe_unique_page_id_ <= 0 || !web_contents()) {
     return false;
   }
-  const content::NavigationEntry* nav_entry =
+  const NavigationEntry* nav_entry =
       web_contents()->GetController().GetActiveEntry();
   return (nav_entry && nav_entry->GetUniqueID() == unsafe_unique_page_id_);
 }

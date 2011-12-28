@@ -16,12 +16,13 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 
+using content::NavigationEntry;
 using content::WebContents;
 
 namespace {
 
 // Returns true if the entry's transition type is FORM_SUBMIT.
-bool IsFormSubmit(const content::NavigationEntry* entry) {
+bool IsFormSubmit(const NavigationEntry* entry) {
   return (content::PageTransitionStripQualifier(entry->GetTransitionType()) ==
           content::PAGE_TRANSITION_FORM_SUBMIT);
 }
@@ -91,10 +92,10 @@ void SearchEngineTabHelper::OnPageHasOSDD(
   }
 
   const NavigationController& controller = web_contents()->GetController();
-  const content::NavigationEntry* entry = controller.GetLastCommittedEntry();
+  const NavigationEntry* entry = controller.GetLastCommittedEntry();
   DCHECK(entry);
 
-  const content::NavigationEntry* base_entry = entry;
+  const NavigationEntry* base_entry = entry;
   if (IsFormSubmit(base_entry)) {
     // If the current page is a form submit, find the last page that was not
     // a form submit and use its url to generate the keyword from.
@@ -148,7 +149,7 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   //              happen in new tabs.
   if (last_index <= 0)
     return;
-  const content::NavigationEntry* previous_entry =
+  const NavigationEntry* previous_entry =
       controller.GetEntryAtIndex(last_index - 1);
   if (IsFormSubmit(previous_entry)) {
     // Only generate a keyword if the previous page wasn't itself a form

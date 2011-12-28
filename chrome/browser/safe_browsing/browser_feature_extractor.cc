@@ -28,6 +28,7 @@
 #include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
+using content::NavigationEntry;
 using content::WebContents;
 
 namespace safe_browsing {
@@ -52,7 +53,7 @@ static void AddNavigationFeatures(const std::string& feature_prefix,
                                   int index,
                                   const std::vector<GURL>& redirect_chain,
                                   ClientPhishingRequest* request) {
-  content::NavigationEntry* entry = controller.GetEntryAtIndex(index);
+  NavigationEntry* entry = controller.GetEntryAtIndex(index);
   bool is_secure_referrer = entry->GetReferrer().url.SchemeIsSecure();
   if (!is_secure_referrer) {
     AddFeature(StringPrintf("%s%s=%s",
@@ -162,7 +163,7 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
   // The url that we are extracting features for should already be commited.
   DCHECK_NE(index, -1);
   for (; index >= 0; index--) {
-    content::NavigationEntry* entry = controller.GetEntryAtIndex(index);
+    NavigationEntry* entry = controller.GetEntryAtIndex(index);
     if (url_index == -1 && entry->GetURL() == request_url) {
       // It's possible that we've been on the on the possibly phishy url before
       // in this tab, so make sure that we use the latest navigation for

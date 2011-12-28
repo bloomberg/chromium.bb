@@ -17,7 +17,6 @@
 
 class InterstitialPage;
 class NavigationController;
-class NavigationEntry;
 class RenderViewHost;
 class RenderWidgetHostView;
 class WebUI;
@@ -25,6 +24,7 @@ class WebUI;
 namespace content {
 class BrowserContext;
 class NavigationEntry;
+class NavigationEntryImpl;
 }
 
 // Manages RenderViewHosts for a TabContents. Normally there is only one and
@@ -132,7 +132,7 @@ class CONTENT_EXPORT RenderViewHostManager
   // navigation entry. It may create a new RenderViewHost or re-use an existing
   // one. The RenderViewHost to navigate will be returned. Returns NULL if one
   // could not be created.
-  RenderViewHost* Navigate(const NavigationEntry& entry);
+  RenderViewHost* Navigate(const content::NavigationEntryImpl& entry);
 
   // Instructs the various live views to stop. Called when the user directed the
   // page to stop loading.
@@ -215,23 +215,24 @@ class CONTENT_EXPORT RenderViewHostManager
   // Either of the entries may be NULL.
   bool ShouldSwapProcessesForNavigation(
       const content::NavigationEntry* cur_entry,
-      const NavigationEntry* new_entry) const;
+      const content::NavigationEntryImpl* new_entry) const;
 
   // Returns an appropriate SiteInstance object for the given NavigationEntry,
   // possibly reusing the current SiteInstance.
   // Never called if --process-per-tab is used.
-  SiteInstance* GetSiteInstanceForEntry(const NavigationEntry& entry,
-                                        SiteInstance* curr_instance);
+  SiteInstance* GetSiteInstanceForEntry(
+      const content::NavigationEntryImpl& entry,
+      SiteInstance* curr_instance);
 
   // Helper method to create a pending RenderViewHost for a cross-site
   // navigation.
-  bool CreatePendingRenderView(const NavigationEntry& entry,
+  bool CreatePendingRenderView(const content::NavigationEntryImpl& entry,
                                SiteInstance* instance);
 
   // Sets up the necessary state for a new RenderViewHost navigating to the
   // given entry.
   bool InitRenderView(RenderViewHost* render_view_host,
-                      const NavigationEntry& entry);
+                      const content::NavigationEntryImpl& entry);
 
   // Sets the pending RenderViewHost/WebUI to be the active one. Note that this
   // doesn't require the pending render_view_host_ pointer to be non-NULL, since
@@ -241,7 +242,8 @@ class CONTENT_EXPORT RenderViewHostManager
   // Helper method to terminate the pending RenderViewHost.
   void CancelPending();
 
-  RenderViewHost* UpdateRendererStateForNavigate(const NavigationEntry& entry);
+  RenderViewHost* UpdateRendererStateForNavigate(
+      const content::NavigationEntryImpl& entry);
 
   // Called when a renderer process is starting to close.  We should not
   // schedule new navigations in its swapped out RenderViewHosts after this.

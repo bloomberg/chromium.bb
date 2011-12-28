@@ -34,6 +34,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
 
+using content::NavigationEntry;
 using content::UserMetricsAction;
 using content::WebContents;
 
@@ -216,14 +217,13 @@ TabContentsWrapper* TabStripModel::DiscardTabContentsAt(int index) {
                           NULL /* base_tab_contents */,
                           NULL /* session_storage_namespace */));
   TabContentsWrapper* old_contents = GetContentsAt(index);
-  content::NavigationEntry* old_nav_entry =
+  NavigationEntry* old_nav_entry =
       old_contents->tab_contents()->GetController().GetActiveEntry();
   if (old_nav_entry) {
     // Set the new tab contents to reload this URL when clicked.
     // This also allows the tab to keep drawing the favicon and page title.
-    content::NavigationEntry* new_nav_entry =
-        content::NavigationEntry::Create(*old_nav_entry);
-    std::vector<content::NavigationEntry*> entries;
+    NavigationEntry* new_nav_entry = NavigationEntry::Create(*old_nav_entry);
+    std::vector<NavigationEntry*> entries;
     entries.push_back(new_nav_entry);
     null_contents->tab_contents()->GetController().Restore(0, false, &entries);
   }

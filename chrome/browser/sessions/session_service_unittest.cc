@@ -28,6 +28,8 @@
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::NavigationEntry;
+
 class SessionServiceTest : public BrowserWithTestWindowTest,
                            public content::NotificationObserver {
  public:
@@ -69,8 +71,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
                         const TabNavigation& navigation,
                         int index,
                         bool select) {
-    scoped_ptr<content::NavigationEntry> entry(
-        content::NavigationEntry::Create());
+    scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
     entry->SetURL(navigation.virtual_url());
     entry->SetReferrer(navigation.referrer());
     entry->SetTitle(navigation.title());

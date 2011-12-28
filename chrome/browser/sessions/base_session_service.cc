@@ -18,8 +18,9 @@
 #include "content/public/common/referrer.h"
 #include "webkit/glue/webkit_glue.h"
 
-using content::BrowserThread;
 using WebKit::WebReferrerPolicy;
+using content::BrowserThread;
+using content::NavigationEntry;
 
 // InternalGetCommandsRequest -------------------------------------------------
 
@@ -138,7 +139,7 @@ SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
     SessionID::id_type command_id,
     SessionID::id_type tab_id,
     int index,
-    const content::NavigationEntry& entry) {
+    const NavigationEntry& entry) {
   // Use pickle to handle marshalling.
   Pickle pickle;
   pickle.WriteInt(tab_id);

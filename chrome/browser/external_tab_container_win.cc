@@ -67,6 +67,7 @@
 #include "ui/views/layout/grid_layout.h"
 
 using content::BrowserThread;
+using content::NavigationEntry;
 using content::OpenURLParams;
 using content::SSLStatus;
 using content::WebContents;
@@ -956,7 +957,7 @@ bool ExternalTabContainer::InitNavigationInfo(NavigationInfo* nav_info,
                                               content::NavigationType nav_type,
                                               int relative_offset) {
   DCHECK(nav_info);
-  content::NavigationEntry* entry =
+  NavigationEntry* entry =
       tab_contents_->tab_contents()->GetController().GetActiveEntry();
   // If this is very early in the game then we may not have an entry.
   if (!entry)
