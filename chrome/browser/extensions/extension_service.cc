@@ -433,8 +433,11 @@ ExtensionService::ExtensionService(Profile* profile,
   app_notification_manager_->Init();
 
   if (extensions_enabled_) {
-    ExternalExtensionProviderImpl::CreateExternalProviders(
-        this, profile_, &external_extension_providers_);
+    if (!command_line->HasSwitch(switches::kImport) &&
+        !command_line->HasSwitch(switches::kImportFromFile)) {
+      ExternalExtensionProviderImpl::CreateExternalProviders(
+          this, profile_, &external_extension_providers_);
+    }
   }
 
   // Use monochrome icons for Omnibox icons.
@@ -558,7 +561,8 @@ void ExtensionService::Init() {
   // that is already running an extension service for this profile.
   // TODO(aa): can we start up even less of ExtensionService?
   // http://crbug.com/107636
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kImport)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kImport) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kImportFromFile)) {
     // TODO(erikkay) this should probably be deferred to a future point
     // rather than running immediately at startup.
     CheckForExternalUpdates();
