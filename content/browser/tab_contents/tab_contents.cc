@@ -111,6 +111,8 @@ using content::DevToolsAgentHostRegistry;
 using content::DevToolsManagerImpl;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::GlobalRequestID;
+using content::OpenURLParams;
 using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;
@@ -762,27 +764,16 @@ void TabContents::WebUISend(RenderViewHost* render_view_host,
     delegate_->WebUISend(this, source_url, name, args);
 }
 
-// TODO(adriansc): Remove this method once refactoring changed all call sites.
-TabContents* TabContents::OpenURL(const GURL& url,
-                                  const GURL& referrer,
-                                  WindowOpenDisposition disposition,
-                                  content::PageTransition transition) {
-  // For specifying a referrer, use the version of OpenURL taking OpenURLParams.
-  DCHECK(referrer.is_empty());
-  return OpenURL(OpenURLParams(url, content::Referrer(), disposition,
-                               transition, false));
-}
+WebContents* TabContents::OpenURL(const OpenURLParams& params) {
+  if (!delegate_)
+    return NULL;
 
-TabContents* TabContents::OpenURL(const OpenURLParams& params) {
-  if (delegate_) {
-    TabContents* new_contents = delegate_->OpenURLFromTab(this, params);
-    // Notify observers.
-    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                      DidOpenURL(params.url, params.referrer,
-                                 params.disposition, params.transition));
-    return new_contents;
-  }
-  return NULL;
+  WebContents* new_contents = delegate_->OpenURLFromTab(this, params);
+  // Notify observers.
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidOpenURL(params.url, params.referrer,
+                               params.disposition, params.transition));
+  return new_contents;
 }
 
 bool TabContents::NavigateToPendingEntry(
@@ -1921,7 +1912,7 @@ void TabContents::RequestTransferURL(const GURL& url,
                                      WindowOpenDisposition disposition,
                                      int64 source_frame_id,
                                      const GlobalRequestID& old_request_id) {
-  TabContents* new_contents = NULL;
+  WebContents* new_contents = NULL;
   content::PageTransition transition_type = content::PAGE_TRANSITION_LINK;
   if (render_manager_.web_ui()) {
     // When we're a Web UI, it will provide a page transition type for us (this

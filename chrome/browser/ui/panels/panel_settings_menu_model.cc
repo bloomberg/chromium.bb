@@ -16,6 +16,9 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 PanelSettingsMenuModel::PanelSettingsMenuModel(Panel* panel)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       panel_(panel) {
@@ -75,12 +78,13 @@ void PanelSettingsMenuModel::ExecuteCommand(int command_id) {
 
   Browser* browser = panel_->browser();
   switch (command_id) {
-    case COMMAND_NAME:
-     browser->OpenURL(extension->GetHomepageURL(),
-                      GURL(),
-                      NEW_FOREGROUND_TAB,
-                      content::PAGE_TRANSITION_LINK);
+    case COMMAND_NAME: {
+      OpenURLParams params(
+          extension->GetHomepageURL(), Referrer(), NEW_FOREGROUND_TAB,
+          content::PAGE_TRANSITION_LINK, false);
+      browser->OpenURL(params);
       break;
+    }
     case COMMAND_CONFIGURE:
       DCHECK(!extension->options_url().is_empty());
       browser->GetProfile()->GetExtensionProcessManager()->OpenOptionsPage(

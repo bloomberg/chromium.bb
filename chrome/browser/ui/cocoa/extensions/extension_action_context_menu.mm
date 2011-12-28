@@ -35,6 +35,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 // A class that loads the extension icon on the I/O thread before showing the
 // confirmation dialog to uninstall the given extension.
 // Also acts as the extension's UI delegate in order to display the dialog.
@@ -245,8 +248,10 @@ int CurrentTabId() {
     case kExtensionContextName: {
       GURL url(std::string(extension_urls::kGalleryBrowsePrefix) +
                std::string("/detail/") + extension_->id());
-      browser->OpenURL(
-          url, GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+      OpenURLParams params(
+          url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
+           false);
+      browser->OpenURL(params);
       break;
     }
     case kExtensionContextOptions: {

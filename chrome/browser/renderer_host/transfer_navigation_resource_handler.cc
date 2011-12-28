@@ -14,6 +14,8 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/public/common/referrer.h"
 
+using content::GlobalRequestID;
+
 namespace {
 
 void RequestTransferURLOnUIThread(int render_process_id,

@@ -51,6 +51,8 @@
 #include "chrome/installer/util/install_util.h"
 #endif  // defined(OS_WIN)
 
+using content::OpenURLParams;
+using content::Referrer;
 using content::UserMetricsAction;
 
 // The amount of vertical space separating the error label at the bottom from
@@ -625,7 +627,9 @@ void AboutChromeView::LinkClicked(views::Link* source, int event_flags) {
   }
 
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-  browser->OpenURL(url, GURL(), NEW_WINDOW, content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(
+      url, Referrer(), NEW_WINDOW, content::PAGE_TRANSITION_LINK, false);
+  browser->OpenURL(params);
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

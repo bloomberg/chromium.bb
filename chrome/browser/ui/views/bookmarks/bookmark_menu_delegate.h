@@ -17,8 +17,11 @@
 #include "ui/views/controls/menu/menu_delegate.h"
 
 class BookmarkNode;
-class PageNavigator;
 class Profile;
+
+namespace content {
+class PageNavigator;
+}
 
 namespace ui {
 class OSExchangeData;
@@ -48,7 +51,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   };
 
   BookmarkMenuDelegate(Profile* profile,
-                       PageNavigator* navigator,
+                       content::PageNavigator* navigator,
                        views::Widget* parent,
                        int first_menu_id);
   virtual ~BookmarkMenuDelegate();
@@ -62,7 +65,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
             bookmark_utils::BookmarkLaunchLocation);
 
   // Sets the PageNavigator.
-  void SetPageNavigator(PageNavigator* navigator);
+  void SetPageNavigator(content::PageNavigator* navigator);
 
   // Returns the id given to the next menu.
   int next_menu_id() const { return next_menu_id_; }
@@ -160,7 +163,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
 
   Profile* profile_;
 
-  PageNavigator* page_navigator_;
+  content::PageNavigator* page_navigator_;
 
   // Parent of menus.
   views::Widget* parent_;

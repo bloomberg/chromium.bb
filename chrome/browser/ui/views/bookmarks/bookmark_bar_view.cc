@@ -37,10 +37,10 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
@@ -62,6 +62,9 @@
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 
+using content::OpenURLParams;
+using content::PageNavigator;
+using content::Referrer;
 using content::UserMetricsAction;
 using views::CustomButton;
 using views::DropTargetEvent;
@@ -1029,8 +1032,10 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
   Profile* profile = browser_->profile();
   if (node->is_url()) {
     RecordAppLaunch(profile, node->url());
-    page_navigator_->OpenURL(node->url(), GURL(),
-        disposition_from_event_flags, content::PAGE_TRANSITION_AUTO_BOOKMARK);
+    OpenURLParams params(
+        node->url(), Referrer(), disposition_from_event_flags,
+        content::PAGE_TRANSITION_AUTO_BOOKMARK, false);
+    page_navigator_->OpenURL(params);
   } else {
     bookmark_utils::OpenAll(GetWidget()->GetNativeWindow(), profile,
         page_navigator_, node, disposition_from_event_flags);

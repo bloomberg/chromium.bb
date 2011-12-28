@@ -16,7 +16,10 @@ class Browser;
 class BookmarkModel;
 class BookmarkNode;
 class MenuGtk;  // See below for why we need this.
+
+namespace content {
 class PageNavigator;
+}
 
 // BookmarkNodeMenuModel builds a SimpleMenuModel on demand when the menu is
 // shown, and automatically destroys child models when the menu is closed.
@@ -25,7 +28,7 @@ class BookmarkNodeMenuModel : public ui::SimpleMenuModel {
   BookmarkNodeMenuModel(ui::SimpleMenuModel::Delegate* delegate,
                         BookmarkModel* model,
                         const BookmarkNode* node,
-                        PageNavigator* page_navigator);
+                        content::PageNavigator* page_navigator);
   virtual ~BookmarkNodeMenuModel();
 
   // From SimpleMenuModel. Takes care of deleting submenus.
@@ -64,7 +67,7 @@ class BookmarkNodeMenuModel : public ui::SimpleMenuModel {
   const BookmarkNode* node_;
 
   // The page navigator used to open bookmarks in ActivatedAt().
-  PageNavigator* page_navigator_;
+  content::PageNavigator* page_navigator_;
 
   // A list of the submenus we own and will need to delete.
   std::vector<BookmarkNodeMenuModel*> submenus_;

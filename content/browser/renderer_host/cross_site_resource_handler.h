@@ -10,7 +10,10 @@
 #include "net/url_request/url_request_status.h"
 
 class ResourceDispatcherHost;
+
+namespace content {
 struct GlobalRequestID;
+}
 
 // Ensures that cross-site responses are delayed until the onunload handler of
 // the previous page is allowed to run.  This handler wraps an
@@ -60,7 +63,7 @@ class CrossSiteResourceHandler : public ResourceHandler {
   void StartCrossSiteTransition(
       int request_id,
       content::ResourceResponse* response,
-      const GlobalRequestID& global_id);
+      const content::GlobalRequestID& global_id);
 
   scoped_refptr<ResourceHandler> next_handler_;
   int render_process_host_id_;

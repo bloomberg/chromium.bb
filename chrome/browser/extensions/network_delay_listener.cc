@@ -18,6 +18,7 @@
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
+using content::GlobalRequestID;
 
 NetworkDelayListener::NetworkDelayListener()
     : resource_queue_(NULL),

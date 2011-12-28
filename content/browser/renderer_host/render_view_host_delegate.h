@@ -28,7 +28,6 @@ class SkBitmap;
 class TabContents;
 class WebKeyboardEvent;
 struct ContextMenuParams;
-struct GlobalRequestID;
 struct NativeWebKeyboardEvent;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_FrameNavigate_Params;
@@ -44,6 +43,7 @@ namespace content {
 class BrowserContext;
 class WebContents;
 struct FileChooserParams;
+struct GlobalRequestID;
 struct Referrer;
 struct RendererPreferences;
 }
@@ -282,11 +282,12 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
                               int64 source_frame_id) {}
 
   // The page wants to transfer the request to a new renderer.
-  virtual void RequestTransferURL(const GURL& url,
-                                  const content::Referrer& referrer,
-                                  WindowOpenDisposition disposition,
-                                  int64 source_frame_id,
-                                  const GlobalRequestID& old_request_id) {}
+  virtual void RequestTransferURL(
+      const GURL& url,
+      const content::Referrer& referrer,
+      WindowOpenDisposition disposition,
+      int64 source_frame_id,
+      const content::GlobalRequestID& old_request_id) {}
 
   // A javascript message, confirmation or prompt should be shown.
   virtual void RunJavaScriptMessage(const RenderViewHost* rvh,

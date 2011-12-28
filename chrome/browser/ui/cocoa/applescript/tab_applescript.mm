@@ -26,6 +26,9 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "googleurl/src/gurl.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 @interface AnyResultValue : NSObject {
  @private
   scoped_nsobject<NSAppleEventDescriptor> descriptor;
@@ -390,12 +393,13 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
   NavigationEntry* entry =
       tabContents_->tab_contents()->GetController().GetLastCommittedEntry();
   if (entry) {
-    tabContents_->tab_contents()->OpenURL(
+    tabContents_->tab_contents()->OpenURL(OpenURLParams(
         GURL(chrome::kViewSourceScheme + std::string(":") +
              entry->GetURL().spec()),
-        GURL(),
+        Referrer(),
         NEW_FOREGROUND_TAB,
-        content::PAGE_TRANSITION_LINK);
+        content::PAGE_TRANSITION_LINK,
+        false));
   }
 }
 

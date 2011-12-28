@@ -61,6 +61,8 @@
 #include "chrome/browser/browser_process.h"
 #endif
 
+using content::OpenURLParams;
+using content::Referrer;
 using content::WebContents;
 
 namespace {
@@ -302,7 +304,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
   // Navigate to a page that triggers a cross-site transition.
   ASSERT_TRUE(test_server()->Start());
   GURL url2(test_server()->GetURL("files/title1.html"));
-  browser()->OpenURL(url2, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
+  browser()->OpenURL(OpenURLParams(
+      url2, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
 
   ui_test_utils::WindowedNotificationObserver host_destroyed_observer(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,

@@ -32,9 +32,9 @@ class HtmlDialogTabContentsDelegate : public content::WebContentsDelegate {
   void Detach();
 
   // content::WebContentsDelegate declarations.
-
-  virtual TabContents* OpenURLFromTab(TabContents* source,
-                                      const OpenURLParams& params) OVERRIDE;
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
 
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,

@@ -21,6 +21,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 namespace {
 
 // The width of the window, in view coordinates. The height will be
@@ -112,8 +115,10 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 - (IBAction)showChromeWebStore:(id)sender {
   GURL url(l10n_util::GetStringUTF8(IDS_WEBSTORE_URL));
   Browser* browser = BrowserList::GetLastActive();
-  browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(
+      url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
+      false);
+  browser->OpenURL(params);
 }
 
 // A picker button has been pressed - invoke corresponding service.

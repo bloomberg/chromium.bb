@@ -40,9 +40,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-using content::BrowserThread;
-using content::WebContents;
 using WebKit::WebSecurityOrigin;
+using content::BrowserThread;
+using content::OpenURLParams;
+using content::Referrer;
+using content::WebContents;
 
 // GeolocationInfoBarQueueController ------------------------------------------
 
@@ -244,10 +246,12 @@ bool GeolocationConfirmInfoBarDelegate::LinkClicked(
       "https://www.google.com/support/chrome/bin/answer.py?answer=142065";
 #endif
 
-  owner()->web_contents()->OpenURL(
+  OpenURLParams params(
       google_util::AppendGoogleLocaleParam(GURL(kGeolocationLearnMoreUrl)),
-      GURL(), (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK);
+      Referrer(),
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+      content::PAGE_TRANSITION_LINK, false);
+  owner()->web_contents()->OpenURL(params);
   return false;  // Do not dismiss the info bar.
 }
 

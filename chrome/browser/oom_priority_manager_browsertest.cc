@@ -12,6 +12,8 @@
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 
+using content::OpenURLParams;
+
 namespace {
 
 class OomPriorityManagerTest : public InProcessBrowserTest {

@@ -11,6 +11,9 @@
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 class NewTabUIBrowserTest : public InProcessBrowserTest {
  public:
   NewTabUIBrowserTest() {
@@ -55,8 +58,9 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, LoadNTPInExistingProcess) {
     ui_test_utils::WindowedNotificationObserver process_exited_observer(
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         content::NotificationService::AllSources());
-    browser()->OpenURL(test_server()->GetURL("files/title1.html"), GURL(),
-                       CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
+    browser()->OpenURL(OpenURLParams(
+        test_server()->GetURL("files/title1.html"), Referrer(), CURRENT_TAB,
+        content::PAGE_TRANSITION_TYPED, false));
     process_exited_observer.Wait();
   }
 

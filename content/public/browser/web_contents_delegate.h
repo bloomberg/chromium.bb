@@ -22,7 +22,6 @@ class GURL;
 class TabContents;
 struct ContextMenuParams;
 struct NativeWebKeyboardEvent;
-struct OpenURLParams;
 
 namespace base {
 class ListValue;
@@ -54,22 +53,24 @@ struct WebIntentData;
 
 namespace content {
 
+struct OpenURLParams;
+
 // Objects implement this interface to get notified about changes in the
 // TabContents and to provide necessary functionality.
 class CONTENT_EXPORT WebContentsDelegate {
  public:
   WebContentsDelegate();
 
-  // Opens a new URL inside the passed in TabContents (if source is 0 open
+  // Opens a new URL inside the passed in WebContents (if source is 0 open
   // in the current front-most tab), unless |disposition| indicates the url
   // should be opened in a new tab or window.
   //
   // A NULL source indicates the current tab (callers should probably use
   // OpenURL() for these cases which does it for you).
 
-  // Returns the TabContents the URL is opened in, or NULL if the URL wasn't
+  // Returns the WebContents the URL is opened in, or NULL if the URL wasn't
   // opened immediately.
-  virtual TabContents* OpenURLFromTab(TabContents* source,
+  virtual WebContents* OpenURLFromTab(WebContents* source,
                                       const OpenURLParams& params);
 
   // Called to inform the delegate that the tab content's navigation state

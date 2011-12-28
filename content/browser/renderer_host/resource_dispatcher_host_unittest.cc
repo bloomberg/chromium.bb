@@ -16,7 +16,6 @@
 #include "content/browser/download/download_id_factory.h"
 #include "content/browser/mock_resource_context.h"
 #include "content/browser/renderer_host/dummy_resource_handler.h"
-#include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_handler.h"
@@ -24,6 +23,7 @@
 #include "content/common/child_process_host_impl.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_data.h"
@@ -42,6 +42,7 @@ using content::BrowserThread;
 using content::BrowserThreadImpl;
 using content::ChildProcessHostImpl;
 using content::DownloadManager;
+using content::GlobalRequestID;
 
 // TODO(eroman): Write unit tests for SafeBrowsing that exercise
 //               SafeBrowsingResourceHandler.

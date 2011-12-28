@@ -28,7 +28,7 @@
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
-class Profile;
+using content::OpenURLParams;
 
 using content::SSLStatus;
 

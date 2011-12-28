@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
-#include "content/browser/tab_contents/page_navigator.h"
+#include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -24,6 +24,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
 #include "webkit/glue/window_open_disposition.h"
+
+using content::OpenURLParams;
+using content::PageNavigator;
 
 namespace {
 

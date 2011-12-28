@@ -15,6 +15,9 @@
 
 typedef BrowserWithTestWindowTest BrowserCommandsTest;
 
+using content::OpenURLParams;
+using content::Referrer;
+
 // Tests IDC_SELECT_TAB_0, IDC_SELECT_NEXT_TAB, IDC_SELECT_PREVIOUS_TAB and
 // IDC_SELECT_LAST_TAB.
 TEST_F(BrowserCommandsTest, TabNavigationAccelerators) {
@@ -86,7 +89,8 @@ TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
   // Navigate to a url.
   GURL url1("http://foo/1");
   AddTab(browser(), url1);
-  browser()->OpenURL(url1, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
+  browser()->OpenURL(OpenURLParams(
+      url1, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
 
   // TODO(beng): remove this once we can use TabContentses directly in testing
   //             instead of the TestTabContents which causes this command not to

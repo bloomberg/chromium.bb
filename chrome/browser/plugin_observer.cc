@@ -29,6 +29,8 @@
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/webplugininfo.h"
 
+using content::OpenURLParams;
+using content::Referrer;
 using content::UserMetricsAction;
 
 namespace {
@@ -73,10 +75,12 @@ bool PluginInfoBarDelegate::Cancel() {
 }
 
 bool PluginInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  owner()->web_contents()->OpenURL(
-      google_util::AppendGoogleLocaleParam(GURL(GetLearnMoreURL())), GURL(),
+  OpenURLParams params(
+      google_util::AppendGoogleLocaleParam(GURL(GetLearnMoreURL())), Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK);
+      content::PAGE_TRANSITION_LINK,
+      false);
+  owner()->web_contents()->OpenURL(params);
   return false;
 }
 
@@ -260,8 +264,10 @@ string16 OutdatedPluginInfoBarDelegate::GetButtonLabel(
 
 bool OutdatedPluginInfoBarDelegate::Accept() {
   content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Update"));
-  owner()->web_contents()->OpenURL(update_url_, GURL(), NEW_FOREGROUND_TAB,
-                                   content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(
+      update_url_, Referrer(), NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK, false);
+  owner()->web_contents()->OpenURL(params);
   return false;
 }
 

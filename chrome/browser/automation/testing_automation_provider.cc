@@ -154,6 +154,8 @@ using content::ChildProcessHost;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::PluginService;
+using content::OpenURLParams;
+using content::Referrer;
 using content::SSLStatus;
 using content::WebContents;
 
@@ -632,8 +634,9 @@ void TestingAutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
                                          number_of_navigations, false, false);
 
       // TODO(darin): avoid conversion to GURL.
-      browser->OpenURL(
-          url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
+      OpenURLParams params(
+          url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
+      browser->OpenURL(params);
       return;
     }
   }
@@ -666,8 +669,9 @@ void TestingAutomationProvider::NavigationAsyncWithDisposition(
     if (browser) {
       // Don't add any listener unless a callback mechanism is desired.
       // TODO(vibhor): Do this if such a requirement arises in future.
-      browser->OpenURL(
-          url, GURL(), disposition, content::PAGE_TRANSITION_TYPED);
+      OpenURLParams params(
+          url, Referrer(), disposition, content::PAGE_TRANSITION_TYPED, false);
+      browser->OpenURL(params);
       *status = true;
     }
   }

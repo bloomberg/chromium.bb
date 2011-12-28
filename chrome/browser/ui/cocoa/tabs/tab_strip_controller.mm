@@ -66,6 +66,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 
+using content::OpenURLParams;
+using content::Referrer;
 using content::UserMetricsAction;
 
 NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
@@ -1882,9 +1884,9 @@ private:
     }
     case CURRENT_TAB:
       content::RecordAction(UserMetricsAction("Tab_DropURLOnTab"));
-      tabStripModel_->GetTabContentsAt(index)
-          ->tab_contents()->OpenURL(*url, GURL(), CURRENT_TAB,
-                                    content::PAGE_TRANSITION_TYPED);
+      OpenURLParams params(
+          *url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
+      tabStripModel_->GetTabContentsAt(index)->tab_contents()->OpenURL(params);
       tabStripModel_->ActivateTabAt(index, true);
       break;
     default:

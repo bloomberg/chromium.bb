@@ -26,6 +26,9 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 namespace {
 
 // User actions on the sync promo (aka "Sign in to Chrome").
@@ -201,8 +204,9 @@ void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
 
   GURL url = SyncPromoUI::GetNextPageURLForSyncPromoURL(
       web_ui_->tab_contents()->GetURL());
-  web_ui_->tab_contents()->OpenURL(url, GURL(), CURRENT_TAB,
-                                   content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(
+      url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
+  web_ui_->tab_contents()->OpenURL(params);
 }
 
 void SyncPromoHandler::HandleInitializeSyncPromo(const base::ListValue* args) {
@@ -232,8 +236,9 @@ void SyncPromoHandler::HandleShowAdvancedSettings(
   CloseSyncSetup();
   std::string url(chrome::kChromeUISettingsURL);
   url += chrome::kSyncSetupSubPage;
-  web_ui_->tab_contents()->OpenURL(GURL(url), GURL(), CURRENT_TAB,
-                                   content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(
+      GURL(url), Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
+  web_ui_->tab_contents()->OpenURL(params);
   RecordUserFlowAction(SYNC_PROMO_ADVANCED_CLICKED);
 }
 

@@ -43,6 +43,7 @@
 #include <gdk/gdkkeysyms.h>  // NOLINT
 #endif
 
+using content::OpenURLParams;
 using content::UserMetricsAction;
 using content::WebContents;
 
@@ -416,8 +417,9 @@ bool DefaultTabDragController::GetStartedDrag() const {
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultTabDragController, PageNavigator implementation:
 
-TabContents* DefaultTabDragController::OpenURLFromTab(TabContents* source,
-                                                  const OpenURLParams& params) {
+WebContents* DefaultTabDragController::OpenURLFromTab(
+    WebContents* source,
+    const OpenURLParams& params) {
   if (source_tab_drag_data()->original_delegate) {
     OpenURLParams forward_params = params;
     if (params.disposition == CURRENT_TAB)

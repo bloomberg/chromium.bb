@@ -13,8 +13,8 @@
 #include "base/timer.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_types.h"
-#include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_handler.h"
+#include "content/public/browser/global_request_id.h"
 #include "net/base/net_errors.h"
 
 class DownloadFileManager;
@@ -100,7 +100,7 @@ class DownloadResourceHandler : public ResourceHandler {
   void CallStartedCB(net::Error error);
 
   DownloadId download_id_;
-  GlobalRequestID global_id_;
+  content::GlobalRequestID global_id_;
   int render_view_id_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   std::string content_disposition_;

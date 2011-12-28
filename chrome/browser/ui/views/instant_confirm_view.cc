@@ -20,6 +20,9 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 InstantConfirmView::InstantConfirmView(Profile* profile) : profile_(profile) {
   views::Label* description_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_INSTANT_OPT_IN_MESSAGE));
@@ -80,8 +83,10 @@ bool InstantConfirmView::IsModal() const {
 
 void InstantConfirmView::LinkClicked(views::Link* source, int event_flags) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-  browser->OpenURL(browser::InstantLearnMoreURL(), GURL(),
-                   NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED);
+  OpenURLParams params(
+      browser::InstantLearnMoreURL(), Referrer(), NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_TYPED, false);
+  browser->OpenURL(params);
 }
 
 namespace browser {

@@ -28,6 +28,8 @@
 #include "ui/gfx/image/image.h"
 #include "webkit/glue/webkit_glue.h"
 
+using content::OpenURLParams;
+
 namespace {
 
 // Left or right margin.

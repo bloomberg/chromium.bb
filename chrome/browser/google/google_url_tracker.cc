@@ -32,6 +32,9 @@
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 namespace {
 
 InfoBarDelegate* CreateInfobar(InfoBarTabHelper* infobar_helper,
@@ -73,10 +76,13 @@ string16 GoogleURLTrackerInfoBarDelegate::GetLinkText() const {
 
 bool GoogleURLTrackerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  owner()->web_contents()->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
-      "https://www.google.com/support/chrome/bin/answer.py?answer=1618699")),
-      GURL(), (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(
+      google_util::AppendGoogleLocaleParam(GURL(
+          "https://www.google.com/support/chrome/bin/answer.py?answer=1618699")),
+      Referrer(),
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+      content::PAGE_TRANSITION_LINK, false);
+  owner()->web_contents()->OpenURL(params);
   return false;
 }
 
@@ -304,9 +310,11 @@ void GoogleURLTracker::RedoSearch() {
   replacements.SetHost(google_url_.host().data(),
                        url_parse::Component(0, google_url_.host().length()));
   GURL new_search_url(search_url_.ReplaceComponents(replacements));
-  if (new_search_url.is_valid())
-    controller_->tab_contents()->OpenURL(new_search_url, GURL(), CURRENT_TAB,
-                                         content::PAGE_TRANSITION_GENERATED);
+  if (new_search_url.is_valid()) {
+    OpenURLParams params(new_search_url, Referrer(), CURRENT_TAB,
+                         content::PAGE_TRANSITION_GENERATED, false);
+    controller_->tab_contents()->OpenURL(params);
+  }
 }
 
 void GoogleURLTracker::Observe(int type,

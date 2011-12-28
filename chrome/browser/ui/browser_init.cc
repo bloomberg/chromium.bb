@@ -124,6 +124,8 @@
 #endif
 
 using content::BrowserThread;
+using content::OpenURLParams;
+using content::Referrer;
 
 namespace {
 
@@ -1310,8 +1312,10 @@ string16 LearnMoreInfoBar::GetLinkText() const {
 }
 
 bool LearnMoreInfoBar::LinkClicked(WindowOpenDisposition disposition) {
-  owner()->web_contents()->OpenURL(learn_more_url_, GURL(), disposition,
-                                   content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(
+      learn_more_url_, Referrer(), disposition, content::PAGE_TRANSITION_LINK,
+      false);
+  owner()->web_contents()->OpenURL(params);
   return false;
 }
 

@@ -61,6 +61,9 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 namespace {
 
 // Height of the toolbar in pixels when the bookmark bar is closed.
@@ -755,8 +758,9 @@ class NotificationBridge : public content::NotificationObserver {
         OmniboxView::StripJavascriptSchemas(UTF8ToUTF16(url.spec())));
     return;
   }
-  browser_->GetSelectedTabContents()->OpenURL(url, GURL(), CURRENT_TAB,
-                                              content::PAGE_TRANSITION_TYPED);
+  OpenURLParams params(
+      url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
+  browser_->GetSelectedTabContents()->OpenURL(params);
 }
 
 // (URLDropTargetController protocol)
@@ -771,8 +775,9 @@ class NotificationBridge : public content::NotificationObserver {
       base::SysNSStringToUTF16(text), string16(), false, false, &match, NULL);
   GURL url(match.destination_url);
 
-  browser_->GetSelectedTabContents()->OpenURL(url, GURL(), CURRENT_TAB,
-                                              content::PAGE_TRANSITION_TYPED);
+  OpenURLParams params(
+      url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
+  browser_->GetSelectedTabContents()->OpenURL(params);
 }
 
 // (URLDropTargetController protocol)

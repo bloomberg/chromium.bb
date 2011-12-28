@@ -20,6 +20,9 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 enum MenuEntries {
   NAME = 0,
   CONFIGURE,
@@ -114,8 +117,10 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
 
   switch (command_id) {
     case NAME: {
-      browser_->OpenURL(extension->GetHomepageURL(), GURL(),
-                        NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+      OpenURLParams params(extension->GetHomepageURL(), Referrer(),
+                           NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
+                           false);
+      browser_->OpenURL(params);
       break;
     }
     case CONFIGURE:

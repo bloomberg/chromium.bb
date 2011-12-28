@@ -35,7 +35,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
   BookmarkContextMenu(
       views::Widget* parent_widget,
       Profile* profile,
-      PageNavigator* page_navigator,
+      content::PageNavigator* page_navigator,
       const BookmarkNode* parent,
       const std::vector<const BookmarkNode*>& selection,
       bool close_on_remove);
@@ -51,7 +51,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
   }
 
   // Sets the PageNavigator.
-  void SetPageNavigator(PageNavigator* navigator);
+  void SetPageNavigator(content::PageNavigator* navigator);
 
   // Overridden from views::MenuDelegate:
   virtual void ExecuteCommand(int command_id) OVERRIDE;

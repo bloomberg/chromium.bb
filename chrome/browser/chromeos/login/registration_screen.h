@@ -81,8 +81,9 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
   virtual RegistrationView* AllocateView() OVERRIDE;
 
   // content::WebContentsDelegate implementation:
-  virtual TabContents* OpenURLFromTab(TabContents* source,
-                                      const OpenURLParams& params) OVERRIDE;
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
 
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;

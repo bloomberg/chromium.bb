@@ -20,6 +20,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 @interface ExtensionInstallDialogController ()
 - (bool)isInlineInstall;
 - (void)appendRatingStar:(const SkBitmap*)skiaImage;
@@ -124,9 +127,9 @@ void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
 - (IBAction)storeLinkClicked:(id)sender {
   GURL store_url(
       extension_urls::GetWebstoreItemDetailURLPrefix() + extension_->id());
-  BrowserList::GetLastActiveWithProfile(profile_)->
-      OpenURL(store_url, GURL(), NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK);
+  BrowserList::GetLastActiveWithProfile(profile_)->OpenURL(OpenURLParams(
+      store_url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
+      false));
 
   delegate_->InstallUIAbort(/*user_initiated=*/true);
   [NSApp endSheet:[self window]];

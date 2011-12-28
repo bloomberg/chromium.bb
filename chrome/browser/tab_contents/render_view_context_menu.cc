@@ -88,8 +88,10 @@
 #endif
 
 using content::DownloadManager;
+using content::OpenURLParams;
 using content::SSLStatus;
 using content::UserMetricsAction;
+using content::WebContents;
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;
 using WebKit::WebURL;
@@ -1830,23 +1832,23 @@ void RenderViewContextMenu::OpenURL(
     const GURL& url, const GURL& referrer, int64 frame_id,
     WindowOpenDisposition disposition,
     content::PageTransition transition) {
-  TabContents* new_contents = source_tab_contents_->OpenURL(OpenURLParams(
+  WebContents* new_contents = source_tab_contents_->OpenURL(OpenURLParams(
       url, content::Referrer(referrer, params_.referrer_policy), disposition,
       transition, false));
+  if (!new_contents)
+    return;
 
-  if (new_contents) {
-    RetargetingDetails details;
-    details.source_web_contents = source_tab_contents_;
-    details.source_frame_id = frame_id;
-    details.target_url = url;
-    details.target_web_contents = new_contents;
-    details.not_yet_in_tabstrip = false;
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_RETARGETING,
-        content::Source<Profile>(Profile::FromBrowserContext(
-            source_tab_contents_->GetBrowserContext())),
-        content::Details<RetargetingDetails>(&details));
-  }
+  RetargetingDetails details;
+  details.source_web_contents = source_tab_contents_;
+  details.source_frame_id = frame_id;
+  details.target_url = url;
+  details.target_web_contents = new_contents;
+  details.not_yet_in_tabstrip = false;
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_RETARGETING,
+      content::Source<Profile>(Profile::FromBrowserContext(
+          source_tab_contents_->GetBrowserContext())),
+      content::Details<RetargetingDetails>(&details));
 }
 
 void RenderViewContextMenu::CopyImageAt(int x, int y) {

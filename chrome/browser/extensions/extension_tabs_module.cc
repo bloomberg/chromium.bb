@@ -60,6 +60,8 @@
 namespace keys = extension_tabs_module_constants;
 namespace errors = extension_manifest_errors;
 
+using content::OpenURLParams;
+using content::Referrer;
 using content::WebContents;
 
 const int CaptureVisibleTabFunction::kDefaultQuality = 90;
@@ -1376,8 +1378,9 @@ bool ReloadTabFunction::RunImpl() {
   if (tab_contents->ShowingInterstitialPage()) {
     // This does as same as Browser::ReloadInternal.
     NavigationEntry* entry = tab_contents->GetController().GetActiveEntry();
-    GetCurrentBrowser()->OpenURL(entry->GetURL(), GURL(), CURRENT_TAB,
-                                 content::PAGE_TRANSITION_RELOAD);
+    OpenURLParams params(entry->GetURL(), Referrer(), CURRENT_TAB,
+                         content::PAGE_TRANSITION_RELOAD, false);
+    GetCurrentBrowser()->OpenURL(params);
   } else if (bypass_cache) {
     tab_contents->GetController().ReloadIgnoringCache(true);
   } else {

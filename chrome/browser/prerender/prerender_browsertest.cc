@@ -50,6 +50,8 @@ using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
+using content::OpenURLParams;
+using content::Referrer;
 using content::WebContents;
 
 // Prerender tests work as follows:
@@ -715,8 +717,9 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // Since the test needs to wait until the prerendered page has stopped
     // loading, rather than the page directly navigated to, need to
     // handle browser navigation directly.
-    browser()->OpenURL(
-        src_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
+    browser()->OpenURL(OpenURLParams(
+        src_url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
+        false));
 
     ui_test_utils::RunMessageLoop();
 

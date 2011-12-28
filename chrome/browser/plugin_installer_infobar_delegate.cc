@@ -14,6 +14,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 PluginInstallerInfoBarDelegate::PluginInstallerInfoBarDelegate(
     InfoBarTabHelper* infobar_helper,
     const string16& plugin_name,
@@ -73,9 +76,11 @@ bool PluginInstallerInfoBarDelegate::LinkClicked(
     url = google_util::AppendGoogleLocaleParam(GURL(
       "https://www.google.com/support/chrome/bin/answer.py?answer=142064"));
   }
-  owner()->web_contents()->OpenURL(
-      url, GURL(),
+
+  OpenURLParams params(
+      url, Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK);
+      content::PAGE_TRANSITION_LINK, false);
+  owner()->web_contents()->OpenURL(params);
   return false;
 }

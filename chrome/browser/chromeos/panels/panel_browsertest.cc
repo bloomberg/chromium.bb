@@ -18,6 +18,9 @@
 #include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
 #endif
 
+using content::OpenURLParams;
+using content::Referrer;
+
 namespace chromeos {
 
 class PanelTest : public InProcessBrowserTest {
@@ -50,7 +53,8 @@ IN_PROC_BROWSER_TEST_F(PanelTest, PanelOpenSmall) {
   ui_test_utils::WindowedNotificationObserver tab_added_observer(
       content::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
-  browser()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
+  browser()->OpenURL(OpenURLParams(
+      url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
   tab_added_observer.Wait();
 
   // Find the new browser.
@@ -100,7 +104,8 @@ IN_PROC_BROWSER_TEST_F(PanelTest, MAYBE_PanelOpenLarge) {
   ui_test_utils::WindowedNotificationObserver tab_added_observer(
       content::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
-  browser()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
+  browser()->OpenURL(OpenURLParams(
+      url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
   tab_added_observer.Wait();
 
   // Shouldn't find a new browser.

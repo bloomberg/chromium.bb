@@ -29,6 +29,9 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 namespace {
 
 // Size of extension icon in top left of dialog.
@@ -299,8 +302,10 @@ void ExtensionInstallDialogView::LinkClicked(views::Link* source,
                                              int event_flags) {
   GURL store_url(
       extension_urls::GetWebstoreItemDetailURLPrefix() + extension_->id());
-  BrowserList::GetLastActive()->OpenURL(
-      store_url, GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(
+      store_url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
+      false);
+  BrowserList::GetLastActive()->OpenURL(params);
   GetWidget()->Close();
 }
 

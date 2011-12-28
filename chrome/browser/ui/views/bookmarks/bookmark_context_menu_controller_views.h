@@ -11,8 +11,11 @@
 #include "base/basictypes.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 
-class PageNavigator;
 class Profile;
+
+namespace content {
+class PageNavigator;
+}
 
 namespace views {
 class Widget;
@@ -55,7 +58,7 @@ class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
       views::Widget* parent_widget,
       BookmarkContextMenuControllerViewsDelegate* delegate,
       Profile* profile,
-      PageNavigator* navigator,
+      content::PageNavigator* navigator,
       const BookmarkNode* parent,
       const std::vector<const BookmarkNode*>& selection);
   virtual ~BookmarkContextMenuControllerViews();
@@ -68,8 +71,10 @@ class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
 
   Profile* profile() const { return profile_; }
 
-  void set_navigator(PageNavigator* navigator) { navigator_ = navigator; }
-  PageNavigator* navigator() const { return navigator_; }
+  void set_navigator(content::PageNavigator* navigator) {
+    navigator_ = navigator;
+  }
+  content::PageNavigator* navigator() const { return navigator_; }
 
  private:
   // Overridden from BaseBookmarkModelObserver:
@@ -85,7 +90,7 @@ class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
   views::Widget* parent_widget_;
   BookmarkContextMenuControllerViewsDelegate* delegate_;
   Profile* profile_;
-  PageNavigator* navigator_;
+  content::PageNavigator* navigator_;
   const BookmarkNode* parent_;
   std::vector<const BookmarkNode*> selection_;
   BookmarkModel* model_;

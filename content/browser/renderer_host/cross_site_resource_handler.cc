@@ -8,15 +8,17 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
+
+using content::GlobalRequestID;
 
 namespace {
 

@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_GLOBAL_REQUEST_ID_H_
-#define CONTENT_BROWSER_RENDERER_HOST_GLOBAL_REQUEST_ID_H_
+#ifndef CONTENT_PUBLIC_BROWSER_GLOBAL_REQUEST_ID_H_
+#define CONTENT_PUBLIC_BROWSER_GLOBAL_REQUEST_ID_H_
 #pragma once
+
+namespace content {
 
 // Uniquely identifies a net::URLRequest.
 struct GlobalRequestID {
@@ -37,4 +39,6 @@ struct GlobalRequestID {
   }
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_GLOBAL_REQUEST_ID_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_GLOBAL_REQUEST_ID_H_

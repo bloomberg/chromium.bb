@@ -21,8 +21,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/view_event_test_base.h"
-#include "content/browser/tab_contents/page_navigator.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/accessibility/accessibility_types.h"
@@ -37,6 +37,9 @@
 #include "ui/views/widget/widget.h"
 
 using content::BrowserThread;
+using content::OpenURLParams;
+using content::PageNavigator;
+using content::WebContents;
 
 #if defined(OS_LINUX)
 // See http://crbug.com/40040 for details.
@@ -116,18 +119,7 @@ class ViewsDelegateImpl : public views::ViewsDelegate {
 // PageNavigator implementation that records the URL.
 class TestingPageNavigator : public PageNavigator {
  public:
-  // Deprecated. Please use the one-argument variant.
-  // TODO(adriansc): Remove this function once refactoring has changed
-  // all call sites.
-  virtual TabContents* OpenURL(const GURL& url,
-                               const GURL& referrer,
-                               WindowOpenDisposition disposition,
-                               content::PageTransition transition) OVERRIDE {
-    return OpenURL(OpenURLParams(url, content::Referrer(), disposition,
-                                 transition, false));
-  }
-
-  virtual TabContents* OpenURL(const OpenURLParams& params) OVERRIDE {
+  virtual WebContents* OpenURL(const OpenURLParams& params) OVERRIDE {
     url_ = params.url;
     return NULL;
   }

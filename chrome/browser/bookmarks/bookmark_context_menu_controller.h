@@ -13,8 +13,11 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/native_widget_types.h"
 
-class PageNavigator;
 class Profile;
+
+namespace content {
+class PageNavigator;
+}
 
 // An interface implemented by an object that performs actions on the actual
 // menu for the controller.
@@ -47,7 +50,7 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
       gfx::NativeWindow parent_window,
       BookmarkContextMenuControllerDelegate* delegate,
       Profile* profile,
-      PageNavigator* navigator,
+      content::PageNavigator* navigator,
       const BookmarkNode* parent,
       const std::vector<const BookmarkNode*>& selection);
   virtual ~BookmarkContextMenuController();
@@ -66,7 +69,7 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
 
   // Accessors:
   Profile* profile() const { return profile_; }
-  PageNavigator* navigator() const { return navigator_; }
+  content::PageNavigator* navigator() const { return navigator_; }
 
  private:
   // Adds a IDC_* style command to the menu with a localized string.
@@ -86,7 +89,7 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
   gfx::NativeWindow parent_window_;
   BookmarkContextMenuControllerDelegate* delegate_;
   Profile* profile_;
-  PageNavigator* navigator_;
+  content::PageNavigator* navigator_;
   const BookmarkNode* parent_;
   std::vector<const BookmarkNode*> selection_;
   BookmarkModel* model_;

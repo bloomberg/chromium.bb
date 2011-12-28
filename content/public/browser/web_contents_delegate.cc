@@ -21,7 +21,7 @@ namespace content {
 WebContentsDelegate::WebContentsDelegate() {
 }
 
-TabContents* WebContentsDelegate::OpenURLFromTab(TabContents* source,
+WebContents* WebContentsDelegate::OpenURLFromTab(WebContents* source,
                                                  const OpenURLParams& params) {
   return NULL;
 }

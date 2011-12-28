@@ -29,6 +29,8 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
+using content::OpenURLParams;
+using content::Referrer;
 using content::SSLStatus;
 
 namespace {
@@ -309,8 +311,9 @@ void PageInfoBubbleView::LinkClicked(views::Link* source, int event_flags) {
   GURL url = google_util::AppendGoogleLocaleParam(
       GURL(chrome::kPageInfoHelpCenterURL));
   Browser* browser = BrowserList::GetLastActive();
-  browser->OpenURL(
-      url, GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(
+      url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false);
+  browser->OpenURL(params);
   // NOTE: The bubble closes automatically on deactivation as the link opens.
 }
 

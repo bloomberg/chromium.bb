@@ -207,7 +207,9 @@
 #endif
 
 using base::TimeDelta;
+using content::OpenURLParams;
 using content::PluginService;
+using content::Referrer;
 using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;
@@ -1548,8 +1550,9 @@ void Browser::ReloadInternal(WindowOpenDisposition disposition,
   if (current_tab && current_tab->ShowingInterstitialPage()) {
     NavigationEntry* entry = current_tab->GetController().GetActiveEntry();
     DCHECK(entry);  // Should exist if interstitial is showing.
-    OpenURL(
-        entry->GetURL(), GURL(), disposition, content::PAGE_TRANSITION_RELOAD);
+    OpenURL(OpenURLParams(
+        entry->GetURL(), Referrer(), disposition,
+        content::PAGE_TRANSITION_RELOAD, false));
     return;
   }
 
@@ -1565,11 +1568,12 @@ void Browser::ReloadInternal(WindowOpenDisposition disposition,
 
 void Browser::Home(WindowOpenDisposition disposition) {
   content::RecordAction(UserMetricsAction("Home"));
-  OpenURL(
-      profile_->GetHomePage(), GURL(), disposition,
+  OpenURL(OpenURLParams(
+      profile_->GetHomePage(), Referrer(), disposition,
       content::PageTransitionFromInt(
           content::PAGE_TRANSITION_AUTO_BOOKMARK |
-          content::PAGE_TRANSITION_HOME_PAGE));
+          content::PAGE_TRANSITION_HOME_PAGE),
+      false));
 }
 
 void Browser::OpenCurrentURL() {
@@ -2250,8 +2254,9 @@ void Browser::ShowHelpTab() {
 }
 
 void Browser::OpenPrivacyDashboardTabAndActivate() {
-  OpenURL(GURL(kPrivacyDashboardUrl), GURL(),
-          NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+  OpenURL(OpenURLParams(
+      GURL(kPrivacyDashboardUrl), Referrer(),
+      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
   window_->Activate();
 }
 
@@ -2301,8 +2306,9 @@ void Browser::OpenLanguageOptionsDialog() {
 }
 
 void Browser::OpenSystemTabAndActivate() {
-  OpenURL(GURL(chrome::kChromeUISystemInfoURL), GURL(),
-          NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+  OpenURL(OpenURLParams(
+      GURL(chrome::kChromeUISystemInfoURL), Referrer(), NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK, false));
   window_->Activate();
 }
 
@@ -2311,16 +2317,18 @@ void Browser::OpenMobilePlanTabAndActivate() {
           switches::kEnableMobileSetupDialog)) {
     window_->ShowMobileSetup();
   } else {
-    OpenURL(GURL(chrome::kChromeUIMobileSetupURL), GURL(),
-            NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+    OpenURL(OpenURLParams(
+        GURL(chrome::kChromeUIMobileSetupURL), Referrer(), NEW_FOREGROUND_TAB,
+        content::PAGE_TRANSITION_LINK, false));
     window_->Activate();
   }
 }
 #endif
 
 void Browser::OpenPluginsTabAndActivate() {
-  OpenURL(GURL(chrome::kChromeUIPluginsURL), GURL(),
-          NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+  OpenURL(OpenURLParams(
+      GURL(chrome::kChromeUIPluginsURL), Referrer(), NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK, false));
   window_->Activate();
 }
 
@@ -3004,18 +3012,7 @@ void Browser::UpdateUIForNavigationInTab(TabContentsWrapper* contents,
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, PageNavigator implementation:
 
-// TODO(adriansc): Remove this method once refactoring changed all call sites.
-TabContents* Browser::OpenURL(const GURL& url,
-                              const GURL& referrer,
-                              WindowOpenDisposition disposition,
-                              content::PageTransition transition) {
-  // For specifying a referrer, use the version of OpenURL taking OpenURLParams.
-  DCHECK(referrer.is_empty());
-  return OpenURLFromTab(NULL, OpenURLParams(
-      url, content::Referrer(), disposition, transition, false));
-}
-
-TabContents* Browser::OpenURL(const OpenURLParams& params) {
+WebContents* Browser::OpenURL(const OpenURLParams& params) {
   return OpenURLFromTab(NULL, params);
 }
 
@@ -3424,7 +3421,7 @@ void Browser::TabStripEmpty() {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, content::WebContentsDelegate implementation:
 
-TabContents* Browser::OpenURLFromTab(TabContents* source,
+WebContents* Browser::OpenURLFromTab(WebContents* source,
                                      const OpenURLParams& params) {
   browser::NavigateParams nav_params(this, params.url, params.transition);
   nav_params.source_contents =
@@ -4076,8 +4073,12 @@ void Browser::URLStarredChanged(TabContentsWrapper* source, bool starred) {
 void Browser::FileSelected(const FilePath& path, int index, void* params) {
   profile_->set_last_selected_directory(path.DirName());
   GURL file_url = net::FilePathToFileURL(path);
-  if (!file_url.is_empty())
-    OpenURL(file_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
+  if (file_url.is_empty())
+    return;
+
+  OpenURL(OpenURLParams(
+      file_url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
+      false));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

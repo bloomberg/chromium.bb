@@ -35,6 +35,7 @@
 #include "content/public/browser/notification_service.h"
 #include "net/http/http_util.h"
 
+using content::GlobalRequestID;
 using content::WebContents;
 
 namespace {

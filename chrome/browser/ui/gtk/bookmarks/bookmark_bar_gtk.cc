@@ -51,6 +51,7 @@
 #include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/image/image.h"
 
+using content::PageNavigator;
 using content::UserMetricsAction;
 
 namespace {

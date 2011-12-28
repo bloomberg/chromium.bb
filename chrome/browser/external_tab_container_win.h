@@ -120,9 +120,9 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   static ExternalTabContainer* GetContainerForTab(HWND tab_window);
 
   // Overridden from content::WebContentsDelegate:
-
-  virtual TabContents* OpenURLFromTab(TabContents* source,
-                                      const OpenURLParams& params) OVERRIDE;
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) OVERRIDE;
   virtual void AddNewContents(TabContents* source,
@@ -319,7 +319,7 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   // attach tab request.
   // Contains the list of URL requests which are pending waiting for an ack
   // from the external host.
-  std::vector<OpenURLParams> pending_open_url_requests_;
+  std::vector<content::OpenURLParams> pending_open_url_requests_;
 
   // Set to true if the ExternalTabContainer instance is waiting for an ack
   // from the host.
@@ -368,8 +368,9 @@ class TemporaryPopupExternalTabContainer : public ExternalTabContainer {
   virtual void Observe(int type, const content::NotificationSource& source,
                        const content::NotificationDetails& details) {}
 
-  virtual TabContents* OpenURLFromTab(TabContents* source,
-                                      const OpenURLParams& params) OVERRIDE;
+  virtual content::WebContents* OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) OVERRIDE;
 
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) {

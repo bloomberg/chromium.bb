@@ -12,7 +12,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/page_navigator.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,23 +22,14 @@
 #endif
 
 using content::BrowserThread;
+using content::OpenURLParams;
+using content::PageNavigator;
+using content::WebContents;
 
 // PageNavigator implementation that records the URL.
 class TestingPageNavigator : public PageNavigator {
  public:
-  // Deprecated. Please use the one-argument variant.
-  // TODO(adriansc): Remove this method once refactoring changed all call
-  // sites.
-  virtual TabContents* OpenURL(const GURL& url,
-                               const GURL& referrer,
-                               WindowOpenDisposition disposition,
-                               content::PageTransition transition) OVERRIDE {
-    DCHECK(referrer.is_empty());
-    return OpenURL(OpenURLParams(url, content::Referrer(), disposition,
-                                 transition, false));
-  }
-
-  virtual TabContents* OpenURL(const OpenURLParams& params) OVERRIDE {
+  virtual WebContents* OpenURL(const OpenURLParams& params) OVERRIDE {
     urls_.push_back(params.url);
     return NULL;
   }

@@ -66,6 +66,7 @@
 #include "ui/views/layout/grid_layout.h"
 
 using content::BrowserThread;
+using content::OpenURLParams;
 using content::SSLStatus;
 using content::WebContents;
 using ui::ViewProp;
@@ -352,7 +353,7 @@ ExternalTabContainer*
 ////////////////////////////////////////////////////////////////////////////////
 // ExternalTabContainer, content::WebContentsDelegate implementation:
 
-TabContents* ExternalTabContainer::OpenURLFromTab(TabContents* source,
+WebContents* ExternalTabContainer::OpenURLFromTab(WebContents* source,
                                                   const OpenURLParams& params) {
   if (pending()) {
     pending_open_url_requests_.push_back(params);
@@ -1186,8 +1187,8 @@ TemporaryPopupExternalTabContainer::~TemporaryPopupExternalTabContainer() {
   DVLOG(1) << __FUNCTION__;
 }
 
-TabContents* TemporaryPopupExternalTabContainer::OpenURLFromTab(
-    TabContents* source,
+WebContents* TemporaryPopupExternalTabContainer::OpenURLFromTab(
+    WebContents* source,
     const OpenURLParams& params) {
   if (!automation_)
     return NULL;
@@ -1197,7 +1198,7 @@ TabContents* TemporaryPopupExternalTabContainer::OpenURLFromTab(
     DCHECK(route_all_top_level_navigations_);
     forward_params.disposition = NEW_FOREGROUND_TAB;
   }
-  TabContents* new_contents =
+  WebContents* new_contents =
       ExternalTabContainer::OpenURLFromTab(source, forward_params);
   // support only one navigation for a dummy tab before it is killed.
   ::DestroyWindow(GetNativeView());

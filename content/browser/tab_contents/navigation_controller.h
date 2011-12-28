@@ -14,9 +14,9 @@
 #include "base/memory/linked_ptr.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
@@ -201,7 +201,7 @@ class CONTENT_EXPORT NavigationController {
       const content::Referrer& referrer,
       content::PageTransition transition,
       const std::string& extra_headers,
-      const GlobalRequestID& transferred_global_request_id,
+      const content::GlobalRequestID& transferred_global_request_id,
       bool is_renderer_initiated);
 
   // Loads the current page if this NavigationController was restored from

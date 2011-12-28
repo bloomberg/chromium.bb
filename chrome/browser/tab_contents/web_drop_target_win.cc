@@ -29,6 +29,8 @@ using WebKit::WebDragOperationCopy;
 using WebKit::WebDragOperationLink;
 using WebKit::WebDragOperationMove;
 using WebKit::WebDragOperationGeneric;
+using content::OpenURLParams;
+using content::Referrer;
 
 namespace {
 
@@ -68,15 +70,17 @@ class InterstitialDropTarget {
   }
 
   DWORD OnDrop(IDataObject* data_object, DWORD effect) {
-    if (ui::ClipboardUtil::HasUrl(data_object)) {
-      std::wstring url;
-      std::wstring title;
-      ui::ClipboardUtil::GetUrl(data_object, &url, &title, true);
-      tab_contents_->OpenURL(GURL(url), GURL(), CURRENT_TAB,
-                             content::PAGE_TRANSITION_AUTO_BOOKMARK);
-      return GetPreferredDropEffect(effect);
-    }
-    return DROPEFFECT_NONE;
+    if (!ui::ClipboardUtil::HasUrl(data_object))
+      return DROPEFFECT_NONE;
+
+    std::wstring url;
+    std::wstring title;
+    ui::ClipboardUtil::GetUrl(data_object, &url, &title, true);
+    OpenURLParams params(
+        GURL(url), Referrer(), CURRENT_TAB,
+        content::PAGE_TRANSITION_AUTO_BOOKMARK, false);
+    tab_contents_->OpenURL(params);
+    return GetPreferredDropEffect(effect);
   }
 
  private:

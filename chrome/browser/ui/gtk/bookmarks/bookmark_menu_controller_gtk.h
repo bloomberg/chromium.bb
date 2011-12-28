@@ -19,10 +19,13 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class Profile;
-class PageNavigator;
 class BookmarkModel;
 class BookmarkNode;
 class MenuGtk;
+
+namespace content {
+class PageNavigator;
+}
 
 typedef struct _GdkDragContext GdkDragContext;
 typedef struct _GdkEventButton GdkEventButton;
@@ -35,7 +38,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   // Creates a BookmarkMenuController showing the children of |node| starting
   // at index |start_child_index|.
   BookmarkMenuController(Profile* profile,
-                         PageNavigator* page_navigator,
+                         content::PageNavigator* page_navigator,
                          GtkWindow* window,
                          const BookmarkNode* node,
                          int start_child_index);
@@ -99,7 +102,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
                        GdkDragContext*, GtkSelectionData*, guint, guint);
 
   Profile* profile_;
-  PageNavigator* page_navigator_;
+  content::PageNavigator* page_navigator_;
 
   // Parent window of this menu.
   GtkWindow* parent_window_;

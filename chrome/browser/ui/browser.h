@@ -44,8 +44,8 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/browser/tab_contents/page_navigator.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/page_zoom.h"
@@ -81,7 +81,7 @@ class Browser : public TabHandlerDelegate,
                 public BlockedContentTabHelperDelegate,
                 public BookmarkTabHelperDelegate,
                 public ExtensionTabHelperDelegate,
-                public PageNavigator,
+                public content::PageNavigator,
                 public CommandUpdater::CommandUpdaterDelegate,
                 public content::NotificationObserver,
                 public SelectFileDialog::Listener,
@@ -757,14 +757,9 @@ class Browser : public TabHandlerDelegate,
 
   // Interface implementations ////////////////////////////////////////////////
 
-  // Overridden from PageNavigator:
-  // Deprecated. Please use the one-argument variant instead.
-  // TODO(adriansc): Remove this method once refactoring changed all call sites.
-  virtual TabContents* OpenURL(const GURL& url,
-                               const GURL& referrer,
-                               WindowOpenDisposition disposition,
-                               content::PageTransition transition) OVERRIDE;
-  virtual TabContents* OpenURL(const OpenURLParams& params) OVERRIDE;
+  // Overridden from content::PageNavigator:
+  virtual content::WebContents* OpenURL(
+      const content::OpenURLParams& params) OVERRIDE;
 
   // Overridden from CommandUpdater::CommandUpdaterDelegate:
   virtual void ExecuteCommand(int id) OVERRIDE;
@@ -918,8 +913,9 @@ class Browser : public TabHandlerDelegate,
   };
 
   // Overridden from content::WebContentsDelegate:
-  virtual TabContents* OpenURLFromTab(TabContents* source,
-                                      const OpenURLParams& params) OVERRIDE;
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) OVERRIDE;
   virtual void AddNewContents(TabContents* source,

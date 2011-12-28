@@ -32,7 +32,9 @@
 #include "ui/gfx/image/image.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
+using content::OpenURLParams;
 using content::PluginService;
+using content::Referrer;
 using content::UserMetricsAction;
 using webkit::npapi::PluginGroup;
 using webkit::WebPluginInfo;
@@ -129,8 +131,10 @@ void PDFEnableAdobeReaderInfoBarDelegate::OnNo() {
 
 // Launch the url to get the latest Adbobe Reader installer.
 void OpenReaderUpdateURL(TabContents* tab) {
-  tab->OpenURL(GURL(kReaderUpdateUrl), GURL(), NEW_FOREGROUND_TAB,
-               content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(
+      GURL(kReaderUpdateUrl), Referrer(), NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK, false);
+  tab->OpenURL(params);
 }
 
 // Opens the PDF using Adobe Reader.

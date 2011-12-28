@@ -42,6 +42,9 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/image/image.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 namespace {
 
 SkBitmap GetGAIAPictureForNTP(const gfx::Image& image) {
@@ -127,9 +130,10 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
   if (username.empty()) {
     // The user isn't signed in, show the sync promo.
     if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
-      web_ui_->tab_contents()->OpenURL(GURL(chrome::kChromeUISyncPromoURL),
-                                       GURL(), CURRENT_TAB,
-                                       content::PAGE_TRANSITION_LINK);
+      OpenURLParams params(
+          GURL(chrome::kChromeUISyncPromoURL), Referrer(), CURRENT_TAB,
+          content::PAGE_TRANSITION_LINK, false);
+      web_ui_->tab_contents()->OpenURL(params);
       RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
     }
   } else if (args->GetSize() == 4) {

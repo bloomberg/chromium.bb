@@ -38,6 +38,7 @@
 #endif
 
 using content::DownloadItem;
+using content::OpenURLParams;
 using content::WebContents;
 
 namespace prerender {
@@ -92,7 +93,7 @@ class PrerenderContents::TabContentsDelegateImpl
       prerender_contents_(prerender_contents) {
   }
 
- virtual TabContents* OpenURLFromTab(TabContents* source,
+ virtual WebContents* OpenURLFromTab(WebContents* source,
                                      const OpenURLParams& params) OVERRIDE {
     // |OpenURLFromTab| is typically called when a frame performs a navigation
     // that requires the browser to perform the transition instead of WebKit.

@@ -23,6 +23,7 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"
 
+using content::OpenURLParams;
 using content::WebContents;
 
 static const int kPadding = 20;

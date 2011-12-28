@@ -59,8 +59,6 @@ class WebIntentPickerGtk : public WebIntentPicker,
    public:
     InlineDispositionDelegate();
     virtual ~InlineDispositionDelegate();
-    virtual TabContents* OpenURLFromTab(TabContents* source,
-                                        const OpenURLParams& params) OVERRIDE;
     virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
     virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,

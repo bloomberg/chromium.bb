@@ -98,8 +98,9 @@ class DevToolsWindow : private content::NotificationObserver,
   void CallClientFunction(const string16& function_name,
                           const base::Value& arg);
   // Overridden from content::WebContentsDelegate.
-  virtual TabContents* OpenURLFromTab(TabContents* source,
-                                      const OpenURLParams& params) OVERRIDE;
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,

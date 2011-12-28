@@ -7,9 +7,9 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/mock_resource_context.h"
 #include "content/browser/renderer_host/dummy_resource_handler.h"
-#include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_queue.h"
+#include "content/public/browser/global_request_id.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,6 +17,7 @@
 using content::BrowserThread;
 using content::BrowserThreadImpl;
 using content::DummyResourceHandler;
+using content::GlobalRequestID;
 
 namespace {
 

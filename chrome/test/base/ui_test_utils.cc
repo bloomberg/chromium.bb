@@ -68,6 +68,8 @@
 #include "ui/aura/root_window.h"
 #endif
 
+using content::OpenURLParams;
+using content::Referrer;
 using content::WebContents;
 
 static const int kDefaultWsPort = 8880;
@@ -416,7 +418,8 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       content::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
 
-  browser->OpenURL(url, GURL(), disposition, content::PAGE_TRANSITION_TYPED);
+  browser->OpenURL(OpenURLParams(
+      url, Referrer(), disposition, content::PAGE_TRANSITION_TYPED, false));
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_BROWSER)
     browser = WaitForBrowserNotInSet(initial_browsers);
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_TAB)

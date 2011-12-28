@@ -15,14 +15,18 @@
 #include "content/public/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 namespace {
 
 void SimulateRendererCrash(Browser* browser) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
       content::NotificationService::AllSources());
-  browser->OpenURL(GURL(chrome::kChromeUICrashURL), GURL(), CURRENT_TAB,
-                   content::PAGE_TRANSITION_TYPED);
+  browser->OpenURL(OpenURLParams(
+      GURL(chrome::kChromeUICrashURL), Referrer(), CURRENT_TAB,
+      content::PAGE_TRANSITION_TYPED, false));
   observer.Wait();
 }
 

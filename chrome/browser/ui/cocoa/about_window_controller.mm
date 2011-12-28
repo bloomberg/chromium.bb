@@ -27,6 +27,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 namespace {
 
 void AttributedStringAppendString(NSMutableAttributedString* attr_str,
@@ -619,8 +622,10 @@ static BOOL recentShownUserActionFailedStatus = NO;
   // We always create a new window, so there's no need to try to re-use
   // an existing one just to pass in the NEW_WINDOW disposition.
   Browser* browser = Browser::Create(profile_);
-  browser->OpenURL(GURL([link UTF8String]), GURL(), NEW_FOREGROUND_TAB,
-                   content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(
+      GURL([link UTF8String]), Referrer(), NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK, false);
+  browser->OpenURL(params);
   browser->window()->Show();
   return YES;
 }

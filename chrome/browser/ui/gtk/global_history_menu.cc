@@ -31,6 +31,8 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/gtk_util.h"
 
+using content::OpenURLParams;
+
 namespace {
 
 // The maximum number of most visited items to display.

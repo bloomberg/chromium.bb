@@ -35,7 +35,6 @@
 #include "content/browser/renderer_host/async_resource_handler.h"
 #include "content/browser/renderer_host/buffered_resource_handler.h"
 #include "content/browser/renderer_host/cross_site_resource_handler.h"
-#include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/redirect_to_file_resource_handler.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -54,6 +53,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/content_switches.h"
@@ -85,6 +85,7 @@ using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
 using content::BrowserThread;
+using content::GlobalRequestID;
 using content::ResourceResponse;
 using content::WebContents;
 using webkit_blob::DeletableFileReference;

@@ -32,6 +32,8 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
 
+using content::OpenURLParams;
+using content::Referrer;
 using content::SSLStatus;
 
 @interface PageInfoBubbleController (Private)
@@ -214,8 +216,10 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   GURL url = google_util::AppendGoogleLocaleParam(
       GURL(chrome::kPageInfoHelpCenterURL));
   Browser* browser = BrowserList::GetLastActive();
-  browser->OpenURL(
-      url, GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(
+      url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
+      false);
+  browser->OpenURL(params);
 }
 
 // This will create the subviews for the page info window. The general layout

@@ -5,11 +5,12 @@
 #include "content/browser/renderer_host/resource_queue.h"
 
 #include "base/stl_util.h"
-#include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_request_id.h"
 
 using content::BrowserThread;
+using content::GlobalRequestID;
 
 ResourceQueueDelegate::~ResourceQueueDelegate() {
 }

@@ -17,6 +17,8 @@
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+using content::OpenURLParams;
+using content::Referrer;
 
 namespace options2 {
 
@@ -44,8 +46,10 @@ void ShowLinuxProxyConfigUrl(TabContents* tab_contents) {
   const char* name = base::nix::GetDesktopEnvironmentName(env.get());
   if (name)
     LOG(ERROR) << "Could not find " << name << " network settings in $PATH";
-  tab_contents->OpenURL(GURL(kLinuxProxyConfigUrl), GURL(),
-                        NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(
+      GURL(kLinuxProxyConfigUrl), Referrer(), NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK, false);
+  tab_contents->OpenURL(params);
 }
 
 // Start the given proxy configuration utility.

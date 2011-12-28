@@ -17,6 +17,8 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
 
+using content::PageNavigator;
+
 ////////////////////////////////////////////////////////////////////////////////
 // BookmarkContextMenu, public:
 

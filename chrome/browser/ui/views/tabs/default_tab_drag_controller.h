@@ -114,8 +114,9 @@ class DefaultTabDragController : public TabDragController,
   virtual bool GetStartedDrag() const OVERRIDE;
 
   // Overridden from content::WebContentsDelegate:
-  virtual TabContents* OpenURLFromTab(TabContents* source,
-                                      const OpenURLParams& params) OVERRIDE;
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) OVERRIDE;
   virtual void AddNewContents(TabContents* source,

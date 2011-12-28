@@ -17,6 +17,9 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::OpenURLParams;
+using content::PageNavigator;
+
 // Per chrome/app/chrome_command_ids.h, values < 4000 are for "dynamic menu
 // items". We only use one command id for all the bookmarks, because we handle
 // bookmark item activations directly. So we pick a suitably large random value

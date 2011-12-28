@@ -12,13 +12,13 @@
 #include "base/shared_memory.h"
 #include "content/browser/debugger/devtools_netlog_observer.h"
 #include "content/browser/host_zoom_map.h"
-#include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/resource_context.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
@@ -27,6 +27,7 @@
 #include "webkit/glue/resource_loader_bridge.h"
 
 using base::TimeTicks;
+using content::GlobalRequestID;
 
 namespace {
 

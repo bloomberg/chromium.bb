@@ -12,6 +12,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 
+using content::OpenURLParams;
+
 GenericHandler::GenericHandler() {
 }
 
@@ -49,8 +51,9 @@ void GenericHandler::HandleNavigateToUrl(const ListValue* args) {
   if (disposition == CURRENT_TAB && target_string == "_blank")
     disposition = NEW_FOREGROUND_TAB;
 
-  web_ui_->tab_contents()->OpenURL(
-      GURL(url_string), GURL(), disposition, content::PAGE_TRANSITION_LINK);
+  web_ui_->tab_contents()->OpenURL(OpenURLParams(
+      GURL(url_string), content::Referrer(), disposition,
+      content::PAGE_TRANSITION_LINK, false));
 
   // This may delete us!
 }

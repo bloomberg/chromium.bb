@@ -53,6 +53,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 
+using content::OpenURLParams;
+using content::Referrer;
 using content::UserMetricsAction;
 
 // Bookmark bar state changing and animations
@@ -1109,8 +1111,10 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // Actually open the URL.  This is the last chance for a unit test to
 // override.
 - (void)openURL:(GURL)url disposition:(WindowOpenDisposition)disposition {
-  browser_->OpenURL(
-      url, GURL(), disposition, content::PAGE_TRANSITION_AUTO_BOOKMARK);
+  OpenURLParams params(
+      url, Referrer(), disposition, content::PAGE_TRANSITION_AUTO_BOOKMARK,
+      false);
+  browser_->OpenURL(params);
 }
 
 - (void)clearMenuTagMap {

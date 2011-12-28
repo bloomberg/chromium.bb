@@ -146,6 +146,8 @@
 // longer indicate that the window is shrinking from an apparent zoomed state)
 // and if it's set we continue to constrain the resize.
 
+using content::OpenURLParams;
+using content::Referrer;
 using content::WebContents;
 
 @interface NSWindow (NSPrivateApis)
@@ -1756,8 +1758,10 @@ enum {
     if (web_contents) {
       GURL helpUrl =
           google_util::AppendGoogleLocaleParam(GURL(chrome::kCrashReasonURL));
-      web_contents->OpenURL(
-          helpUrl, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_LINK);
+      OpenURLParams params(
+          helpUrl, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK,
+          false);
+      web_contents->OpenURL(params);
     }
   }
 }

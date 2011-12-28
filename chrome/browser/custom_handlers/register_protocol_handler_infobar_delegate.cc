@@ -14,6 +14,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::OpenURLParams;
+using content::Referrer;
 using content::UserMetricsAction;
 
 RegisterProtocolHandlerInfoBarDelegate::RegisterProtocolHandlerInfoBarDelegate(
@@ -93,9 +95,13 @@ bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   content::RecordAction(
       UserMetricsAction("RegisterProtocolHandler.InfoBar_LearnMore"));
-  owner()->web_contents()->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
-      chrome::kLearnMoreRegisterProtocolHandlerURL)), GURL(),
+  OpenURLParams params(
+      google_util::AppendGoogleLocaleParam(GURL(
+          chrome::kLearnMoreRegisterProtocolHandlerURL)),
+      Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK);
+      content::PAGE_TRANSITION_LINK,
+      false);
+  owner()->web_contents()->OpenURL(params);
   return false;
 }

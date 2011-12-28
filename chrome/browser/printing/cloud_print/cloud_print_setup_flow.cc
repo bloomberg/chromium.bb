@@ -36,6 +36,8 @@
 #include "ui/base/l10n/l10n_font_util.h"
 #include "ui/gfx/font.h"
 
+using content::OpenURLParams;
+using content::Referrer;
 using content::WebContents;
 
 namespace {
@@ -259,15 +261,17 @@ void CloudPrintSetupFlow::OnUserSubmittedAuth(const std::string& user,
 }
 
 void CloudPrintSetupFlow::OnUserClickedLearnMore() {
-  web_ui_->tab_contents()->OpenURL(CloudPrintURL::GetCloudPrintLearnMoreURL(),
-                                   GURL(), NEW_FOREGROUND_TAB,
-                                   content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(CloudPrintURL::GetCloudPrintLearnMoreURL(),
+                       Referrer(), NEW_FOREGROUND_TAB,
+                       content::PAGE_TRANSITION_LINK, false);
+  web_ui_->tab_contents()->OpenURL(params);
 }
 
 void CloudPrintSetupFlow::OnUserClickedPrintTestPage() {
-  web_ui_->tab_contents()->OpenURL(CloudPrintURL::GetCloudPrintTestPageURL(),
-                                   GURL(), NEW_FOREGROUND_TAB,
-                                   content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(CloudPrintURL::GetCloudPrintTestPageURL(),
+                       Referrer(), NEW_FOREGROUND_TAB,
+                       content::PAGE_TRANSITION_LINK, false);
+  web_ui_->tab_contents()->OpenURL(params);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

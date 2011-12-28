@@ -29,6 +29,8 @@
 #include "content/public/browser/notification_service.h"
 
 using content::BrowserThread;
+using content::OpenURLParams;
+using content::Referrer;
 
 namespace {
 
@@ -213,8 +215,9 @@ void ExtensionProcessManager::OpenOptionsPage(const Extension* extension,
     browser = Browser::GetOrCreateTabbedBrowser(profile->GetOriginalProfile());
   }
 
-  browser->OpenURL(extension->options_url(), GURL(), SINGLETON_TAB,
-                   content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(extension->options_url(), Referrer(), SINGLETON_TAB,
+                       content::PAGE_TRANSITION_LINK, false);
+  browser->OpenURL(params);
   browser->window()->Show();
   static_cast<RenderViewHostDelegate*>(browser->GetSelectedTabContents())->
       Activate();

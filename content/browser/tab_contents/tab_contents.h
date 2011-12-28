@@ -210,15 +210,8 @@ class CONTENT_EXPORT TabContents
   virtual bool GotResponseToLockMouseRequest(bool allowed) OVERRIDE;
 
   // Implementation of PageNavigator.
-
-  // Deprecated. Please use the one-argument variant instead.
-  // TODO(adriansc): Remove this method once refactoring changed all call sites.
-  virtual TabContents* OpenURL(const GURL& url,
-                               const GURL& referrer,
-                               WindowOpenDisposition disposition,
-                               content::PageTransition transition) OVERRIDE;
-
-  virtual TabContents* OpenURL(const OpenURLParams& params) OVERRIDE;
+  virtual content::WebContents* OpenURL(
+      const content::OpenURLParams& params) OVERRIDE;
 
   // RenderViewHostDelegate ----------------------------------------------------
 
@@ -270,7 +263,7 @@ class CONTENT_EXPORT TabContents
       const content::Referrer& referrer,
       WindowOpenDisposition disposition,
       int64 source_frame_id,
-      const GlobalRequestID& transferred_global_request_id) OVERRIDE;
+      const content::GlobalRequestID& transferred_global_request_id) OVERRIDE;
   virtual void RunJavaScriptMessage(const RenderViewHost* rvh,
                                     const string16& message,
                                     const string16& default_prompt,

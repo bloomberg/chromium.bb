@@ -17,12 +17,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-namespace net {
-class URLRequest;
-}  // namespace net
-
-struct GlobalRequestID;
-
 // This class handles delaying of resource loads that depend on unloaded
 // extensions. For each request that comes in, we check if all extensions are
 // ready for it to be loaded; if not, we delay the request.
@@ -43,7 +37,7 @@ class NetworkDelayListener
   virtual bool ShouldDelayRequest(
       net::URLRequest* request,
       const ResourceDispatcherHostRequestInfo& request_info,
-      const GlobalRequestID& request_id) OVERRIDE;
+      const content::GlobalRequestID& request_id) OVERRIDE;
   virtual void WillShutdownResourceQueue() OVERRIDE;
 
   friend class base::RefCountedThreadSafe<NetworkDelayListener>;

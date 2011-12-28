@@ -15,6 +15,8 @@
 #include "webkit/glue/window_open_disposition.h"
 
 using WebKit::WebDragOperationsMask;
+using content::OpenURLParams;
+using content::Referrer;
 
 @implementation WebDragDest
 
@@ -164,8 +166,9 @@ using WebKit::WebDragOperationsMask;
     if ([pboard containsURLData]) {
       GURL url;
       ui::PopulateURLAndTitleFromPasteboard(&url, NULL, pboard, YES);
-      tabContents_->OpenURL(url, GURL(), CURRENT_TAB,
-                            content::PAGE_TRANSITION_AUTO_BOOKMARK);
+      tabContents_->OpenURL(OpenURLParams(
+          url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_AUTO_BOOKMARK,
+          false));
       return YES;
     }
     return NO;

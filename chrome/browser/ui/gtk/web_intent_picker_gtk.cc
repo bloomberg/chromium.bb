@@ -313,11 +313,6 @@ GtkWidget* WebIntentPickerGtk::GetServiceButton(size_t index) {
 WebIntentPickerGtk::InlineDispositionDelegate::InlineDispositionDelegate() {}
 WebIntentPickerGtk::InlineDispositionDelegate::~InlineDispositionDelegate() {}
 
-TabContents* WebIntentPickerGtk::InlineDispositionDelegate::OpenURLFromTab(
-    TabContents* source,
-    const OpenURLParams& params) {
-  return NULL;
-}
 
 bool WebIntentPickerGtk::InlineDispositionDelegate::IsPopupOrPanel(
     const TabContents* source) const {

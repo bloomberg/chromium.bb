@@ -11,6 +11,9 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/common/url_constants.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 class ToolbarModelTest : public BrowserWithTestWindowTest {
  public:
   ToolbarModelTest() {}
@@ -20,8 +23,9 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
                             const std::string& expected_text,
                             bool should_display) {
     TabContents* contents = browser()->GetTabContentsAt(0);
-    browser()->OpenURL(GURL(url), GURL(), CURRENT_TAB,
-                       content::PAGE_TRANSITION_TYPED);
+    browser()->OpenURL(OpenURLParams(
+        GURL(url), Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
+        false));
 
     // Check while loading.
     EXPECT_EQ(should_display, browser()->toolbar_model()->ShouldDisplayURL());

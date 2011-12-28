@@ -36,8 +36,11 @@ class Browser;
 class BrowserWindowGtk;
 class GtkThemeService;
 class MenuGtk;
-class PageNavigator;
 class TabstripOriginProvider;
+
+namespace content {
+class PageNavigator;
+}
 
 class BookmarkBarGtk : public ui::AnimationDelegate,
                        public BookmarkModelObserver,
@@ -62,7 +65,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
 
   // Sets the PageNavigator that is used when the user selects an entry on
   // the bookmark bar.
-  void SetPageNavigator(PageNavigator* navigator);
+  void SetPageNavigator(content::PageNavigator* navigator);
 
   // Create the contents of the bookmark bar.
   void Init();
@@ -297,7 +300,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   void OnEditBookmarksEnabledChanged();
 
   // Used for opening urls.
-  PageNavigator* page_navigator_;
+  content::PageNavigator* page_navigator_;
 
   Browser* browser_;
   BrowserWindowGtk* window_;

@@ -14,13 +14,16 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+namespace content {
+struct GlobalRequestID;
+}
+
 namespace net {
 class URLRequest;
 }  // namespace net
 
 class Extension;
 class URLPattern;
-struct GlobalRequestID;
 
 // This class handles delaying of resource loads that depend on unloaded user
 // scripts. For each request that comes in, we check if it depends on a user
@@ -43,7 +46,7 @@ class UserScriptListener
   virtual bool ShouldDelayRequest(
       net::URLRequest* request,
       const ResourceDispatcherHostRequestInfo& request_info,
-      const GlobalRequestID& request_id) OVERRIDE;
+      const content::GlobalRequestID& request_id) OVERRIDE;
   virtual void WillShutdownResourceQueue() OVERRIDE;
 
   friend class base::RefCountedThreadSafe<UserScriptListener>;

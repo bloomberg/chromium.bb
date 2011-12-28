@@ -19,10 +19,13 @@
 class BookmarkModel;
 class BookmarkNode;
 class Browser;
-class PageNavigator;
 class PrefService;
 class Profile;
 class TabContents;
+
+namespace content {
+class PageNavigator;
+}
 
 namespace views {
 class DropTargetEvent;
@@ -86,14 +89,14 @@ void DragBookmarks(Profile* profile,
 // no browser with the specified profile a new one is created.
 void OpenAll(gfx::NativeWindow parent,
              Profile* profile,
-             PageNavigator* navigator,
+             content::PageNavigator* navigator,
              const std::vector<const BookmarkNode*>& nodes,
              WindowOpenDisposition initial_disposition);
 
 // Convenience for |OpenAll| with a single BookmarkNode.
 void OpenAll(gfx::NativeWindow parent,
              Profile* profile,
-             PageNavigator* navigator,
+             content::PageNavigator* navigator,
              const BookmarkNode* node,
              WindowOpenDisposition initial_disposition);
 

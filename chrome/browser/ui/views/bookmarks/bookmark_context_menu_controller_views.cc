@@ -15,11 +15,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/page_navigator.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/views/widget/widget.h"
 
+using content::PageNavigator;
 using content::UserMetricsAction;
 
 BookmarkContextMenuControllerViews::BookmarkContextMenuControllerViews(

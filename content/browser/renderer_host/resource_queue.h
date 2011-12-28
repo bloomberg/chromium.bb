@@ -12,13 +12,16 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 
+namespace content {
+struct GlobalRequestID;
+}
+
 namespace net {
 class URLRequest;
 }  // namespace net
 
 class ResourceDispatcherHostRequestInfo;
 class ResourceQueue;
-struct GlobalRequestID;
 
 // Makes decisions about delaying or not each net::URLRequest in the queue.
 // All methods are called on the IO thread.
@@ -32,7 +35,7 @@ class CONTENT_EXPORT ResourceQueueDelegate {
   virtual bool ShouldDelayRequest(
       net::URLRequest* request,
       const ResourceDispatcherHostRequestInfo& request_info,
-      const GlobalRequestID& request_id) = 0;
+      const content::GlobalRequestID& request_id) = 0;
 
   // Called just before ResourceQueue shutdown. After that, the delegate
   // should not use the ResourceQueue.
@@ -71,7 +74,7 @@ class CONTENT_EXPORT ResourceQueue {
 
   // Tells the queue that the net::URLRequest object associated with
   // |request_id| is no longer valid.
-  void RemoveRequest(const GlobalRequestID& request_id);
+  void RemoveRequest(const content::GlobalRequestID& request_id);
 
   // A delegate should call StartDelayedRequests when it wants to allow all
   // its delayed requests to start. If it was the last delegate that required
@@ -79,8 +82,9 @@ class CONTENT_EXPORT ResourceQueue {
   void StartDelayedRequests(ResourceQueueDelegate* delegate);
 
  private:
-  typedef std::map<GlobalRequestID, net::URLRequest*> RequestMap;
-  typedef std::map<GlobalRequestID, DelegateSet> InterestedDelegatesMap;
+  typedef std::map<content::GlobalRequestID, net::URLRequest*> RequestMap;
+  typedef std::map<content::GlobalRequestID, DelegateSet>
+      InterestedDelegatesMap;
 
   // The registered delegates. Will not change after the queue has been
   // initialized.

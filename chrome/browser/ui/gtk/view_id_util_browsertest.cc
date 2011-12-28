@@ -10,6 +10,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
+using content::OpenURLParams;
+
 class ViewIDTest : public InProcessBrowserTest {
  public:
   ViewIDTest() : root_window_(NULL) {}

@@ -57,8 +57,9 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
   // Overridden from content::WebContentsDelegate:
 
   // Forwards OpenURLFromTab to our |owner_|.
-  virtual TabContents* OpenURLFromTab(TabContents* source,
-                                      const OpenURLParams& params) OVERRIDE;
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
 
   // Forwards AddNewContents to our |owner_|.
   virtual void AddNewContents(TabContents* source,

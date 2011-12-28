@@ -21,6 +21,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 namespace {
 
 class TestTabContentsDelegate : public HtmlDialogTabContentsDelegate {
@@ -72,7 +75,7 @@ TEST_F(HtmlDialogTabContentsDelegateTest, DoNothingMethodsTest) {
 
 TEST_F(HtmlDialogTabContentsDelegateTest, OpenURLFromTabTest) {
   test_tab_contents_delegate_->OpenURLFromTab(
-    NULL, OpenURLParams(GURL(chrome::kAboutBlankURL), content::Referrer(),
+    NULL, OpenURLParams(GURL(chrome::kAboutBlankURL), Referrer(),
     NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
   // This should create a new foreground tab in the existing browser.
   EXPECT_EQ(1, browser()->tab_count());
@@ -95,7 +98,7 @@ TEST_F(HtmlDialogTabContentsDelegateTest, DetachTest) {
   EXPECT_EQ(NULL, test_tab_contents_delegate_->profile());
   // Now, none of the following calls should do anything.
   test_tab_contents_delegate_->OpenURLFromTab(
-      NULL, OpenURLParams(GURL(chrome::kAboutBlankURL), content::Referrer(),
+      NULL, OpenURLParams(GURL(chrome::kAboutBlankURL), Referrer(),
       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
   test_tab_contents_delegate_->AddNewContents(NULL, NULL, NEW_FOREGROUND_TAB,
                                               gfx::Rect(), false);

@@ -16,6 +16,8 @@
 #include "content/public/browser/user_metrics.h"
 #include "ui/base/text/text_elider.h"
 
+using content::OpenURLParams;
+using content::Referrer;
 using content::UserMetricsAction;
 
 namespace {
@@ -94,8 +96,10 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
     browser = Browser::Create(bridge_->GetProfile());
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  browser->OpenURL(node->url(), GURL(), disposition,
-                   content::PAGE_TRANSITION_AUTO_BOOKMARK);
+  OpenURLParams params(
+      node->url(), Referrer(), disposition,
+      content::PAGE_TRANSITION_AUTO_BOOKMARK, false);
+  browser->OpenURL(params);
 }
 
 // Open sites under BookmarkNode with the specified disposition.

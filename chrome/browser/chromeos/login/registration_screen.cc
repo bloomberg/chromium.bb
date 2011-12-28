@@ -20,6 +20,9 @@
 #include "net/url_request/url_request_about_job.h"
 #include "net/url_request/url_request_filter.h"
 
+using content::OpenURLParams;
+using content::WebContents;
+
 namespace chromeos {
 
 namespace {
@@ -108,7 +111,7 @@ void RegistrationScreen::OnPageLoadFailed(const std::string& url) {
 ///////////////////////////////////////////////////////////////////////////////
 // RegistrationScreen, content::WebContentsDelegate implementation:
 
-TabContents* RegistrationScreen::OpenURLFromTab(TabContents* source,
+WebContents* RegistrationScreen::OpenURLFromTab(WebContents* source,
                                                 const OpenURLParams& params) {
   if (params.url.spec() == kRegistrationSuccessUrl) {
     source->Stop();

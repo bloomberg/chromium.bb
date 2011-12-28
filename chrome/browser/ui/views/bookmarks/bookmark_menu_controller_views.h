@@ -17,8 +17,11 @@
 class BookmarkBarView;
 class BookmarkMenuDelegate;
 class BookmarkNode;
-class PageNavigator;
 class Profile;
+
+namespace content {
+class PageNavigator;
+}
 
 namespace ui {
 class OSExchangeData;
@@ -49,7 +52,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   // Creates a BookmarkMenuController showing the children of |node| starting
   // at |start_child_index|.
   BookmarkMenuController(Profile* profile,
-                         PageNavigator* page_navigator,
+                         content::PageNavigator* page_navigator,
                          views::Widget* parent,
                          const BookmarkNode* node,
                          int start_child_index);
@@ -69,7 +72,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   views::MenuItemView* context_menu() const;
 
   // Sets the page navigator.
-  void SetPageNavigator(PageNavigator* navigator);
+  void SetPageNavigator(content::PageNavigator* navigator);
 
   void set_observer(Observer* observer) { observer_ = observer; }
 

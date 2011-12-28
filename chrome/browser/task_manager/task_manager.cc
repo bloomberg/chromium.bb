@@ -46,6 +46,8 @@
 #endif
 
 using content::BrowserThread;
+using content::OpenURLParams;
+using content::Referrer;
 
 namespace {
 
@@ -1062,6 +1064,9 @@ TaskManager* TaskManager::GetInstance() {
 
 void TaskManager::OpenAboutMemory() {
   Browser* browser = BrowserList::GetLastActive();
+  OpenURLParams params(
+      GURL(chrome::kChromeUIMemoryURL), Referrer(), NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK, false);
 
   if (!browser) {
     // On OS X, the task manager can be open without any open browser windows.
@@ -1072,11 +1077,9 @@ void TaskManager::OpenAboutMemory() {
     if (!profile)
       return;
     browser = Browser::Create(profile);
-    browser->OpenURL(GURL(chrome::kChromeUIMemoryURL), GURL(),
-                     NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+    browser->OpenURL(params);
   } else {
-    browser->OpenURL(GURL(chrome::kChromeUIMemoryURL), GURL(),
-                     NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+    browser->OpenURL(params);
 
     // In case the browser window is minimized, show it. If |browser| is a
     // non-tabbed window, the call to OpenURL above will have opened a

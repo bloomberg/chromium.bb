@@ -15,6 +15,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "net/base/mock_host_resolver.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 // Disabled, http://crbug.com/64899.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WindowOpen) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -160,10 +163,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PopupBlockingHostedApp) {
       test_server()->GetURL(popup_app_contents_path + "open_popup.html")
           .ReplaceComponents(replace_host);
 
-  browser()->OpenURL(open_tab, GURL(), NEW_FOREGROUND_TAB,
-                     content::PAGE_TRANSITION_TYPED);
-  browser()->OpenURL(open_popup, GURL(), NEW_FOREGROUND_TAB,
-                     content::PAGE_TRANSITION_TYPED);
+  browser()->OpenURL(OpenURLParams(
+      open_tab, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED,
+      false));
+  browser()->OpenURL(OpenURLParams(
+      open_popup, Referrer(), NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_TYPED, false));
 
   WaitForTabsAndPopups(browser(), 3, 1, 0);
 }

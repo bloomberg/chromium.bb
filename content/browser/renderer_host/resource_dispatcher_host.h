@@ -39,14 +39,15 @@ class ResourceMessageFilter;
 class SaveFileManager;
 class TabContents;
 struct DownloadSaveInfo;
-struct GlobalRequestID;
 struct ResourceHostMsg_Request;
 struct ViewMsg_SwapOut_Params;
 
 namespace content {
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
+struct GlobalRequestID;
 }
+
 namespace net {
 class CookieList;
 class URLRequestJobFactory;
@@ -212,7 +213,8 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
                                    int* render_view_host_id);
 
   // Retrieves a net::URLRequest.  Must be called from the IO thread.
-  net::URLRequest* GetURLRequest(const GlobalRequestID& request_id) const;
+  net::URLRequest* GetURLRequest(
+      const content::GlobalRequestID& request_id) const;
 
   void RemovePendingRequest(int process_unique_id, int request_id);
 
@@ -267,7 +269,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // Marks the request as "parked". This happens if a request is
   // redirected cross-site and needs to be resumed by a new render view.
   void MarkAsTransferredNavigation(
-      const GlobalRequestID& transferred_request_id,
+      const content::GlobalRequestID& transferred_request_id,
       net::URLRequest* transferred_request);
 
  private:
@@ -294,7 +296,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   bool PauseRequestIfNeeded(ResourceDispatcherHostRequestInfo* info);
 
   // Resumes the given request by calling OnResponseStarted or OnReadCompleted.
-  void ResumeRequest(const GlobalRequestID& request_id);
+  void ResumeRequest(const content::GlobalRequestID& request_id);
 
   // Internal function to start reading for the first time.
   void StartReading(net::URLRequest* request);
@@ -345,7 +347,8 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // It may be enhanced in the future to provide some kind of prioritization
   // mechanism. We should also consider a hashtable or binary tree if it turns
   // out we have a lot of things here.
-  typedef std::map<GlobalRequestID, net::URLRequest*> PendingRequestList;
+  typedef std::map<content::GlobalRequestID, net::URLRequest*>
+      PendingRequestList;
 
   // Deletes the pending request identified by the iterator passed in.
   // This function will invalidate the iterator passed in. Callers should
@@ -508,7 +511,8 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   // Maps the request ID of request that is being transferred to a new RVH
   // to the respective request.
-  typedef std::map<GlobalRequestID, net::URLRequest*> TransferredNavigations;
+  typedef std::map<content::GlobalRequestID, net::URLRequest*>
+      TransferredNavigations;
   TransferredNavigations transferred_navigations_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHost);

@@ -58,6 +58,8 @@
 #endif
 
 using content::BrowserThread;
+using content::OpenURLParams;
+using content::Referrer;
 using printing::Metafile;
 
 namespace {
@@ -543,11 +545,12 @@ void PrintPreviewHandler::HandlePrintWithCloudPrint() {
 
 void PrintPreviewHandler::HandleManageCloudPrint(const ListValue* /*args*/) {
   Browser* browser = BrowserList::GetLastActive();
-  browser->OpenURL(CloudPrintURL(browser->profile()).
-                   GetCloudPrintServiceManageURL(),
-                   GURL(),
-                   NEW_FOREGROUND_TAB,
-                   content::PAGE_TRANSITION_LINK);
+  browser->OpenURL(OpenURLParams(
+      CloudPrintURL(browser->profile()).GetCloudPrintServiceManageURL(),
+      Referrer(),
+      NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK,
+      false));
 }
 
 void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* /*args*/) {

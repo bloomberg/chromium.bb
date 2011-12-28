@@ -47,6 +47,8 @@
 #endif
 
 using content::DownloadManager;
+using content::OpenURLParams;
+using content::Referrer;
 using content::UserMetricsAction;
 
 AdvancedOptionsHandler::AdvancedOptionsHandler() {
@@ -474,9 +476,10 @@ void AdvancedOptionsHandler::ShowCloudPrintManagePage(const ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_ManageCloudPrinters"));
   // Open a new tab in the current window for the management page.
   Profile* profile = Profile::FromWebUI(web_ui_);
-  web_ui_->tab_contents()->OpenURL(
-      CloudPrintURL(profile).GetCloudPrintServiceManageURL(),
-      GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+  OpenURLParams params(
+      CloudPrintURL(profile).GetCloudPrintServiceManageURL(), Referrer(),
+      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false);
+  web_ui_->tab_contents()->OpenURL(params);
 }
 
 #if !defined(OS_CHROMEOS)
@@ -484,10 +487,11 @@ void AdvancedOptionsHandler::ShowCloudPrintSetupDialog(const ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_EnableCloudPrintProxy"));
   // Open the connector enable page in the current tab.
   Profile* profile = Profile::FromWebUI(web_ui_);
-  web_ui_->tab_contents()->OpenURL(
+  OpenURLParams params(
       CloudPrintURL(profile).GetCloudPrintServiceEnableURL(
           CloudPrintProxyServiceFactory::GetForProfile(profile)->proxy_id()),
-      GURL(), CURRENT_TAB, content::PAGE_TRANSITION_LINK);
+      Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
+  web_ui_->tab_contents()->OpenURL(params);
 }
 
 void AdvancedOptionsHandler::HandleDisableCloudPrintConnector(

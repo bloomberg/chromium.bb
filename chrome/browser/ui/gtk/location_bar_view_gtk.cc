@@ -70,6 +70,8 @@
 #include "ui/gfx/image/image.h"
 #include "webkit/glue/window_open_disposition.h"
 
+using content::OpenURLParams;
+
 namespace {
 
 // We are positioned with a little bit of extra space that we don't use now.

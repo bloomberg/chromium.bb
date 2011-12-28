@@ -2,18 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/tab_contents/page_navigator.h"
+#include "content/public/browser/page_navigator.h"
 
-#include "content/public/common/page_transition_types.h"
-#include "webkit/glue/window_open_disposition.h"
-
-class GURL;
+namespace content {
 
 OpenURLParams::OpenURLParams(
     const GURL& url,
-    const content::Referrer& referrer,
+    const Referrer& referrer,
     WindowOpenDisposition disposition,
-    content::PageTransition transition,
+    PageTransition transition,
     bool is_renderer_initiated)
     : url(url),
       referrer(referrer),
@@ -24,10 +21,11 @@ OpenURLParams::OpenURLParams(
 
 OpenURLParams::OpenURLParams()
     : disposition(UNKNOWN),
-      transition(content::PageTransitionFromInt(0)),
+      transition(PageTransitionFromInt(0)),
       is_renderer_initiated(false) {
 }
 
 OpenURLParams::~OpenURLParams() {
 }
 
+}  // namespace content

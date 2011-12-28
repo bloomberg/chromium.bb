@@ -18,6 +18,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 SpellingBubbleModel::SpellingBubbleModel(Profile* profile)
     : profile_(profile) {
 }
@@ -59,7 +62,8 @@ string16 SpellingBubbleModel::GetLinkText() const {
 
 void SpellingBubbleModel::LinkClicked() {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-  browser->OpenURL(
+  OpenURLParams params(
       google_util::AppendGoogleLocaleParam(GURL(chrome::kPrivacyLearnMoreURL)),
-      GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+      Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false);
+  browser->OpenURL(params);
 }

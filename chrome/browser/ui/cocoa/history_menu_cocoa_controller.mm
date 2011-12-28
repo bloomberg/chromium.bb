@@ -17,6 +17,9 @@
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "webkit/glue/window_open_disposition.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 @implementation HistoryMenuCocoaController
 
 - (id)initWithBridge:(HistoryMenuBridge*)bridge {
@@ -47,8 +50,10 @@
         node->session_id, UNKNOWN);
   } else {
     DCHECK(node->url.is_valid());
-    browser->OpenURL(node->url, GURL(), disposition,
-                     content::PAGE_TRANSITION_AUTO_BOOKMARK);
+    OpenURLParams params(
+        node->url, Referrer(), disposition,
+        content::PAGE_TRANSITION_AUTO_BOOKMARK, false);
+    browser->OpenURL(params);
   }
 }
 

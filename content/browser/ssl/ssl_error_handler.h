@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/global_request_id.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/resource_type.h"
 
@@ -100,7 +100,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
 
   // The id of the net::URLRequest associated with this object.
   // Should only be accessed from the IO thread.
-  GlobalRequestID request_id_;
+  content::GlobalRequestID request_id_;
 
   // The ResourceDispatcherHost we are associated with.
   ResourceDispatcherHost* resource_dispatcher_host_;

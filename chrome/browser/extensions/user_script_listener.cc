@@ -16,6 +16,7 @@
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
+using content::GlobalRequestID;
 
 struct UserScriptListener::ProfileData {
   // True if the user scripts contained in |url_patterns| are ready for

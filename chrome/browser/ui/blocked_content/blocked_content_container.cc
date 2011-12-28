@@ -9,6 +9,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/rect.h"
 
+using content::OpenURLParams;
 using content::WebContents;
 
 // static
@@ -109,8 +110,8 @@ void BlockedContentContainer::Clear() {
 
 // Overridden from content::WebContentsDelegate:
 
-TabContents* BlockedContentContainer::OpenURLFromTab(
-    TabContents* source,
+WebContents* BlockedContentContainer::OpenURLFromTab(
+    WebContents* source,
     const OpenURLParams& params) {
   return owner_->web_contents()->OpenURL(params);
 }

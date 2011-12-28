@@ -21,6 +21,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
 
+using content::OpenURLParams;
+
 namespace {
 
 const int kLeftColumnMinWidth = 250;

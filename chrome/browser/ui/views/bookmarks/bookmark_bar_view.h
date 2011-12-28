@@ -29,7 +29,10 @@
 
 class BookmarkContextMenu;
 class Browser;
+
+namespace content {
 class PageNavigator;
+}
 
 namespace ui {
 class SlideAnimation;
@@ -79,7 +82,7 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // Sets the PageNavigator that is used when the user selects an entry on
   // the bookmark bar.
-  void SetPageNavigator(PageNavigator* navigator);
+  void SetPageNavigator(content::PageNavigator* navigator);
 
   // Sets whether the containing browser is showing an infobar.  This affects
   // layout during animation.
@@ -353,7 +356,7 @@ class BookmarkBarView : public DetachableToolbarView,
   content::NotificationRegistrar registrar_;
 
   // Used for opening urls.
-  PageNavigator* page_navigator_;
+  content::PageNavigator* page_navigator_;
 
   // Model providing details as to the starred entries/folders that should be
   // shown. This is owned by the Profile.

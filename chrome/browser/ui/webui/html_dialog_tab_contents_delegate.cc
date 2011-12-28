@@ -11,6 +11,9 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
+using content::OpenURLParams;
+using content::WebContents;
+
 // Incognito profiles are not long-lived, so we always want to store a
 // non-incognito profile.
 //
@@ -28,8 +31,8 @@ void HtmlDialogTabContentsDelegate::Detach() {
   profile_ = NULL;
 }
 
-TabContents* HtmlDialogTabContentsDelegate::OpenURLFromTab(
-    TabContents* source, const OpenURLParams& params) {
+WebContents* HtmlDialogTabContentsDelegate::OpenURLFromTab(
+    WebContents* source, const OpenURLParams& params) {
   if (profile_) {
     // Specify a NULL browser for navigation. This will cause Navigate()
     // to find a browser matching params.profile or create a new one.

@@ -6,13 +6,15 @@
 
 #include "base/logging.h"
 #include "content/browser/debugger/devtools_netlog_observer.h"
-#include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/common/resource_messages.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
+
+using content::GlobalRequestID;
 
 SyncResourceHandler::SyncResourceHandler(
     ResourceMessageFilter* filter,

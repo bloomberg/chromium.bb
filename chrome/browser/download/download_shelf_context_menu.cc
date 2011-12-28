@@ -10,13 +10,14 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/page_navigator.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::DownloadItem;
+using content::OpenURLParams;
 
 DownloadShelfContextMenu::~DownloadShelfContextMenu() {}
 

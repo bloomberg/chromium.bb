@@ -23,6 +23,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 // AlternateNavInfoBarDelegate ------------------------------------------------
 
 class AlternateNavInfoBarDelegate : public LinkInfoBarDelegate {
@@ -76,12 +79,14 @@ string16 AlternateNavInfoBarDelegate::GetLinkText() const {
 
 bool AlternateNavInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  owner()->web_contents()->OpenURL(
-      alternate_nav_url_, GURL(), disposition,
+  OpenURLParams params(
+      alternate_nav_url_, Referrer(), disposition,
       // Pretend the user typed this URL, so that navigating to
       // it will be the default action when it's typed again in
       // the future.
-      content::PAGE_TRANSITION_TYPED);
+      content::PAGE_TRANSITION_TYPED,
+      false);
+  owner()->web_contents()->OpenURL(params);
 
   // We should always close, even if the navigation did not occur within this
   // TabContents.

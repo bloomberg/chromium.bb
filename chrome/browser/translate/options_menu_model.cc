@@ -16,6 +16,8 @@
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::OpenURLParams;
+using content::Referrer;
 using content::WebContents;
 
 namespace {
@@ -142,9 +144,10 @@ void OptionsMenuModel::ExecuteCommand(int command_id) {
       if (web_contents) {
         GURL about_url = google_util::AppendGoogleLocaleParam(
             GURL(kAboutGoogleTranslateUrl));
-        web_contents->OpenURL(
-            about_url, GURL(), NEW_FOREGROUND_TAB,
-            content::PAGE_TRANSITION_LINK);
+        OpenURLParams params(
+            about_url, Referrer(), NEW_FOREGROUND_TAB,
+            content::PAGE_TRANSITION_LINK, false);
+        web_contents->OpenURL(params);
       }
       break;
     }

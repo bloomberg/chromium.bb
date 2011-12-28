@@ -57,6 +57,8 @@ using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
+using content::OpenURLParams;
+using content::WebContents;
 
 const char DevToolsWindow::kDevToolsApp[] = "DevToolsApp";
 
@@ -439,7 +441,7 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
   CallClientFunction(ASCIIToUTF16("WebInspector.addExtensions"), results);
 }
 
-TabContents* DevToolsWindow::OpenURLFromTab(TabContents* source,
+WebContents* DevToolsWindow::OpenURLFromTab(WebContents* source,
                                             const OpenURLParams& params) {
   if (inspected_tab_) {
     OpenURLParams forward_params = params;

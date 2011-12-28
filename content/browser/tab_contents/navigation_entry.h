@@ -9,9 +9,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/renderer_host/global_request_id.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/page_type.h"
@@ -162,11 +162,11 @@ class CONTENT_EXPORT NavigationEntry
   }
 
   void set_transferred_global_request_id(
-      const GlobalRequestID& transferred_global_request_id) {
+      const content::GlobalRequestID& transferred_global_request_id) {
     transferred_global_request_id_ = transferred_global_request_id;
   }
 
-  GlobalRequestID transferred_global_request_id() const {
+  content::GlobalRequestID transferred_global_request_id() const {
     return transferred_global_request_id_;
   }
 
@@ -216,7 +216,7 @@ class CONTENT_EXPORT NavigationEntry
   // carries this |transferred_global_request_id_| annotation. Once the request
   // is transferred to the new process, this is cleared and the request
   // continues as normal.
-  GlobalRequestID transferred_global_request_id_;
+  content::GlobalRequestID transferred_global_request_id_;
 
   // Copy and assignment is explicitly allowed for this class.
 };

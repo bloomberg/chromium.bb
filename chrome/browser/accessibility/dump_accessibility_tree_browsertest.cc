@@ -22,6 +22,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::OpenURLParams;
+using content::Referrer;
+
 // Suffix of the expectation file corresponding to html file.
 // Example:
 // HTML test:      test-file.html
@@ -111,8 +114,8 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
         content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
         content::NotificationService::AllSources());
     GURL url(kUrlPreamble + html_contents);
-    browser()->OpenURL(
-        url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
+    browser()->OpenURL(OpenURLParams(
+        url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
 
     // Wait for the tree.
     tree_updated_observer.Wait();

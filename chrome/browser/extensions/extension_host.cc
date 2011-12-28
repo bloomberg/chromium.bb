@@ -52,6 +52,7 @@
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
+using content::OpenURLParams;
 using content::WebContents;
 
 // Helper class that rate-limits the creation of renderer processes for
@@ -395,7 +396,7 @@ void ExtensionHost::CloseContents(WebContents* contents) {
   }
 }
 
-TabContents* ExtensionHost::OpenURLFromTab(TabContents* source,
+WebContents* ExtensionHost::OpenURLFromTab(WebContents* source,
                                            const OpenURLParams& params) {
   // Whitelist the dispositions we will allow to be opened.
   switch (params.disposition) {

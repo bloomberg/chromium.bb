@@ -23,6 +23,7 @@
 #include "content/public/browser/notification_types.h"
 #include "ui/gfx/screen.h"
 
+using content::OpenURLParams;
 using content::WebContents;
 
 namespace {
@@ -171,8 +172,8 @@ DraggedTabData DraggedTabControllerGtk::InitDraggedTabData(TabGtk* tab) {
 ////////////////////////////////////////////////////////////////////////////////
 // DraggedTabControllerGtk, content::WebContentsDelegate implementation:
 
-TabContents* DraggedTabControllerGtk::OpenURLFromTab(
-    TabContents* source,
+WebContents* DraggedTabControllerGtk::OpenURLFromTab(
+    WebContents* source,
     const OpenURLParams& params) {
   if (drag_data_->GetSourceTabData()->original_delegate_) {
     OpenURLParams forward_params = params;

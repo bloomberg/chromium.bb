@@ -26,6 +26,7 @@
 #include "net/url_request/url_request_status.h"
 
 using content::BrowserThread;
+using content::OpenURLParams;
 using content::WebContents;
 
 const char kManifestKey[] = "manifest";
