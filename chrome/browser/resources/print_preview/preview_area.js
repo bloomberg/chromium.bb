@@ -212,7 +212,7 @@ cr.define('print_preview', function() {
      */
     displayErrorMessageAndNotify: function(errorMessage) {
       this.overlayLayer.classList.remove('invisible');
-      this.customMessage_.textContent = errorMessage;
+      this.customMessage_.innerHTML = errorMessage;
       this.customMessage_.hidden = false;
       this.customMessageWithDots_.innerHTML = '';
       this.customMessageWithDots_.hidden = true;
