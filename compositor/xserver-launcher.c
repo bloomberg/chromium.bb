@@ -138,10 +138,15 @@ dump_property(struct wlsc_wm *wm, xcb_atom_t property,
 	int32_t *incr_value;
 	const char *text_value, *name;
 	xcb_atom_t *atom_value;
-	int i, width;
+	int i, width, len;
 
 	width = fprintf(stderr, "property %s: ",
 			get_atom_name(wm->conn, property));
+	if (reply == NULL) {
+		fprintf(stderr, "(no reply)\n");
+		return;
+	}
+
 	width += fprintf(stderr,
 			 "type %s, format %d, length %d (value_len %d): ",
 			 get_atom_name(wm->conn, reply->type),
@@ -152,11 +157,15 @@ dump_property(struct wlsc_wm *wm, xcb_atom_t property,
 	if (reply->type == wm->atom.incr) {
 		incr_value = xcb_get_property_value(reply);
 		fprintf(stderr, "%d\n", *incr_value);
-	} if (reply->type == wm->atom.utf8_string ||
+	} else if (reply->type == wm->atom.utf8_string ||
 	      reply->type == wm->atom.string) {
 		text_value = xcb_get_property_value(reply);
-		fprintf(stderr, "\"%.100s\"\n", text_value);
-	} if (reply->type == XCB_ATOM_ATOM) {
+		if (reply->value_len > 40)
+			len = 40;
+		else
+			len = reply->value_len;
+		fprintf(stderr, "\"%.*s\"\n", len, text_value);
+	} else if (reply->type == XCB_ATOM_ATOM) {
 		atom_value = xcb_get_property_value(reply);
 		for (i = 0; i < reply->value_len; i++) {
 			name = get_atom_name(wm->conn, atom_value[i]);
@@ -448,36 +457,37 @@ wlsc_wm_handle_configure_request(struct wlsc_wm *wm, xcb_generic_event_t *event)
 }
 
 static void
-wlsc_wm_get_properties(struct wlsc_wm *wm, xcb_window_t window)
+wlsc_wm_list_properties(struct wlsc_wm *wm, xcb_window_t window)
 {
-	xcb_generic_error_t *e;
-	xcb_get_property_reply_t *reply;
-	int i;
+	xcb_list_properties_cookie_t list_cookie;
+	xcb_list_properties_reply_t *list_reply;
+	xcb_get_property_cookie_t property_cookie;
+	xcb_get_property_reply_t *property_reply;
+	xcb_atom_t *atoms;
+	int i, length;
 
-	struct {
-		xcb_atom_t atom;
-		xcb_get_property_cookie_t cookie;
-	} props[] = {
-		{ XCB_ATOM_WM_CLASS, },
-		{ XCB_ATOM_WM_TRANSIENT_FOR },
-		{ wm->atom.wm_protocols, },
-		{ wm->atom.net_wm_name, },
-	};
+	list_cookie = xcb_list_properties(wm->conn, window);
+	list_reply = xcb_list_properties_reply(wm->conn, list_cookie, NULL);
 
-	for (i = 0; i < ARRAY_LENGTH(props); i++)
-		props[i].cookie =
+	length = xcb_list_properties_atoms_length(list_reply);
+	atoms = xcb_list_properties_atoms(list_reply);
+
+	for (i = 0; i < length; i++) {
+		property_cookie = 
 			xcb_get_property (wm->conn, 
 					  0, /* delete */
 					  window,
-					  props[i].atom,
+					  atoms[i],
 					  XCB_ATOM_ANY,
 					  0, 2048);
 
-	for (i = 0; i < ARRAY_LENGTH(props); i++)  {
-		reply = xcb_get_property_reply(wm->conn, props[i].cookie, &e);
-		dump_property(wm, props[i].atom, reply);
-		free(reply);
+		property_reply = xcb_get_property_reply(wm->conn,
+							property_cookie, NULL);
+		dump_property(wm, atoms[i], property_reply);
+		free(property_reply);
 	}
+
+	free(list_reply);
 }
 
 static void
@@ -525,7 +535,6 @@ wlsc_wm_handle_map_request(struct wlsc_wm *wm, xcb_generic_event_t *event)
 
 	fprintf(stderr, "XCB_MAP_REQUEST\n");
 
-	wlsc_wm_get_properties(wm, map_request->window);
 	values[0] = XCB_EVENT_MASK_PROPERTY_CHANGE;
 	xcb_change_window_attributes(wm->conn, map_request->window,
 				     XCB_CW_EVENT_MASK, values);
@@ -542,7 +551,7 @@ wlsc_wm_handle_map_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 
 	fprintf(stderr, "XCB_MAP_NOTIFY\n");
 
-	wlsc_wm_get_properties(wm, map_notify->window);
+	wlsc_wm_list_properties(wm, map_notify->window);
 
 	window = hash_table_lookup(wm->window_hash, map_notify->window);
 	wlsc_wm_activate(wm, window, XCB_TIME_CURRENT_TIME);
