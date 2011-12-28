@@ -1302,6 +1302,7 @@
         'browser/chromeos/dbus/proxy_resolution_service_provider_unittest.cc',
         'browser/chromeos/extensions/file_browser_notifications_unittest.cc',
         'browser/chromeos/external_metrics_unittest.cc',
+        'browser/chromeos/gdata/gdata_parser_unittest.cc',
         'browser/chromeos/gview_request_interceptor_unittest.cc',
         'browser/chromeos/input_method/candidate_window_view_unittest.cc',
         'browser/chromeos/input_method/hotkey_manager_unittest.cc',

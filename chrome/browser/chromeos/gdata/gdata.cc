@@ -16,6 +16,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
@@ -527,12 +528,17 @@ void DocumentsService::UpdateFilelist(GDataErrorCode status,
   if (status != HTTP_SUCCESS)
     return;
 
+  DocumentFeed* feed = DocumentFeed::CreateFrom(data);
   feed_value_.reset(data);
   // TODO(zelidrag): This part should be removed once we start handling the
   // results properly.
   std::string json;
   base::JSONWriter::Write(feed_value_.get(), true, &json);
   DVLOG(1) << "Received document feed:\n" << json;
+  DVLOG(1) << "Parsed feed info:"
+           << "\n  title = " << feed->title()
+           << "\n  start_index = " << feed->start_index()
+           << "\n  items_per_page = " << feed->items_per_page();
 }
 
 

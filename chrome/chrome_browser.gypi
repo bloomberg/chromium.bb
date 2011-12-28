@@ -503,6 +503,8 @@
         'browser/chromeos/frame/panel_controller.h',
         'browser/chromeos/gdata/gdata.cc',
         'browser/chromeos/gdata/gdata.h',
+        'browser/chromeos/gdata/gdata_parser.cc',
+        'browser/chromeos/gdata/gdata_parser.h',
         'browser/chromeos/gview_request_interceptor.cc',
         'browser/chromeos/gview_request_interceptor.h',
         'browser/chromeos/input_method/candidate_window.cc',
