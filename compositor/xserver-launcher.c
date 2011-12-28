@@ -86,6 +86,7 @@ struct wlsc_wm {
 		xcb_atom_t		 net_wm_state_fullscreen;
 		xcb_atom_t		 net_wm_user_time;
 		xcb_atom_t		 net_wm_icon_name;
+		xcb_atom_t		 net_wm_window_type;
 		xcb_atom_t		 clipboard;
 		xcb_atom_t		 targets;
 		xcb_atom_t		 utf8_string;
@@ -105,6 +106,11 @@ struct wlsc_wm_window {
 	xcb_window_t id;
 	struct wlsc_surface *surface;
 	struct wl_listener surface_destroy_listener;
+	char *class;
+	char *name;
+	struct wlsc_wm_window *transient_for;
+	uint32_t protocols;
+	xcb_atom_t type;
 };
 
 static struct wlsc_wm_window *
@@ -140,8 +146,7 @@ dump_property(struct wlsc_wm *wm, xcb_atom_t property,
 	xcb_atom_t *atom_value;
 	int i, width, len;
 
-	width = fprintf(stderr, "property %s: ",
-			get_atom_name(wm->conn, property));
+	width = fprintf(stderr, "  %s: ", get_atom_name(wm->conn, property));
 	if (reply == NULL) {
 		fprintf(stderr, "(no reply)\n");
 		return;
@@ -170,8 +175,8 @@ dump_property(struct wlsc_wm *wm, xcb_atom_t property,
 		for (i = 0; i < reply->value_len; i++) {
 			name = get_atom_name(wm->conn, atom_value[i]);
 			if (width + strlen(name) + 2 > 78) {
-				fprintf(stderr, "\n  ");
-				width = 2;
+				fprintf(stderr, "\n    ");
+				width = 4;
 			} else if (i > 0) {
 				width += fprintf(stderr, ", ");
 			}
@@ -182,6 +187,41 @@ dump_property(struct wlsc_wm *wm, xcb_atom_t property,
 	} else {
 		fprintf(stderr, "huh?\n");
 	}
+}
+
+static void
+dump_window_properties(struct wlsc_wm *wm, xcb_window_t window)
+{
+	xcb_list_properties_cookie_t list_cookie;
+	xcb_list_properties_reply_t *list_reply;
+	xcb_get_property_cookie_t property_cookie;
+	xcb_get_property_reply_t *property_reply;
+	xcb_atom_t *atoms;
+	int i, length;
+
+	list_cookie = xcb_list_properties(wm->conn, window);
+	list_reply = xcb_list_properties_reply(wm->conn, list_cookie, NULL);
+
+	length = xcb_list_properties_atoms_length(list_reply);
+	atoms = xcb_list_properties_atoms(list_reply);
+
+	for (i = 0; i < length; i++) {
+		property_cookie =
+			xcb_get_property(wm->conn,
+					 0, /* delete */
+					 window,
+					 atoms[i],
+					 XCB_ATOM_ANY,
+					 0, 2048);
+
+		property_reply = xcb_get_property_reply(wm->conn,
+							property_cookie, NULL);
+		dump_property(wm, atoms[i], property_reply);
+
+		free(property_reply);
+	}
+
+	free(list_reply);
 }
 
 static void
@@ -434,7 +474,10 @@ wlsc_wm_handle_configure_request(struct wlsc_wm *wm, xcb_generic_event_t *event)
 	uint32_t values[16];
 	int i = 0;
 
-	fprintf(stderr, "XCB_CONFIGURE_REQUEST\n");
+	fprintf(stderr, "XCB_CONFIGURE_REQUEST (window %d) %d,%d @ %dx%d\n",
+		configure_request->window,
+		configure_request->x, configure_request->y,
+		configure_request->width, configure_request->height);
 
 	if (configure_request->value_mask & XCB_CONFIG_WINDOW_X)
 		values[i++] = configure_request->x;
@@ -457,37 +500,15 @@ wlsc_wm_handle_configure_request(struct wlsc_wm *wm, xcb_generic_event_t *event)
 }
 
 static void
-wlsc_wm_list_properties(struct wlsc_wm *wm, xcb_window_t window)
+wlsc_wm_handle_configure_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 {
-	xcb_list_properties_cookie_t list_cookie;
-	xcb_list_properties_reply_t *list_reply;
-	xcb_get_property_cookie_t property_cookie;
-	xcb_get_property_reply_t *property_reply;
-	xcb_atom_t *atoms;
-	int i, length;
+	xcb_configure_notify_event_t *configure_notify = 
+		(xcb_configure_notify_event_t *) event;
 
-	list_cookie = xcb_list_properties(wm->conn, window);
-	list_reply = xcb_list_properties_reply(wm->conn, list_cookie, NULL);
-
-	length = xcb_list_properties_atoms_length(list_reply);
-	atoms = xcb_list_properties_atoms(list_reply);
-
-	for (i = 0; i < length; i++) {
-		property_cookie = 
-			xcb_get_property (wm->conn, 
-					  0, /* delete */
-					  window,
-					  atoms[i],
-					  XCB_ATOM_ANY,
-					  0, 2048);
-
-		property_reply = xcb_get_property_reply(wm->conn,
-							property_cookie, NULL);
-		dump_property(wm, atoms[i], property_reply);
-		free(property_reply);
-	}
-
-	free(list_reply);
+	fprintf(stderr, "XCB_CONFIGURE_NOTIFY (window %d) %d,%d @ %dx%d\n",
+		configure_notify->window,
+		configure_notify->x, configure_notify->y,
+		configure_notify->width, configure_notify->height);
 }
 
 static void
@@ -533,7 +554,7 @@ wlsc_wm_handle_map_request(struct wlsc_wm *wm, xcb_generic_event_t *event)
 		(xcb_map_request_event_t *) event;
 	uint32_t values[1];
 
-	fprintf(stderr, "XCB_MAP_REQUEST\n");
+	fprintf(stderr, "XCB_MAP_REQUEST (window %d)\n", map_request->window);
 
 	values[0] = XCB_EVENT_MASK_PROPERTY_CHANGE;
 	xcb_change_window_attributes(wm->conn, map_request->window,
@@ -542,18 +563,81 @@ wlsc_wm_handle_map_request(struct wlsc_wm *wm, xcb_generic_event_t *event)
 	xcb_map_window(wm->conn, map_request->window);
 }
 
+/* We reuse some predefined, but otherwise useles atoms */
+#define TYPE_WM_PROTOCOLS XCB_ATOM_CUT_BUFFER0
+
 static void
 wlsc_wm_handle_map_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 {
-	xcb_map_notify_event_t *map_notify =
-		(xcb_map_notify_event_t *) event;
+#define F(field) offsetof(struct wlsc_wm_window, field)
+
+	const struct {
+		xcb_atom_t atom;
+		xcb_atom_t type;
+		int offset;
+	} props[] = {
+		{ XCB_ATOM_WM_CLASS, XCB_ATOM_STRING, F(class) },
+		{ XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, F(transient_for) },
+		{ wm->atom.wm_protocols, TYPE_WM_PROTOCOLS, F(protocols) },
+		{ wm->atom.net_wm_window_type, XCB_ATOM_ATOM, F(type) },
+		{ wm->atom.net_wm_name, XCB_ATOM_STRING, F(name) },
+	};
+#undef F
+
+	xcb_map_notify_event_t *map_notify = (xcb_map_notify_event_t *) event;
+	xcb_get_property_cookie_t cookie[ARRAY_LENGTH(props)];
+	xcb_get_property_reply_t *reply;
 	struct wlsc_wm_window *window;
+	void *p;
+	uint32_t *xid;
+	xcb_atom_t *atom;
+	int i;
 
-	fprintf(stderr, "XCB_MAP_NOTIFY\n");
+	fprintf(stderr, "XCB_MAP_NOTIFY (window %d)\n", map_notify->window);
 
-	wlsc_wm_list_properties(wm, map_notify->window);
+	dump_window_properties(wm, map_notify->window);
 
 	window = hash_table_lookup(wm->window_hash, map_notify->window);
+
+	for (i = 0; i < ARRAY_LENGTH(props); i++)
+		cookie[i] = xcb_get_property(wm->conn,
+					     0, /* delete */
+					     window->id,
+					     props[i].atom,
+					     XCB_ATOM_ANY, 0, 2048);
+
+	for (i = 0; i < ARRAY_LENGTH(props); i++)  {
+		reply = xcb_get_property_reply(wm->conn, cookie[i], NULL);
+		p = ((char *) window + props[i].offset);
+
+		switch (props[i].type) {
+		case XCB_ATOM_STRING:
+			/* FIXME: We're using this for both string and
+			   utf8_string */
+			*(char **) p =
+				strndup(xcb_get_property_value(reply),
+					xcb_get_property_value_length(reply));
+			break;
+		case XCB_ATOM_WINDOW:
+			xid = xcb_get_property_value(reply);
+			*(struct wlsc_wm_window **) p =
+				hash_table_lookup(wm->window_hash, *xid);
+			break;
+		case XCB_ATOM_ATOM:
+			atom = xcb_get_property_value(reply);
+			*(xcb_atom_t *) p = *atom;
+			break;
+		case TYPE_WM_PROTOCOLS:
+			break;
+		default:
+			break;
+		}
+		free(reply);
+	}
+
+	fprintf(stderr, "window %d: name %s, class %s, transient_for %d\n",
+		window->id, window->name, window->class,
+		window->transient_for ? window->transient_for->id : 0);
 	wlsc_wm_activate(wm, window, XCB_TIME_CURRENT_TIME);
 }
 
@@ -598,7 +682,8 @@ wlsc_wm_handle_create_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 		(xcb_create_notify_event_t *) event;
 	struct wlsc_wm_window *window;
 
-	fprintf(stderr, "XCB_CREATE_NOTIFY, win %d\n", create_notify->window);
+	fprintf(stderr, "XCB_CREATE_NOTIFY (window %d)\n",
+		create_notify->window);
 
 	window = malloc(sizeof *window);
 	if (window == NULL) {
@@ -608,8 +693,6 @@ wlsc_wm_handle_create_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 
 	window->id = create_notify->window;
 	hash_table_insert(wm->window_hash, window->id, window);
-
-	fprintf(stderr, "created window %p\n", window);
 }
 
 static void
@@ -694,7 +777,7 @@ wlsc_wm_handle_event(int fd, uint32_t mask, void *data)
 			wlsc_wm_handle_configure_request(wm, event);
 			break;
 		case XCB_CONFIGURE_NOTIFY:
-			fprintf(stderr, "XCB_CONFIGURE_NOTIFY\n");
+			wlsc_wm_handle_configure_notify(wm, event);
 			break;
 		case XCB_DESTROY_NOTIFY:
 			wlsc_wm_handle_destroy_notify(wm, event);
@@ -742,6 +825,7 @@ wxs_wm_get_resources(struct wlsc_wm *wm)
 		{ "_NET_WM_STATE_FULLSCREEN", F(atom.net_wm_state_fullscreen) },
 		{ "_NET_WM_USER_TIME", F(atom.net_wm_user_time) },
 		{ "_NET_WM_ICON_NAME", F(atom.net_wm_icon_name) },
+		{ "_NET_WM_WINDOW_TYPE", F(atom.net_wm_window_type) },
 		{ "CLIPBOARD",		F(atom.clipboard) },
 		{ "TARGETS",		F(atom.targets) },
 		{ "UTF8_STRING",	F(atom.utf8_string) },
