@@ -4328,11 +4328,19 @@ gfx::Rect Browser::GetInstantBounds() {
 // Browser, protected:
 
 BrowserWindow* Browser::CreateBrowserWindow() {
-#if !defined(OS_CHROMEOS) || defined(USE_AURA)
-  if (type_ == TYPE_PANEL) {
-    return PanelManager::GetInstance()->CreatePanel(this);
-  }
+  bool create_panel = false;
+#if defined(OS_CHROMEOS) && defined(USE_AURA)
+  // For R18, panels and popups in Aura ChromeOS use the PanelManager.
+  // TODO(stevenjb): Clean this up after R18.
+  if (is_type_panel() || is_type_popup())
+    create_panel = true;
+#elif !defined(OS_CHROMEOS)
+  // PanelManager is used for panels in non-ChromeOS environments.
+  if (is_type_panel())
+    create_panel = true;
 #endif
+  if (create_panel)
+    return PanelManager::GetInstance()->CreatePanel(this);
 
   return BrowserWindow::CreateBrowserWindow(this);
 }

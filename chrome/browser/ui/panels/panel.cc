@@ -24,7 +24,7 @@
 #include "ui/gfx/rect.h"
 
 #if defined(USE_AURA)
-#include "ui/gfx/screen.h"
+#include "chrome/browser/ui/panels/panel_browser_view.h"
 #endif
 
 using content::SSLStatus;
@@ -318,12 +318,24 @@ bool Panel::IsFullscreenBubbleVisible() const {
 }
 
 LocationBar* Panel::GetLocationBar() const {
+#if defined(USE_AURA)
+  // TODO(stevenjb): Remove this when Aura panels are implemented post R18.
+  PanelBrowserView* panel_view = static_cast<PanelBrowserView*>(native_panel_);
+  return panel_view->GetLocationBar();
+#else
   // Panels do not have a location bar.
   return NULL;
+#endif
 }
 
 void Panel::SetFocusToLocationBar(bool select_all) {
+#if defined(USE_AURA)
+  // TODO(stevenjb): Remove this when Aura panels are implemented post R18.
+  PanelBrowserView* panel_view = static_cast<PanelBrowserView*>(native_panel_);
+  panel_view->SetFocusToLocationBar(select_all);
+#else
   // Panels do not have a location bar.
+#endif
 }
 
 void Panel::UpdateReloadStopState(bool is_loading, bool force) {
@@ -541,12 +553,9 @@ gfx::Rect Panel::GetInstantBounds() {
 WindowOpenDisposition Panel::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
 #if defined(USE_AURA)
-  // TODO(stevenjb): Remove this platform specific behavior after R18 when
-  // the panel code has moved to aura_shell.
-  gfx::Size window_size = gfx::Screen::GetMonitorAreaNearestWindow(
-      native_panel_->GetNativePanelHandle()).size();
-  return browser::DispositionForPopupBounds(
-      bounds, window_size.width(), window_size.height());
+  // TODO(stevenjb): Remove this when Aura panels are implemented post R18.
+  PanelBrowserView* panel_view = static_cast<PanelBrowserView*>(native_panel_);
+  return panel_view->GetDispositionForPopupBounds(bounds);
 #else
   return NEW_POPUP;
 #endif
