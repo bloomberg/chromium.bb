@@ -71,7 +71,7 @@ wl_event_source_fd_dispatch(struct wl_event_source *source,
 	if (ep->events & EPOLLIN)
 		mask |= WL_EVENT_READABLE;
 	if (ep->events & EPOLLOUT)
-		mask |= WL_EVENT_WRITEABLE;
+		mask |= WL_EVENT_WRITABLE;
 
 	return fd_source->func(fd_source->fd, mask, fd_source->base.data);
 }
@@ -118,7 +118,7 @@ wl_event_loop_add_fd(struct wl_event_loop *loop,
 	memset(&ep, 0, sizeof ep);
 	if (mask & WL_EVENT_READABLE)
 		ep.events |= EPOLLIN;
-	if (mask & WL_EVENT_WRITEABLE)
+	if (mask & WL_EVENT_WRITABLE)
 		ep.events |= EPOLLOUT;
 	ep.data.ptr = source;
 
@@ -141,7 +141,7 @@ wl_event_source_fd_update(struct wl_event_source *source, uint32_t mask)
 	memset(&ep, 0, sizeof ep);
 	if (mask & WL_EVENT_READABLE)
 		ep.events |= EPOLLIN;
-	if (mask & WL_EVENT_WRITEABLE)
+	if (mask & WL_EVENT_WRITABLE)
 		ep.events |= EPOLLOUT;
 	ep.data.ptr = source;
 

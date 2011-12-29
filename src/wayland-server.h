@@ -33,7 +33,7 @@ extern "C" {
 
 enum {
 	WL_EVENT_READABLE = 0x01,
-	WL_EVENT_WRITEABLE = 0x02
+	WL_EVENT_WRITABLE = 0x02
 };
 
 struct wl_event_loop;

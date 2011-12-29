@@ -180,7 +180,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 
 	if (mask & WL_EVENT_READABLE)
 		cmask |= WL_CONNECTION_READABLE;
-	if (mask & WL_EVENT_WRITEABLE)
+	if (mask & WL_EVENT_WRITABLE)
 		cmask |= WL_CONNECTION_WRITABLE;
 
 	len = wl_connection_data(connection, cmask);
@@ -261,7 +261,7 @@ wl_client_connection_update(struct wl_connection *connection,
 	if (mask & WL_CONNECTION_READABLE)
 		emask |= WL_EVENT_READABLE;
 	if (mask & WL_CONNECTION_WRITABLE)
-		emask |= WL_EVENT_WRITEABLE;
+		emask |= WL_EVENT_WRITABLE;
 
 	return wl_event_source_fd_update(client->source, emask);
 }
