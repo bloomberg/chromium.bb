@@ -41,7 +41,7 @@ class NavigationController {
   // Creates navigation entry and translates the virtual url to a real one.
   // Used when navigating to a new URL using LoadURL.  Extra headers are
   // separated by \n.
-  static NavigationEntry* CreateNavigationEntry(
+  CONTENT_EXPORT static NavigationEntry* CreateNavigationEntry(
       const GURL& url,
       const Referrer& referrer,
       PageTransition transition,
