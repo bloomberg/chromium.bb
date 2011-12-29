@@ -11,7 +11,7 @@
 namespace policy {
 
 const char NetworkConfigurationUpdater::kEmptyConfiguration[] =
-    "{NetworkConfigurations:[],Certificates:[]}";
+    "{\"NetworkConfigurations\":[],\"Certificates\":[]}";
 
 NetworkConfigurationUpdater::NetworkConfigurationUpdater(
     ConfigurationPolicyProvider* provider,

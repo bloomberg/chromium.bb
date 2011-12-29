@@ -2946,42 +2946,48 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     network_ids.insert(network->unique_id());
   }
 
-  // Go through the list of existing remembered networks and clean out the ones
-  // that no longer have a definition in the ONC blob. We first collect the
-  // networks and do the actual deletion later because ForgetNetwork() changes
-  // the remembered network vectors.
-  if (source != NetworkUIData::ONC_SOURCE_USER_IMPORT) {
+  if (source == NetworkUIData::ONC_SOURCE_USER_POLICY ||
+      source == NetworkUIData::ONC_SOURCE_DEVICE_POLICY) {
+    // For policy-managed networks, go through the list of existing remembered
+    // networks and clean out the ones that no longer have a definition in the
+    // ONC blob. We first collect the networks and do the actual deletion later
+    // because ForgetNetwork() changes the remembered network vectors.
     std::vector<std::string> to_be_deleted;
     for (WifiNetworkVector::iterator i(remembered_wifi_networks_.begin());
          i != remembered_wifi_networks_.end(); ++i) {
       WifiNetwork* network = *i;
       if (NetworkUIData::GetONCSource(network->ui_data()) == source &&
-          network_ids.find(network->unique_id()) == network_ids.end())
+          network_ids.find(network->unique_id()) == network_ids.end()) {
         to_be_deleted.push_back(network->service_path());
+      }
     }
 
     for (VirtualNetworkVector::iterator i(remembered_virtual_networks_.begin());
          i != remembered_virtual_networks_.end(); ++i) {
       VirtualNetwork* network = *i;
       if (NetworkUIData::GetONCSource(network->ui_data()) == source &&
-          network_ids.find(network->unique_id()) == network_ids.end())
+          network_ids.find(network->unique_id()) == network_ids.end()) {
         to_be_deleted.push_back(network->service_path());
+      }
     }
 
     for (std::vector<std::string>::const_iterator i(to_be_deleted.begin());
          i != to_be_deleted.end(); ++i) {
       ForgetNetwork(*i);
     }
-  }
-
-  if (parser.GetNetworkConfigsSize() == 0 &&
-      parser.GetCertificatesSize() == 0) {
+  } else if (source == NetworkUIData::ONC_SOURCE_USER_IMPORT) {
+    // User-imported files should always contain something.
+    if (parser.GetNetworkConfigsSize() == 0 &&
+        parser.GetCertificatesSize() == 0) {
       LOG(ERROR) << "Onc file missing networks and certs.";
-      if (error)
+      if (error) {
         *error = l10n_util::GetStringUTF8(
             IDS_NETWORK_CONFIG_ERROR_NETWORK_IMPORT);
+      }
       return false;
+    }
   }
+
   return true;
 }
 
