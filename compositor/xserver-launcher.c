@@ -434,7 +434,7 @@ wlsc_wm_get_selection_data(struct wlsc_wm *wm)
 		wm->property_source =
 			wl_event_loop_add_fd(wm->server->loop,
 					     wm->data_source_fd,
-					     WL_EVENT_WRITEABLE,
+					     WL_EVENT_WRITABLE,
 					     wlsc_wm_write_property,
 					     wm);
 		wm->property_reply = reply;
@@ -464,7 +464,7 @@ wlsc_wm_get_incr_chunk(struct wlsc_wm *wm)
 		wm->property_source =
 			wl_event_loop_add_fd(wm->server->loop,
 					     wm->data_source_fd,
-					     WL_EVENT_WRITEABLE,
+					     WL_EVENT_WRITABLE,
 					     wlsc_wm_write_property,
 					     wm);
 		wm->property_reply = reply;

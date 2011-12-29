@@ -492,7 +492,7 @@ wayland_compositor_handle_event(int fd, uint32_t mask, void *data)
 
 	if (mask & WL_EVENT_READABLE)
 		wl_display_iterate(c->parent.display, WL_DISPLAY_READABLE);
-	if (mask & WL_EVENT_WRITEABLE)
+	if (mask & WL_EVENT_WRITABLE)
 		wl_display_iterate(c->parent.display, WL_DISPLAY_WRITABLE);
 
 	return 1;
