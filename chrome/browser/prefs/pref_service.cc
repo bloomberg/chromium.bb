@@ -755,6 +755,7 @@ void PrefService::UnregisterPreference(const char* path) {
     return;
   }
 
+  delete *it;
   prefs_.erase(it);
   default_store_->RemoveDefaultValue(path);
   if (pref_sync_associator_.get() &&
