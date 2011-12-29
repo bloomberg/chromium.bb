@@ -505,6 +505,11 @@ wlsc_xserver_set_selection(struct wlsc_input_device *device)
 					wm->selection_window,
 					wm->atom.clipboard,
 					XCB_TIME_CURRENT_TIME);
+	} else {
+		xcb_set_selection_owner(wm->conn,
+					XCB_ATOM_NONE,
+					wm->atom.clipboard,
+					XCB_TIME_CURRENT_TIME);
 	}
 }
 
