@@ -8,7 +8,7 @@
 #include <list>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/message_loop_helpers.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
@@ -142,7 +142,7 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
                                   const WebKit::WebURLResponse& response);
 
  private:
-  friend class DeleteTask<WebViewPlugin>;
+  friend class base::DeleteHelper<WebViewPlugin>;
   virtual ~WebViewPlugin();
 
   Delegate* delegate_;

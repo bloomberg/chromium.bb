@@ -10,7 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/message_loop_helpers.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "build/build_config.h"
@@ -231,7 +231,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
 #endif
 
  private:
-  friend class DeleteTask<WebPluginDelegateImpl>;
+  friend class base::DeleteHelper<WebPluginDelegateImpl>;
   friend class WebPluginDelegate;
 
   WebPluginDelegateImpl(gfx::PluginWindowHandle containing_view,
