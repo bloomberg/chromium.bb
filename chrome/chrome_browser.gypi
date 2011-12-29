@@ -4663,7 +4663,7 @@
                   'app/nibs/ExtensionInstalledBubble.xib',
                   'app/nibs/FirstRunBubble.xib',
                   'app/nibs/FirstRunDialog.xib',
-                  'app/nibs/FullScreenExitBubble.xib',
+                  'app/nibs/FullscreenExitBubble.xib',
                   'app/nibs/GlobalErrorBubble.xib',
                   'app/nibs/HttpAuthLoginSheet.xib',
                   'app/nibs/HungRendererDialog.xib',
