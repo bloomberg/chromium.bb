@@ -27,7 +27,9 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/test/gfx_test_utils.h"
 
-#if defined(VIEWS_COMPOSITOR)
+#if defined(USE_WEBKIT_COMPOSITOR)
+#include "ui/gfx/compositor/compositor_setup.h"
+#elif defined(VIEWS_COMPOSITOR)
 #include "ui/gfx/compositor/compositor.h"
 #endif
 
@@ -118,7 +120,9 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
           &test_name_, 0, test_status_prefixes[i], "");
     }
 
-#if defined(VIEWS_COMPOSITOR)
+#if defined(USE_WEBKIT_COMPOSITOR)
+    ui::DisableTestCompositor();
+#elif defined(VIEWS_COMPOSITOR)
     ui::Compositor::set_compositor_factory_for_testing(NULL);
 #endif
   }
