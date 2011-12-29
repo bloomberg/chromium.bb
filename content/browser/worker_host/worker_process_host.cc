@@ -29,7 +29,7 @@
 #include "content/browser/resource_context.h"
 #include "content/browser/worker_host/message_port_service.h"
 #include "content/browser/worker_host/worker_message_filter.h"
-#include "content/browser/worker_host/worker_service.h"
+#include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/debug_flags.h"
 #include "content/common/view_messages.h"
@@ -51,6 +51,7 @@
 using content::BrowserThread;
 using content::ChildProcessHost;
 using content::UserMetricsAction;
+using content::WorkerServiceImpl;
 
 namespace {
 
@@ -106,8 +107,8 @@ WorkerProcessHost::~WorkerProcessHost() {
           base::Bind(&WorkerCrashCallback, parent_iter->render_process_id(),
                      parent_iter->render_view_id()));
     }
-    WorkerService::GetInstance()->NotifyWorkerDestroyed(this,
-                                                        i->worker_route_id());
+    WorkerServiceImpl::GetInstance()->NotifyWorkerDestroyed(
+        this, i->worker_route_id());
   }
 
   ChildProcessSecurityPolicy::GetInstance()->Remove(id());
@@ -245,8 +246,8 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
 
   worker_message_filter_ = new WorkerMessageFilter(
       render_process_id, resource_context_, resource_dispatcher_host_,
-      base::Bind(&WorkerService::next_worker_route_id,
-                 base::Unretained(WorkerService::GetInstance())));
+      base::Bind(&WorkerServiceImpl::next_worker_route_id,
+                 base::Unretained(WorkerServiceImpl::GetInstance())));
   child_process_host()->AddFilter(worker_message_filter_);
   child_process_host()->AddFilter(new AppCacheDispatcherHost(
       resource_context_->appcache_service(), id()));
@@ -329,8 +330,8 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
     return true;
 
   if (message.type() == WorkerHostMsg_WorkerContextDestroyed::ID) {
-    WorkerService::GetInstance()->NotifyWorkerDestroyed(this,
-                                                        message.routing_id());
+    WorkerServiceImpl::GetInstance()->NotifyWorkerDestroyed(
+        this, message.routing_id());
   }
 
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
@@ -432,8 +433,10 @@ void WorkerProcessHost::RelayMessage(
     IPC::Message* new_message = new IPC::Message(message);
     new_message->set_routing_id(route_id);
     filter->Send(new_message);
-    if (message.type() == WorkerMsg_StartWorkerContext::ID)
-      WorkerService::GetInstance()->NotifyWorkerContextStarted(this, route_id);
+    if (message.type() == WorkerMsg_StartWorkerContext::ID) {
+      WorkerServiceImpl::GetInstance()->NotifyWorkerContextStarted(
+          this, route_id);
+    }
     return;
   }
 }

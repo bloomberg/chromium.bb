@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "content/common/content_export.h"
-#include "content/browser/worker_host/worker_service_observer.h"
+#include "content/public/browser/worker_service_observer.h"
 
 namespace IPC {
 class Message;
@@ -53,7 +53,7 @@ class WorkerDevToolsManager : private WorkerServiceObserver {
   WorkerDevToolsManager();
   virtual ~WorkerDevToolsManager();
 
-  // WorkerServiceOberver implementation.
+  // WorkerServiceObserver implementation.
   virtual void WorkerCreated(
       WorkerProcessHost* process,
       const WorkerProcessHost::WorkerInstance& instance) OVERRIDE;

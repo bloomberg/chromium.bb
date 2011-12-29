@@ -11,15 +11,15 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "content/browser/worker_host/worker_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/worker_service_observer.h"
 
 class TaskManagerSharedWorkerResource;
 
 class TaskManagerWorkerResourceProvider
     : public TaskManager::ResourceProvider,
-      private WorkerServiceObserver,
+      private content::WorkerServiceObserver,
       private content::NotificationObserver {
  public:
   explicit TaskManagerWorkerResourceProvider(TaskManager* task_manager);
@@ -39,7 +39,7 @@ class TaskManagerWorkerResourceProvider
   virtual void StartUpdating() OVERRIDE;
   virtual void StopUpdating() OVERRIDE;
 
-  // WorkerServiceObserver implementation.
+  // content::WorkerServiceObserver implementation.
   virtual void WorkerCreated(
       WorkerProcessHost* process,
       const WorkerProcessHost::WorkerInstance& instance) OVERRIDE;

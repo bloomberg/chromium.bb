@@ -11,4 +11,5 @@ include_rules = [
   "+content/browser/tab_contents/page_navigator.h",
   "+content/browser/tab_contents/tab_contents.h",
   "+content/browser/webui/web_ui.h",
+  "+content/browser/worker_host/worker_process_host.h",
 ]

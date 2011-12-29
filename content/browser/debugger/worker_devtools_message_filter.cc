@@ -5,7 +5,6 @@
 #include "content/browser/debugger/worker_devtools_message_filter.h"
 
 #include "content/browser/debugger/worker_devtools_manager.h"
-#include "content/browser/worker_host/worker_service.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/worker_messages.h"
 

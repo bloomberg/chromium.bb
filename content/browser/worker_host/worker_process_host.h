@@ -20,6 +20,7 @@ class ResourceDispatcherHost;
 
 namespace content {
 class ResourceContext;
+class WorkerServiceImpl;
 }  // namespace content
 
 // The WorkerProcessHost is the interface that represents the browser side of
@@ -143,7 +144,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   }
 
  protected:
-  friend class WorkerService;
+  friend class content::WorkerServiceImpl;
 
   Instances& mutable_instances() { return instances_; }
 

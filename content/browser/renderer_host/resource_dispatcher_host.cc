@@ -47,7 +47,7 @@
 #include "content/browser/resource_context.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
-#include "content/browser/worker_host/worker_service.h"
+#include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -88,6 +88,7 @@ using content::BrowserThread;
 using content::GlobalRequestID;
 using content::ResourceResponse;
 using content::WebContents;
+using content::WorkerServiceImpl;
 using webkit_blob::DeletableFileReference;
 
 // ----------------------------------------------------------------------------
@@ -1909,7 +1910,7 @@ bool ResourceDispatcherHost::RenderViewForRequest(
   if (info->process_type() == content::PROCESS_TYPE_WORKER) {
     // Need to display some related UI for this network request - pick an
     // arbitrary parent to do so.
-    if (!WorkerService::GetInstance()->GetRendererForWorker(
+    if (!WorkerServiceImpl::GetInstance()->GetRendererForWorker(
             info->child_id(), render_process_host_id, render_view_host_id)) {
       *render_process_host_id = -1;
       *render_view_host_id = -1;

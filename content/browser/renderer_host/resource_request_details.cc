@@ -6,7 +6,9 @@
 
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
-#include "content/browser/worker_host/worker_service.h"
+#include "content/browser/worker_host/worker_service_impl.h"
+
+using content::WorkerServiceImpl;
 
 ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
                                                int cert_id)
@@ -32,7 +34,7 @@ ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
   // the first one (works for dedicated workers and shared workers with
   // a single process).
   int temp;
-  if (!WorkerService::GetInstance()->GetRendererForWorker(
+  if (!WorkerServiceImpl::GetInstance()->GetRendererForWorker(
           info->child_id(), &origin_child_id_, &temp)) {
     origin_child_id_ = info->child_id();
   }

@@ -12,7 +12,7 @@
 #include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/debugger/worker_devtools_message_filter.h"
 #include "content/browser/worker_host/worker_process_host.h"
-#include "content/browser/worker_host/worker_service.h"
+#include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
@@ -277,7 +277,7 @@ DevToolsAgentHost* WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
 }
 
 WorkerDevToolsManager::WorkerDevToolsManager() {
-  WorkerService::GetInstance()->AddObserver(this);
+  WorkerServiceImpl::GetInstance()->AddObserver(this);
 }
 
 WorkerDevToolsManager::~WorkerDevToolsManager() {

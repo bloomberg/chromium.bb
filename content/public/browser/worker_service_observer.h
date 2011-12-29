@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WORKER_HOST_WORKER_SERVICE_OBSERVER_H_
-#define CONTENT_BROWSER_WORKER_HOST_WORKER_SERVICE_OBSERVER_H_
+#ifndef CONTENT_PUBLIC_BROWSER_WORKER_SERVICE_OBSERVER_H_
+#define CONTENT_PUBLIC_BROWSER_WORKER_SERVICE_OBSERVER_H_
 #pragma once
 
 #include "content/browser/worker_host/worker_process_host.h"
 
+namespace content {
+
 class WorkerServiceObserver {
  public:
+  virtual ~WorkerServiceObserver() {}
+
   virtual void WorkerCreated(
       WorkerProcessHost* process,
       const WorkerProcessHost::WorkerInstance& instance) = 0;
@@ -19,9 +23,8 @@ class WorkerServiceObserver {
   virtual void WorkerContextStarted(
       WorkerProcessHost* process,
       int worker_route_id) = 0;
-
- protected:
-  virtual ~WorkerServiceObserver() {}
 };
 
-#endif  // CONTENT_BROWSER_WORKER_HOST_WORKER_SERVICE_OBSERVER_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_WORKER_SERVICE_OBSERVER_H_

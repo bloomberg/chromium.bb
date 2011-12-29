@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/worker_host/worker_service.h"
+#include "content/browser/worker_host/worker_service_impl.h"
 
 #include <string>
 
@@ -13,33 +13,38 @@
 #include "content/browser/resource_context.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_process_host.h"
-#include "content/browser/worker_host/worker_service_observer.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
+#include "content/public/browser/worker_service_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "net/base/registry_controlled_domain.h"
 
-using content::BrowserThread;
+namespace content {
 
-const int WorkerService::kMaxWorkerProcessesWhenSharing = 10;
-const int WorkerService::kMaxWorkersWhenSeparate = 64;
-const int WorkerService::kMaxWorkersPerTabWhenSeparate = 16;
+const int WorkerServiceImpl::kMaxWorkerProcessesWhenSharing = 10;
+const int WorkerServiceImpl::kMaxWorkersWhenSeparate = 64;
+const int WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate = 16;
 
 WorkerService* WorkerService::GetInstance() {
+  return WorkerServiceImpl::GetInstance();
+}
+
+WorkerServiceImpl* WorkerServiceImpl::GetInstance() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return Singleton<WorkerService>::get();
+  return Singleton<WorkerServiceImpl>::get();
 }
 
-WorkerService::WorkerService() : next_worker_route_id_(0) {
+WorkerServiceImpl::WorkerServiceImpl() : next_worker_route_id_(0) {
 }
 
-WorkerService::~WorkerService() {
+WorkerServiceImpl::~WorkerServiceImpl() {
   // The observers in observers_ can't be used here because they might be
   // gone already.
 }
 
-void WorkerService::OnWorkerMessageFilterClosing(WorkerMessageFilter* filter) {
+void WorkerServiceImpl::OnWorkerMessageFilterClosing(
+    WorkerMessageFilter* filter) {
   for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
      !iter.Done(); ++iter) {
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
@@ -76,7 +81,7 @@ void WorkerService::OnWorkerMessageFilterClosing(WorkerMessageFilter* filter) {
   TryStartingQueuedWorker();
 }
 
-void WorkerService::CreateWorker(
+void WorkerServiceImpl::CreateWorker(
     const ViewHostMsg_CreateWorker_Params& params,
     int route_id,
     WorkerMessageFilter* filter,
@@ -100,7 +105,7 @@ void WorkerService::CreateWorker(
   CreateWorkerFromInstance(instance);
 }
 
-void WorkerService::LookupSharedWorker(
+void WorkerServiceImpl::LookupSharedWorker(
     const ViewHostMsg_CreateWorker_Params& params,
     int route_id,
     WorkerMessageFilter* filter,
@@ -142,15 +147,15 @@ void WorkerService::LookupSharedWorker(
   }
 }
 
-void WorkerService::CancelCreateDedicatedWorker(
+void WorkerServiceImpl::CancelCreateDedicatedWorker(
     int route_id,
     WorkerMessageFilter* filter) {
 
   NOTREACHED();
 }
 
-void WorkerService::ForwardToWorker(const IPC::Message& message,
-                                    WorkerMessageFilter* filter) {
+void WorkerServiceImpl::ForwardToWorker(const IPC::Message& message,
+                                        WorkerMessageFilter* filter) {
   for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
        !iter.Done(); ++iter) {
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
@@ -161,8 +166,8 @@ void WorkerService::ForwardToWorker(const IPC::Message& message,
   // TODO(jabdelmalek): tell filter that callee is gone
 }
 
-void WorkerService::DocumentDetached(unsigned long long document_id,
-                                     WorkerMessageFilter* filter) {
+void WorkerServiceImpl::DocumentDetached(unsigned long long document_id,
+                                         WorkerMessageFilter* filter) {
   // Any associated shared workers can be shut down.
   for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
        !iter.Done(); ++iter) {
@@ -195,7 +200,7 @@ void WorkerService::DocumentDetached(unsigned long long document_id,
   }
 }
 
-bool WorkerService::CreateWorkerFromInstance(
+bool WorkerServiceImpl::CreateWorkerFromInstance(
     WorkerProcessHost::WorkerInstance instance) {
   // TODO(michaeln): We need to ensure that a process is working
   // on behalf of a single browser context. The process sharing logic below
@@ -302,7 +307,7 @@ bool WorkerService::CreateWorkerFromInstance(
   return true;
 }
 
-WorkerProcessHost* WorkerService::GetProcessForDomain(const GURL& url) {
+WorkerProcessHost* WorkerServiceImpl::GetProcessForDomain(const GURL& url) {
   int num_processes = 0;
   std::string domain =
       net::RegistryControlledDomainService::GetDomainAndRegistry(url);
@@ -326,7 +331,7 @@ WorkerProcessHost* WorkerService::GetProcessForDomain(const GURL& url) {
   return NULL;
 }
 
-WorkerProcessHost* WorkerService::GetProcessToFillUpCores() {
+WorkerProcessHost* WorkerServiceImpl::GetProcessToFillUpCores() {
   int num_processes = 0;
   BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
   for (; !iter.Done(); ++iter)
@@ -338,7 +343,7 @@ WorkerProcessHost* WorkerService::GetProcessToFillUpCores() {
   return NULL;
 }
 
-WorkerProcessHost* WorkerService::GetLeastLoadedWorker() {
+WorkerProcessHost* WorkerServiceImpl::GetLeastLoadedWorker() {
   WorkerProcessHost* smallest = NULL;
   for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
        !iter.Done(); ++iter) {
@@ -350,7 +355,7 @@ WorkerProcessHost* WorkerService::GetLeastLoadedWorker() {
   return smallest;
 }
 
-bool WorkerService::CanCreateWorkerProcess(
+bool WorkerServiceImpl::CanCreateWorkerProcess(
     const WorkerProcessHost::WorkerInstance& instance) {
   // Worker can be fired off if *any* parent has room.
   const WorkerDocumentSet::DocumentInfoSet& parents =
@@ -375,9 +380,10 @@ bool WorkerService::CanCreateWorkerProcess(
   return false;
 }
 
-bool WorkerService::TabCanCreateWorkerProcess(int render_process_id,
-                                              int render_view_id,
-                                              bool* hit_total_worker_limit) {
+bool WorkerServiceImpl::TabCanCreateWorkerProcess(
+    int render_process_id,
+    int render_view_id,
+    bool* hit_total_worker_limit) {
   int total_workers = 0;
   int workers_per_tab = 0;
   *hit_total_worker_limit = false;
@@ -403,7 +409,7 @@ bool WorkerService::TabCanCreateWorkerProcess(int render_process_id,
   return true;
 }
 
-void WorkerService::TryStartingQueuedWorker() {
+void WorkerServiceImpl::TryStartingQueuedWorker() {
   if (queued_workers_.empty())
     return;
 
@@ -426,9 +432,9 @@ void WorkerService::TryStartingQueuedWorker() {
   }
 }
 
-bool WorkerService::GetRendererForWorker(int worker_process_id,
-                                         int* render_process_id,
-                                         int* render_view_id) const {
+bool WorkerServiceImpl::GetRendererForWorker(int worker_process_id,
+                                             int* render_process_id,
+                                             int* render_view_id) const {
   for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
        !iter.Done(); ++iter) {
     if (iter->id() != worker_process_id)
@@ -450,7 +456,7 @@ bool WorkerService::GetRendererForWorker(int worker_process_id,
   return false;
 }
 
-const WorkerProcessHost::WorkerInstance* WorkerService::FindWorkerInstance(
+const WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindWorkerInstance(
       int worker_process_id) {
   for (BrowserChildProcessHost::Iterator iter(content::PROCESS_TYPE_WORKER);
        !iter.Done(); ++iter) {
@@ -465,31 +471,30 @@ const WorkerProcessHost::WorkerInstance* WorkerService::FindWorkerInstance(
   return NULL;
 }
 
-void WorkerService::AddObserver(WorkerServiceObserver* observer) {
+void WorkerServiceImpl::AddObserver(WorkerServiceObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   observers_.AddObserver(observer);
 }
 
-void WorkerService::RemoveObserver(WorkerServiceObserver* observer) {
+void WorkerServiceImpl::RemoveObserver(WorkerServiceObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   observers_.RemoveObserver(observer);
 }
 
-void WorkerService::NotifyWorkerDestroyed(
+void WorkerServiceImpl::NotifyWorkerDestroyed(
     WorkerProcessHost* process,
     int worker_route_id) {
   FOR_EACH_OBSERVER(WorkerServiceObserver, observers_,
                     WorkerDestroyed(process, worker_route_id));
 }
 
-void WorkerService::NotifyWorkerContextStarted(WorkerProcessHost* process,
-                                               int worker_route_id) {
+void WorkerServiceImpl::NotifyWorkerContextStarted(WorkerProcessHost* process,
+                                                   int worker_route_id) {
   FOR_EACH_OBSERVER(WorkerServiceObserver, observers_,
                     WorkerContextStarted(process, worker_route_id));
 }
 
-WorkerProcessHost::WorkerInstance*
-WorkerService::FindSharedWorkerInstance(
+WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindSharedWorkerInstance(
     const GURL& url,
     const string16& name,
     const content::ResourceContext* resource_context) {
@@ -507,8 +512,7 @@ WorkerService::FindSharedWorkerInstance(
   return NULL;
 }
 
-WorkerProcessHost::WorkerInstance*
-WorkerService::FindPendingInstance(
+WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindPendingInstance(
     const GURL& url,
     const string16& name,
     const content::ResourceContext* resource_context) {
@@ -525,7 +529,7 @@ WorkerService::FindPendingInstance(
 }
 
 
-void WorkerService::RemovePendingInstances(
+void WorkerServiceImpl::RemovePendingInstances(
     const GURL& url,
     const string16& name,
     const content::ResourceContext* resource_context) {
@@ -541,8 +545,7 @@ void WorkerService::RemovePendingInstances(
   }
 }
 
-WorkerProcessHost::WorkerInstance*
-WorkerService::CreatePendingInstance(
+WorkerProcessHost::WorkerInstance* WorkerServiceImpl::CreatePendingInstance(
     const GURL& url,
     const string16& name,
     const content::ResourceContext* resource_context) {
@@ -557,3 +560,5 @@ WorkerService::CreatePendingInstance(
   pending_shared_workers_.push_back(pending);
   return &pending_shared_workers_.back();
 }
+
+}  // namespace content

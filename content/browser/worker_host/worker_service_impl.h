@@ -7,36 +7,40 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/browser/worker_host/worker_process_host.h"
-#include "content/common/content_export.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
+#include "content/public/browser/worker_service.h"
 
+class GURL;
 struct ViewHostMsg_CreateWorker_Params;
-class WorkerServiceObserver;
 
 namespace content {
 class ResourceContext;
-}  // namespace content
+class WorkerServiceObserver;
 
-// A singleton for managing HTML5 web workers.
-class CONTENT_EXPORT WorkerService {
+class CONTENT_EXPORT WorkerServiceImpl
+    : public NON_EXPORTED_BASE(WorkerService) {
  public:
-  // Returns the WorkerService singleton.
-  static WorkerService* GetInstance();
+  // Returns the WorkerServiceImpl singleton.
+  static WorkerServiceImpl* GetInstance();
+
+  // WorkerService implementation:
+  virtual void AddObserver(WorkerServiceObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(WorkerServiceObserver* observer) OVERRIDE;
 
   // These methods correspond to worker related IPCs.
   void CreateWorker(const ViewHostMsg_CreateWorker_Params& params,
                     int route_id,
                     WorkerMessageFilter* filter,
-                    const content::ResourceContext& resource_context);
+                    const ResourceContext& resource_context);
   void LookupSharedWorker(const ViewHostMsg_CreateWorker_Params& params,
                           int route_id,
                           WorkerMessageFilter* filter,
-                          const content::ResourceContext* resource_context,
+                          const ResourceContext* resource_context,
                           bool* exists,
                           bool* url_error);
   void CancelCreateDedicatedWorker(int route_id, WorkerMessageFilter* filter);
@@ -60,9 +64,6 @@ class CONTENT_EXPORT WorkerService {
   const WorkerProcessHost::WorkerInstance* FindWorkerInstance(
       int worker_process_id);
 
-  void AddObserver(WorkerServiceObserver* observer);
-  void RemoveObserver(WorkerServiceObserver* observer);
-
   void NotifyWorkerDestroyed(
       WorkerProcessHost* process,
       int worker_route_id);
@@ -78,10 +79,10 @@ class CONTENT_EXPORT WorkerService {
   static const int kMaxWorkersPerTabWhenSeparate;
 
  private:
-  friend struct DefaultSingletonTraits<WorkerService>;
+  friend struct DefaultSingletonTraits<WorkerServiceImpl>;
 
-  WorkerService();
-  ~WorkerService();
+  WorkerServiceImpl();
+  virtual ~WorkerServiceImpl();
 
   // Given a WorkerInstance, create an associated worker process.
   bool CreateWorkerFromInstance(WorkerProcessHost::WorkerInstance instance);
@@ -116,22 +117,22 @@ class CONTENT_EXPORT WorkerService {
   WorkerProcessHost::WorkerInstance* CreatePendingInstance(
       const GURL& url,
       const string16& name,
-      const content::ResourceContext* resource_context);
+      const ResourceContext* resource_context);
   WorkerProcessHost::WorkerInstance* FindPendingInstance(
       const GURL& url,
       const string16& name,
-      const content::ResourceContext* resource_context);
+      const ResourceContext* resource_context);
   void RemovePendingInstances(
       const GURL& url,
       const string16& name,
-      const content::ResourceContext* resource_context);
+      const ResourceContext* resource_context);
 
   WorkerProcessHost::WorkerInstance* FindSharedWorkerInstance(
       const GURL& url,
       const string16& name,
-      const content::ResourceContext* resource_context);
+      const ResourceContext* resource_context);
 
-  content::NotificationRegistrar registrar_;
+  NotificationRegistrar registrar_;
   int next_worker_route_id_;
 
   WorkerProcessHost::Instances queued_workers_;
@@ -143,7 +144,9 @@ class CONTENT_EXPORT WorkerService {
 
   ObserverList<WorkerServiceObserver> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(WorkerService);
+  DISALLOW_COPY_AND_ASSIGN(WorkerServiceImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_WORKER_HOST_WORKER_SERVICE_H_

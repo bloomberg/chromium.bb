@@ -32,6 +32,7 @@ include_rules = [
   "-content/browser/notification_service_impl.h",
   "-content/browser/tab_contents/navigation_entry_impl.h",
   "-content/browser/plugin_service_impl.h",
+  "-content/browser/worker_service_impl.h",
 
   "-content/common",
   # TODO(jam): remove all the exceptions. BUG=98716

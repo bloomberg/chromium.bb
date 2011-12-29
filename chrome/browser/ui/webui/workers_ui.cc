@@ -19,9 +19,9 @@
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
-#include "content/browser/worker_host/worker_service.h"
-#include "content/browser/worker_host/worker_service_observer.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/worker_service.h"
+#include "content/public/browser/worker_service_observer.h"
 #include "content/public/common/process_type.h"
 #include "grit/generated_resources.h"
 #include "grit/workers_resources.h"
@@ -30,6 +30,8 @@
 using content::BrowserThread;
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
+using content::WorkerService;
+using content::WorkerServiceObserver;
 
 static const char kWorkersDataFile[] = "workers_data.json";
 

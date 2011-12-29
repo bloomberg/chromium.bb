@@ -26,20 +26,22 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
-#include "content/browser/worker_host/worker_service.h"
-#include "content/browser/worker_host/worker_service_observer.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/worker_service.h"
+#include "content/public/browser/worker_service_observer.h"
 #include "net/test/test_server.h"
 
 using content::BrowserThread;
 using content::DevToolsManager;
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
+using content::WorkerService;
+using content::WorkerServiceObserver;
 
 namespace {
 
