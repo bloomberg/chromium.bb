@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop_helpers.h"
+#include "base/task.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
 class BrowserActionsContainer;
@@ -111,7 +111,7 @@ class BrowserActionOverflowMenuController : public views::MenuDelegate {
   // Whether this controller is being used for drop.
   bool for_drop_;
 
-  friend class base::DeleteHelper<BrowserActionOverflowMenuController>;
+  friend class DeleteTask<BrowserActionOverflowMenuController>;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionOverflowMenuController);
 };

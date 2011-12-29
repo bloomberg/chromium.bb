@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop_helpers.h"
+#include "base/task.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "ui/gfx/rect.h"
 #include "webkit/plugins/webkit_plugins_export.h"
@@ -35,7 +35,7 @@ class WebPluginImpl : public WebKit::WebPlugin {
       const base::WeakPtr<PluginDelegate>& plugin_delegate);
 
  private:
-  friend class base::DeleteHelper<WebPluginImpl>;
+  friend class DeleteTask<WebPluginImpl>;
 
   WEBKIT_PLUGINS_EXPORT virtual ~WebPluginImpl();
 

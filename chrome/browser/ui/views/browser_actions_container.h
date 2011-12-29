@@ -13,7 +13,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop_helpers.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
@@ -141,7 +140,7 @@ class BrowserActionButton : public views::MenuButton,
 
   content::NotificationRegistrar registrar_;
 
-  friend class base::DeleteHelper<BrowserActionButton>;
+  friend class DeleteTask<BrowserActionButton>;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionButton);
 };

@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop_helpers.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
@@ -133,7 +132,7 @@ class WebPluginDelegateProxy
   gfx::PluginWindowHandle GetPluginWindowHandle();
 
  protected:
-  friend class base::DeleteHelper<WebPluginDelegateProxy>;
+  template<class WebPluginDelegateProxy> friend class DeleteTask;
   virtual ~WebPluginDelegateProxy();
 
  private:
