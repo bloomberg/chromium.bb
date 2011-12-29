@@ -7,7 +7,7 @@
 #pragma once
 
 #include "build/build_config.h"
-
+#include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/time.h"
 #include "content/browser/ssl/ssl_manager.h"
@@ -24,7 +24,7 @@ struct LoadCommittedDetails;
 
 // TODO(jam): rename to NavigationControllerImpl once chrome only uses the i/f.
 class CONTENT_EXPORT NavigationController
-    : public content::NavigationController {
+    : public NON_EXPORTED_BASE(content::NavigationController) {
  public:
   NavigationController(TabContents* tab_contents,
                        content::BrowserContext* browser_context,
