@@ -4,8 +4,6 @@
 
 #include "content/browser/browser_main_loop.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
@@ -265,7 +263,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
 #if defined(OS_WIN)
   // If we're running tests (ui_task is non-null), then the ResourceBundle
   // has already been initialized.
-  if (parameters_.ui_task.is_null()) {
+  if (!parameters_.ui_task) {
     // Override the configured locale with the user's preferred UI language.
     l10n_util::OverrideLocaleWithUILanguageList();
   }
@@ -412,8 +410,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
-                 true));
+      NewRunnableFunction(&base::ThreadRestrictions::SetIOAllowed, true));
 
   if (parts_.get())
     parts_->PostMainMessageLoopRun();
@@ -558,7 +555,7 @@ void BrowserMainLoop::InitializeToolkit() {
 }
 
 void BrowserMainLoop::MainMessageLoopRun() {
-  if (!parameters_.ui_task.is_null())
+  if (parameters_.ui_task)
     MessageLoopForUI::current()->PostTask(FROM_HERE, parameters_.ui_task);
 
 #if defined(OS_MACOSX)

@@ -10,7 +10,6 @@
 #define CONTENT_PUBLIC_COMMON_MAIN_FUNCTION_PARAMS_H_
 #pragma once
 
-#include "base/callback.h"
 #include "base/command_line.h"
 
 #if defined(OS_WIN)
@@ -30,9 +29,14 @@ class Task;
 namespace content {
 
 struct MainFunctionParams {
-  explicit MainFunctionParams(const CommandLine& cl);
-  ~MainFunctionParams();
-
+  explicit MainFunctionParams(const CommandLine& cl)
+      : command_line(cl),
+#if defined(OS_WIN)
+        sandbox_info(NULL),
+#elif defined(OS_MACOSX)
+        autorelease_pool(NULL),
+#endif
+        ui_task(NULL) {}
   const CommandLine& command_line;
 #if defined(OS_WIN)
   sandbox::SandboxInterfaceInfo* sandbox_info;
@@ -41,7 +45,7 @@ struct MainFunctionParams {
 #endif
   // Used by InProcessBrowserTest. If non-null BrowserMain schedules this
   // task to run on the MessageLoop and BrowserInit is not invoked.
-  base::Closure ui_task;
+  Task* ui_task;
 };
 
 }  // namespace content

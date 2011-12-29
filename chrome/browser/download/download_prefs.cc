@@ -5,7 +5,6 @@
 #include "chrome/browser/download/download_prefs.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_split.h"

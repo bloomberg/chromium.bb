@@ -155,19 +155,19 @@ class FileAccessProvider
   // TODO(mattm): don't pass std::string by value.. could use RefCountedBytes
   // but it's a vector.  Maybe do the derive from CancelableRequest thing
   // described in cancelable_request.h?
-  typedef base::Callback<void(int, std::string)> ReadCallback;
+  typedef Callback2<int, std::string>::Type ReadCallback;
 
   // Reports 0 on success or errno on failure, and the number of bytes written,
   // on success.
-  typedef base::Callback<void(int, int)> WriteCallback;
+  typedef Callback2<int, int>::Type WriteCallback;
 
   Handle StartRead(const FilePath& path,
                    CancelableRequestConsumerBase* consumer,
-                   const ReadCallback& callback);
+                   ReadCallback* callback);
   Handle StartWrite(const FilePath& path,
                     const std::string& data,
                     CancelableRequestConsumerBase* consumer,
-                    const WriteCallback& callback);
+                    WriteCallback* callback);
 
  private:
   void DoRead(scoped_refptr<CancelableRequest<ReadCallback> > request,
@@ -180,7 +180,7 @@ class FileAccessProvider
 CancelableRequestProvider::Handle FileAccessProvider::StartRead(
     const FilePath& path,
     CancelableRequestConsumerBase* consumer,
-    const FileAccessProvider::ReadCallback& callback) {
+    FileAccessProvider::ReadCallback* callback) {
   scoped_refptr<CancelableRequest<ReadCallback> > request(
       new CancelableRequest<ReadCallback>(callback));
   AddRequest(request, consumer);
@@ -198,7 +198,7 @@ CancelableRequestProvider::Handle FileAccessProvider::StartWrite(
     const FilePath& path,
     const std::string& data,
     CancelableRequestConsumerBase* consumer,
-    const WriteCallback& callback) {
+    WriteCallback* callback) {
   scoped_refptr<CancelableRequest<WriteCallback> > request(
       new CancelableRequest<WriteCallback>(callback));
   AddRequest(request, consumer);
@@ -223,7 +223,7 @@ void FileAccessProvider::DoRead(
   bool success = file_util::ReadFileToString(path, &data);
   int saved_errno = success ? 0 : errno;
   VLOG(1) << "DoRead done read: " << success << " " << data.size();
-  request->ForwardResult(saved_errno, data);
+  request->ForwardResult(ReadCallback::TupleType(saved_errno, data));
 }
 
 void FileAccessProvider::DoWrite(
@@ -238,14 +238,14 @@ void FileAccessProvider::DoWrite(
   if (request->canceled())
     return;
 
-  request->ForwardResult(saved_errno, bytes_written);
+  request->ForwardResult(WriteCallback::TupleType(saved_errno, bytes_written));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //  CertificateManagerHandler
 
 CertificateManagerHandler::CertificateManagerHandler()
-    : file_access_provider_(new FileAccessProvider()) {
+    : file_access_provider_(new FileAccessProvider) {
   certificate_manager_model_.reset(new CertificateManagerModel(this));
 }
 
@@ -623,8 +623,7 @@ void CertificateManagerHandler::ExportPersonalSlotsUnlocked() {
       file_path_,
       output,
       &consumer_,
-      base::Bind(&CertificateManagerHandler::ExportPersonalFileWritten,
-                 base::Unretained(this)));
+      NewCallback(this, &CertificateManagerHandler::ExportPersonalFileWritten));
 }
 
 void CertificateManagerHandler::ExportPersonalFileWritten(int write_errno,
@@ -678,8 +677,7 @@ void CertificateManagerHandler::ImportPersonalPasswordSelected(
   file_access_provider_->StartRead(
       file_path_,
       &consumer_,
-      base::Bind(&CertificateManagerHandler::ImportPersonalFileRead,
-                 base::Unretained(this)));
+      NewCallback(this, &CertificateManagerHandler::ImportPersonalFileRead));
 }
 
 void CertificateManagerHandler::ImportPersonalFileRead(
@@ -785,8 +783,7 @@ void CertificateManagerHandler::ImportServerFileSelected(const FilePath& path) {
   file_access_provider_->StartRead(
       file_path_,
       &consumer_,
-      base::Bind(&CertificateManagerHandler::ImportServerFileRead,
-                 base::Unretained(this)));
+      NewCallback(this, &CertificateManagerHandler::ImportServerFileRead));
 }
 
 void CertificateManagerHandler::ImportServerFileRead(int read_errno,
@@ -841,8 +838,7 @@ void CertificateManagerHandler::ImportCAFileSelected(const FilePath& path) {
   file_access_provider_->StartRead(
       file_path_,
       &consumer_,
-      base::Bind(&CertificateManagerHandler::ImportCAFileRead,
-                 base::Unretained(this)));
+      NewCallback(this, &CertificateManagerHandler::ImportCAFileRead));
 }
 
 void CertificateManagerHandler::ImportCAFileRead(int read_errno,
