@@ -77,7 +77,7 @@ void SSLErrorHandler::Dispatch() {
   }
 
   // Hand ourselves off to the SSLManager.
-  manager_ = tab_contents->GetController().ssl_manager();
+  manager_ = tab_contents->GetController().GetSSLManager();
   OnDispatched();
 }
 

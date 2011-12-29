@@ -51,6 +51,7 @@
     'public/browser/favicon_status.h',
     'public/browser/global_request_id.h',
     'public/browser/native_web_keyboard_event.h',
+    'public/browser/navigation_controller.h',
     'public/browser/navigation_details.cc',
     'public/browser/navigation_details.h',
     'public/browser/navigation_entry.h',

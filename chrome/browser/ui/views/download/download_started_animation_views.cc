@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_started_animation.h"
 
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"

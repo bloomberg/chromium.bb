@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"

@@ -11,6 +11,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search_engines/template_url_fetcher_ui_callbacks.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"

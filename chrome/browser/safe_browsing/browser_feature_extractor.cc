@@ -21,6 +21,7 @@
 #include "chrome/browser/safe_browsing/browser_features.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"

@@ -8,118 +8,91 @@
 
 #include "build/build_config.h"
 
-#include <string>
-#include <vector>
-
 #include "base/memory/linked_ptr.h"
 #include "base/time.h"
-#include "googleurl/src/gurl.h"
 #include "content/browser/ssl/ssl_manager.h"
-#include "content/common/content_export.h"
-#include "content/public/browser/global_request_id.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_type.h"
-#include "content/public/common/page_transition_types.h"
-#include "content/public/common/referrer.h"
 
-class SessionStorageNamespace;
 class SiteInstance;
-class TabContents;
 struct ViewHostMsg_FrameNavigate_Params;
 
 namespace content {
-class BrowserContext;
-class NavigationEntry;
 class NavigationEntryImpl;
 struct LoadCommittedDetails;
-struct Referrer;
 }
 
-// A NavigationController maintains the back-forward list for a single tab and
-// manages all navigation within that list.
-//
-// The NavigationController also owns all TabContents for the tab. This is to
-// make sure that we have at most one TabContents instance per type.
-class CONTENT_EXPORT NavigationController {
+// TODO(jam): rename to NavigationControllerImpl once chrome only uses the i/f.
+class CONTENT_EXPORT NavigationController
+    : public content::NavigationController {
  public:
-
-  enum ReloadType {
-    NO_RELOAD,                // Normal load.
-    RELOAD,                   // Normal (cache-validating) reload.
-    RELOAD_IGNORING_CACHE     // Reload bypassing the cache, aka shift-reload.
-  };
-
-  // ---------------------------------------------------------------------------
-
   NavigationController(TabContents* tab_contents,
                        content::BrowserContext* browser_context,
                        SessionStorageNamespace* session_storage_namespace);
-  ~NavigationController();
+  virtual ~NavigationController();
 
-  // Returns the browser context for this controller. It can never be NULL.
-  content::BrowserContext* GetBrowserContext() const;
+  // NavigationController implementation:
+  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
+  virtual void Restore(
+      int selected_navigation,
+      bool from_last_session,
+      std::vector<content::NavigationEntry*>* entries) OVERRIDE;
+  virtual content::NavigationEntry* GetActiveEntry() const OVERRIDE;
+  virtual content::NavigationEntry* GetVisibleEntry() const OVERRIDE;
+  virtual int GetCurrentEntryIndex() const OVERRIDE;
+  virtual content::NavigationEntry* GetLastCommittedEntry() const OVERRIDE;
+  virtual int GetLastCommittedEntryIndex() const OVERRIDE;
+  virtual bool CanViewSource() const OVERRIDE;
+  virtual int GetEntryCount() const OVERRIDE;
+  virtual content::NavigationEntry* GetEntryAtIndex(int index) const OVERRIDE;
+  virtual content::NavigationEntry* GetEntryAtOffset(int offset) const OVERRIDE;
+  virtual void DiscardNonCommittedEntries() OVERRIDE;
+  virtual content::NavigationEntry* GetPendingEntry() const OVERRIDE;
+  virtual int GetPendingEntryIndex() const OVERRIDE;
+  virtual content::NavigationEntry* GetTransientEntry() const OVERRIDE;
+  virtual void LoadURL(const GURL& url,
+                       const content::Referrer& referrer,
+                       content::PageTransition type,
+                       const std::string& extra_headers) OVERRIDE;
+  virtual void LoadURLFromRenderer(const GURL& url,
+                                   const content::Referrer& referrer,
+                                   content::PageTransition type,
+                                   const std::string& extra_headers) OVERRIDE;
+  virtual void TransferURL(
+      const GURL& url,
+      const content::Referrer& referrer,
+      content::PageTransition transition,
+      const std::string& extra_headers,
+      const content::GlobalRequestID& transferred_global_request_id,
+      bool is_renderer_initiated) OVERRIDE;
+  virtual void LoadIfNecessary() OVERRIDE;
+  virtual bool CanGoBack() const OVERRIDE;
+  virtual bool CanGoForward() const OVERRIDE;
+  virtual void GoBack() OVERRIDE;
+  virtual void GoForward() OVERRIDE;
+  virtual void GoToIndex(int index) OVERRIDE;
+  virtual void GoToOffset(int offset) OVERRIDE;
+  virtual void RemoveEntryAtIndex(int index) OVERRIDE;
+  virtual SSLManager* GetSSLManager() OVERRIDE;
+  virtual SessionStorageNamespace* GetSessionStorageNamespace() const OVERRIDE;
+  virtual void SetMaxRestoredPageID(int32 max_id) OVERRIDE;
+  virtual int32 GetMaxRestoredPageID() const OVERRIDE;
+  virtual bool NeedsReload() const OVERRIDE;
+  virtual void CancelPendingReload() OVERRIDE;
+  virtual void ContinuePendingReload() OVERRIDE;
+  virtual bool IsInitialNavigation() OVERRIDE;
+  virtual void Reload(bool check_for_repost) OVERRIDE;
+  virtual void ReloadIgnoringCache(bool check_for_repost) OVERRIDE;
+  virtual void NotifyEntryChanged(const content::NavigationEntry* entry,
+                                 int index) OVERRIDE;
+  virtual void CopyStateFromAndPrune(
+      content::NavigationController* source) OVERRIDE;
+  virtual void PruneAllButActive() OVERRIDE;
 
   // Sets the browser context for this controller.
   void set_browser_context(content::BrowserContext* browser_context) {
     browser_context_ = browser_context;
   }
-
-  // Initializes this NavigationController with the given saved navigations,
-  // using selected_navigation as the currently loaded entry. Before this call
-  // the controller should be unused (there should be no current entry). If
-  // from_last_session is true, navigations are from the previous session,
-  // otherwise they are from the current session (undo tab close). This takes
-  // ownership of the NavigationEntrys in |entries| and clears it out.
-  // This is used for session restore.
-  void Restore(int selected_navigation,
-               bool from_last_session,
-               std::vector<content::NavigationEntry*>* entries);
-
-  // Active entry --------------------------------------------------------------
-
-  // Returns the active entry, which is the transient entry if any, the pending
-  // entry if a navigation is in progress or the last committed entry otherwise.
-  // NOTE: This can be NULL!!
-  //
-  // If you are trying to get the current state of the NavigationController,
-  // this is the method you will typically want to call.  If you want to display
-  // the active entry to the user (e.g., in the location bar), use
-  // GetVisibleEntry instead.
-  content::NavigationEntry* GetActiveEntry() const;
-
-  // Returns the same entry as GetActiveEntry, except that it ignores pending
-  // history navigation entries.  This should be used when displaying info to
-  // the user, so that the location bar and other indicators do not update for
-  // a back/forward navigation until the pending entry commits.  This approach
-  // guards against URL spoofs on slow history navigations.
-  content::NavigationEntry* GetVisibleEntry() const;
-
-  // Returns the index from which we would go back/forward or reload.  This is
-  // the last_committed_entry_index_ if pending_entry_index_ is -1.  Otherwise,
-  // it is the pending_entry_index_.
-  int GetCurrentEntryIndex() const;
-
-  // Returns the last committed entry, which may be null if there are no
-  // committed entries.
-  content::NavigationEntry* GetLastCommittedEntry() const;
-
-  // Returns true if the source for the current entry can be viewed.
-  bool CanViewSource() const;
-
-  // Returns the index of the last committed entry.
-  int GetLastCommittedEntryIndex() const;
-
-  // Navigation list -----------------------------------------------------------
-
-  // Returns the number of entries in the NavigationController, excluding
-  // the pending entry if there is one, but including the transient entry if
-  // any.
-  int GetEntryCount() const;
-
-  content::NavigationEntry* GetEntryAtIndex(int index) const;
-
-  // Returns the entry at the specified offset from current.  Returns NULL
-  // if out of bounds.
-  content::NavigationEntry* GetEntryAtOffset(int offset) const;
 
   // Returns the index of the specified entry, or -1 if entry is not contained
   // in this NavigationController.
@@ -135,19 +108,6 @@ class CONTENT_EXPORT NavigationController {
   content::NavigationEntryImpl* GetEntryWithPageID(SiteInstance* instance,
                                                    int32 page_id) const;
 
-  // Pending entry -------------------------------------------------------------
-
-  // Discards the pending and transient entries if any.
-  void DiscardNonCommittedEntries();
-
-  // Returns the pending entry corresponding to the navigation that is
-  // currently in progress, or null if there is none.
-  content::NavigationEntry* GetPendingEntry() const;
-
-  // Returns the index of the pending entry or -1 if the pending entry
-  // corresponds to a new navigation (created via LoadURL).
-  int GetPendingEntryIndex() const;
-
   // Transient entry -----------------------------------------------------------
 
   // Adds an entry that is returned by GetActiveEntry().  The entry is
@@ -158,73 +118,6 @@ class CONTENT_EXPORT NavigationController {
   // from them.
   // Note that adding a transient entry does not change the active contents.
   void AddTransientEntry(content::NavigationEntryImpl* entry);
-
-  // Returns the transient entry if any.  Note that the returned entry is owned
-  // by the navigation controller and may be deleted at any time.
-  content::NavigationEntry* GetTransientEntry() const;
-
-  // New navigations -----------------------------------------------------------
-
-  // Loads the specified URL, specifying extra http headers to add to the
-  // request.  Extra headers are separated by \n.
-  void LoadURL(const GURL& url,
-               const content::Referrer& referrer,
-               content::PageTransition type,
-               const std::string& extra_headers);
-
-  // Same as LoadURL, but for renderer-initiated navigations.  This state is
-  // important for tracking whether to display pending URLs.
-  void LoadURLFromRenderer(const GURL& url,
-                           const content::Referrer& referrer,
-                           content::PageTransition type,
-                           const std::string& extra_headers);
-
-  // Behaves like LoadURL() and LoadURLFromRenderer() but marks the new
-  // navigation as being transferred from one RVH to another. In this case the
-  // browser can recycle the old request once the new renderer wants to
-  // navigate.
-  // |transferred_global_request_id| identifies the request ID of the old
-  // request.
-  void TransferURL(
-      const GURL& url,
-      const content::Referrer& referrer,
-      content::PageTransition transition,
-      const std::string& extra_headers,
-      const content::GlobalRequestID& transferred_global_request_id,
-      bool is_renderer_initiated);
-
-  // Loads the current page if this NavigationController was restored from
-  // history and the current page has not loaded yet.
-  void LoadIfNecessary();
-
-  // Renavigation --------------------------------------------------------------
-
-  // Navigation relative to the "current entry"
-  bool CanGoBack() const;
-  bool CanGoForward() const;
-  void GoBack();
-  void GoForward();
-
-  // Navigates to the specified absolute index.
-  void GoToIndex(int index);
-
-  // Navigates to the specified offset from the "current entry". Does nothing if
-  // the offset is out of bounds.
-  void GoToOffset(int offset);
-
-  // Reloads the current entry. If |check_for_repost| is true and the current
-  // entry has POST data the user is prompted to see if they really want to
-  // reload the page. In nearly all cases pass in true.
-  void Reload(bool check_for_repost);
-  // Like Reload(), but don't use caches (aka "shift-reload").
-  void ReloadIgnoringCache(bool check_for_repost);
-
-  // Removing of entries -------------------------------------------------------
-
-  // Removes the entry at the specified |index|.  This call dicards any pending
-  // and transient entries.  If the index is the last committed index, this does
-  // nothing and returns false.
-  void RemoveEntryAtIndex(int index);
 
   // TabContents ---------------------------------------------------------------
 
@@ -258,11 +151,6 @@ class CONTENT_EXPORT NavigationController {
   // so that we know to load URLs that were pending as "lazy" loads.
   void SetActive(bool is_active);
 
-  // Broadcasts the NOTIFY_NAV_ENTRY_CHANGED notification for the given entry
-  // (which must be at the given index). This will keep things in sync like
-  // the saved session.
-  void NotifyEntryChanged(const content::NavigationEntry* entry, int index);
-
   // Returns true if the given URL would be an in-page navigation (i.e. only
   // the reference fragment is different) from the "last committed entry". We do
   // not compare it against the "active entry" since the active entry can be
@@ -281,40 +169,7 @@ class CONTENT_EXPORT NavigationController {
   // one should be empty (just created).
   void CopyStateFrom(const NavigationController& source);
 
-  // A variant of CopyStateFrom. Removes all entries from this except the last
-  // entry, inserts all entries from |source| before and including the active
-  // entry. This method is intended for use when the last entry of |this| is the
-  // active entry. For example:
-  // source: A B *C* D
-  // this:   E F *G*   (last must be active or pending)
-  // result: A B *G*
-  // This ignores the transient index of the source and honors that of 'this'.
-  void CopyStateFromAndPrune(NavigationController* source);
-
-  // Removes all the entries except the active entry. If there is a new pending
-  // navigation it is preserved.
-  void PruneAllButActive();
-
   // Random data ---------------------------------------------------------------
-
-  SSLManager* ssl_manager() { return &ssl_manager_; }
-
-  // Returns true if a reload happens when activated (SetActive(true) is
-  // invoked). This is true for session/tab restore and cloned tabs.
-  bool NeedsReload() const;
-
-  // Sets the max restored page ID this NavigationController has seen, if it
-  // was restored from a previous session.
-  void set_max_restored_page_id(int32 max_id) {
-    max_restored_page_id_ = max_id;
-  }
-
-  // Returns the largest restored page ID seen in this navigation controller,
-  // if it was restored from a previous session.  (-1 otherwise)
-  int32 max_restored_page_id() const { return max_restored_page_id_; }
-
-  // The session storage namespace that all child render views should use.
-  SessionStorageNamespace* GetSessionStorageNamespace() const;
 
   // Disables checking for a repost and prompting the user. This is used during
   // testing.
@@ -325,32 +180,6 @@ class CONTENT_EXPORT NavigationController {
     max_entry_count_for_testing_ = max_entry_count;
   }
   static size_t max_entry_count();
-
-  // Cancels a repost that brought up a warning.
-  void CancelPendingReload();
-  // Continues a repost that brought up a warning.
-  void ContinuePendingReload();
-
-  // Returns true if we are navigating to the URL the tab is opened with.
-  bool IsInitialNavigation();
-
-  // Creates navigation entry and translates the virtual url to a real one.
-  // Used when navigating to a new URL using LoadURL.  Extra headers are
-  // separated by \n.
-  static content::NavigationEntry* CreateNavigationEntry(
-      const GURL& url,
-      const content::Referrer& referrer,
-      content::PageTransition transition,
-      bool is_renderer_initiated,
-      const std::string& extra_headers,
-      content::BrowserContext* browser_context);
-  static content::NavigationEntryImpl* CreateNavigationEntryImpl(
-      const GURL& url,
-      const content::Referrer& referrer,
-      content::PageTransition transition,
-      bool is_renderer_initiated,
-      const std::string& extra_headers,
-      content::BrowserContext* browser_context);
 
  private:
   class RestoreHelper;

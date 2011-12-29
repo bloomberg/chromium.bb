@@ -25,6 +25,7 @@
 #include "content/browser/download/save_package.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/security_style.h"
+#include "net/base/cert_status_flags.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class BrowserProxy;

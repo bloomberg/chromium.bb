@@ -30,7 +30,7 @@ class PrintPreviewMessageHandler : public content::WebContentsObserver {
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void NavigateToPendingEntry(const GURL& url,
-      NavigationController::ReloadType reload_type) OVERRIDE;
+      content::NavigationController::ReloadType reload_type) OVERRIDE;
 
  private:
   // Gets the print preview tab associated with the TabContents being observed.

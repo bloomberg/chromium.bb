@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_UI_PREFS_PREFS_TAB_HELPER_H_
 #pragma once
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 

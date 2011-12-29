@@ -31,6 +31,7 @@ class Browser;
 class Extension;
 class PrefsTabHelper;
 class RenderWidgetHostView;
+class SiteInstance;
 struct WebPreferences;
 
 namespace content {

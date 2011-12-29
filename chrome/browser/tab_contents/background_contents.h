@@ -16,6 +16,7 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class Profile;
+class SiteInstance;
 
 // This class consumes TabContents. It can host a renderer, but does not
 // have any visible display.

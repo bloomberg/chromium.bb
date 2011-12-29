@@ -153,7 +153,7 @@ void FaviconTabHelper::NotifyFaviconUpdated() {
 
 void FaviconTabHelper::NavigateToPendingEntry(
     const GURL& url,
-    NavigationController::ReloadType reload_type) {
+    content::NavigationController::ReloadType reload_type) {
   if (reload_type != NavigationController::NO_RELOAD &&
       !profile_->IsOffTheRecord()) {
     FaviconService* favicon_service =

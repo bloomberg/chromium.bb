@@ -95,7 +95,7 @@ class CONTENT_EXPORT TabContents
   // If this method returns false, then the navigation is discarded (equivalent
   // to calling DiscardPendingEntry on the NavigationController).
   bool NavigateToPendingEntry(
-      NavigationController::ReloadType reload_type);
+      content::NavigationController::ReloadType reload_type);
 
   // Sets the passed passed interstitial as the currently showing interstitial.
   // |interstitial_page| should be non NULL (use the remove_interstitial_page
@@ -473,7 +473,7 @@ class CONTENT_EXPORT TabContents
   // must be already part of the entries in the navigation controller.
   // This does not change the NavigationController state.
   bool NavigateToEntry(const content::NavigationEntryImpl& entry,
-                       NavigationController::ReloadType reload_type);
+                       content::NavigationController::ReloadType reload_type);
 
   // Sets the history for this tab_contents to |history_length| entries, and
   // moves the current page_id to the last entry in the list if it's valid.

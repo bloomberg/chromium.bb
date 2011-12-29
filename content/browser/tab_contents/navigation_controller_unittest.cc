@@ -1479,7 +1479,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   // Create a NavigationController with a restored set of tabs.
   GURL url("http://foo");
   std::vector<NavigationEntry*> entries;
-  NavigationEntry* entry = NavigationController::CreateNavigationEntryImpl(
+  NavigationEntry* entry = NavigationController::CreateNavigationEntry(
       url, content::Referrer(), content::PAGE_TRANSITION_RELOAD, false,
       std::string(), browser_context());
   entry->SetPageID(0);
@@ -1546,7 +1546,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   // Create a NavigationController with a restored set of tabs.
   GURL url("http://foo");
   std::vector<NavigationEntry*> entries;
-  NavigationEntry* entry = NavigationController::CreateNavigationEntryImpl(
+  NavigationEntry* entry = NavigationController::CreateNavigationEntry(
       url, content::Referrer(), content::PAGE_TRANSITION_RELOAD, false,
       std::string(), browser_context());
   entry->SetPageID(0);

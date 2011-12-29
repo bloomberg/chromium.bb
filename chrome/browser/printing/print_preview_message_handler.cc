@@ -246,7 +246,7 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
 
 void PrintPreviewMessageHandler::NavigateToPendingEntry(
     const GURL& url,
-    NavigationController::ReloadType reload_type) {
+    content::NavigationController::ReloadType reload_type) {
   TabContentsWrapper* tab = tab_contents_wrapper();
   TabContentsWrapper* preview_tab = GetPrintPreviewTab();
   if (tab == preview_tab) {

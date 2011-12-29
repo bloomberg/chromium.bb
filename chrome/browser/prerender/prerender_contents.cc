@@ -287,7 +287,7 @@ void PrerenderContents::StartPrerendering(
   if (starting_page_id_ < 0)
     starting_page_id_ = 0;
   starting_page_id_ += kPrerenderPageIdOffset;
-  prerender_contents_->tab_contents()->GetController().set_max_restored_page_id(
+  prerender_contents_->tab_contents()->GetController().SetMaxRestoredPageID(
       starting_page_id_);
 
   tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));

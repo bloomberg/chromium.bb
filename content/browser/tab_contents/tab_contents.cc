@@ -142,7 +142,7 @@ BOOL CALLBACK InvalidateWindow(HWND hwnd, LPARAM lparam) {
 
 ViewMsg_Navigate_Type::Value GetNavigationType(
     content::BrowserContext* browser_context, const NavigationEntryImpl& entry,
-    NavigationController::ReloadType reload_type) {
+    content::NavigationController::ReloadType reload_type) {
   switch (reload_type) {
     case NavigationController::RELOAD:
       return ViewMsg_Navigate_Type::RELOAD;
@@ -162,7 +162,7 @@ ViewMsg_Navigate_Type::Value GetNavigationType(
 void MakeNavigateParams(const NavigationEntryImpl& entry,
                         const NavigationController& controller,
                         content::WebContentsDelegate* delegate,
-                        NavigationController::ReloadType reload_type,
+                        content::NavigationController::ReloadType reload_type,
                         ViewMsg_Navigate_Params* params) {
   params->page_id = entry.GetPageID();
   params->pending_history_list_offset = controller.GetIndexOfEntry(&entry);
@@ -779,7 +779,7 @@ WebContents* TabContents::OpenURL(const OpenURLParams& params) {
 }
 
 bool TabContents::NavigateToPendingEntry(
-    NavigationController::ReloadType reload_type) {
+    content::NavigationController::ReloadType reload_type) {
   return NavigateToEntry(
       *NavigationEntryImpl::FromNavigationEntry(controller_.GetPendingEntry()),
       reload_type);
@@ -787,7 +787,7 @@ bool TabContents::NavigateToPendingEntry(
 
 bool TabContents::NavigateToEntry(
     const NavigationEntryImpl& entry,
-    NavigationController::ReloadType reload_type) {
+    content::NavigationController::ReloadType reload_type) {
   // The renderer will reject IPC messages with URLs longer than
   // this limit, so don't attempt to navigate with a longer URL.
   if (entry.GetURL().spec().size() > content::kMaxURLChars)
@@ -1295,7 +1295,7 @@ void TabContents::OnDidRunInsecureContent(
     content::RecordAction(
         UserMetricsAction("SSL.RanInsecureContentGoogle"));
   }
-  controller_.ssl_manager()->DidRunInsecureContent(security_origin);
+  controller_.GetSSLManager()->DidRunInsecureContent(security_origin);
   displayed_insecure_content_ = true;
   SSLManager::NotifySSLInternalStateChanged(&GetController());
 }
@@ -1506,7 +1506,7 @@ void TabContents::UpdateMaxPageIDIfNecessary(RenderViewHost* rvh) {
   // navigating (to avoid a race between the browser updating max_page_id and
   // the renderer updating next_page_id_).  Because of this, we only call this
   // from CreateRenderView and allow that to notify the RenderView for us.
-  int max_restored_page_id = controller_.max_restored_page_id();
+  int max_restored_page_id = controller_.GetMaxRestoredPageID();
   if (max_restored_page_id > GetMaxPageIDForSiteInstance(rvh->site_instance()))
     UpdateMaxPageIDForSiteInstance(rvh->site_instance(), max_restored_page_id);
 }

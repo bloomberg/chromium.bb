@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_TAB_HELPER_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_TAB_HELPER_H_
 
-#include "content/public/browser/web_contents_observer.h"
-
 #include "base/time.h"
+#include "base/memory/scoped_ptr.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "googleurl/src/gurl.h"
 
 class TabContentsWrapper;
-class GURL;
 
 namespace prerender {
 

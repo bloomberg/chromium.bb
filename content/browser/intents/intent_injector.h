@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/common/content_export.h"

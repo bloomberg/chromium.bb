@@ -117,6 +117,39 @@ size_t NavigationController::max_entry_count_for_testing_ =
 // static
 bool NavigationController::check_for_repost_ = true;
 
+// static
+NavigationEntry* content::NavigationController::CreateNavigationEntry(
+      const GURL& url,
+      const content::Referrer& referrer,
+      content::PageTransition transition,
+      bool is_renderer_initiated,
+      const std::string& extra_headers,
+      content::BrowserContext* browser_context) {
+  // Allow the browser URL handler to rewrite the URL. This will, for example,
+  // remove "view-source:" from the beginning of the URL to get the URL that
+  // will actually be loaded. This real URL won't be shown to the user, just
+  // used internally.
+  GURL loaded_url(url);
+  bool reverse_on_redirect = false;
+  BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
+      &loaded_url, browser_context, &reverse_on_redirect);
+
+  NavigationEntryImpl* entry = new NavigationEntryImpl(
+      NULL,  // The site instance for tabs is sent on navigation
+             // (TabContents::GetSiteInstance).
+      -1,
+      loaded_url,
+      referrer,
+      string16(),
+      transition,
+      is_renderer_initiated);
+  entry->SetVirtualURL(url);
+  entry->set_user_typed_url(url);
+  entry->set_update_virtual_url_with_url(reverse_on_redirect);
+  entry->set_extra_headers(extra_headers);
+  return entry;
+}
+
 NavigationController::NavigationController(
     TabContents* contents,
     content::BrowserContext* browser_context,
@@ -233,50 +266,6 @@ void NavigationController::ContinuePendingReload() {
 
 bool NavigationController::IsInitialNavigation() {
   return last_document_loaded_.is_null();
-}
-
-// static
-NavigationEntry* NavigationController::CreateNavigationEntry(
-      const GURL& url,
-      const content::Referrer& referrer,
-      content::PageTransition transition,
-      bool is_renderer_initiated,
-      const std::string& extra_headers,
-      content::BrowserContext* browser_context) {
-  return CreateNavigationEntryImpl(
-      url, referrer, transition, is_renderer_initiated, extra_headers,
-      browser_context);
-}
-
-// static
-NavigationEntryImpl* NavigationController::CreateNavigationEntryImpl(
-    const GURL& url, const content::Referrer& referrer,
-    content::PageTransition transition,
-    bool is_renderer_initiated, const std::string& extra_headers,
-    content::BrowserContext* browser_context) {
-  // Allow the browser URL handler to rewrite the URL. This will, for example,
-  // remove "view-source:" from the beginning of the URL to get the URL that
-  // will actually be loaded. This real URL won't be shown to the user, just
-  // used internally.
-  GURL loaded_url(url);
-  bool reverse_on_redirect = false;
-  BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
-      &loaded_url, browser_context, &reverse_on_redirect);
-
-  NavigationEntryImpl* entry = new NavigationEntryImpl(
-      NULL,  // The site instance for tabs is sent on navigation
-             // (TabContents::GetSiteInstance).
-      -1,
-      loaded_url,
-      referrer,
-      string16(),
-      transition,
-      is_renderer_initiated);
-  entry->SetVirtualURL(url);
-  entry->set_user_typed_url(url);
-  entry->set_update_virtual_url_with_url(reverse_on_redirect);
-  entry->set_extra_headers(extra_headers);
-  return entry;
 }
 
 NavigationEntryImpl* NavigationController::GetEntryWithPageID(
@@ -510,9 +499,10 @@ void NavigationController::TransferURL(
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
-  NavigationEntryImpl* entry = CreateNavigationEntryImpl(
-      url, referrer, transition, is_renderer_initiated, extra_headers,
-      browser_context_);
+  NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
+      CreateNavigationEntry(
+          url, referrer, transition, is_renderer_initiated, extra_headers,
+          browser_context_));
   entry->set_transferred_global_request_id(transferred_global_request_id);
 
   LoadEntry(entry);
@@ -526,8 +516,9 @@ void NavigationController::LoadURL(
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
-  NavigationEntryImpl* entry = CreateNavigationEntryImpl(
-      url, referrer, transition, false, extra_headers, browser_context_);
+  NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
+      CreateNavigationEntry(
+          url, referrer, transition, false, extra_headers, browser_context_));
 
   LoadEntry(entry);
 }
@@ -540,8 +531,9 @@ void NavigationController::LoadURLFromRenderer(
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
-  NavigationEntryImpl* entry = CreateNavigationEntryImpl(
-      url, referrer, transition, true, extra_headers, browser_context_);
+  NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
+      CreateNavigationEntry(
+          url, referrer, transition, true, extra_headers, browser_context_));
 
   LoadEntry(entry);
 }
@@ -975,7 +967,9 @@ void NavigationController::CopyStateFrom(const NavigationController& source) {
   FinishRestore(source.last_committed_entry_index_, false);
 }
 
-void NavigationController::CopyStateFromAndPrune(NavigationController* source) {
+void NavigationController::CopyStateFromAndPrune(
+    content::NavigationController* temp) {
+  NavigationController* source = static_cast<NavigationController*>(temp);
   // The SiteInstance and page_id of the last committed entry needs to be
   // remembered at this point, in case there is only one committed entry
   // and it is pruned.
@@ -1061,13 +1055,24 @@ void NavigationController::PruneAllButActive() {
   }
 }
 
-bool NavigationController::NeedsReload() const {
-  return needs_reload_;
+SSLManager* NavigationController::GetSSLManager() {
+  return &ssl_manager_;
+}
+
+void NavigationController::SetMaxRestoredPageID(int32 max_id) {
+  max_restored_page_id_ = max_id;
+}
+
+int32 NavigationController::GetMaxRestoredPageID() const {
+  return max_restored_page_id_;
 }
 
 SessionStorageNamespace*
     NavigationController::GetSessionStorageNamespace() const {
   return session_storage_namespace_;
+}
+bool NavigationController::NeedsReload() const {
+  return needs_reload_;
 }
 
 void NavigationController::RemoveEntryAtIndexInternal(int index) {
@@ -1267,7 +1272,7 @@ void NavigationController::FinishRestore(int selected_index,
   DCHECK(selected_index >= 0 && selected_index < GetEntryCount());
   ConfigureEntriesForRestore(&entries_, from_last_session);
 
-  set_max_restored_page_id(static_cast<int32>(GetEntryCount()));
+  SetMaxRestoredPageID(static_cast<int32>(GetEntryCount()));
 
   last_committed_entry_index_ = selected_index;
 }

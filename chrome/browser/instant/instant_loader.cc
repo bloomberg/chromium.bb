@@ -1029,7 +1029,7 @@ void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
   // will overlap.
   int32 max_page_id = tab_contents->tab_contents()->GetMaxPageID();
   if (max_page_id != -1) {
-    preview_contents_->tab_contents()->GetController().set_max_restored_page_id(
+    preview_contents_->tab_contents()->GetController().SetMaxRestoredPageID(
         max_page_id + 1);
   }
 

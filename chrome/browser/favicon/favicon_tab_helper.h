@@ -81,7 +81,7 @@ class FaviconTabHelper : public content::WebContentsObserver,
   // content::WebContentsObserver overrides.
   virtual void NavigateToPendingEntry(
       const GURL& url,
-      NavigationController::ReloadType reload_type) OVERRIDE;
+      content::NavigationController::ReloadType reload_type) OVERRIDE;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
