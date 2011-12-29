@@ -877,7 +877,7 @@ void EnableNonBrowserCrashDumping() {
   // We deliberately leak this object.
   google_breakpad::ExceptionHandler* handler =
       new google_breakpad::ExceptionHandler("" /* unused */, NULL, NULL,
-                                            (void*) fd, true);
+                                            reinterpret_cast<void*>(fd), true);
   handler->set_crash_handler(NonBrowserCrashHandler);
 }
 
