@@ -90,9 +90,6 @@ class ScreenLocker : public LoginStatusConsumer {
   // Hide the screen locker.
   static void Hide();
 
-  // Queries the value of the webui lock screen flag.
-  static bool UseWebUILockScreen();
-
   // Notifies that PowerManager rejected UnlockScreen request.
   static void UnlockScreenFailed();
 

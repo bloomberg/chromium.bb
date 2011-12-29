@@ -421,19 +421,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableHttpPipelining)
   },
-  // TODO(flackr): Remove this flag and views screen locker when the WebUI
-  // locker is mature (crbug.com/105263).
-  {
-    "disable-webui-lock-screen",
-    IDS_FLAGS_WEBUI_LOCK_NAME,
-    IDS_FLAGS_WEBUI_LOCK_DESCRIPTION,
-    kOsCrOS,
-#if defined(OS_CHROMEOS)
-    SINGLE_VALUE_TYPE(switches::kDisableWebUILockScreen)
-#else
-    SINGLE_VALUE_TYPE("")
-#endif
-  },
   {
     "enable-video-track",
     IDS_FLAGS_ENABLE_VIDEO_TRACK_NAME,

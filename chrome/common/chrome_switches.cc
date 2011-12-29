@@ -1152,9 +1152,6 @@ const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 const char kMemoryWidget[]                  = "memory-widget";
 
 #if defined(OS_CHROMEOS)
-// Enables WebUI based lock screen.
-const char kDisableWebUILockScreen[]        = "disable-webui-lock-screen";
-
 // Enables WebUI based OOBE and login.
 const char kWebUILogin[]                    = "webui-login";
 

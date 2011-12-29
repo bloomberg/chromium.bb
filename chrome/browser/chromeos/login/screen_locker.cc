@@ -50,10 +50,6 @@
 #include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
 #endif
 
-#if !defined(USE_AURA)
-#include "chrome/browser/chromeos/login/screen_locker_views.h"
-#endif
-
 using content::BrowserThread;
 using content::UserMetricsAction;
 
@@ -212,14 +208,7 @@ ScreenLocker::ScreenLocker(const User& user)
 
 void ScreenLocker::Init() {
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
-#if defined(USE_AURA)
   delegate_.reset(new WebUIScreenLocker(this));
-#else
-  if (UseWebUILockScreen())
-    delegate_.reset(new WebUIScreenLocker(this));
-  else
-    delegate_.reset(new ScreenLockerViews(this));
-#endif
   delegate_->LockScreen(unlock_on_input_);
 }
 
@@ -414,14 +403,6 @@ void ScreenLocker::UnlockScreenFailed() {
     VLOG(1) << "UnlockScreenFailed: screen is already unlocked.";
   }
 }
-
-#if !defined(USE_AURA)
-// static
-bool ScreenLocker::UseWebUILockScreen() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableWebUILockScreen);
-}
-#endif
 
 // static
 void ScreenLocker::InitClass() {

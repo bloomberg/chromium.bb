@@ -5,9 +5,6 @@
 #include "chrome/browser/chromeos/login/screen_locker_tester.h"
 
 #include <string>
-#if defined(TOOLKIT_USES_GTK)
-#include <gdk/gdkkeysyms.h>
-#endif
 
 #include "base/stringprintf.h"
 #include "base/string_util.h"
@@ -30,8 +27,6 @@
 
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/login/lock_window_gtk.h"
-#include "chrome/browser/chromeos/login/screen_locker_views.h"
-#include "chrome/browser/chromeos/login/screen_lock_view.h"
 #endif
 
 namespace {
@@ -99,83 +94,6 @@ void LoginAttemptObserver::LoginAttempted() {
 namespace chromeos {
 
 namespace test {
-
-#if defined(TOOLKIT_USES_GTK)
-class ScreenLockerViewsTester : public ScreenLockerTester {
- public:
-  // ScreenLockerTester overrides:
-  virtual void SetPassword(const std::string& password) OVERRIDE;
-  virtual std::string GetPassword() OVERRIDE;
-  virtual void EnterPassword(const std::string& password) OVERRIDE;
-  virtual void EmulateWindowManagerReady() OVERRIDE;
-  virtual views::Widget* GetWidget() const OVERRIDE;
-  virtual views::Widget* GetChildWidget() const OVERRIDE;
-
- private:
-  friend class chromeos::ScreenLocker;
-
-  ScreenLockerViewsTester() {}
-
-  // Returns the ScreenLockerViews object.
-  ScreenLockerViews* screen_locker_views() const;
-
-  views::Textfield* GetPasswordField() const;
-
-  DISALLOW_COPY_AND_ASSIGN(ScreenLockerViewsTester);
-};
-
-void ScreenLockerViewsTester::SetPassword(const std::string& password) {
-  DCHECK(ScreenLocker::screen_locker_);
-  views::Textfield* pass = GetPasswordField();
-  pass->SetText(ASCIIToUTF16(password.c_str()));
-}
-
-std::string ScreenLockerViewsTester::GetPassword() {
-  DCHECK(ScreenLocker::screen_locker_);
-  views::Textfield* pass = GetPasswordField();
-  return UTF16ToUTF8(pass->text());
-}
-
-void ScreenLockerViewsTester::EnterPassword(const std::string& password) {
-  SetPassword(password);
-  LoginAttemptObserver login(ScreenLocker::screen_locker_);
-  views::Textfield* pass = GetPasswordField();
-  GdkEvent* event = gdk_event_new(GDK_KEY_PRESS);
-  event->key.keyval = GDK_Return;
-  views::KeyEvent key_event(event);
-  screen_locker_views()->screen_lock_view_->HandleKeyEvent(pass, key_event);
-  gdk_event_free(event);
-  // Wait for login attempt.
-  login.WaitForAttempt();
-}
-
-void ScreenLockerViewsTester::EmulateWindowManagerReady() {
-  DCHECK(ScreenLocker::screen_locker_);
-  screen_locker_views()->OnWindowManagerReady();
-}
-
-views::Textfield* ScreenLockerViewsTester::GetPasswordField() const {
-  DCHECK(ScreenLocker::screen_locker_);
-  return screen_locker_views()->screen_lock_view_->password_field_;
-}
-
-views::Widget* ScreenLockerViewsTester::GetWidget() const {
-  DCHECK(ScreenLocker::screen_locker_);
-  return screen_locker_views()->lock_window_;
-}
-
-views::Widget* ScreenLockerViewsTester::GetChildWidget() const {
-  DCHECK(ScreenLocker::screen_locker_);
-  return screen_locker_views()->lock_widget_;
-}
-
-ScreenLockerViews* ScreenLockerViewsTester::screen_locker_views() const {
-  DCHECK(ScreenLocker::screen_locker_);
-  DCHECK(!ScreenLocker::UseWebUILockScreen());
-  return static_cast<ScreenLockerViews*>(
-      ScreenLocker::screen_locker_->delegate_.get());
-}
-#endif  // TOOLKIT_USES_GTK
 
 class WebUIScreenLockerTester : public ScreenLockerTester {
  public:
@@ -257,9 +175,6 @@ base::Value* WebUIScreenLockerTester::ExecuteJavascriptAndGetValue(
 
 WebUIScreenLocker* WebUIScreenLockerTester::webui_screen_locker() const {
   DCHECK(ScreenLocker::screen_locker_);
-#if not defined(USE_AURA)
-  DCHECK(ScreenLocker::UseWebUILockScreen());
-#endif
   return static_cast<WebUIScreenLocker*>(
       ScreenLocker::screen_locker_->delegate_.get());
 }
@@ -292,14 +207,7 @@ void ScreenLockerTester::InjectMockAuthenticator(
 }  // namespace test
 
 test::ScreenLockerTester* ScreenLocker::GetTester() {
-#if defined(TOOLKIT_USES_GTK)
-  if (ScreenLocker::UseWebUILockScreen())
-    return new test::WebUIScreenLockerTester();
-  else
-    return new test::ScreenLockerViewsTester();
-#else
   return new test::WebUIScreenLockerTester();
-#endif
 }
 
 }  // namespace chromeos
