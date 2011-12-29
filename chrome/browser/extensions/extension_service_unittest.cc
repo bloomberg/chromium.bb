@@ -15,6 +15,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
@@ -82,7 +83,7 @@ bool WebAccessibilityNotificationToViewHostMsg(
 
 RendererAccessibility::RendererAccessibility(RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       browser_root_(NULL),
       last_scroll_offset_(gfx::Size()),
       ack_pending_(false),
@@ -195,14 +196,15 @@ void RendererAccessibility::PostAccessibilityNotification(
   }
   pending_notifications_.push_back(acc_notification);
 
-  if (!ack_pending_ && method_factory_.empty()) {
+  if (!ack_pending_ && !weak_factory_.HasWeakPtrs()) {
     // When no accessibility notifications are in-flight post a task to send
     // the notifications to the browser. We use PostTask so that we can queue
     // up additional notifications.
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &RendererAccessibility::SendPendingAccessibilityNotifications));
+        base::Bind(
+            &RendererAccessibility::SendPendingAccessibilityNotifications,
+            weak_factory_.GetWeakPtr()));
   }
 }
 

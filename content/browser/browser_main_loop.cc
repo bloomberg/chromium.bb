@@ -410,7 +410,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableFunction(&base::ThreadRestrictions::SetIOAllowed, true));
+      base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
+                 true));
 
   if (parts_.get())
     parts_->PostMainMessageLoopRun();
@@ -556,7 +557,7 @@ void BrowserMainLoop::InitializeToolkit() {
 
 void BrowserMainLoop::MainMessageLoopRun() {
   if (parameters_.ui_task)
-    MessageLoopForUI::current()->PostTask(FROM_HERE, parameters_.ui_task);
+    MessageLoopForUI::current()->PostTask(FROM_HERE, *parameters_.ui_task);
 
 #if defined(OS_MACOSX)
   MessageLoopForUI::current()->Run();

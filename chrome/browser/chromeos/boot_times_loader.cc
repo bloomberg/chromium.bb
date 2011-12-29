@@ -212,7 +212,7 @@ static void SendBootTimesToUMA(const BootTimesLoader::BootTimes& boot_times) {
 }
 
 void BootTimesLoader::Backend::GetBootTimes(
-    scoped_refptr<GetBootTimesRequest> request) {
+    const scoped_refptr<GetBootTimesRequest>& request) {
   const FilePath::CharType kFirmwareBootTime[] = FPL("firmware-boot-time");
   const FilePath::CharType kPreStartup[] = FPL("pre-startup");
   const FilePath::CharType kChromeExec[] = FPL("chrome-exec");
@@ -356,13 +356,7 @@ void BootTimesLoader::LoginDone() {
   // Don't swamp the FILE thread right away.
   BrowserThread::PostDelayedTask(
       BrowserThread::FILE, FROM_HERE,
-      // This doesn't compile without std::string(...), as base::Bind doesn't
-      // accept arrays.
-      // TODO(jhawkins): Verify this is true for base::Bind.
-      base::Bind(WriteTimes,
-                 std::string(kLoginTimes),
-                 std::string(kUmaLogin),
-                 std::string(kUmaLoginPrefix),
+      base::Bind(&WriteTimes, kLoginTimes, kUmaLogin, kUmaLoginPrefix,
                  login_time_markers_),
       kLoginTimeWriteDelayMs);
 }
@@ -377,7 +371,7 @@ void BootTimesLoader::WriteLogoutTimes() {
 void BootTimesLoader::RecordStats(const std::string& name, const Stats& stats) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(RecordStatsDelayed, name, stats.uptime, stats.disk));
+      base::Bind(&RecordStatsDelayed, name, stats.uptime, stats.disk));
 }
 
 BootTimesLoader::Stats BootTimesLoader::GetCurrentStats() {

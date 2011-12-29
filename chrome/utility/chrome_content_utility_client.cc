@@ -4,6 +4,7 @@
 
 #include "chrome/utility/chrome_content_utility_client.h"
 
+#include "base/bind.h"
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
@@ -394,11 +395,8 @@ void ChromeContentUtilityClient::OnImportStart(
     ImporterCleanup();
   }
   import_thread_->message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(importer_.get(),
-                                   &Importer::StartImport,
-                                   source_profile,
-                                   items,
-                                   bridge_));
+      FROM_HERE, base::Bind(&Importer::StartImport, importer_.get(),
+                            source_profile, items, bridge_));
 }
 
 void ChromeContentUtilityClient::OnImportCancel() {

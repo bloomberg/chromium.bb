@@ -11,6 +11,7 @@
 #pragma once
 
 #include "base/command_line.h"
+#include "base/callback_forward.h"
 
 #if defined(OS_WIN)
 namespace sandbox {
@@ -45,7 +46,7 @@ struct MainFunctionParams {
 #endif
   // Used by InProcessBrowserTest. If non-null BrowserMain schedules this
   // task to run on the MessageLoop and BrowserInit is not invoked.
-  Task* ui_task;
+  base::Closure* ui_task;
 };
 
 }  // namespace content
