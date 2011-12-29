@@ -166,14 +166,14 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
                         ViewMsg_Navigate_Params* params) {
   params->page_id = entry.GetPageID();
   params->pending_history_list_offset = controller.GetIndexOfEntry(&entry);
-  params->current_history_list_offset = controller.last_committed_entry_index();
-  params->current_history_list_length = controller.entry_count();
+  params->current_history_list_offset = controller.GetLastCommittedEntryIndex();
+  params->current_history_list_length = controller.GetEntryCount();
   params->url = entry.GetURL();
   params->referrer = entry.GetReferrer();
   params->transition = entry.GetTransitionType();
   params->state = entry.GetContentState();
   params->navigation_type =
-      GetNavigationType(controller.browser_context(), entry, reload_type);
+      GetNavigationType(controller.GetBrowserContext(), entry, reload_type);
   params->request_time = base::Time::Now();
   params->extra_headers = entry.extra_headers();
   params->transferred_request_child_id =
@@ -361,7 +361,7 @@ const NavigationController& TabContents::GetController() const {
 }
 
 content::BrowserContext* TabContents::GetBrowserContext() const {
-  return controller_.browser_context();
+  return controller_.GetBrowserContext();
 }
 
 void TabContents::SetViewType(content::ViewType type) {

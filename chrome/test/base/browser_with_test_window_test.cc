@@ -93,7 +93,7 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
   // we need to send the preexisting page ID. We can tell these apart because
   // renavigations will have a pending_entry_index while new ones won't (they'll
   // just have a standalong pending_entry that isn't in the list already).
-  if (controller->pending_entry_index() >= 0) {
+  if (controller->GetPendingEntryIndex() >= 0) {
     test_rvh->SendNavigateWithTransition(
         controller->GetPendingEntry()->GetPageID(),
         controller->GetPendingEntry()->GetURL(),

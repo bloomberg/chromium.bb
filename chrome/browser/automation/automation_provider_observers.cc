@@ -259,7 +259,7 @@ void NavigationControllerRestoredObserver::Observe(
 }
 
 bool NavigationControllerRestoredObserver::FinishedRestoring() {
-  return (!controller_->needs_reload() && !controller_->GetPendingEntry() &&
+  return (!controller_->NeedsReload() && !controller_->GetPendingEntry() &&
           !controller_->tab_contents()->IsLoading());
 }
 

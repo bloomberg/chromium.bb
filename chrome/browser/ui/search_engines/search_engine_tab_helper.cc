@@ -99,7 +99,7 @@ void SearchEngineTabHelper::OnPageHasOSDD(
   if (IsFormSubmit(base_entry)) {
     // If the current page is a form submit, find the last page that was not
     // a form submit and use its url to generate the keyword from.
-    int index = controller.last_committed_entry_index() - 1;
+    int index = controller.GetLastCommittedEntryIndex() - 1;
     while (index >= 0 && IsFormSubmit(controller.GetEntryAtIndex(index)))
       index--;
     if (index >= 0)
@@ -142,7 +142,7 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
     return;
 
   const NavigationController& controller = web_contents()->GetController();
-  int last_index = controller.last_committed_entry_index();
+  int last_index = controller.GetLastCommittedEntryIndex();
   // When there was no previous page, the last index will be 0. This is
   // normally due to a form submit that opened in a new tab.
   // TODO(brettw) bug 916126: we should support keywords when form submits

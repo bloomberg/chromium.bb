@@ -979,7 +979,7 @@ TEST_F(TabContentsTest,
   // Navigate to a page.
   GURL url1("http://www.google.com");
   rvh()->SendNavigate(1, url1);
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 
   // Initiate a browser navigation that will trigger the interstitial
   controller().LoadURL(GURL("http://www.evil.com"), content::Referrer(),
@@ -1016,7 +1016,7 @@ TEST_F(TabContentsTest,
   entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url1);
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 }
 
 // Test navigating to a page (with the navigation initiated from the renderer,
@@ -1027,7 +1027,7 @@ TEST_F(TabContentsTest,
   // Navigate to a page.
   GURL url1("http://www.google.com");
   rvh()->SendNavigate(1, url1);
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show an interstitial (no pending entry, the interstitial would have been
   // triggered by clicking on a link).
@@ -1061,7 +1061,7 @@ TEST_F(TabContentsTest,
   entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url1);
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 }
 
 // Test navigating to a page that shows an interstitial without creating a new
@@ -1071,7 +1071,7 @@ TEST_F(TabContentsTest, ShowInterstitialNoNewNavigationDontProceed) {
   // Navigate to a page.
   GURL url1("http://www.google.com");
   rvh()->SendNavigate(1, url1);
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state =
@@ -1105,7 +1105,7 @@ TEST_F(TabContentsTest, ShowInterstitialNoNewNavigationDontProceed) {
   entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url1);
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 }
 
 // Test navigating to a page (with the navigation initiated from the browser,
@@ -1116,7 +1116,7 @@ TEST_F(TabContentsTest,
   // Navigate to a page.
   GURL url1("http://www.google.com");
   rvh()->SendNavigate(1, url1);
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 
   // Initiate a browser navigation that will trigger the interstitial
   controller().LoadURL(GURL("http://www.evil.com"), content::Referrer(),
@@ -1164,7 +1164,7 @@ TEST_F(TabContentsTest,
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url3);
 
-  EXPECT_EQ(2, controller().entry_count());
+  EXPECT_EQ(2, controller().GetEntryCount());
 }
 
 // Test navigating to a page (with the navigation initiated from the renderer,
@@ -1175,7 +1175,7 @@ TEST_F(TabContentsTest,
   // Navigate to a page.
   GURL url1("http://www.google.com");
   rvh()->SendNavigate(1, url1);
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state =
@@ -1219,7 +1219,7 @@ TEST_F(TabContentsTest,
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url3);
 
-  EXPECT_EQ(2, controller().entry_count());
+  EXPECT_EQ(2, controller().GetEntryCount());
 }
 
 // Test navigating to a page that shows an interstitial without creating a new
@@ -1229,7 +1229,7 @@ TEST_F(TabContentsTest, ShowInterstitialNoNewNavigationProceed) {
   // Navigate to a page so we have a navigation entry in the controller.
   GURL url1("http://www.google.com");
   rvh()->SendNavigate(1, url1);
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state =
@@ -1266,7 +1266,7 @@ TEST_F(TabContentsTest, ShowInterstitialNoNewNavigationProceed) {
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url1);
 
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 }
 
 // Test navigating to a page that shows an interstitial, then navigating away.
@@ -1295,7 +1295,7 @@ TEST_F(TabContentsTest, ShowInterstitialThenGoBack) {
   // Navigate to a page so we have a navigation entry in the controller.
   GURL url1("http://www.google.com");
   rvh()->SendNavigate(1, url1);
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show interstitial.
   TestInterstitialPage::InterstitialState state =
@@ -1328,7 +1328,7 @@ TEST_F(TabContentsTest, ShowInterstitialCrashRendererThenGoBack) {
   // Navigate to a page so we have a navigation entry in the controller.
   GURL url1("http://www.google.com");
   rvh()->SendNavigate(1, url1);
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show interstitial.
   TestInterstitialPage::InterstitialState state =
@@ -1366,7 +1366,7 @@ TEST_F(TabContentsTest, ShowInterstitialCrashRendererThenNavigate) {
   // Navigate to a page so we have a navigation entry in the controller.
   GURL url1("http://www.google.com");
   rvh()->SendNavigate(1, url1);
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show interstitial.
   TestInterstitialPage::InterstitialState state =
@@ -1412,7 +1412,7 @@ TEST_F(TabContentsTest, ShowInterstitialProceedMultipleCommands) {
   // Navigate to a page so we have a navigation entry in the controller.
   GURL url1("http://www.google.com");
   rvh()->SendNavigate(1, url1);
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state =
@@ -1446,7 +1446,7 @@ TEST_F(TabContentsTest, ShowInterstitialOnInterstitial) {
   // Navigate to a page so we have a navigation entry in the controller.
   GURL start_url("http://www.google.com");
   rvh()->SendNavigate(1, start_url);
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state1 =
@@ -1487,7 +1487,7 @@ TEST_F(TabContentsTest, ShowInterstitialOnInterstitial) {
   NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == landing_url);
-  EXPECT_EQ(2, controller().entry_count());
+  EXPECT_EQ(2, controller().GetEntryCount());
 }
 
 // Test showing an interstitial, proceeding and then navigating to another
@@ -1496,7 +1496,7 @@ TEST_F(TabContentsTest, ShowInterstitialProceedShowInterstitial) {
   // Navigate to a page so we have a navigation entry in the controller.
   GURL start_url("http://www.google.com");
   rvh()->SendNavigate(1, start_url);
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state1 =
@@ -1542,7 +1542,7 @@ TEST_F(TabContentsTest, ShowInterstitialProceedShowInterstitial) {
   NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == landing_url);
-  EXPECT_EQ(2, controller().entry_count());
+  EXPECT_EQ(2, controller().GetEntryCount());
 }
 
 // Test that navigating away from an interstitial while it's loading cause it
@@ -1733,7 +1733,7 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneSourceInterstitial) {
   // Navigate to a page.
   GURL url1("http://www.google.com");
   rvh()->SendNavigate(1, url1);
-  EXPECT_EQ(1, controller().entry_count());
+  EXPECT_EQ(1, controller().GetEntryCount());
 
   // Initiate a browser navigation that will trigger the interstitial
   controller().LoadURL(GURL("http://www.evil.com"), content::Referrer(),
@@ -1750,7 +1750,7 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneSourceInterstitial) {
   interstitial->Show();
   interstitial->TestDidNavigate(1, url2);
   EXPECT_TRUE(interstitial->is_showing());
-  EXPECT_EQ(2, controller().entry_count());
+  EXPECT_EQ(2, controller().GetEntryCount());
 
   // Create another NavigationController.
   GURL url3("http://foo2");
@@ -1764,7 +1764,7 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneSourceInterstitial) {
   other_controller.CopyStateFromAndPrune(&controller());
 
   // The merged controller should only have two entries: url1 and url2.
-  ASSERT_EQ(2, other_controller.entry_count());
+  ASSERT_EQ(2, other_controller.GetEntryCount());
   EXPECT_EQ(1, other_controller.GetCurrentEntryIndex());
   EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->GetURL());
   EXPECT_EQ(url3, other_controller.GetEntryAtIndex(1)->GetURL());
@@ -1800,7 +1800,7 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneTargetInterstitial) {
   interstitial->Show();
   interstitial->TestDidNavigate(1, url3);
   EXPECT_TRUE(interstitial->is_showing());
-  EXPECT_EQ(2, other_controller.entry_count());
+  EXPECT_EQ(2, other_controller.GetEntryCount());
   other_contents->ExpectSetHistoryLengthAndPrune(
       NavigationEntryImpl::FromNavigationEntry(
           other_controller.GetEntryAtIndex(0))->site_instance(), 1,
@@ -1808,7 +1808,7 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneTargetInterstitial) {
   other_controller.CopyStateFromAndPrune(&controller());
 
   // The merged controller should only have two entries: url1 and url2.
-  ASSERT_EQ(2, other_controller.entry_count());
+  ASSERT_EQ(2, other_controller.GetEntryCount());
   EXPECT_EQ(1, other_controller.GetCurrentEntryIndex());
   EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->GetURL());
   EXPECT_EQ(url3, other_controller.GetEntryAtIndex(1)->GetURL());

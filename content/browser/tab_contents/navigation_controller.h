@@ -56,9 +56,7 @@ class CONTENT_EXPORT NavigationController {
   ~NavigationController();
 
   // Returns the browser context for this controller. It can never be NULL.
-  content::BrowserContext* browser_context() const {
-    return browser_context_;
-  }
+  content::BrowserContext* GetBrowserContext() const;
 
   // Sets the browser context for this controller.
   void set_browser_context(content::BrowserContext* browser_context) {
@@ -108,18 +106,14 @@ class CONTENT_EXPORT NavigationController {
   bool CanViewSource() const;
 
   // Returns the index of the last committed entry.
-  int last_committed_entry_index() const {
-    return last_committed_entry_index_;
-  }
+  int GetLastCommittedEntryIndex() const;
 
   // Navigation list -----------------------------------------------------------
 
   // Returns the number of entries in the NavigationController, excluding
   // the pending entry if there is one, but including the transient entry if
   // any.
-  int entry_count() const {
-    return static_cast<int>(entries_.size());
-  }
+  int GetEntryCount() const;
 
   content::NavigationEntry* GetEntryAtIndex(int index) const;
 
@@ -152,9 +146,7 @@ class CONTENT_EXPORT NavigationController {
 
   // Returns the index of the pending entry or -1 if the pending entry
   // corresponds to a new navigation (created via LoadURL).
-  int pending_entry_index() const {
-    return pending_entry_index_;
-  }
+  int GetPendingEntryIndex() const;
 
   // Transient entry -----------------------------------------------------------
 
@@ -309,7 +301,7 @@ class CONTENT_EXPORT NavigationController {
 
   // Returns true if a reload happens when activated (SetActive(true) is
   // invoked). This is true for session/tab restore and cloned tabs.
-  bool needs_reload() const { return needs_reload_; }
+  bool NeedsReload() const;
 
   // Sets the max restored page ID this NavigationController has seen, if it
   // was restored from a previous session.
@@ -322,9 +314,7 @@ class CONTENT_EXPORT NavigationController {
   int32 max_restored_page_id() const { return max_restored_page_id_; }
 
   // The session storage namespace that all child render views should use.
-  SessionStorageNamespace* session_storage_namespace() const {
-    return session_storage_namespace_;
-  }
+  SessionStorageNamespace* GetSessionStorageNamespace() const;
 
   // Disables checking for a repost and prompting the user. This is used during
   // testing.

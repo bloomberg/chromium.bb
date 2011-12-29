@@ -53,12 +53,12 @@ int TabContentsWrapperSyncedTabDelegate::GetCurrentEntryIndex() const {
 }
 
 int TabContentsWrapperSyncedTabDelegate::GetEntryCount() const {
-  return tab_contents_wrapper_->tab_contents()->GetController().entry_count();
+  return tab_contents_wrapper_->tab_contents()->GetController().GetEntryCount();
 }
 
 int TabContentsWrapperSyncedTabDelegate::GetPendingEntryIndex() const {
   return tab_contents_wrapper_->tab_contents()->GetController().
-      pending_entry_index();
+      GetPendingEntryIndex();
 }
 
 NavigationEntry* TabContentsWrapperSyncedTabDelegate::GetPendingEntry() const {

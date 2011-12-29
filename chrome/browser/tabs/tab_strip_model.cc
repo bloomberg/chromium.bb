@@ -1121,7 +1121,7 @@ bool TabStripModel::IsNewTabAtEndOfTabStrip(
   return url.SchemeIs(chrome::kChromeUIScheme) &&
          url.host() == chrome::kChromeUINewTabHost &&
          contents == GetContentsAt(count() - 1) &&
-         contents->tab_contents()->GetController().entry_count() == 1;
+         contents->tab_contents()->GetController().GetEntryCount() == 1;
 }
 
 bool TabStripModel::InternalCloseTabs(const std::vector<int>& in_indices,

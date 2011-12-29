@@ -187,7 +187,7 @@ void AlternateNavURLFetcher::StartFetch(NavigationController* controller) {
   fetcher_.reset(content::URLFetcher::Create(
       GURL(alternate_nav_url_), content::URLFetcher::HEAD, this));
   fetcher_->SetRequestContext(
-      controller_->browser_context()->GetRequestContext());
+      controller_->GetBrowserContext()->GetRequestContext());
   fetcher_->Start();
 }
 

@@ -562,7 +562,7 @@ void SessionService::Observe(int type,
         TabNavigationPathPrunedFromBack(
             tab->restore_tab_helper()->window_id(),
             tab->restore_tab_helper()->session_id(),
-            tab->tab_contents()->GetController().entry_count());
+            tab->tab_contents()->GetController().GetEntryCount());
       }
       RecordSessionUpdateHistogramData(content::NOTIFICATION_NAV_LIST_PRUNED,
           &last_updated_nav_list_pruned_time_);
@@ -1121,9 +1121,9 @@ void SessionService::BuildCommandsForTab(
                                  current_index - max_persist_navigation_count);
   const int max_index =
       std::min(current_index + max_persist_navigation_count,
-               tab->tab_contents()->GetController().entry_count());
+               tab->tab_contents()->GetController().GetEntryCount());
   const int pending_index =
-      tab->tab_contents()->GetController().pending_entry_index();
+      tab->tab_contents()->GetController().GetPendingEntryIndex();
   if (tab_to_available_range) {
     (*tab_to_available_range)[session_id.id()] =
         std::pair<int, int>(min_index, max_index);

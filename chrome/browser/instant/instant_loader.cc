@@ -430,7 +430,7 @@ void InstantLoader::TabContentsDelegateImpl::NavigationStateChanged(
     const WebContents* source,
     unsigned changed_flags) {
   if (!loader_->ready() && !registered_render_widget_host_ &&
-      source->GetController().entry_count()) {
+      source->GetController().GetEntryCount()) {
     // The load has been committed. Install an observer that waits for the
     // first paint then makes the preview active. We wait for the load to be
     // committed before waiting on paint as there is always an initial paint

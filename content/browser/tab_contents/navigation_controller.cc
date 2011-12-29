@@ -148,12 +148,16 @@ NavigationController::~NavigationController() {
       content::NotificationService::NoDetails());
 }
 
+content::BrowserContext* NavigationController::GetBrowserContext() const {
+  return browser_context_;
+}
+
 void NavigationController::Restore(
     int selected_navigation,
     bool from_last_session,
     std::vector<NavigationEntry*>* entries) {
   // Verify that this controller is unused and that the input is valid.
-  DCHECK(entry_count() == 0 && !GetPendingEntry());
+  DCHECK(GetEntryCount() == 0 && !GetPendingEntry());
   DCHECK(selected_navigation >= 0 &&
          selected_navigation < static_cast<int>(entries->size()));
 
@@ -353,6 +357,14 @@ bool NavigationController::CanViewSource() const {
     is_supported_mime_type && !tab_contents_->GetInterstitialPage();
 }
 
+int NavigationController::GetLastCommittedEntryIndex() const {
+  return last_committed_entry_index_;
+}
+
+int NavigationController::GetEntryCount() const {
+  return static_cast<int>(entries_.size());
+}
+
 NavigationEntry* NavigationController::GetEntryAtIndex(
     int index) const {
   return entries_.at(index).get();
@@ -363,7 +375,7 @@ NavigationEntry* NavigationController::GetEntryAtOffset(
   int index = (transient_entry_index_ != -1) ?
                   transient_entry_index_ + offset :
                   last_committed_entry_index_ + offset;
-  if (index < 0 || index >= entry_count())
+  if (index < 0 || index >= GetEntryCount())
     return NULL;
 
   return entries_[index].get();
@@ -454,7 +466,7 @@ void NavigationController::GoToOffset(int offset) {
   int index = (transient_entry_index_ != -1) ?
                   transient_entry_index_ + offset :
                   last_committed_entry_index_ + offset;
-  if (index < 0 || index >= entry_count())
+  if (index < 0 || index >= GetEntryCount())
     return;
 
   GoToIndex(index);
@@ -545,7 +557,7 @@ bool NavigationController::RendererDidNavigate(
   // Save the previous state before we clobber it.
   if (GetLastCommittedEntry()) {
     details->previous_url = GetLastCommittedEntry()->GetURL();
-    details->previous_entry_index = last_committed_entry_index();
+    details->previous_entry_index = GetLastCommittedEntryIndex();
   } else {
     details->previous_url = GURL();
     details->previous_entry_index = -1;
@@ -950,13 +962,13 @@ bool NavigationController::IsURLInPageNavigation(const GURL& url) const {
 
 void NavigationController::CopyStateFrom(const NavigationController& source) {
   // Verify that we look new.
-  DCHECK(entry_count() == 0 && !GetPendingEntry());
+  DCHECK(GetEntryCount() == 0 && !GetPendingEntry());
 
-  if (source.entry_count() == 0)
+  if (source.GetEntryCount() == 0)
     return;  // Nothing new to do.
 
   needs_reload_ = true;
-  InsertEntriesFrom(source, source.entry_count());
+  InsertEntriesFrom(source, source.GetEntryCount());
 
   session_storage_namespace_ = source.session_storage_namespace_->Clone();
 
@@ -974,11 +986,12 @@ void NavigationController::CopyStateFromAndPrune(NavigationController* source) {
   int32 minimum_page_id = last_committed ? last_committed->GetPageID() : -1;
 
   // This code is intended for use when the last entry is the active entry.
-  DCHECK((transient_entry_index_ != -1 &&
-          transient_entry_index_ == entry_count() - 1) ||
-         (pending_entry_ && (pending_entry_index_ == -1 ||
-                             pending_entry_index_ == entry_count() - 1)) ||
-         (!pending_entry_ && last_committed_entry_index_ == entry_count() - 1));
+  DCHECK(
+      (transient_entry_index_ != -1 &&
+      transient_entry_index_ == GetEntryCount() - 1) ||
+      (pending_entry_ && (pending_entry_index_ == -1 ||
+                          pending_entry_index_ == GetEntryCount() - 1)) ||
+      (!pending_entry_ && last_committed_entry_index_ == GetEntryCount() - 1));
 
   // Remove all the entries leaving the active entry.
   PruneAllButActive();
@@ -988,19 +1001,19 @@ void NavigationController::CopyStateFromAndPrune(NavigationController* source) {
   int max_source_index = source->pending_entry_index_ != -1 ?
       source->pending_entry_index_ : source->last_committed_entry_index_;
   if (max_source_index == -1)
-    max_source_index = source->entry_count();
+    max_source_index = source->GetEntryCount();
   else
     max_source_index++;
   InsertEntriesFrom(*source, max_source_index);
 
   // Adjust indices such that the last entry and pending are at the end now.
-  last_committed_entry_index_ = entry_count() - 1;
+  last_committed_entry_index_ = GetEntryCount() - 1;
   if (pending_entry_index_ != -1)
-    pending_entry_index_ = entry_count() - 1;
+    pending_entry_index_ = GetEntryCount() - 1;
   if (transient_entry_index_ != -1) {
     // There's a transient entry. In this case we want the last committed to
     // point to the previous entry.
-    transient_entry_index_ = entry_count() - 1;
+    transient_entry_index_ = GetEntryCount() - 1;
     if (last_committed_entry_index_ != -1)
       last_committed_entry_index_--;
   }
@@ -1013,14 +1026,14 @@ void NavigationController::CopyStateFromAndPrune(NavigationController* source) {
 void NavigationController::PruneAllButActive() {
   if (transient_entry_index_ != -1) {
     // There is a transient entry. Prune up to it.
-    DCHECK_EQ(entry_count() - 1, transient_entry_index_);
+    DCHECK_EQ(GetEntryCount() - 1, transient_entry_index_);
     entries_.erase(entries_.begin(), entries_.begin() + transient_entry_index_);
     transient_entry_index_ = 0;
     last_committed_entry_index_ = -1;
     pending_entry_index_ = -1;
   } else if (!pending_entry_) {
     // There's no pending entry. Leave the last entry (if there is one).
-    if (!entry_count())
+    if (!GetEntryCount())
       return;
 
     DCHECK(last_committed_entry_index_ >= 0);
@@ -1048,8 +1061,17 @@ void NavigationController::PruneAllButActive() {
   }
 }
 
+bool NavigationController::NeedsReload() const {
+  return needs_reload_;
+}
+
+SessionStorageNamespace*
+    NavigationController::GetSessionStorageNamespace() const {
+  return session_storage_namespace_;
+}
+
 void NavigationController::RemoveEntryAtIndexInternal(int index) {
-  DCHECK(index < entry_count());
+  DCHECK(index < GetEntryCount());
   DCHECK(index != last_committed_entry_index_);
 
   DiscardNonCommittedEntries();
@@ -1072,6 +1094,10 @@ void NavigationController::DiscardNonCommittedEntries() {
 
 NavigationEntry* NavigationController::GetPendingEntry() const {
   return pending_entry_;
+}
+
+int NavigationController::GetPendingEntryIndex() const {
+  return pending_entry_index_;
 }
 
 void NavigationController::InsertOrReplaceEntry(NavigationEntryImpl* entry,
@@ -1238,10 +1264,10 @@ void NavigationController::NotifyEntryChanged(const NavigationEntry* entry,
 
 void NavigationController::FinishRestore(int selected_index,
                                          bool from_last_session) {
-  DCHECK(selected_index >= 0 && selected_index < entry_count());
+  DCHECK(selected_index >= 0 && selected_index < GetEntryCount());
   ConfigureEntriesForRestore(&entries_, from_last_session);
 
-  set_max_restored_page_id(static_cast<int32>(entry_count()));
+  set_max_restored_page_id(static_cast<int32>(GetEntryCount()));
 
   last_committed_entry_index_ = selected_index;
 }
@@ -1283,7 +1309,7 @@ NavigationEntry* NavigationController::GetTransientEntry() const {
 void NavigationController::InsertEntriesFrom(
     const NavigationController& source,
     int max_index) {
-  DCHECK_LE(max_index, source.entry_count());
+  DCHECK_LE(max_index, source.GetEntryCount());
   size_t insert_index = 0;
   for (int i = 0; i < max_index; i++) {
     // When cloning a tab, copy all entries except interstitial pages

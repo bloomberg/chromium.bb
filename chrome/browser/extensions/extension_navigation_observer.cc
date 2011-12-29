@@ -31,7 +31,7 @@ void ExtensionNavigationObserver::Observe(
   NavigationController* controller =
       content::Source<NavigationController>(source).ptr();
   if (!profile_->IsSameProfile(
-          Profile::FromBrowserContext(controller->browser_context())))
+          Profile::FromBrowserContext(controller->GetBrowserContext())))
     return;
 
   PromptToEnableExtensionIfNecessary(controller);

@@ -314,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(OnSubmitEvent)) {
 
   // We should have two entries. One corresponding to the page the user was
   // first on, and one for the search page.
-  EXPECT_EQ(2, preview_tab->GetController().entry_count());
+  EXPECT_EQ(2, preview_tab->GetController().GetEntryCount());
 
   // Check that the value is reflected and onsubmit is called.
   EXPECT_EQ("true 1 0 1 true d false defghi true 3 3",

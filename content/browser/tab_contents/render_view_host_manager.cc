@@ -65,7 +65,7 @@ void RenderViewHostManager::Init(content::BrowserContext* browser_context,
     site_instance = SiteInstance::CreateSiteInstance(browser_context);
   render_view_host_ = RenderViewHostFactory::Create(
       site_instance, render_view_delegate_, routing_id, delegate_->
-      GetControllerForRenderManager().session_storage_namespace());
+      GetControllerForRenderManager().GetSessionStorageNamespace());
 
   // Keep track of renderer processes as they start to shut down.
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSING,
@@ -342,7 +342,7 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
   const GURL& current_url = (cur_entry) ? cur_entry->GetURL() :
       render_view_host_->site_instance()->site();
   content::BrowserContext* browser_context =
-      delegate_->GetControllerForRenderManager().browser_context();
+      delegate_->GetControllerForRenderManager().GetBrowserContext();
   const content::WebUIFactory* web_ui_factory = content::WebUIFactory::Get();
   if (web_ui_factory->UseWebUIForURL(browser_context, current_url)) {
     // Force swap if it's not an acceptable URL for Web UI.
@@ -380,7 +380,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
 
   const GURL& dest_url = entry.GetURL();
   NavigationController& controller = delegate_->GetControllerForRenderManager();
-  content::BrowserContext* browser_context = controller.browser_context();
+  content::BrowserContext* browser_context = controller.GetBrowserContext();
 
   // If the entry has an instance already we should use it.
   if (entry.site_instance())
@@ -515,7 +515,7 @@ bool RenderViewHostManager::CreatePendingRenderView(
 
   pending_render_view_host_ = RenderViewHostFactory::Create(
       instance, render_view_delegate_, MSG_ROUTING_NONE, delegate_->
-      GetControllerForRenderManager().session_storage_namespace());
+      GetControllerForRenderManager().GetSessionStorageNamespace());
 
   // Prevent the process from exiting while we're trying to use it.
   pending_render_view_host_->process()->AddPendingView();

@@ -147,7 +147,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   RecordUserAction(SHOW);
   if (!is_main_frame_load_blocked_) {
     navigation_entry_index_to_remove_ =
-        tab()->GetController().last_committed_entry_index();
+        tab()->GetController().GetLastCommittedEntryIndex();
   } else {
     navigation_entry_index_to_remove_ = -1;
   }
@@ -610,7 +610,7 @@ void SafeBrowsingBlockingPage::DontProceed() {
   // current entry if it has been committed again, which is possible on a page
   // that had a subresource warning.
   int last_committed_index =
-      tab()->GetController().last_committed_entry_index();
+      tab()->GetController().GetLastCommittedEntryIndex();
   if (navigation_entry_index_to_remove_ != -1 &&
       navigation_entry_index_to_remove_ != last_committed_index &&
       !tab()->IsBeingDestroyed()) {

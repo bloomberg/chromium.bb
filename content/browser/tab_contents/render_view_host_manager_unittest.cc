@@ -241,7 +241,7 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   int32 new_id = contents()->GetMaxPageIDForSiteInstance(
       active_rvh()->site_instance()) + 1;
   pending_rvh()->SendNavigate(new_id, kUrl);
-  EXPECT_EQ(controller().last_committed_entry_index(), 1);
+  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 1);
   ASSERT_TRUE(controller().GetLastCommittedEntry());
   EXPECT_TRUE(kUrl == controller().GetLastCommittedEntry()->GetURL());
   EXPECT_FALSE(controller().GetPendingEntry());
@@ -258,7 +258,7 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   EXPECT_FALSE(pending_rvh());
   EXPECT_TRUE(last_rvh == rvh());
   rvh()->SendNavigate(new_id, kUrl);  // The same page_id returned.
-  EXPECT_EQ(controller().last_committed_entry_index(), 1);
+  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 1);
   EXPECT_FALSE(controller().GetPendingEntry());
   // New message should be sent out to make sure to enter view-source mode.
   EXPECT_TRUE(process()->sink().GetUniqueMessageMatching(

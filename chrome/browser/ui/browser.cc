@@ -1377,7 +1377,7 @@ bool Browser::NavigateToIndexWithDisposition(int index,
                                              WindowOpenDisposition disp) {
   NavigationController& controller =
       GetOrCloneTabForDisposition(disp)->GetController();
-  if (index < 0 || index >= controller.entry_count())
+  if (index < 0 || index >= controller.GetEntryCount())
     return false;
   controller.GoToIndex(index);
   return true;
@@ -3374,7 +3374,8 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
   TabInsertedAt(new_contents, index,
                 (index == tab_handler_->GetTabStripModel()->active_index()));
 
-  int entry_count = new_contents->tab_contents()->GetController().entry_count();
+  int entry_count =
+      new_contents->tab_contents()->GetController().GetEntryCount();
   if (entry_count > 0) {
     // Send out notification so that observers are updated appropriately.
     new_contents->tab_contents()->GetController().NotifyEntryChanged(

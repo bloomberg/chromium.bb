@@ -9,7 +9,7 @@
 #include "content/public/browser/browser_context.h"
 
 SSLPolicyBackend::SSLPolicyBackend(NavigationController* controller)
-    : ssl_host_state_(controller->browser_context()->GetSSLHostState()),
+    : ssl_host_state_(controller->GetBrowserContext()->GetSSLHostState()),
       controller_(controller) {
   DCHECK(controller_);
 }

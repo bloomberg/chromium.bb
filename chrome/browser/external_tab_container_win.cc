@@ -837,7 +837,7 @@ void ExternalTabContainer::Observe(int type,
         if (InitNavigationInfo(&navigation_info, commit->type,
                 commit->previous_entry_index -
                 tab_contents_->tab_contents()->
-                    GetController().last_committed_entry_index()))
+                    GetController().GetLastCommittedEntryIndex()))
           automation_->Send(new AutomationMsg_DidNavigate(tab_handle_,
                                                           navigation_info));
       }

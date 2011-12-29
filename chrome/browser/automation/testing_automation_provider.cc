@@ -765,7 +765,7 @@ void TestingAutomationProvider::GetRedirectsFrom(int tab_handle,
     LOG(ERROR) << "Can only handle one redirect query at once.";
   } else if (tab_tracker_->ContainsHandle(tab_handle)) {
     NavigationController* tab = tab_tracker_->GetResource(tab_handle);
-    Profile* profile = Profile::FromBrowserContext(tab->browser_context());
+    Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
     HistoryService* history_service =
         profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
 
@@ -1430,7 +1430,7 @@ void TestingAutomationProvider::GetDownloadDirectory(
     int handle, FilePath* download_directory) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    DownloadManager* dlm = tab->browser_context()->GetDownloadManager();
+    DownloadManager* dlm = tab->GetBrowserContext()->GetDownloadManager();
     *download_directory =
         DownloadPrefs::FromDownloadManager(dlm)->download_path();
   }

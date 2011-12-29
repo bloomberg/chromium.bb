@@ -486,8 +486,8 @@ void TabRestoreService::PopulateTab(Tab* tab,
                                     int index,
                                     TabRestoreServiceDelegate* delegate,
                                     NavigationController* controller) {
-  const int pending_index = controller->pending_entry_index();
-  int entry_count = controller->entry_count();
+  const int pending_index = controller->GetPendingEntryIndex();
+  int entry_count = controller->GetEntryCount();
   if (entry_count == 0 && pending_index == 0)
     entry_count++;
   tab->navigations.resize(static_cast<int>(entry_count));
@@ -513,7 +513,7 @@ void TabRestoreService::PopulateTab(Tab* tab,
       tab->extension_app_id = extension->id();
   }
 
-  tab->session_storage_namespace = controller->session_storage_namespace();
+  tab->session_storage_namespace = controller->GetSessionStorageNamespace();
 
   // Delegate may be NULL during unit tests.
   if (delegate) {

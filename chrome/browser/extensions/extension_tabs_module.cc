@@ -1614,7 +1614,7 @@ bool DetectTabLanguageFunction::RunImpl() {
       return false;
   }
 
-  if (contents->tab_contents()->GetController().needs_reload()) {
+  if (contents->tab_contents()->GetController().NeedsReload()) {
     // If the tab hasn't been loaded, don't wait for the tab to load.
     error_ = keys::kCannotDetermineLanguageOfUnloadedTab;
     return false;

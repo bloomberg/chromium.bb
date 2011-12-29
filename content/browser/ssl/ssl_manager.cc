@@ -59,7 +59,7 @@ void SSLManager::NotifySSLInternalStateChanged(
     NavigationController* controller) {
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
-      content::Source<content::BrowserContext>(controller->browser_context()),
+      content::Source<content::BrowserContext>(controller->GetBrowserContext()),
       content::NotificationService::NoDetails());
 }
 
@@ -121,7 +121,8 @@ SSLManager::SSLManager(NavigationController* controller)
       content::Source<NavigationController>(controller_));
   registrar_.Add(
       this, content::NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
-      content::Source<content::BrowserContext>(controller_->browser_context()));
+      content::Source<content::BrowserContext>(
+          controller_->GetBrowserContext()));
 }
 
 SSLManager::~SSLManager() {

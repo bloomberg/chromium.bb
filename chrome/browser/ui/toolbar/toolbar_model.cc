@@ -46,7 +46,7 @@ string16 ToolbarModel::GetText() const {
   NavigationController* navigation_controller = GetNavigationController();
   if (navigation_controller) {
     Profile* profile =
-        Profile::FromBrowserContext(navigation_controller->browser_context());
+        Profile::FromBrowserContext(navigation_controller->GetBrowserContext());
     languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
     NavigationEntry* entry = navigation_controller->GetVisibleEntry();
     if (!ShouldDisplayURL()) {

@@ -190,7 +190,7 @@ TEST_F(TabRestoreServiceTest, DontRestorePrintPreviewTab) {
   GURL printPreviewURL(chrome::kChromeUIPrintURL);
   NavigateAndCommit(printPreviewURL);
   EXPECT_EQ(printPreviewURL, contents()->GetURL());
-  EXPECT_EQ(4, controller().entry_count());
+  EXPECT_EQ(4, controller().GetEntryCount());
 
   // Have the service record the tab.
   service_->CreateHistoricalTab(&controller(), -1);

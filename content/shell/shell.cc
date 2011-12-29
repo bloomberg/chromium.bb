@@ -99,7 +99,7 @@ void Shell::Stop() {
 
 void Shell::UpdateNavigationControls() {
   int current_index = tab_contents_->GetController().GetCurrentEntryIndex();
-  int max_index = tab_contents_->GetController().entry_count() - 1;
+  int max_index = tab_contents_->GetController().GetEntryCount() - 1;
 
   PlatformEnableUIControl(BACK_BUTTON, current_index > 0);
   PlatformEnableUIControl(FORWARD_BUTTON, current_index < max_index);

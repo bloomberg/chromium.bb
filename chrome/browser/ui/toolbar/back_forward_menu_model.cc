@@ -291,7 +291,7 @@ int BackForwardMenuModel::GetHistoryItemCount() const {
 
   if (model_type_ == FORWARD_MENU) {
     // Only count items from n+1 to end (if n is current entry)
-    items = contents->GetController().entry_count() -
+    items = contents->GetController().GetEntryCount() -
             contents->GetController().GetCurrentEntryIndex() - 1;
   } else {
     items = contents->GetController().GetCurrentEntryIndex();
@@ -335,7 +335,7 @@ int BackForwardMenuModel::GetIndexOfNextChapterStop(int start_from,
   TabContents* contents = GetTabContents();
   NavigationController& controller = contents->GetController();
 
-  int max_count = controller.entry_count();
+  int max_count = controller.GetEntryCount();
   if (start_from < 0 || start_from >= max_count)
     return -1;  // Out of bounds.
 
@@ -443,7 +443,7 @@ int BackForwardMenuModel::MenuIndexToNavEntryIndex(int index) const {
 NavigationEntry* BackForwardMenuModel::GetNavigationEntry(int index) const {
   int controller_index = MenuIndexToNavEntryIndex(index);
   NavigationController& controller = GetTabContents()->GetController();
-  if (controller_index >= 0 && controller_index < controller.entry_count())
+  if (controller_index >= 0 && controller_index < controller.GetEntryCount())
     return controller.GetEntryAtIndex(controller_index);
 
   NOTREACHED();
