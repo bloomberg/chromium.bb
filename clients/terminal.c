@@ -2038,7 +2038,6 @@ data_source_send(void *data,
 	struct terminal *terminal = data;
 
 	terminal_send_selection(terminal, fd);
-	close(fd);
 }
 
 static void
