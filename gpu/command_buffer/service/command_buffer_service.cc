@@ -20,7 +20,8 @@ CommandBufferService::CommandBufferService()
       put_offset_(0),
       token_(0),
       generation_(0),
-      error_(error::kNoError) {
+      error_(error::kNoError),
+      context_lost_reason_(error::kUnknown) {
   // Element zero is always NULL.
   registered_objects_.push_back(Buffer());
 }

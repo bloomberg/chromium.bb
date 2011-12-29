@@ -40,7 +40,7 @@ scoped_refptr<PluginResource> PluginResourceTracker::GetExistingResource(
     return result->second.resource;
 }
 
-PluginResourceTracker::PluginResourceTracker() {
+PluginResourceTracker::PluginResourceTracker() : last_id_(0) {
 }
 
 void PluginResourceTracker::AddResource(PluginResource* resource,

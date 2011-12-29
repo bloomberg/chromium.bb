@@ -265,10 +265,8 @@ void UpdateDeviceList() {
 }
 
 base::NativeEvent CreateNoopEvent() {
-  MSG event;
+  MSG event = { NULL };
   event.message = WM_USER;
-  event.wParam = 0;
-  event.lParam = 0;
   return event;
 }
 

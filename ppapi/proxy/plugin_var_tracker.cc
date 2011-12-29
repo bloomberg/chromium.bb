@@ -234,8 +234,7 @@ PP_Var PluginVarTracker::GetOrCreateObjectVarID(ProxyObjectVar* object) {
     object->AssignVarID(var_id);
   }
 
-  PP_Var ret;
-  ret.type = PP_VARTYPE_OBJECT;
+  PP_Var ret = { PP_VARTYPE_OBJECT };
   ret.value.as_id = var_id;
   return ret;
 }

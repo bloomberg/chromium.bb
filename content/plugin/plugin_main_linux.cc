@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,8 +29,7 @@ void SignalHandler(int signum, siginfo_t* info, void* void_context) {
     // Not the problem we're interested in.  Reraise the signal.  We
     // need to be careful to handle threads etc. properly.
 
-    struct sigaction sa;
-    sa.sa_flags = 0;
+    struct sigaction sa = { { NULL } };
     sigemptyset(&sa.sa_mask);
     sa.sa_handler = SIG_DFL;
     sigaction(signum, &sa, NULL);
@@ -61,8 +60,7 @@ void SignalHandler(int signum, siginfo_t* info, void* void_context) {
 // particular circumstance, emulating the instruction, and resuming.
 // This function registers the signal handler.
 void WorkaroundFlashLAHF() {
-  struct sigaction action;
-  memset(&action, 0, sizeof(action));
+  struct sigaction action = { { NULL } };
   action.sa_flags = SA_SIGINFO;
   action.sa_sigaction = &SignalHandler;
 

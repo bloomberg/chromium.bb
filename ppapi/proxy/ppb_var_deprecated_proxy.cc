@@ -503,8 +503,7 @@ void PPB_Var_Deprecated_Proxy::SetAllowPluginReentrancy() {
 }
 
 void PPB_Var_Deprecated_Proxy::DoReleaseObject(int64 object_id) {
-  PP_Var var;
-  var.type = PP_VARTYPE_OBJECT;
+  PP_Var var = { PP_VARTYPE_OBJECT };
   var.value.as_id = object_id;
   ppb_var_impl_->Release(var);
 }
