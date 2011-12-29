@@ -6,6 +6,7 @@
 
 #include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,40 +30,103 @@ using content::WebContents;
 namespace {
 
 const char* kPerTabPrefsToObserve[] = {
-    prefs::kWebKitJavascriptEnabled
+  prefs::kDefaultCharset,
+  prefs::kWebKitJavascriptEnabled,
+  prefs::kWebKitJavascriptCanOpenWindowsAutomatically,
+  prefs::kWebKitLoadsImagesAutomatically,
+  prefs::kWebKitPluginsEnabled,
+  prefs::kWebKitCursiveFontFamily,
+  prefs::kWebKitFantasyFontFamily,
+  prefs::kWebKitFixedFontFamily,
+  prefs::kWebKitSansSerifFontFamily,
+  prefs::kWebKitSerifFontFamily,
+  prefs::kWebKitStandardFontFamily,
+  prefs::kWebKitDefaultFontSize,
+  prefs::kWebKitDefaultFixedFontSize,
+  prefs::kWebKitMinimumFontSize,
+  prefs::kWebKitMinimumLogicalFontSize
 };
 
 const int kPerTabPrefsToObserveLength = arraysize(kPerTabPrefsToObserve);
 
-void RegisterPerTabUserPrefs(PrefService* prefs) {
+static void RegisterFontsAndCharsetPrefs(PrefService* prefs) {
+  WebPreferences pref_defaults;
+
+  prefs->RegisterLocalizedStringPref(prefs::kDefaultCharset,
+                                     IDS_DEFAULT_ENCODING,
+                                     PrefService::SYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitStandardFontFamily,
+                                     IDS_STANDARD_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitFixedFontFamily,
+                                     IDS_FIXED_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitSerifFontFamily,
+                                     IDS_SERIF_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitSansSerifFontFamily,
+                                     IDS_SANS_SERIF_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitCursiveFontFamily,
+                                     IDS_CURSIVE_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitFantasyFontFamily,
+                                     IDS_FANTASY_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitDefaultFontSize,
+                                      IDS_DEFAULT_FONT_SIZE,
+                                      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitDefaultFixedFontSize,
+                                      IDS_DEFAULT_FIXED_FONT_SIZE,
+                                      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitMinimumFontSize,
+                                      IDS_MINIMUM_FONT_SIZE,
+                                      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitMinimumLogicalFontSize,
+                                      IDS_MINIMUM_LOGICAL_FONT_SIZE,
+                                      PrefService::UNSYNCABLE_PREF);
+}
+
+static void RegisterPerTabUserPrefs(PrefService* prefs) {
   WebPreferences pref_defaults;
 
   prefs->RegisterBooleanPref(prefs::kWebKitJavascriptEnabled,
                              pref_defaults.javascript_enabled,
                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(
+      prefs::kWebKitJavascriptCanOpenWindowsAutomatically,
+      true,
+      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kWebKitLoadsImagesAutomatically,
+                             pref_defaults.loads_images_automatically,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kWebKitPluginsEnabled,
+                             pref_defaults.plugins_enabled,
+                             PrefService::UNSYNCABLE_PREF);
+  RegisterFontsAndCharsetPrefs(prefs);
 }
 
 // The list of prefs we want to observe.
 const char* kPrefsToObserve[] = {
-  prefs::kDefaultCharset,
   prefs::kDefaultZoomLevel,
+  prefs::kGlobalDefaultCharset,
   prefs::kEnableReferrers,
   prefs::kWebKitAllowDisplayingInsecureContent,
   prefs::kWebKitAllowRunningInsecureContent,
-  prefs::kWebKitCursiveFontFamily,
-  prefs::kWebKitDefaultFixedFontSize,
-  prefs::kWebKitDefaultFontSize,
-  prefs::kWebKitFantasyFontFamily,
-  prefs::kWebKitFixedFontFamily,
+  prefs::kWebKitGlobalCursiveFontFamily,
+  prefs::kWebKitGlobalDefaultFixedFontSize,
+  prefs::kWebKitGlobalDefaultFontSize,
+  prefs::kWebKitGlobalFantasyFontFamily,
+  prefs::kWebKitGlobalFixedFontFamily,
   prefs::kWebKitGlobalJavascriptEnabled,
   prefs::kWebKitJavaEnabled,
-  prefs::kWebKitLoadsImagesAutomatically,
-  prefs::kWebKitMinimumFontSize,
-  prefs::kWebKitMinimumLogicalFontSize,
-  prefs::kWebKitPluginsEnabled,
-  prefs::kWebKitSansSerifFontFamily,
-  prefs::kWebKitSerifFontFamily,
-  prefs::kWebKitStandardFontFamily,
+  prefs::kWebKitGlobalLoadsImagesAutomatically,
+  prefs::kWebKitGlobalMinimumFontSize,
+  prefs::kWebKitGlobalMinimumLogicalFontSize,
+  prefs::kWebKitGlobalPluginsEnabled,
+  prefs::kWebKitGlobalSansSerifFontFamily,
+  prefs::kWebKitGlobalSerifFontFamily,
+  prefs::kWebKitGlobalStandardFontFamily,
   prefs::kWebkitTabsToLinks,
   prefs::kWebKitUsesUniversalDetector
 };
@@ -211,6 +275,49 @@ const PerScriptFontDefault kPerScriptFontDefaults[] = {
 const size_t kPerScriptFontDefaultsLength = arraysize(kPerScriptFontDefaults);
 #endif
 
+const struct {
+  const char* from;
+  const char* to;
+} kPrefNamesToMigrate[] = {
+  { prefs::kDefaultCharset,
+    prefs::kGlobalDefaultCharset },
+  { prefs::kWebKitCursiveFontFamily,
+    prefs::kWebKitGlobalCursiveFontFamily },
+  { prefs::kWebKitDefaultFixedFontSize,
+    prefs::kWebKitGlobalDefaultFixedFontSize },
+  { prefs::kWebKitDefaultFontSize,
+    prefs::kWebKitGlobalDefaultFontSize },
+  { prefs::kWebKitFantasyFontFamily,
+    prefs::kWebKitGlobalFantasyFontFamily },
+  { prefs::kWebKitFixedFontFamily,
+    prefs::kWebKitGlobalFixedFontFamily },
+  { prefs::kWebKitMinimumFontSize,
+    prefs::kWebKitGlobalMinimumFontSize },
+  { prefs::kWebKitMinimumLogicalFontSize,
+    prefs::kWebKitGlobalMinimumLogicalFontSize },
+  { prefs::kWebKitSansSerifFontFamily,
+    prefs::kWebKitGlobalSansSerifFontFamily },
+  { prefs::kWebKitSerifFontFamily,
+    prefs::kWebKitGlobalSerifFontFamily },
+  { prefs::kWebKitStandardFontFamily,
+    prefs::kWebKitGlobalStandardFontFamily },
+};
+
+const int kPrefsToMigrateLength = ARRAYSIZE_UNSAFE(kPrefNamesToMigrate);
+
+static void MigratePreferences(PrefService* prefs) {
+  RegisterFontsAndCharsetPrefs(prefs);
+  for (int i = 0; i < kPrefsToMigrateLength; ++i) {
+    const PrefService::Preference *pref =
+        prefs->FindPreference(kPrefNamesToMigrate[i].from);
+    if (!pref) continue;
+    if (!pref->IsDefaultValue()) {
+      prefs->Set(kPrefNamesToMigrate[i].to, *pref->GetValue()->DeepCopy());
+    }
+    prefs->UnregisterPreference(kPrefNamesToMigrate[i].from);
+  }
+}
+
 }  // namespace
 
 PrefsTabHelper::PrefsTabHelper(WebContents* contents)
@@ -268,13 +375,13 @@ void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
                              pref_defaults.web_security_enabled,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(
-      prefs::kWebKitJavascriptCanOpenWindowsAutomatically,
+      prefs::kWebKitGlobalJavascriptCanOpenWindowsAutomatically,
       true,
       PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kWebKitLoadsImagesAutomatically,
+  prefs->RegisterBooleanPref(prefs::kWebKitGlobalLoadsImagesAutomatically,
                              pref_defaults.loads_images_automatically,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kWebKitPluginsEnabled,
+  prefs->RegisterBooleanPref(prefs::kWebKitGlobalPluginsEnabled,
                              pref_defaults.plugins_enabled,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitDomPasteEnabled,
@@ -311,25 +418,25 @@ void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
                                      IDS_ACCEPT_LANGUAGES,
                                      PrefService::UNSYNCABLE_PREF);
 #endif
-  prefs->RegisterLocalizedStringPref(prefs::kDefaultCharset,
+  prefs->RegisterLocalizedStringPref(prefs::kGlobalDefaultCharset,
                                      IDS_DEFAULT_ENCODING,
                                      PrefService::SYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitStandardFontFamily,
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalStandardFontFamily,
                                      IDS_STANDARD_FONT_FAMILY,
                                      PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitFixedFontFamily,
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalFixedFontFamily,
                                      IDS_FIXED_FONT_FAMILY,
                                      PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitSerifFontFamily,
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalSerifFontFamily,
                                      IDS_SERIF_FONT_FAMILY,
                                      PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitSansSerifFontFamily,
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalSansSerifFontFamily,
                                      IDS_SANS_SERIF_FONT_FAMILY,
                                      PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitCursiveFontFamily,
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalCursiveFontFamily,
                                      IDS_CURSIVE_FONT_FAMILY,
                                      PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitFantasyFontFamily,
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalFantasyFontFamily,
                                      IDS_FANTASY_FONT_FAMILY,
                                      PrefService::UNSYNCABLE_PREF);
 
@@ -360,18 +467,19 @@ void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
   RegisterFontFamilyMap(prefs, prefs::kWebKitCursiveFontFamilyMap);
   RegisterFontFamilyMap(prefs, prefs::kWebKitFantasyFontFamilyMap);
 
-  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitDefaultFontSize,
+  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitGlobalDefaultFontSize,
                                       IDS_DEFAULT_FONT_SIZE,
                                       PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitDefaultFixedFontSize,
+  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitGlobalDefaultFixedFontSize,
                                       IDS_DEFAULT_FIXED_FONT_SIZE,
                                       PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitMinimumFontSize,
+  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitGlobalMinimumFontSize,
                                       IDS_MINIMUM_FONT_SIZE,
                                       PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitMinimumLogicalFontSize,
-                                      IDS_MINIMUM_LOGICAL_FONT_SIZE,
-                                      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedIntegerPref(
+      prefs::kWebKitGlobalMinimumLogicalFontSize,
+      IDS_MINIMUM_LOGICAL_FONT_SIZE,
+      PrefService::UNSYNCABLE_PREF);
   prefs->RegisterLocalizedBooleanPref(prefs::kWebKitUsesUniversalDetector,
                                       IDS_USES_UNIVERSAL_DETECTOR,
                                       PrefService::SYNCABLE_PREF);
@@ -381,6 +489,7 @@ void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kRecentlySelectedEncoding,
                             "",
                             PrefService::UNSYNCABLE_PREF);
+  MigratePreferences(prefs);
 }
 
 void PrefsTabHelper::RenderViewCreated(RenderViewHost* render_view_host) {
@@ -409,7 +518,8 @@ void PrefsTabHelper::Observe(int type,
       DCHECK(content::Source<PrefService>(source).ptr() ==
                  GetProfile()->GetPrefs() ||
              content::Source<PrefService>(source).ptr() == per_tab_prefs_);
-      if ((*pref_name_in == prefs::kDefaultCharset) ||
+      if ((*pref_name_in == prefs::kDefaultCharset ||
+           *pref_name_in == prefs::kGlobalDefaultCharset) ||
           StartsWithASCII(*pref_name_in, "webkit.webprefs.", true)) {
         UpdateWebPreferences();
       } else if (*pref_name_in == prefs::kDefaultZoomLevel ||
@@ -431,6 +541,36 @@ void PrefsTabHelper::UpdateWebPreferences() {
   WebPreferences prefs = rvhd->GetWebkitPrefs();
   prefs.javascript_enabled =
       per_tab_prefs_->GetBoolean(prefs::kWebKitJavascriptEnabled);
+  prefs.javascript_can_open_windows_automatically =
+      per_tab_prefs_->GetBoolean(
+          prefs::kWebKitJavascriptCanOpenWindowsAutomatically);
+  prefs.loads_images_automatically =
+      per_tab_prefs_->GetBoolean(prefs::kWebKitLoadsImagesAutomatically);
+  prefs.plugins_enabled =
+      per_tab_prefs_->GetBoolean(prefs::kWebKitPluginsEnabled);
+  prefs.standard_font_family =
+      UTF8ToUTF16(per_tab_prefs_->GetString(prefs::kWebKitStandardFontFamily));
+  prefs.fixed_font_family =
+      UTF8ToUTF16(per_tab_prefs_->GetString(prefs::kWebKitFixedFontFamily));
+  prefs.serif_font_family =
+      UTF8ToUTF16(per_tab_prefs_->GetString(prefs::kWebKitSerifFontFamily));
+  prefs.sans_serif_font_family =
+      UTF8ToUTF16(per_tab_prefs_->GetString(prefs::kWebKitSansSerifFontFamily));
+  prefs.cursive_font_family =
+      UTF8ToUTF16(per_tab_prefs_->GetString(prefs::kWebKitCursiveFontFamily));
+  prefs.fantasy_font_family =
+      UTF8ToUTF16(per_tab_prefs_->GetString(prefs::kWebKitFantasyFontFamily));
+  prefs.default_font_size =
+      per_tab_prefs_->GetInteger(prefs::kWebKitDefaultFontSize);
+  prefs.default_fixed_font_size =
+      per_tab_prefs_->GetInteger(prefs::kWebKitDefaultFixedFontSize);
+  prefs.minimum_font_size =
+      per_tab_prefs_->GetInteger(prefs::kWebKitMinimumFontSize);
+  prefs.minimum_logical_font_size =
+      per_tab_prefs_->GetInteger(prefs::kWebKitMinimumLogicalFontSize);
+  prefs.default_encoding =
+      per_tab_prefs_->GetString(prefs::kDefaultCharset);
+
   web_contents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
 }
 

@@ -204,7 +204,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   // Set up Accept-Language and Accept-Charset header values
   params->accept_language = net::HttpUtil::GenerateAcceptLanguageHeader(
       pref_service->GetString(prefs::kAcceptLanguages));
-  std::string default_charset = pref_service->GetString(prefs::kDefaultCharset);
+  std::string default_charset =
+      pref_service->GetString(prefs::kGlobalDefaultCharset);
   params->accept_charset =
       net::HttpUtil::GenerateAcceptCharsetHeader(default_charset);
 

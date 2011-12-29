@@ -255,9 +255,9 @@ class PrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
     pref_services->SetUserPref(prefs::kUsesSystemTheme,
                                Value::CreateBooleanValue(false));
 #endif
-    pref_services->SetUserPref(prefs::kDefaultCharset,
+    pref_services->SetUserPref(prefs::kGlobalDefaultCharset,
                                Value::CreateStringValue("utf8"));
-    pref_services->SetUserPref(prefs::kWebKitDefaultFontSize,
+    pref_services->SetUserPref(prefs::kWebKitGlobalDefaultFontSize,
                                Value::CreateIntegerValue(20));
     pref_services->SetUserPref(prefs::kWebKitTextAreasAreResizable,
                                Value::CreateBooleanValue(false));

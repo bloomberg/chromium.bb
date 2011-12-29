@@ -1,0 +1,19 @@
+{
+    "intl": {
+        "charset_default": "ISO-8859-1"
+    },
+    "webkit": {
+        "webprefs": {
+            "standard_font_family": "StandardFontFamily",
+            "fixed_font_family": "FixedFontFamily",
+            "serif_font_family": "SerifFontFamily",
+            "sansserif_font_family": "SansSerifFontFamily",
+            "cursive_font_family": "CursiveFontFamily",
+            "fantasy_font_family": "FantasyFontFamily",
+            "default_font_size": 42,
+            "default_fixed_font_size": 42,
+            "minimum_font_size": 42,
+            "minimum_logical_font_size": 42
+        }
+    }
+}

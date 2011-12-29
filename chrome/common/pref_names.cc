@@ -95,7 +95,7 @@ const char kApplicationLocaleBackup[] = "intl.app_locale_backup";
 
 // The default character encoding to assume for a web page in the
 // absence of MIME charset specification
-const char kDefaultCharset[] = "intl.charset_default";
+const char kGlobalDefaultCharset[] = "intl.global.charset_default";
 
 // The value to use for Accept-Languages HTTP header when making an HTTP
 // request.
@@ -111,13 +111,18 @@ const char kStaticEncodings[] = "intl.static_encodings";
 const char kPopupWhitelistedHosts[] = "profile.popup_whitelisted_sites";
 
 // WebKit preferences.
-const char kWebKitStandardFontFamily[] = "webkit.webprefs.standard_font_family";
-const char kWebKitFixedFontFamily[] = "webkit.webprefs.fixed_font_family";
-const char kWebKitSerifFontFamily[] = "webkit.webprefs.serif_font_family";
-const char kWebKitSansSerifFontFamily[] =
-    "webkit.webprefs.sansserif_font_family";
-const char kWebKitCursiveFontFamily[] = "webkit.webprefs.cursive_font_family";
-const char kWebKitFantasyFontFamily[] = "webkit.webprefs.fantasy_font_family";
+const char kWebKitGlobalStandardFontFamily[] =
+    "webkit.webprefs.global.standard_font_family";
+const char kWebKitGlobalFixedFontFamily[] =
+    "webkit.webprefs.global.fixed_font_family";
+const char kWebKitGlobalSerifFontFamily[] =
+    "webkit.webprefs.global.serif_font_family";
+const char kWebKitGlobalSansSerifFontFamily[] =
+    "webkit.webprefs.global.sansserif_font_family";
+const char kWebKitGlobalCursiveFontFamily[] =
+    "webkit.webprefs.global.cursive_font_family";
+const char kWebKitGlobalFantasyFontFamily[] =
+    "webkit.webprefs.global.fantasy_font_family";
 const char kWebKitStandardFontFamilyMap[] =
     "webkit.webprefs.fonts.standard";
 const char kWebKitFixedFontFamilyMap[] =
@@ -180,20 +185,23 @@ const char kWebKitSerifFontFamilyTraditionalHan[] =
 const char kWebKitSansSerifFontFamilyTraditionalHan[] =
     "webkit.webprefs.fonts.sansserif.Hant";
 
-const char kWebKitDefaultFontSize[] = "webkit.webprefs.default_font_size";
-const char kWebKitDefaultFixedFontSize[] =
-    "webkit.webprefs.default_fixed_font_size";
-const char kWebKitMinimumFontSize[] = "webkit.webprefs.minimum_font_size";
-const char kWebKitMinimumLogicalFontSize[] =
-    "webkit.webprefs.minimum_logical_font_size";
+const char kWebKitGlobalDefaultFontSize[] =
+    "webkit.webprefs.global.default_font_size";
+const char kWebKitGlobalDefaultFixedFontSize[] =
+    "webkit.webprefs.global.default_fixed_font_size";
+const char kWebKitGlobalMinimumFontSize[] =
+    "webkit.webprefs.global.minimum_font_size";
+const char kWebKitGlobalMinimumLogicalFontSize[] =
+    "webkit.webprefs.global.minimum_logical_font_size";
+const char kWebKitGlobalJavascriptCanOpenWindowsAutomatically[] =
+    "webkit.webprefs.global.javascript_can_open_windows_automatically";
 const char kWebKitGlobalJavascriptEnabled[] =
     "webkit.webprefs.global.javascript_enabled";
+const char kWebKitGlobalLoadsImagesAutomatically[] =
+    "webkit.webprefs.global.loads_images_automatically";
+const char kWebKitGlobalPluginsEnabled[] =
+    "webkit.webprefs.global.plugins_enabled";
 const char kWebKitWebSecurityEnabled[] = "webkit.webprefs.web_security_enabled";
-const char kWebKitJavascriptCanOpenWindowsAutomatically[] =
-    "webkit.webprefs.javascript_can_open_windows_automatically";
-const char kWebKitLoadsImagesAutomatically[] =
-    "webkit.webprefs.loads_images_automatically";
-const char kWebKitPluginsEnabled[] = "webkit.webprefs.plugins_enabled";
 const char kWebKitDomPasteEnabled[] = "webkit.webprefs.dom_paste_enabled";
 const char kWebKitShrinksStandaloneImagesToFit[] =
     "webkit.webprefs.shrinks_standalone_images_to_fit";
@@ -210,7 +218,26 @@ const char kWebKitAllowRunningInsecureContent[] =
     "webkit.webprefs.allow_running_insecure_content";
 
 // Settings below can be overridden for each tab individually.
+const char kDefaultCharset[] = "intl.charset_default";
+const char kWebKitStandardFontFamily[] = "webkit.webprefs.standard_font_family";
+const char kWebKitFixedFontFamily[] = "webkit.webprefs.fixed_font_family";
+const char kWebKitSerifFontFamily[] = "webkit.webprefs.serif_font_family";
+const char kWebKitSansSerifFontFamily[] =
+    "webkit.webprefs.sansserif_font_family";
+const char kWebKitCursiveFontFamily[] = "webkit.webprefs.cursive_font_family";
+const char kWebKitFantasyFontFamily[] = "webkit.webprefs.fantasy_font_family";
+const char kWebKitDefaultFontSize[] = "webkit.webprefs.default_font_size";
+const char kWebKitDefaultFixedFontSize[] =
+    "webkit.webprefs.default_fixed_font_size";
+const char kWebKitMinimumFontSize[] = "webkit.webprefs.minimum_font_size";
+const char kWebKitMinimumLogicalFontSize[] =
+    "webkit.webprefs.minimum_logical_font_size";
 const char kWebKitJavascriptEnabled[] = "webkit.webprefs.javascript_enabled";
+const char kWebKitJavascriptCanOpenWindowsAutomatically[] =
+    "webkit.webprefs.javascript_can_open_windows_automatically";
+const char kWebKitLoadsImagesAutomatically[] =
+    "webkit.webprefs.loads_images_automatically";
+const char kWebKitPluginsEnabled[] = "webkit.webprefs.plugins_enabled";
 
 // Boolean which specifies whether the bookmark bar is visible on all tabs.
 const char kShowBookmarkBar[] = "bookmark_bar.show_on_all_tabs";

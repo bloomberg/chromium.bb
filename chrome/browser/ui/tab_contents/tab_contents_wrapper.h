@@ -191,8 +191,7 @@ class TabContentsWrapper : public content::WebContentsObserver {
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(
-      PrefsTabHelperTest, OverridePrefsOnViewCreation);
+  friend class PrefsTabHelperTest;
 
   // Used to retrieve this object from |tab_contents_|, which is placed in
   // its property bag to avoid adding additional interfaces.

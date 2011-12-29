@@ -49,9 +49,93 @@ class PrefsTabHelperTest : public TabContentsWrapperTestHarness {
     return contents_wrapper2_.get();
   }
 
+  TestPrefsTabHelper* CreateTestPrefsTabHelper() {
+    TestPrefsTabHelper* test_prefs_helper =
+        new TestPrefsTabHelper(contents_wrapper()->tab_contents());
+    contents_wrapper()->prefs_tab_helper_.reset(test_prefs_helper);
+    return test_prefs_helper;
+  }
+
   void SetContents2(TestTabContents* contents) {
     contents_wrapper2_.reset(
         contents ? new TabContentsWrapper(contents) : NULL);
+  }
+
+  void TestBooleanPreference(const char* key) {
+    PrefService* prefs1 =
+        contents_wrapper()->prefs_tab_helper()->per_tab_prefs();
+    PrefService* prefs2 =
+        contents_wrapper2()->prefs_tab_helper()->per_tab_prefs();
+    const bool initial_value = prefs1->GetBoolean(key);
+    EXPECT_EQ(initial_value, prefs2->GetBoolean(key));
+
+    prefs1->SetBoolean(key, !initial_value);
+    EXPECT_EQ(!initial_value, prefs1->GetBoolean(key));
+    EXPECT_EQ(initial_value, prefs2->GetBoolean(key));
+
+    prefs1->SetBoolean(key, initial_value);
+    EXPECT_EQ(initial_value, prefs1->GetBoolean(key));
+    EXPECT_EQ(initial_value, prefs2->GetBoolean(key));
+
+    prefs2->SetBoolean(key, !initial_value);
+    EXPECT_EQ(initial_value, prefs1->GetBoolean(key));
+    EXPECT_EQ(!initial_value, prefs2->GetBoolean(key));
+
+    prefs1->SetBoolean(key, !initial_value);
+    EXPECT_EQ(!initial_value, prefs1->GetBoolean(key));
+    EXPECT_EQ(!initial_value, prefs2->GetBoolean(key));
+  }
+
+  void TestIntegerPreference(const char* key) {
+    PrefService* prefs1 =
+        contents_wrapper()->prefs_tab_helper()->per_tab_prefs();
+    PrefService* prefs2 =
+        contents_wrapper2()->prefs_tab_helper()->per_tab_prefs();
+    const int initial_value = prefs1->GetInteger(key);
+    EXPECT_EQ(initial_value, prefs2->GetInteger(key));
+
+    const int modified_value = initial_value + 1;
+    prefs1->SetInteger(key, modified_value);
+    EXPECT_EQ(modified_value, prefs1->GetInteger(key));
+    EXPECT_EQ(initial_value, prefs2->GetInteger(key));
+
+    prefs1->SetInteger(key, initial_value);
+    EXPECT_EQ(initial_value, prefs1->GetInteger(key));
+    EXPECT_EQ(initial_value, prefs2->GetInteger(key));
+
+    prefs2->SetInteger(key, modified_value);
+    EXPECT_EQ(initial_value, prefs1->GetInteger(key));
+    EXPECT_EQ(modified_value, prefs2->GetInteger(key));
+
+    prefs1->SetInteger(key, modified_value);
+    EXPECT_EQ(modified_value, prefs1->GetInteger(key));
+    EXPECT_EQ(modified_value, prefs2->GetInteger(key));
+  }
+
+  void TestStringPreference(const char* key) {
+    PrefService* prefs1 =
+        contents_wrapper()->prefs_tab_helper()->per_tab_prefs();
+    PrefService* prefs2 =
+        contents_wrapper2()->prefs_tab_helper()->per_tab_prefs();
+    const std::string initial_value = prefs1->GetString(key);
+    EXPECT_EQ(initial_value, prefs2->GetString(key));
+
+    const std::string modified_value = initial_value + "_";
+    prefs1->SetString(key, modified_value);
+    EXPECT_EQ(modified_value, prefs1->GetString(key));
+    EXPECT_EQ(initial_value, prefs2->GetString(key));
+
+    prefs1->SetString(key, initial_value);
+    EXPECT_EQ(initial_value, prefs1->GetString(key));
+    EXPECT_EQ(initial_value, prefs2->GetString(key));
+
+    prefs2->SetString(key, modified_value);
+    EXPECT_EQ(initial_value, prefs1->GetString(key));
+    EXPECT_EQ(modified_value, prefs2->GetString(key));
+
+    prefs1->SetString(key, modified_value);
+    EXPECT_EQ(modified_value, prefs1->GetString(key));
+    EXPECT_EQ(modified_value, prefs2->GetString(key));
   }
 
  protected:
@@ -73,30 +157,77 @@ class PrefsTabHelperTest : public TabContentsWrapperTestHarness {
 };
 
 TEST_F(PrefsTabHelperTest, PerTabJavaScriptEnabled) {
-  const char* key = prefs::kWebKitJavascriptEnabled;
-  PrefService* prefs1 = contents_wrapper()->prefs_tab_helper()->per_tab_prefs();
-  PrefService* prefs2 =
-      contents_wrapper2()->prefs_tab_helper()->per_tab_prefs();
-  const bool initial_value = prefs1->GetBoolean(key);
-  EXPECT_EQ(initial_value, prefs2->GetBoolean(key));
+  TestBooleanPreference(prefs::kWebKitJavascriptEnabled);
+}
 
-  prefs1->SetBoolean(key, !initial_value);
-  EXPECT_EQ(!initial_value, prefs1->GetBoolean(key));
-  EXPECT_EQ(initial_value, prefs2->GetBoolean(key));
+TEST_F(PrefsTabHelperTest, PerTabJavascriptCanOpenWindowsAutomatically) {
+  TestBooleanPreference(prefs::kWebKitJavascriptCanOpenWindowsAutomatically);
+}
 
-  prefs1->SetBoolean(key, initial_value);
-  EXPECT_EQ(initial_value, prefs1->GetBoolean(key));
-  EXPECT_EQ(initial_value, prefs2->GetBoolean(key));
+TEST_F(PrefsTabHelperTest, PerTabLoadsImagesAutomatically) {
+  TestBooleanPreference(prefs::kWebKitLoadsImagesAutomatically);
+}
 
-  prefs2->SetBoolean(key, !initial_value);
-  EXPECT_EQ(initial_value, prefs1->GetBoolean(key));
-  EXPECT_EQ(!initial_value, prefs2->GetBoolean(key));
+TEST_F(PrefsTabHelperTest, PerTabPluginsEnabled) {
+  TestBooleanPreference(prefs::kWebKitPluginsEnabled);
+}
+
+TEST_F(PrefsTabHelperTest, PerTabDefaultFontSize) {
+  TestIntegerPreference(prefs::kWebKitDefaultFontSize);
+}
+
+TEST_F(PrefsTabHelperTest, PerTabDefaultFixedFontSize) {
+  TestIntegerPreference(prefs::kWebKitDefaultFixedFontSize);
+}
+
+TEST_F(PrefsTabHelperTest, PerTabMinimumFontSize) {
+  TestIntegerPreference(prefs::kWebKitMinimumFontSize);
+}
+
+TEST_F(PrefsTabHelperTest, PerTabMinimumLogicalFontSize) {
+  TestIntegerPreference(prefs::kWebKitMinimumLogicalFontSize);
+}
+
+TEST_F(PrefsTabHelperTest, PerTabDefaultCharset) {
+  TestStringPreference(prefs::kDefaultCharset);
+}
+
+TEST_F(PrefsTabHelperTest, PerTabDefaultCharsetUpdate) {
+  TestPrefsTabHelper* test_prefs_helper = CreateTestPrefsTabHelper();
+  EXPECT_FALSE(test_prefs_helper->was_update_web_preferences_called());
+  const char* pref = prefs::kDefaultCharset;
+  PrefService* prefs =
+      contents_wrapper()->prefs_tab_helper()->per_tab_prefs();
+  prefs->SetString(pref, prefs->GetString(pref) + "_");
+  EXPECT_TRUE(test_prefs_helper->was_update_web_preferences_called());
+}
+
+TEST_F(PrefsTabHelperTest, PerTabStandardFontFamily) {
+  TestStringPreference(prefs::kWebKitStandardFontFamily);
+}
+
+TEST_F(PrefsTabHelperTest, PerTabFixedFontFamily) {
+  TestStringPreference(prefs::kWebKitFixedFontFamily);
+}
+
+TEST_F(PrefsTabHelperTest, PerTabSerifFontFamily) {
+  TestStringPreference(prefs::kWebKitSerifFontFamily);
+}
+
+TEST_F(PrefsTabHelperTest, PerTabSansSerifFontFamily) {
+  TestStringPreference(prefs::kWebKitSansSerifFontFamily);
+}
+
+TEST_F(PrefsTabHelperTest, PerTabCursiveFontFamily) {
+  TestStringPreference(prefs::kWebKitCursiveFontFamily);
+}
+
+TEST_F(PrefsTabHelperTest, PerTabFantasyFontFamily) {
+  TestStringPreference(prefs::kWebKitFantasyFontFamily);
 }
 
 TEST_F(PrefsTabHelperTest, OverridePrefsOnViewCreation) {
-  TestPrefsTabHelper* test_prefs_helper =
-      new TestPrefsTabHelper(contents_wrapper()->tab_contents());
-  contents_wrapper()->prefs_tab_helper_.reset(test_prefs_helper);
+  TestPrefsTabHelper* test_prefs_helper = CreateTestPrefsTabHelper();
   EXPECT_FALSE(test_prefs_helper->was_update_web_preferences_called());
   test_prefs_helper->NotifyRenderViewCreated();
   EXPECT_TRUE(test_prefs_helper->was_update_web_preferences_called());

@@ -745,6 +745,24 @@ void PrefService::RegisterPreference(const char* path,
     pref_sync_associator_->RegisterPref(path);
 }
 
+void PrefService::UnregisterPreference(const char* path) {
+  DCHECK(CalledOnValidThread());
+
+  Preference p(this, path, Value::TYPE_NULL);
+  PreferenceSet::const_iterator it = prefs_.find(&p);
+  if (it == prefs_.end()) {
+    NOTREACHED() << "Trying to unregister an unregistered pref: " << path;
+    return;
+  }
+
+  prefs_.erase(it);
+  default_store_->RemoveDefaultValue(path);
+  if (pref_sync_associator_.get() &&
+      pref_sync_associator_->IsPrefRegistered(path)) {
+    pref_sync_associator_->UnregisterPref(path);
+  }
+}
+
 void PrefService::ClearPref(const char* path) {
   DCHECK(CalledOnValidThread());
 

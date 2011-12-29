@@ -238,6 +238,8 @@ class PrefService : public base::NonThreadSafe {
   void RegisterInt64Pref(const char* path,
                          int64 default_value,
                          PrefSyncStatus sync_status);
+  // Unregisters a preference.
+  void UnregisterPreference(const char* path);
 
   // If the path is valid and the value at the end of the path matches the type
   // specified, it will return the specified value.  Otherwise, the default

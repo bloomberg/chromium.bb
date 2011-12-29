@@ -340,17 +340,17 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
   WebPreferences web_prefs;
 
   web_prefs.standard_font_family =
-      UTF8ToUTF16(prefs->GetString(prefs::kWebKitStandardFontFamily));
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalStandardFontFamily));
   web_prefs.fixed_font_family =
-      UTF8ToUTF16(prefs->GetString(prefs::kWebKitFixedFontFamily));
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalFixedFontFamily));
   web_prefs.serif_font_family =
-      UTF8ToUTF16(prefs->GetString(prefs::kWebKitSerifFontFamily));
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalSerifFontFamily));
   web_prefs.sans_serif_font_family =
-      UTF8ToUTF16(prefs->GetString(prefs::kWebKitSansSerifFontFamily));
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalSansSerifFontFamily));
   web_prefs.cursive_font_family =
-      UTF8ToUTF16(prefs->GetString(prefs::kWebKitCursiveFontFamily));
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalCursiveFontFamily));
   web_prefs.fantasy_font_family =
-      UTF8ToUTF16(prefs->GetString(prefs::kWebKitFantasyFontFamily));
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalFantasyFontFamily));
 
   FillFontFamilyMap(prefs, prefs::kWebKitStandardFontFamilyMap,
                     &web_prefs.standard_font_family_map);
@@ -366,18 +366,19 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
                     &web_prefs.fantasy_font_family_map);
 
   web_prefs.default_font_size =
-      prefs->GetInteger(prefs::kWebKitDefaultFontSize);
+      prefs->GetInteger(prefs::kWebKitGlobalDefaultFontSize);
   web_prefs.default_fixed_font_size =
-      prefs->GetInteger(prefs::kWebKitDefaultFixedFontSize);
+      prefs->GetInteger(prefs::kWebKitGlobalDefaultFixedFontSize);
   web_prefs.minimum_font_size =
-      prefs->GetInteger(prefs::kWebKitMinimumFontSize);
+      prefs->GetInteger(prefs::kWebKitGlobalMinimumFontSize);
   web_prefs.minimum_logical_font_size =
-      prefs->GetInteger(prefs::kWebKitMinimumLogicalFontSize);
+      prefs->GetInteger(prefs::kWebKitGlobalMinimumLogicalFontSize);
 
-  web_prefs.default_encoding = prefs->GetString(prefs::kDefaultCharset);
+  web_prefs.default_encoding = prefs->GetString(prefs::kGlobalDefaultCharset);
 
   web_prefs.javascript_can_open_windows_automatically =
-      prefs->GetBoolean(prefs::kWebKitJavascriptCanOpenWindowsAutomatically);
+      prefs->GetBoolean(
+          prefs::kWebKitGlobalJavascriptCanOpenWindowsAutomatically);
   web_prefs.dom_paste_enabled =
       prefs->GetBoolean(prefs::kWebKitDomPasteEnabled);
   web_prefs.shrinks_standalone_images_to_fit =
@@ -407,12 +408,12 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         prefs->GetBoolean(prefs::kWebKitWebSecurityEnabled);
     web_prefs.plugins_enabled =
         !command_line.HasSwitch(switches::kDisablePlugins) &&
-        prefs->GetBoolean(prefs::kWebKitPluginsEnabled);
+        prefs->GetBoolean(prefs::kWebKitGlobalPluginsEnabled);
     web_prefs.java_enabled =
         !command_line.HasSwitch(switches::kDisableJava) &&
         prefs->GetBoolean(prefs::kWebKitJavaEnabled);
     web_prefs.loads_images_automatically =
-        prefs->GetBoolean(prefs::kWebKitLoadsImagesAutomatically);
+        prefs->GetBoolean(prefs::kWebKitGlobalLoadsImagesAutomatically);
     web_prefs.uses_page_cache =
         command_line.HasSwitch(switches::kEnableFastback);
     web_prefs.remote_fonts_enabled =
@@ -543,8 +544,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
       CharacterEncoding::GetCanonicalEncodingNameByAliasName(
           web_prefs.default_encoding);
   if (web_prefs.default_encoding.empty()) {
-    prefs->ClearPref(prefs::kDefaultCharset);
-    web_prefs.default_encoding = prefs->GetString(prefs::kDefaultCharset);
+    prefs->ClearPref(prefs::kGlobalDefaultCharset);
+    web_prefs.default_encoding = prefs->GetString(prefs::kGlobalDefaultCharset);
   }
   DCHECK(!web_prefs.default_encoding.empty());
 
