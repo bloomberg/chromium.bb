@@ -1,0 +1,113 @@
+# DO NOT EDIT. THIS IS A GENERATED FILE.
+# ALL MANUAL CHANGES WILL BE OVERWRITTEN.
+vars = {
+    'webkit_url':
+         'http://git.chromium.org/external/WebKit_trimmed.git',
+    'git_url':
+         'http://git.chromium.org'
+}
+
+deps = {
+    'src/chrome/app/theme/google_chrome':
+        'ssh://gerrit-int.chromium.org:29419/chrome/theme.git@2f6bf72a301cfcb8937887c5c65fe72fdfec409d',
+    'src/chrome/browser/autofill/internal':
+        'ssh://gerrit-int.chromium.org:29419/chrome/autofill.git@d62c24d67f25b54f29efaefdc9da29e0762901ce',
+    'src/chrome/browser/spellchecker/internal':
+        'ssh://gerrit-int.chromium.org:29419/chrome/spellchecker/internal.git@7813bf4a7bbac05d95d2bf1585885b578faf3ede',
+    'src/chrome/installer/linux':
+        'ssh://gerrit-int.chromium.org:29419/chrome/installer/linux.git@b8e6c8ccfa0bf409e0e3d6dac53ace94a8b43919',
+    'src/chrome/installer/mac/internal':
+        'ssh://gerrit-int.chromium.org:29419/chrome/installer/mac/internal.git@eb5f38673029372be6801dd526dc3d423e192d0f',
+    'src/chrome/test/data/firefox2_profile/searchplugins':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/osdd/firefox2_profile_searchplugins.git@a00658be3199e5dda29945e9b7aafa0948c0b137',
+    'src/chrome/test/data/firefox2_searchplugins':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/osdd/firefox2_searchplugins.git@f4f40d51d90be9c970a20293dbc9b49af8cf654b',
+    'src/chrome/test/data/firefox3_profile/searchplugins':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/osdd/firefox3_profile_searchplugins.git@6cf09b86fb9d058453e7d05978ff8e91b5e8e749',
+    'src/chrome/test/data/firefox3_searchplugins':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/osdd/firefox3_searchplugins.git@490580801915834d72dd8a1e943924c35df45673',
+    'src/chrome/test/data/osdd':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/osdd/chrome.git@8ad4577f7161db640eb3a6bbf9e7132a421d4280',
+    'src/chrome/test/data/perf/frame_rate/private':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/frame_rate_tests.git@3ddd3b8d6a73c2c7e8295ef6a5f4195c927348a2',
+    'src/chrome/test/data/plugin':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/chrome_plugin_tests.git@6f1ef2cd08da72817d15683c7e6c30942f5bcfb9',
+    'src/chrome/test/data/pyauto_private':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/pyauto_private.git@fb6f23252c3e051fa28a3fe6d2e59a82eba80032',
+    'src/data/autodiscovery':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/autodiscovery.git@4e67a1c180ccfe96320c5daf9493094849721454',
+    'src/data/dom_perf':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/dom_perf.git@eb7332e405d49982d61c76965abeb8c19ea98ee8',
+    'src/data/memory_test':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/memory_test.git@1c862d2d94b309dc2f002021ec6269fcb5318c4d',
+    'src/data/mozilla_js_tests':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/mozilla_js_tests.git@1785584fe98cbb9f7c8d62cc8c1ae3c44027b887',
+    'src/data/page_cycler':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/page_cycler.git@1ddf8a0e2cf9b4b8c55c5a14729e6be10bb1fa3a',
+    'src/data/selenium_core':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/selenium_core.git@52fec36542e05562dfe3c152f7270760b73d2be1',
+    'src/data/tab_switching':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/tab_switching.git@43eec89446d8475b26d6211531066ac5f193f2d4',
+    'src/gpu/gles2_conform_test':
+        'ssh://gerrit-int.chromium.org:29419/chrome/gpu/gles2_conform_test.git@a3158965ab5d64f40d020ee78794758c822e289d',
+    'src/third_party/gles2_conform':
+        'ssh://gerrit-int.chromium.org:29419/chrome/deps/gles2_conform.git@1b7ae5961f605335a102751792de888b337626cc',
+    'src/tools/histograms':
+        'ssh://gerrit-int.chromium.org:29419/chrome/tools/histograms.git',
+    'src/webkit/data/bmp_decoder':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/bmp_decoder.git@95b41fc16acf4a23c62bf3495fc1dce0774cdefe',
+    'src/webkit/data/ico_decoder':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/ico_decoder.git@f47d7947ecc9e7b397547dcc6902471d58dedd7d',
+    'src/webkit/data/test_shell/plugins':
+        'ssh://gerrit-int.chromium.org:29419/chrome/data/webkit_plugin_tests.git@e4bd19f95afa6483a54906c2a3e5d329d2d81690',
+}
+
+deps_os = {
+    'mac':
+    {
+        'src/third_party/adobe/flash/binaries/mac':
+            'ssh://gerrit-int.chromium.org:29419/chrome/deps/adobe/flash/binaries/npapi/mac.git@bddca9d7f4fcbe60fa38f3c9c19a1e9b13eb1261',
+        'src/third_party/googlemac':
+            'ssh://gerrit-int.chromium.org:29419/chrome/deps/googlemac.git@59ae6b0d1e1bff4d2863820b716dabf96ed586fe',
+        'tools/goma':
+            'ssh://gerrit-int.chromium.org:29419/chrome/tools/goma/mac.git',
+    },
+    'unix':
+    {
+        'src/chrome/browser/extensions/default_extensions/chromeos':
+            'ssh://gerrit-int.chromium.org:29419/chrome/extensions/chromeos.git@03259a1d6670dfae30992b3b3c245a09bdbf060d',
+        'src/third_party/adobe/flash/binaries/chromeos':
+            'ssh://gerrit-int.chromium.org:29419/chrome/deps/adobe/flash/binaries/npapi/linux.git@6ac8f50a79e41f82831073091a1d012d40397d04',
+        'src/third_party/adobe/flash/binaries/linux':
+            'ssh://gerrit-int.chromium.org:29419/chrome/deps/adobe/flash/binaries/npapi/linux.git@6ac8f50a79e41f82831073091a1d012d40397d04',
+        'src/tools/distcc':
+            'ssh://gerrit-int.chromium.org:29419/chrome/tools/distcc.git',
+    },
+    'win':
+    {
+        'src/chrome/tools/memory':
+            'ssh://gerrit-int.chromium.org:29419/chrome/tools/memory.git@3c9359382236f6d57c91505234a2bc7fd635ba6c',
+        'src/third_party/adobe/flash/binaries/win':
+            'ssh://gerrit-int.chromium.org:29419/chrome/deps/adobe/flash/binaries/npapi/win.git@55cb30434812168c16888593fb1be30348efd3f6',
+        'src/third_party/adobe/flash/symbols/win':
+            'ssh://gerrit-int.chromium.org:29419/chrome/deps/adobe/flash/symbols/npapi/win.git@a41772b634a32aa0976e9e6ffbd26c15ffe94921',
+        'src/third_party/directxsdk':
+            'ssh://gerrit-int.chromium.org:29419/chrome/deps/directxsdk.git@b9c2106f0051f6cc172f5a2153a50dcea8c3f07d',
+        'src/third_party/ffmpeg/binaries/chrome/win/ia32':
+            'ssh://gerrit-int.chromium.org:29419/chrome/ffmpeg/binaries/win.git@02e18525323ecca7a1ebea4981d5de81eeb46a7e',
+        'src/third_party/platformsdk_win7':
+            'ssh://gerrit-int.chromium.org:29419/chrome/deps/platformsdk_win7.git@4d2145117b8d8d6dba34d35f0cedcb405f4a386e',
+    },
+}
+
+include_rules = [
+    
+]
+
+skip_child_includes = [
+    
+]
+
+hooks = [
+    
+]

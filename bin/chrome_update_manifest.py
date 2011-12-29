@@ -44,6 +44,10 @@ _EXTERNAL_PROJECT = """\
            name="%(name)s"
            revision="refs/heads/master" />\n"""
 
+_CROS_HEADER = """\
+  <!-- Begin CrOS-specific Chromium (browser) projects -->
+  <!-- Hardcoded revision="refs/heads/master" is intentional here -->\n\n"""
+
 _INTERNAL_HEADER = """\
   <!-- Begin Chrome browser (PRIVATE) projects -->
   <!-- Hardcoded revision="refs/heads/master" is intentional here -->\n\n"""
@@ -71,7 +75,7 @@ _TEST_MANIFEST_TEMPLATE = """\
 </manifest>"""
 
 
-def ConvertDepsToManifest(deps_file, manifest_file, template):
+def ConvertDepsToManifest(deps_file, manifest_file, template, blacklist=None):
   """Convert dependencies in .DEPS.git files to manifest entries.
 
   Arguments:
@@ -79,40 +83,65 @@ def ConvertDepsToManifest(deps_file, manifest_file, template):
     manifest_file: The file object to write manifest entries to.
     template: The template to use for manifest projects. One of
               (_EXTERNAL_PROJECT, _INTERNAL_PROJECT)
+    blacklist: A list of projects to ignore.
   """
   _, merged_deps = chrome_set_ver.GetParsedDeps(deps_file)
   mappings = chrome_set_ver.GetPathToProjectMappings(merged_deps)
 
-  # Print and check for double checkouts
+  # Check for double checkouts and blacklisted projects.
   previous_projects = set([])
   for rel_path, project in sorted(mappings.items(),
                                   key=lambda mapping: mapping[1]):
     rel_path = os.path.join('chromium', rel_path)
-    if project in previous_projects:
+    if blacklist and project in blacklist:
+      cros_lib.Warning('Skipping project %s in %s' % (project, deps_file))
+    elif project in previous_projects:
       cros_lib.Warning('Found double checkout of %s to %s'
                        % (project, rel_path))
-      continue
-
-    manifest_file.write(template % {'path' : rel_path, 'name' : project})
-
-    previous_projects.add(project)
+    else:
+      manifest_file.write(template % {'path' : rel_path, 'name' : project})
+      previous_projects.add(project)
 
 
 class ManifestException(Exception):
   pass
 
 
-def CheckForNonChromeProjects(xml_snippet_object):
+def ParseManifestString(manifest_xml):
+  """Returns a cros_lib.ManifestHandler object containing the parsed XML.
+
+  Arguments:
+    manifest_xml: The well-formed XML snippet to parse.
+
+  Returns:
+    A cros_build_lib.ManifestHandler object.
+  """
+  return cros_lib.ManifestHandler.ParseManifest(StringIO.StringIO(manifest_xml))
+
+
+def CheckForNonChromeProjects(manifest_xml):
   """Make sure we didn't remove non-chrome projects from the manifest.
 
   Arguments:
     xml_snippet_object: The file object containing manifest entries to examine.
   """
-  handler = cros_lib.ManifestHandler.ParseManifest(xml_snippet_object)
+  handler = ParseManifestString(manifest_xml)
   for project, attributes in handler.projects.iteritems():
     if not attributes.get('path', '').startswith('chromium/'):
       raise ManifestException('Project %s was about to be accidentally removed!'
                               % project)
+
+
+def GetListOfProjects(manifest_xml):
+  """Returns a list of projects specified in the manifest.
+
+  Arguments:
+    manifest_xml: The well-formed XML snippet to parse.
+
+  Returns:
+    A list of projects.
+  """
+  return ParseManifestString(manifest_xml).projects.keys()
 
 
 class Manifest(object):
@@ -154,24 +183,24 @@ class Manifest(object):
     manifest_version.PrepForChanges(self.manifest_dir, False)
 
     top_part, overwritten, bottom_part = self._PartitionManifest()
-
-    # Check contents for non-chrome projects
-    overwritten_content = StringIO.StringIO()
-    overwritten_content.write(_TEST_MANIFEST_TEMPLATE
+    CheckForNonChromeProjects(_TEST_MANIFEST_TEMPLATE
                               % {'content' : overwritten})
-    overwritten_content.seek(0)
-    CheckForNonChromeProjects(overwritten_content)
 
     with open(self.new_manifest_path, 'w') as new_manifest:
       new_manifest.write(top_part)
       new_manifest.write(_BEGIN_MARKER + _EXTERNAL_HEADER)
       new_manifest.write(_EXTERNAL_PROJECT % {'path' : 'chromium/src',
                                               'name' : 'chromium/src'})
-      ConvertDepsToManifest(os.path.join(
-                                self.repo_root,
-                                _CHROMIUM_SRC_ROOT,
-                                '.DEPS.git'),
-                            new_manifest, _EXTERNAL_PROJECT)
+      src_root = os.path.join(self.repo_root, _CHROMIUM_SRC_ROOT)
+      ConvertDepsToManifest(os.path.join(src_root, '.DEPS.git'), new_manifest,
+                            _EXTERNAL_PROJECT)
+      new_manifest.write('\n')
+
+      # Convert cros.DEPS, skipping projects already in the manifest.
+      new_manifest.write(_CROS_HEADER)
+      ConvertDepsToManifest(os.path.join(src_root, 'tools/cros.DEPS/DEPS'),
+                            new_manifest, _EXTERNAL_PROJECT,
+                            blacklist=GetListOfProjects(top_part + bottom_part))
       new_manifest.write('\n')
 
       if self.internal:

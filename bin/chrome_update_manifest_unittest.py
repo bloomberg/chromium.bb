@@ -59,6 +59,10 @@ class DEPSFileTest(mox.MoxTestBase):
                     os.path.join(self.repo_root,
                                  'chromium/src/.DEPS.git'))
 
+    shutil.copyfile(os.path.join(self.test_base, test_name, 'DEPS_cros.git'),
+                    os.path.join(self.repo_root,
+                                 'chromium/src/tools/cros.DEPS/DEPS'))
+
     internal_src_deps = os.path.join(self.test_base, test_name,
                                      'DEPS_internal.git')
     if os.path.exists(internal_src_deps):
@@ -124,6 +128,36 @@ class DEPSFileTest(mox.MoxTestBase):
                                                internal=False, dryrun=True)
     self._assertRaisesRegexp('.* accidentally .*',
                             manifest.CreateNewManifest)
+
+  def testParseInternalManifestWithNoCrosDEPS(self):
+    """Test a scenario where no cros.DEPS projects are written to manifest."""
+    self._CopyTestFiles('test5')
+    self.mox.StubOutWithMock(manifest_version, 'PrepForChanges')
+    manifest_version.PrepForChanges(mox.IgnoreArg(), False)
+    self.mox.ReplayAll()
+    manifest = chrome_update_manifest.Manifest(self.repo_root,
+                                               self.manifest_path,
+                                               '/does/not/exist',
+                                               internal=True, dryrun=True)
+    manifest.CreateNewManifest()
+    assert(filecmp.cmp(manifest.new_manifest_path,
+                       os.path.join(self.test_base, 'test5/expected.xml'),
+                       shallow=False))
+
+  def testParseExternalManifestCrosDEPSUnchanged(self):
+    """Test that manifest stays the same given same cros.DEPS."""
+    self._CopyTestFiles('test6')
+    self.mox.StubOutWithMock(manifest_version, 'PrepForChanges')
+    manifest_version.PrepForChanges(mox.IgnoreArg(), False)
+    self.mox.ReplayAll()
+    manifest = chrome_update_manifest.Manifest(self.repo_root,
+                                               self.manifest_path,
+                                               '/does/not/exist',
+                                               internal=False, dryrun=True)
+    manifest.CreateNewManifest()
+    assert(filecmp.cmp(manifest.new_manifest_path,
+                       os.path.join(self.test_base, 'test6/expected.xml'),
+                       shallow=False))
 
   def tearDown(self):
     os.chdir(self.old_dir)

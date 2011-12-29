@@ -395,9 +395,6 @@ Your sources have been sync'd successfully.
   <!-- Begin CrOS-specific Chromium (browser) projects -->
   <!-- Hardcoded revision="refs/heads/master" is intentional here -->
 
-  <project path="chromium/src/profile"
-           name="chromiumos/profile/chromium"
-           revision="refs/heads/master" />
 
   <!-- Begin Chrome browser (PRIVATE) projects -->
   <!-- Hardcoded revision="refs/heads/master" is intentional here -->
