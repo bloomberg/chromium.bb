@@ -71,14 +71,7 @@ std::string PasswordsSyncPerfTest::NextPassword() {
   return base::StringPrintf("password%d", password_number_++);
 }
 
-// Flaky on Windows, timing out on Mac, see http://crbug.com/105999
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_P0 DISABLED_P0
-#else
-#define MAYBE_P0 P0
-#endif
-
-IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, MAYBE_P0) {
+IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // TCM ID - 7367749.
