@@ -109,6 +109,11 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   aura::client::SetTooltipText(window_, NULL);
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+  ui::Compositor* compositor = window_->layer()->GetCompositor();
+  if (compositor && compositor->HasObserver(this))
+    compositor->RemoveObserver(this);
+#endif
 }
 
 void RenderWidgetHostViewAura::InitAsChild() {
