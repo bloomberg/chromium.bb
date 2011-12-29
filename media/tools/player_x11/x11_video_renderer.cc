@@ -101,7 +101,6 @@ void X11VideoRenderer::Paint(media::VideoFrame* video_frame) {
          video_frame->format() == media::VideoFrame::YV16);
   DCHECK(video_frame->stride(media::VideoFrame::kUPlane) ==
          video_frame->stride(media::VideoFrame::kVPlane));
-  DCHECK(video_frame->planes() == media::VideoFrame::kNumYUVPlanes);
 
   DCHECK(image_->data);
   media::YUVType yuv_type =

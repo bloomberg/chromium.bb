@@ -13,6 +13,8 @@
 #include "media/base/yuv_convert.h"
 #include "ui/gfx/gl/gl_implementation.h"
 
+enum { kNumYUVPlanes = 3 };
+
 static GLXContext InitGLContext(Display* display, Window window) {
   // Some versions of NVIDIA's GL libGL.so include a broken version of
   // dlopen/dlsym, and so linking it into chrome breaks it. So we dynamically
@@ -126,18 +128,14 @@ void GlVideoRenderer::Paint(media::VideoFrame* video_frame) {
          video_frame->format() == media::VideoFrame::YV16);
   DCHECK(video_frame->stride(media::VideoFrame::kUPlane) ==
          video_frame->stride(media::VideoFrame::kVPlane));
-  DCHECK(video_frame->planes() == media::VideoFrame::kNumYUVPlanes);
 
   if (glXGetCurrentContext() != gl_context_ ||
       glXGetCurrentDrawable() != window_) {
     glXMakeCurrent(display_, window_, gl_context_);
   }
-  for (unsigned int i = 0; i < media::VideoFrame::kNumYUVPlanes; ++i) {
-    unsigned int width = (i == media::VideoFrame::kYPlane) ?
-        video_frame->width() : video_frame->width() / 2;
-    unsigned int height = (i == media::VideoFrame::kYPlane ||
-                           video_frame->format() == media::VideoFrame::YV16) ?
-        video_frame->height() : video_frame->height() / 2;
+  for (unsigned int i = 0; i < kNumYUVPlanes; ++i) {
+    unsigned int width = video_frame->stride(i);
+    unsigned int height = video_frame->rows(i);
     glActiveTexture(GL_TEXTURE0 + i);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, video_frame->stride(i));
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
@@ -160,7 +158,7 @@ void GlVideoRenderer::Initialize(int width, int height) {
 
   // Create 3 textures, one for each plane, and bind them to different
   // texture units.
-  glGenTextures(media::VideoFrame::kNumYUVPlanes, textures_);
+  glGenTextures(3, textures_);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

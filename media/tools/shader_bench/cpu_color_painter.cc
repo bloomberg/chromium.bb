@@ -5,6 +5,8 @@
 #include "media/base/yuv_convert.h"
 #include "media/tools/shader_bench/cpu_color_painter.h"
 
+enum { kNumRGBPlanes = 1 };
+
 // Pass-through vertex shader.
 static const char kVertexShader[] =
     "precision highp float;\n"
@@ -39,12 +41,12 @@ CPUColorPainter::CPUColorPainter()
 CPUColorPainter::~CPUColorPainter() {
   if (program_id_) {
     glDeleteProgram(program_id_);
-    glDeleteTextures(media::VideoFrame::kNumRGBPlanes, textures_);
+    glDeleteTextures(kNumRGBPlanes, textures_);
   }
 }
 
 void CPUColorPainter::Initialize(int width, int height) {
-  glGenTextures(media::VideoFrame::kNumRGBPlanes, textures_);
+  glGenTextures(kNumRGBPlanes, textures_);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

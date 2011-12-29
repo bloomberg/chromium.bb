@@ -5,6 +5,8 @@
 #include "media/tools/shader_bench/gpu_color_painter.h"
 #include "ui/gfx/gl/gl_context.h"
 
+enum { kNumYUVPlanes = 3 };
+
 // Matrix used for the YUV to RGB conversion.
 static const float kYUV2RGB[9] = {
   1.f, 0.f, 1.403f,
@@ -59,16 +61,16 @@ GPUColorWithLuminancePainter::GPUColorWithLuminancePainter()
 GPUColorWithLuminancePainter::~GPUColorWithLuminancePainter() {
   if (program_id_) {
     glDeleteProgram(program_id_);
-    glDeleteTextures(media::VideoFrame::kNumYUVPlanes, textures_);
+    glDeleteTextures(kNumYUVPlanes, textures_);
   }
 }
 
 void GPUColorWithLuminancePainter::Initialize(int width, int height) {
   // Create 3 textures, one for each plane, and bind them to different
   // texture units.
-  glGenTextures(media::VideoFrame::kNumYUVPlanes, textures_);
+  glGenTextures(kNumYUVPlanes, textures_);
 
-  for (unsigned int i = 0; i < media::VideoFrame::kNumYUVPlanes; ++i) {
+  for (unsigned int i = 0; i < kNumYUVPlanes; ++i) {
     unsigned int texture_width = (i == media::VideoFrame::kYPlane) ?
         width : width / 2;
     unsigned int texture_height = (i == media::VideoFrame::kYPlane) ?
@@ -102,7 +104,7 @@ void GPUColorWithLuminancePainter::Initialize(int width, int height) {
 
 void GPUColorWithLuminancePainter::Paint(
     scoped_refptr<media::VideoFrame> video_frame) {
-  for (unsigned int i = 0; i < media::VideoFrame::kNumYUVPlanes; ++i) {
+  for (unsigned int i = 0; i < kNumYUVPlanes; ++i) {
     unsigned int width = (i == media::VideoFrame::kYPlane) ?
         video_frame->width() : video_frame->width() / 2;
     unsigned int height = (i == media::VideoFrame::kYPlane) ?

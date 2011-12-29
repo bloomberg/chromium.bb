@@ -91,7 +91,6 @@ static void FastPaint(
          video_frame->format() == media::VideoFrame::YV16);
   DCHECK_EQ(video_frame->stride(media::VideoFrame::kUPlane),
             video_frame->stride(media::VideoFrame::kVPlane));
-  DCHECK(video_frame->planes() == media::VideoFrame::kNumYUVPlanes);
 
   const SkBitmap& bitmap = canvas->getDevice()->accessBitmap(true);
   media::YUVType yuv_type = (video_frame->format() == media::VideoFrame::YV12) ?
@@ -200,7 +199,6 @@ static void ConvertVideoFrameToBitmap(
          video_frame->format() == media::VideoFrame::YV16);
   DCHECK(video_frame->stride(media::VideoFrame::kUPlane) ==
          video_frame->stride(media::VideoFrame::kVPlane));
-  DCHECK(video_frame->planes() == media::VideoFrame::kNumYUVPlanes);
 
   // Check if |bitmap| needs to be (re)allocated.
   if (bitmap->isNull() ||
