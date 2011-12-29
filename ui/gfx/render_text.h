@@ -180,7 +180,7 @@ class UI_EXPORT RenderText {
   void SetCompositionRange(const ui::Range& composition_range);
 
   // Apply |style_range| to the internal style model.
-  void ApplyStyleRange(StyleRange style_range);
+  void ApplyStyleRange(const StyleRange& style_range);
 
   // Apply |default_style_| over the entire text range.
   void ApplyDefaultStyle();

@@ -42,7 +42,7 @@ void CheckStyleRanges(const gfx::StyleRanges& style_ranges, size_t length) {
 #endif
 
 void ApplyStyleRangeImpl(gfx::StyleRanges* style_ranges,
-                         gfx::StyleRange style_range) {
+                         const gfx::StyleRange& style_range) {
   const ui::Range& new_range = style_range.range;
   // Follow StyleRanges invariant conditions: sorted and non-overlapping ranges.
   gfx::StyleRanges::iterator i;
@@ -395,7 +395,7 @@ void RenderText::SetCompositionRange(const ui::Range& composition_range) {
   UpdateLayout();
 }
 
-void RenderText::ApplyStyleRange(StyleRange style_range) {
+void RenderText::ApplyStyleRange(const StyleRange& style_range) {
   const ui::Range& new_range = style_range.range;
   if (!new_range.IsValid() || new_range.is_empty())
     return;
