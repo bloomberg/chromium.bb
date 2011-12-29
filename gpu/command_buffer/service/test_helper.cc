@@ -221,6 +221,11 @@ void TestHelper::SetupFeatureInfoInitExpectations(
   EXPECT_CALL(*gl, GetString(GL_EXTENSIONS))
       .WillOnce(Return(reinterpret_cast<const uint8*>(extensions)))
       .RetiresOnSaturation();
+#if defined(OS_LINUX)
+  EXPECT_CALL(*gl, GetString(GL_VENDOR))
+      .WillOnce(Return(reinterpret_cast<const uint8*>(extensions)))
+      .RetiresOnSaturation();
+#endif
 }
 
 }  // namespace gles2
