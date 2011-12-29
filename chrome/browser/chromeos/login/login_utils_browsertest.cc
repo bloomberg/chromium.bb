@@ -97,7 +97,6 @@ class LoginUtilsTestBase : public TESTBASE,
         ui_thread_(content::BrowserThread::UI, &loop_),
         file_thread_(content::BrowserThread::FILE, &loop_),
         io_thread_(content::BrowserThread::IO),
-        io_thread_state_(local_state_.Get(), NULL, NULL),
         prepared_profile_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
@@ -113,14 +112,20 @@ class LoginUtilsTestBase : public TESTBASE,
 
     local_state_.Get()->RegisterStringPref(prefs::kApplicationLocale, "");
 
-    browser_process_->SetIOThread(&io_thread_state_);
+    // DBusThreadManager should be initialized before io_thread_state_, as
+    // DBusThreadManager is used from chromeos::ProxyConfigServiceImpl,
+    // which is part of io_thread_state_.
+    DBusThreadManager::InitializeForTesting(&mock_dbus_thread_manager_);
 
-    DBusThreadManager::InitializeForTesting(&dbus_thread_manager_);
-
+    // Likewise, SessionManagerClient should also be initialized before
+    // io_thread_state_.
     MockSessionManagerClient* session_managed_client =
-        dbus_thread_manager_.mock_session_manager_client();
+        mock_dbus_thread_manager_.mock_session_manager_client();
     EXPECT_CALL(*session_managed_client, RetrievePolicy(_))
         .WillRepeatedly(MockSessionManagerClientPolicyCallback(""));
+
+    io_thread_state_.reset(new IOThread(local_state_.Get(), NULL, NULL));
+    browser_process_->SetIOThread(io_thread_state_.get());
 
     CrosLibrary::TestApi* test_api = CrosLibrary::Get()->GetTestApi();
     ASSERT_TRUE(test_api);
@@ -232,7 +237,7 @@ class LoginUtilsTestBase : public TESTBASE,
 
   void PrepareProfile(const std::string& username) {
     MockSessionManagerClient* session_managed_client =
-        dbus_thread_manager_.mock_session_manager_client();
+        mock_dbus_thread_manager_.mock_session_manager_client();
     EXPECT_CALL(*session_managed_client, StartSession(_));
     EXPECT_CALL(*cryptohome_, GetSystemSalt())
         .WillRepeatedly(Return(std::string("stub_system_salt")));
@@ -306,9 +311,9 @@ class LoginUtilsTestBase : public TESTBASE,
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
-  IOThread io_thread_state_;
+  scoped_ptr<IOThread> io_thread_state_;
 
-  MockDBusThreadManager dbus_thread_manager_;
+  MockDBusThreadManager mock_dbus_thread_manager_;
   TestURLFetcherFactory test_url_fetcher_factory_;
 
   policy::BrowserPolicyConnector* connector_;
