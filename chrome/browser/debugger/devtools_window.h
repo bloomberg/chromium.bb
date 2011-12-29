@@ -128,6 +128,7 @@ class DevToolsWindow : private content::NotificationObserver,
   virtual void MoveWindow(int x, int y) OVERRIDE;
   virtual void DockWindow() OVERRIDE;
   virtual void UndockWindow() OVERRIDE;
+  virtual void SetDockSide(const std::string& side) OVERRIDE;
   virtual void SaveToFile(const std::string& suggested_file_name,
                           const std::string& content) OVERRIDE;
 

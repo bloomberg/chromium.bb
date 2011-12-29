@@ -26,6 +26,8 @@ class TabContents;
   // A view hosting docked devTools contents.
   scoped_nsobject<NSSplitView> splitView_;
 
+  BOOL dockToRight_;
+
   // Manages currently displayed devTools contents.
   scoped_nsobject<TabContentsController> contentsController_;
 }
@@ -44,6 +46,10 @@ class TabContents;
 // the actual resize).
 - (void)updateDevToolsForTabContents:(TabContents*)contents
                          withProfile:(Profile*)profile;
+
+// Specifies whether devtools should dock to right.
+- (void)setDockToRight:(BOOL)dock_to_right
+           withProfile:(Profile*)profile;
 
 // Call when the devTools view is properly sized and the render widget host view
 // should be put into the view hierarchy.

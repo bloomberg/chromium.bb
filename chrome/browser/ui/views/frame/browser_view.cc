@@ -157,7 +157,8 @@ const int kDefaultHungPluginDetectFrequency = 2000;
 // Minimal height of devtools pane or content pane when devtools are docked
 // to the browser window.
 const int kMinDevToolsHeight = 50;
-const int kMinContentsHeight = 50;
+const int kMinDevToolsWidth = 150;
+const int kMinContentsSize = 50;
 
 // How long do we wait before we consider a window hung (in ms).
 const int kDefaultPluginMessageResponseTimeout = 30000;
@@ -325,6 +326,7 @@ BrowserView::BrowserView(Browser* browser)
       preview_container_(NULL),
       contents_(NULL),
       contents_split_(NULL),
+      devtools_dock_side_(DEVTOOLS_DOCK_SIDE_BOTTOM),
       initialized_(false),
       ignore_layout_(true),
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -756,6 +758,20 @@ void BrowserView::BookmarkBarStateChanged(
 void BrowserView::UpdateDevTools() {
   UpdateDevToolsForContents(GetSelectedTabContentsWrapper());
   Layout();
+}
+
+
+void BrowserView::SetDevToolsDockSide(DevToolsDockSide side) {
+  if (devtools_dock_side_ == side)
+    return;
+
+  if (devtools_container_->visible()) {
+    HideDevToolsContainer();
+    devtools_dock_side_ = side;
+    ShowDevToolsContainer();
+  } else {
+    devtools_dock_side_ = side;
+  }
 }
 
 void BrowserView::UpdateLoadingAnimations(bool should_animate) {
@@ -2154,44 +2170,64 @@ void BrowserView::UpdateDevToolsForContents(TabContentsWrapper* wrapper) {
 
   devtools_container_->ChangeTabContents(devtools_contents);
 
-  if (should_show) {
-    if (!devtools_focus_tracker_.get()) {
-      // Install devtools focus tracker when dev tools window is shown for the
-      // first time.
-      devtools_focus_tracker_.reset(
-          new views::ExternalFocusTracker(devtools_container_,
-                                          GetFocusManager()));
-    }
+  if (should_show)
+    ShowDevToolsContainer();
+  else if (should_hide)
+    HideDevToolsContainer();
+}
 
-    // Restore split offset.
-    int split_offset = browser_->profile()->GetPrefs()->
-        GetInteger(prefs::kDevToolsSplitLocation);
-    if (split_offset == -1)
-      split_offset = contents_split_->height() * 2 / 3;
-
-    // Make sure user can see both panes.
-    split_offset = std::min(contents_split_->height() - kMinDevToolsHeight,
-                            split_offset);
-    split_offset = std::max(kMinContentsHeight, split_offset);
-    if (split_offset < 0)
-      split_offset = contents_split_->height() * 2 / 3;
-    contents_split_->set_divider_offset(split_offset);
-
-    devtools_container_->SetVisible(true);
-    contents_split_->InvalidateLayout();
-    Layout();
-  } else if (should_hide) {
-    // Store split offset when hiding devtools window only.
-    browser_->profile()->GetPrefs()->SetInteger(prefs::kDevToolsSplitLocation,
-        contents_split_->divider_offset());
-
-    // Restore focus to the last focused view when hiding devtools window.
-    devtools_focus_tracker_->FocusLastFocusedExternalView();
-
-    devtools_container_->SetVisible(false);
-    contents_split_->InvalidateLayout();
-    Layout();
+void BrowserView::ShowDevToolsContainer() {
+  if (!devtools_focus_tracker_.get()) {
+    // Install devtools focus tracker when dev tools window is shown for the
+    // first time.
+    devtools_focus_tracker_.reset(
+        new views::ExternalFocusTracker(devtools_container_,
+                                        GetFocusManager()));
   }
+
+  bool dock_to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;
+
+  int contents_size = dock_to_right ? contents_split_->width() :
+      contents_split_->height();
+  int min_size = dock_to_right ? kMinDevToolsWidth : kMinDevToolsHeight;
+
+  // Restore split offset.
+  int split_offset = browser_->profile()->GetPrefs()->
+      GetInteger(prefs::kDevToolsSplitLocation);
+
+  if (split_offset == -1)
+    split_offset = contents_size * 1 / 3;
+
+  // Make sure user can see both panes.
+  split_offset = std::max(min_size, split_offset);
+  split_offset = std::min(contents_size - kMinContentsSize, split_offset);
+  if (split_offset < 0)
+    split_offset = contents_size * 1 / 3;
+  contents_split_->set_divider_offset(contents_size - split_offset);
+
+  devtools_container_->SetVisible(true);
+  contents_split_->set_orientation(
+      dock_to_right ? views::SingleSplitView::HORIZONTAL_SPLIT
+                    : views::SingleSplitView::VERTICAL_SPLIT);
+  contents_split_->InvalidateLayout();
+  Layout();
+}
+
+void BrowserView::HideDevToolsContainer() {
+  // Store split offset when hiding devtools window only.
+  bool dock_to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;
+  int contents_size = dock_to_right ? contents_split_->width() :
+      contents_split_->height();
+
+  browser_->profile()->GetPrefs()->SetInteger(prefs::kDevToolsSplitLocation,
+      contents_size - contents_split_->divider_offset());
+
+  // Restore focus to the last focused view when hiding devtools window.
+  devtools_focus_tracker_->FocusLastFocusedExternalView();
+
+  devtools_container_->SetVisible(false);
+  contents_split_->InvalidateLayout();
+  Layout();
 }
 
 void BrowserView::UpdateUIForContents(TabContentsWrapper* contents) {

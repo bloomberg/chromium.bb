@@ -235,6 +235,10 @@ void Panel::UpdateDevTools() {
   NOTIMPLEMENTED();
 }
 
+void Panel::SetDevToolsDockSide(DevToolsDockSide side) {
+  NOTIMPLEMENTED();
+}
+
 void Panel::UpdateLoadingAnimations(bool should_animate) {
   native_panel_->UpdatePanelLoadingAnimations(should_animate);
 }

@@ -117,6 +117,10 @@ IPC_MESSAGE_ROUTED0(DevToolsHostMsg_RequestDockWindow)
 // Detaches dev tools window that is inspecting current render_view_host.
 IPC_MESSAGE_ROUTED0(DevToolsHostMsg_RequestUndockWindow)
 
+// Specifies side for devtools to dock to.
+IPC_MESSAGE_ROUTED1(DevToolsHostMsg_RequestSetDockSide,
+                    std::string /* side */)
+
 // Shows Save As dialog for content.
 IPC_MESSAGE_ROUTED2(DevToolsHostMsg_SaveAs,
                     std::string /* file_name */,

@@ -44,6 +44,7 @@ class DevToolsClient : public content::RenderViewObserver,
   virtual void moveWindowBy(const WebKit::WebFloatPoint& offset) OVERRIDE;
   virtual void requestDockWindow() OVERRIDE;
   virtual void requestUndockWindow() OVERRIDE;
+  virtual void requestSetDockSide(const WebKit::WebString& side) OVERRIDE;
   virtual void saveAs(const WebKit::WebString& file_name,
                       const WebKit::WebString& content) OVERRIDE;
 

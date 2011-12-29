@@ -1425,6 +1425,9 @@ const char kDevToolsDisabled[] = "devtools.disabled";
 // A boolean specifying whether dev tools window should be opened docked.
 const char kDevToolsOpenDocked[] = "devtools.open_docked";
 
+// A string specifying the dock location (either 'bottom' or 'right').
+const char kDevToolsDockSide[] = "devtools.dock_side";
+
 // Integer location of the split bar in the browser view.
 const char kDevToolsSplitLocation[] = "devtools.split_location";
 

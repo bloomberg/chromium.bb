@@ -531,6 +531,11 @@ enum {
   [devToolsController_ ensureContentsVisible];
 }
 
+- (void)setDevToolsDockToRight:(bool)dock_to_right {
+  [devToolsController_ setDockToRight:dock_to_right
+                          withProfile:browser_->profile()];
+}
+
 - (void)updateSidebarForContents:(TabContents*)contents {
   [sidebarController_ updateSidebarForTabContents:contents];
   [sidebarController_ ensureContentsVisible];

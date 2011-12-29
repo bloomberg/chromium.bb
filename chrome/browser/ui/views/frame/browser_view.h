@@ -259,6 +259,7 @@ class BrowserView : public BrowserWindow,
   virtual void BookmarkBarStateChanged(
       BookmarkBar::AnimateChangeType change_type) OVERRIDE;
   virtual void UpdateDevTools() OVERRIDE;
+  virtual void SetDevToolsDockSide(DevToolsDockSide side) OVERRIDE;
   virtual void UpdateLoadingAnimations(bool should_animate) OVERRIDE;
   virtual void SetStarredState(bool is_starred) OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
@@ -507,6 +508,12 @@ class BrowserView : public BrowserWindow,
   // if there's no such sidebar.
   void UpdateSidebarForContents(TabContentsWrapper* tab_contents);
 
+  // Shows docked devtools.
+  void ShowDevToolsContainer();
+
+  // Hides docked devtools.
+  void HideDevToolsContainer();
+
   // Updated devtools window for given contents.
   void UpdateDevToolsForContents(TabContentsWrapper* tab_contents);
 
@@ -666,6 +673,9 @@ class BrowserView : public BrowserWindow,
 
   // Split view containing the contents container and devtools container.
   views::SingleSplitView* contents_split_;
+
+  // Side to dock devtools to
+  DevToolsDockSide devtools_dock_side_;
 
   // Tracks and stores the last focused view which is not the
   // devtools_container_ or any of its children. Used to restore focus once

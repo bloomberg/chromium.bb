@@ -46,6 +46,7 @@ class DevToolsFrontendHost : public DevToolsClientHost,
   void OnMoveWindow(int x, int y);
   void OnRequestDockWindow();
   void OnRequestUndockWindow();
+  void OnRequestSetDockSide(const std::string& side);
   void OnSaveAs(const std::string& file_name,
                 const std::string& content);
 

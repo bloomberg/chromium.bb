@@ -70,6 +70,8 @@ bool DevToolsFrontendHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestDockWindow, OnRequestDockWindow)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestUndockWindow,
                         OnRequestUndockWindow)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestSetDockSide,
+                        OnRequestSetDockSide)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAs,
                         OnSaveAs)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -107,6 +109,10 @@ void DevToolsFrontendHost::OnRequestDockWindow() {
 
 void DevToolsFrontendHost::OnRequestUndockWindow() {
   delegate_->UndockWindow();
+}
+
+void DevToolsFrontendHost::OnRequestSetDockSide(const std::string& side) {
+  delegate_->SetDockSide(side);
 }
 
 }  // namespace content

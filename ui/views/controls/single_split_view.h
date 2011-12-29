@@ -48,6 +48,10 @@ class VIEWS_EXPORT SingleSplitView : public View {
     return is_horizontal_ ? HORIZONTAL_SPLIT : VERTICAL_SPLIT;
   }
 
+  void set_orientation(Orientation orientation) {
+    is_horizontal_ = orientation == HORIZONTAL_SPLIT;
+  }
+
   void set_divider_offset(int divider_offset) {
     divider_offset_ = divider_offset;
   }

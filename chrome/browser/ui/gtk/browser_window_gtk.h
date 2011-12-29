@@ -86,6 +86,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void BookmarkBarStateChanged(
       BookmarkBar::AnimateChangeType change_type) OVERRIDE;
   virtual void UpdateDevTools() OVERRIDE;
+  virtual void SetDevToolsDockSide(DevToolsDockSide side) OVERRIDE;
   virtual void UpdateLoadingAnimations(bool should_animate) OVERRIDE;
   virtual void SetStarredState(bool is_starred) OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
@@ -185,6 +186,12 @@ class BrowserWindowGtk : public BrowserWindow,
   TabStripGtk* tabstrip() const { return tabstrip_.get(); }
 
   void UpdateDevToolsForContents(TabContents* contents);
+
+  // Shows docked devtools.
+  void ShowDevToolsContainer();
+
+  // Hides docked devtools.
+  void HideDevToolsContainer();
 
   void OnDebouncedBoundsChanged();
 
@@ -476,6 +483,12 @@ class BrowserWindowGtk : public BrowserWindow,
   // A container that manages the GtkWidget*s of developer tools for the
   // selected tab contents.
   scoped_ptr<TabContentsContainerGtk> devtools_container_;
+
+  DevToolsDockSide devtools_dock_side_;
+
+  // Box containing either contents_container_ or contents_split_ depending
+  // on whether docked devtools is visible.
+  GtkWidget* contents_split_vbox_;
 
   // Split pane containing the contents_container_ and the devtools_container_.
   GtkWidget* contents_split_;

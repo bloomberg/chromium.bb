@@ -37,6 +37,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void BookmarkBarStateChanged(
       BookmarkBar::AnimateChangeType change_type) OVERRIDE {}
   virtual void UpdateDevTools() OVERRIDE {}
+  virtual void SetDevToolsDockSide(DevToolsDockSide side) OVERRIDE {}
   virtual void UpdateLoadingAnimations(bool should_animate) OVERRIDE {}
   virtual void SetStarredState(bool is_starred) OVERRIDE {}
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;

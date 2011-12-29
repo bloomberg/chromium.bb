@@ -64,11 +64,17 @@ using content::WebContents;
 
 const char DevToolsWindow::kDevToolsApp[] = "DevToolsApp";
 
+const char kDockSideBottom[] = "bottom";
+const char kDockSideRight[] = "right";
+
 // static
 void DevToolsWindow::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kDevToolsOpenDocked,
                              true,
                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kDevToolsDockSide,
+                            kDockSideBottom,
+                            PrefService::UNSYNCABLE_PREF);
 }
 
 // static
@@ -270,6 +276,10 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
                                         &inspected_tab_index)) {
       BrowserWindow* inspected_window = inspected_browser->window();
       tab_contents_->tab_contents()->SetDelegate(this);
+      std::string dock_side =
+          profile_->GetPrefs()->GetString(prefs::kDevToolsDockSide);
+      inspected_window->SetDevToolsDockSide(dock_side == kDockSideRight ?
+          DEVTOOLS_DOCK_SIDE_RIGHT : DEVTOOLS_DOCK_SIDE_BOTTOM);
       inspected_window->UpdateDevTools();
       tab_contents_->tab_contents()->GetView()->SetInitialFocus();
       inspected_window->Show();
@@ -685,6 +695,19 @@ void DevToolsWindow::DockWindow() {
 
 void DevToolsWindow::UndockWindow() {
   RequestSetDocked(false);
+}
+
+void DevToolsWindow::SetDockSide(const std::string& side) {
+  std::string pref_value = kDockSideBottom;
+  if (side == kDockSideRight)
+    pref_value = kDockSideRight;
+  profile_->GetPrefs()->SetString(prefs::kDevToolsDockSide, pref_value);
+
+  BrowserWindow* inspected_window = GetInspectedBrowserWindow();
+  if (inspected_window) {
+    inspected_window->SetDevToolsDockSide(pref_value == kDockSideRight ?
+            DEVTOOLS_DOCK_SIDE_RIGHT : DEVTOOLS_DOCK_SIDE_BOTTOM);
+  }
 }
 
 void DevToolsWindow::SaveToFile(const std::string& suggested_file_name,

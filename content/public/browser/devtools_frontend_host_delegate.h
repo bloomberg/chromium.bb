@@ -33,6 +33,9 @@ class DevToolsFrontendHostDelegate {
   // own window.
   virtual void UndockWindow() = 0;
 
+  // Specifies side for devtools to dock to.
+  virtual void SetDockSide(const std::string& side) = 0;
+
   // Shows "Save As..." dialog to save |content|.
   virtual void SaveToFile(const std::string& suggested_file_name,
                           const std::string& content) = 0;
