@@ -60,6 +60,10 @@ class WebstoreInstaller : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Instead of using the default download directory, use |directory| instead.
+  // This does *not* transfer ownership of |directory|.
+  static void SetDownloadDirectoryForTests(FilePath* directory);
+
  private:
   // Starts downloading the extension to |file_path|.
   void StartDownload(FilePath file_path);

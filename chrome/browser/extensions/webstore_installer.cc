@@ -39,9 +39,12 @@ namespace {
 
 const char kInvalidIdError[] = "Invalid id";
 const char kNoBrowserError[] = "No browser found";
+const char kDownloadDirectoryError[] = "Could not create download directory";
 
 const char kInlineInstallSource[] = "inline";
 const char kDefaultInstallSource[] = "";
+
+FilePath* g_download_directory_for_tests = NULL;
 
 GURL GetWebstoreInstallURL(
     const std::string& extension_id, const std::string& install_source) {
@@ -71,8 +74,22 @@ GURL GetWebstoreInstallURL(
 // Must be executed on the FILE thread.
 void GetDownloadFilePath(const std::string& id,
                          const base::Callback<void(FilePath)>& callback) {
-  FilePath file =
-      download_util::GetDefaultDownloadDirectory().AppendASCII(id + ".crx");
+  FilePath directory = download_util::GetDefaultDownloadDirectory();
+  if (g_download_directory_for_tests) {
+    directory = *g_download_directory_for_tests;
+  }
+
+  // Ensure the download directory exists. TODO(asargent) - make this use
+  // common code from the downloads system.
+  if (!file_util::DirectoryExists(directory)) {
+    if (!file_util::CreateDirectory(directory)) {
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                              base::Bind(callback, FilePath()));
+      return;
+    }
+  }
+
+  FilePath file = directory.AppendASCII(id + ".crx");
 
   int uniquifier = DownloadFile::GetUniquePathNumber(file);
   if (uniquifier > 0)
@@ -156,8 +173,17 @@ void WebstoreInstaller::Observe(int type,
   }
 }
 
+void WebstoreInstaller::SetDownloadDirectoryForTests(FilePath* directory) {
+  g_download_directory_for_tests = directory;
+}
+
 void WebstoreInstaller::StartDownload(FilePath file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (file.empty()) {
+    ReportFailure(kDownloadDirectoryError);
+    return;
+  }
 
   // TODO(mihaip): For inline installs, we pretend like the referrer is the
   // gallery, even though this could be an inline install, in order to pass the

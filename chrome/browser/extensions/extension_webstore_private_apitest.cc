@@ -209,6 +209,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
   ASSERT_TRUE(RunInstallTest("accepted.html", "extension.crx"));
 }
 
+// Test having the default download directory missing.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MissingDownloadDir) {
+  // Set a non-existent directory as the download path.
+  ScopedTempDir temp_dir;
+  EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath missing_directory = temp_dir.Take();
+  EXPECT_TRUE(file_util::Delete(missing_directory, true));
+  WebstoreInstaller::SetDownloadDirectoryForTests(&missing_directory);
+
+  // Now run the install test, which should succeed.
+  ASSERT_TRUE(RunInstallTest("accepted.html", "extension.crx"));
+
+  // Cleanup.
+  if (file_util::DirectoryExists(missing_directory))
+    EXPECT_TRUE(file_util::Delete(missing_directory, true));
+}
+
 // Tests passing a localized name.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallLocalized) {
   ASSERT_TRUE(RunInstallTest("localized.html", "localized_extension.crx"));
@@ -298,4 +315,3 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
   bool webgl_allowed = false;
   RunTest(webgl_allowed);
 }
-
