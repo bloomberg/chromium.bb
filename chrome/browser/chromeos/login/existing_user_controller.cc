@@ -176,6 +176,12 @@ void ExistingUserController::Observe(
 ExistingUserController::~ExistingUserController() {
   LoginUtils::Get()->DelegateDeleted(this);
 
+  cros_settings_->RemoveSettingsObserver(kAccountsPrefShowUserNamesOnSignIn,
+                                         this);
+  cros_settings_->RemoveSettingsObserver(kAccountsPrefAllowNewUser, this);
+  cros_settings_->RemoveSettingsObserver(kAccountsPrefAllowGuest, this);
+  cros_settings_->RemoveSettingsObserver(kAccountsPrefUsers, this);
+
   if (current_controller_ == this) {
     current_controller_ = NULL;
   } else {
