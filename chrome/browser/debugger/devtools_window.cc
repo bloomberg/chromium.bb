@@ -535,6 +535,7 @@ std::string SkColorToRGBAString(SkColor color) {
       base::DoubleToString(SkColorGetA(color) / 255.0).c_str());
 }
 
+// static
 GURL DevToolsWindow::GetDevToolsUrl(Profile* profile, bool docked,
                                     bool shared_worker_frontend) {
   ThemeService* tp = ThemeServiceFactory::GetForProfile(profile);
@@ -549,10 +550,14 @@ GURL DevToolsWindow::GetDevToolsUrl(Profile* profile, bool docked,
   bool experiments_enabled =
       command_line.HasSwitch(switches::kEnableDevToolsExperiments);
 
-  std::string url_string = StringPrintf(
-      "%sdevtools.html?docked=%s&toolbarColor=%s&textColor=%s%s%s",
+  std::string dock_side =
+      profile->GetPrefs()->GetString(prefs::kDevToolsDockSide);
+
+  std::string url_string = StringPrintf("%sdevtools.html?"
+      "docked=%s&dockSide=%s&toolbarColor=%s&textColor=%s%s%s",
       chrome::kChromeUIDevToolsURL,
       docked ? "true" : "false",
+      dock_side.c_str(),
       SkColorToRGBAString(color_toolbar).c_str(),
       SkColorToRGBAString(color_tab_text).c_str(),
       shared_worker_frontend ? "&isSharedWorker=true" : "",
