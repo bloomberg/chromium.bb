@@ -5415,6 +5415,32 @@
    fun:_ZN8chromeos17NotificationPanel3AddEP7Balloon
    fun:_ZN8chromeos21BalloonCollectionImpl21AddSystemNotificationERK12NotificationP7Profilebb
 }
+{
+   bug_100235
+   Memcheck:Unaddressable
+   fun:_ZN25BrowserNonClientFrameView16UpdateAvatarInfoEv
+   fun:_ZN25BrowserNonClientFrameView17VisibilityChangedEPN5views4ViewEb
+   fun:_ZN5views4View21VisibilityChangedImplEPS0_b
+   fun:_ZN5views4View32PropagateVisibilityNotificationsEPS0_b
+   fun:_ZN5views4View32PropagateVisibilityNotificationsEPS0_b
+   fun:_ZN5views4View32PropagateVisibilityNotificationsEPS0_b
+   fun:_ZN5views6Widget31OnNativeWidgetVisibilityChangedEb
+   fun:_ZN5views15NativeWidgetGtk6OnShowEP10_GtkWidget
+   fun:_ZN5views15NativeWidgetGtk11OnShowThunkEP10_GtkWidgetPv
+   fun:g_cclosure_marshal_VOID__VOID
+   fun:g_closure_invoke
+   fun:signal_emit_unlocked_R
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   fun:gtk_widget_show
+   fun:_ZN5views15NativeWidgetGtk19ShowWithWindowStateEN2ui15WindowShowStateE
+   fun:_ZN5views6Widget12ShowInactiveEv
+   fun:_ZN11BrowserView12ShowInactiveEv
+   fun:_ZN8chromeos16PanelBrowserView12ShowInactiveEv
+   fun:_ZN12_GLOBAL__N_122ScopedBrowserDisplayerD1Ev
+   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
+   fun:_ZN7Browser14AddNewContentsEPN7content11WebContentsES2_21WindowOpenDispositionRKN3gfx4RectEb
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
