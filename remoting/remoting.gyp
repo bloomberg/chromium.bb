@@ -768,6 +768,8 @@
         'protocol/host_event_dispatcher.h',
         'protocol/host_stub.h',
         'protocol/input_stub.h',
+        'protocol/it2me_host_authenticator_factory.cc',
+        'protocol/it2me_host_authenticator_factory.h',
         'protocol/jingle_channel_connector.h',
         'protocol/jingle_datagram_connector.cc',
         'protocol/jingle_datagram_connector.h',
