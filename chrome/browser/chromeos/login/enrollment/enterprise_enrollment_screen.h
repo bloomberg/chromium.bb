@@ -11,13 +11,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
-#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 
 namespace chromeos {
 
@@ -28,7 +24,6 @@ class ScreenObserver;
 class EnterpriseEnrollmentScreen
     : public WizardScreen,
       public EnterpriseEnrollmentScreenActor::Controller,
-      public GaiaAuthConsumer,
       public policy::CloudPolicySubsystem::Observer {
  public:
   EnterpriseEnrollmentScreen(ScreenObserver* observer,
@@ -44,27 +39,10 @@ class EnterpriseEnrollmentScreen
   virtual void Hide() OVERRIDE;
 
   // EnterpriseEnrollmentScreenActor::Controller implementation:
-  virtual void OnAuthSubmitted(const std::string& user,
-                               const std::string& password,
-                               const std::string& captcha,
-                               const std::string& access_code) OVERRIDE;
   virtual void OnOAuthTokenAvailable(const std::string& user,
                                      const std::string& token) OVERRIDE;
-  virtual void OnAuthCancelled() OVERRIDE;
   virtual void OnConfirmationClosed(bool go_back_to_signin) OVERRIDE;
-  virtual bool GetInitialUser(std::string* user) OVERRIDE;
   virtual bool IsAutoEnrollment(std::string* user) OVERRIDE;
-
-  // GaiaAuthConsumer implementation:
-  virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
-  virtual void OnClientLoginFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
-
-  virtual void OnIssueAuthTokenSuccess(const std::string& service,
-                                       const std::string& auth_token) OVERRIDE;
-  virtual void OnIssueAuthTokenFailure(
-      const std::string& service,
-      const GoogleServiceAuthError& error) OVERRIDE;
 
   // CloudPolicySubsystem::Observer implementation:
   virtual void OnPolicyStateChanged(
@@ -77,22 +55,16 @@ class EnterpriseEnrollmentScreen
   }
 
  private:
-  void HandleAuthError(const GoogleServiceAuthError& error);
-
   // Starts the Lockbox storage process.
   void WriteInstallAttributesData();
 
   // Kicks off the policy infrastructure to register with the service.
-  void RegisterForDevicePolicy(
-      const std::string& token,
-      policy::BrowserPolicyConnector::TokenType token_type);
+  void RegisterForDevicePolicy(const std::string& token);
 
   EnterpriseEnrollmentScreenActor* actor_;
   bool is_auto_enrollment_;
   bool is_showing_;
-  scoped_ptr<GaiaAuthFetcher> auth_fetcher_;
   std::string user_;
-  std::string captcha_token_;
   scoped_ptr<policy::CloudPolicySubsystem::ObserverRegistrar> registrar_;
   base::WeakPtrFactory<EnterpriseEnrollmentScreen> weak_ptr_factory_;
 

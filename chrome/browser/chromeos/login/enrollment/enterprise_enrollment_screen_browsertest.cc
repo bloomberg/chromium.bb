@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/mock_screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -39,8 +38,8 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentScreenTest, TestCancel) {
   ASSERT_EQ(controller()->current_screen(), enterprise_enrollment_screen);
 
   EXPECT_CALL(mock_screen_observer,
-              OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_CANCELLED));
-  enterprise_enrollment_screen->OnAuthCancelled();
+              OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED));
+  enterprise_enrollment_screen->OnConfirmationClosed(true);
   Mock::VerifyAndClearExpectations(&mock_screen_observer);
 
   static_cast<WizardScreen*>(enterprise_enrollment_screen)->screen_observer_ =

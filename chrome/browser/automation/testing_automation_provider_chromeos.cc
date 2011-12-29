@@ -935,7 +935,7 @@ void TestingAutomationProvider::EnrollEnterpriseDevice(
   // Set up an observer (it will delete itself).
   new EnrollmentObserver(this, reply_message, enroll_screen->GetActor(),
                          enroll_screen);
-  enroll_screen->OnAuthSubmitted(user, password, "", "");
+  enroll_screen->GetActor()->SubmitTestCredentials(user, password);
 }
 
 void TestingAutomationProvider::GetEnterprisePolicyInfo(

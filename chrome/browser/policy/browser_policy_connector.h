@@ -34,12 +34,6 @@ class UserPolicyTokenCache;
 // respective classes.
 class BrowserPolicyConnector : public content::NotificationObserver {
  public:
-  // Indicates the type of token passed to SetDeviceCredentials.
-  enum TokenType {
-    TOKEN_TYPE_GAIA,  // A gaia service token.
-    TOKEN_TYPE_OAUTH, // An OAuth v2 access token.
-  };
-
   // Builds an uninitialized BrowserPolicyConnector, suitable for testing.
   // Init() should be called to create and start the policy machinery.
   BrowserPolicyConnector();
@@ -76,8 +70,7 @@ class BrowserPolicyConnector : public content::NotificationObserver {
 
   // Triggers registration for device policy.
   void RegisterForDevicePolicy(const std::string& owner_email,
-                               const std::string& token,
-                               TokenType token_type);
+                               const std::string& token);
 
   // Returns true if this device is managed by an enterprise (as opposed to
   // a local owner).

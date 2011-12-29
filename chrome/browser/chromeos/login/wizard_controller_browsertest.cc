@@ -260,7 +260,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   // don't set expectations on those objects.
   ExistingUserController::current_controller()->CompleteLogin(kUsername,
                                                               kPassword);
-
   EnterpriseEnrollmentScreen* screen =
       controller()->GetEnterpriseEnrollmentScreen();
   EXPECT_EQ(screen, controller()->current_screen());
@@ -275,27 +274,11 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   MessageLoop::current()->RunAllPending();
   set_controller(NULL);
 }
-
-IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
-                       ControlFlowEnterpriseEnrollmentCancelled) {
-  EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
-  EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(0);
-  EXPECT_CALL(*mock_enterprise_enrollment_screen_, Show()).Times(1);
-  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
-
-  controller()->ShowEnterpriseEnrollmentScreen();
-  EXPECT_EQ(controller()->GetEnterpriseEnrollmentScreen(),
-            controller()->current_screen());
-  OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_CANCELLED);
-
-  EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
-  set_controller(NULL);
-}
 #endif
 
 // TODO(nkostylev): Add test for WebUI accelerators http://crosbug.com/22571
 
-COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 16,
+COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 15,
                add_tests_for_new_control_flow_you_just_introduced);
 
 }  // namespace chromeos

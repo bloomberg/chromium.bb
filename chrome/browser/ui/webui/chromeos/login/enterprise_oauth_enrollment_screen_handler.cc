@@ -6,10 +6,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/message_loop.h"
-#include "base/values.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
+#include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
@@ -78,7 +80,6 @@ namespace chromeos {
 
 EnterpriseOAuthEnrollmentScreenHandler::EnterpriseOAuthEnrollmentScreenHandler()
     : controller_(NULL),
-      editable_user_(true),
       show_on_init_(false),
       is_auto_enrollment_(false),
       enrollment_failed_once_(false),
@@ -97,6 +98,10 @@ void EnterpriseOAuthEnrollmentScreenHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "oauthEnrollClose",
       base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::HandleClose,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "oauthEnrollCancel",
+      base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::HandleCancel,
                  base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       "oauthEnrollCompleteLogin",
@@ -137,11 +142,10 @@ void EnterpriseOAuthEnrollmentScreenHandler::Show() {
 void EnterpriseOAuthEnrollmentScreenHandler::Hide() {
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::SetEditableUser(bool editable) {
-  editable_user_ = editable;
-}
-
 void EnterpriseOAuthEnrollmentScreenHandler::ShowConfirmationScreen() {
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                            policy::kMetricEnrollmentOK,
+                            policy::kMetricEnrollmentSize);
   ShowStep(kEnrollmentStepSuccess);
   if (!is_auto_enrollment_ || enrollment_failed_once_)
     ResetAuth();
@@ -172,35 +176,68 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowAuthError(
       ShowNetworkEnrollmentError();
       return;
   }
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                            policy::kMetricEnrollmentOtherFailed,
+                            policy::kMetricEnrollmentSize);
   NOTREACHED();
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowAccountError() {
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                            policy::kMetricEnrollmentNotSupported,
+                            policy::kMetricEnrollmentSize);
   ShowError(IDS_ENTERPRISE_ENROLLMENT_ACCOUNT_ERROR, true);
   NotifyObservers(false);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowSerialNumberError() {
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                            policy::kMetricEnrollmentInvalidSerialNumber,
+                            policy::kMetricEnrollmentSize);
   ShowError(IDS_ENTERPRISE_ENROLLMENT_SERIAL_NUMBER_ERROR, true);
   NotifyObservers(false);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowFatalAuthError() {
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                            policy::kMetricEnrollmentLoginFailed,
+                            policy::kMetricEnrollmentSize);
   ShowError(IDS_ENTERPRISE_ENROLLMENT_FATAL_AUTH_ERROR, false);
   NotifyObservers(false);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowFatalEnrollmentError() {
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                            policy::kMetricEnrollmentOtherFailed,
+                            policy::kMetricEnrollmentSize);
   ShowError(IDS_ENTERPRISE_ENROLLMENT_FATAL_ENROLLMENT_ERROR, false);
   NotifyObservers(false);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowNetworkEnrollmentError() {
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                            policy::kMetricEnrollmentNetworkFailed,
+                            policy::kMetricEnrollmentSize);
   ShowError(IDS_ENTERPRISE_ENROLLMENT_NETWORK_ENROLLMENT_ERROR, true);
   NotifyObservers(false);
 }
 
+void EnterpriseOAuthEnrollmentScreenHandler::SubmitTestCredentials(
+    const std::string& email,
+    const std::string& password) {
+  test_email_ = email;
+  test_password_ = password;
+  DoShow();
+}
+
 // EnterpriseOAuthEnrollmentScreenHandler BaseScreenHandler implementation -----
+
+void EnterpriseOAuthEnrollmentScreenHandler::Initialize() {
+  if (show_on_init_) {
+    Show();
+    show_on_init_ = false;
+  }
+}
 
 void EnterpriseOAuthEnrollmentScreenHandler::GetLocalizedStrings(
     base::DictionaryValue *localized_strings) {
@@ -280,13 +317,6 @@ void EnterpriseOAuthEnrollmentScreenHandler::OnBrowsingDataRemoverDone() {
   }
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::Initialize() {
-  if (show_on_init_) {
-    Show();
-    show_on_init_ = false;
-  }
-}
-
 // EnterpriseOAuthEnrollmentScreenHandler, private -----------------------------
 
 void EnterpriseOAuthEnrollmentScreenHandler::HandleClose(
@@ -319,6 +349,14 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleClose(
   }
 }
 
+void EnterpriseOAuthEnrollmentScreenHandler::HandleCancel(
+    const base::ListValue* value) {
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                            policy::kMetricEnrollmentCancelled,
+                            policy::kMetricEnrollmentSize);
+  HandleClose(value);
+}
+
 void EnterpriseOAuthEnrollmentScreenHandler::HandleCompleteLogin(
     const base::ListValue* value) {
   if (!controller_) {
@@ -345,6 +383,9 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleRetry(
 
 void EnterpriseOAuthEnrollmentScreenHandler::EnrollAfterLogin() {
   DCHECK(!user_.empty());
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                            policy::kMetricEnrollmentStarted,
+                            policy::kMetricEnrollmentSize);
   Profile* profile =
       Profile::FromBrowserContext(web_ui_->tab_contents()->GetBrowserContext());
   oauth_fetcher_.reset(
@@ -424,6 +465,11 @@ void EnterpriseOAuthEnrollmentScreenHandler::DoShow() {
   screen_data.SetString("gaiaOrigin",
                         GaiaUrls::GetInstance()->gaia_origin_url());
   screen_data.SetBoolean("is_auto_enrollment", is_auto_enrollment_);
+  if (!test_email_.empty()) {
+    screen_data.SetString("test_email", test_email_);
+    screen_data.SetString("test_password", test_password_);
+  }
+
   ShowScreen("oauth-enrollment", &screen_data);
 
   if (is_auto_enrollment_ && !enrollment_failed_once_)

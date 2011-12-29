@@ -23,15 +23,9 @@ class EnterpriseEnrollmentScreenActor {
    public:
     virtual ~Controller() {}
 
-    virtual void OnAuthSubmitted(const std::string& user,
-                                 const std::string& password,
-                                 const std::string& captcha,
-                                 const std::string& access_code) = 0;
     virtual void OnOAuthTokenAvailable(const std::string& user,
                                        const std::string& oauth_token) = 0;
-    virtual void OnAuthCancelled() = 0;
     virtual void OnConfirmationClosed(bool go_back_to_signin) = 0;
-    virtual bool GetInitialUser(std::string* user) = 0;
     virtual bool IsAutoEnrollment(std::string* user) = 0;
   };
 
@@ -66,9 +60,6 @@ class EnterpriseEnrollmentScreenActor {
   // Hides the contents of the screen.
   virtual void Hide() = 0;
 
-  // Sets whether the user is editable.
-  virtual void SetEditableUser(bool editable) = 0;
-
   // Switches to the confirmation screen.
   virtual void ShowConfirmationScreen() = 0;
 
@@ -79,6 +70,10 @@ class EnterpriseEnrollmentScreenActor {
   virtual void ShowFatalAuthError() = 0;
   virtual void ShowFatalEnrollmentError() = 0;
   virtual void ShowNetworkEnrollmentError() = 0;
+
+  // Used for testing only.
+  virtual void SubmitTestCredentials(const std::string& email,
+                                     const std::string& password) = 0;
 
  protected:
   void NotifyObservers(bool succeeded);

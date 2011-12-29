@@ -692,7 +692,6 @@ void WizardController::OnExit(ExitCodes exit_code) {
     case REGISTRATION_SKIPPED:
       OnRegistrationSkipped();
       break;
-    case ENTERPRISE_ENROLLMENT_CANCELLED:
     case ENTERPRISE_ENROLLMENT_COMPLETED:
       OnEnterpriseEnrollmentDone();
       break;

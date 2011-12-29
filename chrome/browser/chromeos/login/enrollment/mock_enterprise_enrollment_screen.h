@@ -31,7 +31,6 @@ class MockEnterpriseEnrollmentScreenActor
   MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
-  MOCK_METHOD1(SetEditableUser, void(bool editable));
   MOCK_METHOD0(ShowConfirmationScreen, void());
   MOCK_METHOD1(ShowAuthError, void(const GoogleServiceAuthError& error));
   MOCK_METHOD0(ShowAccountError, void());
@@ -39,6 +38,8 @@ class MockEnterpriseEnrollmentScreenActor
   MOCK_METHOD0(ShowFatalAuthError, void());
   MOCK_METHOD0(ShowFatalEnrollmentError, void());
   MOCK_METHOD0(ShowNetworkEnrollmentError, void());
+  MOCK_METHOD2(SubmitTestCredentials, void(const std::string& email,
+                                           const std::string& password));
 };
 
 }  // namespace chromeos

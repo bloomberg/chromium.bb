@@ -2634,8 +2634,6 @@
         'browser/policy/device_management_backend_mock.cc',
         'browser/policy/device_management_backend_mock.h',
         'browser/policy/device_management_service_browsertest.cc',
-        'browser/policy/enterprise_metrics_browsertest.cc',
-        'browser/policy/enterprise_metrics_enrollment_browsertest.cc',
         'browser/popup_blocker_browsertest.cc',
         'browser/prerender/prefetch_browsertest.cc',
         'browser/prerender/prerender_browsertest.cc',
@@ -2822,7 +2820,6 @@
             'browser/extensions/extension_input_method_apitest.cc',
             'browser/extensions/api/terminal/terminal_private_apitest.cc',
             'browser/oom_priority_manager_browsertest.cc',
-            'browser/policy/enterprise_metrics_enrollment_browsertest.cc',
             'browser/ui/views/status_icons/status_tray_chromeos_browsertest.cc',
           ],
         }, { #else: OS == "chromeos"

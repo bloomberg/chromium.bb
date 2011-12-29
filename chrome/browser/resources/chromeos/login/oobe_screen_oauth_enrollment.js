@@ -103,7 +103,7 @@ cr.define('oobe', function() {
       cancelButton.textContent =
           localStrings.getString('oauthEnrollCancel');
       cancelButton.addEventListener('click', function(e) {
-        chrome.send('oauthEnrollClose', []);
+        chrome.send('oauthEnrollCancel', []);
       });
       buttons.push(cancelButton);
 
@@ -129,6 +129,10 @@ cr.define('oobe', function() {
       var url = data.signin_url;
       if (data.gaiaOrigin)
         url += '?gaiaOrigin=' + encodeURIComponent(data.gaiaOrigin);
+      if (data.test_email) {
+        url += '&test_email=' + encodeURIComponent(data.test_email);
+        url += '&test_password=' + encodeURIComponent(data.test_password);
+      }
       this.signin_url_ = url;
       this.is_auto_enrollment_ = data.is_auto_enrollment;
       $('oauth-enroll-signin-frame').contentWindow.location.href =
@@ -140,7 +144,9 @@ cr.define('oobe', function() {
      * Cancels enrollment and drops the user back to the login screen.
      */
     cancel: function() {
-      chrome.send('oauthEnrollClose', []);
+      // TODO(joaodasilva): this is triggered by the accelerator (Escape key),
+      // but should be prevented while auto-enrolling.
+      chrome.send('oauthEnrollCancel', []);
     },
 
     /**

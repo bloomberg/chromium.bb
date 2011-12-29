@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data_remover.h"
@@ -40,7 +40,6 @@ class EnterpriseOAuthEnrollmentScreenHandler
   virtual void PrepareToShow() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
-  virtual void SetEditableUser(bool editable) OVERRIDE;
   virtual void ShowConfirmationScreen() OVERRIDE;
   virtual void ShowAuthError(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void ShowAccountError() OVERRIDE;
@@ -48,8 +47,11 @@ class EnterpriseOAuthEnrollmentScreenHandler
   virtual void ShowFatalAuthError() OVERRIDE;
   virtual void ShowFatalEnrollmentError() OVERRIDE;
   virtual void ShowNetworkEnrollmentError() OVERRIDE;
+  virtual void SubmitTestCredentials(const std::string& email,
+                                     const std::string& password) OVERRIDE;
 
   // Implements BaseScreenHandler:
+  virtual void Initialize() OVERRIDE;
   virtual void GetLocalizedStrings(
       base::DictionaryValue* localized_strings) OVERRIDE;
 
@@ -72,16 +74,10 @@ class EnterpriseOAuthEnrollmentScreenHandler
   // Implements BrowsingDataRemover::Observer:
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
 
- protected:
-  // Implements BaseScreenHandler:
-  virtual void Initialize() OVERRIDE;
-
-  // Keeps the controller for this actor.
-  Controller* controller_;
-
  private:
   // Handlers for WebUI messages.
   void HandleClose(const base::ListValue* args);
+  void HandleCancel(const base::ListValue* args);
   void HandleCompleteLogin(const base::ListValue* args);
   void HandleRetry(const base::ListValue* args);
 
@@ -112,7 +108,9 @@ class EnterpriseOAuthEnrollmentScreenHandler
   // pending sign-in will be resumed.
   void DoClose(bool back_to_signin);
 
-  bool editable_user_;
+  // Keeps the controller for this actor.
+  Controller* controller_;
+
   bool show_on_init_;
 
   // Whether this is an auto-enrollment screen.
@@ -123,6 +121,10 @@ class EnterpriseOAuthEnrollmentScreenHandler
 
   // Username of the user signing in.
   std::string user_;
+
+  // Credentials used for tests.
+  std::string test_email_;
+  std::string test_password_;
 
   // This intentionally lives here and not in the controller, since it needs to
   // execute requests in the context of the profile that displays the webui.
