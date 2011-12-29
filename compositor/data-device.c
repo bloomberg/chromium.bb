@@ -339,6 +339,8 @@ wlsc_input_device_set_selection(struct wlsc_input_device *device,
 		}
 	}
 
+	wlsc_xserver_set_selection(device);
+
 	device->selection_data_source_listener.func =
 		destroy_selection_data_source;
 	wl_list_insert(source->resource.destroy_listener_list.prev,

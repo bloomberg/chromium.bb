@@ -457,6 +457,8 @@ void
 wlsc_xserver_destroy(struct wlsc_compositor *compositor);
 void
 wlsc_xserver_surface_activate(struct wlsc_surface *surface);
+void
+wlsc_xserver_set_selection(struct wlsc_input_device *device);
 
 struct wlsc_zoom;
 typedef	void (*wlsc_zoom_done_func_t)(struct wlsc_zoom *zoom, void *data);

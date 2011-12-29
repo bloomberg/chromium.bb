@@ -75,6 +75,12 @@ struct wlsc_wm {
 	struct wl_event_source *property_source;
 	xcb_get_property_reply_t *property_reply;
 	int property_start;
+	struct wl_array source_data;
+	xcb_selection_request_event_t selection_request;
+	xcb_atom_t selection_target;
+	xcb_timestamp_t selection_timestamp;
+	int selection_property_set;
+	int flush_property_on_delete;
 
 	struct {
 		xcb_atom_t		 wm_protocols;
@@ -469,6 +475,39 @@ wlsc_wm_get_incr_chunk(struct wlsc_wm *wm)
 	}
 }
 
+void
+wlsc_xserver_set_selection(struct wlsc_input_device *device)
+{
+	struct wlsc_xserver *wxs = device->compositor->wxs;
+	struct wlsc_wm *wm = wxs->wm;
+	struct wlsc_data_source *source;
+	const char **p, **end;
+	int has_text_plain = 0;
+
+	fprintf(stderr, "set selection\n");
+
+	source = device->selection_data_source;
+	p = source->mime_types.data;
+	end = (const char **)
+		((char *) source->mime_types.data + source->mime_types.size);
+
+	while (p < end) {
+		fprintf(stderr, "  %s\n", *p);
+		if (strcmp(*p, "text/plain") == 0 ||
+		    strcmp(*p, "text/plain;charset=utf-8") == 0)
+			has_text_plain = 1;
+		p++;
+	}
+
+	if (wm && has_text_plain &&
+	    source->create_offer != data_source_create_offer) {
+		xcb_set_selection_owner(wm->conn,
+					wm->selection_window,
+					wm->atom.clipboard,
+					XCB_TIME_CURRENT_TIME);
+	}
+}
+
 static void
 wlsc_wm_handle_configure_request(struct wlsc_wm *wm, xcb_generic_event_t *event)
 {
@@ -555,13 +594,8 @@ wlsc_wm_handle_map_request(struct wlsc_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_map_request_event_t *map_request =
 		(xcb_map_request_event_t *) event;
-	uint32_t values[1];
 
 	fprintf(stderr, "XCB_MAP_REQUEST (window %d)\n", map_request->window);
-
-	values[0] = XCB_EVENT_MASK_PROPERTY_CHANGE;
-	xcb_change_window_attributes(wm->conn, map_request->window,
-				     XCB_CW_EVENT_MASK, values);
 
 	xcb_map_window(wm->conn, map_request->window);
 }
@@ -648,6 +682,265 @@ wlsc_wm_handle_map_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 	wlsc_wm_activate(wm, window, XCB_TIME_CURRENT_TIME);
 }
 
+static const int incr_chunk_size = 64 * 1024;
+
+static void
+wlsc_wm_send_selection_notify(struct wlsc_wm *wm, xcb_atom_t property)
+{
+	xcb_selection_notify_event_t selection_notify;
+
+	memset(&selection_notify, 0, sizeof selection_notify);
+	selection_notify.response_type = XCB_SELECTION_NOTIFY;
+	selection_notify.sequence = 0;
+	selection_notify.time = wm->selection_request.time;
+	selection_notify.requestor = wm->selection_request.requestor;
+	selection_notify.selection = wm->selection_request.selection;
+	selection_notify.target = wm->selection_request.target;
+	selection_notify.property = property;
+
+	xcb_send_event(wm->conn, 0, /* propagate */
+		       wm->selection_request.requestor,
+		       XCB_EVENT_MASK_NO_EVENT, (char *) &selection_notify);
+}
+
+static void
+wlsc_wm_send_targets(struct wlsc_wm *wm)
+{
+	xcb_atom_t targets[] = {
+		wm->atom.timestamp,
+		wm->atom.targets,
+		wm->atom.utf8_string,
+		/* wm->atom.compound_text, */
+		wm->atom.text,
+		/* wm->atom.string */
+	};
+
+	xcb_change_property(wm->conn,
+			    XCB_PROP_MODE_REPLACE,
+			    wm->selection_request.requestor,
+			    wm->selection_request.property,
+			    XCB_ATOM_ATOM,
+			    32, /* format */
+			    ARRAY_LENGTH(targets), targets);
+
+	wlsc_wm_send_selection_notify(wm, wm->selection_request.property);
+}
+
+static void
+wlsc_wm_send_timestamp(struct wlsc_wm *wm)
+{
+	xcb_change_property(wm->conn,
+			    XCB_PROP_MODE_REPLACE,
+			    wm->selection_request.requestor,
+			    wm->selection_request.property,
+			    XCB_ATOM_INTEGER,
+			    32, /* format */
+			    1, &wm->selection_timestamp);
+
+	wlsc_wm_send_selection_notify(wm, wm->selection_request.property);
+}
+
+static int
+wlsc_wm_flush_source_data(struct wlsc_wm *wm)
+{
+	int length;
+
+	xcb_change_property(wm->conn,
+			    XCB_PROP_MODE_REPLACE,
+			    wm->selection_request.requestor,
+			    wm->selection_request.property,
+			    wm->selection_target,
+			    8, /* format */
+			    wm->source_data.size,
+			    wm->source_data.data);
+	wm->selection_property_set = 1;
+	length = wm->source_data.size;
+	wm->source_data.size = 0;
+
+	return length;
+}
+
+static int
+wlsc_wm_read_data_source(int fd, uint32_t mask, void *data)
+{
+	struct wlsc_wm *wm = data;
+	int len, current, available;
+	void *p;
+
+	current = wm->source_data.size;
+	if (wm->source_data.size < incr_chunk_size)
+		p = wl_array_add(&wm->source_data, incr_chunk_size);
+	else
+		p = (char *) wm->source_data.data + wm->source_data.size;
+	available = wm->source_data.alloc - current;
+
+	len = read(fd, p, available);
+	if (len == -1) {
+		fprintf(stderr, "read error from data source: %m\n");
+		wlsc_wm_send_selection_notify(wm, XCB_ATOM_NONE);
+		wl_event_source_remove(wm->property_source);
+		close(fd);
+		wl_array_release(&wm->source_data);
+	}
+
+	fprintf(stderr, "read %d (available %d, mask 0x%x) bytes: \"%.*s\"\n",
+		len, available, mask, len, (char *) p);
+
+	wm->source_data.size = current + len;
+	if (wm->source_data.size >= incr_chunk_size) {
+		if (!wm->incr) {
+			fprintf(stderr, "got %d bytes, starting incr\n",
+				wm->source_data.size);
+			wm->incr = 1;
+			xcb_change_property(wm->conn,
+					    XCB_PROP_MODE_REPLACE,
+					    wm->selection_request.requestor,
+					    wm->selection_request.property,
+					    wm->atom.incr,
+					    32, /* format */
+					    1, &incr_chunk_size);
+			wm->selection_property_set = 1;
+			wm->flush_property_on_delete = 1;
+			wl_event_source_remove(wm->property_source);
+			wlsc_wm_send_selection_notify(wm, wm->selection_request.property);
+		} else if (wm->selection_property_set) {
+			fprintf(stderr, "got %d bytes, waiting for "
+				"property delete\n", wm->source_data.size);
+
+			wm->flush_property_on_delete = 1;
+			wl_event_source_remove(wm->property_source);
+		} else {
+			fprintf(stderr, "got %d bytes, "
+				"property deleted, seting new property\n",
+				wm->source_data.size);
+			wlsc_wm_flush_source_data(wm);
+		}
+	} else if (len == 0 && !wm->incr) {
+		fprintf(stderr, "non-incr transfer complete\n");
+		/* Non-incr transfer all done. */
+		wlsc_wm_flush_source_data(wm);
+		wlsc_wm_send_selection_notify(wm, wm->selection_request.property);
+		xcb_flush(wm->conn);
+		wl_event_source_remove(wm->property_source);
+		close(fd);
+		wl_array_release(&wm->source_data);
+		wm->selection_request.requestor = XCB_NONE;
+	} else if (len == 0 && wm->incr) {
+		fprintf(stderr, "incr transfer complete\n");
+
+		wm->flush_property_on_delete = 1;
+		if (wm->selection_property_set) {
+			fprintf(stderr, "got %d bytes, waiting for "
+				"property delete\n", wm->source_data.size);
+		} else {
+			fprintf(stderr, "got %d bytes, "
+				"property deleted, seting new property\n",
+				wm->source_data.size);
+			wlsc_wm_flush_source_data(wm);
+		}
+		xcb_flush(wm->conn);
+		wl_event_source_remove(wm->property_source);
+		wm->data_source_fd = -1;
+		close(fd);
+	} else {
+		fprintf(stderr, "nothing happened, buffered the bytes\n");
+	}
+
+	return 1;
+}
+
+static void
+wlsc_wm_send_data(struct wlsc_wm *wm, xcb_atom_t target, const char *mime_type)
+{
+	struct wlsc_input_device *device = (struct wlsc_input_device *)
+		wm->server->compositor->input_device;
+	int p[2];
+
+	if (pipe2(p, O_CLOEXEC | O_NONBLOCK) == -1) {
+		fprintf(stderr, "pipe2 failed: %m\n");
+		wlsc_wm_send_selection_notify(wm, XCB_ATOM_NONE);
+		return;
+	}
+
+	wl_array_init(&wm->source_data);
+	wm->selection_target = target;
+	wm->data_source_fd = p[0];
+	wm->property_source = wl_event_loop_add_fd(wm->server->loop,
+						   wm->data_source_fd,
+						   WL_EVENT_READABLE,
+						   wlsc_wm_read_data_source,
+						   wm);
+
+	wl_resource_post_event(&device->selection_data_source->resource,
+			       WL_DATA_SOURCE_SEND, mime_type, p[1]);
+	close(p[1]);
+}
+
+static void
+wlsc_wm_send_incr_chunk(struct wlsc_wm *wm)
+{
+	fprintf(stderr, "property deleted\n");
+	int length;
+
+	wm->selection_property_set = 0;
+	if (wm->flush_property_on_delete) {
+		fprintf(stderr, "setting new property, %d bytes\n",
+			wm->source_data.size);
+		wm->flush_property_on_delete = 0;
+		length = wlsc_wm_flush_source_data(wm);
+
+		if (wm->data_source_fd >= 0) {
+			wm->property_source =
+				wl_event_loop_add_fd(wm->server->loop,
+						     wm->data_source_fd,
+						     WL_EVENT_READABLE,
+						     wlsc_wm_read_data_source,
+						     wm);
+		} else if (length > 0) {
+			/* Transfer is all done, but queue a flush for
+			 * the delete of the last chunk so we can set
+			 * the 0 sized propert to signal the end of
+			 * the transfer. */
+			wm->flush_property_on_delete = 1;
+			wl_array_release(&wm->source_data);
+		} else {
+			wm->selection_request.requestor = XCB_NONE;
+		}
+	}
+}
+
+static void
+wlsc_wm_handle_selection_request(struct wlsc_wm *wm,
+				 xcb_generic_event_t *event)
+{
+	xcb_selection_request_event_t *selection_request =
+		(xcb_selection_request_event_t *) event;
+
+	fprintf(stderr, "selection request, %s, ",
+		get_atom_name(wm->conn, selection_request->selection));
+	fprintf(stderr, "target %s, ",
+		get_atom_name(wm->conn, selection_request->target));
+	fprintf(stderr, "property %s\n",
+		get_atom_name(wm->conn, selection_request->property));
+
+	wm->selection_request = *selection_request;
+	wm->incr = 0;
+	wm->flush_property_on_delete = 0;
+
+	if (selection_request->target == wm->atom.targets) {
+		wlsc_wm_send_targets(wm);
+	} else if (selection_request->target == wm->atom.timestamp) {
+		wlsc_wm_send_timestamp(wm);
+	} else if (selection_request->target == wm->atom.utf8_string ||
+		   selection_request->target == wm->atom.text) {
+		wlsc_wm_send_data(wm, wm->atom.utf8_string,
+				  "text/plain;charset=utf-8");
+	} else {
+		fprintf(stderr, "can only handle UTF8_STRING targets...\n");
+		wlsc_wm_send_selection_notify(wm, XCB_ATOM_NONE);
+	}
+}
+
 static void
 wlsc_wm_handle_property_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 {
@@ -659,6 +952,11 @@ wlsc_wm_handle_property_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 		    property_notify->atom == wm->atom.wl_selection &&
 		    wm->incr)
 			wlsc_wm_get_incr_chunk(wm);
+	} else if (property_notify->window == wm->selection_request.requestor) {
+		if (property_notify->state == XCB_PROPERTY_DELETE &&
+		    property_notify->atom == wm->selection_request.property &&
+		    wm->incr)
+			wlsc_wm_send_incr_chunk(wm);
 	} else if (property_notify->atom == XCB_ATOM_WM_CLASS) {
 		fprintf(stderr, "wm_class changed\n");
 	} else if (property_notify->atom == XCB_ATOM_WM_TRANSIENT_FOR) {
@@ -688,6 +986,7 @@ wlsc_wm_handle_create_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 	xcb_create_notify_event_t *create_notify =
 		(xcb_create_notify_event_t *) event;
 	struct wlsc_wm_window *window;
+	uint32_t values[1];
 
 	fprintf(stderr, "XCB_CREATE_NOTIFY (window %d)\n",
 		create_notify->window);
@@ -697,6 +996,10 @@ wlsc_wm_handle_create_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 		fprintf(stderr, "failed to allocate window\n");
 		return;
 	}
+
+	values[0] = XCB_EVENT_MASK_PROPERTY_CHANGE;
+	xcb_change_window_attributes(wm->conn, create_notify->window,
+				     XCB_CW_EVENT_MASK, values);
 
 	memset(window, 0, sizeof *window);
 	window->id = create_notify->window;
@@ -753,11 +1056,20 @@ wlsc_wm_handle_xfixes_selection_notify(struct wlsc_wm *wm,
 	printf("xfixes selection notify event: owner %d\n",
 	       xfixes_selection_notify->owner);
 
+	/* We have to use XCB_TIME_CURRENT_TIME when we claim the
+	 * selection, so grab the actual timestamp here so we can
+	 * answer TIMESTAMP conversion requests correctly. */
+	if (xfixes_selection_notify->owner == wm->selection_window) {
+		wm->selection_timestamp = xfixes_selection_notify->timestamp;
+		fprintf(stderr, "our window, skipping\n");
+		return;
+	}
+
 	xcb_convert_selection(wm->conn, wm->selection_window,
 			      wm->atom.clipboard,
 			      wm->atom.targets,
 			      wm->atom.wl_selection,
-			      XCB_TIME_CURRENT_TIME);
+			      xfixes_selection_notify->timestamp);
 
 	xcb_flush(wm->conn);
 }
@@ -800,6 +1112,9 @@ wlsc_wm_handle_event(int fd, uint32_t mask, void *data)
 			break;
 		case XCB_SELECTION_NOTIFY:
 			wlsc_wm_handle_selection_notify(wm, event);
+			break;
+		case XCB_SELECTION_REQUEST:
+			wlsc_wm_handle_selection_request(wm, event);
 			break;
 		}
 
@@ -947,6 +1262,8 @@ wlsc_wm_create(struct wlsc_xserver *wxs)
 		XCB_EVENT_MASK_PROPERTY_CHANGE;
 	xcb_change_window_attributes(wm->conn, wm->screen->root,
 				     XCB_CW_EVENT_MASK, values);
+
+	wm->selection_request.requestor = XCB_NONE;
 
 	wm->selection_window = xcb_generate_id(wm->conn);
 	xcb_create_window(wm->conn,
