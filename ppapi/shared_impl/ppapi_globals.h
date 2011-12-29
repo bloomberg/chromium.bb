@@ -13,6 +13,7 @@
 
 namespace ppapi {
 
+class CallbackTracker;
 class FunctionGroupBase;
 class ResourceTracker;
 class VarTracker;
@@ -29,6 +30,8 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   // Retrieves the corresponding tracker.
   virtual ResourceTracker* GetResourceTracker() = 0;
   virtual VarTracker* GetVarTracker() = 0;
+  virtual CallbackTracker* GetCallbackTrackerForInstance(
+      PP_Instance instance) = 0;
 
   // Returns the function object corresponding to the given ID, or NULL if
   // there isn't one.

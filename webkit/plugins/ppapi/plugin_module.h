@@ -28,6 +28,7 @@ struct PPB_Core;
 typedef void* NPIdentifier;
 
 namespace ppapi {
+class CallbackTracker;
 class WebKitForwarding;
 }  // namespace ppapi
 
@@ -117,6 +118,7 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   void InstanceDeleted(PluginInstance* instance);
 
   scoped_refptr<CallbackTracker> GetCallbackTracker();
+  scoped_refptr< ::ppapi::CallbackTracker> GetNewCallbackTracker();
 
   // Called when running out of process and the plugin crashed. This will
   // release relevant resources and update all affected instances.
@@ -154,7 +156,11 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
 
   // Tracker for completion callbacks, used mainly to ensure that all callbacks
   // are properly aborted on module shutdown.
-  scoped_refptr<CallbackTracker> callback_tracker_;
+  //
+  // TODO(brettw) remove this in favor of the ::ppapi:: one below.
+  scoped_refptr<CallbackTracker> old_callback_tracker_;
+
+  scoped_refptr< ::ppapi::CallbackTracker> callback_tracker_;
 
   PP_Module pp_module_;
 

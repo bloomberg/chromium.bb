@@ -13,7 +13,8 @@ PluginGlobals* PluginGlobals::plugin_globals_ = NULL;
 
 PluginGlobals::PluginGlobals()
     : ppapi::PpapiGlobals(),
-      plugin_proxy_delegate_(NULL) {
+      plugin_proxy_delegate_(NULL),
+      callback_tracker_(new CallbackTracker) {
   DCHECK(!plugin_globals_);
   plugin_globals_ = this;
 }
@@ -29,6 +30,13 @@ ResourceTracker* PluginGlobals::GetResourceTracker() {
 
 VarTracker* PluginGlobals::GetVarTracker() {
   return &plugin_var_tracker_;
+}
+
+CallbackTracker* PluginGlobals::GetCallbackTrackerForInstance(
+    PP_Instance instance) {
+  // In the plugin process, the callback tracker is always the same, regardless
+  // of the instance.
+  return callback_tracker_.get();
 }
 
 FunctionGroupBase* PluginGlobals::GetFunctionAPI(PP_Instance inst, ApiID id) {

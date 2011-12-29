@@ -6,6 +6,7 @@
 #define WEBKIT_PLUGINS_PPAPI_HOST_GLOBALS_H_
 
 #include "base/compiler_specific.h"
+#include "ppapi/shared_impl/callback_tracker.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "webkit/plugins/ppapi/host_resource_tracker.h"
@@ -31,6 +32,8 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
   // PpapiGlobals implementation.
   virtual ::ppapi::ResourceTracker* GetResourceTracker() OVERRIDE;
   virtual ::ppapi::VarTracker* GetVarTracker() OVERRIDE;
+  virtual ::ppapi::CallbackTracker* GetCallbackTrackerForInstance(
+      PP_Instance instance) OVERRIDE;
   virtual ::ppapi::FunctionGroupBase* GetFunctionAPI(
       PP_Instance inst,
       ::ppapi::ApiID id) OVERRIDE;

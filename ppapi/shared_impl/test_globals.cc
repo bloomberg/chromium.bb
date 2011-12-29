@@ -6,7 +6,9 @@
 
 namespace ppapi {
 
-TestGlobals::TestGlobals() : ppapi::PpapiGlobals() {
+TestGlobals::TestGlobals()
+    : ppapi::PpapiGlobals(),
+      callback_tracker_(new CallbackTracker) {
 }
 
 TestGlobals::~TestGlobals() {
@@ -18,6 +20,11 @@ ResourceTracker* TestGlobals::GetResourceTracker() {
 
 VarTracker* TestGlobals::GetVarTracker() {
   return &var_tracker_;
+}
+
+CallbackTracker* TestGlobals::GetCallbackTrackerForInstance(
+    PP_Instance instance) {
+  return callback_tracker_.get();
 }
 
 FunctionGroupBase* TestGlobals::GetFunctionAPI(PP_Instance inst, ApiID id) {

@@ -84,6 +84,7 @@
 #include "ppapi/c/trusted/ppb_graphics_3d_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
+#include "ppapi/shared_impl/callback_tracker.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_opengles2_shared.h"
 #include "ppapi/shared_impl/ppb_var_shared.h"
@@ -415,7 +416,8 @@ PluginModule::PluginModule(const std::string& name,
                            const FilePath& path,
                            PluginDelegate::ModuleLifetime* lifetime_delegate)
     : lifetime_delegate_(lifetime_delegate),
-      callback_tracker_(new CallbackTracker),
+      old_callback_tracker_(new CallbackTracker),
+      callback_tracker_(new ::ppapi::CallbackTracker),
       is_in_destructor_(false),
       is_crashed_(false),
       broker_(NULL),
@@ -445,6 +447,7 @@ PluginModule::~PluginModule() {
 
   GetLivePluginSet()->erase(this);
 
+  old_callback_tracker_->AbortAll();
   callback_tracker_->AbortAll();
 
   if (entry_points_.shutdown_module)
@@ -550,6 +553,10 @@ void PluginModule::InstanceDeleted(PluginInstance* instance) {
 }
 
 scoped_refptr<CallbackTracker> PluginModule::GetCallbackTracker() {
+  return old_callback_tracker_;
+}
+
+scoped_refptr< ::ppapi::CallbackTracker> PluginModule::GetNewCallbackTracker() {
   return callback_tracker_;
 }
 

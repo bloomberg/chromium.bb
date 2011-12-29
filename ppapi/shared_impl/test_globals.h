@@ -6,6 +6,7 @@
 #define PPAPI_SHARED_IMPL_TEST_GLOBALS_H_
 
 #include "base/compiler_specific.h"
+#include "ppapi/shared_impl/callback_tracker.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/var_tracker.h"
@@ -31,6 +32,8 @@ class TestGlobals : public PpapiGlobals {
   // PpapiGlobals implementation.
   virtual ResourceTracker* GetResourceTracker() OVERRIDE;
   virtual VarTracker* GetVarTracker() OVERRIDE;
+  virtual CallbackTracker* GetCallbackTrackerForInstance(
+      PP_Instance instance) OVERRIDE;
   virtual FunctionGroupBase* GetFunctionAPI(PP_Instance inst,
                                             ApiID id) OVERRIDE;
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
@@ -38,6 +41,7 @@ class TestGlobals : public PpapiGlobals {
  private:
   ResourceTracker resource_tracker_;
   TestVarTracker var_tracker_;
+  scoped_refptr<CallbackTracker> callback_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TestGlobals);
 };

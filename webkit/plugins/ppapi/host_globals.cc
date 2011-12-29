@@ -58,6 +58,16 @@ HostGlobals::~HostGlobals() {
   return &host_var_tracker_;
 }
 
+::ppapi::CallbackTracker* HostGlobals::GetCallbackTrackerForInstance(
+    PP_Instance instance) {
+  std::map<PP_Instance, linked_ptr<InstanceData> >::iterator found =
+      instance_map_.find(instance);
+  if (found == instance_map_.end())
+    return NULL;
+
+  return found->second->instance->module()->GetNewCallbackTracker();
+}
+
 ::ppapi::FunctionGroupBase* HostGlobals::GetFunctionAPI(PP_Instance pp_instance,
                                                         ::ppapi::ApiID id) {
   // Get the instance object. This also ensures that the instance data is in

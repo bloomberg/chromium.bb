@@ -4,7 +4,9 @@
 
 #include "ppapi/shared_impl/resource_tracker.h"
 
+#include "ppapi/shared_impl/callback_tracker.h"
 #include "ppapi/shared_impl/id_assignment.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource.h"
 
 namespace ppapi {
@@ -168,6 +170,8 @@ void ResourceTracker::RemoveResource(Resource* object) {
 }
 
 void ResourceTracker::LastPluginRefWasDeleted(Resource* object) {
+  PpapiGlobals::Get()->GetCallbackTrackerForInstance(object->pp_instance())->
+      PostAbortForResource(object->pp_resource());
   object->LastPluginRefWasDeleted();
 }
 

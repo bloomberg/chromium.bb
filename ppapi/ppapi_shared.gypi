@@ -30,6 +30,8 @@
         '../base/base.gyp:base',
       ],
       'sources': [
+        'shared_impl/callback_tracker.cc',
+        'shared_impl/callback_tracker.h',
         'shared_impl/file_type_conversion.cc',
         'shared_impl/file_type_conversion.h',
         'shared_impl/function_group_base.cc',
@@ -89,6 +91,8 @@
         'shared_impl/scoped_pp_resource.h',
         'shared_impl/time_conversion.cc',
         'shared_impl/time_conversion.h',
+        'shared_impl/tracked_callback.cc',
+        'shared_impl/tracked_callback.h',
         'shared_impl/var.cc',
         'shared_impl/var.h',
         'shared_impl/var_tracker.cc',
