@@ -27,6 +27,12 @@ class MultiprofileTest(pyauto.PyUITest):
       flags.append('--multi-profiles')
     return flags
 
+  def _CheckNumProfiles(self, expected_number):
+    """Returns True if |expected_number| is equal to the number of profiles."""
+    # TODO: Remove when crbug.com/108761 is fixed.
+    multi_profile = self.GetMultiProfileInfo()
+    return expected_number == len(multi_profile['profiles'])
+
   def testBasic(self):
     """Multi-profile windows can open."""
     self.assertEqual(1, self.GetBrowserWindowCount())
@@ -53,6 +59,9 @@ class MultiprofileTest(pyauto.PyUITest):
     """Verify we can create 20 new profiles."""
     for index in range(1, 21):
       self.OpenNewBrowserWindowWithNewProfile()
+      # Wait until the profile has been created.
+      # TODO: Remove when crbug.com/108761 is fixed.
+      self.WaitUntil(self._CheckNumProfiles, args=[index + 1])
       multi_profile = self.GetMultiProfileInfo()
       self.assertEqual(index + 1, len(multi_profile['profiles']),
           msg='Expected %d profiles after adding %d new users. Got %d' % (
