@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/worker/webworkerclient_proxy.h"
+#include "content/worker/websharedworkerclient_proxy.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -12,9 +12,9 @@
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
 #include "content/public/common/content_switches.h"
-// TODO(jam): uncomment this and WebWorkerClientProxy::createWorker when the
-// renderer worker code moves to content. This code isn't used now since we
-// don't support nested workers anyways.
+// TODO(jam): uncomment this and WebSharedWorkerClientProxy::createWorker
+// when the renderer worker code moves to content. This code isn't used
+// now since we don't support nested workers anyways.
 //#include "content/renderer/webworker_proxy.h"
 #include "content/worker/shared_worker_devtools_agent.h"
 #include "content/worker/websharedworker_stub.h"
@@ -36,13 +36,13 @@ using WebKit::WebMessagePortChannelArray;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
 using WebKit::WebWorker;
-using WebKit::WebWorkerClient;
+using WebKit::WebSharedWorkerClient;
 
 // How long to wait for worker to finish after it's been told to terminate.
 #define kMaxTimeForRunawayWorkerMs 3000
 
-WebWorkerClientProxy::WebWorkerClientProxy(int route_id,
-                                           WebSharedWorkerStub* stub)
+WebSharedWorkerClientProxy::WebSharedWorkerClientProxy(
+    int route_id, WebSharedWorkerStub* stub)
     : route_id_(route_id),
       appcache_host_id_(0),
       stub_(stub),
@@ -50,10 +50,10 @@ WebWorkerClientProxy::WebWorkerClientProxy(int route_id,
       devtools_agent_(NULL) {
 }
 
-WebWorkerClientProxy::~WebWorkerClientProxy() {
+WebSharedWorkerClientProxy::~WebSharedWorkerClientProxy() {
 }
 
-void WebWorkerClientProxy::postMessageToWorkerObject(
+void WebSharedWorkerClientProxy::postMessageToWorkerObject(
     const WebString& message,
     const WebMessagePortChannelArray& channels) {
   std::vector<int> message_port_ids(channels.size());
@@ -71,7 +71,7 @@ void WebWorkerClientProxy::postMessageToWorkerObject(
       route_id_, message, message_port_ids, routing_ids));
 }
 
-void WebWorkerClientProxy::postExceptionToWorkerObject(
+void WebSharedWorkerClientProxy::postExceptionToWorkerObject(
     const WebString& error_message,
     int line_number,
     const WebString& source_url) {
@@ -79,7 +79,7 @@ void WebWorkerClientProxy::postExceptionToWorkerObject(
       route_id_, error_message, line_number, source_url));
 }
 
-void WebWorkerClientProxy::postConsoleMessageToWorkerObject(
+void WebSharedWorkerClientProxy::postConsoleMessageToWorkerObject(
     int source,
     int type,
     int level,
@@ -96,30 +96,31 @@ void WebWorkerClientProxy::postConsoleMessageToWorkerObject(
   Send(new WorkerHostMsg_PostConsoleMessageToWorkerObject(route_id_, params));
 }
 
-void WebWorkerClientProxy::confirmMessageFromWorkerObject(
+void WebSharedWorkerClientProxy::confirmMessageFromWorkerObject(
     bool has_pending_activity) {
   Send(new WorkerHostMsg_ConfirmMessageFromWorkerObject(
       route_id_, has_pending_activity));
 }
 
-void WebWorkerClientProxy::reportPendingActivity(bool has_pending_activity) {
+void WebSharedWorkerClientProxy::reportPendingActivity(
+    bool has_pending_activity) {
   Send(new WorkerHostMsg_ReportPendingActivity(
       route_id_, has_pending_activity));
 }
 
-void WebWorkerClientProxy::workerContextClosed() {
+void WebSharedWorkerClientProxy::workerContextClosed() {
   Send(new WorkerHostMsg_WorkerContextClosed(route_id_));
 }
 
-void WebWorkerClientProxy::workerContextDestroyed() {
+void WebSharedWorkerClientProxy::workerContextDestroyed() {
   Send(new WorkerHostMsg_WorkerContextDestroyed(route_id_));
   // Tell the stub that the worker has shutdown - frees this object.
   if (stub_)
     stub_->Shutdown();
 }
 
-WebKit::WebWorker* WebWorkerClientProxy::createWorker(
-    WebKit::WebWorkerClient* client) {
+WebKit::WebWorker* WebSharedWorkerClientProxy::createWorker(
+    WebKit::WebSharedWorkerClient* client) {
   // TODO(jam): see comment at top of file
   //return new WebWorkerProxy(client, WorkerThread::current(),
   //                          0, appcache_host_id_);
@@ -127,14 +128,14 @@ WebKit::WebWorker* WebWorkerClientProxy::createWorker(
 }
 
 WebKit::WebNotificationPresenter*
-WebWorkerClientProxy::notificationPresenter() {
+WebSharedWorkerClientProxy::notificationPresenter() {
   // TODO(johnnyg): Notifications are not yet hooked up to workers.
   // Coming soon.
   NOTREACHED();
   return NULL;
 }
 
-WebApplicationCacheHost* WebWorkerClientProxy::createApplicationCacheHost(
+WebApplicationCacheHost* WebSharedWorkerClientProxy::createApplicationCacheHost(
     WebKit::WebApplicationCacheHostClient* client) {
   WorkerWebApplicationCacheHostImpl* host =
       new WorkerWebApplicationCacheHostImpl(stub_->appcache_init_info(),
@@ -148,7 +149,7 @@ WebApplicationCacheHost* WebWorkerClientProxy::createApplicationCacheHost(
 // TODO(abarth): Security checks should use WebDocument or WebSecurityOrigin,
 // not WebFrame as the context object because WebFrames can contain different
 // WebDocuments at different times.
-bool WebWorkerClientProxy::allowDatabase(WebFrame* frame,
+bool WebSharedWorkerClientProxy::allowDatabase(WebFrame* frame,
                                          const WebString& name,
                                          const WebString& display_name,
                                          unsigned long estimated_size) {
@@ -163,14 +164,14 @@ bool WebWorkerClientProxy::allowDatabase(WebFrame* frame,
   return result;
 }
 
-bool WebWorkerClientProxy::allowFileSystem() {
+bool WebSharedWorkerClientProxy::allowFileSystem() {
   bool result = false;
   Send(new WorkerProcessHostMsg_AllowFileSystem(
       route_id_, stub_->url().GetOrigin(), &result));
   return result;
 }
 
-void WebWorkerClientProxy::openFileSystem(
+void WebSharedWorkerClientProxy::openFileSystem(
     WebKit::WebFileSystem::Type type,
     long long size,
     bool create,
@@ -180,22 +181,23 @@ void WebWorkerClientProxy::openFileSystem(
       size, create, new WebFileSystemCallbackDispatcher(callbacks));
 }
 
-void WebWorkerClientProxy::dispatchDevToolsMessage(const WebString& message) {
+void WebSharedWorkerClientProxy::dispatchDevToolsMessage(
+    const WebString& message) {
   if (devtools_agent_)
     devtools_agent_->SendDevToolsMessage(message);
 }
 
-void WebWorkerClientProxy::saveDevToolsAgentState(
+void WebSharedWorkerClientProxy::saveDevToolsAgentState(
     const WebKit::WebString& state) {
   if (devtools_agent_)
     devtools_agent_->SaveDevToolsAgentState(state);
 }
 
-bool WebWorkerClientProxy::Send(IPC::Message* message) {
+bool WebSharedWorkerClientProxy::Send(IPC::Message* message) {
   return WorkerThread::current()->Send(message);
 }
 
-void WebWorkerClientProxy::EnsureWorkerContextTerminates() {
+void WebSharedWorkerClientProxy::EnsureWorkerContextTerminates() {
   // Avoid a worker doing a while(1) from never exiting.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kWebWorkerShareProcesses)) {
@@ -211,7 +213,7 @@ void WebWorkerClientProxy::EnsureWorkerContextTerminates() {
   // will exit the message loop and subsequent ones won't be executed.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(
-          &WebWorkerClientProxy::workerContextDestroyed,
+          &WebSharedWorkerClientProxy::workerContextDestroyed,
           weak_factory_.GetWeakPtr()),
       kMaxTimeForRunawayWorkerMs);
 }

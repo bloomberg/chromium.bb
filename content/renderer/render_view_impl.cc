@@ -239,7 +239,6 @@ using WebKit::WebView;
 using WebKit::WebWidget;
 using WebKit::WebWindowFeatures;
 using WebKit::WebWorker;
-using WebKit::WebWorkerClient;
 using appcache::WebApplicationCacheHostImpl;
 using base::Time;
 using base::TimeDelta;

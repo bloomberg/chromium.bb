@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
-#include "content/worker/webworkerclient_proxy.h"
+#include "content/worker/websharedworkerclient_proxy.h"
 #include "content/worker/worker_webapplicationcachehost_impl.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
@@ -29,14 +29,14 @@ class WebSharedWorkerStub : public IPC::Channel::Listener {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
-  // Invoked when the WebWorkerClientProxy is shutting down.
+  // Invoked when the WebSharedWorkerClientProxy is shutting down.
   void Shutdown();
 
   // Called after terminating the worker context to make sure that the worker
   // actually terminates (is not stuck in an infinite loop).
   void EnsureWorkerContextTerminates();
 
-  WebWorkerClientProxy* client() { return &client_; }
+  WebSharedWorkerClientProxy* client() { return &client_; }
 
   const WorkerAppCacheInitInfo& appcache_init_info() const {
     return appcache_init_info_;
@@ -57,8 +57,9 @@ class WebSharedWorkerStub : public IPC::Channel::Listener {
   int route_id_;
   WorkerAppCacheInitInfo appcache_init_info_;
 
-  // WebWorkerClient that responds to outgoing API calls from the worker object.
-  WebWorkerClientProxy client_;
+  // WebSharedWorkerClient that responds to outgoing API calls
+  // from the worker object.
+  WebSharedWorkerClientProxy client_;
 
   WebKit::WebSharedWorker* impl_;
   string16 name_;

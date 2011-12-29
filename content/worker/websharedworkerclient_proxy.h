@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebWorkerClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorkerClient.h"
 
 namespace WebKit {
 class WebApplicationCacheHost;
@@ -27,12 +27,12 @@ class WebSharedWorkerStub;
 // is also called by the worker code and converts these function calls into
 // IPCs that are sent to the renderer, where they're converted back to function
 // calls by WebWorkerProxy.
-class WebWorkerClientProxy : public WebKit::WebWorkerClient {
+class WebSharedWorkerClientProxy : public WebKit::WebSharedWorkerClient {
  public:
-  WebWorkerClientProxy(int route_id, WebSharedWorkerStub* stub);
-  virtual ~WebWorkerClientProxy();
+  WebSharedWorkerClientProxy(int route_id, WebSharedWorkerStub* stub);
+  virtual ~WebSharedWorkerClientProxy();
 
-  // WebWorkerClient implementation.
+  // WebSharedWorkerClient implementation.
   virtual void postMessageToWorkerObject(
       const WebKit::WebString& message,
       const WebKit::WebMessagePortChannelArray& channel);
@@ -63,7 +63,8 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient {
   virtual void reportPendingActivity(bool has_pending_activity);
   virtual void workerContextClosed();
   virtual void workerContextDestroyed();
-  virtual WebKit::WebWorker* createWorker(WebKit::WebWorkerClient* client);
+  virtual WebKit::WebWorker* createWorker(
+      WebKit::WebSharedWorkerClient* client);
 
   virtual WebKit::WebNotificationPresenter* notificationPresenter();
 
@@ -94,10 +95,10 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient {
   int route_id_;
   int appcache_host_id_;
   WebSharedWorkerStub* stub_;
-  base::WeakPtrFactory<WebWorkerClientProxy> weak_factory_;
+  base::WeakPtrFactory<WebSharedWorkerClientProxy> weak_factory_;
   SharedWorkerDevToolsAgent* devtools_agent_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebWorkerClientProxy);
+  DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerClientProxy);
 };
 
 #endif  // CONTENT_WORKER_WEBWORKERCLIENT_PROXY_H_
