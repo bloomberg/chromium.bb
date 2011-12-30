@@ -2792,6 +2792,22 @@ void NetworkLibraryImplBase::ConnectToVirtualNetworkUsingConnectData(
     return;
   }
 
+  // When a L2TP/IPsec certificate-based VPN is created, the VirtualNetwork
+  // instance is created by NativeNetworkParser::CreateNetworkFromInfo().
+  // At that point, the provider type is deduced based on the value of
+  // client_cert_id_ of the VirtualNetwork instance, which hasn't been
+  // updated to the value of connect_data_.client_cert_pkcs11_id. Thus,
+  // the provider type is always incorrectly set to L2TP_IPSEC_PSK when
+  // L2TP_IPSEC_USER_CERT is expected. Here we fix the provider type based
+  // on connect_data_.client_cert_pkcs11_id.
+  //
+  // TODO(benchan): This is a quick and dirty workaround, we should refactor
+  // the code to make the flow more straightforward. See crosbug.com/24636
+  if (vpn->provider_type() == PROVIDER_TYPE_L2TP_IPSEC_PSK &&
+      !connect_data_.client_cert_pkcs11_id.empty()) {
+    vpn->set_provider_type(PROVIDER_TYPE_L2TP_IPSEC_USER_CERT);
+  }
+
   vpn->set_added(true);
   if (!data.server_hostname.empty())
     vpn->set_server_hostname(data.server_hostname);
