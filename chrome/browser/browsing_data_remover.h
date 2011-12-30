@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_helpers.h"
 #include "base/observer_list.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/time.h"
@@ -142,7 +143,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // BrowsingDataRemover deletes itself (using DeleteTask) and is not supposed
   // to be deleted by other objects so make destructor private and DeleteTask
   // a friend.
-  friend class DeleteTask<BrowsingDataRemover>;
+  friend class base::DeleteHelper<BrowsingDataRemover>;
   virtual ~BrowsingDataRemover();
 
   // content::NotificationObserver method. Callback when TemplateURLService has

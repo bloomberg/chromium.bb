@@ -8,8 +8,9 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/message_loop_helpers.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/screen_locker_delegate.h"
@@ -97,7 +98,7 @@ class ScreenLocker : public LoginStatusConsumer {
   static test::ScreenLockerTester* GetTester();
 
  private:
-  friend class DeleteTask<ScreenLocker>;
+  friend class base::DeleteHelper<ScreenLocker>;
   friend class test::ScreenLockerTester;
   friend class test::ScreenLockerViewsTester;
   friend class test::WebUIScreenLockerTester;

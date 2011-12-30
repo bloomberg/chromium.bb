@@ -32,6 +32,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
+#include "base/message_loop_helpers.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
@@ -800,7 +801,7 @@ class SSLChan : public MessageLoopForIO::Watcher {
   MessageLoopForIO::FileDescriptorWatcher read_pipe_controller_;
   MessageLoopForIO::FileDescriptorWatcher write_pipe_controller_;
 
-  friend class DeleteTask<SSLChan>;
+  friend class base::DeleteHelper<SSLChan>;
   DISALLOW_COPY_AND_ASSIGN(SSLChan);
 };
 
