@@ -290,8 +290,7 @@ bool MockKeychain::AlreadyContainsInternetPassword(
        keychain_attr_list_.begin(); it != keychain_attr_list_.end(); ++it) {
     SecKeychainAttribute* attribute;
     attribute = AttributeWithTag(it->second, kSecServerItemAttr);
-    if ((attribute->length != serverNameLength) ||
-        (attribute->data == NULL && *serverName != '\0') ||
+    if ((attribute->data == NULL && *serverName != '\0') ||
         (attribute->data != NULL && *serverName == '\0') ||
         strncmp(serverName,
                 (const char*) attribute->data,
@@ -299,8 +298,7 @@ bool MockKeychain::AlreadyContainsInternetPassword(
       continue;
     }
     attribute = AttributeWithTag(it->second, kSecSecurityDomainItemAttr);
-    if ((attribute->length != securityDomainLength) ||
-        (attribute->data == NULL && *securityDomain != '\0') ||
+    if ((attribute->data == NULL && *securityDomain != '\0') ||
         (attribute->data != NULL && *securityDomain == '\0') ||
         strncmp(securityDomain,
                 (const char*) attribute->data,
@@ -308,8 +306,7 @@ bool MockKeychain::AlreadyContainsInternetPassword(
       continue;
     }
     attribute = AttributeWithTag(it->second, kSecAccountItemAttr);
-    if ((attribute->length != accountNameLength) ||
-        (attribute->data == NULL && *accountName != '\0') ||
+    if ((attribute->data == NULL && *accountName != '\0') ||
         (attribute->data != NULL && *accountName == '\0') ||
         strncmp(accountName,
                 (const char*) attribute->data,
@@ -317,8 +314,7 @@ bool MockKeychain::AlreadyContainsInternetPassword(
       continue;
     }
     attribute = AttributeWithTag(it->second, kSecPathItemAttr);
-    if ((attribute->length != pathLength) ||
-        (attribute->data == NULL && *path != '\0') ||
+    if ((attribute->data == NULL && *path != '\0') ||
         (attribute->data != NULL && *path == '\0') ||
         strncmp(path,
                 (const char*) attribute->data,
