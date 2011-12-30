@@ -324,8 +324,15 @@ TEST_PPAPI_IN_PROCESS(MAYBE_CursorControl)
 TEST_PPAPI_OUT_OF_PROCESS(MAYBE_CursorControl)
 TEST_PPAPI_NACL_VIA_HTTP(MAYBE_CursorControl)
 
-TEST_PPAPI_IN_PROCESS(InputEvent)
-TEST_PPAPI_OUT_OF_PROCESS(InputEvent)
+// Times out on Linux. http://crbug.com/108859
+#if defined(OS_LINUX)
+#define MAYBE_InputEvent DISABLED_InputEvent
+#else
+#define MAYBE_InputEvent InputEvent
+#endif
+
+TEST_PPAPI_IN_PROCESS(MAYBE_InputEvent)
+TEST_PPAPI_OUT_OF_PROCESS(MAYBE_InputEvent)
 // TODO(bbudge) Enable when input events are proxied correctly for NaCl.
 TEST_PPAPI_NACL_VIA_HTTP(DISABLED_InputEvent)
 
