@@ -335,7 +335,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
 // The final navigation should end up in the app process.
 // See http://crbug.com/61757
 // This test occasionally timeout on aura. See crbug.com/105957.
-#if defined(USE_AURA)
+// This test doesn't complete on WebKit Win (dbg). See crbug.com/108853.
+#if defined(USE_AURA) || (defined(OS_WIN) && !defined(NDEBUG))
 #define MAYBE_AppProcessRedirectBack DISABLED_AppProcessRedirectBack
 #else
 #define MAYBE_AppProcessRedirectBack AppProcessRedirectBack
