@@ -548,8 +548,8 @@ void SigninScreenHandler::LoadAuthExtension(bool force, bool silent_load) {
 void SigninScreenHandler::UpdateAuthExtension() {
   DictionaryValue params;
   UpdateAuthParamsFromSettings(&params, CrosSettings::Get());
-  web_ui_->CallJavascriptFunction("login.GaiaSigninScreen.updateAuthExtension",
-                                  params);
+  web_ui()->CallJavascriptFunction("login.GaiaSigninScreen.updateAuthExtension",
+                                   params);
 }
 
 void SigninScreenHandler::ShowSigninScreenForCreds(
