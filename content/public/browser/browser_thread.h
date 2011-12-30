@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/message_loop_proxy.h"
 #include "base/task.h"
 #include "base/tracked_objects.h"
 #include "content/common/content_export.h"
@@ -20,7 +21,6 @@
 class MessageLoop;
 
 namespace base {
-class MessageLoopProxy;
 class Thread;
 }
 
@@ -153,8 +153,8 @@ class CONTENT_EXPORT BrowserThread {
   static bool ReleaseSoon(ID identifier,
                           const tracked_objects::Location& from_here,
                           const T* object) {
-    return PostNonNestableTask(
-        identifier, from_here, new ReleaseTask<T>(object));
+    return GetMessageLoopProxyForThread(identifier)->ReleaseSoon(
+        from_here, object);
   }
 
   // Callable on any thread.  Returns whether the given ID corresponds to a well

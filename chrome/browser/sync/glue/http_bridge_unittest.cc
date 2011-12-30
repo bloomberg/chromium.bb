@@ -33,10 +33,12 @@ class HttpBridgeTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    GetIOThreadLoop()->ReleaseSoon(FROM_HERE,
-        fake_default_request_context_getter_);
+    if (fake_default_request_context_getter_) {
+      GetIOThreadLoop()->ReleaseSoon(FROM_HERE,
+          fake_default_request_context_getter_);
+      fake_default_request_context_getter_ = NULL;
+    }
     io_thread_.Stop();
-    fake_default_request_context_getter_ = NULL;
   }
 
   HttpBridge* BuildBridge() {

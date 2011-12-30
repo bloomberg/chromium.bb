@@ -224,33 +224,10 @@ class DeleteTask : public CancelableTask {
   const T* obj_;
 };
 
-// Task to Release() an object
-template<class T>
-class ReleaseTask : public CancelableTask {
- public:
-  explicit ReleaseTask(const T* obj) : obj_(obj) {
-  }
-  virtual void Run() {
-    if (obj_)
-      obj_->Release();
-  }
-  virtual void Cancel() {
-    obj_ = NULL;
-  }
-
- private:
-  const T* obj_;
-};
-
 // Equivalents for use by base::Bind().
 template<typename T>
 void DeletePointer(T* obj) {
   delete obj;
-}
-
-template<typename T>
-void ReleasePointer(T* obj) {
-  obj->Release();
 }
 
 // RunnableMethodTraits --------------------------------------------------------
