@@ -139,6 +139,10 @@ void StatisticsProviderImpl::LoadMachineStatistics() {
                                    kMachineOSInfoDelim);
   parser.GetNameValuePairsFromFile(FilePath(kVpdFile), kVpdEq, kVpdDelim);
 
+  // Finished loading the statistics.
+  on_statistics_loaded_.Signal();
+  VLOG(1) << "Finished loading statistics";
+
 #if defined(GOOGLE_CHROME_BUILD)
   // TODO(kochi): This is for providing a channel information to
   // chrome::VersionInfo::GetChannel()/GetVersionStringModifier(),
@@ -152,10 +156,6 @@ void StatisticsProviderImpl::LoadMachineStatistics() {
       chrome::VersionInfo::SetChannel(channel);
   }
 #endif
-
-  // Finished loading the statistics.
-  on_statistics_loaded_.Signal();
-  VLOG(1) << "Finished loading statistics";
 }
 
 StatisticsProviderImpl* StatisticsProviderImpl::GetInstance() {
