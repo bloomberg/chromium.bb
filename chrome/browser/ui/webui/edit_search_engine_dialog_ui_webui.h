@@ -12,7 +12,7 @@
 // The WebUI for chrome://editsearchengine
 class EditSearchEngineDialogUI : public HtmlDialogUI {
  public:
-  explicit EditSearchEngineDialogUI(TabContents* contents);
+  explicit EditSearchEngineDialogUI(content::WebContents* contents);
   virtual ~EditSearchEngineDialogUI();
 
  protected:

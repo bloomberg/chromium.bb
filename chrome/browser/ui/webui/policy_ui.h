@@ -71,7 +71,7 @@ class PolicyUIHandler : public WebUIMessageHandler,
 // The Web UI handler for about:policy.
 class PolicyUI : public ChromeWebUI {
  public:
-  explicit PolicyUI(TabContents* contents);
+  explicit PolicyUI(content::WebContents* contents);
   virtual ~PolicyUI();
 
  private:

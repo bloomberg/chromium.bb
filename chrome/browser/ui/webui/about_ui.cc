@@ -49,10 +49,10 @@
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/sensors/sensors_provider.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/process_type.h"
 #include "crypto/nss_util.h"
@@ -93,6 +93,7 @@ using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
 using content::PluginService;
+using content::WebContents;
 
 namespace {
 
@@ -1377,7 +1378,7 @@ std::string AboutUIHTMLSource::GetMimeType(const std::string& path) const {
   return "text/html";
 }
 
-AboutUI::AboutUI(TabContents* contents, const std::string& name)
+AboutUI::AboutUI(WebContents* contents, const std::string& name)
     : ChromeWebUI(contents) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   ChromeURLDataManager::DataSource* source =

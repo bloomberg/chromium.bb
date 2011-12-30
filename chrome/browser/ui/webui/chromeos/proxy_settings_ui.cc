@@ -15,9 +15,11 @@
 #include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -64,7 +66,7 @@ void ProxySettingsHTMLSource::StartDataRequest(const std::string& path,
 
 namespace chromeos {
 
-ProxySettingsUI::ProxySettingsUI(TabContents* contents)
+ProxySettingsUI::ProxySettingsUI(WebContents* contents)
     : ChromeWebUI(contents),
       proxy_handler_(new ProxyHandler()) {
   // |localized_strings| will be owned by ProxySettingsHTMLSource.

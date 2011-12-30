@@ -25,7 +25,9 @@
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -244,7 +246,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
   // version of the Sync Promo.
   int message_body_resource_id = IDS_SYNC_PROMO_MESSAGE_BODY_A;
   if (web_ui && SyncPromoUI::GetIsLaunchPageForSyncPromoURL(
-      web_ui->tab_contents()->GetURL())) {
+      web_ui->web_contents()->GetURL())) {
     message_body_resource_id = sync_promo_trial::GetMessageBodyResID();
   }
   localized_strings->SetString(
@@ -451,7 +453,7 @@ void SyncSetupHandler::SetFlow(SyncSetupFlow* flow) {
 }
 
 void SyncSetupHandler::Focus() {
-  static_cast<RenderViewHostDelegate*>(web_ui()->tab_contents())->Activate();
+  web_ui()->web_contents()->GetRenderViewHost()->delegate()->Activate();
 }
 
 void SyncSetupHandler::OnDidClosePage(const ListValue* args) {

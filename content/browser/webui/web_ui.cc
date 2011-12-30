@@ -21,6 +21,8 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 
+using content::WebContents;
+
 // static
 string16 WebUI::GetJavascriptCall(
     const std::string& function_name,
@@ -38,14 +40,14 @@ string16 WebUI::GetJavascriptCall(
       char16('(') + parameters + char16(')') + char16(';');
 }
 
-WebUI::WebUI(TabContents* contents)
+WebUI::WebUI(WebContents* contents)
     : hide_favicon_(false),
       focus_location_bar_by_default_(false),
       should_hide_url_(false),
       link_transition_type_(content::PAGE_TRANSITION_LINK),
       bindings_(content::BINDINGS_POLICY_WEB_UI),
       register_callback_overwrites_(false),
-      tab_contents_(contents) {
+      web_contents_(contents) {
   DCHECK(contents);
   AddMessageHandler(new GenericHandler());
 }
@@ -71,7 +73,7 @@ void WebUI::OnWebUISend(const GURL& source_url,
                         const std::string& message,
                         const ListValue& args) {
   if (!ChildProcessSecurityPolicy::GetInstance()->
-          HasWebUIBindings(tab_contents_->GetRenderProcessHost()->GetID())) {
+          HasWebUIBindings(web_contents_->GetRenderProcessHost()->GetID())) {
     NOTREACHED() << "Blocked unauthorized use of WebUIBindings.";
     return;
   }
@@ -175,7 +177,7 @@ void WebUI::AddMessageHandler(WebUIMessageHandler* handler) {
 }
 
 void WebUI::ExecuteJavascript(const string16& javascript) {
-  tab_contents_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
+  web_contents_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
       ASCIIToUTF16(frame_xpath_), javascript);
 }
 

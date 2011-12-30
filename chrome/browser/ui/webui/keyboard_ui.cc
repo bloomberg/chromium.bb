@@ -10,13 +10,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using content::WebContents;
 
 ///////////////////////////////////////////////////////////////////////////////
 // KeyboardUI
 
-KeyboardUI::KeyboardUI(TabContents* contents)
+KeyboardUI::KeyboardUI(WebContents* contents)
     : ChromeWebUI(contents) {
   KeyboardHTMLSource* html_source = new KeyboardHTMLSource();
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());

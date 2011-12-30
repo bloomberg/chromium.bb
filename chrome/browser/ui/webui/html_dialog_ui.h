@@ -86,13 +86,13 @@ class HtmlDialogUIDelegate {
 
 // Displays file URL contents inside a modal HTML dialog.
 //
-// This application really should not use TabContents + WebUI. It should instead
+// This application really should not use WebContents + WebUI. It should instead
 // just embed a RenderView in a dialog and be done with it.
 //
 // Before loading a URL corresponding to this WebUI, the caller should set its
-// delegate as a property on the TabContents. This WebUI will pick it up from
+// delegate as a property on the WebContents. This WebUI will pick it up from
 // there and call it back. This is a bit of a hack to allow the dialog to pass
-// its delegate to the Web UI without having nasty accessors on the TabContents.
+// its delegate to the Web UI without having nasty accessors on the WebContents.
 // The correct design using RVH directly would avoid all of this.
 class HtmlDialogUI : public ChromeWebUI {
  public:
@@ -107,15 +107,15 @@ class HtmlDialogUI : public ChromeWebUI {
     std::string json_input;
   };
 
-  // When created, the property should already be set on the TabContents.
-  explicit HtmlDialogUI(TabContents* tab_contents);
+  // When created, the property should already be set on the WebContents.
+  explicit HtmlDialogUI(content::WebContents* web_contents);
   virtual ~HtmlDialogUI();
 
   // Close the dialog, passing the specified arguments to the close handler.
   void CloseDialog(const base::ListValue* args);
 
   // Returns the PropertyBag accessor object used to write the delegate pointer
-  // into the TabContents (see class-level comment above).
+  // into the WebContents (see class-level comment above).
   static base::PropertyAccessor<HtmlDialogUIDelegate*>& GetPropertyAccessor();
 
  private:
@@ -135,7 +135,7 @@ class HtmlDialogUI : public ChromeWebUI {
 // cloud print dialog).
 class ExternalHtmlDialogUI : public HtmlDialogUI {
  public:
-  explicit ExternalHtmlDialogUI(TabContents* tab_contents);
+  explicit ExternalHtmlDialogUI(content::WebContents* web_contents);
   virtual ~ExternalHtmlDialogUI();
 };
 

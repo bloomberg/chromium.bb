@@ -24,7 +24,7 @@ struct PageSizeMargins;
 
 class PrintPreviewUI : public ConstrainedHtmlUI {
  public:
-  explicit PrintPreviewUI(TabContents* contents);
+  explicit PrintPreviewUI(content::WebContents* contents);
   virtual ~PrintPreviewUI();
 
   // Gets the print preview |data|. |index| is zero-based, and can be

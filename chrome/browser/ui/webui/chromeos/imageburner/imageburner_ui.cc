@@ -30,6 +30,7 @@
 
 using content::BrowserThread;
 using content::DownloadItem;
+using content::WebContents;
 
 const char kPropertyDevicePath[] = "devicePath";
 const char kPropertyFilePath[] = "filePath";
@@ -127,8 +128,8 @@ void WebUIHandlerTaskProxy::DeleteOnUIThread() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-WebUIHandler::WebUIHandler(TabContents* contents)
-    : tab_contents_(contents),
+WebUIHandler::WebUIHandler(WebContents* contents)
+    : web_contents_(contents),
       download_manager_(NULL),
       active_download_item_(NULL),
       burn_manager_(NULL),
@@ -390,7 +391,7 @@ void WebUIHandler::ImageDirCreatedOnUIThread(bool success) {
   if (success) {
     zip_image_file_path_ =
         burn_manager_->GetImageDir().Append(kImageZipFileName);
-    burn_manager_->FetchConfigFile(tab_contents_, this);
+    burn_manager_->FetchConfigFile(web_contents_, this);
   } else {
     DownloadCompleted(success);
   }
@@ -411,7 +412,7 @@ void WebUIHandler::OnConfigFileFetched(const ConfigFile&
 
   if (!download_manager_) {
     download_manager_ =
-        tab_contents_->GetBrowserContext()->GetDownloadManager();
+        web_contents_->GetBrowserContext()->GetDownloadManager();
     download_manager_->AddObserver(this);
   }
   if (!state_machine_->download_started()) {
@@ -419,7 +420,7 @@ void WebUIHandler::OnConfigFileFetched(const ConfigFile&
     if (!state_machine_->image_download_requested()) {
       state_machine_->OnImageDownloadRequested();
       burn_manager_->downloader()->DownloadFile(image_download_url_,
-          zip_image_file_path_, tab_contents_);
+          zip_image_file_path_, web_contents_);
     }
   }
 }
@@ -643,7 +644,7 @@ bool WebUIHandler::CheckNetwork() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-ImageBurnUI::ImageBurnUI(TabContents* contents) : ChromeWebUI(contents) {
+ImageBurnUI::ImageBurnUI(WebContents* contents) : ChromeWebUI(contents) {
   imageburner::WebUIHandler* handler = new imageburner::WebUIHandler(contents);
   AddMessageHandler(handler);
 

@@ -17,9 +17,9 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/worker_service.h"
 #include "content/public/browser/worker_service_observer.h"
 #include "content/public/common/process_type.h"
@@ -30,6 +30,7 @@
 using content::BrowserThread;
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
+using content::WebContents;
 using content::WorkerService;
 using content::WorkerServiceObserver;
 
@@ -249,7 +250,7 @@ class WorkersUI::WorkerCreationDestructionListener
   WorkersUI* workers_ui_;
 };
 
-WorkersUI::WorkersUI(TabContents* contents)
+WorkersUI::WorkersUI(WebContents* contents)
     : ChromeWebUI(contents),
       observer_(new WorkerCreationDestructionListener(this)){
   AddMessageHandler(new WorkersDOMHandler());

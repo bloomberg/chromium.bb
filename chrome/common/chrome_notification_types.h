@@ -122,7 +122,8 @@ enum NotificationType {
 
   // Used to fire notifications about how long various events took to
   // complete.  E.g., this is used to get more fine grained timings from the
-  // new tab page.  Details is a MetricEventDurationDetails.
+  // new tab page.  The source is a WebContents and the details is a
+  // MetricEventDurationDetails.
   NOTIFICATION_METRIC_EVENT_DURATION,
 
   // This notification is sent when TabContents::SetAppExtension is invoked.
@@ -907,7 +908,7 @@ enum NotificationType {
   NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
 
   // Sent when an app is installed and an NTP has been shown. Source is the
-  // TabContents that was shown, and Details is the string ID of the extension
+  // WebContents that was shown, and Details is the string ID of the extension
   // which was installed.
   NOTIFICATION_APP_INSTALLED_TO_NTP,
 

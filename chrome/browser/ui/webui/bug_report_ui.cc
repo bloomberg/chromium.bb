@@ -20,14 +20,16 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/screenshot_source.h"
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -45,6 +47,7 @@
 #endif
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -108,7 +111,7 @@ std::string GetUserEmail() {
 int GetIndexOfFeedbackTab(Browser* browser) {
   GURL bug_report_url(chrome::kChromeUIBugReportURL);
   for (int i = 0; i < browser->tab_count(); ++i) {
-    TabContents* tab = browser->GetTabContentsAt(i);
+    WebContents* tab = browser->GetTabContentsWrapperAt(i)->web_contents();
     if (tab && tab->GetURL().GetWithEmptyPath() == bug_report_url)
       return i;
   }
@@ -159,7 +162,7 @@ void ShowHtmlBugReportView(Browser* browser,
 class BugReportHandler : public WebUIMessageHandler,
                          public base::SupportsWeakPtr<BugReportHandler> {
  public:
-  explicit BugReportHandler(TabContents* tab);
+  explicit BugReportHandler(content::WebContents* tab);
   virtual ~BugReportHandler();
 
   // Init work after Attach.  Returns true on success.
@@ -184,7 +187,7 @@ class BugReportHandler : public WebUIMessageHandler,
   void CancelFeedbackCollection();
   void CloseFeedbackTab();
 
-  TabContents* tab_;
+  WebContents* tab_;
   ScreenshotSource* screenshot_source_;
 
   BugReportData* bug_report_data_;
@@ -307,7 +310,7 @@ ChromeWebUIDataSource* CreateBugReportUIHTMLSource(bool successful_init) {
 // BugReportHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
-BugReportHandler::BugReportHandler(TabContents* tab)
+BugReportHandler::BugReportHandler(WebContents* tab)
     : tab_(tab),
       screenshot_source_(NULL),
       bug_report_data_(NULL)
@@ -375,7 +378,8 @@ bool BugReportHandler::Init() {
     return false;
   }
 
-  TabContents* target_tab = browser->GetTabContentsAt(index);
+  WebContents* target_tab =
+      browser->GetTabContentsWrapperAt(index)->web_contents();
   if (target_tab) {
     target_tab_url_ = target_tab->GetURL().spec();
   }
@@ -612,7 +616,7 @@ void BugReportHandler::CloseFeedbackTab() {
 // BugReportUI
 //
 ////////////////////////////////////////////////////////////////////////////////
-BugReportUI::BugReportUI(TabContents* tab) : HtmlDialogUI(tab) {
+BugReportUI::BugReportUI(WebContents* tab) : HtmlDialogUI(tab) {
   BugReportHandler* handler = new BugReportHandler(tab);
   AddMessageHandler(handler);
 

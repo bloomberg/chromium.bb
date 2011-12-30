@@ -51,6 +51,7 @@
 
 using content::BrowserThread;
 using content::UserMetricsAction;
+using content::WebContents;
 
 namespace {
 
@@ -68,7 +69,7 @@ const char kLTRHtmlTextDirection[] = "ltr";
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabUI
 
-NewTabUI::NewTabUI(TabContents* contents)
+NewTabUI::NewTabUI(WebContents* contents)
     : ChromeWebUI(contents) {
   // Override some options on the Web UI.
   hide_favicon_ = true;

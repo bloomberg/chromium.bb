@@ -35,6 +35,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::WebContents;
+
 // On Linux this is crashing intermittently http://crbug/84719
 // In some environments this test fails about 1/6 http://crbug/84850
 #if defined(OS_LINUX)
@@ -93,7 +95,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
   ASSERT_TRUE(StartsWith(model()->GetResourceTitle(2), prefix, true));
 
   // Close the tab and verify that we notice.
-  TabContents* first_tab = browser()->GetTabContentsAt(0);
+  WebContents* first_tab =
+      browser()->GetTabContentsWrapperAt(0)->web_contents();
   ASSERT_TRUE(first_tab);
   browser()->CloseTabContents(first_tab);
   TaskManagerBrowserTestUtil::WaitForResourceChange(2);

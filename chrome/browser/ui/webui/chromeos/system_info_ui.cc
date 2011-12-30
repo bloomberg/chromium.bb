@@ -22,8 +22,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -32,6 +32,8 @@
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using content::WebContents;
 
 class SystemInfoUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
@@ -168,7 +170,7 @@ void SystemInfoHandler::RegisterMessages() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-SystemInfoUI::SystemInfoUI(TabContents* contents) : ChromeWebUI(contents) {
+SystemInfoUI::SystemInfoUI(WebContents* contents) : ChromeWebUI(contents) {
   SystemInfoHandler* handler = new SystemInfoHandler();
   AddMessageHandler(handler);
   SystemInfoUIHTMLSource* html_source = new SystemInfoUIHTMLSource();

@@ -41,6 +41,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::WebContents;
+
 static const int kTitleIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
   0,
   IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE,
@@ -360,7 +362,7 @@ void ExtensionInstallUI::OpenAppInstalledNTP(Browser* browser,
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
-      content::Source<TabContents>(params.target_contents->tab_contents()),
+      content::Source<WebContents>(params.target_contents->web_contents()),
       content::Details<const std::string>(&app_id));
 }
 

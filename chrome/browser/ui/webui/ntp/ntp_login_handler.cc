@@ -31,9 +31,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -129,13 +129,13 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
       OpenURLParams params(
           GURL(chrome::kChromeUISyncPromoURL), Referrer(), CURRENT_TAB,
           content::PAGE_TRANSITION_LINK, false);
-      web_ui()->tab_contents()->OpenURL(params);
+      web_ui()->web_contents()->OpenURL(params);
       RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
     }
   } else if (args->GetSize() == 4) {
     // The user is signed in, show the profiles menu.
     Browser* browser =
-        BrowserList::FindBrowserWithTabContents(web_ui()->tab_contents());
+        BrowserList::FindBrowserWithWebContents(web_ui()->web_contents());
     if (!browser)
       return;
     double x = 0;
@@ -151,7 +151,7 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
     success = args->GetDouble(3, &height);
     DCHECK(success);
     gfx::Rect rect(x, y, width, height);
-    browser->window()->ShowAvatarBubble(web_ui()->tab_contents(), rect);
+    browser->window()->ShowAvatarBubble(web_ui()->web_contents(), rect);
     ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::NTP_AVATAR_BUBBLE);
   }
 }

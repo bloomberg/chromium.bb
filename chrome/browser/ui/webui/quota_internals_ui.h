@@ -12,7 +12,7 @@
 
 class QuotaInternalsUI : public ChromeWebUI {
  public:
-  explicit QuotaInternalsUI(TabContents* contents);
+  explicit QuotaInternalsUI(content::WebContents* contents);
   virtual ~QuotaInternalsUI() {}
  private:
   DISALLOW_COPY_AND_ASSIGN(QuotaInternalsUI);

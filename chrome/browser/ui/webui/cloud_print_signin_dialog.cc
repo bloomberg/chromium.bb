@@ -20,12 +20,12 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
 using content::NavigationEntry;
@@ -42,7 +42,7 @@ namespace cloud_print_signin_dialog {
 class CloudPrintSigninFlowHandler : public WebUIMessageHandler,
                                     public content::NotificationObserver {
  public:
-  explicit CloudPrintSigninFlowHandler(TabContents* parent_tab);
+  explicit CloudPrintSigninFlowHandler(WebContents* parent_tab);
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
@@ -54,17 +54,17 @@ class CloudPrintSigninFlowHandler : public WebUIMessageHandler,
   // Records the final size of the dialog in prefs.
   void StoreDialogSize();
   content::NotificationRegistrar registrar_;
-  TabContents* parent_tab_;
+  WebContents* parent_tab_;
 };
 
 CloudPrintSigninFlowHandler::CloudPrintSigninFlowHandler(
-    TabContents* parent_tab) : parent_tab_(parent_tab) {
+    WebContents* parent_tab) : parent_tab_(parent_tab) {
 }
 
 void CloudPrintSigninFlowHandler::RegisterMessages() {
-  if (web_ui() && web_ui()->tab_contents()) {
+  if (web_ui() && web_ui()->web_contents()) {
     NavigationController* controller =
-        &web_ui()->tab_contents()->GetController();
+        &web_ui()->web_contents()->GetController();
     NavigationEntry* pending_entry = controller->GetPendingEntry();
     if (pending_entry)
       pending_entry->SetURL(CloudPrintURL(
@@ -79,14 +79,14 @@ void CloudPrintSigninFlowHandler::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    GURL url = web_ui()->tab_contents()->GetURL();
+    GURL url = web_ui()->web_contents()->GetURL();
     GURL dialog_url = CloudPrintURL(
         Profile::FromWebUI(web_ui())).GetCloudPrintServiceURL();
     if (url.host() == dialog_url.host() &&
         url.path() == dialog_url.path() &&
         url.scheme() == dialog_url.scheme()) {
       StoreDialogSize();
-      web_ui()->tab_contents()->GetRenderViewHost()->ClosePage();
+      web_ui()->web_contents()->GetRenderViewHost()->ClosePage();
       static_cast<PrintPreviewUI*>(
           parent_tab_->GetWebUI())->OnReloadPrintersList();
     }
@@ -95,9 +95,9 @@ void CloudPrintSigninFlowHandler::Observe(
 
 void CloudPrintSigninFlowHandler::StoreDialogSize() {
   if (web_ui() &&
-      web_ui()->tab_contents() &&
-      web_ui()->tab_contents()->GetView()) {
-    gfx::Size size = web_ui()->tab_contents()->GetView()->GetContainerSize();
+      web_ui()->web_contents() &&
+      web_ui()->web_contents()->GetView()) {
+    gfx::Size size = web_ui()->web_contents()->GetView()->GetContainerSize();
     Profile* profile = Profile::FromWebUI(web_ui());
     profile->GetPrefs()->SetInteger(prefs::kCloudPrintSigninDialogWidth,
                                     size.width());
@@ -109,7 +109,7 @@ void CloudPrintSigninFlowHandler::StoreDialogSize() {
 // The delegate provides most of the basic setup for the dialog.
 class CloudPrintSigninDelegate : public HtmlDialogUIDelegate {
  public:
-  explicit CloudPrintSigninDelegate(TabContents* parent_tab);
+  explicit CloudPrintSigninDelegate(WebContents* parent_tab);
   virtual bool IsDialogModal() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
@@ -122,10 +122,10 @@ class CloudPrintSigninDelegate : public HtmlDialogUIDelegate {
       WebContents* source, bool* out_close_dialog) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
  private:
-  TabContents* parent_tab_;
+  WebContents* parent_tab_;
 };
 
-CloudPrintSigninDelegate::CloudPrintSigninDelegate(TabContents* parent_tab)
+CloudPrintSigninDelegate::CloudPrintSigninDelegate(WebContents* parent_tab)
     : parent_tab_(parent_tab) {
 }
 
@@ -183,7 +183,7 @@ bool CloudPrintSigninDelegate::ShouldShowDialogTitle() const {
   return false;
 }
 
-void CreateCloudPrintSigninDialogImpl(TabContents* parent_tab) {
+void CreateCloudPrintSigninDialogImpl(WebContents* parent_tab) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   HtmlDialogUIDelegate* dialog_delegate =
       new CloudPrintSigninDelegate(parent_tab);
@@ -192,7 +192,7 @@ void CreateCloudPrintSigninDialogImpl(TabContents* parent_tab) {
                                                       STYLE_GENERIC);
 }
 
-void CreateCloudPrintSigninDialog(TabContents* parent_tab) {
+void CreateCloudPrintSigninDialog(WebContents* parent_tab) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   BrowserThread::PostTask(

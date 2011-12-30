@@ -8,11 +8,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/widget/widget.h"
 #endif
+
+using content::WebContents;
 
 namespace {
 
@@ -21,7 +23,7 @@ bool override_more_webui_ = false;
 
 }  // namespace
 
-ChromeWebUI::ChromeWebUI(TabContents* contents)
+ChromeWebUI::ChromeWebUI(WebContents* contents)
     : WebUI(contents) {
 }
 
@@ -29,7 +31,7 @@ ChromeWebUI::~ChromeWebUI() {
 }
 
 Profile* ChromeWebUI::GetProfile() const {
-  return Profile::FromBrowserContext(tab_contents()->GetBrowserContext());
+  return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 }
 
 bool ChromeWebUI::CanShowBookmarkBar() const {

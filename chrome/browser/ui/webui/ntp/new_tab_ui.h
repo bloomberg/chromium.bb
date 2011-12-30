@@ -25,7 +25,7 @@ class Profile;
 class NewTabUI : public ChromeWebUI,
                  public content::NotificationObserver {
  public:
-  explicit NewTabUI(TabContents* manager);
+  explicit NewTabUI(content::WebContents* manager);
   virtual ~NewTabUI();
 
   // Override WebUI methods so we can hook up the paint timer to the render

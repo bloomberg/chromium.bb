@@ -33,9 +33,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -409,7 +409,7 @@ void PersonalOptionsHandler::SendProfilesInfo() {
       g_browser_process->profile_manager()->GetProfileInfoCache();
   ListValue profile_info_list;
   FilePath current_profile_path =
-      web_ui()->tab_contents()->GetBrowserContext()->GetPath();
+      web_ui()->web_contents()->GetBrowserContext()->GetPath();
   for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i) {
     DictionaryValue* profile_value = new DictionaryValue();
     FilePath profile_path = cache.GetPathOfProfileAtIndex(i);

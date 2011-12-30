@@ -14,7 +14,7 @@ class Value;
 
 class NetInternalsUI : public ChromeWebUI {
  public:
-  explicit NetInternalsUI(TabContents* contents);
+  explicit NetInternalsUI(content::WebContents* contents);
 
   // Returns a Value containing constants NetInternals needs to load a log file.
   // Safe to call on any thread.  Caller takes ownership of the returned Value.

@@ -17,7 +17,7 @@
 // objects for pages that appear in the uber page.
 class UberUI : public ChromeWebUI {
  public:
-  explicit UberUI(TabContents* contents);
+  explicit UberUI(content::WebContents* contents);
   virtual ~UberUI();
 
   // ChromeWebUI implementation.

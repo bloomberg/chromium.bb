@@ -21,7 +21,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -33,6 +33,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros_settings.h"
 #endif
+
+using content::WebContents;
 
 namespace {
 
@@ -155,7 +157,7 @@ void CrashesDOMHandler::UpdateUI() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-CrashesUI::CrashesUI(TabContents* contents) : ChromeWebUI(contents) {
+CrashesUI::CrashesUI(WebContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler(new CrashesDOMHandler());
 
   // Set up the chrome://crashes/ source.

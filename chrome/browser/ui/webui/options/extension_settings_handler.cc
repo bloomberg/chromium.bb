@@ -32,16 +32,19 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -484,8 +487,8 @@ void ExtensionSettingsHandler::HandleSelectFilePathMessage(
 
   load_extension_dialog_ = SelectFileDialog::Create(this);
   load_extension_dialog_->SelectFile(type, select_title, FilePath(), &info,
-      file_type_index, FILE_PATH_LITERAL(""), web_ui()->tab_contents(),
-      web_ui()->tab_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
+      file_type_index, FILE_PATH_LITERAL(""), web_ui()->web_contents(),
+      web_ui()->web_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
 
@@ -607,7 +610,7 @@ void ExtensionSettingsHandler::Observe(
       break;
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED:
       deleting_rvh_ = content::Details<BackgroundContents>(details)->
-          tab_contents()->GetRenderViewHost();
+          web_contents()->GetRenderViewHost();
       // Fall through.
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED:
     case chrome::NOTIFICATION_EXTENSION_HOST_CREATED:
@@ -635,7 +638,7 @@ const Extension* ExtensionSettingsHandler::GetExtension(const ListValue* args) {
 }
 
 void ExtensionSettingsHandler::MaybeUpdateAfterNotification() {
-  TabContents* contents = web_ui()->tab_contents();
+  WebContents* contents = web_ui()->web_contents();
   if (!ignore_notifications_ && contents && contents->GetRenderViewHost())
     HandleRequestExtensionsData(NULL);
   deleting_rvh_ = NULL;

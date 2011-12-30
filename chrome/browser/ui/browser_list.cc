@@ -44,6 +44,8 @@
 #endif
 #endif
 
+using content::WebContents;
+
 namespace {
 
 // This object is instantiated when the first Browser object is added to the
@@ -753,10 +755,10 @@ Browser* BrowserList::FindBrowserWithWindow(gfx::NativeWindow window) {
 }
 
 // static
-Browser* BrowserList::FindBrowserWithTabContents(TabContents* tab_contents) {
-  DCHECK(tab_contents);
+Browser* BrowserList::FindBrowserWithWebContents(WebContents* web_contents) {
+  DCHECK(web_contents);
   for (TabContentsIterator it; !it.done(); ++it) {
-    if (it->tab_contents() == tab_contents)
+    if (it->web_contents() == web_contents)
       return it.browser();
   }
   return NULL;

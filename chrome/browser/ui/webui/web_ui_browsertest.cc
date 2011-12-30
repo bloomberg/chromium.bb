@@ -27,6 +27,8 @@
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::WebContents;
+
 namespace {
 
 const FilePath::CharType kMockJS[] = FILE_PATH_LITERAL("mock4js.js");
@@ -236,8 +238,8 @@ class MockWebUIProvider : public TestChromeWebUIFactory::WebUIProvider {
   MockWebUIProvider() {}
 
   // Returns a new ChromeWebUI
-  WebUI* NewWebUI(TabContents* tab_contents, const GURL& url) OVERRIDE {
-    return new ChromeWebUI(tab_contents);
+  WebUI* NewWebUI(WebContents* web_contents, const GURL& url) OVERRIDE {
+    return new ChromeWebUI(web_contents);
   }
 };
 

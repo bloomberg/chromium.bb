@@ -117,7 +117,7 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
 
     if (login_web_ui) {
       RenderViewHost* render_view_host =
-          login_web_ui->tab_contents()->GetRenderViewHost();
+          login_web_ui->web_contents()->GetRenderViewHost();
       // Set a flag to tell ChromeVox that it's just been enabled,
       // so that it won't interrupt our speech feedback enabled message.
       ExtensionMsg_ExecuteCode_Params params;

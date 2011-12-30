@@ -14,7 +14,7 @@ class DevToolsUI : public ChromeWebUI {
  public:
   static void RegisterDevToolsDataSource(Profile* profile);
 
-  explicit DevToolsUI(TabContents* contents);
+  explicit DevToolsUI(content::WebContents* contents);
 
   // WebUI
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;

@@ -33,9 +33,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -45,6 +45,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -1349,7 +1350,7 @@ void MobileSetupHandler::StartActivationOnUIThread() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MobileSetupUI::MobileSetupUI(TabContents* contents) : ChromeWebUI(contents) {
+MobileSetupUI::MobileSetupUI(WebContents* contents) : ChromeWebUI(contents) {
   chromeos::CellularNetwork* network = GetCellularNetwork();
   std::string service_path = network ? network->service_path() : std::string();
   MobileSetupHandler* handler = new MobileSetupHandler(service_path);
@@ -1365,5 +1366,5 @@ MobileSetupUI::MobileSetupUI(TabContents* contents) : ChromeWebUI(contents) {
 void MobileSetupUI::RenderViewCreated(RenderViewHost* host) {
   ChromeWebUI::RenderViewCreated(host);
   // Destroyed by the corresponding RenderViewHost.
-  new PortalFrameLoadObserver(host, tab_contents()->GetWebUI());
+  new PortalFrameLoadObserver(host, web_contents()->GetWebUI());
 }

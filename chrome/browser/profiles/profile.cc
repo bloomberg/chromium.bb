@@ -49,10 +49,10 @@
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/ssl/ssl_host_state.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/locale_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/database/database_tracker.h"
@@ -88,10 +88,10 @@ Profile* Profile::FromBrowserContext(content::BrowserContext* browser_context) {
 Profile* Profile::FromWebUI(WebUI* web_ui) {
   // TODO(dhollowa): Crash diagnosis http://crbug.com/97802
   CHECK(web_ui);
-  CHECK(web_ui->tab_contents());
-  CHECK(web_ui->tab_contents()->GetBrowserContext());
+  CHECK(web_ui->web_contents());
+  CHECK(web_ui->web_contents()->GetBrowserContext());
 
-  return FromBrowserContext(web_ui->tab_contents()->GetBrowserContext());
+  return FromBrowserContext(web_ui->web_contents()->GetBrowserContext());
 }
 
 TestingProfile* Profile::AsTestingProfile() {

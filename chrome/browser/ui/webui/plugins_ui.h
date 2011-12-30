@@ -13,7 +13,7 @@ class RefCountedMemory;
 
 class PluginsUI : public ChromeWebUI {
  public:
-  explicit PluginsUI(TabContents* contents);
+  explicit PluginsUI(content::WebContents* contents);
 
   static RefCountedMemory* GetFaviconResourceBytes();
   static void RegisterUserPrefs(PrefService* prefs);

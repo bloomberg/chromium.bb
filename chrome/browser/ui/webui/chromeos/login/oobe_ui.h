@@ -29,7 +29,7 @@ namespace chromeos {
 class OobeUI : public OobeDisplay,
                public ChromeWebUI {
  public:
-  explicit OobeUI(TabContents* contents);
+  explicit OobeUI(content::WebContents* contents);
 
   // OobeDisplay implementation:
   virtual void ShowScreen(WizardScreen* screen) OVERRIDE;

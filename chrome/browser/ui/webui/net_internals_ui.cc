@@ -74,6 +74,7 @@
 #endif
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -1626,7 +1627,7 @@ Value* NetInternalsUI::GetConstants() {
   return constants_dict;
 }
 
-NetInternalsUI::NetInternalsUI(TabContents* contents) : ChromeWebUI(contents) {
+NetInternalsUI::NetInternalsUI(WebContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler(new NetInternalsMessageHandler());
 
   // Set up the chrome://net-internals/ source.

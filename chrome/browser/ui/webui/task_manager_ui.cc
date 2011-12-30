@@ -11,13 +11,15 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/task_manager_handler.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -75,7 +77,7 @@ ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-TaskManagerUI::TaskManagerUI(TabContents* contents) : ChromeWebUI(contents) {
+TaskManagerUI::TaskManagerUI(WebContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler(new TaskManagerHandler(TaskManager::GetInstance()));
 
   // Set up the chrome://taskmanager/ source.

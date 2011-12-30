@@ -32,7 +32,7 @@ class ExtensionWebUI : public ChromeWebUI {
  public:
   static const char kExtensionURLOverrides[];
 
-  ExtensionWebUI(TabContents* tab_contents, const GURL& url);
+  ExtensionWebUI(content::WebContents* tab_contents, const GURL& url);
 
   virtual ~ExtensionWebUI();
 

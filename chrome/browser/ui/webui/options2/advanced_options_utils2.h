@@ -7,7 +7,9 @@
 
 #include "base/basictypes.h"
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 namespace options2 {
 
@@ -15,10 +17,10 @@ namespace options2 {
 class AdvancedOptionsUtilities {
  public:
   // Invoke UI for network proxy settings.
-  static void ShowNetworkProxySettings(TabContents*);
+  static void ShowNetworkProxySettings(content::WebContents*);
 
   // Invoke UI for SSL certificates.
-  static void ShowManageSSLCertificates(TabContents*);
+  static void ShowManageSSLCertificates(content::WebContents*);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AdvancedOptionsUtilities);

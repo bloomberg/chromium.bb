@@ -4,15 +4,17 @@
 
 #include "chrome/browser/ui/webui/hung_renderer_dialog_ui.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
-HungRendererDialogUI::HungRendererDialogUI(TabContents* contents)
+using content::WebContents;
+
+HungRendererDialogUI::HungRendererDialogUI(WebContents* contents)
     : HtmlDialogUI(contents) {
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUIHungRendererDialogHost);

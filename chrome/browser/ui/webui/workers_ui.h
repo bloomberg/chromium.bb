@@ -11,7 +11,7 @@
 
 class WorkersUI : public ChromeWebUI {
  public:
-  explicit WorkersUI(TabContents* contents);
+  explicit WorkersUI(content::WebContents* contents);
   virtual ~WorkersUI();
 
  private:

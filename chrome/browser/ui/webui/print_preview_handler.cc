@@ -41,9 +41,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 #include "printing/backend/print_backend.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
@@ -61,6 +63,7 @@ using content::BrowserThread;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
+using content::WebContents;
 using printing::Metafile;
 
 namespace {
@@ -261,8 +264,9 @@ void PrintPreviewHandler::RegisterMessages() {
 TabContentsWrapper* PrintPreviewHandler::preview_tab_wrapper() const {
   return TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
 }
-TabContents* PrintPreviewHandler::preview_tab() const {
-  return web_ui()->tab_contents();
+
+WebContents* PrintPreviewHandler::preview_tab() const {
+  return web_ui()->web_contents();
 }
 
 void PrintPreviewHandler::HandleGetPrinters(const ListValue* /*args*/) {
@@ -313,10 +317,10 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   }
   if (display_header_footer) {
     settings->SetString(printing::kSettingHeaderFooterTitle,
-                        initiator_tab->tab_contents()->GetTitle());
+                        initiator_tab->web_contents()->GetTitle());
     std::string url;
     NavigationEntry* entry =
-        initiator_tab->tab_contents()->GetController().GetActiveEntry();
+        initiator_tab->web_contents()->GetController().GetActiveEntry();
     if (entry)
       url = entry->GetVirtualURL().spec();
     settings->SetString(printing::kSettingHeaderFooterURL, url);
@@ -344,7 +348,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   }
 
   VLOG(1) << "Print preview request start";
-  RenderViewHost* rvh = initiator_tab->tab_contents()->GetRenderViewHost();
+  RenderViewHost* rvh = initiator_tab->web_contents()->GetRenderViewHost();
   rvh->Send(new PrintMsg_PrintPreview(rvh->routing_id(), *settings));
 }
 
@@ -359,7 +363,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   TabContentsWrapper* initiator_tab = GetInitiatorTab();
   CHECK(initiator_tab);
 
-  RenderViewHost* init_rvh = initiator_tab->tab_contents()->GetRenderViewHost();
+  RenderViewHost* init_rvh = initiator_tab->web_contents()->GetRenderViewHost();
   init_rvh->Send(new PrintMsg_ResetScriptedPrintCount(init_rvh->routing_id()));
 
   scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
@@ -426,7 +430,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     // The PDF being printed contains only the pages that the user selected,
     // so ignore the page range and print all pages.
     settings->Remove(printing::kSettingPageRange, NULL);
-    RenderViewHost* rvh = web_ui()->tab_contents()->GetRenderViewHost();
+    RenderViewHost* rvh = web_ui()->web_contents()->GetRenderViewHost();
     rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->routing_id(), *settings));
   }
   initiator_tab->print_view_manager()->PrintPreviewDone();
@@ -665,10 +669,8 @@ void PrintPreviewHandler::SendInitialSettings(
 
 void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {
   TabContentsWrapper* initiator_tab = GetInitiatorTab();
-  if (initiator_tab) {
-    static_cast<RenderViewHostDelegate*>(
-        initiator_tab->tab_contents())->Activate();
-  }
+  if (initiator_tab)
+    initiator_tab->web_contents()->GetRenderViewHost()->delegate()->Activate();
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui());
   print_preview_ui->OnClosePrintPreviewTab();
 }

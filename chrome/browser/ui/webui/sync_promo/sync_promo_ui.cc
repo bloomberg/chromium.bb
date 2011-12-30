@@ -21,12 +21,14 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/url_util.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -103,7 +105,7 @@ bool GetValueForKeyInQuery(const GURL& url, const std::string& search_key,
 
 }  // namespace
 
-SyncPromoUI::SyncPromoUI(TabContents* contents) : ChromeWebUI(contents) {
+SyncPromoUI::SyncPromoUI(WebContents* contents) : ChromeWebUI(contents) {
   should_hide_url_ = true;
 
   SyncPromoHandler* handler = new SyncPromoHandler(

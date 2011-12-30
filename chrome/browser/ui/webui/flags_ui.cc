@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -31,6 +31,8 @@
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
+
+using content::WebContents;
 
 namespace {
 
@@ -155,7 +157,7 @@ void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-FlagsUI::FlagsUI(TabContents* contents) : ChromeWebUI(contents) {
+FlagsUI::FlagsUI(WebContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler(new FlagsDOMHandler());
 
   // Set up the about:flags source.

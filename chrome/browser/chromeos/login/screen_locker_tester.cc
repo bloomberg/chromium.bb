@@ -16,8 +16,8 @@
 #include "chrome/browser/chromeos/login/webui_screen_locker.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -28,6 +28,8 @@
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/login/lock_window_gtk.h"
 #endif
+
+using content::WebContents;
 
 namespace {
 
@@ -168,7 +170,7 @@ views::Widget* WebUIScreenLockerTester::GetChildWidget() const {
 
 base::Value* WebUIScreenLockerTester::ExecuteJavascriptAndGetValue(
     const std::string& js_text) {
-  RenderViewHost* rvh = webui()->tab_contents()->GetRenderViewHost();
+  RenderViewHost* rvh = webui()->web_contents()->GetRenderViewHost();
   return rvh->ExecuteJavascriptAndGetValue(string16(),
                                            ASCIIToUTF16(js_text));
 }

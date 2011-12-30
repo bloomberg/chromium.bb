@@ -62,6 +62,10 @@ BackgroundContents::~BackgroundContents() {
       content::Details<BackgroundContents>(this));
 }
 
+content::WebContents* BackgroundContents::web_contents() const {
+  return tab_contents_.get();
+}
+
 const GURL& BackgroundContents::GetURL() const {
   return tab_contents_.get() ? tab_contents_->GetURL() : GURL::EmptyGURL();
 }

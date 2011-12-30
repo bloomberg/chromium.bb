@@ -20,13 +20,16 @@
 
 class GURL;
 class RenderViewHost;
-class TabContents;
 class WebUIMessageHandler;
 
 namespace base {
 class DictionaryValue;
 class ListValue;
 class Value;
+}
+
+namespace content {
+class WebContents;
 }
 
 // A WebUI sets up the datasources and message handlers for a given HTML-based
@@ -36,7 +39,7 @@ class Value;
 // ChromeWebUI.
 class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
  public:
-  explicit WebUI(TabContents* contents);
+  explicit WebUI(content::WebContents* contents);
   virtual ~WebUI();
 
   // IPC message handling.
@@ -146,7 +149,7 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
   void CallJavascriptFunction(const std::string& function_name,
                               const std::vector<const base::Value*>& args);
 
-  TabContents* tab_contents() const { return tab_contents_; }
+  content::WebContents* web_contents() const { return web_contents_; }
 
   // An opaque identifier used to identify a WebUI. This can only be compared to
   // kNoWebUI or other WebUI types. See GetWebUIType.
@@ -186,8 +189,8 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
   // The WebUIMessageHandlers we own.
   std::vector<WebUIMessageHandler*> handlers_;
 
-  // Non-owning pointer to the TabContents this WebUI is associated with.
-  TabContents* tab_contents_;
+  // Non-owning pointer to the WebContents this WebUI is associated with.
+  content::WebContents* web_contents_;
 
  private:
   // A map of message name -> message handling callback.

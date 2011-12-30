@@ -14,7 +14,7 @@
 // The TabContents used for the keyboard page.
 class KeyboardUI : public ChromeWebUI {
  public:
-  explicit KeyboardUI(TabContents* manager);
+  explicit KeyboardUI(content::WebContents* manager);
   virtual ~KeyboardUI();
 
   class KeyboardHTMLSource : public ChromeURLDataManager::DataSource {

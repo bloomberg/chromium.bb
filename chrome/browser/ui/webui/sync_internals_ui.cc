@@ -24,9 +24,15 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/sync_internals_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using browser_sync::JsArgList;
+using browser_sync::JsEventDetails;
+using browser_sync::JsReplyHandler;
+using browser_sync::WeakHandle;
+using content::WebContents;
 
 namespace {
 
@@ -57,11 +63,6 @@ ChromeWebUIDataSource* CreateSyncInternalsHTMLSource() {
 
 }  // namespace
 
-using browser_sync::JsArgList;
-using browser_sync::JsEventDetails;
-using browser_sync::JsReplyHandler;
-using browser_sync::WeakHandle;
-
 namespace {
 
 // Gets the ProfileSyncService of the underlying original profile.
@@ -72,7 +73,7 @@ ProfileSyncService* GetProfileSyncService(Profile* profile) {
 
 }  // namespace
 
-SyncInternalsUI::SyncInternalsUI(TabContents* contents)
+SyncInternalsUI::SyncInternalsUI(WebContents* contents)
     : ChromeWebUI(contents),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // TODO(akalin): Fix.

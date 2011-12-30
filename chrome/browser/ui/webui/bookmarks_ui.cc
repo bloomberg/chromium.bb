@@ -17,12 +17,13 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "googleurl/src/gurl.h"
 
+using content::WebContents;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -55,7 +56,7 @@ std::string BookmarksUIHTMLSource::GetMimeType(const std::string& path) const {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-BookmarksUI::BookmarksUI(TabContents* contents) : ChromeWebUI(contents) {
+BookmarksUI::BookmarksUI(WebContents* contents) : ChromeWebUI(contents) {
   BookmarksUIHTMLSource* html_source = new BookmarksUIHTMLSource();
 
   // Set up the chrome://bookmarks/ source.

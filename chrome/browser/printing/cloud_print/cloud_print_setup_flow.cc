@@ -29,8 +29,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_font_util.h"
@@ -264,14 +264,14 @@ void CloudPrintSetupFlow::OnUserClickedLearnMore() {
   OpenURLParams params(CloudPrintURL::GetCloudPrintLearnMoreURL(),
                        Referrer(), NEW_FOREGROUND_TAB,
                        content::PAGE_TRANSITION_LINK, false);
-  web_ui_->tab_contents()->OpenURL(params);
+  web_ui_->web_contents()->OpenURL(params);
 }
 
 void CloudPrintSetupFlow::OnUserClickedPrintTestPage() {
   OpenURLParams params(CloudPrintURL::GetCloudPrintTestPageURL(),
                        Referrer(), NEW_FOREGROUND_TAB,
                        content::PAGE_TRANSITION_LINK, false);
-  web_ui_->tab_contents()->OpenURL(params);
+  web_ui_->web_contents()->OpenURL(params);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -337,7 +337,7 @@ void CloudPrintSetupFlow::ExecuteJavascriptInIFrame(
     const string16& iframe_xpath,
     const string16& js) {
   if (web_ui_) {
-    RenderViewHost* rvh = web_ui_->tab_contents()->GetRenderViewHost();
+    RenderViewHost* rvh = web_ui_->web_contents()->GetRenderViewHost();
     rvh->ExecuteJavascriptInWebFrame(iframe_xpath, js);
   }
 }

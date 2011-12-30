@@ -614,9 +614,9 @@ void BrowserWindowCocoa::UpdateSidebarForContents(TabContents* tab_contents) {
   }
 }
 
-void BrowserWindowCocoa::ShowAvatarBubble(TabContents* tab_contents,
+void BrowserWindowCocoa::ShowAvatarBubble(WebContents* web_contents,
                                           const gfx::Rect& rect) {
-  NSView* view = tab_contents->GetNativeView();
+  NSView* view = web_contents->GetNativeView();
   NSRect bounds = [view bounds];
   NSPoint point;
   point.x = NSMinX(bounds) + rect.right();

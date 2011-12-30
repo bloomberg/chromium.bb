@@ -10,7 +10,7 @@
 
 class KeyboardOverlayUI : public HtmlDialogUI {
  public:
-  explicit KeyboardOverlayUI(TabContents* contents);
+  explicit KeyboardOverlayUI(content::WebContents* contents);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeyboardOverlayUI);

@@ -9,8 +9,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "content/browser/disposition_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
-#include "googleurl/src/gurl.h"
+#include "content/public/browser/web_contents.h"
 
 using content::OpenURLParams;
 
@@ -51,7 +50,7 @@ void GenericHandler::HandleNavigateToUrl(const ListValue* args) {
   if (disposition == CURRENT_TAB && target_string == "_blank")
     disposition = NEW_FOREGROUND_TAB;
 
-  web_ui()->tab_contents()->OpenURL(OpenURLParams(
+  web_ui()->web_contents()->OpenURL(OpenURLParams(
       GURL(url_string), content::Referrer(), disposition,
       content::PAGE_TRANSITION_LINK, false));
 

@@ -10,7 +10,7 @@
 
 class TaskManagerUI : public ChromeWebUI {
  public:
-  explicit TaskManagerUI(TabContents* contents);
+  explicit TaskManagerUI(content::WebContents* contents);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TaskManagerUI);

@@ -12,7 +12,7 @@ class Profile;
 
 class ChromeWebUI : public WebUI {
  public:
-  explicit ChromeWebUI(TabContents* contents);
+  explicit ChromeWebUI(content::WebContents* contents);
   virtual ~ChromeWebUI();
 
   // Returns the profile for this WebUI.

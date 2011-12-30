@@ -12,7 +12,7 @@ class RefCountedMemory;
 
 class DownloadsUI : public ChromeWebUI {
  public:
-  explicit DownloadsUI(TabContents* contents);
+  explicit DownloadsUI(content::WebContents* contents);
 
   static RefCountedMemory* GetFaviconResourceBytes();
 

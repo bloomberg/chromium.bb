@@ -11,25 +11,27 @@
 #include "base/values.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
+
+using content::WebContents;
 
 static base::LazyInstance<base::PropertyAccessor<HtmlDialogUIDelegate*> >
     g_html_dialog_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;
 
-HtmlDialogUI::HtmlDialogUI(TabContents* tab_contents)
-    : ChromeWebUI(tab_contents) {
+HtmlDialogUI::HtmlDialogUI(WebContents* web_contents)
+    : ChromeWebUI(web_contents) {
 }
 
 HtmlDialogUI::~HtmlDialogUI() {
-  // Don't unregister our property. During the teardown of the TabContents,
-  // this will be deleted, but the TabContents will already be destroyed.
+  // Don't unregister our property. During the teardown of the WebContents,
+  // this will be deleted, but the WebContents will already be destroyed.
   //
-  // This object is owned indirectly by the TabContents. WebUIs can change, so
+  // This object is owned indirectly by the WebContents. WebUIs can change, so
   // it's scary if this WebUI is changed out and replaced with something else,
   // since the property will still point to the old delegate. But the delegate
-  // is itself the owner of the TabContents for a dialog so will be in scope,
+  // is itself the owner of the WebContents for a dialog so will be in scope,
   // and the HTML dialogs won't swap WebUIs anyway since they don't navigate.
 }
 
@@ -56,7 +58,7 @@ void HtmlDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
   std::string dialog_args;
   std::vector<WebUIMessageHandler*> handlers;
   HtmlDialogUIDelegate** delegate = GetPropertyAccessor().GetProperty(
-      tab_contents()->GetPropertyBag());
+      web_contents()->GetPropertyBag());
   if (delegate) {
     dialog_args = (*delegate)->GetDialogArgs();
     (*delegate)->GetWebUIMessageHandlers(&handlers);
@@ -79,7 +81,7 @@ void HtmlDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
 
 void HtmlDialogUI::OnDialogClosed(const ListValue* args) {
   HtmlDialogUIDelegate** delegate = GetPropertyAccessor().GetProperty(
-      tab_contents()->GetPropertyBag());
+      web_contents()->GetPropertyBag());
   if (delegate) {
     std::string json_retval;
     if (args && !args->empty() && !args->GetString(0, &json_retval))
@@ -89,8 +91,8 @@ void HtmlDialogUI::OnDialogClosed(const ListValue* args) {
   }
 }
 
-ExternalHtmlDialogUI::ExternalHtmlDialogUI(TabContents* tab_contents)
-    : HtmlDialogUI(tab_contents) {
+ExternalHtmlDialogUI::ExternalHtmlDialogUI(WebContents* web_contents)
+    : HtmlDialogUI(web_contents) {
   // Non-file based UI needs to not have access to the Web UI bindings
   // for security reasons. The code hosting the dialog should provide
   // dialog specific functionality through other bindings and methods

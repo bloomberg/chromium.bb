@@ -13,7 +13,7 @@ class RefCountedMemory;
 // The Web UI handler for about:flash.
 class FlashUI : public ChromeWebUI {
  public:
-  explicit FlashUI(TabContents* contents);
+  explicit FlashUI(content::WebContents* contents);
 
   static RefCountedMemory* GetFaviconResourceBytes();
 

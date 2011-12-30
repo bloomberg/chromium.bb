@@ -448,7 +448,7 @@ class Browser : public TabHandlerDelegate,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_pos,
                       bool user_gesture);
-  void CloseTabContents(TabContents* contents);
+  void CloseTabContents(content::WebContents* contents);
 
   // Shows a dialog with HTML content and returns it. |delegate| contains a
   // pointer to the delegate who knows how to display the dialog (which file

@@ -19,8 +19,8 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -212,7 +212,7 @@ void CrosLanguageOptionsHandler::RestartCallback(const ListValue* args) {
   content::RecordAction(UserMetricsAction("LanguageOptions_SignOut"));
 
   Browser* browser = Browser::GetBrowserForController(
-      &web_ui()->tab_contents()->GetController(), NULL);
+      &web_ui()->web_contents()->GetController(), NULL);
   if (browser)
     browser->ExecuteCommand(IDC_EXIT);
 }

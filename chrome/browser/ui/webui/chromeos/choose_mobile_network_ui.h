@@ -13,7 +13,7 @@ namespace chromeos {
 // A custom WebUI that defines datasource for choosing cellular network dialog.
 class ChooseMobileNetworkUI : public ChromeWebUI {
  public:
-  explicit ChooseMobileNetworkUI(TabContents* contents);
+  explicit ChooseMobileNetworkUI(content::WebContents* contents);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChooseMobileNetworkUI);

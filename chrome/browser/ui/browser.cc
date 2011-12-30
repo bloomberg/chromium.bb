@@ -1256,7 +1256,7 @@ void Browser::AddWebContents(WebContents* new_contents,
   AddNewContents(NULL, new_contents, disposition, initial_pos, user_gesture);
 }
 
-void Browser::CloseTabContents(TabContents* contents) {
+void Browser::CloseTabContents(WebContents* contents) {
   CloseContents(contents);
 }
 

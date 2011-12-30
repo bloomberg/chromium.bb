@@ -15,6 +15,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/browser_resources.h"
 
+using content::WebContents;
+
 namespace {
 
 ChromeWebUIDataSource* CreateUberHTMLSource() {
@@ -29,7 +31,7 @@ ChromeWebUIDataSource* CreateUberHTMLSource() {
 
 }  // namespace
 
-UberUI::UberUI(TabContents* contents) : ChromeWebUI(contents) {
+UberUI::UberUI(WebContents* contents) : ChromeWebUI(contents) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(CreateUberHTMLSource());
 
@@ -43,8 +45,8 @@ UberUI::~UberUI() {
 
 void UberUI::RegisterSubpage(const std::string& page_url) {
   ChromeWebUI* web_ui = static_cast<ChromeWebUI*>(
-      ChromeWebUIFactory::GetInstance()->CreateWebUIForURL(tab_contents_,
-                                                           GURL(page_url)));
+      ChromeWebUIFactory::GetInstance()->CreateWebUIForURL(
+          static_cast<TabContents*>(web_contents_), GURL(page_url)));
 
   web_ui->set_frame_xpath("//iframe[@src='" + page_url + "']");
   sub_uis_[page_url] = web_ui;

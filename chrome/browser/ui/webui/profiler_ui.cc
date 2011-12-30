@@ -19,9 +19,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/trace_controller.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
@@ -32,8 +32,9 @@
 #include "base/path_service.h"
 #endif  //  USE_SOURCE_FILES_DIRECTLY
 
-using content::BrowserThread;
 using chrome_browser_metrics::TrackingSynchronizer;
+using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -141,7 +142,7 @@ void ProfilerMessageHandler::OnResetData(const ListValue* list) {
 
 }  // namespace
 
-ProfilerUI::ProfilerUI(TabContents* contents) : ChromeWebUI(contents) {
+ProfilerUI::ProfilerUI(WebContents* contents) : ChromeWebUI(contents) {
   ui_weak_ptr_factory_.reset(new base::WeakPtrFactory<ProfilerUI>(this));
   ui_weak_ptr_ = ui_weak_ptr_factory_->GetWeakPtr();
 

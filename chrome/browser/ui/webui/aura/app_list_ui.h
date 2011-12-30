@@ -12,7 +12,7 @@ class AppListUIDelegate;
 
 class AppListUI : public ChromeWebUI {
  public:
-  explicit AppListUI(TabContents* contents);
+  explicit AppListUI(content::WebContents* contents);
 
   AppListUIDelegate* delegate() const {
     return delegate_;

@@ -80,7 +80,7 @@ class PrintPreviewHandler : public WebUIMessageHandler,
                            GetLastUsedMarginSettingsDefault);
 
   TabContentsWrapper* preview_tab_wrapper() const;
-  TabContents* preview_tab() const;
+  content::WebContents* preview_tab() const;
 
   // Gets the list of printers. |args| is unused.
   void HandleGetPrinters(const base::ListValue* args);

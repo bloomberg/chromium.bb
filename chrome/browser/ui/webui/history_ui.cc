@@ -30,10 +30,10 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -46,6 +46,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::UserMetricsAction;
+using content::WebContents;
 
 // Maximum number of search results to return in a given search. We should
 // eventually remove this.
@@ -422,7 +423,7 @@ void BrowsingHistoryHandler::Observe(
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-HistoryUI::HistoryUI(TabContents* contents) : ChromeWebUI(contents) {
+HistoryUI::HistoryUI(WebContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler(new BrowsingHistoryHandler());
 
   HistoryUIHTMLSource* html_source = new HistoryUIHTMLSource();

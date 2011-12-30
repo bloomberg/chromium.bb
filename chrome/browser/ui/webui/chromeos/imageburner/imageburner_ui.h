@@ -10,7 +10,7 @@
 
 class ImageBurnUI : public ChromeWebUI {
  public:
-  explicit ImageBurnUI(TabContents* contents);
+  explicit ImageBurnUI(content::WebContents* contents);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageBurnUI);

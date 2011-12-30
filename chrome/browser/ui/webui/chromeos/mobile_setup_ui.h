@@ -12,7 +12,7 @@
 // that is used in Chrome OS activate modem and perform plan subscription tasks.
 class MobileSetupUI : public ChromeWebUI {
  public:
-  explicit MobileSetupUI(TabContents* contents);
+  explicit MobileSetupUI(content::WebContents* contents);
 
  private:
   // ChromeWebUI overrides.

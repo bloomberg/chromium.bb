@@ -15,7 +15,7 @@
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/ui/certificate_dialogs.h"
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/browser_thread.h"  // for FileAccessProvider
 #include "grit/generated_resources.h"
@@ -566,7 +566,7 @@ void CertificateManagerHandler::ExportPersonal(const ListValue* args) {
   select_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_SAVEAS_FILE, string16(),
       FilePath(), &file_type_info, 1, FILE_PATH_LITERAL("p12"),
-      web_ui()->tab_contents(), GetParentWindow(),
+      web_ui()->web_contents(), GetParentWindow(),
       reinterpret_cast<void*>(EXPORT_PERSONAL_FILE_SELECTED));
 }
 
@@ -653,7 +653,7 @@ void CertificateManagerHandler::StartImportPersonal(const ListValue* args) {
   select_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_OPEN_FILE, string16(),
       FilePath(), &file_type_info, 1, FILE_PATH_LITERAL("p12"),
-      web_ui()->tab_contents(), GetParentWindow(),
+      web_ui()->web_contents(), GetParentWindow(),
       reinterpret_cast<void*>(IMPORT_PERSONAL_FILE_SELECTED));
 }
 
@@ -770,7 +770,7 @@ void CertificateManagerHandler::ImportServer(const ListValue* args) {
       select_file_dialog_.get(),
       SelectFileDialog::SELECT_OPEN_FILE,
       FilePath(),
-      web_ui()->tab_contents(),
+      web_ui()->web_contents(),
       GetParentWindow(),
       reinterpret_cast<void*>(IMPORT_SERVER_FILE_SELECTED));
 }
@@ -825,7 +825,7 @@ void CertificateManagerHandler::ImportCA(const ListValue* args) {
   ShowCertSelectFileDialog(select_file_dialog_.get(),
                            SelectFileDialog::SELECT_OPEN_FILE,
                            FilePath(),
-                           web_ui()->tab_contents(),
+                           web_ui()->web_contents(),
                            GetParentWindow(),
                            reinterpret_cast<void*>(IMPORT_CA_FILE_SELECTED));
 }
@@ -908,7 +908,7 @@ void CertificateManagerHandler::Export(const ListValue* args) {
   net::X509Certificate* cert = CallbackArgsToCert(args);
   if (!cert)
     return;
-  ShowCertExportDialog(web_ui()->tab_contents(), GetParentWindow(),
+  ShowCertExportDialog(web_ui()->web_contents(), GetParentWindow(),
                        cert->os_cert_handle());
 }
 
@@ -1041,5 +1041,5 @@ void CertificateManagerHandler::CheckTpmTokenReady(const ListValue* args) {
 #endif
 
 gfx::NativeWindow CertificateManagerHandler::GetParentWindow() const {
-  return web_ui()->tab_contents()->GetView()->GetTopLevelNativeWindow();
+  return web_ui()->web_contents()->GetView()->GetTopLevelNativeWindow();
 }

@@ -28,12 +28,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -360,8 +360,8 @@ void AdvancedOptionsHandler::HandleSelectDownloadLocation(
       SelectFileDialog::SELECT_FOLDER,
       l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE),
       pref_service->GetFilePath(prefs::kDownloadDefaultDirectory),
-      NULL, 0, FILE_PATH_LITERAL(""), web_ui()->tab_contents(),
-      web_ui()->tab_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
+      NULL, 0, FILE_PATH_LITERAL(""), web_ui()->web_contents(),
+      web_ui()->web_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
 void AdvancedOptionsHandler::FileSelected(const FilePath& path, int index,
@@ -381,7 +381,7 @@ void AdvancedOptionsHandler::OnCloudPrintSetupClosed() {
 void AdvancedOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
   DownloadManager* manager =
-      web_ui()->tab_contents()->GetBrowserContext()->GetDownloadManager();
+      web_ui()->web_contents()->GetBrowserContext()->GetDownloadManager();
   if (manager)
     DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
 }
@@ -451,14 +451,14 @@ void AdvancedOptionsHandler::SetupBackgroundModeSettings() {
 #if !defined(OS_CHROMEOS)
 void AdvancedOptionsHandler::ShowNetworkProxySettings(const ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_ShowProxySettings"));
-  AdvancedOptionsUtilities::ShowNetworkProxySettings(web_ui()->tab_contents());
+  AdvancedOptionsUtilities::ShowNetworkProxySettings(web_ui()->web_contents());
 }
 #endif
 
 #if !defined(USE_NSS) && !defined(USE_OPENSSL)
 void AdvancedOptionsHandler::ShowManageSSLCertificates(const ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_ManageSSLCertificates"));
-  AdvancedOptionsUtilities::ShowManageSSLCertificates(web_ui()->tab_contents());
+  AdvancedOptionsUtilities::ShowManageSSLCertificates(web_ui()->web_contents());
 }
 #endif
 
@@ -469,7 +469,7 @@ void AdvancedOptionsHandler::ShowCloudPrintManagePage(const ListValue* args) {
   OpenURLParams params(
       CloudPrintURL(profile).GetCloudPrintServiceManageURL(), Referrer(),
       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false);
-  web_ui()->tab_contents()->OpenURL(params);
+  web_ui()->web_contents()->OpenURL(params);
 }
 
 #if !defined(OS_CHROMEOS)
@@ -481,7 +481,7 @@ void AdvancedOptionsHandler::ShowCloudPrintSetupDialog(const ListValue* args) {
       CloudPrintURL(profile).GetCloudPrintServiceEnableURL(
           CloudPrintProxyServiceFactory::GetForProfile(profile)->proxy_id()),
       Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
-  web_ui()->tab_contents()->OpenURL(params);
+  web_ui()->web_contents()->OpenURL(params);
 }
 
 void AdvancedOptionsHandler::HandleDisableCloudPrintConnector(
@@ -611,7 +611,7 @@ void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
   // Set the enabled state for the AutoOpenFileTypesResetToDefault button.
   // We enable the button if the user has any auto-open file types registered.
   DownloadManager* manager =
-      web_ui()->tab_contents()->GetBrowserContext()->GetDownloadManager();
+      web_ui()->web_contents()->GetBrowserContext()->GetDownloadManager();
   bool disabled = !(manager &&
       DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenUsed());
   base::FundamentalValue value(disabled);

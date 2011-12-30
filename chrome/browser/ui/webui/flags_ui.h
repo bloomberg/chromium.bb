@@ -13,7 +13,7 @@ class RefCountedMemory;
 
 class FlagsUI : public ChromeWebUI {
  public:
-  explicit FlagsUI(TabContents* contents);
+  explicit FlagsUI(content::WebContents* contents);
 
   static RefCountedMemory* GetFaviconResourceBytes();
   static void RegisterPrefs(PrefService* prefs);

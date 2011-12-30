@@ -8,11 +8,13 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
-CertificateViewerUI::CertificateViewerUI(TabContents* contents)
+using content::WebContents;
+
+CertificateViewerUI::CertificateViewerUI(WebContents* contents)
 #if defined(USE_AURA)
     : ConstrainedHtmlUI(contents) {
 #else

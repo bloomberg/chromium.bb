@@ -21,10 +21,11 @@
 #include "chrome/browser/ui/webui/print_preview_data_source.h"
 #include "chrome/browser/ui/webui/print_preview_handler.h"
 #include "chrome/common/print_messages.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 
+using content::WebContents;
 using printing::PageSizeMargins;
 
 namespace {
@@ -71,7 +72,7 @@ base::LazyInstance<PrintPreviewRequestIdMapWithLock>
 
 }  // namespace
 
-PrintPreviewUI::PrintPreviewUI(TabContents* contents)
+PrintPreviewUI::PrintPreviewUI(WebContents* contents)
     : ConstrainedHtmlUI(contents),
       initial_preview_start_time_(base::TimeTicks::Now()),
       handler_(NULL),
@@ -135,10 +136,10 @@ void PrintPreviewUI::SetInitiatorTabURLAndTitle(
 void PrintPreviewUI::SetSourceIsModifiable(
     TabContentsWrapper* print_preview_tab,
     bool source_is_modifiable) {
-  if (!print_preview_tab || !print_preview_tab->tab_contents()->GetWebUI())
+  if (!print_preview_tab || !print_preview_tab->web_contents()->GetWebUI())
     return;
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      print_preview_tab->tab_contents()->GetWebUI());
+      print_preview_tab->web_contents()->GetWebUI());
   print_preview_ui->source_is_modifiable_ = source_is_modifiable;
 }
 
@@ -165,7 +166,7 @@ std::string PrintPreviewUI::GetPrintPreviewUIAddress() const {
 
 void PrintPreviewUI::OnPrintPreviewTabClosed() {
   TabContentsWrapper* preview_tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents());
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents());
   printing::BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
   if (background_printing_manager->HasPrintPreviewTab(preview_tab))
@@ -175,7 +176,7 @@ void PrintPreviewUI::OnPrintPreviewTabClosed() {
 
 void PrintPreviewUI::OnInitiatorTabClosed() {
   TabContentsWrapper* preview_tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents());
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents());
   printing::BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
   if (background_printing_manager->HasPrintPreviewTab(preview_tab))
@@ -281,7 +282,7 @@ PrintPreviewDataService* PrintPreviewUI::print_preview_data_service() {
 
 void PrintPreviewUI::OnHidePreviewTab() {
   TabContentsWrapper* preview_tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents());
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents());
   printing::BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
   if (background_printing_manager->HasPrintPreviewTab(preview_tab))

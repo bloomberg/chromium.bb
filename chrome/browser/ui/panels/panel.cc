@@ -583,7 +583,7 @@ void Panel::UpdatePreferredSize(WebContents* web_contents,
   }
 }
 
-void Panel::ShowAvatarBubble(TabContents* tab_contents, const gfx::Rect& rect) {
+void Panel::ShowAvatarBubble(WebContents* web_contents, const gfx::Rect& rect) {
   // Panels will never show a new tab page so this should never be called.
   NOTREACHED();
 }

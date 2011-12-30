@@ -17,14 +17,15 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using chromeos::input_method::ModifierKey;
+using content::WebContents;
 
 namespace {
 
@@ -279,7 +280,7 @@ void KeyboardOverlayHandler::GetLabelMap(const ListValue* args) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-KeyboardOverlayUI::KeyboardOverlayUI(TabContents* contents)
+KeyboardOverlayUI::KeyboardOverlayUI(WebContents* contents)
     : HtmlDialogUI(contents) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   KeyboardOverlayHandler* handler = new KeyboardOverlayHandler(profile);

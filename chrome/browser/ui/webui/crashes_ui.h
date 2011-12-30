@@ -12,7 +12,7 @@ class RefCountedMemory;
 
 class CrashesUI : public ChromeWebUI {
  public:
-  explicit CrashesUI(TabContents* contents);
+  explicit CrashesUI(content::WebContents* contents);
 
   static RefCountedMemory* GetFaviconResourceBytes();
 

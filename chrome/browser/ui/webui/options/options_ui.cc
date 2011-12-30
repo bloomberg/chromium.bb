@@ -83,6 +83,7 @@
 #endif
 
 using content::UserMetricsAction;
+using content::WebContents;
 
 static const char kLocalizedStringsFile[] = "strings.js";
 static const char kOptionsBundleJsFile[]  = "options_bundle.js";
@@ -196,7 +197,7 @@ void OptionsPageUIHandler::RegisterTitle(DictionaryValue* localized_strings,
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-OptionsUI::OptionsUI(TabContents* contents)
+OptionsUI::OptionsUI(WebContents* contents)
     : ChromeWebUI(contents),
       initialized_handlers_(false) {
   DictionaryValue* localized_strings = new DictionaryValue();

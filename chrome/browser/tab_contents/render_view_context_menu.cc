@@ -524,7 +524,7 @@ void RenderViewContextMenu::InitMenu() {
   bool has_link = !params_.unfiltered_link_url.is_empty();
   bool has_selection = !params_.selection_text.empty();
 
-  Browser* active_browser = BrowserList::FindBrowserWithTabContents(
+  Browser* active_browser = BrowserList::FindBrowserWithWebContents(
       source_tab_contents_);
   if (active_browser && active_browser->is_app()) {
     const std::string ext_id = web_app::GetExtensionIdFromApplicationName(

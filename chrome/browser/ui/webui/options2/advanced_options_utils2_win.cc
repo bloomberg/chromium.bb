@@ -14,11 +14,12 @@
 #include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_process.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace options2 {
 
@@ -49,7 +50,7 @@ void OpenConnectionDialogCallback() {
 }
 
 void AdvancedOptionsUtilities::ShowNetworkProxySettings(
-      TabContents* tab_contents) {
+      WebContents* web_contents) {
   DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::FILE));
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
@@ -57,14 +58,14 @@ void AdvancedOptionsUtilities::ShowNetworkProxySettings(
 }
 
 void AdvancedOptionsUtilities::ShowManageSSLCertificates(
-      TabContents* tab_contents) {
+      WebContents* web_contents) {
   CRYPTUI_CERT_MGR_STRUCT cert_mgr = { 0 };
   cert_mgr.dwSize = sizeof(CRYPTUI_CERT_MGR_STRUCT);
   cert_mgr.hwndParent =
 #if defined(USE_AURA)
       NULL;
 #else
-      tab_contents->GetView()->GetTopLevelNativeWindow();
+      web_contents->GetView()->GetTopLevelNativeWindow();
 #endif
   ::CryptUIDlgCertMgr(&cert_mgr);
 }

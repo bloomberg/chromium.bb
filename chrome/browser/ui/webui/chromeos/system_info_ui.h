@@ -10,7 +10,7 @@
 
 class SystemInfoUI : public ChromeWebUI {
  public:
-  explicit SystemInfoUI(TabContents* contents);
+  explicit SystemInfoUI(content::WebContents* contents);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemInfoUI);

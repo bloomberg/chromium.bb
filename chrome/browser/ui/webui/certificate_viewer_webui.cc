@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "grit/generated_resources.h"
 
@@ -174,7 +174,7 @@ void CertificateViewerDialogHandler::ExportCertificate(
   if (cert_index < 0 || cert_index >= (int)cert_chain_.size())
     return;
 
-  ShowCertExportDialog(web_ui()->tab_contents(),
+  ShowCertExportDialog(web_ui()->web_contents(),
                        window_,
                        cert_chain_[cert_index]);
 }

@@ -9,8 +9,10 @@
 #include "base/logging.h"
 #include "base/mac/scoped_aedesc.h"
 
+using content::WebContents;
+
 void AdvancedOptionsUtilities::ShowNetworkProxySettings(
-      TabContents* tab_contents) {
+      WebContents* web_contents) {
   NSArray* itemsToOpen = [NSArray arrayWithObject:[NSURL fileURLWithPath:
       @"/System/Library/PreferencePanes/Network.prefPane"]];
 
@@ -30,7 +32,7 @@ void AdvancedOptionsUtilities::ShowNetworkProxySettings(
 }
 
 void AdvancedOptionsUtilities::ShowManageSSLCertificates(
-      TabContents* tab_contents) {
+      WebContents* web_contents) {
   NSString* const kKeychainBundleId = @"com.apple.keychainaccess";
   [[NSWorkspace sharedWorkspace]
    launchAppWithBundleIdentifier:kKeychainBundleId

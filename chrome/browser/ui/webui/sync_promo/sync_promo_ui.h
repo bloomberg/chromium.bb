@@ -14,9 +14,9 @@ class PrefService;
 // The Web UI handler for chrome://syncpromo.
 class SyncPromoUI : public ChromeWebUI {
  public:
-  // Constructs a SyncPromoUI. |contents| is the TabContents that this WebUI is
+  // Constructs a SyncPromoUI. |contents| is the WebContents that this WebUI is
   // associated with. |contents| may not be NULL.
-  explicit SyncPromoUI(TabContents* contents);
+  explicit SyncPromoUI(content::WebContents* contents);
 
   // Returns true if the sync promo should be visible.
   // |profile| is the profile of the tab the promo would be shown on.

@@ -2666,7 +2666,7 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
 }
 #endif
 
-void BrowserView::ShowAvatarBubble(TabContents* tab_contents,
+void BrowserView::ShowAvatarBubble(WebContents* web_contents,
                                    const gfx::Rect& rect) {
   gfx::Point origin(rect.origin());
   views::View::ConvertPointToScreen(GetTabContentsContainerView(), &origin);

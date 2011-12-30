@@ -79,7 +79,7 @@ class BrowsingHistoryHandler : public WebUIMessageHandler,
 
 class HistoryUI : public ChromeWebUI {
  public:
-  explicit HistoryUI(TabContents* contents);
+  explicit HistoryUI(content::WebContents* contents);
 
   // Return the URL for a given search term.
   static const GURL GetHistoryURLWithSearchText(const string16& text);

@@ -12,7 +12,7 @@ class RefCountedMemory;
 
 class SessionsUI : public ChromeWebUI {
  public:
-  explicit SessionsUI(TabContents* contents);
+  explicit SessionsUI(content::WebContents* contents);
 
   static RefCountedMemory* GetFaviconResourceBytes();
 

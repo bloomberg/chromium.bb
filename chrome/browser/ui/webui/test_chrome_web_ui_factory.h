@@ -15,7 +15,6 @@
 
 class GURL;
 class Profile;
-class TabContents;
 
 // This class replaces the ChromeWebUIFactory when the switches::kTestType flag
 // is passed. It provides a registry to override CreateWebUIForURL() by host.
@@ -26,7 +25,7 @@ class TestChromeWebUIFactory : public ChromeWebUIFactory {
    public:
     // Create and return a new WebUI object for the |tab_contents| based on the
     // |url|.
-    virtual WebUI* NewWebUI(TabContents* tab_contents,
+    virtual WebUI* NewWebUI(content::WebContents* tab_contents,
                             const GURL& url) = 0;
 
    protected:

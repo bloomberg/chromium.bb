@@ -24,7 +24,7 @@ class SyncInternalsUI : public ChromeWebUI,
                         public browser_sync::JsEventHandler,
                         public browser_sync::JsReplyHandler {
  public:
-  explicit SyncInternalsUI(TabContents* contents);
+  explicit SyncInternalsUI(content::WebContents* contents);
   virtual ~SyncInternalsUI();
 
   // WebUI implementation.

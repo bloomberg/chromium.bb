@@ -17,6 +17,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::WebContents;
 
 namespace {
 
@@ -35,7 +36,7 @@ ChromeWebUIDataSource* CreateQuotaInternalsHTMLSource() {
 
 }  // namespace
 
-QuotaInternalsUI::QuotaInternalsUI(TabContents* contents)
+QuotaInternalsUI::QuotaInternalsUI(WebContents* contents)
     : ChromeWebUI(contents) {
   AddMessageHandler(new quota_internals::QuotaInternalsHandler);
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());

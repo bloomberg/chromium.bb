@@ -10,7 +10,7 @@
 
 class ExtensionsUI : public ChromeWebUI {
  public:
-  explicit ExtensionsUI(TabContents* contents);
+  explicit ExtensionsUI(content::WebContents* contents);
   virtual ~ExtensionsUI();
 };
 

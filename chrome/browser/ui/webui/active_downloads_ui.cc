@@ -42,9 +42,11 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -52,6 +54,8 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request_file_job.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -153,7 +157,6 @@ class ActiveDownloadsHandler
   bool SelectTab(const GURL& url);
 
   Profile* profile_;
-  TabContents* tab_contents_;
   DownloadManager* download_manager_;
 
   DownloadList active_downloads_;
@@ -164,7 +167,6 @@ class ActiveDownloadsHandler
 
 ActiveDownloadsHandler::ActiveDownloadsHandler()
     : profile_(NULL),
-      tab_contents_(NULL),
       download_manager_(NULL) {
 }
 
@@ -178,7 +180,6 @@ ActiveDownloadsHandler::~ActiveDownloadsHandler() {
 void ActiveDownloadsHandler::RegisterMessages() {
   profile_ = Profile::FromWebUI(web_ui());
   profile_->GetChromeURLDataManager()->AddDataSource(new FileIconSourceCros());
-  tab_contents_ = web_ui()->tab_contents();
 
   web_ui()->RegisterMessageCallback("getDownloads",
       base::Bind(&ActiveDownloadsHandler::HandleGetDownloads,
@@ -211,7 +212,7 @@ void ActiveDownloadsHandler::PlayMediaFile(const ListValue* args) {
   FilePath file_path(UTF16ToUTF8(ExtractStringValue(args)));
 
   Browser* browser = Browser::GetBrowserForController(
-      &tab_contents_->GetController(), NULL);
+      &web_ui()->web_contents()->GetController(), NULL);
   MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
   mediaplayer->PopupMediaPlayer(browser);
   mediaplayer->ForcePlayMediaFile(profile_, file_path);
@@ -254,9 +255,9 @@ void ActiveDownloadsHandler::HandleShowAllFiles(const ListValue* args) {
 
 bool ActiveDownloadsHandler::SelectTab(const GURL& url) {
   for (TabContentsIterator it; !it.done(); ++it) {
-    TabContents* tab_contents = it->tab_contents();
-    if (tab_contents->GetURL() == url) {
-      static_cast<RenderViewHostDelegate*>(tab_contents)->Activate();
+    WebContents* web_contents = it->web_contents();
+    if (web_contents->GetURL() == url) {
+      web_contents->GetRenderViewHost()->delegate()->Activate();
       return true;
     }
   }
@@ -353,7 +354,7 @@ void ActiveDownloadsHandler::OnDownloadUpdated(DownloadItem* item) {
 ////////////////////////////////////////////////////////////////////////////////
 
 
-ActiveDownloadsUI::ActiveDownloadsUI(TabContents* contents)
+ActiveDownloadsUI::ActiveDownloadsUI(WebContents* contents)
     : HtmlDialogUI(contents),
       handler_(new ActiveDownloadsHandler()) {
   AddMessageHandler(handler_);
@@ -411,11 +412,12 @@ Browser* ActiveDownloadsUI::GetPopup() {
        it != BrowserList::end();
        ++it) {
     if ((*it)->is_type_panel() && (*it)->is_app()) {
-      TabContents* tab_contents = (*it)->GetSelectedTabContents();
-      DCHECK(tab_contents);
-      if (!tab_contents)
+      WebContents* web_contents =
+          (*it)->GetSelectedTabContentsWrapper()->web_contents();
+      DCHECK(web_contents);
+      if (!web_contents)
         continue;
-      const GURL& url = tab_contents->GetURL();
+      const GURL& url = web_contents->GetURL();
 
       if (url.SchemeIs(chrome::kChromeUIScheme) &&
           url.host() == chrome::kChromeUIActiveDownloadsHost) {

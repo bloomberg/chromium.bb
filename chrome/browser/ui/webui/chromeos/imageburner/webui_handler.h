@@ -80,7 +80,7 @@ class WebUIHandler
       public WebUIHandlerTaskProxy::Delegate,
       public BurnManager::Delegate {
  public:
-  explicit WebUIHandler(TabContents* contents);
+  explicit WebUIHandler(content::WebContents* contents);
   virtual ~WebUIHandler();
 
   // WebUIMessageHandler implementation.
@@ -196,7 +196,7 @@ class WebUIHandler
   FilePath zip_image_file_path_;
   GURL image_download_url_;
   std::string image_file_name_;
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
   content::DownloadManager* download_manager_;
   content::DownloadItem*  active_download_item_;
   BurnManager* burn_manager_;

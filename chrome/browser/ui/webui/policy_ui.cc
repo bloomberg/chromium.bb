@@ -18,7 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -26,6 +26,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
+
+using content::WebContents;
 
 ChromeWebUIDataSource* CreatePolicyUIHTMLSource() {
   ChromeWebUIDataSource* source =
@@ -230,7 +232,7 @@ string16 PolicyUIHandler::CreateStatusMessageString(
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-PolicyUI::PolicyUI(TabContents* contents) : ChromeWebUI(contents) {
+PolicyUI::PolicyUI(WebContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler(new PolicyUIHandler);
 
   // Set up the chrome://policy/ source.

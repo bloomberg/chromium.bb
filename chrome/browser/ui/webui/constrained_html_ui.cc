@@ -15,13 +15,15 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
+
+using content::WebContents;
 
 static base::LazyInstance<base::PropertyAccessor<ConstrainedHtmlUIDelegate*> >
     g_constrained_html_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;
 
-ConstrainedHtmlUI::ConstrainedHtmlUI(TabContents* contents)
+ConstrainedHtmlUI::ConstrainedHtmlUI(WebContents* contents)
     : ChromeWebUI(contents) {
 }
 
@@ -70,7 +72,7 @@ void ConstrainedHtmlUI::OnDialogCloseMessage(const ListValue* args) {
 
 ConstrainedHtmlUIDelegate* ConstrainedHtmlUI::GetConstrainedDelegate() {
   ConstrainedHtmlUIDelegate** property =
-      GetPropertyAccessor().GetProperty(tab_contents()->GetPropertyBag());
+      GetPropertyAccessor().GetProperty(web_contents()->GetPropertyBag());
   return property ? *property : NULL;
 }
 

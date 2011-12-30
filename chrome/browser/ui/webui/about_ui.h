@@ -45,7 +45,7 @@ class AboutUIHTMLSource : public ChromeURLDataManager::DataSource {
 
 class AboutUI : public ChromeWebUI {
  public:
-  explicit AboutUI(TabContents* contents, const std::string& host);
+  explicit AboutUI(content::WebContents* contents, const std::string& host);
   virtual ~AboutUI() {}
 
  private:

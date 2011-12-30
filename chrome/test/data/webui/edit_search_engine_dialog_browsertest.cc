@@ -13,8 +13,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_html_dialog_observer.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_contents.h"
 
 namespace {
 
@@ -55,7 +55,7 @@ void EditSearchEngineDialogUITest::ShowSearchEngineDialog() {
   // Now we can get the WebUI object from the observer, and make some details
   // about our test available to the JavaScript.
   WebUI* webui = dialog_observer.GetWebUI();
-  webui->tab_contents()->GetRenderViewHost()->SetWebUIProperty(
+  webui->web_contents()->GetRenderViewHost()->SetWebUIProperty(
       "expectedUrl", chrome::kChromeUIEditSearchEngineDialogURL);
 
   // Tell the test which WebUI instance we are dealing with and complete

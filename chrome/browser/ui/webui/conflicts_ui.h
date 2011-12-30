@@ -15,7 +15,7 @@ class RefCountedMemory;
 // The Web UI handler for about:conflicts.
 class ConflictsUI : public ChromeWebUI {
  public:
-  explicit ConflictsUI(TabContents* contents);
+  explicit ConflictsUI(content::WebContents* contents);
 
   static RefCountedMemory* GetFaviconResourceBytes();
 

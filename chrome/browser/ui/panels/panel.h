@@ -184,7 +184,7 @@ class Panel : public BrowserWindow,
 #endif
   virtual void UpdatePreferredSize(content::WebContents* web_contents,
                                    const gfx::Size& pref_size) OVERRIDE;
-  virtual void ShowAvatarBubble(TabContents* tab_contents,
+  virtual void ShowAvatarBubble(content::WebContents* web_contents,
                                 const gfx::Rect& rect) OVERRIDE;
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE;
 

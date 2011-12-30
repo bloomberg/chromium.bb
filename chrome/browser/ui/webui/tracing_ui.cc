@@ -20,15 +20,16 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/trace_controller.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -305,8 +306,8 @@ void TracingMessageHandler::OnLoadTraceFile(const ListValue* list) {
       SelectFileDialog::SELECT_OPEN_FILE,
       string16(),
       FilePath(),
-      NULL, 0, FILE_PATH_LITERAL(""), web_ui()->tab_contents(),
-      web_ui()->tab_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
+      NULL, 0, FILE_PATH_LITERAL(""), web_ui()->web_contents(),
+      web_ui()->web_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
 void TracingMessageHandler::LoadTraceFileComplete(std::string* file_contents) {
@@ -314,7 +315,7 @@ void TracingMessageHandler::LoadTraceFileComplete(std::string* file_contents) {
   std::string javascript = "tracingController.onLoadTraceFileComplete("
       + *file_contents + ");";
 
-  web_ui()->tab_contents()->GetRenderViewHost()->
+  web_ui()->web_contents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(javascript));
 }
 
@@ -336,8 +337,8 @@ void TracingMessageHandler::OnSaveTraceFile(const ListValue* list) {
       SelectFileDialog::SELECT_SAVEAS_FILE,
       string16(),
       FilePath(),
-      NULL, 0, FILE_PATH_LITERAL(""), web_ui()->tab_contents(),
-      web_ui()->tab_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
+      NULL, 0, FILE_PATH_LITERAL(""), web_ui()->web_contents(),
+      web_ui()->web_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
 void TracingMessageHandler::SaveTraceFileComplete() {
@@ -388,7 +389,7 @@ void TracingMessageHandler::OnTraceDataCollected(
   trace_buffer.Finish();
   output.Append(");");
 
-  web_ui()->tab_contents()->GetRenderViewHost()->
+  web_ui()->web_contents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(output.json_output));
 }
 
@@ -408,7 +409,7 @@ void TracingMessageHandler::OnTraceBufferPercentFullReply(float percent_full) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-TracingUI::TracingUI(TabContents* contents) : ChromeWebUI(contents) {
+TracingUI::TracingUI(WebContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler(new TracingMessageHandler());
 
   // Set up the chrome://tracing/ source.

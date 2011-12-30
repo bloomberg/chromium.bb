@@ -29,9 +29,9 @@
 #include "chrome/browser/ui/webui/fileicon_source.h"
 #include "chrome/browser/ui/webui/fileicon_source_chromeos.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/gfx/image/image.h"
 
@@ -289,7 +289,7 @@ void DownloadsDOMHandler::HandleDrag(const ListValue* args) {
     IconManager* im = g_browser_process->icon_manager();
     gfx::Image* icon = im->LookupIcon(file->GetUserVerifiedFilePath(),
                                       IconLoader::NORMAL);
-    gfx::NativeView view = web_ui()->tab_contents()->GetNativeView();
+    gfx::NativeView view = web_ui()->web_contents()->GetNativeView();
     {
       // Enable nested tasks during DnD, while |DragDownload()| blocks.
       MessageLoop::ScopedNestableTaskAllower allower(MessageLoop::current());

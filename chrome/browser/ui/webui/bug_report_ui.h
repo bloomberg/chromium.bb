@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 
 class Browser;
-class TabContents;
 
 namespace browser {
 void ShowHtmlBugReportView(Browser* browser,
@@ -20,7 +19,7 @@ void ShowHtmlBugReportView(Browser* browser,
 
 class BugReportUI : public HtmlDialogUI {
  public:
-  explicit BugReportUI(TabContents* contents);
+  explicit BugReportUI(content::WebContents* contents);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BugReportUI);

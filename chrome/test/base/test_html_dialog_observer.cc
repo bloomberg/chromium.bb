@@ -9,11 +9,11 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 
 TestHtmlDialogObserver::TestHtmlDialogObserver(
     JsInjectionReadyObserver* js_injection_ready_observer)
@@ -48,13 +48,13 @@ void TestHtmlDialogObserver::Observe(
       // navigate in this method, ensuring that this is not a race condition.
       registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                      content::Source<NavigationController>(
-                         &web_ui_->tab_contents()->GetController()));
+                         &web_ui_->web_contents()->GetController()));
       break;
     case content::NOTIFICATION_LOAD_STOP:
       DCHECK(web_ui_);
       registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP,
                         content::Source<NavigationController>(
-                            &web_ui_->tab_contents()->GetController()));
+                            &web_ui_->web_contents()->GetController()));
       done_ = true;
       // If the message loop is running stop it.
       if (running_) {

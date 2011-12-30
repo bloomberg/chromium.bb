@@ -10,7 +10,7 @@
 
 class GpuInternalsUI : public ChromeWebUI {
  public:
-  explicit GpuInternalsUI(TabContents* contents);
+  explicit GpuInternalsUI(content::WebContents* contents);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuInternalsUI);

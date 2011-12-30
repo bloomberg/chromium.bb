@@ -40,7 +40,7 @@ void CertificateViewerUITest::ShowCertificateViewer() {
   TestHtmlDialogObserver dialog_observer(this);
   ::ShowCertificateViewer(browser()->window()->GetNativeHandle(), google_cert);
   WebUI* webui = dialog_observer.GetWebUI();
-  webui->tab_contents()->GetRenderViewHost()->SetWebUIProperty(
+  webui->web_contents()->GetRenderViewHost()->SetWebUIProperty(
       "expectedUrl", chrome::kChromeUICertificateViewerURL);
   SetWebUIInstance(webui);
   WebUIBrowserTest::SetUpOnMainThread();

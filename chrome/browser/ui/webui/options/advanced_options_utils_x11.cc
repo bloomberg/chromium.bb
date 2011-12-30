@@ -13,12 +13,13 @@
 #include "base/nix/xdg_util.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
 using content::OpenURLParams;
 using content::Referrer;
+using content::WebContents;
 
 // Command used to configure GNOME 2 proxy settings.
 const char* kGNOME2ProxyConfigCommand[] = {"gnome-network-properties", NULL};
@@ -38,7 +39,7 @@ const char kLinuxProxyConfigUrl[] = "about:linux-proxy-config";
 namespace {
 
 // Show the proxy config URL in the given tab.
-void ShowLinuxProxyConfigUrl(TabContents* tab_contents) {
+void ShowLinuxProxyConfigUrl(WebContents* web_contents) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<base::Environment> env(base::Environment::Create());
   const char* name = base::nix::GetDesktopEnvironmentName(env.get());
@@ -47,11 +48,11 @@ void ShowLinuxProxyConfigUrl(TabContents* tab_contents) {
   OpenURLParams params(
       GURL(kLinuxProxyConfigUrl), Referrer(), NEW_FOREGROUND_TAB,
       content::PAGE_TRANSITION_LINK, false);
-  tab_contents->OpenURL(params);
+  web_contents->OpenURL(params);
 }
 
 // Start the given proxy configuration utility.
-bool StartProxyConfigUtil(TabContents* tab_contents, const char* command[]) {
+bool StartProxyConfigUtil(WebContents* web_contents, const char* command[]) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // base::LaunchProcess() returns true ("success") if the fork()
   // succeeds, but not necessarily the exec(). We'd like to be able to
@@ -93,14 +94,14 @@ bool StartProxyConfigUtil(TabContents* tab_contents, const char* command[]) {
 
 // Detect, and if possible, start the appropriate proxy config utility. On
 // failure to do so, show the Linux proxy config URL in a new tab instead.
-void DetectAndStartProxyConfigUtil(TabContents* tab_contents) {
+void DetectAndStartProxyConfigUtil(WebContents* web_contents) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   bool launched = false;
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_GNOME: {
-      launched = StartProxyConfigUtil(tab_contents, kGNOME2ProxyConfigCommand);
+      launched = StartProxyConfigUtil(web_contents, kGNOME2ProxyConfigCommand);
       if (!launched) {
         // We try this second, even though it's the newer way, because this
         // command existed in older versions of GNOME, but it didn't do the
@@ -108,18 +109,18 @@ void DetectAndStartProxyConfigUtil(TabContents* tab_contents) {
         // the right thing. (Also some distributions have blurred the lines
         // between GNOME 2 and 3, so we can't necessarily detect what the
         // right thing is based on indications of which version we have.)
-        launched = StartProxyConfigUtil(tab_contents,
+        launched = StartProxyConfigUtil(web_contents,
                                         kGNOME3ProxyConfigCommand);
       }
       break;
     }
 
     case base::nix::DESKTOP_ENVIRONMENT_KDE3:
-      launched = StartProxyConfigUtil(tab_contents, kKDE3ProxyConfigCommand);
+      launched = StartProxyConfigUtil(web_contents, kKDE3ProxyConfigCommand);
       break;
 
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
-      launched = StartProxyConfigUtil(tab_contents, kKDE4ProxyConfigCommand);
+      launched = StartProxyConfigUtil(web_contents, kKDE4ProxyConfigCommand);
       break;
 
     case base::nix::DESKTOP_ENVIRONMENT_XFCE:
@@ -130,15 +131,15 @@ void DetectAndStartProxyConfigUtil(TabContents* tab_contents) {
   if (launched)
     return;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&ShowLinuxProxyConfigUrl, tab_contents));
+      base::Bind(&ShowLinuxProxyConfigUrl, web_contents));
 }
 
 }  // anonymous namespace
 
 void AdvancedOptionsUtilities::ShowNetworkProxySettings(
-    TabContents* tab_contents) {
+    WebContents* web_contents) {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DetectAndStartProxyConfigUtil, tab_contents));
+      base::Bind(&DetectAndStartProxyConfigUtil, web_contents));
 }
 
 #endif  // !defined(OS_CHROMEOS)

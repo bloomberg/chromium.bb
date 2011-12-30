@@ -16,6 +16,7 @@
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::WebContents;
 
 namespace imageburner {
 
@@ -300,7 +301,7 @@ const FilePath& BurnManager::GetImageDir() {
   return image_dir_;
 }
 
-void BurnManager::FetchConfigFile(TabContents* tab_contents,
+void BurnManager::FetchConfigFile(WebContents* web_contents,
     Delegate* delegate) {
   if (config_file_fetched_) {
     delegate->OnConfigFileFetched(config_file_, true);
@@ -313,10 +314,10 @@ void BurnManager::FetchConfigFile(TabContents* tab_contents,
   config_file_requested_ = true;
 
   config_file_path_ = GetImageDir().Append(kConfigFileName);
-  download_manager_ = tab_contents->GetBrowserContext()->GetDownloadManager();
+  download_manager_ = web_contents->GetBrowserContext()->GetDownloadManager();
   download_manager_->AddObserver(this);
   downloader()->AddListener(this, config_file_url_);
-  downloader()->DownloadFile(config_file_url_, config_file_path_, tab_contents);
+  downloader()->DownloadFile(config_file_url_, config_file_path_, web_contents);
 }
 
 void BurnManager::ConfigFileFetchedOnUIThread(bool fetched,
@@ -363,17 +364,17 @@ class DownloaderTaskProxy
 
   void CreateFileStream(const GURL& url,
                         const FilePath& target_path,
-                        TabContents* tab_contents) {
+                        WebContents* web_contents) {
     BurnManager::GetInstance()->downloader()->
-        CreateFileStreamOnFileThread(url, target_path, tab_contents);
+        CreateFileStreamOnFileThread(url, target_path, web_contents);
   }
 
   void OnFileStreamCreated(const GURL& url,
                            const FilePath& file_path,
-                           TabContents* tab_contents,
+                           WebContents* web_contents,
                            net::FileStream* created_file_stream) {
     BurnManager::GetInstance()->downloader()->
-        OnFileStreamCreatedOnUIThread(url, file_path, tab_contents,
+        OnFileStreamCreatedOnUIThread(url, file_path, web_contents,
         created_file_stream);
   }
 
@@ -396,19 +397,19 @@ Downloader::Downloader() {}
 Downloader::~Downloader() {}
 
 void Downloader::DownloadFile(const GURL& url,
-    const FilePath& file_path, TabContents* tab_contents) {
+    const FilePath& file_path, WebContents* web_contents) {
   // First we have to create file stream we will download file to.
   // That has to be done on File thread.
   scoped_refptr<DownloaderTaskProxy> task = new DownloaderTaskProxy();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&DownloaderTaskProxy::CreateFileStream, task.get(), url,
-                 file_path, tab_contents));
+                 file_path, web_contents));
 }
 
 void Downloader::CreateFileStreamOnFileThread(
     const GURL& url, const FilePath& file_path,
-    TabContents* tab_contents) {
+    WebContents* web_contents) {
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!file_path.empty());
@@ -425,26 +426,27 @@ void Downloader::CreateFileStreamOnFileThread(
   BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&DownloaderTaskProxy::OnFileStreamCreated, task.get(),
-                   url, file_path, tab_contents, file_stream.release()));
+                   url, file_path, web_contents, file_stream.release()));
 }
 
 void Downloader::OnFileStreamCreatedOnUIThread(const GURL& url,
-    const FilePath& file_path, TabContents* tab_contents,
+    const FilePath& file_path, WebContents* web_contents,
     net::FileStream* created_file_stream) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (created_file_stream) {
     DownloadManager* download_manager =
-        tab_contents->GetBrowserContext()->GetDownloadManager();
+        web_contents->GetBrowserContext()->GetDownloadManager();
     DownloadSaveInfo save_info;
     save_info.file_path = file_path;
     save_info.file_stream = linked_ptr<net::FileStream>(created_file_stream);
     DownloadStarted(true, url);
-    download_manager->DownloadUrlToFile(url,
-                                        tab_contents->GetURL(),
-                                        tab_contents->GetEncoding(),
-                                        save_info,
-                                        tab_contents);
+    download_manager->DownloadUrlToFile(
+        url,
+        web_contents->GetURL(),
+        web_contents->GetEncoding(),
+        save_info,
+        static_cast<TabContents*>(web_contents));
   } else {
     DownloadStarted(false, url);
   }

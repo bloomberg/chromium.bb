@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_old.h"
+#include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -49,6 +50,8 @@
 #include "ui/base/animation/animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -192,7 +195,7 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
 
 void AppLauncherHandler::RegisterMessages() {
   registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
-      content::Source<TabContents>(web_ui()->tab_contents()));
+      content::Source<WebContents>(web_ui()->web_contents()));
 
   web_ui()->RegisterMessageCallback("getApps",
       base::Bind(&AppLauncherHandler::HandleGetApps,

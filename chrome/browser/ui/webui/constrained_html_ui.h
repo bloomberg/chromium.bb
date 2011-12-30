@@ -12,7 +12,6 @@ class ConstrainedWindow;
 class HtmlDialogUIDelegate;
 class Profile;
 class RenderViewHost;
-class TabContents;
 class TabContentsWrapper;
 
 namespace base {
@@ -27,9 +26,9 @@ class ConstrainedHtmlUIDelegate {
   // message from WebUI.
   virtual void OnDialogCloseFromWebUI() = 0;
 
-  // If called, on dialog closure, the dialog will release its TabContents
+  // If called, on dialog closure, the dialog will release its WebContents
   // instead of destroying it. After which point, the caller will own the
-  // released TabContents.
+  // released WebContents.
   virtual void ReleaseTabContentsOnDialogClose() = 0;
 
   // Returns the ConstrainedWindow.
@@ -50,7 +49,7 @@ class ConstrainedHtmlUIDelegate {
 // implementations, this class is just a factory stub.
 class ConstrainedHtmlUI : public ChromeWebUI {
  public:
-  explicit ConstrainedHtmlUI(TabContents* contents);
+  explicit ConstrainedHtmlUI(content::WebContents* contents);
   virtual ~ConstrainedHtmlUI();
 
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
@@ -64,12 +63,12 @@ class ConstrainedHtmlUI : public ChromeWebUI {
       TabContentsWrapper* overshadowed);
 
   // Returns a property accessor that can be used to set the
-  // ConstrainedHtmlUIDelegate property on a TabContents.
+  // ConstrainedHtmlUIDelegate property on a WebContents.
   static base::PropertyAccessor<ConstrainedHtmlUIDelegate*>&
       GetPropertyAccessor();
 
  protected:
-  // Returns the TabContents' PropertyBag's ConstrainedHtmlUIDelegate.
+  // Returns the WebContents' PropertyBag's ConstrainedHtmlUIDelegate.
   // Returns NULL if that property is not set.
   ConstrainedHtmlUIDelegate* GetConstrainedDelegate();
 

@@ -27,7 +27,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/gpu/gpu_data_manager.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/browser_resources.h"
@@ -44,6 +44,7 @@
 
 using content::PluginService;
 using content::UserMetricsAction;
+using content::WebContents;
 
 namespace {
 
@@ -364,7 +365,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-FlashUI::FlashUI(TabContents* contents) : ChromeWebUI(contents) {
+FlashUI::FlashUI(WebContents* contents) : ChromeWebUI(contents) {
   content::RecordAction(
       UserMetricsAction("ViewAboutFlash"));
 

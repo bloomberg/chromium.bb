@@ -49,16 +49,16 @@ class Downloader {
   // Downloads a file from the Internet.
   // Should be called from UI thread.
   void DownloadFile(const GURL& url, const FilePath& target_file,
-      TabContents* tab_contents);
+      content::WebContents* web_contents);
 
   // Creates file stream for a download.
   // Must be called from FILE thread.
   void CreateFileStreamOnFileThread(const GURL& url, const FilePath& file_path,
-      TabContents* tab_contents);
+      content::WebContents* web_contents);
 
   // Gets called after file stream is created and starts download.
   void OnFileStreamCreatedOnUIThread(const GURL& url,
-      const FilePath& file_path, TabContents* tab_contents,
+      const FilePath& file_path, content::WebContents* web_contents,
       net::FileStream* created_file_stream);
 
   // Adds an item to list of listeners that wait for confirmation that download
@@ -235,7 +235,7 @@ class BurnManager
 
   // Creates URL image should be fetched from.
   // Must be called from UI thread.
-  void FetchConfigFile(TabContents* tab_content,
+  void FetchConfigFile(content::WebContents* web_content,
                        Delegate* delegate);
 
   // Creates directory image will be downloaded to.

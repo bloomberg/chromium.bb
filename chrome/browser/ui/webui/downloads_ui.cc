@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/downloads_dom_handler.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -25,6 +25,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::DownloadManager;
+using content::WebContents;
 
 namespace {
 
@@ -83,7 +84,7 @@ ChromeWebUIDataSource* CreateDownloadsUIHTMLSource() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-DownloadsUI::DownloadsUI(TabContents* contents) : ChromeWebUI(contents) {
+DownloadsUI::DownloadsUI(WebContents* contents) : ChromeWebUI(contents) {
   DownloadManager* dlm =
       DownloadServiceFactory::GetForProfile(GetProfile())->GetDownloadManager();
 

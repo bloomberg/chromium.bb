@@ -83,7 +83,7 @@ class OptionsPageUIHandlerHost {
 class OptionsUI : public ChromeWebUI,
                   public OptionsPageUIHandlerHost {
  public:
-  explicit OptionsUI(TabContents* contents);
+  explicit OptionsUI(content::WebContents* contents);
   virtual ~OptionsUI();
 
   static RefCountedMemory* GetFaviconResourceBytes();

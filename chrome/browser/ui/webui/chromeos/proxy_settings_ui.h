@@ -18,7 +18,7 @@ class ProxyHandler;
 class ProxySettingsUI : public ChromeWebUI,
                         public OptionsPageUIHandlerHost {
  public:
-  explicit ProxySettingsUI(TabContents* contents);
+  explicit ProxySettingsUI(content::WebContents* contents);
   virtual ~ProxySettingsUI();
 
  private:

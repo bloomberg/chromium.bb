@@ -79,6 +79,8 @@
 #include "chrome/browser/ui/webui/options2/certificate_manager_handler2.h"
 #endif
 
+using content::WebContents;
+
 namespace options2 {
 
 static const char kLocalizedStringsFile[] = "strings.js";
@@ -193,7 +195,7 @@ void OptionsPageUIHandler::RegisterTitle(DictionaryValue* localized_strings,
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-OptionsUI::OptionsUI(TabContents* contents)
+OptionsUI::OptionsUI(WebContents* contents)
     : ChromeWebUI(contents),
       initialized_handlers_(false) {
   DictionaryValue* localized_strings = new DictionaryValue();

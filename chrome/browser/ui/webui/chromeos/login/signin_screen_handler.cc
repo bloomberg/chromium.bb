@@ -29,10 +29,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -812,7 +812,7 @@ void SigninScreenHandler::StartClearingCookies() {
 
   cookie_remover_ = new BrowsingDataRemover(
       Profile::FromBrowserContext(
-          web_ui()->tab_contents()->GetBrowserContext()),
+          web_ui()->web_contents()->GetBrowserContext()),
       BrowsingDataRemover::EVERYTHING,
       base::Time());
   cookie_remover_->AddObserver(this);

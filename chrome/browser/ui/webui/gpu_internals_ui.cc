@@ -18,15 +18,16 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/gpu/gpu_data_manager.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "third_party/angle/src/common/version.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -236,7 +237,7 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-GpuInternalsUI::GpuInternalsUI(TabContents* contents) : ChromeWebUI(contents) {
+GpuInternalsUI::GpuInternalsUI(WebContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler(new GpuMessageHandler());
 
   // Set up the chrome://gpu-internals/ source.

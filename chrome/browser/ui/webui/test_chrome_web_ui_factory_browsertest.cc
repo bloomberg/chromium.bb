@@ -10,6 +10,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::WebContents;
 using ::testing::_;
 using ::testing::Eq;
 using ::testing::StrictMock;
@@ -25,7 +26,7 @@ ACTION(ReturnNewWebUI) {
 // expected.
 class MockWebUIProvider : public TestChromeWebUIFactory::WebUIProvider {
  public:
-  MOCK_METHOD2(NewWebUI, WebUI*(TabContents* tab_contents, const GURL& url));
+  MOCK_METHOD2(NewWebUI, WebUI*(WebContents* tab_contents, const GURL& url));
 };
 
 // Dummy URL location for us to override.

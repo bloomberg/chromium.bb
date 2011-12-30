@@ -1225,9 +1225,9 @@ FindBar* BrowserWindowGtk::CreateFindBar() {
   return new FindBarGtk(this);
 }
 
-void BrowserWindowGtk::ShowAvatarBubble(TabContents* tab_contents,
+void BrowserWindowGtk::ShowAvatarBubble(WebContents* web_contents,
                                         const gfx::Rect& rect) {
-  GtkWidget* widget = tab_contents->GetContentNativeView();
+  GtkWidget* widget = web_contents->GetContentNativeView();
   new AvatarMenuBubbleGtk(browser_.get(), widget,
       BubbleGtk::ARROW_LOCATION_TOP_LEFT, &rect);
 }

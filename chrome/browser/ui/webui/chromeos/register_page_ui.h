@@ -12,7 +12,7 @@
 // is used in Chrome OS to register product on first sign in.
 class RegisterPageUI : public ChromeWebUI {
  public:
-  explicit RegisterPageUI(TabContents* contents);
+  explicit RegisterPageUI(content::WebContents* contents);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RegisterPageUI);

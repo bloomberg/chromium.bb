@@ -24,13 +24,16 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/bindings_policy.h"
 #include "net/base/file_stream.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -124,11 +127,11 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
 const char ExtensionWebUI::kExtensionURLOverrides[] =
     "extensions.chrome_url_overrides";
 
-ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
-    : ChromeWebUI(tab_contents),
+ExtensionWebUI::ExtensionWebUI(WebContents* web_contents, const GURL& url)
+    : ChromeWebUI(web_contents),
       url_(url) {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   ExtensionService* service = profile->GetExtensionService();
   const Extension* extension =
       service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(url));
@@ -147,7 +150,7 @@ ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
   if (browser_command_line.HasSwitch(switches::kChromeFrame))
     bindings_ |= content::BINDINGS_POLICY_EXTERNAL_HOST;
   // For chrome:// overrides, some of the defaults are a little different.
-  GURL effective_url = tab_contents->GetURL();
+  GURL effective_url = web_contents->GetURL();
   if (effective_url.SchemeIs(chrome::kChromeUIScheme)) {
     if (effective_url.host() == chrome::kChromeUINewTabHost) {
       focus_location_bar_by_default_ = true;
@@ -160,7 +163,7 @@ ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
   // Hack: A few things we specialize just for the bookmark manager.
   if (extension->id() == extension_misc::kBookmarkManagerId) {
     TabContentsWrapper* tab =
-        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
+        TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
     DCHECK(tab);
     bookmark_manager_extension_event_router_.reset(
         new BookmarkManagerExtensionEventRouter(profile, tab));
@@ -340,7 +343,7 @@ void ExtensionWebUI::UnregisterAndReplaceOverride(const std::string& page,
     // This is the active override, so we need to find all existing
     // tabs for this override and get them to reload the original URL.
     for (TabContentsIterator iterator; !iterator.done(); ++iterator) {
-      TabContents* tab = (*iterator)->tab_contents();
+      WebContents* tab = (*iterator)->web_contents();
       Profile* tab_profile =
           Profile::FromBrowserContext(tab->GetBrowserContext());
       if (tab_profile != profile)

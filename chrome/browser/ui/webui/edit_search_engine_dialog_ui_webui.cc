@@ -4,14 +4,16 @@
 
 #include "chrome/browser/ui/webui/edit_search_engine_dialog_ui_webui.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
-EditSearchEngineDialogUI::EditSearchEngineDialogUI(TabContents* contents)
+using content::WebContents;
+
+EditSearchEngineDialogUI::EditSearchEngineDialogUI(WebContents* contents)
     : HtmlDialogUI(contents) {
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUIEditSearchEngineDialogHost);
