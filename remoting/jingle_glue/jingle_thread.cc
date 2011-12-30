@@ -144,7 +144,14 @@ JingleThread::JingleThread()
       message_loop_(NULL) {
 }
 
-JingleThread::~JingleThread() { }
+JingleThread::~JingleThread() {
+  // It is important to call Stop here. If we wait for the base class to
+  // call Stop in it's d'tor, then JingleThread::Run() will access member
+  // variables that are already gone. See similar comments in
+  // base/threading/thread.h.
+  if (message_loop_)
+    Stop();
+}
 
 void JingleThread::Start() {
   Thread::Start();
