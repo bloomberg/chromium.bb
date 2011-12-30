@@ -512,3 +512,19 @@ class XcodeSettings(object):
     # dSYMs need to build before stripping happens.
     return (self._GetDebugPostbuilds(configname, output, output_binary) +
             self._GetStripPostbuilds(configname, output_binary))
+
+
+def MergeGlobalXcodeSettingsToSpec(global_dict, spec):
+  """Merges the global xcode_settings dictionary into each configuration of the
+  target represented by spec. For keys that are both in the global and the local
+  xcode_settings dict, the local key gets precendence.
+  """
+  # The xcode generator special-cases global xcode_settings and does something
+  # that amounts to merging in the global xcode_settings into each local
+  # xcode_settings dict.
+  global_xcode_settings = global_dict.get('xcode_settings', {})
+  for config in spec['configurations'].values():
+    if 'xcode_settings' in config:
+      new_settings = global_xcode_settings.copy()
+      new_settings.update(config['xcode_settings'])
+      config['xcode_settings'] = new_settings

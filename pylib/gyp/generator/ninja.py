@@ -823,7 +823,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
     if toolset != 'target':
       obj += '.' + toolset
     output_file = os.path.join(obj, base_path, name + '.ninja')
-    spec = target_dicts[qualified_target]
 
     writer = NinjaWriter(target_outputs, base_path, builddir,
                          OpenOutput(os.path.join(options.toplevel_dir,
@@ -831,6 +830,10 @@ def GenerateOutput(target_list, target_dicts, data, params):
                                                  output_file)),
                          flavor)
     master_ninja.subninja(output_file)
+
+    spec = target_dicts[qualified_target]
+    if flavor == 'mac':
+      gyp.xcode_emulation.MergeGlobalXcodeSettingsToSpec(data[build_file], spec)
 
     output, compile_depends = writer.WriteSpec(spec, config_name)
     if output:

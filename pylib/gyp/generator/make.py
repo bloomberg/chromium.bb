@@ -2375,17 +2375,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     spec = target_dicts[qualified_target]
     configs = spec['configurations']
 
-    # The xcode generator special-cases global xcode_settings and does something
-    # that amounts to merging in the global xcode_settings into each local
-    # xcode_settings dict.
     if flavor == 'mac':
-      global_xcode_settings = data[build_file].get('xcode_settings', {})
-      for configname in configs.keys():
-        config = configs[configname]
-        if 'xcode_settings' in config:
-          new_settings = global_xcode_settings.copy()
-          new_settings.update(config['xcode_settings'])
-          config['xcode_settings'] = new_settings
+      gyp.xcode_emulation.MergeGlobalXcodeSettingsToSpec(data[build_file], spec)
 
     writer = MakefileWriter(generator_flags, flavor)
     writer.Write(qualified_target, base_path, output_file, spec, configs,
