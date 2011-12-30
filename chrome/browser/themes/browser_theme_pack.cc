@@ -352,8 +352,10 @@ BrowserThemePack* BrowserThemePack::BuildFromExtension(
                                 &file_paths);
   pack->BuildSourceImagesArray(file_paths);
 
-  if (!pack->LoadRawBitmapsTo(file_paths, &pack->prepared_images_))
+  if (!pack->LoadRawBitmapsTo(file_paths, &pack->prepared_images_)) {
+    delete pack;
     return NULL;
+  }
 
   pack->GenerateFrameImages(&pack->prepared_images_);
 

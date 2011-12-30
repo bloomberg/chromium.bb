@@ -907,16 +907,16 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     return false;
   }
   ScriptableHandle* handle = ScriptableHandle::NewPlugin(this);
-  if (handle == NULL) {
+  if (handle == NULL)
     return false;
-  }
+
   set_scriptable_handle(handle);
   PLUGIN_PRINTF(("Plugin::Init (scriptable_handle=%p)\n",
                  static_cast<void*>(scriptable_handle())));
   url_util_ = pp::URLUtil_Dev::Get();
-  if (url_util_ == NULL) {
+  if (url_util_ == NULL)
     return false;
-  }
+
   PLUGIN_PRINTF(("Plugin::Init (url_util_=%p)\n",
                  static_cast<const void*>(url_util_)));
 
