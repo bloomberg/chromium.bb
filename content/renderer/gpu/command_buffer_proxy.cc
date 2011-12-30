@@ -377,7 +377,7 @@ CommandBufferProxy::CreateVideoDecoder(
   int decoder_route_id;
   if (!Send(new GpuCommandBufferMsg_CreateVideoDecoder(route_id_, profile,
                                                        &decoder_route_id))) {
-    LOG(ERROR) << "Send(GpuChannelMsg_CreateVideoDecoder) failed";
+    LOG(ERROR) << "Send(GpuCommandBufferMsg_CreateVideoDecoder) failed";
     return NULL;
   }
 

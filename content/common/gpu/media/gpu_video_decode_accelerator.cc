@@ -147,7 +147,8 @@ void GpuVideoDecodeAccelerator::Initialize(
       stub_->decoder()->GetGLContext()->GetHandle());
 #endif  // OS_WIN
   video_decode_accelerator_ = video_decoder;
-  video_decode_accelerator_->Initialize(profile);
+  if (!video_decode_accelerator_->Initialize(profile))
+    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
 #else  // Update RenderViewImpl::createMediaPlayer when adding clauses.
   NOTIMPLEMENTED() << "HW video decode acceleration not available.";
   NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
