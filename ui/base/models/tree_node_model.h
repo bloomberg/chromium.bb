@@ -145,7 +145,7 @@ class TreeNode : public TreeModelNode {
   }
 
   // Sets the title of the node.
-  void set_title(const string16& title) { title_ = title; }
+  virtual void SetTitle(const string16& title) { title_ = title; }
 
   // TreeModelNode:
   virtual const string16& GetTitle() const OVERRIDE { return title_; }
@@ -279,7 +279,7 @@ class TreeNodeModel : public TreeModel {
 
   virtual void SetTitle(TreeModelNode* node, const string16& title) OVERRIDE {
     DCHECK(node);
-    AsNode(node)->set_title(title);
+    AsNode(node)->SetTitle(title);
     NotifyObserverTreeNodeChanged(node);
   }
 

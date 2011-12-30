@@ -107,7 +107,7 @@ const BookmarkNode* BookmarkNodeFinder::FindBookmarkNode(
     const sync_api::BaseNode& sync_node) {
   // Create a bookmark node from the given sync node.
   BookmarkNode temp_node(sync_node.GetURL());
-  temp_node.set_title(UTF8ToUTF16(sync_node.GetTitle()));
+  temp_node.SetTitle(UTF8ToUTF16(sync_node.GetTitle()));
   if (sync_node.GetIsFolder())
     temp_node.set_type(BookmarkNode::FOLDER);
   else

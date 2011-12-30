@@ -236,9 +236,9 @@ TEST_F(BookmarkEditorViewTest, MoveToNewParent) {
   BookmarkEditorView::EditorNode* f2 =
       editor_tree_model()->GetRoot()->GetChild(0)->GetChild(1);
   BookmarkEditorView::EditorNode* f21 = AddNewFolder(f2);
-  f21->set_title(ASCIIToUTF16("F21"));
+  f21->SetTitle(ASCIIToUTF16("F21"));
   BookmarkEditorView::EditorNode* f211 = AddNewFolder(f21);
-  f211->set_title(ASCIIToUTF16("F211"));
+  f211->SetTitle(ASCIIToUTF16("F211"));
 
   // Parent the node to "F21".
   ApplyEdits(f2);

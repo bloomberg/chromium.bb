@@ -55,6 +55,12 @@ BookmarkNode::BookmarkNode(int64 id, const GURL& url)
 BookmarkNode::~BookmarkNode() {
 }
 
+void BookmarkNode::SetTitle(const string16& title) {
+  // Remove extra whitespace from folder/bookmark names.
+  ui::TreeNode<BookmarkNode>::SetTitle(CollapseWhitespace(title, false));
+}
+
+
 bool BookmarkNode::IsVisible() const {
   return true;
 }
@@ -297,14 +303,11 @@ const SkBitmap& BookmarkModel::GetFavicon(const BookmarkNode* node) {
 }
 
 void BookmarkModel::SetTitle(const BookmarkNode* node, const string16& title) {
-  // Remove extra whitespace from folder/bookmark names.
-  string16 mutable_title = CollapseWhitespace(title, false);
-
   if (!node) {
     NOTREACHED();
     return;
   }
-  if (node->GetTitle() == mutable_title)
+  if (node->GetTitle() == title)
     return;
 
   if (is_permanent_node(node)) {
@@ -315,7 +318,7 @@ void BookmarkModel::SetTitle(const BookmarkNode* node, const string16& title) {
   // The title index doesn't support changing the title, instead we remove then
   // add it back.
   index_->Remove(node);
-  AsMutable(node)->set_title(mutable_title);
+  AsMutable(node)->SetTitle(title);
   index_->Add(node);
 
   if (store_.get())
@@ -432,7 +435,7 @@ const BookmarkNode* BookmarkModel::AddFolder(const BookmarkNode* parent,
   BookmarkNode* new_node = new BookmarkNode(generate_next_node_id(), GURL());
   new_node->set_date_folder_modified(Time::Now());
   // Folders shouldn't have line breaks in their titles.
-  new_node->set_title(CollapseWhitespace(title, false));
+  new_node->SetTitle(title);
   new_node->set_type(BookmarkNode::FOLDER);
 
   return AddNode(AsMutable(parent), index, new_node, false);
@@ -464,7 +467,7 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
   SetDateFolderModified(parent, creation_time);
 
   BookmarkNode* new_node = new BookmarkNode(generate_next_node_id(), url);
-  new_node->set_title(title);
+  new_node->SetTitle(title);
   new_node->set_date_added(creation_time);
   new_node->set_type(BookmarkNode::URL);
 
@@ -761,7 +764,7 @@ BookmarkPermanentNode* BookmarkModel::CreatePermanentNode(
       title_id = IDS_BOOKMARK_BAR_FOLDER_NAME;
       break;
   }
-  node->set_title(l10n_util::GetStringUTF16(title_id));
+  node->SetTitle(l10n_util::GetStringUTF16(title_id));
   node->set_type(type);
   return node;
 }

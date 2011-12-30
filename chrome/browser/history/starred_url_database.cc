@@ -89,7 +89,7 @@ void ResetBookmarkNode(const history::StarredEntry& entry,
 
   node->set_date_added(entry.date_added);
   node->set_date_folder_modified(entry.date_folder_modified);
-  node->set_title(entry.title);
+  node->SetTitle(entry.title);
 
   switch (entry.type) {
     case history::StarredEntry::URL:

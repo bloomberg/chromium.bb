@@ -980,7 +980,8 @@ namespace {
 // |   |-- dup
 // |   |   +-- dupu1, http://www.dupu1.com/
 // |   +-- dup
-// |       +-- dupu2, http://www.dupu1.com/
+// |   |   +-- dupu2, http://www.dupu1.com/
+// |   +--   ls  , http://www.ls.com/
 // |
 // +-- Mobile bookmarks
 //     |-- f5
@@ -1016,6 +1017,7 @@ static TestData kOtherBookmarkChildren[] = {
   { L"f4", NULL },
   { L"dup", NULL },
   { L"dup", NULL },
+  { L"  ls  ", "http://www.ls.com/" }
 };
 static TestData kF3Children[] = {
   { L"f3u4", "http://www.f3u4.com/" },
@@ -1076,11 +1078,14 @@ void ProfileSyncServiceBookmarkTestWithData::CompareWithTestData(
   for (int i = 0; i < size; ++i) {
     const BookmarkNode* child_node = node->GetChild(i);
     const TestData& item = data[i];
-    EXPECT_EQ(child_node->GetTitle(), WideToUTF16Hack(item.title));
+    GURL url = GURL(item.url == NULL ? "" : item.url);
+    BookmarkNode test_node(url);
+    test_node.SetTitle(WideToUTF16Hack(item.title));
+    EXPECT_EQ(child_node->GetTitle(), test_node.GetTitle());
     if (item.url) {
       EXPECT_FALSE(child_node->is_folder());
       EXPECT_TRUE(child_node->is_url());
-      EXPECT_EQ(child_node->url(), GURL(item.url));
+      EXPECT_EQ(child_node->url(), test_node.url());
     } else {
       EXPECT_TRUE(child_node->is_folder());
       EXPECT_FALSE(child_node->is_url());

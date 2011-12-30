@@ -189,10 +189,10 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
   bb_node->set_type(BookmarkNode::BOOKMARK_BAR);
   other_folder_node->set_type(BookmarkNode::OTHER_NODE);
   mobile_folder_node->set_type(BookmarkNode::MOBILE);
-  bb_node->set_title(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_FOLDER_NAME));
-  other_folder_node->set_title(
+  bb_node->SetTitle(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_FOLDER_NAME));
+  other_folder_node->SetTitle(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME));
-  mobile_folder_node->set_title(
+  mobile_folder_node->SetTitle(
         l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME));
 
   return true;
@@ -315,7 +315,7 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
       return false;
   }
 
-  node->set_title(title);
+  node->SetTitle(title);
   node->set_date_added(date_added);
   return true;
 }

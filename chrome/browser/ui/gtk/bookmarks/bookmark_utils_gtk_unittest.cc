@@ -43,7 +43,7 @@ TEST(BookmarkUtilsGtkTest, GetNodesFromSelectionInvalid) {
 
 TEST(BookmarkUtilsGtkTest, WriteBookmarkToSelectionHTML) {
   BookmarkNode x(GURL("http://www.google.com"));
-  x.set_title(string16(ASCIIToUTF16("Google")));
+  x.SetTitle(string16(ASCIIToUTF16("Google")));
   GtkSelectionData data;
   data.data = NULL;
   data.length = 0;
