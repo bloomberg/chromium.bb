@@ -31,13 +31,19 @@ class SrcCheckOutException(Exception):
 
 def FixExternalRepoPushUrls(buildroot):
   """Set up SSH push for public repo's."""
-  shell_code = ('git config --remove-section "url.%(host)s" 2> /dev/null;' +
-               '[ "${REPO_REMOTE}" = "cros" ] || exit 0; ' +
-               'git config "remote.${REPO_REMOTE}.pushurl" ' +
-               '"%(host)s/${REPO_PROJECT}"')
+  shell_code = ('[ "${REPO_REMOTE}" = "cros" ] || exit 0; ' +
+                'git config "remote.${REPO_REMOTE}.pushurl" ' +
+                '"%(host)s/${REPO_PROJECT}"')
   cros_lib.RunCommand(['repo', 'forall', '-c',
                        shell_code % {'host': constants.GERRIT_SSH_URL},
                       ], cwd=buildroot)
+
+def FixBrokenExistingRepos(buildroot):
+  """remove hardcoded insteadof urls people have litered in the builders"""
+
+  cros_lib.RunCommand(['repo', 'forall', '-c',
+    'git config --remove-section "url.%s" 2> /dev/null' %
+     constants.GERRIT_SSH_URL], cwd=buildroot, error_ok=True)
 
 
 def InARepoRepository(directory):
@@ -188,9 +194,14 @@ class RepoRepository(object):
         # we have to repo up to date else it would fail.
         cros_lib.RunCommand(['repo', 'selfupdate'],
                              cwd=self.directory)
+
+      FixBrokenExistingRepos(self.directory)
+
       cros_lib.OldRunCommand(['repo', 'sync', '--jobs', str(jobs)],
                              cwd=self.directory, num_retries=2)
+
       FixExternalRepoPushUrls(self.directory)
+
     except cros_lib.RunCommandError, e:
       err_msg = 'Failed to sync sources %s' % e.message
       logging.error(err_msg)
