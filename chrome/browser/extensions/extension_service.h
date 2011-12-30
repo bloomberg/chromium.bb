@@ -282,8 +282,14 @@ class ExtensionService
   // Initialize and start all installed extensions.
   void Init();
 
-  // Initialize the event routers after import has finished.
+  // To delay some initialization until after import has finished, register
+  // for the notification.
+  // TODO(yoz): remove InitEventRoutersAterImport.
   void InitEventRoutersAfterImport();
+  void RegisterForImportFinished();
+
+  // Complete some initialization after being notified that import has finished.
+  void InitAfterImport();
 
   // Start up the extension event routers.
   void InitEventRouters();
