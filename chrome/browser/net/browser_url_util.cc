@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
@@ -28,6 +29,19 @@ void WriteURLToClipboard(const GURL& url,
 
   ui::ScopedClipboardWriter scw(clipboard);
   scw.WriteURL(text);
+}
+
+GURL AppendQueryParameter(const GURL& url,
+                          const std::string& name,
+                          const std::string& value) {
+  std::string query(url.query());
+  if (!query.empty())
+    query += "&";
+  query += (net::EscapeQueryParamValue(name, true) + "=" +
+            net::EscapeQueryParamValue(value, true));
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(query);
+  return url.ReplaceComponents(replacements);
 }
 
 }  // namespace chrome_browser_net
