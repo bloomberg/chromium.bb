@@ -304,6 +304,10 @@ WebPlugin* CreateWebPlugin(WebFrame* frame,
 
 WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
                                           WebMediaPlayerClient* client) {
+#if defined(OS_ANDROID)
+  // TODO: Implement the WebMediaPlayer that will be used for Android.
+  return NULL;
+#else
   scoped_ptr<media::MessageLoopFactory> message_loop_factory(
       new media::MessageLoopFactoryImpl());
 
@@ -322,6 +326,7 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
     return NULL;
   }
   return result.release();
+#endif
 }
 
 WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(

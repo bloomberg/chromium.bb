@@ -49,6 +49,8 @@
         ['OS=="android"', {
           'sources!': [
             'audio_decoder.cc',
+            'webmediaplayer_impl.cc',
+            'webmediaplayer_impl.h',
           ],
         }],
       ],
