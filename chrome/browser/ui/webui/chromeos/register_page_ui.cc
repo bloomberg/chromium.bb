@@ -111,11 +111,7 @@ class RegisterPageHandler : public WebUIMessageHandler,
   RegisterPageHandler();
   virtual ~RegisterPageHandler();
 
-  // Init work after Attach.
-  void Init();
-
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
  private:
@@ -192,19 +188,12 @@ RegisterPageHandler::RegisterPageHandler() {
 RegisterPageHandler::~RegisterPageHandler() {
 }
 
-WebUIMessageHandler* RegisterPageHandler::Attach(WebUI* web_ui) {
-  return WebUIMessageHandler::Attach(web_ui);
-}
-
-void RegisterPageHandler::Init() {
-}
-
 void RegisterPageHandler::RegisterMessages() {
 #if defined(OS_CHROMEOS)
-  web_ui_->RegisterMessageCallback(kJsCallbackGetRegistrationUrl,
+  web_ui()->RegisterMessageCallback(kJsCallbackGetRegistrationUrl,
       base::Bind(&RegisterPageHandler::HandleGetRegistrationUrl,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(kJsCallbackUserInfo,
+  web_ui()->RegisterMessageCallback(kJsCallbackUserInfo,
       base::Bind(&RegisterPageHandler::HandleGetUserInfo,
                  base::Unretained(this)));
 #endif
@@ -224,7 +213,7 @@ void RegisterPageHandler::HandleGetRegistrationUrl(const ListValue* args) {
       return;
     }
     StringValue url_value(url);
-    web_ui_->CallJavascriptFunction(kJsApiSetRegistrationUrl, url_value);
+    web_ui()->CallJavascriptFunction(kJsApiSetRegistrationUrl, url_value);
   } else {
     SkipRegistration("Startup manifest not defined.");
   }
@@ -258,7 +247,7 @@ void RegisterPageHandler::SkipRegistration(const std::string& error_msg) {
   if (chromeos::WizardController::default_controller())
     chromeos::WizardController::default_controller()->SkipRegistration();
   else
-    web_ui_->CallJavascriptFunction(kJsApiSkipRegistration);
+    web_ui()->CallJavascriptFunction(kJsApiSkipRegistration);
 #endif
 }
 
@@ -291,7 +280,7 @@ void RegisterPageHandler::SendUserInfo() {
   value.SetString("user_first_name", "");
   value.SetString("user_last_name", "");
 
-  web_ui_->CallJavascriptFunction(kJsApiSetUserInfo, value);
+  web_ui()->CallJavascriptFunction(kJsApiSetUserInfo, value);
 #endif
 }
 
@@ -303,8 +292,7 @@ void RegisterPageHandler::SendUserInfo() {
 
 RegisterPageUI::RegisterPageUI(TabContents* contents) : ChromeWebUI(contents) {
   RegisterPageHandler* handler = new RegisterPageHandler();
-  AddMessageHandler((handler)->Attach(this));
-  handler->Init();
+  AddMessageHandler(handler);
   RegisterPageUIHTMLSource* html_source = new RegisterPageUIHTMLSource();
 
   // Set up the chrome://register/ source.

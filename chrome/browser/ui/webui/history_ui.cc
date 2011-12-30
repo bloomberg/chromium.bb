@@ -137,29 +137,26 @@ BrowsingHistoryHandler::~BrowsingHistoryHandler() {
   cancelable_delete_consumer_.CancelAllRequests();
 }
 
-WebUIMessageHandler* BrowsingHistoryHandler::Attach(WebUI* web_ui) {
+void BrowsingHistoryHandler::RegisterMessages() {
   // Create our favicon data source.
-  Profile* profile = Profile::FromWebUI(web_ui);
+  Profile* profile = Profile::FromWebUI(web_ui());
   profile->GetChromeURLDataManager()->AddDataSource(
       new FaviconSource(profile, FaviconSource::FAVICON));
 
   // Get notifications when history is cleared.
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
       content::Source<Profile>(profile->GetOriginalProfile()));
-  return WebUIMessageHandler::Attach(web_ui);
-}
 
-void BrowsingHistoryHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("getHistory",
+  web_ui()->RegisterMessageCallback("getHistory",
       base::Bind(&BrowsingHistoryHandler::HandleGetHistory,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("searchHistory",
+  web_ui()->RegisterMessageCallback("searchHistory",
       base::Bind(&BrowsingHistoryHandler::HandleSearchHistory,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("removeURLsOnOneDay",
+  web_ui()->RegisterMessageCallback("removeURLsOnOneDay",
       base::Bind(&BrowsingHistoryHandler::HandleRemoveURLsOnOneDay,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("clearBrowsingData",
+  web_ui()->RegisterMessageCallback("clearBrowsingData",
       base::Bind(&BrowsingHistoryHandler::HandleClearBrowsingData,
                  base::Unretained(this)));
 }
@@ -184,7 +181,7 @@ void BrowsingHistoryHandler::HandleGetHistory(const ListValue* args) {
   search_text_ = string16();
 
   HistoryService* hs =
-      Profile::FromWebUI(web_ui_)->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      Profile::FromWebUI(web_ui())->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text_,
       options,
       &cancelable_search_consumer_,
@@ -210,7 +207,7 @@ void BrowsingHistoryHandler::HandleSearchHistory(const ListValue* args) {
   // Need to remember the query string for our results.
   search_text_ = query;
   HistoryService* hs =
-      Profile::FromWebUI(web_ui_)->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      Profile::FromWebUI(web_ui())->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text_,
       options,
       &cancelable_search_consumer_,
@@ -220,7 +217,7 @@ void BrowsingHistoryHandler::HandleSearchHistory(const ListValue* args) {
 
 void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
   if (cancelable_delete_consumer_.HasPendingRequests()) {
-    web_ui_->CallJavascriptFunction("deleteFailed");
+    web_ui()->CallJavascriptFunction("deleteFailed");
     return;
   }
 
@@ -228,7 +225,7 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
   int visit_time = 0;
   if (!ExtractIntegerValue(args, &visit_time)) {
     LOG(ERROR) << "Unable to extract integer argument.";
-    web_ui_->CallJavascriptFunction("deleteFailed");
+    web_ui()->CallJavascriptFunction("deleteFailed");
     return;
   }
   base::Time::Exploded exploded;
@@ -253,7 +250,7 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
   }
 
   HistoryService* hs =
-      Profile::FromWebUI(web_ui_)->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      Profile::FromWebUI(web_ui())->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
       urls_to_be_deleted_, begin_time, end_time, &cancelable_delete_consumer_,
       base::Bind(&BrowsingHistoryHandler::RemoveComplete,
@@ -263,7 +260,7 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
 void BrowsingHistoryHandler::HandleClearBrowsingData(const ListValue* args) {
   // TODO(beng): This is an improper direct dependency on Browser. Route this
   // through some sort of delegate.
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   Browser* browser = BrowserList::FindBrowserWithProfile(profile);
   if (browser)
     browser->OpenClearBrowsingDataDialog();
@@ -311,7 +308,7 @@ void BrowsingHistoryHandler::QueryComplete(
           base::TimeFormatShortDate(page.visit_time()));
       page_value->SetString("snippet", page.snippet().text());
     }
-    Profile* profile = Profile::FromWebUI(web_ui_);
+    Profile* profile = Profile::FromWebUI(web_ui());
     page_value->SetBoolean("starred",
         profile->GetBookmarkModel()->IsBookmarked(page.url()));
     results_value.Append(page_value);
@@ -321,14 +318,14 @@ void BrowsingHistoryHandler::QueryComplete(
   info_value.SetString("term", search_text_);
   info_value.SetBoolean("finished", results->reached_beginning());
 
-  web_ui_->CallJavascriptFunction("historyResult", info_value, results_value);
+  web_ui()->CallJavascriptFunction("historyResult", info_value, results_value);
 }
 
 void BrowsingHistoryHandler::RemoveComplete() {
   urls_to_be_deleted_.clear();
 
   // Notify the page that the deletion request succeeded.
-  web_ui_->CallJavascriptFunction("deleteComplete");
+  web_ui()->CallJavascriptFunction("deleteComplete");
 }
 
 void BrowsingHistoryHandler::ExtractSearchHistoryArguments(
@@ -415,7 +412,7 @@ void BrowsingHistoryHandler::Observe(
   if (deletedDetails->urls != urls_to_be_deleted_ ||
       deletedDetails->all_history) {
     // Notify the page that someone else deleted from the history.
-    web_ui_->CallJavascriptFunction("historyDeleted");
+    web_ui()->CallJavascriptFunction("historyDeleted");
   }
 }
 
@@ -426,7 +423,7 @@ void BrowsingHistoryHandler::Observe(
 ////////////////////////////////////////////////////////////////////////////////
 
 HistoryUI::HistoryUI(TabContents* contents) : ChromeWebUI(contents) {
-  AddMessageHandler((new BrowsingHistoryHandler())->Attach(this));
+  AddMessageHandler(new BrowsingHistoryHandler());
 
   HistoryUIHTMLSource* html_source = new HistoryUIHTMLSource();
 

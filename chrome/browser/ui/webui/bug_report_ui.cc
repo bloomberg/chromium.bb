@@ -166,7 +166,6 @@ class BugReportHandler : public WebUIMessageHandler,
   bool Init();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
  private:
@@ -350,11 +349,6 @@ void BugReportHandler::SetupScreenshotsSource() {
   profile->GetChromeURLDataManager()->AddDataSource(screenshot_source_);
 }
 
-WebUIMessageHandler* BugReportHandler::Attach(WebUI* web_ui) {
-  SetupScreenshotsSource();
-  return WebUIMessageHandler::Attach(web_ui);
-}
-
 bool BugReportHandler::Init() {
   std::string page_url;
   if (tab_->GetController().GetActiveEntry()) {
@@ -393,24 +387,26 @@ bool BugReportHandler::Init() {
 }
 
 void BugReportHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("getDialogDefaults",
+  SetupScreenshotsSource();
+
+  web_ui()->RegisterMessageCallback("getDialogDefaults",
       base::Bind(&BugReportHandler::HandleGetDialogDefaults,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("refreshCurrentScreenshot",
+  web_ui()->RegisterMessageCallback("refreshCurrentScreenshot",
       base::Bind(&BugReportHandler::HandleRefreshCurrentScreenshot,
                  base::Unretained(this)));
 #if defined(OS_CHROMEOS)
-  web_ui_->RegisterMessageCallback("refreshSavedScreenshots",
+  web_ui()->RegisterMessageCallback("refreshSavedScreenshots",
       base::Bind(&BugReportHandler::HandleRefreshSavedScreenshots,
                  base::Unretained(this)));
 #endif
-  web_ui_->RegisterMessageCallback("sendReport",
+  web_ui()->RegisterMessageCallback("sendReport",
       base::Bind(&BugReportHandler::HandleSendReport,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("cancel",
+  web_ui()->RegisterMessageCallback("cancel",
       base::Bind(&BugReportHandler::HandleCancel,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("openSystemTab",
+  web_ui()->RegisterMessageCallback("openSystemTab",
       base::Bind(&BugReportHandler::HandleOpenSystemTab,
                  base::Unretained(this)));
 }
@@ -446,13 +442,13 @@ void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
   dialog_defaults.Append(new StringValue(GetUserEmail()));
 #endif
 
-  web_ui_->CallJavascriptFunction("setupDialogDefaults", dialog_defaults);
+  web_ui()->CallJavascriptFunction("setupDialogDefaults", dialog_defaults);
 }
 
 void BugReportHandler::HandleRefreshCurrentScreenshot(const ListValue*) {
   std::string current_screenshot(kCurrentScreenshotUrl);
   StringValue screenshot(current_screenshot);
-  web_ui_->CallJavascriptFunction("setupCurrentScreenshot", screenshot);
+  web_ui()->CallJavascriptFunction("setupCurrentScreenshot", screenshot);
 }
 
 
@@ -464,7 +460,7 @@ void BugReportHandler::HandleRefreshSavedScreenshots(const ListValue*) {
   ListValue screenshots_list;
   for (size_t i = 0; i < saved_screenshots.size(); ++i)
     screenshots_list.Append(new StringValue(saved_screenshots[i]));
-  web_ui_->CallJavascriptFunction("setupSavedScreenshots", screenshots_list);
+  web_ui()->CallJavascriptFunction("setupSavedScreenshots", screenshots_list);
 }
 #endif
 
@@ -545,7 +541,7 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
 #endif
 
   // Update the data in bug_report_data_ so it can be sent
-  bug_report_data_->UpdateData(Profile::FromWebUI(web_ui_)
+  bug_report_data_->UpdateData(Profile::FromWebUI(web_ui())
                                , target_tab_url_
                                , problem_type
                                , page_url
@@ -618,7 +614,7 @@ void BugReportHandler::CloseFeedbackTab() {
 ////////////////////////////////////////////////////////////////////////////////
 BugReportUI::BugReportUI(TabContents* tab) : HtmlDialogUI(tab) {
   BugReportHandler* handler = new BugReportHandler(tab);
-  AddMessageHandler((handler)->Attach(this));
+  AddMessageHandler(handler);
 
   // The handler's init will determine whether we show the error html page.
   ChromeWebUIDataSource* html_source =

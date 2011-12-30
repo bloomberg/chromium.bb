@@ -110,7 +110,6 @@ class ProfilerMessageHandler : public WebUIMessageHandler {
   ProfilerMessageHandler() {}
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // Messages.
@@ -121,24 +120,18 @@ class ProfilerMessageHandler : public WebUIMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(ProfilerMessageHandler);
 };
 
-WebUIMessageHandler* ProfilerMessageHandler::Attach(WebUI* web_ui) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  WebUIMessageHandler* result = WebUIMessageHandler::Attach(web_ui);
-  return result;
-}
-
 void ProfilerMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  web_ui_->RegisterMessageCallback("getData",
+  web_ui()->RegisterMessageCallback("getData",
       base::Bind(&ProfilerMessageHandler::OnGetData,base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("resetData",
+  web_ui()->RegisterMessageCallback("resetData",
       base::Bind(&ProfilerMessageHandler::OnResetData,
                  base::Unretained(this)));
 }
 
 void ProfilerMessageHandler::OnGetData(const ListValue* list) {
-  ProfilerUI* profiler_ui = reinterpret_cast<ProfilerUI*>(web_ui_);
+  ProfilerUI* profiler_ui = reinterpret_cast<ProfilerUI*>(web_ui());
   profiler_ui->GetData();
 }
 
@@ -152,7 +145,7 @@ ProfilerUI::ProfilerUI(TabContents* contents) : ChromeWebUI(contents) {
   ui_weak_ptr_factory_.reset(new base::WeakPtrFactory<ProfilerUI>(this));
   ui_weak_ptr_ = ui_weak_ptr_factory_->GetWeakPtr();
 
-  AddMessageHandler((new ProfilerMessageHandler())->Attach(this));
+  AddMessageHandler(new ProfilerMessageHandler());
 
   // Set up the chrome://profiler/ source.
   Profile::FromBrowserContext(contents->GetBrowserContext())->

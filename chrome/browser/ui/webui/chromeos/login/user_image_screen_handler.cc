@@ -67,8 +67,8 @@ void UserImageScreenHandler::Initialize() {
   for (int i = 0; i < kDefaultImagesCount; ++i) {
     image_urls.Append(new StringValue(GetDefaultImageUrl(i)));
   }
-  web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setUserImages",
-                                  image_urls);
+  web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setUserImages",
+                                   image_urls);
 
   if (selected_image_ != User::kInvalidImageIndex)
     SelectImage(selected_image_);
@@ -111,7 +111,7 @@ void UserImageScreenHandler::SelectImage(int index) {
   selected_image_ = index;
   if (page_is_ready()) {
     base::StringValue image_url(GetDefaultImageUrl(index));
-    web_ui_->CallJavascriptFunction(
+    web_ui()->CallJavascriptFunction(
         "oobe.UserImageScreen.setSelectedImage",
         image_url);
   }
@@ -137,16 +137,16 @@ bool UserImageScreenHandler::IsCapturing() const {
 }
 
 void UserImageScreenHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("takePhoto",
+  web_ui()->RegisterMessageCallback("takePhoto",
       base::Bind(&UserImageScreenHandler::HandleTakePhoto,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("selectImage",
+  web_ui()->RegisterMessageCallback("selectImage",
       base::Bind(&UserImageScreenHandler::HandleSelectImage,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("onUserImageAccepted",
+  web_ui()->RegisterMessageCallback("onUserImageAccepted",
       base::Bind(&UserImageScreenHandler::HandleImageAccepted,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("onUserImageScreenShown",
+  web_ui()->RegisterMessageCallback("onUserImageScreenShown",
       base::Bind(&UserImageScreenHandler::HandleScreenShown,
                  base::Unretained(this)));
 }
@@ -159,8 +159,8 @@ void UserImageScreenHandler::AddProfileImage(const SkBitmap& image) {
 void UserImageScreenHandler::SendProfileImage(const std::string& data_url) {
   if (page_is_ready()) {
     base::StringValue data_url_value(data_url);
-    web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setProfileImage",
-                                    data_url_value);
+    web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setProfileImage",
+                                     data_url_value);
   }
 }
 
@@ -168,8 +168,8 @@ void UserImageScreenHandler::OnProfileImageAbsent() {
   profile_picture_absent_ = true;
   if (page_is_ready()) {
     scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
-    web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setProfileImage",
-                                    *null_value);
+    web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setProfileImage",
+                                     *null_value);
   }
 }
 
@@ -178,8 +178,8 @@ void UserImageScreenHandler::OnPhotoAccepted(const SkBitmap& photo) {
   user_photo_data_url_ = web_ui_util::GetImageDataUrl(user_photo_);
   selected_image_ = User::kExternalImageIndex;
   base::StringValue data_url(user_photo_data_url_);
-  web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setUserPhoto",
-                                  data_url);
+  web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setUserPhoto",
+                                   data_url);
 }
 
 void UserImageScreenHandler::HandleTakePhoto(const base::ListValue* args) {
@@ -245,8 +245,8 @@ void UserImageScreenHandler::HandleScreenShown(const base::ListValue* args) {
 void UserImageScreenHandler::OnCameraPresenceCheckDone() {
   base::FundamentalValue present_value(
       CameraDetector::camera_presence() == CameraDetector::kCameraPresent);
-  web_ui_->CallJavascriptFunction("oobe.UserImageScreen.setCameraPresent",
-                                  present_value);
+  web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setCameraPresent",
+                                   present_value);
 }
 
 }  // namespace chromeos

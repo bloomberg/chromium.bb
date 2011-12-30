@@ -102,7 +102,6 @@ void BluetoothOptionsHandler::GetLocalizedValues(
 }
 
 void BluetoothOptionsHandler::Initialize() {
-  DCHECK(web_ui_);
   // Bluetooth support is a work in progress.  Supress the feature unless
   // explicitly enabled via a command line flag.
   if (!CommandLine::ForCurrentProcess()
@@ -110,13 +109,13 @@ void BluetoothOptionsHandler::Initialize() {
     return;
   }
 
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "options.SystemOptions.showBluetoothSettings");
 
   // TODO(kevers): Determine whether bluetooth adapter is powered.
   bool bluetooth_on = false;
   base::FundamentalValue checked(bluetooth_on);
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "options.SystemOptions.setBluetoothState", checked);
 
   chromeos::BluetoothManager* bluetooth_manager =
@@ -130,14 +129,13 @@ void BluetoothOptionsHandler::Initialize() {
 }
 
 void BluetoothOptionsHandler::RegisterMessages() {
-  DCHECK(web_ui_);
-  web_ui_->RegisterMessageCallback("bluetoothEnableChange",
+  web_ui()->RegisterMessageCallback("bluetoothEnableChange",
       base::Bind(&BluetoothOptionsHandler::EnableChangeCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("findBluetoothDevices",
+  web_ui()->RegisterMessageCallback("findBluetoothDevices",
       base::Bind(&BluetoothOptionsHandler::FindDevicesCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("updateBluetoothDevice",
+  web_ui()->RegisterMessageCallback("updateBluetoothDevice",
       base::Bind(&BluetoothOptionsHandler::UpdateDeviceCallback,
                  base::Unretained(this)));
 }
@@ -148,7 +146,7 @@ void BluetoothOptionsHandler::EnableChangeCallback(
   args->GetBoolean(0, &bluetooth_enabled);
   // TODO(kevers): Call Bluetooth API to enable or disable.
   base::FundamentalValue checked(bluetooth_enabled);
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "options.SystemOptions.setBluetoothState", checked);
 }
 
@@ -219,7 +217,7 @@ void BluetoothOptionsHandler::SendDeviceNotification(
   if (params) {
     js_properties.MergeDictionary(params);
   }
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "options.SystemOptions.addBluetoothDevice",
       js_properties);
 }
@@ -280,7 +278,7 @@ void BluetoothOptionsHandler::DiscoveryStarted(const std::string& adapter_id) {
 
 void BluetoothOptionsHandler::DiscoveryEnded(const std::string& adapter_id) {
   VLOG(2) << "Discovery ended on " << adapter_id;
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "options.SystemOptions.notifyBluetoothSearchComplete");
 
   // Stop the discovery session.
@@ -344,7 +342,7 @@ void BluetoothOptionsHandler::GenerateFakeDeviceList() {
     false,
     false,
     "");
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "options.SystemOptions.notifyBluetoothSearchComplete");
 }
 

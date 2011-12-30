@@ -27,7 +27,7 @@ void StatsOptionsHandler::Initialize() {
 
 // WebUIMessageHandler implementation.
 void StatsOptionsHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("metricsReportingCheckboxAction",
+  web_ui()->RegisterMessageCallback("metricsReportingCheckboxAction",
       base::Bind(&StatsOptionsHandler::HandleMetricsReportingCheckbox,
                  base::Unretained(this)));
 }

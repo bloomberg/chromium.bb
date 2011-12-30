@@ -205,7 +205,6 @@ class KeyboardOverlayHandler
   virtual ~KeyboardOverlayHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
  private:
@@ -234,16 +233,11 @@ KeyboardOverlayHandler::KeyboardOverlayHandler(Profile* profile)
 KeyboardOverlayHandler::~KeyboardOverlayHandler() {
 }
 
-WebUIMessageHandler* KeyboardOverlayHandler::Attach(WebUI* web_ui) {
-  return WebUIMessageHandler::Attach(web_ui);
-}
-
 void KeyboardOverlayHandler::RegisterMessages() {
-  DCHECK(web_ui_);
-  web_ui_->RegisterMessageCallback("getInputMethodId",
+  web_ui()->RegisterMessageCallback("getInputMethodId",
       base::Bind(&KeyboardOverlayHandler::GetInputMethodId,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("getLabelMap",
+  web_ui()->RegisterMessageCallback("getLabelMap",
       base::Bind(&KeyboardOverlayHandler::GetLabelMap,
                  base::Unretained(this)));
 }
@@ -254,7 +248,7 @@ void KeyboardOverlayHandler::GetInputMethodId(const ListValue* args) {
   const chromeos::input_method::InputMethodDescriptor& descriptor =
       manager->current_input_method();
   StringValue param(descriptor.id());
-  web_ui_->CallJavascriptFunction("initKeyboardOverlayId", param);
+  web_ui()->CallJavascriptFunction("initKeyboardOverlayId", param);
 }
 
 void KeyboardOverlayHandler::GetLabelMap(const ListValue* args) {
@@ -276,7 +270,7 @@ void KeyboardOverlayHandler::GetLabelMap(const ListValue* args) {
     dict.SetString(ModifierKeyToLabel(i->first), ModifierKeyToLabel(i->second));
   }
 
-  web_ui_->CallJavascriptFunction("initIdentifierMap", dict);
+  web_ui()->CallJavascriptFunction("initIdentifierMap", dict);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -289,7 +283,7 @@ KeyboardOverlayUI::KeyboardOverlayUI(TabContents* contents)
     : HtmlDialogUI(contents) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   KeyboardOverlayHandler* handler = new KeyboardOverlayHandler(profile);
-  AddMessageHandler((handler)->Attach(this));
+  AddMessageHandler(handler);
 
   // Set up the chrome://keyboardoverlay/ source.
   profile->GetChromeURLDataManager()->AddDataSource(

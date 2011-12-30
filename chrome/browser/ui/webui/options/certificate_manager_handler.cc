@@ -365,82 +365,82 @@ void CertificateManagerHandler::GetLocalizedValues(
 }
 
 void CertificateManagerHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "viewCertificate",
       base::Bind(&CertificateManagerHandler::View, base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getCaCertificateTrust",
       base::Bind(&CertificateManagerHandler::GetCATrust,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "editCaCertificateTrust",
       base::Bind(&CertificateManagerHandler::EditCATrust,
                  base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "editServerCertificate",
       base::Bind(&CertificateManagerHandler::EditServer,
                  base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "cancelImportExportCertificate",
       base::Bind(&CertificateManagerHandler::CancelImportExportProcess,
                  base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "exportPersonalCertificate",
       base::Bind(&CertificateManagerHandler::ExportPersonal,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "exportAllPersonalCertificates",
       base::Bind(&CertificateManagerHandler::ExportAllPersonal,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "exportPersonalCertificatePasswordSelected",
       base::Bind(&CertificateManagerHandler::ExportPersonalPasswordSelected,
                  base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "importPersonalCertificate",
       base::Bind(&CertificateManagerHandler::StartImportPersonal,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "importPersonalCertificatePasswordSelected",
       base::Bind(&CertificateManagerHandler::ImportPersonalPasswordSelected,
                  base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "importCaCertificate",
       base::Bind(&CertificateManagerHandler::ImportCA,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "importCaCertificateTrustSelected",
       base::Bind(&CertificateManagerHandler::ImportCATrustSelected,
                  base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "importServerCertificate",
       base::Bind(&CertificateManagerHandler::ImportServer,
                  base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "exportCertificate",
       base::Bind(&CertificateManagerHandler::Export,
                  base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "deleteCertificate",
       base::Bind(&CertificateManagerHandler::Delete,
                  base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "populateCertificateManager",
       base::Bind(&CertificateManagerHandler::Populate,
                  base::Unretained(this)));
 
 #if defined(OS_CHROMEOS)
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "checkTpmTokenReady",
       base::Bind(&CertificateManagerHandler::CheckTpmTokenReady,
                  base::Unretained(this)));
@@ -498,7 +498,7 @@ void CertificateManagerHandler::View(const ListValue* args) {
 void CertificateManagerHandler::GetCATrust(const ListValue* args) {
   net::X509Certificate* cert = CallbackArgsToCert(args);
   if (!cert) {
-    web_ui_->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
+    web_ui()->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
     return;
   }
 
@@ -510,7 +510,7 @@ void CertificateManagerHandler::GetCATrust(const ListValue* args) {
       static_cast<bool>(trust_bits & net::CertDatabase::TRUSTED_EMAIL));
   base::FundamentalValue obj_sign_value(
       static_cast<bool>(trust_bits & net::CertDatabase::TRUSTED_OBJ_SIGN));
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "CertificateEditCaTrustOverlay.populateTrust",
       ssl_value, email_value, obj_sign_value);
 }
@@ -526,7 +526,7 @@ void CertificateManagerHandler::EditCATrust(const ListValue* args) {
   fail |= !CallbackArgsToBool(args, 3, &trust_obj_sign);
   if (fail) {
     LOG(ERROR) << "EditCATrust args fail";
-    web_ui_->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
+    web_ui()->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
     return;
   }
 
@@ -536,7 +536,7 @@ void CertificateManagerHandler::EditCATrust(const ListValue* args) {
       trust_ssl * net::CertDatabase::TRUSTED_SSL +
           trust_email * net::CertDatabase::TRUSTED_EMAIL +
           trust_obj_sign * net::CertDatabase::TRUSTED_OBJ_SIGN);
-  web_ui_->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
+  web_ui()->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
   if (!result) {
     // TODO(mattm): better error messages?
     ShowError(
@@ -566,7 +566,7 @@ void CertificateManagerHandler::ExportPersonal(const ListValue* args) {
   select_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_SAVEAS_FILE, string16(),
       FilePath(), &file_type_info, 1, FILE_PATH_LITERAL("p12"),
-      web_ui_->tab_contents(), GetParentWindow(),
+      web_ui()->tab_contents(), GetParentWindow(),
       reinterpret_cast<void*>(EXPORT_PERSONAL_FILE_SELECTED));
 }
 
@@ -577,14 +577,14 @@ void CertificateManagerHandler::ExportAllPersonal(const ListValue* args) {
 void CertificateManagerHandler::ExportPersonalFileSelected(
     const FilePath& path) {
   file_path_ = path;
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "CertificateManager.exportPersonalAskPassword");
 }
 
 void CertificateManagerHandler::ExportPersonalPasswordSelected(
     const ListValue* args) {
   if (!args->GetString(0, &password_)){
-    web_ui_->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+    web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
     ImportExportCleanup();
     return;
   }
@@ -610,7 +610,7 @@ void CertificateManagerHandler::ExportPersonalSlotsUnlocked() {
       password_,
       &output);
   if (!num_exported) {
-    web_ui_->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+    web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_EXPORT_ERROR_TITLE),
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR));
@@ -625,7 +625,7 @@ void CertificateManagerHandler::ExportPersonalSlotsUnlocked() {
 
 void CertificateManagerHandler::ExportPersonalFileWritten(int write_errno,
                                                           int bytes_written) {
-  web_ui_->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+  web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
   ImportExportCleanup();
   if (write_errno) {
     ShowError(
@@ -640,7 +640,7 @@ void CertificateManagerHandler::StartImportPersonal(const ListValue* args) {
   if (!args->GetBoolean(0, &use_hardware_backed_)){
     // Unable to retrieve the hardware backed attribute from the args,
     // so bail.
-    web_ui_->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+    web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
     ImportExportCleanup();
     return;
   }
@@ -653,21 +653,21 @@ void CertificateManagerHandler::StartImportPersonal(const ListValue* args) {
   select_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_OPEN_FILE, string16(),
       FilePath(), &file_type_info, 1, FILE_PATH_LITERAL("p12"),
-      web_ui_->tab_contents(), GetParentWindow(),
+      web_ui()->tab_contents(), GetParentWindow(),
       reinterpret_cast<void*>(IMPORT_PERSONAL_FILE_SELECTED));
 }
 
 void CertificateManagerHandler::ImportPersonalFileSelected(
     const FilePath& path) {
   file_path_ = path;
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "CertificateManager.importPersonalAskPassword");
 }
 
 void CertificateManagerHandler::ImportPersonalPasswordSelected(
     const ListValue* args) {
   if (!args->GetString(0, &password_)){
-    web_ui_->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+    web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
     ImportExportCleanup();
     return;
   }
@@ -681,7 +681,7 @@ void CertificateManagerHandler::ImportPersonalFileRead(
     int read_errno, std::string data) {
   if (read_errno) {
     ImportExportCleanup();
-    web_ui_->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+    web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_IMPORT_ERROR_TITLE),
         l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_READ_ERROR_FORMAT,
@@ -716,7 +716,7 @@ void CertificateManagerHandler::ImportPersonalSlotUnlocked() {
   int result = certificate_manager_model_->ImportFromPKCS12(
       module_, file_data_, password_, is_extractable);
   ImportExportCleanup();
-  web_ui_->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+  web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
   int string_id;
   switch (result) {
     case net::OK:
@@ -770,7 +770,7 @@ void CertificateManagerHandler::ImportServer(const ListValue* args) {
       select_file_dialog_.get(),
       SelectFileDialog::SELECT_OPEN_FILE,
       FilePath(),
-      web_ui_->tab_contents(),
+      web_ui()->tab_contents(),
       GetParentWindow(),
       reinterpret_cast<void*>(IMPORT_SERVER_FILE_SELECTED));
 }
@@ -825,7 +825,7 @@ void CertificateManagerHandler::ImportCA(const ListValue* args) {
   ShowCertSelectFileDialog(select_file_dialog_.get(),
                            SelectFileDialog::SELECT_OPEN_FILE,
                            FilePath(),
-                           web_ui_->tab_contents(),
+                           web_ui()->tab_contents(),
                            GetParentWindow(),
                            reinterpret_cast<void*>(IMPORT_CA_FILE_SELECTED));
 }
@@ -865,8 +865,8 @@ void CertificateManagerHandler::ImportCAFileRead(int read_errno,
   // TODO(mattm): check here if root_cert is not a CA cert and show error.
 
   StringValue cert_name(root_cert->subject().GetDisplayName());
-  web_ui_->CallJavascriptFunction("CertificateEditCaTrustOverlay.showImport",
-                                  cert_name);
+  web_ui()->CallJavascriptFunction("CertificateEditCaTrustOverlay.showImport",
+                                   cert_name);
 }
 
 void CertificateManagerHandler::ImportCATrustSelected(const ListValue* args) {
@@ -880,7 +880,7 @@ void CertificateManagerHandler::ImportCATrustSelected(const ListValue* args) {
   if (fail) {
     LOG(ERROR) << "ImportCATrustSelected args fail";
     ImportExportCleanup();
-    web_ui_->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
+    web_ui()->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
     return;
   }
 
@@ -891,7 +891,7 @@ void CertificateManagerHandler::ImportCATrustSelected(const ListValue* args) {
           trust_email * net::CertDatabase::TRUSTED_EMAIL +
           trust_obj_sign * net::CertDatabase::TRUSTED_OBJ_SIGN,
       &not_imported);
-  web_ui_->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
+  web_ui()->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
   if (!result) {
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE),
@@ -908,7 +908,7 @@ void CertificateManagerHandler::Export(const ListValue* args) {
   net::X509Certificate* cert = CallbackArgsToCert(args);
   if (!cert)
     return;
-  ShowCertExportDialog(web_ui_->tab_contents(), GetParentWindow(),
+  ShowCertExportDialog(web_ui()->tab_contents(), GetParentWindow(),
                        cert->os_cert_handle());
 }
 
@@ -983,7 +983,7 @@ void CertificateManagerHandler::PopulateTree(const std::string& tab_name,
     ListValue args;
     args.Append(Value::CreateStringValue(tree_name));
     args.Append(nodes);
-    web_ui_->CallJavascriptFunction("CertificateManager.onPopulateTree", args);
+    web_ui()->CallJavascriptFunction("CertificateManager.onPopulateTree", args);
   }
 }
 
@@ -996,7 +996,7 @@ void CertificateManagerHandler::ShowError(const std::string& title,
   args.push_back(Value::CreateNullValue());  // cancelTitle
   args.push_back(Value::CreateNullValue());  // okCallback
   args.push_back(Value::CreateNullValue());  // cancelCallback
-  web_ui_->CallJavascriptFunction("AlertOverlay.show", args.get());
+  web_ui()->CallJavascriptFunction("AlertOverlay.show", args.get());
 }
 
 void CertificateManagerHandler::ShowImportErrors(
@@ -1022,10 +1022,10 @@ void CertificateManagerHandler::ShowImportErrors(
 
   StringValue title_value(title);
   StringValue error_value(error);
-  web_ui_->CallJavascriptFunction("CertificateImportErrorOverlay.show",
-                                  title_value,
-                                  error_value,
-                                  cert_error_list);
+  web_ui()->CallJavascriptFunction("CertificateImportErrorOverlay.show",
+                                   title_value,
+                                   error_value,
+                                   cert_error_list);
 }
 
 #if defined(OS_CHROMEOS)
@@ -1035,11 +1035,11 @@ void CertificateManagerHandler::CheckTpmTokenReady(const ListValue* args) {
 
   // TODO(xiyuan): Use async way when underlying supports it.
   base::FundamentalValue ready(cryptohome->Pkcs11IsTpmTokenReady());
-  web_ui_->CallJavascriptFunction("CertificateManager.onCheckTpmTokenReady",
-                                  ready);
+  web_ui()->CallJavascriptFunction("CertificateManager.onCheckTpmTokenReady",
+                                   ready);
 }
 #endif
 
 gfx::NativeWindow CertificateManagerHandler::GetParentWindow() const {
-  return web_ui_->tab_contents()->GetView()->GetTopLevelNativeWindow();
+  return web_ui()->tab_contents()->GetView()->GetTopLevelNativeWindow();
 }

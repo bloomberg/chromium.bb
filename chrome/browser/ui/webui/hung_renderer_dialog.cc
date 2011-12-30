@@ -213,12 +213,11 @@ HungRendererDialogHandler::HungRendererDialogHandler(
 }
 
 void HungRendererDialogHandler::CloseDialog() {
-  DCHECK(web_ui_);
-  static_cast<HtmlDialogUI*>(web_ui_)->CloseDialog(NULL);
+  static_cast<HtmlDialogUI*>(web_ui())->CloseDialog(NULL);
 }
 
 void HungRendererDialogHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("requestTabContentsList",
+  web_ui()->RegisterMessageCallback("requestTabContentsList",
       base::Bind(&HungRendererDialogHandler::RequestTabContentsList,
                  base::Unretained(this)));
 }
@@ -240,6 +239,6 @@ void HungRendererDialogHandler::RequestTabContentsList(
     }
   }
   // Send list of tab contents details to javascript.
-  web_ui_->CallJavascriptFunction("hungRendererDialog.setTabContentsList",
-                                  tab_contents_list);
+  web_ui()->CallJavascriptFunction("hungRendererDialog.setTabContentsList",
+                                   tab_contents_list);
 }

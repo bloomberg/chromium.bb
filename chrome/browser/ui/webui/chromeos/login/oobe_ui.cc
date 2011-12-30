@@ -218,7 +218,7 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
 }
 
 void OobeUI::AddScreenHandler(BaseScreenHandler* handler) {
-  AddMessageHandler(handler->Attach(this));
+  AddMessageHandler(handler);
 }
 
 void OobeUI::InitializeHandlers() {

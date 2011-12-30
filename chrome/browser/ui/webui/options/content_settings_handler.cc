@@ -304,7 +304,7 @@ void ContentSettingsHandler::Initialize() {
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
       content::NotificationService::AllSources());
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
       content::Source<Profile>(profile));
@@ -321,7 +321,7 @@ void ContentSettingsHandler::Observe(
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       if (content::Source<Profile>(source).ptr()->IsOffTheRecord()) {
-        web_ui_->CallJavascriptFunction(
+        web_ui()->CallJavascriptFunction(
             "ContentSettingsExceptionsArea.OTRProfileDestroyed");
       }
       break;
@@ -385,13 +385,13 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
       ContentSettingsTypeToGroupName(type) + ".managedBy",
       provider_id);
 
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "ContentSettings.setContentFilterSettingsValue", filter_settings);
 }
 
 std::string ContentSettingsHandler::GetSettingDefaultFromModel(
     ContentSettingsType type, std::string* provider_id) {
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   ContentSetting default_setting;
   if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
     default_setting =
@@ -408,11 +408,11 @@ std::string ContentSettingsHandler::GetSettingDefaultFromModel(
 
 void ContentSettingsHandler::UpdateHandlersEnabledRadios() {
 #if defined(ENABLE_REGISTER_PROTOCOL_HANDLER)
-  DCHECK(web_ui_);
   base::FundamentalValue handlers_enabled(
       GetProtocolHandlerRegistry()->enabled());
 
-  web_ui_->CallJavascriptFunction("ContentSettings.updateHandlersEnabledRadios",
+  web_ui()->CallJavascriptFunction(
+      "ContentSettings.updateHandlersEnabledRadios",
       handlers_enabled);
 #endif  // defined(ENABLE_REGISTER_PROTOCOL_HANDLER)
 }
@@ -472,7 +472,7 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
 }
 
 void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
 
   ContentSettingsForOneType all_settings;
@@ -529,8 +529,8 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
 
   StringValue type_string(
       ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  web_ui_->CallJavascriptFunction("ContentSettings.setExceptions",
-                                  type_string, exceptions);
+  web_ui()->CallJavascriptFunction("ContentSettings.setExceptions",
+                                   type_string, exceptions);
 
   // This is mainly here to keep this function ideologically parallel to
   // UpdateExceptionsViewFromHostContentSettingsMap().
@@ -538,7 +538,7 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
 }
 
 void ContentSettingsHandler::UpdateNotificationExceptionsView() {
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
 
@@ -564,8 +564,8 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
 
   StringValue type_string(
       ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
-  web_ui_->CallJavascriptFunction("ContentSettings.setExceptions",
-                                  type_string, exceptions);
+  web_ui()->CallJavascriptFunction("ContentSettings.setExceptions",
+                                   type_string, exceptions);
 
   // This is mainly here to keep this function ideologically parallel to
   // UpdateExceptionsViewFromHostContentSettingsMap().
@@ -603,8 +603,8 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
   }
 
   StringValue type_string(ContentSettingsTypeToGroupName(type));
-  web_ui_->CallJavascriptFunction("ContentSettings.setExceptions", type_string,
-                                  exceptions);
+  web_ui()->CallJavascriptFunction("ContentSettings.setExceptions", type_string,
+                                   exceptions);
 
   UpdateExceptionsViewFromOTRHostContentSettingsMap(type);
 
@@ -653,21 +653,21 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
   }
 
   StringValue type_string(ContentSettingsTypeToGroupName(type));
-  web_ui_->CallJavascriptFunction("ContentSettings.setOTRExceptions",
-                                  type_string, otr_exceptions);
+  web_ui()->CallJavascriptFunction("ContentSettings.setOTRExceptions",
+                                   type_string, otr_exceptions);
 }
 
 void ContentSettingsHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("setContentFilter",
+  web_ui()->RegisterMessageCallback("setContentFilter",
       base::Bind(&ContentSettingsHandler::SetContentFilter,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("removeException",
+  web_ui()->RegisterMessageCallback("removeException",
       base::Bind(&ContentSettingsHandler::RemoveException,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("setException",
+  web_ui()->RegisterMessageCallback("setException",
       base::Bind(&ContentSettingsHandler::SetException,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("checkExceptionPatternValidity",
+  web_ui()->RegisterMessageCallback("checkExceptionPatternValidity",
       base::Bind(&ContentSettingsHandler::CheckExceptionPatternValidity,
                  base::Unretained(this)));
 }
@@ -684,7 +684,7 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
   ContentSetting default_setting = ContentSettingFromString(setting);
   ContentSettingsType content_type = ContentSettingsTypeFromGroupName(group);
   if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    Profile* profile = Profile::FromWebUI(web_ui_);
+    Profile* profile = Profile::FromWebUI(web_ui());
     DesktopNotificationServiceFactory::GetForProfile(profile)->
         SetDefaultContentSetting(default_setting);
   } else {
@@ -738,7 +738,7 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
   std::string type_string;
   CHECK(args->GetString(arg_i++, &type_string));
 
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   ContentSettingsType type = ContentSettingsTypeFromGroupName(type_string);
   if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     std::string origin;
@@ -842,7 +842,7 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
   scoped_ptr<Value> pattern_value(Value::CreateStringValue(pattern_string));
   scoped_ptr<Value> valid_value(Value::CreateBooleanValue(pattern.IsValid()));
 
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "ContentSettings.patternValidityCheckComplete",
       *type,
       *mode_value.get(),
@@ -863,16 +863,16 @@ std::string ContentSettingsHandler::ContentSettingsTypeToGroupName(
 }
 
 HostContentSettingsMap* ContentSettingsHandler::GetContentSettingsMap() {
-  return Profile::FromWebUI(web_ui_)->GetHostContentSettingsMap();
+  return Profile::FromWebUI(web_ui())->GetHostContentSettingsMap();
 }
 
 ProtocolHandlerRegistry* ContentSettingsHandler::GetProtocolHandlerRegistry() {
-  return Profile::FromWebUI(web_ui_)->GetProtocolHandlerRegistry();
+  return Profile::FromWebUI(web_ui())->GetProtocolHandlerRegistry();
 }
 
 HostContentSettingsMap*
     ContentSettingsHandler::GetOTRContentSettingsMap() {
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   if (profile->HasOffTheRecordProfile())
     return profile->GetOffTheRecordProfile()->GetHostContentSettingsMap();
   return NULL;

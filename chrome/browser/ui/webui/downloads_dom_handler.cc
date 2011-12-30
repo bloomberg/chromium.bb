@@ -155,40 +155,40 @@ void DownloadsDOMHandler::Init() {
 }
 
 void DownloadsDOMHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("getDownloads",
+  web_ui()->RegisterMessageCallback("getDownloads",
       base::Bind(&DownloadsDOMHandler::HandleGetDownloads,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("openFile",
+  web_ui()->RegisterMessageCallback("openFile",
       base::Bind(&DownloadsDOMHandler::HandleOpenFile,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("drag",
+  web_ui()->RegisterMessageCallback("drag",
       base::Bind(&DownloadsDOMHandler::HandleDrag,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("saveDangerous",
+  web_ui()->RegisterMessageCallback("saveDangerous",
       base::Bind(&DownloadsDOMHandler::HandleSaveDangerous,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("discardDangerous",
+  web_ui()->RegisterMessageCallback("discardDangerous",
       base::Bind(&DownloadsDOMHandler::HandleDiscardDangerous,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("show",
+  web_ui()->RegisterMessageCallback("show",
       base::Bind(&DownloadsDOMHandler::HandleShow,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("togglepause",
+  web_ui()->RegisterMessageCallback("togglepause",
       base::Bind(&DownloadsDOMHandler::HandlePause,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("resume",
+  web_ui()->RegisterMessageCallback("resume",
       base::Bind(&DownloadsDOMHandler::HandlePause,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("remove",
+  web_ui()->RegisterMessageCallback("remove",
       base::Bind(&DownloadsDOMHandler::HandleRemove,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("cancel",
+  web_ui()->RegisterMessageCallback("cancel",
       base::Bind(&DownloadsDOMHandler::HandleCancel,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("clearAll",
+  web_ui()->RegisterMessageCallback("clearAll",
       base::Bind(&DownloadsDOMHandler::HandleClearAll,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("openDownloadsFolder",
+  web_ui()->RegisterMessageCallback("openDownloadsFolder",
       base::Bind(&DownloadsDOMHandler::HandleOpenDownloadsFolder,
                  base::Unretained(this)));
 }
@@ -216,7 +216,7 @@ void DownloadsDOMHandler::OnDownloadUpdated(content::DownloadItem* download) {
 
   ListValue results_value;
   results_value.Append(download_util::CreateDownloadItemValue(download, id));
-  web_ui_->CallJavascriptFunction("downloadUpdated", results_value);
+  web_ui()->CallJavascriptFunction("downloadUpdated", results_value);
 }
 
 // A download has started or been deleted. Query our DownloadManager for the
@@ -289,7 +289,7 @@ void DownloadsDOMHandler::HandleDrag(const ListValue* args) {
     IconManager* im = g_browser_process->icon_manager();
     gfx::Image* icon = im->LookupIcon(file->GetUserVerifiedFilePath(),
                                       IconLoader::NORMAL);
-    gfx::NativeView view = web_ui_->tab_contents()->GetNativeView();
+    gfx::NativeView view = web_ui()->tab_contents()->GetNativeView();
     {
       // Enable nested tasks during DnD, while |DragDownload()| blocks.
       MessageLoop::ScopedNestableTaskAllower allower(MessageLoop::current());
@@ -377,7 +377,7 @@ void DownloadsDOMHandler::SendCurrentDownloads() {
     results_value.Append(download_util::CreateDownloadItemValue(*it, index));
   }
 
-  web_ui_->CallJavascriptFunction("downloadsList", results_value);
+  web_ui()->CallJavascriptFunction("downloadsList", results_value);
 }
 
 void DownloadsDOMHandler::ClearDownloadItems() {

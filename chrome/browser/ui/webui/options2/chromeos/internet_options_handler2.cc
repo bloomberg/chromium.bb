@@ -551,47 +551,46 @@ void InternetOptionsHandler::Initialize() {
 
 void InternetOptionsHandler::RegisterMessages() {
   // Setup handlers specific to this panel.
-  DCHECK(web_ui_);
-  web_ui_->RegisterMessageCallback("buttonClickCallback",
+  web_ui()->RegisterMessageCallback("buttonClickCallback",
       base::Bind(&InternetOptionsHandler::ButtonClickCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("refreshCellularPlan",
+  web_ui()->RegisterMessageCallback("refreshCellularPlan",
       base::Bind(&InternetOptionsHandler::RefreshCellularPlanCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("setPreferNetwork",
+  web_ui()->RegisterMessageCallback("setPreferNetwork",
       base::Bind(&InternetOptionsHandler::SetPreferNetworkCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("setAutoConnect",
+  web_ui()->RegisterMessageCallback("setAutoConnect",
       base::Bind(&InternetOptionsHandler::SetAutoConnectCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("setIPConfig",
+  web_ui()->RegisterMessageCallback("setIPConfig",
       base::Bind(&InternetOptionsHandler::SetIPConfigCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("enableWifi",
+  web_ui()->RegisterMessageCallback("enableWifi",
       base::Bind(&InternetOptionsHandler::EnableWifiCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("disableWifi",
+  web_ui()->RegisterMessageCallback("disableWifi",
       base::Bind(&InternetOptionsHandler::DisableWifiCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("enableCellular",
+  web_ui()->RegisterMessageCallback("enableCellular",
       base::Bind(&InternetOptionsHandler::EnableCellularCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("disableCellular",
+  web_ui()->RegisterMessageCallback("disableCellular",
       base::Bind(&InternetOptionsHandler::DisableCellularCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("buyDataPlan",
+  web_ui()->RegisterMessageCallback("buyDataPlan",
       base::Bind(&InternetOptionsHandler::BuyDataPlanCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("showMorePlanInfo",
+  web_ui()->RegisterMessageCallback("showMorePlanInfo",
       base::Bind(&InternetOptionsHandler::BuyDataPlanCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("setApn",
+  web_ui()->RegisterMessageCallback("setApn",
       base::Bind(&InternetOptionsHandler::SetApnCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("setSimCardLock",
+  web_ui()->RegisterMessageCallback("setSimCardLock",
       base::Bind(&InternetOptionsHandler::SetSimCardLockCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("changePin",
+  web_ui()->RegisterMessageCallback("changePin",
       base::Bind(&InternetOptionsHandler::ChangePinCallback,
                  base::Unretained(this)));
 }
@@ -623,10 +622,10 @@ void InternetOptionsHandler::DisableCellularCallback(const ListValue* args) {
 }
 
 void InternetOptionsHandler::BuyDataPlanCallback(const ListValue* args) {
-  if (!web_ui_)
+  if (!web_ui())
     return;
   Browser* browser = BrowserList::FindBrowserWithFeature(
-      Profile::FromWebUI(web_ui_), Browser::FEATURE_TABSTRIP);
+      Profile::FromWebUI(web_ui()), Browser::FEATURE_TABSTRIP);
   if (browser)
     browser->OpenMobilePlanTabAndActivate();
 }
@@ -680,13 +679,13 @@ void InternetOptionsHandler::ChangePinCallback(const ListValue* args) {
 void InternetOptionsHandler::RefreshNetworkData() {
   DictionaryValue dictionary;
   FillNetworkInfo(&dictionary);
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "options.InternetOptions.refreshNetworkData", dictionary);
 }
 
 void InternetOptionsHandler::OnNetworkManagerChanged(
     chromeos::NetworkLibrary* cros) {
-  if (!web_ui_)
+  if (!web_ui())
     return;
   MonitorNetworks();
   RefreshNetworkData();
@@ -695,7 +694,7 @@ void InternetOptionsHandler::OnNetworkManagerChanged(
 void InternetOptionsHandler::OnNetworkChanged(
     chromeos::NetworkLibrary* cros,
     const chromeos::Network* network) {
-  if (web_ui_)
+  if (web_ui())
     RefreshNetworkData();
 }
 
@@ -728,7 +727,7 @@ void InternetOptionsHandler::MonitorNetworks() {
 
 void InternetOptionsHandler::OnCellularDataPlanChanged(
     chromeos::NetworkLibrary* cros) {
-  if (!web_ui_)
+  if (!web_ui())
     return;
   const chromeos::CellularNetwork* cellular = cros_->cellular_network();
   if (!cellular)
@@ -749,7 +748,7 @@ void InternetOptionsHandler::OnCellularDataPlanChanged(
       cellular->activation_state() == chromeos::ACTIVATION_STATE_ACTIVATED);
   connection_plans.Set("plans", plan_list);
   SetActivationButtonVisibility(cellular, &connection_plans);
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "options.InternetOptions.updateCellularPlans", connection_plans);
 }
 
@@ -761,7 +760,7 @@ void InternetOptionsHandler::Observe(
   OptionsPageUIHandler::Observe(type, source, details);
   if (type == chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED) {
     base::FundamentalValue require_pin(*content::Details<bool>(details).ptr());
-    web_ui_->CallJavascriptFunction(
+    web_ui()->CallJavascriptFunction(
         "options.InternetOptions.updateSecurityTab", require_pin);
   } else if (type == chrome::NOTIFICATION_ENTER_PIN_ENDED) {
     // We make an assumption (which is valid for now) that the SIM
@@ -771,7 +770,7 @@ void InternetOptionsHandler::Observe(
     if (cancelled) {
       base::DictionaryValue dictionary;
       FillNetworkInfo(&dictionary);
-      web_ui_->CallJavascriptFunction(
+      web_ui()->CallJavascriptFunction(
           "options.InternetOptions.setupAttributes", dictionary);
     }
     // The case in which the correct PIN was entered and the SIM is
@@ -864,8 +863,8 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
     const chromeos::Network* network) {
   DCHECK(network);
 
-  if (web_ui_) {
-    Profile::FromWebUI(web_ui_)->GetProxyConfigTracker()->UISetCurrentNetwork(
+  if (web_ui()) {
+    Profile::FromWebUI(web_ui())->GetProxyConfigTracker()->UISetCurrentNetwork(
         network->service_path());
   }
 
@@ -976,7 +975,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
     dictionary.SetBoolean("deviceConnected", cros_->ethernet_connected());
   }
 
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "options.InternetOptions.showDetailedInfo", dictionary);
 }
 
@@ -1115,7 +1114,7 @@ gfx::NativeWindow InternetOptionsHandler::GetNativeWindow() const {
   // TODO(beng): This is an improper direct dependency on Browser. Route this
   // through some sort of delegate.
   Browser* browser =
-      BrowserList::FindBrowserWithProfile(Profile::FromWebUI(web_ui_));
+      BrowserList::FindBrowserWithProfile(Profile::FromWebUI(web_ui()));
   return browser->window()->GetNativeHandle();
 }
 

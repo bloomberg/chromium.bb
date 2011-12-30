@@ -22,14 +22,14 @@ void WebUIBrowserAsyncGenTest::AsyncWebUIMessageHandler::HandleCallJS(
     const base::ListValue* list_value) {
   std::string call_js;
   ASSERT_TRUE(list_value->GetString(0, &call_js));
-  web_ui_->CallJavascriptFunction(call_js);
+  web_ui()->CallJavascriptFunction(call_js);
 }
 
 void WebUIBrowserAsyncGenTest::AsyncWebUIMessageHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "callJS", base::Bind(&AsyncWebUIMessageHandler::HandleCallJS,
                            base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "tearDown", base::Bind(&AsyncWebUIMessageHandler::HandleTearDown,
                              base::Unretained(this)));
 }

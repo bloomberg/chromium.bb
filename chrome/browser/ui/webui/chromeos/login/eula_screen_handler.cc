@@ -86,13 +86,13 @@ void EulaScreenHandler::Initialize() {
     return;
 
   base::FundamentalValue checked(delegate_->IsUsageStatsEnabled());
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.setUsageStats", checked);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.setUsageStats", checked);
 
   // This OEM EULA is a file:// URL which we're unable to load in iframe.
   // Instead if it's defined we use chrome://terms/oem that will load same file.
   if (!delegate_->GetOemEulaUrl().is_empty()) {
     StringValue oem_eula_url(chrome::kChromeUITermsOemURL);
-    web_ui_->CallJavascriptFunction("cr.ui.Oobe.setOemEulaUrl", oem_eula_url);
+    web_ui()->CallJavascriptFunction("cr.ui.Oobe.setOemEulaUrl", oem_eula_url);
   }
 
   if (show_on_init_) {
@@ -102,19 +102,19 @@ void EulaScreenHandler::Initialize() {
 }
 
 void EulaScreenHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("eulaOnExit",
+  web_ui()->RegisterMessageCallback("eulaOnExit",
       base::Bind(&EulaScreenHandler::HandleOnExit,base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("eulaOnLearnMore",
+  web_ui()->RegisterMessageCallback("eulaOnLearnMore",
       base::Bind(&EulaScreenHandler::HandleOnLearnMore,base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("eulaOnTpmPopupOpened",
+  web_ui()->RegisterMessageCallback("eulaOnTpmPopupOpened",
       base::Bind(&EulaScreenHandler::HandleOnTpmPopupOpened,
                  base::Unretained(this)));
 }
 
 void EulaScreenHandler::OnPasswordFetched(const std::string& tpm_password) {
   StringValue tpm_password_value(tpm_password);
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.setTpmPassword",
-                                  tpm_password_value);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.setTpmPassword",
+                                   tpm_password_value);
 }
 
 void EulaScreenHandler::HandleOnExit(const base::ListValue* args) {

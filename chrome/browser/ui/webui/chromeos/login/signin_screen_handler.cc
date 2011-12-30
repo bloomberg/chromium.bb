@@ -346,57 +346,57 @@ void SigninScreenHandler::Initialize() {
 }
 
 void SigninScreenHandler::RegisterMessages() {
-  network_state_informer_.reset(new NetworkStateInformer(web_ui_));
+  network_state_informer_.reset(new NetworkStateInformer(web_ui()));
 
-  web_ui_->RegisterMessageCallback("authenticateUser",
+  web_ui()->RegisterMessageCallback("authenticateUser",
       base::Bind(&SigninScreenHandler::HandleAuthenticateUser,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("completeLogin",
+  web_ui()->RegisterMessageCallback("completeLogin",
       base::Bind(&SigninScreenHandler::HandleCompleteLogin,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("getUsers",
+  web_ui()->RegisterMessageCallback("getUsers",
       base::Bind(&SigninScreenHandler::HandleGetUsers,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("launchIncognito",
+  web_ui()->RegisterMessageCallback("launchIncognito",
       base::Bind(&SigninScreenHandler::HandleLaunchIncognito,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("fixCaptivePortal",
+  web_ui()->RegisterMessageCallback("fixCaptivePortal",
       base::Bind(&SigninScreenHandler::HandleFixCaptivePortal,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("showAddUser",
+  web_ui()->RegisterMessageCallback("showAddUser",
       base::Bind(&SigninScreenHandler::HandleShowAddUser,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("shutdownSystem",
+  web_ui()->RegisterMessageCallback("shutdownSystem",
       base::Bind(&SigninScreenHandler::HandleShutdownSystem,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("removeUser",
+  web_ui()->RegisterMessageCallback("removeUser",
       base::Bind(&SigninScreenHandler::HandleRemoveUser,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("toggleEnrollmentScreen",
+  web_ui()->RegisterMessageCallback("toggleEnrollmentScreen",
       base::Bind(&SigninScreenHandler::HandleToggleEnrollmentScreen,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("launchHelpApp",
+  web_ui()->RegisterMessageCallback("launchHelpApp",
       base::Bind(&SigninScreenHandler::HandleLaunchHelpApp,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("createAccount",
+  web_ui()->RegisterMessageCallback("createAccount",
       base::Bind(&SigninScreenHandler::HandleCreateAccount,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("accountPickerReady",
+  web_ui()->RegisterMessageCallback("accountPickerReady",
       base::Bind(&SigninScreenHandler::HandleAccountPickerReady,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("loginWebuiReady",
+  web_ui()->RegisterMessageCallback("loginWebuiReady",
       base::Bind(&SigninScreenHandler::HandleLoginWebuiReady,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("loginRequestNetworkState",
+  web_ui()->RegisterMessageCallback("loginRequestNetworkState",
       base::Bind(&SigninScreenHandler::HandleLoginRequestNetworkState,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("loginAddNetworkStateObserver",
+  web_ui()->RegisterMessageCallback("loginAddNetworkStateObserver",
       base::Bind(&SigninScreenHandler::HandleLoginAddNetworkStateObserver,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("loginRemoveNetworkStateObserver",
+  web_ui()->RegisterMessageCallback("loginRemoveNetworkStateObserver",
       base::Bind(&SigninScreenHandler::HandleLoginRemoveNetworkStateObserver,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("signOutUser",
+  web_ui()->RegisterMessageCallback("signOutUser",
       base::Bind(&SigninScreenHandler::HandleSignOutUser,
                  base::Unretained(this)));
 }
@@ -406,12 +406,12 @@ void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::ClearAndEnablePassword() {
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.resetSigninUI");
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.resetSigninUI");
 }
 
 void SigninScreenHandler::OnLoginSuccess(const std::string& username) {
   base::StringValue username_value(username);
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.onLoginSuccess", username_value);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.onLoginSuccess", username_value);
 }
 
 void SigninScreenHandler::OnUserRemoved(const std::string& username) {
@@ -420,7 +420,7 @@ void SigninScreenHandler::OnUserRemoved(const std::string& username) {
 
 void SigninScreenHandler::OnUserImageChanged(const User& user) {
   base::StringValue user_email(user.email());
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "login.AccountPickerScreen.updateUserImage", user_email);
 }
 
@@ -439,11 +439,11 @@ void SigninScreenHandler::ShowError(int login_attempts,
   base::StringValue error_message(error_text);
   base::StringValue help_link(help_link_text);
   base::FundamentalValue help_id(static_cast<int>(help_topic_id));
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.showSignInError",
-                                  login_attempts_value,
-                                  error_message,
-                                  help_link,
-                                  help_id);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.showSignInError",
+                                   login_attempts_value,
+                                   error_message,
+                                   help_link,
+                                   help_id);
 }
 
 void SigninScreenHandler::OnBrowsingDataRemoverDone() {
@@ -456,7 +456,7 @@ void SigninScreenHandler::OnBrowsingDataRemoverDone() {
 void SigninScreenHandler::OnCapsLockChange(bool enabled) {
   if (page_is_ready()) {
     base::FundamentalValue capsLockState(enabled);
-    web_ui_->CallJavascriptFunction(
+    web_ui()->CallJavascriptFunction(
         "login.AccountPickerScreen.setCapsLockState", capsLockState);
   }
 }
@@ -518,8 +518,8 @@ void SigninScreenHandler::LoadAuthExtension(bool force, bool silent_load) {
       test_pass_.clear();
     }
   }
-  web_ui_->CallJavascriptFunction("login.GaiaSigninScreen.loadAuthExtension",
-                                  params);
+  web_ui()->CallJavascriptFunction("login.GaiaSigninScreen.loadAuthExtension",
+                                   params);
 }
 
 
@@ -690,8 +690,8 @@ void SigninScreenHandler::SendUserList(bool animated) {
 
   // Call the Javascript callback
   base::FundamentalValue animated_value(animated);
-  web_ui_->CallJavascriptFunction("login.AccountPickerScreen.loadUsers",
-                                  users_list, animated_value);
+  web_ui()->CallJavascriptFunction("login.AccountPickerScreen.loadUsers",
+                                   users_list, animated_value);
 }
 
 void SigninScreenHandler::HandleAccountPickerReady(
@@ -782,7 +782,8 @@ void SigninScreenHandler::StartClearingCookies() {
     cookie_remover_->RemoveObserver(this);
 
   cookie_remover_ = new BrowsingDataRemover(
-      Profile::FromBrowserContext(web_ui_->tab_contents()->GetBrowserContext()),
+      Profile::FromBrowserContext(
+          web_ui()->tab_contents()->GetBrowserContext()),
       BrowsingDataRemover::EVERYTHING,
       base::Time());
   cookie_remover_->AddObserver(this);

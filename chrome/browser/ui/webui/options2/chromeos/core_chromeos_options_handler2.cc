@@ -93,7 +93,7 @@ CoreChromeOSOptionsHandler::CoreChromeOSOptionsHandler()
 
 CoreChromeOSOptionsHandler::~CoreChromeOSOptionsHandler() {
   PrefProxyConfigTracker* proxy_tracker =
-      Profile::FromWebUI(web_ui_)->GetProxyConfigTracker();
+      Profile::FromWebUI(web_ui())->GetProxyConfigTracker();
   proxy_tracker->RemoveNotificationCallback(
       base::Bind(&CoreChromeOSOptionsHandler::NotifyProxyPrefsChanged,
                  pointer_factory_.GetWeakPtr()));
@@ -101,10 +101,10 @@ CoreChromeOSOptionsHandler::~CoreChromeOSOptionsHandler() {
 
 void CoreChromeOSOptionsHandler::Initialize() {
   proxy_prefs_.reset(PrefSetObserver::CreateProxyPrefSetObserver(
-    Profile::FromWebUI(web_ui_)->GetPrefs(), this));
+    Profile::FromWebUI(web_ui())->GetPrefs(), this));
   // Observe the chromeos::ProxyConfigServiceImpl for changes from the UI.
   PrefProxyConfigTracker* proxy_tracker =
-      Profile::FromWebUI(web_ui_)->GetProxyConfigTracker();
+      Profile::FromWebUI(web_ui())->GetProxyConfigTracker();
   proxy_tracker->AddNotificationCallback(
       base::Bind(&CoreChromeOSOptionsHandler::NotifyProxyPrefsChanged,
                  pointer_factory_.GetWeakPtr()));
@@ -114,7 +114,7 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
     const std::string& pref_name) {
   if (proxy_cros_settings_parser::IsProxyPref(pref_name)) {
     base::Value *value = NULL;
-    proxy_cros_settings_parser::GetProxyPrefValue(Profile::FromWebUI(web_ui_),
+    proxy_cros_settings_parser::GetProxyPrefValue(Profile::FromWebUI(web_ui()),
                                                   pref_name, &value);
     if (!value)
       return base::Value::CreateNullValue();
@@ -125,7 +125,7 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
     // Specially handle kUseSharedProxies because kProxy controls it to
     // determine if it's managed by policy/extension.
     if (pref_name == prefs::kUseSharedProxies) {
-      PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
+      PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
       const PrefService::Preference* pref =
           pref_service->FindPreference(prefs::kUseSharedProxies);
       if (!pref)
@@ -169,7 +169,7 @@ void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
                                          const base::Value* value,
                                          const std::string& metric) {
   if (proxy_cros_settings_parser::IsProxyPref(pref_name)) {
-    proxy_cros_settings_parser::SetProxyPrefValue(Profile::FromWebUI(web_ui_),
+    proxy_cros_settings_parser::SetProxyPrefValue(Profile::FromWebUI(web_ui()),
                                                   pref_name, value);
     ProcessUserMetric(value, metric);
     return;
@@ -207,7 +207,7 @@ void CoreChromeOSOptionsHandler::Observe(
   // Special handling for preferences kUseSharedProxies and kProxy, the latter
   // controls the former and decides if it's managed by policy/extension.
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    const PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
+    const PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
     std::string* pref_name = content::Details<std::string>(details).ptr();
     if (content::Source<PrefService>(source).ptr() == pref_service &&
         (proxy_prefs_->IsObserved(*pref_name) ||
@@ -221,7 +221,6 @@ void CoreChromeOSOptionsHandler::Observe(
 
 void CoreChromeOSOptionsHandler::NotifySettingsChanged(
     const std::string* setting_name) {
-  DCHECK(web_ui_);
   DCHECK(CrosSettings::Get()->IsCrosSettings(*setting_name));
   const base::Value* value = FetchPref(*setting_name);
   if (!value) {
@@ -237,19 +236,18 @@ void CoreChromeOSOptionsHandler::NotifySettingsChanged(
     ListValue result_value;
     result_value.Append(base::Value::CreateStringValue(setting_name->c_str()));
     result_value.Append(value->DeepCopy());
-    web_ui_->CallJavascriptFunction(WideToASCII(callback_function),
-                                    result_value);
+    web_ui()->CallJavascriptFunction(WideToASCII(callback_function),
+                                     result_value);
   }
   if (value)
     delete value;
 }
 
 void CoreChromeOSOptionsHandler::NotifyProxyPrefsChanged() {
-  DCHECK(web_ui_);
   for (size_t i = 0; i < kProxySettingsCount; ++i) {
     base::Value* value = NULL;
     proxy_cros_settings_parser::GetProxyPrefValue(
-        Profile::FromWebUI(web_ui_), kProxySettings[i], &value);
+        Profile::FromWebUI(web_ui()), kProxySettings[i], &value);
     DCHECK(value);
     PreferenceCallbackMap::const_iterator iter =
         pref_callback_map_.find(kProxySettings[i]);
@@ -258,8 +256,8 @@ void CoreChromeOSOptionsHandler::NotifyProxyPrefsChanged() {
       ListValue result_value;
       result_value.Append(base::Value::CreateStringValue(kProxySettings[i]));
       result_value.Append(value->DeepCopy());
-      web_ui_->CallJavascriptFunction(WideToASCII(callback_function),
-                                      result_value);
+      web_ui()->CallJavascriptFunction(WideToASCII(callback_function),
+                                       result_value);
     }
     if (value)
       delete value;

@@ -73,10 +73,10 @@ ProxySettingsUI::ProxySettingsUI(TabContents* contents)
   CoreChromeOSOptionsHandler* core_handler = new CoreChromeOSOptionsHandler();
   core_handler->set_handlers_host(this);
   core_handler->GetLocalizedValues(localized_strings);
-  AddMessageHandler(core_handler->Attach(this));
+  AddMessageHandler(core_handler);
 
   proxy_handler_->GetLocalizedValues(localized_strings);
-  AddMessageHandler(proxy_handler_->Attach(this));
+  AddMessageHandler(proxy_handler_);
 
   ProxySettingsHTMLSource* source =
       new ProxySettingsHTMLSource(localized_strings);

@@ -46,10 +46,10 @@ void WindowToValue(const TabRestoreService::Window& window,
 }  // namespace
 
 void RecentlyClosedTabsHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("getRecentlyClosedTabs",
+  web_ui()->RegisterMessageCallback("getRecentlyClosedTabs",
       base::Bind(&RecentlyClosedTabsHandler::HandleGetRecentlyClosedTabs,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("reopenTab",
+  web_ui()->RegisterMessageCallback("reopenTab",
       base::Bind(&RecentlyClosedTabsHandler::HandleReopenTab,
                  base::Unretained(this)));
 }
@@ -62,7 +62,7 @@ RecentlyClosedTabsHandler::~RecentlyClosedTabsHandler() {
 void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
   TabRestoreServiceDelegate* delegate =
       TabRestoreServiceDelegate::FindDelegateForController(
-      &web_ui_->tab_contents()->GetController(), NULL);
+      &web_ui()->tab_contents()->GetController(), NULL);
   if (!delegate || !tab_restore_service_)
     return;
 
@@ -89,7 +89,7 @@ void RecentlyClosedTabsHandler::HandleGetRecentlyClosedTabs(
     const ListValue* args) {
   if (!tab_restore_service_) {
     tab_restore_service_ =
-        TabRestoreServiceFactory::GetForProfile(Profile::FromWebUI(web_ui_));
+        TabRestoreServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
 
     // TabRestoreServiceFactory::GetForProfile() can return NULL (i.e., when in
     // Off the Record mode)
@@ -112,7 +112,7 @@ void RecentlyClosedTabsHandler::TabRestoreServiceChanged(
   TabRestoreService::Entries entries = service->entries();
   CreateRecentlyClosedValues(entries, &list_value);
 
-  web_ui_->CallJavascriptFunction("recentlyClosedTabs", list_value);
+  web_ui()->CallJavascriptFunction("recentlyClosedTabs", list_value);
 }
 
 void RecentlyClosedTabsHandler::TabRestoreServiceDestroyed(

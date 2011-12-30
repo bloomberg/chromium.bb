@@ -52,7 +52,6 @@ class GpuMessageHandler
   virtual ~GpuMessageHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // GpuDataManager::Observer implementation.
@@ -93,20 +92,14 @@ GpuMessageHandler::~GpuMessageHandler() {
   gpu_data_manager_->RemoveObserver(this);
 }
 
-WebUIMessageHandler* GpuMessageHandler::Attach(WebUI* web_ui) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  WebUIMessageHandler* result = WebUIMessageHandler::Attach(web_ui);
-  return result;
-}
-
 /* BrowserBridge.callAsync prepends a requestID to these messages. */
 void GpuMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  web_ui_->RegisterMessageCallback("browserBridgeInitialized",
+  web_ui()->RegisterMessageCallback("browserBridgeInitialized",
       base::Bind(&GpuMessageHandler::OnBrowserBridgeInitialized,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("callAsync",
+  web_ui()->RegisterMessageCallback("callAsync",
       base::Bind(&GpuMessageHandler::OnCallAsync,
                  base::Unretained(this)));
 }
@@ -148,12 +141,12 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
 
   // call BrowserBridge.onCallAsyncReply with result
   if (ret) {
-    web_ui_->CallJavascriptFunction("browserBridge.onCallAsyncReply",
+    web_ui()->CallJavascriptFunction("browserBridge.onCallAsyncReply",
         *requestId,
         *ret);
     delete ret;
   } else {
-    web_ui_->CallJavascriptFunction("browserBridge.onCallAsyncReply",
+    web_ui()->CallJavascriptFunction("browserBridge.onCallAsyncReply",
         *requestId);
   }
 }
@@ -230,7 +223,7 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
     gpu_info_val->Set("featureStatus", feature_status);
 
   // Send GPU Info to javascript.
-  web_ui_->CallJavascriptFunction("browserBridge.onGpuInfoUpdate",
+  web_ui()->CallJavascriptFunction("browserBridge.onGpuInfoUpdate",
       *(gpu_info_val.get()));
 }
 
@@ -244,7 +237,7 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
 ////////////////////////////////////////////////////////////////////////////////
 
 GpuInternalsUI::GpuInternalsUI(TabContents* contents) : ChromeWebUI(contents) {
-  AddMessageHandler((new GpuMessageHandler())->Attach(this));
+  AddMessageHandler(new GpuMessageHandler());
 
   // Set up the chrome://gpu-internals/ source.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());

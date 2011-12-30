@@ -36,9 +36,9 @@ NewTabPageHandler::~NewTabPageHandler() {
                        page_switch_count_);
 }
 
-WebUIMessageHandler* NewTabPageHandler::Attach(WebUI* web_ui) {
+void NewTabPageHandler::RegisterMessages() {
   // Record an open of the NTP with its default page type.
-  PrefService* prefs = Profile::FromWebUI(web_ui)->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   int shown_page_type = prefs->GetInteger(prefs::kNTPShownPage) >>
       kPageIdOffset;
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.DefaultPageType",
@@ -53,10 +53,6 @@ WebUIMessageHandler* NewTabPageHandler::Attach(WebUI* web_ui) {
         shown_page_type, kHistogramEnumerationMax);
   }
 
-  return WebUIMessageHandler::Attach(web_ui);
-}
-
-void NewTabPageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("closeNotificationPromo",
       base::Bind(&NewTabPageHandler::HandleCloseNotificationPromo,
                  base::Unretained(this)));
@@ -83,7 +79,7 @@ void NewTabPageHandler::HandleCloseNotificationPromo(const ListValue* args) {
 
 void NewTabPageHandler::HandleNotificationPromoViewed(const ListValue* args) {
   scoped_refptr<NotificationPromo> notification_promo =
-      NotificationPromo::Create(Profile::FromWebUI(web_ui_), NULL);
+      NotificationPromo::Create(Profile::FromWebUI(web_ui()), NULL);
   if (notification_promo->HandleViewed())
     Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
 }

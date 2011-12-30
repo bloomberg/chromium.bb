@@ -42,7 +42,6 @@ void ConstrainedHtmlUI::RenderViewCreated(RenderViewHost* render_view_host) {
                                      dialog_delegate->GetDialogArgs());
   for (std::vector<WebUIMessageHandler*>::iterator it = handlers.begin();
        it != handlers.end(); ++it) {
-    (*it)->Attach(this);
     AddMessageHandler(*it);
   }
 

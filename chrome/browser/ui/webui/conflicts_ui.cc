@@ -96,7 +96,7 @@ class ConflictsDOMHandler : public WebUIMessageHandler,
 };
 
 void ConflictsDOMHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("requestModuleList",
+  web_ui()->RegisterMessageCallback("requestModuleList",
       base::Bind(&ConflictsDOMHandler::HandleRequestModuleList,
                  base::Unretained(this)));
 }
@@ -131,7 +131,7 @@ void ConflictsDOMHandler::SendModuleList() {
   }
   results.SetString("modulesTableTitle", table_title);
 
-  web_ui_->CallJavascriptFunction("returnModuleList", results);
+  web_ui()->CallJavascriptFunction("returnModuleList", results);
 }
 
 void ConflictsDOMHandler::Observe(int type,
@@ -158,7 +158,7 @@ void ConflictsDOMHandler::Observe(int type,
 
 ConflictsUI::ConflictsUI(TabContents* contents) : ChromeWebUI(contents) {
   content::RecordAction(UserMetricsAction("ViewAboutConflicts"));
-  AddMessageHandler((new ConflictsDOMHandler())->Attach(this));
+  AddMessageHandler(new ConflictsDOMHandler());
 
   // Set up the about:conflicts source.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());

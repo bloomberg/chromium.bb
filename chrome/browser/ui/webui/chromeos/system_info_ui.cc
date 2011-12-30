@@ -69,7 +69,6 @@ class SystemInfoHandler : public WebUIMessageHandler,
   virtual ~SystemInfoHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
  private:
@@ -159,11 +158,6 @@ SystemInfoHandler::SystemInfoHandler() {
 SystemInfoHandler::~SystemInfoHandler() {
 }
 
-WebUIMessageHandler* SystemInfoHandler::Attach(WebUI* web_ui) {
-  // TODO(stevenjb): customize handler attach if needed...
-  return WebUIMessageHandler::Attach(web_ui);
-}
-
 void SystemInfoHandler::RegisterMessages() {
   // TODO(stevenjb): add message registration, callbacks...
 }
@@ -176,7 +170,7 @@ void SystemInfoHandler::RegisterMessages() {
 
 SystemInfoUI::SystemInfoUI(TabContents* contents) : ChromeWebUI(contents) {
   SystemInfoHandler* handler = new SystemInfoHandler();
-  AddMessageHandler((handler)->Attach(this));
+  AddMessageHandler(handler);
   SystemInfoUIHTMLSource* html_source = new SystemInfoUIHTMLSource();
 
   // Set up the chrome://system/ source.

@@ -213,31 +213,31 @@ bool CollectedCookiesUIDelegate::ShouldShowDialogTitle() const {
 }
 
 void CollectedCookiesUIDelegate::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("BindCookiesTreeModel",
+  web_ui()->RegisterMessageCallback("BindCookiesTreeModel",
       base::Bind(&CollectedCookiesUIDelegate::BindCookiesTreeModel,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("Block",
+  web_ui()->RegisterMessageCallback("Block",
       base::Bind(&CollectedCookiesUIDelegate::Block,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("Allow",
+  web_ui()->RegisterMessageCallback("Allow",
       base::Bind(&CollectedCookiesUIDelegate::Allow,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("AllowThisSession",
+  web_ui()->RegisterMessageCallback("AllowThisSession",
       base::Bind(&CollectedCookiesUIDelegate::AllowThisSession,
                  base::Unretained(this)));
 
-  allowed_cookies_adapter_.Init(web_ui_);
-  blocked_cookies_adapter_.Init(web_ui_);
+  allowed_cookies_adapter_.Init(web_ui());
+  blocked_cookies_adapter_.Init(web_ui());
 }
 
 void CollectedCookiesUIDelegate::CloseDialog() {
-  if (!closed_ && web_ui_)
-    web_ui_->CallJavascriptFunction("closeDialog");
+  if (!closed_ && web_ui())
+    web_ui()->CallJavascriptFunction("closeDialog");
 }
 
 void CollectedCookiesUIDelegate::SetInfobarLabel(const std::string& text) {
   StringValue string(text);
-  web_ui_->CallJavascriptFunction("setInfobarLabel", string);
+  web_ui()->CallJavascriptFunction("setInfobarLabel", string);
 }
 
 void CollectedCookiesUIDelegate::AddContentException(

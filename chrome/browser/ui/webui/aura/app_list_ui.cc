@@ -87,7 +87,7 @@ class AppListHandler : public WebUIMessageHandler {
 
  private:
   AppListUI* app_list_ui() const {
-    return static_cast<AppListUI*>(web_ui_);
+    return static_cast<AppListUI*>(web_ui());
   }
 
   void HandleClose(const base::ListValue* args);
@@ -97,9 +97,9 @@ class AppListHandler : public WebUIMessageHandler {
 };
 
 void AppListHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("close",
+  web_ui()->RegisterMessageCallback("close",
       base::Bind(&AppListHandler::HandleClose, base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("onAppsLoaded",
+  web_ui()->RegisterMessageCallback("onAppsLoaded",
       base::Bind(&AppListHandler::HandleAppsLoaded, base::Unretained(this)));
 }
 
@@ -118,11 +118,11 @@ void AppListHandler::HandleAppsLoaded(const base::ListValue* args) {
 AppListUI::AppListUI(TabContents* contents)
     : ChromeWebUI(contents),
       delegate_(NULL) {
-  AddMessageHandler((new AppListHandler)->Attach(this));
+  AddMessageHandler(new AppListHandler);
 
   ExtensionService* service = GetProfile()->GetExtensionService();
   if (service)
-    AddMessageHandler((new AppLauncherHandler(service))->Attach(this));
+    AddMessageHandler(new AppLauncherHandler(service));
 
   // Set up the source.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());

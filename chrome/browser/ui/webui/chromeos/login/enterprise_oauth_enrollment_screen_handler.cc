@@ -95,19 +95,19 @@ EnterpriseOAuthEnrollmentScreenHandler::
 // EnterpriseOAuthEnrollmentScreenHandler, WebUIMessageHandler implementation --
 
 void EnterpriseOAuthEnrollmentScreenHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "oauthEnrollClose",
       base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::HandleClose,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "oauthEnrollCancel",
       base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::HandleCancel,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "oauthEnrollCompleteLogin",
       base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::HandleCompleteLogin,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "oauthEnrollRetry",
       base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::HandleRetry,
                  base::Unretained(this)));
@@ -386,8 +386,8 @@ void EnterpriseOAuthEnrollmentScreenHandler::EnrollAfterLogin() {
   UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
                             policy::kMetricEnrollmentStarted,
                             policy::kMetricEnrollmentSize);
-  Profile* profile =
-      Profile::FromBrowserContext(web_ui_->tab_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui()->tab_contents()->GetBrowserContext());
   oauth_fetcher_.reset(
       new GaiaOAuthFetcher(this,
                            profile->GetRequestContext(),
@@ -404,8 +404,8 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowStep(const char* step) {
   RevokeTokens();
 
   base::StringValue step_value(step);
-  web_ui_->CallJavascriptFunction("oobe.OAuthEnrollmentScreen.showStep",
-                                  step_value);
+  web_ui()->CallJavascriptFunction("oobe.OAuthEnrollmentScreen.showStep",
+                                   step_value);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowError(int message_id,
@@ -416,16 +416,16 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowError(int message_id,
   const std::string message(l10n_util::GetStringUTF8(message_id));
   base::StringValue message_value(message);
   base::FundamentalValue retry_value(retry);
-  web_ui_->CallJavascriptFunction("oobe.OAuthEnrollmentScreen.showError",
-                                  message_value,
-                                  retry_value);
+  web_ui()->CallJavascriptFunction("oobe.OAuthEnrollmentScreen.showError",
+                                   message_value,
+                                   retry_value);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowWorking(int message_id) {
   const std::string message(l10n_util::GetStringUTF8(message_id));
   base::StringValue message_value(message);
-  web_ui_->CallJavascriptFunction("oobe.OAuthEnrollmentScreen.showWorking",
-                                  message_value);
+  web_ui()->CallJavascriptFunction("oobe.OAuthEnrollmentScreen.showWorking",
+                                   message_value);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ResetAuth() {
@@ -434,8 +434,8 @@ void EnterpriseOAuthEnrollmentScreenHandler::ResetAuth() {
   if (browsing_data_remover_)
     return;
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_ui_->tab_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui()->tab_contents()->GetBrowserContext());
   browsing_data_remover_ =
       new BrowsingDataRemover(profile,
                               BrowsingDataRemover::EVERYTHING,
@@ -445,8 +445,8 @@ void EnterpriseOAuthEnrollmentScreenHandler::ResetAuth() {
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::RevokeTokens() {
-  Profile* profile =
-      Profile::FromBrowserContext(web_ui_->tab_contents()->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      web_ui()->tab_contents()->GetBrowserContext());
 
   if (!access_token_.empty()) {
     new TokenRevoker(access_token_, access_token_secret_, profile);

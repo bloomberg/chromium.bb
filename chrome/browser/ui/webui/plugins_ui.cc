@@ -118,7 +118,6 @@ class PluginsDOMHandler : public WebUIMessageHandler,
   virtual ~PluginsDOMHandler() {}
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // Callback for the "requestPluginsData" message.
@@ -160,8 +159,8 @@ PluginsDOMHandler::PluginsDOMHandler()
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
-WebUIMessageHandler* PluginsDOMHandler::Attach(WebUI* web_ui) {
-  Profile* profile = Profile::FromWebUI(web_ui);
+void PluginsDOMHandler::RegisterMessages() {
+  Profile* profile = Profile::FromWebUI(web_ui());
 
   PrefService* prefs = profile->GetPrefs();
   show_details_.Init(prefs::kPluginsShowDetails, prefs, NULL);
@@ -170,20 +169,16 @@ WebUIMessageHandler* PluginsDOMHandler::Attach(WebUI* web_ui) {
                  chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
                  content::Source<Profile>(profile));
 
-  return WebUIMessageHandler::Attach(web_ui);
-}
-
-void PluginsDOMHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("requestPluginsData",
+  web_ui()->RegisterMessageCallback("requestPluginsData",
       base::Bind(&PluginsDOMHandler::HandleRequestPluginsData,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("enablePlugin",
+  web_ui()->RegisterMessageCallback("enablePlugin",
       base::Bind(&PluginsDOMHandler::HandleEnablePluginMessage,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("saveShowDetailsToPrefs",
+  web_ui()->RegisterMessageCallback("saveShowDetailsToPrefs",
       base::Bind(&PluginsDOMHandler::HandleSaveShowDetailsToPrefs,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("getShowDetails",
+  web_ui()->RegisterMessageCallback("getShowDetails",
       base::Bind(&PluginsDOMHandler::HandleGetShowDetails,
                  base::Unretained(this)));
 }
@@ -193,7 +188,7 @@ void PluginsDOMHandler::HandleRequestPluginsData(const ListValue* args) {
 }
 
 void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
 
   // Be robust in accepting badness since plug-ins display HTML (hence
   // JavaScript).
@@ -244,7 +239,7 @@ void PluginsDOMHandler::HandleSaveShowDetailsToPrefs(const ListValue* args) {
 
 void PluginsDOMHandler::HandleGetShowDetails(const ListValue* args) {
   base::FundamentalValue show_details(show_details_.GetValue());
-  web_ui_->CallJavascriptFunction("loadShowDetailsFromPrefs", show_details);
+  web_ui()->CallJavascriptFunction("loadShowDetailsFromPrefs", show_details);
 }
 
 void PluginsDOMHandler::Observe(int type,
@@ -265,7 +260,7 @@ void PluginsDOMHandler::LoadPlugins() {
 
 void PluginsDOMHandler::PluginsLoaded(const std::vector<PluginGroup>& groups) {
   PluginPrefs* plugin_prefs =
-      PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui_));
+      PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui()));
 
   // Construct DictionaryValues to return to the UI
   ListValue* plugin_groups_data = new ListValue();
@@ -365,7 +360,7 @@ void PluginsDOMHandler::PluginsLoaded(const std::vector<PluginGroup>& groups) {
   }
   DictionaryValue results;
   results.Set("plugins", plugin_groups_data);
-  web_ui_->CallJavascriptFunction("returnPluginsData", results);
+  web_ui()->CallJavascriptFunction("returnPluginsData", results);
 }
 
 }  // namespace
@@ -377,7 +372,7 @@ void PluginsDOMHandler::PluginsLoaded(const std::vector<PluginGroup>& groups) {
 ///////////////////////////////////////////////////////////////////////////////
 
 PluginsUI::PluginsUI(TabContents* contents) : ChromeWebUI(contents) {
-  AddMessageHandler((new PluginsDOMHandler())->Attach(this));
+  AddMessageHandler(new PluginsDOMHandler());
 
   // Set up the chrome://plugins/ source.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());

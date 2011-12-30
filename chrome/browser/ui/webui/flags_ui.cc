@@ -104,13 +104,13 @@ class FlagsDOMHandler : public WebUIMessageHandler {
 };
 
 void FlagsDOMHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("requestFlagsExperiments",
+  web_ui()->RegisterMessageCallback("requestFlagsExperiments",
       base::Bind(&FlagsDOMHandler::HandleRequestFlagsExperiments,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("enableFlagsExperiment",
+  web_ui()->RegisterMessageCallback("enableFlagsExperiment",
       base::Bind(&FlagsDOMHandler::HandleEnableFlagsExperimentMessage,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("restartBrowser",
+  web_ui()->RegisterMessageCallback("restartBrowser",
       base::Bind(&FlagsDOMHandler::HandleRestartBrowser,
                  base::Unretained(this)));
 }
@@ -122,7 +122,7 @@ void FlagsDOMHandler::HandleRequestFlagsExperiments(const ListValue* args) {
                   g_browser_process->local_state()));
   results.SetBoolean("needsRestart",
                      about_flags::IsRestartNeededToCommitChanges());
-  web_ui_->CallJavascriptFunction("returnFlagsExperiments", results);
+  web_ui()->CallJavascriptFunction("returnFlagsExperiments", results);
 }
 
 void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
@@ -156,7 +156,7 @@ void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
 ///////////////////////////////////////////////////////////////////////////////
 
 FlagsUI::FlagsUI(TabContents* contents) : ChromeWebUI(contents) {
-  AddMessageHandler((new FlagsDOMHandler())->Attach(this));
+  AddMessageHandler(new FlagsDOMHandler());
 
   // Set up the about:flags source.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());

@@ -203,21 +203,21 @@ NetInternalsTest::MessageHandler::MessageHandler(
 }
 
 void NetInternalsTest::MessageHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "openNewTab",
       base::Bind(&NetInternalsTest::MessageHandler::OpenNewTab,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "addCacheEntry",
       base::Bind(&NetInternalsTest::MessageHandler::AddCacheEntry,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("navigateToPrerender",
+  web_ui()->RegisterMessageCallback("navigateToPrerender",
        base::Bind(&NetInternalsTest::MessageHandler::NavigateToPrerender,
                   base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("createIncognitoBrowser",
+  web_ui()->RegisterMessageCallback("createIncognitoBrowser",
        base::Bind(&NetInternalsTest::MessageHandler::CreateIncognitoBrowser,
                   base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("closeIncognitoBrowser",
+  web_ui()->RegisterMessageCallback("closeIncognitoBrowser",
        base::Bind(&NetInternalsTest::MessageHandler::CloseIncognitoBrowser,
                   base::Unretained(this)));
 }

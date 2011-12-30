@@ -89,7 +89,6 @@ DownloadsUI::DownloadsUI(TabContents* contents) : ChromeWebUI(contents) {
 
   DownloadsDOMHandler* handler = new DownloadsDOMHandler(dlm);
   AddMessageHandler(handler);
-  handler->Attach(this);
   handler->Init();
 
   // Set up the chrome://downloads/ source.

@@ -62,13 +62,13 @@ CloudPrintSigninFlowHandler::CloudPrintSigninFlowHandler(
 }
 
 void CloudPrintSigninFlowHandler::RegisterMessages() {
-  if (web_ui_ && web_ui_->tab_contents()) {
+  if (web_ui() && web_ui()->tab_contents()) {
     NavigationController* controller =
-        &web_ui_->tab_contents()->GetController();
+        &web_ui()->tab_contents()->GetController();
     NavigationEntry* pending_entry = controller->GetPendingEntry();
     if (pending_entry)
       pending_entry->SetURL(CloudPrintURL(
-          Profile::FromWebUI(web_ui_)).GetCloudPrintSigninURL());
+          Profile::FromWebUI(web_ui())).GetCloudPrintSigninURL());
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    content::Source<NavigationController>(controller));
   }
@@ -79,14 +79,14 @@ void CloudPrintSigninFlowHandler::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    GURL url = web_ui_->tab_contents()->GetURL();
+    GURL url = web_ui()->tab_contents()->GetURL();
     GURL dialog_url = CloudPrintURL(
-        Profile::FromWebUI(web_ui_)).GetCloudPrintServiceURL();
+        Profile::FromWebUI(web_ui())).GetCloudPrintServiceURL();
     if (url.host() == dialog_url.host() &&
         url.path() == dialog_url.path() &&
         url.scheme() == dialog_url.scheme()) {
       StoreDialogSize();
-      web_ui_->tab_contents()->GetRenderViewHost()->ClosePage();
+      web_ui()->tab_contents()->GetRenderViewHost()->ClosePage();
       static_cast<PrintPreviewUI*>(
           parent_tab_->GetWebUI())->OnReloadPrintersList();
     }
@@ -94,9 +94,11 @@ void CloudPrintSigninFlowHandler::Observe(
 }
 
 void CloudPrintSigninFlowHandler::StoreDialogSize() {
-  if (web_ui_ && web_ui_->tab_contents() && web_ui_->tab_contents()->GetView()) {
-    gfx::Size size = web_ui_->tab_contents()->GetView()->GetContainerSize();
-    Profile* profile = Profile::FromWebUI(web_ui_);
+  if (web_ui() &&
+      web_ui()->tab_contents() &&
+      web_ui()->tab_contents()->GetView()) {
+    gfx::Size size = web_ui()->tab_contents()->GetView()->GetContainerSize();
+    Profile* profile = Profile::FromWebUI(web_ui());
     profile->GetPrefs()->SetInteger(prefs::kCloudPrintSigninDialogWidth,
                                     size.width());
     profile->GetPrefs()->SetInteger(

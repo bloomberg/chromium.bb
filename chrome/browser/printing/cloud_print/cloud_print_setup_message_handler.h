@@ -19,9 +19,6 @@ class CloudPrintSetupMessageHandler : public WebUIMessageHandler {
     : flow_(flow) {}
   virtual ~CloudPrintSetupMessageHandler() {}
 
-  // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
-
  protected:
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;

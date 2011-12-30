@@ -109,7 +109,6 @@ SyncPromoUI::SyncPromoUI(TabContents* contents) : ChromeWebUI(contents) {
   SyncPromoHandler* handler = new SyncPromoHandler(
       g_browser_process->profile_manager());
   AddMessageHandler(handler);
-  handler->Attach(this);
 
   // Set up the chrome://theme/ source.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());

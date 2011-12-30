@@ -79,27 +79,23 @@ NTPLoginHandler::NTPLoginHandler() {
 NTPLoginHandler::~NTPLoginHandler() {
 }
 
-WebUIMessageHandler* NTPLoginHandler::Attach(WebUI* web_ui) {
-  PrefService* pref_service = Profile::FromWebUI(web_ui)->GetPrefs();
+void NTPLoginHandler::RegisterMessages() {
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   username_pref_.Init(prefs::kGoogleServicesUsername, pref_service, this);
 
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                  content::NotificationService::AllSources());
 
-  return WebUIMessageHandler::Attach(web_ui);
-}
-
-void NTPLoginHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("initializeSyncLogin",
+  web_ui()->RegisterMessageCallback("initializeSyncLogin",
       base::Bind(&NTPLoginHandler::HandleInitializeSyncLogin,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("showSyncLoginUI",
+  web_ui()->RegisterMessageCallback("showSyncLoginUI",
       base::Bind(&NTPLoginHandler::HandleShowSyncLoginUI,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("loginMessageSeen",
+  web_ui()->RegisterMessageCallback("loginMessageSeen",
       base::Bind(&NTPLoginHandler::HandleLoginMessageSeen,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("showAdvancedLoginUI",
+  web_ui()->RegisterMessageCallback("showAdvancedLoginUI",
       base::Bind(&NTPLoginHandler::HandleShowAdvancedLoginUI,
                  base::Unretained(this)));
 }
@@ -123,7 +119,7 @@ void NTPLoginHandler::HandleInitializeSyncLogin(const ListValue* args) {
 }
 
 void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   std::string username = profile->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
 
@@ -133,13 +129,13 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
       OpenURLParams params(
           GURL(chrome::kChromeUISyncPromoURL), Referrer(), CURRENT_TAB,
           content::PAGE_TRANSITION_LINK, false);
-      web_ui_->tab_contents()->OpenURL(params);
+      web_ui()->tab_contents()->OpenURL(params);
       RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
     }
   } else if (args->GetSize() == 4) {
     // The user is signed in, show the profiles menu.
     Browser* browser =
-        BrowserList::FindBrowserWithTabContents(web_ui_->tab_contents());
+        BrowserList::FindBrowserWithTabContents(web_ui()->tab_contents());
     if (!browser)
       return;
     double x = 0;
@@ -155,7 +151,7 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
     success = args->GetDouble(3, &height);
     DCHECK(success);
     gfx::Rect rect(x, y, width, height);
-    browser->window()->ShowAvatarBubble(web_ui_->tab_contents(), rect);
+    browser->window()->ShowAvatarBubble(web_ui()->tab_contents(), rect);
     ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::NTP_AVATAR_BUBBLE);
   }
 }
@@ -172,16 +168,16 @@ void NTPLoginHandler::RecordInHistogram(int type) {
 }
 
 void NTPLoginHandler::HandleLoginMessageSeen(const ListValue* args) {
-  Profile::FromWebUI(web_ui_)->GetPrefs()->SetBoolean(
+  Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
       prefs::kSyncPromoShowNTPBubble, false);
 }
 
 void NTPLoginHandler::HandleShowAdvancedLoginUI(const ListValue* args) {
-  Profile::FromWebUI(web_ui_)->GetProfileSyncService()->ShowConfigure(false);
+  Profile::FromWebUI(web_ui())->GetProfileSyncService()->ShowConfigure(false);
 }
 
 void NTPLoginHandler::UpdateLogin() {
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   std::string username = profile->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
 
@@ -224,7 +220,7 @@ void NTPLoginHandler::UpdateLogin() {
   StringValue header_value(header);
   StringValue sub_header_value(sub_header);
   StringValue icon_url_value(icon_url);
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "updateLogin", header_value, sub_header_value, icon_url_value);
 }
 

@@ -125,10 +125,10 @@ EditSearchEngineDialogHandlerWebUI::~EditSearchEngineDialogHandlerWebUI() {
 
 // Overridden from WebUIMessageHandler
 void EditSearchEngineDialogHandlerWebUI::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("requestDetails",
+  web_ui()->RegisterMessageCallback("requestDetails",
       base::Bind(&EditSearchEngineDialogHandlerWebUI::RequestDetails,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("requestValidation",
+  web_ui()->RegisterMessageCallback("requestValidation",
       base::Bind(&EditSearchEngineDialogHandlerWebUI::RequestValidation,
                  base::Unretained(this)));
 }
@@ -141,8 +141,8 @@ void EditSearchEngineDialogHandlerWebUI::RequestDetails(
   dict.SetString("url", controller_->template_url()->url()->DisplayURL());
 
   // Send list of tab contents details to javascript.
-  web_ui_->CallJavascriptFunction("editSearchEngineDialog.setDetails",
-                                  dict);
+  web_ui()->CallJavascriptFunction("editSearchEngineDialog.setDetails",
+                                   dict);
 }
 
 void EditSearchEngineDialogHandlerWebUI::RequestValidation(
@@ -162,8 +162,8 @@ void EditSearchEngineDialogHandlerWebUI::RequestValidation(
     validation.SetBoolean("url", isUrlValid);
     validation.SetBoolean("ok", isDescriptionValid && isKeywordValid &&
                           isUrlValid);
-    web_ui_->CallJavascriptFunction("editSearchEngineDialog.setValidation",
-                                    validation);
+    web_ui()->CallJavascriptFunction("editSearchEngineDialog.setValidation",
+                                     validation);
   }
 }
 

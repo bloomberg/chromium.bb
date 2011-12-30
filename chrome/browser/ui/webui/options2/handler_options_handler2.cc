@@ -48,31 +48,29 @@ void HandlerOptionsHandler::Initialize() {
   UpdateHandlerList();
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
-      content::Source<Profile>(Profile::FromWebUI(web_ui_)));
+      content::Source<Profile>(Profile::FromWebUI(web_ui())));
 }
 
 void HandlerOptionsHandler::RegisterMessages() {
-  DCHECK(web_ui_);
-  web_ui_->RegisterMessageCallback("clearDefault",
+  web_ui()->RegisterMessageCallback("clearDefault",
       base::Bind(&HandlerOptionsHandler::ClearDefault,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("removeHandler",
+  web_ui()->RegisterMessageCallback("removeHandler",
       base::Bind(&HandlerOptionsHandler::RemoveHandler,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("setHandlersEnabled",
+  web_ui()->RegisterMessageCallback("setHandlersEnabled",
       base::Bind(&HandlerOptionsHandler::SetHandlersEnabled,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("setDefault",
+  web_ui()->RegisterMessageCallback("setDefault",
       base::Bind(&HandlerOptionsHandler::SetDefault,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("removeIgnoredHandler",
+  web_ui()->RegisterMessageCallback("removeIgnoredHandler",
       base::Bind(&HandlerOptionsHandler::RemoveIgnoredHandler,
                  base::Unretained(this)));
 }
 
 ProtocolHandlerRegistry* HandlerOptionsHandler::GetProtocolHandlerRegistry() {
-  DCHECK(web_ui_);
-  return Profile::FromWebUI(web_ui_)->GetProtocolHandlerRegistry();
+  return Profile::FromWebUI(web_ui())->GetProtocolHandlerRegistry();
 }
 
 static void GetHandlersAsListValue(
@@ -124,9 +122,9 @@ void HandlerOptionsHandler::UpdateHandlerList() {
 
   scoped_ptr<ListValue> ignored_handlers(new ListValue());
   GetIgnoredHandlers(ignored_handlers.get());
-  web_ui_->CallJavascriptFunction("HandlerOptions.setHandlers", handlers);
-  web_ui_->CallJavascriptFunction("HandlerOptions.setIgnoredHandlers",
-                                  *ignored_handlers);
+  web_ui()->CallJavascriptFunction("HandlerOptions.setHandlers", handlers);
+  web_ui()->CallJavascriptFunction("HandlerOptions.setIgnoredHandlers",
+                                   *ignored_handlers);
 #endif // defined(ENABLE_REGISTER_PROTOCOL_HANDLER)
 }
 

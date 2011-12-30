@@ -135,7 +135,6 @@ class ExtensionSettingsHandler : public OptionsPageUIHandler,
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
 
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(

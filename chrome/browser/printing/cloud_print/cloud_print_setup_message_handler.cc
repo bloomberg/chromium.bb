@@ -11,20 +11,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 
-WebUIMessageHandler* CloudPrintSetupMessageHandler::Attach(WebUI* web_ui) {
-  // Pass the WebUI object to the setup flow.
-  flow_->Attach(web_ui);
-  return WebUIMessageHandler::Attach(web_ui);
-}
-
 void CloudPrintSetupMessageHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("SubmitAuth",
+  // Pass the WebUI object to the setup flow.
+  flow_->Attach(web_ui());
+
+  web_ui()->RegisterMessageCallback("SubmitAuth",
       base::Bind(&CloudPrintSetupMessageHandler::HandleSubmitAuth,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("PrintTestPage",
+  web_ui()->RegisterMessageCallback("PrintTestPage",
       base::Bind(&CloudPrintSetupMessageHandler::HandlePrintTestPage,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("LearnMore",
+  web_ui()->RegisterMessageCallback("LearnMore",
       base::Bind(&CloudPrintSetupMessageHandler::HandleLearnMore,
                  base::Unretained(this)));
 }

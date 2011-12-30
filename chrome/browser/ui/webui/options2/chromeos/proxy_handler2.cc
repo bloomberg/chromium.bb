@@ -80,8 +80,8 @@ void ProxyHandler::GetLocalizedValues(
 
 void ProxyHandler::SetNetworkName(const std::string& name) {
   StringValue network(name);
-  web_ui_->CallJavascriptFunction("options.ProxyOptions.setNetworkName",
-                                  network);
+  web_ui()->CallJavascriptFunction("options.ProxyOptions.setNetworkName",
+                                   network);
 }
 
 }  // namespace options2

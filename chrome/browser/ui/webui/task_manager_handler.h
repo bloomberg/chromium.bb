@@ -20,8 +20,6 @@ class TaskManagerHandler : public WebUIMessageHandler,
   explicit TaskManagerHandler(TaskManager* tm);
   virtual ~TaskManagerHandler();
 
-  void Init();
-
   // TaskManagerModelObserver implementation.
   // Invoked when the model has been completely changed.
   virtual void OnModelChanged() OVERRIDE;

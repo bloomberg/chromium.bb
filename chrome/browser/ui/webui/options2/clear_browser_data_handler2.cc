@@ -31,7 +31,7 @@ ClearBrowserDataHandler::~ClearBrowserDataHandler() {
 
 void ClearBrowserDataHandler::Initialize() {
   clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled,
-                                      Profile::FromWebUI(web_ui_)->GetPrefs(),
+                                      Profile::FromWebUI(web_ui())->GetPrefs(),
                                       NULL);
 }
 
@@ -88,14 +88,13 @@ void ClearBrowserDataHandler::GetLocalizedValues(
 
 void ClearBrowserDataHandler::RegisterMessages() {
   // Setup handlers specific to this panel.
-  DCHECK(web_ui_);
-  web_ui_->RegisterMessageCallback("performClearBrowserData",
+  web_ui()->RegisterMessageCallback("performClearBrowserData",
       base::Bind(&ClearBrowserDataHandler::HandleClearBrowserData,
                  base::Unretained(this)));
 }
 
 void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* prefs = profile->GetPrefs();
 
   int remove_mask = 0;
@@ -120,8 +119,8 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
   int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
 
   base::FundamentalValue state(true);
-  web_ui_->CallJavascriptFunction("ClearBrowserDataOverlay.setClearingState",
-                                  state);
+  web_ui()->CallJavascriptFunction("ClearBrowserDataOverlay.setClearingState",
+                                   state);
 
   // If we are still observing a previous data remover, we need to stop
   // observing.
@@ -140,8 +139,7 @@ void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
   // No need to remove ourselves as an observer as BrowsingDataRemover deletes
   // itself after we return.
   remover_ = NULL;
-  DCHECK(web_ui_);
-  web_ui_->CallJavascriptFunction("ClearBrowserDataOverlay.doneClearing");
+  web_ui()->CallJavascriptFunction("ClearBrowserDataOverlay.doneClearing");
 }
 
 }  // namespace options2

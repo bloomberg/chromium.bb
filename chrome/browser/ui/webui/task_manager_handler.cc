@@ -220,8 +220,8 @@ void TaskManagerHandler::OnModelChanged() {
     tasks_value.Append(CreateTaskGroupValue(model_, i));
 
   if (is_enabled_) {
-    web_ui_->CallJavascriptFunction("taskChanged",
-                                    start_value, length_value, tasks_value);
+    web_ui()->CallJavascriptFunction("taskChanged",
+                                     start_value, length_value, tasks_value);
   }
 }
 
@@ -303,26 +303,23 @@ void TaskManagerHandler::OnItemsRemoved(const int start, const int length) {
   OnGroupRemoved(group_start, group_end - group_start + 1);
 }
 
-void TaskManagerHandler::Init() {
-}
-
 void TaskManagerHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("killProcesses",
+  web_ui()->RegisterMessageCallback("killProcesses",
       base::Bind(&TaskManagerHandler::HandleKillProcesses,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("inspect",
+  web_ui()->RegisterMessageCallback("inspect",
       base::Bind(&TaskManagerHandler::HandleInspect,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("activatePage",
+  web_ui()->RegisterMessageCallback("activatePage",
       base::Bind(&TaskManagerHandler::HandleActivatePage,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("openAboutMemory",
+  web_ui()->RegisterMessageCallback("openAboutMemory",
       base::Bind(&TaskManagerHandler::OpenAboutMemory,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("enableTaskManager",
+  web_ui()->RegisterMessageCallback("enableTaskManager",
       base::Bind(&TaskManagerHandler::EnableTaskManager,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("disableTaskManager",
+  web_ui()->RegisterMessageCallback("disableTaskManager",
       base::Bind(&TaskManagerHandler::DisableTaskManager,
                  base::Unretained(this)));
 }
@@ -405,7 +402,7 @@ void TaskManagerHandler::EnableTaskManager(const ListValue* indexes) {
 }
 
 void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {
-  RenderViewHost* rvh = web_ui_->tab_contents()->GetRenderViewHost();
+  RenderViewHost* rvh = web_ui()->tab_contents()->GetRenderViewHost();
   if (rvh && rvh->delegate()) {
     WebPreferences webkit_prefs = rvh->delegate()->GetWebkitPrefs();
     webkit_prefs.allow_scripts_to_close_windows = true;
@@ -420,7 +417,7 @@ void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {
 // TaskManagerHandler, private: -----------------------------------------------
 
 bool TaskManagerHandler::is_alive() {
-  return web_ui_->tab_contents()->GetRenderViewHost() != NULL;
+  return web_ui()->tab_contents()->GetRenderViewHost() != NULL;
 }
 
 void TaskManagerHandler::UpdateResourceGroupTable(int start, int length) {
@@ -449,8 +446,8 @@ void TaskManagerHandler::OnGroupChanged(const int group_start,
     tasks_value.Append(CreateTaskGroupValue(model_, group_start + i));
 
   if (is_enabled_ && is_alive()) {
-    web_ui_->CallJavascriptFunction("taskChanged",
-                                    start_value, length_value, tasks_value);
+    web_ui()->CallJavascriptFunction("taskChanged",
+                                     start_value, length_value, tasks_value);
   }
 }
 
@@ -463,8 +460,8 @@ void TaskManagerHandler::OnGroupAdded(const int group_start,
     tasks_value.Append(CreateTaskGroupValue(model_, group_start + i));
 
   if (is_enabled_ && is_alive()) {
-    web_ui_->CallJavascriptFunction("taskAdded",
-                                    start_value, length_value, tasks_value);
+    web_ui()->CallJavascriptFunction("taskAdded",
+                                     start_value, length_value, tasks_value);
   }
 }
 
@@ -473,5 +470,5 @@ void TaskManagerHandler::OnGroupRemoved(const int group_start,
   base::FundamentalValue start_value(group_start);
   base::FundamentalValue length_value(group_length);
   if (is_enabled_ && is_alive())
-    web_ui_->CallJavascriptFunction("taskRemoved", start_value, length_value);
+    web_ui()->CallJavascriptFunction("taskRemoved", start_value, length_value);
 }

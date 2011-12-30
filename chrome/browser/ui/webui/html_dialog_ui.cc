@@ -66,7 +66,6 @@ void HtmlDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
     render_view_host->SetWebUIProperty("dialogArguments", dialog_args);
   for (std::vector<WebUIMessageHandler*>::iterator it = handlers.begin();
        it != handlers.end(); ++it) {
-    (*it)->Attach(this);
     AddMessageHandler(*it);
   }
 

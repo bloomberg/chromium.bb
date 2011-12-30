@@ -96,11 +96,11 @@ PolicyUIHandler::~PolicyUIHandler() {
 }
 
 void PolicyUIHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "requestData",
       base::Bind(&PolicyUIHandler::HandleRequestData,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "fetchPolicy",
       base::Bind(&PolicyUIHandler::HandleFetchPolicy,
                  base::Unretained(this)));
@@ -128,7 +128,7 @@ void PolicyUIHandler::SendDataToUI(bool is_policy_update) {
   results.Set("status", dict);
   results.SetBoolean("isPolicyUpdate", is_policy_update);
 
-  web_ui_->CallJavascriptFunction("Policy.returnData", results);
+  web_ui()->CallJavascriptFunction("Policy.returnData", results);
 }
 
 DictionaryValue* PolicyUIHandler::GetStatusData() {
@@ -231,7 +231,7 @@ string16 PolicyUIHandler::CreateStatusMessageString(
 ////////////////////////////////////////////////////////////////////////////////
 
 PolicyUI::PolicyUI(TabContents* contents) : ChromeWebUI(contents) {
-  AddMessageHandler((new PolicyUIHandler)->Attach(this));
+  AddMessageHandler(new PolicyUIHandler);
 
   // Set up the chrome://policy/ source.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());

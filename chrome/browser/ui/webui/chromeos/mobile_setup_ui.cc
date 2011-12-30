@@ -219,11 +219,9 @@ class MobileSetupHandler
   virtual ~MobileSetupHandler();
 
   // Init work after Attach.
-  void Init(TabContents* contents);
   void StartActivationOnUIThread();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // NetworkLibrary::NetworkManagerObserver implementation.
@@ -326,7 +324,6 @@ class MobileSetupHandler
   static const char* GetStateDescription(PlanActivationState state);
 
   scoped_refptr<CellularConfigDocument> cellular_config_;
-  TabContents* tab_contents_;
   // Internal handler state.
   PlanActivationState state_;
   std::string service_path_;
@@ -488,7 +485,6 @@ void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
 ////////////////////////////////////////////////////////////////////////////////
 MobileSetupHandler::MobileSetupHandler(const std::string& service_path)
     : cellular_config_(new CellularConfigDocument()),
-      tab_contents_(NULL),
       state_(PLAN_ACTIVATION_PAGE_LOADING),
       service_path_(service_path),
       reenable_cert_check_(false),
@@ -511,22 +507,14 @@ MobileSetupHandler::~MobileSetupHandler() {
   ReEnableCertRevocationChecking();
 }
 
-WebUIMessageHandler* MobileSetupHandler::Attach(WebUI* web_ui) {
-  return WebUIMessageHandler::Attach(web_ui);
-}
-
-void MobileSetupHandler::Init(TabContents* contents) {
-  tab_contents_ = contents;
-}
-
 void MobileSetupHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(kJsApiStartActivation,
+  web_ui()->RegisterMessageCallback(kJsApiStartActivation,
       base::Bind(&MobileSetupHandler::HandleStartActivation,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(kJsApiSetTransactionStatus,
+  web_ui()->RegisterMessageCallback(kJsApiSetTransactionStatus,
       base::Bind(&MobileSetupHandler::HandleSetTransactionStatus,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(kJsApiPaymentPortalLoad,
+  web_ui()->RegisterMessageCallback(kJsApiPaymentPortalLoad,
       base::Bind(&MobileSetupHandler::HandlePaymentPortalLoad,
                  base::Unretained(this)));
 }
@@ -789,7 +777,7 @@ bool MobileSetupHandler::ConnectionTimeout() {
 
 void MobileSetupHandler::EvaluateCellularNetwork(
     chromeos::CellularNetwork* network) {
-  if (!web_ui_)
+  if (!web_ui())
     return;
 
   PlanActivationState new_state = state_;
@@ -1137,7 +1125,7 @@ void MobileSetupHandler::UpdatePage(
   device_dict.SetInteger("state", state_);
   if (error_description.length())
     device_dict.SetString("error", error_description);
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       kJsDeviceStatusChangedCallback, device_dict);
 }
 
@@ -1365,8 +1353,7 @@ MobileSetupUI::MobileSetupUI(TabContents* contents) : ChromeWebUI(contents) {
   chromeos::CellularNetwork* network = GetCellularNetwork();
   std::string service_path = network ? network->service_path() : std::string();
   MobileSetupHandler* handler = new MobileSetupHandler(service_path);
-  AddMessageHandler((handler)->Attach(this));
-  handler->Init(contents);
+  AddMessageHandler(handler);
   MobileSetupUIHTMLSource* html_source =
       new MobileSetupUIHTMLSource(service_path);
 

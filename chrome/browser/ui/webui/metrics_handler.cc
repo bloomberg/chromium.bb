@@ -24,14 +24,14 @@ MetricsHandler::MetricsHandler() {}
 MetricsHandler::~MetricsHandler() {}
 
 void MetricsHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "metricsHandler:recordAction",
       base::Bind(&MetricsHandler::HandleRecordAction, base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "metricsHandler:recordInHistogram",
       base::Bind(&MetricsHandler::HandleRecordInHistogram,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "metricsHandler:logEventTime",
       base::Bind(&MetricsHandler::HandleLogEventTime, base::Unretained(this)));
 }
@@ -77,7 +77,7 @@ void MetricsHandler::HandleRecordInHistogram(const ListValue* args) {
 
 void MetricsHandler::HandleLogEventTime(const ListValue* args) {
   std::string event_name = UTF16ToUTF8(ExtractStringValue(args));
-  TabContents* tab = web_ui_->tab_contents();
+  TabContents* tab = web_ui()->tab_contents();
 
   // Not all new tab pages get timed. In those cases, we don't have a
   // new_tab_start_time_.

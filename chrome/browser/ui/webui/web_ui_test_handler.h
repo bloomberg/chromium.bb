@@ -34,11 +34,11 @@ class WebUITestHandler : public WebUIMessageHandler,
   // error message on failure. Returns test pass/fail.
   bool RunJavaScriptTestWithResult(const string16& js_text);
 
- private:
   // WebUIMessageHandler overrides.
   // Add test handlers to the current WebUI object.
   virtual void RegisterMessages() OVERRIDE;
 
+ private:
   // Receives testResult messages.
   void HandleTestResult(const base::ListValue* test_result);
 

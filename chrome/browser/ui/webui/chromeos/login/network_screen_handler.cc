@@ -79,12 +79,12 @@ void NetworkScreenHandler::Hide() {
 
 void NetworkScreenHandler::ShowError(const string16& message) {
   scoped_ptr<Value> message_value(Value::CreateStringValue(message));
-  web_ui_->CallJavascriptFunction("oobe.NetworkScreen.showError",
-                                  *message_value);
+  web_ui()->CallJavascriptFunction("oobe.NetworkScreen.showError",
+                                   *message_value);
 }
 
 void NetworkScreenHandler::ClearErrors() {
-  web_ui_->CallJavascriptFunction("oobe.NetworkScreen.clearErrors");
+  web_ui()->CallJavascriptFunction("oobe.NetworkScreen.clearErrors");
 }
 
 void NetworkScreenHandler::ShowConnectingStatus(
@@ -97,10 +97,10 @@ void NetworkScreenHandler::ShowConnectingStatus(
   // scoped_ptr<Value> network_id_value(Value::CreateStringValue(network_id));
   // scoped_ptr<Value> connecting_label_value(
   //     Value::CreateStringValue(connecting_label));
-  // web_ui_->CallJavascriptFunction("cr.ui.Oobe.showConnectingStatus",
-  //                                 *connecting_value,
-  //                                 *network_id_value,
-  //                                 *connecting_label_value);
+  // web_ui()->CallJavascriptFunction("cr.ui.Oobe.showConnectingStatus",
+  //                                  *connecting_value,
+  //                                  *network_id_value,
+  //                                  *connecting_label_value);
 }
 
 void NetworkScreenHandler::EnableContinue(bool enabled) {
@@ -109,8 +109,8 @@ void NetworkScreenHandler::EnableContinue(bool enabled) {
     return;
 
   scoped_ptr<Value> enabled_value(Value::CreateBooleanValue(enabled));
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.enableContinueButton",
-                                  *enabled_value);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.enableContinueButton",
+                                   *enabled_value);
 }
 
 // NetworkScreenHandler, BaseScreenHandler implementation: --------------------
@@ -142,12 +142,12 @@ void NetworkScreenHandler::Initialize() {
 // NetworkScreenHandler, WebUIMessageHandler implementation: -------------------
 
 void NetworkScreenHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(kJsApiNetworkOnExit,
+  web_ui()->RegisterMessageCallback(kJsApiNetworkOnExit,
       base::Bind(&NetworkScreenHandler::HandleOnExit,base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(kJsApiNetworkOnLanguageChanged,
+  web_ui()->RegisterMessageCallback(kJsApiNetworkOnLanguageChanged,
       base::Bind(&NetworkScreenHandler::HandleOnLanguageChanged,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(kJsApiNetworkOnInputMethodChanged,
+  web_ui()->RegisterMessageCallback(kJsApiNetworkOnInputMethodChanged,
       base::Bind(&NetworkScreenHandler::HandleOnInputMethodChanged,
                  base::Unretained(this)));
 }
@@ -169,9 +169,9 @@ void NetworkScreenHandler::HandleOnLanguageChanged(const ListValue* args) {
   LanguageSwitchMenu::SwitchLanguageAndEnableKeyboardLayouts(locale);
 
   DictionaryValue localized_strings;
-  static_cast<OobeUI*>(web_ui_)->GetLocalizedStrings(&localized_strings);
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.reloadContent",
-                                  localized_strings);
+  static_cast<OobeUI*>(web_ui())->GetLocalizedStrings(&localized_strings);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.reloadContent",
+                                   localized_strings);
   // Buttons are recreated, updated "Continue" button state.
   EnableContinue(is_continue_enabled_);
 }

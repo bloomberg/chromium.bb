@@ -76,12 +76,7 @@ ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
 ///////////////////////////////////////////////////////////////////////////////
 
 TaskManagerUI::TaskManagerUI(TabContents* contents) : ChromeWebUI(contents) {
-  TaskManagerHandler* handler =
-      new TaskManagerHandler(TaskManager::GetInstance());
-
-  handler->Attach(this);
-  handler->Init();
-  AddMessageHandler(handler);
+  AddMessageHandler(new TaskManagerHandler(TaskManager::GetInstance()));
 
   // Set up the chrome://taskmanager/ source.
   ChromeWebUIDataSource* html_source = CreateTaskManagerUIHTMLSource();

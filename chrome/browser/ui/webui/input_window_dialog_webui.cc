@@ -150,12 +150,11 @@ InputWindowDialogHandler::InputWindowDialogHandler(
 }
 
 void InputWindowDialogHandler::CloseDialog() {
-  DCHECK(web_ui_);
-  static_cast<HtmlDialogUI*>(web_ui_)->CloseDialog(NULL);
+  static_cast<HtmlDialogUI*>(web_ui())->CloseDialog(NULL);
 }
 
 void InputWindowDialogHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("validate",
+  web_ui()->RegisterMessageCallback("validate",
       base::Bind(&InputWindowDialogHandler::Validate,
                  base::Unretained(this)));
 }
@@ -173,6 +172,6 @@ void InputWindowDialogHandler::Validate(const base::ListValue* args) {
   }
   const bool valid = delegate_->IsValid(texts);
   scoped_ptr<Value> result(Value::CreateBooleanValue(valid));
-  web_ui_->CallJavascriptFunction("inputWindowDialog.ackValidation",
-                                  *result);
+  web_ui()->CallJavascriptFunction("inputWindowDialog.ackValidation",
+                                   *result);
 }

@@ -56,19 +56,19 @@ void ManageProfileHandler::Initialize() {
 }
 
 void ManageProfileHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("setProfileNameAndIcon",
+  web_ui()->RegisterMessageCallback("setProfileNameAndIcon",
       base::Bind(&ManageProfileHandler::SetProfileNameAndIcon,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("deleteProfile",
+  web_ui()->RegisterMessageCallback("deleteProfile",
       base::Bind(&ManageProfileHandler::DeleteProfile,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("requestDefaultProfileIcons",
+  web_ui()->RegisterMessageCallback("requestDefaultProfileIcons",
       base::Bind(&ManageProfileHandler::RequestDefaultProfileIcons,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("requestProfileInfo",
+  web_ui()->RegisterMessageCallback("requestProfileInfo",
       base::Bind(&ManageProfileHandler::RequestProfileInfo,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("profileIconSelectionChanged",
+  web_ui()->RegisterMessageCallback("profileIconSelectionChanged",
       base::Bind(&ManageProfileHandler::ProfileIconSelectionChanged,
                  base::Unretained(this)));
 }
@@ -95,7 +95,7 @@ void ManageProfileHandler::SendProfileIcons() {
   // First add the GAIA picture if it's available.
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
   if (profile_index != std::string::npos) {
     const gfx::Image* icon =
@@ -113,7 +113,7 @@ void ManageProfileHandler::SendProfileIcons() {
     image_url_list.Append(Value::CreateStringValue(url));
   }
 
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "ManageProfileOverlay.receiveDefaultProfileIcons",
       image_url_list);
 }
@@ -126,8 +126,8 @@ void ManageProfileHandler::SendProfileNames() {
     profile_name_dict.SetBoolean(UTF16ToUTF8(cache.GetNameOfProfileAtIndex(i)),
                                  true);
 
-  web_ui_->CallJavascriptFunction("ManageProfileOverlay.receiveProfileNames",
-                                  profile_name_dict);
+  web_ui()->CallJavascriptFunction("ManageProfileOverlay.receiveProfileNames",
+                                   profile_name_dict);
 }
 
 void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
@@ -239,9 +239,9 @@ void ManageProfileHandler::RequestProfileInfo(const ListValue* args) {
     return;
 
   FilePath profile_path = cache.GetPathOfProfileAtIndex(index);
-  FilePath current_profile_path = Profile::FromWebUI(web_ui_)->GetPath();
+  FilePath current_profile_path = Profile::FromWebUI(web_ui())->GetPath();
   bool is_current_profile =
-      profile_path == Profile::FromWebUI(web_ui_)->GetPath();
+      profile_path == Profile::FromWebUI(web_ui())->GetPath();
 
   DictionaryValue profile_value;
   profile_value.SetString("name", cache.GetNameOfProfileAtIndex(index));
@@ -261,13 +261,13 @@ void ManageProfileHandler::RequestProfileInfo(const ListValue* args) {
                              cache.GetDefaultAvatarIconUrl(icon_index));
   }
 
-  web_ui_->CallJavascriptFunction("ManageProfileOverlay.setProfileInfo",
-                                  profile_value);
+  web_ui()->CallJavascriptFunction("ManageProfileOverlay.setProfileInfo",
+                                   profile_value);
 
   // Ensure that we have the most up to date GAIA picture.
   if (is_current_profile) {
     GAIAInfoUpdateService* service =
-        Profile::FromWebUI(web_ui_)->GetGAIAInfoUpdateService();
+        Profile::FromWebUI(web_ui())->GetGAIAInfoUpdateService();
     if (service)
       service->Update();
   }
@@ -285,7 +285,7 @@ void ManageProfileHandler::ProfileIconSelectionChanged(
   }
 
   // Currently this only supports editing the current profile's info.
-  if (file_path != Profile::FromWebUI(web_ui_)->GetPath())
+  if (file_path != Profile::FromWebUI(web_ui())->GetPath())
     return;
 
   std::string icon_url;
@@ -307,6 +307,6 @@ void ManageProfileHandler::ProfileIconSelectionChanged(
     return;
 
   StringValue gaia_name_value(gaia_name);
-  web_ui_->CallJavascriptFunction("ManageProfileOverlay.setProfileName",
-                                  gaia_name_value);
+  web_ui()->CallJavascriptFunction("ManageProfileOverlay.setProfileName",
+                                   gaia_name_value);
 }

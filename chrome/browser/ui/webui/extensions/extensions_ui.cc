@@ -37,7 +37,7 @@ ExtensionsUI::ExtensionsUI(TabContents* contents) : ChromeWebUI(contents) {
 
   ExtensionSettingsHandler* handler = new ExtensionSettingsHandler();
   handler->GetLocalizedValues(source->localized_strings());
-  AddMessageHandler(handler->Attach(this));
+  AddMessageHandler(handler);
 }
 
 ExtensionsUI::~ExtensionsUI() {

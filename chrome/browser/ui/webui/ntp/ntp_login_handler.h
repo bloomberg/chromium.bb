@@ -22,8 +22,6 @@ class NTPLoginHandler : public WebUIMessageHandler,
   NTPLoginHandler();
   virtual ~NTPLoginHandler();
 
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
-
   // WebUIMessageHandler interface
   virtual void RegisterMessages() OVERRIDE;
 

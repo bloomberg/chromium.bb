@@ -163,7 +163,7 @@ FlashDOMHandler::~FlashDOMHandler() {
 }
 
 void FlashDOMHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("requestFlashInfo",
+  web_ui()->RegisterMessageCallback("requestFlashInfo",
       base::Bind(&FlashDOMHandler::HandleRequestFlashInfo,
                  base::Unretained(this)));
 }
@@ -267,7 +267,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
     AddPair(list, ASCIIToUTF16("Flash plugin"), "Disabled");
   } else {
     PluginPrefs* plugin_prefs =
-        PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui_));
+        PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui()));
     for (size_t i = 0; i < info_array.size(); ++i) {
       if (plugin_prefs->IsPluginEnabled(info_array[i])) {
         flash_version = info_array[i].version + ASCIIToUTF16(" ") +
@@ -353,7 +353,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
 
   DictionaryValue flashInfo;
   flashInfo.Set("flashInfo", list);
-  web_ui_->CallJavascriptFunction("returnFlashInfo", flashInfo);
+  web_ui()->CallJavascriptFunction("returnFlashInfo", flashInfo);
 }
 
 }  // namespace
@@ -368,7 +368,7 @@ FlashUI::FlashUI(TabContents* contents) : ChromeWebUI(contents) {
   content::RecordAction(
       UserMetricsAction("ViewAboutFlash"));
 
-  AddMessageHandler((new FlashDOMHandler())->Attach(this));
+  AddMessageHandler(new FlashDOMHandler());
 
   // Set up the about:flash source.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());

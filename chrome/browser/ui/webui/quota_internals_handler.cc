@@ -24,8 +24,7 @@ QuotaInternalsHandler::~QuotaInternalsHandler() {
 }
 
 void QuotaInternalsHandler::RegisterMessages() {
-  DCHECK(web_ui_);
-  web_ui_->RegisterMessageCallback("requestInfo",
+  web_ui()->RegisterMessageCallback("requestInfo",
       base::Bind(&QuotaInternalsHandler::OnRequestInfo,
                  base::Unretained(this)));
 }
@@ -76,15 +75,15 @@ void QuotaInternalsHandler::ReportStatistics(const Statistics& stats) {
 void QuotaInternalsHandler::SendMessage(const std::string& message,
                                         const base::Value& value) {
   scoped_ptr<base::Value> message_data(base::Value::CreateStringValue(message));
-  web_ui_->CallJavascriptFunction("cr.quota.messageHandler",
-                                  *message_data,
-                                  value);
+  web_ui()->CallJavascriptFunction("cr.quota.messageHandler",
+                                   *message_data,
+                                   value);
 }
 
 void QuotaInternalsHandler::OnRequestInfo(const base::ListValue*) {
   if (!proxy_)
     proxy_ = new QuotaInternalsProxy(this);
-  proxy_->RequestInfo(Profile::FromWebUI(web_ui_)->GetQuotaManager());
+  proxy_->RequestInfo(Profile::FromWebUI(web_ui())->GetQuotaManager());
 }
 
 }  // namespace quota_internals

@@ -209,36 +209,41 @@ class CONTENT_EXPORT WebUIMessageHandler {
   WebUIMessageHandler();
   virtual ~WebUIMessageHandler();
 
-  // Attaches |this| to |web_ui| in order to handle messages from it.  Declared
-  // virtual so that subclasses can do special init work as soon as the web_ui
-  // is provided.  Returns |this| for convenience.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
-
  protected:
+  // Helper methods:
+
   // Adds "url" and "title" keys on incoming dictionary, setting title
   // as the url as a fallback on empty title.
   static void SetURLAndTitle(base::DictionaryValue* dictionary,
                              string16 title,
                              const GURL& gurl);
 
-  // This is where subclasses specify which messages they'd like to handle.
-  virtual void RegisterMessages() = 0;
-
   // Extract an integer value from a list Value.
-  bool ExtractIntegerValue(const base::ListValue* value, int* out_int);
+  static bool ExtractIntegerValue(const base::ListValue* value, int* out_int);
 
   // Extract a floating point (double) value from a list Value.
-  bool ExtractDoubleValue(const base::ListValue* value, double* out_value);
+  static bool ExtractDoubleValue(const base::ListValue* value,
+                                 double* out_value);
 
   // Extract a string value from a list Value.
-  string16 ExtractStringValue(const base::ListValue* value);
+  static string16 ExtractStringValue(const base::ListValue* value);
+
+  // This is where subclasses specify which messages they'd like to handle and
+  // perform any additional initialization.. At this point web_ui() will return
+  // the associated WebUI object.
+  virtual void RegisterMessages() = 0;
 
   // Returns the attached WebUI for this handler.
   WebUI* web_ui() const { return web_ui_; }
 
-  WebUI* web_ui_;  // TODO(wyck): Make private after merge conflicts go away.
-
  private:
+  friend class WebUI;
+  friend class WebUIBrowserTest;
+
+  void set_web_ui(WebUI* web_ui) { web_ui_ = web_ui; }
+
+  WebUI* web_ui_;
+
   DISALLOW_COPY_AND_ASSIGN(WebUIMessageHandler);
 };
 

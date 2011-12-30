@@ -190,53 +190,50 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   value->SetString("app_launch_ordinal", app_launch_ordinal.ToString());
 }
 
-WebUIMessageHandler* AppLauncherHandler::Attach(WebUI* web_ui) {
-  registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
-      content::Source<TabContents>(web_ui->tab_contents()));
-  return WebUIMessageHandler::Attach(web_ui);
-}
-
 void AppLauncherHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("getApps",
+  registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
+      content::Source<TabContents>(web_ui()->tab_contents()));
+
+  web_ui()->RegisterMessageCallback("getApps",
       base::Bind(&AppLauncherHandler::HandleGetApps,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("launchApp",
+  web_ui()->RegisterMessageCallback("launchApp",
       base::Bind(&AppLauncherHandler::HandleLaunchApp,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("setLaunchType",
+  web_ui()->RegisterMessageCallback("setLaunchType",
       base::Bind(&AppLauncherHandler::HandleSetLaunchType,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("uninstallApp",
+  web_ui()->RegisterMessageCallback("uninstallApp",
       base::Bind(&AppLauncherHandler::HandleUninstallApp,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("hideAppsPromo",
+  web_ui()->RegisterMessageCallback("hideAppsPromo",
       base::Bind(&AppLauncherHandler::HandleHideAppsPromo,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("createAppShortcut",
+  web_ui()->RegisterMessageCallback("createAppShortcut",
       base::Bind(&AppLauncherHandler::HandleCreateAppShortcut,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("reorderApps",
+  web_ui()->RegisterMessageCallback("reorderApps",
       base::Bind(&AppLauncherHandler::HandleReorderApps,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("setPageIndex",
+  web_ui()->RegisterMessageCallback("setPageIndex",
       base::Bind(&AppLauncherHandler::HandleSetPageIndex,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("promoSeen",
+  web_ui()->RegisterMessageCallback("promoSeen",
       base::Bind(&AppLauncherHandler::HandlePromoSeen,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("saveAppPageName",
+  web_ui()->RegisterMessageCallback("saveAppPageName",
       base::Bind(&AppLauncherHandler::HandleSaveAppPageName,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("generateAppForLink",
+  web_ui()->RegisterMessageCallback("generateAppForLink",
       base::Bind(&AppLauncherHandler::HandleGenerateAppForLink,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("recordAppLaunchByURL",
+  web_ui()->RegisterMessageCallback("recordAppLaunchByURL",
       base::Bind(&AppLauncherHandler::HandleRecordAppLaunchByURL,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("closeNotification",
+  web_ui()->RegisterMessageCallback("closeNotification",
       base::Bind(&AppLauncherHandler::HandleNotificationClose,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("setNotificationsDisabled",
+  web_ui()->RegisterMessageCallback("setNotificationsDisabled",
       base::Bind(&AppLauncherHandler::HandleSetNotificationsDisabled,
                  base::Unretained(this)));
 }
@@ -264,10 +261,10 @@ void AppLauncherHandler::Observe(int type,
       if (notification) {
         scoped_ptr<DictionaryValue> notification_value(
             SerializeNotification(*notification));
-        web_ui_->CallJavascriptFunction("appNotificationChanged",
+        web_ui()->CallJavascriptFunction("appNotificationChanged",
             id_value, *notification_value.get());
       } else {
-        web_ui_->CallJavascriptFunction("appNotificationChanged", id_value);
+        web_ui()->CallJavascriptFunction("appNotificationChanged", id_value);
       }
       break;
     }
@@ -285,7 +282,8 @@ void AppLauncherHandler::Observe(int type,
               prefs->IsFromBookmark(extension->id()) &&
               attempted_bookmark_app_install_));
         attempted_bookmark_app_install_ = false;
-        web_ui_->CallJavascriptFunction("ntp4.appAdded", *app_info, *highlight);
+        web_ui()->CallJavascriptFunction(
+            "ntp4.appAdded", *app_info, *highlight);
       }
 
       break;
@@ -302,7 +300,7 @@ void AppLauncherHandler::Observe(int type,
               content::Details<UnloadedExtensionInfo>(details)->reason ==
               extension_misc::UNLOAD_REASON_UNINSTALL));
       if (app_info.get()) {
-        web_ui_->CallJavascriptFunction(
+        web_ui()->CallJavascriptFunction(
             "ntp4.appRemoved", *app_info, *uninstall_value);
       }
       break;
@@ -317,13 +315,15 @@ void AppLauncherHandler::Observe(int type,
     case chrome::NOTIFICATION_PREF_CHANGED: {
       DictionaryValue dictionary;
       FillAppDictionary(&dictionary);
-      web_ui_->CallJavascriptFunction("appsPrefChangeCallback", dictionary);
+      web_ui()->CallJavascriptFunction("appsPrefChangeCallback", dictionary);
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
       CrxInstaller* crx_installer = content::Source<CrxInstaller>(source).ptr();
-      if (!Profile::FromWebUI(web_ui_)->IsSameProfile(crx_installer->profile()))
+      if (!Profile::FromWebUI(web_ui())->IsSameProfile(
+              crx_installer->profile())) {
         return;
+      }
       // Fall Through.
     }
     case chrome::NOTIFICATION_EXTENSION_LOAD_ERROR: {
@@ -403,7 +403,7 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
       extension_service_->apps_promo()->ShouldShowAppLauncher(
           extension_service_->GetAppIds()));
 
-  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   const ListValue* app_page_names = prefs->GetList(prefs::kNTPAppPageNames);
   if (!app_page_names || !app_page_names->GetSize()) {
     ListPrefUpdate update(prefs, prefs::kNTPAppPageNames);
@@ -452,7 +452,7 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   // b) Conceptually, it doesn't really make sense to count a
   //    prefchange-triggered refresh as a promo 'view'.
   AppsPromo* apps_promo = extension_service_->apps_promo();
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   bool apps_promo_just_expired = false;
   if (apps_promo->ShouldShowPromo(extension_service_->GetAppIds(),
                                   &apps_promo_just_expired)) {
@@ -472,7 +472,7 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
 
   SetAppToBeHighlighted();
   FillAppDictionary(&dictionary);
-  web_ui_->CallJavascriptFunction("getAppsCallback", dictionary);
+  web_ui()->CallJavascriptFunction("getAppsCallback", dictionary);
 
   // First time we get here we set up the observer so that we can tell update
   // the apps as they change.
@@ -702,7 +702,7 @@ void AppLauncherHandler::HandleSaveAppPageName(const ListValue* args) {
   CHECK(args->GetDouble(1, &page_index));
 
   AutoReset<bool> auto_reset(&ignore_changes_, true);
-  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   ListPrefUpdate update(prefs, prefs::kNTPAppPageNames);
   ListValue* list = update.Get();
   list->Set(static_cast<size_t>(page_index), Value::CreateStringValue(name));
@@ -722,7 +722,7 @@ void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
       extension_service_->extension_prefs()->PageIntegerAsStringOrdinal(
           static_cast<size_t>(page_index));
 
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   FaviconService* favicon_service =
       profile->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (!favicon_service) {
@@ -753,7 +753,7 @@ void AppLauncherHandler::HandleRecordAppLaunchByURL(
       static_cast<extension_misc::AppLaunchBucket>(static_cast<int>(source));
   CHECK(source < extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
 
-  RecordAppLaunchByURL(Profile::FromWebUI(web_ui_), url, bucket);
+  RecordAppLaunchByURL(Profile::FromWebUI(web_ui()), url, bucket);
 }
 
 void AppLauncherHandler::HandleNotificationClose(const ListValue* args) {
@@ -820,7 +820,7 @@ void AppLauncherHandler::SetAppToBeHighlighted() {
     return;
 
   StringValue app_id(highlight_app_id_);
-  web_ui_->CallJavascriptFunction("ntp4.setAppToBeHighlighted", app_id);
+  web_ui()->CallJavascriptFunction("ntp4.setAppToBeHighlighted", app_id);
   highlight_app_id_.clear();
 }
 
@@ -892,7 +892,7 @@ void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {
 
     // Launch app asynchronously so the image will update.
     StringValue app_id(extension_id);
-    web_ui_->CallJavascriptFunction("launchAppAfterEnable", app_id);
+    web_ui()->CallJavascriptFunction("launchAppAfterEnable", app_id);
     return;
   }
 
@@ -942,7 +942,7 @@ void AppLauncherHandler::InstallUIProceed() {
   // icon disappears but isn't replaced by the enabled icon, making a poor
   // visual experience.
   StringValue app_id(extension->id());
-  web_ui_->CallJavascriptFunction("launchAppAfterEnable", app_id);
+  web_ui()->CallJavascriptFunction("launchAppAfterEnable", app_id);
 
   extension_id_prompting_ = "";
 }
@@ -964,7 +964,7 @@ void AppLauncherHandler::InstallUIAbort(bool user_initiated) {
 ExtensionUninstallDialog* AppLauncherHandler::GetExtensionUninstallDialog() {
   if (!extension_uninstall_dialog_.get()) {
     extension_uninstall_dialog_.reset(
-        ExtensionUninstallDialog::Create(Profile::FromWebUI(web_ui_), this));
+        ExtensionUninstallDialog::Create(Profile::FromWebUI(web_ui()), this));
   }
   return extension_uninstall_dialog_.get();
 }
@@ -972,7 +972,7 @@ ExtensionUninstallDialog* AppLauncherHandler::GetExtensionUninstallDialog() {
 ExtensionInstallUI* AppLauncherHandler::GetExtensionInstallUI() {
   if (!extension_install_ui_.get()) {
     extension_install_ui_.reset(
-        new ExtensionInstallUI(Profile::FromWebUI(web_ui_)));
+        new ExtensionInstallUI(Profile::FromWebUI(web_ui())));
   }
   return extension_install_ui_.get();
 }

@@ -21,7 +21,7 @@ GenericHandler::~GenericHandler() {
 }
 
 void GenericHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("navigateToUrl",
+  web_ui()->RegisterMessageCallback("navigateToUrl",
       base::Bind(&GenericHandler::HandleNavigateToUrl, base::Unretained(this)));
 }
 
@@ -51,7 +51,7 @@ void GenericHandler::HandleNavigateToUrl(const ListValue* args) {
   if (disposition == CURRENT_TAB && target_string == "_blank")
     disposition = NEW_FOREGROUND_TAB;
 
-  web_ui_->tab_contents()->OpenURL(OpenURLParams(
+  web_ui()->tab_contents()->OpenURL(OpenURLParams(
       GURL(url_string), content::Referrer(), disposition,
       content::PAGE_TRANSITION_LINK, false));
 

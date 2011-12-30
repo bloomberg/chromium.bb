@@ -233,10 +233,10 @@ bool SSLClientCertificateSelectorWebUI::ShouldShowDialogTitle() const {
 // WebUIMessageHandler methods
 
 void SSLClientCertificateSelectorWebUI::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("requestDetails",
+  web_ui()->RegisterMessageCallback("requestDetails",
       base::Bind(&SSLClientCertificateSelectorWebUI::RequestDetails,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("viewCertificate",
+  web_ui()->RegisterMessageCallback("viewCertificate",
       base::Bind(&SSLClientCertificateSelectorWebUI::ViewCertificate,
                  base::Unretained(this)));
 }
@@ -269,7 +269,7 @@ void SSLClientCertificateSelectorWebUI::RequestDetails(
   dict.Set("certificates", certificates);
   dict.Set("details", details);
   // Send list of tab contents details to javascript.
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "sslClientCertificateSelector.setDetails",
       dict);
 }

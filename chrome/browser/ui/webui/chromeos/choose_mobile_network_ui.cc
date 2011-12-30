@@ -115,15 +115,15 @@ ChooseMobileNetworkHandler::~ChooseMobileNetworkHandler() {
 }
 
 void ChooseMobileNetworkHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kJsApiCancel,
       base::Bind(&ChooseMobileNetworkHandler::HandleCancel,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kJsApiConnect,
       base::Bind(&ChooseMobileNetworkHandler::HandleConnect,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kJsApiPageReady,
       base::Bind(&ChooseMobileNetworkHandler::HandlePageReady,
                  base::Unretained(this)));
@@ -156,7 +156,7 @@ void ChooseMobileNetworkHandler::OnNetworkDeviceFoundNetworks(
     }
   }
   if (is_page_ready_) {
-    web_ui_->CallJavascriptFunction(kJsApiShowNetworks, networks_list_);
+    web_ui()->CallJavascriptFunction(kJsApiShowNetworks, networks_list_);
     networks_list_.Clear();
     has_pending_results_ = false;
   } else {
@@ -197,7 +197,7 @@ void ChooseMobileNetworkHandler::HandlePageReady(const ListValue* args) {
   }
 
   if (has_pending_results_) {
-    web_ui_->CallJavascriptFunction(kJsApiShowNetworks, networks_list_);
+    web_ui()->CallJavascriptFunction(kJsApiShowNetworks, networks_list_);
     networks_list_.Clear();
     has_pending_results_ = false;
   }
@@ -209,7 +209,7 @@ void ChooseMobileNetworkHandler::HandlePageReady(const ListValue* args) {
 ChooseMobileNetworkUI::ChooseMobileNetworkUI(TabContents* contents)
     : ChromeWebUI(contents) {
   ChooseMobileNetworkHandler* handler = new ChooseMobileNetworkHandler();
-  AddMessageHandler((handler)->Attach(this));
+  AddMessageHandler(handler);
   // Set up the "chrome://choose-mobile-network" source.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(

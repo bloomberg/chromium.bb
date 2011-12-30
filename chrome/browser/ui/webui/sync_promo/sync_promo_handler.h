@@ -21,7 +21,6 @@ class SyncPromoHandler : public SyncSetupHandler {
   static void RegisterUserPrefs(PrefService* prefs);
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // SyncSetupFlowHandler implementation.

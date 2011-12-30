@@ -79,47 +79,43 @@ void SyncPromoHandler::RegisterUserPrefs(PrefService* prefs) {
       PrefService::UNSYNCABLE_PREF);
 }
 
-WebUIMessageHandler* SyncPromoHandler::Attach(WebUI* web_ui) {
-  DCHECK(web_ui);
+void SyncPromoHandler::RegisterMessages() {
   // Keep a reference to the preferences service for convenience and it's
   // probably a little faster that getting it via Profile::FromWebUI() every
   // time we need to interact with preferences.
-  prefs_ = Profile::FromWebUI(web_ui)->GetPrefs();
+  prefs_ = Profile::FromWebUI(web_ui())->GetPrefs();
   DCHECK(prefs_);
   // Ignore events from view-source:chrome://syncpromo.
-  if (!web_ui->tab_contents()->GetController().GetActiveEntry()->
+  if (!web_ui()->tab_contents()->GetController().GetActiveEntry()->
           IsViewSourceMode()) {
     // Listen to see if the tab we're in gets closed.
     registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
         content::Source<NavigationController>(
-            &web_ui->tab_contents()->GetController()));
+            &web_ui()->tab_contents()->GetController()));
     // Listen to see if the window we're in gets closed.
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
         content::NotificationService::AllSources());
   }
-  return SyncSetupHandler::Attach(web_ui);
-}
 
-void SyncPromoHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("SyncPromo:Close",
+  web_ui()->RegisterMessageCallback("SyncPromo:Close",
       base::Bind(&SyncPromoHandler::HandleCloseSyncPromo,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("SyncPromo:Initialize",
+  web_ui()->RegisterMessageCallback("SyncPromo:Initialize",
       base::Bind(&SyncPromoHandler::HandleInitializeSyncPromo,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("SyncPromo:RecordSignInAttempts",
+  web_ui()->RegisterMessageCallback("SyncPromo:RecordSignInAttempts",
       base::Bind(&SyncPromoHandler::HandleRecordSignInAttempts,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("SyncPromo:RecordThrobberTime",
+  web_ui()->RegisterMessageCallback("SyncPromo:RecordThrobberTime",
       base::Bind(&SyncPromoHandler::HandleRecordThrobberTime,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("SyncPromo:ShowAdvancedSettings",
+  web_ui()->RegisterMessageCallback("SyncPromo:ShowAdvancedSettings",
       base::Bind(&SyncPromoHandler::HandleShowAdvancedSettings,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("SyncPromo:UserFlowAction",
+  web_ui()->RegisterMessageCallback("SyncPromo:UserFlowAction",
       base::Bind(&SyncPromoHandler::HandleUserFlowAction,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("SyncPromo:UserSkipped",
+  web_ui()->RegisterMessageCallback("SyncPromo:UserSkipped",
       base::Bind(&SyncPromoHandler::HandleUserSkipped,
                  base::Unretained(this)));
   SyncSetupHandler::RegisterMessages();
@@ -167,7 +163,7 @@ void SyncPromoHandler::Observe(int type,
       // Make sure we're in the tab strip of the closing window.
       Browser* browser = content::Source<Browser>(source).ptr();
       if (browser->tabstrip_model()->GetWrapperIndex(
-              web_ui_->tab_contents()) != TabStripModel::kNoTab) {
+              web_ui()->tab_contents()) != TabStripModel::kNoTab) {
         RecordUserFlowAction(SYNC_PROMO_CLOSED_WINDOW);
         window_already_closed_ = true;
       }
@@ -189,7 +185,7 @@ void SyncPromoHandler::ShowSetupUI() {
   // StepWizardForShowSetupUI and ShowSetupUI.
   // TODO(binji): Move this function back and fix the focus the right way.
   ProfileSyncService* service =
-      Profile::FromWebUI(web_ui_)->GetProfileSyncService();
+      Profile::FromWebUI(web_ui())->GetProfileSyncService();
   service->get_wizard().Step(SyncSetupWizard::GetLoginState());
 }
 
@@ -203,22 +199,22 @@ void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
     prefs_->SetBoolean(prefs::kSyncPromoShowNTPBubble, true);
 
   GURL url = SyncPromoUI::GetNextPageURLForSyncPromoURL(
-      web_ui_->tab_contents()->GetURL());
+      web_ui()->tab_contents()->GetURL());
   OpenURLParams params(
       url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
-  web_ui_->tab_contents()->OpenURL(params);
+  web_ui()->tab_contents()->OpenURL(params);
 }
 
 void SyncPromoHandler::HandleInitializeSyncPromo(const base::ListValue* args) {
   // If the promo is also the Chrome launch page, we want to show the title and
   // log an event if we are running an experiment.
   bool is_launch_page = SyncPromoUI::GetIsLaunchPageForSyncPromoURL(
-      web_ui_->tab_contents()->GetURL());
+      web_ui()->tab_contents()->GetURL());
   if (is_launch_page && sync_promo_trial::IsExperimentActive())
     sync_promo_trial::RecordUserSawMessage();
   base::FundamentalValue visible(is_launch_page);
-  web_ui_->CallJavascriptFunction("SyncSetupOverlay.setPromoTitleVisible",
-                                  visible);
+  web_ui()->CallJavascriptFunction("SyncSetupOverlay.setPromoTitleVisible",
+                                   visible);
 
   OpenSyncSetup();
   // We don't need to compute anything for this, just do this every time.
@@ -238,7 +234,7 @@ void SyncPromoHandler::HandleShowAdvancedSettings(
   url += chrome::kSyncSetupSubPage;
   OpenURLParams params(
       GURL(url), Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
-  web_ui_->tab_contents()->OpenURL(params);
+  web_ui()->tab_contents()->OpenURL(params);
   RecordUserFlowAction(SYNC_PROMO_ADVANCED_CLICKED);
 }
 
@@ -269,7 +265,7 @@ void SyncPromoHandler::HandleUserFlowAction(const base::ListValue* args) {
 }
 
 void SyncPromoHandler::HandleUserSkipped(const base::ListValue* args) {
-  SyncPromoUI::SetUserSkippedSyncPromo(Profile::FromWebUI(web_ui_));
+  SyncPromoUI::SetUserSkippedSyncPromo(Profile::FromWebUI(web_ui()));
   RecordUserFlowAction(SYNC_PROMO_SKIP_CLICKED);
 }
 
@@ -291,8 +287,8 @@ void SyncPromoHandler::RecordExperimentOutcomesOnSignIn() {
     sync_promo_trial::RecordUserSignedIn();
   if (sync_promo_trial::IsPartOfBrandTrialToEnable()) {
     bool is_start_up = SyncPromoUI::GetIsLaunchPageForSyncPromoURL(
-        web_ui_->tab_contents()->GetURL());
-    Profile* profile = Profile::FromWebUI(web_ui_);
+        web_ui()->tab_contents()->GetURL());
+    Profile* profile = Profile::FromWebUI(web_ui());
     sync_promo_trial::RecordUserSignedInWithTrialBrand(is_start_up, profile);
   }
 }

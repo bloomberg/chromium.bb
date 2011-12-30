@@ -42,16 +42,16 @@ void NetworkDropdownHandler::Initialize() {
 }
 
 void NetworkDropdownHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(kJsApiNetworkItemChosen,
+  web_ui()->RegisterMessageCallback(kJsApiNetworkItemChosen,
       base::Bind(&NetworkDropdownHandler::HandleNetworkItemChosen,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(kJsApiNetworkDropdownShow,
+  web_ui()->RegisterMessageCallback(kJsApiNetworkDropdownShow,
       base::Bind(&NetworkDropdownHandler::HandleNetworkDropdownShow,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(kJsApiNetworkDropdownHide,
+  web_ui()->RegisterMessageCallback(kJsApiNetworkDropdownHide,
       base::Bind(&NetworkDropdownHandler::HandleNetworkDropdownHide,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(kJsApiNetworkDropdownRefresh,
+  web_ui()->RegisterMessageCallback(kJsApiNetworkDropdownRefresh,
       base::Bind(&NetworkDropdownHandler::HandleNetworkDropdownRefresh,
                  base::Unretained(this)));
 }
@@ -81,7 +81,7 @@ void NetworkDropdownHandler::HandleNetworkDropdownShow(
   if (!args->GetDouble(2, &last_network_type))
     NOTREACHED();
 
-  dropdown_.reset(new NetworkDropdown(web_ui_, oobe));
+  dropdown_.reset(new NetworkDropdown(web_ui(), oobe));
 
   if (last_network_type >= 0) {
     dropdown_->SetLastNetworkType(

@@ -84,29 +84,27 @@ void PasswordManagerHandler::Initialize() {
     return;
 
   show_passwords_.Init(prefs::kPasswordManagerAllowShowPasswords,
-                       Profile::FromWebUI(web_ui_)->GetPrefs(), this);
-  // We should not cache web_ui_->GetProfile(). See crosbug.com/6304.
+                       Profile::FromWebUI(web_ui())->GetPrefs(), this);
+  // We should not cache web_ui()->GetProfile(). See crosbug.com/6304.
   PasswordStore* store = GetPasswordStore();
   if (store)
     store->AddObserver(this);
 }
 
 void PasswordManagerHandler::RegisterMessages() {
-  DCHECK(web_ui_);
-
-  web_ui_->RegisterMessageCallback("updatePasswordLists",
+  web_ui()->RegisterMessageCallback("updatePasswordLists",
       base::Bind(&PasswordManagerHandler::UpdatePasswordLists,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("removeSavedPassword",
+  web_ui()->RegisterMessageCallback("removeSavedPassword",
       base::Bind(&PasswordManagerHandler::RemoveSavedPassword,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("removePasswordException",
+  web_ui()->RegisterMessageCallback("removePasswordException",
       base::Bind(&PasswordManagerHandler::RemovePasswordException,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("removeAllSavedPasswords",
+  web_ui()->RegisterMessageCallback("removeAllSavedPasswords",
       base::Bind(&PasswordManagerHandler::RemoveAllSavedPasswords,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("removeAllPasswordExceptions",
+  web_ui()->RegisterMessageCallback("removeAllPasswordExceptions",
       base::Bind(&PasswordManagerHandler::RemoveAllPasswordExceptions,
                  base::Unretained(this)));
 }
@@ -116,7 +114,7 @@ void PasswordManagerHandler::OnLoginsChanged() {
 }
 
 PasswordStore* PasswordManagerHandler::GetPasswordStore() {
-  return Profile::FromWebUI(web_ui_)->
+  return Profile::FromWebUI(web_ui())->
       GetPasswordStore(Profile::EXPLICIT_ACCESS);
 }
 
@@ -139,7 +137,7 @@ void PasswordManagerHandler::UpdatePasswordLists(const ListValue* args) {
   password_list_.reset();
   password_exception_list_.reset();
 
-  languages_ = Profile::FromWebUI(web_ui_)->GetPrefs()->
+  languages_ = Profile::FromWebUI(web_ui())->GetPrefs()->
       GetString(prefs::kAcceptLanguages);
   populater_.Populate();
   exception_populater_.Populate();
@@ -209,8 +207,8 @@ void PasswordManagerHandler::SetPasswordList() {
     entries.Append(entry);
   }
 
-  web_ui_->CallJavascriptFunction("PasswordManager.setSavedPasswordsList",
-                                  entries);
+  web_ui()->CallJavascriptFunction("PasswordManager.setSavedPasswordsList",
+                                   entries);
 }
 
 void PasswordManagerHandler::SetPasswordExceptionList() {
@@ -220,8 +218,8 @@ void PasswordManagerHandler::SetPasswordExceptionList() {
         net::FormatUrl(password_exception_list_[i]->origin, languages_)));
   }
 
-  web_ui_->CallJavascriptFunction("PasswordManager.setPasswordExceptionsList",
-                                  entries);
+  web_ui()->CallJavascriptFunction("PasswordManager.setPasswordExceptionsList",
+                                   entries);
 }
 
 PasswordManagerHandler::ListPopulater::ListPopulater(

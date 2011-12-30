@@ -53,10 +53,10 @@ void CoreOobeHandler::Initialize() {
 }
 
 void CoreOobeHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(kJsApiToggleAccessibility,
+  web_ui()->RegisterMessageCallback(kJsApiToggleAccessibility,
       base::Bind(&CoreOobeHandler::OnToggleAccessibility,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(kJsApiScreenStateInitialize,
+  web_ui()->RegisterMessageCallback(kJsApiScreenStateInitialize,
       base::Bind(&CoreOobeHandler::OnInitialized,
                  base::Unretained(this)));
 }
@@ -66,7 +66,7 @@ void CoreOobeHandler::OnInitialized(const base::ListValue* args) {
 }
 
 void CoreOobeHandler::OnToggleAccessibility(const base::ListValue* args) {
-  accessibility::ToggleAccessibility(web_ui_);
+  accessibility::ToggleAccessibility(web_ui());
 }
 
 void CoreOobeHandler::ShowOobeUI(bool show) {
@@ -81,7 +81,7 @@ void CoreOobeHandler::ShowOobeUI(bool show) {
 
 void CoreOobeHandler::UpdateOobeUIVisibility() {
   base::FundamentalValue showValue(show_oobe_ui_);
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.showOobeUI", showValue);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.showOobeUI", showValue);
 }
 
 void CoreOobeHandler::OnOSVersionLabelTextUpdated(
@@ -98,9 +98,9 @@ void CoreOobeHandler::UpdateLabel(const std::string& id,
                                   const std::string& text) {
   base::StringValue id_value(UTF8ToUTF16(id));
   base::StringValue text_value(UTF8ToUTF16(text));
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.setLabelText",
-                                  id_value,
-                                  text_value);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.setLabelText",
+                                   id_value,
+                                   text_value);
 }
 
 }  // namespace chromeos

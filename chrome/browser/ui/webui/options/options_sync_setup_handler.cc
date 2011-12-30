@@ -16,7 +16,7 @@ OptionsSyncSetupHandler::~OptionsSyncSetupHandler() {
 
 void OptionsSyncSetupHandler::StepWizardForShowSetupUI() {
   ProfileSyncService* service =
-      Profile::FromWebUI(web_ui_)->GetProfileSyncService();
+      Profile::FromWebUI(web_ui())->GetProfileSyncService();
   DCHECK(service);
 
   // We should bring up either a login or a configure flow based on the state of
@@ -35,5 +35,5 @@ void OptionsSyncSetupHandler::StepWizardForShowSetupUI() {
 void OptionsSyncSetupHandler::ShowSetupUI() {
   // Show the Sync Setup page.
   scoped_ptr<Value> page(Value::CreateStringValue("syncSetup"));
-  web_ui_->CallJavascriptFunction("OptionsPage.navigateToPage", *page);
+  web_ui()->CallJavascriptFunction("OptionsPage.navigateToPage", *page);
 }

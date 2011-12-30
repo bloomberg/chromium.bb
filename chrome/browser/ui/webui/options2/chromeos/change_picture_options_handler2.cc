@@ -97,20 +97,19 @@ void ChangePictureOptionsHandler::GetLocalizedValues(
 }
 
 void ChangePictureOptionsHandler::RegisterMessages() {
-  DCHECK(web_ui_);
-  web_ui_->RegisterMessageCallback("chooseFile",
+  web_ui()->RegisterMessageCallback("chooseFile",
       base::Bind(&ChangePictureOptionsHandler::HandleChooseFile,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("takePhoto",
+  web_ui()->RegisterMessageCallback("takePhoto",
       base::Bind(&ChangePictureOptionsHandler::HandleTakePhoto,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("onChangePicturePageShown",
+  web_ui()->RegisterMessageCallback("onChangePicturePageShown",
       base::Bind(&ChangePictureOptionsHandler::HandlePageShown,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("onChangePicturePageInitialized",
+  web_ui()->RegisterMessageCallback("onChangePicturePageInitialized",
       base::Bind(&ChangePictureOptionsHandler::HandlePageInitialized,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("selectImage",
+  web_ui()->RegisterMessageCallback("selectImage",
       base::Bind(&ChangePictureOptionsHandler::HandleSelectImage,
                  base::Unretained(this)));
 }
@@ -120,8 +119,8 @@ void ChangePictureOptionsHandler::SendDefaultImages() {
   for (int i = 0; i < kDefaultImagesCount; ++i) {
     image_urls.Append(new StringValue(GetDefaultImageUrl(i)));
   }
-  web_ui_->CallJavascriptFunction("ChangePictureOptions.setDefaultImages",
-                                  image_urls);
+  web_ui()->CallJavascriptFunction("ChangePictureOptions.setDefaultImages",
+                                   image_urls);
 }
 
 void ChangePictureOptionsHandler::HandleChooseFile(const ListValue* args) {
@@ -146,7 +145,7 @@ void ChangePictureOptionsHandler::HandleChooseFile(const ListValue* args) {
       &file_type_info,
       0,
       FILE_PATH_LITERAL(""),
-      web_ui_->tab_contents(),
+      web_ui()->tab_contents(),
       GetBrowserWindow(),
       NULL);
 }
@@ -199,7 +198,7 @@ void ChangePictureOptionsHandler::SendSelectedImage() {
       // User has image from camera/file, record it and add to the image list.
       previous_image_ = user.image();
       previous_image_data_url_ = web_ui_util::GetImageDataUrl(previous_image_);
-      web_ui_->CallJavascriptFunction("ChangePictureOptions.setOldImage");
+      web_ui()->CallJavascriptFunction("ChangePictureOptions.setOldImage");
       break;
     }
     case User::kProfileImageIndex: {
@@ -212,8 +211,8 @@ void ChangePictureOptionsHandler::SendSelectedImage() {
              previous_image_index_ < kDefaultImagesCount);
       // User has image from the set of default images.
       base::StringValue image_url(GetDefaultImageUrl(previous_image_index_));
-      web_ui_->CallJavascriptFunction("ChangePictureOptions.setSelectedImage",
-                                      image_url);
+      web_ui()->CallJavascriptFunction("ChangePictureOptions.setSelectedImage",
+                                       image_url);
     }
   }
 }
@@ -222,8 +221,8 @@ void ChangePictureOptionsHandler::SendProfileImage(const SkBitmap& image,
                                                    bool should_select) {
   base::StringValue data_url(web_ui_util::GetImageDataUrl(image));
   base::FundamentalValue select(should_select);
-  web_ui_->CallJavascriptFunction("ChangePictureOptions.setProfileImage",
-                                  data_url, select);
+  web_ui()->CallJavascriptFunction("ChangePictureOptions.setProfileImage",
+                                   data_url, select);
 }
 
 void ChangePictureOptionsHandler::UpdateProfileImage() {
@@ -318,8 +317,8 @@ void ChangePictureOptionsHandler::CheckCameraPresence() {
 
 void ChangePictureOptionsHandler::SetCameraPresent(bool present) {
   base::FundamentalValue present_value(present);
-  web_ui_->CallJavascriptFunction("ChangePictureOptions.setCameraPresent",
-                                  present_value);
+  web_ui()->CallJavascriptFunction("ChangePictureOptions.setCameraPresent",
+                                   present_value);
 }
 
 void ChangePictureOptionsHandler::OnCameraPresenceCheckDone() {
@@ -340,7 +339,7 @@ void ChangePictureOptionsHandler::Observe(
 
 gfx::NativeWindow ChangePictureOptionsHandler::GetBrowserWindow() const {
   Browser* browser =
-      BrowserList::FindBrowserWithProfile(Profile::FromWebUI(web_ui_));
+      BrowserList::FindBrowserWithProfile(Profile::FromWebUI(web_ui()));
   if (!browser)
     return NULL;
   return browser->window()->GetNativeHandle();

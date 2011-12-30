@@ -110,43 +110,43 @@ void BrowserOptionsHandler::GetLocalizedValues(
 }
 
 void BrowserOptionsHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("becomeDefaultBrowser",
+  web_ui()->RegisterMessageCallback("becomeDefaultBrowser",
       base::Bind(&BrowserOptionsHandler::BecomeDefaultBrowser,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("setDefaultSearchEngine",
+  web_ui()->RegisterMessageCallback("setDefaultSearchEngine",
       base::Bind(&BrowserOptionsHandler::SetDefaultSearchEngine,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("removeStartupPages",
+  web_ui()->RegisterMessageCallback("removeStartupPages",
       base::Bind(&BrowserOptionsHandler::RemoveStartupPages,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("addStartupPage",
+  web_ui()->RegisterMessageCallback("addStartupPage",
       base::Bind(&BrowserOptionsHandler::AddStartupPage,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("editStartupPage",
+  web_ui()->RegisterMessageCallback("editStartupPage",
       base::Bind(&BrowserOptionsHandler::EditStartupPage,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("setStartupPagesToCurrentPages",
+  web_ui()->RegisterMessageCallback("setStartupPagesToCurrentPages",
       base::Bind(&BrowserOptionsHandler::SetStartupPagesToCurrentPages,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("dragDropStartupPage",
+  web_ui()->RegisterMessageCallback("dragDropStartupPage",
       base::Bind(&BrowserOptionsHandler::DragDropStartupPage,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("requestAutocompleteSuggestions",
+  web_ui()->RegisterMessageCallback("requestAutocompleteSuggestions",
       base::Bind(&BrowserOptionsHandler::RequestAutocompleteSuggestions,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("enableInstant",
+  web_ui()->RegisterMessageCallback("enableInstant",
       base::Bind(&BrowserOptionsHandler::EnableInstant,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("disableInstant",
+  web_ui()->RegisterMessageCallback("disableInstant",
       base::Bind(&BrowserOptionsHandler::DisableInstant,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("getInstantFieldTrialStatus",
+  web_ui()->RegisterMessageCallback("getInstantFieldTrialStatus",
       base::Bind(&BrowserOptionsHandler::GetInstantFieldTrialStatus,
                  base::Unretained(this)));
 }
 
 void BrowserOptionsHandler::Initialize() {
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
 
   // Create our favicon data source.
   profile->GetChromeURLDataManager()->AddDataSource(
@@ -201,12 +201,12 @@ void BrowserOptionsHandler::CheckAutoLaunchCallback(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (is_in_auto_launch_group) {
-    web_ui_->RegisterMessageCallback("toggleAutoLaunch",
+    web_ui()->RegisterMessageCallback("toggleAutoLaunch",
         base::Bind(&BrowserOptionsHandler::ToggleAutoLaunch,
         base::Unretained(this)));
 
     base::FundamentalValue enabled(will_launch_at_login);
-    web_ui_->CallJavascriptFunction("BrowserOptions.updateAutoLaunchState",
+    web_ui()->CallJavascriptFunction("BrowserOptions.updateAutoLaunchState",
       enabled);
   }
 #endif
@@ -253,7 +253,7 @@ void BrowserOptionsHandler::BecomeDefaultBrowser(const ListValue* args) {
 
   // If the user attempted to make Chrome the default browser, then he/she
   // arguably wants to be notified when that changes.
-  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   prefs->SetBoolean(prefs::kCheckDefaultBrowser, true);
 }
 
@@ -294,8 +294,9 @@ void BrowserOptionsHandler::SetDefaultBrowserUIString(int status_string_id) {
       (status_string_id == IDS_OPTIONS_DEFAULTBROWSER_DEFAULT ||
        status_string_id == IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT)));
 
-  web_ui_->CallJavascriptFunction("BrowserOptions.updateDefaultBrowserState",
-                                  *status_string, *is_default, *can_be_default);
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.updateDefaultBrowserState",
+      *status_string, *is_default, *can_be_default);
 }
 
 void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
@@ -325,9 +326,9 @@ void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
   scoped_ptr<Value> default_managed(Value::CreateBooleanValue(
       template_url_service_->is_default_search_managed()));
 
-  web_ui_->CallJavascriptFunction("BrowserOptions.updateSearchEngines",
-                                  search_engines, *default_value,
-                                  *default_managed);
+  web_ui()->CallJavascriptFunction("BrowserOptions.updateSearchEngines",
+                                   search_engines, *default_value,
+                                   *default_managed);
 }
 
 void BrowserOptionsHandler::SetDefaultSearchEngine(const ListValue* args) {
@@ -348,7 +349,7 @@ void BrowserOptionsHandler::SetDefaultSearchEngine(const ListValue* args) {
 
 void BrowserOptionsHandler::UpdateSearchEngines() {
   template_url_service_ =
-      TemplateURLServiceFactory::GetForProfile(Profile::FromWebUI(web_ui_));
+      TemplateURLServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
   if (template_url_service_) {
     template_url_service_->Load();
     template_url_service_->AddObserver(this);
@@ -357,7 +358,7 @@ void BrowserOptionsHandler::UpdateSearchEngines() {
 }
 
 void BrowserOptionsHandler::UpdateStartupPages() {
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   const SessionStartupPref startup_pref =
       SessionStartupPref::GetStartupPref(profile->GetPrefs());
   startup_custom_pages_table_model_->SetURLs(startup_pref.urls);
@@ -377,8 +378,8 @@ void BrowserOptionsHandler::OnModelChanged() {
     startup_pages.Append(entry);
   }
 
-  web_ui_->CallJavascriptFunction("BrowserOptions.updateStartupPages",
-                                  startup_pages);
+  web_ui()->CallJavascriptFunction("BrowserOptions.updateStartupPages",
+                                   startup_pages);
 }
 
 void BrowserOptionsHandler::OnItemsChanged(int start, int length) {
@@ -493,7 +494,7 @@ void BrowserOptionsHandler::DragDropStartupPage(const ListValue* args) {
 }
 
 void BrowserOptionsHandler::SaveStartupPagesPref() {
-  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
 
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(prefs);
   pref.urls = startup_custom_pages_table_model_->GetURLs();
@@ -512,11 +513,11 @@ void BrowserOptionsHandler::RequestAutocompleteSuggestions(
 }
 
 void BrowserOptionsHandler::EnableInstant(const ListValue* args) {
-  InstantController::Enable(Profile::FromWebUI(web_ui_));
+  InstantController::Enable(Profile::FromWebUI(web_ui()));
 }
 
 void BrowserOptionsHandler::DisableInstant(const ListValue* args) {
-  InstantController::Disable(Profile::FromWebUI(web_ui_));
+  InstantController::Disable(Profile::FromWebUI(web_ui()));
 }
 
 void BrowserOptionsHandler::ToggleAutoLaunch(const ListValue* args) {
@@ -537,12 +538,12 @@ void BrowserOptionsHandler::ToggleAutoLaunch(const ListValue* args) {
 }
 
 void BrowserOptionsHandler::GetInstantFieldTrialStatus(const ListValue* args) {
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   base::FundamentalValue enabled(
       InstantFieldTrial::IsInstantExperiment(profile) &&
       !InstantFieldTrial::IsHiddenExperiment(profile));
-  web_ui_->CallJavascriptFunction("BrowserOptions.setInstantFieldTrialStatus",
-                                  enabled);
+  web_ui()->CallJavascriptFunction("BrowserOptions.setInstantFieldTrialStatus",
+                                   enabled);
 }
 
 void BrowserOptionsHandler::OnResultChanged(bool default_match_changed) {
@@ -564,7 +565,7 @@ void BrowserOptionsHandler::OnResultChanged(bool default_match_changed) {
     suggestions.Append(entry);
   }
 
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "BrowserOptions.updateAutocompleteSuggestions", suggestions);
 }
 

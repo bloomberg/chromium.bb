@@ -90,7 +90,7 @@ PrintPreviewUI::PrintPreviewUI(TabContents* contents)
 
   // WebUI owns |handler_|.
   handler_ = new PrintPreviewHandler();
-  AddMessageHandler(handler_->Attach(this));
+  AddMessageHandler(handler_);
 
   preview_ui_addr_str_ = GetPrintPreviewUIAddress();
   g_print_preview_request_id_map.Get().Set(preview_ui_addr_str_, -1);

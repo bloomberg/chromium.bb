@@ -36,7 +36,6 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
 
   void set_handlers_host(OptionsPageUIHandlerHost* handlers_host) {
     handlers_host_ = handlers_host;

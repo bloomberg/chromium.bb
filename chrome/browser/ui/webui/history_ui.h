@@ -25,7 +25,6 @@ class BrowsingHistoryHandler : public WebUIMessageHandler,
   virtual ~BrowsingHistoryHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // Callback for the "getHistory" message.

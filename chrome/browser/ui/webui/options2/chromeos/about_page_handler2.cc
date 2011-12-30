@@ -235,14 +235,14 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 }
 
 void AboutPageHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("PageReady",
+  web_ui()->RegisterMessageCallback("PageReady",
       base::Bind(&AboutPageHandler::PageReady, base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("SetReleaseTrack",
+  web_ui()->RegisterMessageCallback("SetReleaseTrack",
       base::Bind(&AboutPageHandler::SetReleaseTrack, base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback("CheckNow",
+  web_ui()->RegisterMessageCallback("CheckNow",
       base::Bind(&AboutPageHandler::CheckNow, base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("RestartNow",
+  web_ui()->RegisterMessageCallback("RestartNow",
       base::Bind(&AboutPageHandler::RestartNow, base::Unretained(this)));
 }
 
@@ -367,20 +367,20 @@ void AboutPageHandler::UpdateStatus(
     scoped_ptr<Value> insert_delay(Value::CreateBooleanValue(
         status.status ==
         UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE));
-    web_ui_->CallJavascriptFunction("AboutPage.updateStatusCallback",
-                                    *update_message, *insert_delay);
+    web_ui()->CallJavascriptFunction("AboutPage.updateStatusCallback",
+                                     *update_message, *insert_delay);
 
     scoped_ptr<Value> enabled_value(Value::CreateBooleanValue(enabled));
-    web_ui_->CallJavascriptFunction("AboutPage.updateEnableCallback",
-                                    *enabled_value);
+    web_ui()->CallJavascriptFunction("AboutPage.updateEnableCallback",
+                                     *enabled_value);
 
     scoped_ptr<Value> image_string(Value::CreateStringValue(image));
-    web_ui_->CallJavascriptFunction("AboutPage.setUpdateImage",
-                                    *image_string);
+    web_ui()->CallJavascriptFunction("AboutPage.setUpdateImage",
+                                     *image_string);
   }
   // We'll change the "Check For Update" button to "Restart" button.
   if (status.status == UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
-    web_ui_->CallJavascriptFunction("AboutPage.changeToRestartButton");
+    web_ui()->CallJavascriptFunction("AboutPage.changeToRestartButton");
   }
 }
 
@@ -388,8 +388,8 @@ void AboutPageHandler::OnOSVersion(VersionLoader::Handle handle,
                                    std::string version) {
   if (version.size()) {
     scoped_ptr<Value> version_string(Value::CreateStringValue(version));
-    web_ui_->CallJavascriptFunction("AboutPage.updateOSVersionCallback",
-                                    *version_string);
+    web_ui()->CallJavascriptFunction("AboutPage.updateOSVersionCallback",
+                                     *version_string);
   }
 }
 
@@ -397,8 +397,8 @@ void AboutPageHandler::OnOSFirmware(VersionLoader::Handle handle,
                                     std::string firmware) {
   if (firmware.size()) {
     scoped_ptr<Value> firmware_string(Value::CreateStringValue(firmware));
-    web_ui_->CallJavascriptFunction("AboutPage.updateOSFirmwareCallback",
-                                    *firmware_string);
+    web_ui()->CallJavascriptFunction("AboutPage.updateOSFirmwareCallback",
+                                     *firmware_string);
   }
 }
 
@@ -412,7 +412,7 @@ void AboutPageHandler::UpdateSelectedChannel(UpdateObserver* observer,
     // is valid.
     AboutPageHandler* handler = observer->page_handler();
     scoped_ptr<Value> channel_string(Value::CreateStringValue(channel));
-    handler->web_ui_->CallJavascriptFunction(
+    handler->web_ui()->CallJavascriptFunction(
         "AboutPage.updateSelectedOptionCallback", *channel_string);
   }
 }

@@ -57,7 +57,6 @@ class TracingMessageHandler
   virtual ~TracingMessageHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
   // SelectFileDialog::Listener implementation
@@ -153,31 +152,25 @@ TracingMessageHandler::~TracingMessageHandler() {
   TraceController::GetInstance()->CancelSubscriber(this);
 }
 
-WebUIMessageHandler* TracingMessageHandler::Attach(WebUI* web_ui) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  WebUIMessageHandler* result = WebUIMessageHandler::Attach(web_ui);
-  return result;
-}
-
 void TracingMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  web_ui_->RegisterMessageCallback("tracingControllerInitialized",
+  web_ui()->RegisterMessageCallback("tracingControllerInitialized",
       base::Bind(&TracingMessageHandler::OnTracingControllerInitialized,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("beginTracing",
+  web_ui()->RegisterMessageCallback("beginTracing",
       base::Bind(&TracingMessageHandler::OnBeginTracing,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("endTracingAsync",
+  web_ui()->RegisterMessageCallback("endTracingAsync",
       base::Bind(&TracingMessageHandler::OnEndTracingAsync,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("beginRequestBufferPercentFull",
+  web_ui()->RegisterMessageCallback("beginRequestBufferPercentFull",
       base::Bind(&TracingMessageHandler::OnBeginRequestBufferPercentFull,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("loadTraceFile",
+  web_ui()->RegisterMessageCallback("loadTraceFile",
       base::Bind(&TracingMessageHandler::OnLoadTraceFile,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("saveTraceFile",
+  web_ui()->RegisterMessageCallback("saveTraceFile",
       base::Bind(&TracingMessageHandler::OnSaveTraceFile,
                  base::Unretained(this)));
 }
@@ -222,8 +215,8 @@ void TracingMessageHandler::OnTracingControllerInitialized(
 
     dict->SetString("blacklist_version",
         GpuDataManager::GetInstance()->GetBlacklistVersion());
-    web_ui_->CallJavascriptFunction("tracingController.onClientInfoUpdate",
-                                    *dict);
+    web_ui()->CallJavascriptFunction("tracingController.onClientInfoUpdate",
+                                     *dict);
   }
 }
 
@@ -243,7 +236,7 @@ void TracingMessageHandler::OnGpuInfoUpdate() {
     gpu_info_val->Set("featureStatus", feature_status);
 
   // Send GPU Info to javascript.
-  web_ui_->CallJavascriptFunction("tracingController.onGpuInfoUpdate",
+  web_ui()->CallJavascriptFunction("tracingController.onGpuInfoUpdate",
       *(gpu_info_val.get()));
 }
 
@@ -294,10 +287,10 @@ void TracingMessageHandler::FileSelected(
 void TracingMessageHandler::FileSelectionCanceled(void* params) {
   select_trace_file_dialog_.release();
   if (select_trace_file_dialog_type_ == SelectFileDialog::SELECT_OPEN_FILE) {
-    web_ui_->CallJavascriptFunction(
+    web_ui()->CallJavascriptFunction(
         "tracingController.onLoadTraceFileCanceled");
   } else {
-    web_ui_->CallJavascriptFunction(
+    web_ui()->CallJavascriptFunction(
         "tracingController.onSaveTraceFileCanceled");
   }
 }
@@ -312,8 +305,8 @@ void TracingMessageHandler::OnLoadTraceFile(const ListValue* list) {
       SelectFileDialog::SELECT_OPEN_FILE,
       string16(),
       FilePath(),
-      NULL, 0, FILE_PATH_LITERAL(""), web_ui_->tab_contents(),
-      web_ui_->tab_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
+      NULL, 0, FILE_PATH_LITERAL(""), web_ui()->tab_contents(),
+      web_ui()->tab_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
 void TracingMessageHandler::LoadTraceFileComplete(std::string* file_contents) {
@@ -321,7 +314,7 @@ void TracingMessageHandler::LoadTraceFileComplete(std::string* file_contents) {
   std::string javascript = "tracingController.onLoadTraceFileComplete("
       + *file_contents + ");";
 
-  web_ui_->tab_contents()->GetRenderViewHost()->
+  web_ui()->tab_contents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(javascript));
 }
 
@@ -343,13 +336,13 @@ void TracingMessageHandler::OnSaveTraceFile(const ListValue* list) {
       SelectFileDialog::SELECT_SAVEAS_FILE,
       string16(),
       FilePath(),
-      NULL, 0, FILE_PATH_LITERAL(""), web_ui_->tab_contents(),
-      web_ui_->tab_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
+      NULL, 0, FILE_PATH_LITERAL(""), web_ui()->tab_contents(),
+      web_ui()->tab_contents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
 void TracingMessageHandler::SaveTraceFileComplete() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  web_ui_->CallJavascriptFunction("tracingController.onSaveTraceFileComplete");
+  web_ui()->CallJavascriptFunction("tracingController.onSaveTraceFileComplete");
 }
 
 void TracingMessageHandler::OnBeginTracing(const ListValue* args) {
@@ -379,7 +372,7 @@ void TracingMessageHandler::OnEndTracingAsync(const ListValue* list) {
 void TracingMessageHandler::OnEndTracingComplete() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   trace_enabled_ = false;
-  web_ui_->CallJavascriptFunction("tracingController.onEndTracingComplete");
+  web_ui()->CallJavascriptFunction("tracingController.onEndTracingComplete");
 }
 
 void TracingMessageHandler::OnTraceDataCollected(
@@ -395,13 +388,13 @@ void TracingMessageHandler::OnTraceDataCollected(
   trace_buffer.Finish();
   output.Append(");");
 
-  web_ui_->tab_contents()->GetRenderViewHost()->
+  web_ui()->tab_contents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(output.json_output));
 }
 
 void TracingMessageHandler::OnTraceBufferPercentFullReply(float percent_full) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "tracingController.onRequestBufferPercentFullComplete",
       *scoped_ptr<Value>(Value::CreateDoubleValue(percent_full)));
 }
@@ -416,7 +409,7 @@ void TracingMessageHandler::OnTraceBufferPercentFullReply(float percent_full) {
 ////////////////////////////////////////////////////////////////////////////////
 
 TracingUI::TracingUI(TabContents* contents) : ChromeWebUI(contents) {
-  AddMessageHandler((new TracingMessageHandler())->Attach(this));
+  AddMessageHandler(new TracingMessageHandler());
 
   // Set up the chrome://tracing/ source.
   Profile::FromBrowserContext(contents->GetBrowserContext())->

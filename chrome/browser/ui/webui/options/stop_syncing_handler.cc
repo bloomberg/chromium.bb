@@ -39,14 +39,13 @@ void StopSyncingHandler::GetLocalizedValues(
 }
 
 void StopSyncingHandler::RegisterMessages() {
-  DCHECK(web_ui_);
-  web_ui_->RegisterMessageCallback("stopSyncing",
+  web_ui()->RegisterMessageCallback("stopSyncing",
       base::Bind(&StopSyncingHandler::StopSyncing, base::Unretained(this)));
 }
 
 void StopSyncingHandler::StopSyncing(const ListValue* args){
   ProfileSyncService* service =
-      Profile::FromWebUI(web_ui_)->GetProfileSyncService();
+      Profile::FromWebUI(web_ui())->GetProfileSyncService();
   if (service != NULL && ProfileSyncService::IsSyncEnabled()) {
     service->DisableForUser();
     ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);

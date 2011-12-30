@@ -186,7 +186,7 @@ SyncSetupHandler::~SyncSetupHandler() {
 }
 
 void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
-  GetStaticLocalizedValues(localized_strings, web_ui_);
+  GetStaticLocalizedValues(localized_strings, web_ui());
 }
 
 void SyncSetupHandler::GetStaticLocalizedValues(
@@ -354,28 +354,28 @@ void SyncSetupHandler::OnGetOAuthTokenFailure(
 }
 
 void SyncSetupHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("SyncSetupDidClosePage",
+  web_ui()->RegisterMessageCallback("SyncSetupDidClosePage",
       base::Bind(&SyncSetupHandler::OnDidClosePage,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("SyncSetupSubmitAuth",
+  web_ui()->RegisterMessageCallback("SyncSetupSubmitAuth",
       base::Bind(&SyncSetupHandler::HandleSubmitAuth,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("SyncSetupConfigure",
+  web_ui()->RegisterMessageCallback("SyncSetupConfigure",
       base::Bind(&SyncSetupHandler::HandleConfigure,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("SyncSetupPassphrase",
+  web_ui()->RegisterMessageCallback("SyncSetupPassphrase",
       base::Bind(&SyncSetupHandler::HandlePassphraseEntry,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("SyncSetupPassphraseCancel",
+  web_ui()->RegisterMessageCallback("SyncSetupPassphraseCancel",
       base::Bind(&SyncSetupHandler::HandlePassphraseCancel,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("SyncSetupAttachHandler",
+  web_ui()->RegisterMessageCallback("SyncSetupAttachHandler",
       base::Bind(&SyncSetupHandler::HandleAttachHandler,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("SyncSetupShowErrorUI",
+  web_ui()->RegisterMessageCallback("SyncSetupShowErrorUI",
       base::Bind(&SyncSetupHandler::HandleShowErrorUI,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("SyncSetupShowSetupUI",
+  web_ui()->RegisterMessageCallback("SyncSetupShowSetupUI",
       base::Bind(&SyncSetupHandler::HandleShowSetupUI,
                  base::Unretained(this)));
 }
@@ -387,7 +387,7 @@ void SyncSetupHandler::RegisterMessages() {
 void SyncSetupHandler::ShowOAuthLogin() {
   DCHECK(browser_sync::IsUsingOAuth());
 
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   oauth_login_.reset(new GaiaOAuthFetcher(this,
                                           profile->GetRequestContext(),
                                           profile,
@@ -399,46 +399,46 @@ void SyncSetupHandler::ShowOAuthLogin() {
 void SyncSetupHandler::ShowGaiaLogin(const DictionaryValue& args) {
   DCHECK(!browser_sync::IsUsingOAuth());
   StringValue page("login");
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "SyncSetupOverlay.showSyncSetupPage", page, args);
 }
 
 void SyncSetupHandler::ShowGaiaSuccessAndClose() {
-  web_ui_->CallJavascriptFunction("SyncSetupOverlay.showSuccessAndClose");
+  web_ui()->CallJavascriptFunction("SyncSetupOverlay.showSuccessAndClose");
 }
 
 void SyncSetupHandler::ShowGaiaSuccessAndSettingUp() {
-  web_ui_->CallJavascriptFunction("SyncSetupOverlay.showSuccessAndSettingUp");
+  web_ui()->CallJavascriptFunction("SyncSetupOverlay.showSuccessAndSettingUp");
 }
 
 void SyncSetupHandler::ShowConfigure(const DictionaryValue& args) {
   StringValue page("configure");
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "SyncSetupOverlay.showSyncSetupPage", page, args);
 }
 
 void SyncSetupHandler::ShowPassphraseEntry(const DictionaryValue& args) {
   StringValue page("passphrase");
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "SyncSetupOverlay.showSyncSetupPage", page, args);
 }
 
 void SyncSetupHandler::ShowSettingUp() {
   StringValue page("settingUp");
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "SyncSetupOverlay.showSyncSetupPage", page);
 }
 
 void SyncSetupHandler::ShowSetupDone(const string16& user) {
   StringValue page("done");
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "SyncSetupOverlay.showSyncSetupPage", page);
 
   // Suppress the sync promo once the user signs into sync. This way the user
   // doesn't see the sync promo even if they sign out of sync later on.
-  SyncPromoUI::SetUserSkippedSyncPromo(Profile::FromWebUI(web_ui_));
+  SyncPromoUI::SetUserSkippedSyncPromo(Profile::FromWebUI(web_ui()));
 
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   ProfileSyncService* service = profile->GetProfileSyncService();
   if (!service->HasSyncSetupCompleted()) {
     FilePath profile_file_path = profile->GetPath();
@@ -451,7 +451,7 @@ void SyncSetupHandler::SetFlow(SyncSetupFlow* flow) {
 }
 
 void SyncSetupHandler::Focus() {
-  static_cast<RenderViewHostDelegate*>(web_ui_->tab_contents())->Activate();
+  static_cast<RenderViewHostDelegate*>(web_ui()->tab_contents())->Activate();
 }
 
 void SyncSetupHandler::OnDidClosePage(const ListValue* args) {
@@ -553,7 +553,7 @@ void SyncSetupHandler::HandleAttachHandler(const ListValue* args) {
 void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
   DCHECK(!flow_);
 
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   ProfileSyncService* service = profile->GetProfileSyncService();
   DCHECK(service);
 
@@ -579,10 +579,9 @@ void SyncSetupHandler::CloseSyncSetup() {
 }
 
 void SyncSetupHandler::OpenSyncSetup() {
-  DCHECK(web_ui_);
   DCHECK(!flow_);
 
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   ProfileSyncService* service = profile->GetProfileSyncService();
   if (!service) {
     // If there's no sync service, the user tried to manually invoke a syncSetup
@@ -616,7 +615,7 @@ void SyncSetupHandler::OpenSyncSetup() {
 // Private member functions.
 
 bool SyncSetupHandler::FocusExistingWizard() {
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   ProfileSyncService* service = profile->GetProfileSyncService();
   if (!service)
     return false;
@@ -630,13 +629,13 @@ bool SyncSetupHandler::FocusExistingWizard() {
 }
 
 void SyncSetupHandler::CloseOverlay() {
-  web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay");
+  web_ui()->CallJavascriptFunction("OptionsPage.closeOverlay");
 }
 
 bool SyncSetupHandler::IsLoginAuthDataValid(const std::string& username,
                                             string16* error_message) {
   // Happens during unit tests.
-  if (!web_ui_ || !profile_manager_)
+  if (!web_ui() || !profile_manager_)
     return true;
 
   if (username.empty())
@@ -645,7 +644,7 @@ bool SyncSetupHandler::IsLoginAuthDataValid(const std::string& username,
   // Check if the username is already in use by another profile.
   const ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
   size_t current_profile_index = cache.GetIndexOfProfileWithPath(
-      Profile::FromWebUI(web_ui_)->GetPath());
+      Profile::FromWebUI(web_ui())->GetPath());
   string16 username_utf16 = UTF8ToUTF16(username);
 
   for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
@@ -662,7 +661,7 @@ bool SyncSetupHandler::IsLoginAuthDataValid(const std::string& username,
 
 void SyncSetupHandler::ShowLoginErrorMessage(const string16& error_message) {
   DictionaryValue args;
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   ProfileSyncService* service = profile->GetProfileSyncService();
   SyncSetupFlow::GetArgsForGaiaLogin(service, &args);
   args.SetString("error_message", error_message);

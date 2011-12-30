@@ -217,43 +217,43 @@ PrintPreviewHandler::~PrintPreviewHandler() {
 }
 
 void PrintPreviewHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("getPrinters",
+  web_ui()->RegisterMessageCallback("getPrinters",
       base::Bind(&PrintPreviewHandler::HandleGetPrinters,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("getPreview",
+  web_ui()->RegisterMessageCallback("getPreview",
       base::Bind(&PrintPreviewHandler::HandleGetPreview,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("print",
+  web_ui()->RegisterMessageCallback("print",
       base::Bind(&PrintPreviewHandler::HandlePrint,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("getPrinterCapabilities",
+  web_ui()->RegisterMessageCallback("getPrinterCapabilities",
       base::Bind(&PrintPreviewHandler::HandleGetPrinterCapabilities,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("showSystemDialog",
+  web_ui()->RegisterMessageCallback("showSystemDialog",
       base::Bind(&PrintPreviewHandler::HandleShowSystemDialog,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("signIn",
+  web_ui()->RegisterMessageCallback("signIn",
       base::Bind(&PrintPreviewHandler::HandleSignin,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("manageCloudPrinters",
+  web_ui()->RegisterMessageCallback("manageCloudPrinters",
       base::Bind(&PrintPreviewHandler::HandleManageCloudPrint,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("manageLocalPrinters",
+  web_ui()->RegisterMessageCallback("manageLocalPrinters",
       base::Bind(&PrintPreviewHandler::HandleManagePrinters,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("closePrintPreviewTab",
+  web_ui()->RegisterMessageCallback("closePrintPreviewTab",
       base::Bind(&PrintPreviewHandler::HandleClosePreviewTab,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("hidePreview",
+  web_ui()->RegisterMessageCallback("hidePreview",
       base::Bind(&PrintPreviewHandler::HandleHidePreview,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("cancelPendingPrintRequest",
+  web_ui()->RegisterMessageCallback("cancelPendingPrintRequest",
       base::Bind(&PrintPreviewHandler::HandleCancelPendingPrintRequest,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("saveLastPrinter",
+  web_ui()->RegisterMessageCallback("saveLastPrinter",
       base::Bind(&PrintPreviewHandler::HandleSaveLastPrinter,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("getInitialSettings",
+  web_ui()->RegisterMessageCallback("getInitialSettings",
       base::Bind(&PrintPreviewHandler::HandleGetInitialSettings,
                  base::Unretained(this)));
 }
@@ -262,7 +262,7 @@ TabContentsWrapper* PrintPreviewHandler::preview_tab_wrapper() const {
   return TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
 }
 TabContents* PrintPreviewHandler::preview_tab() const {
-  return web_ui_->tab_contents();
+  return web_ui()->tab_contents();
 }
 
 void PrintPreviewHandler::HandleGetPrinters(const ListValue* /*args*/) {
@@ -286,7 +286,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   if (!settings->GetInteger(printing::kPreviewRequestID, &request_id))
     return;
 
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui());
   print_preview_ui->OnPrintPreviewRequest(request_id);
   // Add an additional key in order to identify |print_preview_ui| later on
   // when calling PrintPreviewUI::GetCurrentPrintPreviewStatus() on the IO
@@ -417,7 +417,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 
     // This tries to activate the initiator tab as well, so do not clear the
     // association with the initiator tab yet.
-    PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+    PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui());
     print_preview_ui->OnHidePreviewTab();
 
     // Do this so the initiator tab can open a new print preview tab.
@@ -426,7 +426,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     // The PDF being printed contains only the pages that the user selected,
     // so ignore the page range and print all pages.
     settings->Remove(printing::kSettingPageRange, NULL);
-    RenderViewHost* rvh = web_ui_->tab_contents()->GetRenderViewHost();
+    RenderViewHost* rvh = web_ui()->tab_contents()->GetRenderViewHost();
     rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->routing_id(), *settings));
   }
   initiator_tab->print_view_manager()->PrintPreviewDone();
@@ -444,7 +444,7 @@ void PrintPreviewHandler::HandlePrintToPdf(
                          GetPageCountFromSettingsDictionary(settings));
 
     // Pre-populating select file dialog with print job title.
-    PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+    PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui());
     string16 print_job_title_utf16 = print_preview_ui->initiator_tab_title();
 
 #if defined(OS_WIN)
@@ -463,7 +463,7 @@ void PrintPreviewHandler::HandlePrintToPdf(
 }
 
 void PrintPreviewHandler::HandleHidePreview(const ListValue* /*args*/) {
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui());
   print_preview_ui->OnHidePreviewTab();
 }
 
@@ -525,7 +525,7 @@ void PrintPreviewHandler::HandlePrintWithCloudPrint() {
   ReportStats();
   ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
 
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui());
   scoped_refptr<RefCountedBytes> data;
   print_preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
@@ -567,7 +567,7 @@ void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* /*args*/) {
   manager->PrintForSystemDialogNow();
 
   // Cancel the pending preview request if exists.
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui());
   print_preview_ui->OnCancelPendingPreviewRequest();
 }
 
@@ -636,7 +636,7 @@ void PrintPreviewHandler::HandleGetInitialSettings(const ListValue* /*args*/) {
 void PrintPreviewHandler::SendInitialSettings(
     const std::string& default_printer,
     const std::string& cloud_print_data) {
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui());
 
   base::DictionaryValue initial_settings;
   initial_settings.SetString(kInitiatorTabTitle,
@@ -660,7 +660,7 @@ void PrintPreviewHandler::SendInitialSettings(
     GetLastUsedMarginSettings(&initial_settings);
     GetNumberFormatAndMeasurementSystem(&initial_settings);
   }
-  web_ui_->CallJavascriptFunction("setInitialSettings", initial_settings);
+  web_ui()->CallJavascriptFunction("setInitialSettings", initial_settings);
 }
 
 void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {
@@ -669,20 +669,20 @@ void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {
     static_cast<RenderViewHostDelegate*>(
         initiator_tab->tab_contents())->Activate();
   }
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui());
   print_preview_ui->OnClosePrintPreviewTab();
 }
 
 void PrintPreviewHandler::SendPrinterCapabilities(
     const DictionaryValue& settings_info) {
   VLOG(1) << "Get printer capabilities finished";
-  web_ui_->CallJavascriptFunction("updateWithPrinterCapabilities",
-                                  settings_info);
+  web_ui()->CallJavascriptFunction("updateWithPrinterCapabilities",
+                                   settings_info);
 }
 
 void PrintPreviewHandler::SetupPrinterList(const ListValue& printers) {
   SendCloudPrintEnabled();
-  web_ui_->CallJavascriptFunction("setPrinters", printers);
+  web_ui()->CallJavascriptFunction("setPrinters", printers);
 }
 
 void PrintPreviewHandler::SendCloudPrintEnabled() {
@@ -691,14 +691,14 @@ void PrintPreviewHandler::SendCloudPrintEnabled() {
   if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled)) {
     GURL gcp_url(CloudPrintURL(profile).GetCloudPrintServiceURL());
     base::StringValue gcp_url_value(gcp_url.spec());
-    web_ui_->CallJavascriptFunction("setUseCloudPrint", gcp_url_value);
+    web_ui()->CallJavascriptFunction("setUseCloudPrint", gcp_url_value);
   }
 }
 
 void PrintPreviewHandler::SendCloudPrintJob(const DictionaryValue& settings,
                                             std::string print_ticket) {
   scoped_refptr<RefCountedBytes> data;
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui());
   print_preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
   CHECK(data.get());
@@ -749,8 +749,7 @@ void PrintPreviewHandler::SendCloudPrintJob(const DictionaryValue& settings,
 
   StringValue data_value(final_data);
 
-  web_ui_->CallJavascriptFunction("printToCloud",
-                                  data_value);
+  web_ui()->CallJavascriptFunction("printToCloud", data_value);
 }
 
 TabContentsWrapper* PrintPreviewHandler::GetInitiatorTab() const {
@@ -819,7 +818,7 @@ void PrintPreviewHandler::FileSelected(const FilePath& path,
   // Updating last_saved_path_ to the newly selected folder.
   *last_saved_path_ = path.DirName();
 
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui());
   print_preview_ui->CallJavascriptFunction("fileSelectionCompleted");
   scoped_refptr<RefCountedBytes> data;
   print_preview_ui->GetPrintPreviewDataForIndex(
@@ -830,7 +829,7 @@ void PrintPreviewHandler::FileSelected(const FilePath& path,
 }
 
 void PrintPreviewHandler::PostPrintToPdfTask() {
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui());
   scoped_refptr<RefCountedBytes> data;
   print_preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
@@ -846,7 +845,7 @@ void PrintPreviewHandler::PostPrintToPdfTask() {
 }
 
 void PrintPreviewHandler::FileSelectionCanceled(void* params) {
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui());
   print_preview_ui->OnFileSelectionCancelled();
 }
 

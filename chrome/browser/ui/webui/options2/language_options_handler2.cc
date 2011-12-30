@@ -50,7 +50,7 @@ void LanguageOptionsHandler::GetLocalizedValues(
 void LanguageOptionsHandler::RegisterMessages() {
   LanguageOptionsHandlerCommon::RegisterMessages();
 
-  web_ui_->RegisterMessageCallback("uiLanguageRestart",
+  web_ui()->RegisterMessageCallback("uiLanguageRestart",
       base::Bind(&LanguageOptionsHandler::RestartCallback,
                  base::Unretained(this)));
 }

@@ -83,25 +83,24 @@ NewTabUI::NewTabUI(TabContents* contents)
   link_transition_type_ = content::PAGE_TRANSITION_AUTO_BOOKMARK;
 
   if (!GetProfile()->IsOffTheRecord()) {
-    AddMessageHandler((new browser_sync::ForeignSessionHandler())->
-        Attach(this));
-    AddMessageHandler((new MostVisitedHandler())->Attach(this));
-    AddMessageHandler((new RecentlyClosedTabsHandler())->Attach(this));
-    AddMessageHandler((new MetricsHandler())->Attach(this));
+    AddMessageHandler(new browser_sync::ForeignSessionHandler());
+    AddMessageHandler(new MostVisitedHandler());
+    AddMessageHandler(new RecentlyClosedTabsHandler());
+    AddMessageHandler(new MetricsHandler());
     if (GetProfile()->IsSyncAccessible())
-      AddMessageHandler((new NewTabPageSyncHandler())->Attach(this));
+      AddMessageHandler(new NewTabPageSyncHandler());
     ExtensionService* service = GetProfile()->GetExtensionService();
     // We might not have an ExtensionService (on ChromeOS when not logged in
     // for example).
     if (service)
-      AddMessageHandler((new AppLauncherHandler(service))->Attach(this));
+      AddMessageHandler(new AppLauncherHandler(service));
 
-    AddMessageHandler((new NewTabPageHandler())->Attach(this));
-    AddMessageHandler((new FaviconWebUIHandler())->Attach(this));
+    AddMessageHandler(new NewTabPageHandler());
+    AddMessageHandler(new FaviconWebUIHandler());
   }
 
   if (NTPLoginHandler::ShouldShow(GetProfile()))
-    AddMessageHandler((new NTPLoginHandler())->Attach(this));
+    AddMessageHandler(new NTPLoginHandler());
 
   // Initializing the CSS and HTML can require some CPU, so do it after
   // we've hooked up the most visited handler.  This allows the DB query

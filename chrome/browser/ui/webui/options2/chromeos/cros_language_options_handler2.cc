@@ -79,16 +79,16 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
 void CrosLanguageOptionsHandler::RegisterMessages() {
   ::options2::LanguageOptionsHandlerCommon::RegisterMessages();
 
-  web_ui_->RegisterMessageCallback("inputMethodDisable",
+  web_ui()->RegisterMessageCallback("inputMethodDisable",
       base::Bind(&CrosLanguageOptionsHandler::InputMethodDisableCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("inputMethodEnable",
+  web_ui()->RegisterMessageCallback("inputMethodEnable",
       base::Bind(&CrosLanguageOptionsHandler::InputMethodEnableCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("inputMethodOptionsOpen",
+  web_ui()->RegisterMessageCallback("inputMethodOptionsOpen",
       base::Bind(&CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("uiLanguageRestart",
+  web_ui()->RegisterMessageCallback("uiLanguageRestart",
       base::Bind(&CrosLanguageOptionsHandler::RestartCallback,
                  base::Unretained(this)));
 }
@@ -206,7 +206,7 @@ string16 CrosLanguageOptionsHandler::GetProductName() {
 
 void CrosLanguageOptionsHandler::SetApplicationLocale(
     const std::string& language_code) {
-  Profile::FromWebUI(web_ui_)->ChangeAppLocale(
+  Profile::FromWebUI(web_ui())->ChangeAppLocale(
       language_code, Profile::APP_LOCALE_CHANGED_VIA_SETTINGS);
 }
 
@@ -214,7 +214,7 @@ void CrosLanguageOptionsHandler::RestartCallback(const ListValue* args) {
   content::RecordAction(UserMetricsAction("LanguageOptions_SignOut"));
 
   Browser* browser = Browser::GetBrowserForController(
-      &web_ui_->tab_contents()->GetController(), NULL);
+      &web_ui()->tab_contents()->GetController(), NULL);
   if (browser)
     browser->ExecuteCommand(IDC_EXIT);
 }

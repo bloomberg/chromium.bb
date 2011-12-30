@@ -121,11 +121,7 @@ class ActiveDownloadsHandler
   ActiveDownloadsHandler();
   virtual ~ActiveDownloadsHandler();
 
-  // Initialization after Attach.
-  void Init();
-
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // DownloadItem::Observer interface.
@@ -179,41 +175,36 @@ ActiveDownloadsHandler::~ActiveDownloadsHandler() {
   download_manager_->RemoveObserver(this);
 }
 
-WebUIMessageHandler* ActiveDownloadsHandler::Attach(WebUI* web_ui) {
-  profile_ = Profile::FromWebUI(web_ui);
+void ActiveDownloadsHandler::RegisterMessages() {
+  profile_ = Profile::FromWebUI(web_ui());
   profile_->GetChromeURLDataManager()->AddDataSource(new FileIconSourceCros());
-  tab_contents_ = web_ui->tab_contents();
-  return WebUIMessageHandler::Attach(web_ui);
-}
+  tab_contents_ = web_ui()->tab_contents();
 
-void ActiveDownloadsHandler::Init() {
+  web_ui()->RegisterMessageCallback("getDownloads",
+      base::Bind(&ActiveDownloadsHandler::HandleGetDownloads,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("pauseToggleDownload",
+      base::Bind(&ActiveDownloadsHandler::HandlePauseToggleDownload,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("allowDownload",
+      base::Bind(&ActiveDownloadsHandler::HandleAllowDownload,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("cancelDownload",
+      base::Bind(&ActiveDownloadsHandler::HandleCancelDownload,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("showAllFiles",
+      base::Bind(&ActiveDownloadsHandler::HandleShowAllFiles,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("openNewFullWindow",
+      base::Bind(&ActiveDownloadsHandler::OpenNewFullWindow,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("playMediaFile",
+      base::Bind(&ActiveDownloadsHandler::PlayMediaFile,
+                 base::Unretained(this)));
+
   download_manager_ =
       DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
   download_manager_->AddObserver(this);
-}
-
-void ActiveDownloadsHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("getDownloads",
-      base::Bind(&ActiveDownloadsHandler::HandleGetDownloads,
-                 base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("pauseToggleDownload",
-      base::Bind(&ActiveDownloadsHandler::HandlePauseToggleDownload,
-                 base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("allowDownload",
-      base::Bind(&ActiveDownloadsHandler::HandleAllowDownload,
-                 base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("cancelDownload",
-      base::Bind(&ActiveDownloadsHandler::HandleCancelDownload,
-                 base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("showAllFiles",
-      base::Bind(&ActiveDownloadsHandler::HandleShowAllFiles,
-                 base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("openNewFullWindow",
-      base::Bind(&ActiveDownloadsHandler::OpenNewFullWindow,
-                 base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("playMediaFile",
-      base::Bind(&ActiveDownloadsHandler::PlayMediaFile,
-                 base::Unretained(this)));
 }
 
 void ActiveDownloadsHandler::PlayMediaFile(const ListValue* args) {
@@ -326,7 +317,7 @@ void ActiveDownloadsHandler::SendDownloads() {
     results.Append(download_util::CreateDownloadItemValue(downloads_[i], i));
   }
 
-  web_ui_->CallJavascriptFunction("downloadsList", results);
+  web_ui()->CallJavascriptFunction("downloadsList", results);
 }
 
 void ActiveDownloadsHandler::OnDownloadUpdated(DownloadItem* item) {
@@ -351,7 +342,7 @@ void ActiveDownloadsHandler::OnDownloadUpdated(DownloadItem* item) {
     const size_t id = it - downloads_.begin();
     scoped_ptr<DictionaryValue> result(
         download_util::CreateDownloadItemValue(item, id));
-    web_ui_->CallJavascriptFunction("downloadUpdated", *result);
+    web_ui()->CallJavascriptFunction("downloadUpdated", *result);
   }
 }
 
@@ -365,8 +356,7 @@ void ActiveDownloadsHandler::OnDownloadUpdated(DownloadItem* item) {
 ActiveDownloadsUI::ActiveDownloadsUI(TabContents* contents)
     : HtmlDialogUI(contents),
       handler_(new ActiveDownloadsHandler()) {
-  AddMessageHandler(handler_->Attach(this));
-  handler_->Init();
+  AddMessageHandler(handler_);
 
   // Set up the chrome://active-downloads/ source.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());

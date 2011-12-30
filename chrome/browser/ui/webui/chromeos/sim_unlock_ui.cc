@@ -94,11 +94,7 @@ class SimUnlockHandler : public WebUIMessageHandler,
   SimUnlockHandler();
   virtual ~SimUnlockHandler();
 
-  // Init work after Attach.
-  void Init(TabContents* contents);
-
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // NetworkLibrary::NetworkDeviceObserver implementation.
@@ -217,8 +213,6 @@ class SimUnlockHandler : public WebUIMessageHandler,
   void UpdatePage(const chromeos::NetworkDevice* cellular,
                   const std::string& error_msg);
 
-  TabContents* tab_contents_;
-
   // Dialog internal state.
   SimUnlockState state_;
 
@@ -317,8 +311,7 @@ void SimUnlockUIHTMLSource::StartDataRequest(const std::string& path,
 // SimUnlockHandler ------------------------------------------------------------
 
 SimUnlockHandler::SimUnlockHandler()
-    : tab_contents_(NULL),
-      state_(SIM_UNLOCK_LOADING),
+    : state_(SIM_UNLOCK_LOADING),
       dialog_mode_(SimDialogDelegate::SIM_DIALOG_UNLOCK),
       pending_pin_operation_(false) {
   const chromeos::NetworkDevice* cellular = GetCellularDevice();
@@ -339,31 +332,23 @@ SimUnlockHandler::~SimUnlockHandler() {
   }
 }
 
-WebUIMessageHandler* SimUnlockHandler::Attach(WebUI* web_ui) {
-  return WebUIMessageHandler::Attach(web_ui);
-}
-
-void SimUnlockHandler::Init(TabContents* contents) {
-  tab_contents_ = contents;
-}
-
 void SimUnlockHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(kJsApiCancel,
+  web_ui()->RegisterMessageCallback(kJsApiCancel,
       base::Bind(&SimUnlockHandler::HandleCancel,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(kJsApiChangePinCode,
+  web_ui()->RegisterMessageCallback(kJsApiChangePinCode,
       base::Bind(&SimUnlockHandler::HandleChangePinCode,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(kJsApiEnterPinCode,
+  web_ui()->RegisterMessageCallback(kJsApiEnterPinCode,
       base::Bind(&SimUnlockHandler::HandleEnterPinCode,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(kJsApiEnterPukCode,
+  web_ui()->RegisterMessageCallback(kJsApiEnterPukCode,
       base::Bind(&SimUnlockHandler::HandleEnterPukCode,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(kJsApiProceedToPukInput,
+  web_ui()->RegisterMessageCallback(kJsApiProceedToPukInput,
       base::Bind(&SimUnlockHandler::HandleProceedToPukInput,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(kJsApiSimStatusInitialize,
+  web_ui()->RegisterMessageCallback(kJsApiSimStatusInitialize,
       base::Bind(&SimUnlockHandler::HandleSimStatusInitialize,
                  base::Unretained(this)));
 }
@@ -669,15 +654,14 @@ void SimUnlockHandler::UpdatePage(const chromeos::NetworkDevice* cellular,
     sim_dict.SetString(kError, error_msg);
   else
     sim_dict.SetString(kError, kErrorOk);
-  web_ui_->CallJavascriptFunction(kJsApiSimStatusChanged, sim_dict);
+  web_ui()->CallJavascriptFunction(kJsApiSimStatusChanged, sim_dict);
 }
 
 // SimUnlockUI -----------------------------------------------------------------
 
 SimUnlockUI::SimUnlockUI(TabContents* contents) : ChromeWebUI(contents) {
   SimUnlockHandler* handler = new SimUnlockHandler();
-  AddMessageHandler((handler)->Attach(this));
-  handler->Init(contents);
+  AddMessageHandler(handler);
   SimUnlockUIHTMLSource* html_source = new SimUnlockUIHTMLSource();
 
   // Set up the chrome://sim-unlock/ source.

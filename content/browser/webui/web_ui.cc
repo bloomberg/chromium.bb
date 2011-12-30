@@ -47,8 +47,7 @@ WebUI::WebUI(TabContents* contents)
       register_callback_overwrites_(false),
       tab_contents_(contents) {
   DCHECK(contents);
-  GenericHandler* handler = new GenericHandler();
-  AddMessageHandler(handler->Attach(this));
+  AddMessageHandler(new GenericHandler());
 }
 
 WebUI::~WebUI() {
@@ -169,6 +168,8 @@ void WebUI::RegisterMessageCallback(const std::string &message,
 // WebUI, protected: ----------------------------------------------------------
 
 void WebUI::AddMessageHandler(WebUIMessageHandler* handler) {
+  handler->set_web_ui(this);
+  handler->RegisterMessages();
   handlers_.push_back(handler);
 }
 
@@ -183,12 +184,6 @@ WebUIMessageHandler::WebUIMessageHandler() : web_ui_(NULL) {
 }
 
 WebUIMessageHandler::~WebUIMessageHandler() {
-}
-
-WebUIMessageHandler* WebUIMessageHandler::Attach(WebUI* web_ui) {
-  web_ui_ = web_ui;
-  RegisterMessages();
-  return this;
 }
 
 // WebUIMessageHandler, protected: ---------------------------------------------

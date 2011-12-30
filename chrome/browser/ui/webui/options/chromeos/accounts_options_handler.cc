@@ -44,14 +44,13 @@ AccountsOptionsHandler::~AccountsOptionsHandler() {
 }
 
 void AccountsOptionsHandler::RegisterMessages() {
-  DCHECK(web_ui_);
-  web_ui_->RegisterMessageCallback("whitelistUser",
+  web_ui()->RegisterMessageCallback("whitelistUser",
       base::Bind(&AccountsOptionsHandler::HandleWhitelistUser,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("unwhitelistUser",
+  web_ui()->RegisterMessageCallback("unwhitelistUser",
       base::Bind(&AccountsOptionsHandler::HandleUnwhitelistUser,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("whitelistExistingUsers",
+  web_ui()->RegisterMessageCallback("whitelistExistingUsers",
       base::Bind(&AccountsOptionsHandler::HandleWhitelistExistingUsers,
                  base::Unretained(this)));
 }

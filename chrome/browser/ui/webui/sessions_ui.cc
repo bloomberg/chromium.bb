@@ -63,7 +63,6 @@ class SessionsDOMHandler : public WebUIMessageHandler {
   virtual ~SessionsDOMHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
  private:
@@ -108,12 +107,8 @@ SessionsDOMHandler::SessionsDOMHandler() {
 SessionsDOMHandler::~SessionsDOMHandler() {
 }
 
-WebUIMessageHandler* SessionsDOMHandler::Attach(WebUI* web_ui) {
-  return WebUIMessageHandler::Attach(web_ui);
-}
-
 void SessionsDOMHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("requestSessionList",
+  web_ui()->RegisterMessageCallback("requestSessionList",
       base::Bind(&SessionsDOMHandler::HandleRequestSessions,
                  base::Unretained(this)));
 }
@@ -125,7 +120,7 @@ void SessionsDOMHandler::HandleRequestSessions(const ListValue* args) {
 browser_sync::SessionModelAssociator* SessionsDOMHandler::GetModelAssociator() {
   // We only want to get the model associator if there is one, and it is done
   // syncing sessions.
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   if (!profile->HasProfileSyncService())
     return NULL;
   ProfileSyncService* service = profile->GetProfileSyncService();
@@ -245,9 +240,9 @@ void SessionsDOMHandler::UpdateUI() {
 
   // Send the results to JavaScript, even if the lists are empty, so that the
   // UI can show a message that there is nothing.
-  web_ui_->CallJavascriptFunction("updateSessionList",
-                                  session_list,
-                                  magic_list);
+  web_ui()->CallJavascriptFunction("updateSessionList",
+                                   session_list,
+                                   magic_list);
 }
 
 }  // namespace
@@ -259,7 +254,7 @@ void SessionsDOMHandler::UpdateUI() {
 ///////////////////////////////////////////////////////////////////////////////
 
 SessionsUI::SessionsUI(TabContents* contents) : ChromeWebUI(contents) {
-  AddMessageHandler((new SessionsDOMHandler())->Attach(this));
+  AddMessageHandler(new SessionsDOMHandler());
 
   // Set up the chrome://sessions/ source.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());

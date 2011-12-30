@@ -408,10 +408,13 @@ void WebUIBrowserTest::SetupHandlers() {
       browser()->GetSelectedTabContents()->GetWebUI();
   ASSERT_TRUE(web_ui_instance != NULL);
   web_ui_instance->set_register_callback_overwrites(true);
-  test_handler_->Attach(web_ui_instance);
+  test_handler_->set_web_ui(web_ui_instance);
+  test_handler_->RegisterMessages();
 
-  if (GetMockMessageHandler())
-    GetMockMessageHandler()->Attach(web_ui_instance);
+  if (GetMockMessageHandler()) {
+    GetMockMessageHandler()->set_web_ui(web_ui_instance);
+    GetMockMessageHandler()->RegisterMessages();
+  }
 }
 
 // According to the interface for EXPECT_FATAL_FAILURE
@@ -507,16 +510,16 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
 
    private:
     virtual void RegisterMessages() OVERRIDE {
-      web_ui_->RegisterMessageCallback("startAsyncTest",
+      web_ui()->RegisterMessageCallback("startAsyncTest",
           base::Bind(&AsyncWebUIMessageHandler::HandleStartAsyncTest,
                      base::Unretained(this)));
-      web_ui_->RegisterMessageCallback("testContinues",
+      web_ui()->RegisterMessageCallback("testContinues",
           base::Bind(&AsyncWebUIMessageHandler::HandleTestContinues,
                      base::Unretained(this)));
-      web_ui_->RegisterMessageCallback("testFails",
+      web_ui()->RegisterMessageCallback("testFails",
           base::Bind(&AsyncWebUIMessageHandler::HandleTestFails,
                      base::Unretained(this)));
-      web_ui_->RegisterMessageCallback("testPasses",
+      web_ui()->RegisterMessageCallback("testPasses",
           base::Bind(&AsyncWebUIMessageHandler::HandleTestPasses,
                      base::Unretained(this)));
     }
@@ -525,7 +528,7 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
     void HandleStartAsyncTest(const ListValue* list_value) {
       Value* test_name;
       ASSERT_TRUE(list_value->Get(0, &test_name));
-      web_ui_->CallJavascriptFunction("runAsync", *test_name);
+      web_ui()->CallJavascriptFunction("runAsync", *test_name);
     }
 
     DISALLOW_COPY_AND_ASSIGN(AsyncWebUIMessageHandler);

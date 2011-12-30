@@ -125,7 +125,7 @@ class LoginHandlerHtmlDelegate : public HtmlDialogUIDelegate,
 
   // WebUIMessageHandler method:
   virtual void RegisterMessages() OVERRIDE {
-    web_ui_->RegisterMessageCallback(
+    web_ui()->RegisterMessageCallback(
         "GetAutofill",
         base::Bind(&LoginHandlerHtmlDelegate::GetAutofill,
                    base::Unretained(this)));
@@ -231,11 +231,11 @@ void LoginHandlerHtmlDelegate::ShowAutofillData(const string16& username,
 }
 
 void LoginHandlerHtmlDelegate::SendAutofillData() {
-  if (!closed_ && web_ui_ && has_autofill_ && ready_for_autofill_) {
+  if (!closed_ && web_ui() && has_autofill_ && ready_for_autofill_) {
     StringValue username_v(autofill_username_);
     StringValue password_v(autofill_password_);
-    web_ui_->CallJavascriptFunction("setAutofillCredentials",
-                                    username_v, password_v);
+    web_ui()->CallJavascriptFunction("setAutofillCredentials",
+                                     username_v, password_v);
   }
 }
 

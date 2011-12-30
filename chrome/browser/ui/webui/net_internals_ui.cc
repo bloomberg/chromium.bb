@@ -160,7 +160,6 @@ class NetInternalsMessageHandler
   virtual ~NetInternalsMessageHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // Calls g_browser.receive in the renderer, passing in |command| and |arg|.
@@ -424,10 +423,10 @@ NetInternalsMessageHandler::~NetInternalsMessageHandler() {
   }
 }
 
-WebUIMessageHandler* NetInternalsMessageHandler::Attach(WebUI* web_ui) {
+void NetInternalsMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  Profile* profile = Profile::FromWebUI(web_ui);
+  Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* pref_service = profile->GetPrefs();
   http_throttling_enabled_.Init(
       prefs::kHttpThrottlingEnabled, pref_service, this);
@@ -449,125 +448,119 @@ WebUIMessageHandler* NetInternalsMessageHandler::Attach(WebUI* web_ui) {
     prerender_manager_ = base::WeakPtr<prerender::PrerenderManager>();
   }
 
-  WebUIMessageHandler* result = WebUIMessageHandler::Attach(web_ui);
-  return result;
-}
-
-void NetInternalsMessageHandler::RegisterMessages() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "notifyReady",
       base::Bind(&NetInternalsMessageHandler::OnRendererReady,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getProxySettings",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnGetProxySettings, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "reloadProxySettings",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnReloadProxySettings, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getBadProxies",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnGetBadProxies, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "clearBadProxies",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnClearBadProxies, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getHostResolverInfo",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnGetHostResolverInfo, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "clearHostResolverCache",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnClearHostResolverCache, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "enableIPv6",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnEnableIPv6, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "startConnectionTests",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnStartConnectionTests, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "hstsQuery",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnHSTSQuery, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "hstsAdd",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnHSTSAdd, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "hstsDelete",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnHSTSDelete, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getHttpCacheInfo",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnGetHttpCacheInfo, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getSocketPoolInfo",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnGetSocketPoolInfo, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "closeIdleSockets",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnCloseIdleSockets, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "flushSocketPools",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnFlushSocketPools, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getSpdySessionInfo",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnGetSpdySessionInfo, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getSpdyStatus",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnGetSpdyStatus, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getSpdyAlternateProtocolMappings",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnGetSpdyAlternateProtocolMappings, proxy_));
 #ifdef OS_WIN
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getServiceProviders",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnGetServiceProviders, proxy_));
 #endif
 
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getHttpPipeliningStatus",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnGetHttpPipeliningStatus, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "setLogLevel",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnSetLogLevel, proxy_));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "enableHttpThrottling",
       base::Bind(&NetInternalsMessageHandler::OnEnableHttpThrottling,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "clearBrowserCache",
       base::Bind(&NetInternalsMessageHandler::OnClearBrowserCache,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getPrerenderInfo",
       base::Bind(&NetInternalsMessageHandler::OnGetPrerenderInfo,
                  base::Unretained(this)));
 #ifdef OS_CHROMEOS
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "refreshSystemLogs",
       base::Bind(&NetInternalsMessageHandler::OnRefreshSystemLogs,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getSystemLog",
       base::Bind(&NetInternalsMessageHandler::OnGetSystemLog,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "importONCFile",
       base::Bind(&NetInternalsMessageHandler::OnImportONCFile,
                  base::Unretained(this)));
@@ -581,12 +574,12 @@ void NetInternalsMessageHandler::SendJavascriptCommand(
   scoped_ptr<Value> value(arg);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (value.get()) {
-    web_ui_->CallJavascriptFunction("g_browser.receive",
-                                    *command_value.get(),
-                                    *value.get());
+    web_ui()->CallJavascriptFunction("g_browser.receive",
+                                     *command_value.get(),
+                                     *value.get());
   } else {
-    web_ui_->CallJavascriptFunction("g_browser.receive",
-                                    *command_value.get());
+    web_ui()->CallJavascriptFunction("g_browser.receive",
+                                     *command_value.get());
   }
 }
 
@@ -1634,7 +1627,7 @@ Value* NetInternalsUI::GetConstants() {
 }
 
 NetInternalsUI::NetInternalsUI(TabContents* contents) : ChromeWebUI(contents) {
-  AddMessageHandler((new NetInternalsMessageHandler())->Attach(this));
+  AddMessageHandler(new NetInternalsMessageHandler());
 
   // Set up the chrome://net-internals/ source.
   GetProfile()->GetChromeURLDataManager()->AddDataSource(

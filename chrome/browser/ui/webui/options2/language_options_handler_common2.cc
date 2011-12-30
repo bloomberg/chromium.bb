@@ -109,16 +109,15 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
 }
 
 void LanguageOptionsHandlerCommon::RegisterMessages() {
-  DCHECK(web_ui_);
-  web_ui_->RegisterMessageCallback("languageOptionsOpen",
+  web_ui()->RegisterMessageCallback("languageOptionsOpen",
       base::Bind(
           &LanguageOptionsHandlerCommon::LanguageOptionsOpenCallback,
           base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("spellCheckLanguageChange",
+  web_ui()->RegisterMessageCallback("spellCheckLanguageChange",
       base::Bind(
           &LanguageOptionsHandlerCommon::SpellCheckLanguageChangeCallback,
           base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("uiLanguageChange",
+  web_ui()->RegisterMessageCallback("uiLanguageChange",
       base::Bind(
           &LanguageOptionsHandlerCommon::UiLanguageChangeCallback,
           base::Unretained(this)));
@@ -157,7 +156,7 @@ void LanguageOptionsHandlerCommon::UiLanguageChangeCallback(
       "LanguageOptions_UiLanguageChange_%s", language_code.c_str());
   content::RecordComputedAction(action);
   SetApplicationLocale(language_code);
-    web_ui_->CallJavascriptFunction("options.LanguageOptions.uiLanguageSaved");
+    web_ui()->CallJavascriptFunction("options.LanguageOptions.uiLanguageSaved");
 }
 
 void LanguageOptionsHandlerCommon::SpellCheckLanguageChangeCallback(

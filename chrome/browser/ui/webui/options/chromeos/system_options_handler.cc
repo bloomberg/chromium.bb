@@ -127,11 +127,10 @@ void SystemOptionsHandler::GetLocalizedValues(
 }
 
 void SystemOptionsHandler::Initialize() {
-  DCHECK(web_ui_);
   PrefService* pref_service = g_browser_process->local_state();
   bool acc_enabled = pref_service->GetBoolean(prefs::kSpokenFeedbackEnabled);
   base::FundamentalValue checked(acc_enabled);
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "options.SystemOptions.SetAccessibilityCheckboxState", checked);
 
   chromeos::XInputHierarchyChangedEventListener::GetInstance()
@@ -155,28 +154,27 @@ void SystemOptionsHandler::CheckMouseExists() {
 
 void SystemOptionsHandler::TouchpadExists(bool* exists) {
   base::FundamentalValue val(*exists);
-  web_ui_->CallJavascriptFunction("options.SystemOptions.showTouchpadControls",
-                                  val);
+  web_ui()->CallJavascriptFunction("options.SystemOptions.showTouchpadControls",
+                                   val);
   delete exists;
 }
 
 void SystemOptionsHandler::MouseExists(bool* exists) {
   base::FundamentalValue val(*exists);
-  web_ui_->CallJavascriptFunction("options.SystemOptions.showMouseControls",
-                                  val);
+  web_ui()->CallJavascriptFunction("options.SystemOptions.showMouseControls",
+                                   val);
   delete exists;
 }
 
 void SystemOptionsHandler::RegisterMessages() {
-  DCHECK(web_ui_);
-  web_ui_->RegisterMessageCallback("accessibilityChange",
+  web_ui()->RegisterMessageCallback("accessibilityChange",
       base::Bind(&SystemOptionsHandler::AccessibilityChangeCallback,
                  base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback("decreaseScreenBrightness",
+  web_ui()->RegisterMessageCallback("decreaseScreenBrightness",
       base::Bind(&SystemOptionsHandler::DecreaseScreenBrightnessCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("increaseScreenBrightness",
+  web_ui()->RegisterMessageCallback("increaseScreenBrightness",
       base::Bind(&SystemOptionsHandler::IncreaseScreenBrightnessCallback,
                  base::Unretained(this)));
 }

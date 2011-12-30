@@ -65,7 +65,7 @@ void UpdateScreenHandler::Show() {
   }
   ShowScreen(kUpdateScreen, NULL);
 #if !defined(OFFICIAL_BUILD)
-  web_ui_->CallJavascriptFunction("oobe.UpdateScreen.enableUpdateCancel");
+  web_ui()->CallJavascriptFunction("oobe.UpdateScreen.enableUpdateCancel");
 #endif
 }
 
@@ -77,18 +77,19 @@ void UpdateScreenHandler::PrepareToShow() {
 
 void UpdateScreenHandler::ShowManualRebootInfo() {
   StringValue message(l10n_util::GetStringUTF16(IDS_UPDATE_COMPLETED));
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.setUpdateMessage", message);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.setUpdateMessage", message);
 }
 
 void UpdateScreenHandler::SetProgress(int progress) {
   base::FundamentalValue progress_value(progress);
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.setUpdateProgress",
-                                  progress_value);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.setUpdateProgress",
+                                   progress_value);
 }
 
 void UpdateScreenHandler::ShowCurtain(bool enable) {
   base::FundamentalValue enable_value(enable);
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.showUpdateCurtain", enable_value);
+  web_ui()->CallJavascriptFunction(
+      "cr.ui.Oobe.showUpdateCurtain", enable_value);
 }
 
 void UpdateScreenHandler::ShowPreparingUpdatesInfo(bool visible) {
@@ -101,13 +102,13 @@ void UpdateScreenHandler::ShowPreparingUpdatesInfo(bool visible) {
         l10n_util::GetStringFUTF16(IDS_INSTALLING_UPDATE,
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME))));
   }
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.setUpdateMessage",
-                                  *info_message);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.setUpdateMessage",
+                                   *info_message);
 }
 
 void UpdateScreenHandler::RegisterMessages() {
 #if !defined(OFFICIAL_BUILD)
-  web_ui_->RegisterMessageCallback("cancelUpdate",
+  web_ui()->RegisterMessageCallback("cancelUpdate",
       base::Bind(&UpdateScreenHandler::HandleUpdateCancel,
                  base::Unretained(this)));
 #endif

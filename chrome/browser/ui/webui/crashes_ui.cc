@@ -71,7 +71,6 @@ class CrashesDOMHandler : public WebUIMessageHandler,
   virtual ~CrashesDOMHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // CrashUploadList::Delegate implemenation.
@@ -100,13 +99,10 @@ CrashesDOMHandler::~CrashesDOMHandler() {
   upload_list_->ClearDelegate();
 }
 
-WebUIMessageHandler* CrashesDOMHandler::Attach(WebUI* web_ui) {
-  upload_list_->LoadCrashListAsynchronously();
-  return WebUIMessageHandler::Attach(web_ui);
-}
-
 void CrashesDOMHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("requestCrashList",
+  upload_list_->LoadCrashListAsynchronously();
+
+  web_ui()->RegisterMessageCallback("requestCrashList",
       base::Bind(&CrashesDOMHandler::HandleRequestCrashes,
                  base::Unretained(this)));
 }
@@ -147,8 +143,8 @@ void CrashesDOMHandler::UpdateUI() {
   const chrome::VersionInfo version_info;
   base::StringValue version(version_info.Version());
 
-  web_ui_->CallJavascriptFunction("updateCrashList", enabled, crash_list,
-                                  version);
+  web_ui()->CallJavascriptFunction("updateCrashList", enabled, crash_list,
+                                   version);
 }
 
 }  // namespace
@@ -160,7 +156,7 @@ void CrashesDOMHandler::UpdateUI() {
 ///////////////////////////////////////////////////////////////////////////////
 
 CrashesUI::CrashesUI(TabContents* contents) : ChromeWebUI(contents) {
-  AddMessageHandler((new CrashesDOMHandler())->Attach(this));
+  AddMessageHandler(new CrashesDOMHandler());
 
   // Set up the chrome://crashes/ source.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());

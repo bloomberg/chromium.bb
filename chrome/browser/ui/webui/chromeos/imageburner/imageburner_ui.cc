@@ -154,18 +154,14 @@ WebUIHandler::~WebUIHandler() {
     state_machine_->RemoveObserver(this);
 }
 
-WebUIMessageHandler* WebUIHandler::Attach(WebUI* web_ui) {
-  return WebUIMessageHandler::Attach(web_ui);
-}
-
 void WebUIHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("getDevices",
+  web_ui()->RegisterMessageCallback("getDevices",
       base::Bind(&WebUIHandler::HandleGetDevices, base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("burnImage",
+  web_ui()->RegisterMessageCallback("burnImage",
       base::Bind(&WebUIHandler::HandleBurnImage, base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("cancelBurnImage",
+  web_ui()->RegisterMessageCallback("cancelBurnImage",
       base::Bind(&WebUIHandler::HandleCancelBurnImage, base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("webuiInitialized",
+  web_ui()->RegisterMessageCallback("webuiInitialized",
       base::Bind(&WebUIHandler::HandleWebUIInitialized,
                  base::Unretained(this)));
 }
@@ -178,10 +174,10 @@ void WebUIHandler::DiskChanged(
   if (event == chromeos::disks::MOUNT_DISK_ADDED) {
     DictionaryValue disk_value;
     CreateDiskValue(*disk, &disk_value);
-    web_ui_->CallJavascriptFunction("browserBridge.deviceAdded", disk_value);
+    web_ui()->CallJavascriptFunction("browserBridge.deviceAdded", disk_value);
   } else if (event == chromeos::disks::MOUNT_DISK_REMOVED) {
     StringValue device_path_value(disk->device_path());
-    web_ui_->CallJavascriptFunction("browserBridge.deviceRemoved",
+    web_ui()->CallJavascriptFunction("browserBridge.deviceRemoved",
         device_path_value);
     if (burn_manager_->target_device_path().value() ==
         disk->device_path()) {
@@ -220,7 +216,7 @@ void WebUIHandler::BurnProgressUpdated(chromeos::BurnLibrary* object,
 
 void WebUIHandler::OnNetworkManagerChanged(chromeos::NetworkLibrary* obj) {
   if (state_machine_->state() == StateMachine::INITIAL && CheckNetwork()) {
-    web_ui_->CallJavascriptFunction("browserBridge.reportNetworkDetected");
+    web_ui()->CallJavascriptFunction("browserBridge.reportNetworkDetected");
   }
   if (state_machine_->state() == StateMachine::DOWNLOADING && !CheckNetwork()) {
     ProcessError(IDS_IMAGEBURN_NETWORK_ERROR);
@@ -285,7 +281,7 @@ void WebUIHandler::OnBurnStateChanged(StateMachine::State state) {
 
 void WebUIHandler::OnError(int error_message_id) {
   StringValue error_message(l10n_util::GetStringUTF16(error_message_id));
-  web_ui_->CallJavascriptFunction("browserBridge.reportFail", error_message);
+  web_ui()->CallJavascriptFunction("browserBridge.reportFail", error_message);
   working_ = false;
 }
 
@@ -316,7 +312,7 @@ void WebUIHandler::HandleGetDevices(const ListValue* args) {
       results_value.Append(disk_value);
     }
   }
-  web_ui_->CallJavascriptFunction("browserBridge.getDevicesCallback",
+  web_ui()->CallJavascriptFunction("browserBridge.getDevicesCallback",
       results_value);
 }
 
@@ -339,7 +335,7 @@ void WebUIHandler::HandleCancelBurnImage(const ListValue* args) {
 void WebUIHandler::HandleBurnImage(const ListValue* args) {
   if (args && state_machine_->new_burn_posible()) {
     if (!CheckNetwork()) {
-      web_ui_->CallJavascriptFunction("browserBridge.reportNoNetwork");
+      web_ui()->CallJavascriptFunction("browserBridge.reportNoNetwork");
       return;
     }
     FilePath target_device_path;
@@ -458,7 +454,7 @@ void WebUIHandler::FinalizeBurn() {
   burn_manager_->ResetTargetPaths();
   chromeos::CrosLibrary::Get()->GetBurnLibrary()->RemoveObserver(this);
   observing_burn_lib_ = false;
-  web_ui_->CallJavascriptFunction("browserBridge.reportSuccess");
+  web_ui()->CallJavascriptFunction("browserBridge.reportSuccess");
   working_ = false;
 }
 
@@ -541,7 +537,7 @@ void WebUIHandler::SendDeviceTooSmallSignal(int64 device_size) {
   string16 size;
   GetDataSizeText(device_size, &size);
   StringValue device_size_text(size);
-  web_ui_->CallJavascriptFunction("browserBridge.reportDeviceTooSmall",
+  web_ui()->CallJavascriptFunction("browserBridge.reportDeviceTooSmall",
       device_size_text);
 }
 
@@ -583,7 +579,7 @@ void WebUIHandler::SendProgressSignal(ProgressType progress_type,
   GetProgressTimeLeftText(time_left_message_id, time, &time_left_text);
   progress.SetString("timeLeftText", time_left_text);
 
-  web_ui_->CallJavascriptFunction("browserBridge.updateProgress", progress);
+  web_ui()->CallJavascriptFunction("browserBridge.updateProgress", progress);
 }
 
 void WebUIHandler::GetProgressTimeLeftText(int message_id,
@@ -649,7 +645,7 @@ bool WebUIHandler::CheckNetwork() {
 
 ImageBurnUI::ImageBurnUI(TabContents* contents) : ChromeWebUI(contents) {
   imageburner::WebUIHandler* handler = new imageburner::WebUIHandler(contents);
-  AddMessageHandler((handler)->Attach(this));
+  AddMessageHandler(handler);
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(

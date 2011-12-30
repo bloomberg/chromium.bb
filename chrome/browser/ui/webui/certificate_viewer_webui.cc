@@ -153,13 +153,13 @@ CertificateViewerDialogHandler::~CertificateViewerDialogHandler() {
 }
 
 void CertificateViewerDialogHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("exportCertificate",
+  web_ui()->RegisterMessageCallback("exportCertificate",
       base::Bind(&CertificateViewerDialogHandler::ExportCertificate,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("requestCertificateInfo",
+  web_ui()->RegisterMessageCallback("requestCertificateInfo",
       base::Bind(&CertificateViewerDialogHandler::RequestCertificateInfo,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("requestCertificateFields",
+  web_ui()->RegisterMessageCallback("requestCertificateFields",
       base::Bind(&CertificateViewerDialogHandler::RequestCertificateFields,
                  base::Unretained(this)));
 }
@@ -174,7 +174,7 @@ void CertificateViewerDialogHandler::ExportCertificate(
   if (cert_index < 0 || cert_index >= (int)cert_chain_.size())
     return;
 
-  ShowCertExportDialog(web_ui_->tab_contents(),
+  ShowCertExportDialog(web_ui()->tab_contents(),
                        window_,
                        cert_chain_[cert_index]);
 }
@@ -271,7 +271,7 @@ void CertificateViewerDialogHandler::RequestCertificateInfo(
   cert_info.Set("hierarchy", children);
 
   // Send certificate information to javascript.
-  web_ui_->CallJavascriptFunction("cert_viewer.getCertificateInfo", cert_info);
+  web_ui()->CallJavascriptFunction("cert_viewer.getCertificateInfo", cert_info);
 }
 
 void CertificateViewerDialogHandler::RequestCertificateFields(
@@ -422,6 +422,6 @@ void CertificateViewerDialogHandler::RequestCertificateFields(
       x509_certificate_model::HashCertSHA1(cert));
 
   // Send certificate information to javascript.
-  web_ui_->CallJavascriptFunction("cert_viewer.getCertificateFields",
+  web_ui()->CallJavascriptFunction("cert_viewer.getCertificateFields",
       root_list);
 }

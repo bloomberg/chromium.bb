@@ -22,13 +22,13 @@ void BaseScreenHandler::InitializeBase() {
 
 void BaseScreenHandler::ShowScreen(const char* screen_name,
                                    const base::DictionaryValue* data) {
-  if (!web_ui_)
+  if (!web_ui())
     return;
   DictionaryValue screen_params;
   screen_params.SetString("id", screen_name);
   if (data)
     screen_params.SetWithoutPathExpansion("data", data->DeepCopy());
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.showScreen", screen_params);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.showScreen", screen_params);
 }
 
 

@@ -67,7 +67,7 @@ void FontSettingsHandler::GetLocalizedValues(
 }
 
 void FontSettingsHandler::Initialize() {
-  DCHECK(web_ui_);
+  DCHECK(web_ui());
   SetUpStandardFontSample();
   SetUpSerifFontSample();
   SetUpSansSerifFontSample();
@@ -75,13 +75,9 @@ void FontSettingsHandler::Initialize() {
   SetUpMinimumFontSample();
 }
 
-WebUIMessageHandler* FontSettingsHandler::Attach(WebUI* web_ui) {
-  // Call through to superclass.
-  WebUIMessageHandler* handler = OptionsPageUIHandler::Attach(web_ui);
-
+void FontSettingsHandler::RegisterMessages() {
   // Perform validation for saved fonts.
-  DCHECK(web_ui_);
-  PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   FontSettingsUtilities::ValidateSavedFonts(pref_service);
 
   // Register for preferences that we need to observe manually.
@@ -95,12 +91,7 @@ WebUIMessageHandler* FontSettingsHandler::Attach(WebUI* web_ui) {
                                 pref_service, this);
   minimum_font_size_.Init(prefs::kWebKitMinimumFontSize, pref_service, this);
 
-  // Return result from the superclass.
-  return handler;
-}
-
-void FontSettingsHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("fetchFontsData",
+  web_ui()->RegisterMessageCallback("fetchFontsData",
       base::Bind(&FontSettingsHandler::HandleFetchFontsData,
                  base::Unretained(this)));
 }
@@ -115,7 +106,7 @@ void FontSettingsHandler::FontsListHasLoaded(
     scoped_refptr<content::FontListResult> list) {
   ListValue encoding_list;
   const std::vector<CharacterEncoding::EncodingInfo>* encodings;
-  PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   encodings = CharacterEncoding::GetCurrentDisplayEncodings(
       g_browser_process->GetApplicationLocale(),
       pref_service->GetString(prefs::kStaticEncodings),
@@ -149,9 +140,9 @@ void FontSettingsHandler::FontsListHasLoaded(
   selected_values.Append(Value::CreateStringValue(fixed_font_.GetValue()));
   selected_values.Append(Value::CreateStringValue(font_encoding_.GetValue()));
 
-  web_ui_->CallJavascriptFunction("FontSettings.setFontsData",
-                                  *list->list.get(), encoding_list,
-                                  selected_values);
+  web_ui()->CallJavascriptFunction("FontSettings.setFontsData",
+                                   *list->list.get(), encoding_list,
+                                   selected_values);
 }
 
 void FontSettingsHandler::Observe(int type,
@@ -181,35 +172,35 @@ void FontSettingsHandler::Observe(int type,
 void FontSettingsHandler::SetUpStandardFontSample() {
   base::StringValue font_value(standard_font_.GetValue());
   base::FundamentalValue size_value(default_font_size_.GetValue());
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "FontSettings.setUpStandardFontSample", font_value, size_value);
 }
 
 void FontSettingsHandler::SetUpSerifFontSample() {
   base::StringValue font_value(serif_font_.GetValue());
   base::FundamentalValue size_value(default_font_size_.GetValue());
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "FontSettings.setUpSerifFontSample", font_value, size_value);
 }
 
 void FontSettingsHandler::SetUpSansSerifFontSample() {
   base::StringValue font_value(sans_serif_font_.GetValue());
   base::FundamentalValue size_value(default_font_size_.GetValue());
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "FontSettings.setUpSansSerifFontSample", font_value, size_value);
 }
 
 void FontSettingsHandler::SetUpFixedFontSample() {
   base::StringValue font_value(fixed_font_.GetValue());
   base::FundamentalValue size_value(default_fixed_font_size_.GetValue());
-  web_ui_->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunction(
       "FontSettings.setUpFixedFontSample", font_value, size_value);
 }
 
 void FontSettingsHandler::SetUpMinimumFontSample() {
   base::FundamentalValue size_value(minimum_font_size_.GetValue());
-  web_ui_->CallJavascriptFunction("FontSettings.setUpMinimumFontSample",
-                                  size_value);
+  web_ui()->CallJavascriptFunction("FontSettings.setUpMinimumFontSample",
+                                   size_value);
 }
 
 }  // namespace options2

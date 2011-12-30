@@ -350,7 +350,7 @@ void OptionsUI::AddOptionsPageUIHandler(DictionaryValue* localized_strings,
   if (handler->IsEnabled()) {
     handler->GetLocalizedValues(localized_strings);
     // Add handler to the list and also pass the ownership.
-    AddMessageHandler(handler.release()->Attach(this));
+    AddMessageHandler(handler.release());
   }
 }
 

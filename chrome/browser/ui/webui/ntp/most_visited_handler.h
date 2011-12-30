@@ -38,7 +38,6 @@ class MostVisitedHandler : public WebUIMessageHandler,
   virtual ~MostVisitedHandler();
 
   // WebUIMessageHandler override and implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // Callback for the "getMostVisited" message.

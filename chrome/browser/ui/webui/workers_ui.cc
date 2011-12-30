@@ -123,10 +123,10 @@ class WorkersDOMHandler : public WebUIMessageHandler {
 };
 
 void WorkersDOMHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(kOpenDevToolsCommand,
+  web_ui()->RegisterMessageCallback(kOpenDevToolsCommand,
       base::Bind(&WorkersDOMHandler::HandleOpenDevTools,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(kTerminateWorkerCommand,
+  web_ui()->RegisterMessageCallback(kTerminateWorkerCommand,
       base::Bind(&WorkersDOMHandler::HandleTerminateWorker,
                  base::Unretained(this)));
 }
@@ -143,7 +143,7 @@ void WorkersDOMHandler::HandleOpenDevTools(const ListValue* args) {
                           &worker_process_host_id));
   CHECK(base::StringToInt(worker_route_id_str, &worker_route_id));
 
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   if (!profile)
     return;
   DevToolsAgentHost* agent_host =
@@ -252,9 +252,7 @@ class WorkersUI::WorkerCreationDestructionListener
 WorkersUI::WorkersUI(TabContents* contents)
     : ChromeWebUI(contents),
       observer_(new WorkerCreationDestructionListener(this)){
-  WorkersDOMHandler* handler = new WorkersDOMHandler();
-  AddMessageHandler(handler);
-  handler->Attach(this);
+  AddMessageHandler(new WorkersDOMHandler());
 
   WorkersUIHTMLSource* html_source = new WorkersUIHTMLSource();
 

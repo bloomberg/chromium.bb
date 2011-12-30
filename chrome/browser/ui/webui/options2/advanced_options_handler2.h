@@ -33,7 +33,6 @@ class AdvancedOptionsHandler
   virtual void Initialize() OVERRIDE;
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // content::NotificationObserver implementation.

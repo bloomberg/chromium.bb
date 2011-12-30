@@ -43,7 +43,7 @@ void PackExtensionHandler::GetLocalizedValues(
 
 void PackExtensionHandler::RegisterMessages() {
   // Setup handlers specific to this panel.
-  web_ui_->RegisterMessageCallback("pack",
+  web_ui()->RegisterMessageCallback("pack",
       base::Bind(&PackExtensionHandler::HandlePackMessage,
                  base::Unretained(this)));
 }
@@ -51,7 +51,7 @@ void PackExtensionHandler::RegisterMessages() {
 void PackExtensionHandler::OnPackSuccess(const FilePath& crx_file,
                                          const FilePath& pem_file) {
   ListValue results;
-  web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay", results);
+  web_ui()->CallJavascriptFunction("OptionsPage.closeOverlay", results);
 
   ShowAlert(UTF16ToUTF8(PackExtensionJob::StandardSuccessMessage(crx_file,
                                                                  pem_file)));
@@ -97,5 +97,5 @@ void PackExtensionHandler::HandlePackMessage(const ListValue* args) {
 void PackExtensionHandler::ShowAlert(const std::string& message) {
   ListValue arguments;
   arguments.Append(Value::CreateStringValue(message));
-  web_ui_->CallJavascriptFunction("alert", arguments);
+  web_ui()->CallJavascriptFunction("alert", arguments);
 }
