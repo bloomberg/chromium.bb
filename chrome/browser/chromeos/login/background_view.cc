@@ -80,7 +80,7 @@ BackgroundView::BackgroundView()
       os_version_label_(NULL),
       boot_times_label_(NULL),
       shutdown_button_(NULL),
-#if defined(OFFICIAL_BUILD)
+#if defined(GOOGLE_CHROME_BUILD)
       is_official_build_(true),
 #else
       is_official_build_(false),

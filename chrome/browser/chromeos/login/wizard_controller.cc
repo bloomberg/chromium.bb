@@ -125,7 +125,7 @@ WizardController* WizardController::default_controller_ = NULL;
 WizardController::WizardController(chromeos::LoginDisplayHost* host,
                                    chromeos::OobeDisplay* oobe_display)
     : current_screen_(NULL),
-#if defined(OFFICIAL_BUILD)
+#if defined(GOOGLE_CHROME_BUILD)
       is_official_build_(true),
 #else
       is_official_build_(false),
@@ -270,11 +270,10 @@ void WizardController::ShowUpdateScreen() {
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetUpdateScreen());
   // There is no special step for update.
-#if defined(OFFICIAL_BUILD)
-  host_->SetOobeProgress(chromeos::BackgroundView::EULA);
-#else
-  host_->SetOobeProgress(chromeos::BackgroundView::SELECT_NETWORK);
-#endif
+  if (is_official_build_)
+    host_->SetOobeProgress(chromeos::BackgroundView::EULA);
+  else
+    host_->SetOobeProgress(chromeos::BackgroundView::SELECT_NETWORK);
 }
 
 void WizardController::ShowUserImageScreen() {
@@ -289,9 +288,8 @@ void WizardController::ShowEulaScreen() {
   VLOG(1) << "Showing EULA screen.";
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetEulaScreen());
-#if defined(OFFICIAL_BUILD)
-  host_->SetOobeProgress(chromeos::BackgroundView::EULA);
-#endif
+  if (is_official_build_)
+    host_->SetOobeProgress(chromeos::BackgroundView::EULA);
 }
 
 void WizardController::ShowRegistrationScreen() {
@@ -304,9 +302,8 @@ void WizardController::ShowRegistrationScreen() {
   VLOG(1) << "Showing registration screen.";
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetRegistrationScreen());
-#if defined(OFFICIAL_BUILD)
-  host_->SetOobeProgress(chromeos::BackgroundView::REGISTRATION);
-#endif
+  if (is_official_build_)
+    host_->SetOobeProgress(chromeos::BackgroundView::REGISTRATION);
 }
 
 void WizardController::ShowHTMLPageScreen() {

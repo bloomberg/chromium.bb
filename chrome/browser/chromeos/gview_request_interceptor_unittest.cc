@@ -247,7 +247,7 @@ TEST_F(GViewRequestInterceptorTest, InterceptPdfWhenDisabled) {
   EXPECT_EQ(GURL(kPdfUrlIntercepted), request.url());
 }
 
-#if !defined(OFFICIAL_BUILD)
+#if !defined(GOOGLE_CHROME_BUILD)
 // Official builds have pdf plugin by default, and we cannot unload it, so the
 // test fails. Since pdf plugin is always present, we don't need to run this
 // test.

@@ -215,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorNetwork) {
   set_controller(NULL);
 }
 
-#if !defined(OFFICIAL_BUILD)
+#if !defined(GOOGLE_CHROME_BUILD)
 // TODO(mnissler): These tests are not yet enabled for official builds. Remove
 // the guards once we enable the enrollment feature for official builds.
 
