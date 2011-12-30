@@ -44,3 +44,4 @@ DiskCacheEntryTest.InternalAsyncIO
 DiskCacheEntryTest.ExternalAsyncIO
 DiskCacheEntryTest.ExternalSyncIO
 DiskCacheEntryTest.ExternalSyncIONoBuffer
+DiskCacheEntryTest.ExternalAsyncIONoBuffer
