@@ -127,7 +127,6 @@ using WebKit::WebURLResponse;
 using WebKit::WebWidget;
 using WebKit::WebWindowFeatures;
 using WebKit::WebWorker;
-using WebKit::WebWorkerClient;
 using WebKit::WebVector;
 using WebKit::WebView;
 
