@@ -88,6 +88,23 @@ void ClearDnsCache(IOThread* io_thread) {
 
 namespace chromeos {
 
+namespace {
+
+// Updates params dictionary passed to the auth extension with related
+// preferences from CrosSettings.
+void UpdateAuthParamsFromSettings(DictionaryValue* params,
+                                  const CrosSettings* cros_settings) {
+  bool allow_new_user = true;
+  cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
+  bool allow_guest = true;
+  cros_settings->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
+  // Account creation depends on Guest sign-in (http://crosbug.com/24570).
+  params->SetBoolean("createAccount", allow_new_user && allow_guest);
+  params->SetBoolean("guestSignin", allow_guest);
+}
+
+} //  namespace
+
 // Class which observes network state changes and calls registered callbacks.
 // State is considered changed if connection or the active network has been
 // changed. Also, it answers to the requests about current network state.
@@ -236,6 +253,8 @@ SigninScreenHandler::SigninScreenHandler()
       cookie_remover_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       key_event_listener_(NULL) {
+  CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowNewUser, this);
+  CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowGuest, this);
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
@@ -244,6 +263,8 @@ SigninScreenHandler::~SigninScreenHandler() {
     cookie_remover_->RemoveObserver(this);
   if (key_event_listener_)
     key_event_listener_->RemoveCapsLockObserver(this);
+  CrosSettings::Get()->RemoveSettingsObserver(kAccountsPrefAllowNewUser, this);
+  CrosSettings::Get()->RemoveSettingsObserver(kAccountsPrefAllowGuest, this);
 }
 
 void SigninScreenHandler::GetLocalizedStrings(
@@ -461,6 +482,15 @@ void SigninScreenHandler::OnCapsLockChange(bool enabled) {
   }
 }
 
+void SigninScreenHandler::Observe(int type,
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED)
+    UpdateAuthExtension();
+  else
+    NOTREACHED();
+}
+
 void SigninScreenHandler::OnDnsCleared() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   dns_clear_task_running_ = false;
@@ -491,14 +521,7 @@ void SigninScreenHandler::LoadAuthExtension(bool force, bool silent_load) {
   params.SetString("email", email_);
   email_.clear();
 
-  // TODO(pastarmovj): Watch for changes of this variables to update the UI
-  // properly when the policy has been fetched on sign-on screen.
-  bool allow_new_user = true;
-  CrosSettings::Get()->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
-  params.SetBoolean("createAccount", allow_new_user);
-  bool allow_guest = true;
-  CrosSettings::Get()->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
-  params.SetBoolean("guestSignin", allow_guest);
+  UpdateAuthParamsFromSettings(&params, CrosSettings::Get());
 
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   if (!app_locale.empty())
@@ -522,6 +545,12 @@ void SigninScreenHandler::LoadAuthExtension(bool force, bool silent_load) {
                                    params);
 }
 
+void SigninScreenHandler::UpdateAuthExtension() {
+  DictionaryValue params;
+  UpdateAuthParamsFromSettings(&params, CrosSettings::Get());
+  web_ui_->CallJavascriptFunction("login.GaiaSigninScreen.updateAuthExtension",
+                                  params);
+}
 
 void SigninScreenHandler::ShowSigninScreenForCreds(
     const std::string& username,

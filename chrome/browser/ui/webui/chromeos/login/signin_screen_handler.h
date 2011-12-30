@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/notification_observer.h"
 
 class BrowsingDataRemover;
 
@@ -105,7 +106,8 @@ class SigninScreenHandlerDelegate {
 class SigninScreenHandler : public BaseScreenHandler,
                             public LoginDisplayWebUIHandler,
                             public BrowsingDataRemover::Observer,
-                            public SystemKeyEventListener::CapsLockObserver {
+                            public SystemKeyEventListener::CapsLockObserver,
+                            public content::NotificationObserver {
  public:
   SigninScreenHandler();
   virtual ~SigninScreenHandler();
@@ -148,6 +150,11 @@ class SigninScreenHandler : public BaseScreenHandler,
   // SystemKeyEventListener::CapsLockObserver overrides.
   virtual void OnCapsLockChange(bool enabled) OVERRIDE;
 
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   // Shows signin screen after dns cache and cookie cleanup operations finish.
   void ShowSigninScreenIfReady();
 
@@ -156,6 +163,10 @@ class SigninScreenHandler : public BaseScreenHandler,
   // for cases when extension should be loaded in the background and it
   // shouldn't grab the focus.
   void LoadAuthExtension(bool force, bool silent_load);
+
+  // Updates authentication extension. Called when device settings that affect
+  // sign-in (allow BWSI and allow whitelist) are changed.
+  void UpdateAuthExtension();
 
   // Handles confirmation message of user authentication that was performed by
   // the authentication extension.

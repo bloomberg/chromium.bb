@@ -141,11 +141,15 @@ cr.define('login', function() {
       document.removeEventListener('focusout', listener);
     },
 
+    /**
+     * Loads the authentication extension into the iframe.
+     * @param {Object} data Extension parameters bag.
+     * @private
+     */
     loadAuthExtension_: function(data) {
       this.silentLoad_ = data.silentLoad;
 
-      $('createAccount').hidden = !data.createAccount;
-      $('guestSignin').hidden = !data.guestSignin;
+      this.updateAuthExtension_(data);
 
       var params = [];
       if (data.gaiaOrigin)
@@ -187,6 +191,16 @@ cr.define('login', function() {
         // be deleted.
         this.doReload();
       }
+    },
+
+    /**
+     * Updates the authentication extension with new parameters, if needed.
+     * @param {Object} data New extension parameters bag.
+     * @private
+     */
+    updateAuthExtension_: function(data) {
+      $('createAccount').hidden = !data.createAccount;
+      $('guestSignin').hidden = !data.guestSignin;
     },
 
     /**
@@ -306,8 +320,20 @@ cr.define('login', function() {
     }
   };
 
+  /**
+   * Loads the authentication extension into the iframe.
+   * @param {Object} data Extension parameters bag.
+   */
   GaiaSigninScreen.loadAuthExtension = function(data) {
     $('gaia-signin').loadAuthExtension_(data);
+  };
+
+  /**
+   * Updates the authentication extension with new parameters, if needed.
+   * @param {Object} data New extension parameters bag.
+   */
+  GaiaSigninScreen.updateAuthExtension = function(data) {
+    $('gaia-signin').updateAuthExtension_(data);
   };
 
   return {
