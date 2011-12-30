@@ -1387,6 +1387,15 @@ void RenderWidgetHostViewGtk::ModifyEventMovementAndCoords(
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostView, public:
+
+// static
+RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
+    RenderWidgetHost* widget) {
+  return new RenderWidgetHostViewGtk(widget);
+}
+
 // static
 void RenderWidgetHostView::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {

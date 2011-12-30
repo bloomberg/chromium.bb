@@ -2496,3 +2496,12 @@ LRESULT RenderWidgetHostViewWin::OnReconvertString(RECONVERTSTRING* reconv) {
   // need_size.
   return reinterpret_cast<LRESULT>(reconv);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostView, public:
+
+// static
+RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
+    RenderWidgetHost* widget) {
+  return new RenderWidgetHostViewWin(widget);
+}

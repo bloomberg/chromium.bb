@@ -69,6 +69,19 @@ class RenderWidgetHostView {
  public:
   CONTENT_EXPORT virtual ~RenderWidgetHostView();
 
+  // Platform-specific creator. Use this to construct new RenderWidgetHostViews
+  // rather than using RenderWidgetHostViewWin & friends.
+  //
+  // This function must NOT size it, because the RenderView in the renderer
+  // wouldn't have been created yet. The widget would set its "waiting for
+  // resize ack" flag, and the ack would never come becasue no RenderView
+  // received it.
+  //
+  // The RenderWidgetHost must already be created (because we can't know if it's
+  // going to be a regular RenderWidgetHost or a RenderViewHost (a subclass).
+  CONTENT_EXPORT static RenderWidgetHostView* CreateViewForWidget(
+      RenderWidgetHost* widget);
+
   // Perform all the initialization steps necessary for this object to represent
   // a popup (such as a <select> dropdown), then shows the popup at |pos|.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,

@@ -860,6 +860,12 @@ void RenderWidgetHostViewAura::FinishImeCompositionSession() {
 // RenderWidgetHostView, public:
 
 // static
+RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
+    RenderWidgetHost* widget) {
+  return new RenderWidgetHostViewAura(widget);
+}
+
+// static
 void RenderWidgetHostView::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
   const gfx::Size size = gfx::Screen::GetPrimaryMonitorSize();

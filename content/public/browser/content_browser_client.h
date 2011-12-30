@@ -22,8 +22,6 @@ class MHTMLGenerationManager;
 class PluginProcessHost;
 class QuotaPermissionContext;
 class RenderViewHost;
-class RenderWidgetHost;
-class RenderWidgetHostView;
 class ResourceDispatcherHost;
 class SiteInstance;
 class SSLCertErrorHandler;
@@ -86,19 +84,6 @@ class ContentBrowserClient {
   // browser_main_parts.h.
   virtual BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) = 0;
-
-  // Platform-specific creator. Use this to construct new RenderWidgetHostViews
-  // rather than using RenderWidgetHostViewWin & friends.
-  //
-  // This function must NOT size it, because the RenderView in the renderer
-  // wouldn't have been created yet. The widget would set its "waiting for
-  // resize ack" flag, and the ack would never come becasue no RenderView
-  // received it.
-  //
-  // The RenderWidgetHost must already be created (because we can't know if it's
-  // going to be a regular RenderWidgetHost or a RenderViewHost (a subclass).
-  virtual RenderWidgetHostView* CreateViewForWidget(
-      RenderWidgetHost* widget) = 0;
 
   virtual TabContentsView* CreateTabContentsView(TabContents* tab_contents) = 0;
 

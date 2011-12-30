@@ -6,8 +6,6 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_H_
 #pragma once
 
-#if defined(__OBJC__)
-
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
@@ -399,19 +397,5 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMac);
 };
-
-#endif // __OBJC__
-
-// Functions that may be accessed from non-Objective-C C/C++ code.
-
-#include "content/common/content_export.h"
-
-class RenderWidgetHostView;
-class RenderWidgetHost;
-
-namespace render_widget_host_view_mac {
-CONTENT_EXPORT RenderWidgetHostView* CreateRenderWidgetHostView(
-    RenderWidgetHost* widget);
-}
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_H_

@@ -10,7 +10,6 @@
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/common/view_messages.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -431,7 +430,7 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
 TEST_F(RenderWidgetHostTest, Background) {
 #if !defined(OS_MACOSX)
   scoped_ptr<RenderWidgetHostView> view(
-      content::GetContentClient()->browser()->CreateViewForWidget(host_.get()));
+      RenderWidgetHostView::CreateViewForWidget(host_.get()));
 #if defined(USE_AURA)
   // TODO(derat): Call this on all platforms: http://crbug.com/102450.
   static_cast<RenderWidgetHostViewAura*>(view.get())->InitAsChild();

@@ -35,8 +35,6 @@ class ShellContentBrowserClient : public ContentBrowserClient
 
   virtual BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) OVERRIDE;
-  virtual RenderWidgetHostView* CreateViewForWidget(
-      RenderWidgetHost* widget) OVERRIDE;
   virtual TabContentsView* CreateTabContentsView(
       TabContents* tab_contents) OVERRIDE;
   virtual void RenderViewHostCreated(
