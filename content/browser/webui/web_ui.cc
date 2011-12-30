@@ -168,6 +168,7 @@ void WebUI::RegisterMessageCallback(const std::string &message,
 // WebUI, protected: ----------------------------------------------------------
 
 void WebUI::AddMessageHandler(WebUIMessageHandler* handler) {
+  DCHECK(!handler->web_ui());
   handler->set_web_ui(this);
   handler->RegisterMessages();
   handlers_.push_back(handler);
