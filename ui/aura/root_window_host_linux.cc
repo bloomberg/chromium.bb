@@ -338,10 +338,18 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       current_cursor_(aura::kCursorNull),
       is_cursor_visible_(true),
       bounds_(bounds) {
-  xwindow_ = XCreateSimpleWindow(xdisplay_, x_root_window_,
-                                 bounds.x(), bounds.y(),
-                                 bounds.width(), bounds.height(),
-                                 0, 0, 0);
+  XSetWindowAttributes swa;
+  memset(&swa, 0, sizeof(swa));
+  swa.background_pixmap = None;
+  xwindow_ = XCreateWindow(
+      xdisplay_, x_root_window_,
+      bounds_.x(), bounds_.y(), bounds_.width(), bounds_.height(),
+      0,               // border width
+      CopyFromParent,  // depth
+      InputOutput,
+      CopyFromParent,  // visual
+      CWBackPixmap,
+      &swa);
 
   long event_mask = ButtonPressMask | ButtonReleaseMask |
                     KeyPressMask | KeyReleaseMask |
