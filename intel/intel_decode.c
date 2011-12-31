@@ -28,7 +28,6 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "intel_decode.h"
 #include "intel_chipset.h"
 #include "intel_bufmgr.h"
 
