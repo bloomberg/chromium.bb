@@ -7,7 +7,7 @@ import gyp.common
 import gyp.system_test
 import gyp.xcode_emulation
 import os.path
-import pprint
+import re
 import subprocess
 import sys
 
@@ -415,6 +415,13 @@ class NinjaWriter:
         basename = os.path.split(path)[1]
         src = self.GypPathToNinja(path)
         dst = self.GypPathToNinja(os.path.join(copy['destination'], basename))
+
+        if self.flavor == 'mac' and ('$(' in src or '$(' in dst):
+          # TODO(thakis/jeremya): Support this.
+          print 'Warning: Variable names in copies rules not supported yet.'
+          src = re.sub(r'\$\([^)]*\)', 'TODO_implement_envvars', src)
+          dst = re.sub(r'\$\([^)]*\)', 'TODO_implement_envvars', dst)
+
         outputs += self.ninja.build(dst, 'copy', src,
                                     order_only=prebuild)
 
