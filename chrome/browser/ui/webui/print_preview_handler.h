@@ -8,13 +8,14 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/printing/print_view_manager_observer.h"
 #include "chrome/browser/ui/select_file_dialog.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "printing/print_job_constants.h"
 
 class FilePath;
@@ -32,7 +33,7 @@ class PrintBackend;
 }
 
 // The handler for Javascript messages related to the print preview dialog.
-class PrintPreviewHandler : public WebUIMessageHandler,
+class PrintPreviewHandler : public content::WebUIMessageHandler,
                             public base::SupportsWeakPtr<PrintPreviewHandler>,
                             public SelectFileDialog::Listener,
                             public printing::PrintViewManagerObserver {

@@ -30,6 +30,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
 
+using content::WebUIMessageHandler;
+
 namespace {
 
 // TODO(xiyuan): Localize this.

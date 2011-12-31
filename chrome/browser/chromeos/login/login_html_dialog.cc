@@ -18,6 +18,7 @@
 #include "ui/views/widget/widget.h"
 
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 namespace chromeos {
 

@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_METRICS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_METRICS_HANDLER_H_
 
-#include "content/browser/webui/web_ui.h"
+#include "base/compiler_specific.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // MetricsHandler
@@ -21,7 +22,7 @@ namespace base {
 class ListValue;
 }
 
-class MetricsHandler : public WebUIMessageHandler {
+class MetricsHandler : public content::WebUIMessageHandler {
  public:
   MetricsHandler();
   virtual ~MetricsHandler();

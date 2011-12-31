@@ -42,6 +42,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"

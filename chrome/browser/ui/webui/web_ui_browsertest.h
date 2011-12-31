@@ -16,10 +16,13 @@
 #include "content/test/test_navigation_observer.h"
 
 class RenderViewHost;
-class WebUIMessageHandler;
 
 namespace base {
 class Value;
+}
+
+namespace content {
+class WebUIMessageHandler;
 }
 
 // This macro simplifies the declaration of simple javascript unit tests.
@@ -134,7 +137,7 @@ class WebUIBrowserTest
   void SetWebUIInstance(WebUI* web_ui);
 
   // Returns a mock WebUI object under test (if any).
-  virtual WebUIMessageHandler* GetMockMessageHandler();
+  virtual content::WebUIMessageHandler* GetMockMessageHandler();
 
   // Returns a file:// GURL constructed from |path| inside the test data dir for
   // webui tests.

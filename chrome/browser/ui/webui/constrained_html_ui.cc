@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 static base::LazyInstance<base::PropertyAccessor<ConstrainedHtmlUIDelegate*> >
     g_constrained_html_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;

@@ -27,6 +27,7 @@
 class RenderWidgetHost;
 
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 namespace browser {
 

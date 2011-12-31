@@ -23,11 +23,13 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/common/result_codes.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 namespace {
 HungRendererDialog* g_instance = NULL;

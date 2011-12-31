@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -45,6 +46,7 @@
 using content::PluginService;
 using content::UserMetricsAction;
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 namespace {
 

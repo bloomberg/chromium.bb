@@ -20,16 +20,15 @@
 
 class GURL;
 class RenderViewHost;
-class WebUIMessageHandler;
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 class Value;
 }
 
 namespace content {
 class WebContents;
+class WebUIMessageHandler;
 }
 
 // A WebUI sets up the datasources and message handlers for a given HTML-based
@@ -167,7 +166,7 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
 
  protected:
   // Takes ownership of |handler|, which will be destroyed when the WebUI is.
-  void AddMessageHandler(WebUIMessageHandler* handler);
+  void AddMessageHandler(content::WebUIMessageHandler* handler);
 
   // Execute a string of raw Javascript on the page.  Overridable for
   // testing purposes.
@@ -187,7 +186,7 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
   bool register_callback_overwrites_;  // Defaults to false.
 
   // The WebUIMessageHandlers we own.
-  std::vector<WebUIMessageHandler*> handlers_;
+  std::vector<content::WebUIMessageHandler*> handlers_;
 
   // Non-owning pointer to the WebContents this WebUI is associated with.
   content::WebContents* web_contents_;
@@ -202,52 +201,6 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
   std::string frame_xpath_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUI);
-};
-
-// Messages sent from the DOM are forwarded via the WebUI to handler
-// classes. These objects are owned by WebUI and destroyed when the
-// host is destroyed.
-class CONTENT_EXPORT WebUIMessageHandler {
- public:
-  WebUIMessageHandler();
-  virtual ~WebUIMessageHandler();
-
- protected:
-  // Helper methods:
-
-  // Adds "url" and "title" keys on incoming dictionary, setting title
-  // as the url as a fallback on empty title.
-  static void SetURLAndTitle(base::DictionaryValue* dictionary,
-                             string16 title,
-                             const GURL& gurl);
-
-  // Extract an integer value from a list Value.
-  static bool ExtractIntegerValue(const base::ListValue* value, int* out_int);
-
-  // Extract a floating point (double) value from a list Value.
-  static bool ExtractDoubleValue(const base::ListValue* value,
-                                 double* out_value);
-
-  // Extract a string value from a list Value.
-  static string16 ExtractStringValue(const base::ListValue* value);
-
-  // This is where subclasses specify which messages they'd like to handle and
-  // perform any additional initialization.. At this point web_ui() will return
-  // the associated WebUI object.
-  virtual void RegisterMessages() = 0;
-
-  // Returns the attached WebUI for this handler.
-  WebUI* web_ui() const { return web_ui_; }
-
- private:
-  friend class WebUI;
-  friend class WebUIBrowserTest;
-
-  void set_web_ui(WebUI* web_ui) { web_ui_ = web_ui; }
-
-  WebUI* web_ui_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebUIMessageHandler);
 };
 
 #endif  // CONTENT_BROWSER_WEBUI_WEB_UI_H_

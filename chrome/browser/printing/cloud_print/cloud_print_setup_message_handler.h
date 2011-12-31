@@ -8,12 +8,12 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 class CloudPrintSetupFlow;
 
 // This class is used to handle DOM messages from the setup dialog.
-class CloudPrintSetupMessageHandler : public WebUIMessageHandler {
+class CloudPrintSetupMessageHandler : public content::WebUIMessageHandler {
  public:
   explicit CloudPrintSetupMessageHandler(CloudPrintSetupFlow* flow)
     : flow_(flow) {}

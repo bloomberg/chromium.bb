@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_BASE_SCREEN_HANDLER_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
@@ -16,7 +16,7 @@ class DictionaryValue;
 namespace chromeos {
 
 // Base class for the OOBE/Login WebUI handlers.
-class BaseScreenHandler : public WebUIMessageHandler {
+class BaseScreenHandler : public content::WebUIMessageHandler {
  public:
   BaseScreenHandler();
   virtual ~BaseScreenHandler();

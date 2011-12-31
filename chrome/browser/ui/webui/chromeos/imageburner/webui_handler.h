@@ -20,6 +20,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
@@ -69,7 +70,7 @@ class WebUIHandlerTaskProxy
 };
 
 class WebUIHandler
-    : public WebUIMessageHandler,
+    : public content::WebUIMessageHandler,
       public chromeos::disks::DiskMountManager::Observer,
       public chromeos::BurnLibrary::Observer,
       public chromeos::NetworkLibrary::NetworkManagerObserver,

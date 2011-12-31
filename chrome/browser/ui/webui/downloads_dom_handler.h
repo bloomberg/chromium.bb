@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
 class ListValue;
@@ -19,7 +19,7 @@ class ListValue;
 
 // The handler for Javascript messages related to the "downloads" view,
 // also observes changes to the download manager.
-class DownloadsDOMHandler : public WebUIMessageHandler,
+class DownloadsDOMHandler : public content::WebUIMessageHandler,
                             public content::DownloadManager::Observer,
                             public content::DownloadItem::Observer {
  public:

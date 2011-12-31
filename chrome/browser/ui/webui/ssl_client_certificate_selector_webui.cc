@@ -28,6 +28,7 @@
 #include "ui/gfx/size.h"
 
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 namespace {
 

@@ -80,6 +80,7 @@
 #endif
 
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 namespace options2 {
 

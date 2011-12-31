@@ -19,6 +19,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 namespace browser {
 

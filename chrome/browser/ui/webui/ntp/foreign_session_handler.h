@@ -10,13 +10,13 @@
 
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 namespace browser_sync {
 
-class ForeignSessionHandler : public WebUIMessageHandler,
+class ForeignSessionHandler : public content::WebUIMessageHandler,
                               public content::NotificationObserver {
  public:
   // WebUIMessageHandler implementation.

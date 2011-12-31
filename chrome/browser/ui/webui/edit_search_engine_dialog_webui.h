@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 class EditSearchEngineController;
 class Profile;
@@ -36,7 +37,7 @@ class EditSearchEngineDialogWebUI : private HtmlDialogUIDelegate {
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
+      std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
@@ -53,7 +54,7 @@ class EditSearchEngineDialogWebUI : private HtmlDialogUIDelegate {
 // EditSearchEngineDialogHandlerWebUI is the message handling component of the
 // EditSearchEngineDialogWebUI. It handles messages from JavaScript, and it
 // handles the closing of the dialog.
-class EditSearchEngineDialogHandlerWebUI : public WebUIMessageHandler {
+class EditSearchEngineDialogHandlerWebUI : public content::WebUIMessageHandler {
  public:
   EditSearchEngineDialogHandlerWebUI(const TemplateURL* template_url,
                                      Profile* profile);

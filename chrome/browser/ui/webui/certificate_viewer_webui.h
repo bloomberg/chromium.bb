@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "net/base/x509_certificate.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -42,7 +43,7 @@ class CertificateViewerDialog : private HtmlDialogUIDelegate {
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
+      std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
@@ -64,7 +65,7 @@ class CertificateViewerDialog : private HtmlDialogUIDelegate {
 
 // Dialog handler which handles calls from the JS WebUI code to view certificate
 // details and export the certificate.
-class CertificateViewerDialogHandler : public WebUIMessageHandler {
+class CertificateViewerDialogHandler : public content::WebUIMessageHandler {
  public:
   CertificateViewerDialogHandler(gfx::NativeWindow window,
                                  net::X509Certificate* cert);

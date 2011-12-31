@@ -17,10 +17,12 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/size.h"
 
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 // Thin bridge that routes notifications to
 // HtmlDialogWindowController's member variables.

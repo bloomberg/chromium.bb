@@ -13,9 +13,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 class GURL;
 class CloudPrintHtmlDialogDelegateTest;
@@ -100,7 +100,7 @@ class CloudPrintHtmlDialogDelegate;
 // the renderer process - do we want a progress throbber shown?
 // Probably..), and packing up the PDF and job parameters and sending
 // them to the cloud.
-class CloudPrintFlowHandler : public WebUIMessageHandler,
+class CloudPrintFlowHandler : public content::WebUIMessageHandler,
                               public content::NotificationObserver {
  public:
   CloudPrintFlowHandler(const FilePath& path_to_file,
@@ -167,7 +167,7 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
+      std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;

@@ -24,6 +24,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -34,6 +35,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 class SystemInfoUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:

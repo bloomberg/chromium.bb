@@ -26,10 +26,12 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 using content::BrowserThread;
 using content::NavigationEntry;
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 // This module implements a sign in dialog for cloud print.
 // it is based heavily off "chrome/browser/printing/print_dialog_cloud.cc".

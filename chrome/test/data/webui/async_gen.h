@@ -6,6 +6,7 @@
 #pragma once
 
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
@@ -19,7 +20,7 @@ class WebUIBrowserAsyncGenTest : public WebUIBrowserTest {
   virtual ~WebUIBrowserAsyncGenTest();
 
  protected:
-  class AsyncWebUIMessageHandler : public WebUIMessageHandler {
+  class AsyncWebUIMessageHandler : public content::WebUIMessageHandler {
    public:
     AsyncWebUIMessageHandler();
     ~AsyncWebUIMessageHandler();
@@ -38,7 +39,7 @@ class WebUIBrowserAsyncGenTest : public WebUIBrowserTest {
 
  private:
   // Provide this object's handler.
-  virtual WebUIMessageHandler* GetMockMessageHandler() OVERRIDE {
+  virtual content::WebUIMessageHandler* GetMockMessageHandler() OVERRIDE {
     return &message_handler_;
   }
 

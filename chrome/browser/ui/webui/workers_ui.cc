@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/worker_service.h"
 #include "content/public/browser/worker_service_observer.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/process_type.h"
 #include "grit/generated_resources.h"
 #include "grit/workers_resources.h"
@@ -31,6 +32,7 @@ using content::BrowserThread;
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
 using content::WebContents;
+using content::WebUIMessageHandler;
 using content::WorkerService;
 using content::WorkerServiceObserver;
 

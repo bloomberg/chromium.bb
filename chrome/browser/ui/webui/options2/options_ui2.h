@@ -15,12 +15,13 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 namespace options2 {
 
 // The base class handler of Javascript messages of options pages.
-class OptionsPageUIHandler : public WebUIMessageHandler,
-                              public content::NotificationObserver {
+class OptionsPageUIHandler : public content::WebUIMessageHandler,
+                             public content::NotificationObserver {
  public:
   OptionsPageUIHandler();
   virtual ~OptionsPageUIHandler();

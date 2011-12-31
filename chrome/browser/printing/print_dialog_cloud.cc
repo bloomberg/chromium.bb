@@ -108,6 +108,7 @@
 using content::BrowserThread;
 using content::NavigationEntry;
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 namespace internal_cloud_print_helpers {
 

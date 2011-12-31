@@ -12,11 +12,12 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "net/base/ssl_cert_request_info.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 class TabContentsWrapper;
 
 class SSLClientCertificateSelectorWebUI : public HtmlDialogUIDelegate,
-                                                 WebUIMessageHandler {
+                                          content::WebUIMessageHandler {
  public:
   // Static factory method.
   static void ShowDialog(
@@ -38,7 +39,7 @@ class SSLClientCertificateSelectorWebUI : public HtmlDialogUIDelegate,
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
+      std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;

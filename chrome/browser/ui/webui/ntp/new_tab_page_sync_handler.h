@@ -10,7 +10,7 @@
 
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
 class ListValue;
@@ -18,7 +18,7 @@ class ListValue;
 
 // Sends sync-state changes to the New Tab Page for UI updating and forwards
 // link clicks on the page to the sync service.
-class NewTabPageSyncHandler : public WebUIMessageHandler,
+class NewTabPageSyncHandler : public content::WebUIMessageHandler,
                               public ProfileSyncServiceObserver {
  public:
   NewTabPageSyncHandler();

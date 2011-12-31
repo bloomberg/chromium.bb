@@ -7,7 +7,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/values.h"
+#include "content/browser/webui/web_ui.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+using content::WebUIMessageHandler;
 
 ChromeSendWebUITest::ChromeSendWebUITest() {}
 

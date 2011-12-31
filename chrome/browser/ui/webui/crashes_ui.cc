@@ -22,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -35,6 +36,7 @@
 #endif
 
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 namespace {
 

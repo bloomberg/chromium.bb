@@ -24,12 +24,14 @@
 #include "content/browser/trace_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 namespace {
 

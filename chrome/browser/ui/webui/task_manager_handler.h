@@ -7,14 +7,14 @@
 #pragma once
 
 #include <vector>
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "chrome/browser/task_manager/task_manager.h"
 
 namespace base {
 class ListValue;
 }
 
-class TaskManagerHandler : public WebUIMessageHandler,
+class TaskManagerHandler : public content::WebUIMessageHandler,
                            public TaskManagerModelObserver {
  public:
   explicit TaskManagerHandler(TaskManager* tm);

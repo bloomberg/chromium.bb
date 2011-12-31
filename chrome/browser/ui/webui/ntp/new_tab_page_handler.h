@@ -7,14 +7,14 @@
 
 #include "base/values.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 class PrefService;
 class Profile;
 
 // Handler for general New Tab Page functionality that does not belong in a
 // more specialized handler.
-class NewTabPageHandler : public WebUIMessageHandler {
+class NewTabPageHandler : public content::WebUIMessageHandler {
  public:
   NewTabPageHandler();
   virtual ~NewTabPageHandler();

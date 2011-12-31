@@ -19,6 +19,7 @@
 
 using content::BrowserThread;
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 class MobileSetupDialogDelegate : public HtmlDialogUIDelegate {
  public:

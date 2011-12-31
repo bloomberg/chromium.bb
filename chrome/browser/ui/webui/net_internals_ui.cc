@@ -43,6 +43,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "grit/generated_resources.h"
 #include "grit/net_internals_resources.h"
 #include "net/base/escape.h"
@@ -75,6 +76,7 @@
 
 using content::BrowserThread;
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 namespace {
 

@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 class ExtensionIconColorManager;
 
@@ -20,7 +20,7 @@ namespace base {
 class ListValue;
 }
 
-class FaviconWebUIHandler : public WebUIMessageHandler {
+class FaviconWebUIHandler : public content::WebUIMessageHandler {
  public:
   FaviconWebUIHandler();
   virtual ~FaviconWebUIHandler();

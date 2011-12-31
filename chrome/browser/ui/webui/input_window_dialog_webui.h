@@ -12,6 +12,7 @@
 #include "base/string16.h"
 #include "chrome/browser/ui/input_window_dialog.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
 class ListValue;
@@ -39,7 +40,7 @@ class InputWindowDialogWebUI : public InputWindowDialog,
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
+      std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
@@ -62,7 +63,7 @@ class InputWindowDialogWebUI : public InputWindowDialog,
 
 // Dialog handler that handles calls from the JS WebUI code to validate the
 // string value in the text field.
-class InputWindowDialogHandler : public WebUIMessageHandler {
+class InputWindowDialogHandler : public content::WebUIMessageHandler {
  public:
   explicit InputWindowDialogHandler(InputWindowDialog::Delegate* delegate);
 

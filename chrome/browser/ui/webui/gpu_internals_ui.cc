@@ -21,6 +21,7 @@
 #include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "third_party/angle/src/common/version.h"
@@ -28,6 +29,7 @@
 
 using content::BrowserThread;
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 namespace {
 

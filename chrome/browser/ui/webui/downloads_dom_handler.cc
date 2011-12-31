@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/webui/fileicon_source.h"
 #include "chrome/browser/ui/webui/fileicon_source_chromeos.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"

@@ -38,6 +38,7 @@
 #include "webkit/plugins/webplugininfo.h"
 
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 namespace {
 

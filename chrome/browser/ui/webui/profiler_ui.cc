@@ -22,6 +22,7 @@
 #include "content/browser/trace_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
@@ -35,6 +36,7 @@
 using chrome_browser_metrics::TrackingSynchronizer;
 using content::BrowserThread;
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 namespace {
 

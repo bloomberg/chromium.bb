@@ -17,6 +17,7 @@
 #include "ui/gfx/screen.h"
 
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 static const int kBaseWidth = 1252;
 static const int kBaseHeight = 516;

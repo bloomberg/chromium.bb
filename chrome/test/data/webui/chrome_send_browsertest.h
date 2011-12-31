@@ -16,7 +16,7 @@ class ChromeSendWebUITest : public WebUIBrowserTest {
   virtual ~ChromeSendWebUITest();
 
   // Mocked message handler class to register expects using gmock framework.
-  class ChromeSendWebUIMessageHandler : public WebUIMessageHandler {
+  class ChromeSendWebUIMessageHandler : public content::WebUIMessageHandler {
    public:
     ChromeSendWebUIMessageHandler();
     ~ChromeSendWebUIMessageHandler();
@@ -33,7 +33,7 @@ class ChromeSendWebUITest : public WebUIBrowserTest {
   ::testing::StrictMock<ChromeSendWebUIMessageHandler> message_handler_;
 
  private:
-  virtual WebUIMessageHandler* GetMockMessageHandler() OVERRIDE;
+  virtual content::WebUIMessageHandler* GetMockMessageHandler() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSendWebUITest);
 };

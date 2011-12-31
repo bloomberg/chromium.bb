@@ -8,11 +8,11 @@
 #include "base/values.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 class TabRestoreService;
 
-class RecentlyClosedTabsHandler : public WebUIMessageHandler,
+class RecentlyClosedTabsHandler : public content::WebUIMessageHandler,
                                   public TabRestoreServiceObserver {
  public:
   RecentlyClosedTabsHandler() : tab_restore_service_(NULL) {}

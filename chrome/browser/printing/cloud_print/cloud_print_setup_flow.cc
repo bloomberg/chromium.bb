@@ -39,6 +39,7 @@
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 namespace {
 

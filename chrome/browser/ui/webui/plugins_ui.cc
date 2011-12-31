@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -42,6 +43,7 @@
 
 using content::PluginService;
 using content::WebContents;
+using content::WebUIMessageHandler;
 using webkit::npapi::PluginGroup;
 using webkit::WebPluginInfo;
 

@@ -30,6 +30,7 @@
 
 using content::BrowserThread;
 using content::WebContents;
+using content::WebUIMessageHandler;
 using testing::A;
 using testing::AtLeast;
 using testing::Eq;

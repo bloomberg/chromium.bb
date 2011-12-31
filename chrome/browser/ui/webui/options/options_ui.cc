@@ -84,6 +84,7 @@
 
 using content::UserMetricsAction;
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 static const char kLocalizedStringsFile[] = "strings.js";
 static const char kOptionsBundleJsFile[]  = "options_bundle.js";

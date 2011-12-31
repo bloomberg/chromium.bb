@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/values.h"
+#include "content/browser/webui/web_ui.h"
 
 WebUIBrowserAsyncGenTest::WebUIBrowserAsyncGenTest() {}
 

@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "content/browser/webui/web_ui.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "webkit/quota/quota_types.h"
 
 namespace base {
@@ -29,7 +29,7 @@ typedef std::map<std::string, std::string> Statistics;
 
 // This class handles message from WebUI page of chrome://quota-internals/.
 // All methods in this class should be called on UI thread.
-class QuotaInternalsHandler : public WebUIMessageHandler {
+class QuotaInternalsHandler : public content::WebUIMessageHandler {
  public:
   QuotaInternalsHandler();
   virtual ~QuotaInternalsHandler();

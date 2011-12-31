@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "content/browser/disposition_utils.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
 
 using content::OpenURLParams;

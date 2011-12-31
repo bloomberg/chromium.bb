@@ -17,9 +17,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/string_ordinal.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 class AppNotification;
 class ExtensionService;
@@ -27,7 +27,7 @@ class PrefChangeRegistrar;
 class Profile;
 
 // The handler for Javascript messages related to the "apps" view.
-class AppLauncherHandler : public WebUIMessageHandler,
+class AppLauncherHandler : public content::WebUIMessageHandler,
                            public ExtensionUninstallDialog::Delegate,
                            public ExtensionInstallUI::Delegate,
                            public content::NotificationObserver {

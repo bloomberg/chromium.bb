@@ -46,7 +46,7 @@ class HtmlDialogUIDelegate {
   // is still open.  Ownership of each handler is taken over by the WebUI
   // hosting the page.
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const = 0;
+      std::vector<content::WebUIMessageHandler*>* handlers) const = 0;
 
   // Get the size of the dialog.
   virtual void GetDialogSize(gfx::Size* size) const = 0;

@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_UI_WEBUI_MEDIA_MEDIA_INTERNALS_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 class MediaInternalsProxy;
 
@@ -16,7 +18,7 @@ class ListValue;
 
 // This class handles messages to and from MediaInternalsUI.
 // It does all its work on the IO thread through the proxy below.
-class MediaInternalsMessageHandler : public WebUIMessageHandler {
+class MediaInternalsMessageHandler : public content::WebUIMessageHandler {
  public:
   MediaInternalsMessageHandler();
   virtual ~MediaInternalsMessageHandler();

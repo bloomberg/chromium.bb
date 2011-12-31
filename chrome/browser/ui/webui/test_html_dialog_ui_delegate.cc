@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 namespace test {
 

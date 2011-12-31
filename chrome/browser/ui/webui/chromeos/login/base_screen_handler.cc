@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "content/browser/webui/web_ui.h"
 
 namespace chromeos {
 

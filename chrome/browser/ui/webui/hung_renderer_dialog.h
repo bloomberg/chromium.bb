@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "ui/gfx/native_widget_types.h"
 
 class HungRendererDialogHandler;
@@ -63,7 +64,7 @@ class HungRendererDialog : private HtmlDialogUIDelegate {
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
+      std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
@@ -93,7 +94,7 @@ class HungRendererDialog : private HtmlDialogUIDelegate {
 
 // Dialog handler that handles calls from the JS WebUI code to get the details
 // of the list of frozen tabs.
-class HungRendererDialogHandler : public WebUIMessageHandler {
+class HungRendererDialogHandler : public content::WebUIMessageHandler {
  public:
   explicit HungRendererDialogHandler(content::WebContents* contents);
 

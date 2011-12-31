@@ -27,6 +27,7 @@
 
 using content::BrowserThread;
 using content::WebContents;
+using content::WebUIMessageHandler;
 
 class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
  public:

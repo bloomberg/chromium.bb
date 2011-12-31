@@ -16,6 +16,7 @@
 #include "chrome/common/content_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 class GURL;
 class TabContents;
@@ -26,8 +27,8 @@ class Size;
 }
 
 class CollectedCookiesUIDelegate : public HtmlDialogUIDelegate,
-                                          WebUIMessageHandler,
-                                          content::NotificationObserver {
+                                   content::WebUIMessageHandler,
+                                   content::NotificationObserver {
  public:
   virtual ~CollectedCookiesUIDelegate();
 
@@ -39,7 +40,7 @@ class CollectedCookiesUIDelegate : public HtmlDialogUIDelegate,
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
+      std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
