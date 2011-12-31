@@ -195,9 +195,7 @@ class XcodeSettings(object):
       return self._GetStandaloneBinaryPath()
 
   def _SdkPath(self):
-    sdk_root = 'macosx10.5'
-    if 'SDKROOT' in self._Settings():
-      sdk_root = self._Settings()['SDKROOT']
+    sdk_root = self.GetPerTargetSetting('SDKROOT', default='macosx10.5')
     if sdk_root.startswith('macosx'):
       sdk_root = 'MacOSX' + sdk_root[len('macosx'):]
     return '/Developer/SDKs/%s.sdk' % sdk_root
@@ -512,6 +510,18 @@ class XcodeSettings(object):
     # dSYMs need to build before stripping happens.
     return (self._GetDebugPostbuilds(configname, output, output_binary) +
             self._GetStripPostbuilds(configname, output_binary))
+
+  def AdjustFrameworkLibraries(self, libraries):
+    """Transforms entries like 'Cocoa.framework' in libraries into entries like
+    '-framework Cocoa'.
+    """
+    libraries = [
+        '-framework ' + os.path.splitext(os.path.basename(library))[0]
+        if library.endswith('.framework') else library
+        for library in libraries]
+    libraries = [library.replace('$(SDKROOT)', self._SdkPath())
+        for library in libraries]
+    return libraries
 
 
 def MergeGlobalXcodeSettingsToSpec(global_dict, spec):

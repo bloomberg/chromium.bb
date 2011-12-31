@@ -1560,12 +1560,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       if libraries:
         # Remove duplicate entries
         libraries = gyp.common.uniquer(libraries)
-        # On Mac, framework libraries need to be passed as '-framework Cocoa'.
         if self.flavor == 'mac':
-          libraries = [
-              '-framework ' + os.path.splitext(os.path.basename(library))[0]
-              if library.endswith('.framework') else library
-              for library in libraries]
+          libraries = self.xcode_settings.AdjustFrameworkLibraries(libraries)
       self.WriteList(libraries, 'LIBS')
       self.WriteLn(
           '%s: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))' % self.output_binary)

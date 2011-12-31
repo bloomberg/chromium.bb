@@ -528,9 +528,12 @@ class NinjaWriter:
       self.WriteVariableList('ldflags',
                              gyp.common.uniquer(map(self.ExpandSpecial,
                                                     ldflags)))
-      self.WriteVariableList('libs',
-                             gyp.common.uniquer(map(self.ExpandSpecial,
-                                                    spec.get('libraries', []))))
+
+      libraries = gyp.common.uniquer(map(self.ExpandSpecial,
+                                         spec.get('libraries', [])))
+      if self.flavor == 'mac':
+        libraries = self.xcode_settings.AdjustFrameworkLibraries(libraries)
+      self.WriteVariableList('libs', libraries)
 
     extra_bindings = []
     if command in ('solink', 'solink_module'):
