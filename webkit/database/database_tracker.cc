@@ -216,9 +216,8 @@ void DatabaseTracker::DeleteDatabaseIfNeeded(const string16& origin_identifier,
     if (dbs_to_be_deleted_[origin_identifier].empty())
       dbs_to_be_deleted_.erase(origin_identifier);
 
-    for (PendingDeletionCallbacks::iterator callback =
-             deletion_callbacks_.begin();
-         callback != deletion_callbacks_.end(); ++callback) {
+    PendingDeletionCallbacks::iterator callback = deletion_callbacks_.begin();
+    while (callback != deletion_callbacks_.end()) {
       DatabaseSet::iterator found_origin =
           callback->second.find(origin_identifier);
       if (found_origin != callback->second.end()) {
@@ -229,12 +228,14 @@ void DatabaseTracker::DeleteDatabaseIfNeeded(const string16& origin_identifier,
           if (callback->second.empty()) {
             net::CompletionCallback cb = callback->first;
             cb.Run(net::OK);
+            callback = deletion_callbacks_.erase(callback);
+            continue;
           }
         }
       }
-    }
 
-    deletion_callbacks_.clear();
+      ++callback;
+    }
   }
 }
 

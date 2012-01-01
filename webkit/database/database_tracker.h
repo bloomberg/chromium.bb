@@ -116,7 +116,7 @@ class DatabaseTracker
   FilePath GetFullDBFilePath(const string16& origin_identifier,
                              const string16& database_name);
 
-  // virtual for unittesting only
+  // virtual for unit-testing only
   virtual bool GetOriginInfo(const string16& origin_id, OriginInfo* info);
   virtual bool GetAllOriginIdentifiers(std::vector<string16>* origin_ids);
   virtual bool GetAllOriginsInfo(std::vector<OriginInfo>* origins_info);
