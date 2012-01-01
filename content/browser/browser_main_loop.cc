@@ -408,8 +408,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   // need to be able to perform IO.
   base::ThreadRestrictions::SetIOAllowed(true);
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
                  true));
 

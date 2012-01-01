@@ -44,7 +44,9 @@ static const FilePath::CharType kDiskCacheDirectoryName[] =
 
 namespace {
 
-// Helper with no return value for use with NewRunnableFunction.
+// Helper with no return value for use with base::Bind.
+// TODO(jhawkins): Figure out why base::IgnoreResult does not work for
+// file_util::Delete on Windows.
 void DeleteDirectory(const FilePath& path) {
   file_util::Delete(path, true);
 }

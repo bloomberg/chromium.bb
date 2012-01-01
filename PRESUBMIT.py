@@ -189,7 +189,6 @@ def _CheckNoNewOldCallback(input_api, output_api):
     of the old callback system.
     """
     return ('NewRunnableMethod' in line or
-            'NewRunnableFunction' in line or
             'NewCallback' in line or
             input_api.re.search(r'\bCallback\d<', line) or
             input_api.re.search(r'\bpublic Task\b', line) or

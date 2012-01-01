@@ -304,12 +304,12 @@ struct RunnableMethodTraits {
     void ReleaseCallee(TypeName* manager) {}       \
   }
 
-// RunnableMethod and RunnableFunction -----------------------------------------
+// RunnableMethod --------------------------------------------------------------
 //
 // Runnable methods are a type of task that call a function on an object when
-// they are run. We implement both an object and a set of NewRunnableMethod and
-// NewRunnableFunction functions for convenience. These functions are
-// overloaded and will infer the template types, simplifying calling code.
+// they are run. We implement both an object and a set of NewRunnableMethod
+// functions for convenience. These functions are overloaded and will infer the
+// template types, simplifying calling code.
 //
 // The template definitions all use the following names:
 // T                - the class type of the object you're supplying
@@ -326,7 +326,6 @@ struct RunnableMethodTraits {
 //
 // Usage:
 // PostTask(FROM_HERE, NewRunnableMethod(object, &Object::method[, a[, b]])
-// PostTask(FROM_HERE, NewRunnableFunction(&function[, a[, b]])
 
 // RunnableMethod and NewRunnableMethod implementation -------------------------
 
@@ -456,99 +455,6 @@ inline CancelableTask* NewRunnableMethod(T* object, Method method,
                                                              MakeTuple(a, b, c,
                                                                        d, e, f,
                                                                        g, h));
-}
-
-// RunnableFunction and NewRunnableFunction implementation ---------------------
-
-template <class Function, class Params>
-class RunnableFunction : public Task {
- public:
-  RunnableFunction(Function function, const Params& params)
-      : function_(function), params_(params) {
-    COMPILE_ASSERT(
-        (base::internal::ParamsUseScopedRefptrCorrectly<Params>::value),
-        badrunnablefunctionparams);
-  }
-
-  ~RunnableFunction() {
-    function_ = reinterpret_cast<Function>(base::kDeadTask);
-  }
-
-  virtual void Run() {
-    if (function_)
-      DispatchToFunction(function_, params_);
-  }
-
- private:
-  Function function_;
-  Params params_;
-};
-
-template <class Function>
-inline Task* NewRunnableFunction(Function function) {
-  return new RunnableFunction<Function, Tuple0>(function, MakeTuple());
-}
-
-template <class Function, class A>
-inline Task* NewRunnableFunction(Function function, const A& a) {
-  return new RunnableFunction<Function, Tuple1<A> >(function, MakeTuple(a));
-}
-
-template <class Function, class A, class B>
-inline Task* NewRunnableFunction(Function function, const A& a, const B& b) {
-  return new RunnableFunction<Function, Tuple2<A, B> >(function,
-                                                       MakeTuple(a, b));
-}
-
-template <class Function, class A, class B, class C>
-inline Task* NewRunnableFunction(Function function, const A& a, const B& b,
-                                 const C& c) {
-  return new RunnableFunction<Function, Tuple3<A, B, C> >(function,
-                                                          MakeTuple(a, b, c));
-}
-
-template <class Function, class A, class B, class C, class D>
-inline Task* NewRunnableFunction(Function function, const A& a, const B& b,
-                                 const C& c, const D& d) {
-  return new RunnableFunction<Function, Tuple4<A, B, C, D> >(function,
-                                                             MakeTuple(a, b,
-                                                                       c, d));
-}
-
-template <class Function, class A, class B, class C, class D, class E>
-inline Task* NewRunnableFunction(Function function, const A& a, const B& b,
-                                 const C& c, const D& d, const E& e) {
-  return new RunnableFunction<Function, Tuple5<A, B, C, D, E> >(function,
-                                                                MakeTuple(a, b,
-                                                                          c, d,
-                                                                          e));
-}
-
-template <class Function, class A, class B, class C, class D, class E,
-          class F>
-inline Task* NewRunnableFunction(Function function, const A& a, const B& b,
-                                 const C& c, const D& d, const E& e,
-                                 const F& f) {
-  return new RunnableFunction<Function, Tuple6<A, B, C, D, E, F> >(function,
-      MakeTuple(a, b, c, d, e, f));
-}
-
-template <class Function, class A, class B, class C, class D, class E,
-          class F, class G>
-inline Task* NewRunnableFunction(Function function, const A& a, const B& b,
-                                 const C& c, const D& d, const E& e, const F& f,
-                                 const G& g) {
-  return new RunnableFunction<Function, Tuple7<A, B, C, D, E, F, G> >(function,
-      MakeTuple(a, b, c, d, e, f, g));
-}
-
-template <class Function, class A, class B, class C, class D, class E,
-          class F, class G, class H>
-inline Task* NewRunnableFunction(Function function, const A& a, const B& b,
-                                 const C& c, const D& d, const E& e, const F& f,
-                                 const G& g, const H& h) {
-  return new RunnableFunction<Function, Tuple8<A, B, C, D, E, F, G, H> >(
-      function, MakeTuple(a, b, c, d, e, f, g, h));
 }
 
 namespace base {
