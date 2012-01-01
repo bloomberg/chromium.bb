@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,7 +105,7 @@ TEST(JingleMessageTest, SessionInitiate) {
       "name='chromoting' creator='initiator'><description "
       "xmlns='google:remoting'><control transport='stream' version='2'/><event "
       "transport='stream' version='2'/><video transport='stream' version='2' "
-      "codec='vp8'/><initial-resolution width='800' height='600'/>"
+      "codec='vp8'/><initial-resolution width='640' height='480'/>"
       "<authentication><auth-token>j7whCMii0Z0AAPwj7whCM/j7whCMii0Z0AAPw="
       "</auth-token></authentication></description><transport "
       "xmlns='http://www.google.com/transport/p2p'/></content></jingle>"
@@ -137,7 +137,7 @@ TEST(JingleMessageTest, SessionAccept) {
       "name='chromoting'><description xmlns='google:remoting'><control "
       "transport='stream' version='2'/><event transport='stream' version='2'/>"
       "<video codec='vp8' transport='stream' version='2'/><initial-resolution "
-      "height='2048' width='2048'/><authentication><certificate>"
+      "height='480' width='640'/><authentication><certificate>"
       "MIICpjCCAY6gW0Cert0TANBgkqhkiG9w0BAQUFA=</certificate>"
       "</authentication></description><transport xmlns="
       "'http://www.google.com/transport/p2p'/></content></jingle></cli:iq>";

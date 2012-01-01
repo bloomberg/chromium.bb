@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -323,14 +323,8 @@ void ChromotingHost::OnIncomingSession(
     return;
   }
 
-  // TODO(simonmorris): The resolution is set in the video stream now,
-  // so it doesn't need to be set here.
-  *protocol_config_->mutable_initial_resolution() =
-      protocol::ScreenResolution(2048, 2048);
-  // TODO(sergeyu): Respect resolution requested by the client if supported.
   protocol::SessionConfig config;
-  if (!protocol_config_->Select(session->candidate_config(),
-                                true /* force_host_resolution */, &config)) {
+  if (!protocol_config_->Select(session->candidate_config(), &config)) {
     LOG(WARNING) << "Rejecting connection from " << session->jid()
                  << " because no compatible configuration has been found.";
     *response = protocol::SessionManager::INCOMPATIBLE;

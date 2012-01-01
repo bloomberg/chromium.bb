@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,13 +27,13 @@ const char kDescriptionTag[] = "description";
 const char kControlTag[] = "control";
 const char kEventTag[] = "event";
 const char kVideoTag[] = "video";
-const char kResolutionTag[] = "initial-resolution";
+const char kDeprecatedResolutionTag[] = "initial-resolution";
 
 const char kTransportAttr[] = "transport";
 const char kVersionAttr[] = "version";
 const char kCodecAttr[] = "codec";
-const char kWidthAttr[] = "width";
-const char kHeightAttr[] = "height";
+const char kDeprecatedWidthAttr[] = "width";
+const char kDeprecatedHeightAttr[] = "height";
 
 const char kStreamTransport[] = "stream";
 const char kDatagramTransport[] = "datagram";
@@ -160,7 +160,6 @@ ContentDescription::~ContentDescription() { }
 //     <control transport="stream" version="1" />
 //     <event transport="datagram" version="1" />
 //     <video transport="srtp" codec="vp8" version="1" />
-//     <initial-resolution width="800" height="600" />
 //     <authentication>
 //      Message created by Authenticator implementation.
 //     </authentication>
@@ -187,14 +186,11 @@ XmlElement* ContentDescription::ToXml() const {
     root->AddElement(FormatChannelConfig(*it, kVideoTag));
   }
 
+  // Older endpoints require an initial-resolution tag, but otherwise ignore it.
   XmlElement* resolution_tag = new XmlElement(
-      QName(kChromotingXmlNamespace, kResolutionTag));
-  resolution_tag->AddAttr(QName(kDefaultNs, kWidthAttr),
-                          base::IntToString(
-                              config()->initial_resolution().width));
-  resolution_tag->AddAttr(QName(kDefaultNs, kHeightAttr),
-                          base::IntToString(
-                              config()->initial_resolution().height));
+      QName(kChromotingXmlNamespace, kDeprecatedResolutionTag));
+  resolution_tag->AddAttr(QName(kDefaultNs, kDeprecatedWidthAttr), "640");
+  resolution_tag->AddAttr(QName(kDefaultNs, kDeprecatedHeightAttr), "480");
   root->AddElement(resolution_tag);
 
   if (authenticator_message_.get()) {
@@ -245,24 +241,6 @@ ContentDescription* ContentDescription::ParseXml(
       config->mutable_video_configs()->push_back(channel_config);
       child = child->NextNamed(video_tag);
     }
-
-    // <initial-resolution> tag.
-    child = element->FirstNamed(QName(kChromotingXmlNamespace, kResolutionTag));
-    if (!child)
-      return NULL; // Resolution must always be specified.
-    int width;
-    int height;
-    if (!base::StringToInt(child->Attr(QName(kDefaultNs, kWidthAttr)),
-                           &width) ||
-        !base::StringToInt(child->Attr(QName(kDefaultNs, kHeightAttr)),
-                           &height)) {
-      return NULL;
-    }
-    ScreenResolution resolution(width, height);
-    if (!resolution.IsValid())
-      return NULL;
-
-    *config->mutable_initial_resolution() = resolution;
 
     scoped_ptr<XmlElement> authenticator_message;
     child = Authenticator::FindAuthenticatorMessage(element);

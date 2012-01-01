@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,19 +23,15 @@ RectangleUpdateDecoder::RectangleUpdateDecoder(MessageLoop* message_loop,
                                                FrameConsumer* consumer)
     : message_loop_(message_loop),
       consumer_(consumer),
-      initial_screen_size_(SkISize::Make(0, 0)),
+      screen_size_(SkISize::Make(0, 0)),
       clip_rect_(SkIRect::MakeEmpty()),
-      frame_is_new_(false),
-      frame_is_consuming_(false) {
+      decoder_needs_reset_(false) {
 }
 
 RectangleUpdateDecoder::~RectangleUpdateDecoder() {
 }
 
 void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
-  initial_screen_size_ = SkISize::Make(config.initial_resolution().width,
-                                       config.initial_resolution().height);
-
   // Initialize decoder based on the selected codec.
   ChannelConfig::Codec codec = config.video_config().codec;
   if (codec == ChannelConfig::CODEC_VERBATIM) {
@@ -70,36 +66,35 @@ void RectangleUpdateDecoder::AllocateFrame(const VideoPacket* packet,
   }
   base::ScopedClosureRunner done_runner(done);
 
-  // Find the required frame size.
-  bool has_screen_size = packet->format().has_screen_width() &&
-                         packet->format().has_screen_height();
-  SkISize screen_size(SkISize::Make(packet->format().screen_width(),
-                                    packet->format().screen_height()));
-  if (!has_screen_size)
-    screen_size = initial_screen_size_;
-
-  // Find the current frame size.
-  int width = 0;
-  int height = 0;
-  if (frame_) {
-    width = static_cast<int>(frame_->width());
-    height = static_cast<int>(frame_->height());
+  // If the packet includes a screen size, store it.
+  if (packet->format().has_screen_width() &&
+      packet->format().has_screen_height()) {
+    screen_size_.set(packet->format().screen_width(),
+                     packet->format().screen_height());
   }
 
-  SkISize frame_size(SkISize::Make(width, height));
+  // If we've never seen a screen size, ignore the packet.
+  if (screen_size_.isZero()) {
+    return;
+  }
+
+  // Ensure the output frame is the right size.
+  SkISize frame_size = SkISize::Make(0, 0);
+  if (frame_)
+    frame_size.set(frame_->width(), frame_->height());
 
   // Allocate a new frame, if necessary.
-  if ((!frame_) || (has_screen_size && (screen_size != frame_size))) {
+  if ((!frame_) || (screen_size_ != frame_size)) {
     if (frame_) {
       consumer_->ReleaseFrame(frame_);
       frame_ = NULL;
     }
 
     consumer_->AllocateFrame(
-        media::VideoFrame::RGB32, screen_size, &frame_,
+        media::VideoFrame::RGB32, screen_size_, &frame_,
         base::Bind(&RectangleUpdateDecoder::ProcessPacketData,
                    this, packet, done_runner.Release()));
-    frame_is_new_ = true;
+    decoder_needs_reset_ = true;
     return;
   }
   ProcessPacketData(packet, done_runner.Release());
@@ -115,10 +110,10 @@ void RectangleUpdateDecoder::ProcessPacketData(
   }
   base::ScopedClosureRunner done_runner(done);
 
-  if (frame_is_new_) {
+  if (decoder_needs_reset_) {
     decoder_->Reset();
     decoder_->Initialize(frame_);
-    frame_is_new_ = false;
+    decoder_needs_reset_ = false;
   }
 
   if (!decoder_->IsReadyForData()) {
@@ -205,7 +200,6 @@ void RectangleUpdateDecoder::SubmitToConsumer() {
   RectVector* dirty_rects = new RectVector();
   decoder_->GetUpdatedRects(dirty_rects);
 
-  frame_is_consuming_ = true;
   consumer_->OnPartialFrameOutput(frame_, dirty_rects, base::Bind(
       &RectangleUpdateDecoder::OnFrameConsumed, this, dirty_rects));
 }
@@ -231,7 +225,6 @@ void RectangleUpdateDecoder::OnFrameConsumed(RectVector* rects) {
 
   delete rects;
 
-  frame_is_consuming_ = false;
   DoRefresh();
 }
 

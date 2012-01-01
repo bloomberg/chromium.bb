@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,18 +74,15 @@ class RectangleUpdateDecoder :
   MessageLoop* message_loop_;
   FrameConsumer* consumer_;
 
-  SkISize initial_screen_size_;
+  SkISize screen_size_;
   SkIRect clip_rect_;
   RectVector refresh_rects_;
 
   scoped_ptr<Decoder> decoder_;
+  bool decoder_needs_reset_;
 
   // The video frame that the decoder writes to.
   scoped_refptr<media::VideoFrame> frame_;
-  bool frame_is_new_;
-
-  // True if |consumer_| is currently using the frame.
-  bool frame_is_consuming_;
 };
 
 }  // namespace remoting
