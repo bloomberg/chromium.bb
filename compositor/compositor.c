@@ -2019,11 +2019,18 @@ wlsc_compositor_shutdown(struct wlsc_compositor *ec)
 {
 	struct wlsc_output *output, *next;
 
+	wl_event_source_remove(ec->idle_source);
+
 	/* Destroy all outputs associated with this compositor */
 	wl_list_for_each_safe(output, next, &ec->output_list, link)
 		output->destroy(output);
 
 	wlsc_binding_list_destroy_all(&ec->binding_list);
+
+	wl_shm_finish(ec->shm);
+
+	wl_array_release(&ec->vertices);
+	wl_array_release(&ec->indices);
 }
 
 static int on_term_signal(int signal_number, void *data)
