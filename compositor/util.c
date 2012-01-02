@@ -283,6 +283,15 @@ wlsc_binding_destroy(struct wlsc_binding *binding)
 }
 
 WL_EXPORT void
+wlsc_binding_list_destroy_all(struct wl_list *list)
+{
+	struct wlsc_binding *binding, *tmp;
+
+	wl_list_for_each_safe(binding, tmp, list, link)
+		wlsc_binding_destroy(binding);
+}
+
+WL_EXPORT void
 wlsc_compositor_run_binding(struct wlsc_compositor *compositor,
 			    struct wlsc_input_device *device,
 			    uint32_t time,

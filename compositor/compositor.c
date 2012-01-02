@@ -2022,6 +2022,8 @@ wlsc_compositor_shutdown(struct wlsc_compositor *ec)
 	/* Destroy all outputs associated with this compositor */
 	wl_list_for_each_safe(output, next, &ec->output_list, link)
 		output->destroy(output);
+
+	wlsc_binding_list_destroy_all(&ec->binding_list);
 }
 
 static int on_term_signal(int signal_number, void *data)

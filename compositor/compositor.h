@@ -355,6 +355,9 @@ void
 wlsc_binding_destroy(struct wlsc_binding *binding);
 
 void
+wlsc_binding_list_destroy_all(struct wl_list *list);
+
+void
 wlsc_compositor_run_binding(struct wlsc_compositor *compositor,
 			    struct wlsc_input_device *device,
 			    uint32_t time,
