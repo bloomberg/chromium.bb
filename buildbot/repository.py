@@ -34,14 +34,14 @@ def FixExternalRepoPushUrls(buildroot):
   shell_code = ('[ "${REPO_REMOTE}" = "cros" ] || exit 0; ' +
                 'git config "remote.${REPO_REMOTE}.pushurl" ' +
                 '"%(host)s/${REPO_PROJECT}"')
-  cros_lib.RunCommand(['repo', 'forall', '-c',
+  cros_lib.RunCommand(['repo', '--time', 'forall', '-c',
                        shell_code % {'host': constants.GERRIT_SSH_URL},
                       ], cwd=buildroot)
 
 def FixBrokenExistingRepos(buildroot):
   """remove hardcoded insteadof urls people have litered in the builders"""
 
-  cros_lib.RunCommand(['repo', 'forall', '-c',
+  cros_lib.RunCommand(['repo', '--time', 'forall', '-c',
     'git config --remove-section "url.%s" 2> /dev/null' %
      constants.GERRIT_SSH_URL], cwd=buildroot, error_ok=True)
 
@@ -197,7 +197,7 @@ class RepoRepository(object):
 
       FixBrokenExistingRepos(self.directory)
 
-      cros_lib.OldRunCommand(['repo', 'sync', '--jobs', str(jobs)],
+      cros_lib.OldRunCommand(['repo', '--time', 'sync', '--jobs', str(jobs)],
                              cwd=self.directory, num_retries=2)
 
       FixExternalRepoPushUrls(self.directory)
