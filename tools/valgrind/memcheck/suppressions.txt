@@ -4711,7 +4711,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN15DownloadService18GetDownloadManagerEv
-   fun:_ZN11DownloadsUIC1EP11TabContents
+   fun:_ZN11DownloadsUIC1EPN7content11WebContentsE
    fun:_ZN12_GLOBAL__N_18NewWebUII11DownloadsUIEEP11ChromeWebUIP11TabContentsRK4GURL
    fun:_ZNK18ChromeWebUIFactory17CreateWebUIForURLEP11TabContentsRK4GURL
    fun:_ZNK22TestChromeWebUIFactory17CreateWebUIForURLEP11TabContentsRK4GURL
