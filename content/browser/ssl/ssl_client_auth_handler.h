@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_helpers.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -64,7 +65,7 @@ class CONTENT_EXPORT SSLClientAuthHandler
   friend class base::RefCountedThreadSafe<
       SSLClientAuthHandler, content::BrowserThread::DeleteOnIOThread>;
   friend class content::BrowserThread;
-  friend class DeleteTask<SSLClientAuthHandler>;
+  friend class base::DeleteHelper<SSLClientAuthHandler>;
 
   // Notifies that the user has selected a cert.
   // Called on the IO thread.

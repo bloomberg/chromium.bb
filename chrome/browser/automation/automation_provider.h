@@ -21,6 +21,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop_helpers.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/field_types.h"
@@ -160,7 +161,7 @@ class AutomationProvider
  protected:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class DeleteTask<AutomationProvider>;
+  friend class base::DeleteHelper<AutomationProvider>;
   virtual ~AutomationProvider();
 
   // Helper function to find the browser window that contains a given

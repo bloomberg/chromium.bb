@@ -205,26 +205,8 @@ class ScopedRunnableMethodFactory {
   base::WeakPtrFactory<T> weak_factory_;
 };
 
-// General task implementations ------------------------------------------------
-
-// Task to delete an object
-template<class T>
-class DeleteTask : public CancelableTask {
- public:
-  explicit DeleteTask(const T* obj) : obj_(obj) {
-  }
-  virtual void Run() {
-    delete obj_;
-  }
-  virtual void Cancel() {
-    obj_ = NULL;
-  }
-
- private:
-  const T* obj_;
-};
-
-// Equivalents for use by base::Bind().
+// Delete helper for use with base::Bind(). If you're posting a task to delete
+// an object, prefer DeleteSoon().
 template<typename T>
 void DeletePointer(T* obj) {
   delete obj;

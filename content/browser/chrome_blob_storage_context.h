@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop_helpers.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -38,7 +39,7 @@ class CONTENT_EXPORT ChromeBlobStorageContext
   friend class base::RefCountedThreadSafe<
       ChromeBlobStorageContext, content::BrowserThread::DeleteOnIOThread>;
   friend class content::BrowserThread;
-  friend class DeleteTask<ChromeBlobStorageContext>;
+  friend class base::DeleteHelper<ChromeBlobStorageContext>;
 
   virtual ~ChromeBlobStorageContext();
 

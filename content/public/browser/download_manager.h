@@ -34,6 +34,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/message_loop_helpers.h"
 #include "base/time.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/interrupt_reasons.h"
@@ -264,7 +265,7 @@ class CONTENT_EXPORT DownloadManager
       DownloadManager, content::BrowserThread::DeleteOnUIThread>;
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class DeleteTask<DownloadManager>;
+  friend class base::DeleteHelper<DownloadManager>;
 };
 
 }  // namespace content

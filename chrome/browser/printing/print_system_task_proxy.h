@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop_helpers.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -57,7 +58,7 @@ class PrintSystemTaskProxy
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class DeleteTask<PrintSystemTaskProxy>;
+  friend class base::DeleteHelper<PrintSystemTaskProxy>;
 
 #if defined(UNIT_TEST) && defined(USE_CUPS)
   FRIEND_TEST_ALL_PREFIXES(PrintSystemTaskProxyTest, DetectDuplexModeCUPS);

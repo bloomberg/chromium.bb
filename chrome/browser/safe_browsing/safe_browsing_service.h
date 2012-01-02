@@ -18,9 +18,9 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop_helpers.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -338,7 +338,7 @@ class SafeBrowsingService
 
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class DeleteTask<SafeBrowsingService>;
+  friend class base::DeleteHelper<SafeBrowsingService>;
   friend class SafeBrowsingServiceTest;
 
   // Called to initialize objects that are used on the io_thread.

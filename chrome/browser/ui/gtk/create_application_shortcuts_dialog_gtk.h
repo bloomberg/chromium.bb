@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_helpers.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/shell_integration.h"
 #include "content/public/browser/browser_thread.h"
@@ -72,7 +73,7 @@ class CreateApplicationShortcutsDialogGtk
 
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
-  friend class DeleteTask<CreateApplicationShortcutsDialogGtk>;
+  friend class base::DeleteHelper<CreateApplicationShortcutsDialogGtk>;
   DISALLOW_COPY_AND_ASSIGN(CreateApplicationShortcutsDialogGtk);
 };
 

@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/message_loop_helpers.h"
 #include "chrome/browser/protector/base_setting_change.h"
 #include "chrome/browser/protector/settings_change_global_error_delegate.h"
 
@@ -48,7 +48,7 @@ class Protector : public SettingsChangeGlobalErrorDelegate {
   virtual void OnRemovedFromProfile() OVERRIDE;
 
  private:
-  friend class DeleteTask<Protector>;
+  friend class base::DeleteHelper<Protector>;
 
   // The object can only be allocated and destroyed on heap.
   virtual ~Protector();

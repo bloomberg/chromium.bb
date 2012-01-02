@@ -20,7 +20,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/message_loop_helpers.h"
 #include "base/time.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
@@ -89,7 +89,7 @@ class BrowserFeatureExtractor {
                                const DoneCallback& callback);
 
  private:
-  friend class DeleteTask<BrowserFeatureExtractor>;
+  friend class base::DeleteHelper<BrowserFeatureExtractor>;
   typedef std::pair<ClientPhishingRequest*, DoneCallback> ExtractionData;
   typedef std::map<CancelableRequestProvider::Handle,
                    ExtractionData> PendingQueriesMap;

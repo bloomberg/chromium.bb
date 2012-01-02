@@ -15,6 +15,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_helpers.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
@@ -79,7 +80,7 @@ class CONTENT_EXPORT HostZoomMap
       HostZoomMap, content::BrowserThread::DeleteOnUIThread>;
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class DeleteTask<HostZoomMap>;
+  friend class base::DeleteHelper<HostZoomMap>;
 
   typedef std::map<std::string, double> HostZoomLevels;
 

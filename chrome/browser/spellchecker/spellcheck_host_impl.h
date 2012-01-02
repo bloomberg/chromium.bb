@@ -13,6 +13,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop_helpers.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_profile_provider.h"
 #include "content/public/common/url_fetcher_delegate.h"
@@ -65,7 +66,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
 
   // These two classes can destruct us.
   friend class content::BrowserThread;
-  friend class DeleteTask<SpellCheckHostImpl>;
+  friend class base::DeleteHelper<SpellCheckHostImpl>;
 
   // Figure out the location for the dictionary. This is only non-trivial for
   // Windows:

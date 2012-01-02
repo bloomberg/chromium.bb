@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_helpers.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -81,7 +82,7 @@ class GoogleURLChangeNotifier
 
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
-  friend class DeleteTask<GoogleURLChangeNotifier>;
+  friend class base::DeleteHelper<GoogleURLChangeNotifier>;
 
   ~GoogleURLChangeNotifier() {}
 

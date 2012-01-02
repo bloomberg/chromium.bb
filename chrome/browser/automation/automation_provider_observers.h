@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop_helpers.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
@@ -1254,7 +1255,7 @@ class PasswordStoreLoginsChangedObserver
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class DeleteTask<PasswordStoreLoginsChangedObserver>;
+  friend class base::DeleteHelper<PasswordStoreLoginsChangedObserver>;
 
   // Registers the appropriate observers.  Called on the DB thread.
   void RegisterObserversTask();
@@ -1478,7 +1479,7 @@ class AutofillChangedObserver
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class DeleteTask<AutofillChangedObserver>;
+  friend class base::DeleteHelper<AutofillChangedObserver>;
 
   // Registers the appropriate observers.  Called on the DB thread.
   void RegisterObserversTask();
@@ -1719,7 +1720,7 @@ class WaitForProcessLauncherThreadToGoIdleObserver
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class DeleteTask<WaitForProcessLauncherThreadToGoIdleObserver>;
+  friend class base::DeleteHelper<WaitForProcessLauncherThreadToGoIdleObserver>;
 
   virtual ~WaitForProcessLauncherThreadToGoIdleObserver();
 

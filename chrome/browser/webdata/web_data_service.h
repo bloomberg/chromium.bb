@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/file_path.h"
 #include "base/location.h"
+#include "base/message_loop_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/search_engines/template_url_id.h"
@@ -571,8 +572,7 @@ class WebDataService
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class DeleteTask<WebDataService>;
-  friend class ShutdownTask;
+  friend class base::DeleteHelper<WebDataService>;
 
   typedef GenericRequest2<std::vector<const TemplateURL*>,
                           std::vector<TemplateURL*> > SetKeywordsRequest;

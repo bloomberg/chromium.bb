@@ -10,6 +10,7 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop_helpers.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -40,7 +41,7 @@ class UserStyleSheetWatcher
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class DeleteTask<UserStyleSheetWatcher>;
+  friend class base::DeleteHelper<UserStyleSheetWatcher>;
 
   virtual ~UserStyleSheetWatcher();
 

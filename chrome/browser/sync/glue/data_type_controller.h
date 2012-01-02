@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/message_loop_helpers.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -94,8 +95,7 @@ class DataTypeController
  protected:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class DeleteTask<DataTypeController>;
-  friend class ShutdownTask;
+  friend class base::DeleteHelper<DataTypeController>;
 
   virtual ~DataTypeController() {}
 };

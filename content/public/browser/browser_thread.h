@@ -145,8 +145,8 @@ class CONTENT_EXPORT BrowserThread {
   static bool DeleteSoon(ID identifier,
                          const tracked_objects::Location& from_here,
                          const T* object) {
-    return PostNonNestableTask(
-        identifier, from_here, new DeleteTask<T>(object));
+    return GetMessageLoopProxyForThread(identifier)->DeleteSoon(
+        from_here, object);
   }
 
   template <class T>

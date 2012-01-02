@@ -66,6 +66,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/message_loop_helpers.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
@@ -561,7 +562,7 @@ class ProcessSingleton::LinuxWatcher
 
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
-  friend class DeleteTask<ProcessSingleton::LinuxWatcher>;
+  friend class base::DeleteHelper<ProcessSingleton::LinuxWatcher>;
 
   virtual ~LinuxWatcher() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_helpers.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "ui/gfx/native_widget_types.h"
@@ -34,7 +35,7 @@ class GpuMessageFilter : public content::BrowserMessageFilter,
 
  private:
   friend class content::BrowserThread;
-  friend class DeleteTask<GpuMessageFilter>;
+  friend class base::DeleteHelper<GpuMessageFilter>;
   virtual ~GpuMessageFilter();
 
   // Message handlers called on the browser IO thread:

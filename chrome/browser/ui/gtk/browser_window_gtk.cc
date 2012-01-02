@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/environment.h"
@@ -21,6 +22,7 @@
 #include "base/nix/xdg_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/task.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -1578,8 +1580,8 @@ void BrowserWindowGtk::OnMainWindowDestroy(GtkWidget* widget) {
   //
   // We don't want to use DeleteSoon() here since it won't work on a nested pump
   // (like in UI tests).
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   new DeleteTask<BrowserWindowGtk>(this));
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&DeletePointer<BrowserWindowGtk>, this));
 }
 
 void BrowserWindowGtk::UnMaximize() {

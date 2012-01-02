@@ -21,7 +21,6 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -487,9 +486,7 @@ ExtensionService::~ExtensionService() {
     // provide the IO thread message loop needed for those sockets to do their
     // job (including destroying themselves at shutdown).
     DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::IO));
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        new DeleteTask<extensions::SocketController>(socket_controller_));
+    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, socket_controller_);
   }
 }
 

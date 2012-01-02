@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
+#include "base/message_loop_helpers.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
@@ -365,7 +366,7 @@ class NetInternalsMessageHandler::IOThreadImpl
 
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
-  friend class DeleteTask<IOThreadImpl>;
+  friend class base::DeleteHelper<IOThreadImpl>;
 
   ~IOThreadImpl();
 

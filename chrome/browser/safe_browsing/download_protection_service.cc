@@ -9,6 +9,7 @@
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop_helpers.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
@@ -456,7 +457,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
-  friend class DeleteTask<CheckClientDownloadRequest>;
+  friend class base::DeleteHelper<CheckClientDownloadRequest>;
 
   virtual ~CheckClientDownloadRequest() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

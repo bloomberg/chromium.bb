@@ -8,6 +8,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_helpers.h"
 #include "base/string16.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -48,7 +49,7 @@ class ExtensionDataDeleter
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class DeleteTask<ExtensionDataDeleter>;
+  friend class base::DeleteHelper<ExtensionDataDeleter>;
 
   ExtensionDataDeleter(
       Profile* profile,

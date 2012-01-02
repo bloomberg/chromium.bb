@@ -13,6 +13,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop_helpers.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_types.h"
@@ -80,7 +81,7 @@ class QuotaInternalsProxy
   friend class QuotaInternalsHandler;
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::IO>;
-  friend class DeleteTask<QuotaInternalsProxy>;
+  friend class base::DeleteHelper<QuotaInternalsProxy>;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaInternalsProxy);
 };

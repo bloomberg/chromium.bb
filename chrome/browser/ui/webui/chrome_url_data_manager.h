@@ -11,8 +11,8 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_helpers.h"
 #include "base/synchronization/lock.h"
-#include "base/task.h"
 
 class ChromeURLDataManagerBackend;
 class MessageLoop;
@@ -114,7 +114,7 @@ class ChromeURLDataManager {
    private:
     friend class ChromeURLDataManagerBackend;
     friend class ChromeURLDataManager;
-    friend class DeleteTask<DataSource>;
+    friend class base::DeleteHelper<DataSource>;
 
     // SendResponse invokes this on the IO thread. Notifies the backend to
     // handle the actual work of sending the data.

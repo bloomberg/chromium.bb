@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_helpers.h"
 #include "base/process.h"
 #include "content/browser/in_process_webkit/dom_storage_area.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
@@ -41,7 +42,7 @@ class DOMStorageMessageFilter : public content::BrowserMessageFilter {
 
  private:
   friend class content::BrowserThread;
-  friend class DeleteTask<DOMStorageMessageFilter>;
+  friend class base::DeleteHelper<DOMStorageMessageFilter>;
   virtual ~DOMStorageMessageFilter();
 
   // Message Handlers.

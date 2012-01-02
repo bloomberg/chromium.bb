@@ -11,8 +11,8 @@
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_helpers.h"
 #include "base/process.h"
-#include "base/task.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "ipc/ipc_platform_file.h"
@@ -46,7 +46,7 @@ class PepperFileMessageFilter : public content::BrowserMessageFilter {
 
  private:
   friend class content::BrowserThread;
-  friend class DeleteTask<PepperFileMessageFilter>;
+  friend class base::DeleteHelper<PepperFileMessageFilter>;
   virtual ~PepperFileMessageFilter();
 
   // Called on the FILE thread:

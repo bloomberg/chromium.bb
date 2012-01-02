@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop_helpers.h"
 #include "base/process.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension.h"
@@ -247,7 +248,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
  protected:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class DeleteTask<UIThreadExtensionFunction>;
+  friend class base::DeleteHelper<UIThreadExtensionFunction>;
 
   virtual ~UIThreadExtensionFunction();
 
@@ -349,7 +350,7 @@ class IOThreadExtensionFunction : public ExtensionFunction {
  protected:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::IO>;
-  friend class DeleteTask<IOThreadExtensionFunction>;
+  friend class base::DeleteHelper<IOThreadExtensionFunction>;
 
   virtual ~IOThreadExtensionFunction();
 

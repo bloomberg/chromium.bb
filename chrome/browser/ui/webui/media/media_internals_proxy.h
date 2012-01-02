@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_helpers.h"
 #include "base/string16.h"
 #include "chrome/browser/media/media_internals_observer.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -63,7 +64,7 @@ class MediaInternalsProxy
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class DeleteTask<MediaInternalsProxy>;
+  friend class base::DeleteHelper<MediaInternalsProxy>;
   virtual ~MediaInternalsProxy();
 
   // Build a dictionary mapping constant names to values.

@@ -61,6 +61,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop_helpers.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager_event_handler.h"
@@ -130,7 +131,7 @@ class CONTENT_EXPORT AudioInputRendererHost
  private:
   // TODO(henrika): extend test suite (compare AudioRenderHost)
   friend class content::BrowserThread;
-  friend class DeleteTask<AudioInputRendererHost>;
+  friend class base::DeleteHelper<AudioInputRendererHost>;
 
   virtual ~AudioInputRendererHost();
 

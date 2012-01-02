@@ -39,6 +39,7 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_helpers.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -76,7 +77,7 @@ class CONTENT_EXPORT VideoCaptureHost
 
  private:
   friend class content::BrowserThread;
-  friend class DeleteTask<VideoCaptureHost>;
+  friend class base::DeleteHelper<VideoCaptureHost>;
   friend class MockVideoCaptureHost;
   friend class VideoCaptureHostTest;
 

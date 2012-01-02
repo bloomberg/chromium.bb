@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
-#include "base/task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -555,8 +554,7 @@ void ProfileIOData::ShutdownOnUIThread() {
           &ResourceDispatcherHost::CancelRequestsForContext,
           base::Unretained(g_browser_process->resource_dispatcher_host()),
           &resource_context_));
-  bool posted = BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                                        new DeleteTask<ProfileIOData>(this));
+  bool posted = BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
   if (!posted)
     delete this;
 }

@@ -15,6 +15,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/linked_ptr.h"
+#include "base/message_loop_helpers.h"
 #include "base/shared_memory.h"
 #include "base/string16.h"
 #include "build/build_config.h"
@@ -95,7 +96,7 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
 
  private:
   friend class content::BrowserThread;
-  friend class DeleteTask<RenderMessageFilter>;
+  friend class base::DeleteHelper<RenderMessageFilter>;
 
   class OpenChannelToNpapiPluginCallback;
 

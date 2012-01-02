@@ -11,6 +11,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/content_settings.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -42,7 +43,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
 
  private:
   friend class content::BrowserThread;
-  friend class DeleteTask<ChromeRenderMessageFilter>;
+  friend class base::DeleteHelper<ChromeRenderMessageFilter>;
 
   virtual ~ChromeRenderMessageFilter();
 

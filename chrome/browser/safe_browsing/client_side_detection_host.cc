@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop_helpers.h"
 #include "base/metrics/histogram.h"
-#include "base/task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -238,13 +238,13 @@ class CsdClient : public SafeBrowsingService::Client {
   virtual void OnBlockingPageComplete(bool proceed) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     // Delete this on the UI thread since it was created there.
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            new DeleteTask<CsdClient>(this));
+    BrowserThread::DeleteSoon(BrowserThread::UI,
+                              FROM_HERE,
+                              this);
   }
 
  private:
-  friend class DeleteTask<CsdClient>;  // Calls the private destructor.
+  friend class base::DeleteHelper<CsdClient>;  // Calls the private destructor.
 
   // We're taking care of deleting this object.  No-one else should delete
   // this object.

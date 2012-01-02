@@ -15,6 +15,7 @@
 
 #include <string>
 
+#include "base/message_loop_helpers.h"
 #include "content/public/browser/browser_thread.h"
 
 class GURL;
@@ -91,7 +92,7 @@ class ResourceHandler
 
  protected:
   friend class content::BrowserThread;
-  friend class DeleteTask<ResourceHandler>;
+  friend class base::DeleteHelper<ResourceHandler>;
 
   virtual ~ResourceHandler() {}
 };

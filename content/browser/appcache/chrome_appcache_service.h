@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_helpers.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -52,7 +53,7 @@ class CONTENT_EXPORT ChromeAppCacheService
       ChromeAppCacheService,
       content::BrowserThread::DeleteOnIOThread>;
   friend class content::BrowserThread;
-  friend class DeleteTask<ChromeAppCacheService>;
+  friend class base::DeleteHelper<ChromeAppCacheService>;
 
   virtual ~ChromeAppCacheService();
 

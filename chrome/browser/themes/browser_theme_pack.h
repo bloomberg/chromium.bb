@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop_helpers.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/color_utils.h"
@@ -93,7 +94,7 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::FILE>;
-  friend class DeleteTask<BrowserThemePack>;
+  friend class base::DeleteHelper<BrowserThemePack>;
   friend class BrowserThemePackTest;
 
   // Cached images. We cache all retrieved and generated bitmaps and keep

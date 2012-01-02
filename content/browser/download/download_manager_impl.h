@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop_helpers.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/download/download_item_impl.h"
@@ -138,7 +139,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       DownloadManagerImpl, content::BrowserThread::DeleteOnUIThread>;
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class DeleteTask<DownloadManagerImpl>;
+  friend class base::DeleteHelper<DownloadManagerImpl>;
 
   virtual ~DownloadManagerImpl();
 
