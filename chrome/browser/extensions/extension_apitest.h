@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,6 +101,14 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // Same as RunExtensionSubtest, but disables file access.
   bool RunExtensionSubtestNoFileAccess(const char* extension_name,
                                        const std::string& page_url);
+
+  // Same as RunExtensionSubtest, but enables the extension for incognito mode.
+  bool RunExtensionSubtestIncognito(const char* extension_name,
+                                    const std::string& page_url);
+
+  // Same as RunExtensionSubtestIncognito, but disables file access.
+  bool RunExtensionSubtestIncognitoNoFileAccess(const char* extension_name,
+                                                const std::string& page_url);
 
   // Load |page_url| and wait for pass / fail notification from the extension
   // API on the page.

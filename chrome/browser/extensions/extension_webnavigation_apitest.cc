@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -210,6 +211,79 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationRequestOpenTab) {
   WebKit::WebMouseEvent mouse_event;
   mouse_event.type = WebKit::WebInputEvent::MouseDown;
   mouse_event.button = WebKit::WebMouseEvent::ButtonMiddle;
+  mouse_event.x = 7;
+  mouse_event.y = 7;
+  mouse_event.clickCount = 1;
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationTargetBlank) {
+  FrameNavigationState::set_allow_extension_scheme(true);
+  ASSERT_TRUE(StartTestServer());
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
+
+  // Wait for the extension to set itself up and return control to us.
+  ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_targetBlank.html"))
+      << message_;
+
+  TabContents* tab = browser()->GetSelectedTabContents();
+  ui_test_utils::WaitForLoadStop(tab);
+
+  ResultCatcher catcher;
+
+  GURL url = test_server()->GetURL(
+      "files/extensions/api_test/webnavigation/targetBlank/a.html");
+
+  browser::NavigateParams params(browser(), url, content::PAGE_TRANSITION_LINK);
+  ui_test_utils::NavigateToURL(&params);
+
+  // There's a link with target=_blank on a.html. Click on it to open it in a
+  // new tab.
+  WebKit::WebMouseEvent mouse_event;
+  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.x = 7;
+  mouse_event.y = 7;
+  mouse_event.clickCount = 1;
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationTargetBlankIncognito) {
+  FrameNavigationState::set_allow_extension_scheme(true);
+  ASSERT_TRUE(StartTestServer());
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
+
+  // Wait for the extension to set itself up and return control to us.
+  ASSERT_TRUE(RunExtensionSubtestIncognito(
+      "webnavigation", "test_targetBlank.html")) << message_;
+
+  ResultCatcher catcher;
+
+  GURL url = test_server()->GetURL(
+      "files/extensions/api_test/webnavigation/targetBlank/a.html");
+
+  ui_test_utils::OpenURLOffTheRecord(browser()->profile(), url);
+  TabContents* tab = BrowserList::FindTabbedBrowser(
+      browser()->profile()->GetOffTheRecordProfile(), false)->
+          GetSelectedTabContents();
+
+  // There's a link with target=_blank on a.html. Click on it to open it in a
+  // new tab.
+  WebKit::WebMouseEvent mouse_event;
+  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
   mouse_event.x = 7;
   mouse_event.y = 7;
   mouse_event.clickCount = 1;

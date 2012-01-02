@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -376,7 +376,7 @@ void ExtensionWebNavigationEventRouter::Init() {
   if (registrar_.IsEmpty()) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_RETARGETING,
-                   content::Source<Profile>(profile_));
+                   content::NotificationService::AllSources());
     registrar_.Add(this,
                    content::NOTIFICATION_TAB_ADDED,
                    content::NotificationService::AllSources());
@@ -391,9 +391,13 @@ void ExtensionWebNavigationEventRouter::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_RETARGETING:
-      Retargeting(
-          content::Details<const RetargetingDetails>(details).ptr());
+    case chrome::NOTIFICATION_RETARGETING: {
+        Profile* profile = content::Source<Profile>(source).ptr();
+        if (profile->GetOriginalProfile() == profile_) {
+          Retargeting(
+              content::Details<const RetargetingDetails>(details).ptr());
+        }
+      }
       break;
 
     case content::NOTIFICATION_TAB_ADDED:

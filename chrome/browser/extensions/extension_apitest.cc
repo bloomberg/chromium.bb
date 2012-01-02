@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,6 +137,20 @@ bool ExtensionApiTest::RunExtensionSubtestNoFileAccess(
     const std::string& page_url) {
   DCHECK(!page_url.empty()) << "Argument page_url is required.";
   return RunExtensionTestImpl(extension_name, page_url, false, false, false);
+}
+
+bool ExtensionApiTest::RunExtensionSubtestIncognito(
+    const char* extension_name,
+    const std::string& page_url) {
+  DCHECK(!page_url.empty()) << "Argument page_url is required.";
+  return RunExtensionTestImpl(extension_name, page_url, true, true, false);
+}
+
+bool ExtensionApiTest::RunExtensionSubtestIncognitoNoFileAccess(
+    const char* extension_name,
+    const std::string& page_url) {
+  DCHECK(!page_url.empty()) << "Argument page_url is required.";
+  return RunExtensionTestImpl(extension_name, page_url, true, false, false);
 }
 
 bool ExtensionApiTest::RunPageTest(const std::string& page_url) {
