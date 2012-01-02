@@ -21,6 +21,10 @@
 #include "ui/base/x/active_window_watcher_x_observer.h"
 #endif
 
+namespace content {
+class WebContents;
+}
+
 // The ExtensionBrowserEventRouter listens to Browser window & tab events
 // and routes them to listeners inside extension process renderers.
 // ExtensionBrowserEventRouter listens to *all* events, but will only route
@@ -101,11 +105,11 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                        const content::NotificationDetails& details) OVERRIDE;
  private:
   // "Synthetic" event. Called from TabInsertedAt if new tab is detected.
-  void TabCreatedAt(TabContents* contents, int index, bool active);
+  void TabCreatedAt(content::WebContents* contents, int index, bool active);
 
   // Internal processing of tab updated events. Is called by both TabChangedAt
   // and Observe/NAV_ENTRY_COMMITTED.
-  void TabUpdated(TabContents* contents, bool did_navigate);
+  void TabUpdated(content::WebContents* contents, bool did_navigate);
 
   // The DispatchEvent methods forward events to the |profile|'s event router.
   // The ExtensionBrowserEventRouter listens to events for all profiles,
@@ -127,7 +131,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   void DispatchEventWithTab(Profile* profile,
                             const std::string& extension_id,
                             const char* event_name,
-                            const TabContents* tab_contents,
+                            const content::WebContents* web_contents,
                             bool active);
 
   void DispatchSimpleBrowserEvent(Profile* profile,
@@ -136,7 +140,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
 
   // Packages |changed_properties| as a tab updated event for the tab |contents|
   // and dispatches the event to the extension.
-  void DispatchTabUpdatedEvent(TabContents* contents,
+  void DispatchTabUpdatedEvent(content::WebContents* contents,
                                DictionaryValue* changed_properties);
 
   // Called to dispatch a deprecated style page action click event that was
@@ -155,10 +159,10 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
 
   // Register ourselves to receive the various notifications we are interested
   // in for a tab.
-  void RegisterForTabNotifications(TabContents* contents);
+  void RegisterForTabNotifications(content::WebContents* contents);
 
   // Removes notifications added in RegisterForTabNotifications.
-  void UnregisterForTabNotifications(TabContents* contents);
+  void UnregisterForTabNotifications(content::WebContents* contents);
 
   content::NotificationRegistrar registrar_;
 
@@ -176,18 +180,18 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
     // std::map<> by value.
     TabEntry();
 
-    // Update the load state of the tab based on its TabContents.  Returns true
+    // Update the load state of the tab based on its WebContents.  Returns true
     // if the state changed, false otherwise.  Whether the state has changed or
     // not is used to determine if events needs to be sent to extensions during
     // processing of TabChangedAt(). This method will "hold" a state-change
     // to "loading", until the DidNavigate() method which should always follow
     // it. Returns NULL if no updates should be sent.
-    DictionaryValue* UpdateLoadState(const TabContents* contents);
+    DictionaryValue* UpdateLoadState(const content::WebContents* contents);
 
     // Indicates that a tab load has resulted in a navigation and the
     // destination url is available for inspection. Returns NULL if no updates
     // should be sent.
-    DictionaryValue* DidNavigate(const TabContents* contents);
+    DictionaryValue* DidNavigate(const content::WebContents* contents);
 
    private:
     // Whether we are waiting to fire the 'complete' status change. This will
@@ -201,7 +205,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
 
   // Gets the TabEntry for the given |contents|. Returns TabEntry* if
   // found, NULL if not.
-  TabEntry* GetTabEntry(const TabContents* contents);
+  TabEntry* GetTabEntry(const content::WebContents* contents);
 
   std::map<int, TabEntry> tab_entries_;
 

@@ -14,11 +14,13 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()
     : ui_thread_(BrowserThread::UI, message_loop()),
@@ -57,8 +59,8 @@ BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {
 }
 
 TestRenderViewHost* BrowserWithTestWindowTest::TestRenderViewHostForTab(
-    TabContents* tab_contents) {
-  return static_cast<TestRenderViewHost*>(tab_contents->GetRenderViewHost());
+    WebContents* web_contents) {
+  return static_cast<TestRenderViewHost*>(web_contents->GetRenderViewHost());
 }
 
 void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
@@ -66,7 +68,7 @@ void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
   params.tabstrip_index = 0;
   params.disposition = NEW_FOREGROUND_TAB;
   browser::Navigate(&params);
-  CommitPendingLoad(&params.target_contents->tab_contents()->GetController());
+  CommitPendingLoad(&params.target_contents->web_contents()->GetController());
 }
 
 void BrowserWithTestWindowTest::CommitPendingLoad(
@@ -75,10 +77,10 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
     return;  // Nothing to commit.
 
   TestRenderViewHost* old_rvh =
-      TestRenderViewHostForTab(controller->tab_contents());
+      TestRenderViewHostForTab(controller->GetWebContents());
 
   TestRenderViewHost* pending_rvh = static_cast<TestRenderViewHost*>(
-      controller->tab_contents()->GetRenderManagerForTesting()->
+      controller->GetWebContents()->GetRenderManagerForTesting()->
       pending_render_view_host());
   if (pending_rvh) {
     // Simulate the ShouldClose_ACK that is received from the current renderer
@@ -100,7 +102,7 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
         controller->GetPendingEntry()->GetTransitionType());
   } else {
     test_rvh->SendNavigateWithTransition(
-        controller->tab_contents()->
+        controller->GetWebContents()->
             GetMaxPageIDForSiteInstance(test_rvh->site_instance()) + 1,
         controller->GetPendingEntry()->GetURL(),
         controller->GetPendingEntry()->GetTransitionType());
@@ -121,7 +123,8 @@ void BrowserWithTestWindowTest::NavigateAndCommit(
 }
 
 void BrowserWithTestWindowTest::NavigateAndCommitActiveTab(const GURL& url) {
-  NavigateAndCommit(&browser()->GetSelectedTabContents()->GetController(), url);
+  NavigateAndCommit(&browser()->GetSelectedTabContentsWrapper()->
+      web_contents()->GetController(), url);
 }
 
 void BrowserWithTestWindowTest::DestroyBrowser() {

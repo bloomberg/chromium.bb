@@ -20,6 +20,7 @@ namespace tab_util {
 // Helper to find the TabContents that originated the given request. Can be
 // NULL if the tab has been closed or some other error occurs.
 // Should only be called from the UI thread, since it accesses TabContent.
+// TODO(jam): remove TabContents version
 TabContents* GetTabContentsByID(int render_process_id, int render_view_id);
 content::WebContents* GetWebContentsByID(int render_process_id,
                                          int render_view_id);

@@ -260,7 +260,7 @@ void NavigationControllerRestoredObserver::Observe(
 
 bool NavigationControllerRestoredObserver::FinishedRestoring() {
   return (!controller_->NeedsReload() && !controller_->GetPendingEntry() &&
-          !controller_->tab_contents()->IsLoading());
+          !controller_->GetWebContents()->IsLoading());
 }
 
 void NavigationControllerRestoredObserver::SendDone() {
@@ -300,7 +300,7 @@ NavigationNotificationObserver::NavigationNotificationObserver(
   registrar_.Add(this, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
                  content::NotificationService::AllSources());
 
-  if (include_current_navigation && controller->tab_contents()->IsLoading())
+  if (include_current_navigation && controller->GetWebContents()->IsLoading())
     navigation_started_ = true;
 }
 
@@ -888,7 +888,7 @@ void BrowserOpenedNotificationObserver::Observe(
     NavigationController* controller =
         content::Source<NavigationController>(source).ptr();
     TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
-        controller->tab_contents());
+        controller->GetWebContents());
     int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
     if (window_id == new_window_id_) {
       if (for_browser_command_) {
@@ -1143,7 +1143,7 @@ bool ExecuteBrowserCommandObserver::Getint(
 }
 
 FindInPageNotificationObserver::FindInPageNotificationObserver(
-    AutomationProvider* automation, TabContents* parent_tab,
+    AutomationProvider* automation, WebContents* parent_tab,
     bool reply_with_json, IPC::Message* reply_message)
     : automation_(automation->AsWeakPtr()),
       active_match_ordinal_(-1),
@@ -1396,13 +1396,13 @@ void PageTranslatedObserver::Observe(
 
 TabLanguageDeterminedObserver::TabLanguageDeterminedObserver(
     AutomationProvider* automation, IPC::Message* reply_message,
-    TabContents* tab_contents, TranslateInfoBarDelegate* translate_bar)
+    WebContents* web_contents, TranslateInfoBarDelegate* translate_bar)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
-      tab_contents_(tab_contents),
+      web_contents_(web_contents),
       translate_bar_(translate_bar) {
   registrar_.Add(this, chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-                 content::Source<WebContents>(tab_contents));
+                 content::Source<WebContents>(web_contents_));
 }
 
 TabLanguageDeterminedObserver::~TabLanguageDeterminedObserver() {}
@@ -1418,7 +1418,7 @@ void TabLanguageDeterminedObserver::Observe(
   }
 
   TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
-      tab_contents_)->translate_tab_helper();
+      web_contents_)->translate_tab_helper();
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->SetBoolean("page_translated",
                            helper->language_state().IsPageTranslated());
@@ -1426,7 +1426,7 @@ void TabLanguageDeterminedObserver::Observe(
       "can_translate_page", TranslatePrefs::CanTranslate(
           automation_->profile()->GetPrefs(),
           helper->language_state().original_language(),
-          tab_contents_->GetURL()));
+          web_contents_->GetURL()));
   return_value->SetString("original_language",
                           helper->language_state().original_language());
   if (translate_bar_) {
@@ -2240,7 +2240,7 @@ void AppLaunchObserver::Observe(int type,
           content::Source<NavigationController>(source).ptr();
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              controller->tab_contents());
+              controller->GetWebContents());
       int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
       if (window_id == new_window_id_) {
         if (automation_) {
@@ -2974,7 +2974,7 @@ void BrowserOpenedWithNewProfileNotificationObserver::Observe(
     NavigationController* controller =
         content::Source<NavigationController>(source).ptr();
     TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
-        controller->tab_contents());
+        controller->GetWebContents());
     int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
     if (window_id == new_window_id_) {
       if (automation_) {

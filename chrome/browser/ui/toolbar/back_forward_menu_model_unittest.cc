@@ -15,9 +15,9 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -108,11 +108,11 @@ class BackFwdMenuModelTest : public ChromeRenderViewHostTestHarness {
 TEST_F(BackFwdMenuModelTest, BasicCase) {
   scoped_ptr<BackForwardMenuModel> back_model(new BackForwardMenuModel(
       NULL, BackForwardMenuModel::BACKWARD_MENU));
-  back_model->set_test_tab_contents(contents());
+  back_model->set_test_web_contents(contents());
 
   scoped_ptr<BackForwardMenuModel> forward_model(new BackForwardMenuModel(
       NULL, BackForwardMenuModel::FORWARD_MENU));
-  forward_model->set_test_tab_contents(contents());
+  forward_model->set_test_web_contents(contents());
 
   EXPECT_EQ(0, back_model->GetItemCount());
   EXPECT_EQ(0, forward_model->GetItemCount());
@@ -176,11 +176,11 @@ TEST_F(BackFwdMenuModelTest, BasicCase) {
 TEST_F(BackFwdMenuModelTest, MaxItemsTest) {
   scoped_ptr<BackForwardMenuModel> back_model(new BackForwardMenuModel(
       NULL, BackForwardMenuModel::BACKWARD_MENU));
-  back_model->set_test_tab_contents(contents());
+  back_model->set_test_web_contents(contents());
 
   scoped_ptr<BackForwardMenuModel> forward_model(new BackForwardMenuModel(
       NULL, BackForwardMenuModel::FORWARD_MENU));
-  forward_model->set_test_tab_contents(contents());
+  forward_model->set_test_web_contents(contents());
 
   // Seed the controller with 32 URLs
   LoadURLAndUpdateState("http://www.a.com/1", "A1");
@@ -258,11 +258,11 @@ TEST_F(BackFwdMenuModelTest, MaxItemsTest) {
 TEST_F(BackFwdMenuModelTest, ChapterStops) {
   scoped_ptr<BackForwardMenuModel> back_model(new BackForwardMenuModel(
     NULL, BackForwardMenuModel::BACKWARD_MENU));
-  back_model->set_test_tab_contents(contents());
+  back_model->set_test_web_contents(contents());
 
   scoped_ptr<BackForwardMenuModel> forward_model(new BackForwardMenuModel(
       NULL, BackForwardMenuModel::FORWARD_MENU));
-  forward_model->set_test_tab_contents(contents());
+  forward_model->set_test_web_contents(contents());
 
   // Seed the controller with 32 URLs.
   int i = 0;
@@ -469,7 +469,7 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
 TEST_F(BackFwdMenuModelTest, EscapeLabel) {
   scoped_ptr<BackForwardMenuModel> back_model(new BackForwardMenuModel(
       NULL, BackForwardMenuModel::BACKWARD_MENU));
-  back_model->set_test_tab_contents(contents());
+  back_model->set_test_web_contents(contents());
 
   EXPECT_EQ(0, back_model->GetItemCount());
   EXPECT_FALSE(back_model->ItemHasCommand(1));
@@ -505,7 +505,7 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
 
   BackForwardMenuModel back_model(
       &browser, BackForwardMenuModel::BACKWARD_MENU);
-  back_model.set_test_tab_contents(controller().tab_contents());
+  back_model.set_test_web_contents(controller().GetWebContents());
   back_model.SetMenuModelDelegate(&favicon_delegate);
 
   SkBitmap new_icon(CreateBitmap(SK_ColorRED));

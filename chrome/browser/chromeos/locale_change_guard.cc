@@ -15,15 +15,16 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::UserMetricsAction;
+using content::WebContents;
 
 namespace chromeos {
 
@@ -88,7 +89,7 @@ void LocaleChangeGuard::Observe(int type,
   switch (type) {
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
       if (profile_ ==
-          content::Source<TabContents>(source)->GetBrowserContext()) {
+          content::Source<WebContents>(source)->GetBrowserContext()) {
         // We need to perform locale change check only once, so unsubscribe.
         registrar_.Remove(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
                           content::NotificationService::AllSources());

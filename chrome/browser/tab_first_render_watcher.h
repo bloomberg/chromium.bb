@@ -11,7 +11,10 @@
 #include "content/public/browser/notification_registrar.h"
 
 class RenderViewHost;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // This class watches given TabContent's loading and rendering state change.
 class TabFirstRenderWatcher : public content::NotificationObserver {
@@ -23,7 +26,7 @@ class TabFirstRenderWatcher : public content::NotificationObserver {
     virtual void OnTabMainFrameFirstRender() = 0;
   };
 
-  TabFirstRenderWatcher(TabContents* tab, Delegate* delegate);
+  TabFirstRenderWatcher(content::WebContents* tab, Delegate* delegate);
 
  private:
   // Overridden from content::NotificationObserver
@@ -38,8 +41,8 @@ class TabFirstRenderWatcher : public content::NotificationObserver {
   };
   State state_;
 
-  // TabContents that this class watches.
-  TabContents* tab_contents_;
+  // WebContents that this class watches.
+  content::WebContents* web_contents_;
 
   // Delegate to notify.
   Delegate* delegate_;

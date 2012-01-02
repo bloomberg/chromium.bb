@@ -1579,8 +1579,8 @@ void TabContents::NotifyDisconnected() {
 
   notify_disconnection_ = false;
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
-      content::Source<TabContents>(this),
+      content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+      content::Source<WebContents>(this),
       content::NotificationService::NoDetails());
 }
 
@@ -1613,7 +1613,7 @@ content::ViewType TabContents::GetRenderViewType() const {
 void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
-      content::Source<TabContents>(this),
+      content::Source<WebContents>(this),
       content::Details<RenderViewHost>(render_view_host));
   NavigationEntry* entry = controller_.GetActiveEntry();
   if (!entry)
@@ -1898,7 +1898,7 @@ void TabContents::DocumentOnLoadCompletedInMainFrame(
     int32 page_id) {
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-      content::Source<TabContents>(this),
+      content::Source<WebContents>(this),
       content::Details<int>(&page_id));
 }
 

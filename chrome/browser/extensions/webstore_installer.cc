@@ -201,7 +201,7 @@ void WebstoreInstaller::StartDownload(FilePath file) {
   // We will navigate the current tab to this url to start the download. The
   // download system will then pass the crx to the CrxInstaller.
   profile_->GetDownloadManager()->DownloadUrlToFile(
-      download_url_, referrer, "", save_info, controller_->tab_contents());
+      download_url_, referrer, "", save_info, controller_->GetWebContents());
 }
 
 void WebstoreInstaller::ReportFailure(const std::string& error) {

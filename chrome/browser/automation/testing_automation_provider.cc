@@ -576,7 +576,7 @@ void TestingAutomationProvider::CloseTab(int tab_handle,
     Browser* browser = Browser::GetBrowserForController(controller, &index);
     DCHECK(browser);
     new TabClosedNotificationObserver(this, wait_until_closed, reply_message);
-    browser->CloseTabContents(controller->tab_contents());
+    browser->CloseTabContents(controller->GetWebContents());
     return;
   }
 
@@ -587,8 +587,8 @@ void TestingAutomationProvider::CloseTab(int tab_handle,
 void TestingAutomationProvider::GetCookies(const GURL& url, int handle,
                                            int* value_size,
                                            std::string* value) {
-  TabContents *contents = tab_tracker_->ContainsHandle(handle) ?
-      tab_tracker_->GetResource(handle)->tab_contents() : NULL;
+  WebContents* contents = tab_tracker_->ContainsHandle(handle) ?
+      tab_tracker_->GetResource(handle)->GetWebContents() : NULL;
   automation_util::GetCookies(url, contents, value_size, value);
 }
 
@@ -596,16 +596,16 @@ void TestingAutomationProvider::SetCookie(const GURL& url,
                                           const std::string& value,
                                           int handle,
                                           int* response_value) {
-  TabContents *contents = tab_tracker_->ContainsHandle(handle) ?
-      tab_tracker_->GetResource(handle)->tab_contents() : NULL;
+  WebContents* contents = tab_tracker_->ContainsHandle(handle) ?
+      tab_tracker_->GetResource(handle)->GetWebContents() : NULL;
   automation_util::SetCookie(url, value, contents, response_value);
 }
 
 void TestingAutomationProvider::DeleteCookie(const GURL& url,
                                              const std::string& cookie_name,
                                              int handle, bool* success) {
-  TabContents *contents = tab_tracker_->ContainsHandle(handle) ?
-      tab_tracker_->GetResource(handle)->tab_contents() : NULL;
+  WebContents* contents = tab_tracker_->ContainsHandle(handle) ?
+      tab_tracker_->GetResource(handle)->GetWebContents() : NULL;
   automation_util::DeleteCookie(url, cookie_name, contents, success);
 }
 
@@ -614,7 +614,7 @@ void TestingAutomationProvider::ShowCollectedCookiesDialog(
   *success = false;
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* controller = tab_tracker_->GetResource(handle);
-    TabContents* tab_contents = controller->tab_contents();
+    WebContents* tab_contents = controller->GetWebContents();
     Browser* browser = Browser::GetBrowserForController(controller, NULL);
     browser->ShowCollectedCookiesDialog(
         TabContentsWrapper::GetCurrentWrapperForContents(tab_contents));
@@ -1271,9 +1271,9 @@ void TestingAutomationProvider::GetTabProcessID(int handle, int* process_id) {
 
   if (tab_tracker_->ContainsHandle(handle)) {
     *process_id = 0;
-    TabContents* tab_contents =
-        tab_tracker_->GetResource(handle)->tab_contents();
-    content::RenderProcessHost* rph = tab_contents->GetRenderProcessHost();
+    WebContents* web_contents =
+        tab_tracker_->GetResource(handle)->GetWebContents();
+    content::RenderProcessHost* rph = web_contents->GetRenderProcessHost();
     if (rph)
       *process_id = base::GetProcId(rph->GetHandle());
   }
@@ -1400,10 +1400,10 @@ void TestingAutomationProvider::GetConstrainedWindowCount(int handle,
   *count = -1;  // -1 is the error code
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* nav_controller = tab_tracker_->GetResource(handle);
-    TabContents* tab_contents = nav_controller->tab_contents();
-    if (tab_contents) {
+    WebContents* web_contents = nav_controller->GetWebContents();
+    if (web_contents) {
       TabContentsWrapper* wrapper =
-          TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+          TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
       if (wrapper) {
         *count = static_cast<int>(wrapper->constrained_window_tab_helper()->
                                   constrained_window_count());
@@ -1524,13 +1524,13 @@ void TestingAutomationProvider::ShowInterstitialPage(
     IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(tab_handle)) {
     NavigationController* controller = tab_tracker_->GetResource(tab_handle);
-    TabContents* tab_contents = controller->tab_contents();
+    WebContents* web_contents = controller->GetWebContents();
 
     new NavigationNotificationObserver(controller, this, reply_message, 1,
                                        false, false);
 
     AutomationInterstitialPage* interstitial =
-        new AutomationInterstitialPage(tab_contents,
+        new AutomationInterstitialPage(static_cast<TabContents*>(web_contents),
                                        GURL("about:interstitial"),
                                        html_text);
     interstitial->Show();
@@ -1599,7 +1599,7 @@ void TestingAutomationProvider::GetPageType(
     // In order to return the proper result when an interstitial is shown and
     // no navigation entry were created for it we need to ask the TabContents.
     if (*page_type == content::PAGE_TYPE_NORMAL &&
-        tab->tab_contents()->ShowingInterstitialPage())
+        tab->GetWebContents()->ShowingInterstitialPage())
       *page_type = content::PAGE_TYPE_INTERSTITIAL;
   } else {
     *success = false;
@@ -1622,9 +1622,10 @@ void TestingAutomationProvider::ActionOnSSLBlockingPage(
     NavigationController* tab = tab_tracker_->GetResource(handle);
     NavigationEntry* entry = tab->GetActiveEntry();
     if (entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
-      TabContents* tab_contents = tab->tab_contents();
+      WebContents* web_contents = tab->GetWebContents();
       InterstitialPage* ssl_blocking_page =
-          InterstitialPage::GetInterstitialPage(tab_contents);
+          InterstitialPage::GetInterstitialPage(
+              static_cast<TabContents*>(web_contents));
       if (ssl_blocking_page) {
         if (proceed) {
           new NavigationNotificationObserver(tab, this, reply_message, 1,
@@ -1717,7 +1718,7 @@ void TestingAutomationProvider::SavePage(int tab_handle,
     return;
   }
 
-  nav->tab_contents()->SavePage(file_name, dir_path, save_type);
+  nav->GetWebContents()->SavePage(file_name, dir_path, save_type);
   *success = true;
 }
 
@@ -1973,7 +1974,7 @@ void TestingAutomationProvider::GetInfoBarCount(int handle, size_t* count) {
     if (nav_controller) {
       TabContentsWrapper* wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              nav_controller->tab_contents());
+              nav_controller->GetWebContents());
       *count = wrapper->infobar_tab_helper()->infobar_count();
     }
   }
@@ -1990,7 +1991,7 @@ void TestingAutomationProvider::ClickInfoBarAccept(
     if (nav_controller) {
       InfoBarTabHelper* infobar_helper =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              nav_controller->tab_contents())->infobar_tab_helper();
+              nav_controller->GetWebContents())->infobar_tab_helper();
       if (info_bar_index < infobar_helper->infobar_count()) {
         if (wait_for_navigation) {
           new NavigationNotificationObserver(nav_controller, this,
@@ -2220,7 +2221,7 @@ void TestingAutomationProvider::GetBlockedPopupCount(int handle, int* count) {
       NavigationController* nav_controller = tab_tracker_->GetResource(handle);
       TabContentsWrapper* tab_contents =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              nav_controller->tab_contents());
+              nav_controller->GetWebContents());
       if (tab_contents) {
         BlockedContentTabHelper* blocked_content =
             tab_contents->blocked_content_tab_helper();
@@ -6052,7 +6053,7 @@ void TestingAutomationProvider::GetIndicesFromTab(
   int id = id_or_handle;
   if (has_handle) {
     TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
-        tab_tracker_->GetResource(id_or_handle)->tab_contents());
+        tab_tracker_->GetResource(id_or_handle)->GetWebContents());
     id = tab->restore_tab_helper()->session_id().id();
   }
   BrowserList::const_iterator iter = BrowserList::begin();
@@ -6573,7 +6574,7 @@ void TestingAutomationProvider::WaitForInfoBarCount(
   // The delegate will delete itself.
   new InfoBarCountObserver(this, reply_message,
       TabContentsWrapper::GetCurrentWrapperForContents(
-          controller->tab_contents()), target_count);
+          controller->GetWebContents()), target_count);
 }
 
 // Gets the current used encoding name of the page in the specified tab.
@@ -6582,10 +6583,8 @@ void TestingAutomationProvider::GetPageCurrentEncoding(
   if (tab_tracker_->ContainsHandle(tab_handle)) {
     NavigationController* nav = tab_tracker_->GetResource(tab_handle);
     Browser* browser = FindAndActivateTab(nav);
-    DCHECK(browser);
-
     if (browser->command_updater()->IsCommandEnabled(IDC_ENCODING_MENU))
-      *current_encoding = nav->tab_contents()->GetEncoding();
+      *current_encoding = nav->GetWebContents()->GetEncoding();
   }
 }
 
@@ -6631,7 +6630,7 @@ void TestingAutomationProvider::LoadBlockedPlugins(int tab_handle,
     NavigationController* nav = tab_tracker_->GetResource(tab_handle);
     if (!nav)
       return;
-    TabContents* contents = nav->tab_contents();
+    WebContents* contents = nav->GetWebContents();
     if (!contents)
       return;
     RenderViewHost* host = contents->GetRenderViewHost();

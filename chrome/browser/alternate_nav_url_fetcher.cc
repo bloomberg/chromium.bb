@@ -12,9 +12,9 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_fetcher.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "net/base/registry_controlled_domain.h"
@@ -137,7 +137,7 @@ void AlternateNavURLFetcher::Observe(
       // See above.
       NavigationController* controller =
           &content::Source<TabContentsWrapper>(source)->
-              tab_contents()->GetController();
+              web_contents()->GetController();
       if (controller_ == controller) {
         delete this;
       } else if (!controller_) {
@@ -225,7 +225,7 @@ void AlternateNavURLFetcher::ShowInfobarIfPossible() {
 
   InfoBarTabHelper* infobar_helper =
       TabContentsWrapper::GetCurrentWrapperForContents(
-          controller_->tab_contents())->infobar_tab_helper();
+          controller_->GetWebContents())->infobar_tab_helper();
   infobar_helper->AddInfoBar(
       new AlternateNavInfoBarDelegate(infobar_helper, alternate_nav_url_));
   delete this;

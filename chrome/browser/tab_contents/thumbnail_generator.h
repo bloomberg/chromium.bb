@@ -58,7 +58,7 @@ class ThumbnailGenerator : public content::NotificationObserver,
   virtual ~ThumbnailGenerator();
 
   // Starts taking thumbnails of the given tab contents.
-  void StartThumbnailing(TabContents* tab_contents);
+  void StartThumbnailing(content::WebContents* web_contents);
 
   // This registers a callback that can receive the resulting SkBitmap
   // from the renderer when it is done rendering it.  This differs
@@ -140,9 +140,9 @@ class ThumbnailGenerator : public content::NotificationObserver,
   // Indicates that the given widget has changed is visibility.
   void WidgetHidden(RenderWidgetHost* widget);
 
-  // Called when the given tab contents are disconnected (either
+  // Called when the given web contents are disconnected (either
   // through being closed, or because the renderer is no longer there).
-  void TabContentsDisconnected(TabContents* contents);
+  void WebContentsDisconnected(content::WebContents* contents);
 
   content::NotificationRegistrar registrar_;
 

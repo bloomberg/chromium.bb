@@ -8,6 +8,7 @@
 #include "content/browser/download/download_item_impl.h"
 
 using content::DownloadItem;
+using content::WebContents;
 
 MockDownloadManager::MockDownloadManager(
     content::DownloadManagerDelegate* delegate,
@@ -101,7 +102,7 @@ void MockDownloadManager::DownloadUrlToFile(
     const GURL& referrer,
     const std::string& referrer_encoding,
     const DownloadSaveInfo& save_info,
-    TabContents* tab_contents) {
+    WebContents* web_contents) {
 }
 
 void MockDownloadManager::AddObserver(Observer* observer) {

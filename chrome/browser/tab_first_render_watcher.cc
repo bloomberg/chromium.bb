@@ -9,18 +9,21 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 
-TabFirstRenderWatcher::TabFirstRenderWatcher(TabContents* tab,
+using content::WebContents;
+
+TabFirstRenderWatcher::TabFirstRenderWatcher(WebContents* tab,
                                              Delegate* delegate)
     : state_(NONE),
-      tab_contents_(tab),
+      web_contents_(tab),
       delegate_(delegate) {
   registrar_.Add(this,
       content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
-      content::Source<TabContents>(tab_contents_));
+      content::Source<WebContents>(web_contents_));
   registrar_.Add(this,
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-      content::Source<TabContents>(tab_contents_));
+      content::Source<WebContents>(web_contents_));
 }
 
 void TabFirstRenderWatcher::Observe(int type,

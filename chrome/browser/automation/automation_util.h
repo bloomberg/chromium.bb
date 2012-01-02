@@ -21,6 +21,10 @@ class RenderViewHost;
 class TabContents;
 class TabContentsWrapper;
 
+namespace content {
+class WebContents;
+}
+
 namespace base {
 class DictionaryValue;
 }
@@ -47,20 +51,20 @@ Browser* GetBrowserForTab(TabContents* tab);
 // Gets the size and value of the cookie string for |url| in the given tab.
 // Can be called from any thread.
 void GetCookies(const GURL& url,
-                TabContents* contents,
+                content::WebContents* contents,
                 int* value_size,
                 std::string* value);
 
 // Sets a cookie for |url| in the given tab.  Can be called from any thread.
 void SetCookie(const GURL& url,
                const std::string& value,
-               TabContents* contents,
+               content::WebContents* contents,
                int* response_value);
 
 // Deletes a cookie for |url| in the given tab.  Can be called from any thread.
 void DeleteCookie(const GURL& url,
                   const std::string& cookie_name,
-                  TabContents* contents,
+                  content::WebContents* contents,
                   bool* success);
 
 // Gets the cookies for the given URL. Uses the JSON interface.

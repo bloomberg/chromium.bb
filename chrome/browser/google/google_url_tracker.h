@@ -20,7 +20,10 @@
 
 class NavigationController;
 class PrefService;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // This object is responsible for checking the Google URL once per network
 // change, and if necessary prompting the user to see if they want to change to
@@ -119,9 +122,9 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   void SearchCommitted();
   void OnNavigationPending(const content::NotificationSource& source,
                            const GURL& pending_url);
-  void OnNavigationCommittedOrTabClosed(TabContents* tab_contents,
+  void OnNavigationCommittedOrTabClosed(content::WebContents* web_contents,
                                         int type);
-  void ShowGoogleURLInfoBarIfNecessary(TabContents* tab_contents);
+  void ShowGoogleURLInfoBarIfNecessary(content::WebContents* web_contents);
 
   content::NotificationRegistrar registrar_;
   InfobarCreator infobar_creator_;

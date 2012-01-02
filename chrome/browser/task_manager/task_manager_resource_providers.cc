@@ -390,7 +390,7 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                  content::NotificationService::AllBrowserContextsAndSources());
   // TAB_CONTENTS_DISCONNECTED should be enough to know when to remove a
   // resource.  This is an attempt at mitigating a crasher that seem to
@@ -414,7 +414,7 @@ void TaskManagerTabContentsResourceProvider::StopUpdating() {
       this, content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
       content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Remove(
-      this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
+      this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
       content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Remove(
       this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
@@ -525,7 +525,7 @@ void TaskManagerTabContentsResourceProvider::Observe(int type,
              resources_.end()) << "TAB_CONTENTS_DESTROYED with no associated "
                                   "TAB_CONTENTS_DISCONNECTED";
       // Fall through.
-    case content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED:
+    case content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED:
       Remove(tab_contents);
       break;
     case chrome::NOTIFICATION_INSTANT_COMMITTED:

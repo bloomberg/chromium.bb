@@ -248,7 +248,7 @@ void InterstitialPage::Hide() {
 
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_INTERSTITIAL_DETACHED,
-      content::Source<TabContents>(tab_),
+      content::Source<WebContents>(tab_),
       content::NotificationService::NoDetails());
 
   delete this;
@@ -343,7 +343,7 @@ void InterstitialPage::DidNavigate(
   // hiding the bookmark bar.
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-      content::Source<TabContents>(tab_),
+      content::Source<WebContents>(tab_),
       content::NotificationService::NoDetails());
 
   RenderWidgetHostView* rwh_view = tab_->GetRenderViewHost()->view();

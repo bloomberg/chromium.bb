@@ -52,6 +52,7 @@ struct DownloadSaveInfo;
 namespace content {
 class BrowserContext;
 class DownloadManagerDelegate;
+class WebContents;
 
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManager
@@ -156,18 +157,18 @@ class CONTENT_EXPORT DownloadManager
 
   // Download the object at the URL. Used in cases such as "Save Link As..."
   virtual void DownloadUrl(const GURL& url,
-                   const GURL& referrer,
-                   const std::string& referrer_encoding,
-                   TabContents* tab_contents) = 0;
+                           const GURL& referrer,
+                           const std::string& referrer_encoding,
+                           TabContents* tab_contents) = 0;
 
   // Download the object at the URL and save it to the specified path. The
   // download is treated as the temporary download and thus will not appear
   // in the download history. Used in cases such as drag and drop.
   virtual void DownloadUrlToFile(const GURL& url,
-                         const GURL& referrer,
-                         const std::string& referrer_encoding,
-                         const DownloadSaveInfo& save_info,
-                         TabContents* tab_contents) = 0;
+                                 const GURL& referrer,
+                                 const std::string& referrer_encoding,
+                                 const DownloadSaveInfo& save_info,
+                                 WebContents* web_contents) = 0;
 
   // Allow objects to observe the download creation process.
   virtual void AddObserver(Observer* observer) = 0;

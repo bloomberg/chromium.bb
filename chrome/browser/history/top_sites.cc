@@ -28,11 +28,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/thumbnail_score.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -848,7 +848,7 @@ void TopSites::Observe(int type,
     NavigationController* controller =
         content::Source<NavigationController>(source).ptr();
     Profile* profile = Profile::FromBrowserContext(
-        controller->tab_contents()->GetBrowserContext());
+        controller->GetWebContents()->GetBrowserContext());
     if (profile == profile_ && !IsFull()) {
       content::LoadCommittedDetails* load_details =
           content::Details<content::LoadCommittedDetails>(details).ptr();

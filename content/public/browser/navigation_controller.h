@@ -17,19 +17,19 @@
 class GURL;
 class SessionStorageNamespace;
 class SSLManager;
-class TabContents;
 
 namespace content {
 
 class BrowserContext;
 class NavigationEntry;
+class WebContents;
 struct Referrer;
 
 // A NavigationController maintains the back-forward list for a single tab and
 // manages all navigation within that list.
 //
-// The NavigationController also owns all TabContents for the tab. This is to
-// make sure that we have at most one TabContents instance per type.
+// The NavigationController also owns all WebContents for the tab. This is to
+// make sure that we have at most one WebContents instance per type.
 class NavigationController {
  public:
   enum ReloadType {
@@ -50,6 +50,10 @@ class NavigationController {
       BrowserContext* browser_context);
 
   virtual ~NavigationController() {}
+
+  // Returns the web contents associated with this controller. Non-NULL except
+  // during set-up of the tab.
+  virtual WebContents* GetWebContents() const = 0;
 
   // Returns the browser context for this controller. It can never be NULL.
   virtual BrowserContext* GetBrowserContext() const = 0;

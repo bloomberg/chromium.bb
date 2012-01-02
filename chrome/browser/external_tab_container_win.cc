@@ -210,7 +210,7 @@ bool ExternalTabContainer::Init(Profile* profile,
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
-                 content::Source<TabContents>(tab_contents_->tab_contents()));
+                 content::Source<WebContents>(tab_contents_->web_contents()));
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,

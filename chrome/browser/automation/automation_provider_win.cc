@@ -24,7 +24,7 @@
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -251,7 +251,7 @@ ExternalTabContainer* AutomationProvider::GetExternalTabForHandle(int handle) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     return ExternalTabContainer::GetContainerForTab(
-        tab->tab_contents()->GetNativeView());
+        tab->GetWebContents()->GetNativeView());
   }
 
   return NULL;
@@ -297,13 +297,13 @@ void AutomationProvider::OnForwardContextMenuCommandToChrome(int tab_handle,
     return;
   }
 
-  TabContents* tab_contents = tab->tab_contents();
-  if (!tab_contents || !tab_contents->GetDelegate()) {
+  WebContents* web_contents = tab->GetWebContents();
+  if (!web_contents || !web_contents->GetDelegate()) {
     NOTREACHED();
     return;
   }
 
-  tab_contents->GetDelegate()->ExecuteContextMenuCommand(command);
+  web_contents->GetDelegate()->ExecuteContextMenuCommand(command);
 }
 
 void AutomationProvider::ConnectExternalTab(
@@ -332,7 +332,7 @@ void AutomationProvider::ConnectExternalTab(
     external_tab_container->Reinitialize(this,
                                          automation_resource_message_filter_,
                                          parent_window);
-    TabContents* tab_contents = external_tab_container->tab_contents();
+    WebContents* tab_contents = external_tab_container->web_contents();
     *tab_handle = external_tab_container->tab_handle();
     *tab_container_window = external_tab_container->GetNativeView();
     *tab_window = tab_contents->GetNativeView();
@@ -403,8 +403,8 @@ void AutomationProvider::OnRunUnloadHandlers(
 void AutomationProvider::OnSetZoomLevel(int handle, int zoom_level) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    if (tab->tab_contents() && tab->tab_contents()->GetRenderViewHost()) {
-      RenderViewHost* host = tab->tab_contents()->GetRenderViewHost();
+    if (tab->GetWebContents() && tab->GetWebContents()->GetRenderViewHost()) {
+      RenderViewHost* host = tab->GetWebContents()->GetRenderViewHost();
       content::PageZoom zoom = static_cast<content::PageZoom>(zoom_level);
       host->Zoom(zoom);
     }

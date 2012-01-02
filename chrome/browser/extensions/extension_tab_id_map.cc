@@ -11,13 +11,14 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -64,7 +65,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
-      TabContents* contents = content::Source<TabContents>(source).ptr();
+      WebContents* contents = content::Source<WebContents>(source).ptr();
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(contents);
       if (!tab)
@@ -85,7 +86,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
     case content::NOTIFICATION_TAB_PARENTED: {
       TabContentsWrapper* tab =
           content::Source<TabContentsWrapper>(source).ptr();
-      RenderViewHost* host = tab->tab_contents()->GetRenderViewHost();
+      RenderViewHost* host = tab->web_contents()->GetRenderViewHost();
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(

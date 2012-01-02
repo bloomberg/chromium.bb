@@ -21,7 +21,7 @@ namespace {
 
 void SimulateRendererCrash(Browser* browser) {
   ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
+      content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
       content::NotificationService::AllSources());
   browser->OpenURL(OpenURLParams(
       GURL(chrome::kChromeUICrashURL), Referrer(), CURRENT_TAB,

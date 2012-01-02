@@ -12,8 +12,9 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
-using content::BrowserThread;
 using WebKit::WebDragOperationNone;
+using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -39,8 +40,8 @@ WebDragSource::WebDragSource(gfx::NativeWindow source_wnd,
       effect_(DROPEFFECT_NONE) {
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
                  content::Source<TabContents>(tab_contents));
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
-                 content::Source<TabContents>(tab_contents));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+                 content::Source<WebContents>(tab_contents));
 }
 
 WebDragSource::~WebDragSource() {
@@ -116,7 +117,7 @@ void WebDragSource::Observe(int type,
     // That's OK, we can continue the drag, we just can't send messages back to
     // our drag source.
     render_view_host_ = NULL;
-  } else if (content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED == type) {
+  } else if (content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED == type) {
     // This could be possible when we close the tab and the source is still
     // being used in DoDragDrop at the time that the virtual file is being
     // downloaded.

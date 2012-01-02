@@ -768,8 +768,7 @@ void DownloadManagerImpl::DownloadUrlToFile(const GURL& url,
                                             const GURL& referrer,
                                             const std::string& referrer_charset,
                                             const DownloadSaveInfo& save_info,
-                                            TabContents* tab_contents) {
-  DCHECK(tab_contents);
+                                            WebContents* web_contents) {
   ResourceDispatcherHost* resource_dispatcher_host =
       content::GetContentClient()->browser()->GetResourceDispatcherHost();
 
@@ -780,9 +779,9 @@ void DownloadManagerImpl::DownloadUrlToFile(const GURL& url,
       BrowserThread::IO, FROM_HERE,
       base::Bind(&BeginDownload,
           URLParams(url, referrer), save_info, resource_dispatcher_host,
-          RenderParams(tab_contents->GetRenderProcessHost()->GetID(),
-                       tab_contents->GetRenderViewHost()->routing_id()),
-          &tab_contents->GetBrowserContext()->GetResourceContext()));
+          RenderParams(web_contents->GetRenderProcessHost()->GetID(),
+                       web_contents->GetRenderViewHost()->routing_id()),
+          &web_contents->GetBrowserContext()->GetResourceContext()));
 }
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {

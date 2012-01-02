@@ -21,9 +21,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/url_fetcher.h"
 #include "grit/generated_resources.h"
 #include "net/base/load_flags.h"
@@ -34,6 +34,7 @@
 
 using content::OpenURLParams;
 using content::Referrer;
+using content::WebContents;
 
 namespace {
 
@@ -313,7 +314,7 @@ void GoogleURLTracker::RedoSearch() {
   if (new_search_url.is_valid()) {
     OpenURLParams params(new_search_url, Referrer(), CURRENT_TAB,
                          content::PAGE_TRANSITION_GENERATED, false);
-    controller_->tab_contents()->OpenURL(params);
+    controller_->GetWebContents()->OpenURL(params);
   }
 }
 
@@ -331,7 +332,7 @@ void GoogleURLTracker::Observe(int type,
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
     case content::NOTIFICATION_TAB_CLOSED:
       OnNavigationCommittedOrTabClosed(
-          content::Source<NavigationController>(source).ptr()->tab_contents(),
+          content::Source<NavigationController>(source).ptr()->GetWebContents(),
           type);
       break;
 
@@ -370,12 +371,12 @@ void GoogleURLTracker::OnNavigationPending(
 }
 
 void GoogleURLTracker::OnNavigationCommittedOrTabClosed(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     int type) {
   registrar_.RemoveAll();
 
   if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    ShowGoogleURLInfoBarIfNecessary(tab_contents);
+    ShowGoogleURLInfoBarIfNecessary(web_contents);
   } else {
     controller_ = NULL;
     infobar_ = NULL;
@@ -383,16 +384,16 @@ void GoogleURLTracker::OnNavigationCommittedOrTabClosed(
 }
 
 void GoogleURLTracker::ShowGoogleURLInfoBarIfNecessary(
-    TabContents* tab_contents) {
+    WebContents* web_contents) {
   if (!need_to_prompt_)
     return;
   DCHECK(!fetched_google_url_.is_empty());
 
   // |tab_contents| can be NULL during tests.
   InfoBarTabHelper* infobar_helper = NULL;
-  if (tab_contents) {
+  if (web_contents) {
     TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+        TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
     infobar_helper = wrapper->infobar_tab_helper();
   }
   infobar_ = (*infobar_creator_)(infobar_helper, this, fetched_google_url_);

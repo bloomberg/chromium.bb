@@ -21,12 +21,13 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace browser_sync {
 
@@ -37,7 +38,7 @@ namespace {
 SyncedTabDelegate* ExtractSyncedTabDelegate(
     const content::NotificationSource& source) {
   TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
-      content::Source<NavigationController>(source).ptr()->tab_contents());
+      content::Source<NavigationController>(source).ptr()->GetWebContents());
   if (!tab)
     return NULL;
   return tab->synced_tab_delegate();
@@ -107,7 +108,7 @@ void SessionChangeProcessor::Observe(
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
       TabContentsWrapper* tab_contents_wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              content::Source<TabContents>(source).ptr());
+              content::Source<WebContents>(source).ptr());
       if (!tab_contents_wrapper) {
         return;
       }

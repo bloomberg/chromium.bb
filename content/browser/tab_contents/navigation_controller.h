@@ -15,6 +15,7 @@
 #include "content/public/browser/navigation_type.h"
 
 class SiteInstance;
+class TabContents;
 struct ViewHostMsg_FrameNavigate_Params;
 
 namespace content {
@@ -32,6 +33,7 @@ class CONTENT_EXPORT NavigationController
   virtual ~NavigationController();
 
   // NavigationController implementation:
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual void Restore(
       int selected_navigation,
@@ -121,8 +123,6 @@ class CONTENT_EXPORT NavigationController
 
   // TabContents ---------------------------------------------------------------
 
-  // Returns the tab contents associated with this controller. Non-NULL except
-  // during set-up of the tab.
   TabContents* tab_contents() const {
     // This currently returns the active tab contents which should be renamed to
     // tab_contents.

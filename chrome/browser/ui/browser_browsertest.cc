@@ -1356,7 +1356,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
 
   ui_test_utils::WindowedNotificationObserver interstitial_observer(
       content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-      content::Source<TabContents>(contents));
+      content::Source<WebContents>(contents));
   interstitial->Show();
   interstitial_observer.Wait();
 
@@ -1369,7 +1369,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
 
   ui_test_utils::WindowedNotificationObserver interstitial_detach_observer(
       content::NOTIFICATION_INTERSTITIAL_DETACHED,
-      content::Source<TabContents>(contents));
+      content::Source<WebContents>(contents));
   interstitial->Proceed();
   interstitial_detach_observer.Wait();
   // interstitial is deleted now.

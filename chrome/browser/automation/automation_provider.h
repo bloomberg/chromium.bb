@@ -207,7 +207,7 @@ class AutomationProvider
 
   // Sends a find request for a given query.
   void SendFindRequest(
-      TabContents* tab_contents,
+      content::WebContents* web_contents,
       bool with_json,
       const string16& search_string,
       bool forward,

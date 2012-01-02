@@ -66,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(TabFirstRenderWatcherTest,
   dom_view->GetWidget()->Show();
 
   scoped_ptr<TabFirstRenderWatcher> watcher(
-      new TabFirstRenderWatcher(dom_view->dom_contents()->tab_contents(),
+      new TabFirstRenderWatcher(dom_view->dom_contents()->web_contents(),
                                 this));
 
   EXPECT_FALSE(host_created_);

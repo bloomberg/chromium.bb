@@ -574,7 +574,7 @@ class ExecuteBrowserCommandObserver : public content::NotificationObserver {
 class FindInPageNotificationObserver : public content::NotificationObserver {
  public:
   FindInPageNotificationObserver(AutomationProvider* automation,
-                                 TabContents* parent_tab,
+                                 content::WebContents* parent_tab,
                                  bool reply_with_json,
                                  IPC::Message* reply_message);
   virtual ~FindInPageNotificationObserver();
@@ -710,7 +710,7 @@ class TabLanguageDeterminedObserver : public content::NotificationObserver {
  public:
   TabLanguageDeterminedObserver(AutomationProvider* automation,
                                 IPC::Message* reply_message,
-                                TabContents* tab_contents,
+                                content::WebContents* web_contents,
                                 TranslateInfoBarDelegate* translate_bar);
   virtual ~TabLanguageDeterminedObserver();
 
@@ -723,7 +723,7 @@ class TabLanguageDeterminedObserver : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
   TranslateInfoBarDelegate* translate_bar_;
 
   DISALLOW_COPY_AND_ASSIGN(TabLanguageDeterminedObserver);

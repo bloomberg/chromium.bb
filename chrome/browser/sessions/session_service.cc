@@ -534,7 +534,7 @@ void SessionService::Observe(int type,
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
               content::Source<NavigationController>(
-                  source).ptr()->tab_contents());
+                  source).ptr()->GetWebContents());
       if (!tab || tab->profile() != profile())
         return;
       TabClosed(tab->restore_tab_helper()->window_id(),
@@ -549,7 +549,7 @@ void SessionService::Observe(int type,
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
               content::Source<NavigationController>(
-                  source).ptr()->tab_contents());
+                  source).ptr()->GetWebContents());
       if (!tab || tab->profile() != profile())
         return;
       content::Details<content::PrunedDetails> pruned_details(details);
@@ -573,7 +573,7 @@ void SessionService::Observe(int type,
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
               content::Source<NavigationController>(
-                  source).ptr()->tab_contents());
+                  source).ptr()->GetWebContents());
       if (!tab || tab->profile() != profile())
         return;
       content::Details<content::EntryChangedDetails> changed(details);
@@ -588,7 +588,7 @@ void SessionService::Observe(int type,
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
               content::Source<NavigationController>(
-                  source).ptr()->tab_contents());
+                  source).ptr()->GetWebContents());
       if (!tab || tab->profile() != profile())
         return;
       int current_entry_index =

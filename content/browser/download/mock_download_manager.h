@@ -56,7 +56,7 @@ class MockDownloadManager : public content::DownloadManager {
                                  const GURL& referrer,
                                  const std::string& referrer_encoding,
                                  const DownloadSaveInfo& save_info,
-                                 TabContents* tab_contents) OVERRIDE;
+                                 content::WebContents* web_contents) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual void OnPersistentStoreQueryComplete(

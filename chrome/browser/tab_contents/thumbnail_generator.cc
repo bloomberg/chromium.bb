@@ -17,10 +17,11 @@
 #include "chrome/common/thumbnail_score.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
@@ -146,8 +147,8 @@ ThumbnailGenerator::ThumbnailGenerator()
 ThumbnailGenerator::~ThumbnailGenerator() {
 }
 
-void ThumbnailGenerator::StartThumbnailing(TabContents* tab_contents) {
-  content::WebContentsObserver::Observe(tab_contents);
+void ThumbnailGenerator::StartThumbnailing(WebContents* web_contents) {
+  content::WebContentsObserver::Observe(web_contents);
 
   if (registrar_.IsEmpty()) {
     // Even though we deal in RenderWidgetHosts, we only care about its
@@ -155,9 +156,9 @@ void ThumbnailGenerator::StartThumbnailing(TabContents* tab_contents) {
     // for RenderViewHosts that aren't in tabs, or RenderWidgetHosts that
     // aren't views like select popups.
     registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
-                   content::Source<TabContents>(tab_contents));
-    registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
-                   content::Source<TabContents>(tab_contents));
+                   content::Source<WebContents>(web_contents));
+    registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+                   content::Source<WebContents>(web_contents));
   }
 }
 
@@ -352,8 +353,8 @@ void ThumbnailGenerator::Observe(int type,
       break;
     }
 
-    case content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED:
-      TabContentsDisconnected(content::Source<TabContents>(source).ptr());
+    case content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED:
+      WebContentsDisconnected(content::Source<WebContents>(source).ptr());
       break;
 
     default:
@@ -370,7 +371,7 @@ void ThumbnailGenerator::WidgetHidden(RenderWidgetHost* widget) {
   UpdateThumbnailIfNecessary(web_contents());
 }
 
-void ThumbnailGenerator::TabContentsDisconnected(TabContents* contents) {
+void ThumbnailGenerator::WebContentsDisconnected(WebContents* contents) {
   // Go through the existing callbacks, and find any that have the
   // same renderer as this TabContents and remove them so they don't
   // hang around.

@@ -37,6 +37,7 @@
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -157,7 +158,7 @@ Browser* GetBrowserForTab(TabContents* tab) {
   return NULL;
 }
 
-net::URLRequestContextGetter* GetRequestContext(TabContents* contents) {
+net::URLRequestContextGetter* GetRequestContext(WebContents* contents) {
   // Since we may be on the UI thread don't call GetURLRequestContext().
   // Get the request context specific to the current TabContents and app.
   return contents->GetBrowserContext()->GetRequestContextForRenderProcess(
@@ -165,7 +166,7 @@ net::URLRequestContextGetter* GetRequestContext(TabContents* contents) {
 }
 
 void GetCookies(const GURL& url,
-                TabContents* contents,
+                WebContents* contents,
                 int* value_size,
                 std::string* value) {
   *value_size = -1;
@@ -185,7 +186,7 @@ void GetCookies(const GURL& url,
 
 void SetCookie(const GURL& url,
                const std::string& value,
-               TabContents* contents,
+               WebContents* contents,
                int* response_value) {
   *response_value = -1;
 
@@ -207,7 +208,7 @@ void SetCookie(const GURL& url,
 
 void DeleteCookie(const GURL& url,
                   const std::string& cookie_name,
-                  TabContents* contents,
+                  WebContents* contents,
                   bool* success) {
   *success = false;
   if (url.is_valid() && contents) {

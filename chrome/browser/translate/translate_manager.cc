@@ -35,13 +35,15 @@
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_fetcher.h"
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
@@ -271,7 +273,7 @@ void TranslateManager::Observe(int type,
 
       TabContentsWrapper* wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              controller->tab_contents());
+              controller->GetWebContents());
       if (!wrapper || !wrapper->translate_tab_helper())
         return;
 
@@ -297,8 +299,8 @@ void TranslateManager::Observe(int type,
           base::Bind(
               &TranslateManager::InitiateTranslationPosted,
               weak_method_factory_.GetWeakPtr(),
-              controller->tab_contents()->GetRenderProcessHost()->GetID(),
-              controller->tab_contents()->GetRenderViewHost()->routing_id(),
+              controller->GetWebContents()->GetRenderProcessHost()->GetID(),
+              controller->GetWebContents()->GetRenderViewHost()->routing_id(),
               helper->language_state().original_language()));
       break;
     }
@@ -397,7 +399,7 @@ void TranslateManager::OnURLFetchComplete(const content::URLFetcher* source) {
     for (iter = pending_requests_.begin(); iter != pending_requests_.end();
          ++iter) {
       const PendingRequest& request = *iter;
-      TabContents* tab = tab_util::GetTabContentsByID(request.render_process_id,
+      WebContents* tab = tab_util::GetWebContentsByID(request.render_process_id,
                                                       request.render_view_id);
       if (!tab) {
         // The tab went away while we were retrieving the script.
@@ -539,7 +541,7 @@ void TranslateManager::InitiateTranslation(WebContents* tab,
 void TranslateManager::InitiateTranslationPosted(
     int process_id, int render_id, const std::string& page_lang) {
   // The tab might have been closed.
-  TabContents* tab = tab_util::GetTabContentsByID(process_id, render_id);
+  WebContents* tab = tab_util::GetWebContentsByID(process_id, render_id);
   if (!tab)
     return;
 

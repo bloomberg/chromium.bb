@@ -19,6 +19,8 @@
 #include "content/public/browser/notification_source.h"
 #include "ui/views/layout/fill_layout.h"
 
+using content::WebContents;
+
 // The minimum/maximum dimensions of the popup.
 // The minimum is just a little larger than the size of the button itself.
 // The maximum is an arbitrary number that should be smaller than most screens.
@@ -50,7 +52,7 @@ ExtensionPopup::ExtensionPopup(
 
   // Wait to show the popup until the contained host finishes loading.
   registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                 content::Source<TabContents>(host->host_contents()));
+                 content::Source<WebContents>(host->host_contents()));
 
   // Listen for the containing view calling window.close();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
@@ -68,7 +70,7 @@ void ExtensionPopup::Observe(int type,
                              const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:
-      DCHECK(content::Source<TabContents>(host()->host_contents()) == source);
+      DCHECK(content::Source<WebContents>(host()->host_contents()) == source);
       // Show when the content finishes loading and its width is computed.
       Show();
       // Focus on the host contents when the bubble is first shown.

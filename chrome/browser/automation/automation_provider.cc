@@ -546,9 +546,9 @@ void AutomationProvider::HandleFindRequest(
   }
 
   NavigationController* nav = tab_tracker_->GetResource(handle);
-  TabContents* tab_contents = nav->tab_contents();
+  WebContents* web_contents = nav->GetWebContents();
 
-  SendFindRequest(tab_contents,
+  SendFindRequest(web_contents,
                   false,
                   params.search_string,
                   params.forward,
@@ -558,7 +558,7 @@ void AutomationProvider::HandleFindRequest(
 }
 
 void AutomationProvider::SendFindRequest(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     bool with_json,
     const string16& search_string,
     bool forward,
@@ -568,14 +568,14 @@ void AutomationProvider::SendFindRequest(
   int request_id = FindInPageNotificationObserver::kFindInPageRequestId;
   FindInPageNotificationObserver* observer =
       new FindInPageNotificationObserver(this,
-                                         tab_contents,
+                                         web_contents,
                                          with_json,
                                          reply_message);
   if (!with_json) {
     find_in_page_observer_.reset(observer);
   }
   TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
   if (wrapper)
     wrapper->find_tab_helper()->set_current_find_request_id(request_id);
 
@@ -583,7 +583,7 @@ void AutomationProvider::SendFindRequest(
   options.forward = forward;
   options.matchCase = match_case;
   options.findNext = find_next;
-  tab_contents->GetRenderViewHost()->Find(
+  web_contents->GetRenderViewHost()->Find(
       FindInPageNotificationObserver::kFindInPageRequestId, search_string,
       options);
 }
@@ -605,7 +605,7 @@ WebContents* AutomationProvider::GetWebContentsForHandle(
     NavigationController* nav_controller = tab_tracker_->GetResource(handle);
     if (tab)
       *tab = nav_controller;
-    return nav_controller->tab_contents();
+    return nav_controller->GetWebContents();
   }
   return NULL;
 }
@@ -634,7 +634,7 @@ void AutomationProvider::OverrideEncoding(int tab_handle,
     } else {
       // There is no UI, Chrome probably runs as Chrome-Frame mode.
       // Try to get TabContents and call its override_encoding method.
-      TabContents* contents = nav->tab_contents();
+      WebContents* contents = nav->GetWebContents();
       if (!contents)
         return;
       const std::string selected_encoding =
@@ -726,10 +726,10 @@ void AutomationProvider::OnSetPageFontSize(int tab_handle,
   if (tab_tracker_->ContainsHandle(tab_handle)) {
     NavigationController* tab = tab_tracker_->GetResource(tab_handle);
     DCHECK(tab != NULL);
-    if (tab && tab->tab_contents()) {
-      DCHECK(tab->tab_contents()->GetBrowserContext() != NULL);
-      Profile* profile =
-          Profile::FromBrowserContext(tab->tab_contents()->GetBrowserContext());
+    if (tab && tab->GetWebContents()) {
+      DCHECK(tab->GetWebContents()->GetBrowserContext() != NULL);
+      Profile* profile = Profile::FromBrowserContext(
+          tab->GetWebContents()->GetBrowserContext());
       profile->GetPrefs()->SetInteger(
           prefs::kWebKitGlobalDefaultFontSize, font_size);
     }
@@ -801,13 +801,13 @@ RenderViewHost* AutomationProvider::GetViewForTab(int tab_handle) {
       return NULL;
     }
 
-    TabContents* tab_contents = tab->tab_contents();
-    if (!tab_contents) {
+    WebContents* web_contents = tab->GetWebContents();
+    if (!web_contents) {
       NOTREACHED();
       return NULL;
     }
 
-    RenderViewHost* view_host = tab_contents->GetRenderViewHost();
+    RenderViewHost* view_host = web_contents->GetRenderViewHost();
     return view_host;
   }
 

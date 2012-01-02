@@ -9,12 +9,13 @@
 #include "base/file_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 
 using ::base::files::FilePathWatcher;
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -176,7 +177,7 @@ void UserStyleSheetWatcher::Observe(int type,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(type == content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB);
   if (profile_->IsSameProfile(Profile::FromBrowserContext(
-          content::Source<TabContents>(source)->GetBrowserContext()))) {
+          content::Source<WebContents>(source)->GetBrowserContext()))) {
     loader_->NotifyLoaded();
     registrar_.RemoveAll();
   }

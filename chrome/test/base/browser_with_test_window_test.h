@@ -18,6 +18,9 @@
 #include "ui/aura/test/test_activation_client.h"
 #endif
 
+class GURL;
+class NavigationController;
+
 #if defined(USE_AURA)
 namespace aura {
 namespace test {
@@ -26,8 +29,9 @@ class TestActivationClient;
 }
 #endif
 
-class GURL;
-class NavigationController;
+namespace content {
+class WebContents;
+}
 
 // Base class for browser based unit tests. BrowserWithTestWindowTest creates a
 // Browser with a TestingProfile and TestBrowserWindow. To add a tab use
@@ -60,7 +64,8 @@ class BrowserWithTestWindowTest : public testing::Test {
 
   // Returns the current RenderViewHost for the current tab as a
   // TestRenderViewHost.
-  TestRenderViewHost* TestRenderViewHostForTab(TabContents* tab_contents);
+  TestRenderViewHost* TestRenderViewHostForTab(
+      content::WebContents* web_contents);
 
  protected:
   TestBrowserWindow* window() const { return window_.get(); }

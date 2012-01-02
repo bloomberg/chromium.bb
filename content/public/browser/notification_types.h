@@ -82,7 +82,7 @@ enum NotificationType {
   // Other load-related (not from NavigationController) ----------------------
 
   // Corresponds to ViewHostMsg_DocumentOnLoadCompletedInMainFrame. The source
-  // is the TabContents and the details the page_id.
+  // is the WebContents and the details the page_id.
   NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
 
   // A content load is starting.  The source will be a
@@ -237,10 +237,10 @@ enum NotificationType {
   // source pointer becomes junk.  No details are expected.
   NOTIFICATION_TAB_CONTENTS_SWAPPED,
 
-  // This message is sent after a TabContents is disconnected from the
-  // renderer process.  The source is a Source<TabContents> with a pointer to
-  // the TabContents (the pointer is usable).  No details are expected.
-  NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
+  // This message is sent after a WebContents is disconnected from the
+  // renderer process.  The source is a Source<WebContents> with a pointer to
+  // the WebContents (the pointer is usable).  No details are expected.
+  NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
 
   // This notification is sent after TabContents' title is updated. The source
   // is a Source<TabContents> with a pointer to the TabContents. The details
@@ -262,17 +262,17 @@ enum NotificationType {
   // TODO(sky): Remove when we figure out http://crbug.com/107172.
   NOTIFICATION_WEB_CONTENTS_DELEGATE_DESTROYED,
 
-  // A RenderViewHost was created for a TabContents. The source is the
-  // associated TabContents, and the details is the RenderViewHost
+  // A RenderViewHost was created for a WebContents. The source is the
+  // associated WebContents, and the details is the RenderViewHost
   // pointer.
   NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
 
   // Notification than an interstitial has become associated with a tab. The
-  // source is the TabContents, the details not used.
+  // source is the WebContents, the details not used.
   NOTIFICATION_INTERSTITIAL_ATTACHED,
 
   // Notification than an interstitial has become detached from a tab. The
-  // source is the TabContents, the details not used.
+  // source is the WebContents, the details not used.
   NOTIFICATION_INTERSTITIAL_DETACHED,
 
   // Indicates that a RenderProcessHost was created and its handle is now

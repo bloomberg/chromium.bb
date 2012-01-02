@@ -35,6 +35,7 @@ using content::GlobalRequestID;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::UserMetricsAction;
+using content::WebContents;
 
 namespace {
 
@@ -179,6 +180,10 @@ NavigationController::~NavigationController() {
       content::NOTIFICATION_TAB_CLOSED,
       content::Source<NavigationController>(this),
       content::NotificationService::NoDetails());
+}
+
+WebContents* NavigationController::GetWebContents() const {
+  return tab_contents_;
 }
 
 content::BrowserContext* NavigationController::GetBrowserContext() const {

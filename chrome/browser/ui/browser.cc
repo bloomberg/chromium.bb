@@ -3106,7 +3106,7 @@ TabContentsWrapper* Browser::CreateTabContentsForURL(
 
 bool Browser::CanDuplicateContentsAt(int index) {
   NavigationController& nc = GetTabContentsAt(index)->GetController();
-  return nc.tab_contents() && nc.GetLastCommittedEntry();
+  return nc.GetWebContents() && nc.GetLastCommittedEntry();
 }
 
 void Browser::DuplicateContentsAt(int index) {
@@ -3259,14 +3259,14 @@ void Browser::TabInsertedAt(TabContentsWrapper* contents,
 
   // If the tab crashes in the beforeunload or unload handler, it won't be
   // able to ack. But we know we can close it.
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
-                 content::Source<TabContents>(contents->tab_contents()));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+                 content::Source<WebContents>(contents->web_contents()));
 
   registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-                 content::Source<TabContents>(contents->tab_contents()));
+                 content::Source<WebContents>(contents->web_contents()));
 
   registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_DETACHED,
-                 content::Source<TabContents>(contents->tab_contents()));
+                 content::Source<WebContents>(contents->web_contents()));
 }
 
 void Browser::TabClosingAt(TabStripModel* tab_strip_model,
@@ -4093,12 +4093,12 @@ void Browser::Observe(int type,
                       const content::NotificationSource& source,
                       const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED:
+    case content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED:
       if (is_attempting_to_close_browser_) {
         // Pass in false so that we delay processing. We need to delay the
         // processing as it may close the tab, which is currently on the call
         // stack above us.
-        ClearUnloadState(content::Source<TabContents>(source).ptr(), false);
+        ClearUnloadState(content::Source<WebContents>(source).ptr(), false);
       }
       break;
 
@@ -5120,11 +5120,11 @@ void Browser::TabDetachedAtImpl(TabContentsWrapper* contents, int index,
   }
 
   registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-                    content::Source<TabContents>(contents->tab_contents()));
+                    content::Source<WebContents>(contents->web_contents()));
   registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_DETACHED,
-                    content::Source<TabContents>(contents->tab_contents()));
-  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
-                    content::Source<TabContents>(contents->tab_contents()));
+                    content::Source<WebContents>(contents->tab_contents()));
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+                    content::Source<WebContents>(contents->web_contents()));
 }
 
 // static

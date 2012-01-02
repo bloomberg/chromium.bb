@@ -504,7 +504,7 @@ void TabRestoreService::PopulateTab(Tab* tab,
 
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(
-          controller->tab_contents());
+          controller->GetWebContents());
   // wrapper is NULL in some browser tests.
   if (wrapper) {
     const Extension* extension =

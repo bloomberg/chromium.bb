@@ -79,8 +79,8 @@ void LoginHtmlDialog::Show() {
     bubble_frame_view_->StartThrobber();
     notification_registrar_.Add(
         this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-        content::Source<TabContents>(
-            html_view->dom_contents()->tab_contents()));
+        content::Source<WebContents>(
+            html_view->dom_contents()->web_contents()));
   }
 #endif
   html_view->GetWidget()->Show();
