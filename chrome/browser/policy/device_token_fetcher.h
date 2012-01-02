@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,6 @@ class CloudPolicyDataStore;
 class DelayedWorkScheduler;
 class DeviceManagementService;
 class PolicyNotifier;
-
-namespace em = enterprise_management;
 
 // Fetches the device token that can be used for policy requests with the device
 // management server, either from disk if it already has been successfully
@@ -55,7 +53,7 @@ class DeviceTokenFetcher
 
   // DeviceManagementBackend::DeviceRegisterResponseDelegate method overrides:
   virtual void HandleRegisterResponse(
-      const em::DeviceRegisterResponse& response) OVERRIDE;
+      const enterprise_management::DeviceRegisterResponse& response) OVERRIDE;
   virtual void OnError(DeviceManagementBackend::ErrorCode code) OVERRIDE;
 
  private:

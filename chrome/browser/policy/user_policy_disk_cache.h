@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,14 +12,10 @@
 #include "base/memory/weak_ptr.h"
 
 namespace enterprise_management {
-
 class CachedCloudPolicyResponse;
-
 }
 
 namespace policy {
-
-namespace em = enterprise_management;
 
 // Handles the on-disk cache file used by UserPolicyCache. This class handles
 // the necessary thread switching and may outlive the associated UserPolicyCache
@@ -45,7 +41,7 @@ class UserPolicyDiskCache
     virtual ~Delegate();
     virtual void OnDiskCacheLoaded(
         LoadResult result,
-        const em::CachedCloudPolicyResponse& policy) = 0;
+        const enterprise_management::CachedCloudPolicyResponse& policy) = 0;
   };
 
   UserPolicyDiskCache(const base::WeakPtr<Delegate>& delegate,
@@ -57,7 +53,7 @@ class UserPolicyDiskCache
   void Load();
 
   // Triggers a write operation to the disk cache on the FILE thread.
-  void Store(const em::CachedCloudPolicyResponse& policy);
+  void Store(const enterprise_management::CachedCloudPolicyResponse& policy);
 
  private:
   friend class base::RefCountedThreadSafe<UserPolicyDiskCache>;
@@ -68,14 +64,16 @@ class UserPolicyDiskCache
 
   // Forwards the result to the UI thread.
   void LoadDone(LoadResult result,
-                const em::CachedCloudPolicyResponse& policy);
+                const enterprise_management::CachedCloudPolicyResponse& policy);
 
   // Passes back the successfully read policy to the cache on the UI thread.
-  void ReportResultOnUIThread(LoadResult result,
-                              const em::CachedCloudPolicyResponse& policy);
+  void ReportResultOnUIThread(
+      LoadResult result,
+      const enterprise_management::CachedCloudPolicyResponse& policy);
 
   // Saves a policy blob on the FILE thread.
-  void StoreOnFileThread(const em::CachedCloudPolicyResponse& policy);
+  void StoreOnFileThread(
+      const enterprise_management::CachedCloudPolicyResponse& policy);
 
   base::WeakPtr<Delegate> delegate_;
   const FilePath backing_file_path_;

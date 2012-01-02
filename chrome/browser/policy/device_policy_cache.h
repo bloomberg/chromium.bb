@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,8 +21,6 @@ class CloudPolicyDataStore;
 class EnterpriseInstallAttributes;
 class PolicyMap;
 
-namespace em = enterprise_management;
-
 // CloudPolicyCacheBase implementation that persists policy information
 // to ChromeOS' session manager (via SignedSettingsHelper).
 class DevicePolicyCache : public CloudPolicyCacheBase {
@@ -33,11 +31,13 @@ class DevicePolicyCache : public CloudPolicyCacheBase {
 
   // CloudPolicyCacheBase implementation:
   virtual void Load() OVERRIDE;
-  virtual void SetPolicy(const em::PolicyFetchResponse& policy) OVERRIDE;
+  virtual void SetPolicy(
+      const enterprise_management::PolicyFetchResponse& policy) OVERRIDE;
   virtual void SetUnmanaged() OVERRIDE;
 
-  void OnRetrievePolicyCompleted(chromeos::SignedSettings::ReturnCode code,
-                                 const em::PolicyFetchResponse& policy);
+  void OnRetrievePolicyCompleted(
+      chromeos::SignedSettings::ReturnCode code,
+      const enterprise_management::PolicyFetchResponse& policy);
 
  private:
   friend class DevicePolicyCacheTest;
@@ -51,9 +51,10 @@ class DevicePolicyCache : public CloudPolicyCacheBase {
       chromeos::SignedSettingsHelper* signed_settings_helper);
 
   // CloudPolicyCacheBase implementation:
-  virtual bool DecodePolicyData(const em::PolicyData& policy_data,
-                                PolicyMap* mandatory,
-                                PolicyMap* recommended) OVERRIDE;
+  virtual bool DecodePolicyData(
+      const enterprise_management::PolicyData& policy_data,
+      PolicyMap* mandatory,
+      PolicyMap* recommended) OVERRIDE;
 
   void PolicyStoreOpCompleted(chromeos::SignedSettings::ReturnCode code);
 
@@ -63,13 +64,15 @@ class DevicePolicyCache : public CloudPolicyCacheBase {
 
   // Tries to install the initial device policy retrieved from signed settings.
   // Fills in |device_token| if it could be extracted from the loaded protobuf.
-  void InstallInitialPolicy(chromeos::SignedSettings::ReturnCode code,
-                            const em::PolicyFetchResponse& policy,
-                            std::string* device_token);
+  void InstallInitialPolicy(
+      chromeos::SignedSettings::ReturnCode code,
+      const enterprise_management::PolicyFetchResponse& policy,
+      std::string* device_token);
 
-  static void DecodeDevicePolicy(const em::ChromeDeviceSettingsProto& policy,
-                                 PolicyMap* mandatory,
-                                 PolicyMap* recommended);
+  static void DecodeDevicePolicy(
+      const enterprise_management::ChromeDeviceSettingsProto& policy,
+      PolicyMap* mandatory,
+      PolicyMap* recommended);
 
   CloudPolicyDataStore* data_store_;
   EnterpriseInstallAttributes* install_attributes_;

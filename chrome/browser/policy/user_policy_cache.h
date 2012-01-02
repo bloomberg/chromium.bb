@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,8 +27,6 @@ class GenericValue;
 
 namespace policy {
 
-namespace em = enterprise_management;
-
 class PolicyMap;
 
 // CloudPolicyCacheBase implementation that persists policy information
@@ -45,7 +43,8 @@ class UserPolicyCache : public CloudPolicyCacheBase,
 
   // CloudPolicyCacheBase implementation:
   virtual void Load() OVERRIDE;
-  virtual void SetPolicy(const em::PolicyFetchResponse& policy) OVERRIDE;
+  virtual void SetPolicy(
+      const enterprise_management::PolicyFetchResponse& policy) OVERRIDE;
   virtual void SetUnmanaged() OVERRIDE;
   virtual void SetFetchingDone() OVERRIDE;
 
@@ -55,12 +54,14 @@ class UserPolicyCache : public CloudPolicyCacheBase,
   // UserPolicyDiskCache::Delegate implementation:
   virtual void OnDiskCacheLoaded(
       UserPolicyDiskCache::LoadResult result,
-      const em::CachedCloudPolicyResponse& cached_response) OVERRIDE;
+      const enterprise_management::CachedCloudPolicyResponse&
+          cached_response) OVERRIDE;
 
   // CloudPolicyCacheBase implementation:
-  virtual bool DecodePolicyData(const em::PolicyData& policy_data,
-                                PolicyMap* mandatory,
-                                PolicyMap* recommended) OVERRIDE;
+  virtual bool DecodePolicyData(
+      const enterprise_management::PolicyData& policy_data,
+      PolicyMap* mandatory,
+      PolicyMap* recommended) OVERRIDE;
 
   // Checks if this cache is ready, and invokes SetReady() if so.
   void CheckIfReady();
@@ -78,7 +79,7 @@ class UserPolicyCache : public CloudPolicyCacheBase,
                                  PolicyMap* recommended);
 
   Value* DecodeIntegerValue(google::protobuf::int64 value) const;
-  Value* DecodeValue(const em::GenericValue& value) const;
+  Value* DecodeValue(const enterprise_management::GenericValue& value) const;
 
   // </Old-style policy support>
 

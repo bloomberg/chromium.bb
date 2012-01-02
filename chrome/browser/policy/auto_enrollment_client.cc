@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/policy/auto_enrollment_client.h"
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
@@ -12,6 +13,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/guid.h"
 #include "crypto/sha2.h"
+
+namespace em = enterprise_management;
 
 namespace {
 

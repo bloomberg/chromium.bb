@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,8 @@ class DeviceRegisterResponseDelegateMock
   DeviceRegisterResponseDelegateMock();
   virtual ~DeviceRegisterResponseDelegateMock();
 
-  MOCK_METHOD1(HandleRegisterResponse, void(const em::DeviceRegisterResponse&));
+  MOCK_METHOD1(HandleRegisterResponse,
+               void(const enterprise_management::DeviceRegisterResponse&));
   MOCK_METHOD1(OnError, void(DeviceManagementBackend::ErrorCode error));
 };
 
@@ -30,7 +31,7 @@ class DeviceUnregisterResponseDelegateMock
   virtual ~DeviceUnregisterResponseDelegateMock();
 
   MOCK_METHOD1(HandleUnregisterResponse,
-               void(const em::DeviceUnregisterResponse&));
+               void(const enterprise_management::DeviceUnregisterResponse&));
   MOCK_METHOD1(OnError, void(DeviceManagementBackend::ErrorCode error));
 };
 
@@ -40,7 +41,8 @@ class DevicePolicyResponseDelegateMock
   DevicePolicyResponseDelegateMock();
   virtual ~DevicePolicyResponseDelegateMock();
 
-  MOCK_METHOD1(HandlePolicyResponse, void(const em::DevicePolicyResponse&));
+  MOCK_METHOD1(HandlePolicyResponse,
+               void(const enterprise_management::DevicePolicyResponse&));
   MOCK_METHOD1(OnError, void(DeviceManagementBackend::ErrorCode error));
 };
 
@@ -50,8 +52,9 @@ class DeviceAutoEnrollmentResponseDelegateMock
   DeviceAutoEnrollmentResponseDelegateMock();
   virtual ~DeviceAutoEnrollmentResponseDelegateMock();
 
-  MOCK_METHOD1(HandleAutoEnrollmentResponse,
-               void(const em::DeviceAutoEnrollmentResponse&));
+  MOCK_METHOD1(
+      HandleAutoEnrollmentResponse,
+      void(const enterprise_management::DeviceAutoEnrollmentResponse&));
   MOCK_METHOD1(OnError, void(DeviceManagementBackend::ErrorCode error));
 };
 

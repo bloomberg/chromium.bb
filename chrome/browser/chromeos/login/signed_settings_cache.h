@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,14 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SIGNED_SETTINGS_CACHE_H_
 #pragma once
 
-#include <string>
-
-#include "base/basictypes.h"
-#include "base/values.h"
-#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
-#include "chrome/browser/policy/proto/device_management_backend.pb.h"
-
-namespace em = enterprise_management;
+namespace enterprise_management {
+class PolicyData;
+}
 
 class PrefService;
 
@@ -28,10 +23,12 @@ namespace signed_settings_cache {
 void RegisterPrefs(PrefService* local_state);
 
 // Stores a new policy blob inside the cache stored in |local_state|.
-bool Store(const em::PolicyData &policy, PrefService* local_state);
+bool Store(const enterprise_management::PolicyData &policy,
+           PrefService* local_state);
 
 // Retrieves the policy blob from the cache stored in |local_state|.
-bool Retrieve(em::PolicyData *policy, PrefService* local_state);
+bool Retrieve(enterprise_management::PolicyData *policy,
+              PrefService* local_state);
 
 // Call this after owner has been assigned to persist settings
 // into SignedSettings storage.

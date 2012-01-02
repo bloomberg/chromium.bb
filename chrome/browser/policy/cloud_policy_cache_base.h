@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,6 @@
 namespace policy {
 
 class PolicyNotifier;
-
-namespace em = enterprise_management;
 
 // Caches policy information, as set by calls to |SetPolicy()|, persists
 // it to disk or session_manager (depending on subclass implementation),
@@ -50,7 +48,8 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   virtual void Load() = 0;
 
   // Resets the policy information.
-  virtual void SetPolicy(const em::PolicyFetchResponse& policy) = 0;
+  virtual void SetPolicy(
+      const enterprise_management::PolicyFetchResponse& policy) = 0;
 
   virtual void SetUnmanaged() = 0;
 
@@ -107,9 +106,10 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   // NULL if they don't care. |check_for_timestamp_validity| tells this method
   // to discard policy data with a timestamp from the future.
   // Returns true upon success.
-  bool SetPolicyInternal(const em::PolicyFetchResponse& policy,
-                         base::Time* timestamp,
-                         bool check_for_timestamp_validity);
+  bool SetPolicyInternal(
+      const enterprise_management::PolicyFetchResponse& policy,
+      base::Time* timestamp,
+      bool check_for_timestamp_validity);
 
   void SetUnmanagedInternal(const base::Time& timestamp);
 
@@ -118,17 +118,19 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
 
   // Decodes |policy_data|, populating |mandatory| and |recommended| with
   // the results.
-  virtual bool DecodePolicyData(const em::PolicyData& policy_data,
-                                PolicyMap* mandatory,
-                                PolicyMap* recommended) = 0;
+  virtual bool DecodePolicyData(
+      const enterprise_management::PolicyData& policy_data,
+      PolicyMap* mandatory,
+      PolicyMap* recommended) = 0;
 
   // Decodes a PolicyFetchResponse into two PolicyMaps and a timestamp.
   // Also performs verification, returns NULL if any check fails.
-  bool DecodePolicyResponse(const em::PolicyFetchResponse& policy_response,
-                            PolicyMap* mandatory,
-                            PolicyMap* recommended,
-                            base::Time* timestamp,
-                            PublicKeyVersion* public_key_version);
+  bool DecodePolicyResponse(
+      const enterprise_management::PolicyFetchResponse& policy_response,
+      PolicyMap* mandatory,
+      PolicyMap* recommended,
+      base::Time* timestamp,
+      PublicKeyVersion* public_key_version);
 
   // Notifies observers if the cache IsReady().
   void NotifyObservers();

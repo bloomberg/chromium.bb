@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,8 +18,6 @@
 
 namespace policy {
 
-namespace em = enterprise_management;
-
 // Useful for unit testing when a server-based backend isn't
 // available. Simulates both successful and failed requests to the device
 // management server.
@@ -33,26 +31,26 @@ class MockDeviceManagementBackend : public DeviceManagementBackend {
       const std::string& gaia_auth_token,
       const std::string& oauth_token,
       const std::string& device_id,
-      const em::DeviceRegisterRequest& request,
+      const enterprise_management::DeviceRegisterRequest& request,
       DeviceRegisterResponseDelegate* delegate));
 
   MOCK_METHOD4(ProcessUnregisterRequest, void(
       const std::string& device_management_token,
       const std::string& device_id,
-      const em::DeviceUnregisterRequest& request,
+      const enterprise_management::DeviceUnregisterRequest& request,
       DeviceUnregisterResponseDelegate* delegate));
 
   MOCK_METHOD6(ProcessPolicyRequest, void(
       const std::string& device_management_token,
       const std::string& device_id,
       CloudPolicyDataStore::UserAffiliation affiliation,
-      const em::DevicePolicyRequest& request,
-      const em::DeviceStatusReportRequest* device_status,
+      const enterprise_management::DevicePolicyRequest& request,
+      const enterprise_management::DeviceStatusReportRequest* device_status,
       DevicePolicyResponseDelegate* delegate));
 
   MOCK_METHOD3(ProcessAutoEnrollmentRequest, void(
       const std::string& device_id,
-      const em::DeviceAutoEnrollmentRequest& request,
+      const enterprise_management::DeviceAutoEnrollmentRequest& request,
       DeviceAutoEnrollmentResponseDelegate* delegate));
 
  private:
@@ -60,7 +58,7 @@ class MockDeviceManagementBackend : public DeviceManagementBackend {
 };
 
 ACTION(MockDeviceManagementBackendSucceedRegister) {
-  em::DeviceRegisterResponse response;
+  enterprise_management::DeviceRegisterResponse response;
   std::string token("FAKE_DEVICE_TOKEN_");
   static int next_token_suffix;
   token += next_token_suffix++;
@@ -69,11 +67,13 @@ ACTION(MockDeviceManagementBackendSucceedRegister) {
 }
 
 ACTION(MockDeviceManagementBackendSucceedSpdyCloudPolicy) {
-  em::PolicyData signed_response;
-  em::CloudPolicySettings settings;
-  em::DisableSpdyProto* spdy_proto = settings.mutable_disablespdy();
+  enterprise_management::PolicyData signed_response;
+  enterprise_management::CloudPolicySettings settings;
+  enterprise_management::DisableSpdyProto* spdy_proto =
+      settings.mutable_disablespdy();
   spdy_proto->set_disablespdy(true);
-  spdy_proto->mutable_policy_options()->set_mode(em::PolicyOptions::MANDATORY);
+  spdy_proto->mutable_policy_options()->set_mode(
+      enterprise_management::PolicyOptions::MANDATORY);
   EXPECT_TRUE(
       settings.SerializeToString(signed_response.mutable_policy_value()));
   base::TimeDelta timestamp =
@@ -81,8 +81,9 @@ ACTION(MockDeviceManagementBackendSucceedSpdyCloudPolicy) {
   signed_response.set_timestamp(timestamp.InMilliseconds());
   std::string serialized_signed_response;
   EXPECT_TRUE(signed_response.SerializeToString(&serialized_signed_response));
-  em::DevicePolicyResponse response;
-  em::PolicyFetchResponse* fetch_response = response.add_response();
+  enterprise_management::DevicePolicyResponse response;
+  enterprise_management::PolicyFetchResponse* fetch_response =
+      response.add_response();
   fetch_response->set_policy_data(serialized_signed_response);
   // TODO(jkummerow): Set proper new_public_key and signature (when
   // implementing support for signature verification).

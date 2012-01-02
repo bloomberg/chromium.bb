@@ -1,16 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/device_settings_provider.h"
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/hash_tables.h"
 #include "base/logging.h"
-#include "base/memory/singleton.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -22,18 +19,16 @@
 #include "chrome/browser/chromeos/login/signed_settings_cache.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
-#include "chrome/browser/policy/proto/device_management_backend.pb.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_map.h"
-#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
-using content::BrowserThread;
 using google::protobuf::RepeatedPtrField;
+
+namespace em = enterprise_management;
 
 namespace chromeos {
 

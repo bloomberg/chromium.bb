@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,6 @@
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
-
-namespace em = enterprise_management;
 
 // Interface for clients that need to converse with the device management
 // server, which provides services to register Chrome installations and CrOS
@@ -60,7 +58,7 @@ class DeviceManagementBackend : base::NonThreadSafe {
    public:
     virtual ~DeviceRegisterResponseDelegate() {}
     virtual void HandleRegisterResponse(
-        const em::DeviceRegisterResponse& response) = 0;
+        const enterprise_management::DeviceRegisterResponse& response) = 0;
     virtual void OnError(ErrorCode code) = 0;
 
    protected:
@@ -74,7 +72,7 @@ class DeviceManagementBackend : base::NonThreadSafe {
    public:
     virtual ~DeviceUnregisterResponseDelegate() {}
     virtual void HandleUnregisterResponse(
-        const em::DeviceUnregisterResponse& response) = 0;
+        const enterprise_management::DeviceUnregisterResponse& response) = 0;
     virtual void OnError(ErrorCode code) = 0;
 
    protected:
@@ -89,7 +87,7 @@ class DeviceManagementBackend : base::NonThreadSafe {
     virtual ~DevicePolicyResponseDelegate() {}
 
     virtual void HandlePolicyResponse(
-        const em::DevicePolicyResponse& response) = 0;
+        const enterprise_management::DevicePolicyResponse& response) = 0;
     virtual void OnError(ErrorCode code) = 0;
 
    protected:
@@ -104,7 +102,8 @@ class DeviceManagementBackend : base::NonThreadSafe {
     virtual ~DeviceAutoEnrollmentResponseDelegate() {}
 
     virtual void HandleAutoEnrollmentResponse(
-        const em::DeviceAutoEnrollmentResponse& response) = 0;
+        const enterprise_management::DeviceAutoEnrollmentResponse&
+            response) = 0;
     virtual void OnError(ErrorCode code) = 0;
 
    protected:
@@ -120,26 +119,26 @@ class DeviceManagementBackend : base::NonThreadSafe {
       const std::string& gaia_auth_token,
       const std::string& oauth_token,
       const std::string& device_id,
-      const em::DeviceRegisterRequest& request,
+      const enterprise_management::DeviceRegisterRequest& request,
       DeviceRegisterResponseDelegate* delegate) = 0;
 
   virtual void ProcessUnregisterRequest(
       const std::string& device_management_token,
       const std::string& device_id,
-      const em::DeviceUnregisterRequest& request,
+      const enterprise_management::DeviceUnregisterRequest& request,
       DeviceUnregisterResponseDelegate* delegate) = 0;
 
   virtual void ProcessPolicyRequest(
       const std::string& device_management_token,
       const std::string& device_id,
       CloudPolicyDataStore::UserAffiliation user_affiliation,
-      const em::DevicePolicyRequest& request,
-      const em::DeviceStatusReportRequest* device_status,
+      const enterprise_management::DevicePolicyRequest& request,
+      const enterprise_management::DeviceStatusReportRequest* device_status,
       DevicePolicyResponseDelegate* delegate) = 0;
 
   virtual void ProcessAutoEnrollmentRequest(
       const std::string& device_id,
-      const em::DeviceAutoEnrollmentRequest& request,
+      const enterprise_management::DeviceAutoEnrollmentRequest& request,
       DeviceAutoEnrollmentResponseDelegate* delegate) = 0;
 
  protected:

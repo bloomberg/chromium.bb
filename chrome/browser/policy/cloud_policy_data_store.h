@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,14 +10,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/policy/device_status_collector.h"
 #endif
-#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
-
-namespace em = enterprise_management;
 
 // Stores in memory all the data that is used in the cloud policy subsystem,
 // and manages notification about changes to these fields.
@@ -97,7 +96,8 @@ class CloudPolicyDataStore {
   bool has_auth_token() const;
   const std::string& machine_id() const;
   const std::string& machine_model() const;
-  em::DeviceRegisterRequest_Type policy_register_type() const;
+  enterprise_management::DeviceRegisterRequest_Type
+      policy_register_type() const;
   const std::string& policy_type() const;
   bool token_cache_loaded() const;
   const std::string& user_name() const;
@@ -111,7 +111,7 @@ class CloudPolicyDataStore {
 
  private:
   CloudPolicyDataStore(
-      const em::DeviceRegisterRequest_Type policy_register_type,
+      const enterprise_management::DeviceRegisterRequest_Type register_type,
       const std::string& policy_type);
 
   // Data necessary for constructing register requests.
@@ -125,7 +125,7 @@ class CloudPolicyDataStore {
 
   // Constants that won't change over the life-time of a cloud policy
   // subsystem.
-  const em::DeviceRegisterRequest_Type policy_register_type_;
+  const enterprise_management::DeviceRegisterRequest_Type policy_register_type_;
   const std::string policy_type_;
 
   // Data used for constructiong both register and policy requests.

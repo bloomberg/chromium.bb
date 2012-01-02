@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,20 +10,15 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
-#include "base/hash_tables.h"
+#include "base/callback_forward.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/chromeos/signed_settings_migration_helper.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "content/public/browser/notification_registrar.h"
 
-namespace em = enterprise_management;
-
-class PrefService;
-
 namespace base {
-class ListValue;
+class Value;
 }
 
 namespace chromeos {
@@ -54,7 +49,7 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  const em::PolicyData policy() const;
+  const enterprise_management::PolicyData policy() const;
 
   // Populates in-memory cache from the local_state cache that is used to store
   // signed settings before the device is owned and to speed up policy
@@ -67,10 +62,11 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   void SetInPolicy(const std::string& prop, const base::Value& value);
 
   // Finalizes stores to the policy file if the cache is dirty.
-  void FinishSetInPolicy(const std::string& prop,
-                         const base::Value* value,
-                         SignedSettings::ReturnCode code,
-                         const em::PolicyFetchResponse& policy);
+  void FinishSetInPolicy(
+      const std::string& prop,
+      const base::Value* value,
+      SignedSettings::ReturnCode code,
+      const enterprise_management::PolicyFetchResponse& policy);
 
   // Parses the policy cache and fills the cache of base::Value objects.
   void UpdateValuesCache();
@@ -101,8 +97,9 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   void OnStorePolicyCompleted(SignedSettings::ReturnCode code);
 
   // Callback of RetrievePolicyOp for ordinary policy [re]loads.
-  void OnRetrievePolicyCompleted(SignedSettings::ReturnCode code,
-                                 const em::PolicyFetchResponse& policy);
+  void OnRetrievePolicyCompleted(
+      SignedSettings::ReturnCode code,
+      const enterprise_management::PolicyFetchResponse& policy);
 
   // Pending callbacks that need to be invoked after settings verification.
   std::vector<base::Closure> callbacks_;
@@ -116,7 +113,7 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   // we allow for some number of retries.
   int retries_left_;
 
-  em::PolicyData policy_;
+  enterprise_management::PolicyData policy_;
   bool trusted_;
 
   PrefValueMap values_cache_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SIGNED_SETTINGS_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/owner_manager.h"
 
 // There are two operations that can be performed on the Chrome OS owner-signed
@@ -24,15 +22,10 @@
 // and then call the appropriate method of the Delegate you passed in
 // -- again, on the UI thread.
 
-namespace base {
-class Value;
-}  // namespace base
-
 namespace enterprise_management {
-class PolicyFetchResponse;
 class PolicyData;
+class PolicyFetchResponse;
 }  // namespace enterprise_management
-namespace em = enterprise_management;
 
 namespace chromeos {
 class OwnershipService;
@@ -63,11 +56,12 @@ class SignedSettings : public base::RefCountedThreadSafe<SignedSettings>,
   // These are both "policy" operations, and only one instance of
   // one type can be in flight at a time.
   static SignedSettings* CreateStorePolicyOp(
-      em::PolicyFetchResponse* policy,
+      enterprise_management::PolicyFetchResponse* policy,
       SignedSettings::Delegate<bool>* d);
 
   static SignedSettings* CreateRetrievePolicyOp(
-      SignedSettings::Delegate<const em::PolicyFetchResponse&>* d);
+      SignedSettings::Delegate<
+          const enterprise_management::PolicyFetchResponse&>* d);
 
   static ReturnCode MapKeyOpCode(OwnerManager::KeyOpCode code);
 
@@ -80,8 +74,9 @@ class SignedSettings : public base::RefCountedThreadSafe<SignedSettings>,
                                const std::vector<uint8>& payload) = 0;
 
  protected:
-  static bool PolicyIsSane(const em::PolicyFetchResponse& value,
-                           em::PolicyData* poldata);
+  static bool PolicyIsSane(
+      const enterprise_management::PolicyFetchResponse& value,
+      enterprise_management::PolicyData* poldata);
 
   void set_service(OwnershipService* service) { service_ = service; }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,36 +6,30 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SIGNED_SETTINGS_HELPER_H_
 #pragma once
 
-#include <string>
-
 #include "chrome/browser/chromeos/login/signed_settings.h"
-
-namespace base {
-class Value;
-}  // namespace base
 
 namespace enterprise_management {
 class PolicyFetchResponse;
 }  // namespace enterprise_management
-namespace em = enterprise_management;
-namespace chromeos {
 
-class SignedSettings;
+namespace chromeos {
 
 // Helper to serialize signed settings ops, provide unified callback interface,
 // and handle callbacks destruction before ops completion.
 class SignedSettingsHelper {
  public:
   typedef base::Callback<void(SignedSettings::ReturnCode)> StorePolicyCallback;
-  typedef base::Callback<void(SignedSettings::ReturnCode,
-      const em::PolicyFetchResponse&)> RetrievePolicyCallback;
+  typedef
+      base::Callback<void(SignedSettings::ReturnCode,
+                          const enterprise_management::PolicyFetchResponse&)>
+      RetrievePolicyCallback;
 
   // Class factory
   static SignedSettingsHelper* Get();
 
   // Functions to start signed settings ops.
   virtual void StartStorePolicyOp(
-      const em::PolicyFetchResponse& policy,
+      const enterprise_management::PolicyFetchResponse& policy,
       StorePolicyCallback callback) = 0;
   virtual void StartRetrievePolicyOp(
       RetrievePolicyCallback callback) = 0;

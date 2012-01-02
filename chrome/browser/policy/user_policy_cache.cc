@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
@@ -19,6 +18,8 @@
 #include "chrome/browser/policy/proto/old_generic_format.pb.h"
 #include "policy/configuration_policy_type.h"
 #include "policy/policy_constants.h"
+
+namespace em = enterprise_management;
 
 namespace policy {
 

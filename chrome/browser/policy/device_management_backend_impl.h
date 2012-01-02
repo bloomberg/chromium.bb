@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,23 +64,23 @@ class DeviceManagementBackendImpl : public DeviceManagementBackend {
       const std::string& gaia_auth_token,
       const std::string& oauth_token,
       const std::string& device_id,
-      const em::DeviceRegisterRequest& request,
+      const enterprise_management::DeviceRegisterRequest& request,
       DeviceRegisterResponseDelegate* response_delegate) OVERRIDE;
   virtual void ProcessUnregisterRequest(
       const std::string& device_management_token,
       const std::string& device_id,
-      const em::DeviceUnregisterRequest& request,
+      const enterprise_management::DeviceUnregisterRequest& request,
       DeviceUnregisterResponseDelegate* response_delegate) OVERRIDE;
   virtual void ProcessPolicyRequest(
       const std::string& device_management_token,
       const std::string& device_id,
       CloudPolicyDataStore::UserAffiliation affiliation,
-      const em::DevicePolicyRequest& request,
-      const em::DeviceStatusReportRequest* device_status,
+      const enterprise_management::DevicePolicyRequest& request,
+      const enterprise_management::DeviceStatusReportRequest* device_status,
       DevicePolicyResponseDelegate* response_delegate) OVERRIDE;
   virtual void ProcessAutoEnrollmentRequest(
       const std::string& device_id,
-      const em::DeviceAutoEnrollmentRequest& request,
+      const enterprise_management::DeviceAutoEnrollmentRequest& request,
       DeviceAutoEnrollmentResponseDelegate* delegate) OVERRIDE;
 
   // Converts a user affiliation to the appropriate query parameter value.
