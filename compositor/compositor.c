@@ -765,7 +765,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 
 	pixman_region32_init(&new_damage);
 	pixman_region32_init(&opaque);
-				
+
 	wl_list_for_each(es, &ec->surface_list, link) {
 		pixman_region32_subtract(&es->damage, &es->damage, &opaque);
 		pixman_region32_union(&new_damage, &new_damage, &es->damage);
@@ -805,11 +805,14 @@ wlsc_output_repaint(struct wlsc_output *output)
 			wlsc_surface_draw(es, output, &repaint);
 			pixman_region32_subtract(&es->damage,
 						 &es->damage, &output->region);
+			pixman_region32_fini(&repaint);
 		}
 	}
 
 	if (ec->fade.spring.current > 0.001)
 		fade_output(output, ec->fade.spring.current, &total_damage);
+
+	pixman_region32_fini(&total_damage);
 }
 
 struct wlsc_frame_callback {
