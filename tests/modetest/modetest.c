@@ -652,6 +652,26 @@ fill422(unsigned char *virtual, int n, int width, int height, int stride)
 	}
 }
 
+static void
+fill1555(unsigned char *virtual, int n, int width, int height, int stride)
+{
+	int i, j;
+	/* paint the buffer with colored tiles */
+	for (j = 0; j < height; j++) {
+		uint16_t *ptr = (uint16_t*)((char*)virtual + j * stride);
+		for (i = 0; i < width; i++) {
+			div_t d = div(n+i+j, width);
+			uint32_t rgb = 0x00130502 * (d.quot >> 6) + 0x000a1120 * (d.rem >> 6);
+			unsigned char *rgbp = (unsigned char *)&rgb;
+
+			*(ptr++) = 0x8000 |
+					(rgbp[RED] >> 3) << 10 |
+					(rgbp[GREEN] >> 3) << 5 |
+					(rgbp[BLUE] >> 3);
+		}
+	}
+}
+
 static int
 set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
 {
@@ -756,6 +776,22 @@ set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
 					1, 0, p->w, p->h, pitches[0]);
 
 			format = DRM_FORMAT_YVU420;
+		} else if (!strcmp(p->format_str, "XR15")) {
+			pitches[0] = p->w * 2;
+			offsets[0] = 0;
+			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[0]);
+
+			fill1555(virtual, 0, p->w, p->h, pitches[0]);
+
+			format = DRM_FORMAT_XRGB1555;
+		} else if (!strcmp(p->format_str, "AR15")) {
+			pitches[0] = p->w * 2;
+			offsets[0] = 0;
+			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[0]);
+
+			fill1555(virtual, 0, p->w, p->h, pitches[0]);
+
+			format = DRM_FORMAT_ARGB1555;
 		} else {
 			fprintf(stderr, "Unknown format: %s\n", p->format_str);
 			return -1;
