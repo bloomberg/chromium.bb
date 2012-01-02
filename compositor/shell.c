@@ -1238,6 +1238,9 @@ shell_destroy(struct wlsc_shell *base)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 
+	if (shell->child.client)
+		wl_client_destroy(shell->child.client);
+
 	free(shell->screensaver.path);
 	free(shell);
 }
@@ -1295,9 +1298,6 @@ shell_init(struct wlsc_compositor *ec)
 				    terminate_binding, ec);
 	wlsc_compositor_add_binding(ec, 0, BTN_LEFT, 0,
 				    click_to_activate_binding, ec);
-
-
-
 
 	ec->shell = &shell->shell;
 
