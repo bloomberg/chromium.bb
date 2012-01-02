@@ -98,7 +98,7 @@ bool NativeTabContentsContainerAura::SkipDefaultKeyEventProcessing(
 bool NativeTabContentsContainerAura::IsFocusable() const {
   // We need to be focusable when our contents is not a view hierarchy, as
   // clicking on the contents needs to focus us.
-  return container_->tab_contents() != NULL;
+  return container_->web_contents() != NULL;
 }
 
 void NativeTabContentsContainerAura::OnFocus() {
