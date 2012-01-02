@@ -48,7 +48,7 @@ class DictionaryValue;
 class SafeBrowsingBlockingPage : public ChromeInterstitialPage {
  public:
   typedef std::vector<SafeBrowsingService::UnsafeResource> UnsafeResourceList;
-  typedef std::map<TabContents*, UnsafeResourceList> UnsafeResourceMap;
+  typedef std::map<content::WebContents*, UnsafeResourceList> UnsafeResourceMap;
 
   virtual ~SafeBrowsingBlockingPage();
 
@@ -82,7 +82,7 @@ class SafeBrowsingBlockingPage : public ChromeInterstitialPage {
 
   // Don't instanciate this class directly, use ShowBlockingPage instead.
   SafeBrowsingBlockingPage(SafeBrowsingService* service,
-                           TabContents* tab_contents,
+                           content::WebContents* web_contents,
                            const UnsafeResourceList& unsafe_resources);
 
   // After a malware interstitial where the user opted-in to the
@@ -184,7 +184,7 @@ class SafeBrowsingBlockingPageFactory {
 
   virtual SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
       SafeBrowsingService* service,
-      TabContents* tab_contents,
+      content::WebContents* web_contents,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources) = 0;
 };
 

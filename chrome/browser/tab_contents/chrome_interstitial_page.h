@@ -13,13 +13,11 @@
 #include "content/public/browser/notification_observer.h"
 #include "googleurl/src/gurl.h"
 
-class TabContents;
-
 // This class adds the possibility to react to DOMResponse-messages sent by
 // the RenderViewHost via ChromeRenderViewHostObserver to the InterstitialPage.
 class ChromeInterstitialPage : public InterstitialPage {
  public:
-  ChromeInterstitialPage(TabContents* tab,
+  ChromeInterstitialPage(content::WebContents* tab,
                          bool new_navigation,
                          const GURL& url);
   virtual ~ChromeInterstitialPage();

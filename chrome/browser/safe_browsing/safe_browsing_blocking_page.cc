@@ -29,9 +29,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -43,6 +43,7 @@ using content::BrowserThread;
 using content::OpenURLParams;
 using content::Referrer;
 using content::UserMetricsAction;
+using content::WebContents;
 
 // For malware interstitial pages, we link the problematic URL to Google's
 // diagnostic page.
@@ -114,9 +115,9 @@ class SafeBrowsingBlockingPageFactoryImpl
  public:
   SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
       SafeBrowsingService* service,
-      TabContents* tab_contents,
+      WebContents* web_contents,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources) {
-    return new SafeBrowsingBlockingPage(service, tab_contents,
+    return new SafeBrowsingBlockingPage(service, web_contents,
                                         unsafe_resources);
   }
 
@@ -134,9 +135,9 @@ static base::LazyInstance<SafeBrowsingBlockingPageFactoryImpl>
 
 SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     SafeBrowsingService* sb_service,
-    TabContents* tab_contents,
+    WebContents* web_contents,
     const UnsafeResourceList& unsafe_resources)
-    : ChromeInterstitialPage(tab_contents,
+    : ChromeInterstitialPage(web_contents,
                              IsMainPageLoadBlocked(unsafe_resources),
                              unsafe_resources[0].url),
       malware_details_proceed_delay_ms_(
@@ -703,11 +704,11 @@ SafeBrowsingBlockingPage::UnsafeResourceMap*
 void SafeBrowsingBlockingPage::ShowBlockingPage(
     SafeBrowsingService* sb_service,
     const SafeBrowsingService::UnsafeResource& unsafe_resource) {
-  TabContents* tab_contents = tab_util::GetTabContentsByID(
+  WebContents* web_contents = tab_util::GetWebContentsByID(
       unsafe_resource.render_process_host_id, unsafe_resource.render_view_id);
 
   InterstitialPage* interstitial =
-      InterstitialPage::GetInterstitialPage(tab_contents);
+      InterstitialPage::GetInterstitialPage(web_contents);
   if (interstitial && !unsafe_resource.is_subresource) {
     // There is already an interstitial showing and we are about to display a
     // new one for the main frame. Just hide the current one, it is now
@@ -726,14 +727,14 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
     if (!factory_)
       factory_ = g_safe_browsing_blocking_page_factory_impl.Pointer();
     SafeBrowsingBlockingPage* blocking_page =
-        factory_->CreateSafeBrowsingPage(sb_service, tab_contents, resources);
+        factory_->CreateSafeBrowsingPage(sb_service, web_contents, resources);
     blocking_page->Show();
     return;
   }
 
   // This is an interstitial for a page's resource, let's queue it.
   UnsafeResourceMap* unsafe_resource_map = GetUnsafeResourcesMap();
-  (*unsafe_resource_map)[tab_contents].push_back(unsafe_resource);
+  (*unsafe_resource_map)[web_contents].push_back(unsafe_resource);
 }
 
 // static

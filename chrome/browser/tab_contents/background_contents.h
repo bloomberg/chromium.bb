@@ -43,7 +43,6 @@ class BackgroundContents : public content::WebContentsDelegate,
                      Delegate* delegate);
   virtual ~BackgroundContents();
 
-  TabContents* tab_contents() { return tab_contents_.get(); }
   // TODO(jam): move impl to header once this class only uses WebContents.
   content::WebContents* web_contents() const;
   virtual const GURL& GetURL() const;

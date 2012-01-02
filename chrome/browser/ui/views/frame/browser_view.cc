@@ -2119,7 +2119,8 @@ void BrowserView::UpdateSidebarForContents(TabContentsWrapper* tab_contents) {
   bool should_hide = !visible && sidebar_container_->visible();
 
   // Update sidebar content.
-  TabContents* old_contents = sidebar_container_->tab_contents();
+  TabContents* old_contents =
+      static_cast<TabContents*>(sidebar_container_->web_contents());
   sidebar_container_->ChangeTabContents(sidebar_contents);
   SidebarManager::GetInstance()->
       NotifyStateChanges(old_contents, sidebar_contents);
@@ -2597,7 +2598,7 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents) {
   // the TabContents window.
   DCHECK(new_contents);
   bool change_tab_contents =
-      contents_container_->tab_contents() != new_contents->tab_contents();
+      contents_container_->web_contents() != new_contents->tab_contents();
 
   // Update various elements that are interested in knowing the current
   // TabContents.

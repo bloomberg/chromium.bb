@@ -25,6 +25,7 @@
 #include "net/url_request/url_request_context.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 OfflineResourceHandler::OfflineResourceHandler(
     ResourceHandler* handler,
@@ -206,13 +207,13 @@ void OfflineResourceHandler::ShowOfflinePage() {
   } else {
     RenderViewHost* render_view_host =
         RenderViewHost::FromID(process_host_id_, render_view_id_);
-    TabContents* tab_contents = render_view_host ?
-        render_view_host->delegate()->GetAsTabContents() : NULL;
+    WebContents* web_contents = render_view_host ?
+        render_view_host->delegate()->GetAsWebContents() : NULL;
     // There is a chance that the tab closed after we decided to show
     // the offline page on the IO thread and before we actually show the
     // offline page here on the UI thread.
-    if (tab_contents)
-      (new chromeos::OfflineLoadPage(tab_contents, deferred_url_, this))->
+    if (web_contents)
+      (new chromeos::OfflineLoadPage(web_contents, deferred_url_, this))->
           Show();
   }
 }

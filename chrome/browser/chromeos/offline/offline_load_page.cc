@@ -22,15 +22,16 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -46,10 +47,10 @@ void SetString(DictionaryValue* strings, const char* name, int resource_id) {
 
 namespace chromeos {
 
-OfflineLoadPage::OfflineLoadPage(TabContents* tab_contents,
+OfflineLoadPage::OfflineLoadPage(WebContents* web_contents,
                                  const GURL& url,
                                  OfflineResourceHandler* handler)
-    : ChromeInterstitialPage(tab_contents, true, url),
+    : ChromeInterstitialPage(web_contents, true, url),
       handler_(handler),
       proceeded_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {

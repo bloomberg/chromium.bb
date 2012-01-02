@@ -7,7 +7,6 @@
 #pragma once
 
 class RenderViewHost;
-class TabContents;
 class TabContentsContainer;
 
 namespace content {

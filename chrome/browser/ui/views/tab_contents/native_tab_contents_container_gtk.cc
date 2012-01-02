@@ -90,8 +90,8 @@ bool NativeTabContentsContainerGtk::SkipDefaultKeyEventProcessing(
   // We'll first give the page a chance to process the key events.  If it does
   // not process them, they'll be returned to us and we'll treat them as
   // accelerators then.
-  return container_->tab_contents() &&
-         !container_->tab_contents()->IsCrashed();
+  return container_->web_contents() &&
+         !container_->web_contents()->IsCrashed();
 }
 
 views::FocusTraversable* NativeTabContentsContainerGtk::GetFocusTraversable() {
@@ -101,12 +101,12 @@ views::FocusTraversable* NativeTabContentsContainerGtk::GetFocusTraversable() {
 bool NativeTabContentsContainerGtk::IsFocusable() const {
   // We need to be focusable when our contents is not a view hierarchy, as
   // clicking on the contents needs to focus us.
-  return container_->tab_contents() != NULL;
+  return container_->web_contents() != NULL;
 }
 
 void NativeTabContentsContainerGtk::OnFocus() {
-  if (container_->tab_contents())
-    container_->tab_contents()->Focus();
+  if (container_->web_contents())
+    container_->web_contents()->Focus();
 }
 
 void NativeTabContentsContainerGtk::RequestFocus() {
@@ -127,15 +127,15 @@ void NativeTabContentsContainerGtk::RequestFocus() {
 
 void NativeTabContentsContainerGtk::AboutToRequestFocusFromTabTraversal(
     bool reverse) {
-  if (!container_->tab_contents())
+  if (!container_->web_contents())
     return;
   // Give an opportunity to the tab to reset its focus.
-  if (container_->tab_contents()->GetInterstitialPage()) {
-    container_->tab_contents()->GetInterstitialPage()->FocusThroughTabTraversal(
+  if (container_->web_contents()->GetInterstitialPage()) {
+    container_->web_contents()->GetInterstitialPage()->FocusThroughTabTraversal(
         reverse);
     return;
   }
-  container_->tab_contents()->FocusThroughTabTraversal(reverse);
+  container_->web_contents()->FocusThroughTabTraversal(reverse);
 }
 
 void NativeTabContentsContainerGtk::GetAccessibleState(

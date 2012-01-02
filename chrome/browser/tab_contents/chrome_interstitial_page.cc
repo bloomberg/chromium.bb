@@ -10,11 +10,13 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 
-ChromeInterstitialPage::ChromeInterstitialPage(TabContents* tab,
+using content::WebContents;
+
+ChromeInterstitialPage::ChromeInterstitialPage(WebContents* tab,
                                                bool new_navigation,
                                                const GURL& url)
     : InterstitialPage(tab, new_navigation, url) {

@@ -31,8 +31,8 @@ class TabContentsContainer : public views::View,
 
   View* GetFocusView() { return native_container_->GetView(); }
 
-  // Accessor for |tab_contents_|.
-  TabContents* tab_contents() const { return tab_contents_; }
+  // TODO(jam): move web_contents() to header.
+  content::WebContents* web_contents();
 
   // Called by the BrowserView to notify that |contents| got the focus.
   void WebContentsFocused(content::WebContents* contents);

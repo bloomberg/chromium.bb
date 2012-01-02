@@ -15,6 +15,7 @@
 
 using content::BrowserThread;
 using content::NavigationEntry;
+using content::WebContents;
 
 static const char* kGoogleURL = "http://www.google.com/";
 static const char* kGoodURL = "http://www.goodguys.com/";
@@ -26,9 +27,9 @@ static const char* kBadURL3 = "http://www.badguys3.com/";
 class TestSafeBrowsingBlockingPage :  public SafeBrowsingBlockingPage {
  public:
   TestSafeBrowsingBlockingPage(SafeBrowsingService* service,
-                               TabContents* tab_contents,
+                               WebContents* web_contents,
                                const UnsafeResourceList& unsafe_resources)
-      : SafeBrowsingBlockingPage(service, tab_contents, unsafe_resources) {
+      : SafeBrowsingBlockingPage(service, web_contents, unsafe_resources) {
     // Don't delay details at all for the unittest.
     malware_details_proceed_delay_ms_ = 0;
   }
@@ -62,9 +63,9 @@ class TestSafeBrowsingBlockingPageFactory
 
   virtual SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
       SafeBrowsingService* service,
-      TabContents* tab_contents,
+      WebContents* web_contents,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources) {
-    return new TestSafeBrowsingBlockingPage(service, tab_contents,
+    return new TestSafeBrowsingBlockingPage(service, web_contents,
                                             unsafe_resources);
   }
 };

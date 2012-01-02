@@ -21,9 +21,10 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -36,6 +37,7 @@ using content::OpenURLParams;
 using content::PluginService;
 using content::Referrer;
 using content::UserMetricsAction;
+using content::WebContents;
 using webkit::npapi::PluginGroup;
 using webkit::WebPluginInfo;
 
@@ -130,7 +132,7 @@ void PDFEnableAdobeReaderInfoBarDelegate::OnNo() {
 }
 
 // Launch the url to get the latest Adbobe Reader installer.
-void OpenReaderUpdateURL(TabContents* tab) {
+void OpenReaderUpdateURL(WebContents* tab) {
   OpenURLParams params(
       GURL(kReaderUpdateUrl), Referrer(), NEW_FOREGROUND_TAB,
       content::PAGE_TRANSITION_LINK, false);
@@ -143,11 +145,11 @@ void OpenUsingReader(TabContentsWrapper* tab,
                      InfoBarDelegate* old_delegate,
                      InfoBarDelegate* new_delegate) {
   ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
-      tab->tab_contents()->GetRenderProcessHost()->GetID(),
-      tab->tab_contents()->GetRenderViewHost()->routing_id(),
-      tab->tab_contents()->GetURL(),
+      tab->web_contents()->GetRenderProcessHost()->GetID(),
+      tab->web_contents()->GetRenderViewHost()->routing_id(),
+      tab->web_contents()->GetURL(),
       ASCIIToUTF16(PluginGroup::kAdobeReaderGroupName));
-  tab->tab_contents()->GetRenderViewHost()->ReloadFrame();
+  tab->web_contents()->GetRenderViewHost()->ReloadFrame();
 
   if (new_delegate) {
     if (old_delegate) {
@@ -166,7 +168,7 @@ class PDFUnsupportedFeatureInterstitial : public ChromeInterstitialPage {
       TabContentsWrapper* tab,
       const WebPluginInfo& reader_webplugininfo)
       : ChromeInterstitialPage(
-            tab->tab_contents(), false, tab->tab_contents()->GetURL()),
+            tab->web_contents(), false, tab->web_contents()->GetURL()),
         tab_contents_(tab),
         reader_webplugininfo_(reader_webplugininfo) {
     content::RecordAction(UserMetricsAction("PDF_ReaderInterstitialShown"));
@@ -332,7 +334,7 @@ string16 PDFUnsupportedFeatureInfoBarDelegate::GetMessageText() const {
 bool PDFUnsupportedFeatureInfoBarDelegate::OnYes() {
   if (!reader_installed_) {
     content::RecordAction(UserMetricsAction("PDF_InstallReaderInfoBarOK"));
-    OpenReaderUpdateURL(tab_contents_->tab_contents());
+    OpenReaderUpdateURL(tab_contents_->web_contents());
     return true;
   }
 
@@ -367,13 +369,13 @@ void PDFUnsupportedFeatureInfoBarDelegate::OnNo() {
 void GotPluginGroupsCallback(int process_id,
                              int routing_id,
                              const std::vector<PluginGroup>& groups) {
-  TabContents* tab_contents =
-      tab_util::GetTabContentsByID(process_id, routing_id);
-  if (!tab_contents)
+  WebContents* web_contents =
+      tab_util::GetWebContentsByID(process_id, routing_id);
+  if (!web_contents)
     return;
 
   TabContentsWrapper* tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
   if (!tab)
     return;
 
@@ -409,6 +411,6 @@ void PDFHasUnsupportedFeature(TabContentsWrapper* tab) {
 
   PluginService::GetInstance()->GetPluginGroups(
       base::Bind(&GotPluginGroupsCallback,
-          tab->tab_contents()->GetRenderProcessHost()->GetID(),
-          tab->tab_contents()->GetRenderViewHost()->routing_id()));
+          tab->web_contents()->GetRenderProcessHost()->GetID(),
+          tab->web_contents()->GetRenderViewHost()->routing_id()));
 }

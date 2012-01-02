@@ -102,19 +102,19 @@ bool NativeTabContentsContainerWin::SkipDefaultKeyEventProcessing(
   // We'll first give the page a chance to process the key events.  If it does
   // not process them, they'll be returned to us and we'll treat them as
   // accelerators then.
-  return container_->tab_contents() &&
-         !container_->tab_contents()->IsCrashed();
+  return container_->web_contents() &&
+         !container_->web_contents()->IsCrashed();
 }
 
 bool NativeTabContentsContainerWin::IsFocusable() const {
   // We need to be focusable when our contents is not a view hierarchy, as
   // clicking on the contents needs to focus us.
-  return container_->tab_contents() != NULL;
+  return container_->web_contents() != NULL;
 }
 
 void NativeTabContentsContainerWin::OnFocus() {
-  if (container_->tab_contents())
-    container_->tab_contents()->Focus();
+  if (container_->web_contents())
+    container_->web_contents()->Focus();
 }
 
 void NativeTabContentsContainerWin::RequestFocus() {
@@ -137,7 +137,7 @@ void NativeTabContentsContainerWin::RequestFocus() {
 
 void NativeTabContentsContainerWin::AboutToRequestFocusFromTabTraversal(
     bool reverse) {
-  container_->tab_contents()->FocusThroughTabTraversal(reverse);
+  container_->web_contents()->FocusThroughTabTraversal(reverse);
 }
 
 void NativeTabContentsContainerWin::GetAccessibleState(
@@ -147,11 +147,11 @@ void NativeTabContentsContainerWin::GetAccessibleState(
 
 gfx::NativeViewAccessible
     NativeTabContentsContainerWin::GetNativeViewAccessible() {
-  TabContents* tab_contents = container_->tab_contents();
-  if (tab_contents) {
+  WebContents* web_contents = container_->web_contents();
+  if (web_contents) {
     RenderWidgetHostViewWin* host_view_win =
         static_cast<RenderWidgetHostViewWin*>(
-            tab_contents->GetRenderWidgetHostView());
+            web_contents->GetRenderWidgetHostView());
     if (host_view_win)
       return host_view_win->GetIAccessible();
   }

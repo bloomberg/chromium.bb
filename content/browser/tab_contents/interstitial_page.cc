@@ -115,10 +115,10 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
 InterstitialPage::InterstitialPageMap*
     InterstitialPage::tab_to_interstitial_page_ =  NULL;
 
-InterstitialPage::InterstitialPage(TabContents* tab,
+InterstitialPage::InterstitialPage(WebContents* tab,
                                    bool new_navigation,
                                    const GURL& url)
-    : tab_(tab),
+    : tab_(static_cast<TabContents*>(tab)),
       url_(url),
       new_navigation_(new_navigation),
       should_discard_pending_nav_entry_(new_navigation),
@@ -419,6 +419,10 @@ void InterstitialPage::HandleKeyboardEvent(
   return tab_->HandleKeyboardEvent(event);
 }
 
+WebContents* InterstitialPage::tab() const {
+  return tab_;
+}
+
 RenderViewHost* InterstitialPage::CreateRenderViewHost() {
   RenderViewHost* render_view_host = new RenderViewHost(
       SiteInstance::CreateSiteInstance(tab()->GetBrowserContext()),
@@ -591,8 +595,9 @@ void InterstitialPage::InitInterstitialPageMap() {
 
 // static
 InterstitialPage* InterstitialPage::GetInterstitialPage(
-    TabContents* tab_contents) {
+    WebContents* web_contents) {
   InitInterstitialPageMap();
+  TabContents* tab_contents = static_cast<TabContents*>(web_contents);
   InterstitialPageMap::const_iterator iter =
       tab_to_interstitial_page_->find(tab_contents);
   if (iter == tab_to_interstitial_page_->end())
@@ -673,8 +678,13 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::GotFocus() {
 
 void InterstitialPage::InterstitialPageRVHViewDelegate::TakeFocus(
     bool reverse) {
-  if (interstitial_page_->tab() && interstitial_page_->tab()->GetViewDelegate())
-    interstitial_page_->tab()->GetViewDelegate()->TakeFocus(reverse);
+  if (!interstitial_page_->tab())
+    return;
+  TabContents* tab = static_cast<TabContents*>(interstitial_page_->tab());
+  if (!tab->GetViewDelegate())
+    return;
+
+  tab->GetViewDelegate()->TakeFocus(reverse);
 }
 
 void InterstitialPage::InterstitialPageRVHViewDelegate::OnFindReply(

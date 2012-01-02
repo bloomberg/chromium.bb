@@ -547,9 +547,9 @@ TaskManagerBackgroundContentsResource::TaskManagerBackgroundContentsResource(
     BackgroundContents* background_contents,
     const string16& application_name)
     : TaskManagerRendererResource(
-          background_contents->tab_contents()->GetRenderProcessHost()->
+          background_contents->web_contents()->GetRenderProcessHost()->
               GetHandle(),
-          background_contents->tab_contents()->GetRenderViewHost()),
+          background_contents->web_contents()->GetRenderViewHost()),
       background_contents_(background_contents),
       application_name_(application_name) {
   // Just use the same icon that other extension resources do.
@@ -616,7 +616,7 @@ TaskManagerBackgroundContentsResourceProvider::GetResource(
     return NULL;
 
   for (Resources::iterator i = resources_.begin(); i != resources_.end(); i++) {
-    TabContents* tab = i->first->tab_contents();
+    WebContents* tab = i->first->web_contents();
     if (tab->GetRenderProcessHost()->GetID() == render_process_host_id
         && tab->GetRenderViewHost()->routing_id() == routing_id) {
       return i->second;
@@ -710,7 +710,7 @@ void TaskManagerBackgroundContentsResourceProvider::Add(
     return;
 
   // Don't add contents whose process is dead.
-  if (!contents->tab_contents()->GetRenderProcessHost()->GetHandle())
+  if (!contents->web_contents()->GetRenderProcessHost()->GetHandle())
     return;
 
   // Should never add the same BackgroundContents twice.

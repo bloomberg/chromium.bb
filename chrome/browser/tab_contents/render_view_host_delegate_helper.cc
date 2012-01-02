@@ -151,7 +151,7 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
         frame_name);
     if (contents) {
       pending_contents_[route_id] =
-          contents->tab_contents()->GetRenderViewHost();
+          contents->web_contents()->GetRenderViewHost();
       return NULL;
     }
   }

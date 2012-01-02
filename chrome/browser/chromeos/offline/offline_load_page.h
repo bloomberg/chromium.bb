@@ -15,7 +15,6 @@
 
 class Extension;
 class OfflineResourceHandler;
-class TabContents;
 
 namespace base {
 class DictionaryValue;
@@ -30,8 +29,8 @@ namespace chromeos {
 class OfflineLoadPage : public ChromeInterstitialPage,
                         public net::NetworkChangeNotifier::OnlineStateObserver {
  public:
-  // Create a offline load page for the |tab_contents|.
-  OfflineLoadPage(TabContents* tab_contents, const GURL& url,
+  // Create a offline load page for the |web_contents|.
+  OfflineLoadPage(content::WebContents* web_contents, const GURL& url,
                   OfflineResourceHandler* handler);
 
  protected:

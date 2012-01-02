@@ -50,6 +50,8 @@
 #include "base/string_util.h"
 #endif
 
+using content::WebContents;
+
 #if defined(OS_MACOSX)
 // TODO(suzhe): http://crbug.com/60973
 #define MAYBE_FocusTraversal DISABLED_FocusTraversal
@@ -170,7 +172,7 @@ class TestInterstitialPage : public InterstitialPage {
     return InterstitialPage::render_view_host();
   }
 
-  virtual TabContents* tab() {
+  virtual WebContents* tab() {
     return InterstitialPage::tab();
   }
 

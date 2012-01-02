@@ -5122,7 +5122,7 @@ void Browser::TabDetachedAtImpl(TabContentsWrapper* contents, int index,
   registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
                     content::Source<WebContents>(contents->web_contents()));
   registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_DETACHED,
-                    content::Source<WebContents>(contents->tab_contents()));
+                    content::Source<WebContents>(contents->web_contents()));
   registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                     content::Source<WebContents>(contents->web_contents()));
 }

@@ -91,8 +91,8 @@ bool NativeTabContentsContainerAura::SkipDefaultKeyEventProcessing(
   // We'll first give the page a chance to process the key events.  If it does
   // not process them, they'll be returned to us and we'll treat them as
   // accelerators then.
-  return container_->tab_contents() &&
-         !container_->tab_contents()->IsCrashed();
+  return container_->web_contents() &&
+         !container_->web_contents()->IsCrashed();
 }
 
 bool NativeTabContentsContainerAura::IsFocusable() const {
@@ -102,8 +102,8 @@ bool NativeTabContentsContainerAura::IsFocusable() const {
 }
 
 void NativeTabContentsContainerAura::OnFocus() {
-  if (container_->tab_contents())
-    container_->tab_contents()->Focus();
+  if (container_->web_contents())
+    container_->web_contents()->Focus();
 }
 
 void NativeTabContentsContainerAura::RequestFocus() {
@@ -126,7 +126,7 @@ void NativeTabContentsContainerAura::RequestFocus() {
 
 void NativeTabContentsContainerAura::AboutToRequestFocusFromTabTraversal(
     bool reverse) {
-  container_->tab_contents()->FocusThroughTabTraversal(reverse);
+  container_->web_contents()->FocusThroughTabTraversal(reverse);
 }
 
 void NativeTabContentsContainerAura::GetAccessibleState(

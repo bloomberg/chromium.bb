@@ -17,11 +17,12 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/ssl_status.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -51,7 +52,7 @@ SSLBlockingPage::SSLBlockingPage(
     bool overridable,
     const base::Callback<void(SSLCertErrorHandler*, bool)>& callback)
     : ChromeInterstitialPage(
-          tab_util::GetTabContentsByID(
+          tab_util::GetWebContentsByID(
               handler->render_process_host_id(), handler->tab_contents_id()),
           true,
           handler->request_url()),

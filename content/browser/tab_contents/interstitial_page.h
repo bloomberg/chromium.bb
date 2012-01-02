@@ -24,6 +24,7 @@ class TabContentsView;
 
 namespace content {
 class NavigationEntry;
+class WebContents;
 }
 
 // This class is a base class for interstitial pages, pages that show some
@@ -60,7 +61,9 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
   // added to the navigation controller (so the interstitial page appears as a
   // new navigation entry). |new_navigation| should be false when the
   // interstitial was triggered by a loading a sub-resource in a page.
-  InterstitialPage(TabContents* tab, bool new_navigation, const GURL& url);
+  InterstitialPage(content::WebContents* tab,
+                   bool new_navigation,
+                   const GURL& url);
   virtual ~InterstitialPage();
 
   // Shows the interstitial page in the tab.
@@ -70,8 +73,9 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
   void Hide();
 
   // Retrieves the InterstitialPage if any associated with the specified
-  // |tab_contents| (used by ui tests).
-  static InterstitialPage* GetInterstitialPage(TabContents* tab_contents);
+  // |web_contents| (used by ui tests).
+  static InterstitialPage* GetInterstitialPage(
+      content::WebContents* web_contents);
 
   // Sub-classes should return the HTML that should be displayed in the page.
   virtual std::string GetHTMLContents();
@@ -148,7 +152,7 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
   virtual void UpdateEntry(content::NavigationEntry* entry) {}
 
   bool enabled() const { return enabled_; }
-  TabContents* tab() const { return tab_; }
+  content::WebContents* tab() const;
   const GURL& url() const { return url_; }
   RenderViewHost* render_view_host() const { return render_view_host_; }
   void set_renderer_preferences(const content::RendererPreferences& prefs) {

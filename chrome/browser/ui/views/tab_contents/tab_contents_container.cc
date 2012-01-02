@@ -47,6 +47,10 @@ void TabContentsContainer::ChangeTabContents(TabContents* contents) {
   }
 }
 
+content::WebContents* TabContentsContainer::web_contents() {
+  return tab_contents_;
+}
+
 void TabContentsContainer::WebContentsFocused(WebContents* contents) {
   native_container_->WebContentsFocused(contents);
 }
