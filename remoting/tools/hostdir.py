@@ -118,13 +118,13 @@ class CommandError(Exception):
 def load_auth_token():
   try:
     lines = open(auth_filepath).readlines()
-  except IOError as e:
-    raise CommandError("Can't open file (%s). Please run " +
-                       "'%s login' and try again." %
+  except IOError:
+    raise CommandError(("Can't open file (%s). Please run " +
+                        "'%s login' and try again.") %
                        (auth_filepath, sys.argv[0]))
   if len(lines) != 2:
-    raise CommandError("Invalid auth file (%s). Please run " +
-                       "'%s login' and try again." %
+    raise CommandError(("Invalid auth file (%s). Please run " +
+                        "'%s login' and try again.") %
                        (auth_filepath, sys.argv[0]))
   return map(lambda x: x.strip(), lines)
 
