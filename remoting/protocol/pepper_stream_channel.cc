@@ -50,8 +50,6 @@ PepperStreamChannel::PepperStreamChannel(
 
 PepperStreamChannel::~PepperStreamChannel() {
   session_->OnDeleteChannel(this);
-  // Verify that the |channel_| is ether destroyed or we own it.
-  DCHECK_EQ(channel_, owned_channel_.get());
   // Channel should be already destroyed if we were connected.
   DCHECK(!connected_ || channel_ == NULL);
 }
