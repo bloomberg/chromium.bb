@@ -2068,6 +2068,7 @@ int main(int argc, char *argv[])
 {
 	struct wl_display *display;
 	struct wlsc_compositor *ec;
+	struct wl_event_source *signals[4];
 	struct wl_event_loop *loop;
 	int o, xserver = 0;
 	void *shell_module, *backend_module;
@@ -2079,6 +2080,7 @@ int main(int argc, char *argv[])
 	char *shell = NULL;
 	char *p;
 	int option_idle_time = 300;
+	int i;
 
 	static const char opts[] = "B:b:o:S:i:s:x";
 	static const struct option longopts[ ] = {
@@ -2123,12 +2125,16 @@ int main(int argc, char *argv[])
 	display = wl_display_create();
 
 	loop = wl_display_get_event_loop(display);
-	wl_event_loop_add_signal(loop, SIGTERM, on_term_signal, display);
-	wl_event_loop_add_signal(loop, SIGINT, on_term_signal, display);
-	wl_event_loop_add_signal(loop, SIGQUIT, on_term_signal, display);
+	signals[0] = wl_event_loop_add_signal(loop, SIGTERM, on_term_signal,
+					      display);
+	signals[1] = wl_event_loop_add_signal(loop, SIGINT, on_term_signal,
+					      display);
+	signals[2] = wl_event_loop_add_signal(loop, SIGQUIT, on_term_signal,
+					      display);
 
 	wl_list_init(&child_process_list);
-	wl_event_loop_add_signal(loop, SIGCHLD, sigchld_handler, NULL);
+	signals[3] = wl_event_loop_add_signal(loop, SIGCHLD, sigchld_handler,
+					      NULL);
 
 	if (!backend) {
 		if (getenv("WAYLAND_DISPLAY"))
@@ -2184,6 +2190,9 @@ int main(int argc, char *argv[])
 
 	if (ec->has_bind_display)
 		ec->unbind_display(ec->display, display);
+
+	for (i = ARRAY_LENGTH(signals); i;)
+		wl_event_source_remove(signals[--i]);
 
 	ec->destroy(ec);
 	wl_display_destroy(display);
