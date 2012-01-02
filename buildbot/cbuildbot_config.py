@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -683,3 +684,43 @@ add_config('aura-release', internal, full, official, release,
   vm_tests=None,
   chrome_tests=False
 )
+
+if __name__ == '__main__':
+  # Simple helper script to either generate a pickle dump of current config,
+  # or compare current config against a saved on disk pickle of a config
+  # this is mainly for ease of mangling this file, and ensuring what you
+  # changed affected only what you actually wanted it to.
+
+  import sys
+  import pickle
+  if len(sys.argv) == 1:
+    # Dump the current configuration for comparison.
+    pickle.dump(config, sys.stdout)
+    sys.exit(0)
+
+  with open(sys.argv[1]) as f:
+    original = pickle.load(f)
+
+  keys = set(config.keys() + original.keys())
+  for key in sorted(set(config.keys() + original.keys())):
+    obj1, obj2 = original.get(key), config.get(key)
+    if obj1 == obj2:
+      continue
+    elif obj1 is None:
+      print "%s: added to config\n" % (key,)
+      continue
+    elif obj2 is None:
+      print "%s: removed from config\n" % (key,)
+      continue
+
+    print "%s:" % (key,)
+
+    for subkey in sorted(set(obj1.keys() + obj2.keys())):
+
+      sobj1, sobj2 = obj1.get(subkey), obj2.get(subkey)
+
+      if sobj1 == sobj2:
+        continue
+
+      print ' %s: %r, %r' % (subkey, sobj1, sobj2)
+    print
