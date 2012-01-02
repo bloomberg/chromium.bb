@@ -10,11 +10,12 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/device_management_backend.h"
 
 namespace policy {
 
-class DeviceManagementJobBase;
+class DeviceManagementRequestJob;
 class DeviceManagementService;
 
 // Implements the actual backend interface. It creates device management jobs
@@ -24,40 +25,8 @@ class DeviceManagementBackendImpl : public DeviceManagementBackend {
   explicit DeviceManagementBackendImpl(DeviceManagementService* service);
   virtual ~DeviceManagementBackendImpl();
 
-  static std::string GetAgentString();
-  static std::string GetPlatformString();
-
-  // Name constants for URL query parameters.
-  static const char kParamAgent[];
-  static const char kParamAppType[];
-  static const char kParamDeviceID[];
-  static const char kParamDeviceType[];
-  static const char kParamOAuthToken[];
-  static const char kParamPlatform[];
-  static const char kParamRequest[];
-  static const char kParamUserAffiliation[];
-
-  // String constants for the device and app type we report to the server.
-  static const char kValueAppType[];
-  static const char kValueDeviceType[];
-  static const char kValueRequestAutoEnrollment[];
-  static const char kValueRequestPolicy[];
-  static const char kValueRequestRegister[];
-  static const char kValueRequestUnregister[];
-  static const char kValueUserAffiliationManaged[];
-  static const char kValueUserAffiliationNone[];
-
  private:
-  friend class DeviceManagementJobBase;
-
-  typedef std::set<DeviceManagementJobBase*> JobSet;
-
-  // Called by the DeviceManagementJobBase dtor so we can clean up.
-  void JobDone(DeviceManagementJobBase* job);
-
-  // Add a job to the pending job set and register it with the service (if
-  // available).
-  void AddJob(DeviceManagementJobBase* job);
+  typedef std::set<DeviceManagementRequestJob*> JobSet;
 
   // DeviceManagementBackend overrides.
   virtual void ProcessRegisterRequest(
@@ -83,9 +52,27 @@ class DeviceManagementBackendImpl : public DeviceManagementBackend {
       const enterprise_management::DeviceAutoEnrollmentRequest& request,
       DeviceAutoEnrollmentResponseDelegate* delegate) OVERRIDE;
 
-  // Converts a user affiliation to the appropriate query parameter value.
-  static const char* UserAffiliationToString(
-      CloudPolicyDataStore::UserAffiliation affiliation);
+  // Helpers for mapping new-style callbacks to the old delegate style.
+  void OnRegistrationDone(
+      DeviceManagementRequestJob* job,
+      DeviceRegisterResponseDelegate* delegate,
+      DeviceManagementStatus status,
+      const enterprise_management::DeviceManagementResponse& response);
+  void OnUnregistrationDone(
+      DeviceManagementRequestJob* job,
+      DeviceUnregisterResponseDelegate* delegate,
+      DeviceManagementStatus status,
+      const enterprise_management::DeviceManagementResponse& response);
+  void OnPolicyFetchDone(
+      DeviceManagementRequestJob* job,
+      DevicePolicyResponseDelegate* delegate,
+      DeviceManagementStatus status,
+      const enterprise_management::DeviceManagementResponse& response);
+  void OnAutoEnrollmentDone(
+      DeviceManagementRequestJob* job,
+      DeviceAutoEnrollmentResponseDelegate* delegate,
+      DeviceManagementStatus status,
+      const enterprise_management::DeviceManagementResponse& response);
 
   // Keeps track of the jobs currently in flight.
   JobSet pending_jobs_;

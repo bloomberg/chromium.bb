@@ -59,18 +59,11 @@ class MockDeviceManagementService : public DeviceManagementService {
   virtual ~MockDeviceManagementService();
 
   MOCK_METHOD0(CreateBackend, DeviceManagementBackend*());
-  MOCK_METHOD2(StartJob, void(DeviceManagementJob*, bool));
 
   // This method bypasses the mocked version and calls the superclass'
   // CreateBackend(), returning a "real" backend.
   DeviceManagementBackend* CreateBackendNotMocked() {
     return DeviceManagementService::CreateBackend();
-  }
-
-  // This method bypasses the mocked version and calls the superclass'
-  // StartJob.
-  void StartJobNotMocked(DeviceManagementJob* job, bool bypass_proxy) {
-    DeviceManagementService::StartJob(job, bypass_proxy);
   }
 
  private:

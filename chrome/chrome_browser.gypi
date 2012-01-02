@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -1792,6 +1792,8 @@
         'browser/policy/browser_policy_connector.h',
         'browser/policy/cloud_policy_cache_base.cc',
         'browser/policy/cloud_policy_cache_base.h',
+        'browser/policy/cloud_policy_constants.cc',
+        'browser/policy/cloud_policy_constants.h',
         'browser/policy/cloud_policy_controller.cc',
         'browser/policy/cloud_policy_controller.h',
         'browser/policy/cloud_policy_data_store.cc',
