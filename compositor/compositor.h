@@ -408,6 +408,9 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec);
 
 void
+wlsc_input_device_fini(struct wlsc_input_device *device);
+
+void
 wlsc_switcher_init(struct wlsc_compositor *compositor);
 
 enum {

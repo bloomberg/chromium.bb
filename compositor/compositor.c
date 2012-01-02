@@ -1677,6 +1677,18 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 	device->selection_data_source = NULL;
 }
 
+WL_EXPORT void
+wlsc_input_device_fini(struct wlsc_input_device *device)
+{
+	wl_list_remove(&device->link);
+	/* The global object is destroyed at wl_display_destroy() time. */
+
+	if (device->sprite)
+		destroy_surface(&device->sprite->surface.resource);
+
+	wl_input_device_fini(&device->input_device);
+}
+
 static void
 bind_output(struct wl_client *client,
 	    void *data, uint32_t version, uint32_t id)
