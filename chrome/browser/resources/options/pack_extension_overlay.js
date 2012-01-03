@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,6 +82,16 @@ cr.define('options', function() {
       });
     },
   };
+
+  /**
+   * Wrap up the pack process by showing the success |message| and closing
+   * the overlay.
+   * @param {String} message The message to show to the user.
+   */
+  PackExtensionOverlay.showSuccessMessage = function(message) {
+    alert(message);
+    OptionsPage.closeOverlay();
+  }
 
   // Export
   return {

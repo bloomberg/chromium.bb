@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,11 +50,12 @@ void PackExtensionHandler::RegisterMessages() {
 
 void PackExtensionHandler::OnPackSuccess(const FilePath& crx_file,
                                          const FilePath& pem_file) {
-  ListValue results;
-  web_ui()->CallJavascriptFunction("OptionsPage.closeOverlay", results);
-
-  ShowAlert(UTF16ToUTF8(PackExtensionJob::StandardSuccessMessage(crx_file,
-                                                                 pem_file)));
+  ListValue arguments;
+  arguments.Append(Value::CreateStringValue(
+      UTF16ToUTF8(PackExtensionJob::StandardSuccessMessage(crx_file,
+                                                           pem_file))));
+  web_ui()->CallJavascriptFunction(
+      "PackExtensionOverlay.showSuccessMessage", arguments);
 }
 
 void PackExtensionHandler::OnPackFailure(const std::string& error) {
