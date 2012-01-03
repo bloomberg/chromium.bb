@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -265,9 +265,9 @@ void Layer::SetExternalTexture(ui::Texture* texture) {
     web_layer_.removeAllChildren();
     WebKit::WebLayer new_layer;
     if (layer_updated_externally_)
-      new_layer = WebKit::WebExternalTextureLayer::create(this);
+      new_layer = WebKit::WebExternalTextureLayer::create();
     else
-      new_layer = WebKit::WebContentLayer::create(this, this);
+      new_layer = WebKit::WebContentLayer::create(this);
     if (parent_) {
       DCHECK(!parent_->web_layer_.isNull());
       parent_->web_layer_.replaceChild(web_layer_, new_layer);
@@ -394,14 +394,6 @@ void Layer::DrawTree() {
   Draw();
   for (size_t i = 0; i < children_.size(); ++i)
     children_.at(i)->DrawTree();
-#endif
-}
-
-void Layer::notifyNeedsComposite() {
-#if defined(USE_WEBKIT_COMPOSITOR)
-  ScheduleDraw();
-#else
-  NOTREACHED();
 #endif
 }
 
@@ -730,7 +722,7 @@ float Layer::GetOpacityForAnimation() const {
 
 #if defined(USE_WEBKIT_COMPOSITOR)
 void Layer::CreateWebLayer() {
-  web_layer_ = WebKit::WebContentLayer::create(this, this);
+  web_layer_ = WebKit::WebContentLayer::create(this);
   web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
   web_layer_.setOpaque(true);
   web_layer_is_accelerated_ = false;

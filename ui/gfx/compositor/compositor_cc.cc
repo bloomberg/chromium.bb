@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,7 +131,7 @@ CompositorCC::CompositorCC(CompositorDelegate* delegate,
                            const gfx::Size& size)
     : Compositor(delegate, size),
       widget_(widget),
-      root_web_layer_(WebKit::WebLayer::create(this)) {
+      root_web_layer_(WebKit::WebLayer::create()) {
   WebKit::WebLayerTreeView::Settings settings;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   settings.showFPSCounter =
@@ -272,10 +272,6 @@ void CompositorCC::didRebindGraphicsContext(bool success) {
 }
 
 void CompositorCC::scheduleComposite() {
-  ScheduleDraw();
-}
-
-void CompositorCC::notifyNeedsComposite() {
   ScheduleDraw();
 }
 

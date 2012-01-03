@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/size.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayerTreeView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayerTreeViewClient.h"
 
@@ -79,8 +78,7 @@ class COMPOSITOR_EXPORT TextureCC : public Texture {
 
 class COMPOSITOR_EXPORT CompositorCC
     : public Compositor,
-      NON_EXPORTED_BASE(public WebKit::WebLayerTreeViewClient),
-      NON_EXPORTED_BASE(public WebKit::WebLayerClient) {
+      NON_EXPORTED_BASE(public WebKit::WebLayerTreeViewClient) {
  public:
   CompositorCC(CompositorDelegate* delegate,
                gfx::AcceleratedWidget widget,
@@ -110,9 +108,6 @@ class COMPOSITOR_EXPORT CompositorCC
   virtual WebKit::WebGraphicsContext3D* createContext3D();
   virtual void didRebindGraphicsContext(bool success);
   virtual void scheduleComposite();
-
-  // WebLayerClient implementation.
-  virtual void notifyNeedsComposite();
 
  private:
   gfx::AcceleratedWidget widget_;

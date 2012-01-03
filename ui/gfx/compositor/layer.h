@@ -15,7 +15,6 @@
 #include "base/message_loop.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebContentLayerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayerClient.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/compositor/compositor.h"
@@ -40,7 +39,6 @@ class Texture;
 // NULL, but the children are not deleted.
 class COMPOSITOR_EXPORT Layer :
     public LayerAnimationDelegate,
-    NON_EXPORTED_BASE(public WebKit::WebLayerClient),
     NON_EXPORTED_BASE(public WebKit::WebContentLayerClient) {
  public:
   enum LayerType {
@@ -191,9 +189,6 @@ class COMPOSITOR_EXPORT Layer :
   // Sometimes the Layer is being updated by something other than SetCanvas
   // (e.g. the GPU process on UI_COMPOSITOR_IMAGE_TRANSPORT).
   bool layer_updated_externally() const { return layer_updated_externally_; }
-
-  // WebLayerClient
-  virtual void notifyNeedsComposite();
 
   // WebContentLayerClient
   virtual void paintContents(WebKit::WebCanvas*, const WebKit::WebRect& clip);
