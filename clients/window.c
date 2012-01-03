@@ -658,18 +658,18 @@ display_create_surface_from_file(struct display *display,
 	const char *filename;
 	int hotspot_x, hotspot_y;
 } pointer_images[] = {
-	{ DATADIR "/wayland/bottom_left_corner.png",	 6, 30 },
-	{ DATADIR "/wayland/bottom_right_corner.png",	28, 28 },
-	{ DATADIR "/wayland/bottom_side.png",		16, 20 },
-	{ DATADIR "/wayland/grabbing.png",		20, 17 },
-	{ DATADIR "/wayland/left_ptr.png",		10,  5 },
-	{ DATADIR "/wayland/left_side.png",		10, 20 },
-	{ DATADIR "/wayland/right_side.png",		30, 19 },
-	{ DATADIR "/wayland/top_left_corner.png",	 8,  8 },
-	{ DATADIR "/wayland/top_right_corner.png",	26,  8 },
-	{ DATADIR "/wayland/top_side.png",		18,  8 },
-	{ DATADIR "/wayland/xterm.png",			15, 15 },
-	{ DATADIR "/wayland/hand1.png",			18, 11 }
+	{ DATADIR "/weston/bottom_left_corner.png",	 6, 30 },
+	{ DATADIR "/weston/bottom_right_corner.png",	28, 28 },
+	{ DATADIR "/weston/bottom_side.png",		16, 20 },
+	{ DATADIR "/weston/grabbing.png",		20, 17 },
+	{ DATADIR "/weston/left_ptr.png",		10,  5 },
+	{ DATADIR "/weston/left_side.png",		10, 20 },
+	{ DATADIR "/weston/right_side.png",		30, 19 },
+	{ DATADIR "/weston/top_left_corner.png",	 8,  8 },
+	{ DATADIR "/weston/top_right_corner.png",	26,  8 },
+	{ DATADIR "/weston/top_side.png",		18,  8 },
+	{ DATADIR "/weston/xterm.png",			15, 15 },
+	{ DATADIR "/weston/hand1.png",			18, 11 }
 };
 
 static void

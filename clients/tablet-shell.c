@@ -348,7 +348,7 @@ int main(int argc, char *argv[])
 				   "tablet_shell", 1);
 	shell = tablet_shell_create(display, id);
 
-	config_file = config_file_path("wayland-tablet-shell.ini");
+	config_file = config_file_path("weston-tablet-shell.ini");
 	parse_config_file(config_file,
 			  config_sections, ARRAY_LENGTH(config_sections),
 			  shell);

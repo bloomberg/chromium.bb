@@ -115,7 +115,7 @@ shell_configuration(struct wl_shell *shell)
 		{ "screensaver", saver_keys, ARRAY_LENGTH(saver_keys), NULL },
 	};
 
-	config_file = config_file_path("wayland-desktop-shell.ini");
+	config_file = config_file_path("weston-desktop-shell.ini");
 	ret = parse_config_file(config_file, cs, ARRAY_LENGTH(cs), shell);
 	free(config_file);
 
@@ -1122,7 +1122,7 @@ desktop_shell_sigchld(struct weston_process *process, int status)
 static int
 launch_desktop_shell_process(struct wl_shell *shell)
 {
-	const char *shell_exe = LIBEXECDIR "/wayland-desktop-shell";
+	const char *shell_exe = LIBEXECDIR "/weston-desktop-shell";
 
 	shell->child.client = weston_client_launch(shell->compositor,
 						 &shell->child.process,

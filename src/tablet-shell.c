@@ -87,7 +87,7 @@ tablet_shell_sigchld(struct weston_process *process, int status)
 	shell->process.pid = 0;
 
 	fprintf(stderr,
-		"wayland-tablet-daemon crashed, exit code %d\n", status);
+		"weston-tablet-shell crashed, exit code %d\n", status);
 }
 
 static void
@@ -365,7 +365,7 @@ static const struct tablet_shell_interface tablet_shell_implementation = {
 static void
 launch_ux_daemon(struct tablet_shell *shell)
 {
-	const char *shell_exe = LIBEXECDIR "/wayland-tablet-shell";
+	const char *shell_exe = LIBEXECDIR "/weston-tablet-shell";
 
 	shell->client = weston_client_launch(shell->compositor,
 					   &shell->process,
