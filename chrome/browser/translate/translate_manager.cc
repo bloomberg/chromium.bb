@@ -261,8 +261,8 @@ void TranslateManager::Observe(int type,
                                const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      NavigationController* controller =
-          content::Source<NavigationController>(source).ptr();
+      content::NavigationController* controller =
+          content::Source<content::NavigationController>(source).ptr();
       content::LoadCommittedDetails* load_details =
           content::Details<content::LoadCommittedDetails>(details).ptr();
       NavigationEntry* entry = controller->GetActiveEntry();

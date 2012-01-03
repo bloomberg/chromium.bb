@@ -37,11 +37,11 @@ using content::WebContents;
 
 namespace {
 
-RenderWidgetHost* GetRenderWidgetHost(NavigationController* tab) {
-  TabContents* tab_contents = tab->tab_contents();
-  if (tab_contents) {
+RenderWidgetHost* GetRenderWidgetHost(content::NavigationController* tab) {
+  WebContents* web_contents = tab->GetWebContents();
+  if (web_contents) {
     RenderWidgetHostView* render_widget_host_view =
-        tab_contents->GetRenderWidgetHostView();
+        web_contents->GetRenderWidgetHostView();
     if (render_widget_host_view)
       return render_widget_host_view->GetRenderWidgetHost();
   }
@@ -440,8 +440,8 @@ void BootTimesLoader::Observe(
       break;
     }
     case content::NOTIFICATION_LOAD_START: {
-      NavigationController* tab =
-          content::Source<NavigationController>(source).ptr();
+      content::NavigationController* tab =
+          content::Source<content::NavigationController>(source).ptr();
       RenderWidgetHost* rwh = GetRenderWidgetHost(tab);
       DCHECK(rwh);
       AddLoginTimeMarker("TabLoad-Start: " + GetTabUrl(rwh), false);
@@ -449,8 +449,8 @@ void BootTimesLoader::Observe(
       break;
     }
     case content::NOTIFICATION_LOAD_STOP: {
-      NavigationController* tab =
-          content::Source<NavigationController>(source).ptr();
+      content::NavigationController* tab =
+          content::Source<content::NavigationController>(source).ptr();
       RenderWidgetHost* rwh = GetRenderWidgetHost(tab);
       if (render_widget_hosts_loading_.find(rwh) !=
           render_widget_hosts_loading_.end()) {

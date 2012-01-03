@@ -154,11 +154,12 @@ bool HintInfoBar::Accept() {
 // OmniboxSearchHint ----------------------------------------------------------
 
 OmniboxSearchHint::OmniboxSearchHint(TabContentsWrapper* tab) : tab_(tab) {
-  NavigationController* controller = &(tab->tab_contents()->GetController());
+  content::NavigationController* controller =
+      &(tab->web_contents()->GetController());
   notification_registrar_.Add(
       this,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(controller));
+      content::Source<content::NavigationController>(controller));
   // Fill the search_engine_urls_ map, used for faster look-up (overkill?).
   for (size_t i = 0; i < arraysize(kSearchEngineURLs); ++i)
     search_engine_urls_[kSearchEngineURLs[i]] = 1;
@@ -176,8 +177,8 @@ void OmniboxSearchHint::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    NavigationEntry* entry =
-        tab_->tab_contents()->GetController().GetActiveEntry();
+    content::NavigationEntry* entry =
+        tab_->web_contents()->GetController().GetActiveEntry();
     if (search_engine_urls_.find(entry->GetURL().spec()) ==
         search_engine_urls_.end()) {
       // The search engine is not in our white-list, bail.

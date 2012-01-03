@@ -47,13 +47,13 @@ void TestHtmlDialogObserver::Observe(
       // TabContents::NavigateToEntry. The new RenderView is later told to
       // navigate in this method, ensuring that this is not a race condition.
       registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                     content::Source<NavigationController>(
+                     content::Source<content::NavigationController>(
                          &web_ui_->web_contents()->GetController()));
       break;
     case content::NOTIFICATION_LOAD_STOP:
       DCHECK(web_ui_);
       registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP,
-                        content::Source<NavigationController>(
+                        content::Source<content::NavigationController>(
                             &web_ui_->web_contents()->GetController()));
       done_ = true;
       // If the message loop is running stop it.

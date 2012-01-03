@@ -52,7 +52,7 @@ void NotifyPrunedEntries(NavigationController* nav_controller,
   details.count = count;
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_LIST_PRUNED,
-      content::Source<NavigationController>(nav_controller),
+      content::Source<content::NavigationController>(nav_controller),
       content::Details<content::PrunedDetails>(&details));
 }
 
@@ -178,7 +178,7 @@ NavigationController::~NavigationController() {
 
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CLOSED,
-      content::Source<NavigationController>(this),
+      content::Source<content::NavigationController>(this),
       content::NotificationService::NoDetails());
 }
 
@@ -239,7 +239,7 @@ void NavigationController::ReloadInternal(bool check_for_repost,
     // with check_for_repost = false.
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_REPOST_WARNING_SHOWN,
-        content::Source<NavigationController>(this),
+        content::Source<content::NavigationController>(this),
         content::NotificationService::NoDetails());
 
     pending_reload_ = reload_type;
@@ -300,7 +300,7 @@ void NavigationController::LoadEntry(NavigationEntryImpl* entry) {
   pending_entry_ = entry;
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_PENDING,
-      content::Source<NavigationController>(this),
+      content::Source<content::NavigationController>(this),
       content::Details<NavigationEntry>(entry));
   NavigateToPendingEntry(NO_RELOAD);
 }
@@ -1229,7 +1229,7 @@ void NavigationController::NotifyNavigationEntryCommitted(
 
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(this),
+      content::Source<content::NavigationController>(this),
       notification_details);
 }
 
@@ -1268,7 +1268,7 @@ void NavigationController::NotifyEntryChanged(const NavigationEntry* entry,
   det.index = index;
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_CHANGED,
-      content::Source<NavigationController>(this),
+      content::Source<content::NavigationController>(this),
       content::Details<content::EntryChangedDetails>(&det));
 }
 

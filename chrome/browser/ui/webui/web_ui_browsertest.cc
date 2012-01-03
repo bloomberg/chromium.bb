@@ -181,7 +181,7 @@ void WebUIBrowserTest::PreLoadJavascriptLibraries(
 
 void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   TestNavigationObserver navigation_observer(
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->web_contents()->
               GetController()),
       this, 1);

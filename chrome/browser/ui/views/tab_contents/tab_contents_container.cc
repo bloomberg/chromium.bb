@@ -169,7 +169,8 @@ void TabContentsContainer::AddObservers() {
   registrar_.Add(
       this,
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      content::Source<NavigationController>(&web_contents_->GetController()));
+      content::Source<content::NavigationController>(
+          &web_contents_->GetController()));
 
   registrar_.Add(
       this,

@@ -587,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
   // Reload the tab and make sure Find window doesn't go away.
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
               GetController()));
   browser()->Reload(CURRENT_TAB);
@@ -1114,7 +1114,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
   // End the find session, click on the link.
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &tab->tab_contents()->GetController()));
   tab->find_tab_helper()->StopFinding(FindBarController::kActivateSelection);
   observer.Wait();

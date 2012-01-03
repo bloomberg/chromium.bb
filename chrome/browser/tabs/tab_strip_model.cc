@@ -388,7 +388,7 @@ int TabStripModel::GetWrapperIndex(const WebContents* contents) const {
 }
 
 int TabStripModel::GetIndexOfController(
-    const NavigationController* controller) const {
+    const content::NavigationController* controller) const {
   int index = 0;
   TabContentsDataVector::const_iterator iter = contents_data_.begin();
   for (; iter != contents_data_.end(); ++iter, ++index) {

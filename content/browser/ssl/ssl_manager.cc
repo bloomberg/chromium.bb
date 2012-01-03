@@ -109,7 +109,7 @@ SSLManager::SSLManager(NavigationController* controller)
 
   // Subscribe to various notifications.
   registrar_.Add(this, content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
-                 content::Source<NavigationController>(controller_));
+                 content::Source<content::NavigationController>(controller_));
   registrar_.Add(
       this, content::NOTIFICATION_RESOURCE_RESPONSE_STARTED,
       content::Source<WebContents>(controller_->tab_contents()));
@@ -118,7 +118,7 @@ SSLManager::SSLManager(NavigationController* controller)
       content::Source<WebContents>(controller_->tab_contents()));
   registrar_.Add(
       this, content::NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
-      content::Source<NavigationController>(controller_));
+      content::Source<content::NavigationController>(controller_));
   registrar_.Add(
       this, content::NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
       content::Source<content::BrowserContext>(
@@ -263,7 +263,7 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
   if (!entry->GetSSL().Equals(original_ssl_status)) {
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
-        content::Source<NavigationController>(controller_),
+        content::Source<content::NavigationController>(controller_),
         content::NotificationService::NoDetails());
   }
 }

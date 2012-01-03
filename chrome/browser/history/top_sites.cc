@@ -845,8 +845,8 @@ void TopSites::Observe(int type,
     }
     StartQueryForMostVisited();
   } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    NavigationController* controller =
-        content::Source<NavigationController>(source).ptr();
+    content::NavigationController* controller =
+        content::Source<content::NavigationController>(source).ptr();
     Profile* profile = Profile::FromBrowserContext(
         controller->GetWebContents()->GetBrowserContext());
     if (profile == profile_ && !IsFull()) {

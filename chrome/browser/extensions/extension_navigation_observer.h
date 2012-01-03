@@ -14,7 +14,10 @@
 #include "content/public/browser/notification_registrar.h"
 
 class Profile;
+
+namespace content {
 class NavigationController;
+}
 
 // The ExtensionNavigationObserver listens to navigation notifications. If the
 // user navigates into an extension that has been disabled due to a permission
@@ -37,7 +40,8 @@ class ExtensionNavigationObserver : public ExtensionInstallUI::Delegate,
   // Checks if |nav_controller| has entered an extension's web extent. If it
   // has and the extension is disabled due to a permissions increase, this
   // prompts the user to accept the new permissions and enables the extension.
-  void PromptToEnableExtensionIfNecessary(NavigationController* nav_controller);
+  void PromptToEnableExtensionIfNecessary(
+      content::NavigationController* nav_controller);
 
   // ExtensionInstallUI::Delegate callbacks used for the permissions prompt.
   virtual void InstallUIProceed() OVERRIDE;
@@ -52,7 +56,7 @@ class ExtensionNavigationObserver : public ExtensionInstallUI::Delegate,
 
   // The data we keep track of when prompting to enable extensions.
   std::string in_progress_prompt_extension_id_;
-  NavigationController* in_progress_prompt_navigation_controller_;
+  content::NavigationController* in_progress_prompt_navigation_controller_;
 
   // The extension ids we've already prompted the user about.
   std::set<std::string> prompted_extensions_;

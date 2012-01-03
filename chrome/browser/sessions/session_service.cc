@@ -533,7 +533,7 @@ void SessionService::Observe(int type,
     case content::NOTIFICATION_TAB_CLOSED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              content::Source<NavigationController>(
+              content::Source<content::NavigationController>(
                   source).ptr()->GetWebContents());
       if (!tab || tab->profile() != profile())
         return;
@@ -548,7 +548,7 @@ void SessionService::Observe(int type,
     case content::NOTIFICATION_NAV_LIST_PRUNED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              content::Source<NavigationController>(
+              content::Source<content::NavigationController>(
                   source).ptr()->GetWebContents());
       if (!tab || tab->profile() != profile())
         return;
@@ -572,7 +572,7 @@ void SessionService::Observe(int type,
     case content::NOTIFICATION_NAV_ENTRY_CHANGED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              content::Source<NavigationController>(
+              content::Source<content::NavigationController>(
                   source).ptr()->GetWebContents());
       if (!tab || tab->profile() != profile())
         return;
@@ -587,7 +587,7 @@ void SessionService::Observe(int type,
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              content::Source<NavigationController>(
+              content::Source<content::NavigationController>(
                   source).ptr()->GetWebContents());
       if (!tab || tab->profile() != profile())
         return;

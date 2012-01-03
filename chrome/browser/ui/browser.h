@@ -69,6 +69,11 @@ class StatusBubble;
 class TabNavigation;
 class TabStripModel;
 struct WebApplicationInfo;
+
+namespace content {
+class NavigationController;
+}
+
 namespace gfx {
 class Point;
 }
@@ -383,7 +388,8 @@ class Browser : public TabHandlerDelegate,
 
   int tab_count() const;
   int active_index() const;
-  int GetIndexOfController(const NavigationController* controller) const;
+  int GetIndexOfController(
+      const content::NavigationController* controller) const;
 
   // TODO(dpapad): Rename to GetActiveTabContentsWrapper().
   TabContentsWrapper* GetSelectedTabContentsWrapper() const;
@@ -670,7 +676,7 @@ class Browser : public TabHandlerDelegate,
   // Returns NULL if not found.
   // This call is O(N) in the number of tabs.
   static Browser* GetBrowserForController(
-      const NavigationController* controller, int* index);
+      const content::NavigationController* controller, int* index);
 
   // Retrieve the last active tabbed browser with a profile matching |profile|.
   static Browser* GetTabbedBrowser(Profile* profile, bool match_incognito);

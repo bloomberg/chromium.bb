@@ -211,9 +211,9 @@ void InterstitialPage::Show() {
                               content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                               content::Source<WebContents>(tab_));
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(&tab_->GetController()));
+      content::Source<content::NavigationController>(&tab_->GetController()));
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-      content::Source<NavigationController>(&tab_->GetController()));
+      content::Source<content::NavigationController>(&tab_->GetController()));
 }
 
 void InterstitialPage::Hide() {

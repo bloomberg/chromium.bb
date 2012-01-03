@@ -1242,7 +1242,7 @@ void TabContents::OnDidFailProvisionalLoadWithError(
 
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
-      content::Source<NavigationController>(&controller_),
+      content::Source<content::NavigationController>(&controller_),
       content::Details<ProvisionalLoadDetails>(&details));
 
   FOR_EACH_OBSERVER(WebContentsObserver,
@@ -1276,7 +1276,7 @@ void TabContents::OnDidLoadResourceFromMemoryCache(
 
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
-      content::Source<NavigationController>(&controller_),
+      content::Source<content::NavigationController>(&controller_),
       content::Details<LoadFromMemoryCacheDetails>(&details));
 }
 
@@ -1438,7 +1438,7 @@ void TabContents::SetIsLoading(bool is_loading,
   if (details)
       det = content::Details<LoadNotificationDetails>(details);
   content::NotificationService::current()->Notify(type,
-      content::Source<NavigationController>(&controller_),
+      content::Source<content::NavigationController>(&controller_),
       det);
 }
 

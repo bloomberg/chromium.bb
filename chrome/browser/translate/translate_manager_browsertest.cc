@@ -268,7 +268,7 @@ class NavEntryCommittedObserver : public content::NotificationObserver {
  public:
   explicit NavEntryCommittedObserver(TabContents* tab_contents) {
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                   content::Source<NavigationController>(
+                   content::Source<content::NavigationController>(
                       &tab_contents->GetController()));
   }
 

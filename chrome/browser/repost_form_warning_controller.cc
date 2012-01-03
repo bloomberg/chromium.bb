@@ -24,7 +24,8 @@ RepostFormWarningController::RepostFormWarningController(
     : TabModalConfirmDialogDelegate(web_contents),
       navigation_controller_(&web_contents->GetController()) {
   registrar_.Add(this, content::NOTIFICATION_REPOST_WARNING_SHOWN,
-                 content::Source<NavigationController>(navigation_controller_));
+                 content::Source<content::NavigationController>(
+                    navigation_controller_));
 }
 
 RepostFormWarningController::~RepostFormWarningController() {

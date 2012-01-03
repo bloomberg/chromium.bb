@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
   content::NotificationRegistrar registrar;
   registrar.Add(this,
                 content::NOTIFICATION_LOAD_STOP,
-                content::Source<NavigationController>(controller));
+                content::Source<content::NavigationController>(controller));
   std::string base_url = std::string("files/");
 
   file_util::FileEnumerator file_enumerator(
@@ -350,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_OnLoadAndReload) {
 
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &browser()->GetSelectedWebContents()->GetController()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
       browser()->GetSelectedWebContents()->GetRenderViewHost(),

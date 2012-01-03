@@ -51,7 +51,6 @@ class FilePath;
 class InitialLoadObserver;
 class LoginHandler;
 class MetricEventDurationObserver;
-class NavigationController;
 class NavigationControllerRestoredObserver;
 class Profile;
 class RenderViewHost;
@@ -62,6 +61,10 @@ struct ExternalTabSettings;
 
 namespace IPC {
 class ChannelProxy;
+}
+
+namespace content {
+class NavigationController;
 }
 
 namespace base {
@@ -117,8 +120,9 @@ class AutomationProvider
   // Get the index of a particular NavigationController object
   // in the given parent window.  This method uses
   // TabStrip::GetIndexForNavigationController to get the index.
-  int GetIndexForNavigationController(const NavigationController* controller,
-                                      const Browser* parent) const;
+  int GetIndexForNavigationController(
+      const content::NavigationController* controller,
+      const Browser* parent) const;
 
   // Add or remove a non-owning reference to a tab's LoginHandler.  This is for
   // when a login prompt is shown for HTTP/FTP authentication.
@@ -126,8 +130,9 @@ class AutomationProvider
   // Eventually we'll probably want ways to interact with the ChromeView of the
   // login window in a generic manner, such that it can be used for anything,
   // not just logins.
-  void AddLoginHandler(NavigationController* tab, LoginHandler* handler);
-  void RemoveLoginHandler(NavigationController* tab);
+  void AddLoginHandler(content::NavigationController* tab,
+                       LoginHandler* handler);
+  void RemoveLoginHandler(content::NavigationController* tab);
 
   // IPC::Channel::Sender implementation.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -167,13 +172,13 @@ class AutomationProvider
   // Helper function to find the browser window that contains a given
   // NavigationController and activate that tab.
   // Returns the Browser if found.
-  Browser* FindAndActivateTab(NavigationController* contents);
+  Browser* FindAndActivateTab(content::NavigationController* contents);
 
   // Convert a tab handle into a WebContents. If |tab| is non-NULL a pointer
   // to the tab is also returned. Returns NULL in case of failure or if the tab
   // is not of the WebContents type.
-  content::WebContents* GetWebContentsForHandle(int handle,
-                                                NavigationController** tab);
+  content::WebContents* GetWebContentsForHandle(
+      int handle, content::NavigationController** tab);
 
   // Returns the protocol version which typically is the module version.
   virtual std::string GetProtocolVersion();
@@ -193,7 +198,8 @@ class AutomationProvider
   scoped_ptr<AutomationTabTracker> tab_tracker_;
   scoped_ptr<AutomationWindowTracker> window_tracker_;
 
-  typedef std::map<NavigationController*, LoginHandler*> LoginHandlerMap;
+  typedef std::map<content::NavigationController*, LoginHandler*>
+      LoginHandlerMap;
   LoginHandlerMap login_handler_map_;
 
   Profile* profile_;

@@ -307,7 +307,7 @@ void RLZTracker::Observe(int type,
       break;
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {
       const NavigationEntry* entry =
-          content::Details<NavigationEntry>(details).ptr();
+          content::Details<content::NavigationEntry>(details).ptr();
       if (entry != NULL &&
           ((entry->GetTransitionType() &
             content::PAGE_TRANSITION_HOME_PAGE) != 0)) {

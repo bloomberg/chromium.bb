@@ -118,9 +118,9 @@ WebIntentPickerController::WebIntentPickerController(
           service_tab_(NULL) {
   NavigationController* controller = &wrapper->tab_contents()->GetController();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
-                 content::Source<NavigationController>(controller));
+                 content::Source<content::NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
-                 content::Source<NavigationController>(controller));
+                 content::Source<content::NavigationController>(controller));
 }
 
 WebIntentPickerController::~WebIntentPickerController() {

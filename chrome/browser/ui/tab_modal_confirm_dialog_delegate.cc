@@ -19,9 +19,9 @@ TabModalConfirmDialogDelegate::TabModalConfirmDialogDelegate(
       closing_(false) {
   NavigationController* controller = &web_contents->GetController();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
-                 content::Source<NavigationController>(controller));
+                 content::Source<content::NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
-                 content::Source<NavigationController>(controller));
+                 content::Source<content::NavigationController>(controller));
 }
 
 TabModalConfirmDialogDelegate::~TabModalConfirmDialogDelegate() {

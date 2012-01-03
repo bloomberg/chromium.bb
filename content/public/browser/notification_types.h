@@ -301,9 +301,9 @@ enum NotificationType {
   NOTIFICATION_RENDERER_PROCESS_HANG,
 
   // This is sent to notify that the RenderViewHost displayed in a
-  // TabContents has changed.  Source is the TabContents for which the change
-  // happened, details is the previous RenderViewHost (can be NULL when the
-  // first RenderViewHost is set).
+  // TabContents has changed.  Source is the NavigationController for which the
+  // change happened, details is the previous RenderViewHost (can be NULL when
+  // the first RenderViewHost is set).
   NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
 
   // Indicates that the render view host has received an accessibility tree

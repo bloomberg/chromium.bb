@@ -42,8 +42,8 @@ void TestTabStripModelObserver::ObservePrintPreviewTabContents(
     TabContentsWrapper* preview_tab =
         tab_controller->GetPrintPreviewForTab(contents);
     if (preview_tab) {
-      RegisterAsObserver(content::Source<NavigationController>(
-          &preview_tab->tab_contents()->GetController()));
+      RegisterAsObserver(content::Source<content::NavigationController>(
+          &preview_tab->web_contents()->GetController()));
     }
   }
 }

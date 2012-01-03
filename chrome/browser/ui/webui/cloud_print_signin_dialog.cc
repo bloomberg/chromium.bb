@@ -72,7 +72,7 @@ void CloudPrintSigninFlowHandler::RegisterMessages() {
       pending_entry->SetURL(CloudPrintURL(
           Profile::FromWebUI(web_ui())).GetCloudPrintSigninURL());
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                   content::Source<NavigationController>(controller));
+                   content::Source<content::NavigationController>(controller));
   }
 }
 

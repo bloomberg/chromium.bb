@@ -35,7 +35,8 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
       status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
       download_count_(0),
       infobar_(NULL) {
-  content::Source<NavigationController> notification_source(controller);
+  content::Source<content::NavigationController> notification_source(
+      controller);
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                  notification_source);
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED, notification_source);
@@ -102,7 +103,8 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
     const content::NotificationDetails& details) {
   if ((type != content::NOTIFICATION_NAV_ENTRY_PENDING &&
        type != content::NOTIFICATION_TAB_CLOSED) ||
-      content::Source<NavigationController>(source).ptr() != controller_) {
+      content::Source<content::NavigationController>(source).ptr() !=
+          controller_) {
     NOTREACHED();
     return;
   }

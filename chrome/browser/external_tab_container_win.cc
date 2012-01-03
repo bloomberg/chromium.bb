@@ -202,13 +202,13 @@ bool ExternalTabContainer::Init(Profile* profile,
   }
 
   NavigationController* controller =
-      &tab_contents_->tab_contents()->GetController();
+      &tab_contents_->web_contents()->GetController();
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 content::Source<NavigationController>(controller));
+                 content::Source<content::NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
-                 content::Source<NavigationController>(controller));
+                 content::Source<content::NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 content::Source<NavigationController>(controller));
+                 content::Source<content::NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
                  content::Source<WebContents>(tab_contents_->web_contents()));
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
@@ -251,15 +251,15 @@ void ExternalTabContainer::Uninitialize() {
   registrar_.RemoveAll();
   if (tab_contents_.get()) {
     UnregisterRenderViewHost(
-        tab_contents_->tab_contents()->GetRenderViewHost());
+        tab_contents_->web_contents()->GetRenderViewHost());
 
     if (GetWidget()->GetRootView())
       GetWidget()->GetRootView()->RemoveAllChildViews(true);
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED,
-        content::Source<NavigationController>(
-            &tab_contents_->tab_contents()->GetController()),
+        content::Source<content::NavigationController>(
+            &tab_contents_->web_contents()->GetController()),
         content::Details<ExternalTabContainer>(this));
 
     tab_contents_.reset(NULL);

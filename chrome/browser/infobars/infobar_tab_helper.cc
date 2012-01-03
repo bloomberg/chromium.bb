@@ -9,6 +9,7 @@
 #include "chrome/browser/tab_contents/insecure_content_infobar_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 
@@ -57,7 +58,7 @@ void InfoBarTabHelper::AddInfoBar(InfoBarDelegate* delegate) {
   if (infobars_.size() == 1) {
     registrar_.Add(
         this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::Source<NavigationController>(
+        content::Source<content::NavigationController>(
             &web_contents()->GetController()));
   }
 }
@@ -123,7 +124,7 @@ void InfoBarTabHelper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
   if (infobars_.empty()) {
     registrar_.Remove(
         this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::Source<NavigationController>(
+        content::Source<content::NavigationController>(
             &web_contents()->GetController()));
   }
 }
@@ -182,7 +183,7 @@ void InfoBarTabHelper::Observe(int type,
   switch (type) {
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       DCHECK(&web_contents()->GetController() ==
-             content::Source<NavigationController>(source).ptr());
+             content::Source<content::NavigationController>(source).ptr());
 
       content::LoadCommittedDetails& committed_details =
           *(content::Details<content::LoadCommittedDetails>(details).ptr());

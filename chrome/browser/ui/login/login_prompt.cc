@@ -287,7 +287,7 @@ void LoginHandler::NotifyAuthNeeded() {
   LoginNotificationDetails details(this);
 
   service->Notify(chrome::NOTIFICATION_AUTH_NEEDED,
-                  content::Source<NavigationController>(controller),
+                  content::Source<content::NavigationController>(controller),
                   content::Details<LoginNotificationDetails>(&details));
 }
 
@@ -306,7 +306,7 @@ void LoginHandler::NotifyAuthCancelled() {
   LoginNotificationDetails details(this);
 
   service->Notify(chrome::NOTIFICATION_AUTH_CANCELLED,
-                  content::Source<NavigationController>(controller),
+                  content::Source<content::NavigationController>(controller),
                   content::Details<LoginNotificationDetails>(&details));
 }
 
@@ -326,7 +326,7 @@ void LoginHandler::NotifyAuthSupplied(const string16& username,
 
   service->Notify(
       chrome::NOTIFICATION_AUTH_SUPPLIED,
-      content::Source<NavigationController>(controller),
+      content::Source<content::NavigationController>(controller),
       content::Details<AuthSuppliedLoginNotificationDetails>(&details));
 }
 

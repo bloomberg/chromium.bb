@@ -77,7 +77,7 @@ class SidebarTest : public ExtensionBrowserTest {
 
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        content::Source<NavigationController>(
+        content::Source<content::NavigationController>(
             &client_contents->GetController()));
     sidebar_manager->NavigateSidebar(tab, content_id_, url);
     observer.Wait();

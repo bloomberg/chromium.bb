@@ -38,7 +38,8 @@ namespace {
 SyncedTabDelegate* ExtractSyncedTabDelegate(
     const content::NotificationSource& source) {
   TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
-      content::Source<NavigationController>(source).ptr()->GetWebContents());
+      content::Source<content::NavigationController>(source).ptr()->
+          GetWebContents());
   if (!tab)
     return NULL;
   return tab->synced_tab_delegate();

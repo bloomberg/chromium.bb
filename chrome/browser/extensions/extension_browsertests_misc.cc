@@ -812,7 +812,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        content::Source<NavigationController>(
+        content::Source<content::NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
                 GetController()));
     browser()->Reload(CURRENT_TAB);
@@ -839,7 +839,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        content::Source<NavigationController>(
+        content::Source<content::NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
                 GetController()));
     browser()->Reload(CURRENT_TAB);

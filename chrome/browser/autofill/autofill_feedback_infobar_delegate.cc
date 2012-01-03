@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/bug_report_ui.h"
 #include "chrome/browser/userfeedback/proto/extension.pb.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"

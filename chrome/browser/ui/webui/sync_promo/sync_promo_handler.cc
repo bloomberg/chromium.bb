@@ -91,7 +91,7 @@ void SyncPromoHandler::RegisterMessages() {
           IsViewSourceMode()) {
     // Listen to see if the tab we're in gets closed.
     registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
-        content::Source<NavigationController>(
+        content::Source<content::NavigationController>(
             &web_ui()->web_contents()->GetController()));
     // Listen to see if the window we're in gets closed.
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,

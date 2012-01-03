@@ -317,7 +317,7 @@ bool GetCurrentTabTitle(const Browser* browser, string16* title) {
 void WaitForNavigations(NavigationController* controller,
                         int number_of_navigations) {
   TestNavigationObserver observer(
-      content::Source<NavigationController>(controller), NULL,
+      content::Source<content::NavigationController>(controller), NULL,
       number_of_navigations);
   observer.WaitForObservation(
       base::Bind(&ui_test_utils::RunMessageLoop),
@@ -341,7 +341,7 @@ void WaitForBrowserActionUpdated(ExtensionAction* browser_action) {
 void WaitForLoadStop(WebContents* tab) {
   WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(&tab->GetController()));
+      content::Source<content::NavigationController>(&tab->GetController()));
   // In many cases, the load may have finished before we get here.  Only wait if
   // the tab still has a pending navigation.
   if (!tab->IsLoading())
@@ -403,7 +403,7 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
   if (disposition == CURRENT_TAB && browser->GetSelectedWebContents())
     WaitForLoadStop(browser->GetSelectedWebContents());
   TestNavigationObserver same_tab_observer(
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &browser->GetSelectedWebContents()->GetController()),
       NULL,
       number_of_navigations);
@@ -929,7 +929,8 @@ TitleWatcher::TitleWatcher(TabContents* tab_contents,
   notification_registrar_.Add(
       this,
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(&tab_contents->GetController()));
+      content::Source<content::NavigationController>(
+          &tab_contents->GetController()));
 }
 
 void TitleWatcher::AlsoWaitForTitle(const string16& expected_title) {
@@ -954,8 +955,8 @@ void TitleWatcher::Observe(int type,
     TabContents* source_contents = content::Source<TabContents>(source).ptr();
     ASSERT_EQ(tab_contents_, source_contents);
   } else if (type == content::NOTIFICATION_LOAD_STOP) {
-    NavigationController* controller =
-        content::Source<NavigationController>(source).ptr();
+    content::NavigationController* controller =
+        content::Source<content::NavigationController>(source).ptr();
     ASSERT_EQ(&tab_contents_->GetController(), controller);
   } else {
     FAIL() << "Unexpected notification received.";

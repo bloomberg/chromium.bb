@@ -61,7 +61,6 @@ class Extension;
 class ExtensionProcessManager;
 class ExtensionService;
 class InfoBarTabHelper;
-class NavigationController;
 class Notification;
 class Profile;
 class RenderViewHost;
@@ -80,6 +79,7 @@ class Message;
 }
 
 namespace content {
+class NavigationController;
 class WebContents;
 }
 
@@ -183,9 +183,10 @@ class NewTabUILoadObserver : public content::NotificationObserver {
 class NavigationControllerRestoredObserver
     : public content::NotificationObserver {
  public:
-  NavigationControllerRestoredObserver(AutomationProvider* automation,
-                                       NavigationController* controller,
-                                       IPC::Message* reply_message);
+  NavigationControllerRestoredObserver(
+      AutomationProvider* automation,
+      content::NavigationController* controller,
+      IPC::Message* reply_message);
   virtual ~NavigationControllerRestoredObserver();
 
   virtual void Observe(int type,
@@ -198,7 +199,7 @@ class NavigationControllerRestoredObserver
 
   content::NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
-  NavigationController* controller_;
+  content::NavigationController* controller_;
   scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationControllerRestoredObserver);
@@ -206,7 +207,7 @@ class NavigationControllerRestoredObserver
 
 class NavigationNotificationObserver : public content::NotificationObserver {
  public:
-  NavigationNotificationObserver(NavigationController* controller,
+  NavigationNotificationObserver(content::NavigationController* controller,
                                  AutomationProvider* automation,
                                  IPC::Message* reply_message,
                                  int number_of_navigations,
@@ -224,7 +225,7 @@ class NavigationNotificationObserver : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
-  NavigationController* controller_;
+  content::NavigationController* controller_;
   int navigations_remaining_;
   bool navigation_started_;
   bool use_json_interface_;
@@ -242,7 +243,7 @@ class TabStripNotificationObserver : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);
 
-  virtual void ObserveTab(NavigationController* controller) = 0;
+  virtual void ObserveTab(content::NavigationController* controller) = 0;
 
  protected:
   content::NotificationRegistrar registrar_;
@@ -257,7 +258,7 @@ class TabAppendedNotificationObserver : public TabStripNotificationObserver {
                                   IPC::Message* reply_message);
   virtual ~TabAppendedNotificationObserver();
 
-  virtual void ObserveTab(NavigationController* controller);
+  virtual void ObserveTab(content::NavigationController* controller);
 
  protected:
   Browser* parent_;
@@ -274,7 +275,7 @@ class TabClosedNotificationObserver : public TabStripNotificationObserver {
                                 IPC::Message* reply_message);
   virtual ~TabClosedNotificationObserver();
 
-  virtual void ObserveTab(NavigationController* controller);
+  virtual void ObserveTab(content::NavigationController* controller);
 
   void set_for_browser_command(bool for_browser_command);
 
@@ -1300,9 +1301,9 @@ class AutomationProviderBrowsingDataObserver
 // in the omnibox popup.
 class OmniboxAcceptNotificationObserver : public content::NotificationObserver {
  public:
-  OmniboxAcceptNotificationObserver(NavigationController* controller,
-                                 AutomationProvider* automation,
-                                 IPC::Message* reply_message);
+   OmniboxAcceptNotificationObserver(content::NavigationController* controller,
+                                     AutomationProvider* automation,
+                                     IPC::Message* reply_message);
   virtual ~OmniboxAcceptNotificationObserver();
 
   virtual void Observe(int type,
@@ -1313,7 +1314,7 @@ class OmniboxAcceptNotificationObserver : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
-  NavigationController* controller_;
+  content::NavigationController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxAcceptNotificationObserver);
 };
@@ -1404,7 +1405,7 @@ class NTPInfoObserver : public content::NotificationObserver {
 // a content load in some tab has stopped.
 class AppLaunchObserver : public content::NotificationObserver {
  public:
-  AppLaunchObserver(NavigationController* controller,
+  AppLaunchObserver(content::NavigationController* controller,
                     AutomationProvider* automation,
                     IPC::Message* reply_message,
                     extension_misc::LaunchContainer launch_container);
@@ -1415,7 +1416,7 @@ class AppLaunchObserver : public content::NotificationObserver {
                        const content::NotificationDetails& details);
 
  private:
-  NavigationController* controller_;
+  content::NavigationController* controller_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
   content::NotificationRegistrar registrar_;

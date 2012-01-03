@@ -291,18 +291,19 @@ void AutomationProvider::OnLoginWebuiReady() {
     Send(new AutomationMsg_InitialLoadsComplete());
 }
 
-void AutomationProvider::AddLoginHandler(NavigationController* tab,
+void AutomationProvider::AddLoginHandler(content::NavigationController* tab,
                                          LoginHandler* handler) {
   login_handler_map_[tab] = handler;
 }
 
-void AutomationProvider::RemoveLoginHandler(NavigationController* tab) {
+void AutomationProvider::RemoveLoginHandler(content::NavigationController* tab) {
   DCHECK(login_handler_map_[tab]);
   login_handler_map_.erase(tab);
 }
 
 int AutomationProvider::GetIndexForNavigationController(
-    const NavigationController* controller, const Browser* parent) const {
+    const content::NavigationController* controller,
+    const Browser* parent) const {
   DCHECK(parent);
   return parent->GetIndexOfController(controller);
 }
@@ -526,7 +527,7 @@ bool AutomationProvider::Send(IPC::Message* msg) {
 }
 
 Browser* AutomationProvider::FindAndActivateTab(
-    NavigationController* controller) {
+    content::NavigationController* controller) {
   int tab_index;
   Browser* browser = Browser::GetBrowserForController(controller, &tab_index);
   if (browser)
@@ -545,7 +546,7 @@ void AutomationProvider::HandleFindRequest(
     return;
   }
 
-  NavigationController* nav = tab_tracker_->GetResource(handle);
+  content::NavigationController* nav = tab_tracker_->GetResource(handle);
   WebContents* web_contents = nav->GetWebContents();
 
   SendFindRequest(web_contents,
@@ -600,9 +601,10 @@ void AutomationProvider::SetProxyConfig(const std::string& new_proxy_config) {
 }
 
 WebContents* AutomationProvider::GetWebContentsForHandle(
-    int handle, NavigationController** tab) {
+    int handle, content::NavigationController** tab) {
   if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* nav_controller = tab_tracker_->GetResource(handle);
+    content::NavigationController* nav_controller =
+        tab_tracker_->GetResource(handle);
     if (tab)
       *tab = nav_controller;
     return nav_controller->GetWebContents();
@@ -616,7 +618,7 @@ void AutomationProvider::OverrideEncoding(int tab_handle,
                                           bool* success) {
   *success = false;
   if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* nav = tab_tracker_->GetResource(tab_handle);
+    content::NavigationController* nav = tab_tracker_->GetResource(tab_handle);
     if (!nav)
       return;
     Browser* browser = FindAndActivateTab(nav);
@@ -688,7 +690,7 @@ void AutomationProvider::Paste(int tab_handle) {
 
 void AutomationProvider::ReloadAsync(int tab_handle) {
   if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+    content::NavigationController* tab = tab_tracker_->GetResource(tab_handle);
     if (!tab) {
       NOTREACHED();
       return;
@@ -724,7 +726,7 @@ void AutomationProvider::OnSetPageFontSize(int tab_handle,
   }
 
   if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+    content::NavigationController* tab = tab_tracker_->GetResource(tab_handle);
     DCHECK(tab != NULL);
     if (tab && tab->GetWebContents()) {
       DCHECK(tab->GetWebContents()->GetBrowserContext() != NULL);
@@ -795,7 +797,7 @@ void AutomationProvider::GetTracingOutput(std::string* chunk,
 
 RenderViewHost* AutomationProvider::GetViewForTab(int tab_handle) {
   if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+    content::NavigationController* tab = tab_tracker_->GetResource(tab_handle);
     if (!tab) {
       NOTREACHED();
       return NULL;
@@ -1003,7 +1005,7 @@ void AutomationProvider::GetExtensionProperty(
 }
 
 void AutomationProvider::SaveAsAsync(int tab_handle) {
-  NavigationController* tab = NULL;
+  content::NavigationController* tab = NULL;
   WebContents* web_contents = GetWebContentsForHandle(tab_handle, &tab);
   if (web_contents)
     web_contents->OnSavePage();

@@ -28,8 +28,8 @@ void ExtensionNavigationObserver::Observe(
     return;
   }
 
-  NavigationController* controller =
-      content::Source<NavigationController>(source).ptr();
+  content::NavigationController* controller =
+      content::Source<content::NavigationController>(source).ptr();
   if (!profile_->IsSameProfile(
           Profile::FromBrowserContext(controller->GetBrowserContext())))
     return;
@@ -43,7 +43,7 @@ void ExtensionNavigationObserver::RegisterForNotifications() {
 }
 
 void ExtensionNavigationObserver::PromptToEnableExtensionIfNecessary(
-    NavigationController* nav_controller) {
+    content::NavigationController* nav_controller) {
   // Bail out if we're already running a prompt.
   if (!in_progress_prompt_extension_id_.empty())
     return;
@@ -80,7 +80,7 @@ void ExtensionNavigationObserver::InstallUIProceed() {
   ExtensionService* extension_service = profile_->GetExtensionService();
   const Extension* extension = extension_service->GetExtensionById(
       in_progress_prompt_extension_id_, true);
-  NavigationController* nav_controller =
+  content::NavigationController* nav_controller =
       in_progress_prompt_navigation_controller_;
   CHECK(extension);
   CHECK(nav_controller);

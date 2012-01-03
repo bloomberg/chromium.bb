@@ -50,7 +50,7 @@ class IFrameLoader : public content::NotificationObserver {
     NavigationController* controller =
         &browser->GetSelectedWebContents()->GetController();
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                   content::Source<NavigationController>(controller));
+                   content::Source<content::NavigationController>(controller));
     registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    content::NotificationService::AllSources());
     std::string script = base::StringPrintf(
@@ -325,7 +325,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     {
       ui_test_utils::WindowedNotificationObserver observer(
           content::NOTIFICATION_LOAD_STOP,
-          content::Source<NavigationController>(
+          content::Source<content::NavigationController>(
               &tab_contents_wrapper->web_contents()->GetController()));
       if (allowed)
         infobar_->AsConfirmInfoBarDelegate()->Accept();
@@ -508,7 +508,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   Geoposition fresh_position = GeopositionFromLatLong(3.17, 4.23);
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &current_browser_->GetSelectedWebContents()->GetController()));
   NotifyGeoposition(fresh_position);
   observer.Wait();
@@ -545,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   Geoposition cached_position = GeopositionFromLatLong(5.67, 8.09);
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &current_browser_->GetSelectedWebContents()->GetController()));
   NotifyGeoposition(cached_position);
   observer.Wait();
@@ -653,7 +653,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
   // its way through to the first watcher.
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &current_browser_->GetSelectedWebContents()->GetController()));
   NotifyGeoposition(final_position);
   observer.Wait();

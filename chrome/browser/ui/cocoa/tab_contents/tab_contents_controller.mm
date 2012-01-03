@@ -68,7 +68,8 @@ void TabContentsNotificationBridge::ChangeWebContents(WebContents* contents) {
     registrar_.Add(
         this,
         content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-        content::Source<NavigationController>(&contents->GetController()));
+        content::Source<content::NavigationController>(
+            &contents->GetController()));
   }
 }
 

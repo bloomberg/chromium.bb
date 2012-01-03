@@ -311,7 +311,7 @@ void CloudPrintFlowHandler::RegisterMessages() {
         CloudPrintURL(profile).GetCloudPrintServiceDialogURL());
   }
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 content::Source<NavigationController>(controller));
+                 content::Source<content::NavigationController>(controller));
 }
 
 void CloudPrintFlowHandler::Observe(

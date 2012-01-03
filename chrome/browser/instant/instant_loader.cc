@@ -296,7 +296,7 @@ InstantLoader::TabContentsDelegateImpl::TabContentsDelegateImpl(
   registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
       content::Source<WebContents>(loader->preview_contents()->web_contents()));
   registrar_.Add(this, content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &loader->preview_contents()->web_contents()->GetController()));
 }
 
@@ -779,7 +779,7 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
       registrar_.Remove(
           this,
           content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-          content::Source<NavigationController>(
+          content::Source<content::NavigationController>(
               &preview_contents_->web_contents()->GetController()));
 #endif
     }
@@ -999,13 +999,13 @@ void InstantLoader::ReplacePreviewContents(TabContentsWrapper* old_tc,
   registrar_.Remove(
       this,
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &old_tc->web_contents()->GetController()));
 #endif
   registrar_.Remove(
       this,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &old_tc->web_contents()->GetController()));
 
   // We prerendered so we should be ready to show. If we're ready, swap in
@@ -1045,14 +1045,14 @@ void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
   registrar_.Add(
       this,
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &preview_contents_->web_contents()->GetController()));
 #endif
 
   registrar_.Add(
       this,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &preview_contents_->web_contents()->GetController()));
 
   gfx::Rect tab_bounds;

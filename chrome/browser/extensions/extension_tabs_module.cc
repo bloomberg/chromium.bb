@@ -1638,11 +1638,11 @@ bool DetectTabLanguageFunction::RunImpl() {
                  content::Source<WebContents>(contents->web_contents()));
   registrar_.Add(
       this, content::NOTIFICATION_TAB_CLOSING,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &(contents->web_contents()->GetController())));
   registrar_.Add(
       this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &(contents->web_contents()->GetController())));
   return true;
 }

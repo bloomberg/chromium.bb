@@ -294,7 +294,8 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   TestTabContents tab_contents(browser_context(), instance);
   notifications.ListenFor(
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      content::Source<NavigationController>(&tab_contents.GetController()));
+      content::Source<content::NavigationController>(
+          &tab_contents.GetController()));
 
   // Create.
   RenderViewHostManager manager(&tab_contents, &tab_contents);
@@ -382,7 +383,8 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   TestTabContents tab_contents(browser_context(), instance);
   notifications.ListenFor(
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      content::Source<NavigationController>(&tab_contents.GetController()));
+      content::Source<content::NavigationController>(
+          &tab_contents.GetController()));
 
   // Create.
   RenderViewHostManager manager(&tab_contents, &tab_contents);

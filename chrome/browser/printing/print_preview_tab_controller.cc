@@ -222,8 +222,8 @@ void PrintPreviewTabController::Observe(
       break;
     }
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      NavigationController* controller =
-          content::Source<NavigationController>(source).ptr();
+      content::NavigationController* controller =
+          content::Source<content::NavigationController>(source).ptr();
       TabContentsWrapper* wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(
               controller->GetWebContents());
@@ -416,7 +416,8 @@ void PrintPreviewTabController::AddObservers(TabContentsWrapper* tab) {
                  content::Source<WebContents>(contents));
   registrar_.Add(
       this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(&contents->GetController()));
+      content::Source<content::NavigationController>(
+          &contents->GetController()));
 
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.
@@ -436,7 +437,8 @@ void PrintPreviewTabController::RemoveObservers(TabContentsWrapper* tab) {
                     content::Source<WebContents>(contents));
   registrar_.Remove(
       this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(&contents->GetController()));
+      content::Source<content::NavigationController>(
+          &contents->GetController()));
 
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.

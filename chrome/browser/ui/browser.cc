@@ -1179,7 +1179,7 @@ int Browser::active_index() const {
 }
 
 int Browser::GetIndexOfController(
-    const NavigationController* controller) const {
+    const content::NavigationController* controller) const {
   return tab_handler_->GetTabStripModel()->GetIndexOfController(controller);
 }
 
@@ -2528,7 +2528,7 @@ bool Browser::RunUnloadEventsHelper(TabContents* contents) {
 
 // static
 Browser* Browser::GetBrowserForController(
-    const NavigationController* controller, int* index_result) {
+    const content::NavigationController* controller, int* index_result) {
   BrowserList::const_iterator it;
   for (it = BrowserList::begin(); it != BrowserList::end(); ++it) {
     int index = (*it)->tab_handler_->GetTabStripModel()->GetIndexOfController(
@@ -3280,8 +3280,8 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
   fullscreen_controller_->OnTabClosing(contents->tab_contents());
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CLOSING,
-      content::Source<NavigationController>(
-          &contents->tab_contents()->GetController()),
+      content::Source<content::NavigationController>(
+          &contents->web_contents()->GetController()),
       content::NotificationService::NoDetails());
 
   // Sever the TabContents' connection back to us.
@@ -4116,7 +4116,7 @@ void Browser::Observe(int type,
       // closing of this one.
       if (GetSelectedWebContents() &&
           &GetSelectedWebContents()->GetController() ==
-          content::Source<NavigationController>(source).ptr())
+          content::Source<content::NavigationController>(source).ptr())
         UpdateToolbar(false);
       break;
 

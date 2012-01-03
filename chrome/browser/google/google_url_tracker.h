@@ -18,10 +18,10 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
 
-class NavigationController;
 class PrefService;
 
 namespace content {
+class NavigationController;
 class WebContents;
 }
 
@@ -149,7 +149,7 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   bool need_to_prompt_;    // True if the last fetched Google URL is not
                            // matched with current user's default Google URL
                            // nor the last prompted Google URL.
-  NavigationController* controller_;
+  content::NavigationController* controller_;
   InfoBarDelegate* infobar_;
   GURL search_url_;
 

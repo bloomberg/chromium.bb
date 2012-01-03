@@ -115,7 +115,7 @@ RenderViewHost* RenderViewHostManager::Navigate(
       details.old_host = NULL;
       content::NotificationService::current()->Notify(
           content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-          content::Source<NavigationController>(
+          content::Source<content::NavigationController>(
               &delegate_->GetControllerForRenderManager()),
           content::Details<RenderViewHostSwitchedDetails>(&details));
     }
@@ -602,7 +602,7 @@ void RenderViewHostManager::CommitPending() {
   details.old_host = old_render_view_host;
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &delegate_->GetControllerForRenderManager()),
       content::Details<RenderViewHostSwitchedDetails>(&details));
 

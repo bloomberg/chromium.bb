@@ -425,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   EnableExtension(app->id());
   ui_test_utils::WindowedNotificationObserver reload_observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
               GetController()));
   browser()->Reload(CURRENT_TAB);
@@ -437,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   DisableExtension(app->id());
   ui_test_utils::WindowedNotificationObserver reload_observer2(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
               GetController()));
   browser()->Reload(CURRENT_TAB);
@@ -449,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   EnableExtension(app->id());
   ui_test_utils::WindowedNotificationObserver js_reload_observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
               GetController()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(contents->GetRenderViewHost(),
@@ -462,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   DisableExtension(app->id());
   ui_test_utils::WindowedNotificationObserver js_reload_observer2(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
               GetController()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(contents->GetRenderViewHost(),
@@ -516,7 +516,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
     // NAV_ENTRY_COMMITTED on the new tab there.
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::Source<NavigationController>(&(newtab->GetController())));
+        content::Source<content::NavigationController>(
+            &(newtab->GetController())));
     observer.Wait();
   }
 
@@ -654,7 +655,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadAppAfterCrash) {
   ui_test_utils::CrashTab(browser()->GetSelectedWebContents());
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
+      content::Source<content::NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
               GetController()));
   browser()->Reload(CURRENT_TAB);

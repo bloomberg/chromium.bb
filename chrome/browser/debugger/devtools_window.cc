@@ -206,13 +206,13 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
   registrar_.Add(
       this,
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
-          &tab_contents_->tab_contents()->GetController()));
+      content::Source<content::NavigationController>(
+          &tab_contents_->web_contents()->GetController()));
   registrar_.Add(
       this,
       content::NOTIFICATION_TAB_CLOSING,
-      content::Source<NavigationController>(
-          &tab_contents_->tab_contents()->GetController()));
+      content::Source<content::NavigationController>(
+          &tab_contents_->web_contents()->GetController()));
   registrar_.Add(
       this,
       chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
@@ -483,8 +483,8 @@ void DevToolsWindow::Observe(int type,
     DoAction();
     AddDevToolsExtensionsToClient();
   } else if (type == content::NOTIFICATION_TAB_CLOSING) {
-    if (content::Source<NavigationController>(source).ptr() ==
-            &tab_contents_->tab_contents()->GetController()) {
+    if (content::Source<content::NavigationController>(source).ptr() ==
+            &tab_contents_->web_contents()->GetController()) {
       // This happens when browser closes all of its tabs as a result
       // of window.Close event.
       // Notify manager that this DevToolsClientHost no longer exists and

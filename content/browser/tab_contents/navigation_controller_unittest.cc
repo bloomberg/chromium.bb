@@ -48,11 +48,14 @@ class NavigationControllerTest : public RenderViewHostTestHarness {
 void RegisterForAllNavNotifications(TestNotificationTracker* tracker,
                                     NavigationController* controller) {
   tracker->ListenFor(content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                     content::Source<NavigationController>(controller));
+                     content::Source<content::NavigationController>(
+                         controller));
   tracker->ListenFor(content::NOTIFICATION_NAV_LIST_PRUNED,
-                     content::Source<NavigationController>(controller));
+                     content::Source<content::NavigationController>(
+                         controller));
   tracker->ListenFor(content::NOTIFICATION_NAV_ENTRY_CHANGED,
-                     content::Source<NavigationController>(controller));
+                     content::Source<content::NavigationController>(
+                         controller));
 }
 
 class TestWebContentsDelegate : public content::WebContentsDelegate {
@@ -1393,7 +1396,7 @@ class PrunedListener : public content::NotificationObserver {
   explicit PrunedListener(NavigationController* controller)
       : notification_count_(0) {
     registrar_.Add(this, content::NOTIFICATION_NAV_LIST_PRUNED,
-                   content::Source<NavigationController>(controller));
+                   content::Source<content::NavigationController>(controller));
   }
 
   virtual void Observe(int type,

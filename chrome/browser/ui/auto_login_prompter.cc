@@ -226,7 +226,7 @@ AutoLoginPrompter::AutoLoginPrompter(
       username_(username),
       args_(args) {
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 content::Source<NavigationController>(
+                 content::Source<content::NavigationController>(
                     &web_contents_->GetController()));
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::Source<WebContents>(web_contents_));

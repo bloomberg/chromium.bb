@@ -587,7 +587,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     EXPECT_FALSE(tab->IsLoading());
     ui_test_utils::WindowedNotificationObserver back_nav_observer(
         content::NOTIFICATION_LOAD_STOP,
-        content::Source<NavigationController>(&tab->GetController()));
+        content::Source<content::NavigationController>(&tab->GetController()));
     browser->GoBack(CURRENT_TAB);
     back_nav_observer.Wait();
     bool js_result;
@@ -766,7 +766,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
       page_load_observer.reset(
           new ui_test_utils::WindowedNotificationObserver(
               content::NOTIFICATION_LOAD_STOP,
-              content::Source<NavigationController>(
+              content::Source<content::NavigationController>(
                   &tab_contents->GetController())));
     }
 

@@ -14,7 +14,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
+namespace content {
 class NavigationController;
+}
 
 namespace net {
 class URLRequestStatus;
@@ -62,7 +64,7 @@ class AlternateNavURLFetcher : public content::NotificationObserver,
 
   // Sets |controller_| to the supplied pointer and begins fetching
   // |alternate_nav_url_|.
-  void StartFetch(NavigationController* controller);
+  void StartFetch(content::NavigationController* controller);
 
   // Sets |state_| to either SUCCEEDED or FAILED depending on the result of the
   // fetch.
@@ -78,7 +80,7 @@ class AlternateNavURLFetcher : public content::NotificationObserver,
 
   GURL alternate_nav_url_;
   scoped_ptr<content::URLFetcher> fetcher_;
-  NavigationController* controller_;
+  content::NavigationController* controller_;
   State state_;
   bool navigated_to_entry_;
 

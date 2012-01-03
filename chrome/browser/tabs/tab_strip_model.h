@@ -23,6 +23,7 @@ class TabStripModelDelegate;
 class TabStripModelOrderController;
 
 namespace content {
+class NavigationController;
 class WebContents;
 }
 
@@ -276,7 +277,8 @@ class TabStripModel : public content::NotificationObserver {
 
   // Returns the index of the specified NavigationController, or kNoTab if it is
   // not in this TabStripModel.
-  int GetIndexOfController(const NavigationController* controller) const;
+  int GetIndexOfController(
+      const content::NavigationController* controller) const;
 
   // Notify any observers that the TabContents at the specified index has
   // changed in some way. See TabChangeType for details of |change_type|.

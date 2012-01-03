@@ -124,7 +124,7 @@ void SSLBlockingPage::UpdateEntry(NavigationEntry* entry) {
   entry->GetSSL().security_bits = ssl_info.security_bits;
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
-      content::Source<NavigationController>(&tab()->GetController()),
+      content::Source<content::NavigationController>(&tab()->GetController()),
       content::NotificationService::NoDetails());
 }
 
