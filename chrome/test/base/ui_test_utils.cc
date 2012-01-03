@@ -304,10 +304,10 @@ void RunAllPendingInMessageLoop(content::BrowserThread::ID thread_id) {
 }
 
 bool GetCurrentTabTitle(const Browser* browser, string16* title) {
-  TabContents* tab_contents = browser->GetSelectedTabContents();
-  if (!tab_contents)
+  WebContents* web_contents = browser->GetSelectedWebContents();
+  if (!web_contents)
     return false;
-  NavigationEntry* last_entry = tab_contents->GetController().GetActiveEntry();
+  NavigationEntry* last_entry = web_contents->GetController().GetActiveEntry();
   if (!last_entry)
     return false;
   title->assign(last_entry->GetTitleForDisplay(""));
@@ -338,7 +338,7 @@ void WaitForBrowserActionUpdated(ExtensionAction* browser_action) {
                   content::Source<ExtensionAction>(browser_action));
 }
 
-void WaitForLoadStop(TabContents* tab) {
+void WaitForLoadStop(WebContents* tab) {
   WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(&tab->GetController()));
@@ -371,7 +371,7 @@ void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
   Browser::OpenURLOffTheRecord(profile, url);
   Browser* browser = BrowserList::FindTabbedBrowser(
       profile->GetOffTheRecordProfile(), false);
-  WaitForNavigations(&browser->GetSelectedTabContents()->GetController(), 1);
+  WaitForNavigations(&browser->GetSelectedWebContents()->GetController(), 1);
 }
 
 void NavigateToURL(browser::NavigateParams* params) {
@@ -400,11 +400,11 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     int number_of_navigations,
     WindowOpenDisposition disposition,
     int browser_test_flags) {
-  if (disposition == CURRENT_TAB && browser->GetSelectedTabContents())
-    WaitForLoadStop(browser->GetSelectedTabContents());
+  if (disposition == CURRENT_TAB && browser->GetSelectedWebContents())
+    WaitForLoadStop(browser->GetSelectedWebContents());
   TestNavigationObserver same_tab_observer(
       content::Source<NavigationController>(
-          &browser->GetSelectedTabContents()->GetController()),
+          &browser->GetSelectedWebContents()->GetController()),
       NULL,
       number_of_navigations);
 
@@ -429,11 +429,11 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     // Some other flag caused the wait prior to this.
     return;
   }
-  TabContents* tab_contents = NULL;
+  WebContents* web_contents = NULL;
   if (disposition == NEW_BACKGROUND_TAB) {
     // We've opened up a new tab, but not selected it.
-    tab_contents = browser->GetTabContentsAt(browser->active_index() + 1);
-    EXPECT_TRUE(tab_contents != NULL)
+    web_contents = browser->GetTabContentsAt(browser->active_index() + 1);
+    EXPECT_TRUE(web_contents != NULL)
         << " Unable to wait for navigation to \"" << url.spec()
         << "\" because the new tab is not available yet";
     return;
@@ -441,7 +441,7 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       (disposition == NEW_FOREGROUND_TAB) ||
       (disposition == SINGLETON_TAB)) {
     // The currently selected tab is the right one.
-    tab_contents = browser->GetSelectedTabContents();
+    web_contents = browser->GetSelectedWebContents();
   }
   if (disposition == CURRENT_TAB) {
     same_tab_observer.WaitForObservation(
@@ -449,12 +449,12 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
         base::Bind(&MessageLoop::Quit,
                    base::Unretained(MessageLoopForUI::current())));
     return;
-  } else if (tab_contents) {
-    NavigationController* controller = &tab_contents->GetController();
+  } else if (web_contents) {
+    NavigationController* controller = &web_contents->GetController();
     WaitForNavigations(controller, number_of_navigations);
     return;
   }
-  EXPECT_TRUE(NULL != tab_contents) << " Unable to wait for navigation to \""
+  EXPECT_TRUE(NULL != web_contents) << " Unable to wait for navigation to \""
                                     << url.spec() << "\""
                                     << " because we can't get the tab contents";
 }
@@ -485,7 +485,7 @@ void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
 DOMElementProxyRef GetActiveDOMDocument(Browser* browser) {
   JavaScriptExecutionController* executor =
       new InProcessJavaScriptExecutionController(
-          browser->GetSelectedTabContents()->GetRenderViewHost());
+          browser->GetSelectedWebContents()->GetRenderViewHost());
   int element_handle;
   executor->ExecuteJavaScriptAndGetReturn("document;", &element_handle);
   return executor->GetObjectProxy<DOMElementProxy>(element_handle);
@@ -566,7 +566,7 @@ AppModalDialog* WaitForAppModalDialog() {
   return content::Source<AppModalDialog>(observer.source()).ptr();
 }
 
-void CrashTab(TabContents* tab) {
+void CrashTab(WebContents* tab) {
   content::RenderProcessHost* rph = tab->GetRenderProcessHost();
   base::KillProcess(rph->GetHandle(), 0, false);
   TestNotificationObserver observer;

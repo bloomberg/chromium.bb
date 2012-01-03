@@ -1081,7 +1081,7 @@ void BookmarkBarView::ShowContextMenuForView(View* source,
       (parent == profile->GetBookmarkModel()->other_node()) &&
       (parent->child_count() == 1);
   context_menu_.reset(new BookmarkContextMenu(GetWidget(), profile,
-      browser_->GetSelectedTabContents(), parent, nodes, close_on_remove));
+      browser_->GetSelectedWebContents(), parent, nodes, close_on_remove));
   context_menu_->RunMenuAt(p);
 }
 

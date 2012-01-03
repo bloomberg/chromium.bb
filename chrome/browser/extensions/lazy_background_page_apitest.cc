@@ -14,9 +14,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
-
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 
 class LazyBackgroundPageApiTest : public ExtensionApiTest {
@@ -57,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BrowserActionCreateTab) {
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
   EXPECT_EQ(num_tabs_before + 1, browser()->tab_count());
   EXPECT_EQ("chrome://extensions/",
-            browser()->GetSelectedTabContents()->GetURL().spec());
+            browser()->GetSelectedWebContents()->GetURL().spec());
 }
 
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,

@@ -18,7 +18,6 @@
 
 class Browser;
 class GURL;
-class TabContents;
 
 namespace content {
 class WebContents;
@@ -42,9 +41,9 @@ class TabFinder : public content::NotificationObserver {
   // Returns the tab that matches the specified url. If a tab is found the
   // browser containing the tab is set in |existing_browser|. This searches
   // in |browser| first before checking any other browsers.
-  TabContents* FindTab(Browser* browser,
-                       const GURL& url,
-                       Browser** existing_browser);
+  content::WebContents* FindTab(Browser* browser,
+                                const GURL& url,
+                                Browser** existing_browser);
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
@@ -64,7 +63,7 @@ class TabFinder : public content::NotificationObserver {
 
   // Forwarded from WebContentsObserverImpl.
   void DidNavigateAnyFrame(
-    content::WebContents* source,
+      content::WebContents* source,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params);
 
@@ -74,13 +73,13 @@ class TabFinder : public content::NotificationObserver {
 
   // Returns the first tab in the specified browser that matches the specified
   // url.  Returns NULL if there are no tabs matching the specified url.
-  TabContents* FindTabInBrowser(Browser* browser, const GURL& url);
+  content::WebContents* FindTabInBrowser(Browser* browser, const GURL& url);
 
   // If we're not currently tracking |tab| this creates a
   // WebContentsObserverImpl to listen for navigations.
   void TrackTab(content::WebContents* tab);
 
-  // Invoked when a TabContents is being destroyed.
+  // Invoked when a WebContents is being destroyed.
   void TabDestroyed(WebContentsObserverImpl* observer);
 
   // Cancels any pending requests for the specified tabs redirect chain.

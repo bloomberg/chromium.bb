@@ -13,11 +13,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/mock_host_resolver.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -88,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestNewTab) {
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_newTab.html"))
       << message_;
 
-  TabContents* tab = browser()->GetSelectedTabContents();
+  WebContents* tab = browser()->GetSelectedWebContents();
   ui_test_utils::WaitForLoadStop(tab);
 
   ResultCatcher catcher;

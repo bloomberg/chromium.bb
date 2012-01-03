@@ -145,7 +145,7 @@ class CONTENT_EXPORT DownloadManager
   // (exclusive). You may pass in null Time values to do an unbounded delete
   // in either direction.
   virtual int RemoveDownloadsBetween(const base::Time remove_begin,
-                             const base::Time remove_end) = 0;
+                                     const base::Time remove_end) = 0;
 
   // Remove downloads will delete all downloads that have a timestamp that is
   // the same or more recent than |remove_begin|. The number of downloads

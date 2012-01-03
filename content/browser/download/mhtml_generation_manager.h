@@ -15,7 +15,10 @@
 #include "ipc/ipc_platform_file.h"
 
 class FilePath;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 class CONTENT_EXPORT MHTMLGenerationManager
     : public base::RefCountedThreadSafe<
@@ -28,8 +31,8 @@ class CONTENT_EXPORT MHTMLGenerationManager
       int64 /* size of the file */)> GenerateMHTMLCallback;
 
   // Instructs the render view to generate a MHTML representation of the current
-  // page for |tab_contents|.
-  void GenerateMHTML(TabContents* tab_contents,
+  // page for |web_contents|.
+  void GenerateMHTML(content::WebContents* web_contents,
                      const FilePath& file,
                      const GenerateMHTMLCallback& callback);
 

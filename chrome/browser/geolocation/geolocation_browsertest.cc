@@ -28,11 +28,13 @@
 #include "content/browser/geolocation/location_arbitrator.h"
 #include "content/browser/geolocation/mock_location_provider.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -46,7 +48,7 @@ class IFrameLoader : public content::NotificationObserver {
       : navigation_completed_(false),
         javascript_completed_(false) {
     NavigationController* controller =
-        &browser->GetSelectedTabContents()->GetController();
+        &browser->GetSelectedWebContents()->GetController();
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                    content::Source<NavigationController>(controller));
     registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
@@ -56,7 +58,7 @@ class IFrameLoader : public content::NotificationObserver {
         "window.domAutomationController.send(addIFrame(%d, \"%s\"));",
         iframe_id,
         url.spec().c_str());
-    browser->GetSelectedTabContents()->GetRenderViewHost()->
+    browser->GetSelectedWebContents()->GetRenderViewHost()->
         ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(script));
     ui_test_utils::RunMessageLoop();
 
@@ -67,7 +69,7 @@ class IFrameLoader : public content::NotificationObserver {
         "window.domAutomationController.send(getIFrameSrc(%d))", iframe_id);
     std::string iframe_src;
     EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-        browser->GetSelectedTabContents()->GetRenderViewHost(),
+        browser->GetSelectedWebContents()->GetRenderViewHost(),
         L"", UTF8ToWide(script), &iframe_src));
     iframe_url_ = GURL(iframe_src);
   }
@@ -280,7 +282,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   void AddGeolocationWatch(bool wait_for_infobar) {
     GeolocationNotificationObserver notification_observer(wait_for_infobar);
     notification_observer.AddWatchAndWaitForNotification(
-        current_browser_->GetSelectedTabContents()->GetRenderViewHost(),
+        current_browser_->GetSelectedWebContents()->GetRenderViewHost(),
         iframe_xpath_);
     if (wait_for_infobar) {
       EXPECT_TRUE(notification_observer.infobar_);
@@ -324,7 +326,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
       ui_test_utils::WindowedNotificationObserver observer(
           content::NOTIFICATION_LOAD_STOP,
           content::Source<NavigationController>(
-              &tab_contents_wrapper->tab_contents()->GetController()));
+              &tab_contents_wrapper->web_contents()->GetController()));
       if (allowed)
         infobar_->AsConfirmInfoBarDelegate()->Accept();
       else
@@ -346,12 +348,12 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
 
   void CheckStringValueFromJavascriptForTab(
       const std::string& expected, const std::string& function,
-      TabContents* tab_contents) {
+      WebContents* web_contents) {
     std::string script = base::StringPrintf(
         "window.domAutomationController.send(%s)", function.c_str());
     std::string result;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-        tab_contents->GetRenderViewHost(),
+        web_contents->GetRenderViewHost(),
         iframe_xpath_, UTF8ToWide(script), &result));
     EXPECT_EQ(expected, result);
   }
@@ -359,7 +361,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   void CheckStringValueFromJavascript(
       const std::string& expected, const std::string& function) {
     CheckStringValueFromJavascriptForTab(
-        expected, function, current_browser_->GetSelectedTabContents());
+        expected, function, current_browser_->GetSelectedWebContents());
   }
 
   InfoBarDelegate* infobar_;
@@ -507,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &current_browser_->GetSelectedTabContents()->GetController()));
+          &current_browser_->GetSelectedWebContents()->GetController()));
   NotifyGeoposition(fresh_position);
   observer.Wait();
   CheckGeoposition(fresh_position);
@@ -544,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &current_browser_->GetSelectedTabContents()->GetController()));
+          &current_browser_->GetSelectedWebContents()->GetController()));
   NotifyGeoposition(cached_position);
   observer.Wait();
   CheckGeoposition(cached_position);
@@ -598,7 +600,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_InvalidUrlRequest) {
   // correctly. Also acts as a regression test for http://crbug.com/40478
   html_for_tests_ = "files/geolocation/invalid_request_url.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
-  TabContents* original_tab = current_browser_->GetSelectedTabContents();
+  WebContents* original_tab = current_browser_->GetSelectedWebContents();
   CheckStringValueFromJavascript("1", "requestGeolocationFromInvalidUrl()");
   CheckStringValueFromJavascriptForTab("1", "isAlive()", original_tab);
 }
@@ -638,7 +640,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
       final_position.latitude, final_position.longitude);
   std::string js_result;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      current_browser_->GetSelectedTabContents()->GetRenderViewHost(),
+      current_browser_->GetSelectedWebContents()->GetRenderViewHost(),
       L"", UTF8ToWide(script), &js_result));
   EXPECT_EQ(js_result, "ok");
 
@@ -652,7 +654,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &current_browser_->GetSelectedTabContents()->GetController()));
+          &current_browser_->GetSelectedWebContents()->GetController()));
   NotifyGeoposition(final_position);
   observer.Wait();
   CheckGeoposition(final_position);
@@ -678,7 +680,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_TabDestroyed) {
       "window.domAutomationController.send(window.close());";
   bool result =
       ui_test_utils::ExecuteJavaScript(
-      current_browser_->GetSelectedTabContents()->GetRenderViewHost(),
+      current_browser_->GetSelectedWebContents()->GetRenderViewHost(),
       L"", UTF8ToWide(script));
   EXPECT_EQ(result, true);
 }

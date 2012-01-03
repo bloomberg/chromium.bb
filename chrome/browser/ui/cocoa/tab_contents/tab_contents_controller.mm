@@ -15,6 +15,8 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
+using content::WebContents;
+
 @interface TabContentsController(Private)
 // Forwards frame update to |delegate_| (ResizeNotificationView calls it).
 - (void)tabContentsViewFrameWillChange:(NSRect)frameRect;
@@ -35,7 +37,7 @@ class TabContentsNotificationBridge : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);
   // Register for |contents|'s notifications, remove all prior registrations.
-  void ChangeTabContents(TabContents* contents);
+  void ChangeWebContents(WebContents* contents);
  private:
   content::NotificationRegistrar registrar_;
   TabContentsController* controller_;  // weak, owns us
@@ -60,7 +62,7 @@ void TabContentsNotificationBridge::Observe(
   }
 }
 
-void TabContentsNotificationBridge::ChangeTabContents(TabContents* contents) {
+void TabContentsNotificationBridge::ChangeWebContents(WebContents* contents) {
   registrar_.RemoveAll();
   if (contents) {
     registrar_.Add(
@@ -105,7 +107,7 @@ void TabContentsNotificationBridge::ChangeTabContents(TabContents* contents) {
     contents_ = contents;
     delegate_ = delegate;
     tabContentsBridge_.reset(new TabContentsNotificationBridge(self));
-    tabContentsBridge_->ChangeTabContents(contents);
+    tabContentsBridge_->ChangeWebContents(contents);
   }
   return self;
 }
@@ -164,7 +166,7 @@ void TabContentsNotificationBridge::ChangeTabContents(TabContents* contents) {
 
 - (void)changeTabContents:(TabContents*)newContents {
   contents_ = newContents;
-  tabContentsBridge_->ChangeTabContents(contents_);
+  tabContentsBridge_->ChangeWebContents(contents_);
 }
 
 - (void)tabContentsViewFrameWillChange:(NSRect)frameRect {

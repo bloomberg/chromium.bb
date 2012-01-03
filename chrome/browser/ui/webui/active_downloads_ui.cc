@@ -414,8 +414,7 @@ Browser* ActiveDownloadsUI::GetPopup() {
        it != BrowserList::end();
        ++it) {
     if ((*it)->is_type_panel() && (*it)->is_app()) {
-      WebContents* web_contents =
-          (*it)->GetSelectedTabContentsWrapper()->web_contents();
+      WebContents* web_contents = (*it)->GetSelectedWebContents();
       DCHECK(web_contents);
       if (!web_contents)
         continue;

@@ -161,14 +161,14 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   CommitPendingLoad(&second->GetController());
   browser()->GoBack(NEW_FOREGROUND_TAB);
   ASSERT_EQ(3, browser()->active_index());
-  ASSERT_EQ(url1, browser()->GetSelectedTabContents()->GetURL());
+  ASSERT_EQ(url1, browser()->GetSelectedWebContents()->GetURL());
 
   // Same thing again for forward.
   // TODO(brettw) bug 11055: see the comment above about why we need this.
-  CommitPendingLoad(&browser()->GetSelectedTabContents()->GetController());
+  CommitPendingLoad(&browser()->GetSelectedWebContents()->GetController());
   browser()->GoForward(NEW_FOREGROUND_TAB);
   ASSERT_EQ(4, browser()->active_index());
-  ASSERT_EQ(url2, browser()->GetSelectedTabContents()->GetURL());
+  ASSERT_EQ(url2, browser()->GetSelectedWebContents()->GetURL());
 }
 
 // Tests IDC_SEARCH (the Search key on Chrome OS devices).
@@ -178,13 +178,13 @@ TEST_F(BrowserCommandsTest, Search) {
   GURL non_ntp_url("http://foo/");
   AddTab(browser(), non_ntp_url);
   ASSERT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(non_ntp_url, browser()->GetSelectedTabContents()->GetURL());
+  EXPECT_EQ(non_ntp_url, browser()->GetSelectedWebContents()->GetURL());
 
   // Pressing the Search key should open a new tab containing the NTP.
   browser()->Search();
   ASSERT_EQ(2, browser()->tab_count());
   ASSERT_EQ(1, browser()->active_index());
-  GURL current_url = browser()->GetSelectedTabContents()->GetURL();
+  GURL current_url = browser()->GetSelectedWebContents()->GetURL();
   EXPECT_TRUE(current_url.SchemeIs(chrome::kChromeUIScheme));
   EXPECT_EQ(chrome::kChromeUINewTabHost, current_url.host());
 
@@ -192,7 +192,7 @@ TEST_F(BrowserCommandsTest, Search) {
   browser()->Search();
   ASSERT_EQ(2, browser()->tab_count());
   ASSERT_EQ(1, browser()->active_index());
-  current_url = browser()->GetSelectedTabContents()->GetURL();
+  current_url = browser()->GetSelectedWebContents()->GetURL();
   EXPECT_TRUE(current_url.SchemeIs(chrome::kChromeUIScheme));
   EXPECT_EQ(chrome::kChromeUINewTabHost, current_url.host());
 }

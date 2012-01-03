@@ -470,7 +470,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
       RestoreTabsToBrowser(*(*i), browser, selected_tab_index);
       ShowBrowser(browser, initial_tab_count, selected_tab_index);
       tab_loader_->TabIsLoading(
-          &browser->GetSelectedTabContents()->GetController());
+          &browser->GetSelectedWebContents()->GetController());
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
     }
 
@@ -651,7 +651,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
       }
       if ((*i)->type == Browser::TYPE_TABBED)
         last_browser = browser;
-      TabContents* active_tab = browser->GetSelectedTabContents();
+      WebContents* active_tab = browser->GetSelectedWebContents();
       int initial_tab_count = browser->tab_count();
       int selected_tab_index = (*i)->selected_tab_index;
       RestoreTabsToBrowser(*(*i), browser, selected_tab_index);
@@ -663,7 +663,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
         active_tab = NULL;
       }
       tab_loader_->TabIsLoading(
-          &browser->GetSelectedTabContents()->GetController());
+          &browser->GetSelectedWebContents()->GetController());
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
     }
 
@@ -722,7 +722,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                 extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
     }
 
-    TabContents* tab_contents =
+    WebContents* web_contents =
         browser->AddRestoredTab(tab.navigations,
                                 tab_index,
                                 selected_index,
@@ -732,7 +732,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                 true,
                                 NULL);
     if (schedule_load)
-      tab_loader_->ScheduleLoad(&tab_contents->GetController());
+      tab_loader_->ScheduleLoad(&web_contents->GetController());
   }
 
   Browser* CreateRestoredBrowser(Browser::Type type,
@@ -763,7 +763,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     // TODO(jcampan): http://crbug.com/8123 we should not need to set the
     //                initial focus explicitly.
-    browser->GetSelectedTabContents()->GetView()->SetInitialFocus();
+    browser->GetSelectedWebContents()->GetView()->SetInitialFocus();
 
     if (!browser_shown_) {
       browser_shown_ = true;

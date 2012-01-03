@@ -15,12 +15,14 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using content::WebContents;
 
 namespace chromeos {
 
@@ -188,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest, CloseCloseableTab) {
   EXPECT_TRUE(CanCloseTab(browser()));
   browser()->CloseTab();
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(ntp_url_, browser()->GetSelectedTabContents()->GetURL());
+  EXPECT_EQ(ntp_url_, browser()->GetSelectedWebContents()->GetURL());
 }
 
 // Tests closing a closeable browser - all tabs in browser should be closed,
@@ -200,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest, CloseCloseableBrowser) {
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_EQ(browser(), *(BrowserList::begin()));
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(ntp_url_, browser()->GetSelectedTabContents()->GetURL());
+  EXPECT_EQ(ntp_url_, browser()->GetSelectedWebContents()->GetURL());
 }
 
 // Tests closing a non-closeable tab and hence non-closeable browser - tab and
@@ -211,17 +213,17 @@ IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest,
   EXPECT_EQ(1, browser()->tab_count());
   NavigateToURL(ntp_url_);
   EXPECT_FALSE(CanCloseTab(browser()));
-  TabContents* tab_contents = browser()->GetSelectedTabContents();
+  WebContents* web_contents = browser()->GetSelectedWebContents();
   browser()->CloseTab();
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(tab_contents, browser()->GetSelectedTabContents());
+  EXPECT_EQ(web_contents, browser()->GetSelectedWebContents());
 
   // Close browser with non-closeable tab.
   browser()->CloseWindow();
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_EQ(browser(), *(BrowserList::begin()));
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(tab_contents, browser()->GetSelectedTabContents());
+  EXPECT_EQ(web_contents, browser()->GetSelectedWebContents());
 }
 
 // Tests an incognito browsr with a normal browser.
@@ -271,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest, CloseIncognitoBrowser) {
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_FALSE(new_browser->profile()->IsOffTheRecord());
   EXPECT_EQ(1, new_browser->tab_count());
-  EXPECT_EQ(ntp_url_, new_browser->GetSelectedTabContents()->GetURL());
+  EXPECT_EQ(ntp_url_, new_browser->GetSelectedWebContents()->GetURL());
 }
 
 // Tests closing of browser with BeforeUnload handler where user clicks cancel
@@ -285,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest,
   EXPECT_TRUE(CanCloseTab(browser()));
 
   // Close browser, click Cancel in BeforeUnload confirm dialog.
-  TabContents* tab_contents = browser()->GetSelectedTabContents();
+  WebContents* web_contents = browser()->GetSelectedWebContents();
   browser()->CloseWindow();
   AppModalDialog* confirm = ui_test_utils::WaitForAppModalDialog();
   confirm->native_dialog()->CancelAppModalDialog();
@@ -293,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest,
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_EQ(browser(), *(BrowserList::begin()));
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(tab_contents, browser()->GetSelectedTabContents());
+  EXPECT_EQ(web_contents, browser()->GetSelectedWebContents());
 
   // Close the browser.
   browser()->CloseWindow();
@@ -319,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest,
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_EQ(browser(), *(BrowserList::begin()));
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(ntp_url_, browser()->GetSelectedTabContents()->GetURL());
+  EXPECT_EQ(ntp_url_, browser()->GetSelectedWebContents()->GetURL());
 }
 
 }  // namespace chromeos

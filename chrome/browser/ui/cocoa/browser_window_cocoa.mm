@@ -227,7 +227,7 @@ void BrowserWindowCocoa::BookmarkBarStateChanged(
 
 void BrowserWindowCocoa::UpdateDevTools() {
   [controller_ updateDevToolsForContents:
-      browser_->GetSelectedTabContents()];
+      browser_->GetSelectedWebContents()];
 }
 
 void BrowserWindowCocoa::SetDevToolsDockSide(DevToolsDockSide side) {
@@ -609,7 +609,7 @@ NSWindow* BrowserWindowCocoa::window() const {
 }
 
 void BrowserWindowCocoa::UpdateSidebarForContents(TabContents* tab_contents) {
-  if (tab_contents == browser_->GetSelectedTabContents()) {
+  if (tab_contents == browser_->GetSelectedWebContents()) {
     [controller_ updateSidebarForContents:tab_contents];
   }
 }

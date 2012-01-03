@@ -17,6 +17,8 @@
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
+using content::WebContents;
+
 class RenderViewHostTest : public InProcessBrowserTest {
  public:
   RenderViewHostTest() {}
@@ -30,7 +32,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest,
   ui_test_utils::NavigateToURL(browser(), empty_url);
 
   RenderViewHost* rvh =
-      browser()->GetSelectedTabContents()->GetRenderViewHost();
+      browser()->GetSelectedWebContents()->GetRenderViewHost();
 
   {
     Value* value = rvh->ExecuteJavascriptAndGetValue(string16(),
@@ -164,8 +166,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest,
 class RenderViewHostTestWebContentsObserver
     : public content::WebContentsObserver {
  public:
-  explicit RenderViewHostTestWebContentsObserver(TabContents* tab_contents)
-      : content::WebContentsObserver(tab_contents),
+  explicit RenderViewHostTestWebContentsObserver(WebContents* web_contents)
+      : content::WebContentsObserver(web_contents),
         navigation_count_(0) {}
   virtual ~RenderViewHostTestWebContentsObserver() {}
 
@@ -198,7 +200,7 @@ class RenderViewHostTestWebContentsObserver
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
   ASSERT_TRUE(test_server()->Start());
   RenderViewHostTestWebContentsObserver observer(
-      browser()->GetSelectedTabContents());
+      browser()->GetSelectedWebContents());
 
   GURL test_url = test_server()->GetURL("files/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
@@ -211,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BaseURLParam) {
   ASSERT_TRUE(test_server()->Start());
   RenderViewHostTestWebContentsObserver observer(
-      browser()->GetSelectedTabContents());
+      browser()->GetSelectedWebContents());
 
   // Base URL is not set if it is the same as the URL.
   GURL test_url = test_server()->GetURL("files/simple.html");

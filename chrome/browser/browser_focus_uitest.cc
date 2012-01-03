@@ -151,7 +151,7 @@ class BrowserFocusTest : public InProcessBrowserTest {
 
 class TestInterstitialPage : public InterstitialPage {
  public:
-  TestInterstitialPage(TabContents* tab, bool new_navigation, const GURL& url)
+  TestInterstitialPage(WebContents* tab, bool new_navigation, const GURL& url)
       : InterstitialPage(tab, new_navigation, url) {
     FilePath file_path;
     bool r = PathService::Get(chrome::DIR_TEST_DATA, &file_path);
@@ -420,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
   focused_browser->window()->Activate();
 
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      unfocused_browser->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      unfocused_browser->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"stealFocus();"));
 
   // Make sure the first browser is still active.
@@ -439,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
   browser()->FocusLocationBar();
 
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"stealFocus();"));
 
   // Make sure the location bar is still focused.
@@ -485,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
       // Let's make sure the focus is on the expected element in the page.
       std::string actual;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-          browser()->GetSelectedTabContents()->GetRenderViewHost(),
+          browser()->GetSelectedWebContents()->GetRenderViewHost(),
           L"",
           L"window.domAutomationController.send(getFocusedElement());",
           &actual));
@@ -502,7 +502,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
             browser(), ui::VKEY_TAB, false, false, false, false,
             content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
             content::NotificationSource(content::Source<RenderViewHost>(
-                browser()->GetSelectedTabContents()->GetRenderViewHost())),
+                browser()->GetSelectedWebContents()->GetRenderViewHost())),
             details));
       } else {
         // On the last tab key press, the focus returns to the browser.
@@ -545,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
             browser(), ui::VKEY_TAB, false, true, false, false,
             content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
             content::NotificationSource(content::Source<RenderViewHost>(
-                browser()->GetSelectedTabContents()->GetRenderViewHost())),
+                browser()->GetSelectedWebContents()->GetRenderViewHost())),
             details));
       } else {
         // On the last tab key press, the focus returns to the browser.
@@ -558,7 +558,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
       // Let's make sure the focus is on the expected element in the page.
       std::string actual;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-          browser()->GetSelectedTabContents()->GetRenderViewHost(),
+          browser()->GetSelectedWebContents()->GetRenderViewHost(),
           L"",
           L"window.domAutomationController.send(getFocusedElement());",
           &actual));
@@ -586,7 +586,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
 
   // Let's show an interstitial.
   TestInterstitialPage* interstitial_page =
-      new TestInterstitialPage(browser()->GetSelectedTabContents(),
+      new TestInterstitialPage(browser()->GetSelectedWebContents(),
                                true, GURL("http://interstitial.com"));
   interstitial_page->Show();
   // Give some time for the interstitial to show.
@@ -707,12 +707,12 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
 
   // Page should have focus.
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
-  EXPECT_TRUE(browser()->GetSelectedTabContents()->GetRenderViewHost()->view()->
+  EXPECT_TRUE(browser()->GetSelectedWebContents()->GetRenderViewHost()->view()->
       HasFocus());
 
   // Let's show an interstitial.
   TestInterstitialPage* interstitial_page =
-      new TestInterstitialPage(browser()->GetSelectedTabContents(),
+      new TestInterstitialPage(browser()->GetSelectedWebContents(),
                                true, GURL("http://interstitial.com"));
   interstitial_page->Show();
   // Give some time for the interstitial to show.
@@ -812,26 +812,26 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_TabInitialFocus) {
   // Open the history tab, focus should be on the tab contents.
   browser()->ShowHistoryTab();
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
-      browser()->GetSelectedTabContents()));
+      browser()->GetSelectedWebContents()));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Open the new tab, focus should be on the location bar.
   browser()->NewTab();
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
-      browser()->GetSelectedTabContents()));
+      browser()->GetSelectedWebContents()));
   EXPECT_TRUE(IsViewFocused(location_bar_focus_view_id_));
 
   // Open the download tab, focus should be on the tab contents.
   browser()->ShowDownloadsTab();
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
-      browser()->GetSelectedTabContents()));
+      browser()->GetSelectedWebContents()));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Open about:blank, focus should be on the location bar.
   browser()->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
                                    content::PAGE_TRANSITION_LINK);
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
-      browser()->GetSelectedTabContents()));
+      browser()->GetSelectedWebContents()));
   EXPECT_TRUE(IsViewFocused(location_bar_focus_view_id_));
 }
 
@@ -888,7 +888,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnReloadCrashedTab) {
 
   // Open a regular page, crash, reload.
   ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(kSimplePage));
-  ui_test_utils::CrashTab(browser()->GetSelectedTabContents());
+  ui_test_utils::CrashTab(browser()->GetSelectedWebContents());
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,

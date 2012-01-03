@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 
+using content::WebContents;
+
 void BrowserTabRestoreServiceDelegate::ShowBrowserWindow() {
   browser_->window()->Show();
 }
@@ -30,8 +32,8 @@ TabContents* BrowserTabRestoreServiceDelegate::GetTabContentsAt(
   return browser_->GetTabContentsAt(index);
 }
 
-TabContents* BrowserTabRestoreServiceDelegate::GetSelectedTabContents() const {
-  return browser_->GetSelectedTabContents();
+WebContents* BrowserTabRestoreServiceDelegate::GetSelectedWebContents() const {
+  return browser_->GetSelectedWebContents();
 }
 
 bool BrowserTabRestoreServiceDelegate::IsTabPinned(int index) const {

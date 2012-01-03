@@ -272,12 +272,12 @@ class Panel : public BrowserWindow,
   // size may differ after panel layout.
   Panel(Browser* browser, const gfx::Size& requested_size);
 
-  // Configures the tab contents for auto resize, including configurations
+  // Configures the web contents for auto resize, including configurations
   // on the renderer and detecting renderer changes.
-  void EnableTabContentsAutoResize(TabContents* tab_contents);
+  void EnableWebContentsAutoResize(content::WebContents* web_contents);
 
   // Configures the renderer for auto resize (if auto resize is enabled).
-  void ConfigureAutoResize(TabContents* tab_contents);
+  void ConfigureAutoResize(content::WebContents* web_contents);
 
   Browser* browser_;  // Weak, owned by native panel.
 

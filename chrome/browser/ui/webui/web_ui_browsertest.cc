@@ -22,7 +22,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_tab_strip_model_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
@@ -182,7 +182,7 @@ void WebUIBrowserTest::PreLoadJavascriptLibraries(
 void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   TestNavigationObserver navigation_observer(
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+          &browser()->GetSelectedTabContentsWrapper()->web_contents()->
               GetController()),
       this, 1);
   browser::NavigateParams params(
@@ -213,7 +213,7 @@ void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
   TabContentsWrapper* preview_tab = tab_controller->GetPrintPreviewForTab(
       browser()->GetSelectedTabContentsWrapper());
   ASSERT_TRUE(preview_tab);
-  SetWebUIInstance(preview_tab->tab_contents()->GetWebUI());
+  SetWebUIInstance(preview_tab->web_contents()->GetWebUI());
 }
 
 const char WebUIBrowserTest::kDummyURL[] = "chrome://DummyURL";
@@ -409,7 +409,7 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
 void WebUIBrowserTest::SetupHandlers() {
   WebUI* web_ui_instance = override_selected_web_ui_ ?
       override_selected_web_ui_ :
-      browser()->GetSelectedTabContents()->GetWebUI();
+      browser()->GetSelectedWebContents()->GetWebUI();
   ASSERT_TRUE(web_ui_instance != NULL);
   web_ui_instance->set_register_callback_overwrites(true);
   test_handler_->set_web_ui(web_ui_instance);

@@ -12,9 +12,9 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 
 #if defined(OS_WIN)
 #include <atlbase.h>
@@ -39,7 +39,7 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
         content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
         content::NotificationService::AllSources());
     RenderWidgetHostView* host_view =
-        browser()->GetSelectedTabContents()->GetRenderWidgetHostView();
+        browser()->GetSelectedWebContents()->GetRenderWidgetHostView();
     RenderWidgetHost* host = host_view->GetRenderWidgetHost();
     RenderViewHost* view_host = static_cast<RenderViewHost*>(host);
     view_host->set_save_accessibility_tree_for_testing(true);

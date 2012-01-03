@@ -44,7 +44,7 @@ bool FullscreenController::IsFullscreenForTab(const WebContents* tab) const {
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
   if (!wrapper || (wrapper != fullscreened_tab_))
     return false;
-  DCHECK(tab == browser_->GetSelectedTabContents());
+  DCHECK(tab == browser_->GetSelectedWebContents());
   DCHECK(window_->IsFullscreen());
   return true;
 }
@@ -85,7 +85,7 @@ void FullscreenController::RequestToLockMouse(WebContents* tab) {
 
 void FullscreenController::ToggleFullscreenModeForTab(WebContents* tab,
                                                       bool enter_fullscreen) {
-  if (tab != browser_->GetSelectedTabContents())
+  if (tab != browser_->GetSelectedWebContents())
     return;
 
   bool in_browser_or_tab_fullscreen_mode;
@@ -139,7 +139,7 @@ void FullscreenController::TogglePresentationMode(bool for_tab) {
   bool entering_fullscreen = !window_->InPresentationMode();
   GURL url;
   if (for_tab) {
-    url = browser_->GetSelectedTabContents()->GetURL();
+    url = browser_->GetSelectedWebContents()->GetURL();
     tab_fullscreen_accepted_ = entering_fullscreen &&
         GetFullscreenSetting(url) == CONTENT_SETTING_ALLOW;
   }
@@ -165,7 +165,7 @@ void FullscreenController::ToggleFullscreenMode(bool for_tab) {
 
   GURL url;
   if (for_tab) {
-    url = browser_->GetSelectedTabContents()->GetURL();
+    url = browser_->GetSelectedWebContents()->GetURL();
     tab_fullscreen_accepted_ = entering_fullscreen &&
         GetFullscreenSetting(url) == CONTENT_SETTING_ALLOW;
   } else {

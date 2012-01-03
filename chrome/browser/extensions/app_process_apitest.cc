@@ -24,6 +24,8 @@
 #include "content/test/test_navigation_observer.h"
 #include "net/base/mock_host_resolver.h"
 
+using content::WebContents;
+
 class AppApiTest : public ExtensionApiTest {
  protected:
   // Gets the base URL for files for a specific test, making sure that it uses
@@ -55,7 +57,7 @@ static void WindowOpenHelper(Browser* browser,
   // Now the active tab in last active window should be the new tab.
   Browser* last_active_browser = BrowserList::GetLastActive();
   EXPECT_TRUE(last_active_browser);
-  TabContents* newtab = last_active_browser->GetSelectedTabContents();
+  WebContents* newtab = last_active_browser->GetSelectedWebContents();
   EXPECT_TRUE(newtab);
   observer.Wait();
   EXPECT_EQ(url, newtab->GetController().GetLastCommittedEntry()->GetURL());
@@ -505,7 +507,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
   Browser* last_active_browser = BrowserList::GetLastActive();
   EXPECT_TRUE(last_active_browser);
   ASSERT_NE(browser(), last_active_browser);
-  TabContents* newtab = last_active_browser->GetSelectedTabContents();
+  WebContents* newtab = last_active_browser->GetSelectedWebContents();
   EXPECT_TRUE(newtab);
   if (!newtab->GetController().GetLastCommittedEntry() ||
       newtab->GetController().GetLastCommittedEntry()->GetURL() != app_url) {
@@ -560,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromExtension) {
   // App has loaded, and chrome.app.isInstalled should be true.
   bool is_installed = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(chrome.app.isInstalled)",
       &is_installed));
   ASSERT_TRUE(is_installed);
@@ -614,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
   Browser* last_active_browser = BrowserList::GetLastActive();
   EXPECT_TRUE(last_active_browser);
   ASSERT_NE(browser(), last_active_browser);
-  TabContents* newtab = last_active_browser->GetSelectedTabContents();
+  WebContents* newtab = last_active_browser->GetSelectedWebContents();
   EXPECT_TRUE(newtab);
   GURL non_app_url = base_url.Resolve("path3/empty.html");
   observer.Wait();
@@ -649,7 +651,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadAppAfterCrash) {
   ASSERT_TRUE(is_installed);
 
   // Crash the tab and reload it, chrome.app.isInstalled should still be true.
-  ui_test_utils::CrashTab(browser()->GetSelectedTabContents());
+  ui_test_utils::CrashTab(browser()->GetSelectedWebContents());
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(

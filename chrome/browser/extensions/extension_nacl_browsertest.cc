@@ -16,11 +16,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/web_contents.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using content::PluginService;
+using content::WebContents;
 
 namespace {
 
@@ -97,13 +98,13 @@ class NaClExtensionTest : public ExtensionBrowserTest {
 
     bool embedded_plugin_created = false;
     bool content_handler_plugin_created = false;
-    TabContents* tab_contents = browser()->GetSelectedTabContents();
+    WebContents* web_contents = browser()->GetSelectedWebContents();
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        tab_contents->GetRenderViewHost(), L"",
+        web_contents->GetRenderViewHost(), L"",
         L"window.domAutomationController.send(EmbeddedPluginCreated());",
         &embedded_plugin_created));
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        tab_contents->GetRenderViewHost(), L"",
+        web_contents->GetRenderViewHost(), L"",
         L"window.domAutomationController.send(ContentHandlerPluginCreated());",
         &content_handler_plugin_created));
 

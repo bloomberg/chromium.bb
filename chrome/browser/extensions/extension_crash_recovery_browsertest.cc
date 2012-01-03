@@ -18,9 +18,11 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
+
+using content::WebContents;
 
 class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
  protected:
@@ -163,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, ReloadIndependently) {
   SCOPED_TRACE("after reloading");
   CheckExtensionConsistency(first_extension_id_);
 
-  TabContents* current_tab = browser()->GetSelectedTabContents();
+  WebContents* current_tab = browser()->GetSelectedWebContents();
   ASSERT_TRUE(current_tab);
 
   // The balloon should automatically hide after the extension is successfully
@@ -178,13 +180,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   CrashExtension(first_extension_id_);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 
-  TabContents* original_tab = browser()->GetSelectedTabContents();
+  WebContents* original_tab = browser()->GetSelectedWebContents();
   ASSERT_TRUE(original_tab);
   ASSERT_EQ(1U, CountBalloons());
 
   // Open a new tab, but the balloon will still be there.
   browser()->NewTab();
-  TabContents* new_current_tab = browser()->GetSelectedTabContents();
+  WebContents* new_current_tab = browser()->GetSelectedWebContents();
   ASSERT_TRUE(new_current_tab);
   ASSERT_NE(new_current_tab, original_tab);
   ASSERT_EQ(1U, CountBalloons());
@@ -206,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   CrashExtension(first_extension_id_);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 
-  TabContents* current_tab = browser()->GetSelectedTabContents();
+  WebContents* current_tab = browser()->GetSelectedWebContents();
   ASSERT_TRUE(current_tab);
   ASSERT_EQ(1U, CountBalloons());
 
@@ -379,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 
   {
     SCOPED_TRACE("first: reload");
-    TabContents* current_tab = browser()->GetSelectedTabContents();
+    WebContents* current_tab = browser()->GetSelectedWebContents();
     ASSERT_TRUE(current_tab);
     // At the beginning we should have one balloon displayed for each extension.
     ASSERT_EQ(2U, CountBalloons());
@@ -472,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
-            &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+            &browser()->GetSelectedTabContentsWrapper()->web_contents()->
                 GetController()));
     browser()->Reload(CURRENT_TAB);
     observer.Wait();

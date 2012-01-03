@@ -30,6 +30,10 @@ class MenuGtk;
 class PopupPageMenuModel;
 class TabContents;
 
+namespace content {
+class WebContents;
+}
+
 class BrowserTitlebar : public content::NotificationObserver,
                         public ui::ActiveWindowWatcherXObserver,
                         public ui::SimpleMenuModel::Delegate {
@@ -62,9 +66,9 @@ class BrowserTitlebar : public content::NotificationObserver,
   void UpdateTitleAndIcon();
 
   // Called by the browser asking us to update the loading throbber.
-  // |tab_contents| is the tab that is associated with the window throbber.
-  // |tab_contents| can be null.
-  void UpdateThrobber(TabContents* tab_contents);
+  // |web_contents| is the tab that is associated with the window throbber.
+  // |web_contents| can be null.
+  void UpdateThrobber(content::WebContents* web_contents);
 
   // On Windows, right clicking in the titlebar background brings up the system
   // menu.  There's no such thing on linux, so we just show the menu items we

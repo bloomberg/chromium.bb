@@ -17,6 +17,8 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
+using content::WebContents;
+
 namespace {
 
 // Minimal height of devtools pane or content pane when devtools are docked
@@ -29,7 +31,7 @@ const int kMinContentsSize = 50;
 
 
 @interface DevToolsController (Private)
-- (void)showDevToolsContents:(TabContents*)devToolsContents
+- (void)showDevToolsContents:(WebContents*)devToolsContents
                  withProfile:(Profile*)profile;
 - (void)showDevToolsContainer:(Profile*)profile;
 - (void)hideDevToolsContainer:(Profile*)profile;
@@ -69,13 +71,13 @@ const int kMinContentsSize = 50;
   return splitView_.get();
 }
 
-- (void)updateDevToolsForTabContents:(TabContents*)contents
+- (void)updateDevToolsForWebContents:(WebContents*)contents
                          withProfile:(Profile*)profile {
   // Get current devtools content.
   TabContentsWrapper* devToolsTab = contents ?
       DevToolsWindow::GetDevToolsContents(contents) : NULL;
-  TabContents* devToolsContents = devToolsTab ?
-      devToolsTab->tab_contents() : NULL;
+  WebContents* devToolsContents = devToolsTab ?
+      devToolsTab->web_contents() : NULL;
 
   [self showDevToolsContents:devToolsContents withProfile:profile];
 }
@@ -99,7 +101,7 @@ const int kMinContentsSize = 50;
   [contentsController_ ensureContentsVisible];
 }
 
-- (void)showDevToolsContents:(TabContents*)devToolsContents
+- (void)showDevToolsContents:(WebContents*)devToolsContents
                  withProfile:(Profile*)profile {
   [contentsController_ ensureContentsSizeDoesNotChange];
 
@@ -117,7 +119,8 @@ const int kMinContentsSize = 50;
     }
   }
 
-  [contentsController_ changeTabContents:devToolsContents];
+  [contentsController_ changeTabContents:
+      static_cast<TabContents*>(devToolsContents)];
 }
 
 - (void)showDevToolsContainer:(Profile*)profile {

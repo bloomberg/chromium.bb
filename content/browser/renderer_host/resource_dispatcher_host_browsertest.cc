@@ -20,7 +20,7 @@ class ResourceDispatcherHostBrowserTest : public InProcessBrowserTest {
 
  protected:
   RenderViewHost* render_view_host() {
-    return browser()->GetSelectedTabContents()->GetRenderViewHost();
+    return browser()->GetSelectedWebContents()->GetRenderViewHost();
   }
 
   bool GetPopupTitle(const GURL& url, string16* title);

@@ -31,8 +31,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/mock_host_resolver.h"
 #include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -568,7 +568,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     // opened.
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN, ui::EF_CONTROL_DOWN));
 
-    GURL url = browser()->GetSelectedTabContents()->GetURL();
+    GURL url = browser()->GetSelectedWebContents()->GetURL();
     EXPECT_STREQ(kDesiredTLDHostname, url.host().c_str());
   }
 
@@ -600,7 +600,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
 
     // Open the default match.
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN, 0));
-    GURL url = browser()->GetSelectedTabContents()->GetURL();
+    GURL url = browser()->GetSelectedWebContents()->GetURL();
     EXPECT_STREQ(kSearchTextURL, url.spec().c_str());
 
     // Test that entering a single character then Enter performs a search.
@@ -617,7 +617,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
 
     // Open the default match.
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN, 0));
-    url = browser()->GetSelectedTabContents()->GetURL();
+    url = browser()->GetSelectedWebContents()->GetURL();
     EXPECT_STREQ(kSearchSingleCharURL, url.spec().c_str());
   }
 

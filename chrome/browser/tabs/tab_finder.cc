@@ -81,7 +81,7 @@ bool TabFinder::IsEnabled() {
       switches::kFocusExistingTabOnOpen);
 }
 
-TabContents* TabFinder::FindTab(Browser* browser,
+WebContents* TabFinder::FindTab(Browser* browser,
                                 const GURL& url,
                                 Browser** existing_browser) {
   if (browser->profile()->IsOffTheRecord())
@@ -89,12 +89,12 @@ TabContents* TabFinder::FindTab(Browser* browser,
 
   // If the current tab matches the url, ignore it and let the user reload the
   // existing tab.
-  TabContents* selected_tab = browser->GetSelectedTabContents();
+  WebContents* selected_tab = browser->GetSelectedWebContents();
   if (TabMatchesURL(selected_tab, url))
     return NULL;
 
   // See if the current browser has a tab matching the specified url.
-  TabContents* tab_in_browser = FindTabInBrowser(browser, url);
+  WebContents* tab_in_browser = FindTabInBrowser(browser, url);
   if (tab_in_browser) {
     *existing_browser = browser;
     return tab_in_browser;
@@ -159,7 +159,7 @@ bool TabFinder::TabMatchesURL(WebContents* tab_contents, const GURL& url) {
   return i != web_contents_to_url_.end() && i->second == url;
 }
 
-TabContents* TabFinder::FindTabInBrowser(Browser* browser, const GURL& url) {
+WebContents* TabFinder::FindTabInBrowser(Browser* browser, const GURL& url) {
   if (!browser->is_type_tabbed())
     return NULL;
 

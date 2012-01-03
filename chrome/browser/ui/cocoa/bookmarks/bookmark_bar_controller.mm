@@ -56,6 +56,7 @@
 using content::OpenURLParams;
 using content::Referrer;
 using content::UserMetricsAction;
+using content::WebContents;
 
 // Bookmark bar state changing and animations
 //
@@ -2283,8 +2284,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 #pragma mark BookmarkBarToolbarViewController Protocol
 
 - (int)currentTabContentsHeight {
-  TabContents* tc = browser_->GetSelectedTabContents();
-  return tc ? tc->GetView()->GetContainerSize().height() : 0;
+  WebContents* wc = browser_->GetSelectedWebContents();
+  return wc ? wc->GetView()->GetContainerSize().height() : 0;
 }
 
 - (ui::ThemeProvider*)themeProvider {

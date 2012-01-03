@@ -28,11 +28,14 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+
+using content::WebContents;
 
 static const char* kDataURIPrefix = "data:text/html;charset=utf-8,";
 static const char* kTestFormString =
@@ -129,14 +132,14 @@ class AutofillTest : public InProcessBrowserTest {
                         const std::string& expected_value) {
     std::string value;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-        browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+        browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
         L"window.domAutomationController.send("
         L"document.getElementById('" + field_name + L"').value);", &value));
     EXPECT_EQ(expected_value, value);
   }
 
   RenderViewHost* render_view_host() {
-    return browser()->GetSelectedTabContents()->GetRenderViewHost();
+    return browser()->GetSelectedWebContents()->GetRenderViewHost();
   }
 
   void SimulateURLFetch(bool success) {
@@ -633,8 +636,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillAfterReload) {
 
   // Reload the page.
   LOG(WARNING) << "Reloading the page.";
-  TabContents* tab =
-      browser()->GetSelectedTabContentsWrapper()->tab_contents();
+  WebContents* tab =
+      browser()->GetSelectedTabContentsWrapper()->web_contents();
   tab->GetController().Reload(false);
   ui_test_utils::WaitForLoadStop(tab);
 

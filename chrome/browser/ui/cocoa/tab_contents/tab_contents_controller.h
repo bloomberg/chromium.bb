@@ -14,6 +14,10 @@ class TabContents;
 class TabContentsNotificationBridge;
 @class TabContentsController;
 
+namespace content {
+class WebContents;
+}
+
 // The interface for the tab contents view controller's delegate.
 
 @protocol TabContentsControllerDelegate
@@ -51,7 +55,7 @@ class TabContentsNotificationBridge;
 // should be put into the view hierarchy.
 - (void)ensureContentsVisible;
 
-// Call to change the underlying tab contents object. View is not changed,
+// Call to change the underlying web contents object. View is not changed,
 // call |-ensureContentsVisible| to display the |newContents|'s render widget
 // host view.
 - (void)changeTabContents:(TabContents*)newContents;

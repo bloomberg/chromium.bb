@@ -15,13 +15,14 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::OpenURLParams;
 using content::Referrer;
+using content::WebContents;
 
 enum MenuEntries {
   NAME = 0,
@@ -93,7 +94,7 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     // homepage, we just disable this menu item.
     return extension->GetHomepageURL().is_valid();
   } else if (command_id == INSPECT_POPUP) {
-    TabContents* contents = browser_->GetSelectedTabContents();
+    WebContents* contents = browser_->GetSelectedWebContents();
     if (!contents)
       return false;
 

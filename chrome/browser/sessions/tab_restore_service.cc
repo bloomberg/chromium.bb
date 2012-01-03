@@ -33,6 +33,7 @@
 
 using base::Time;
 using content::NavigationEntry;
+using content::WebContents;
 
 // TimeFactory-----------------------------------------------------------------
 
@@ -403,7 +404,7 @@ void TabRestoreService::RestoreEntryById(TabRestoreServiceDelegate* delegate,
     delegate->ShowBrowserWindow();
 
     if (disposition == CURRENT_TAB && current_delegate &&
-        current_delegate->GetSelectedTabContents()) {
+        current_delegate->GetSelectedWebContents()) {
       current_delegate->CloseTab();
     }
   } else {

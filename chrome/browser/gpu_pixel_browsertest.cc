@@ -17,7 +17,7 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,7 +70,7 @@ bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
 // Resizes the browser window so that the tab's contents are at a given size.
 void ResizeTabContainer(Browser* browser, const gfx::Size& desired_size) {
   gfx::Rect container_rect;
-  browser->GetSelectedTabContents()->GetContainerBounds(&container_rect);
+  browser->GetSelectedWebContents()->GetContainerBounds(&container_rect);
   // Size cannot be negative, so use a point.
   gfx::Point correction(desired_size.width() - container_rect.size().width(),
                         desired_size.height() - container_rect.size().height());
@@ -325,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLTeapot) {
 
   gfx::Rect root_bounds = browser()->window()->GetBounds();
   gfx::Rect tab_contents_bounds;
-  browser()->GetSelectedTabContents()->GetContainerBounds(&tab_contents_bounds);
+  browser()->GetSelectedWebContents()->GetContainerBounds(&tab_contents_bounds);
 
   gfx::Rect snapshot_bounds(tab_contents_bounds.x() - root_bounds.x(),
                             tab_contents_bounds.y() - root_bounds.y(),

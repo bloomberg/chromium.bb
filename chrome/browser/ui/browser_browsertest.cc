@@ -152,7 +152,7 @@ void RunCloseWithAppMenuCallback(Browser* browser) {
 // to visually tell if it is showing or not.)
 class TestInterstitialPage : public InterstitialPage {
  public:
-  TestInterstitialPage(TabContents* tab, bool new_navigation, const GURL& url)
+  TestInterstitialPage(WebContents* tab, bool new_navigation, const GURL& url)
       : InterstitialPage(tab, new_navigation, url) { }
   virtual ~TestInterstitialPage() { }
 
@@ -288,10 +288,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
   browser()->Reload(CURRENT_TAB);
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   alert->CloseModalDialog();
-  EXPECT_FALSE(browser()->GetSelectedTabContents()->IsLoading());
+  EXPECT_FALSE(browser()->GetSelectedWebContents()->IsLoading());
 
   // Clear the beforeunload handler so the test can easily exit.
-  browser()->GetSelectedTabContents()->GetRenderViewHost()->
+  browser()->GetSelectedWebContents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(),
                                   ASCIIToUTF16("onbeforeunload=null;"));
 }
@@ -316,7 +316,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
   // Cancel the dialog.
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   alert->CloseModalDialog();
-  EXPECT_FALSE(browser()->GetSelectedTabContents()->IsLoading());
+  EXPECT_FALSE(browser()->GetSelectedWebContents()->IsLoading());
 
   // Wait for the ShouldClose_ACK to arrive.  We can detect it by waiting for
   // the pending RVH to be destroyed.
@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
   EXPECT_EQ(url.spec(), UTF16ToUTF8(browser()->toolbar_model()->GetText()));
 
   // Clear the beforeunload handler so the test can easily exit.
-  browser()->GetSelectedTabContents()->GetRenderViewHost()->
+  browser()->GetSelectedWebContents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(),
                                   ASCIIToUTF16("onbeforeunload=null;"));
 }
@@ -341,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
 // Test for crbug.com/11647.  A page closed with window.close() should not have
 // two beforeunload dialogs shown.
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_SingleBeforeUnloadAfterWindowClose) {
-  browser()->GetSelectedTabContents()->GetRenderViewHost()->
+  browser()->GetSelectedWebContents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(),
                                   ASCIIToUTF16(kOpenNewBeforeUnloadPage));
 
@@ -379,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
 
   // Start with an http URL.
   ui_test_utils::NavigateToURL(browser(), http_url);
-  TabContents* oldtab = browser()->GetSelectedTabContents();
+  WebContents* oldtab = browser()->GetSelectedWebContents();
   content::RenderProcessHost* process = oldtab->GetRenderProcessHost();
 
   // Now open a tab to a blank page, set its opener to null, and redirect it
@@ -402,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   // Wait for popup window to appear and finish navigating.
   popup_observer.Wait();
   ASSERT_EQ(2, browser()->tab_count());
-  TabContents* newtab = browser()->GetSelectedTabContents();
+  WebContents* newtab = browser()->GetSelectedWebContents();
   EXPECT_TRUE(newtab);
   EXPECT_NE(oldtab, newtab);
   nav_observer.Wait();
@@ -436,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   // Wait for popup window to appear and finish navigating.
   popup_observer2.Wait();
   ASSERT_EQ(3, browser()->tab_count());
-  TabContents* newtab2 = browser()->GetSelectedTabContents();
+  WebContents* newtab2 = browser()->GetSelectedWebContents();
   EXPECT_TRUE(newtab2);
   EXPECT_NE(oldtab, newtab2);
   nav_observer2.Wait();
@@ -467,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
 
   // Start with an http URL.
   ui_test_utils::NavigateToURL(browser(), http_url);
-  TabContents* oldtab = browser()->GetSelectedTabContents();
+  WebContents* oldtab = browser()->GetSelectedWebContents();
   content::RenderProcessHost* process = oldtab->GetRenderProcessHost();
 
   // Now open a tab to a blank page, set its opener to null, and redirect it
@@ -489,7 +489,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   // Wait for popup window to appear and finish navigating.
   popup_observer.Wait();
   ASSERT_EQ(2, browser()->tab_count());
-  TabContents* newtab = browser()->GetSelectedTabContents();
+  WebContents* newtab = browser()->GetSelectedWebContents();
   EXPECT_TRUE(newtab);
   EXPECT_NE(oldtab, newtab);
   nav_observer.Wait();
@@ -669,7 +669,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  NavigationEntry* entry = browser()->GetSelectedTabContents()->
+  NavigationEntry* entry = browser()->GetSelectedWebContents()->
       GetController().GetActiveEntry();
   EXPECT_EQ(expected_favicon_url.spec(), entry->GetFavicon().url.spec());
 }
@@ -689,7 +689,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_FaviconChange) {
   ASSERT_TRUE(file_url.SchemeIs(chrome::kFileScheme));
   ui_test_utils::NavigateToURL(browser(), file_url);
 
-  NavigationEntry* entry = browser()->GetSelectedTabContents()->
+  NavigationEntry* entry = browser()->GetSelectedWebContents()->
       GetController().GetActiveEntry();
   static const FilePath::CharType* kIcon =
       FILE_PATH_LITERAL("test1.png");
@@ -793,7 +793,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
   AddTabAtIndex(0, GURL(test_server()->GetURL("files/english_page.html")),
                 content::PAGE_TRANSITION_TYPED);
 
-  TabContents* current_tab = browser()->GetSelectedTabContents();
+  WebContents* current_tab = browser()->GetSelectedWebContents();
   TabContentsWrapper* wrapper = browser()->GetSelectedTabContentsWrapper();
   TranslateTabHelper* helper = wrapper->translate_tab_helper();
   content::Source<WebContents> source(current_tab);
@@ -835,7 +835,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestNewTabExitsFullscreen) {
   AddTabAtIndex(
       0, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
 
-  TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
+  WebContents* fullscreen_tab = browser()->GetSelectedWebContents();
 
   {
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(
@@ -871,7 +871,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestTabExitsItselfFromFullscreen) {
   AddTabAtIndex(
       0, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
 
-  TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
+  WebContents* fullscreen_tab = browser()->GetSelectedWebContents();
 
   {
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(
@@ -900,7 +900,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestFullscreenBubbleMouseLockState) {
   AddTabAtIndex(1, GURL(chrome::kAboutBlankURL),
                 content::PAGE_TRANSITION_TYPED);
 
-  TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
+  WebContents* fullscreen_tab = browser()->GetSelectedWebContents();
 
   {
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(
@@ -932,7 +932,7 @@ IN_PROC_BROWSER_TEST_F(
   AddTabAtIndex(
       0, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
 
-  TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
+  WebContents* fullscreen_tab = browser()->GetSelectedWebContents();
 
   {
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(
@@ -1159,7 +1159,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
   ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContents()->GetController()));
+          &browser()->GetSelectedWebContents()->GetController()));
   browser()->GoBack(CURRENT_TAB);
   back_nav_load_observer.Wait();
   EXPECT_TRUE(browser()->command_updater()->IsCommandEnabled(IDC_FORWARD));
@@ -1167,7 +1167,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
   ui_test_utils::WindowedNotificationObserver forward_nav_load_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContents()->GetController()));
+          &browser()->GetSelectedWebContents()->GetController()));
   browser()->GoForward(CURRENT_TAB);
   // This check will happen before the navigation completes, since the browser
   // won't process the renderer's response until the Wait() call below.
@@ -1305,7 +1305,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, PageZoom) {
-  TabContents* contents = browser()->GetSelectedTabContents();
+  WebContents* contents = browser()->GetSelectedWebContents();
   bool enable_plus, enable_minus;
 
   ui_test_utils::WindowedNotificationObserver zoom_in_observer(
@@ -1350,7 +1350,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SAVE_PAGE));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_ENCODING_MENU));
 
-  TabContents* contents = browser()->GetSelectedTabContents();
+  WebContents* contents = browser()->GetSelectedWebContents();
   TestInterstitialPage* interstitial = new TestInterstitialPage(
       contents, false, GURL());
 

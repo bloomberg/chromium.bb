@@ -45,6 +45,7 @@
 #include "ui/views/widget/widget.h"
 
 using content::UserMetricsAction;
+using content::WebContents;
 using ui::MenuModel;
 using views::CustomButton;
 using views::ImageButton;
@@ -505,7 +506,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
   void UpdateZoomControls() {
     bool enable_increment = false;
     bool enable_decrement = false;
-    TabContents* selected_tab = menu_->browser_->GetSelectedTabContents();
+    WebContents* selected_tab = menu_->browser_->GetSelectedWebContents();
     int zoom = 100;
     if (selected_tab)
       zoom = selected_tab->GetZoomPercent(&enable_increment, &enable_decrement);
@@ -526,7 +527,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
 
     int max_w = 0;
 
-    TabContents* selected_tab = menu_->browser_->GetSelectedTabContents();
+    WebContents* selected_tab = menu_->browser_->GetSelectedWebContents();
     if (selected_tab) {
       int min_percent = selected_tab->GetMinimumZoomPercent();
       int max_percent = selected_tab->GetMaximumZoomPercent();

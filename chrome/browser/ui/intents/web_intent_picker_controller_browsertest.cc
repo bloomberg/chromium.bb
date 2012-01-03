@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
   OnServiceChosen(controller, 1);
   ASSERT_EQ(2, browser()->tab_count());
   EXPECT_EQ(GURL(kServiceURL2),
-            browser()->GetSelectedTabContents()->GetURL());
+            browser()->GetSelectedWebContents()->GetURL());
 
   EXPECT_TRUE(host->dispatched_);
 

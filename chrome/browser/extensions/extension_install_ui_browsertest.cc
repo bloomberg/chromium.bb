@@ -12,7 +12,9 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
+
+using content::WebContents;
 
 class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
  public:
@@ -108,9 +110,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                                                 browser()->profile()));
 
   EXPECT_EQ(num_tabs + 1, browser()->tab_count());
-  TabContents* tab_contents = browser()->GetSelectedTabContents();
-  ASSERT_TRUE(tab_contents);
-  EXPECT_TRUE(StartsWithASCII(tab_contents->GetURL().spec(),
+  WebContents* web_contents = browser()->GetSelectedWebContents();
+  ASSERT_TRUE(web_contents);
+  EXPECT_TRUE(StartsWithASCII(web_contents->GetURL().spec(),
                               "chrome://newtab/", false));
 }
 
@@ -129,8 +131,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
 
   EXPECT_EQ(num_incognito_tabs, incognito_browser->tab_count());
   EXPECT_EQ(num_normal_tabs + 1, browser()->tab_count());
-  TabContents* tab_contents = browser()->GetSelectedTabContents();
-  ASSERT_TRUE(tab_contents);
-  EXPECT_TRUE(StartsWithASCII(tab_contents->GetURL().spec(),
+  WebContents* web_contents = browser()->GetSelectedWebContents();
+  ASSERT_TRUE(web_contents);
+  EXPECT_TRUE(StartsWithASCII(web_contents->GetURL().spec(),
                               "chrome://newtab/", false));
 }

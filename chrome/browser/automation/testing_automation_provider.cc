@@ -3538,7 +3538,7 @@ void TestingAutomationProvider::OmniboxAcceptInput(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   NavigationController& controller =
-      browser->GetSelectedTabContents()->GetController();
+      browser->GetSelectedWebContents()->GetController();
   new OmniboxAcceptNotificationObserver(&controller, this, reply_message);
   browser->window()->GetLocationBar()->AcceptInput();
 }
@@ -5846,7 +5846,7 @@ void TestingAutomationProvider::LaunchApp(
       service->extension_prefs()->GetLaunchContainer(
           extension, ExtensionPrefs::LAUNCH_REGULAR);
 
-  TabContents* old_contents = browser->GetSelectedTabContents();
+  WebContents* old_contents = browser->GetSelectedWebContents();
   if (!old_contents) {
     AutomationJSONReply(this, reply_message).SendError(
         "Cannot identify selected tab contents.");

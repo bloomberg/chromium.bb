@@ -15,7 +15,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 
@@ -27,7 +27,7 @@ class ChromeAppAPITest : public ExtensionBrowserTest {
     bool result;
     CHECK(
         ui_test_utils::ExecuteJavaScriptAndExtractBool(
-            browser()->GetSelectedTabContents()->GetRenderViewHost(),
+            browser()->GetSelectedWebContents()->GetRenderViewHost(),
             L"", get_app_is_installed, &result));
     return result;
   }
@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
   std::string result;
   ASSERT_TRUE(
       ui_test_utils::ExecuteJavaScriptAndExtractString(
-          browser()->GetSelectedTabContents()->GetRenderViewHost(),
+          browser()->GetSelectedWebContents()->GetRenderViewHost(),
           L"", get_app_details, &result));
   EXPECT_EQ("null", result);
 
@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
   ui_test_utils::NavigateToURL(browser(), app_url);
   ASSERT_TRUE(
       ui_test_utils::ExecuteJavaScriptAndExtractString(
-          browser()->GetSelectedTabContents()->GetRenderViewHost(),
+          browser()->GetSelectedWebContents()->GetRenderViewHost(),
           L"", get_app_details, &result));
   scoped_ptr<DictionaryValue> app_details(
       static_cast<DictionaryValue*>(
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
   // that isInstalled should have the initial value.
   ASSERT_TRUE(
       ui_test_utils::ExecuteJavaScriptAndExtractString(
-          browser()->GetSelectedTabContents()->GetRenderViewHost(),
+          browser()->GetSelectedWebContents()->GetRenderViewHost(),
           L"",
           L"window.domAutomationController.send("
           L"    function() {"
@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, GetDetailsForFrame) {
   bool result = false;
   ASSERT_TRUE(
       ui_test_utils::ExecuteJavaScriptAndExtractBool(
-          browser()->GetSelectedTabContents()->GetRenderViewHost(),
+          browser()->GetSelectedWebContents()->GetRenderViewHost(),
           L"", test_unsuccessful_access, &result));
   EXPECT_TRUE(result);
 
@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, GetDetailsForFrame) {
   std::string json;
   ASSERT_TRUE(
       ui_test_utils::ExecuteJavaScriptAndExtractString(
-          browser()->GetSelectedTabContents()->GetRenderViewHost(),
+          browser()->GetSelectedWebContents()->GetRenderViewHost(),
           L"", get_details_for_frame, &json));
 
   scoped_ptr<DictionaryValue> app_details(

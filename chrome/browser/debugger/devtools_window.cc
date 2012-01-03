@@ -79,7 +79,7 @@ void DevToolsWindow::RegisterUserPrefs(PrefService* prefs) {
 
 // static
 TabContentsWrapper* DevToolsWindow::GetDevToolsContents(
-    TabContents* inspected_tab) {
+    WebContents* inspected_tab) {
   if (!inspected_tab)
     return NULL;
 

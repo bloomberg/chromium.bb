@@ -44,7 +44,7 @@ class TabContents;
 // Depending on |contents|'s state, decides whether the docked web inspector
 // should be shown or hidden and adjusts its height (|delegate_| handles
 // the actual resize).
-- (void)updateDevToolsForTabContents:(TabContents*)contents
+- (void)updateDevToolsForWebContents:(content::WebContents*)contents
                          withProfile:(Profile*)profile;
 
 // Specifies whether devtools should dock to right.

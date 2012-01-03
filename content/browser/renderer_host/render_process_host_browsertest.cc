@@ -15,6 +15,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 
+using content::WebContents;
+
 RenderProcessHostTest::RenderProcessHostTest() {
   EnableDOMAutomation();
 }
@@ -42,8 +44,8 @@ void DoNothing() {}
 // handle.
 base::ProcessHandle RenderProcessHostTest::ShowSingletonTab(const GURL& page) {
   browser()->ShowSingletonTab(page);
-  TabContents* tc = browser()->GetSelectedTabContents();
-  CHECK(tc->GetURL() == page);
+  WebContents* wc = browser()->GetSelectedWebContents();
+  CHECK(wc->GetURL() == page);
 
   // Ensure that the backgrounding / foregrounding gets a chance to run.
   content::BrowserThread::PostTaskAndReply(
@@ -51,7 +53,7 @@ base::ProcessHandle RenderProcessHostTest::ShowSingletonTab(const GURL& page) {
       base::Bind(DoNothing), MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
 
-  return tc->GetRenderProcessHost()->GetHandle();
+  return wc->GetRenderProcessHost()->GetHandle();
 }
 
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {

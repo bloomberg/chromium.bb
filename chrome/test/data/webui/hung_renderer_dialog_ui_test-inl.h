@@ -12,6 +12,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
 
+using content::WebContents;
+
 // Test framework for chrome/test/data/webui/hung_renderer_dialog_test.js.
 class HungRendererDialogUITest : public WebUIBrowserTest {
  public:
@@ -29,14 +31,14 @@ void HungRendererDialogUITest::ShowHungRendererDialogInternal() {
   // Choose which tab contents to report as hung.  In this case, the default
   // tab contents will be about:blank.
   ASSERT_TRUE(browser());
-  TabContents* tab_contents = browser()->GetSelectedTabContents();
+  WebContents* web_contents = browser()->GetSelectedWebContents();
 
   // The TestHtmlDialogObserver will catch our dialog when it gets created.
   TestHtmlDialogObserver dialog_observer(this);
 
   // Show a disabled Hung Renderer Dialog that won't kill processes or restart
   // hang timers.
-  HungRendererDialog::ShowHungRendererDialogInternal(tab_contents, false);
+  HungRendererDialog::ShowHungRendererDialogInternal(web_contents, false);
 
   // Now we can get the WebUI object from the observer, and make some details
   // about our test available to the JavaScript.

@@ -50,7 +50,7 @@ class ConstrainedHtmlDelegateGtk : public views::NativeWidgetGtk,
   virtual void DeleteDelegate() OVERRIDE {
     if (!closed_via_webui_)
       html_delegate_->OnDialogClosed("");
-    tab_container_->ChangeTabContents(NULL);
+    tab_container_->ChangeWebContents(NULL);
   }
   virtual bool GetBackgroundColor(GdkColor* color) OVERRIDE {
     *color = ui::kGdkWhite;
@@ -114,7 +114,7 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
 
   tab_container_ = new TabContentsContainer;
   GetWidget()->SetContentsView(tab_container_);
-  tab_container_->ChangeTabContents(html_tab_contents_->tab_contents());
+  tab_container_->ChangeWebContents(html_tab_contents_->web_contents());
 
   gfx::Size dialog_size;
   html_delegate_->GetDialogSize(&dialog_size);

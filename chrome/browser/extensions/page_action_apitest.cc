@@ -15,7 +15,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
   ASSERT_TRUE(test_server()->Start());
@@ -41,7 +41,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
     // Simulate the page action being clicked.
     ResultCatcher catcher;
     int tab_id =
-        ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
+        ExtensionTabUtil::GetTabId(browser()->GetSelectedWebContents());
     ExtensionService* service = browser()->profile()->GetExtensionService();
     service->browser_event_router()->PageActionExecuted(
         browser()->profile(), extension->id(), "", tab_id, "", 0);
@@ -69,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageActionAddPopup) {
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedWebContents());
 
   ExtensionAction* page_action = extension->page_action();
   ASSERT_TRUE(page_action)
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageActionRemovePopup) {
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedWebContents());
 
   ExtensionAction* page_action = extension->page_action();
   ASSERT_TRUE(page_action)
@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OldPageActions) {
   {
     ResultCatcher catcher;
     int tab_id =
-        ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
+        ExtensionTabUtil::GetTabId(browser()->GetSelectedWebContents());
     ExtensionService* service = browser()->profile()->GetExtensionService();
     service->browser_event_router()->PageActionExecuted(
         browser()->profile(), extension->id(), "action", tab_id, "", 1);

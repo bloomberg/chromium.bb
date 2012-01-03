@@ -54,6 +54,10 @@ namespace browser {
 struct NavigateParams;
 }
 
+namespace content {
+class WebContents;
+}
+
 namespace gfx {
 class Size;
 }
@@ -106,7 +110,7 @@ void WaitForBrowserActionUpdated(ExtensionAction* browser_action);
 
 // Waits for a load stop for the specified |tab|'s controller, if the tab is
 // currently loading.  Otherwise returns immediately.
-void WaitForLoadStop(TabContents* tab);
+void WaitForLoadStop(content::WebContents* tab);
 
 // Waits for a new browser to be created, returning the browser.
 Browser* WaitForNewBrowser();
@@ -192,7 +196,7 @@ GURL GetFileUrlWithQuery(const FilePath& path, const std::string& query_string);
 AppModalDialog* WaitForAppModalDialog();
 
 // Causes the specified tab to crash. Blocks until it is crashed.
-void CrashTab(TabContents* tab);
+void CrashTab(content::WebContents* tab);
 
 // Performs a find in the page of the specified tab. Returns the number of
 // matches found.  |ordinal| is an optional parameter which is set to the index

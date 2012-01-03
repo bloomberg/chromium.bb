@@ -1560,8 +1560,8 @@ void TabContents::NotifySwapped() {
   // pointer.  See Bug 1230284.
   notify_disconnection_ = true;
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
-      content::Source<TabContents>(this),
+      content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
+      content::Source<WebContents>(this),
       content::NotificationService::NoDetails());
 }
 

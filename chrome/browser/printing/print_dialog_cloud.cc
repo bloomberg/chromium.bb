@@ -604,8 +604,7 @@ void CreateDialogImpl(const FilePath& path_to_file,
   Profile* profile = NULL;
   if (modal) {
     if (job_title.empty()) {
-      WebContents* web_contents =
-          browser->GetSelectedTabContentsWrapper()->web_contents();
+      WebContents* web_contents = browser->GetSelectedWebContents();
       if (web_contents)
         job_title = web_contents->GetTitle();
     }

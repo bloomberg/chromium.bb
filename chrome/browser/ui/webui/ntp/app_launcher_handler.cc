@@ -559,11 +559,11 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
     // To give a more "launchy" experience when using the NTP launcher, we close
     // it automatically.
     Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
-    TabContents* old_contents = NULL;
+    WebContents* old_contents = NULL;
     if (browser)
-      old_contents = browser->GetSelectedTabContents();
+      old_contents = browser->GetSelectedWebContents();
 
-    TabContents* new_contents = Browser::OpenApplication(
+    WebContents* new_contents = Browser::OpenApplication(
         profile, extension, launch_container, GURL(url),
         old_contents ? CURRENT_TAB : NEW_FOREGROUND_TAB);
 

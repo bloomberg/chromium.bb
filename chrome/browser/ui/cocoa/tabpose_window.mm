@@ -252,7 +252,7 @@ void ThumbnailLoader::LoadThumbnail() {
 - (int)bottomOffset {
   int bottomOffset = 0;
   TabContentsWrapper* devToolsContents =
-      DevToolsWindow::GetDevToolsContents(contents_->tab_contents());
+      DevToolsWindow::GetDevToolsContents(contents_->web_contents());
   if (devToolsContents && devToolsContents->tab_contents() &&
       devToolsContents->tab_contents()->GetRenderViewHost() &&
       devToolsContents->tab_contents()->GetRenderViewHost()->view()) {

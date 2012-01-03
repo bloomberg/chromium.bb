@@ -16,9 +16,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "third_party/isimpledom/ISimpleDOMNode.h"
 
@@ -196,7 +196,7 @@ void RecursiveFindNodeInAccessibilityTree(
 IAccessible*
 AccessibilityWinBrowserTest::GetRendererAccessible() {
   HWND hwnd_render_widget_host_view =
-      browser()->GetSelectedTabContents()->GetRenderWidgetHostView()->
+      browser()->GetSelectedWebContents()->GetRenderWidgetHostView()->
           GetNativeView();
 
   // Invoke windows screen reader detection by sending the WM_GETOBJECT message
@@ -216,7 +216,7 @@ AccessibilityWinBrowserTest::GetRendererAccessible() {
 }
 
 void AccessibilityWinBrowserTest::ExecuteScript(wstring script) {
-  browser()->GetSelectedTabContents()->GetRenderViewHost()->
+  browser()->GetSelectedWebContents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(L"", script);
 }
 

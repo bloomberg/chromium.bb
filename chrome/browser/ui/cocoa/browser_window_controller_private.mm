@@ -36,6 +36,8 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "ui/base/ui_base_types.h"
 
+using content::WebContents;
+
 // Forward-declare symbols that are part of the 10.6 SDK.
 #if !defined(MAC_OS_X_VERSION_10_6) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
@@ -518,7 +520,7 @@ willPositionSheet:(NSWindow*)sheet
 
   // If the relayout shifts the content area up or down, let the renderer know.
   if (contentShifted) {
-    if (TabContents* contents = browser_->GetSelectedTabContents()) {
+    if (WebContents* contents = browser_->GetSelectedWebContents()) {
       if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
         rwhv->WindowFrameChanged();
     }

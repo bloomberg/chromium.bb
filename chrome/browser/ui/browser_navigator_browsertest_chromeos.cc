@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 
 namespace {
 
@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
   EXPECT_EQ(incognito_browser, p.browser);
   EXPECT_EQ(2, incognito_browser->tab_count());
   EXPECT_EQ(GURL("chrome://settings"),
-            incognito_browser->GetSelectedTabContents()->GetURL());
+            incognito_browser->GetSelectedWebContents()->GetURL());
 }
 
 // This test verifies that navigating to a large window with

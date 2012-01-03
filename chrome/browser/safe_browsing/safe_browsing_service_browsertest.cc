@@ -35,7 +35,7 @@
 using base::Histogram;
 using base::StatisticsRecorder;
 using content::BrowserThread;
-
+using content::WebContents;
 using ::testing::_;
 using ::testing::Mock;
 using ::testing::StrictMock;
@@ -381,7 +381,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   }
 
   bool ShowingInterstitialPage() {
-    TabContents* contents = browser()->GetSelectedTabContents();
+    WebContents* contents = browser()->GetSelectedWebContents();
     InterstitialPage* interstitial_page = contents->GetInterstitialPage();
     return interstitial_page != NULL;
   }

@@ -760,7 +760,7 @@ class NotificationBridge : public content::NotificationObserver {
   }
   OpenURLParams params(
       url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
-  browser_->GetSelectedTabContents()->OpenURL(params);
+  browser_->GetSelectedWebContents()->OpenURL(params);
 }
 
 // (URLDropTargetController protocol)
@@ -777,7 +777,7 @@ class NotificationBridge : public content::NotificationObserver {
 
   OpenURLParams params(
       url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
-  browser_->GetSelectedTabContents()->OpenURL(params);
+  browser_->GetSelectedWebContents()->OpenURL(params);
 }
 
 // (URLDropTargetController protocol)

@@ -15,8 +15,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 
 using content::NavigationEntry;
@@ -33,7 +33,7 @@ class ExtensionURLRewriteBrowserTest : public ExtensionBrowserTest {
   }
 
   NavigationController* GetNavigationController() const {
-    return &browser()->GetSelectedTabContents()->GetController();
+    return &browser()->GetSelectedWebContents()->GetController();
   }
 
   NavigationEntry* GetNavigationEntry() const {

@@ -19,6 +19,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/context_menu.h"
 
+using content::WebContents;
+
 namespace {
 
 class TestRenderViewContextMenu : public RenderViewContextMenu {
@@ -195,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationRequestOpenTab) {
   ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_requestOpenTab.html"))
       << message_;
 
-  TabContents* tab = browser()->GetSelectedTabContents();
+  WebContents* tab = browser()->GetSelectedWebContents();
   ui_test_utils::WaitForLoadStop(tab);
 
   ResultCatcher catcher;

@@ -10,6 +10,8 @@
 
 typedef InProcessBrowserTest WebKitBrowserTest;
 
+using content::WebContents;
+
 const char kAsyncScriptThatAbortsOnEndPage[] =
     "files/webkit/async_script_abort_on_end.html";
 
@@ -26,12 +28,12 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, AbortOnEnd) {
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  TabContents* tab_contents = browser()->GetSelectedTabContents();
+  WebContents* web_contents = browser()->GetSelectedWebContents();
   // If you are seeing this test fail, please strongly investigate the
   // possibility that http://crbug.com/75604 and
   // https://bugs.webkit.org/show_bug.cgi?id=71122 have reverted before
   // marking this as flakey.
-  EXPECT_FALSE(tab_contents->IsCrashed());
+  EXPECT_FALSE(web_contents->IsCrashed());
 }
 
 // This is a browser test because the DumpRenderTree framework holds
@@ -50,6 +52,6 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, XsltBadImport) {
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  TabContents* tab_contents = browser()->GetSelectedTabContents();
-  EXPECT_FALSE(tab_contents->IsCrashed());
+  WebContents* web_contents = browser()->GetSelectedWebContents();
+  EXPECT_FALSE(web_contents->IsCrashed());
 }

@@ -60,13 +60,13 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
-      browser()->GetSelectedTabContents()->GetSiteInstance());
+      browser()->GetSelectedWebContents()->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance != NULL);
 
   // Test clicking a rel=noreferrer + target=blank link.
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickNoRefTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
@@ -79,16 +79,16 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(1, browser()->active_index());
   EXPECT_EQ("/files/title2.html",
-            browser()->GetSelectedTabContents()->GetURL().path());
+            browser()->GetSelectedWebContents()->GetURL().path());
 
   // Wait for the cross-site transition in the new tab to finish.
-  ui_test_utils::WaitForLoadStop(browser()->GetSelectedTabContents());
-  EXPECT_FALSE(browser()->GetSelectedTabContents()->
+  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
+  EXPECT_FALSE(browser()->GetSelectedWebContents()->
                    GetRenderManagerForTesting()->pending_render_view_host());
 
   // Should have a new SiteInstance.
   scoped_refptr<SiteInstance> noref_blank_site_instance(
-      browser()->GetSelectedTabContents()->GetSiteInstance());
+      browser()->GetSelectedWebContents()->GetSiteInstance());
   EXPECT_NE(orig_site_instance, noref_blank_site_instance);
 }
 
@@ -114,13 +114,13 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
-      browser()->GetSelectedTabContents()->GetSiteInstance());
+      browser()->GetSelectedWebContents()->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance != NULL);
 
   // Test clicking a target=blank link.
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
@@ -134,13 +134,13 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(1, browser()->active_index());
 
   // Wait for the cross-site transition in the new tab to finish.
-  ui_test_utils::WaitForLoadStop(browser()->GetSelectedTabContents());
+  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
   EXPECT_EQ("/files/title2.html",
-            browser()->GetSelectedTabContents()->GetURL().path());
+            browser()->GetSelectedWebContents()->GetURL().path());
 
   // Should have the same SiteInstance.
   scoped_refptr<SiteInstance> blank_site_instance(
-      browser()->GetSelectedTabContents()->GetSiteInstance());
+      browser()->GetSelectedWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, blank_site_instance);
 }
 
@@ -166,29 +166,29 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
-      browser()->GetSelectedTabContents()->GetSiteInstance());
+      browser()->GetSelectedWebContents()->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance != NULL);
 
   // Test clicking a rel=noreferrer link.
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickNoRefLink());",
       &success));
   EXPECT_TRUE(success);
 
   // Wait for the cross-site transition in the current tab to finish.
-  ui_test_utils::WaitForLoadStop(browser()->GetSelectedTabContents());
+  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
 
   // Opens in same tab.
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(0, browser()->active_index());
   EXPECT_EQ("/files/title2.html",
-            browser()->GetSelectedTabContents()->GetURL().path());
+            browser()->GetSelectedWebContents()->GetURL().path());
 
   // Should have the same SiteInstance.
   scoped_refptr<SiteInstance> noref_site_instance(
-      browser()->GetSelectedTabContents()->GetSiteInstance());
+      browser()->GetSelectedWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, noref_site_instance);
 }
 
@@ -214,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
 
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
-      browser()->GetSelectedTabContents()->GetSiteInstance());
+      browser()->GetSelectedWebContents()->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance != NULL);
 
   // Load a cross-site page that fails with a 204 error.
@@ -222,31 +222,31 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
 
   // We should still be looking at the normal page.
   scoped_refptr<SiteInstance> post_nav_site_instance(
-      browser()->GetSelectedTabContents()->GetSiteInstance());
+      browser()->GetSelectedWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, post_nav_site_instance);
   EXPECT_EQ("/files/click-noreferrer-links.html",
-            browser()->GetSelectedTabContents()->GetURL().path());
+            browser()->GetSelectedWebContents()->GetURL().path());
 
   // Renderer-initiated navigations should work.
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickNoRefLink());",
       &success));
   EXPECT_TRUE(success);
 
   // Wait for the cross-site transition in the current tab to finish.
-  ui_test_utils::WaitForLoadStop(browser()->GetSelectedTabContents());
+  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
 
   // Opens in same tab.
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(0, browser()->active_index());
   EXPECT_EQ("/files/title2.html",
-            browser()->GetSelectedTabContents()->GetURL().path());
+            browser()->GetSelectedWebContents()->GetURL().path());
 
   // Should have the same SiteInstance.
   scoped_refptr<SiteInstance> noref_site_instance(
-      browser()->GetSelectedTabContents()->GetSiteInstance());
+      browser()->GetSelectedWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, noref_site_instance);
 }
 
@@ -316,22 +316,22 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
 
   // Observe the newly created render_view_host to make sure it will not leak.
   RenderViewHostObserverArray rvh_observers;
-  rvh_observers.AddObserverToRVH(browser()->GetSelectedTabContents()->
+  rvh_observers.AddObserverToRVH(browser()->GetSelectedWebContents()->
       GetRenderViewHost());
 
   GURL view_source_url(chrome::kViewSourceScheme + std::string(":") +
       navigated_url.spec());
   ui_test_utils::NavigateToURL(browser(), view_source_url);
-  rvh_observers.AddObserverToRVH(browser()->GetSelectedTabContents()->
+  rvh_observers.AddObserverToRVH(browser()->GetSelectedWebContents()->
       GetRenderViewHost());
 
   // Now navigate to a different instance so that we swap out again.
   ui_test_utils::NavigateToURL(browser(),
                                https_server.GetURL("files/title2.html"));
-  rvh_observers.AddObserverToRVH(browser()->GetSelectedTabContents()->
+  rvh_observers.AddObserverToRVH(browser()->GetSelectedWebContents()->
       GetRenderViewHost());
 
   // This used to leak a render view host.
-  browser()->CloseTabContents(browser()->GetSelectedTabContents());
+  browser()->CloseTabContents(browser()->GetSelectedWebContents());
   EXPECT_EQ(0U, rvh_observers.GetNumObservers());
 }

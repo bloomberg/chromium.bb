@@ -25,6 +25,7 @@ class TabContents;
 
 namespace content {
 class PageNavigator;
+class WebContents;
 }
 
 namespace views {
@@ -191,8 +192,8 @@ void ToggleWhenVisible(Profile* profile);
 // Register user preferences for BookmarksBar.
 void RegisterUserPrefs(PrefService* prefs);
 
-// Fills in the URL and title for a bookmark of |tab_contents|.
-void GetURLAndTitleToBookmark(TabContents* tab_contents,
+// Fills in the URL and title for a bookmark of |web_contents|.
+void GetURLAndTitleToBookmark(content::WebContents* web_contents,
                               GURL* url,
                               string16* title);
 

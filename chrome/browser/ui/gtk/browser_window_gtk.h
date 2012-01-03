@@ -185,7 +185,7 @@ class BrowserWindowGtk : public BrowserWindow,
   // Accessor for the tab strip.
   TabStripGtk* tabstrip() const { return tabstrip_.get(); }
 
-  void UpdateDevToolsForContents(TabContents* contents);
+  void UpdateDevToolsForContents(content::WebContents* contents);
 
   // Shows docked devtools.
   void ShowDevToolsContainer();

@@ -16,8 +16,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/web_contents.h"
 #include "net/test/test_server.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -85,7 +85,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
     ui_test_utils::RegisterAndWait(
         this,
         chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
-        content::Source<WebContents>(wrapper->tab_contents()));
+        content::Source<WebContents>(wrapper->web_contents()));
     ASSERT_FALSE(snapshot_different_) << "Rendering didn't match, see result "
         "at " << snapshot_filename_.value().c_str();
   }
@@ -234,13 +234,13 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Scroll) {
   wheel_event.type = WebKit::WebInputEvent::MouseWheel;
   wheel_event.deltaY = -200;
   wheel_event.wheelTicksY = -2;
-  TabContents* tab_contents = browser()->GetSelectedTabContents();
-  tab_contents->GetRenderViewHost()->ForwardWheelEvent(wheel_event);
+  WebContents* web_contents = browser()->GetSelectedWebContents();
+  web_contents->GetRenderViewHost()->ForwardWheelEvent(wheel_event);
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
 
   int y_offset = 0;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(),
+      browser()->GetSelectedWebContents()->GetRenderViewHost(),
       std::wstring(),
       L"window.domAutomationController.send(plugin.pageYOffset())",
       &y_offset));
@@ -269,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
   objects[ui::Clipboard::CBF_TEXT] = params;
   clipboard.WriteObjects(objects);
 
-  browser()->GetSelectedTabContents()->GetRenderViewHost()->Copy();
+  browser()->GetSelectedWebContents()->GetRenderViewHost()->Copy();
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
 
   std::string text;
@@ -285,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
   ASSERT_TRUE(pdf_test_server()->Start());
 
   NavigationController* controller =
-      &(browser()->GetSelectedTabContents()->GetController());
+      &(browser()->GetSelectedWebContents()->GetController());
   content::NotificationRegistrar registrar;
   registrar.Add(this,
                 content::NOTIFICATION_LOAD_STOP,
@@ -320,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
       // and before creating a byte-range request loader.
       bool complete = false;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-          browser()->GetSelectedTabContents()->GetRenderViewHost(),
+          browser()->GetSelectedWebContents()->GetRenderViewHost(),
           std::wstring(),
           L"window.domAutomationController.send(plugin.documentLoadComplete())",
           &complete));
@@ -331,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
       // nested message loop for the JS call.
       if (last_count != load_stop_notification_count())
         continue;
-      ui_test_utils::WaitForLoadStop(browser()->GetSelectedTabContents());
+      ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
     }
   }
 }
@@ -351,14 +351,14 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_OnLoadAndReload) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContents()->GetController()));
+          &browser()->GetSelectedWebContents()->GetController()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(),
+      browser()->GetSelectedWebContents()->GetRenderViewHost(),
       std::wstring(),
       L"reloadPDF();"));
   observer.Wait();
 
-  ASSERT_EQ("success", browser()->GetSelectedTabContents()->GetURL().query());
+  ASSERT_EQ("success", browser()->GetSelectedWebContents()->GetURL().query());
 }
 
 }  // namespace

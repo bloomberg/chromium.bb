@@ -19,6 +19,8 @@
 #include "content/public/common/speech_input_result.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
+using content::WebContents;
+
 namespace speech_input {
 class FakeSpeechInputManager;
 }
@@ -160,13 +162,13 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
     mouse_event.x = 0;
     mouse_event.y = 0;
     mouse_event.clickCount = 1;
-    TabContents* tab_contents = browser()->GetSelectedTabContents();
+    WebContents* web_contents = browser()->GetSelectedWebContents();
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        content::Source<NavigationController>(&tab_contents->GetController()));
-    tab_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+        content::Source<NavigationController>(&web_contents->GetController()));
+    web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
     mouse_event.type = WebKit::WebInputEvent::MouseUp;
-    tab_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+    web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
     observer.Wait();
   }
 
@@ -176,7 +178,7 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
     // then sets the URL fragment as 'pass' if it received the expected string.
     LoadAndStartSpeechInputTest(filename);
 
-    EXPECT_EQ("pass", browser()->GetSelectedTabContents()->GetURL().ref());
+    EXPECT_EQ("pass", browser()->GetSelectedWebContents()->GetURL().ref());
   }
 
   // InProcessBrowserTest methods.

@@ -30,10 +30,13 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using content::WebContents;
 
 // Tests are flaky on Linux because of http://crbug.com/80118.
 #if defined(OS_LINUX)
@@ -106,7 +109,7 @@ class InstantTest : public InProcessBrowserTest {
   // the browser. Returns true on success.
   bool WaitForMessageToBeProcessedByRenderer() {
     bool result = false;
-    return GetBoolFromJavascript(preview()->tab_contents(), "true", &result) &&
+    return GetBoolFromJavascript(preview()->web_contents(), "true", &result) &&
            result;
   }
 
@@ -138,7 +141,7 @@ class InstantTest : public InProcessBrowserTest {
   bool SetSuggestionsJavascriptArgument(const std::string& argument) {
     std::wstring script = UTF8ToWide(base::StringPrintf(
         "window.setSuggestionsArgument = %s;", argument.c_str()));
-    RenderViewHost* rvh = preview()->tab_contents()->GetRenderViewHost();
+    RenderViewHost* rvh = preview()->web_contents()->GetRenderViewHost();
     return ui_test_utils::ExecuteJavaScript(rvh, std::wstring(), script);
   }
 
@@ -147,28 +150,28 @@ class InstantTest : public InProcessBrowserTest {
         "window.domAutomationController.send(%s)", script.c_str()));
   }
 
-  bool GetStringFromJavascript(TabContents* tab,
+  bool GetStringFromJavascript(WebContents* tab,
                                const std::string& script,
                                std::string* result) {
     return ui_test_utils::ExecuteJavaScriptAndExtractString(
         tab->GetRenderViewHost(), std::wstring(), WrapScript(script), result);
   }
 
-  bool GetIntFromJavascript(TabContents* tab,
+  bool GetIntFromJavascript(WebContents* tab,
                             const std::string& script,
                             int* result) {
     return ui_test_utils::ExecuteJavaScriptAndExtractInt(
         tab->GetRenderViewHost(), std::wstring(), WrapScript(script), result);
   }
 
-  bool GetBoolFromJavascript(TabContents* tab,
+  bool GetBoolFromJavascript(WebContents* tab,
                              const std::string& script,
                              bool* result) {
     return ui_test_utils::ExecuteJavaScriptAndExtractBool(
         tab->GetRenderViewHost(), std::wstring(), WrapScript(script), result);
   }
 
-  bool CheckVisibilityIs(TabContents* tab, bool visible) {
+  bool CheckVisibilityIs(WebContents* tab, bool visible) {
     bool hidden = visible;
     return GetBoolFromJavascript(tab, "document.webkitHidden", &hidden) &&
            hidden != visible;
@@ -191,7 +194,7 @@ class InstantTest : public InProcessBrowserTest {
   //
   // If |use_last| is true, then the last searchBox values are used instead of
   // the current. Set |use_last| to true when testing OnSubmit/OnCancel.
-  std::string GetSearchStateAsString(TabContents* tab, bool use_last) {
+  std::string GetSearchStateAsString(WebContents* tab, bool use_last) {
     bool sv = false;
     int onsubmitcalls = 0;
     int oncancelcalls = 0;
@@ -285,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(OnChangeEvent)) {
 
   // Check that the value is reflected and onchange is called.
   EXPECT_EQ("true 0 0 1 true d false def false 3 3",
-            GetSearchStateAsString(preview()->tab_contents(), false));
+            GetSearchStateAsString(preview()->web_contents(), false));
 }
 
 // Verify that the onsubmit event is dispatched upon pressing <Enter>.
@@ -301,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(OnSubmitEvent)) {
   EXPECT_TRUE(instant()->IsCurrent());
   EXPECT_EQ("defghi", UTF16ToUTF8(omnibox()->GetText()));
 
-  TabContents* preview_tab = preview()->tab_contents();
+  WebContents* preview_tab = preview()->web_contents();
   EXPECT_TRUE(preview_tab);
 
   ASSERT_TRUE(PressEnter());
@@ -310,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(OnSubmitEvent)) {
   EXPECT_FALSE(preview());
   EXPECT_FALSE(instant()->is_displayable());
   EXPECT_FALSE(instant()->IsCurrent());
-  EXPECT_EQ(preview_tab, browser()->GetSelectedTabContents());
+  EXPECT_EQ(preview_tab, browser()->GetSelectedWebContents());
 
   // We should have two entries. One corresponding to the page the user was
   // first on, and one for the search page.
@@ -338,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(OnCancelEvent)) {
   EXPECT_TRUE(instant()->IsCurrent());
   EXPECT_EQ("defghi", UTF16ToUTF8(omnibox()->GetText()));
 
-  TabContents* preview_tab = preview()->tab_contents();
+  WebContents* preview_tab = preview()->web_contents();
   EXPECT_TRUE(preview_tab);
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -348,7 +351,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(OnCancelEvent)) {
   EXPECT_FALSE(preview());
   EXPECT_FALSE(instant()->is_displayable());
   EXPECT_FALSE(instant()->IsCurrent());
-  EXPECT_EQ(preview_tab, browser()->GetSelectedTabContents());
+  EXPECT_EQ(preview_tab, browser()->GetSelectedWebContents());
 
   // Check that the value is reflected and oncancel is called.
   EXPECT_EQ("true 0 1 1 true d false def false 3 3",
@@ -566,7 +569,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(NonSearchToSearch)) {
   EXPECT_TRUE(instant()->IsCurrent());
 
   RenderWidgetHostView* rwhv =
-      preview()->tab_contents()->GetRenderWidgetHostView();
+      preview()->web_contents()->GetRenderWidgetHostView();
   EXPECT_TRUE(rwhv);
   EXPECT_TRUE(rwhv->IsShowing());
 }
@@ -601,7 +604,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(SearchToNonSearch)) {
   // Send onchange so that the page sends up suggestions. See the comments in
   // NonSearchToSearch for why this is needed.
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      preview()->tab_contents()->GetRenderViewHost(), std::wstring(),
+      preview()->web_contents()->GetRenderViewHost(), std::wstring(),
       L"window.chrome.searchBox.onchange();"));
   ASSERT_TRUE(WaitForMessageToBeProcessedByRenderer());
 
@@ -670,12 +673,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(ValidHeight)) {
   int height = -1;
 
   // searchBox height is not yet set during initial load.
-  ASSERT_TRUE(GetIntFromJavascript(preview()->tab_contents(),
+  ASSERT_TRUE(GetIntFromJavascript(preview()->web_contents(),
       "window.beforeLoadSearchBox.height", &height));
   EXPECT_EQ(0, height);
 
   // searchBox height is available by the time the page loads.
-  ASSERT_TRUE(GetIntFromJavascript(preview()->tab_contents(),
+  ASSERT_TRUE(GetIntFromJavascript(preview()->web_contents(),
       "window.chrome.searchBox.height", &height));
   EXPECT_GT(height, 0);
 }
@@ -702,7 +705,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(DontPersistSearchbox)) {
   SearchAndWaitForPreviewToShow();
 
   std::string value;
-  ASSERT_TRUE(GetStringFromJavascript(preview()->tab_contents(),
+  ASSERT_TRUE(GetStringFromJavascript(preview()->web_contents(),
       "window.chrome.searchBox.value", &value));
   EXPECT_EQ("def", value);
 
@@ -711,7 +714,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(DontPersistSearchbox)) {
   EXPECT_FALSE(preview());
 
   // The searchBox actually gets cleared on commit.
-  ASSERT_TRUE(GetStringFromJavascript(browser()->GetSelectedTabContents(),
+  ASSERT_TRUE(GetStringFromJavascript(browser()->GetSelectedWebContents(),
       "window.chrome.searchBox.value", &value));
   EXPECT_EQ("", value);
 
@@ -719,7 +722,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(DontPersistSearchbox)) {
   ui_test_utils::NavigateToURL(
       browser(), test_server()->GetURL("files/empty.html"));
 
-  ASSERT_TRUE(GetStringFromJavascript(browser()->GetSelectedTabContents(),
+  ASSERT_TRUE(GetStringFromJavascript(browser()->GetSelectedWebContents(),
       "window.chrome.searchBox.value", &value));
   EXPECT_EQ("", value);
 }
@@ -753,7 +756,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(PreloadsInstant)) {
   EXPECT_TRUE(preview());
   EXPECT_FALSE(instant()->is_displayable());
   EXPECT_FALSE(instant()->IsCurrent());
-  ASSERT_TRUE(CheckVisibilityIs(preview()->tab_contents(), false));
+  ASSERT_TRUE(CheckVisibilityIs(preview()->web_contents(), false));
 
   // Adding a new tab shouldn't delete (or recreate) the TabContentsWrapper.
   TabContentsWrapper* preview_tab = preview();
@@ -767,7 +770,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(PreloadsInstant)) {
   // Verify that the preview is in fact showing instant search.
   EXPECT_TRUE(instant()->is_displayable());
   EXPECT_TRUE(instant()->IsCurrent());
-  ASSERT_TRUE(CheckVisibilityIs(preview()->tab_contents(), true));
+  ASSERT_TRUE(CheckVisibilityIs(preview()->web_contents(), true));
 }
 
 // Tests that the instant search page's visibility is set correctly.
@@ -778,7 +781,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(PageVisibilityTest)) {
 
   // Initially navigate to the empty page which should be visible.
   ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(""));
-  TabContents* initial_contents = browser()->GetSelectedTabContents();
+  WebContents* initial_contents = browser()->GetSelectedWebContents();
 
   ASSERT_TRUE(CheckVisibilityIs(initial_contents, true));
 
@@ -786,7 +789,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(PageVisibilityTest)) {
   browser()->window()->GetLocationBar()->FocusLocation(false);
   DetermineInstantSupport();
   SearchAndWaitForPreviewToShow();
-  TabContents* preview_contents = preview()->tab_contents();
+  WebContents* preview_contents = preview()->web_contents();
 
   ASSERT_TRUE(CheckVisibilityIs(preview_contents, true));
   ASSERT_TRUE(CheckVisibilityIs(initial_contents, false));
@@ -803,7 +806,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(PageVisibilityTest)) {
 
   // Commit the preview.
   ASSERT_TRUE(PressEnter());
-  EXPECT_EQ(preview_contents, browser()->GetSelectedTabContents());
+  EXPECT_EQ(preview_contents, browser()->GetSelectedWebContents());
   ASSERT_TRUE(CheckVisibilityIs(preview_contents, true));
 }
 
@@ -861,14 +864,14 @@ IN_PROC_BROWSER_TEST_F(InstantFieldTrialInstantTest, MAYBE(ExperimentEnabled)) {
   EXPECT_EQ("defghi", UTF16ToUTF8(omnibox()->GetText()));
 
   // Press <Enter> in the omnibox, causing the preview to be committed.
-  TabContents* preview_tab = preview()->tab_contents();
+  WebContents* preview_tab = preview()->web_contents();
   ASSERT_TRUE(PressEnter());
 
   // The preview contents should now be the active tab contents.
   EXPECT_FALSE(preview());
   EXPECT_FALSE(instant()->is_displayable());
   EXPECT_FALSE(instant()->IsCurrent());
-  EXPECT_EQ(preview_tab, browser()->GetSelectedTabContents());
+  EXPECT_EQ(preview_tab, browser()->GetSelectedWebContents());
 }
 
 // Tests the HIDDEN experiment of the field trial.
@@ -906,14 +909,14 @@ IN_PROC_BROWSER_TEST_F(InstantFieldTrialHiddenTest, MAYBE(ExperimentEnabled)) {
   EXPECT_EQ("def", UTF16ToUTF8(omnibox()->GetText()));
 
   // Press <Enter> in the omnibox, causing the preview to be committed.
-  TabContents* preview_tab = preview()->tab_contents();
+  WebContents* preview_tab = preview()->web_contents();
   ASSERT_TRUE(PressEnter());
 
   // The preview contents should now be the active tab contents.
   EXPECT_FALSE(preview());
   EXPECT_FALSE(instant()->is_displayable());
   EXPECT_FALSE(instant()->IsCurrent());
-  EXPECT_EQ(preview_tab, browser()->GetSelectedTabContents());
+  EXPECT_EQ(preview_tab, browser()->GetSelectedWebContents());
 }
 
 // Tests the SILENT experiment of the field trial.
@@ -951,14 +954,14 @@ IN_PROC_BROWSER_TEST_F(InstantFieldTrialSilentTest, MAYBE(ExperimentEnabled)) {
   EXPECT_EQ("def", UTF16ToUTF8(omnibox()->GetText()));
 
   // Press <Enter> in the omnibox, causing the preview to be committed.
-  TabContents* preview_tab = preview()->tab_contents();
+  WebContents* preview_tab = preview()->web_contents();
   ASSERT_TRUE(PressEnter());
 
   // The preview contents should now be the active tab contents.
   EXPECT_FALSE(preview());
   EXPECT_FALSE(instant()->is_displayable());
   EXPECT_FALSE(instant()->IsCurrent());
-  EXPECT_EQ(preview_tab, browser()->GetSelectedTabContents());
+  EXPECT_EQ(preview_tab, browser()->GetSelectedWebContents());
 }
 
 // Tests the SUGGEST experiment of the field trial.
@@ -996,12 +999,12 @@ IN_PROC_BROWSER_TEST_F(InstantFieldTrialSuggestTest, MAYBE(ExperimentEnabled)) {
   EXPECT_EQ("defghi", UTF16ToUTF8(omnibox()->GetText()));
 
   // Press <Enter> in the omnibox, causing the preview to be committed.
-  TabContents* preview_tab = preview()->tab_contents();
+  WebContents* preview_tab = preview()->web_contents();
   ASSERT_TRUE(PressEnter());
 
   // The preview contents should now be the active tab contents.
   EXPECT_FALSE(preview());
   EXPECT_FALSE(instant()->is_displayable());
   EXPECT_FALSE(instant()->IsCurrent());
-  EXPECT_EQ(preview_tab, browser()->GetSelectedTabContents());
+  EXPECT_EQ(preview_tab, browser()->GetSelectedWebContents());
 }

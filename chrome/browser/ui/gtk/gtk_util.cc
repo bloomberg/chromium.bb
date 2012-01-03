@@ -56,6 +56,8 @@
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
+using content::WebContents;
+
 namespace {
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -159,10 +161,10 @@ gboolean PaintNoBackground(GtkWidget* widget,
 
 #if defined(OS_CHROMEOS)
 
-TabContents* GetBrowserWindowSelectedTabContents(BrowserWindow* window) {
+WebContents* GetBrowserWindowSelectedWebContents(BrowserWindow* window) {
   chromeos::BrowserView* browser_view = static_cast<chromeos::BrowserView*>(
       window);
-  return browser_view->GetSelectedTabContents();
+  return browser_view->GetSelectedWebContents();
 }
 
 GtkWidget* GetBrowserWindowFocusedWidget(BrowserWindow* window) {
@@ -179,10 +181,10 @@ GtkWidget* GetBrowserWindowFocusedWidget(BrowserWindow* window) {
 
 #else
 
-TabContents* GetBrowserWindowSelectedTabContents(BrowserWindow* window) {
+WebContents* GetBrowserWindowSelectedWebContents(BrowserWindow* window) {
   BrowserWindowGtk* browser_window = static_cast<BrowserWindowGtk*>(
       window);
-  return browser_window->browser()->GetSelectedTabContents();
+  return browser_window->browser()->GetSelectedWebContents();
 }
 
 GtkWidget* GetBrowserWindowFocusedWidget(BrowserWindow* window) {
@@ -1172,7 +1174,7 @@ void DoCutCopyPaste(BrowserWindow* window,
   if (widget == NULL)
     return;  // Do nothing if no focused widget.
 
-  TabContents* current_tab = GetBrowserWindowSelectedTabContents(window);
+  WebContents* current_tab = GetBrowserWindowSelectedWebContents(window);
   if (current_tab && widget == current_tab->GetContentNativeView()) {
     (current_tab->GetRenderViewHost()->*method)();
   } else {

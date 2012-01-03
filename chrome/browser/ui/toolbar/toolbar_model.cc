@@ -29,6 +29,7 @@
 
 using content::NavigationEntry;
 using content::SSLStatus;
+using content::WebContents;
 
 ToolbarModel::ToolbarModel(Browser* browser)
     : browser_(browser),
@@ -82,9 +83,9 @@ bool ToolbarModel::ShouldDisplayURL() const {
     }
   }
 
-  TabContents* tab_contents = browser_->GetSelectedTabContents();
-  if (tab_contents && tab_contents->GetWebUIForCurrentState())
-    return !tab_contents->GetWebUIForCurrentState()->should_hide_url();
+  WebContents* web_contents = browser_->GetSelectedWebContents();
+  if (web_contents && web_contents->GetWebUIForCurrentState())
+    return !web_contents->GetWebUIForCurrentState()->should_hide_url();
 
   if (entry && entry->GetURL().SchemeIs(chrome::kExtensionScheme))
     return false;

@@ -219,7 +219,7 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
   if (host_view_->IsDetached()) {
     // Draw the background to match the new tab page.
     int height = 0;
-    TabContents* contents = browser_->GetSelectedTabContents();
+    WebContents* contents = browser_->GetSelectedWebContents();
     if (contents && contents->GetView())
       height = contents->GetView()->GetContainerSize().height();
     NtpBackgroundUtil::PaintBackgroundDetachedMode(
@@ -539,8 +539,8 @@ bool BrowserView::ActivateAppModalDialog() const {
   return false;
 }
 
-TabContents* BrowserView::GetSelectedTabContents() const {
-  return browser_->GetSelectedTabContents();
+WebContents* BrowserView::GetSelectedWebContents() const {
+  return browser_->GetSelectedWebContents();
 }
 
 TabContentsWrapper* BrowserView::GetSelectedTabContentsWrapper() const {
@@ -887,9 +887,9 @@ void BrowserView::FullScreenStateChanged() {
 }
 
 void BrowserView::RestoreFocus() {
-  TabContents* selected_tab_contents = GetSelectedTabContents();
-  if (selected_tab_contents)
-    selected_tab_contents->GetView()->RestoreFocus();
+  WebContents* selected_web_contents = GetSelectedWebContents();
+  if (selected_web_contents)
+    selected_web_contents->GetView()->RestoreFocus();
 }
 
 LocationBar* BrowserView::GetLocationBar() const {
@@ -1320,7 +1320,7 @@ void BrowserView::ShowInstant(TabContentsWrapper* preview) {
   if (!preview_container_)
     preview_container_ = new TabContentsContainer();
   contents_->SetPreview(preview_container_, preview->tab_contents());
-  preview_container_->ChangeTabContents(preview->tab_contents());
+  preview_container_->ChangeWebContents(preview->web_contents());
 }
 
 void BrowserView::HideInstant() {
@@ -1328,7 +1328,7 @@ void BrowserView::HideInstant() {
     return;
 
   // The contents must be changed before SetPreview is invoked.
-  preview_container_->ChangeTabContents(NULL);
+  preview_container_->ChangeWebContents(NULL);
   contents_->SetPreview(NULL, NULL);
   delete preview_container_;
   preview_container_ = NULL;
@@ -1403,7 +1403,7 @@ void BrowserView::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_SIDEBAR_CHANGED:
       if (content::Details<SidebarContainer>(details)->tab_contents() ==
-          browser_->GetSelectedTabContents()) {
+          browser_->GetSelectedWebContents()) {
         UpdateSidebar();
       }
       break;
@@ -1420,12 +1420,12 @@ void BrowserView::Observe(int type,
 void BrowserView::TabDetachedAt(TabContentsWrapper* contents, int index) {
   // We use index here rather than comparing |contents| because by this time
   // the model has already removed |contents| from its list, so
-  // browser_->GetSelectedTabContents() will return NULL or something else.
+  // browser_->GetSelectedWebContents() will return NULL or something else.
   if (index == browser_->tabstrip_model()->active_index()) {
     // We need to reset the current tab contents to NULL before it gets
     // freed. This is because the focus manager performs some operations
     // on the selected TabContents when it is removed.
-    contents_container_->ChangeTabContents(NULL);
+    contents_container_->ChangeWebContents(NULL);
     infobar_container_->ChangeTabContents(NULL);
     UpdateSidebarForContents(NULL);
     UpdateDevToolsForContents(NULL);
@@ -1460,7 +1460,7 @@ void BrowserView::TabReplacedAt(TabStripModel* tab_strip_model,
     contents_->MakePreviewContentsActiveContents();
     TabContentsContainer* old_container = contents_container_;
     contents_container_ = preview_container_;
-    old_container->ChangeTabContents(NULL);
+    old_container->ChangeWebContents(NULL);
     delete old_container;
     preview_container_ = NULL;
   }
@@ -1669,10 +1669,10 @@ void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
 }
 
 void BrowserView::OnWindowBeginUserBoundsChange() {
-  TabContents* tab_contents = GetSelectedTabContents();
-  if (!tab_contents)
+  WebContents* web_contents = GetSelectedWebContents();
+  if (!web_contents)
     return;
-  tab_contents->GetRenderViewHost()->NotifyMoveOrResizeStarted();
+  web_contents->GetRenderViewHost()->NotifyMoveOrResizeStarted();
 }
 
 void BrowserView::OnWidgetMove() {
@@ -2025,11 +2025,11 @@ void BrowserView::LoadingAnimationCallback() {
     tabstrip_->UpdateLoadingAnimations();
   } else if (ShouldShowWindowIcon()) {
     // ... or in the window icon area for popups and app windows.
-    TabContents* tab_contents = browser_->GetSelectedTabContents();
-    // GetSelectedTabContents can return NULL for example under Purify when
+    WebContents* web_contents = browser_->GetSelectedWebContents();
+    // GetSelectedWebContents can return NULL for example under Purify when
     // the animations are running slowly and this function is called on a timer
     // through LoadingAnimationCallback.
-    frame_->UpdateThrobber(tab_contents && tab_contents->IsLoading());
+    frame_->UpdateThrobber(web_contents && web_contents->IsLoading());
   }
 }
 
@@ -2121,7 +2121,7 @@ void BrowserView::UpdateSidebarForContents(TabContentsWrapper* tab_contents) {
   // Update sidebar content.
   TabContents* old_contents =
       static_cast<TabContents*>(sidebar_container_->web_contents());
-  sidebar_container_->ChangeTabContents(sidebar_contents);
+  sidebar_container_->ChangeWebContents(sidebar_contents);
   SidebarManager::GetInstance()->
       NotifyStateChanges(old_contents, sidebar_contents);
 
@@ -2158,18 +2158,18 @@ void BrowserView::UpdateSidebarForContents(TabContentsWrapper* tab_contents) {
 }
 
 void BrowserView::UpdateDevToolsForContents(TabContentsWrapper* wrapper) {
-  TabContents* devtools_contents = NULL;
+  WebContents* devtools_contents = NULL;
   if (wrapper) {
     TabContentsWrapper* devtools_contents_wrapper =
-        DevToolsWindow::GetDevToolsContents(wrapper->tab_contents());
+        DevToolsWindow::GetDevToolsContents(wrapper->web_contents());
     if (devtools_contents_wrapper)
-      devtools_contents = devtools_contents_wrapper->tab_contents();
+      devtools_contents = devtools_contents_wrapper->web_contents();
   }
 
   bool should_show = devtools_contents && !devtools_container_->visible();
   bool should_hide = !devtools_contents && devtools_container_->visible();
 
-  devtools_container_->ChangeTabContents(devtools_contents);
+  devtools_container_->ChangeWebContents(devtools_contents);
 
   if (should_show)
     ShowDevToolsContainer();
@@ -2594,7 +2594,7 @@ void BrowserView::UpdateAcceleratorMetrics(
 void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents) {
   // If |contents_container_| already has the correct TabContents, we can save
   // some work.  This also prevents extra events from being reported by the
-  // Visibility API under Windows, as ChangeTabContents will briefly hide
+  // Visibility API under Windows, as ChangeWebContents will briefly hide
   // the TabContents window.
   DCHECK(new_contents);
   bool change_tab_contents =
@@ -2607,7 +2607,7 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents) {
   // we don't want any TabContents to be attached, so that we
   // avoid an unnecessary resize and re-layout of a TabContents.
   if (change_tab_contents)
-    contents_container_->ChangeTabContents(NULL);
+    contents_container_->ChangeWebContents(NULL);
   infobar_container_->ChangeTabContents(new_contents->infobar_tab_helper());
   if (bookmark_bar_view_.get()) {
     bookmark_bar_view_->SetBookmarkBarState(
@@ -2616,11 +2616,11 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents) {
   }
   UpdateUIForContents(new_contents);
   if (change_tab_contents)
-    contents_container_->ChangeTabContents(new_contents->tab_contents());
+    contents_container_->ChangeWebContents(new_contents->web_contents());
   UpdateSidebarForContents(new_contents);
 
   UpdateDevToolsForContents(new_contents);
-  // TODO(beng): This should be called automatically by ChangeTabContents, but I
+  // TODO(beng): This should be called automatically by ChangeWebContents, but I
   //             am striving for parity now rather than cleanliness. This is
   //             required to make features like Duplicate Tab, Undo Close Tab,
   //             etc not result in sad tab.

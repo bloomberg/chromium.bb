@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 
@@ -47,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
       browser(), web_resource.ReplaceComponents(make_host_a_com));
   std::string result;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-    browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+    browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
   EXPECT_EQ(result, "Loaded");
@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
           "non_existent_extension.html"));
   ui_test_utils::NavigateToURL(browser(), non_existent_extension);
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-    browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+    browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
   EXPECT_EQ(result, "Image failed to load");
@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
   ui_test_utils::NavigateToURL(browser(),
       GURL(std::string("data:text/html;charset=utf-8,") + file_source));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Loaded");
@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
       browser(),
       GURL("chrome-extension://pbkkcbgdkliohhfaeefcijaghglkahja/index.html"));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Loaded");
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "web_accessible/accessible_resource.html"));
   ui_test_utils::NavigateToURL(browser(), accessible_resource);
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-    browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+    browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
   EXPECT_EQ("Loaded", result);
@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "web_accessible/nonaccessible_resource.html"));
   ui_test_utils::NavigateToURL(browser(), nonaccessible_resource);
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-    browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+    browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
   EXPECT_EQ("Image failed to load", result);
@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
           "web_accessible/nonexistent_resource.html"));
   ui_test_utils::NavigateToURL(browser(), nonexistent_resource);
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-    browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+    browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
     &result));
   EXPECT_EQ("Image failed to load", result);

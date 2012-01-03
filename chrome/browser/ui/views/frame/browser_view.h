@@ -185,7 +185,7 @@ class BrowserView : public BrowserWindow,
   // determine loading state. It'd be nicer if we could change this to be
   // bool IsSelectedTabLoading() const; or something like that. We could even
   // move it to a WindowDelegate subclass.
-  TabContents* GetSelectedTabContents() const;
+  content::WebContents* GetSelectedWebContents() const;
   TabContentsWrapper* GetSelectedTabContentsWrapper() const;
 
   // Retrieves the icon to use in the frame to indicate an OTR window.

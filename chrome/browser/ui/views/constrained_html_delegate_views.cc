@@ -76,7 +76,7 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
                                     views::View* child) OVERRIDE {
     TabContentsContainer::ViewHierarchyChanged(is_add, parent, child);
     if (is_add && child == this) {
-      ChangeTabContents(html_tab_contents_->tab_contents());
+      ChangeWebContents(html_tab_contents_->tab_contents());
     }
   }
 

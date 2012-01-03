@@ -14,8 +14,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -34,7 +36,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupBlockedPostBlank) {
   // to the original URL.
   EXPECT_EQ(1u, BrowserList::GetBrowserCount(browser()->profile()));
   EXPECT_EQ(1, browser()->tab_count());
-  TabContents* cur_tab = browser()->GetSelectedTabContents();
+  WebContents* cur_tab = browser()->GetSelectedWebContents();
   ASSERT_TRUE(cur_tab);
   EXPECT_EQ(url, cur_tab->GetURL());
 }

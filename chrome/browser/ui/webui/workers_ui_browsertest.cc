@@ -6,8 +6,10 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/web_contents.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -44,13 +46,13 @@ IN_PROC_BROWSER_TEST_F(WorkersUITest, MAYBE_SharedWorkersList) {
       NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
-  TabContents* tab_contents = browser()->GetSelectedTabContents();
-  ASSERT_TRUE(tab_contents != NULL);
+  WebContents* web_contents = browser()->GetSelectedWebContents();
+  ASSERT_TRUE(web_contents != NULL);
 
   std::string result;
   ASSERT_TRUE(
       ui_test_utils::ExecuteJavaScriptAndExtractString(
-          tab_contents->GetRenderViewHost(),
+          web_contents->GetRenderViewHost(),
           L"",
           L"window.domAutomationController.send("
           L"'' + document.getElementsByTagName('td')[1].textContent);",

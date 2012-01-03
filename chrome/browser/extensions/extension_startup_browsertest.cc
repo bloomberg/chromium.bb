@@ -18,9 +18,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/net_util.h"
 
 // This file contains high-level startup tests for the extensions system. We've
@@ -115,7 +115,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
     bool result = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+        browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
         L"window.domAutomationController.send("
         L"document.defaultView.getComputedStyle(document.body, null)."
         L"getPropertyValue('background-color') == 'rgb(245, 245, 220)')",
@@ -124,7 +124,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
     result = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+        browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
         L"window.domAutomationController.send(document.title == 'Modified')",
         &result));
     EXPECT_EQ(expect_script, result);

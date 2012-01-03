@@ -13,10 +13,12 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/accelerators/accelerator_cocoa.h"
+
+using content::WebContents;
 
 @interface FullscreenExitBubbleController(JustForTesting)
 // Already defined.
@@ -78,7 +80,7 @@ TEST_F(FullscreenExitBubbleControllerTest, DenyExitsFullscreen) {
 
   CreateBrowserWindow();
   AppendTabToStrip();
-  TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
+  WebContents* fullscreen_tab = browser()->GetSelectedWebContents();
   {
     base::mac::ScopedNSAutoreleasePool pool;
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(

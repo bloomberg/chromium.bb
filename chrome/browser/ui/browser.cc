@@ -973,7 +973,7 @@ SkBitmap Browser::GetCurrentPageIcon() const {
 }
 
 string16 Browser::GetWindowTitleForCurrentTab() const {
-  TabContents* contents = GetSelectedTabContents();
+  WebContents* contents = GetSelectedWebContents();
   string16 title;
 
   // |contents| can be NULL because GetWindowTitleForCurrentTab is called by the
@@ -1080,7 +1080,7 @@ void Browser::OnWindowClosing() {
 void Browser::OnWindowActivated() {
   // On some platforms we want to automatically reload tabs that are
   // killed when the user selects them.
-  TabContents* contents = GetSelectedTabContents();
+  WebContents* contents = GetSelectedWebContents();
   if (contents && contents->GetCrashedStatus() ==
      base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1185,6 +1185,11 @@ int Browser::GetIndexOfController(
 
 TabContentsWrapper* Browser::GetSelectedTabContentsWrapper() const {
   return tabstrip_model()->GetActiveTabContents();
+}
+
+WebContents* Browser::GetSelectedWebContents() const {
+  TabContentsWrapper* wrapper = GetSelectedTabContentsWrapper();
+  return wrapper ? wrapper->web_contents() : NULL;
 }
 
 TabContentsWrapper* Browser::GetTabContentsWrapperAt(int index) const {
@@ -1407,7 +1412,7 @@ void Browser::ShowSingletonTabRespectRef(const GURL& url) {
 void Browser::ShowSingletonTabOverwritingNTP(
     const browser::NavigateParams& params) {
   browser::NavigateParams local_params(params);
-  TabContents* contents = GetSelectedTabContents();
+  WebContents* contents = GetSelectedWebContents();
   if (contents) {
     const GURL& contents_url = contents->GetURL();
     if ((contents_url == GURL(chrome::kChromeUINewTabURL) ||
@@ -1547,7 +1552,7 @@ void Browser::ReloadIgnoringCache(WindowOpenDisposition disposition) {
 void Browser::ReloadInternal(WindowOpenDisposition disposition,
                              bool ignore_cache) {
   // If we are showing an interstitial, treat this as an OpenURL.
-  TabContents* current_tab = GetSelectedTabContents();
+  WebContents* current_tab = GetSelectedWebContents();
   if (current_tab && current_tab->ShowingInterstitialPage()) {
     NavigationEntry* entry = current_tab->GetController().GetActiveEntry();
     DCHECK(entry);  // Should exist if interstitial is showing.
@@ -1592,7 +1597,7 @@ void Browser::OpenCurrentURL() {
 
   if (open_disposition == CURRENT_TAB && TabFinder::IsEnabled()) {
     Browser* existing_browser = NULL;
-    TabContents* existing_tab = TabFinder::GetInstance()->FindTab(
+    WebContents* existing_tab = TabFinder::GetInstance()->FindTab(
         this, url, &existing_browser);
     if (existing_tab) {
       existing_browser->ActivateContents(existing_tab);
@@ -1747,7 +1752,7 @@ void Browser::WriteCurrentURLToClipboard() {
   // We don't appear to track the action when it comes from the
   // RenderContextViewMenu.
 
-  TabContents* contents = GetSelectedTabContents();
+  WebContents* contents = GetSelectedWebContents();
   if (!toolbar_model_.ShouldDisplayURL())
     return;
 
@@ -1791,7 +1796,7 @@ void Browser::Search() {
     return;
   }
 
-  const GURL& url = GetSelectedTabContents()->GetURL();
+  const GURL& url = GetSelectedWebContents()->GetURL();
   if (url.SchemeIs(chrome::kChromeUIScheme) &&
       url.host() == chrome::kChromeUINewTabHost) {
     // If the NTP is showing, focus the omnibox.
@@ -1841,10 +1846,10 @@ void Browser::BookmarkCurrentPage() {
 
 void Browser::SavePage() {
   content::RecordAction(UserMetricsAction("SavePage"));
-  TabContents* current_tab = GetSelectedTabContents();
+  WebContents* current_tab = GetSelectedWebContents();
   if (current_tab && current_tab->GetContentsMimeType() == "application/pdf")
     content::RecordAction(UserMetricsAction("PDF.SavePage"));
-  GetSelectedTabContents()->OnSavePage();
+  GetSelectedWebContents()->OnSavePage();
 }
 
 void Browser::ViewSelectedSource() {
@@ -1865,12 +1870,12 @@ bool Browser::CanSupportWindowFeature(WindowFeature feature) const {
 
 void Browser::EmailPageLocation() {
   content::RecordAction(UserMetricsAction("EmailPageLocation"));
-  TabContents* tc = GetSelectedTabContents();
-  DCHECK(tc);
+  WebContents* wc = GetSelectedWebContents();
+  DCHECK(wc);
 
   std::string title = net::EscapeQueryParamValue(
-      UTF16ToUTF8(tc->GetTitle()), false);
-  std::string page_url = net::EscapeQueryParamValue(tc->GetURL().spec(), false);
+      UTF16ToUTF8(wc->GetTitle()), false);
+  std::string page_url = net::EscapeQueryParamValue(wc->GetURL().spec(), false);
   std::string mailto = std::string("mailto:?subject=Fwd:%20") +
       title + "&body=%0A%0A" + page_url;
   platform_util::OpenExternal(GURL(mailto));
@@ -1895,7 +1900,7 @@ void Browser::ToggleEncodingAutoDetect() {
   // OTOH, if "auto detect" is turned off, we don't change the currently
   // active encoding.
   if (encoding_auto_detect_.GetValue()) {
-    TabContents* contents = GetSelectedTabContents();
+    WebContents* contents = GetSelectedWebContents();
     if (contents)
       contents->ResetOverrideEncoding();
   }
@@ -1905,7 +1910,7 @@ void Browser::OverrideEncoding(int encoding_id) {
   content::RecordAction(UserMetricsAction("OverrideEncoding"));
   const std::string selected_encoding =
       CharacterEncoding::GetCanonicalEncodingNameByCommandId(encoding_id);
-  TabContents* contents = GetSelectedTabContents();
+  WebContents* contents = GetSelectedWebContents();
   if (!selected_encoding.empty() && contents)
      contents->SetOverrideEncoding(selected_encoding);
   // Update the list of recently selected encodings.
@@ -1961,7 +1966,7 @@ void Browser::Zoom(content::PageZoom zoom) {
     return;
   }
 
-  double current_zoom_level = GetSelectedTabContents()->GetZoomLevel();
+  double current_zoom_level = GetSelectedWebContents()->GetZoomLevel();
   double default_zoom_level =
       profile_->GetPrefs()->GetDouble(prefs::kDefaultZoomLevel);
 
@@ -2056,7 +2061,7 @@ void Browser::OpenFile() {
   select_file_dialog_->SelectFile(SelectFileDialog::SELECT_OPEN_FILE,
                                   string16(), directory,
                                   NULL, 0, FILE_PATH_LITERAL(""),
-                                  GetSelectedTabContents(),
+                                  GetSelectedWebContents(),
                                   parent_window, NULL);
 }
 
@@ -3535,7 +3540,7 @@ void Browser::LoadingStateChanged(WebContents* source) {
       tab_handler_->GetTabStripModel()->TabsAreLoading());
   window_->UpdateTitleBar();
 
-  WebContents* selected_contents = GetSelectedTabContents();
+  WebContents* selected_contents = GetSelectedWebContents();
   if (source == selected_contents) {
     bool is_loading = source->IsLoading();
     UpdateReloadStopState(is_loading, false);
@@ -3604,7 +3609,7 @@ void Browser::ContentsMouseEvent(
   if (!GetStatusBubble())
     return;
 
-  if (source == GetSelectedTabContents()) {
+  if (source == GetSelectedWebContents()) {
     GetStatusBubble()->MouseMoved(location, !motion);
     if (!motion)
       GetStatusBubble()->SetURL(GURL(), std::string());
@@ -3618,7 +3623,7 @@ void Browser::UpdateTargetURL(WebContents* source, int32 page_id,
   if (!GetStatusBubble())
     return;
 
-  if (source == GetSelectedTabContents()) {
+  if (source == GetSelectedWebContents()) {
     PrefService* prefs = profile_->GetPrefs();
     GetStatusBubble()->SetURL(url, prefs->GetString(prefs::kAcceptLanguages));
   }
@@ -3882,12 +3887,12 @@ void Browser::WorkerCrashed(WebContents* source) {
 }
 
 void Browser::DidNavigateMainFramePostCommit(WebContents* tab) {
-  if (tab == GetSelectedTabContents())
+  if (tab == GetSelectedWebContents())
     UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
 }
 
 void Browser::DidNavigateToPendingEntry(WebContents* tab) {
-  if (tab == GetSelectedTabContents())
+  if (tab == GetSelectedWebContents())
     UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
 }
 
@@ -4109,8 +4114,8 @@ void Browser::Observe(int type,
       // (NavigationControllers) for convenience, so the notification could
       // actually be for a different window while we're doing asynchronous
       // closing of this one.
-      if (GetSelectedTabContents() &&
-          &GetSelectedTabContents()->GetController() ==
+      if (GetSelectedWebContents() &&
+          &GetSelectedWebContents()->GetController() ==
           content::Source<NavigationController>(source).ptr())
         UpdateToolbar(false);
       break;
@@ -4222,7 +4227,7 @@ void Browser::Observe(int type,
 
     case chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED: {
       WebContents* web_contents = content::Source<WebContents>(source).ptr();
-      if (web_contents == GetSelectedTabContents()) {
+      if (web_contents == GetSelectedWebContents()) {
         LocationBar* location_bar = window()->GetLocationBar();
         if (location_bar)
           location_bar->UpdateContentSettingsIcons();
@@ -4263,16 +4268,16 @@ void Browser::ShowInstant(TabContentsWrapper* preview_contents) {
   DCHECK(instant_->tab_contents() == GetSelectedTabContentsWrapper());
   window_->ShowInstant(preview_contents);
 
-  GetSelectedTabContents()->HideContents();
-  preview_contents->tab_contents()->ShowContents();
+  GetSelectedWebContents()->HideContents();
+  preview_contents->web_contents()->ShowContents();
 }
 
 void Browser::HideInstant() {
   window_->HideInstant();
-  if (GetSelectedTabContents())
-    GetSelectedTabContents()->ShowContents();
+  if (GetSelectedWebContents())
+    GetSelectedWebContents()->ShowContents();
   if (instant_->GetPreviewContents())
-    instant_->GetPreviewContents()->tab_contents()->HideContents();
+    instant_->GetPreviewContents()->web_contents()->HideContents();
 }
 
 void Browser::CommitInstant(TabContentsWrapper* preview_contents) {
@@ -4592,7 +4597,7 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
 }
 
 void Browser::UpdateCommandsForTabState() {
-  TabContents* current_tab = GetSelectedTabContents();
+  WebContents* current_tab = GetSelectedWebContents();
   TabContentsWrapper* current_tab_wrapper = GetSelectedTabContentsWrapper();
   if (!current_tab || !current_tab_wrapper)  // May be NULL during tab restore.
     return;
@@ -4756,7 +4761,7 @@ void Browser::ScheduleUIUpdate(const WebContents* source,
 
   // Do some synchronous updates.
   if (changed_flags & TabContents::INVALIDATE_URL &&
-      source == GetSelectedTabContents()) {
+      source == GetSelectedWebContents()) {
     // Only update the URL for the current tab. Note that we do not update
     // the navigation commands since those would have already been updated
     // synchronously by NavigationStateChanged.
@@ -4830,7 +4835,7 @@ void Browser::ProcessPendingUIUpdates() {
     const WebContents* contents = i->first;
     unsigned flags = i->second;
 
-    if (contents == GetSelectedTabContents()) {
+    if (contents == GetSelectedWebContents()) {
       // Updates that only matter when the tab is selected go here.
 
       if (flags & TabContents::INVALIDATE_PAGE_ACTIONS) {
@@ -5290,7 +5295,7 @@ void Browser::ViewSource(TabContentsWrapper* contents,
 
 int Browser::GetContentRestrictionsForSelectedTab() {
   int content_restrictions = 0;
-  TabContents* current_tab = GetSelectedTabContents();
+  WebContents* current_tab = GetSelectedWebContents();
   if (current_tab) {
     content_restrictions = current_tab->GetContentRestrictions();
     NavigationEntry* active_entry =
@@ -5366,7 +5371,7 @@ void Browser::OnWindowDidShow() {
     return;
 
   // Suppress the first run bubble if we're showing the sync promo.
-  TabContents* contents = GetSelectedTabContents();
+  WebContents* contents = GetSelectedWebContents();
   bool is_showing_promo = contents &&
       contents->GetURL().SchemeIs(chrome::kChromeUIScheme) &&
       contents->GetURL().host() == chrome::kChromeUISyncPromoHost;

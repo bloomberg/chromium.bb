@@ -25,6 +25,8 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
+using content::WebContents;
+
 class BrowserActionApiTest : public ExtensionApiTest {
  public:
   BrowserActionApiTest() {}
@@ -78,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
       browser()->profile(), action->extension_id(), browser());
 
   // Verify the command worked.
-  TabContents* tab = browser()->GetSelectedTabContents();
+  WebContents* tab = browser()->GetSelectedWebContents();
   bool result = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"",
@@ -191,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionAddPopup) {
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedWebContents());
 
   ExtensionAction* browser_action = extension->browser_action();
   ASSERT_TRUE(browser_action)
@@ -246,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionRemovePopup) {
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedWebContents());
 
   ExtensionAction* browser_action = extension->browser_action();
   ASSERT_TRUE(browser_action)

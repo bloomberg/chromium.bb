@@ -107,9 +107,9 @@ void Panel::SetAutoResizable(bool resizable) {
   auto_resizable_ = resizable;
   if (auto_resizable_) {
     browser()->tabstrip_model()->AddObserver(this);
-    TabContents* tab_contents = browser()->GetSelectedTabContents();
-    if (tab_contents)
-      EnableTabContentsAutoResize(tab_contents);
+    WebContents* web_contents = browser()->GetSelectedWebContents();
+    if (web_contents)
+      EnableWebContentsAutoResize(web_contents);
   } else {
     browser()->tabstrip_model()->RemoveObserver(this);
     registrar_.RemoveAll();
@@ -125,7 +125,7 @@ void Panel::SetSizeRange(const gfx::Size& min_size, const gfx::Size& max_size) {
   min_size_ = min_size;
   max_size_ = max_size;
 
-  ConfigureAutoResize(browser()->GetSelectedTabContents());
+  ConfigureAutoResize(browser()->GetSelectedWebContents());
 }
 
 void Panel::SetAppIconVisibility(bool visible) {
@@ -598,36 +598,36 @@ void Panel::TabInsertedAt(TabContentsWrapper* contents,
                           bool foreground) {
   if (auto_resizable_) {
     DCHECK_EQ(0, index);
-    EnableTabContentsAutoResize(contents->tab_contents());
+    EnableWebContentsAutoResize(contents->web_contents());
   }
 }
 
-void Panel::EnableTabContentsAutoResize(TabContents* tab_contents) {
-  DCHECK(tab_contents);
-  ConfigureAutoResize(tab_contents);
+void Panel::EnableWebContentsAutoResize(WebContents* web_contents) {
+  DCHECK(web_contents);
+  ConfigureAutoResize(web_contents);
 
   // We also need to know when the render view host changes in order
   // to turn on auto-resize notifications in the new render view host.
   registrar_.RemoveAll();  // Stop notifications for previous contents, if any.
   registrar_.Add(
       this,
-      content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
-      content::Source<TabContents>(tab_contents));
+      content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
+      content::Source<WebContents>(web_contents));
 }
 
 void Panel::Observe(int type,
                     const content::NotificationSource& source,
                     const content::NotificationDetails& details) {
-  DCHECK_EQ(type, content::NOTIFICATION_TAB_CONTENTS_SWAPPED);
-  ConfigureAutoResize(content::Source<TabContents>(source).ptr());
+  DCHECK_EQ(type, content::NOTIFICATION_WEB_CONTENTS_SWAPPED);
+  ConfigureAutoResize(content::Source<WebContents>(source).ptr());
 }
 
-void Panel::ConfigureAutoResize(TabContents* tab_contents) {
-  if (!auto_resizable_ || !tab_contents)
+void Panel::ConfigureAutoResize(WebContents* web_contents) {
+  if (!auto_resizable_ || !web_contents)
     return;
 
   // NULL might be returned if the tab has not been added.
-  RenderViewHost* render_view_host = tab_contents->GetRenderViewHost();
+  RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
   if (!render_view_host)
     return;
 
@@ -637,7 +637,7 @@ void Panel::ConfigureAutoResize(TabContents* tab_contents) {
 }
 
 void Panel::OnWindowSizeAvailable() {
-  ConfigureAutoResize(browser()->GetSelectedTabContents());
+  ConfigureAutoResize(browser()->GetSelectedWebContents());
 }
 
 void Panel::DestroyBrowser() {

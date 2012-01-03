@@ -19,12 +19,12 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/net_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -91,7 +91,7 @@ class AutomationTabHelperBrowserTest : public InProcessBrowserTest {
     std::string script = base::StringPrintf("runTestCase(%d);",
                                             test_case_number);
     RenderViewHost* host =
-        browser()->GetSelectedTabContents()->GetRenderViewHost();
+        browser()->GetSelectedWebContents()->GetRenderViewHost();
     if (wait_for_response) {
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
           host, L"", ASCIIToWide(script)));

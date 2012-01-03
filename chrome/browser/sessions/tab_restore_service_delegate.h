@@ -16,6 +16,10 @@ class SessionStorageNamespace;
 class TabContents;
 class TabNavigation;
 
+namespace content {
+class WebContents;
+}
+
 // Objects implement this interface to provide necessary functionality for
 // TabRestoreService to operate. These methods are mostly copies of existing
 // Browser methods.
@@ -35,7 +39,7 @@ class TabRestoreServiceDelegate {
 
   // see Browser methods with the same names
   virtual TabContents* GetTabContentsAt(int index) const = 0;
-  virtual TabContents* GetSelectedTabContents() const = 0;
+  virtual content::WebContents* GetSelectedWebContents() const = 0;
   virtual bool IsTabPinned(int index) const = 0;
   virtual TabContents* AddRestoredTab(
       const std::vector<TabNavigation>& navigations,

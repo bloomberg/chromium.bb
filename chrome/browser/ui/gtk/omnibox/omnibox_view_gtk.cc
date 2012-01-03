@@ -58,6 +58,8 @@
 #include "chrome/browser/ui/gtk/omnibox/omnibox_popup_view_gtk.h"
 #endif
 
+using content::WebContents;
+
 namespace {
 
 const gchar* kOmniboxViewGtkKey = "__OMNIBOX_VIEW_GTK__";
@@ -1586,8 +1588,8 @@ void OmniboxViewGtk::HandleDragDataGet(GtkWidget* widget,
       break;
     }
     case ui::CHROME_NAMED_URL: {
-      TabContents* current_tab =
-          BrowserList::GetLastActive()->GetSelectedTabContents();
+      WebContents* current_tab =
+          BrowserList::GetLastActive()->GetSelectedWebContents();
       string16 tab_title = current_tab->GetTitle();
       // Pass an empty string if user has edited the URL.
       if (current_tab->GetURL().spec() != dragged_text_)

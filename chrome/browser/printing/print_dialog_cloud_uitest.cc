@@ -23,9 +23,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "content/test/test_browser_thread.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_job.h"
@@ -266,11 +266,11 @@ IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, DISABLED_DialogGrabbed) {
 
   // This goes back one step further for the Chrome OS case, to making
   // sure 'window.print()' gets to the right place.
-  ASSERT_TRUE(browser()->GetSelectedTabContents());
-  ASSERT_TRUE(browser()->GetSelectedTabContents()->GetRenderViewHost());
+  ASSERT_TRUE(browser()->GetSelectedWebContents());
+  ASSERT_TRUE(browser()->GetSelectedWebContents()->GetRenderViewHost());
 
   string16 window_print = ASCIIToUTF16("window.print()");
-  browser()->GetSelectedTabContents()->GetRenderViewHost()->
+  browser()->GetSelectedWebContents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), window_print);
 
   ui_test_utils::RunMessageLoop();

@@ -14,6 +14,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
+
+using content::WebContents;
 
 class ExtensionOverrideTest : public ExtensionApiTest {
  protected:
@@ -47,7 +50,7 @@ class ExtensionOverrideTest : public ExtensionApiTest {
   // extension URL.
   void NavigateToKeyboard() {
     ui_test_utils::NavigateToURL(browser(), GURL("chrome://keyboard/"));
-    TabContents* tab = browser()->GetSelectedTabContents();
+    WebContents* tab = browser()->GetSelectedWebContents();
     ASSERT_TRUE(tab->GetController().GetActiveEntry());
     EXPECT_TRUE(tab->GetController().GetActiveEntry()->url().
                 SchemeIs(chrome::kExtensionScheme));
@@ -62,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideNewtab) {
     // Navigate to the new tab page.  The overridden new tab page
     // will call chrome.test.notifyPass() .
     ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab/"));
-    TabContents* tab = browser()->GetSelectedTabContents();
+    WebContents* tab = browser()->GetSelectedWebContents();
     ASSERT_TRUE(tab->GetController().GetActiveEntry());
     EXPECT_TRUE(tab->GetController().GetActiveEntry()->GetURL().
                 SchemeIs(chrome::kExtensionScheme));
@@ -89,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, MAYBE_OverrideNewtabIncognito) {
                                      GURL("chrome://newtab/"));
   Browser* otr_browser = BrowserList::FindTabbedBrowser(
       browser()->profile()->GetOffTheRecordProfile(), false);
-  TabContents* tab = otr_browser->GetSelectedTabContents();
+  WebContents* tab = otr_browser->GetSelectedWebContents();
   ASSERT_TRUE(tab->GetController().GetActiveEntry());
   EXPECT_FALSE(tab->GetController().GetActiveEntry()->GetURL().
                SchemeIs(chrome::kExtensionScheme));

@@ -37,6 +37,8 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #endif
 
+using content::WebContents;
+
 const std::string kSubscribePage = "/subscribe.html";
 const std::string kFeedPage = "files/feeds/feed.html";
 const std::string kFeedPageMultiRel = "files/feeds/feed_multi_rel.html";
@@ -96,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
 
   bool result = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"testTabsAPI()", &result));
   EXPECT_TRUE(result);
 
@@ -108,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
       GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/page.html"));
   result = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"testTabsAPI()", &result));
   EXPECT_TRUE(result);
 }
@@ -299,7 +301,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
                extension->description().c_str());
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur is my name").c_str(),
                extension->name().c_str());
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedWebContents());
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur").c_str(),
                extension->browser_action()->GetTitle(tab_id).c_str());
 }
@@ -328,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
                extension->description().c_str());
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur is my name").c_str(),
                extension->name().c_str());
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedWebContents());
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur").c_str(),
                extension->page_action()->GetTitle(tab_id).c_str());
 }
@@ -375,7 +377,7 @@ static const wchar_t* jscript_error =
     L"    \"No error\""
     L");";
 
-bool ValidatePageElement(TabContents* tab,
+bool ValidatePageElement(WebContents* tab,
                          const std::wstring& frame,
                          const std::wstring& javascript,
                          const std::string& expected_value) {
@@ -413,7 +415,7 @@ void NavigateToFeedAndValidate(net::TestServer* server,
   ui_test_utils::NavigateToURL(browser,
                                GetFeedUrl(server, url, true, extension_id));
 
-  TabContents* tab = browser->GetSelectedTabContents();
+  WebContents* tab = browser->GetSelectedWebContents();
   ASSERT_TRUE(ValidatePageElement(tab,
                                   L"",
                                   jscript_feed_title,
@@ -685,20 +687,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
 // Helper function for common code shared by the 3 WindowOpen tests below.
 static void WindowOpenHelper(Browser* browser, const GURL& start_url,
                              const std::string& newtab_url,
-                             TabContents** newtab_result) {
+                             WebContents** newtab_result) {
   ui_test_utils::NavigateToURL(browser, start_url);
 
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      browser->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      browser->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.open('" + UTF8ToWide(newtab_url) + L"');"));
 
   // Now the active tab in last active window should be the new tab.
   Browser* last_active_browser = BrowserList::GetLastActive();
   EXPECT_TRUE(last_active_browser);
-  TabContents* newtab = last_active_browser->GetSelectedTabContents();
+  WebContents* newtab = last_active_browser->GetSelectedWebContents();
   EXPECT_TRUE(newtab);
   GURL expected_url = start_url.Resolve(newtab_url);
   observer.Wait();
@@ -714,7 +716,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenExtension) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
 
-  TabContents* newtab;
+  WebContents* newtab;
   ASSERT_NO_FATAL_FAILURE(WindowOpenHelper(
       browser(),
       GURL(std::string("chrome-extension://") + last_loaded_extension_id_ +
@@ -750,7 +752,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
 
-  TabContents* newtab;
+  WebContents* newtab;
   ASSERT_NO_FATAL_FAILURE(WindowOpenHelper(
       browser(),
       GURL("about:blank"),
@@ -788,7 +790,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 
   ui_test_utils::NavigateToURL(browser(),
       net::FilePathToFileURL(extension_dir.AppendASCII("test.html")));
-  TabContents* tab = browser()->GetSelectedTabContents();
+  WebContents* tab = browser()->GetSelectedWebContents();
 
   // With no extensions, the plugin should not be loaded.
   bool result = false;
@@ -871,7 +873,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginPrivate) {
   // Load the test page through the extension URL, and the plugin should work.
   ui_test_utils::NavigateToURL(browser(),
       extension->GetResourceURL("test.html"));
-  TabContents* tab = browser()->GetSelectedTabContents();
+  WebContents* tab = browser()->GetSelectedWebContents();
   bool result = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"", L"testPluginWorks()", &result));
@@ -917,7 +919,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
                       chrome::kExtensionsSubPage));
   TabStripModel* tab_strip = browser()->tabstrip_model();
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       jscript_click_option_button));
 
   // If the options page hasn't already come up, wait for it.

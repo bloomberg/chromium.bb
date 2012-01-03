@@ -35,6 +35,7 @@ class Value;
 namespace content {
 class DevToolsAgentHost;
 class DevToolsClientHost;
+class WebContents;
 }
 
 class DevToolsWindow : private content::NotificationObserver,
@@ -43,7 +44,8 @@ class DevToolsWindow : private content::NotificationObserver,
  public:
   static const char kDevToolsApp[];
   static void RegisterUserPrefs(PrefService* prefs);
-  static TabContentsWrapper* GetDevToolsContents(TabContents* inspected_tab);
+  static TabContentsWrapper* GetDevToolsContents(
+      content::WebContents* inspected_tab);
   static bool IsDevToolsWindow(RenderViewHost* window_rvh);
 
   static DevToolsWindow* OpenDevToolsWindowForWorker(

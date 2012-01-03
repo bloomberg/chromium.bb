@@ -525,8 +525,8 @@ enum {
   return ![previewableContentsController_ isShowingPreview];
 }
 
-- (void)updateDevToolsForContents:(TabContents*)contents {
-  [devToolsController_ updateDevToolsForTabContents:contents
+- (void)updateDevToolsForContents:(WebContents*)contents {
+  [devToolsController_ updateDevToolsForWebContents:contents
                                         withProfile:browser_->profile()];
   [devToolsController_ ensureContentsVisible];
 }
@@ -601,7 +601,7 @@ enum {
 - (void)windowDidBecomeKey:(NSNotification*)notification {
   // We need to activate the controls (in the "WebView"). To do this, get the
   // selected TabContents's RenderWidgetHostViewMac and tell it to activate.
-  if (TabContents* contents = browser_->GetSelectedTabContents()) {
+  if (WebContents* contents = browser_->GetSelectedWebContents()) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(true);
   }
@@ -618,7 +618,7 @@ enum {
 
   // We need to deactivate the controls (in the "WebView"). To do this, get the
   // selected TabContents's RenderWidgetHostView and tell it to deactivate.
-  if (TabContents* contents = browser_->GetSelectedTabContents()) {
+  if (WebContents* contents = browser_->GetSelectedWebContents()) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(false);
   }
@@ -629,7 +629,7 @@ enum {
   [self saveWindowPositionIfNeeded];
 
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (TabContents* contents = browser_->GetSelectedTabContents()) {
+  if (WebContents* contents = browser_->GetSelectedWebContents()) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetWindowVisibility(false);
   }
@@ -638,7 +638,7 @@ enum {
 // Called when we have been unminimized.
 - (void)windowDidDeminiaturize:(NSNotification *)notification {
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (TabContents* contents = browser_->GetSelectedTabContents()) {
+  if (WebContents* contents = browser_->GetSelectedWebContents()) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetWindowVisibility(true);
   }
@@ -649,7 +649,7 @@ enum {
   // Let the selected RenderWidgetHostView know, so that it can tell plugins
   // (unless we are minimized, in which case nothing has really changed).
   if (![[self window] isMiniaturized]) {
-    if (TabContents* contents = browser_->GetSelectedTabContents()) {
+    if (WebContents* contents = browser_->GetSelectedWebContents()) {
       if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
         rwhv->SetWindowVisibility(false);
     }
@@ -661,7 +661,7 @@ enum {
   // Let the selected RenderWidgetHostView know, so that it can tell plugins
   // (unless we are minimized, in which case nothing has really changed).
   if (![[self window] isMiniaturized]) {
-    if (TabContents* contents = browser_->GetSelectedTabContents()) {
+    if (WebContents* contents = browser_->GetSelectedWebContents()) {
       if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
         rwhv->SetWindowVisibility(true);
     }
@@ -706,7 +706,7 @@ enum {
       std::max(kProportion * frame.size.width,
                std::min(kProportion * frame.size.height, frame.size.width));
 
-  TabContents* contents = browser_->GetSelectedTabContents();
+  WebContents* contents = browser_->GetSelectedWebContents();
   if (contents) {
     // If the intrinsic width is bigger, then make it the zoomed width.
     const int kScrollbarWidth = 16;  // TODO(viettrungluu): ugh.
@@ -966,7 +966,7 @@ enum {
     DCHECK(browser_.get());
     Profile* profile = browser_->profile();
     DCHECK(profile);
-    TabContents* current_tab = browser_->GetSelectedTabContents();
+    WebContents* current_tab = browser_->GetSelectedWebContents();
     if (!current_tab) {
       return;
     }
@@ -1462,7 +1462,7 @@ enum {
 }
 
 - (NSString*)activeTabTitle {
-  TabContents* contents = browser_->GetSelectedTabContents();
+  WebContents* contents = browser_->GetSelectedWebContents();
   return base::SysUTF16ToNSString(contents->GetTitle());
 }
 
@@ -1526,7 +1526,7 @@ enum {
   windowShim_->UpdateTitleBar();
 
   [sidebarController_ updateSidebarForTabContents:contents];
-  [devToolsController_ updateDevToolsForTabContents:contents
+  [devToolsController_ updateDevToolsForWebContents:contents
                                         withProfile:browser_->profile()];
 
   // Update the bookmark bar.
@@ -1739,7 +1739,7 @@ enum {
   }
 
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (TabContents* contents = browser_->GetSelectedTabContents()) {
+  if (WebContents* contents = browser_->GetSelectedWebContents()) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->WindowFrameChanged();
   }
@@ -1795,7 +1795,7 @@ enum {
     [self resetWindowGrowthState];
 
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (TabContents* contents = browser_->GetSelectedTabContents()) {
+  if (WebContents* contents = browser_->GetSelectedWebContents()) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->WindowFrameChanged();
   }

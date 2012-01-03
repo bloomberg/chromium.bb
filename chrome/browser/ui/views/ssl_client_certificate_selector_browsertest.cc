@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/ssl_client_certificate_selector.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/ssl/ssl_client_auth_handler_mock.h"
 #include "net/base/cert_test_util.h"
 #include "net/base/x509_certificate.h"
@@ -58,7 +59,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
 
     io_loop_finished_event_.Wait();
 
-    ui_test_utils::WaitForLoadStop(browser()->GetSelectedTabContents());
+    ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
     selector_ = new SSLClientCertificateSelector(
         browser()->GetSelectedTabContentsWrapper(),
         cert_request_info_,

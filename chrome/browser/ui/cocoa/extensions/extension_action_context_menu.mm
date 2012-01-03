@@ -37,6 +37,7 @@
 
 using content::OpenURLParams;
 using content::Referrer;
+using content::WebContents;
 
 // A class that loads the extension icon on the I/O thread before showing the
 // confirmation dialog to uninstall the given extension.
@@ -153,7 +154,7 @@ int CurrentTabId() {
   Browser* browser = BrowserList::GetLastActive();
   if(!browser)
     return -1;
-  TabContents* contents = browser->GetSelectedTabContents();
+  WebContents* contents = browser->GetSelectedWebContents();
   if (!contents)
     return -1;
   return ExtensionTabUtil::GetTabId(contents);

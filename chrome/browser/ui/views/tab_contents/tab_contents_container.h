@@ -14,7 +14,6 @@
 class NativeTabContentsContainer;
 class RenderViewHost;
 class RenderWidgetHostView;
-class TabContents;
 
 namespace content {
 class WebContents;
@@ -26,8 +25,8 @@ class TabContentsContainer : public views::View,
   TabContentsContainer();
   virtual ~TabContentsContainer();
 
-  // Changes the TabContents associated with this view.
-  void ChangeTabContents(TabContents* contents);
+  // Changes the WebContents associated with this view.
+  void ChangeWebContents(content::WebContents* contents);
 
   View* GetFocusView() { return native_container_->GetView(); }
 
@@ -84,8 +83,8 @@ class TabContentsContainer : public views::View,
   // view handle associated with the attached TabContents.
   NativeTabContentsContainer* native_container_;
 
-  // The attached TabContents.
-  TabContents* tab_contents_;
+  // The attached WebContents.
+  content::WebContents* web_contents_;
 
   // Handles registering for our notifications.
   content::NotificationRegistrar registrar_;

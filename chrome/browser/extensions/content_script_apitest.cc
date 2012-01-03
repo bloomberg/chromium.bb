@@ -10,7 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 
@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(
   // And check that its styles were affected by the styles that just got loaded.
   bool styles_injected;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send("
       L"document.defaultView.getComputedStyle(document.body, null)."
       L"getPropertyValue('background-color') == 'rgb(255, 0, 0)')",

@@ -917,7 +917,7 @@ void AutomationProvider::ExecuteExtensionActionInActiveTabAsync(
       profile_->GetExtensionMessageService();
   Browser* browser = browser_tracker_->GetResource(browser_handle);
   if (extension && service && message_service && browser) {
-    int tab_id = ExtensionTabUtil::GetTabId(browser->GetSelectedTabContents());
+    int tab_id = ExtensionTabUtil::GetTabId(browser->GetSelectedWebContents());
     if (extension->page_action()) {
       service->browser_event_router()->PageActionExecuted(
           browser->profile(), extension->id(), "action", tab_id, "", 1);

@@ -387,6 +387,8 @@ class Browser : public TabHandlerDelegate,
 
   // TODO(dpapad): Rename to GetActiveTabContentsWrapper().
   TabContentsWrapper* GetSelectedTabContentsWrapper() const;
+  // A convenient version of the above which returns the TCW's WebContents.
+  content::WebContents* GetSelectedWebContents() const;
   TabContentsWrapper* GetTabContentsWrapperAt(int index) const;
   // Same as above but correctly handles if GetSelectedTabContents() is NULL
   // in the model before dereferencing to get the raw TabContents.

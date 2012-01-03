@@ -353,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_PasteWithoutTextChange) {
   // Press Ctrl-V to paste the content back, it should start finding even if the
   // content is not changed.
   content::Source<WebContents> notification_source(
-      browser()->GetSelectedTabContents());
+      browser()->GetSelectedWebContents());
   ui_test_utils::WindowedNotificationObserverWithDetails
       <FindNotificationDetails> observer(
           chrome::NOTIFICATION_FIND_RESULT_AVAILABLE, notification_source);

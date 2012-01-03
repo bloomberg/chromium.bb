@@ -10,7 +10,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/device_orientation/orientation.h"
 #include "content/browser/device_orientation/provider.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 
 namespace device_orientation {
@@ -62,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(DeviceOrientationBrowserTest, BasicTest) {
 
   // Check that the page got the event it expected and that the provider
   // saw requests for adding and removing an observer.
-  EXPECT_EQ("pass", browser()->GetSelectedTabContents()->GetURL().ref());
+  EXPECT_EQ("pass", browser()->GetSelectedWebContents()->GetURL().ref());
   EXPECT_TRUE(provider->added_observer_);
   EXPECT_TRUE(provider->removed_observer_);
 }

@@ -807,7 +807,7 @@ void BrowserWindowGtk::BookmarkBarStateChanged(
 
 void BrowserWindowGtk::UpdateDevTools() {
   UpdateDevToolsForContents(
-      browser_->GetSelectedTabContents());
+      browser_->GetSelectedWebContents());
 }
 
 void BrowserWindowGtk::SetDevToolsDockSide(DevToolsDockSide side)
@@ -851,11 +851,11 @@ void BrowserWindowGtk::LoadingAnimationCallback() {
     tabstrip_->UpdateLoadingAnimations();
   } else if (ShouldShowWindowIcon()) {
     // ... or in the window icon area for popups and app windows.
-    TabContents* tab_contents = browser_->GetSelectedTabContents();
+    WebContents* web_contents = browser_->GetSelectedTabContents();
     // GetSelectedTabContents can return NULL for example under Purify when
     // the animations are running slowly and this function is called on
     // a timer through LoadingAnimationCallback.
-    titlebar_->UpdateThrobber(tab_contents);
+    titlebar_->UpdateThrobber(web_contents);
   }
 }
 
@@ -1265,7 +1265,7 @@ void BrowserWindowGtk::Observe(int type,
 void BrowserWindowGtk::TabDetachedAt(TabContentsWrapper* contents, int index) {
   // We use index here rather than comparing |contents| because by this time
   // the model has already removed |contents| from its list, so
-  // browser_->GetSelectedTabContents() will return NULL or something else.
+  // browser_->GetSelectedWebContents() will return NULL or something else.
   if (index == browser_->tabstrip_model()->active_index()) {
     infobar_container_->ChangeTabContents(NULL);
     UpdateDevToolsForContents(NULL);
@@ -1283,7 +1283,7 @@ void BrowserWindowGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
 
   // Update various elements that are interested in knowing the current
   // TabContents.
-  UpdateDevToolsForContents(new_contents->tab_contents());
+  UpdateDevToolsForContents(new_contents->web_contents());
   infobar_container_->ChangeTabContents(new_contents->infobar_tab_helper());
   contents_container_->SetTab(new_contents);
 
@@ -1370,7 +1370,7 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
                 BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 }
 
-void BrowserWindowGtk::UpdateDevToolsForContents(TabContents* contents) {
+void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
   TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::UpdateDevToolsForContents");
   TabContentsWrapper* old_devtools = devtools_container_->tab();
   TabContentsWrapper* devtools_contents = contents ?
@@ -1387,7 +1387,7 @@ void BrowserWindowGtk::UpdateDevToolsForContents(TabContents* contents) {
     // anything other than user selecting a Tab.
     // See TabContentsViewViews::OnWindowPosChanged for reference on how it
     // should be implemented.
-    devtools_contents->tab_contents()->ShowContents();
+    devtools_contents->web_contents()->ShowContents();
   }
 
   bool should_show = old_devtools == NULL && devtools_contents != NULL;
@@ -2130,11 +2130,11 @@ gboolean BrowserWindowGtk::OnGtkAccelerator(GtkAccelGroup* accel_group,
 gboolean BrowserWindowGtk::OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
   // If a widget besides the native view is focused, we have to try to handle
   // the custom accelerators before letting it handle them.
-  TabContents* current_tab_contents =
-      browser()->GetSelectedTabContents();
+  WebContents* current_web_contents =
+      browser()->GetSelectedWebContents();
   // The current tab might not have a render view if it crashed.
-  if (!current_tab_contents || !current_tab_contents->GetContentNativeView() ||
-      !gtk_widget_is_focus(current_tab_contents->GetContentNativeView())) {
+  if (!current_web_contents || !current_web_contents->GetContentNativeView() ||
+      !gtk_widget_is_focus(current_web_contents->GetContentNativeView())) {
     int command_id = GetCustomCommandId(event);
     if (command_id == -1)
       command_id = GetPreHandleCommandId(event);

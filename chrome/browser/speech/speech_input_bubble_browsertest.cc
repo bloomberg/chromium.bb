@@ -23,16 +23,14 @@ class SpeechInputBubbleTest : public SpeechInputBubbleDelegate,
 IN_PROC_BROWSER_TEST_F(SpeechInputBubbleTest, CreateAndDestroy) {
   gfx::Rect element_rect(100, 100, 100, 100);
   scoped_ptr<SpeechInputBubble> bubble(SpeechInputBubble::Create(
-      browser()->GetSelectedTabContentsWrapper()->web_contents(), this,
-      element_rect));
+      browser()->GetSelectedWebContents(), this, element_rect));
   EXPECT_TRUE(bubble.get());
 }
 
 IN_PROC_BROWSER_TEST_F(SpeechInputBubbleTest, ShowAndDestroy) {
   gfx::Rect element_rect(100, 100, 100, 100);
   scoped_ptr<SpeechInputBubble> bubble(SpeechInputBubble::Create(
-      browser()->GetSelectedTabContentsWrapper()->web_contents(), this,
-      element_rect));
+      browser()->GetSelectedWebContents(), this, element_rect));
   EXPECT_TRUE(bubble.get());
   bubble->Show();
 }
@@ -40,8 +38,7 @@ IN_PROC_BROWSER_TEST_F(SpeechInputBubbleTest, ShowAndDestroy) {
 IN_PROC_BROWSER_TEST_F(SpeechInputBubbleTest, ShowAndHide) {
   gfx::Rect element_rect(100, 100, 100, 100);
   scoped_ptr<SpeechInputBubble> bubble(SpeechInputBubble::Create(
-      browser()->GetSelectedTabContentsWrapper()->web_contents(), this,
-      element_rect));
+      browser()->GetSelectedWebContents(), this, element_rect));
   EXPECT_TRUE(bubble.get());
   bubble->Show();
   bubble->Hide();
@@ -50,8 +47,7 @@ IN_PROC_BROWSER_TEST_F(SpeechInputBubbleTest, ShowAndHide) {
 IN_PROC_BROWSER_TEST_F(SpeechInputBubbleTest, ShowAndHideTwice) {
   gfx::Rect element_rect(100, 100, 100, 100);
   scoped_ptr<SpeechInputBubble> bubble(SpeechInputBubble::Create(
-      browser()->GetSelectedTabContentsWrapper()->web_contents(), this,
-      element_rect));
+      browser()->GetSelectedWebContents(), this, element_rect));
   EXPECT_TRUE(bubble.get());
   bubble->Show();
   bubble->Hide();

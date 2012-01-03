@@ -1080,7 +1080,7 @@ bool ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
     case IDC_FORWARD:
     case IDC_RELOAD: {
       new NavigationNotificationObserver(
-          &browser->GetSelectedTabContents()->GetController(),
+          &browser->GetSelectedWebContents()->GetController(),
           automation, reply_message, 1, false, false);
       break;
     }

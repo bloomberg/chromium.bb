@@ -55,6 +55,7 @@
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::WebContents;
 
 namespace {
 
@@ -595,7 +596,7 @@ class DownloadTest : public InProcessBrowserTest {
       return;
 
     ActiveDownloadsUI* downloads_ui = static_cast<ActiveDownloadsUI*>(
-        popup->GetSelectedTabContents()->GetWebUI());
+        popup->GetSelectedWebContents()->GetWebUI());
 
     ASSERT_TRUE(downloads_ui);
     const ActiveDownloadsUI::DownloadList& downloads =
@@ -1323,7 +1324,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
   ui_test_utils::NavigateToURL(browser(), flags_url);
   DownloadAndWait(browser(), download_url, EXPECT_NO_SELECT_DIALOG);
   ui_test_utils::NavigateToURL(browser(), extensions_url);
-  TabContents* contents = browser()->GetSelectedTabContents();
+  WebContents* contents = browser()->GetSelectedWebContents();
   ASSERT_TRUE(contents);
   bool webui_responded = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -1344,7 +1345,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, BrowserCloseAfterDownload) {
   GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));
 
   ui_test_utils::NavigateToURL(browser(), downloads_url);
-  TabContents* contents = browser()->GetSelectedTabContents();
+  WebContents* contents = browser()->GetSelectedWebContents();
   ASSERT_TRUE(contents);
   bool result = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(

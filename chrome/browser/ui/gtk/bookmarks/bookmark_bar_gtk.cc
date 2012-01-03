@@ -53,6 +53,7 @@
 
 using content::PageNavigator;
 using content::UserMetricsAction;
+using content::WebContents;
 
 namespace {
 
@@ -678,17 +679,17 @@ bool BookmarkBarGtk::GetTabContentsSize(gfx::Size* size) {
     NOTREACHED();
     return false;
   }
-  TabContents* tab_contents = browser->GetSelectedTabContents();
-  if (!tab_contents) {
+  WebContents* web_contents = browser->GetSelectedWebContents();
+  if (!web_contents) {
     // It is possible to have a browser but no TabContents while under testing,
     // so don't NOTREACHED() and error the program.
     return false;
   }
-  if (!tab_contents->GetView()) {
+  if (!web_contents->GetView()) {
     NOTREACHED();
     return false;
   }
-  *size = tab_contents->GetView()->GetContainerSize();
+  *size = web_contents->GetView()->GetContainerSize();
   return true;
 }
 

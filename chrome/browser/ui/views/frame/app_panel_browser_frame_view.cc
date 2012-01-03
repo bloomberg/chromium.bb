@@ -23,6 +23,8 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
+using content::WebContents;
+
 namespace {
 
 // The frame border is only visible in restored mode and is hardcoded to 1 px on
@@ -238,8 +240,8 @@ void AppPanelBrowserFrameView::ButtonPressed(views::Button* sender,
 bool AppPanelBrowserFrameView::ShouldTabIconViewAnimate() const {
   // This function is queried during the creation of the window as the
   // TabIconView we host is initialized, so we need to NULL check the selected
-  // TabContents because in this condition there is not yet a selected tab.
-  TabContents* current_tab = browser_view()->GetSelectedTabContents();
+  // WebContents because in this condition there is not yet a selected tab.
+  WebContents* current_tab = browser_view()->GetSelectedWebContents();
   return current_tab ? current_tab->IsLoading() : false;
 }
 

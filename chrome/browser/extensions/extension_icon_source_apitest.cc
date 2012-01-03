@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 
@@ -34,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoaded) {
       browser(),
       GURL("chrome-extension://gbmgkahjioeacddebbnengilkgbkhodg/index.html"));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Loaded");
@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoaded) {
       browser(),
       GURL("chrome-extension://apocjbpjpkghdepdngjlknfpmabcmlao/index.html"));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser()->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Not Loaded");
@@ -67,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoadedIncognito) {
   Browser* otr_browser = BrowserList::FindTabbedBrowser(
       browser()->profile()->GetOffTheRecordProfile(), false);
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      otr_browser->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      otr_browser->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Loaded");
@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoadedIncognito) {
       browser()->profile(),
       GURL("chrome-extension://apocjbpjpkghdepdngjlknfpmabcmlao/index.html"));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      otr_browser->GetSelectedTabContents()->GetRenderViewHost(), L"",
+      otr_browser->GetSelectedWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Not Loaded");

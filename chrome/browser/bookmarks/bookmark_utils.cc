@@ -157,7 +157,7 @@ void OpenAllImpl(const BookmarkNode* node,
       // the current page, reset the navigator just to be sure.
       Browser* new_browser = BrowserList::GetLastActiveWithProfile(profile);
       if (new_browser) {
-        TabContents* current_tab = new_browser->GetSelectedTabContents();
+        WebContents* current_tab = new_browser->GetSelectedWebContents();
         DCHECK(new_browser && current_tab);
         if (new_browser && current_tab)
           *navigator = current_tab;
@@ -385,14 +385,14 @@ void OpenAll(gfx::NativeWindow parent,
   NewBrowserPageNavigator navigator_impl(profile);
   if (!navigator) {
     Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
-    if (!browser || !browser->GetSelectedTabContents()) {
+    if (!browser || !browser->GetSelectedWebContents()) {
       navigator = &navigator_impl;
     } else {
       if (initial_disposition != NEW_WINDOW &&
           initial_disposition != OFF_THE_RECORD) {
         browser->window()->Activate();
       }
-      navigator = browser->GetSelectedTabContents();
+      navigator = browser->GetSelectedWebContents();
     }
   }
 
@@ -652,21 +652,21 @@ void RegisterUserPrefs(PrefService* prefs) {
                              PrefService::UNSYNCABLE_PREF);
 }
 
-void GetURLAndTitleToBookmark(TabContents* tab_contents,
+void GetURLAndTitleToBookmark(WebContents* web_contents,
                               GURL* url,
                               string16* title) {
-  *url = tab_contents->GetURL();
-  *title = tab_contents->GetTitle();
+  *url = web_contents->GetURL();
+  *title = web_contents->GetTitle();
 }
 
 void GetURLAndTitleToBookmarkFromCurrentTab(Profile* profile,
                                             GURL* url,
                                             string16* title) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
-  TabContents* tab_contents = browser ? browser->GetSelectedTabContents()
+  WebContents* web_contents = browser ? browser->GetSelectedWebContents()
                                         : NULL;
-  if (tab_contents)
-    GetURLAndTitleToBookmark(tab_contents, url, title);
+  if (web_contents)
+    GetURLAndTitleToBookmark(web_contents, url, title);
 }
 
 void GetURLsForOpenTabs(

@@ -388,7 +388,7 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
   // Then we register for notifications to get new tabs.
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -411,7 +411,7 @@ void TaskManagerTabContentsResourceProvider::StopUpdating() {
       this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
       content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Remove(
-      this, content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
+      this, content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
       content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Remove(
       this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
@@ -500,7 +500,8 @@ void TaskManagerTabContentsResourceProvider::Observe(int type,
   TabContentsWrapper* tab_contents;
   if (type == chrome::NOTIFICATION_INSTANT_COMMITTED) {
     tab_contents = content::Source<TabContentsWrapper>(source).ptr();
-  } else if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
+  } else if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED ||
+             type == content::NOTIFICATION_WEB_CONTENTS_SWAPPED) {
     WebContents* web_contents = content::Source<WebContents>(source).ptr();
     tab_contents = TabContentsWrapper::GetCurrentWrapperForContents(
         web_contents);
@@ -515,7 +516,7 @@ void TaskManagerTabContentsResourceProvider::Observe(int type,
     case content::NOTIFICATION_TAB_CONTENTS_CONNECTED:
       Add(tab_contents);
       break;
-    case content::NOTIFICATION_TAB_CONTENTS_SWAPPED:
+    case content::NOTIFICATION_WEB_CONTENTS_SWAPPED:
       Remove(tab_contents);
       Add(tab_contents);
       break;

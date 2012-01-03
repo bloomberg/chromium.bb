@@ -23,10 +23,11 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
 using content::OpenURLParams;
@@ -219,7 +220,7 @@ void ExtensionProcessManager::OpenOptionsPage(const Extension* extension,
                        content::PAGE_TRANSITION_LINK, false);
   browser->OpenURL(params);
   browser->window()->Show();
-  static_cast<RenderViewHostDelegate*>(browser->GetSelectedTabContents())->
+  browser->GetSelectedWebContents()->GetRenderViewHost()->delegate()->
       Activate();
 }
 

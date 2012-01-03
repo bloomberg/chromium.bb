@@ -1177,7 +1177,7 @@ void ExternalTabContainer::SetupExternalTabView() {
   layout->AddView(tab_contents_container_);
   GetWidget()->SetContentsView(external_tab_view_);
   // Note that SetTabContents must be called after AddChildView is called
-  tab_contents_container_->ChangeTabContents(tab_contents());
+  tab_contents_container_->ChangeWebContents(web_contents());
 }
 
 TemporaryPopupExternalTabContainer::TemporaryPopupExternalTabContainer(

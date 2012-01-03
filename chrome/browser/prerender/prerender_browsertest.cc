@@ -540,7 +540,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::NotificationService::AllSources());
     RenderViewHost* render_view_host =
-        browser->GetSelectedTabContents()->GetRenderViewHost();
+        browser->GetSelectedWebContents()->GetRenderViewHost();
     render_view_host->ExecuteJavascriptInWebFrame(
         string16(),
         ASCIIToUTF16("ClickOpenLink()"));
@@ -572,7 +572,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     back_nav_observer.Wait();
     bool original_prerender_page = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser->GetSelectedTabContents()->GetRenderViewHost(), L"",
+        browser->GetSelectedWebContents()->GetRenderViewHost(), L"",
         L"window.domAutomationController.send(IsOriginalPrerenderPage())",
         &original_prerender_page));
     EXPECT_TRUE(original_prerender_page);
@@ -582,7 +582,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   // in. This must be called when the prerendered page is the current page
   // in the active tab.
   void GoBackToPageBeforePrerender(Browser* browser) {
-    TabContents* tab = browser->GetSelectedTabContents();
+    WebContents* tab = browser->GetSelectedWebContents();
     ASSERT_TRUE(tab);
     EXPECT_FALSE(tab->IsLoading());
     ui_test_utils::WindowedNotificationObserver back_nav_observer(
@@ -807,7 +807,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(prerender_contents != NULL);
 
     RenderViewHost* render_view_host =
-        browser()->GetSelectedTabContents()->GetRenderViewHost();
+        browser()->GetSelectedWebContents()->GetRenderViewHost();
     render_view_host->ExecuteJavascriptInWebFrame(
         string16(),
         ASCIIToUTF16(javascript_function_name));
@@ -1883,9 +1883,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewBackgroundTab) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        NavigateToPrerenderedPageWhenDevToolsAttached) {
   DisableJavascriptCalls();
-  TabContents* tab_contents = browser()->GetSelectedTabContents();
+  WebContents* web_contents = browser()->GetSelectedWebContents();
   DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-      tab_contents->GetRenderViewHost());
+      web_contents->GetRenderViewHost());
   DevToolsManager* manager = DevToolsManager::GetInstance();
   FakeDevToolsClientHost client_host;
   manager->RegisterDevToolsClientHostFor(agent, &client_host);

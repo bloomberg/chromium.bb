@@ -54,6 +54,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skbitmap_operations.h"
 
+using content::WebContents;
+
 namespace {
 
 // The space above the titlebars.
@@ -635,12 +637,12 @@ void BrowserTitlebar::UpdateTitleAndIcon() {
   }
 }
 
-void BrowserTitlebar::UpdateThrobber(TabContents* tab_contents) {
+void BrowserTitlebar::UpdateThrobber(WebContents* web_contents) {
   DCHECK(app_mode_favicon_);
 
-  if (tab_contents && tab_contents->IsLoading()) {
+  if (web_contents && web_contents->IsLoading()) {
     GdkPixbuf* icon_pixbuf =
-        throbber_.GetNextFrame(tab_contents->IsWaitingForResponse());
+        throbber_.GetNextFrame(web_contents->IsWaitingForResponse());
     gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_), icon_pixbuf);
   } else {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -987,11 +989,11 @@ bool BrowserTitlebar::IsCommandIdChecked(int command_id) const {
 
   EncodingMenuController controller;
   if (controller.DoesCommandBelongToEncodingMenu(command_id)) {
-    TabContents* tab_contents =
-        browser_window_->browser()->GetSelectedTabContents();
-    if (tab_contents) {
+    WebContents* web_contents =
+        browser_window_->browser()->GetSelectedWebContents();
+    if (web_contents) {
       return controller.IsItemChecked(browser_window_->browser()->profile(),
-                                      tab_contents->GetEncoding(),
+                                      web_contents->GetEncoding(),
                                       command_id);
     }
     return false;

@@ -15,11 +15,13 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/widget/widget.h"
 
+using content::WebContents;
 using testing::Eq;
 
 namespace {
@@ -106,10 +108,10 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
 
   TestHtmlDialogView* html_view =
       new TestHtmlDialogView(browser()->profile(), delegate);
-  TabContents* tab_contents = browser()->GetSelectedTabContents();
-  ASSERT_TRUE(tab_contents != NULL);
-  views::Widget::CreateWindowWithParent(html_view,
-                                        tab_contents->GetDialogRootWindow());
+  WebContents* web_contents = browser()->GetSelectedWebContents();
+  ASSERT_TRUE(web_contents != NULL);
+  views::Widget::CreateWindowWithParent(
+      html_view, web_contents->GetView()->GetTopLevelNativeWindow());
   html_view->InitDialog();
   html_view->GetWidget()->Show();
 
@@ -125,12 +127,12 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
   set_bounds.set_width(400);
   set_bounds.set_height(300);
 
-  html_view->MoveContents(tab_contents, set_bounds);
+  html_view->MoveContents(web_contents, set_bounds);
   ui_test_utils::RunMessageLoop();  // TestHtmlDialogView will quit.
   actual_bounds = html_view->GetWidget()->GetClientAreaScreenBounds();
   EXPECT_EQ(set_bounds, actual_bounds);
 
-  rwhv_bounds = html_view->dom_contents()->tab_contents()->
+  rwhv_bounds = html_view->dom_contents()->web_contents()->
       GetRenderWidgetHostView()->GetViewBounds();
   EXPECT_LT(0, rwhv_bounds.width());
   EXPECT_LT(0, rwhv_bounds.height());
@@ -141,12 +143,12 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
   set_bounds.set_width(550);
   set_bounds.set_height(250);
 
-  html_view->MoveContents(tab_contents, set_bounds);
+  html_view->MoveContents(web_contents, set_bounds);
   ui_test_utils::RunMessageLoop();  // TestHtmlDialogView will quit.
   actual_bounds = html_view->GetWidget()->GetClientAreaScreenBounds();
   EXPECT_EQ(set_bounds, actual_bounds);
 
-  rwhv_bounds = html_view->dom_contents()->tab_contents()->
+  rwhv_bounds = html_view->dom_contents()->web_contents()->
       GetRenderWidgetHostView()->GetViewBounds();
   EXPECT_LT(0, rwhv_bounds.width());
   EXPECT_LT(0, rwhv_bounds.height());
@@ -157,12 +159,12 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
   gfx::Size min_size = html_view->GetWidget()->GetMinimumSize();
   set_bounds.set_size(min_size);
 
-  html_view->MoveContents(tab_contents, set_bounds);
+  html_view->MoveContents(web_contents, set_bounds);
   ui_test_utils::RunMessageLoop();  // TestHtmlDialogView will quit.
   actual_bounds = html_view->GetWidget()->GetClientAreaScreenBounds();
   EXPECT_EQ(set_bounds, actual_bounds);
 
-  rwhv_bounds = html_view->dom_contents()->tab_contents()->
+  rwhv_bounds = html_view->dom_contents()->web_contents()->
       GetRenderWidgetHostView()->GetViewBounds();
   EXPECT_LT(0, rwhv_bounds.width());
   EXPECT_LT(0, rwhv_bounds.height());
@@ -173,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
   set_bounds.set_width(0);
   set_bounds.set_height(0);
 
-  html_view->MoveContents(tab_contents, set_bounds);
+  html_view->MoveContents(web_contents, set_bounds);
   ui_test_utils::RunMessageLoop();  // TestHtmlDialogView will quit.
   actual_bounds = html_view->GetWidget()->GetClientAreaScreenBounds();
   EXPECT_LT(0, actual_bounds.width());
@@ -187,10 +189,10 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, DISABLED_WebContentRendered) {
 
   TestHtmlDialogView* html_view =
       new TestHtmlDialogView(browser()->profile(), delegate);
-  TabContents* tab_contents = browser()->GetSelectedTabContents();
-  ASSERT_TRUE(tab_contents != NULL);
-  views::Widget::CreateWindowWithParent(html_view,
-                                        tab_contents->GetDialogRootWindow());
+  WebContents* web_contents = browser()->GetSelectedWebContents();
+  ASSERT_TRUE(web_contents != NULL);
+  views::Widget::CreateWindowWithParent(
+      html_view, web_contents->GetView()->GetTopLevelNativeWindow());
   EXPECT_TRUE(html_view->initialized_);
 
   html_view->InitDialog();
