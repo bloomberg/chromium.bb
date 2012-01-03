@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "chrome/browser/policy/mock_device_management_backend.h"
 #include "chrome/browser/policy/mock_device_management_service.h"
 #include "crypto/sha2.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,25 +22,15 @@ const char* kSerialHash =
     "\x01\x44\xb1\xde\xfc\xf7\x56\x10\x87\x01\x5f\x8d\x83\x0d\x65\xb1"
     "\x6f\x02\x4a\xd7\xeb\x92\x45\xfc\xd4\xe4\x37\xa1\x55\x2b\x13\x8a";
 
-using ::testing::AnyNumber;
-using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Invoke;
-using ::testing::Unused;
 using ::testing::_;
-
-ACTION_P(MockDeviceManagementBackendFailAutoEnrollment, error) {
-  arg2->OnError(error);
-}
-
-ACTION_P(MockDeviceManagementBackendSucceedAutoEnrollment, response) {
-  arg2->HandleAutoEnrollmentResponse(response);
-}
 
 class AutoEnrollmentClientTest : public testing::Test {
  protected:
   AutoEnrollmentClientTest()
-      : completion_callback_count_(0) {}
+      : service_(NULL),
+        completion_callback_count_(0) {}
 
   virtual void SetUp() OVERRIDE {
     CreateClient(kSerial, 4, 8);
@@ -50,15 +39,15 @@ class AutoEnrollmentClientTest : public testing::Test {
   void CreateClient(const std::string& serial,
                     int power_initial,
                     int power_limit) {
-    MockDeviceManagementService* service = new MockDeviceManagementService;
-    EXPECT_CALL(*service, CreateBackend())
-      .Times(AnyNumber())
-      .WillRepeatedly(MockDeviceManagementServiceProxyBackend(&backend_));
+    service_ = new MockDeviceManagementService();
+    EXPECT_CALL(*service_, StartJob(_))
+        .WillRepeatedly(Invoke(this,
+                               &AutoEnrollmentClientTest::CaptureRequest));
     base::Closure callback =
         base::Bind(&AutoEnrollmentClientTest::CompletionCallback,
                    base::Unretained(this));
     client_.reset(new AutoEnrollmentClient(callback,
-                                           service,
+                                           service_,
                                            serial,
                                            power_initial,
                                            power_limit));
@@ -68,53 +57,51 @@ class AutoEnrollmentClientTest : public testing::Test {
     completion_callback_count_++;
   }
 
-  void ServerWillFail(DeviceManagementBackend::ErrorCode error) {
-    EXPECT_CALL(backend_, ProcessAutoEnrollmentRequest(_, _, _))
-        .WillOnce(
-            DoAll(Invoke(this, &AutoEnrollmentClientTest::CaptureRequest),
-                  MockDeviceManagementBackendFailAutoEnrollment(error)));
+  void ServerWillFail(DeviceManagementStatus error) {
+    em::DeviceManagementResponse dummy_response;
+    EXPECT_CALL(*service_,
+                CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT))
+        .WillOnce(service_->FailJob(error));
   }
 
   void ServerWillReply(int64 modulus, bool with_hashes, bool with_serial_hash) {
-    em::DeviceAutoEnrollmentResponse response;
+    em::DeviceManagementResponse response;
+    em::DeviceAutoEnrollmentResponse* enrollment_response =
+        response.mutable_auto_enrollment_response();
     if (modulus >= 0)
-      response.set_expected_modulus(modulus);
+      enrollment_response->set_expected_modulus(modulus);
     if (with_hashes) {
       for (size_t i = 0; i < 10; ++i) {
         std::string serial = "serial X";
         serial[7] = '0' + i;
         std::string hash = crypto::SHA256HashString(serial);
-        response.mutable_hash()->Add()->assign(hash);
+        enrollment_response->mutable_hash()->Add()->assign(hash);
       }
     }
     if (with_serial_hash) {
-      response.mutable_hash()->Add()->assign(kSerialHash,
+      enrollment_response->mutable_hash()->Add()->assign(kSerialHash,
                                                crypto::kSHA256Length);
     }
-    EXPECT_CALL(backend_, ProcessAutoEnrollmentRequest(_, _, _))
-        .WillOnce(
-            DoAll(Invoke(this, &AutoEnrollmentClientTest::CaptureRequest),
-                  MockDeviceManagementBackendSucceedAutoEnrollment(response)));
+    EXPECT_CALL(*service_,
+                CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT))
+        .WillOnce(service_->SucceedJob(response));
   }
 
-  MockDeviceManagementBackend backend_;
+  MockDeviceManagementService* service_;
   scoped_ptr<AutoEnrollmentClient> client_;
   em::DeviceAutoEnrollmentRequest last_request_;
   int completion_callback_count_;
 
  private:
-  void CaptureRequest(
-      Unused,
-      const em::DeviceAutoEnrollmentRequest& request,
-      Unused) {
-    last_request_ = request;
+  void CaptureRequest(DeviceManagementRequestJob* job) {
+    last_request_ = job->GetRequest()->auto_enrollment_request();
   }
 
   DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentClientTest);
 };
 
 TEST_F(AutoEnrollmentClientTest, NetworkFailure) {
-  ServerWillFail(DeviceManagementBackend::kErrorTemporaryUnavailable);
+  ServerWillFail(DM_STATUS_TEMPORARY_UNAVAILABLE);
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
@@ -141,7 +128,7 @@ TEST_F(AutoEnrollmentClientTest, ClientUploadsRightBits) {
 TEST_F(AutoEnrollmentClientTest, AskForMoreThenFail) {
   InSequence sequence;
   ServerWillReply(32, false, false);
-  ServerWillFail(DeviceManagementBackend::kErrorTemporaryUnavailable);
+  ServerWillFail(DM_STATUS_TEMPORARY_UNAVAILABLE);
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);

@@ -11,7 +11,7 @@
 #include "chrome/browser/policy/device_token_fetcher.h"
 #include "chrome/browser/policy/logging_work_scheduler.h"
 #include "chrome/browser/policy/mock_device_management_backend.h"
-#include "chrome/browser/policy/mock_device_management_service.h"
+#include "chrome/browser/policy/mock_device_management_service_old.h"
 #include "chrome/browser/policy/policy_notifier.h"
 #include "chrome/browser/policy/user_policy_cache.h"
 #include "content/test/test_browser_thread.h"
@@ -102,7 +102,7 @@ class CloudPolicyControllerTest : public testing::Test {
   scoped_ptr<MockDeviceTokenFetcher> token_fetcher_;
   scoped_ptr<CloudPolicyDataStore> data_store_;
   MockDeviceManagementBackend backend_;
-  MockDeviceManagementService service_;
+  MockDeviceManagementServiceOld service_;
   PolicyNotifier notifier_;
   ScopedTempDir temp_user_data_dir_;
   MessageLoop loop_;

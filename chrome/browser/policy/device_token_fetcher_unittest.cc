@@ -10,7 +10,7 @@
 #include "chrome/browser/policy/logging_work_scheduler.h"
 #include "chrome/browser/policy/mock_cloud_policy_data_store.h"
 #include "chrome/browser/policy/mock_device_management_backend.h"
-#include "chrome/browser/policy/mock_device_management_service.h"
+#include "chrome/browser/policy/mock_device_management_service_old.h"
 #include "chrome/browser/policy/policy_notifier.h"
 #include "chrome/browser/policy/user_policy_cache.h"
 #include "content/test/test_browser_thread.h"
@@ -24,9 +24,9 @@ namespace policy {
 const char kTestToken[] = "device_token_fetcher_test_auth_token";
 
 using content::BrowserThread;
-using testing::_;
 using testing::AnyNumber;
 using testing::Mock;
+using testing::_;
 
 class DeviceTokenFetcherTest : public testing::Test {
  protected:
@@ -72,7 +72,7 @@ class DeviceTokenFetcherTest : public testing::Test {
 
   MessageLoop loop_;
   MockDeviceManagementBackend backend_;
-  MockDeviceManagementService service_;
+  MockDeviceManagementServiceOld service_;
   scoped_ptr<CloudPolicyCacheBase> cache_;
   scoped_ptr<CloudPolicyDataStore> data_store_;
   MockCloudPolicyDataStoreObserver observer_;

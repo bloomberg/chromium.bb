@@ -8,53 +8,52 @@ namespace em = enterprise_management;
 
 namespace policy {
 
-ProxyDeviceManagementBackend::ProxyDeviceManagementBackend(
-    DeviceManagementBackend* backend)
-    : backend_(backend) {
-}
-ProxyDeviceManagementBackend::~ProxyDeviceManagementBackend() {}
+class MockDeviceManagementRequestJob : public DeviceManagementRequestJob {
+ public:
+  MockDeviceManagementRequestJob(
+      JobType type,
+      MockDeviceManagementService* service,
+      DeviceManagementStatus status,
+      const enterprise_management::DeviceManagementResponse& response)
+      : DeviceManagementRequestJob(type),
+        service_(service),
+        status_(status),
+        response_(response) {}
 
-void ProxyDeviceManagementBackend::ProcessRegisterRequest(
-    const std::string& gaia_auth_token,
-    const std::string& oauth_token,
-    const std::string& device_id,
-    const em::DeviceRegisterRequest& request,
-    DeviceRegisterResponseDelegate* delegate) {
-  backend_->ProcessRegisterRequest(gaia_auth_token, oauth_token,
-                                   device_id, request, delegate);
-}
+ protected:
+  virtual void Run() OVERRIDE {
+    service_->StartJob(this);
+    callback_.Run(status_, response_);
+  }
 
-void ProxyDeviceManagementBackend::ProcessUnregisterRequest(
-    const std::string& device_management_token,
-    const std::string& device_id,
-    const em::DeviceUnregisterRequest& request,
-    DeviceUnregisterResponseDelegate* delegate) {
-  backend_->ProcessUnregisterRequest(device_management_token, device_id,
-                                     request, delegate);
-}
+ private:
+  MockDeviceManagementService* service_;
+  DeviceManagementStatus status_;
+  enterprise_management::DeviceManagementResponse response_;
 
-void ProxyDeviceManagementBackend::ProcessPolicyRequest(
-    const std::string& device_management_token,
-    const std::string& device_id,
-    CloudPolicyDataStore::UserAffiliation affiliation,
-    const em::DevicePolicyRequest& request,
-    const em::DeviceStatusReportRequest* device_status,
-    DevicePolicyResponseDelegate* delegate) {
-  backend_->ProcessPolicyRequest(device_management_token, device_id,
-                                 affiliation, request, device_status,
-                                 delegate);
-}
+  DISALLOW_COPY_AND_ASSIGN(MockDeviceManagementRequestJob);
+};
 
-void ProxyDeviceManagementBackend::ProcessAutoEnrollmentRequest(
-    const std::string& device_id,
-    const em::DeviceAutoEnrollmentRequest& request,
-    DeviceAutoEnrollmentResponseDelegate* delegate) {
-  backend_->ProcessAutoEnrollmentRequest(device_id, request, delegate);
+ACTION_P3(CreateMockDeviceManagementRequestJob, service, status, response) {
+  return new MockDeviceManagementRequestJob(arg0, service, status, response);
 }
 
 MockDeviceManagementService::MockDeviceManagementService()
     : DeviceManagementService("") {}
 
 MockDeviceManagementService::~MockDeviceManagementService() {}
+
+testing::Action<MockDeviceManagementService::CreateJobFunction>
+    MockDeviceManagementService::SucceedJob(
+        const enterprise_management::DeviceManagementResponse& response) {
+  return CreateMockDeviceManagementRequestJob(this, DM_STATUS_SUCCESS,
+                                              response);
+}
+
+testing::Action<MockDeviceManagementService::CreateJobFunction>
+    MockDeviceManagementService::FailJob(DeviceManagementStatus status) {
+  const enterprise_management::DeviceManagementResponse dummy_response;
+  return CreateMockDeviceManagementRequestJob(this, status, dummy_response);
+}
 
 }  // namespace policy

@@ -9,21 +9,25 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/policy/device_management_backend.h"
+#include "chrome/browser/policy/cloud_policy_constants.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
+
+namespace enterprise_management {
+class DeviceManagementResponse;
+}
 
 namespace policy {
 
+class DeviceManagementRequestJob;
 class DeviceManagementService;
 
 // Interacts with the device management service and determines whether this
 // machine should automatically enter the Enterprise Enrollment screen during
 // OOBE.
-class AutoEnrollmentClient
-    : public DeviceManagementBackend::DeviceAutoEnrollmentResponseDelegate {
+class AutoEnrollmentClient {
  public:
   // |completion_callback| will be invoked on completion of the protocol, after
   // Start() is invoked.
@@ -63,11 +67,10 @@ class AutoEnrollmentClient
   // request.
   void SendRequest(int power);
 
-  // Implementation of DeviceAutoEnrollmentResponseDelegate:
-  virtual void HandleAutoEnrollmentResponse(
-      const enterprise_management::DeviceAutoEnrollmentResponse&
-          response) OVERRIDE;
-  virtual void OnError(DeviceManagementBackend::ErrorCode code) OVERRIDE;
+  // Handles auto-enrollment request completion.
+  void OnRequestCompletion(
+      DeviceManagementStatus status,
+      const enterprise_management::DeviceManagementResponse& response);
 
   // Returns true if |serial_number_hash_| is contained in |hashes|.
   bool IsSerialInProtobuf(
@@ -101,7 +104,7 @@ class AutoEnrollmentClient
 
   // Used to communicate with the device management service.
   scoped_ptr<DeviceManagementService> device_management_service_;
-  scoped_ptr<DeviceManagementBackend> device_management_backend_;
+  scoped_ptr<DeviceManagementRequestJob> request_job_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentClient);
 };

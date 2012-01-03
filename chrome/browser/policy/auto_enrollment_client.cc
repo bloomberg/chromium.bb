@@ -4,7 +4,7 @@
 
 #include "chrome/browser/policy/auto_enrollment_client.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
@@ -125,8 +125,8 @@ AutoEnrollmentClient* AutoEnrollmentClient::Create(
 }
 
 void AutoEnrollmentClient::Start() {
-  // Drop the previous backend and reset state.
-  device_management_backend_.reset();
+  // Drop the previous job and reset state.
+  request_job_.reset();
   should_auto_enroll_ = false;
 
   if (device_management_service_.get()) {
@@ -134,9 +134,6 @@ void AutoEnrollmentClient::Start() {
       LOG(ERROR) << "Failed to get the hash of the serial number, "
                  << "will not attempt to auto-enroll.";
     } else {
-      // Create a new backend and fire the initial request.
-      device_management_backend_.reset(
-          device_management_service_->CreateBackend());
       SendRequest(power_initial_);
       // Don't invoke the callback now.
       return;
@@ -165,20 +162,32 @@ void AutoEnrollmentClient::SendRequest(int power) {
   }
   remainder = remainder & ((1ULL << power) - 1);
 
-  em::DeviceAutoEnrollmentRequest request;
-  request.set_remainder(remainder);
-  request.set_modulus((int64) 1 << power);
-
-  device_management_backend_->ProcessAutoEnrollmentRequest(device_id_,
-                                                           request,
-                                                           this);
+  request_job_.reset(
+      device_management_service_->CreateJob(
+          DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT));
+  request_job_->SetClientID(device_id_);
+  em::DeviceAutoEnrollmentRequest* request =
+      request_job_->GetRequest()->mutable_auto_enrollment_request();
+  request->set_remainder(remainder);
+  request->set_modulus((int64) 1 << power);
+  request_job_->Start(base::Bind(&AutoEnrollmentClient::OnRequestCompletion,
+                                 base::Unretained(this)));
 }
 
-void AutoEnrollmentClient::HandleAutoEnrollmentResponse(
-    const em::DeviceAutoEnrollmentResponse& response) {
-  if (response.has_expected_modulus()) {
+void AutoEnrollmentClient::OnRequestCompletion(
+    DeviceManagementStatus status,
+    const em::DeviceManagementResponse& response) {
+  if (status != DM_STATUS_SUCCESS || !response.has_auto_enrollment_response()) {
+    LOG(ERROR) << "Auto enrollment error: " << status;
+    completion_callback_.Run();
+    return;
+  }
+
+  const em::DeviceAutoEnrollmentResponse& enrollment_response =
+      response.auto_enrollment_response();
+  if (enrollment_response.has_expected_modulus()) {
     // Server is asking us to retry with a different modulus.
-    int64 modulus = response.expected_modulus();
+    int64 modulus = enrollment_response.expected_modulus();
     int64 last_modulus_used = 1 << last_power_used_;
     int power = NextPowerOf2(modulus);
     if ((1 << power) != modulus) {
@@ -207,17 +216,12 @@ void AutoEnrollmentClient::HandleAutoEnrollmentResponse(
     }
   } else {
     // Server should have sent down a list of hashes to try.
-    should_auto_enroll_ = IsSerialInProtobuf(response.hash());
+    should_auto_enroll_ = IsSerialInProtobuf(enrollment_response.hash());
     LOG(INFO) << "Auto enrollment complete, should_auto_enroll = "
               << should_auto_enroll_;
   }
 
   // Auto-enrollment done.
-  completion_callback_.Run();
-}
-
-void AutoEnrollmentClient::OnError(DeviceManagementBackend::ErrorCode code) {
-  LOG(ERROR) << "Auto enrollment backend error: " << code;
   completion_callback_.Run();
 }
 
