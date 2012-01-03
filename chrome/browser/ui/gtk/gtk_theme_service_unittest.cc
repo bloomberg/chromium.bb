@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,17 +11,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace {
-
-// Converts a GdkColor to a SkColor.
-SkColor GdkToSkColor(GdkColor* color) {
-  return SkColorSetRGB(color->red >> 8,
-                       color->green >> 8,
-                       color->blue >> 8);
-}
-
-}  // namespace
+#include "ui/gfx/skia_utils_gtk.h"
 
 class GtkThemeServiceTest : public testing::Test {
  public:
@@ -66,5 +56,5 @@ TEST_F(GtkThemeServiceTest, UsingGtkValues) {
   GtkStyle* label_style = gtk_rc_get_style(fake_label);
   GdkColor label_color = label_style->fg[GTK_STATE_NORMAL];
   EXPECT_EQ(provider_->GetColor(ThemeService::COLOR_TAB_TEXT),
-            GdkToSkColor(&label_color));
+            gfx::GdkColorToSkColor(label_color));
 }

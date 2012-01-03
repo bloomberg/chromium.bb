@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,13 +85,6 @@ const double kMidSeparatorColor[] =
 const double kTopSeparatorColor[] =
     { 222.0 / 255.0, 234.0 / 255.0, 248.0 / 255.0 };
 
-// Converts a GdkColor to a SkColor.
-SkColor GdkToSkColor(const GdkColor* color) {
-  return SkColorSetRGB(color->red >> 8,
-                       color->green >> 8,
-                       color->blue >> 8);
-}
-
 // A list of images that we provide while in gtk mode.
 const int kThemeImages[] = {
   IDR_THEME_TOOLBAR,
@@ -145,15 +138,16 @@ void PickButtonTintFromColors(const GdkColor& accent_gdk_color,
                               const GdkColor& text_color,
                               const GdkColor& background_color,
                               color_utils::HSL* tint) {
-  SkColor accent_color = GdkToSkColor(&accent_gdk_color);
+  SkColor accent_color = gfx::GdkColorToSkColor(accent_gdk_color);
   color_utils::HSL accent_tint;
   color_utils::SkColorToHSL(accent_color, &accent_tint);
 
   color_utils::HSL text_tint;
-  color_utils::SkColorToHSL(GdkToSkColor(&text_color), &text_tint);
+  color_utils::SkColorToHSL(gfx::GdkColorToSkColor(text_color), &text_tint);
 
   color_utils::HSL background_tint;
-  color_utils::SkColorToHSL(GdkToSkColor(&background_color), &background_tint);
+  color_utils::SkColorToHSL(gfx::GdkColorToSkColor(background_color),
+                            &background_tint);
 
   // If the accent color is gray, then our normal HSL tomfoolery will bring out
   // whatever color is oddly dominant (for example, in rgb space [125, 128,
@@ -204,7 +198,7 @@ void BuildIconFromIDRWithColor(int id,
                                GtkStyle* style,
                                GtkStateType state,
                                GtkIconSet* icon_set) {
-  SkColor color = GdkToSkColor(&style->fg[state]);
+  SkColor color = gfx::GdkColorToSkColor(style->fg[state]);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SkBitmap original = *rb.GetBitmapNamed(id);
 
@@ -237,7 +231,8 @@ void BuildIconFromIDRWithColor(int id,
 
 // Applies an HSL shift to a GdkColor (instead of an SkColor)
 void GdkColorHSLShift(const color_utils::HSL& shift, GdkColor* frame_color) {
-  SkColor shifted = color_utils::HSLShift(GdkToSkColor(frame_color), shift);
+  SkColor shifted = color_utils::HSLShift(gfx::GdkColorToSkColor(*frame_color),
+                                                                 shift);
   frame_color->pixel = 0;
   frame_color->red = SkColorGetR(shifted) * ui::kSkiaToGDKMultiplier;
   frame_color->green = SkColorGetG(shifted) * ui::kSkiaToGDKMultiplier;
@@ -789,25 +784,25 @@ void GtkThemeService::LoadGtkValues() {
                        link_color);
 
   // Generate the colors that we pass to WebKit.
-  focus_ring_color_ = GdkToSkColor(&frame_color);
+  focus_ring_color_ = gfx::GdkColorToSkColor(frame_color);
   GdkColor thumb_active_color, thumb_inactive_color, track_color;
   GtkThemeService::GetScrollbarColors(&thumb_active_color,
                                       &thumb_inactive_color,
                                       &track_color);
-  thumb_active_color_ = GdkToSkColor(&thumb_active_color);
-  thumb_inactive_color_ = GdkToSkColor(&thumb_inactive_color);
-  track_color_ = GdkToSkColor(&track_color);
+  thumb_active_color_ = gfx::GdkColorToSkColor(thumb_active_color);
+  thumb_inactive_color_ = gfx::GdkColorToSkColor(thumb_inactive_color);
+  track_color_ = gfx::GdkColorToSkColor(track_color);
 
   // Some GTK themes only define the text selection colors on the GtkEntry
   // class, so we need to use that for getting selection colors.
   active_selection_bg_color_ =
-      GdkToSkColor(&entry_style->base[GTK_STATE_SELECTED]);
+      gfx::GdkColorToSkColor(entry_style->base[GTK_STATE_SELECTED]);
   active_selection_fg_color_ =
-      GdkToSkColor(&entry_style->text[GTK_STATE_SELECTED]);
+      gfx::GdkColorToSkColor(entry_style->text[GTK_STATE_SELECTED]);
   inactive_selection_bg_color_ =
-      GdkToSkColor(&entry_style->base[GTK_STATE_ACTIVE]);
+      gfx::GdkColorToSkColor(entry_style->base[GTK_STATE_ACTIVE]);
   inactive_selection_fg_color_ =
-      GdkToSkColor(&entry_style->text[GTK_STATE_ACTIVE]);
+      gfx::GdkColorToSkColor(entry_style->text[GTK_STATE_ACTIVE]);
 }
 
 GdkColor GtkThemeService::BuildFrameColors(GtkStyle* frame_style) {
@@ -884,13 +879,13 @@ void GtkThemeService::RebuildMenuIconSets() {
 }
 
 void GtkThemeService::SetThemeColorFromGtk(int id, const GdkColor* color) {
-  colors_[id] = GdkToSkColor(color);
+  colors_[id] = gfx::GdkColorToSkColor(*color);
 }
 
 void GtkThemeService::SetThemeTintFromGtk(int id, const GdkColor* color) {
   color_utils::HSL default_tint = GetDefaultTint(id);
   color_utils::HSL hsl;
-  color_utils::SkColorToHSL(GdkToSkColor(color), &hsl);
+  color_utils::SkColorToHSL(gfx::GdkColorToSkColor(*color), &hsl);
 
   if (default_tint.s != -1)
     hsl.s = default_tint.s;
@@ -1008,8 +1003,9 @@ SkBitmap* GtkThemeService::GenerateFrameImage(
                        gradient_name, &gradient_top_color,
                        NULL);
   if (gradient_size) {
-    SkColor lighter = gradient_top_color ? GdkToSkColor(gradient_top_color)
-                      : color_utils::HSLShift(base, kGtkFrameShift);
+    SkColor lighter = gradient_top_color ?
+        gfx::GdkColorToSkColor(*gradient_top_color) :
+        color_utils::HSLShift(base, kGtkFrameShift);
     SkShader* shader = gfx::CreateGradientShader(
         0, gradient_size, lighter, base);
     SkPaint paint;
@@ -1074,7 +1070,7 @@ void GtkThemeService::GetSelectedEntryForegroundHSL(
   // base[GTK_STATE_SELECTED].
   GtkStyle* style = gtk_rc_get_style(fake_entry_.get());
   const GdkColor color = style->text[GTK_STATE_SELECTED];
-  color_utils::SkColorToHSL(GdkToSkColor(&color), tint);
+  color_utils::SkColorToHSL(gfx::GdkColorToSkColor(color), tint);
 }
 
 void GtkThemeService::OnDestroyChromeButton(GtkWidget* button) {
