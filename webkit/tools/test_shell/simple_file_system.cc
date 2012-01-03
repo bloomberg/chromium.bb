@@ -5,7 +5,6 @@
 #include "webkit/tools/test_shell/simple_file_system.h"
 
 #include "base/file_path.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/time.h"

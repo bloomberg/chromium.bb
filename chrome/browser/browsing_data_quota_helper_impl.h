@@ -14,7 +14,6 @@
 #include "base/callback_old.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/browsing_data_quota_helper.h"

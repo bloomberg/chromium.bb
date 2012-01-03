@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/video/capture/video_capture.h"
 #include "ppapi/c/dev/ppp_video_capture_dev.h"

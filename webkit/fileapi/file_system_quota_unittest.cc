@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"

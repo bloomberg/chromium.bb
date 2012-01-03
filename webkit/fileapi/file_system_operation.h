@@ -12,7 +12,6 @@
 #include "base/file_util_proxy.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"

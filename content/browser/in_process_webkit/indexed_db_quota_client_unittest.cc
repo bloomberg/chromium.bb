@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
