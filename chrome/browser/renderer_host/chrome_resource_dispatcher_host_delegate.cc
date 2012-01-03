@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -196,8 +196,7 @@ ResourceHandler* ChromeResourceDispatcherHostDelegate::DownloadStarting(
       int child_id,
       int route_id,
       int request_id,
-      bool is_new_request,
-      bool in_complete) {
+      bool is_new_request) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -223,7 +222,7 @@ ResourceHandler* ChromeResourceDispatcherHostDelegate::DownloadStarting(
 
   return new DownloadThrottlingResourceHandler(
       handler, resource_dispatcher_host_, download_request_limiter_, request,
-      request->url(), child_id, route_id, request_id, in_complete);
+      request->url(), child_id, route_id, request_id);
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldDeferStart(

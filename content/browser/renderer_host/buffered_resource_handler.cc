@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,7 @@ bool BufferedResourceHandler::OnResponseStarted(
     content::ResourceResponse* response) {
   response_ = response;
   if (!DelayResponse())
-    return CompleteResponseStarted(request_id, false);
+    return CompleteResponseStarted(request_id);
   return true;
 }
 
@@ -147,7 +147,7 @@ bool BufferedResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
     *bytes_read = bytes_read_;
 
     // Done buffering, send the pending ResponseStarted event.
-    if (!CompleteResponseStarted(request_id, true))
+    if (!CompleteResponseStarted(request_id))
       return false;
 
     // The next handler might have paused the request in OnResponseStarted.
@@ -272,8 +272,7 @@ bool BufferedResourceHandler::KeepBuffering(int bytes_read) {
   return false;
 }
 
-bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
-                                                      bool in_complete) {
+bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
   ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request_);
   std::string mime_type;
@@ -338,7 +337,7 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
     if (host_->delegate()) {
       handler = host_->delegate()->DownloadStarting(
           handler, *info->context(), request_, info->child_id(),
-          info->route_id(), info->request_id(), false, in_complete);
+          info->route_id(), info->request_id(), false);
     }
 
     UseAlternateResourceHandler(request_id, handler);
@@ -473,6 +472,6 @@ void BufferedResourceHandler::OnPluginsLoaded(
   ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request_);
   host_->PauseRequest(info->child_id(), info->request_id(), false);
-  if (!CompleteResponseStarted(info->request_id(), false))
+  if (!CompleteResponseStarted(info->request_id()))
     host_->CancelRequest(info->child_id(), info->request_id(), false);
 }

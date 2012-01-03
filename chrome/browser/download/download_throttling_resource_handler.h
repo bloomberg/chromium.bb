@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,8 +37,7 @@ class DownloadThrottlingResourceHandler
                                     const GURL& url,
                                     int render_process_host_id,
                                     int render_view_id,
-                                    int request_id,
-                                    bool in_complete);
+                                    int request_id);
 
   // ResourceHanlder implementation:
   virtual bool OnUploadProgress(int request_id,

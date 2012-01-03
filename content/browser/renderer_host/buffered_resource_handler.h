@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,9 +62,8 @@ class BufferedResourceHandler : public ResourceHandler {
   // Returns true if we have to keep buffering data.
   bool KeepBuffering(int bytes_read);
 
-  // Sends a pending OnResponseStarted notification. |in_complete| is true if
-  // this is invoked from |OnResponseCompleted|.
-  bool CompleteResponseStarted(int request_id, bool in_complete);
+  // Sends a pending OnResponseStarted notification.
+  bool CompleteResponseStarted(int request_id);
 
   // Returns true if we have to wait until the plugin list is generated.
   bool ShouldWaitForPlugins();

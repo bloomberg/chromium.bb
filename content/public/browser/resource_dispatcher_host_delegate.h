@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,8 +41,8 @@ class ResourceDispatcherHostDelegate {
       const std::string& method,
       const GURL& url,
       ResourceType::Type resource_type,
-      const content::ResourceContext& resource_context,
-      const content::Referrer& referrer) = 0;
+      const ResourceContext& resource_context,
+      const Referrer& referrer) = 0;
 
   // Called after ShouldBeginRequest when all the resource handlers from the
   // content layer have been added.  To add new handlers to the front, return
@@ -51,7 +51,7 @@ class ResourceDispatcherHostDelegate {
   virtual ResourceHandler* RequestBeginning(
       ResourceHandler* handler,
       net::URLRequest* request,
-      const content::ResourceContext& resource_context,
+      const ResourceContext& resource_context,
       bool is_subresource,
       int child_id,
       int route_id,
@@ -65,13 +65,12 @@ class ResourceDispatcherHostDelegate {
   // |in_complete| is true if this is invoked from |OnResponseCompleted|.
   virtual ResourceHandler* DownloadStarting(
       ResourceHandler* handler,
-      const content::ResourceContext& resource_context,
+      const ResourceContext& resource_context,
       net::URLRequest* request,
       int child_id,
       int route_id,
       int request_id,
-      bool is_new_request,
-      bool in_complete) = 0;
+      bool is_new_request) = 0;
 
   // Called to determine whether a request's start should be deferred. This
   // is only called if the ResourceHandler associated with the request does
@@ -79,7 +78,7 @@ class ResourceDispatcherHostDelegate {
   // the request, false will continue the request.
   virtual bool ShouldDeferStart(
       net::URLRequest* request,
-      const content::ResourceContext& resource_context) = 0;
+      const ResourceContext& resource_context) = 0;
 
   // Called when an SSL Client Certificate is requested. If false is returned,
   // the request is canceled. Otherwise, the certificate is chosen.
