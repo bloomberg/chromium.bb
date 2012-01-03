@@ -34,6 +34,7 @@
 #ifndef INTEL_BUFMGR_H
 #define INTEL_BUFMGR_H
 
+#include <stdio.h>
 #include <stdint.h>
 
 struct drm_clip_rect;
@@ -199,6 +200,7 @@ void drm_intel_decode_set_dump_past_end(struct drm_intel_decode *ctx,
 					int dump_past_end);
 void drm_intel_decode_set_head_tail(struct drm_intel_decode *ctx,
 				    uint32_t head, uint32_t tail);
+void drm_intel_decode_set_output_file(struct drm_intel_decode *ctx, FILE *out);
 void drm_intel_decode(struct drm_intel_decode *ctx);
 
 

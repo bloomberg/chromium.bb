@@ -33,6 +33,9 @@
 
 /* Struct for tracking drm_intel_decode state. */
 struct drm_intel_decode {
+	/** stdio file where the output should land.  Defaults to stdout. */
+	FILE *out;
+
 	/** PCI device ID. */
 	uint32_t devid;
 
@@ -3558,6 +3561,7 @@ drm_intel_decode_context_alloc(uint32_t devid)
 		return NULL;
 
 	ctx->devid = devid;
+	ctx->out = stdout;
 
 	return ctx;
 }
@@ -3592,6 +3596,13 @@ drm_intel_decode_set_head_tail(struct drm_intel_decode *ctx,
 	ctx->tail = tail;
 }
 
+void
+drm_intel_decode_set_output_file(struct drm_intel_decode *ctx,
+				 FILE *out)
+{
+	ctx->out = out;
+}
+
 /**
  * Decodes an i830-i915 batch buffer, writing the output to stdout.
  *
@@ -3618,11 +3629,10 @@ drm_intel_decode(struct drm_intel_decode *ctx)
 	devid = ctx->devid;
 	head_offset = ctx->head;
 	tail_offset = ctx->tail;
+	out = ctx->out;
 
 	saved_s2_set = 0;
 	saved_s4_set = 1;
-
-	out = stdout;
 
 	while (index < count) {
 		switch ((data[index] & 0xe0000000) >> 29) {
