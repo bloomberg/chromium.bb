@@ -214,7 +214,7 @@ void NativeTabContentsViewAura::StartDragging(const WebDropData& drop_data,
   MessageLoop::current()->SetNestableTasksAllowed(old_state);
 
   EndDrag(ConvertToWeb(result_op));
-  GetTabContents()->GetRenderViewHost()->DragSourceSystemDragEnded();
+  GetWebContents()->GetRenderViewHost()->DragSourceSystemDragEnded();
 }
 
 void NativeTabContentsViewAura::CancelDrag() {
