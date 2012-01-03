@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,7 +59,7 @@ class InMemoryURLIndexTest : public testing::Test,
 
   // Validates that the given |term| is contained in |cache| and that it is
   // marked as in-use.
-  void CheckTerm(const InMemoryURLIndex::SearchTermCacheMap& cache,
+  void CheckTerm(const URLIndexPrivateData::SearchTermCacheMap& cache,
                  string16 term) const;
 
   scoped_ptr<InMemoryURLIndex> url_index_;
@@ -154,13 +154,13 @@ String16Vector InMemoryURLIndexTest::Make2Terms(const char* term_1,
 }
 
 void InMemoryURLIndexTest::CheckTerm(
-    const InMemoryURLIndex::SearchTermCacheMap& cache,
+    const URLIndexPrivateData::SearchTermCacheMap& cache,
     string16 term) const {
-  InMemoryURLIndex::SearchTermCacheMap::const_iterator cache_iter(
+  URLIndexPrivateData::SearchTermCacheMap::const_iterator cache_iter(
       cache.find(term));
   ASSERT_NE(cache.end(), cache_iter)
       << "Cache does not contain '" << term << "' but should.";
-  InMemoryURLIndex::SearchTermCacheItem cache_item = cache_iter->second;
+  URLIndexPrivateData::SearchTermCacheItem cache_item = cache_iter->second;
   EXPECT_TRUE(cache_item.used_)
       << "Cache item '" << term << "' should be marked as being in use.";
 }
@@ -299,10 +299,11 @@ TEST_F(InMemoryURLIndexTest, HugeResultSet) {
       url_index_->HistoryItemsForTerms(ASCIIToUTF16("b"));
   ASSERT_EQ(AutocompleteProvider::kMaxMatches, matches.size());
   // There are 7 matches already in the database.
-  ASSERT_EQ(1007U, url_index_->pre_filter_item_count);
-  ASSERT_EQ(500U, url_index_->post_filter_item_count);
+  URLIndexPrivateData& private_data(*(url_index_->private_data_.get()));
+  ASSERT_EQ(1007U, private_data.pre_filter_item_count_);
+  ASSERT_EQ(500U, private_data.post_filter_item_count_);
   ASSERT_EQ(AutocompleteProvider::kMaxMatches,
-            url_index_->post_scoring_item_count);
+            private_data.post_scoring_item_count_);
 }
 
 TEST_F(InMemoryURLIndexTest, TitleSearch) {
@@ -397,13 +398,14 @@ TEST_F(InMemoryURLIndexTest, TypedCharacterCaching) {
   // Verify that match results for previously typed characters are retained
   // (in the term_char_word_set_cache_) and reused, if possible, in future
   // autocompletes.
-  typedef InMemoryURLIndex::SearchTermCacheMap::iterator CacheIter;
-  typedef InMemoryURLIndex::SearchTermCacheItem CacheItem;
+  typedef URLIndexPrivateData::SearchTermCacheMap::iterator CacheIter;
+  typedef URLIndexPrivateData::SearchTermCacheItem CacheItem;
 
   url_index_.reset(new InMemoryURLIndex(FilePath()));
   url_index_->Init(this, "en,ja,hi,zh");
 
-  InMemoryURLIndex::SearchTermCacheMap& cache(url_index_->search_term_cache_);
+  URLIndexPrivateData::SearchTermCacheMap& cache(
+      url_index_->private_data_->search_term_cache_);
 
   // The cache should be empty at this point.
   EXPECT_EQ(0U, cache.size());
@@ -455,34 +457,34 @@ TEST_F(InMemoryURLIndexTest, Scoring) {
   URLRow row_a(MakeURLRow("http://abcdef", "fedcba", 3, 30, 1));
   // Test scores based on position.
   ScoredHistoryMatch scored_a(
-      InMemoryURLIndex::ScoredMatchForURL(row_a, Make1Term("abc")));
+      URLIndexPrivateData::ScoredMatchForURL(row_a, Make1Term("abc")));
   ScoredHistoryMatch scored_b(
-      InMemoryURLIndex::ScoredMatchForURL(row_a, Make1Term("bcd")));
+      URLIndexPrivateData::ScoredMatchForURL(row_a, Make1Term("bcd")));
   EXPECT_GT(scored_a.raw_score, scored_b.raw_score);
   // Test scores based on length.
   ScoredHistoryMatch scored_c(
-      InMemoryURLIndex::ScoredMatchForURL(row_a, Make1Term("abcd")));
+      URLIndexPrivateData::ScoredMatchForURL(row_a, Make1Term("abcd")));
   EXPECT_LT(scored_a.raw_score, scored_c.raw_score);
   // Test scores based on order.
   ScoredHistoryMatch scored_d(
-      InMemoryURLIndex::ScoredMatchForURL(row_a, Make2Terms("abc", "def")));
+      URLIndexPrivateData::ScoredMatchForURL(row_a, Make2Terms("abc", "def")));
   ScoredHistoryMatch scored_e(
-      InMemoryURLIndex::ScoredMatchForURL(row_a, Make2Terms("def", "abc")));
+      URLIndexPrivateData::ScoredMatchForURL(row_a, Make2Terms("def", "abc")));
   EXPECT_GT(scored_d.raw_score, scored_e.raw_score);
   // Test scores based on visit_count.
   URLRow row_b(MakeURLRow("http://abcdef", "fedcba", 10, 30, 1));
   ScoredHistoryMatch scored_f(
-      InMemoryURLIndex::ScoredMatchForURL(row_b, Make1Term("abc")));
+      URLIndexPrivateData::ScoredMatchForURL(row_b, Make1Term("abc")));
   EXPECT_GT(scored_f.raw_score, scored_a.raw_score);
   // Test scores based on last_visit.
   URLRow row_c(MakeURLRow("http://abcdef", "fedcba", 3, 10, 1));
   ScoredHistoryMatch scored_g(
-      InMemoryURLIndex::ScoredMatchForURL(row_c, Make1Term("abc")));
+      URLIndexPrivateData::ScoredMatchForURL(row_c, Make1Term("abc")));
   EXPECT_GT(scored_g.raw_score, scored_a.raw_score);
   // Test scores based on typed_count.
   URLRow row_d(MakeURLRow("http://abcdef", "fedcba", 3, 30, 10));
   ScoredHistoryMatch scored_h(
-      InMemoryURLIndex::ScoredMatchForURL(row_d, Make1Term("abc")));
+      URLIndexPrivateData::ScoredMatchForURL(row_d, Make1Term("abc")));
   EXPECT_GT(scored_h.raw_score, scored_a.raw_score);
 }
 
@@ -600,10 +602,11 @@ TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
     { "xmpp://guest@example.com", false },
   };
   url_index_.reset(new InMemoryURLIndex(FilePath()));
+  URLIndexPrivateData& private_data(*(url_index_->private_data_.get()));
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     GURL url(data[i].url_spec);
     EXPECT_EQ(data[i].expected_is_whitelisted,
-              url_index_->URLSchemeIsWhitelisted(url));
+              private_data.URLSchemeIsWhitelisted(url));
   }
 }
 
@@ -631,10 +634,10 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   InMemoryURLIndex& url_index(*(url_index_.get()));
   url_index.Init(this, "en,ja,hi,zh");
   in_memory_url_index::InMemoryURLIndexCacheItem index_cache;
-  url_index.SavePrivateData(&index_cache);
+  URLIndexPrivateData& private_data(*(url_index_->private_data_.get()));
+  private_data.SavePrivateData(&index_cache);
 
   // Capture our private data so we can later compare for equality.
-  URLIndexPrivateData& private_data(*(url_index_->private_data_));
   String16Vector word_list(private_data.word_list_);
   WordMap word_map(private_data.word_map_);
   CharWordIDMap char_word_map(private_data.char_word_map_);
@@ -654,7 +657,7 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   EXPECT_FALSE(private_data.history_info_map_.empty());
 
   // Clear and then prove it's clear.
-  url_index.ClearPrivateData();
+  private_data.Clear();
   EXPECT_TRUE(private_data.word_list_.empty());
   EXPECT_TRUE(private_data.available_words_.empty());
   EXPECT_TRUE(private_data.word_map_.empty());
@@ -664,7 +667,7 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   EXPECT_TRUE(private_data.history_info_map_.empty());
 
   // Restore the cache.
-  EXPECT_TRUE(url_index.RestorePrivateData(index_cache));
+  EXPECT_TRUE(private_data.RestorePrivateData(index_cache));
 
   // Compare the restored and captured for equality.
   EXPECT_EQ(word_list.size(), private_data.word_list_.size());
