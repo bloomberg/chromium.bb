@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,46 +26,11 @@ bool IsOnline(chromeos::ConnectionState state) {
 
 namespace chromeos {
 
-// Task for fetching tokens from UI thread.
-class OnlineStatusReportThreadTask : public CancelableTask {
- public:
-  OnlineStatusReportThreadTask(NetworkChangeNotifierChromeos* parent,
-                               bool is_online)
-      : parent_(parent), is_online_(is_online), should_report_(true) {}
-  virtual ~OnlineStatusReportThreadTask() {}
-
-  // CancelableTask overrides.
-  virtual void Cancel() {
-    // Normally called from UI thread unless called during shutdown.
-    should_report_ = false;
-  }
-
-  virtual void Run() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (!should_report_)
-      return;
-
-    DVLOG(1) << "OnlineStatusReportThreadTask: firing notification!";
-    parent_->OnOnlineStateNotificationFired();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(
-           &NetworkChangeNotifierChromeos::NotifyObserversOfOnlineStateChange));
-  }
-
-  bool is_online() { return is_online_; }
-
- private:
-  NetworkChangeNotifierChromeos* parent_;
-  bool is_online_;
-  bool should_report_;
-};
-
 NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
     : has_active_network_(false),
       connection_state_(chromeos::STATE_UNKNOWN),
-      online_notification_task_(NULL) {
-
+      is_online_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   BrowserThread::PostDelayedTask(
          BrowserThread::UI, FROM_HERE,
          base::Bind(
@@ -87,12 +52,11 @@ void NetworkChangeNotifierChromeos::Init() {
 }
 
 void NetworkChangeNotifierChromeos::Shutdown() {
-  if (online_notification_task_) {
-    online_notification_task_->Cancel();
-    online_notification_task_ = NULL;
-  }
+  weak_factory_.InvalidateWeakPtrs();
+
   if (!chromeos::CrosLibrary::Get())
     return;
+
   chromeos::NetworkLibrary* lib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   lib->RemoveNetworkManagerObserver(this);
@@ -223,33 +187,37 @@ void NetworkChangeNotifierChromeos::UpdateConnectivityState(
 }
 
 void NetworkChangeNotifierChromeos::ReportOnlineStateChange(bool is_online) {
-  VLOG(2) << "ReportOnlineStateChange: "
-          << (is_online ? "online" : "offline");
-  if (online_notification_task_) {
-    DVLOG(1) << "ReportOnlineStateChange: "
-             << "has pending task";
+  VLOG(2) << "ReportOnlineStateChange: " << (is_online ? "online" : "offline");
+  if (weak_factory_.HasWeakPtrs()) {
+    DVLOG(1) << "ReportOnlineStateChange: has pending task";
     // If we are trying to report the same state, just continue as planned.
     // If the online state had changed since we queued the reporting task,
     // then cancel it. This should help us avoid transient edge reporting
-    // while switching between connection types (i.e. wifi->ehternet).
-    if (is_online != online_notification_task_->is_online()) {
-      online_notification_task_->Cancel();
-      online_notification_task_ = NULL;
-      DVLOG(1) << "ReportOnlineStateChange: "
-               << "canceled pending task";
+    // while switching between connection types (i.e. wifi->ethernet).
+    if (is_online != is_online_) {
+      weak_factory_.InvalidateWeakPtrs();
+      DVLOG(1) << "ReportOnlineStateChange: canceled pending task";
     }
     return;
   }
-  online_notification_task_ = new OnlineStatusReportThreadTask(this,
-                                                               is_online);
+
+  is_online_ = is_online;
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
-      online_notification_task_,
+      base::Bind(
+          &NetworkChangeNotifierChromeos::ReportOnlineStateChangeOnUIThread,
+          weak_factory_.GetWeakPtr()),
       kOnlineNotificationDelayMS);
 }
 
-void NetworkChangeNotifierChromeos::OnOnlineStateNotificationFired() {
-  online_notification_task_ = NULL;
+void NetworkChangeNotifierChromeos::ReportOnlineStateChangeOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DVLOG(1) << "OnlineStatusReportThreadTask: firing notification!";
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+         &NetworkChangeNotifierChromeos::NotifyObserversOfOnlineStateChange));
 }
 
 // static

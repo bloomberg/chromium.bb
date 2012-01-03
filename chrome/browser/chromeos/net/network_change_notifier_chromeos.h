@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,6 +54,7 @@ class NetworkChangeNotifierChromeos
 
   // Initiate online status change reporting.
   void ReportOnlineStateChange(bool is_online);
+  void ReportOnlineStateChangeOnUIThread();
   // Callback from online_notification_task_ when online state notification
   // is actually scheduled.
   void OnOnlineStateNotificationFired();
@@ -77,7 +78,10 @@ class NetworkChangeNotifierChromeos
   // Current active network's IP address.
   std::string ip_address_;
 
-  OnlineStatusReportThreadTask* online_notification_task_;
+  // The last reported online state.
+  bool is_online_;
+  base::WeakPtrFactory<NetworkChangeNotifierChromeos> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierChromeos);
 };
 
