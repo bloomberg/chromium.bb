@@ -16,6 +16,10 @@ void UIPerfTest::SetLaunchSwitches() {
 
   // Reduce performance test variance by disabling background networking.
   launch_arguments_.AppendSwitch(switches::kDisableBackgroundNetworking);
+
+  // We don't want tests to slow down mysteriously when we update the minimum
+  // plugin version.
+  launch_arguments_.AppendSwitch(switches::kAllowOutdatedPlugins);
 }
 
 void UIPerfTest::PrintIOPerfInfo(const char* test_name) {
