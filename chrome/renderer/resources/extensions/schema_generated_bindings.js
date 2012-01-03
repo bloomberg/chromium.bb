@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@ var chrome = chrome || {};
   native function GetChromeHidden();
   native function GetExtensionAPIDefinition();
   native function GetNextRequestId();
-  native function Print();
   native function StartRequest();
 
   native function CreateBlob(filePath);
@@ -21,7 +20,6 @@ var chrome = chrome || {};
   native function GetNextContextMenuId();
   native function GetNextSocketEventId();
   native function GetNextTtsEventId();
-  native function GetRenderViewId();
   native function GetUniqueSubEventName(eventName);
   native function OpenChannelToTab();
   native function SendResponseAck(requestId);
@@ -953,8 +951,7 @@ var chrome = chrome || {};
     });
 
     var canvas;
-    function setIconCommon(details, name, parameters, actionType, iconSize,
-                           nativeFunction) {
+    function setIconCommon(details, name, parameters, actionType, iconSize) {
       if ("iconIndex" in details) {
         sendRequest(name, [details], parameters);
       } else if ("imageData" in details) {
@@ -979,7 +976,7 @@ var chrome = chrome || {};
         }
 
         sendRequest(name, [details], parameters,
-                    {noStringify: true, nativeFunction: nativeFunction});
+                    {noStringify: true, nativeFunction: SetIconCommon});
       } else if ("path" in details) {
         var img = new Image();
         img.onerror = function() {
@@ -998,7 +995,7 @@ var chrome = chrome || {};
           details.imageData = canvas_context.getImageData(0, 0, canvas.width,
                                                           canvas.height);
           sendRequest(name, [details], parameters,
-                      {noStringify: true, nativeFunction: nativeFunction});
+                      {noStringify: true, nativeFunction: SetIconCommon});
         };
         img.src = details.path;
       } else {
@@ -1011,7 +1008,7 @@ var chrome = chrome || {};
                                           actionType) {
       var EXTENSION_ACTION_ICON_SIZE = 19;
       setIconCommon(details, name, parameters, actionType,
-                    EXTENSION_ACTION_ICON_SIZE, SetIconCommon);
+                    EXTENSION_ACTION_ICON_SIZE);
     }
 
     apiFunctions.setHandleRequest("browserAction.setIcon", function(details) {
@@ -1029,7 +1026,7 @@ var chrome = chrome || {};
       var SIDEBAR_ICON_SIZE = 16;
       setIconCommon(
           details, this.name, this.definition.parameters, "sidebar",
-          SIDEBAR_ICON_SIZE, SetIconCommon);
+          SIDEBAR_ICON_SIZE);
     });
 
     apiFunctions.setHandleRequest("contextMenus.create",

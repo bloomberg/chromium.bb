@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -207,8 +207,6 @@ class ExtensionImpl : public ChromeV8Extension {
     } else if (name->Equals(v8::String::New("StartRequest"))) {
       return v8::FunctionTemplate::New(StartRequest,
                                        v8::External::New(this));
-    } else if (name->Equals(v8::String::New("GetRenderViewId"))) {
-      return v8::FunctionTemplate::New(GetRenderViewId);
     } else if (name->Equals(v8::String::New("SetIconCommon"))) {
       return v8::FunctionTemplate::New(SetIconCommon,
                                        v8::External::New(this));
@@ -674,13 +672,6 @@ class ExtensionImpl : public ChromeV8Extension {
     list_value.Append(dict);
 
     return StartRequestCommon(args, &list_value);
-  }
-
-  static v8::Handle<v8::Value> GetRenderViewId(const v8::Arguments& args) {
-    content::RenderView* renderview = GetCurrentRenderView();
-    if (!renderview)
-      return v8::Undefined();
-    return v8::Integer::New(renderview->GetRoutingId());
   }
 
   // Cached JS Array representation of each namespace in extension_api.json.
