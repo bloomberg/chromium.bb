@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ void InitialBrowserWindowObserver::Observe(
     const content::NotificationDetails& details) {
   registrar_.RemoveAll();
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+      content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&WriteInitialWindowFile));
 }
 
