@@ -314,5 +314,34 @@ TEST(JingleMessageReplyTest, ToXml) {
   }
 }
 
+TEST(JingleMessageTest, ErrorMessage) {
+  const char* kTestSessionInitiateErrorMessage =
+      "<iq to='user@gmail.com/chromoting016DBB07' type='error' "
+      "from='user@gmail.com/chromiumsy5C6A652D' "
+      "xmlns='jabber:client'><jingle xmlns='urn:xmpp:jingle:1' "
+      "action='session-initiate' sid='2227053353' "
+      "initiator='user@gmail.com/chromiumsy5C6A652D'><content "
+      "name='chromoting' creator='initiator'><description "
+      "xmlns='google:remoting'><control transport='stream' version='2'/><event "
+      "transport='stream' version='2'/><video transport='stream' version='2' "
+      "codec='vp8'/><initial-resolution width='800' height='600'/>"
+      "<authentication><auth-token>j7whCMii0Z0AAPwj7whCM/j7whCMii0Z0AAPw="
+      "</auth-token></authentication></description><transport "
+      "xmlns='http://www.google.com/transport/p2p'/></content></jingle>"
+      "<error code='501' type='cancel'><feature-not-implemented "
+      "xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/></error>"
+      "</iq>";
+  scoped_ptr<XmlElement> source_message(
+      XmlElement::ForStr(kTestSessionInitiateErrorMessage));
+  ASSERT_TRUE(source_message.get());
+
+  EXPECT_FALSE(JingleMessage::IsJingleMessage(source_message.get()));
+
+  JingleMessage message;
+  std::string error;
+  EXPECT_FALSE(message.ParseXml(source_message.get(), &error));
+  EXPECT_FALSE(error.empty());
+}
+
 }  // namespace protocol
 }  // namespace remoting

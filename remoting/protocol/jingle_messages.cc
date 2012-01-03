@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,7 +135,10 @@ XmlElement* FormatCandidate(const cricket::Candidate& candidate) {
 
 // static
 bool JingleMessage::IsJingleMessage(const buzz::XmlElement* stanza) {
-  return stanza->FirstNamed(QName(kJingleNamespace, "jingle")) != NULL;
+  return
+      stanza->Name() == QName(kJabberNamespace, "iq") &&
+      stanza->Attr(QName("", "type")) == "set" &&
+      stanza->FirstNamed(QName(kJingleNamespace, "jingle")) != NULL;
 }
 
 JingleMessage::JingleMessage()
@@ -158,6 +161,11 @@ JingleMessage::~JingleMessage() {
 
 bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
                              std::string* error) {
+  if (!IsJingleMessage(stanza)) {
+    *error = "Not a jingle message";
+    return false;
+  }
+
   const XmlElement* jingle_tag =
       stanza->FirstNamed(QName(kJingleNamespace, "jingle"));
   if (jingle_tag == NULL) {
