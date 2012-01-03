@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -176,9 +176,9 @@ bool RootView::OnMousePressed(const MouseEvent& event) {
   // event to mouse_pressed_handler_
   if (mouse_pressed_handler_) {
     MouseEvent mouse_pressed_event(e, this, mouse_pressed_handler_);
-    drag_info.Reset();
+    drag_info_.Reset();
     mouse_pressed_handler_->ProcessMousePressed(mouse_pressed_event,
-                                                &drag_info);
+                                                &drag_info_);
     return true;
   }
   DCHECK(!explicit_mouse_handler_);
@@ -202,9 +202,9 @@ bool RootView::OnMousePressed(const MouseEvent& event) {
     if (mouse_pressed_handler_ != last_click_handler_)
       mouse_pressed_event.set_flags(e.flags() & ~ui::EF_IS_DOUBLE_CLICK);
 
-    drag_info.Reset();
+    drag_info_.Reset();
     bool handled = mouse_pressed_handler_->ProcessMousePressed(
-        mouse_pressed_event, &drag_info);
+        mouse_pressed_event, &drag_info_);
 
     // The view could have removed itself from the tree when handling
     // OnMousePressed().  In this case, the removal notification will have
@@ -247,7 +247,8 @@ bool RootView::OnMouseDragged(const MouseEvent& event) {
     SetMouseLocationAndFlags(e);
 
     MouseEvent mouse_event(e, this, mouse_pressed_handler_);
-    return mouse_pressed_handler_->ProcessMouseDragged(mouse_event, &drag_info);
+    return mouse_pressed_handler_->ProcessMouseDragged(mouse_event,
+                                                       &drag_info_);
   }
   return false;
 }
@@ -393,6 +394,7 @@ void RootView::SetMouseHandler(View *new_mh) {
   // If we're clearing the mouse handler, clear explicit_mouse_handler_ as well.
   explicit_mouse_handler_ = (new_mh != NULL);
   mouse_pressed_handler_ = new_mh;
+  drag_info_.Reset();
 }
 
 void RootView::GetAccessibleState(ui::AccessibleViewState* state) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -196,7 +196,7 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   // Drag and drop -------------------------------------------------------------
 
   // Tracks drag state for a view.
-  View::DragInfo drag_info;
+  View::DragInfo drag_info_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(RootView);
 };
