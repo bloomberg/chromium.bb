@@ -1,10 +1,9 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import re        # For StripArchFromLDCommand hack.
-import os.path   # For getting basenames.
 
 Import('env')
 
@@ -17,91 +16,6 @@ if not env.Bit('bitcode'):
 # The PNaCl coordinator cannot yet handle GLibC-based pexe.
 if env.Bit('nacl_glibc'):
   Return()
-
-#----------------------------------------------------------------------
-# Get list of translator files
-
-# Seriously, we need to make up our minds about whether or not we
-# want a dash in the ISA string. My vote is for keeping the dash,
-# since that is what the plugin will respond with.
-def DashFreeArch(arch):
-  return arch.replace('-', '')
-
-# Return a pair of files, representing a mapping
-# from an URL to path in the staging directory.
-def MappingForStagedFile(f):
-  return (f.replace('${STAGING_DIR}/', ''), f)
-
-def ReplicateAndMap(files, arch, replicates, map_files):
-  # Replicate to STAGING (files can be copied from there).
-  replicates += env.Replicate('${STAGING_DIR}/pnacl_support/%s' %
-                              arch,
-                              files)
-  # Above, we have the full path w/ variables like ${TARGET_ROOT}.
-  # Here, we need an "evaluated" string. Hack that w/ basename...
-  basefiles = [ os.path.basename(f) for f in files ]
-  # Set up file mapping for test runner:
-  map_files += [MappingForStagedFile('${STAGING_DIR}/pnacl_support/%s/%s' %
-                                     (arch, f))
-                for f in basefiles]
-
-# TODO(jvoung): Try using env.Publish()
-def LayoutTranslatorBinariesOnServer():
-  ''' Lay out the translator support files in a way that imitates
-      any old webserver hosting pnacl bitcode for all 3 arches.
-      Simple server directory layout for each arch-specific-support file:
-         ./pnacl_support/${arch}/${file}
-
-      Location of test-page, bitcode, etc.:
-         ./mypage.html
-         ./mybitcode.pexe
-  '''
-  # TODO(jvoung): simplify how utman installs these files in the first
-  # place so that mapping is pretty much one-to-one (someone could just
-  # copy the files from the toolchain-dir to their webserver).
-  map_files = []
-  replicates = [] # track staging dependencies
-
-  toolchain_dir = '${PNACL_ROOT}'
-  for arch in ['arm', 'x86-32', 'x86-64']:
-    toolchain_bin = '%s/tools-sb/%s/srpc/bin/' % (toolchain_dir,
-                                                  DashFreeArch(arch))
-    toolchain_binaries = [toolchain_bin + 'llc', toolchain_bin + 'ld']
-    toolchain_lib_dir = '%s/lib-%s/' % (toolchain_dir, arch)
-    toolchain_native_libs = [(toolchain_lib_dir + x)
-                             for x in ['crtbegin.o',
-                                       'crtbeginS.o',
-                                       'crtend.o',
-                                       'crtendS.o',
-                                       'libgcc.a',
-                                       'libgcc_eh.a',
-                                       'libcrt_platform.a']]
-    # Also grab the PPAPI IRT shim for x86-64.
-    if arch == 'x86-64':
-      toolchain_native_libs.append('${LIB_DIR}/libpnacl_irt_shim.a')
-
-    toolchain_local_files = toolchain_native_libs + toolchain_binaries
-    ReplicateAndMap(toolchain_local_files,
-                    arch,
-                    replicates,
-                    map_files)
-
-  # Stage the nacltest.js too, so that you can run this test by starting up
-  # your own http server, your own browser, and visit the staging directory.
-  replicates += env.Replicate('${STAGING_DIR}',
-              '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js')
-  # Don't need to add nacltest.js to map_files, since the browser tester
-  # always loads up that file.
-  return (map_files, replicates)
-
-
-def LayoutPageAssetsOnServer(files):
-  map_files = []
-  replicates = []
-  for f in files:
-    replicates += env.Replicate('${STAGING_DIR}', f)
-    map_files.append(MappingForStagedFile('${STAGING_DIR}/%s' % f))
-  return (map_files, replicates)
 
 #----------------------------------------------------------------------
 # Test pexe translation.
@@ -126,50 +40,38 @@ test_example_obj = bitcode_env.ComponentObject(
     'pnacl_test_example_obj',
     '${SCONSTRUCT_DIR}/tests/ppapi_test_example/ppapi_test_example.cc')
 
+pexe_name = 'pnacl_test_example.pexe'
+
 test_example_pexe = bitcode_env.ComponentProgram(
-    'pnacl_test_example.pexe',
-    [ test_example_obj ],
+    pexe_name,
+    [test_example_obj],
     EXTRA_LIBS=['${PPAPI_LIBS}',
                 'ppapi_test_lib',
-                'platform',
+                'platform', # for CHECK
                 'pthread',
                 'gio',
                 ])
 
-# TODO(jvoung): remove LayoutTranslatorBinariesOnServer() once we start
-# looking up support files through the CRX extension instead.
-# Page independent support assets.
-(map_files_toolchain, replicates_toolchain) = LayoutTranslatorBinariesOnServer()
-
-
-# Assets for the page.
-(map_files_page, replicates_page) = LayoutPageAssetsOnServer(
-    [test_example_pexe,
-     'pnacl_test_example.nmf',
-     'pnacl_test_example.html',
-     ])
-
 # Grab test routines.
 borrowed_file = '${STAGING_DIR}/ppapi_test_example.js',
+
+env.Publish(pexe_name,
+            'run',
+            ['pnacl_test_example.nmf',
+             'pnacl_test_example.html'])
 
 node = bitcode_env.PPAPIBrowserTester(
     'pnacl_test_example.out',
     url='pnacl_test_example.html',
-    files=[borrowed_file], # the rest are in "map_files"
-    map_files=map_files_toolchain + map_files_page,
+    files=(env.ExtractPublishedFiles(pexe_name, prog_suffix=False) +
+           [borrowed_file]),
     args=['--prefer_portable_in_manifest'])
-
-# Make sure the files are actually staged when this test runs.
-env.Depends(node, replicates_toolchain + replicates_page)
 
 bitcode_env.AddNodeToTestSuite(node,
                                ['chrome_browser_tests'],
                                'run_pnacl_example_browser_test',
                                is_broken=(
-                                   bitcode_env.PPAPIBrowserTesterIsBroken() or
-                                   # Re-enable when coordinator uses shim
-                                   # and toolchain tarball has real shim.
-                                   bitcode_env.Bit('target_x86_64')))
+                                   bitcode_env.PPAPIBrowserTesterIsBroken()))
 
 #### Test error handling.
 
@@ -178,7 +80,8 @@ bitcode_env.AddNodeToTestSuite(node,
 # The current llc tests, don't actually crash LLC, they only
 # make llc exit w/ an abnormal status.
 
-(map_files_bad_page, replicates_bad_page) = LayoutPageAssetsOnServer(
+pnacl_bad_files = env.Replicate(
+    '${STAGING_DIR}',
     ['pnacl_bad_doesnotexist.nmf',
      'pnacl_bad_doesnotexist_pexe_only.nmf',
      # This one is just a text file that begins with "BC".
@@ -194,24 +97,23 @@ bitcode_env.AddNodeToTestSuite(node,
      'pnacl_bad_test.html',
      ])
 
+env.Depends(pnacl_bad_files, test_example_obj)
+
 # Borrow bad load test harness.
 borrowed_file = '${STAGING_DIR}/ppapi_bad.js',
 
 node = bitcode_env.PPAPIBrowserTester(
     'pnacl_bad_test.out',
     url='pnacl_bad_test.html',
-    files=[borrowed_file], # the rest are in "map_files"
-    map_files=map_files_toolchain + map_files_bad_page,
+    files=pnacl_bad_files + [borrowed_file],
     args=['--allow_404', '--prefer_portable_in_manifest'])
-
-# Make sure the files are actually staged when this test runs.
-env.Depends(node, replicates_toolchain + replicates_bad_page)
 
 bitcode_env.AddNodeToTestSuite(node,
                                ['chrome_browser_tests'],
                                'run_pnacl_bad_browser_test',
-                               is_broken=(
-                                   bitcode_env.PPAPIBrowserTesterIsBroken() or
-                                   # Re-enable when coordinator uses shim
-                                   # and toolchain tarball has real shim.
-                                   bitcode_env.Bit('target_x86_64')))
+# "Aw, Snap!"s when running the second bad test:
+# third_party/tcmalloc/chromium/src/free_list.cc:115] Memory corruption detected.
+# Somehow it doesn't Aw Snap if we let the JS assertions fail,
+# e.g., by changing the JS assert_eq error strings to something else.
+                               is_broken=(True or
+                                   bitcode_env.PPAPIBrowserTesterIsBroken()))

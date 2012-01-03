@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -177,14 +177,19 @@ class PnaclPackaging(object):
   manifest_template = J(package_base, 'pnacl_manifest_template.json')
 
   @staticmethod
-  def GenerateManifest(output, version, arch, manifest_key=None):
+  def GenerateManifest(output, version, arch,
+                       web_accessible_resources,
+                       manifest_key=None):
     template_fd = open(PnaclPackaging.manifest_template, 'r')
     template = template_fd.read()
     template_fd.close()
     output_fd = open(output, 'w')
     extra = ''
+    if web_accessible_resources != []:
+      extra += '"web_accessible_resources": [%s],\n' % ',\n'.join(
+          [ '"' + to_quote + '"' for to_quote in web_accessible_resources ])
     if manifest_key is not None:
-      extra = '"key": "%s",' % manifest_key
+      extra += '"key": "%s",\n' % manifest_key
     output_fd.write(template % { "version" : version,
                                  "extra" : extra,
                                  "arch" : arch, })
@@ -266,6 +271,22 @@ def ZipDirectory(base_dir, zipfile):
   os.path.walk(base_dir, visit, zipfile)
 
 
+def ListDirectoryRecursivelyAsURLs(base_dir):
+  """ List all files that can be found from base_dir.  Return names as
+  URLs relative to the base_dir.
+  """
+  file_list = []
+  def visit(accum, dirname, names):
+    for name in names:
+      full_name = J(dirname, name)
+      if os.path.isfile(full_name):
+        rel_name = os.path.relpath(full_name, base_dir)
+        url = '/'.join(rel_name.split(os.path.sep))
+        accum.append(url)
+
+  os.path.walk(base_dir, visit, file_list)
+  return file_list
+
 def GeneratePrivateKey():
   """ Generate a dummy extension to generate a fresh private key. This will
   be left in the build dir, and the dummy extension will be cleaned up.
@@ -276,7 +297,8 @@ def GeneratePrivateKey():
   os.mkdir(ext_dir)
   PnaclPackaging.GenerateManifest(J(ext_dir, 'manifest.json'),
                                   '0.0.0.0',
-                                  'dummy_arch')
+                                  'dummy_arch',
+                                  [])
   CRXGen.RunCRXGen(ext_dir)
   shutil.copy2(J(tempdir, 'dummy_extension.pem'),
                PnaclDirs.OutputDir())
@@ -325,10 +347,13 @@ def BuildArchCRX(version_quad, arch, lib_overrides, options):
   if options.unpacked_only:
     return
 
+  web_accessible_files = ListDirectoryRecursivelyAsURLs(parent_dir)
+
   # Generate manifest one level up (to have layout look like the "all" package).
   PnaclPackaging.GenerateManifest(J(parent_dir, 'manifest.json'),
                                   version_quad,
-                                  arch)
+                                  arch,
+                                  web_accessible_files)
   CRXGen.RunCRXGen(parent_dir, options.prev_priv_key)
 
 
@@ -353,10 +378,13 @@ def BuildCWSZip(version_quad):
   StepBanner("CWS ZIP", "Making a zip with all architectures.")
   target_dir = PnaclDirs.OutputAllDir()
 
+  web_accessible_files = ListDirectoryRecursivelyAsURLs(target_dir)
+
   # Overwrite the arch-specific 'manifest.json' that was there.
   PnaclPackaging.GenerateManifest(J(target_dir, 'manifest.json'),
                                   version_quad,
-                                  'all')
+                                  'all',
+                                  web_accessible_files)
   target_zip = J(PnaclDirs.OutputDir(), 'pnacl_all.zip')
   zipf = zipfile.ZipFile(target_zip, 'w', compression=zipfile.ZIP_DEFLATED)
   ZipDirectory(target_dir, zipf)
@@ -370,10 +398,12 @@ def BuildUnpacked(version_quad):
   StepBanner("UNPACKED CRX", "Making an unpacked CRX of all architectures.")
 
   target_dir = PnaclDirs.OutputAllDir()
+  web_accessible_files = ListDirectoryRecursivelyAsURLs(target_dir)
   # Overwrite the manifest file (if there was one already).
   PnaclPackaging.GenerateManifest(J(target_dir, 'manifest.json'),
                                   version_quad,
                                   'all',
+                                  web_accessible_files,
                                   PnaclPackaging.WEBSTORE_PUBLIC_KEY)
 
 

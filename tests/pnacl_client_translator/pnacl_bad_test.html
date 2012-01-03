@@ -2,7 +2,7 @@
           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <!--
-  Copyright (c) 2011 The Native Client Authors. All rights reserved.
+  Copyright (c) 2012 The Native Client Authors. All rights reserved.
   Use of this source code is governed by a BSD-style license that can be
   found in the LICENSE file.
 -->
@@ -26,14 +26,14 @@ function declareTests(tester) {
       tester,
       'bad_pexe',
       'pnacl_bad_pexe.nmf',
-      'NaCl module load failed: PnaclCoordinator compile failed.');
+      'NaCl module load failed: PnaclCoordinator: compile failed.');
 
   // 'bad_pexe' loads a manifest, then loads a pexe that is truncated.
   badLoadTest(
       tester,
       'bad2_pexe',
       'pnacl_bad2_pexe.nmf',
-      'NaCl module load failed: PnaclCoordinator compile failed.');
+      'NaCl module load failed: PnaclCoordinator: compile failed.');
 
   // 'bad_pexe_undefined' loads a manifest, then loads a pexe that compiles
   // but will result in undefined symbols, causing the link to fail.
@@ -41,7 +41,7 @@ function declareTests(tester) {
       tester,
       'bad_pexe_undefined_syms',
       'pnacl_bad_pexe_undefined_syms.nmf',
-      'NaCl module load failed: PnaclCoordinator link failed.');
+      'NaCl module load failed: PnaclCoordinator: link failed.');
 
   // 'nonexistent_pexe loads a manifest, then tries to load a nonexistent pexe,
   // given both a nexe and a portable program to choose from.
@@ -49,7 +49,7 @@ function declareTests(tester) {
       tester,
       'nonexistent_pexe',
       'pnacl_bad_doesnotexist.nmf',
-      'NaCl module load failed: PNaCl pexe load failed.');
+      'NaCl module load failed: PnaclCoordinator: pexe load failed.\n');
 
   // 'nonexistent_pexe_only' loads a manifest, then tries to load a nonexistent
   // pexe, given only a pexe to choose from.
@@ -57,7 +57,7 @@ function declareTests(tester) {
       tester,
       'nonexistent_pexe_only',
       'pnacl_bad_doesnotexist_pexe_only.nmf',
-      'NaCl module load failed: PNaCl pexe load failed.');
+      'NaCl module load failed: PNaclCoordinator: pexe load failed.\n');
 }
 
 

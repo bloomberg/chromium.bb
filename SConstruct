@@ -1184,10 +1184,15 @@ def CommandValidatorTestNacl(env, name, image,
 pre_base_env.AddMethod(CommandValidatorTestNacl)
 
 
-def ExtractPublishedFiles(env, target_name):
+def ExtractPublishedFiles(env, target_name, prog_suffix=True):
   run_files = ['$STAGING_DIR/' + os.path.basename(published_file.path)
                for published_file in env.GetPublished(target_name, 'run')]
-  nexe = '$STAGING_DIR/%s${PROGSUFFIX}' % target_name
+  # This if-else may be removed when ${PROGSUFFIX} is .pexe for pnacl,
+  # and pnacl never generates a .nexe.
+  if prog_suffix:
+    nexe = '$STAGING_DIR/%s${PROGSUFFIX}' % target_name
+  else:
+    nexe = '$STAGING_DIR/%s' % target_name
   return [env.File(file) for file in run_files + [nexe]]
 
 pre_base_env.AddMethod(ExtractPublishedFiles)
@@ -3227,9 +3232,7 @@ irt_variant_tests = [
     'tests/nullptr/nacl.scons',
     'tests/postmessage_redir/nacl.scons',
     'tests/pnacl_abi/nacl.scons',
-    # Disabled until Chrome revision changes translator APIs to match.
-    # TODO(sehr): reenable translator test.
-    #'tests/pnacl_client_translator/nacl.scons',
+    'tests/pnacl_client_translator/nacl.scons',
     'tests/redir/nacl.scons',
     'tests/rodata_not_writable/nacl.scons',
     'tests/signal_handler/nacl.scons',
