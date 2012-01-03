@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -906,7 +906,6 @@
         'base/encoder_row_based_unittest.cc',
         'base/base_mock_objects.cc',
         'base/base_mock_objects.h',
-# BUG57351        'client/chromoting_view_unittest.cc',
         'client/mouse_input_filter_unittest.cc',
         'host/capturer_linux_unittest.cc',
         'host/capturer_mac_unittest.cc',
