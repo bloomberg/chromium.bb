@@ -28,6 +28,7 @@
 #include "content/browser/geolocation/location_arbitrator.h"
 #include "content/browser/geolocation/mock_location_provider.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/web_contents.h"
@@ -47,7 +48,7 @@ class IFrameLoader : public content::NotificationObserver {
   IFrameLoader(Browser* browser, int iframe_id, const GURL& url)
       : navigation_completed_(false),
         javascript_completed_(false) {
-    NavigationController* controller =
+    content::NavigationController* controller =
         &browser->GetSelectedWebContents()->GetController();
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                    content::Source<content::NavigationController>(controller));
