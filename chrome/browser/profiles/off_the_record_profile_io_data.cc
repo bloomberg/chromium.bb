@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
@@ -134,14 +135,21 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   }
 }
 
-// The SSL session cache is partitioned by setting a string. By choosing a
-// different string here, we ensure that incognito connections don't resume
-// sessions from non-incognito connections and vice-versa.
-static const char kIncognitoSSLCacheShard[] = "incognito";
-
 OffTheRecordProfileIOData::OffTheRecordProfileIOData()
     : ProfileIOData(true) {}
 OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {}
+
+unsigned OffTheRecordProfileIOData::ssl_session_cache_instance_ = 0;
+
+// static
+std::string OffTheRecordProfileIOData::GetSSLSessionCacheShard() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // The SSL session cache is partitioned by setting a string. This returns a
+  // unique string to partition the SSL session cache. Each time we create a
+  // new Incognito profile, we'll get a fresh SSL session cache which is also
+  // separate from the non-incognito ones.
+  return StringPrintf("incognito/%u", ssl_session_cache_instance_++);
+}
 
 void OffTheRecordProfileIOData::LazyInitializeInternal(
     ProfileParams* profile_params) const {
@@ -204,7 +212,7 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
                          main_context->origin_bound_cert_service(),
                          main_context->transport_security_state(),
                          main_context->proxy_service(),
-                         kIncognitoSSLCacheShard,
+                         GetSSLSessionCacheShard(),
                          main_context->ssl_config_service(),
                          main_context->http_auth_handler_factory(),
                          main_context->network_delegate(),
