@@ -14,6 +14,10 @@ namespace aura {
 class DropTargetEvent;
 }
 
+namespace content {
+class WebContents;
+}
+
 namespace ui {
 class OSExchangeDataProviderAura;
 }
