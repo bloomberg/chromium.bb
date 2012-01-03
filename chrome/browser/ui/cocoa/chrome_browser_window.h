@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,11 @@
 // window is non-opaque while underlay surfaces are present.
 - (void)underlaySurfaceAdded;
 - (void)underlaySurfaceRemoved;
+
+
+// Indicates whether -performClose: with the given |sender| should be routed
+// to -commandDispatch: on the delegate.
+- (BOOL)performCloseShouldRouteToCommandDispatch:(id)sender;
 
 @end
 

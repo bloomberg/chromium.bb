@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -193,6 +193,13 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 // the profile is loaded or any preferences have been registered). Defer any
 // user-data initialization until -applicationDidFinishLaunching:.
 - (void)awakeFromNib {
+}
+
+// This method is called very early in application startup (ie, before
+// the profile is loaded or any preferences have been registered), just
+// after -awakeFromNib. This is separate from -awakeFromNib: so that
+// test code can load nibs without these side effects.
+- (void)registerEventHandlersAndInitialize {
   // We need to register the handlers early to catch events fired on launch.
   NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
   [em setEventHandler:self
@@ -248,6 +255,27 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 
   // Initialize the Profile menu.
   [self initProfileMenu];
+}
+
+- (void)unregisterEventHandlers {
+  NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
+  [em removeEventHandlerForEventClass:kInternetEventClass
+                           andEventID:kAEGetURL];
+  [em removeEventHandlerForEventClass:cloud_print::kAECloudPrintClass
+                           andEventID:cloud_print::kAECloudPrintClass];
+  [em removeEventHandlerForEventClass:kAECloudPrintInstallClass
+                           andEventID:kAECloudPrintInstallClass];
+  [em removeEventHandlerForEventClass:kAECloudPrintUninstallClass
+                           andEventID:kAECloudPrintUninstallClass];
+  [em removeEventHandlerForEventClass:'WWW!'
+                           andEventID:'OURL'];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)dealloc {
+  if ([NSApp delegate] == self)
+    [NSApp setDelegate:nil];
+  [super dealloc];
 }
 
 // (NSApplicationDelegate protocol) This is the Apple-approved place to override
@@ -322,14 +350,8 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 
 // Called when the app is shutting down. Clean-up as appropriate.
 - (void)applicationWillTerminate:(NSNotification*)aNotification {
-  NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
-  [em removeEventHandlerForEventClass:kInternetEventClass
-                           andEventID:kAEGetURL];
-  [em removeEventHandlerForEventClass:'WWW!'
-                           andEventID:'OURL'];
-
   // There better be no browser windows left at this point.
-  CHECK_EQ(BrowserList::size(), 0u);
+  CHECK_EQ(0u, BrowserList::size());
 
   // Tell BrowserList not to keep the browser process alive. Once all the
   // browsers get dealloc'd, it will stop the RunLoop and fall back into main().
@@ -338,7 +360,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   // Close these off if they have open windows.
   [aboutController_ close];
 
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [self unregisterEventHandlers];
 }
 
 - (void)didEndMainMessageLoop {

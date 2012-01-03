@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,6 +67,9 @@ class Profile;
 
 @property(readonly, nonatomic) BOOL startupComplete;
 @property(readonly, nonatomic) Profile* lastProfile;
+
+// Registers for various event handlers and performs initialization.
+- (void)registerEventHandlersAndInitialize;
 
 - (void)didEndMainMessageLoop;
 

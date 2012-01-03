@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,6 +102,8 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   [nib instantiateNibWithOwner:NSApp topLevelObjects:nil];
   // Make sure the app controller has been created.
   DCHECK([NSApp delegate]);
+  DCHECK([[NSApp delegate] isKindOfClass:[AppController class]]);
+  [[NSApp delegate] registerEventHandlersAndInitialize];
 
   // This is a no-op if the KeystoneRegistration framework is not present.
   // The framework is only distributed with branded Google Chrome builds.

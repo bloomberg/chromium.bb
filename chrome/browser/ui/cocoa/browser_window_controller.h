@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -260,6 +260,9 @@ class TabContents;
 
 // The user changed the theme.
 - (void)userChangedTheme;
+
+// Called when the user picks a menu or toolbar item when this window is key.
+- (void)commandDispatch:(id)sender;
 
 // Executes the command in the context of the current browser.
 // |command| is an integer value containing one of the constants defined in the
