@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,9 @@ namespace remoting {
 // for a non-refcounted object. Must be deleted on the thread it
 // belongs to.
 //
-// The main difference from WeakPtr<> and ScopedRunnableMethodFactory<>
-// is that this class can be used safely to post tasks from different
-// threads.
+//
+// The main difference from WeakPtr<> is that this class can be used safely to
+// post tasks from different threads.
 // It is similar to WeakHandle<> used in sync: the main difference is
 // that WeakHandle<> creates closures itself, while ScopedThreadProxy
 // accepts base::Closure instances which caller needs to create using

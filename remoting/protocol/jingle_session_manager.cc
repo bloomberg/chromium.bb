@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,8 +35,7 @@ JingleSessionManager::JingleSessionManager(
       allow_nat_traversal_(false),
       ready_(false),
       http_port_allocator_(NULL),
-      closed_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
+      closed_(false) {
 }
 
 JingleSessionManager::~JingleSessionManager() {

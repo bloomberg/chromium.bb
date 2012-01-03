@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,8 +52,7 @@ OfflineLoadPage::OfflineLoadPage(WebContents* web_contents,
                                  OfflineResourceHandler* handler)
     : ChromeInterstitialPage(web_contents, true, url),
       handler_(handler),
-      proceeded_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      proceeded_(false) {
   net::NetworkChangeNotifier::AddOnlineStateObserver(this);
 }
 

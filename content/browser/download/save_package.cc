@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,8 +134,7 @@ SavePackage::SavePackage(TabContents* tab_contents,
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
       tab_id_(tab_contents->GetRenderProcessHost()->GetID()),
-      unique_id_(g_save_package_id++),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      unique_id_(g_save_package_id++) {
   DCHECK(page_url_.is_valid());
   DCHECK(save_type_ == SAVE_AS_ONLY_HTML ||
          save_type_ == SAVE_AS_COMPLETE_HTML);
@@ -161,8 +160,7 @@ SavePackage::SavePackage(TabContents* tab_contents)
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
       tab_id_(tab_contents->GetRenderProcessHost()->GetID()),
-      unique_id_(g_save_package_id++),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      unique_id_(g_save_package_id++) {
   DCHECK(page_url_.is_valid());
   InternalInit();
 }
@@ -187,8 +185,7 @@ SavePackage::SavePackage(TabContents* tab_contents,
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
       tab_id_(0),
-      unique_id_(g_save_package_id++),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      unique_id_(g_save_package_id++) {
 }
 
 SavePackage::~SavePackage() {

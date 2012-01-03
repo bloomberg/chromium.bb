@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,6 @@ PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser,
       system_drag_disabled_for_testing_(false),
       last_mouse_down_(NULL),
       drag_widget_(NULL),
-      destroy_drag_widget_factory_(this),
       drag_end_factory_(this),
       panel_(panel),
       bounds_(bounds),

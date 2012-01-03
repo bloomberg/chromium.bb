@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,8 +124,8 @@ MostVisitedURL MakeMostVisitedURL(const PageUsageData& page_data,
 // be assigned to a RunnableMethod.
 //
 // TODO(brettw): bug 1165182: This should be replaced with a
-// ScopedRunnableMethodFactory which will handle everything automatically (like
-// we do in ExpireHistoryBackend).
+// base::WeakPtrFactory which will handle everything automatically (like we do
+// in ExpireHistoryBackend).
 class CommitLaterTask : public base::RefCounted<CommitLaterTask> {
  public:
   explicit CommitLaterTask(HistoryBackend* history_backend)

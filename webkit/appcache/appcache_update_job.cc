@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -292,8 +292,7 @@ bool AppCacheUpdateJob::URLFetcher::MaybeRetryRequest() {
 
 AppCacheUpdateJob::AppCacheUpdateJob(AppCacheService* service,
                                      AppCacheGroup* group)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      service_(service),
+    : service_(service),
       group_(group),
       update_type_(UNKNOWN_TYPE),
       internal_state_(FETCH_MANIFEST),

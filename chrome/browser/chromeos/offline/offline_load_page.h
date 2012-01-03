@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,6 @@ class OfflineLoadPage : public ChromeInterstitialPage,
 
   // True if the proceed is chosen.
   bool proceeded_;
-  ScopedRunnableMethodFactory<OfflineLoadPage> method_factory_;
 
   bool in_test_;
 

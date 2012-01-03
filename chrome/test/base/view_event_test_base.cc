@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/automation/ui_controls.h"
@@ -62,14 +61,10 @@ const int kMouseMoveDelayMS = 200;
 ViewEventTestBase::ViewEventTestBase()
   : window_(NULL),
     content_view_(NULL),
-    ui_thread_(content::BrowserThread::UI, &message_loop_),
-    ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+    ui_thread_(content::BrowserThread::UI, &message_loop_) {
 }
 
 void ViewEventTestBase::Done() {
-  // Cancel the pending time-out.
-  method_factory_.RevokeAll();
-
   MessageLoop::current()->Quit();
 
 #if defined(OS_WIN)

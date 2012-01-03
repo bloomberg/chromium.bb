@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -156,10 +156,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   // type GInitiallyUnowned, but the widget initialization code sinks the
   // reference, so we can't use an OwnedWidgetGtk here.
   GtkWidget* drag_widget_;
-
-  // Used to destroy the drag widget after a return to the message loop.
-  ScopedRunnableMethodFactory<PanelBrowserWindowGtk>
-      destroy_drag_widget_factory_;
 
   // Due to a bug in GTK+, we need to force the end of a drag when we get a
   // mouse release event on the the dragged widget, otherwise, we don't know

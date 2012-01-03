@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -186,7 +186,6 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   void IdleHandlerInForegroundTab();
 
   // These objects live solely on the render thread.
-  scoped_ptr<ScopedRunnableMethodFactory<RenderThreadImpl> > task_factory_;
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
   scoped_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
   scoped_ptr<RendererWebKitPlatformSupportImpl> webkit_platform_support_;
