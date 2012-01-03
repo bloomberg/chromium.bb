@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,16 +59,9 @@ FilePath::CharType kDefaultPluginLibraryName[] =
 // Some version ranges can be shared across operating systems. This should be
 // done where possible to avoid duplication.
 // This is up to date with
-// http://www.adobe.com/support/security/bulletins/apsb11-28.html
+// http://www.adobe.com/support/security/bulletins/apsb11-26.html
 static const VersionRangeDefinition kFlashVersionRange[] = {
-// Flash on Linux doesn't show the fourth version component, so we leave it
-// out here in order to avoid blocking an up-to-date Flash.
-#if defined(OS_LINUX)
-#define FLASH_SUBVERSION ""
-#else
-#define FLASH_SUBVERSION ".55"
-#endif
-    { "", "", "11.1.102" FLASH_SUBVERSION, false }
+    { "", "", "10.3.183", false }
 };
 // This is up to date with
 // http://www.adobe.com/support/security/bulletins/apsb11-19.html
@@ -139,10 +132,10 @@ static const VersionRangeDefinition kJavaVersionRange[] = {
     { "7", "", "10.1", true }  // JDK7u1 identifies itself as 10.1
 };
 // This is up to date with
-// http://www.adobe.com/support/security/bulletins/apsb11-30.html
+// http://www.adobe.com/support/security/bulletins/apsb11-24.html
 static const VersionRangeDefinition kAdobeReaderVersionRange[] = {
     { "10", "11", "10.1.1", false },
-    { "9", "10", "9.4.7", false },
+    { "9", "10", "9.4.6", false },
     { "0", "9", "8.3.1", false }
 };
 static const VersionRangeDefinition kDivXVersionRange[] = {
