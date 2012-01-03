@@ -77,8 +77,9 @@ read_func(png_structp png, png_bytep data, png_size_t size)
 }
 
 WL_EXPORT uint32_t *
-wlsc_load_image(const char *filename,
-		int32_t *width_arg, int32_t *height_arg, uint32_t *stride_arg)
+weston_load_image(const char *filename,
+		  int32_t *width_arg, int32_t *height_arg,
+		  uint32_t *stride_arg)
 {
 	png_struct *png;
 	png_info *info;

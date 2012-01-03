@@ -38,7 +38,7 @@
 #include "evdev.h"
 
 struct wfd_compositor {
-	struct wlsc_compositor base;
+	struct weston_compositor base;
 
 	struct udev *udev;
 	struct gbm_device *gbm;
@@ -55,12 +55,12 @@ struct wfd_compositor {
 };
 
 struct wfd_mode {
-	struct wlsc_mode base;
+	struct weston_mode base;
 	WFDPortMode mode;
 };
 
 struct wfd_output {
-	struct wlsc_output   base;
+	struct weston_output   base;
 
 	WFDPort port;
 
@@ -86,7 +86,7 @@ union wfd_geometry {
 };
 
 static int
-wfd_output_prepare_render(struct wlsc_output *output_base)
+wfd_output_prepare_render(struct weston_output *output_base)
 {
 	struct wfd_output *output = (struct wfd_output *) output_base;
 
@@ -102,7 +102,7 @@ wfd_output_prepare_render(struct wlsc_output *output_base)
 }
 
 static int
-wfd_output_present(struct wlsc_output *output_base)
+wfd_output_present(struct weston_output *output_base)
 {
 	struct wfd_output *output = (struct wfd_output *) output_base;
 	struct wfd_compositor *c =
@@ -179,21 +179,21 @@ init_egl(struct wfd_compositor *ec)
 }
 
 static int
-wfd_output_prepare_scanout_surface(struct wlsc_output *output_base,
-				   struct wlsc_surface *es)
+wfd_output_prepare_scanout_surface(struct weston_output *output_base,
+				   struct weston_surface *es)
 {
 	return -1;
 }
 
 static int
-wfd_output_set_cursor(struct wlsc_output *output_base,
-		      struct wlsc_input_device *input)
+wfd_output_set_cursor(struct weston_output *output_base,
+		      struct weston_input_device *input)
 {
 	return -1;
 }
 
 static void
-wfd_output_destroy(struct wlsc_output *output_base)
+wfd_output_destroy(struct weston_output *output_base)
 {
 	struct wfd_output *output = (struct wfd_output *) output_base;
 	struct wfd_compositor *ec =
@@ -218,7 +218,7 @@ wfd_output_destroy(struct wlsc_output *output_base)
 	wfdDestroyPipeline(ec->dev, output->pipeline);
 	wfdDestroyPort(ec->dev, output->port);
 
-	wlsc_output_destroy(&output->base);
+	weston_output_destroy(&output->base);
 	wl_list_remove(&output->base.link);
 
 	free(output);
@@ -348,13 +348,13 @@ create_output_for_port(struct wfd_compositor *ec,
 			   WFD_PORT_PHYSICAL_SIZE,
 			   2, physical_size);
 
-	wlsc_output_init(&output->base, &ec->base, x, y,
+	weston_output_init(&output->base, &ec->base, x, y,
 			 physical_size[0], physical_size[1], 0);
 
 	output->pipeline = wfdCreatePipeline(ec->dev, output->pipeline_id, NULL);
 	if (output->pipeline == WFD_INVALID_HANDLE) {
 		fprintf(stderr, "failed to create a pipeline\n");
-		goto cleanup_wlsc_output;
+		goto cleanup_weston_output;
 	}
 
 	glGenRenderbuffers(2, output->rbo);
@@ -419,8 +419,8 @@ create_output_for_port(struct wfd_compositor *ec,
 
 cleanup_pipeline:
 	wfdDestroyPipeline(ec->dev, output->pipeline);
-cleanup_wlsc_output:
-	wlsc_output_destroy(&output->base);
+cleanup_weston_output:
+	weston_output_destroy(&output->base);
 cleanup_pipelines:
 	free(pipelines);
 cleanup_port:
@@ -456,7 +456,7 @@ create_outputs(struct wfd_compositor *ec, int option_connector)
 			create_output_for_port(ec, port, x, y);
 
 			x += container_of(ec->base.output_list.prev,
-					  struct wlsc_output,
+					  struct weston_output,
 					  link)->current->width;
 		} else {
 			wfdDestroyPort(ec->dev, port);
@@ -485,9 +485,9 @@ handle_port_state_change(struct wfd_compositor *ec)
 				   WFD_EVENT_PORT_ATTACH_STATE);
 
 	if (state) {
-		struct wlsc_output *last_output =
+		struct weston_output *last_output =
 			container_of(ec->base.output_list.prev,
-				     struct wlsc_output, link);
+				     struct weston_output, link);
 
 		/* XXX: not yet needed, we die with 0 outputs */
 		if (!wl_list_empty(&ec->base.output_list))
@@ -517,7 +517,7 @@ handle_port_state_change(struct wfd_compositor *ec)
 		}
 
 		if (x_offset != 0 || y_offset != 0) {
-			wlsc_output_move(&output->base,
+			weston_output_move(&output->base,
 					 output->base.x - x_offset,
 					 output->base.y - y_offset);
 		}
@@ -559,7 +559,7 @@ on_wfd_event(int fd, uint32_t mask, void *data)
 		if (output == NULL)
 			return 1;
 
-		wlsc_output_finish_frame(&output->base,
+		weston_output_finish_frame(&output->base,
 					 c->start_time + bind_time);
 		break;
 	case WFD_EVENT_PORT_ATTACH_DETACH:
@@ -573,11 +573,11 @@ on_wfd_event(int fd, uint32_t mask, void *data)
 }
 
 static void
-wfd_destroy(struct wlsc_compositor *ec)
+wfd_destroy(struct weston_compositor *ec)
 {
 	struct wfd_compositor *d = (struct wfd_compositor *) ec;
 
-	wlsc_compositor_shutdown(ec);
+	weston_compositor_shutdown(ec);
 
 	udev_unref(d->udev);
 
@@ -591,14 +591,14 @@ wfd_destroy(struct wlsc_compositor *ec)
 /* FIXME: Just add a stub here for now
  * handle drm{Set,Drop}Master in owfdrm somehow */
 static void
-vt_func(struct wlsc_compositor *compositor, int event)
+vt_func(struct weston_compositor *compositor, int event)
 {
 	return;
 }
 
 static const char default_seat[] = "seat0";
 
-static struct wlsc_compositor *
+static struct weston_compositor *
 wfd_compositor_create(struct wl_display *display,
 		      int connector, const char *seat, int tty)
 {
@@ -646,7 +646,7 @@ wfd_compositor_create(struct wl_display *display,
 	glBindFramebuffer(GL_FRAMEBUFFER, ec->base.fbo);
 
 	/* Can't init base class until we have a current egl context */
-	if (wlsc_compositor_init(&ec->base, display) < 0)
+	if (weston_compositor_init(&ec->base, display) < 0)
 		return NULL;
 
 	if (create_outputs(ec, connector) < 0) {
@@ -666,10 +666,10 @@ wfd_compositor_create(struct wl_display *display,
 	return &ec->base;
 }
 
-struct wlsc_compositor *
+struct weston_compositor *
 backend_init(struct wl_display *display, char *options);
 
-WL_EXPORT struct wlsc_compositor *
+WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, char *options)
 {
 	int connector = 0, i;
