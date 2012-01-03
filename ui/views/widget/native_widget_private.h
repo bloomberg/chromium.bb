@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -202,6 +202,9 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
   virtual void FocusNativeView(gfx::NativeView native_view) = 0;
   virtual gfx::Rect GetWorkAreaBoundsInScreen() const = 0;
   virtual void SetInactiveRenderingDisabled(bool value) = 0;
+  virtual Widget::MoveLoopResult RunMoveLoop() = 0;
+  virtual void EndMoveLoop() = 0;
+  virtual void SetVisibilityChangedAnimationsEnabled(bool value) = 0;
 
   // Overridden from NativeWidget:
   virtual internal::NativeWidgetPrivate* AsNativeWidgetPrivate() OVERRIDE;

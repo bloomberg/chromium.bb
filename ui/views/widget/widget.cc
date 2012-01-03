@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -444,6 +444,18 @@ void Widget::SetBoundsConstrained(const gfx::Rect& bounds) {
   }
 }
 
+void Widget::SetVisibilityChangedAnimationsEnabled(bool value) {
+  native_widget_->SetVisibilityChangedAnimationsEnabled(value);
+}
+
+Widget::MoveLoopResult Widget::RunMoveLoop() {
+  return native_widget_->RunMoveLoop();
+}
+
+void Widget::EndMoveLoop() {
+  native_widget_->EndMoveLoop();
+}
+
 void Widget::StackAboveWidget(Widget* widget) {
   native_widget_->StackAbove(widget->GetNativeView());
 }
@@ -797,6 +809,18 @@ const NativeWidget* Widget::native_widget() const {
 
 NativeWidget* Widget::native_widget() {
   return native_widget_;
+}
+
+void Widget::SetMouseCapture(views::View* view) {
+  is_mouse_button_pressed_ = true;
+  root_view_->SetMouseHandler(view);
+  if (!native_widget_->HasMouseCapture())
+    native_widget_->SetMouseCapture();
+}
+
+void Widget::ReleaseMouseCapture() {
+  if (native_widget_->HasMouseCapture())
+    native_widget_->ReleaseMouseCapture();
 }
 
 const Event* Widget::GetCurrentEvent() {

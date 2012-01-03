@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,6 +105,15 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     FRAME_TYPE_DEFAULT,         // Use whatever the default would be.
     FRAME_TYPE_FORCE_CUSTOM,    // Force the custom frame.
     FRAME_TYPE_FORCE_NATIVE     // Force the native frame.
+  };
+
+  // Result from RunMoveLoop().
+  enum MoveLoopResult {
+    // The move loop completed successfully.
+    MOVE_LOOP_SUCCESSFUL,
+
+    // The user canceled the move loop.
+    MOVE_LOOP_CANCELED
   };
 
   struct VIEWS_EXPORT InitParams {
@@ -305,6 +314,18 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // resizing and/or repositioning as necessary. This is only useful for
   // non-child widgets.
   void SetBoundsConstrained(const gfx::Rect& bounds);
+
+  // Sets whether animations that occur when visibility is changed are enabled.
+  // Default is true.
+  void SetVisibilityChangedAnimationsEnabled(bool value);
+
+  // Starts a nested message loop that moves the window. This can be used to
+  // start a window move operation from a mouse moved event. This returns when
+  // the move completes.
+  MoveLoopResult RunMoveLoop();
+
+  // Stops a previously started move loop. This is not immediate.
+  void EndMoveLoop();
 
   // Places the widget in front of the specified widget in z-order.
   void StackAboveWidget(Widget* widget);
@@ -532,6 +553,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   const internal::NativeWidgetPrivate* native_widget_private() const {
     return native_widget_;
   }
+
+  // Sets mouse capture on the specified view.
+  void SetMouseCapture(views::View* view);
+
+  // Releases mouse capture.
+  void ReleaseMouseCapture();
 
   // Returns the current event being processed. If there are multiple events
   // being processed at the same time (e.g. one event triggers another event),

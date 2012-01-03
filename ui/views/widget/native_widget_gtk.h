@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -222,6 +222,9 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
   virtual void FocusNativeView(gfx::NativeView native_view) OVERRIDE;
   virtual gfx::Rect GetWorkAreaBoundsInScreen() const OVERRIDE;
   virtual void SetInactiveRenderingDisabled(bool value) OVERRIDE;
+  virtual Widget::MoveLoopResult RunMoveLoop() OVERRIDE;
+  virtual void EndMoveLoop() OVERRIDE;
+  virtual void SetVisibilityChangedAnimationsEnabled(bool value) OVERRIDE;
 
  protected:
   // Modifies event coordinates to the targeted widget contained by this widget.

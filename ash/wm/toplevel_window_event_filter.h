@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/compiler_specific.h"
+#include "ui/aura/client/window_move_client.h"
 #include "ui/aura/event_filter.h"
 #include "ash/ash_export.h"
 #include "ui/gfx/point.h"
@@ -22,7 +23,9 @@ class Window;
 
 namespace ash {
 
-class ASH_EXPORT ToplevelWindowEventFilter : public aura::EventFilter {
+class ASH_EXPORT ToplevelWindowEventFilter :
+      public aura::EventFilter,
+      public aura::client::WindowMoveClient {
  public:
   explicit ToplevelWindowEventFilter(aura::Window* owner);
   virtual ~ToplevelWindowEventFilter();
@@ -34,6 +37,10 @@ class ASH_EXPORT ToplevelWindowEventFilter : public aura::EventFilter {
                                    aura::MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
                                               aura::TouchEvent* event) OVERRIDE;
+
+  // Overridden form aura::client::WindowMoveClient:
+  virtual void RunMoveLoop(aura::Window* source) OVERRIDE;
+  virtual void EndMoveLoop() OVERRIDE;
 
  protected:
   // Returns the |window_component_|. See the variable definition below for
@@ -50,9 +57,10 @@ class ASH_EXPORT ToplevelWindowEventFilter : public aura::EventFilter {
   // The return value is returned by OnMouseEvent() above.
   bool HandleDrag(aura::Window* target, aura::LocatedEvent* event);
 
-  // Updates the event location to window.
-  void UpdateLocationFromEvent(aura::Window* target,
-                               aura::LocatedEvent* event);
+  // Updates |mouse_down_offset_in_parent_| and |mouse_down_bounds_| from
+  // |location|.
+  void UpdateMouseDownLocation(aura::Window* target,
+                               const gfx::Point& location);
 
   // Updates the |window_component_| using the |event|'s location.
   void UpdateWindowComponentForEvent(aura::Window* window,
@@ -90,6 +98,9 @@ class ASH_EXPORT ToplevelWindowEventFilter : public aura::EventFilter {
 
   // The bounds of the target window when the mouse was pressed.
   gfx::Rect mouse_down_bounds_;
+
+  // Are we running a nested message loop from RunMoveLoop().
+  bool in_move_loop_;
 
   // The window component (hit-test code) the mouse is currently over.
   int window_component_;

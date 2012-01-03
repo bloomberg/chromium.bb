@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,116 @@ using ui::ViewProp;
 namespace views {
 
 namespace {
+
+// MoveLoopMouseWatcher is used to determine if the user canceled or completed a
+// move. win32 doesn't appear to offer a way to determine the result of a move,
+// so we install hooks to determine if we got a mouse up and assume the move
+// completed.
+class MoveLoopMouseWatcher {
+ public:
+  explicit MoveLoopMouseWatcher(NativeWidgetWin* host);
+  ~MoveLoopMouseWatcher();
+
+  // Returns true if the mouse is up, or if we couldn't install the hook.
+  bool got_mouse_up() const { return got_mouse_up_; }
+
+ private:
+  // Instance that owns the hook. We only allow one instance to hook the mouse
+  // at a time.
+  static MoveLoopMouseWatcher* instance_;
+
+  // Key and mouse callbacks from the hook.
+  static LRESULT CALLBACK MouseHook(int n_code, WPARAM w_param, LPARAM l_param);
+  static LRESULT CALLBACK KeyHook(int n_code, WPARAM w_param, LPARAM l_param);
+
+  void Unhook();
+
+  // NativeWidgetWin that created us.
+  NativeWidgetWin* host_;
+
+  // Did we get a mouse up?
+  bool got_mouse_up_;
+
+  // Hook identifiers.
+  HHOOK mouse_hook_;
+  HHOOK key_hook_;
+
+  DISALLOW_COPY_AND_ASSIGN(MoveLoopMouseWatcher);
+};
+
+// static
+MoveLoopMouseWatcher* MoveLoopMouseWatcher::instance_ = NULL;
+
+MoveLoopMouseWatcher::MoveLoopMouseWatcher(NativeWidgetWin* host)
+    : host_(host),
+      got_mouse_up_(false),
+      mouse_hook_(NULL),
+      key_hook_(NULL) {
+  // Only one instance can be active at a time.
+  if (instance_)
+    instance_->Unhook();
+
+  mouse_hook_ = SetWindowsHookEx(
+      WH_MOUSE, &MouseHook, NULL, GetCurrentThreadId());
+  if (mouse_hook_) {
+    instance_ = this;
+    // We don't care if setting the key hook succeeded.
+    key_hook_ = SetWindowsHookEx(
+        WH_KEYBOARD, &KeyHook, NULL, GetCurrentThreadId());
+  }
+  if (instance_ != this) {
+    // Failed installation. Assume we got a mouse up in this case, otherwise
+    // we'll think all drags were canceled.
+    got_mouse_up_ = true;
+  }
+}
+
+MoveLoopMouseWatcher::~MoveLoopMouseWatcher() {
+  Unhook();
+}
+
+void MoveLoopMouseWatcher::Unhook() {
+  if (instance_ != this)
+    return;
+
+  DCHECK(mouse_hook_);
+  UnhookWindowsHookEx(mouse_hook_);
+  if (key_hook_)
+    UnhookWindowsHookEx(key_hook_);
+  key_hook_ = NULL;
+  mouse_hook_ = NULL;
+  instance_ = NULL;
+}
+
+// static
+LRESULT CALLBACK MoveLoopMouseWatcher::MouseHook(int n_code,
+                                                 WPARAM w_param,
+                                                 LPARAM l_param) {
+  DCHECK(instance_);
+  if (n_code == HC_ACTION && w_param == WM_LBUTTONUP)
+    instance_->got_mouse_up_ = true;
+  return CallNextHookEx(instance_->mouse_hook_, n_code, w_param, l_param);
+}
+
+// static
+LRESULT CALLBACK MoveLoopMouseWatcher::KeyHook(int n_code,
+                                               WPARAM w_param,
+                                               LPARAM l_param) {
+  if (n_code == HC_ACTION && w_param == VK_ESCAPE) {
+    int value = TRUE;
+    HRESULT result = DwmSetWindowAttribute(
+        instance_->host_->GetNativeView(),
+        DWMWA_TRANSITIONS_FORCEDISABLED,
+        &value,
+        sizeof(value));
+    // Hide the window on escape, otherwise the window is visibly going to snap
+    // back to the original location before we close it.
+    // This behavior is specific to tab dragging, in that we generally wouldn't
+    // want this functionality if we have other consumers using this API.
+    instance_->host_->Hide();
+  }
+  return CallNextHookEx(instance_->key_hook_, n_code, w_param, l_param);
+}
 
 // Get the source HWND of the specified message. Depending on the message, the
 // source HWND is encoded in either the WPARAM or the LPARAM value.
@@ -717,7 +827,8 @@ void NativeWidgetWin::StackAbove(gfx::NativeView native_view) {
 }
 
 void NativeWidgetWin::StackAtTop() {
-  NOTIMPLEMENTED();
+  SetWindowPos(HWND_TOP, 0, 0, 0, 0,
+               SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
 }
 
 void NativeWidgetWin::SetShape(gfx::NativeRegion region) {
@@ -996,6 +1107,27 @@ gfx::Rect NativeWidgetWin::GetWorkAreaBoundsInScreen() const {
 }
 
 void NativeWidgetWin::SetInactiveRenderingDisabled(bool value) {
+}
+
+Widget::MoveLoopResult NativeWidgetWin::RunMoveLoop() {
+  ReleaseMouseCapture();
+  MoveLoopMouseWatcher watcher(this);
+  SendMessage(hwnd(), WM_SYSCOMMAND, SC_MOVE | 0x0002, GetMessagePos());
+  // Windows doesn't appear to offer a way to determine whether the user
+  // canceled the move or not. We assume if the user released the mouse it was
+  // successful.
+  return watcher.got_mouse_up() ? Widget::MOVE_LOOP_SUCCESSFUL :
+      Widget::MOVE_LOOP_CANCELED;
+}
+
+void NativeWidgetWin::EndMoveLoop() {
+  SendMessage(hwnd(), WM_CANCELMODE, 0, 0);
+}
+
+void NativeWidgetWin::SetVisibilityChangedAnimationsEnabled(bool value) {
+  int dwm_value = value ? FALSE : TRUE;
+  DwmSetWindowAttribute(
+      hwnd(), DWMWA_TRANSITIONS_FORCEDISABLED, &dwm_value, sizeof(dwm_value));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

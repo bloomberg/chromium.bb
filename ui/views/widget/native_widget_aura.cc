@@ -9,6 +9,7 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/client/window_move_client.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -552,6 +553,27 @@ void NativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
     active_window_observer_.reset();
   else
     active_window_observer_.reset(new ActiveWindowObserver(this));
+}
+
+Widget::MoveLoopResult NativeWidgetAura::RunMoveLoop() {
+  if (window_->parent() &&
+      aura::client::GetWindowMoveClient(window_->parent())) {
+    SetMouseCapture();
+    aura::client::GetWindowMoveClient(window_->parent())->RunMoveLoop(window_);
+    return Widget::MOVE_LOOP_SUCCESSFUL;
+  }
+  return Widget::MOVE_LOOP_CANCELED;
+}
+
+void NativeWidgetAura::EndMoveLoop() {
+  if (window_->parent() &&
+      aura::client::GetWindowMoveClient(window_->parent())) {
+    aura::client::GetWindowMoveClient(window_->parent())->EndMoveLoop();
+  }
+}
+
+void NativeWidgetAura::SetVisibilityChangedAnimationsEnabled(bool value) {
+  // Nothing needed on aura.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

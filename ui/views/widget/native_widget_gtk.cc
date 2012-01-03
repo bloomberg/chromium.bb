@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1282,6 +1282,19 @@ gfx::Rect NativeWidgetGtk::GetWorkAreaBoundsInScreen() const {
 }
 
 void NativeWidgetGtk::SetInactiveRenderingDisabled(bool value) {
+}
+
+Widget::MoveLoopResult NativeWidgetGtk::RunMoveLoop() {
+  NOTIMPLEMENTED();
+  return Widget::MOVE_LOOP_CANCELED;
+}
+
+void NativeWidgetGtk::EndMoveLoop() {
+  NOTIMPLEMENTED();
+}
+
+void NativeWidgetGtk::SetVisibilityChangedAnimationsEnabled(bool value) {
+  // Nothing needed on gtk.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

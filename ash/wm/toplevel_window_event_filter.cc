@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/wm/toplevel_window_event_filter.h"
 
 #include "ash/wm/window_util.h"
+#include "base/message_loop.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/cursor.h"
 #include "ui/aura/event.h"
@@ -13,6 +14,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/screen.h"
 
 namespace ash {
 
@@ -135,7 +137,9 @@ void ToggleMaximizedState(aura::Window* window) {
 
 ToplevelWindowEventFilter::ToplevelWindowEventFilter(aura::Window* owner)
     : EventFilter(owner),
+      in_move_loop_(false),
       window_component_(HTNOWHERE) {
+  aura::client::SetWindowMoveClient(owner, this);
 }
 
 ToplevelWindowEventFilter::~ToplevelWindowEventFilter() {
@@ -163,13 +167,17 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
           event->flags() & ui::EF_IS_DOUBLE_CLICK) {
         ToggleMaximizedState(target);
       }
-      UpdateLocationFromEvent(target, event);
+      UpdateMouseDownLocation(target, event->location());
       return GetBoundsChangeForWindowComponent(window_component_) !=
           kBoundsChange_None;
     case ui::ET_MOUSE_DRAGGED:
       return HandleDrag(target, event);
     case ui::ET_MOUSE_RELEASED:
       window_component_ = HTNOWHERE;
+      if (in_move_loop_) {
+        MessageLoop::current()->Quit();
+        in_move_loop_ = false;
+      }
       break;
     default:
       break;
@@ -191,7 +199,7 @@ ui::TouchStatus ToplevelWindowEventFilter::PreHandleTouchEvent(
   // Handle touch move by simulate mouse drag with single touch.
   switch (event->type()) {
     case ui::ET_TOUCH_PRESSED:
-      UpdateLocationFromEvent(target, event);
+      UpdateMouseDownLocation(target, event->location());
       pressed_touch_ids_.insert(event->touch_id());
       if (pressed_touch_ids_.size() == 1)
         return ui::TOUCH_STATUS_START;
@@ -213,6 +221,29 @@ ui::TouchStatus ToplevelWindowEventFilter::PreHandleTouchEvent(
       break;
   }
   return ui::TOUCH_STATUS_UNKNOWN;
+}
+
+void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source) {
+  DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
+  in_move_loop_ = true;
+  window_component_ = HTCAPTION;
+  gfx::Point source_mouse_location(gfx::Screen::GetCursorScreenPoint());
+  aura::Window::ConvertPointToWindow(
+      aura::RootWindow::GetInstance(), source, &source_mouse_location);
+  UpdateMouseDownLocation(source, source_mouse_location);
+  MessageLoopForUI::current()->RunWithDispatcher(
+      aura::RootWindow::GetInstance()->GetDispatcher());
+  in_move_loop_ = false;
+}
+
+void ToplevelWindowEventFilter::EndMoveLoop() {
+  if (!in_move_loop_)
+    return;
+
+  in_move_loop_ = false;
+  window_component_ = HTNOWHERE;
+  MessageLoopForUI::current()->Quit();
+  aura::RootWindow::GetInstance()->PostNativeEvent(ui::CreateNoopEvent());
 }
 
 void ToplevelWindowEventFilter::MoveWindowToFront(aura::Window* target) {
@@ -263,11 +294,11 @@ bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
   return true;
 }
 
-void ToplevelWindowEventFilter::UpdateLocationFromEvent(
+void ToplevelWindowEventFilter::UpdateMouseDownLocation(
     aura::Window* target,
-    aura::LocatedEvent* event) {
+    const gfx::Point& location) {
   mouse_down_bounds_ = target->bounds();
-  mouse_down_offset_in_parent_ = event->location();
+  mouse_down_offset_in_parent_ = location;
   aura::Window::ConvertPointToWindow(target, target->parent(),
                                      &mouse_down_offset_in_parent_);
 }
