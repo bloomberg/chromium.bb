@@ -477,7 +477,8 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 
   // If the window changed to a new BrowserWindowController, update the profile.
   id windowController = [[notify object] windowController];
-  if ([windowController isKindOfClass:[BrowserWindowController class]]) {
+  if ([notify name] == NSWindowDidBecomeMainNotification &&
+      [windowController isKindOfClass:[BrowserWindowController class]]) {
     // If the profile is incognito, use the original profile.
     Profile* newProfile = [windowController profile]->GetOriginalProfile();
     [self windowChangedToProfile:newProfile];
@@ -507,7 +508,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 
   bookmarkMenuBridge_.reset(new BookmarkMenuBridge(lastProfile_,
       [[[NSApp mainMenu] itemWithTag:IDC_BOOKMARKS_MENU] submenu]));
-  bookmarkMenuBridge_->BuildMenu();
+  // No need to |BuildMenu| here.  It is done lazily upon menu access.
 
   historyMenuBridge_.reset(new HistoryMenuBridge(lastProfile_));
   historyMenuBridge_->BuildMenu();

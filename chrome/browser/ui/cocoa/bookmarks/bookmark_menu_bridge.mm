@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -224,16 +224,18 @@ void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu,
   int child_count = node->child_count();
   if (!child_count) {
     NSString* empty_string = l10n_util::GetNSString(IDS_MENU_EMPTY_SUBMENU);
-    NSMenuItem* item = [[[NSMenuItem alloc] initWithTitle:empty_string
-                                                   action:nil
-                                            keyEquivalent:@""] autorelease];
+    NSMenuItem* item =
+        [[[NSMenuItem alloc] initWithTitle:empty_string
+                                    action:@selector(openBookmarkMenuItem:)
+                             keyEquivalent:@""] autorelease];
     [menu addItem:item];
   } else for (int i = 0; i < child_count; i++) {
     const BookmarkNode* child = node->GetChild(i);
     NSString* title = [BookmarkMenuCocoaController menuTitleForNode:child];
-    NSMenuItem* item = [[[NSMenuItem alloc] initWithTitle:title
-                                                   action:nil
-                                            keyEquivalent:@""] autorelease];
+    NSMenuItem* item =
+        [[[NSMenuItem alloc] initWithTitle:title
+                                    action:@selector(openBookmarkMenuItem:)
+                             keyEquivalent:@""] autorelease];
     [menu addItem:item];
     bookmark_nodes_[child] = item;
     if (child->is_folder()) {
@@ -295,7 +297,6 @@ void BookmarkMenuBridge::ConfigureMenuItem(const BookmarkNode* node,
   if (set_title)
     [item setTitle:[BookmarkMenuCocoaController menuTitleForNode:node]];
   [item setTarget:controller_];
-  [item setAction:@selector(openBookmarkMenuItem:)];
   [item setTag:node->id()];
   if (node->is_url())
     [item setToolTip:[BookmarkMenuCocoaController tooltipForNode:node]];
