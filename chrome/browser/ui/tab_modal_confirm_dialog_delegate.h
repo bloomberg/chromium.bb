@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,16 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
 
   void set_window(ConstrainedWindow* window) { window_ = window; }
 
+  // Accepts the confirmation prompt and calls |OnAccepted|.
+  // This method is safe to call even from an |OnAccepted| or |OnCanceled|
+  // callback. It is guaranteed that exactly one of |OnAccepted| or |OnCanceled|
+  // is eventually called.
   void Accept();
+
+  // Cancels the confirmation prompt and calls |OnCanceled|.
+  // This method is safe to call even from an |OnAccepted| or |OnCanceled|
+  // callback. It is guaranteed that exactly one of |OnAccepted| or |OnCanceled|
+  // is eventually called.
   void Cancel();
 
   // The title of the dialog. Note that the title is not shown on all platforms.
