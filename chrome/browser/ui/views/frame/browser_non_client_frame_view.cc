@@ -35,15 +35,23 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
     frame_->GetRootView()->Layout();
   }
 
-  if (!avatar_button_.get())
-    return;
+  // For popup windows which don't have the avatar button, we still
+  // need to draw the taskbar decoration.
+  if (!browser_view_->IsBrowserTypePopup()) {
+    if (!avatar_button_.get())
+      return;
+  }
 
   if (browser_view_->IsGuestSession()) {
-    avatar_button_->SetAvatarIcon(
-        gfx::Image(new SkBitmap(browser_view_->GetGuestAvatarIcon())), false);
+    const gfx::Image avatar(new SkBitmap(browser_view_->GetGuestAvatarIcon()));
+    if (avatar_button_.get())
+      avatar_button_->SetAvatarIcon(avatar, false);
+    DrawTaskBarDecoration(frame_->GetNativeWindow(), &avatar);
   } else if (browser_view_->IsOffTheRecord()) {
-    avatar_button_->SetAvatarIcon(
-        gfx::Image(new SkBitmap(browser_view_->GetOTRAvatarIcon())), false);
+    const gfx::Image avatar(new SkBitmap(browser_view_->GetOTRAvatarIcon()));
+    if (avatar_button_.get())
+      avatar_button_->SetAvatarIcon(avatar, false);
+    DrawTaskBarDecoration(frame_->GetNativeWindow(), &avatar);
   } else {
     ProfileInfoCache& cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -53,9 +61,22 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
       bool is_gaia_picture =
           cache.IsUsingGAIAPictureOfProfileAtIndex(index) &&
           cache.GetGAIAPictureOfProfileAtIndex(index);
-      avatar_button_->SetAvatarIcon(
-          cache.GetAvatarIconOfProfileAtIndex(index), is_gaia_picture);
-      avatar_button_->SetText(cache.GetNameOfProfileAtIndex(index));
+      const gfx::Image& avatar = cache.GetAvatarIconOfProfileAtIndex(index);
+      if (avatar_button_.get()) {
+        avatar_button_->SetAvatarIcon(avatar, is_gaia_picture);
+        avatar_button_->SetText(cache.GetNameOfProfileAtIndex(index));
+      }
+      DrawTaskBarDecoration(frame_->GetNativeWindow(), &avatar);
     }
   }
+}
+
+void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
+                                                  bool is_visible) {
+  if (!is_visible)
+    return;
+  // The first time UpdateAvatarInfo() is called the window is not visible so
+  // DrawTaskBarDecoration() has no effect. Therefore we need to call it again
+  // once the window is visible.
+  UpdateAvatarInfo();
 }

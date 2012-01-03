@@ -34,6 +34,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
 
+  // Overriden from views::View.
+  virtual void VisibilityChanged(views::View* starting_from,
+                                 bool is_visible) OVERRIDE;
+
  protected:
   BrowserView* browser_view() const { return browser_view_; }
   BrowserFrame* frame() const { return frame_; }

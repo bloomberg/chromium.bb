@@ -32,15 +32,13 @@ static inline int Round(double x) {
 // we bail out silently at any error condition.
 // See http://msdn.microsoft.com/en-us/library/dd391696(VS.85).aspx for
 // more information.
-void DrawTaskBarDecoration(const Browser* browser, const gfx::Image* image) {
+void DrawTaskBarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
 #if defined(OS_WIN) && !defined(USE_AURA)
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
-  BrowserWindow* bw = browser->window();
-  if (!bw)
-    return;
-  gfx::NativeWindow window = bw->GetNativeHandle();
-  if (!window)
+  // SetOverlayIcon does nothing if the window is not visible so testing
+  // here avoids all the wasted effort of the image resizing.
+  if (!::IsWindowVisible(window))
     return;
 
   base::win::ScopedComPtr<ITaskbarList3> taskbar;
@@ -85,7 +83,6 @@ AvatarMenuButton::AvatarMenuButton(Browser* browser, bool has_menu)
     : MenuButton(NULL, string16(), this, false),
       browser_(browser),
       has_menu_(has_menu),
-      set_taskbar_decoration_(false),
       is_gaia_picture_(false),
       old_height_(0) {
   // In RTL mode, the avatar icon should be looking the opposite direction.
@@ -93,11 +90,6 @@ AvatarMenuButton::AvatarMenuButton(Browser* browser, bool has_menu)
 }
 
 AvatarMenuButton::~AvatarMenuButton() {
-  // During destruction of the browser frame, we might not have a window
-  // so the taskbar button will be removed by windows anyway.
-  if (browser_->IsAttemptingToCloseBrowser())
-    return;
-  DrawTaskBarDecoration(browser_, NULL);
 }
 
 void AvatarMenuButton::OnPaint(gfx::Canvas* canvas) {
@@ -129,13 +121,6 @@ void AvatarMenuButton::OnPaint(gfx::Canvas* canvas) {
   int dst_y = Round((height() - dst_height) / 2.0);
   canvas->DrawBitmapInt(button_icon_, 0, 0, button_icon_.width(),
       button_icon_.height(), dst_x, dst_y, dst_width, dst_height, false);
-
-  if (set_taskbar_decoration_) {
-    // Drawing the taskbar decoration uses lanczos resizing so we really
-    // want to do it only once.
-    DrawTaskBarDecoration(browser_, icon_.get());
-    set_taskbar_decoration_ = false;
-  }
 }
 
 bool AvatarMenuButton::HitTest(const gfx::Point& point) const {
@@ -149,8 +134,6 @@ void AvatarMenuButton::SetAvatarIcon(const gfx::Image& icon,
   icon_.reset(new gfx::Image(icon));
   button_icon_ = SkBitmap();
   is_gaia_picture_ = is_gaia_picture;
-  // If the icon changes, we need to set the taskbar decoration again.
-  set_taskbar_decoration_ = true;
   SchedulePaint();
 }
 
