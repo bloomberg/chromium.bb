@@ -2174,6 +2174,9 @@ int main(int argc, char *argv[])
 
 	wl_display_run(display);
 
+	/* prevent further rendering while shutting down */
+	ec->state = WLSC_COMPOSITOR_SLEEPING;
+
 	if (xserver)
 		wlsc_xserver_destroy(ec);
 
