@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,12 @@
 #include "net/base/net_errors.h"
 
 namespace appcache {
+
+// TODO(ajwong): Change disk_cache's API to return results via Callback.
+struct AppCacheDiskCache::CreateBackendDataShim {
+  CreateBackendDataShim() : backend(NULL) {}
+  disk_cache::Backend* backend;
+};
 
 // An implementation of AppCacheDiskCacheInterface::Entry that's a thin
 // wrapper around disk_cache::Entry.
@@ -123,10 +129,9 @@ AppCacheDiskCache::AppCacheDiskCache()
 }
 
 AppCacheDiskCache::~AppCacheDiskCache() {
-  if (create_backend_callback_) {
-    create_backend_callback_->Cancel();
-    create_backend_callback_.release();
-    OnCreateBackendComplete(net::ERR_ABORTED);
+  if (!create_backend_callback_.IsCancelled()) {
+    create_backend_callback_.Cancel();
+    OnCreateBackendComplete(NULL, net::ERR_ABORTED);
   }
   disk_cache_.reset();
   STLDeleteElements(&active_calls_);
@@ -152,10 +157,9 @@ void AppCacheDiskCache::Disable() {
 
   is_disabled_ = true;
 
-  if (create_backend_callback_) {
-    create_backend_callback_->Cancel();
-    create_backend_callback_.release();
-    OnCreateBackendComplete(net::ERR_ABORTED);
+  if (!create_backend_callback_.IsCancelled()) {
+    create_backend_callback_.Cancel();
+    OnCreateBackendComplete(NULL, net::ERR_ABORTED);
   }
 }
 
@@ -221,26 +225,31 @@ int AppCacheDiskCache::Init(net::CacheType cache_type,
                             const net::CompletionCallback& callback) {
   DCHECK(!is_initializing() && !disk_cache_.get());
   is_disabled_ = false;
-  create_backend_callback_ = new CreateBackendCallback(
-      this, &AppCacheDiskCache::OnCreateBackendComplete);
 
+  // TODO(ajwong): Change disk_cache's API to return results via Callback.
+  disk_cache::Backend** backend_ptr = new(disk_cache::Backend*);
+  create_backend_callback_.Reset(
+      base::Bind(&AppCacheDiskCache::OnCreateBackendComplete,
+                 base::Unretained(this), base::Owned(backend_ptr)));
   int rv = disk_cache::CreateCacheBackend(
       cache_type, cache_directory, cache_size, force, cache_thread, NULL,
-      &(create_backend_callback_->backend_ptr_),
-      base::Bind(&net::OldCompletionCallbackAdapter, create_backend_callback_));
+      backend_ptr, create_backend_callback_.callback());
   if (rv == net::ERR_IO_PENDING)
     init_callback_ = callback;
   else
-    OnCreateBackendComplete(rv);
+    OnCreateBackendComplete(backend_ptr, rv);
+
   return rv;
 }
 
-void AppCacheDiskCache::OnCreateBackendComplete(int rv) {
+void AppCacheDiskCache::OnCreateBackendComplete(
+    disk_cache::Backend** backend, int rv) {
   if (rv == net::OK) {
-    disk_cache_.reset(create_backend_callback_->backend_ptr_);
-    create_backend_callback_->backend_ptr_ = NULL;
+    DCHECK(backend);
+    disk_cache_.reset(*backend);
   }
-  create_backend_callback_ = NULL;
+
+  create_backend_callback_.Cancel();
 
   // Invoke our clients callback function.
   if (!init_callback_.is_null()) {

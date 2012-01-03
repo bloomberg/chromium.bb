@@ -1,10 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/appcache/appcache_response.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/pickle.h"
@@ -137,13 +139,13 @@ void AppCacheResponseIO::OnRawIOComplete(int result) {
 AppCacheResponseReader::AppCacheResponseReader(
     int64 response_id, int64 group_id, AppCacheDiskCacheInterface* disk_cache)
     : AppCacheResponseIO(response_id, group_id, disk_cache),
-      range_offset_(0), range_length_(kint32max),
-      read_position_(0) {
+      range_offset_(0),
+      range_length_(kint32max),
+      read_position_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 AppCacheResponseReader::~AppCacheResponseReader() {
-  if (open_callback_)
-    open_callback_.release()->Cancel();
 }
 
 void AppCacheResponseReader::ReadInfo(HttpResponseInfoIOBuffer* info_buf,
@@ -240,31 +242,33 @@ void AppCacheResponseReader::OnIOComplete(int result) {
 
 void AppCacheResponseReader::OpenEntryIfNeededAndContinue() {
   int rv;
+  AppCacheDiskCacheInterface::Entry** entry_ptr = NULL;
   if (entry_) {
     rv = net::OK;
   } else if (!disk_cache_) {
     rv = net::ERR_FAILED;
   } else {
-    open_callback_ = new EntryCallback<AppCacheResponseReader>(
-        this, &AppCacheResponseReader::OnOpenEntryComplete);
-    rv = disk_cache_->OpenEntry(
-        response_id_, &open_callback_->entry_ptr_,
-        base::Bind(&net::OldCompletionCallbackAdapter, open_callback_));
+    entry_ptr = new(AppCacheDiskCacheInterface::Entry*);
+    open_callback_ =
+        base::Bind(&AppCacheResponseReader::OnOpenEntryComplete,
+                   weak_factory_.GetWeakPtr(), base::Owned(entry_ptr));
+    rv = disk_cache_->OpenEntry(response_id_, entry_ptr, open_callback_);
   }
 
   if (rv != net::ERR_IO_PENDING)
-    OnOpenEntryComplete(rv);
+    OnOpenEntryComplete(entry_ptr, rv);
 }
 
-void AppCacheResponseReader::OnOpenEntryComplete(int rv) {
+void AppCacheResponseReader::OnOpenEntryComplete(
+    AppCacheDiskCacheInterface::Entry** entry, int rv) {
   DCHECK(info_buffer_.get() || buffer_.get());
 
-  if (open_callback_) {
+  if (!open_callback_.is_null()) {
     if (rv == net::OK) {
-      entry_ = open_callback_->entry_ptr_;
-      open_callback_->entry_ptr_ = NULL;
+      DCHECK(entry);
+      entry_ = *entry;
     }
-    open_callback_ = NULL;
+    open_callback_.Reset();
   }
 
   if (info_buffer_)
@@ -278,13 +282,14 @@ void AppCacheResponseReader::OnOpenEntryComplete(int rv) {
 AppCacheResponseWriter::AppCacheResponseWriter(
     int64 response_id, int64 group_id, AppCacheDiskCacheInterface* disk_cache)
     : AppCacheResponseIO(response_id, group_id, disk_cache),
-      info_size_(0), write_position_(0), write_amount_(0),
-      creation_phase_(INITIAL_ATTEMPT) {
+      info_size_(0),
+      write_position_(0),
+      write_amount_(0),
+      creation_phase_(INITIAL_ATTEMPT),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 AppCacheResponseWriter::~AppCacheResponseWriter() {
-  if (create_callback_)
-    create_callback_.release()->Cancel();
 }
 
 void AppCacheResponseWriter::WriteInfo(
@@ -354,6 +359,7 @@ void AppCacheResponseWriter::OnIOComplete(int result) {
 
 void AppCacheResponseWriter::CreateEntryIfNeededAndContinue() {
   int rv;
+  AppCacheDiskCacheInterface::Entry** entry_ptr = NULL;
   if (entry_) {
     creation_phase_ = NO_ATTEMPT;
     rv = net::OK;
@@ -362,46 +368,48 @@ void AppCacheResponseWriter::CreateEntryIfNeededAndContinue() {
     rv = net::ERR_FAILED;
   } else {
     creation_phase_ = INITIAL_ATTEMPT;
-    create_callback_ = new EntryCallback<AppCacheResponseWriter>(
-        this, &AppCacheResponseWriter::OnCreateEntryComplete);
-    rv = disk_cache_->CreateEntry(
-        response_id_, &create_callback_->entry_ptr_,
-        base::Bind(&net::OldCompletionCallbackAdapter, create_callback_));
+    entry_ptr = new(AppCacheDiskCacheInterface::Entry*);
+    create_callback_ =
+        base::Bind(&AppCacheResponseWriter::OnCreateEntryComplete,
+                   base::Unretained(this), base::Owned(entry_ptr));
+    rv = disk_cache_->CreateEntry(response_id_, entry_ptr, create_callback_);
   }
   if (rv != net::ERR_IO_PENDING)
-    OnCreateEntryComplete(rv);
+    OnCreateEntryComplete(entry_ptr, rv);
 }
 
-void AppCacheResponseWriter::OnCreateEntryComplete(int rv) {
+void AppCacheResponseWriter::OnCreateEntryComplete(
+    AppCacheDiskCacheInterface::Entry** entry, int rv) {
   DCHECK(info_buffer_.get() || buffer_.get());
+
+  AppCacheDiskCacheInterface::Entry** entry_ptr = NULL;
 
   if (creation_phase_ == INITIAL_ATTEMPT) {
     if (rv != net::OK) {
       // We may try to overwrite existing entries.
       creation_phase_ = DOOM_EXISTING;
-      rv = disk_cache_->DoomEntry(
-          response_id_, base::Bind(&net::OldCompletionCallbackAdapter,
-                                   create_callback_));
+      rv = disk_cache_->DoomEntry(response_id_, create_callback_);
       if (rv != net::ERR_IO_PENDING)
-        OnCreateEntryComplete(rv);
+        OnCreateEntryComplete(NULL, rv);
       return;
     }
   } else if (creation_phase_ == DOOM_EXISTING) {
     creation_phase_ = SECOND_ATTEMPT;
-    rv = disk_cache_->CreateEntry(
-        response_id_, &create_callback_->entry_ptr_,
-        base::Bind(&net::OldCompletionCallbackAdapter, create_callback_));
+    entry_ptr = new(AppCacheDiskCacheInterface::Entry*);
+    create_callback_ =
+        base::Bind(&AppCacheResponseWriter::OnCreateEntryComplete,
+                   base::Unretained(this), base::Owned(entry_ptr));
+    rv = disk_cache_->CreateEntry(response_id_, entry_ptr, create_callback_);
     if (rv != net::ERR_IO_PENDING)
-      OnCreateEntryComplete(rv);
+      OnCreateEntryComplete(entry_ptr, rv);
     return;
   }
 
-  if (create_callback_) {
-    if (rv == net::OK) {
-      entry_ = create_callback_->entry_ptr_;
-      create_callback_->entry_ptr_ = NULL;
-    }
-    create_callback_ = NULL;
+  if (!create_callback_.is_null()) {
+    if (rv == net::OK)
+      entry_ = *entry;
+
+    create_callback_.Reset();
   }
 
   if (info_buffer_)

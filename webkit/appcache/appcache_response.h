@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,21 +100,6 @@ class APPCACHE_EXPORT AppCacheResponseIO {
   int64 response_id() const { return response_id_; }
 
  protected:
-  template <class T>
-  class EntryCallback : public net::CancelableOldCompletionCallback<T> {
-   public:
-    typedef net::CancelableOldCompletionCallback<T> BaseClass;
-    EntryCallback(T* object,  void (T::* method)(int))
-        : BaseClass(object, method), entry_ptr_(NULL) {}
-
-    AppCacheDiskCacheInterface::Entry* entry_ptr_;  // Accessed directly.
-   private:
-    ~EntryCallback() {
-      if (entry_ptr_)
-        entry_ptr_->Close();
-    }
-  };
-
   AppCacheResponseIO(int64 response_id,
                      int64 group_id,
                      AppCacheDiskCacheInterface* disk_cache);
@@ -194,12 +179,13 @@ class APPCACHE_EXPORT AppCacheResponseReader : public AppCacheResponseIO {
   void ContinueReadInfo();
   void ContinueReadData();
   void OpenEntryIfNeededAndContinue();
-  void OnOpenEntryComplete(int rv);
+  void OnOpenEntryComplete(AppCacheDiskCacheInterface::Entry** entry, int rv);
 
   int range_offset_;
   int range_length_;
   int read_position_;
-  scoped_refptr<EntryCallback<AppCacheResponseReader> > open_callback_;
+  net::CompletionCallback open_callback_;
+  base::WeakPtrFactory<AppCacheResponseReader> weak_factory_;
 };
 
 // Writes new response data to storage. If the object is deleted
@@ -257,13 +243,14 @@ class APPCACHE_EXPORT AppCacheResponseWriter : public AppCacheResponseIO {
   void ContinueWriteInfo();
   void ContinueWriteData();
   void CreateEntryIfNeededAndContinue();
-  void OnCreateEntryComplete(int rv);
+  void OnCreateEntryComplete(AppCacheDiskCacheInterface::Entry** entry, int rv);
 
   int info_size_;
   int write_position_;
   int write_amount_;
   CreationPhase creation_phase_;
-  scoped_refptr<EntryCallback<AppCacheResponseWriter> > create_callback_;
+  net::CompletionCallback create_callback_;
+  base::WeakPtrFactory<AppCacheResponseWriter> weak_factory_;
 };
 
 }  // namespace appcache
