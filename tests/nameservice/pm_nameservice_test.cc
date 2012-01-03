@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -21,10 +21,10 @@
 #include <unistd.h>
 
 #include "native_client/src/include/nacl_scoped_ptr.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/untrusted/nacl_ppapi_util/nacl_ppapi_util.h"
 #include "native_client/src/untrusted/nacl_ppapi_util/string_buffer.h"
 
-#include <nacl/nacl_srpc.h>
 #include <sys/nacl_syscalls.h>
 #include <sys/nacl_name_service.h>
 

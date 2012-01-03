@@ -1,17 +1,12 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
-
 
 // NaCl inter-module communication primitives.
 
-#ifdef __native_client__
-#include <nacl/nacl_imc.h>
-#else
 #include "native_client/src/shared/imc/nacl_imc.h"
-#endif  // __native_client__
 
 #include <errno.h>
 #include <stdio.h>

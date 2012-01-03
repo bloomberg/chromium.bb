@@ -1,12 +1,11 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/untrusted/nacl_ppapi_util/ppapi_srpc_main.h"
-
-#include <nacl/nacl_srpc.h>
 
 /*
  * Here be dragons.  Beware.

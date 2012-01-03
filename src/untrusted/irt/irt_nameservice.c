@@ -1,17 +1,18 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
 #include <errno.h>
 #include <fcntl.h>
-#include <nacl/nacl_srpc.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/nacl_name_service.h>
 #include <sys/nacl_syscalls.h>
+
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 
 
 /*

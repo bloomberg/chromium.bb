@@ -1,6 +1,7 @@
-/* Copyright 2010 The Native Client SDK Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+/*
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* This file provides wrappers to open(2), read(2), etc. that read bytes from
@@ -32,7 +33,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <pthread.h>
-#include <nacl/nacl_srpc.h>
+
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 
 #define MAX_NACL_FILES  256
 

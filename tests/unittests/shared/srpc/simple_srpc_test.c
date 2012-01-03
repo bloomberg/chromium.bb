@@ -1,20 +1,18 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-#ifdef __native_client__
-#include <nacl/nacl_imc_c.h>
-#include <nacl/nacl_srpc.h>
-#include <nacl/nacl_threads.h>
-#else
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/platform/nacl_threads.h"
+
+#if !defined(__native_client__)
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
-#include "native_client/src/shared/platform/nacl_threads.h"
 #endif
+
 
 #define TEST_NUM 42
 

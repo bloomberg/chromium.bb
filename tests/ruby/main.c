@@ -1,10 +1,14 @@
-/* Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file. */
+/*
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 
 #include <stdio.h>
 #include <string.h>
-#include <nacl/nacl_srpc.h>
+
+#include "native_client/src/shared/srpc/nacl_srpc.h"
+
 #include "ruby-1.8.6-p368/ruby.h"
 
 int initialized = 0;

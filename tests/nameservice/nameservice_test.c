@@ -1,23 +1,21 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
 #include <sys/fcntl.h>
-#include <nacl/nacl_inttypes.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/nacl_syscalls.h>
-#if 0  /* swap after SDK update */
-#include <sys/nacl_name_service.h>
-#else
+
+#include "native_client/src/include/nacl/nacl_inttypes.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
-#endif
-#include <nacl/nacl_srpc.h>
 
 #define RNG_OUTPUT_BYTES  1024
 

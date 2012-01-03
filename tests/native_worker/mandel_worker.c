@@ -1,13 +1,12 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
  * Simple demo for nacl native web worker, tiled mandelbrot set
  */
-
 
 #include <errno.h>
 #include <stdlib.h>
@@ -17,7 +16,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <nacl/nacl_srpc.h>
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 
 static NaClSrpcChannel upcall_channel;
 static int worker_upcall_desc = -1;

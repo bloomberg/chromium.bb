@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -23,6 +23,7 @@
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_sync_raii.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 
 // TODO(bsy): move weak_ref module to the shared directory
 #include "native_client/src/trusted/weak_ref/weak_ref.h"
@@ -31,7 +32,6 @@
 #include "native_client/src/untrusted/nacl_ppapi_util/nacl_ppapi_util.h"
 #include "native_client/src/untrusted/nacl_ppapi_util/string_buffer.h"
 
-#include <nacl/nacl_srpc.h>
 #include <sys/nacl_syscalls.h>
 #include <sys/nacl_name_service.h>
 

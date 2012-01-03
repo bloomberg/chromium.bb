@@ -1,7 +1,7 @@
 /*
- * Copyright 2009  The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -12,7 +12,7 @@
 #include <time.h>
 #include <sys/nacl_syscalls.h>
 
-#include <nacl/nacl_inttypes.h>
+#include "native_client/src/include/nacl/nacl_inttypes.h"
 
 /*
  * The mocking of gettimeofday is only useful for testing the libc

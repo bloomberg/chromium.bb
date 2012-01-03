@@ -1,9 +1,8 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
-
 
 /*
  * NativeClient client side of a test for passing socket addresses.  The
@@ -16,13 +15,14 @@
  */
 
 #include <errno.h>
-#include <nacl/nacl_srpc.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/nacl_syscalls.h>
 #include <unistd.h>
+
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 
 /* Flag used to record errors. */
 /* It is returned to the JavaScript bridge through the report method. */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -13,19 +13,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#ifdef __native_client__
-#include <inttypes.h>
-#include <nacl/nacl_inttypes.h>
-#define NACL_ABI_EIO EIO
-#define NACL_ABI_EINVAL EINVAL
-#else
+
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
-#endif
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 #include "native_client/src/shared/srpc/nacl_srpc_message.h"
+
+#ifdef __native_client__
+#define NACL_ABI_EIO EIO
+#define NACL_ABI_EINVAL EINVAL
+#else
+#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
+#endif
 
 #ifndef SIZE_T_MAX
 # define SIZE_T_MAX (~((size_t) 0))
