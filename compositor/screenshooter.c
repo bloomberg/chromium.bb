@@ -28,6 +28,7 @@
 struct screenshooter {
 	struct wl_object base;
 	struct wlsc_compositor *ec;
+	struct wl_global *global;
 };
 
 static void
@@ -64,20 +65,30 @@ bind_shooter(struct wl_client *client,
 			     &screenshooter_implementation, id, data);
 }
 
-void
+struct screenshooter *
 screenshooter_create(struct wlsc_compositor *ec)
 {
 	struct screenshooter *shooter;
 
 	shooter = malloc(sizeof *shooter);
 	if (shooter == NULL)
-		return;
+		return NULL;
 
 	shooter->base.interface = &screenshooter_interface;
 	shooter->base.implementation =
 		(void(**)(void)) &screenshooter_implementation;
 	shooter->ec = ec;
 
-	wl_display_add_global(ec->wl_display,
-			      &screenshooter_interface, shooter, bind_shooter);
-};
+	shooter->global = wl_display_add_global(ec->wl_display,
+						&screenshooter_interface,
+						shooter, bind_shooter);
+
+	return shooter;
+}
+
+void
+screenshooter_destroy(struct screenshooter *shooter)
+{
+	wl_display_remove_global(shooter->ec->wl_display, shooter->global);
+	free(shooter);
+}

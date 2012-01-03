@@ -169,6 +169,8 @@ enum {
 	WLSC_COMPOSITOR_SLEEPING	/* no rendering, no frame events */
 };
 
+struct screenshooter;
+
 struct wlsc_compositor {
 	struct wl_shm *shm;
 	struct wlsc_xserver *wxs;
@@ -225,6 +227,8 @@ struct wlsc_compositor {
 	int (*authenticate)(struct wlsc_compositor *c, uint32_t id);
 	EGLImageKHR (*create_cursor_image)(struct wlsc_compositor *c,
 					   int32_t *width, int32_t *height);
+
+	struct screenshooter *screenshooter;
 };
 
 #define MODIFIER_CTRL	(1 << 8)
@@ -426,8 +430,11 @@ tty_create(struct wlsc_compositor *compositor, tty_vt_func_t vt_func,
 void
 tty_destroy(struct tty *tty);
 
-void
+struct screenshooter *
 screenshooter_create(struct wlsc_compositor *ec);
+
+void
+screenshooter_destroy(struct screenshooter *shooter);
 
 uint32_t *
 wlsc_load_image(const char *filename,

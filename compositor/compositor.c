@@ -2006,7 +2006,7 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	ec->fade.animation.frame = fade_frame;
 	wl_list_init(&ec->fade.animation.link);
 
-	screenshooter_create(ec);
+	ec->screenshooter = screenshooter_create(ec);
 
 	wlsc_data_device_manager_init(ec);
 
@@ -2035,6 +2035,9 @@ wlsc_compositor_shutdown(struct wlsc_compositor *ec)
 	struct wlsc_output *output, *next;
 
 	wl_event_source_remove(ec->idle_source);
+
+	if (ec->screenshooter)
+		screenshooter_destroy(ec->screenshooter);
 
 	/* Destroy all outputs associated with this compositor */
 	wl_list_for_each_safe(output, next, &ec->output_list, link)
