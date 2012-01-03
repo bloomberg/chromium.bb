@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -130,12 +130,6 @@ class NaClTest(pyauto.PyUITest):
   def disabledTestReloadGLESBookTextureWrap(self):
     self.reloader('ppapi_gles_book.html?manifest='
                   'ppapi_gles_book_texture_wrap.nmf', 'PPAPI')
-
-  def testReloadEarthC(self):
-    self.reloader('earth_c.html', 'Globe')
-
-  def testReloadEarthCC(self):
-    self.reloader('earth_cc.html', 'Globe')
 
   def testReloadProgressEvents(self):
     self.reloader('ppapi_progress_events.html', 'PPAPI')

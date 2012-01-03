@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,9 +11,7 @@ import random
 class NaClTest(pyauto.PyUITest):
   """Tests for NaCl."""
   # (test.html, number of nexes loaded concurrently on page)
-  nexes = [('earth_c.html', 1),
-           ('earth_cc.html', 1),
-           ('ppapi_example_audio.html#mute', 1),
+  nexes = [('ppapi_example_audio.html#mute', 1),
            ('ppapi_example_font.html', 1),
            # TODO(cstefansen): enable test when bug is fixed
            # http://code.google.com/p/nativeclient/issues/detail?id=1936

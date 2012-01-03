@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -119,12 +119,6 @@ class NaClTest(pyauto.PyUITest):
   def disabledTestSurfAwayAsyncGLESBookTextureWrap(self):
     self.surfAwayAsync('ppapi_gles_book.html?manifest='
                        'ppapi_gles_book_texture_wrap.nmf', 'PPAPI')
-
-  def testSurfAwayAsyncEarthC(self):
-    self.surfAwayAsync('earth_c.html', 'Globe')
-
-  def testSurfAwayAsyncEarthCC(self):
-    self.surfAwayAsync('earth_cc.html', 'Globe')
 
   def testSurfAwayAsyncProgressEvents(self):
     self.surfAwayAsync('ppapi_progress_events.html', 'PPAPI')
