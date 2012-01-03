@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,8 @@ static CGContextRef CGContextForData(void* data, int width, int height) {
 BitmapPlatformDevice::BitmapPlatformDeviceData::BitmapPlatformDeviceData(
     CGContextRef bitmap)
     : bitmap_context_(bitmap),
-      config_dirty_(true) {  // Want to load the config next time.
+      config_dirty_(true),  // Want to load the config next time.
+      transform_(SkMatrix::I()) {
   SkASSERT(bitmap_context_);
   // Initialize the clip region to the entire bitmap.
 
@@ -62,7 +63,6 @@ BitmapPlatformDevice::BitmapPlatformDeviceData::BitmapPlatformDeviceData(
            CGBitmapContextGetWidth(bitmap_context_),
            CGBitmapContextGetHeight(bitmap_context_));
   clip_region_ = SkRegion(rect);
-  transform_.reset();
   CGContextRetain(bitmap_context_);
   // We must save the state once so that we can use the restore/save trick
   // in LoadConfig().

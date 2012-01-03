@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,8 @@ BitmapPlatformDevice::BitmapPlatformDeviceData::BitmapPlatformDeviceData(
     HBITMAP hbitmap)
     : bitmap_context_(hbitmap),
       hdc_(NULL),
-      config_dirty_(true) {  // Want to load the config next time.
+      config_dirty_(true),  // Want to load the config next time.
+      transform_(SkMatrix::I()) {
   // Initialize the clip region to the entire bitmap.
   BITMAP bitmap_data;
   if (GetObject(bitmap_context_, sizeof(BITMAP), &bitmap_data)) {
@@ -27,8 +28,6 @@ BitmapPlatformDevice::BitmapPlatformDeviceData::BitmapPlatformDeviceData(
     rect.set(0, 0, bitmap_data.bmWidth, bitmap_data.bmHeight);
     clip_region_ = SkRegion(rect);
   }
-
-  transform_.reset();
 }
 
 BitmapPlatformDevice::BitmapPlatformDeviceData::~BitmapPlatformDeviceData() {

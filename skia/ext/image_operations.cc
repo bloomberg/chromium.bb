@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,10 +99,6 @@ class ResizeFilter {
                int dest_width, int dest_height,
                const SkIRect& dest_subset);
 
-  // Returns the bounds in the input bitmap of data that is used in the output.
-  // The filter offsets are within this rectangle.
-  const SkIRect& src_depend() { return src_depend_; }
-
   // Returns the filled filter values.
   const ConvolutionFilter1D& x_filter() { return x_filter_; }
   const ConvolutionFilter1D& y_filter() { return y_filter_; }
@@ -166,9 +162,6 @@ class ResizeFilter {
   }
 
   ImageOperations::ResizeMethod method_;
-
-  // Subset of source the filters will touch.
-  SkIRect src_depend_;
 
   // Size of the filter support on one side only in the destination space.
   // See GetFilterSupport.
@@ -437,9 +430,6 @@ SkBitmap ImageOperations::ResizeSubpixel(const SkBitmap& source,
               g = SkGetPackedG32(src[1 * row_words]);
               b = SkGetPackedB32(src[2 * row_words]);
               a = SkGetPackedA32(src[1 * row_words]);
-              break;
-            default:
-              NOTREACHED();
               break;
           }
           break;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -185,7 +185,6 @@ bool PlatformDevice::SkPathToCubicPaths(CubicPaths* paths,
         current_path = &paths->back();
         continue;
       }
-      case SkPath::kDone_Verb:  // iter.next returns 0 points
       default: {
         current_path = NULL;
         // Will return false.
