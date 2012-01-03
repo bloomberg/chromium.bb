@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,9 +35,6 @@ TabModalConfirmDialogDelegate::~TabModalConfirmDialogDelegate() {
 void TabModalConfirmDialogDelegate::Cancel() {
   if (closing_)
     return;
-  // Make sure we won't do anything when |Cancel()| or |Accept()| is called
-  // again.
-  closing_ = true;
   OnCanceled();
   CloseDialog();
 }
@@ -45,9 +42,6 @@ void TabModalConfirmDialogDelegate::Cancel() {
 void TabModalConfirmDialogDelegate::Accept() {
   if (closing_)
     return;
-  // Make sure we won't do anything when |Cancel()| or |Accept()| is called
-  // again.
-  closing_ = true;
   OnAccepted();
   CloseDialog();
 }
@@ -94,6 +88,8 @@ void TabModalConfirmDialogDelegate::OnCanceled() {
 }
 
 void TabModalConfirmDialogDelegate::CloseDialog() {
+  // Make sure we won't do anything when |Cancel()| is called again.
+  closing_ = true;
   if (window_)
     window_->CloseConstrainedWindow();
 }
