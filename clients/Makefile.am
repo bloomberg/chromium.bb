@@ -75,10 +75,13 @@ resizor_LDADD = $(toolkit_libs)
 
 wscreensaver_SOURCES =				\
 	wscreensaver.c				\
+	wscreensaver.h				\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
 	wscreensaver-glue.c			\
-	glmatrix.c
+	wscreensaver-glue.h			\
+	glmatrix.c				\
+	matrix3.xpm
 wscreensaver_LDADD = $(toolkit_libs) -lGLU
 
 eventdemo_SOURCES = eventdemo.c

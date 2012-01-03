@@ -93,7 +93,6 @@ tablet_shell_la_LIBADD = $(COMPOSITOR_LIBS)
 tablet_shell_la_CFLAGS = $(GCC_CFLAGS)
 tablet_shell_la_SOURCES =			\
 	tablet-shell.c				\
-	tablet-shell.h				\
 	tablet-shell-protocol.c			\
 	tablet-shell-server-protocol.h
 endif

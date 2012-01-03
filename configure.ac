@@ -143,5 +143,6 @@ AC_CONFIG_FILES([Makefile
 		 shared/Makefile
 		 src/Makefile
 		 clients/Makefile
-		 data/Makefile])
+		 data/Makefile
+		 protocol/Makefile])
 AC_OUTPUT

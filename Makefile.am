@@ -1,1 +1,1 @@
-SUBDIRS = shared src clients data
+SUBDIRS = shared src clients data protocol
