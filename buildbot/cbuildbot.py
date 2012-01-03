@@ -138,50 +138,33 @@ def _IsIncrementalBuild(buildroot, clobber):
   return not clobber and os.path.isdir(repo_dir)
 
 
-def _RunSudoNoOp():
-  """Run sudo with a noop, to reset the sudo timestamp."""
-  # This resets the normal terminal-bound sudo.
-  proc = subprocess.Popen(['sudo', 'true', 'keepalive'], stdout=subprocess.PIPE,
-      shell=False)
-  proc.communicate()
-  # This resets the terminal-less sudo. This is achieved by replacing all of
-  # stdin,stdout,stderr with a PIPE, as that is what sudo uses to determine tty.
-  # Without a tty, the timestamp will belong to a special /dev/null sudo. See
-  # crosbug.com/18393 for details.
-  proc = subprocess.Popen(['sudo', 'true', 'keepalive'], stdin=subprocess.PIPE,
-      stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
-  proc.communicate(input='')
-
-
-def _RunSudoPeriodically(queue):
-  """Runs inside of a separate process.  Periodically runs sudo.
-
-  Put anything in the queue to signal the process to quit.
-  """
-  SUDO_INTERVAL_MINUTES = 5
-  while True:
-    print ('Trybot background sudo keep-alive process is running.  Run '
-           "'kill -9 %s' to terminate." % str(os.getpid()))
-    _RunSudoNoOp()
-    try:
-      # End the process if we get an exit signal
-      queue.get(True, SUDO_INTERVAL_MINUTES * 60)
-      break
-    except Queue.Empty:
-      pass
-
-
-def _LaunchSudoKeepAliveProcess():
-  """Start the background process that avoids the 15 min sudo timeout.
-
+def _RunSudoNoOp(repeat_interval=0):
+  """Run sudo with a noop, to reset the sudo timestamp.
+  Args:
+   repeat_interval: in minutes, the frequency to run the update
+                    if zero, runs once and returns
   Returns:
-    A multiprocessing.Queue that can be used to stop the process.  Stop
-    the process by putting anything in the queue.
+   if repeat_interval is 0, None, else a subprocess.Popen instance.
+   invoker is responsible for invoking terminate to shut down the
+   update.
   """
-  queue = multiprocessing.Queue()
-  p = multiprocessing.Process(target=_RunSudoPeriodically, args=(queue,))
-  p.start()
-  return queue
+
+  # This refreshs the sudo auth cookie; this is implemented this
+  # way to ensure that sudo has access to both invoking tty, and
+  # will update the user's tty-less cookie.
+  # see crosbug/18393.
+
+  cmd = 'sudo true;sudo true < /dev/null > /dev/null 2>&1'
+  repeat_interval *= 60
+  if repeat_interval:
+    cmd = 'while sleep %i; do %s; done' % (repeat_interval, cmd)
+
+  proc = subprocess.Popen([cmd], shell=True, close_fds=True)
+  if not repeat_interval:
+    proc.communicate()
+    return
+
+  return proc
 
 
 class Builder(object):
@@ -546,19 +529,20 @@ def _RunBuildStagesWrapper(bot_id, options, build_config):
     tee_proc.stop()
 
 
-def _RunBuildStagesWithSudoProcess(bot_id, options, build_config):
+def _RunBuildStagesWithSudoProcess(bot_id, options, build_config,
+  sudo_interval=4):
   """Starts sudo process before running build stages, and manages cleanup."""
   # Reset sudo timestamp
   cros_lib.Info('Launching sudo keepalive process. '
                 'This may ask for password twice.')
-  _RunSudoNoOp()
-  sudo_queue = _LaunchSudoKeepAliveProcess()
+
+  sudo_process = _RunSudoNoOp(sudo_interval)
 
   try:
     _RunBuildStagesWrapper(bot_id, options, build_config)
   finally:
     # Pass the stop message to the sudo process.
-    sudo_queue.put(object())
+    sudo_process.terminate()
 
 
 # Parser related functions
