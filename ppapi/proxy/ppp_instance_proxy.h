@@ -19,6 +19,9 @@
 struct PP_Rect;
 
 namespace ppapi {
+
+struct ViewData;
+
 namespace proxy {
 
 class PPP_Instance_Proxy : public InterfaceProxy {
@@ -26,8 +29,7 @@ class PPP_Instance_Proxy : public InterfaceProxy {
   explicit PPP_Instance_Proxy(Dispatcher* dispatcher);
   virtual ~PPP_Instance_Proxy();
 
-  // Return the info for the 1.0 (latest, canonical) version of the interface.
-  static const Info* GetInfo1_0();
+  static const PPP_Instance* GetInstanceInterface();
 
   PPP_Instance_Combined* ppp_instance_target() const {
     return combined_interface_.get();
@@ -38,20 +40,18 @@ class PPP_Instance_Proxy : public InterfaceProxy {
 
  private:
   // Message handlers.
-  void OnMsgDidCreate(PP_Instance instance,
-                      const std::vector<std::string>& argn,
-                      const std::vector<std::string>& argv,
-                      PP_Bool* result);
-  void OnMsgDidDestroy(PP_Instance instance);
-  void OnMsgDidChangeView(PP_Instance instance,
-                          const PP_Rect& position,
-                          const PP_Rect& clip,
-                          PP_Bool fullscreen,
-                          PP_Bool flash_fullscreen);
-  void OnMsgDidChangeFocus(PP_Instance instance, PP_Bool has_focus);
-  void OnMsgHandleDocumentLoad(PP_Instance instance,
-                               const HostResource& url_loader,
-                               PP_Bool* result);
+  void OnPluginMsgDidCreate(PP_Instance instance,
+                            const std::vector<std::string>& argn,
+                            const std::vector<std::string>& argv,
+                            PP_Bool* result);
+  void OnPluginMsgDidDestroy(PP_Instance instance);
+  void OnPluginMsgDidChangeView(PP_Instance instance,
+                                const ViewData& new_data,
+                                PP_Bool flash_fullscreen);
+  void OnPluginMsgDidChangeFocus(PP_Instance instance, PP_Bool has_focus);
+  void OnPluginMsgHandleDocumentLoad(PP_Instance instance,
+                                     const HostResource& url_loader,
+                                     PP_Bool* result);
   scoped_ptr<PPP_Instance_Combined> combined_interface_;
 };
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ppapi/c/ppb_fullscreen.h"
+#include "ppapi/shared_impl/ppb_view_shared.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_instance_api.h"
@@ -17,7 +18,10 @@ PP_Bool IsFullscreen(PP_Instance instance) {
   EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
   if (enter.failed())
     return PP_FALSE;
-  return enter.functions()->IsFullscreen(instance);
+  const ViewData* view = enter.functions()->GetViewData(instance);
+  if (!view)
+    return PP_FALSE;
+  return PP_FromBool(view->is_fullscreen);
 }
 
 PP_Bool SetFullscreen(PP_Instance instance, PP_Bool fullscreen) {

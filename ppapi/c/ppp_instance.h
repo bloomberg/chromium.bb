@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_instance.idl modified Tue Aug 23 11:29:06 2011. */
+/* From ppp_instance.idl modified Thu Dec 15 10:30:21 2011. */
 
 #ifndef PPAPI_C_PPP_INSTANCE_H_
 #define PPAPI_C_PPP_INSTANCE_H_
@@ -18,7 +18,8 @@
 #include "ppapi/c/pp_stdint.h"
 
 #define PPP_INSTANCE_INTERFACE_1_0 "PPP_Instance;1.0"
-#define PPP_INSTANCE_INTERFACE PPP_INSTANCE_INTERFACE_1_0
+#define PPP_INSTANCE_INTERFACE_1_1 "PPP_Instance;1.1"
+#define PPP_INSTANCE_INTERFACE PPP_INSTANCE_INTERFACE_1_1
 
 /**
  * @file
@@ -111,41 +112,10 @@ struct PPP_Instance {
    */
   void (*DidDestroy)(PP_Instance instance);
   /**
-   * DidChangeView() is called when the position, the size, of the clip
-   * rectangle of the element in the browser that corresponds to this
-   * instance has changed.
-   *
-   * A typical implementation will check the size of the <code>position</code>
-   * argument and reallocate the graphics context when a different size is
-   * received. Note that this function will be called for scroll events where
-   * the size doesn't change, so you should always check that the size is
-   * actually different before doing any reallocations.
-   *
-   * @param[in] instance A <code>PP_Instance</code> identifying the instance
-   * that has changed.
-   *
-   * @param[in] position The location on the page of the instance. This is
-   * relative to the top left corner of the viewport, which changes as the
-   * page is scrolled. Generally the size of this value will be used to create
-   * a graphics device, and the position is ignored (most things are relative
-   * to the instance so the absolute position isn't useful in most cases).
-   *
-   * @param[in] clip The visible region of the instance. This is relative to
-   * the top left of the module's coordinate system (not the page).  If the
-   * module is invisible, <code>clip</code> will be (0, 0, 0, 0).
-   *
-   * It's recommended to check for invisible instances and to stop
-   * generating graphics updates in this case to save system resources. It's
-   * not usually worthwhile, however, to generate partial updates according to
-   * the clip when the instance is partially visible. Instead, update the entire
-   * region. The time saved doing partial paints is usually not significant and
-   * it can create artifacts when scrolling (this notification is sent
-   * asynchronously from scrolling so there can be flashes of old content in the
-   * exposed regions).
+   * <code>DidChangeView() is called when the position, size, or other view
+   * attributes of the instance has changed.
    */
-  void (*DidChangeView)(PP_Instance instance,
-                        const struct PP_Rect* position,
-                        const struct PP_Rect* clip);
+  void (*DidChangeView)(PP_Instance instance, PP_Resource view_resource);
   /**
    * DidChangeFocus() is called when an instance has gained or lost focus.
    * Having focus means that keyboard events will be sent to the instance.
@@ -195,12 +165,25 @@ struct PPP_Instance {
    */
   PP_Bool (*HandleDocumentLoad)(PP_Instance instance, PP_Resource url_loader);
 };
+
+struct PPP_Instance_1_0 {
+  PP_Bool (*DidCreate)(PP_Instance instance,
+                       uint32_t argc,
+                       const char* argn[],
+                       const char* argv[]);
+  void (*DidDestroy)(PP_Instance instance);
+  void (*DidChangeView)(PP_Instance instance,
+                        const struct PP_Rect* position,
+                        const struct PP_Rect* clip);
+  void (*DidChangeFocus)(PP_Instance instance, PP_Bool has_focus);
+  PP_Bool (*HandleDocumentLoad)(PP_Instance instance, PP_Resource url_loader);
+};
 /**
  * @}
  */
 
 
-typedef struct PPP_Instance PPP_Instance_1_0;
+typedef struct PPP_Instance PPP_Instance_1_1;
 
 #endif  /* PPAPI_C_PPP_INSTANCE_H_ */
 

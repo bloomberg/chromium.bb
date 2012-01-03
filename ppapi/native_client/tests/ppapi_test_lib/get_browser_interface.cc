@@ -27,6 +27,7 @@
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/c/ppb_view.h"
 
 #include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
 #include "native_client/tests/ppapi_test_lib/internal_utils.h"
@@ -171,6 +172,11 @@ const PPB_Testing_Dev* PPBTestingDev() {
   return  reinterpret_cast<const PPB_Testing_Dev*>(
       // Change to GetBrowserInterfaceSafe when moving out of dev.
       GetBrowserInterface(PPB_TESTING_DEV_INTERFACE));
+}
+
+const PPB_View* PPBView() {
+  return reinterpret_cast<const PPB_View*>(
+      GetBrowserInterface(PPB_VIEW_INTERFACE));
 }
 
 const PPB_Widget_Dev* PPBWidgetDev() {

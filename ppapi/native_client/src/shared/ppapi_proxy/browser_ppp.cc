@@ -164,6 +164,18 @@ const void* BrowserPpp::GetPluginInterface(const char* interface_name) {
               interface_name, NaClSrpcErrorString(srpc_result));
   is_nexe_alive_ = (srpc_result != NACL_SRPC_RESULT_INTERNAL);
 
+  // Special case PPP_Instance versioning. The plugin side of the proxy
+  // converts Instance 1.1 to Instance 1.0 as needed, so we want to say here
+  // in the browser side that any time either 1.0 or 1.1 is supported, that
+  // we'll support 1.1.
+  if (srpc_result == NACL_SRPC_RESULT_OK && !exports_interface_name &&
+      strcmp(interface_name, PPP_INSTANCE_INTERFACE_1_1) == 0) {
+    srpc_result =
+        PppRpcClient::PPP_GetInterface(main_channel_,
+                                       PPP_INSTANCE_INTERFACE_1_0,
+                                       &exports_interface_name);
+  }
+
   const void* ppp_interface = NULL;
   if (srpc_result != NACL_SRPC_RESULT_OK || !exports_interface_name) {
     ppp_interface = NULL;

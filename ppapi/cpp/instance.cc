@@ -17,6 +17,7 @@
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/view.h"
 
 namespace pp {
 
@@ -52,6 +53,11 @@ Instance::~Instance() {
 bool Instance::Init(uint32_t /*argc*/, const char* /*argn*/[],
                     const char* /*argv*/[]) {
   return true;
+}
+
+void Instance::DidChangeView(const View& view) {
+  // Call the deprecated version for source backwards-compat.
+  DidChangeView(view.GetRect(), view.GetClipRect());
 }
 
 void Instance::DidChangeView(const pp::Rect& /*position*/,

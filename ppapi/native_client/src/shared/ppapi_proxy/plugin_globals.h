@@ -20,6 +20,7 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp_mouse_lock.h"
+#include "native_client/src/shared/ppapi_proxy/ppp_instance_combined.h"
 #include "native_client/src/untrusted/irt/irt_ppapi.h"
 
 struct NaClSrpcChannel;
@@ -61,7 +62,7 @@ const void* GetPluginInterface(const char* interface_name);
 const void* GetPluginInterfaceSafe(const char* interface_name);
 const PPP_Find_Dev* PPPFindInterface();
 const PPP_InputEvent* PPPInputEventInterface();
-const PPP_Instance* PPPInstanceInterface();
+PPP_Instance_Combined* PPPInstanceInterface();
 const PPP_Messaging* PPPMessagingInterface();
 const PPP_MouseLock* PPPMouseLockInterface();
 const PPP_Printing_Dev* PPPPrintingInterface();

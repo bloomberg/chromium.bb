@@ -43,8 +43,6 @@ struct PPB_TCPSocket_Private;
 struct PPB_UDPSocket_Private;
 struct PPB_URLLoaderTrusted;
 
-typedef PPB_Instance PPB_Instance_1_0;
-
 namespace ppapi {
 namespace thunk {
 

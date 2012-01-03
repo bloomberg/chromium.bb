@@ -56,7 +56,9 @@
         'browser_upcall.cc',
         'input_event_data.cc',
         'object_serialize.cc',
+        'ppp_instance_combined.cc',
         'utility.cc',
+        'view_data.cc',
         # Autogerated files
         'ppp_rpc_client.cc',
         'ppb_rpc_server.cc',
@@ -70,5 +72,5 @@
         '<(DEPTH)/ppapi/ppapi.gyp:ppapi_c',
       ],
     },
-  ],   
+  ],
 }

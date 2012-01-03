@@ -31,6 +31,7 @@
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/view.h"
 
 static const int kStepsPerCircle = 800;
 
@@ -166,8 +167,6 @@ class MyInstance : public pp::InstancePrivate, public MyFetcherClient {
       : pp::InstancePrivate(instance),
         time_at_last_check_(0.0),
         fetcher_(NULL),
-        width_(0),
-        height_(0),
         animation_counter_(0),
         print_settings_valid_(false),
         showing_custom_cursor_(false),
@@ -220,11 +219,10 @@ class MyInstance : public pp::InstancePrivate, public MyFetcherClient {
     return pp::VarPrivate(this, new MyScriptableObject(this));
   }
 
-  pp::ImageData PaintImage(int width, int height) {
-    pp::ImageData image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-                        pp::Size(width, height), false);
+  pp::ImageData PaintImage(const pp::Size& size) {
+    pp::ImageData image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL, size, false);
     if (image.is_null()) {
-      printf("Couldn't allocate the image data: %d, %d\n", width, height);
+      printf("Couldn't allocate the image data.");
       return image;
     }
 
@@ -243,7 +241,8 @@ class MyInstance : public pp::InstancePrivate, public MyFetcherClient {
     float radians = static_cast<float>(animation_counter_) / kStepsPerCircle *
         2 * 3.14159265358979F;
 
-    float radius = static_cast<float>(std::min(width, height)) / 2.0f - 3.0f;
+    float radius =
+        static_cast<float>(std::min(size.width(), size.height())) / 2.0f - 3.0f;
     int x = static_cast<int>(cos(radians) * radius + radius + 2);
     int y = static_cast<int>(sin(radians) * radius + radius + 2);
 
@@ -253,27 +252,25 @@ class MyInstance : public pp::InstancePrivate, public MyFetcherClient {
   }
 
   void Paint() {
-    pp::ImageData image = PaintImage(width_, height_);
+    pp::ImageData image = PaintImage(device_context_.size());
     if (!image.is_null()) {
       device_context_.ReplaceContents(&image);
       device_context_.Flush(pp::CompletionCallback(&FlushCallback, this));
     } else {
-      printf("NullImage: %d, %d\n", width_, height_);
+      printf("NullImage\n");
     }
   }
 
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip) {
+  virtual void DidChangeView(const pp::View& view) {
     Log(PP_LOGLEVEL_LOG, "DidChangeView");
-    if (position.size().width() == width_ &&
-        position.size().height() == height_)
+    if (view.GetRect().size() == current_view_.GetRect().size())
       return;  // We don't care about the position, only the size.
+    current_view_ = view;
 
-    width_ = position.size().width();
-    height_ = position.size().height();
     printf("DidChangeView relevant change: width=%d height:%d\n",
-           width_, height_);
+           view.GetRect().width(), view.GetRect().height());
 
-    device_context_ = pp::Graphics2D(this, pp::Size(width_, height_), false);
+    device_context_ = pp::Graphics2D(this, view.GetRect().size(), false);
     if (!BindGraphics(device_context_)) {
       printf("Couldn't bind the device context\n");
       return;
@@ -358,14 +355,13 @@ int gettimeofday(struct timeval *tv, struct timezone*) {
       return pp::Resource();
     }
 
-    int width = static_cast<int>(
-        (print_settings_.printable_area.size.width / 72.0) *
-         print_settings_.dpi);
-    int height = static_cast<int>(
-        (print_settings_.printable_area.size.height / 72.0) *
-         print_settings_.dpi);
-
-    return PaintImage(width, height);
+    pp::Size size(static_cast<int>(
+            (print_settings_.printable_area.size.width / 72.0) *
+             print_settings_.dpi),
+        static_cast<int>(
+            (print_settings_.printable_area.size.height / 72.0) *
+             print_settings_.dpi));
+    return PaintImage(size);
   }
 
   virtual void PrintEnd() {
@@ -469,10 +465,9 @@ int gettimeofday(struct timeval *tv, struct timezone*) {
 
   double time_at_last_check_;
 
-  MyFetcher* fetcher_;
+  pp::View current_view_;
 
-  int width_;
-  int height_;
+  MyFetcher* fetcher_;
 
   // Incremented for each flush we get.
   int animation_counter_;

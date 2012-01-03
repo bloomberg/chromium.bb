@@ -60,6 +60,7 @@
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/c/ppb_view.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/private/ppb_file_ref_private.h"
@@ -513,10 +514,14 @@ PluginModule::GetInterfaceFunc PluginModule::GetLocalGetInterfaceFunc() {
 
 PluginInstance* PluginModule::CreateInstance(PluginDelegate* delegate) {
   PluginInstance* instance(NULL);
-  const void* ppp_instance = GetPluginInterface(PPP_INSTANCE_INTERFACE_1_0);
+  const void* ppp_instance = GetPluginInterface(PPP_INSTANCE_INTERFACE_1_1);
   if (ppp_instance) {
+    instance = PluginInstance::Create1_1(delegate, this, ppp_instance);
+  } else if ((ppp_instance = GetPluginInterface(PPP_INSTANCE_INTERFACE_1_0))) {
     instance = PluginInstance::Create1_0(delegate, this, ppp_instance);
-  } if (!instance) {
+  }
+
+  if (!instance) {
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";
     return NULL;
   }

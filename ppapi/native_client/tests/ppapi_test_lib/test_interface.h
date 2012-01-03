@@ -183,9 +183,7 @@ PP_Bool DidCreateDefault(PP_Instance instance,
                          uint32_t argc, const char* argn[], const char* argv[]);
 // Other default implementations of the required PPP_Instance functions.
 void DidDestroyDefault(PP_Instance instance);
-void DidChangeViewDefault(PP_Instance instance,
-                          const struct PP_Rect* position,
-                          const struct PP_Rect* clip);
+void DidChangeViewDefault(PP_Instance instance, PP_Resource view);
 void DidChangeFocusDefault(PP_Instance instance, PP_Bool has_focus);
 PP_Bool HandleDocumentLoadDefault(PP_Instance instance, PP_Resource url_loader);
 

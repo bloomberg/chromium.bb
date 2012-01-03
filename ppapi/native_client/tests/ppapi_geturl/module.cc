@@ -56,9 +56,7 @@ void Instance_DidDestroy(PP_Instance /*instance*/) {
   printf("--- Instance_DidDestroy\n");
 }
 
-void Instance_DidChangeView(PP_Instance /*pp_instance*/,
-                            const PP_Rect* /*position*/,
-                            const PP_Rect* /*clip*/) {
+void Instance_DidChangeView(PP_Instance /*pp_instance*/, PP_Resource /*view*/) {
 }
 
 void Instance_DidChangeFocus(PP_Instance /*pp_instance*/,

@@ -155,6 +155,7 @@ env.DualLibrary('ppapi_browser',
                  'ppb_rpc_server.cc',
                  'ppp_rpc_client.cc',
                  'upcall_server.cc',
+                 'view_data.cc',
                  common_obj,])
 
 # Do a recursive diff of all files found in the first source directory against

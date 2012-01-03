@@ -35,6 +35,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_request_info.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_response_info.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_view.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_widget.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_zoom.h"
 #include "native_client/src/shared/ppapi_proxy/untrusted/srpcgen/ppb_rpc.h"
@@ -93,6 +94,7 @@ InterfaceMapElement interface_map[] = {
     true },
   { PPB_VAR_INTERFACE, PluginVar::GetInterface(), true },
   { PPB_VAR_INTERFACE_1_0, PluginVar::GetInterface1_0(), true },
+  { PPB_VIEW_INTERFACE, PluginView::GetInterface(), true },
   { PPB_WHEEL_INPUT_EVENT_INTERFACE, PluginInputEvent::GetWheelInterface(),
     true },
   { PPB_WIDGET_DEV_INTERFACE, PluginWidget::GetInterface(), true },

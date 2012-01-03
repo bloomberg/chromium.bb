@@ -9,7 +9,8 @@
  */
 
 label Chrome {
-  M14 = 1.0
+  M14 = 1.0,
+  M17 = 1.1
 };
 
 /**
@@ -110,6 +111,8 @@ interface PPP_Instance {
       [in] PP_Instance instance);
 
   /**
+   * Deprecated in 1.1 in favor of the version that takes a Resource.
+   *
    * DidChangeView() is called when the position, the size, of the clip
    * rectangle of the element in the browser that corresponds to this
    * instance has changed.
@@ -155,6 +158,19 @@ interface PPP_Instance {
        * is invisible, clip will be (0, 0, 0, 0).
        */
       [in] PP_Rect clip);
+
+  /**
+   * <code>DidChangeView() is called when the position, size, or other view
+   * attributes of the instance has changed.
+   */
+  [version=1.1]
+  void DidChangeView(
+      /* A PP_Instance identifying the instance whose view changed. */
+      [in] PP_Instance instance,
+      /**
+       * A handle to a <code>PPB_View</code> resource identifying the new view.
+       */
+      [in] PP_Resource view_resource);
 
   /**
    * DidChangeFocus() is called when an instance has gained or lost focus.
@@ -218,7 +234,7 @@ interface PPP_Instance {
 
 #inline c
 
-typedef struct PPP_Instance PPP_Instance_1_0;
+typedef struct PPP_Instance PPP_Instance_1_1;
 
 #endinl
 

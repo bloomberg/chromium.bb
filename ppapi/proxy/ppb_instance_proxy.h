@@ -47,6 +47,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual PP_Bool BindGraphics(PP_Instance instance,
                                PP_Resource device) OVERRIDE;
   virtual PP_Bool IsFullFrame(PP_Instance instance) OVERRIDE;
+  virtual const ViewData* GetViewData(PP_Instance instance) OVERRIDE;
   virtual PP_Var GetWindowObject(PP_Instance instance) OVERRIDE;
   virtual PP_Var GetOwnerElementObject(PP_Instance instance) OVERRIDE;
   virtual PP_Var ExecuteScript(PP_Instance instance,
@@ -65,7 +66,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                           PP_Bool final_result) OVERRIDE;
   virtual void SelectedFindResultChanged(PP_Instance instance,
                                          int32_t index) OVERRIDE;
-  virtual PP_Bool IsFullscreen(PP_Instance instance) OVERRIDE;
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                      PP_Bool fullscreen) OVERRIDE;
   virtual PP_Bool GetScreenSize(PP_Instance instance,
@@ -106,64 +106,64 @@ class PPB_Instance_Proxy : public InterfaceProxy,
 
  private:
   // Plugin -> Host message handlers.
-  void OnMsgGetWindowObject(PP_Instance instance,
-                            SerializedVarReturnValue result);
-  void OnMsgGetOwnerElementObject(PP_Instance instance,
-                                  SerializedVarReturnValue result);
-  void OnMsgBindGraphics(PP_Instance instance,
-                         const ppapi::HostResource& device,
-                         PP_Bool* result);
-  void OnMsgIsFullFrame(PP_Instance instance, PP_Bool* result);
-  void OnMsgExecuteScript(PP_Instance instance,
-                          SerializedVarReceiveInput script,
-                          SerializedVarOutParam out_exception,
-                          SerializedVarReturnValue result);
-  void OnMsgGetDefaultCharSet(PP_Instance instance,
-                              SerializedVarReturnValue result);
-  void OnMsgLog(PP_Instance instance,
-                int log_level,
-                SerializedVarReceiveInput value);
-  void OnMsgLogWithSource(PP_Instance instance,
-                          int log_level,
-                          SerializedVarReceiveInput source,
-                          SerializedVarReceiveInput value);
-  void OnMsgSetFullscreen(PP_Instance instance,
-                               PP_Bool fullscreen,
-                               PP_Bool* result);
-  void OnMsgGetScreenSize(PP_Instance instance,
-                               PP_Bool* result,
-                               PP_Size* size);
-  void OnMsgFlashSetFullscreen(PP_Instance instance,
-                               PP_Bool fullscreen,
-                               PP_Bool* result);
-  void OnMsgFlashGetScreenSize(PP_Instance instance,
-                               PP_Bool* result,
-                               PP_Size* size);
-  void OnMsgRequestInputEvents(PP_Instance instance,
-                               bool is_filtering,
-                               uint32_t event_classes);
-  void OnMsgClearInputEvents(PP_Instance instance,
-                             uint32_t event_classes);
-  void OnMsgPostMessage(PP_Instance instance,
-                        SerializedVarReceiveInput message);
-  void OnMsgLockMouse(PP_Instance instance);
-  void OnMsgUnlockMouse(PP_Instance instance);
-  void OnMsgResolveRelativeToDocument(PP_Instance instance,
-                                      SerializedVarReceiveInput relative,
+  void OnHostMsgGetWindowObject(PP_Instance instance,
+                                SerializedVarReturnValue result);
+  void OnHostMsgGetOwnerElementObject(PP_Instance instance,
                                       SerializedVarReturnValue result);
-  void OnMsgDocumentCanRequest(PP_Instance instance,
-                               SerializedVarReceiveInput url,
-                               PP_Bool* result);
-  void OnMsgDocumentCanAccessDocument(PP_Instance active,
-                                      PP_Instance target,
-                                      PP_Bool* result);
-  void OnMsgGetDocumentURL(PP_Instance instance,
-                           SerializedVarReturnValue result);
-  void OnMsgGetPluginInstanceURL(PP_Instance instance,
-                                 SerializedVarReturnValue result);
+  void OnHostMsgBindGraphics(PP_Instance instance,
+                             const ppapi::HostResource& device,
+                             PP_Bool* result);
+  void OnHostMsgIsFullFrame(PP_Instance instance, PP_Bool* result);
+  void OnHostMsgExecuteScript(PP_Instance instance,
+                              SerializedVarReceiveInput script,
+                              SerializedVarOutParam out_exception,
+                              SerializedVarReturnValue result);
+  void OnHostMsgGetDefaultCharSet(PP_Instance instance,
+                                  SerializedVarReturnValue result);
+  void OnHostMsgLog(PP_Instance instance,
+                    int log_level,
+                    SerializedVarReceiveInput value);
+  void OnHostMsgLogWithSource(PP_Instance instance,
+                              int log_level,
+                              SerializedVarReceiveInput source,
+                              SerializedVarReceiveInput value);
+  void OnHostMsgSetFullscreen(PP_Instance instance,
+                              PP_Bool fullscreen,
+                              PP_Bool* result);
+  void OnHostMsgGetScreenSize(PP_Instance instance,
+                              PP_Bool* result,
+                              PP_Size* size);
+  void OnHostMsgFlashSetFullscreen(PP_Instance instance,
+                                   PP_Bool fullscreen,
+                                   PP_Bool* result);
+  void OnHostMsgFlashGetScreenSize(PP_Instance instance,
+                                   PP_Bool* result,
+                                   PP_Size* size);
+  void OnHostMsgRequestInputEvents(PP_Instance instance,
+                                   bool is_filtering,
+                                   uint32_t event_classes);
+  void OnHostMsgClearInputEvents(PP_Instance instance,
+                                 uint32_t event_classes);
+  void OnHostMsgPostMessage(PP_Instance instance,
+                            SerializedVarReceiveInput message);
+  void OnHostMsgLockMouse(PP_Instance instance);
+  void OnHostMsgUnlockMouse(PP_Instance instance);
+  void OnHostMsgResolveRelativeToDocument(PP_Instance instance,
+                                          SerializedVarReceiveInput relative,
+                                          SerializedVarReturnValue result);
+  void OnHostMsgDocumentCanRequest(PP_Instance instance,
+                                   SerializedVarReceiveInput url,
+                                   PP_Bool* result);
+  void OnHostMsgDocumentCanAccessDocument(PP_Instance active,
+                                          PP_Instance target,
+                                          PP_Bool* result);
+  void OnHostMsgGetDocumentURL(PP_Instance instance,
+                               SerializedVarReturnValue result);
+  void OnHostMsgGetPluginInstanceURL(PP_Instance instance,
+                                     SerializedVarReturnValue result);
 
   // Host -> Plugin message handlers.
-  void OnMsgMouseLockComplete(PP_Instance instance, int32_t result);
+  void OnPluginMsgMouseLockComplete(PP_Instance instance, int32_t result);
 
   void MouseLockCompleteInHost(int32_t result, PP_Instance instance);
 

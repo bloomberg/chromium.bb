@@ -1001,8 +1001,6 @@ Plugin::Plugin(PP_Instance pp_instance)
       last_error_string_(""),
       ppapi_proxy_(NULL),
       enable_dev_interfaces_(false),
-      replayDidChangeView(false),
-      replayHandleDocumentLoad(false),
       init_time_(0),
       ready_time_(0),
       nexe_size_(0),
@@ -1080,19 +1078,16 @@ Plugin::~Plugin() {
 }
 
 
-void Plugin::DidChangeView(const pp::Rect& position, const pp::Rect& clip) {
+void Plugin::DidChangeView(const pp::View& view) {
   PLUGIN_PRINTF(("Plugin::DidChangeView (this=%p)\n",
                  static_cast<void*>(this)));
 
   if (!BrowserPpp::is_valid(ppapi_proxy_)) {
     // Store this event and replay it when the proxy becomes available.
-    replayDidChangeView = true;
-    replayDidChangeViewPosition = position;
-    replayDidChangeViewClip = clip;
-    return;
+    view_to_replay_ = view;
   } else {
     ppapi_proxy_->ppp_instance_interface()->DidChangeView(
-        pp_instance(), &(position.pp_rect()), &(clip.pp_rect()));
+        pp_instance(), view.pp_resource());
   }
 }
 
@@ -1100,9 +1095,7 @@ void Plugin::DidChangeView(const pp::Rect& position, const pp::Rect& clip) {
 void Plugin::DidChangeFocus(bool has_focus) {
   PLUGIN_PRINTF(("Plugin::DidChangeFocus (this=%p)\n",
                  static_cast<void*>(this)));
-  if (!BrowserPpp::is_valid(ppapi_proxy_)) {
-    return;
-  } else {
+  if (BrowserPpp::is_valid(ppapi_proxy_)) {
     ppapi_proxy_->ppp_instance_interface()->DidChangeFocus(
         pp_instance(), PP_FromBool(has_focus));
   }
@@ -1130,8 +1123,7 @@ bool Plugin::HandleDocumentLoad(const pp::URLLoader& url_loader) {
                  static_cast<void*>(this)));
   if (!BrowserPpp::is_valid(ppapi_proxy_)) {
     // Store this event and replay it when the proxy becomes available.
-    replayHandleDocumentLoad = true;
-    replayHandleDocumentLoadURLLoader = url_loader;
+    document_load_to_replay_ = url_loader;
     // Return true so that the browser keeps servicing this loader so we can
     // perform requests on it later.
     return true;
@@ -1384,7 +1376,7 @@ bool Plugin::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   CHECK(module != NULL);  // We could not have gotten past init stage otherwise.
   int32_t pp_error =
       ppapi_proxy->InitializeModule(module->pp_module(),
-                                     module->get_browser_interface());
+                                    module->get_browser_interface());
   PLUGIN_PRINTF(("Plugin::StartProxiedExecution (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   if (pp_error != PP_OK) {
@@ -1421,15 +1413,13 @@ bool Plugin::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   zoom_adapter_.reset(new(std::nothrow) ZoomAdapter(this));
 
   // Replay missed events.
-  if (replayDidChangeView) {
-    replayDidChangeView = false;
-    DidChangeView(replayDidChangeViewPosition, replayDidChangeViewClip);
+  if (!view_to_replay_.is_null()) {
+    DidChangeView(view_to_replay_);
+    view_to_replay_ = pp::View();
   }
-  if (replayHandleDocumentLoad) {
-    replayHandleDocumentLoad = false;
-    HandleDocumentLoad(replayHandleDocumentLoadURLLoader);
-    // Release our reference on this loader.
-    replayHandleDocumentLoadURLLoader = pp::URLLoader();
+  if (!document_load_to_replay_.is_null()) {
+    HandleDocumentLoad(document_load_to_replay_);
+    document_load_to_replay_ = pp::URLLoader();
   }
   bool is_valid_proxy = BrowserPpp::is_valid(ppapi_proxy_);
   PLUGIN_PRINTF(("Plugin::StartProxiedExecution (is_valid_proxy=%d)\n",

@@ -15,11 +15,14 @@
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
 #include "native_client/src/shared/ppapi_proxy/trusted/srpcgen/ppp_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
+#include "native_client/src/shared/ppapi_proxy/view_data.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/c/ppb_view.h"
 
 using nacl::scoped_array;
+using ppapi_proxy::ViewData;
 
 namespace ppapi_proxy {
 
@@ -100,31 +103,23 @@ void DidDestroy(PP_Instance instance) {
               NaClSrpcErrorString(srpc_result));
 }
 
-void DidChangeView(PP_Instance instance,
-                   const PP_Rect* position,
-                   const PP_Rect* clip) {
+void DidChangeView(PP_Instance instance, PP_Resource view) {
   DebugPrintf("PPP_Instance::DidChangeView: instance=%"NACL_PRIu32"\n",
               instance);
-  int32_t position_array[4];
-  const uint32_t kPositionArraySize = NACL_ARRAY_SIZE(position_array);
-  position_array[0] = position->point.x;
-  position_array[1] = position->point.y;
-  position_array[2] = position->size.width;
-  position_array[3] = position->size.height;
-  int32_t clip_array[4];
-  const uint32_t kClipArraySize = NACL_ARRAY_SIZE(clip_array);
-  clip_array[0] = clip->point.x;
-  clip_array[1] = clip->point.y;
-  clip_array[2] = clip->size.width;
-  clip_array[3] = clip->size.height;
+  ViewData view_data;
+
+  const PPB_View* view_interface = PPBViewInterface();
+  view_interface->GetRect(view, &view_data.viewport_rect);
+  view_data.is_fullscreen = view_interface->IsFullscreen(view);
+  view_data.is_page_visible = view_interface->IsPageVisible(view);
+  view_interface->GetClipRect(view, &view_data.clip_rect);
+
   NaClSrpcError srpc_result = PppInstanceRpcClient::PPP_Instance_DidChangeView(
       GetMainSrpcChannel(instance),
       instance,
-      kPositionArraySize,
-      position_array,
-      kClipArraySize,
-      clip_array,
-      static_cast<int32_t>(PPBFullscreenInterface()->IsFullscreen(instance)));
+      view,
+      sizeof(ViewData),
+      reinterpret_cast<char*>(&view_data));
   DebugPrintf("PPP_Instance::DidChangeView: %s\n",
               NaClSrpcErrorString(srpc_result));
 }

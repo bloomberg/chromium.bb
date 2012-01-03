@@ -13,7 +13,9 @@
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_instance_data.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_view.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
+#include "native_client/src/shared/ppapi_proxy/view_data.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
@@ -21,7 +23,11 @@
 
 using nacl::scoped_ptr;
 using ppapi_proxy::DebugPrintf;
+using ppapi_proxy::PluginInstanceData;
+using ppapi_proxy::PluginResource;
+using ppapi_proxy::PluginView;
 using ppapi_proxy::PPPInstanceInterface;
+using ppapi_proxy::ViewData;
 
 namespace {
 
@@ -114,26 +120,30 @@ void PppInstanceRpcServer::PPP_Instance_DidChangeView(
     NaClSrpcClosure* done,
     // inputs
     PP_Instance instance_id,
-    uint32_t position_count, int32_t* position,
-    uint32_t clip_count, int32_t* clip,
-    int32_t is_fullscreen) {
-  const PP_Rect position_rect =
-      PP_MakeRectFromXYWH(position[0], position[1], position[2], position[3]);
-  const PP_Rect clip_rect =
-      PP_MakeRectFromXYWH(clip[0], clip[1], clip[2], clip[3]);
-
-  ppapi_proxy::PluginInstanceData::DidChangeView(instance_id,
-                                                 position_rect,
-                                                 clip_rect,
-                                                 is_fullscreen);
+    PP_Resource resource,
+    nacl_abi_size_t view_size,
+    char* view_bytes) {
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
-  if (position_count != 4 || clip_count != 4) {
+
+  if (view_size != sizeof(ViewData))
     return;
-  }
+  ViewData view_data;
+  memcpy(&view_data, view_bytes, sizeof(ViewData));
+
+  ppapi_proxy::PluginInstanceData* instance_data =
+      ppapi_proxy::PluginInstanceData::FromPP(instance_id);
+  if (!instance_data)
+    return;
+
+  scoped_refptr<PluginView> view =
+      PluginResource::AdoptAsWithNoBrowserCount<PluginView>(resource);
+  view->Init(view_data);
+
+  instance_data->set_last_view_data(view_data);
 
   PPPInstanceInterface()->DidChangeView(
-      instance_id, &position_rect, &clip_rect);
+      instance_id, resource, &view_data.viewport_rect, &view_data.clip_rect);
   DebugPrintf("PPP_Instance::DidChangeView\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }

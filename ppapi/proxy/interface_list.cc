@@ -39,6 +39,7 @@
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/c/ppb_view.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/private/ppb_file_ref_private.h"
@@ -186,12 +187,17 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Var_Deprecated_Proxy::GetInfo());
 
   // PPP (plugin) interfaces.
+  // TODO(brettw) move these to interface_list*.h
+  AddProxy(API_ID_PPP_INSTANCE, &ProxyFactory<PPP_Instance_Proxy>);
+  AddPPP(PPP_INSTANCE_INTERFACE_1_1, API_ID_PPP_INSTANCE,
+         PPP_Instance_Proxy::GetInstanceInterface());
+
+  // Old-style GetInfo PPP interfaces.
   // Do not add more stuff here, they should be added to interface_list*.h
   // TODO(brettw) remove these.
   AddPPP(PPP_Graphics3D_Proxy::GetInfo());
   AddPPP(PPP_InputEvent_Proxy::GetInfo());
   AddPPP(PPP_Instance_Private_Proxy::GetInfo());
-  AddPPP(PPP_Instance_Proxy::GetInfo1_0());
   AddPPP(PPP_Messaging_Proxy::GetInfo());
   AddPPP(PPP_MouseLock_Proxy::GetInfo());
   AddPPP(PPP_VideoCapture_Proxy::GetInfo());

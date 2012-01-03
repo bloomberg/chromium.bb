@@ -43,22 +43,10 @@ void PluginInstanceData::DidDestroy(PP_Instance id) {
 }
 
 // static
-void PluginInstanceData::DidChangeView(PP_Instance id,
-                                       PP_Rect position,
-                                       PP_Rect clip,
-                                       bool is_fullscreen) {
-  PluginInstanceData* instance = FromPP(id);
-  if (instance) {
-    instance->position_ = position;
-    instance->is_fullscreen_ = is_fullscreen;
-  }
-}
-
-// static
 bool PluginInstanceData::IsFullscreen(PP_Instance id) {
   PluginInstanceData* instance = FromPP(id);
   if (instance)
-    return instance->is_fullscreen_;
+    return instance->last_view_data_.is_fullscreen;
   return false;
 }
 

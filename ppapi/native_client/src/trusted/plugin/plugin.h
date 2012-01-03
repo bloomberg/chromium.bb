@@ -33,6 +33,7 @@
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/view.h"
 
 struct NaClSrpcChannel;
 
@@ -84,7 +85,7 @@ class Plugin : public pp::InstancePrivate {
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
 
   // Handles view changes from the browser.
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
+  virtual void DidChangeView(const pp::View& view);
 
   // Handles gaining or losing focus.
   virtual void DidChangeFocus(bool has_focus);
@@ -519,15 +520,14 @@ class Plugin : public pp::InstancePrivate {
   bool enable_dev_interfaces_;
 
   // If we get a DidChangeView event before the nexe is loaded, we store it and
-  // replay it to nexe after it's loaded.
-  bool replayDidChangeView;
-  pp::Rect replayDidChangeViewPosition;
-  pp::Rect replayDidChangeViewClip;
+  // replay it to nexe after it's loaded. We need to replay when this View
+  // resource is non-is_null().
+  pp::View view_to_replay_;
 
   // If we get a HandleDocumentLoad event before the nexe is loaded, we store
-  // it and replay it to nexe after it's loaded.
-  bool replayHandleDocumentLoad;
-  pp::URLLoader replayHandleDocumentLoadURLLoader;
+  // it and replay it to nexe after it's loaded. We need to replay when this
+  // URLLoader resource is non-is_null().
+  pp::URLLoader document_load_to_replay_;
 
   nacl::string mime_type_;
 

@@ -215,17 +215,15 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidDestroy(
 NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidChangeView(
     NaClSrpcChannel* channel,
     PP_Instance instance,
-    nacl_abi_size_t position_bytes, int32_t* position,
-    nacl_abi_size_t clip_bytes, int32_t* clip,
-    int32_t is_fullscreen)  {
+    PP_Resource resource,
+    nacl_abi_size_t view_data_bytes, char* view_data)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPP_Instance_DidChangeView:iIIi:",
+      "PPP_Instance_DidChangeView:iiC:",
       instance,
-      position_bytes, position,
-      clip_bytes, clip,
-      is_fullscreen
+      resource,
+      view_data_bytes, view_data
   );
   if (retval == NACL_SRPC_RESULT_INTERNAL)
     ppapi_proxy::CleanUpAfterDeadNexe(instance);

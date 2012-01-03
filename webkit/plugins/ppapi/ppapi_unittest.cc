@@ -38,9 +38,7 @@ PP_Bool Instance_DidCreate(PP_Instance pp_instance,
 void Instance_DidDestroy(PP_Instance instance) {
 }
 
-void Instance_DidChangeView(PP_Instance pp_instance,
-                            const PP_Rect* position,
-                            const PP_Rect* clip) {
+void Instance_DidChangeView(PP_Instance pp_instance, PP_Resource view) {
 }
 
 void Instance_DidChangeFocus(PP_Instance pp_instance, PP_Bool has_focus) {

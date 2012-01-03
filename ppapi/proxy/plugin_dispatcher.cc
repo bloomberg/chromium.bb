@@ -13,6 +13,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "base/debug/trace_event.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppp_instance.h"
 #include "ppapi/proxy/interface_list.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/plugin_message_filter.h"
@@ -42,10 +43,8 @@ InstanceToDispatcherMap* g_instance_to_dispatcher = NULL;
 }  // namespace
 
 InstanceData::InstanceData()
-    : fullscreen(PP_FALSE),
-      flash_fullscreen(PP_FALSE),
+    : flash_fullscreen(PP_FALSE),
       mouse_lock_callback(PP_BlockUntilComplete()) {
-  memset(&position, 0, sizeof(position));
 }
 
 InstanceData::~InstanceData() {
@@ -219,6 +218,14 @@ void PluginDispatcher::OnMsgSupportsInterface(
     const std::string& interface_name,
     bool* result) {
   *result = !!GetPluginInterface(interface_name);
+
+  // Do fallback for PPP_Instance. This is a hack here and if we have more
+  // cases like this it should be generalized. The PPP_Instance proxy always
+  // proxies the 1.1 interface, and then does fallback to 1.0 inside the
+  // plugin process (see PPP_Instance_Proxy). So here we return true for
+  // supporting the 1.1 interface if either 1.1 or 1.0 is supported.
+  if (!*result && interface_name == PPP_INSTANCE_INTERFACE)
+    *result = !!GetPluginInterface(PPP_INSTANCE_INTERFACE_1_0);
 }
 
 void PluginDispatcher::OnMsgSetPreferences(const Preferences& prefs) {

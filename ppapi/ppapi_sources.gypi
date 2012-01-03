@@ -41,6 +41,7 @@
       'c/ppb_url_request_info.h',
       'c/ppb_url_response_info.h',
       'c/ppb_var.h',
+      'c/ppb_view.h',
       'c/ppp.h',
       'c/ppp_graphics_3d.h',
       'c/ppp_input_event.h',
@@ -169,6 +170,8 @@
       'cpp/url_response_info.h',
       'cpp/var.cc',
       'cpp/var.h',
+      'cpp/view.cc',
+      'cpp/view.h',
 
       # Dev interfaces.
       'cpp/dev/audio_input_dev.cc',

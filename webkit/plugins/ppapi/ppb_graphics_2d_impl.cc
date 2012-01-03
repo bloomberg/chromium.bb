@@ -22,6 +22,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "webkit/plugins/ppapi/common.h"
+#include "webkit/plugins/ppapi/gfx_conversion.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
@@ -330,7 +331,8 @@ int32_t PPB_Graphics2D_Impl::Flush(PP_CompletionCallback callback) {
     // ViewInitiatedPaint/ViewFlushedPaint calls, leaving our callback stranded.
     gfx::Rect visible_changed_rect;
     if (bound_instance_ && !op_rect.IsEmpty())
-      visible_changed_rect = bound_instance_->clip().Intersect(op_rect);
+      visible_changed_rect =PP_ToGfxRect(bound_instance_->view_data().clip_rect).
+          Intersect(op_rect);
 
     if (bound_instance_ && !visible_changed_rect.IsEmpty()) {
       if (operation.type == QueuedOperation::SCROLL) {

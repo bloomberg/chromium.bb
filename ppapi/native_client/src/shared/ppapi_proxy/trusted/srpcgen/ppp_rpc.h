@@ -124,9 +124,8 @@ class PppInstanceRpcClient {
   static NaClSrpcError PPP_Instance_DidChangeView(
       NaClSrpcChannel* channel,
       PP_Instance instance,
-      nacl_abi_size_t position_bytes, int32_t* position,
-      nacl_abi_size_t clip_bytes, int32_t* clip,
-      int32_t is_fullscreen);
+      PP_Resource resource,
+      nacl_abi_size_t view_data_bytes, char* view_data);
   static NaClSrpcError PPP_Instance_DidChangeFocus(
       NaClSrpcChannel* channel,
       PP_Instance instance,

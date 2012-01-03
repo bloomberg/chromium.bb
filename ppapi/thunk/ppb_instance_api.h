@@ -19,6 +19,9 @@
 #endif
 
 namespace ppapi {
+
+struct ViewData;
+
 namespace thunk {
 
 class PPB_Instance_FunctionAPI {
@@ -27,6 +30,9 @@ class PPB_Instance_FunctionAPI {
 
   virtual PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) = 0;
   virtual PP_Bool IsFullFrame(PP_Instance instance) = 0;
+
+  // Not an exposed PPAPI function, this returns the internal view data struct.
+  virtual const ViewData* GetViewData(PP_Instance instance) = 0;
 
   // InstancePrivate.
   virtual PP_Var GetWindowObject(PP_Instance instance) = 0;
@@ -55,7 +61,6 @@ class PPB_Instance_FunctionAPI {
                                          int32_t index) = 0;
 
   // Fullscreen.
-  virtual PP_Bool IsFullscreen(PP_Instance instance) = 0;
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                 PP_Bool fullscreen) = 0;
   virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) = 0;

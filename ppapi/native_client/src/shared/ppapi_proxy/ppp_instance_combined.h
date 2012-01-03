@@ -2,21 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_PPP_INSTANCE_COMBINED_H_
-#define PPAPI_SHARED_IMPL_PPP_INSTANCE_COMBINED_H_
+#ifndef PPAPI_NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PPP_INSTANCE_COMBINED_H_
+#define PPAPI_NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PPP_INSTANCE_COMBINED_H_
 
-#include "base/basictypes.h"
 #include "ppapi/c/ppp_instance.h"
-#include "ppapi/shared_impl/ppapi_shared_export.h"
 
-namespace ppapi {
+namespace ppapi_proxy {
 
 // This exposes the 1.1 interface and forwards it to the 1.0 interface is
 // necessary.
-struct PPAPI_SHARED_EXPORT PPP_Instance_Combined {
+struct  PPP_Instance_Combined {
  public:
-  explicit PPP_Instance_Combined(const PPP_Instance_1_0& instance_if);
-  explicit PPP_Instance_Combined(const PPP_Instance_1_1& instance_if);
+  // You must call one of the Init functions after the constructor.
+  PPP_Instance_Combined();
+
+  void Init1_0(const PPP_Instance_1_0* instance_if);
+  void Init1_1(const PPP_Instance_1_1* instance_if);
+
+  bool initialized() const { return initialized_; }
 
   PP_Bool DidCreate(PP_Instance instance,
                     uint32_t argc,
@@ -29,7 +32,7 @@ struct PPAPI_SHARED_EXPORT PPP_Instance_Combined {
   // but this class doesn't have the necessary context (resource interfaces)
   // to do the conversion, so the caller must do it.
   void DidChangeView(PP_Instance instance,
-                     PP_Resource view_changed_resource,
+                     PP_Resource view_resource,
                      const struct PP_Rect* position,
                      const struct PP_Rect* clip);
 
@@ -37,6 +40,8 @@ struct PPAPI_SHARED_EXPORT PPP_Instance_Combined {
   PP_Bool HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader);
 
  private:
+  bool initialized_;
+
   // For version 1.0, DidChangeView will be NULL, and DidChangeView_1_0 will
   // be set below.
   PPP_Instance_1_1 instance_1_1_;
@@ -45,11 +50,9 @@ struct PPAPI_SHARED_EXPORT PPP_Instance_Combined {
   void (*did_change_view_1_0_)(PP_Instance instance,
                                const struct PP_Rect* position,
                                const struct PP_Rect* clip);
-
-  DISALLOW_COPY_AND_ASSIGN(PPP_Instance_Combined);
 };
 
-}  // namespace ppapi
+}  // namespace ppapi_proxy
 
-#endif  // PPAPI_SHARED_IMPL_PPP_INSTANCE_COMBINED_H_
+#endif  // PPAPI_NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PPP_INSTANCE_COMBINED_H_
 

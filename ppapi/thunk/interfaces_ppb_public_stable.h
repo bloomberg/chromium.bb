@@ -74,5 +74,6 @@ PROXIED_IFACE(NoAPIName, PPB_URLREQUESTINFO_INTERFACE_1_0, PPB_URLRequestInfo)
 PROXIED_IFACE(PPB_URLResponseInfo, PPB_URLRESPONSEINFO_INTERFACE_1_0,
               PPB_URLResponseInfo)
 // Note: PPB_Var is special and registered manually.
+PROXIED_IFACE(NoAPIName, PPB_VIEW_INTERFACE_1_0, PPB_View)
 
 #include "ppapi/thunk/interfaces_postamble.h"

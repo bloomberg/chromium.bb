@@ -36,6 +36,7 @@
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/view.h"
 
 namespace pp {
 
@@ -89,15 +90,14 @@ void Instance_DidDestroy(PP_Instance instance) {
 }
 
 void Instance_DidChangeView(PP_Instance pp_instance,
-                            const PP_Rect* position,
-                            const PP_Rect* clip) {
+                            PP_Resource view_resource) {
   Module* module_singleton = Module::Get();
   if (!module_singleton)
     return;
   Instance* instance = module_singleton->InstanceForPPInstance(pp_instance);
   if (!instance)
     return;
-  instance->DidChangeView(*position, *clip);
+  instance->DidChangeView(View(view_resource));
 }
 
 void Instance_DidChangeFocus(PP_Instance pp_instance, PP_Bool has_focus) {

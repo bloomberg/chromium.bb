@@ -14,6 +14,7 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_input_event.h"
+#include "ppapi/c/ppb_view.h"
 #include "ppapi/c/ppp_instance.h"
 
 namespace {
@@ -37,15 +38,19 @@ void DidDestroy(PP_Instance instance) {
   NACL_NOTREACHED();
 }
 
-void DidChangeView(PP_Instance instance,
-                   const struct PP_Rect* position,
-                   const struct PP_Rect* clip) {
+void DidChangeView(PP_Instance instance, PP_Resource view) {
   printf("--- PPP_Instance::DidChangeView\n");
   EXPECT(instance == pp_instance());
-  EXPECT(clip->point.x == 0 && clip->point.y == 0);
+
+  PP_Rect clip;
+  PPBView()->GetClipRect(view, &clip);
+  EXPECT(clip.point.x == 0 && clip.point.y == 0);
+
   // These are based on embed dimensions.
-  EXPECT(position->size.width == 15 && clip->size.width == 15);
-  EXPECT(position->size.height == 20 && clip->size.height == 20);
+  PP_Rect position;
+  PPBView()->GetRect(view, &position);
+  EXPECT(position.size.width == 15 && clip.size.width == 15);
+  EXPECT(position.size.height == 20 && clip.size.height == 20);
 
   TEST_PASSED;
 }

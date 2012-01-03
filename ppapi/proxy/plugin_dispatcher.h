@@ -18,6 +18,7 @@
 #include "ppapi/proxy/dispatcher.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
+#include "ppapi/shared_impl/ppb_view_shared.h"
 
 namespace ppapi {
 
@@ -32,8 +33,8 @@ struct InstanceData {
   InstanceData();
   ~InstanceData();
 
-  PP_Rect position;
-  PP_Bool fullscreen;  // Used for PPB_Fullscreen.
+  ViewData view;
+
   PP_Bool flash_fullscreen;  // Used for PPB_FlashFullscreen.
 
   // When non-0, indicates the callback to execute when mouse lock is lost.

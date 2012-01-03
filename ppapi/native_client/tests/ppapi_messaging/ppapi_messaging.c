@@ -99,11 +99,9 @@ void DidDestroy(PP_Instance instance) {
 }
 
 void DidChangeView(PP_Instance instance,
-                   const struct PP_Rect* position,
-                   const struct PP_Rect* clip) {
+                   PP_Resource resource) {
   UNREFERENCED_PARAMETER(instance);
-  UNREFERENCED_PARAMETER(position);
-  UNREFERENCED_PARAMETER(clip);
+  UNREFERENCED_PARAMETER(resource);
 }
 
 void DidChangeFocus(PP_Instance instance,

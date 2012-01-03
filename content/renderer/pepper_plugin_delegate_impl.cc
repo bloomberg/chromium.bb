@@ -1813,14 +1813,14 @@ int32_t PepperPluginDelegateImpl::ShowContextMenu(
   params.custom_items = menu->menu_data();
 
   // Transform the position to be in render view's coordinates.
-  if (instance->IsFullscreen(instance->pp_instance()) ||
+  if (instance->view_data().is_fullscreen ||
       instance->FlashIsFullscreen(instance->pp_instance())) {
     WebKit::WebRect rect = render_view_->windowRect();
     params.x -= rect.x;
     params.y -= rect.y;
   } else {
-    params.x += instance->position().x();
-    params.y += instance->position().y();
+    params.x += instance->view_data().rect.point.x;
+    params.y += instance->view_data().rect.point.y;
   }
 
   IPC::Message* msg = new ViewHostMsg_ContextMenu(render_view_->routing_id(),

@@ -9,13 +9,14 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
-#include "ppapi/c/pp_size.h"
+#include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_view.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
 
@@ -25,6 +26,7 @@ const struct PPB_Core* g_core_interface;
 const struct PPB_Graphics2D* g_graphics_2d_interface;
 const struct PPB_ImageData* g_image_data_interface;
 const struct PPB_Instance* g_instance_interface;
+const struct PPB_View* g_view_interface;
 
 /* PPP_Instance implementation -----------------------------------------------*/
 
@@ -139,18 +141,21 @@ void Instance_DidDestroy(PP_Instance instance) {
 }
 
 void Instance_DidChangeView(PP_Instance pp_instance,
-                            const struct PP_Rect* position,
-                            const struct PP_Rect* clip) {
+                            PP_Resource view) {
+  struct PP_Rect position;
   struct InstanceInfo* info = FindInstance(pp_instance);
   if (!info)
     return;
 
-  if (info->last_size.width != position->size.width ||
-      info->last_size.height != position->size.height) {
+  if (g_view_interface->GetRect(view, &position) == PP_FALSE)
+    return;
+
+  if (info->last_size.width != position.size.width ||
+      info->last_size.height != position.size.height) {
     /* Got a resize, repaint the plugin. */
-    Repaint(info, &position->size);
-    info->last_size.width = position->size.width;
-    info->last_size.height = position->size.height;
+    Repaint(info, &position.size);
+    info->last_size.width = position.size.width;
+    info->last_size.height = position.size.height;
   }
 }
 
@@ -185,8 +190,10 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module module,
       get_browser_interface(PPB_IMAGEDATA_INTERFACE);
   g_graphics_2d_interface = (const struct PPB_Graphics2D*)
       get_browser_interface(PPB_GRAPHICS_2D_INTERFACE);
+  g_view_interface = (const struct PPB_View*)
+      get_browser_interface(PPB_VIEW_INTERFACE);
   if (!g_core_interface || !g_instance_interface || !g_image_data_interface ||
-      !g_graphics_2d_interface)
+      !g_graphics_2d_interface || !g_view_interface)
     return -1;
 
   return PP_OK;

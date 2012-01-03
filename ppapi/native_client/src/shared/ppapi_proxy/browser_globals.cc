@@ -388,6 +388,13 @@ const PPB_Testing_Dev* PPBTestingInterface() {
   return ppb;
 }
 
+const PPB_View* PPBViewInterface() {
+  static const PPB_View* ppb =
+      static_cast<const PPB_View*>(
+          GetBrowserInterfaceSafe(PPB_VIEW_INTERFACE));
+  return ppb;
+}
+
 const PPB_Widget_Dev* PPBWidgetInterface() {
   static const PPB_Widget_Dev* ppb =
       static_cast<const PPB_Widget_Dev*>(

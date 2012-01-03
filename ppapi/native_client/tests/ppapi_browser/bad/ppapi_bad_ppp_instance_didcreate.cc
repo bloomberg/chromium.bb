@@ -41,8 +41,7 @@ void DidDestroy(PP_Instance /*instance*/) {
 }
 
 void DidChangeView(PP_Instance /*instance*/,
-                   const struct PP_Rect* /*position*/,
-                   const struct PP_Rect* /*clip*/) {
+                   PP_Resource /*view*/) {
 }
 
 void DidChangeFocus(PP_Instance /*instance*/, PP_Bool /*has_focus*/) {

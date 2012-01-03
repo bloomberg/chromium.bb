@@ -27,7 +27,10 @@
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_url_util_shared.h"
+#include "ppapi/shared_impl/ppb_view_shared.h"
 #include "ppapi/shared_impl/ppp_instance_combined.h"
+#include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
@@ -52,6 +55,7 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/event_conversion.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
+#include "webkit/plugins/ppapi/gfx_conversion.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/message_channel.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
@@ -91,6 +95,8 @@ using base::StringPrintf;
 using ppapi::InputEventData;
 using ppapi::PPB_InputEvent_Shared;
 using ppapi::PpapiGlobals;
+using ppapi::PPB_View_Shared;
+using ppapi::ScopedPPResource;
 using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
@@ -99,6 +105,7 @@ using ppapi::thunk::PPB_Graphics3D_API;
 using ppapi::thunk::PPB_ImageData_API;
 using ppapi::thunk::PPB_Instance_FunctionAPI;
 using ppapi::Var;
+using ppapi::ViewData;
 using WebKit::WebBindings;
 using WebKit::WebCanvas;
 using WebKit::WebConsoleMessage;
@@ -219,11 +226,6 @@ COMPILE_ASSERT_MATCHING_ENUM(TypeGrabbing, PP_CURSORTYPE_GRABBING);
 // Do not assert WebCursorInfo::TypeCustom == PP_CURSORTYPE_CUSTOM;
 // PP_CURSORTYPE_CUSTOM is pinned to allow new cursor types.
 
-void RectToPPRect(const gfx::Rect& input, PP_Rect* output) {
-  *output = PP_MakeRectFromXYWH(input.x(), input.y(),
-                                input.width(), input.height());
-}
-
 // Sets |*security_origin| to be the WebKit security origin associated with the
 // document containing the given plugin instance. On success, returns true. If
 // the instance is invalid, returns false and |*security_origin| will be
@@ -253,6 +255,18 @@ PluginInstance* PluginInstance::Create1_0(PluginDelegate* delegate,
       new ::ppapi::PPP_Instance_Combined(*instance));
 }
 
+// static
+PluginInstance* PluginInstance::Create1_1(PluginDelegate* delegate,
+                                          PluginModule* module,
+                                          const void* ppp_instance_if_1_1) {
+  const PPP_Instance_1_1* instance =
+      static_cast<const PPP_Instance_1_1*>(ppp_instance_if_1_1);
+  return new PluginInstance(
+      delegate,
+      module,
+      new ::ppapi::PPP_Instance_Combined(*instance));
+}
+
 PluginInstance::PluginInstance(
     PluginDelegate* delegate,
     PluginModule* module,
@@ -263,7 +277,8 @@ PluginInstance::PluginInstance(
       pp_instance_(0),
       container_(NULL),
       full_frame_(false),
-      sent_did_change_view_(false),
+      sent_initial_did_change_view_(false),
+      suppress_did_change_view_(false),
       has_webkit_focus_(false),
       has_content_area_focus_(false),
       find_identifier_(-1),
@@ -283,7 +298,6 @@ PluginInstance::PluginInstance(
       fullscreen_container_(NULL),
       flash_fullscreen_(false),
       desired_fullscreen_state_(false),
-      fullscreen_(false),
       message_channel_(NULL),
       sad_plugin_(NULL),
       input_event_mask_(0),
@@ -368,7 +382,8 @@ void PluginInstance::InvalidateRect(const gfx::Rect& rect) {
     else
       fullscreen_container_->InvalidateRect(rect);
   } else {
-    if (!container_ || position_.IsEmpty())
+    if (!container_ ||
+        view_data_.rect.size.width == 0 || view_data_.rect.size.height == 0)
       return;  // Nothing to do.
     if (rect.IsEmpty())
       container_->invalidate();
@@ -630,7 +645,9 @@ bool PluginInstance::IsPluginAcceptingCompositionEvents() const {
 gfx::Rect PluginInstance::GetCaretBounds() const {
   if (!text_input_caret_set_) {
     // If it is never set by the plugin, use the bottom left corner.
-    return gfx::Rect(position().x(), position().y()+position().height(), 0, 0);
+    return gfx::Rect(view_data_.rect.point.x,
+                     view_data_.rect.point.y + view_data_.rect.size.height,
+                     0, 0);
   }
 
   // TODO(kinaba) Take CSS transformation into accont.
@@ -639,7 +656,7 @@ gfx::Rect PluginInstance::GetCaretBounds() const {
   // passed to IME. Currently, we pass only the caret rectangle because
   // it is the only information supported uniformly in Chromium.
   gfx::Rect caret(text_input_caret_);
-  caret.Offset(position().origin());
+  caret.Offset(view_data_.rect.point.x, view_data_.rect.point.y);
   return caret;
 }
 
@@ -720,41 +737,41 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
   if (!clip.IsEmpty())
     new_clip = clip;
 
-  // Don't notify the plugin if we've already sent these same params before.
-  if (sent_did_change_view_ && position == position_ && new_clip == clip_)
-    return;
+  ViewData previous_view = view_data_;
 
-  if (desired_fullscreen_state_ || fullscreen_) {
+  view_data_.rect = PP_FromGfxRect(position);
+  view_data_.clip_rect = PP_FromGfxRect(clip);
+
+  if (desired_fullscreen_state_ || view_data_.is_fullscreen) {
     WebElement element = container_->element();
     WebDocument document = element.document();
     bool is_fullscreen_element = (element == document.fullScreenElement());
-    if (!fullscreen_ && desired_fullscreen_state_ &&
+    if (!view_data_.is_fullscreen && desired_fullscreen_state_ &&
         delegate()->IsInFullscreenMode() && is_fullscreen_element) {
       // Entered fullscreen. Only possible via SetFullscreen().
-      fullscreen_ = true;
-    } else if (fullscreen_ && !is_fullscreen_element) {
+      view_data_.is_fullscreen = true;
+    } else if (view_data_.is_fullscreen && !is_fullscreen_element) {
       // Exited fullscreen. Possible via SetFullscreen() or F11/link,
       // so desired_fullscreen_state might be out-of-date.
       desired_fullscreen_state_ = false;
-      fullscreen_ = false;
+      view_data_.is_fullscreen = false;
+
+      // This operation will cause the plugin to re-layout which will send more
+      // DidChangeView updates. Schedule an asynchronous update and suppress
+      // notifications until that completes to avoid sending intermediate sizes
+      // to the plugins.
+      ScheduleAsyncDidChangeView(previous_view);
+
       // Reset the size attributes that we hacked to fill in the screen and
       // retrigger ViewChanged. Make sure we don't forward duplicates of
       // this view to the plugin.
       ResetSizeAttributesAfterFullscreen();
-      SetSentDidChangeView(position, new_clip);
-      MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(&PluginInstance::ReportGeometry, this));
       return;
     }
   }
 
-  SetSentDidChangeView(position, new_clip);
   flash_fullscreen_ = (fullscreen_container_ != NULL);
-
-  PP_Rect pp_position, pp_clip;
-  RectToPPRect(position_, &pp_position);
-  RectToPPRect(clip_, &pp_clip);
-  instance_interface_->DidChangeView(pp_instance(), &pp_position, &pp_clip);
+  SendDidChangeView(previous_view);
 }
 
 void PluginInstance::SetWebKitFocus(bool has_focus) {
@@ -812,11 +829,12 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
   // store when seeing if we cover the given paint bounds, since the backing
   // store could be smaller than the declared plugin area.
   PPB_ImageData_Impl* image_data = GetBoundGraphics2D()->image_data();
-  gfx::Rect plugin_backing_store_rect(position_.origin(),
-                                      gfx::Size(image_data->width(),
-                                                image_data->height()));
-  gfx::Rect clip_page(clip_);
-  clip_page.Offset(position_.origin());
+  gfx::Rect plugin_backing_store_rect(
+      PP_ToGfxPoint(view_data_.rect.point),
+      gfx::Size(image_data->width(), image_data->height()));
+
+  gfx::Rect clip_page = PP_ToGfxRect(view_data_.clip_rect);
+  clip_page.Offset(PP_ToGfxPoint(view_data_.rect.point));
   gfx::Rect plugin_paint_rect = plugin_backing_store_rect.Intersect(clip_page);
   if (!plugin_paint_rect.Contains(paint_bounds))
     return false;
@@ -993,6 +1011,38 @@ bool PluginInstance::PluginHasFocus() const {
   return has_webkit_focus_ && has_content_area_focus_;
 }
 
+void PluginInstance::ScheduleAsyncDidChangeView(
+    const ::ppapi::ViewData& previous_view) {
+  if (suppress_did_change_view_)
+    return;  // Already scheduled.
+  suppress_did_change_view_ = true;
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&PluginInstance::SendAsyncDidChangeView,
+                            this, previous_view));
+}
+
+void PluginInstance::SendAsyncDidChangeView(const ViewData& previous_view) {
+  DCHECK(suppress_did_change_view_);
+  suppress_did_change_view_ = false;
+  SendDidChangeView(previous_view);
+}
+
+void PluginInstance::SendDidChangeView(const ViewData& previous_view) {
+  if (suppress_did_change_view_ ||
+      (sent_initial_did_change_view_ && previous_view.Equals(view_data_)))
+    return;  // Nothing to update.
+
+  sent_initial_did_change_view_ = true;
+  ScopedPPResource resource(
+      ScopedPPResource::PassRef(),
+      (new PPB_View_Shared(PPB_View_Shared::InitAsImpl(),
+                           pp_instance(), view_data_))->GetReference());
+
+  instance_interface_->DidChangeView(pp_instance(), resource,
+                                     &view_data_.rect,
+                                     &view_data_.clip_rect);
+}
+
 void PluginInstance::ReportGeometry() {
   // If this call was delayed, we may have transitioned back to fullscreen in
   // the mean time, so only report the geometry if we are actually in normal
@@ -1045,7 +1095,7 @@ int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
 
   int num_pages = 0;
   PP_PrintSettings_Dev print_settings;
-  RectToPPRect(printable_area, &print_settings.printable_area);
+  print_settings.printable_area = PP_FromGfxRect(printable_area);
   print_settings.dpi = printer_dpi;
   print_settings.orientation = PP_PRINTORIENTATION_NORMAL;
   print_settings.grayscale = PP_FALSE;
@@ -1151,7 +1201,7 @@ bool PluginInstance::SetFullscreen(bool fullscreen) {
   // Check whether we are trying to switch while the state is in transition.
   // The 2nd request gets dropped while messing up the internal state, so
   // disallow this.
-  if (fullscreen_ != desired_fullscreen_state_)
+  if (view_data_.is_fullscreen != desired_fullscreen_state_)
     return false;
 
   // The browser will allow us to go into fullscreen mode only when processing
@@ -1582,8 +1632,8 @@ void PluginInstance::SimulateInputEvent(const InputEventData& input_event) {
   std::vector<linked_ptr<WebInputEvent> > events =
       CreateSimulatedWebInputEvents(
           input_event,
-          position().x() + position().width() / 2,
-          position().y() + position().height() / 2);
+          view_data_.rect.point.x + view_data_.rect.size.width / 2,
+          view_data_.rect.point.y + view_data_.rect.size.height / 2);
   for (std::vector<linked_ptr<WebInputEvent> >::iterator it = events.begin();
       it != events.end(); ++it) {
     web_view->handleInputEvent(*it->get());
@@ -1615,7 +1665,7 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
   // Refuse to bind if in transition to fullscreen with PPB_FlashFullscreen or
   // to/from fullscreen with PPB_Fullscreen.
   if ((fullscreen_container_ && !flash_fullscreen_) ||
-      desired_fullscreen_state_ != fullscreen_)
+      desired_fullscreen_state_ != view_data_.is_fullscreen)
     return PP_FALSE;
 
   EnterResourceNoLock<PPB_Graphics2D_API> enter_2d(device, false);
@@ -1654,6 +1704,10 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
 
 PP_Bool PluginInstance::IsFullFrame(PP_Instance instance) {
   return PP_FromBool(full_frame());
+}
+
+const ViewData* PluginInstance::GetViewData(PP_Instance instance) {
+  return &view_data_;
 }
 
 PP_Var PluginInstance::GetWindowObject(PP_Instance instance) {
@@ -1777,10 +1831,6 @@ void PluginInstance::SelectedFindResultChanged(PP_Instance instance,
                                                int32_t index) {
   DCHECK_NE(find_identifier_, -1);
   delegate_->SelectedFindResultChanged(find_identifier_, index);
-}
-
-PP_Bool PluginInstance::IsFullscreen(PP_Instance instance) {
-  return PP_FromBool(fullscreen_);
 }
 
 PP_Bool PluginInstance::FlashIsFullscreen(PP_Instance instance) {
@@ -1955,13 +2005,6 @@ bool PluginInstance::CanAccessMainFrame() const {
 
   return containing_document.securityOrigin().canAccess(
       main_document.securityOrigin());
-}
-
-void PluginInstance::SetSentDidChangeView(const gfx::Rect& position,
-                                          const gfx::Rect& clip) {
-  sent_did_change_view_ = true;
-  position_ = position;
-  clip_ = clip;
 }
 
 void PluginInstance::KeepSizeAttributesBeforeFullscreen() {

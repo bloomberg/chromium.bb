@@ -8,6 +8,7 @@
 
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_core.h"
+#include "ppapi/c/ppb_fullscreen.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/private/ppb_flash_fullscreen.h"
 #include "ppapi/proxy/host_dispatcher.h"
@@ -16,11 +17,35 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/ppb_view_shared.h"
+#include "ppapi/shared_impl/scoped_pp_resource.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_view_api.h"
 
 namespace ppapi {
 namespace proxy {
 
 namespace {
+
+void GetFullscreenStates(PP_Instance instance,
+                         HostDispatcher* dispatcher,
+                         PP_Bool* fullscreen,
+                         PP_Bool* flash_fullscreen) {
+  const PPB_Fullscreen* fullscreen_interface =
+      static_cast<const PPB_Fullscreen*>(
+          dispatcher->local_get_interface()(PPB_FULLSCREEN_INTERFACE));
+  DCHECK(fullscreen_interface);
+  *fullscreen = fullscreen_interface->IsFullscreen(instance);
+}
+
+PP_Bool IsFlashFullscreen(PP_Instance instance,
+                          HostDispatcher* dispatcher) {
+  const PPB_FlashFullscreen* flash_fullscreen_interface =
+      static_cast<const PPB_FlashFullscreen*>(
+          dispatcher->local_get_interface()(PPB_FLASHFULLSCREEN_INTERFACE));
+  DCHECK(flash_fullscreen_interface);
+  return flash_fullscreen_interface->IsFullscreen(instance);
+}
 
 PP_Bool DidCreate(PP_Instance instance,
                   uint32_t argc,
@@ -45,26 +70,18 @@ void DidDestroy(PP_Instance instance) {
       new PpapiMsg_PPPInstance_DidDestroy(API_ID_PPP_INSTANCE, instance));
 }
 
-void DidChangeView(PP_Instance instance,
-                   const PP_Rect* position,
-                   const PP_Rect* clip) {
+void DidChangeView(PP_Instance instance, PP_Resource view_resource) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
-  const PPB_FlashFullscreen* fullscreen_interface =
-      static_cast<const PPB_FlashFullscreen*>(
-          dispatcher->local_get_interface()(PPB_FLASHFULLSCREEN_INTERFACE));
-  DCHECK(fullscreen_interface);
-  const PPB_FlashFullscreen* flash_fullscreen_interface =
-      static_cast<const PPB_FlashFullscreen*>(
-          dispatcher->local_get_interface()(PPB_FLASHFULLSCREEN_INTERFACE));
-  DCHECK(flash_fullscreen_interface);
-  PP_Bool fullscreen = fullscreen_interface->IsFullscreen(instance);
-  PP_Bool flash_fullscreen  =
-      flash_fullscreen_interface->IsFullscreen(instance);
-  dispatcher->Send(
-      new PpapiMsg_PPPInstance_DidChangeView(API_ID_PPP_INSTANCE,
-                                             instance, *position, *clip,
-                                             fullscreen,
-                                             flash_fullscreen));
+
+  thunk::EnterResourceNoLock<thunk::PPB_View_API> enter(view_resource, false);
+  if (enter.failed()) {
+    NOTREACHED();
+    return;
+  }
+
+  dispatcher->Send(new PpapiMsg_PPPInstance_DidChangeView(
+      API_ID_PPP_INSTANCE, instance, enter.object()->GetData(),
+      IsFlashFullscreen(instance, dispatcher)));
 }
 
 void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
@@ -105,7 +122,7 @@ PP_Bool HandleDocumentLoad(PP_Instance instance,
   return result;
 }
 
-static const PPP_Instance_1_0 instance_interface_1_0 = {
+static const PPP_Instance_1_1 instance_interface = {
   &DidCreate,
   &DidDestroy,
   &DidChangeView,
@@ -113,18 +130,30 @@ static const PPP_Instance_1_0 instance_interface_1_0 = {
   &HandleDocumentLoad
 };
 
-InterfaceProxy* CreateInstanceProxy(Dispatcher* dispatcher) {
-  return new PPP_Instance_Proxy(dispatcher);
-}
-
 }  // namespace
 
 PPP_Instance_Proxy::PPP_Instance_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher) {
   if (dispatcher->IsPlugin()) {
-    combined_interface_.reset(
-        new PPP_Instance_Combined(*static_cast<const PPP_Instance_1_0*>(
-            dispatcher->local_get_interface()(PPP_INSTANCE_INTERFACE_1_0))));
+    // The PPP_Instance proxy works by always proxying the 1.1 version of the
+    // interface, and then detecting in the plugin process which one to use.
+    // PPP_Instance_Combined handles dispatching to whatever interface is
+    // supported.
+    //
+    // This means that if the plugin supports either 1.0 or 1.1 version of
+    // the interface, we want to say it supports the 1.1 version since we'll
+    // convert it here. This magic conversion code is hardcoded into
+    // PluginDispatcher::OnMsgSupportsInterface.
+    const PPP_Instance* instance = static_cast<const PPP_Instance*>(
+        dispatcher->local_get_interface()(PPP_INSTANCE_INTERFACE));
+    if (instance) {
+      combined_interface_.reset(new PPP_Instance_Combined(*instance));
+    } else {
+      const PPP_Instance_1_0* instance_1_0 =
+          static_cast<const PPP_Instance_1_0*>(
+              dispatcher->local_get_interface()(PPP_INSTANCE_INTERFACE_1_0));
+      combined_interface_.reset(new PPP_Instance_Combined(*instance_1_0));
+    }
   }
 }
 
@@ -132,36 +161,29 @@ PPP_Instance_Proxy::~PPP_Instance_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPP_Instance_Proxy::GetInfo1_0() {
-  static const Info info = {
-    &instance_interface_1_0,
-    PPP_INSTANCE_INTERFACE_1_0,
-    API_ID_PPP_INSTANCE,
-    false,
-    &CreateInstanceProxy
-  };
-  return &info;
+const PPP_Instance* PPP_Instance_Proxy::GetInstanceInterface() {
+  return &instance_interface;
 }
 
 bool PPP_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPP_Instance_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPInstance_DidCreate,
-                        OnMsgDidCreate)
+                        OnPluginMsgDidCreate)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPInstance_DidDestroy,
-                        OnMsgDidDestroy)
+                        OnPluginMsgDidDestroy)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPInstance_DidChangeView,
-                        OnMsgDidChangeView)
+                        OnPluginMsgDidChangeView)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPInstance_DidChangeFocus,
-                        OnMsgDidChangeFocus)
+                        OnPluginMsgDidChangeFocus)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPInstance_HandleDocumentLoad,
-                        OnMsgHandleDocumentLoad)
+                        OnPluginMsgHandleDocumentLoad)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void PPP_Instance_Proxy::OnMsgDidCreate(
+void PPP_Instance_Proxy::OnPluginMsgDidCreate(
     PP_Instance instance,
     const std::vector<std::string>& argn,
     const std::vector<std::string>& argv,
@@ -195,37 +217,45 @@ void PPP_Instance_Proxy::OnMsgDidCreate(
                                            &argn_array[0], &argv_array[0]);
 }
 
-void PPP_Instance_Proxy::OnMsgDidDestroy(PP_Instance instance) {
+void PPP_Instance_Proxy::OnPluginMsgDidDestroy(PP_Instance instance) {
   combined_interface_->DidDestroy(instance);
   PpapiGlobals::Get()->GetResourceTracker()->DidDeleteInstance(instance);
   static_cast<PluginDispatcher*>(dispatcher())->DidDestroyInstance(instance);
 }
 
-void PPP_Instance_Proxy::OnMsgDidChangeView(PP_Instance instance,
-                                            const PP_Rect& position,
-                                            const PP_Rect& clip,
-                                            PP_Bool fullscreen,
-                                            PP_Bool flash_fullscreen) {
+void PPP_Instance_Proxy::OnPluginMsgDidChangeView(
+    PP_Instance instance,
+    const ViewData& new_data,
+    PP_Bool flash_fullscreen) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return;
   InstanceData* data = dispatcher->GetInstanceData(instance);
   if (!data)
     return;
-  data->position = position;
-  data->fullscreen = fullscreen;
+
+  data->view = new_data;
   data->flash_fullscreen = flash_fullscreen;
-  combined_interface_->DidChangeView(instance, &position, &clip);
+
+  ScopedPPResource resource(
+      ScopedPPResource::PassRef(),
+      (new PPB_View_Shared(PPB_View_Shared::InitAsProxy(),
+                           instance, new_data))->GetReference());
+
+  combined_interface_->DidChangeView(instance, resource,
+                                     &new_data.rect,
+                                     &new_data.clip_rect);
 }
 
-void PPP_Instance_Proxy::OnMsgDidChangeFocus(PP_Instance instance,
-                                             PP_Bool has_focus) {
+void PPP_Instance_Proxy::OnPluginMsgDidChangeFocus(PP_Instance instance,
+                                                   PP_Bool has_focus) {
   combined_interface_->DidChangeFocus(instance, has_focus);
 }
 
-void PPP_Instance_Proxy::OnMsgHandleDocumentLoad(PP_Instance instance,
-                                                 const HostResource& url_loader,
-                                                 PP_Bool* result) {
+void PPP_Instance_Proxy::OnPluginMsgHandleDocumentLoad(
+    PP_Instance instance,
+    const HostResource& url_loader,
+    PP_Bool* result) {
   PP_Resource plugin_loader =
       PPB_URLLoader_Proxy::TrackPluginResource(url_loader);
   *result = combined_interface_->HandleDocumentLoad(instance, plugin_loader);

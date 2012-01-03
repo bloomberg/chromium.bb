@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_THUNK_AUDIO_API_H_
-#define PPAPI_THUNK_AUDIO_API_H_
+#ifndef PPAPI_THUNK_PPB_AUDIO_API_H_
+#define PPAPI_THUNK_PPB_AUDIO_API_H_
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_audio.h"
@@ -30,4 +30,4 @@ class PPAPI_THUNK_EXPORT PPB_Audio_API {
 }  // namespace thunk
 }  // namespace ppapi
 
-#endif  // PPAPI_THUNK_AUDIO_API_H_
+#endif  // PPAPI_THUNK_PPB_AUDIO_API_H_

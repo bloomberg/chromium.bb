@@ -35,6 +35,7 @@ struct PPB_URLLoader;
 struct PPB_URLRequestInfo;
 struct PPB_URLResponseInfo;
 struct PPB_Var;
+struct PPB_View;
 struct PPB_WheelInputEvent;
 struct PPB_Widget_Dev;
 
@@ -66,6 +67,7 @@ const PPB_URLLoader* PPBURLLoader();
 const PPB_URLRequestInfo* PPBURLRequestInfo();
 const PPB_URLResponseInfo* PPBURLResponseInfo();
 const PPB_Var* PPBVar();
+const PPB_View* PPBView();
 const PPB_WheelInputEvent* PPBWheelInputEvent();
 
 //

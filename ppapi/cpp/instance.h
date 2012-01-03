@@ -14,6 +14,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/cpp/view.h"
 
 struct PP_InputEvent;
 
@@ -90,9 +91,23 @@ class Instance {
   /// @{
   /// @name PPP_Instance methods for the module to override:
 
-  /// DidChangeView() is called when the position, the size, or the clip
-  /// rectangle of the element in the browser that corresponds to this
-  /// instance has changed.
+  /// DidChangeView() is called when the view information for the Instance
+  /// has changed. See the <code>View</code> object for information.
+  ///
+  /// Most implementations will want to check if the size and user visibility
+  /// changed, and either resize themselves or start/stop generating updates.
+  ///
+  /// You should not call the default implementation. For
+  /// backwards-compatibility, it will call the deprecated version of
+  /// DidChangeView below.
+  virtual void DidChangeView(const View& view);
+
+  /// Deprecated backwards-compatible version of <code>DidChangeView()</code>.
+  /// New code should derive from the version that takes a
+  /// <code>ViewChanged</code> object rather than this version. This function
+  /// is called by the default implementation of the newer
+  /// <code>DidChangeView</code> function for source compatibility with older
+  /// code.
   ///
   /// A typical implementation will check the size of the <code>position</code>
   /// argument and reallocate the graphics context when a different size is

@@ -23,7 +23,6 @@ struct PP_NetAddress_Private;
 namespace ppapi {
 
 class HostResource;
-//struct PPB_FileRef_CreateInfo;
 
 namespace proxy {
 
