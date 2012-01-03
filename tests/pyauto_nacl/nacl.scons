@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Copyright 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
@@ -18,8 +18,6 @@ def CreateDefaultDeps(base_name):
           env.File('${STAGING_DIR}/' + base_name + '.html'),
           env.File('${STAGING_DIR}/' + base_name + '.nmf')]
 
-earth_c_files = CreateDefaultDeps('earth_c')
-earth_cc_files = CreateDefaultDeps('earth_cc')
 ppapi_example_events_files = [
     env.File('${STAGING_DIR}/' + ppapi_example_events_nexe_name),
     env.File('${STAGING_DIR}/ppapi_example_events.html'),
@@ -99,8 +97,6 @@ env.AddNodeToTestSuite(node,
                        is_broken=env.PyAutoTesterIsBroken())
 
 core_test_files = [env.File('${STAGING_DIR}/nacltest.js'),
-                   earth_c_files +
-                   earth_cc_files +
                    ppapi_example_events_files +
                    ppapi_example_2d_files +
                    ppapi_example_audio_files +
