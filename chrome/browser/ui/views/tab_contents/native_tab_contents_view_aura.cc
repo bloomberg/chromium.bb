@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -149,6 +149,7 @@ void NativeTabContentsViewAura::InitNativeTabContentsView() {
   params.create_texture_for_layer = false;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = NULL;
+  params.can_activate = true;
   GetWidget()->Init(params);
 
   // Hide the widget to prevent it from showing up on the root window. This is
