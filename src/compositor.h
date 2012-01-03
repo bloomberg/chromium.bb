@@ -103,7 +103,6 @@ struct weston_input_device {
 	int32_t hotspot_x, hotspot_y;
 	struct wl_list link;
 	uint32_t modifier_state;
-	struct wl_selection *selection;
 
 	struct wl_list drag_resource_list;
 	struct weston_data_source *drag_data_source;
@@ -161,6 +160,7 @@ struct weston_shell {
 	void (*configure)(struct weston_shell *shell,
 			  struct weston_surface *surface,
 			  int32_t x, int32_t y, int32_t width, int32_t height);
+	void (*destroy)(struct weston_shell *shell);
 };
 
 enum {
@@ -168,6 +168,8 @@ enum {
 	WESTON_COMPOSITOR_IDLE,		/* shell->unlock called on activity */
 	WESTON_COMPOSITOR_SLEEPING	/* no rendering, no frame events */
 };
+
+struct screenshooter;
 
 struct weston_compositor {
 	struct wl_shm *shm;
@@ -225,6 +227,8 @@ struct weston_compositor {
 	int (*authenticate)(struct weston_compositor *c, uint32_t id);
 	EGLImageKHR (*create_cursor_image)(struct weston_compositor *c,
 					   int32_t *width, int32_t *height);
+
+	struct screenshooter *screenshooter;
 };
 
 #define MODIFIER_CTRL	(1 << 8)
@@ -354,6 +358,9 @@ void
 weston_binding_destroy(struct weston_binding *binding);
 
 void
+weston_binding_list_destroy_all(struct wl_list *list);
+
+void
 weston_compositor_run_binding(struct weston_compositor *compositor,
 			      struct weston_input_device *device,
 			      uint32_t time,
@@ -404,6 +411,9 @@ weston_input_device_init(struct weston_input_device *device,
 			 struct weston_compositor *ec);
 
 void
+weston_input_device_release(struct weston_input_device *device);
+
+void
 weston_switcher_init(struct weston_compositor *compositor);
 
 enum {
@@ -420,8 +430,11 @@ tty_create(struct weston_compositor *compositor,
 void
 tty_destroy(struct tty *tty);
 
-void
+struct screenshooter *
 screenshooter_create(struct weston_compositor *ec);
+
+void
+screenshooter_destroy(struct screenshooter *s);
 
 uint32_t *
 weston_load_image(const char *filename,

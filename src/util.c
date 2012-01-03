@@ -189,8 +189,10 @@ weston_zoom_frame(struct weston_animation *animation,
 
 	weston_spring_update(&zoom->spring, msecs);
 
-	if (weston_spring_done(&zoom->spring))
+	if (weston_spring_done(&zoom->spring)) {
 		weston_zoom_destroy(zoom);
+		return;
+	}
 
 	scale = zoom->start +
 		(zoom->stop - zoom->start) * zoom->spring.current;
@@ -283,10 +285,19 @@ weston_binding_destroy(struct weston_binding *binding)
 }
 
 WL_EXPORT void
+weston_binding_list_destroy_all(struct wl_list *list)
+{
+	struct weston_binding *binding, *tmp;
+
+	wl_list_for_each_safe(binding, tmp, list, link)
+		weston_binding_destroy(binding);
+}
+
+WL_EXPORT void
 weston_compositor_run_binding(struct weston_compositor *compositor,
-			    struct weston_input_device *device,
-			    uint32_t time,
-			    uint32_t key, uint32_t button, int32_t state)
+			      struct weston_input_device *device,
+			      uint32_t time,
+			      uint32_t key, uint32_t button, int32_t state)
 {
 	struct weston_binding *b;
 
