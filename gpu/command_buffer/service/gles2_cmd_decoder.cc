@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -3913,6 +3913,8 @@ error::Error GLES2DecoderImpl::HandleRegisterSharedIdsCHROMIUM(
 
 void GLES2DecoderImpl::DoClear(GLbitfield mask) {
   if (CheckBoundFramebuffersValid("glClear")) {
+    UNSHIPPED_TRACE_EVENT_INSTANT2("test_gpu", "DoClear", "red", clear_red_,
+                                   "green", clear_green_);
     ApplyDirtyState();
     glClear(mask);
   }
@@ -4222,6 +4224,7 @@ void GLES2DecoderImpl::DoBlitFramebufferEXT(
     glBlitFramebufferEXT(
         srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
   }
+  UNSHIPPED_TRACE_EVENT_INSTANT1("test_gpu", "DoBlit", "width", srcX1 - srcX0);
 }
 
 void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
@@ -7338,8 +7341,10 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
   int this_frame_number = frame_number_++;
   // TRACE_EVENT for gpu tests:
-  TRACE_EVENT_INSTANT1("test_gpu", "SwapBuffers",
-                       "GLImpl", static_cast<int>(gfx::GetGLImplementation()));
+  TRACE_EVENT_INSTANT2("test_gpu", "SwapBuffers",
+                       "GLImpl", static_cast<int>(gfx::GetGLImplementation()),
+                       "width", (is_offscreen ? offscreen_size_.width() :
+                                 surface_->GetSize().width()));
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleSwapBuffers",
                "offscreen", is_offscreen,
                "frame", this_frame_number);
