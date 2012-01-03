@@ -1,0 +1,1350 @@
+0x12300000:      0x69040000: 3DSTATE_PIPELINE_SELECT
+0x12300004:      0x790d0002: 3DSTATE_MULTISAMPLE
+Bad count in 3DSTATE_MULTISAMPLE
+0x12300008:      0x00000000:    dword 1
+0x1230000c:      0x00000000:    dword 2
+0x12300010:      0x00000000:    dword 3
+0x12300014:      0x78180000: 3DSTATE_SAMPLE_MASK
+0x12300018:      0x00000001:    dword 1
+0x1230001c:      0x61020000: STATE_SIP
+0x12300020:      0x00000000:    dword 1
+0x12300024:      0x680b0000: 3DSTATE_VF_STATISTICS
+0x12300028:      0x61010008: STATE_BASE_ADDRESS
+0x1230002c:      0x00000001:    general state base address 0x00000000
+0x12300030:      0x0b59b001:    surface state base address 0x0b59b000
+0x12300034:      0x0b59b001:    dynamic state base address 0x0b59b000
+0x12300038:      0x00000001:    indirect state base address 0x00000000
+0x1230003c:      0x0b59a001:    instruction state base address 0x0b59a000
+0x12300040:      0x00000001:    general state upper bound disabled
+0x12300044:      0x00000001:    dynamic state upper bound disabled
+0x12300048:      0x00000001:    indirect state upper bound disabled
+0x1230004c:      0x00000001:    instruction state upper bound disabled
+0x12300050:      0x78230000: 3D UNKNOWN: 3d_965 opcode = 0x7823
+0x12300054:      0x00007fe0: MI_NOOP
+0x12300058:      0x78210000: 3D UNKNOWN: 3d_965 opcode = 0x7821
+0x1230005c:      0x00007fc0: MI_NOOP
+0x12300060:      0x79120000: 3D UNKNOWN: 3d_965 opcode = 0x7912
+0x12300064:      0x00000008: MI_NOOP
+0x12300068:      0x79160000: 3D UNKNOWN: 3d_965 opcode = 0x7916
+0x1230006c:      0x00080008: MI_NOOP
+0x12300070:      0x78300000: 3D UNKNOWN: 3d_965 opcode = 0x7830
+0x12300074:      0x040002c0: MI_ARB_ON_OFF
+0x12300078:      0x78330000: 3D UNKNOWN: 3d_965 opcode = 0x7833
+0x1230007c:      0x04000000: MI_ARB_ON_OFF
+0x12300080:      0x78310000: 3D UNKNOWN: 3d_965 opcode = 0x7831
+0x12300084:      0x04000000: MI_ARB_ON_OFF
+0x12300088:      0x78320000: 3D UNKNOWN: 3d_965 opcode = 0x7832
+0x1230008c:      0x04000000: MI_ARB_ON_OFF
+0x12300090:      0x78240000: 3D UNKNOWN: 3d_965 opcode = 0x7824
+0x12300094:      0x00007f81: MI_NOOP
+Bad count in 3DSTATE_CC_STATE_POINTERS
+0x12300098:      0x780e0000: 3DSTATE_CC_STATE_POINTERS
+0x1230009c:      0x00007f41:    blend change 1
+0x123000a0:      0x78250000:    depth stencil change 0
+0x123000a4:      0x00007f01:    cc change 1
+0x123000a0:      0x78250000: 3D UNKNOWN: 3d_965 opcode = 0x7825
+0x123000a4:      0x00007f01: MI_NOOP
+0x123000a8:      0x78160005: 3DSTATE_CONSTANT_GS_STATE
+Bad count in 3DSTATE_CONSTANT_GS_STATE
+0x123000ac:      0x00000000:    dword 1
+0x123000b0:      0x00000000:    dword 2
+0x123000b4:      0x00000000:    dword 3
+0x123000b8:      0x00000000:    dword 4
+0x123000bc:      0x00000000:    dword 5
+0x123000c0:      0x00000000:    dword 6
+0x123000c4:      0x78110005: 3DSTATE_GS
+0x123000c8:      0x00000000:    kernel pointer
+0x123000cc:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x123000d0:      0x00000000:    scratch offset
+0x123000d4:      0x00000401:    Dispatch GRF start 1, VUE read length 0, VUE read offset 0
+0x123000d8:      0x00000400:    Max Threads 1, Rendering disable
+0x123000dc:      0x00000000:    Reorder disable, Discard Adjaceny disable, GS disable
+0x123000e0:      0x78290000: 3D UNKNOWN: 3d_965 opcode = 0x7829
+0x123000e4:      0x00000000: MI_NOOP
+0x123000e8:      0x78190005: 3D UNKNOWN: 3d_965 opcode = 0x7819
+0x123000ec:      0x00000000: MI_NOOP
+0x123000f0:      0x00000000: MI_NOOP
+0x123000f4:      0x00000000: MI_NOOP
+0x123000f8:      0x00000000: MI_NOOP
+0x123000fc:      0x00000000: MI_NOOP
+0x12300100:      0x00000000: MI_NOOP
+0x12300104:      0x781b0005: 3D UNKNOWN: 3d_965 opcode = 0x781b
+0x12300108:      0x00000000: MI_NOOP
+0x1230010c:      0x00000000: MI_NOOP
+0x12300110:      0x00000000: MI_NOOP
+0x12300114:      0x00000000: MI_NOOP
+0x12300118:      0x00000000: MI_NOOP
+0x1230011c:      0x00000000: MI_NOOP
+0x12300120:      0x78270000: 3D UNKNOWN: 3d_965 opcode = 0x7827
+0x12300124:      0x00000000: MI_NOOP
+0x12300128:      0x781c0002: 3D UNKNOWN: 3d_965 opcode = 0x781c
+0x1230012c:      0x00000000: MI_NOOP
+0x12300130:      0x00000000: MI_NOOP
+0x12300134:      0x00000000: MI_NOOP
+0x12300138:      0x781a0005: 3D UNKNOWN: 3d_965 opcode = 0x781a
+0x1230013c:      0x00000000: MI_NOOP
+0x12300140:      0x00000000: MI_NOOP
+0x12300144:      0x00000000: MI_NOOP
+0x12300148:      0x00000000: MI_NOOP
+0x1230014c:      0x00000000: MI_NOOP
+0x12300150:      0x00000000: MI_NOOP
+0x12300154:      0x781d0004: 3D UNKNOWN: 3d_965 opcode = 0x781d
+0x12300158:      0x00000000: MI_NOOP
+0x1230015c:      0x00000000: MI_NOOP
+0x12300160:      0x00000000: MI_NOOP
+0x12300164:      0x00000000: MI_NOOP
+0x12300168:      0x00000000: MI_NOOP
+0x1230016c:      0x78280000: 3D UNKNOWN: 3d_965 opcode = 0x7828
+0x12300170:      0x00000000: MI_NOOP
+0x12300174:      0x78260000: 3D UNKNOWN: 3d_965 opcode = 0x7826
+0x12300178:      0x00007d40: MI_NOOP
+0x1230017c:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
+0x12300180:      0x00000000: MI_NOOP
+0x12300184:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
+Bad count in 3DSTATE_CONSTANT_VS_STATE
+0x12300188:      0x00000000:    dword 1
+0x1230018c:      0x00000000:    dword 2
+0x12300190:      0x00000000:    dword 3
+0x12300194:      0x00000000:    dword 4
+0x12300198:      0x00000000:    dword 5
+0x1230019c:      0x00000000:    dword 6
+0x123001a0:      0x78100004: 3DSTATE_VS
+0x123001a4:      0x00000000:    kernel pointer
+0x123001a8:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x123001ac:      0x00000000:    scratch offset
+0x123001b0:      0x00100800:    Dispatch GRF start 1, VUE read length 1, VUE read offset 0
+0x123001b4:      0xfe000401:    Max Threads 128, Vertex Cache enable, VS func enable
+0x123001b8:      0x781e0001: 3D UNKNOWN: 3d_965 opcode = 0x781e
+0x123001bc:      0x00000000: MI_NOOP
+0x123001c0:      0x00000000: MI_NOOP
+0x123001c4:      0x78120002: 3DSTATE_CLIP
+0x123001c8:      0x00150400:    UserClip distance cull test mask 0x0
+0x123001cc:      0x98000026:    Clip enable, API mode OGL, Viewport XY test enable, Viewport Z test enable, Guardband test disable, Clip mode 0, Perspective Divide enable, Non-Perspective Barycentric disable, Tri Provoking 2, Line Provoking 1, Trifan Provoking 2
+0x123001d0:      0x0003ffe0:    Min PointWidth 1, Max PointWidth 2047, Force Zero RTAIndex enable, Max VPIndex 0
+0x123001d4:      0x781f000c: 3D UNKNOWN: 3d_965 opcode = 0x781f
+0x123001d8:      0x00200810: MI_NOOP
+0x123001dc:      0x022d85e0: MI_FLUSH
+0x123001e0:      0x00000000: MI_NOOP
+0x123001e4:      0x00000000: MI_NOOP
+0x123001e8:      0x00000000: MI_NOOP
+0x123001ec:      0x022bba40: MI_FLUSH
+0x123001f0:      0x00000000: MI_NOOP
+0x123001f4:      0x00000000: MI_NOOP
+0x123001f8:      0x00000000: MI_NOOP
+0x123001fc:      0x00000000: MI_NOOP
+0x12300200:      0x00000000: MI_NOOP
+0x12300204:      0x00000000: MI_NOOP
+0x12300208:      0x00000000: MI_NOOP
+Bad count in 3DSTATE_SF
+0x1230020c:      0x78130005: 3DSTATE_SF
+0x12300210:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
+0x12300214:      0x22000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
+0x12300218:      0x4c000808:    AA disable, CullMode 2, Scissor enable, Multisample m ode 0
+0x1230021c:      0x00000000:    Last Pixel disable, SubPixel Precision 8, Use PixelWidth 0
+0x12300220:      0x00000000:    Global Depth Offset Constant 0.000000
+0x12300224:      0x00000000:    Global Depth Offset Scale 0.000000
+0x12300228:      0x78140001:    Global Depth Offset Clamp 12007187723301828176357047660445696.000000
+0x1230022c:      0xa0000040:    Attrib 1 (Override WY, Const Source 0, Swizzle Select 0, Source 0); Attrib 0 (Override , Const Source 0, Swizzle Select 1, Source 0)
+0x12300230:      0x00000000:    Attrib 3 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 2 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300234:      0x782a0000:    Attrib 5 (Override ZYX, Const Source 0, Swizzle Select 0, Source 10); Attrib 4 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300238:      0x00007d40:    Attrib 7 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 6 (Override ZYX, Const Source 2, Swizzle Select 1, Source 0)
+0x1230023c:      0x782f0000:    Attrib 9 (Override ZYX, Const Source 0, Swizzle Select 0, Source 15); Attrib 8 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300240:      0x00000000:    Attrib 11 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 10 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300244:      0x78170005:    Attrib 13 (Override ZYX, Const Source 0, Swizzle Select 0, Source 23); Attrib 12 (Override , Const Source 0, Swizzle Select 0, Source 5)
+0x12300248:      0x00000001:    Attrib 15 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 14 (Override , Const Source 0, Swizzle Select 0, Source 1)
+0x1230024c:      0x00000000:    Point Sprite TexCoord Enable
+0x12300250:      0x00007ee0:    Const Interp Enable
+0x12300254:      0x00000000:    Attrib 7-0 WrapShortest Enable
+0x12300258:      0x00000000:    Attrib 15-8 WrapShortest Enable
+Bad count in 3DSTATE_WM
+0x12300228:      0x78140001: 3DSTATE_WM
+0x1230022c:      0xa0000040:    kernel start pointer 0
+0x12300230:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x12300234:      0x782a0000:    scratch offset
+0x12300238:      0x00007d40:    Depth Clear 0, Depth Resolve 0, HiZ Resolve 0, Dispatch GRF start[0] 0, start[1] 125, start[2] 64
+0x1230023c:      0x782f0000:    MaxThreads 61, PS KillPixel 0, PS computed Z 1, PS use sourceZ 0, Thread Dispatch 1, PS use sourceW 0, Dispatch32 0, Dispatch16 0, Dispatch8 0
+0x12300240:      0x00000000:    Num SF output 0, Pos XY offset 0, ZW interp mode 0 , Barycentric interp mode 0x0, Point raster rule 0, Multisample mode 0, Multisample Dispatch mode 0
+0x12300244:      0x78170005:    kernel start pointer 1
+0x12300248:      0x00000001:    kernel start pointer 2
+0x12300234:      0x782a0000: 3D UNKNOWN: 3d_965 opcode = 0x782a
+0x12300238:      0x00007d40: MI_NOOP
+0x1230023c:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
+0x12300240:      0x00000000: MI_NOOP
+0x12300244:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
+Bad count in 3DSTATE_CONSTANT_PS_STATE
+0x12300248:      0x00000001:    dword 1
+0x1230024c:      0x00000000:    dword 2
+0x12300250:      0x00007ee0:    dword 3
+0x12300254:      0x00000000:    dword 4
+0x12300258:      0x00000000:    dword 5
+0x1230025c:      0x00000000:    dword 6
+0x12300260:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
+0x12300264:      0x00000100: MI_NOOP
+0x12300268:      0x00000000: MI_NOOP
+0x1230026c:      0x00000000: MI_NOOP
+0x12300270:      0x55000801: XY_MONO_SRC_COPY_BLT
+Bad count in XY_MONO_SRC_COPY_BLT
+0x12300274:      0x00020000:    dword 1
+0x12300278:      0x00000000:    dword 2
+0x1230027c:      0x00000180: MI_NOOP
+0x12300280:      0x780f0000: 3DSTATE_SCISSOR_POINTERS
+0x12300284:      0x00007d20:    scissor rect offset
+0x12300288:      0x7a000002: PIPE_CONTROL
+0x1230028c:      0x00002000:    no write, depth stall, 
+0x12300290:      0x00000000:    
+0x12300294:      0x00000000:    
+0x12300298:      0x7a000002: PIPE_CONTROL
+0x1230029c:      0x00000001:    no write, depth cache flush, 
+0x123002a0:      0x00000000:    
+0x123002a4:      0x00000000:    
+0x123002a8:      0x7a000002: PIPE_CONTROL
+0x123002ac:      0x00002000:    no write, depth stall, 
+0x123002b0:      0x00000000:    
+0x123002b4:      0x00000000:    
+Bad count in 3DSTATE_URB
+0x123002b8:      0x78050005: 3DSTATE_URB
+0x123002bc:      0x380c05ff:    VS entries 1535, alloc size 13 (1024bit row)
+0x123002c0:      0x167f9000:    GS entries 912, alloc size 1 (1024bit row)
+0x123002d4:      0x78070002: 3D UNKNOWN: 3d_965 opcode = 0x7807
+0x123002d8:      0x00000000: MI_NOOP
+0x123002dc:      0x00000000: MI_NOOP
+0x123002e0:      0x00000000: MI_NOOP
+0x123002e4:      0x78060001: 3D UNKNOWN: 3d_965 opcode = 0x7806
+0x123002e8:      0x0000027f: MI_NOOP
+0x123002ec:      0x17b65000: MI UNKNOWN
+0x123002f0:      0x78040001: 3D UNKNOWN: 3d_965 opcode = 0x7804
+0x123002f4:      0x00000000: MI_NOOP
+0x123002f8:      0x00000000: MI_NOOP
+0x123002fc:      0x79000002: 3DSTATE_DRAWING_RECTANGLE
+0x12300300:      0x00000000:    top left: 0,0
+0x12300304:      0x012b012b:    bottom right: 299,299
+0x12300308:      0x00000000:    origin: 0,0
+0x1230030c:      0x78080003: 3DSTATE_VERTEX_BUFFERS
+0x12300310:      0x0000400c:    buffer 0: sequential, pitch 12b
+0x12300314:      0x16879000:    buffer address
+0x12300318:      0x16888fff:    max index
+0x1230031c:      0x00000000:    mbz
+0x12300320:      0x78090001: 3DSTATE_VERTEX_ELEMENTS
+0x12300324:      0x02400000:    buffer 0: invalid, type 0x0040, src offset 0x0000 bytes
+0x12300328:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
+Bad count in 3DPRIMITIVE
+0x1230032c:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x12300330:      0x00000006:    vertex count
+0x12300334:      0x00000004:    start vertex
+0x12300338:      0x00000000:    instance count
+0x1230033c:      0x00000001:    start instance
+0x12300340:      0x00000000:    index bias
+0x12300348:      0x79120000: 3D UNKNOWN: 3d_965 opcode = 0x7912
+0x1230034c:      0x00000008: MI_NOOP
+0x12300350:      0x79160000: 3D UNKNOWN: 3d_965 opcode = 0x7916
+0x12300354:      0x00080008: MI_NOOP
+0x12300358:      0x78300000: 3D UNKNOWN: 3d_965 opcode = 0x7830
+0x1230035c:      0x040002c0: MI_ARB_ON_OFF
+0x12300360:      0x78330000: 3D UNKNOWN: 3d_965 opcode = 0x7833
+0x12300364:      0x04000000: MI_ARB_ON_OFF
+0x12300368:      0x78310000: 3D UNKNOWN: 3d_965 opcode = 0x7831
+0x1230036c:      0x04000000: MI_ARB_ON_OFF
+0x12300370:      0x78320000: 3D UNKNOWN: 3d_965 opcode = 0x7832
+0x12300374:      0x04000000: MI_ARB_ON_OFF
+Bad count in 3DSTATE_CC_STATE_POINTERS
+0x12300378:      0x780e0000: 3DSTATE_CC_STATE_POINTERS
+0x1230037c:      0x00007d01:    blend change 1
+0x12300380:      0x78250000:    depth stencil change 0
+0x12300384:      0x00007cc1:    cc change 1
+0x12300380:      0x78250000: 3D UNKNOWN: 3d_965 opcode = 0x7825
+0x12300384:      0x00007cc1: MI_NOOP
+0x12300388:      0x78260000: 3D UNKNOWN: 3d_965 opcode = 0x7826
+0x1230038c:      0x00007a00: MI_NOOP
+0x12300390:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
+0x12300394:      0x00000000: MI_NOOP
+0x12300398:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
+Bad count in 3DSTATE_CONSTANT_VS_STATE
+0x1230039c:      0x00000006:    dword 1
+0x123003a0:      0x00000000:    dword 2
+0x123003a4:      0x00007b80:    dword 3
+0x123003a8:      0x00000000:    dword 4
+0x123003ac:      0x00000000:    dword 5
+0x123003b0:      0x00000000:    dword 6
+0x123003b4:      0x78100004: 3DSTATE_VS
+0x123003b8:      0x00000280:    kernel pointer
+0x123003bc:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x123003c0:      0x00000000:    scratch offset
+0x123003c4:      0x00100800:    Dispatch GRF start 1, VUE read length 1, VUE read offset 0
+0x123003c8:      0xfe000401:    Max Threads 128, Vertex Cache enable, VS func enable
+0x123003cc:      0x781e0001: 3D UNKNOWN: 3d_965 opcode = 0x781e
+0x123003d0:      0x00000000: MI_NOOP
+0x123003d4:      0x00000000: MI_NOOP
+0x123003d8:      0x78120002: 3DSTATE_CLIP
+0x123003dc:      0x00170400:    UserClip distance cull test mask 0x0
+0x123003e0:      0x98000026:    Clip enable, API mode OGL, Viewport XY test enable, Viewport Z test enable, Guardband test disable, Clip mode 0, Perspective Divide enable, Non-Perspective Barycentric disable, Tri Provoking 2, Line Provoking 1, Trifan Provoking 2
+0x123003e4:      0x0003ffe0:    Min PointWidth 1, Max PointWidth 2047, Force Zero RTAIndex enable, Max VPIndex 0
+0x123003e8:      0x781f000c: 3D UNKNOWN: 3d_965 opcode = 0x781f
+0x123003ec:      0x00600810: MI_NOOP write NOPID reg, val=0x200810
+0x123003f0:      0x02380000: MI_FLUSH
+0x123003f4:      0x00000000: MI_NOOP
+0x123003f8:      0xea9de040:    UNKNOWN
+0x123003fc:      0x00007f93: MI_NOOP
+0x12300400:      0x02279b80: MI_FLUSH
+0x12300404:      0x00000000: MI_NOOP
+0x12300408:      0x00000000: MI_NOOP
+0x1230040c:      0x00000000: MI_NOOP
+0x12300410:      0x00000000: MI_NOOP
+0x12300414:      0x00000001: MI_NOOP
+0x12300418:      0x00000000: MI_NOOP
+0x1230041c:      0x00000000: MI_NOOP
+Bad count in 3DSTATE_SF
+0x12300420:      0x78130005: 3DSTATE_SF
+0x12300424:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
+0x12300428:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
+0x1230042c:      0x4c000808:    AA disable, CullMode 2, Scissor enable, Multisample m ode 0
+0x12300430:      0x00000000:    Last Pixel disable, SubPixel Precision 8, Use PixelWidth 0
+0x12300434:      0x00000000:    Global Depth Offset Constant 0.000000
+0x12300438:      0x00000000:    Global Depth Offset Scale 0.000000
+0x1230043c:      0x78140001:    Global Depth Offset Clamp 12007187723301828176357047660445696.000000
+0x12300440:      0xa0000040:    Attrib 1 (Override WY, Const Source 0, Swizzle Select 0, Source 0); Attrib 0 (Override , Const Source 0, Swizzle Select 1, Source 0)
+0x12300444:      0x00000000:    Attrib 3 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 2 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300448:      0x782a0000:    Attrib 5 (Override ZYX, Const Source 0, Swizzle Select 0, Source 10); Attrib 4 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x1230044c:      0x00007a00:    Attrib 7 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 6 (Override ZYX, Const Source 1, Swizzle Select 0, Source 0)
+0x12300450:      0x782f0000:    Attrib 9 (Override ZYX, Const Source 0, Swizzle Select 0, Source 15); Attrib 8 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300454:      0x00000000:    Attrib 11 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 10 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300458:      0x78170005:    Attrib 13 (Override ZYX, Const Source 0, Swizzle Select 0, Source 23); Attrib 12 (Override , Const Source 0, Swizzle Select 0, Source 5)
+0x1230045c:      0x00000000:    Attrib 15 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 14 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300460:      0x00000000:    Point Sprite TexCoord Enable
+0x12300464:      0x00000000:    Const Interp Enable
+0x12300468:      0x00000000:    Attrib 7-0 WrapShortest Enable
+0x1230046c:      0x00000000:    Attrib 15-8 WrapShortest Enable
+Bad count in 3DSTATE_WM
+0x1230043c:      0x78140001: 3DSTATE_WM
+0x12300440:      0xa0000040:    kernel start pointer 0
+0x12300444:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x12300448:      0x782a0000:    scratch offset
+0x1230044c:      0x00007a00:    Depth Clear 0, Depth Resolve 0, HiZ Resolve 0, Dispatch GRF start[0] 0, start[1] 122, start[2] 0
+0x12300450:      0x782f0000:    MaxThreads 61, PS KillPixel 0, PS computed Z 1, PS use sourceZ 0, Thread Dispatch 1, PS use sourceW 0, Dispatch32 0, Dispatch16 0, Dispatch8 0
+0x12300454:      0x00000000:    Num SF output 0, Pos XY offset 0, ZW interp mode 0 , Barycentric interp mode 0x0, Point raster rule 0, Multisample mode 0, Multisample Dispatch mode 0
+0x12300458:      0x78170005:    kernel start pointer 1
+0x1230045c:      0x00000000:    kernel start pointer 2
+0x12300448:      0x782a0000: 3D UNKNOWN: 3d_965 opcode = 0x782a
+0x1230044c:      0x00007a00: MI_NOOP
+0x12300450:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
+0x12300454:      0x00000000: MI_NOOP
+0x12300458:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
+Bad count in 3DSTATE_CONSTANT_PS_STATE
+0x1230045c:      0x00000000:    dword 1
+0x12300460:      0x00000000:    dword 2
+0x12300464:      0x00000000:    dword 3
+0x12300468:      0x00000000:    dword 4
+0x1230046c:      0x00000000:    dword 5
+0x12300470:      0x00000000:    dword 6
+0x12300474:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
+0x12300478:      0x00000540: MI_NOOP
+0x1230047c:      0x00010000: MI_NOOP
+0x12300480:      0x00000000: MI_NOOP
+0x12300484:      0x55000402: XY_MONO_SRC_COPY_BLT
+Bad count in XY_MONO_SRC_COPY_BLT
+0x12300488:      0x00020000:    dword 1
+0x1230048c:      0x00000000:    dword 2
+0x12300490:      0x00000540:    dword 3
+0x12300494:      0x7a000002: PIPE_CONTROL
+0x12300498:      0x00002000:    no write, depth stall, 
+0x1230049c:      0x00000000:    
+0x123004a0:      0x00000000:    
+0x123004a4:      0x7a000002: PIPE_CONTROL
+0x123004a8:      0x00000001:    no write, depth cache flush, 
+0x123004ac:      0x00000000:    
+0x123004b0:      0x00000000:    
+0x123004b4:      0x7a000002: PIPE_CONTROL
+0x123004b8:      0x00002000:    no write, depth stall, 
+0x123004bc:      0x00000000:    
+0x123004c0:      0x00000000:    
+Bad count in 3DSTATE_URB
+0x123004c4:      0x78050005: 3DSTATE_URB
+0x123004c8:      0x380c05ff:    VS entries 1535, alloc size 13 (1024bit row)
+0x123004cc:      0x167f9000:    GS entries 912, alloc size 1 (1024bit row)
+0x123004e0:      0x78070002: 3D UNKNOWN: 3d_965 opcode = 0x7807
+0x123004e4:      0x00000000: MI_NOOP
+0x123004e8:      0x00000000: MI_NOOP
+0x123004ec:      0x00000000: MI_NOOP
+0x123004f0:      0x78060001: 3D UNKNOWN: 3d_965 opcode = 0x7806
+0x123004f4:      0x0000027f: MI_NOOP
+0x123004f8:      0x17b65000: MI UNKNOWN
+0x123004fc:      0x78040001: 3D UNKNOWN: 3d_965 opcode = 0x7804
+0x12300500:      0x00000000: MI_NOOP
+0x12300504:      0x00000000: MI_NOOP
+0x12300508:      0x78080003: 3DSTATE_VERTEX_BUFFERS
+0x1230050c:      0x0000400c:    buffer 0: sequential, pitch 12b
+0x12300510:      0x07b82000:    buffer address
+0x12300514:      0x07b89fff:    max index
+0x12300518:      0x00000000:    mbz
+Bad count in 3DPRIMITIVE
+0x1230051c:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x12300520:      0x00000008:    vertex count
+0x12300524:      0x00000052:    start vertex
+0x12300528:      0x00000000:    instance count
+0x1230052c:      0x00000001:    start instance
+0x12300530:      0x00000000:    index bias
+Bad count in 3DPRIMITIVE
+0x12300538:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x1230053c:      0x00000007:    vertex count
+0x12300540:      0x00000050:    start vertex
+0x12300544:      0x00000052:    instance count
+0x12300548:      0x00000001:    start instance
+0x1230054c:      0x00000000:    index bias
+0x12300554:      0x78260000: 3D UNKNOWN: 3d_965 opcode = 0x7826
+0x12300558:      0x00007a00: MI_NOOP
+0x1230055c:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
+0x12300560:      0x00000000: MI_NOOP
+0x12300564:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
+Bad count in 3DSTATE_CONSTANT_VS_STATE
+0x12300568:      0x00000006:    dword 1
+0x1230056c:      0x00000000:    dword 2
+0x12300570:      0x000078c0:    dword 3
+0x12300574:      0x00000000:    dword 4
+0x12300578:      0x00000000:    dword 5
+0x1230057c:      0x00000000:    dword 6
+0x12300580:      0x78100004: 3DSTATE_VS
+0x12300584:      0x00000280:    kernel pointer
+0x12300588:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x1230058c:      0x00000000:    scratch offset
+0x12300590:      0x00100800:    Dispatch GRF start 1, VUE read length 1, VUE read offset 0
+0x12300594:      0xfe000401:    Max Threads 128, Vertex Cache enable, VS func enable
+0x12300598:      0x782a0000: 3D UNKNOWN: 3d_965 opcode = 0x782a
+0x1230059c:      0x00007a00: MI_NOOP
+0x123005a0:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
+0x123005a4:      0x00000000: MI_NOOP
+0x123005a8:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
+Bad count in 3DSTATE_CONSTANT_PS_STATE
+0x123005ac:      0x00000000:    dword 1
+0x123005b0:      0x00000000:    dword 2
+0x123005b4:      0x00000000:    dword 3
+0x123005b8:      0x00000000:    dword 4
+0x123005bc:      0x00000000:    dword 5
+0x123005c0:      0x00000000:    dword 6
+0x123005c4:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
+0x123005c8:      0x00000540: MI_NOOP
+0x123005cc:      0x00010000: MI_NOOP
+0x123005d0:      0x00000000: MI_NOOP
+0x123005d4:      0x55000402: XY_MONO_SRC_COPY_BLT
+Bad count in XY_MONO_SRC_COPY_BLT
+0x123005d8:      0x00020000:    dword 1
+0x123005dc:      0x00000000:    dword 2
+0x123005e0:      0x00000540:    dword 3
+Bad count in 3DPRIMITIVE
+0x123005e4:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x123005e8:      0x00000008:    vertex count
+0x123005ec:      0x00000052:    start vertex
+0x123005f0:      0x000000a2:    instance count
+0x123005f4:      0x00000001:    start instance
+0x123005f8:      0x00000000:    index bias
+Bad count in 3DPRIMITIVE
+0x12300600:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x12300604:      0x00000007:    vertex count
+0x12300608:      0x00000050:    start vertex
+0x1230060c:      0x000000f4:    instance count
+0x12300610:      0x00000001:    start instance
+0x12300614:      0x00000000:    index bias
+0x1230061c:      0x79120000: 3D UNKNOWN: 3d_965 opcode = 0x7912
+0x12300620:      0x00000008: MI_NOOP
+0x12300624:      0x79160000: 3D UNKNOWN: 3d_965 opcode = 0x7916
+0x12300628:      0x00080008: MI_NOOP
+0x1230062c:      0x78300000: 3D UNKNOWN: 3d_965 opcode = 0x7830
+0x12300630:      0x040002c0: MI_ARB_ON_OFF
+0x12300634:      0x78330000: 3D UNKNOWN: 3d_965 opcode = 0x7833
+0x12300638:      0x04000000: MI_ARB_ON_OFF
+0x1230063c:      0x78310000: 3D UNKNOWN: 3d_965 opcode = 0x7831
+0x12300640:      0x04000000: MI_ARB_ON_OFF
+0x12300644:      0x78320000: 3D UNKNOWN: 3d_965 opcode = 0x7832
+0x12300648:      0x04000000: MI_ARB_ON_OFF
+0x1230064c:      0x78260000: 3D UNKNOWN: 3d_965 opcode = 0x7826
+0x12300650:      0x00007a00: MI_NOOP
+0x12300654:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
+0x12300658:      0x00000000: MI_NOOP
+0x1230065c:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
+Bad count in 3DSTATE_CONSTANT_VS_STATE
+0x12300660:      0x00000006:    dword 1
+0x12300664:      0x00000000:    dword 2
+0x12300668:      0x00007780:    dword 3
+0x1230066c:      0x00000000:    dword 4
+0x12300670:      0x00000000:    dword 5
+0x12300674:      0x00000000:    dword 6
+0x12300678:      0x78100004: 3DSTATE_VS
+0x1230067c:      0x00000680:    kernel pointer
+0x12300680:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x12300684:      0x00000000:    scratch offset
+0x12300688:      0x00100800:    Dispatch GRF start 1, VUE read length 1, VUE read offset 0
+0x1230068c:      0xfe000401:    Max Threads 128, Vertex Cache enable, VS func enable
+0x12300690:      0x781e0001: 3D UNKNOWN: 3d_965 opcode = 0x781e
+0x12300694:      0x00000000: MI_NOOP
+0x12300698:      0x00000000: MI_NOOP
+0x1230069c:      0x781f000c: 3D UNKNOWN: 3d_965 opcode = 0x781f
+0x123006a0:      0x00600810: MI_NOOP write NOPID reg, val=0x200810
+0x123006a4:      0x02390000: MI_FLUSH
+0x123006a8:      0x00000000: MI_NOOP
+0x123006ac:      0x00000000: MI_NOOP
+0x123006b0:      0x00000000: MI_NOOP
+0x123006b4:      0x0000000b: MI_NOOP
+0x123006b8:      0x00000000: MI_NOOP
+0x123006bc:      0xea9de040:    UNKNOWN
+0x123006c0:      0x00007f93: MI_NOOP
+0x123006c4:      0x00000000: MI_NOOP
+0x123006c8:      0x00000001: MI_NOOP
+0x123006cc:      0x00000000: MI_NOOP
+0x123006d0:      0x00000000: MI_NOOP
+Bad count in 3DSTATE_SF
+0x123006d4:      0x78130005: 3DSTATE_SF
+0x123006d8:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
+0x123006dc:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
+0x123006e0:      0x4c000808:    AA disable, CullMode 2, Scissor enable, Multisample m ode 0
+0x123006e4:      0x00000000:    Last Pixel disable, SubPixel Precision 8, Use PixelWidth 0
+0x123006e8:      0x00000000:    Global Depth Offset Constant 0.000000
+0x123006ec:      0x00000000:    Global Depth Offset Scale 0.000000
+0x123006f0:      0x78080003:    Global Depth Offset Clamp 11033634538206626566768129396965376.000000
+0x123006f4:      0x00004018:    Attrib 1 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 0 (Override Z, Const Source 0, Swizzle Select 0, Source 24)
+0x123006f8:      0x07b82f48:    Attrib 3 (Override , Const Source 3, Swizzle Select 2, Source 24); Attrib 2 (Override Y, Const Source 3, Swizzle Select 1, Source 8)
+0x123006fc:      0x07b89fff:    Attrib 5 (Override , Const Source 3, Swizzle Select 2, Source 24); Attrib 4 (Override WX, Const Source 3, Swizzle Select 3, Source 31)
+0x12300700:      0x00000000:    Attrib 7 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 6 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300704:      0x78090003:    Attrib 9 (Override ZYX, Const Source 0, Swizzle Select 0, Source 9); Attrib 8 (Override , Const Source 0, Swizzle Select 0, Source 3)
+0x12300708:      0x02400000:    Attrib 11 (Override , Const Source 1, Swizzle Select 1, Source 0); Attrib 10 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x1230070c:      0x11130000:    Attrib 13 (Override X, Const Source 0, Swizzle Select 0, Source 19); Attrib 12 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300710:      0x0240000c:    Attrib 15 (Override , Const Source 1, Swizzle Select 1, Source 0); Attrib 14 (Override , Const Source 0, Swizzle Select 0, Source 12)
+0x12300714:      0x11130000:    Point Sprite TexCoord Enable
+0x12300718:      0x7b000005:    Const Interp Enable
+0x1230071c:      0x00000008:    Attrib 7-0 WrapShortest Enable
+0x12300720:      0x000000a2:    Attrib 15-8 WrapShortest Enable
+0x123006f0:      0x78080003: 3DSTATE_VERTEX_BUFFERS
+0x123006f4:      0x00004018:    buffer 0: sequential, pitch 24b
+0x123006f8:      0x07b82f48:    buffer address
+0x123006fc:      0x07b89fff:    max index
+0x12300700:      0x00000000:    mbz
+0x12300704:      0x78090003: 3DSTATE_VERTEX_ELEMENTS
+0x12300708:      0x02400000:    buffer 0: invalid, type 0x0040, src offset 0x0000 bytes
+0x1230070c:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
+0x12300710:      0x0240000c:    buffer 0: invalid, type 0x0040, src offset 0x000c bytes
+0x12300714:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
+Bad count in 3DPRIMITIVE
+0x12300718:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x1230071c:      0x00000008:    vertex count
+0x12300720:      0x000000a2:    start vertex
+0x12300724:      0x00000000:    instance count
+0x12300728:      0x00000001:    start instance
+0x1230072c:      0x00000000:    index bias
+0x12300734:      0x78260000: 3D UNKNOWN: 3d_965 opcode = 0x7826
+0x12300738:      0x00007a00: MI_NOOP
+0x1230073c:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
+0x12300740:      0x00000000: MI_NOOP
+0x12300744:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
+Bad count in 3DSTATE_CONSTANT_VS_STATE
+0x12300748:      0x00000006:    dword 1
+0x1230074c:      0x00000000:    dword 2
+0x12300750:      0x00007640:    dword 3
+0x12300754:      0x00000000:    dword 4
+0x12300758:      0x00000000:    dword 5
+0x1230075c:      0x00000000:    dword 6
+0x12300760:      0x78100004: 3DSTATE_VS
+0x12300764:      0x00000680:    kernel pointer
+0x12300768:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x1230076c:      0x00000000:    scratch offset
+0x12300770:      0x00100800:    Dispatch GRF start 1, VUE read length 1, VUE read offset 0
+0x12300774:      0xfe000401:    Max Threads 128, Vertex Cache enable, VS func enable
+0x12300778:      0x781e0001: 3D UNKNOWN: 3d_965 opcode = 0x781e
+0x1230077c:      0x00000000: MI_NOOP
+0x12300780:      0x00000000: MI_NOOP
+0x12300784:      0x78120002: 3DSTATE_CLIP
+0x12300788:      0x00170400:    UserClip distance cull test mask 0x0
+0x1230078c:      0x98000026:    Clip enable, API mode OGL, Viewport XY test enable, Viewport Z test enable, Guardband test disable, Clip mode 0, Perspective Divide enable, Non-Perspective Barycentric disable, Tri Provoking 2, Line Provoking 1, Trifan Provoking 2
+0x12300790:      0x0003ffe0:    Min PointWidth 1, Max PointWidth 2047, Force Zero RTAIndex enable, Max VPIndex 0
+0x12300794:      0x781f000c: 3D UNKNOWN: 3d_965 opcode = 0x781f
+0x12300798:      0x00600810: MI_NOOP write NOPID reg, val=0x200810
+0x1230079c:      0x02390000: MI_FLUSH
+0x123007a0:      0x00000000: MI_NOOP
+0x123007a4:      0xea9de040:    UNKNOWN
+0x123007a8:      0x00007f93: MI_NOOP
+0x123007ac:      0x02279b80: MI_FLUSH
+0x123007b0:      0x00000000: MI_NOOP
+0x123007b4:      0x00000000: MI_NOOP
+0x123007b8:      0x00000000: MI_NOOP
+0x123007bc:      0x00000000: MI_NOOP
+0x123007c0:      0x00000000: MI_NOOP
+0x123007c4:      0x00000000: MI_NOOP
+0x123007c8:      0x00000000: MI_NOOP
+Bad count in 3DSTATE_SF
+0x123007cc:      0x78130005: 3DSTATE_SF
+0x123007d0:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
+0x123007d4:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
+0x123007d8:      0x4c000808:    AA disable, CullMode 2, Scissor enable, Multisample m ode 0
+0x123007dc:      0x00000000:    Last Pixel disable, SubPixel Precision 8, Use PixelWidth 0
+0x123007e0:      0x00000000:    Global Depth Offset Constant 0.000000
+0x123007e4:      0x00000000:    Global Depth Offset Scale 0.000000
+0x123007e8:      0x78140001:    Global Depth Offset Clamp 12007187723301828176357047660445696.000000
+0x123007ec:      0xa0000840:    Attrib 1 (Override WY, Const Source 0, Swizzle Select 0, Source 0); Attrib 0 (Override , Const Source 0, Swizzle Select 1, Source 0)
+0x123007f0:      0x00000000:    Attrib 3 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 2 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x123007f4:      0x782a0000:    Attrib 5 (Override ZYX, Const Source 0, Swizzle Select 0, Source 10); Attrib 4 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x123007f8:      0x00007a00:    Attrib 7 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 6 (Override ZYX, Const Source 1, Swizzle Select 0, Source 0)
+0x123007fc:      0x782f0000:    Attrib 9 (Override ZYX, Const Source 0, Swizzle Select 0, Source 15); Attrib 8 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300800:      0x00000000:    Attrib 11 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 10 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300804:      0x78170005:    Attrib 13 (Override ZYX, Const Source 0, Swizzle Select 0, Source 23); Attrib 12 (Override , Const Source 0, Swizzle Select 0, Source 5)
+0x12300808:      0x00000000:    Attrib 15 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 14 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x1230080c:      0x00000000:    Point Sprite TexCoord Enable
+0x12300810:      0x00000000:    Const Interp Enable
+0x12300814:      0x00000000:    Attrib 7-0 WrapShortest Enable
+0x12300818:      0x00000000:    Attrib 15-8 WrapShortest Enable
+Bad count in 3DSTATE_WM
+0x123007e8:      0x78140001: 3DSTATE_WM
+0x123007ec:      0xa0000840:    kernel start pointer 0
+0x123007f0:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x123007f4:      0x782a0000:    scratch offset
+0x123007f8:      0x00007a00:    Depth Clear 0, Depth Resolve 0, HiZ Resolve 0, Dispatch GRF start[0] 0, start[1] 122, start[2] 0
+0x123007fc:      0x782f0000:    MaxThreads 61, PS KillPixel 0, PS computed Z 1, PS use sourceZ 0, Thread Dispatch 1, PS use sourceW 0, Dispatch32 0, Dispatch16 0, Dispatch8 0
+0x12300800:      0x00000000:    Num SF output 0, Pos XY offset 0, ZW interp mode 0 , Barycentric interp mode 0x0, Point raster rule 0, Multisample mode 0, Multisample Dispatch mode 0
+0x12300804:      0x78170005:    kernel start pointer 1
+0x12300808:      0x00000000:    kernel start pointer 2
+0x123007f4:      0x782a0000: 3D UNKNOWN: 3d_965 opcode = 0x782a
+0x123007f8:      0x00007a00: MI_NOOP
+0x123007fc:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
+0x12300800:      0x00000000: MI_NOOP
+0x12300804:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
+Bad count in 3DSTATE_CONSTANT_PS_STATE
+0x12300808:      0x00000000:    dword 1
+0x1230080c:      0x00000000:    dword 2
+0x12300810:      0x00000000:    dword 3
+0x12300814:      0x00000000:    dword 4
+0x12300818:      0x00000000:    dword 5
+0x1230081c:      0x00000000:    dword 6
+0x12300820:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
+0x12300824:      0x00000940: MI_NOOP
+0x12300828:      0x00010000: MI_NOOP
+0x1230082c:      0x00000000: MI_NOOP
+0x12300830:      0x55000402: XY_MONO_SRC_COPY_BLT
+Bad count in XY_MONO_SRC_COPY_BLT
+0x12300834:      0x00060000:    dword 1
+0x12300838:      0x00000000:    dword 2
+0x1230083c:      0x00000940:    dword 3
+Bad count in 3DPRIMITIVE
+0x12300840:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x12300844:      0x00000008:    vertex count
+0x12300848:      0x0000002a:    start vertex
+0x1230084c:      0x000000a2:    instance count
+0x12300850:      0x00000001:    start instance
+0x12300854:      0x00000000:    index bias
+0x1230085c:      0x79120000: 3D UNKNOWN: 3d_965 opcode = 0x7912
+0x12300860:      0x00000008: MI_NOOP
+0x12300864:      0x79160000: 3D UNKNOWN: 3d_965 opcode = 0x7916
+0x12300868:      0x00080008: MI_NOOP
+0x1230086c:      0x78300000: 3D UNKNOWN: 3d_965 opcode = 0x7830
+0x12300870:      0x040002c0: MI_ARB_ON_OFF
+0x12300874:      0x78330000: 3D UNKNOWN: 3d_965 opcode = 0x7833
+0x12300878:      0x04000000: MI_ARB_ON_OFF
+0x1230087c:      0x78310000: 3D UNKNOWN: 3d_965 opcode = 0x7831
+0x12300880:      0x04000000: MI_ARB_ON_OFF
+0x12300884:      0x78320000: 3D UNKNOWN: 3d_965 opcode = 0x7832
+0x12300888:      0x04000000: MI_ARB_ON_OFF
+0x1230088c:      0x78260000: 3D UNKNOWN: 3d_965 opcode = 0x7826
+0x12300890:      0x00007a00: MI_NOOP
+0x12300894:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
+0x12300898:      0x00000000: MI_NOOP
+0x1230089c:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
+Bad count in 3DSTATE_CONSTANT_VS_STATE
+0x123008a0:      0x00000006:    dword 1
+0x123008a4:      0x00000000:    dword 2
+0x123008a8:      0x00007500:    dword 3
+0x123008ac:      0x00000000:    dword 4
+0x123008b0:      0x00000000:    dword 5
+0x123008b4:      0x00000000:    dword 6
+0x123008b8:      0x78100004: 3DSTATE_VS
+0x123008bc:      0x00000280:    kernel pointer
+0x123008c0:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x123008c4:      0x00000000:    scratch offset
+0x123008c8:      0x00100800:    Dispatch GRF start 1, VUE read length 1, VUE read offset 0
+0x123008cc:      0xfe000401:    Max Threads 128, Vertex Cache enable, VS func enable
+0x123008d0:      0x781e0001: 3D UNKNOWN: 3d_965 opcode = 0x781e
+0x123008d4:      0x00000000: MI_NOOP
+0x123008d8:      0x00000000: MI_NOOP
+0x123008dc:      0x78120002: 3DSTATE_CLIP
+0x123008e0:      0x00170400:    UserClip distance cull test mask 0x0
+0x123008e4:      0x98000026:    Clip enable, API mode OGL, Viewport XY test enable, Viewport Z test enable, Guardband test disable, Clip mode 0, Perspective Divide enable, Non-Perspective Barycentric disable, Tri Provoking 2, Line Provoking 1, Trifan Provoking 2
+0x123008e8:      0x0003ffe0:    Min PointWidth 1, Max PointWidth 2047, Force Zero RTAIndex enable, Max VPIndex 0
+0x123008ec:      0x781f000c: 3D UNKNOWN: 3d_965 opcode = 0x781f
+0x123008f0:      0x00600810: MI_NOOP write NOPID reg, val=0x200810
+0x123008f4:      0x02380000: MI_FLUSH
+0x123008f8:      0x00000000: MI_NOOP
+0x123008fc:      0xea9de040:    UNKNOWN
+0x12300900:      0x00007f93: MI_NOOP
+0x12300904:      0x02279b80: MI_FLUSH
+0x12300908:      0x00000000: MI_NOOP
+0x1230090c:      0x00000000: MI_NOOP
+0x12300910:      0x00000000: MI_NOOP
+0x12300914:      0x00000000: MI_NOOP
+0x12300918:      0x00000001: MI_NOOP
+0x1230091c:      0x00000000: MI_NOOP
+0x12300920:      0x00000000: MI_NOOP
+Bad count in 3DSTATE_SF
+0x12300924:      0x78130005: 3DSTATE_SF
+0x12300928:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
+0x1230092c:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
+0x12300930:      0x4c000808:    AA disable, CullMode 2, Scissor enable, Multisample m ode 0
+0x12300934:      0x00000000:    Last Pixel disable, SubPixel Precision 8, Use PixelWidth 0
+0x12300938:      0x00000000:    Global Depth Offset Constant 0.000000
+0x1230093c:      0x00000000:    Global Depth Offset Scale 0.000000
+0x12300940:      0x78140001:    Global Depth Offset Clamp 12007187723301828176357047660445696.000000
+0x12300944:      0xa0000040:    Attrib 1 (Override WY, Const Source 0, Swizzle Select 0, Source 0); Attrib 0 (Override , Const Source 0, Swizzle Select 1, Source 0)
+0x12300948:      0x00000000:    Attrib 3 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 2 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x1230094c:      0x782a0000:    Attrib 5 (Override ZYX, Const Source 0, Swizzle Select 0, Source 10); Attrib 4 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300950:      0x00007a00:    Attrib 7 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 6 (Override ZYX, Const Source 1, Swizzle Select 0, Source 0)
+0x12300954:      0x782f0000:    Attrib 9 (Override ZYX, Const Source 0, Swizzle Select 0, Source 15); Attrib 8 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300958:      0x00000000:    Attrib 11 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 10 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x1230095c:      0x78170005:    Attrib 13 (Override ZYX, Const Source 0, Swizzle Select 0, Source 23); Attrib 12 (Override , Const Source 0, Swizzle Select 0, Source 5)
+0x12300960:      0x00000000:    Attrib 15 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 14 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300964:      0x00000000:    Point Sprite TexCoord Enable
+0x12300968:      0x00000000:    Const Interp Enable
+0x1230096c:      0x00000000:    Attrib 7-0 WrapShortest Enable
+0x12300970:      0x00000000:    Attrib 15-8 WrapShortest Enable
+Bad count in 3DSTATE_WM
+0x12300940:      0x78140001: 3DSTATE_WM
+0x12300944:      0xa0000040:    kernel start pointer 0
+0x12300948:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x1230094c:      0x782a0000:    scratch offset
+0x12300950:      0x00007a00:    Depth Clear 0, Depth Resolve 0, HiZ Resolve 0, Dispatch GRF start[0] 0, start[1] 122, start[2] 0
+0x12300954:      0x782f0000:    MaxThreads 61, PS KillPixel 0, PS computed Z 1, PS use sourceZ 0, Thread Dispatch 1, PS use sourceW 0, Dispatch32 0, Dispatch16 0, Dispatch8 0
+0x12300958:      0x00000000:    Num SF output 0, Pos XY offset 0, ZW interp mode 0 , Barycentric interp mode 0x0, Point raster rule 0, Multisample mode 0, Multisample Dispatch mode 0
+0x1230095c:      0x78170005:    kernel start pointer 1
+0x12300960:      0x00000000:    kernel start pointer 2
+0x1230094c:      0x782a0000: 3D UNKNOWN: 3d_965 opcode = 0x782a
+0x12300950:      0x00007a00: MI_NOOP
+0x12300954:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
+0x12300958:      0x00000000: MI_NOOP
+0x1230095c:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
+Bad count in 3DSTATE_CONSTANT_PS_STATE
+0x12300960:      0x00000000:    dword 1
+0x12300964:      0x00000000:    dword 2
+0x12300968:      0x00000000:    dword 3
+0x1230096c:      0x00000000:    dword 4
+0x12300970:      0x00000000:    dword 5
+0x12300974:      0x00000000:    dword 6
+0x12300978:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
+0x1230097c:      0x00000540: MI_NOOP
+0x12300980:      0x00010000: MI_NOOP
+0x12300984:      0x00000000: MI_NOOP
+0x12300988:      0x55000402: XY_MONO_SRC_COPY_BLT
+Bad count in XY_MONO_SRC_COPY_BLT
+0x1230098c:      0x00020000:    dword 1
+0x12300990:      0x00000000:    dword 2
+0x12300994:      0x00000540:    dword 3
+0x12300998:      0x78080003: 3DSTATE_VERTEX_BUFFERS
+0x1230099c:      0x0000400c:    buffer 0: sequential, pitch 12b
+0x123009a0:      0x07b84268:    buffer address
+0x123009a4:      0x07b89fff:    max index
+0x123009a8:      0x00000000:    mbz
+0x123009ac:      0x78090001: 3DSTATE_VERTEX_ELEMENTS
+0x123009b0:      0x02400000:    buffer 0: invalid, type 0x0040, src offset 0x0000 bytes
+0x123009b4:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
+Bad count in 3DPRIMITIVE
+0x123009b8:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x123009bc:      0x00000008:    vertex count
+0x123009c0:      0x0000002a:    start vertex
+0x123009c4:      0x00000000:    instance count
+0x123009c8:      0x00000001:    start instance
+0x123009cc:      0x00000000:    index bias
+Bad count in 3DPRIMITIVE
+0x123009d4:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x123009d8:      0x00000007:    vertex count
+0x123009dc:      0x00000028:    start vertex
+0x123009e0:      0x0000002a:    instance count
+0x123009e4:      0x00000001:    start instance
+0x123009e8:      0x00000000:    index bias
+0x123009f0:      0x78260000: 3D UNKNOWN: 3d_965 opcode = 0x7826
+0x123009f4:      0x00007a00: MI_NOOP
+0x123009f8:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
+0x123009fc:      0x00000000: MI_NOOP
+0x12300a00:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
+Bad count in 3DSTATE_CONSTANT_VS_STATE
+0x12300a04:      0x00000006:    dword 1
+0x12300a08:      0x00000000:    dword 2
+0x12300a0c:      0x000073c0:    dword 3
+0x12300a10:      0x00000000:    dword 4
+0x12300a14:      0x00000000:    dword 5
+0x12300a18:      0x00000000:    dword 6
+0x12300a1c:      0x78100004: 3DSTATE_VS
+0x12300a20:      0x00000280:    kernel pointer
+0x12300a24:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x12300a28:      0x00000000:    scratch offset
+0x12300a2c:      0x00100800:    Dispatch GRF start 1, VUE read length 1, VUE read offset 0
+0x12300a30:      0xfe000401:    Max Threads 128, Vertex Cache enable, VS func enable
+0x12300a34:      0x782a0000: 3D UNKNOWN: 3d_965 opcode = 0x782a
+0x12300a38:      0x00007a00: MI_NOOP
+0x12300a3c:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
+0x12300a40:      0x00000000: MI_NOOP
+0x12300a44:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
+Bad count in 3DSTATE_CONSTANT_PS_STATE
+0x12300a48:      0x00000000:    dword 1
+0x12300a4c:      0x00000000:    dword 2
+0x12300a50:      0x00000000:    dword 3
+0x12300a54:      0x00000000:    dword 4
+0x12300a58:      0x00000000:    dword 5
+0x12300a5c:      0x00000000:    dword 6
+0x12300a60:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
+0x12300a64:      0x00000540: MI_NOOP
+0x12300a68:      0x00010000: MI_NOOP
+0x12300a6c:      0x00000000: MI_NOOP
+0x12300a70:      0x55000402: XY_MONO_SRC_COPY_BLT
+Bad count in XY_MONO_SRC_COPY_BLT
+0x12300a74:      0x00020000:    dword 1
+0x12300a78:      0x00000000:    dword 2
+0x12300a7c:      0x00000540:    dword 3
+Bad count in 3DPRIMITIVE
+0x12300a80:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x12300a84:      0x00000008:    vertex count
+0x12300a88:      0x0000002a:    start vertex
+0x12300a8c:      0x00000052:    instance count
+0x12300a90:      0x00000001:    start instance
+0x12300a94:      0x00000000:    index bias
+Bad count in 3DPRIMITIVE
+0x12300a9c:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x12300aa0:      0x00000007:    vertex count
+0x12300aa4:      0x00000028:    start vertex
+0x12300aa8:      0x0000007c:    instance count
+0x12300aac:      0x00000001:    start instance
+0x12300ab0:      0x00000000:    index bias
+0x12300ab8:      0x79120000: 3D UNKNOWN: 3d_965 opcode = 0x7912
+0x12300abc:      0x00000008: MI_NOOP
+0x12300ac0:      0x79160000: 3D UNKNOWN: 3d_965 opcode = 0x7916
+0x12300ac4:      0x00080008: MI_NOOP
+0x12300ac8:      0x78300000: 3D UNKNOWN: 3d_965 opcode = 0x7830
+0x12300acc:      0x040002c0: MI_ARB_ON_OFF
+0x12300ad0:      0x78330000: 3D UNKNOWN: 3d_965 opcode = 0x7833
+0x12300ad4:      0x04000000: MI_ARB_ON_OFF
+0x12300ad8:      0x78310000: 3D UNKNOWN: 3d_965 opcode = 0x7831
+0x12300adc:      0x04000000: MI_ARB_ON_OFF
+0x12300ae0:      0x78320000: 3D UNKNOWN: 3d_965 opcode = 0x7832
+0x12300ae4:      0x04000000: MI_ARB_ON_OFF
+0x12300ae8:      0x78260000: 3D UNKNOWN: 3d_965 opcode = 0x7826
+0x12300aec:      0x00007a00: MI_NOOP
+0x12300af0:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
+0x12300af4:      0x00000000: MI_NOOP
+0x12300af8:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
+Bad count in 3DSTATE_CONSTANT_VS_STATE
+0x12300afc:      0x00000006:    dword 1
+0x12300b00:      0x00000000:    dword 2
+0x12300b04:      0x00007280:    dword 3
+0x12300b08:      0x00000000:    dword 4
+0x12300b0c:      0x00000000:    dword 5
+0x12300b10:      0x00000000:    dword 6
+0x12300b14:      0x78100004: 3DSTATE_VS
+0x12300b18:      0x00000680:    kernel pointer
+0x12300b1c:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x12300b20:      0x00000000:    scratch offset
+0x12300b24:      0x00100800:    Dispatch GRF start 1, VUE read length 1, VUE read offset 0
+0x12300b28:      0xfe000401:    Max Threads 128, Vertex Cache enable, VS func enable
+0x12300b2c:      0x781e0001: 3D UNKNOWN: 3d_965 opcode = 0x781e
+0x12300b30:      0x00000000: MI_NOOP
+0x12300b34:      0x00000000: MI_NOOP
+0x12300b38:      0x781f000c: 3D UNKNOWN: 3d_965 opcode = 0x781f
+0x12300b3c:      0x00600810: MI_NOOP write NOPID reg, val=0x200810
+0x12300b40:      0x02390000: MI_FLUSH
+0x12300b44:      0x00000000: MI_NOOP
+0x12300b48:      0x00000000: MI_NOOP
+0x12300b4c:      0x00000000: MI_NOOP
+0x12300b50:      0x0000000b: MI_NOOP
+0x12300b54:      0x00000000: MI_NOOP
+0x12300b58:      0xea9de040:    UNKNOWN
+0x12300b5c:      0x00007f93: MI_NOOP
+0x12300b60:      0x00000000: MI_NOOP
+0x12300b64:      0x00000001: MI_NOOP
+0x12300b68:      0x00000000: MI_NOOP
+0x12300b6c:      0x00000000: MI_NOOP
+Bad count in 3DSTATE_SF
+0x12300b70:      0x78130005: 3DSTATE_SF
+0x12300b74:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
+0x12300b78:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
+0x12300b7c:      0x4c000808:    AA disable, CullMode 2, Scissor enable, Multisample m ode 0
+0x12300b80:      0x00000000:    Last Pixel disable, SubPixel Precision 8, Use PixelWidth 0
+0x12300b84:      0x00000000:    Global Depth Offset Constant 0.000000
+0x12300b88:      0x00000000:    Global Depth Offset Scale 0.000000
+0x12300b8c:      0x78080003:    Global Depth Offset Clamp 11033634538206626566768129396965376.000000
+0x12300b90:      0x00004018:    Attrib 1 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 0 (Override Z, Const Source 0, Swizzle Select 0, Source 24)
+0x12300b94:      0x07b84a30:    Attrib 3 (Override , Const Source 3, Swizzle Select 2, Source 24); Attrib 2 (Override Z, Const Source 1, Swizzle Select 0, Source 16)
+0x12300b98:      0x07b89fff:    Attrib 5 (Override , Const Source 3, Swizzle Select 2, Source 24); Attrib 4 (Override WX, Const Source 3, Swizzle Select 3, Source 31)
+0x12300b9c:      0x00000000:    Attrib 7 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 6 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300ba0:      0x78090003:    Attrib 9 (Override ZYX, Const Source 0, Swizzle Select 0, Source 9); Attrib 8 (Override , Const Source 0, Swizzle Select 0, Source 3)
+0x12300ba4:      0x02400000:    Attrib 11 (Override , Const Source 1, Swizzle Select 1, Source 0); Attrib 10 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300ba8:      0x11130000:    Attrib 13 (Override X, Const Source 0, Swizzle Select 0, Source 19); Attrib 12 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300bac:      0x0240000c:    Attrib 15 (Override , Const Source 1, Swizzle Select 1, Source 0); Attrib 14 (Override , Const Source 0, Swizzle Select 0, Source 12)
+0x12300bb0:      0x11130000:    Point Sprite TexCoord Enable
+0x12300bb4:      0x7b000005:    Const Interp Enable
+0x12300bb8:      0x00000008:    Attrib 7-0 WrapShortest Enable
+0x12300bbc:      0x00000052:    Attrib 15-8 WrapShortest Enable
+0x12300b8c:      0x78080003: 3DSTATE_VERTEX_BUFFERS
+0x12300b90:      0x00004018:    buffer 0: sequential, pitch 24b
+0x12300b94:      0x07b84a30:    buffer address
+0x12300b98:      0x07b89fff:    max index
+0x12300b9c:      0x00000000:    mbz
+0x12300ba0:      0x78090003: 3DSTATE_VERTEX_ELEMENTS
+0x12300ba4:      0x02400000:    buffer 0: invalid, type 0x0040, src offset 0x0000 bytes
+0x12300ba8:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
+0x12300bac:      0x0240000c:    buffer 0: invalid, type 0x0040, src offset 0x000c bytes
+0x12300bb0:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
+Bad count in 3DPRIMITIVE
+0x12300bb4:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x12300bb8:      0x00000008:    vertex count
+0x12300bbc:      0x00000052:    start vertex
+0x12300bc0:      0x00000000:    instance count
+0x12300bc4:      0x00000001:    start instance
+0x12300bc8:      0x00000000:    index bias
+0x12300bd0:      0x78260000: 3D UNKNOWN: 3d_965 opcode = 0x7826
+0x12300bd4:      0x00007a00: MI_NOOP
+0x12300bd8:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
+0x12300bdc:      0x00000000: MI_NOOP
+0x12300be0:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
+Bad count in 3DSTATE_CONSTANT_VS_STATE
+0x12300be4:      0x00000006:    dword 1
+0x12300be8:      0x00000000:    dword 2
+0x12300bec:      0x00007140:    dword 3
+0x12300bf0:      0x00000000:    dword 4
+0x12300bf4:      0x00000000:    dword 5
+0x12300bf8:      0x00000000:    dword 6
+0x12300bfc:      0x78100004: 3DSTATE_VS
+0x12300c00:      0x00000680:    kernel pointer
+0x12300c04:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x12300c08:      0x00000000:    scratch offset
+0x12300c0c:      0x00100800:    Dispatch GRF start 1, VUE read length 1, VUE read offset 0
+0x12300c10:      0xfe000401:    Max Threads 128, Vertex Cache enable, VS func enable
+0x12300c14:      0x781e0001: 3D UNKNOWN: 3d_965 opcode = 0x781e
+0x12300c18:      0x00000000: MI_NOOP
+0x12300c1c:      0x00000000: MI_NOOP
+0x12300c20:      0x78120002: 3DSTATE_CLIP
+0x12300c24:      0x00170400:    UserClip distance cull test mask 0x0
+0x12300c28:      0x98000026:    Clip enable, API mode OGL, Viewport XY test enable, Viewport Z test enable, Guardband test disable, Clip mode 0, Perspective Divide enable, Non-Perspective Barycentric disable, Tri Provoking 2, Line Provoking 1, Trifan Provoking 2
+0x12300c2c:      0x0003ffe0:    Min PointWidth 1, Max PointWidth 2047, Force Zero RTAIndex enable, Max VPIndex 0
+0x12300c30:      0x781f000c: 3D UNKNOWN: 3d_965 opcode = 0x781f
+0x12300c34:      0x00600810: MI_NOOP write NOPID reg, val=0x200810
+0x12300c38:      0x02390000: MI_FLUSH
+0x12300c3c:      0x00000000: MI_NOOP
+0x12300c40:      0xea9de040:    UNKNOWN
+0x12300c44:      0x00007f93: MI_NOOP
+0x12300c48:      0x02279b80: MI_FLUSH
+0x12300c4c:      0x00000000: MI_NOOP
+0x12300c50:      0x00000000: MI_NOOP
+0x12300c54:      0x00000000: MI_NOOP
+0x12300c58:      0x00000000: MI_NOOP
+0x12300c5c:      0x00000000: MI_NOOP
+0x12300c60:      0x00000000: MI_NOOP
+0x12300c64:      0x00000000: MI_NOOP
+Bad count in 3DSTATE_SF
+0x12300c68:      0x78130005: 3DSTATE_SF
+0x12300c6c:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
+0x12300c70:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
+0x12300c74:      0x4c000808:    AA disable, CullMode 2, Scissor enable, Multisample m ode 0
+0x12300c78:      0x00000000:    Last Pixel disable, SubPixel Precision 8, Use PixelWidth 0
+0x12300c7c:      0x00000000:    Global Depth Offset Constant 0.000000
+0x12300c80:      0x00000000:    Global Depth Offset Scale 0.000000
+0x12300c84:      0x78140001:    Global Depth Offset Clamp 12007187723301828176357047660445696.000000
+0x12300c88:      0xa0000840:    Attrib 1 (Override WY, Const Source 0, Swizzle Select 0, Source 0); Attrib 0 (Override , Const Source 0, Swizzle Select 1, Source 0)
+0x12300c8c:      0x00000000:    Attrib 3 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 2 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300c90:      0x782a0000:    Attrib 5 (Override ZYX, Const Source 0, Swizzle Select 0, Source 10); Attrib 4 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300c94:      0x00007a00:    Attrib 7 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 6 (Override ZYX, Const Source 1, Swizzle Select 0, Source 0)
+0x12300c98:      0x782f0000:    Attrib 9 (Override ZYX, Const Source 0, Swizzle Select 0, Source 15); Attrib 8 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300c9c:      0x00000000:    Attrib 11 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 10 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300ca0:      0x78170005:    Attrib 13 (Override ZYX, Const Source 0, Swizzle Select 0, Source 23); Attrib 12 (Override , Const Source 0, Swizzle Select 0, Source 5)
+0x12300ca4:      0x00000000:    Attrib 15 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 14 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300ca8:      0x00000000:    Point Sprite TexCoord Enable
+0x12300cac:      0x00000000:    Const Interp Enable
+0x12300cb0:      0x00000000:    Attrib 7-0 WrapShortest Enable
+0x12300cb4:      0x00000000:    Attrib 15-8 WrapShortest Enable
+Bad count in 3DSTATE_WM
+0x12300c84:      0x78140001: 3DSTATE_WM
+0x12300c88:      0xa0000840:    kernel start pointer 0
+0x12300c8c:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x12300c90:      0x782a0000:    scratch offset
+0x12300c94:      0x00007a00:    Depth Clear 0, Depth Resolve 0, HiZ Resolve 0, Dispatch GRF start[0] 0, start[1] 122, start[2] 0
+0x12300c98:      0x782f0000:    MaxThreads 61, PS KillPixel 0, PS computed Z 1, PS use sourceZ 0, Thread Dispatch 1, PS use sourceW 0, Dispatch32 0, Dispatch16 0, Dispatch8 0
+0x12300c9c:      0x00000000:    Num SF output 0, Pos XY offset 0, ZW interp mode 0 , Barycentric interp mode 0x0, Point raster rule 0, Multisample mode 0, Multisample Dispatch mode 0
+0x12300ca0:      0x78170005:    kernel start pointer 1
+0x12300ca4:      0x00000000:    kernel start pointer 2
+0x12300c90:      0x782a0000: 3D UNKNOWN: 3d_965 opcode = 0x782a
+0x12300c94:      0x00007a00: MI_NOOP
+0x12300c98:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
+0x12300c9c:      0x00000000: MI_NOOP
+0x12300ca0:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
+Bad count in 3DSTATE_CONSTANT_PS_STATE
+0x12300ca4:      0x00000000:    dword 1
+0x12300ca8:      0x00000000:    dword 2
+0x12300cac:      0x00000000:    dword 3
+0x12300cb0:      0x00000000:    dword 4
+0x12300cb4:      0x00000000:    dword 5
+0x12300cb8:      0x00000000:    dword 6
+0x12300cbc:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
+0x12300cc0:      0x00000940: MI_NOOP
+0x12300cc4:      0x00010000: MI_NOOP
+0x12300cc8:      0x00000000: MI_NOOP
+0x12300ccc:      0x55000402: XY_MONO_SRC_COPY_BLT
+Bad count in XY_MONO_SRC_COPY_BLT
+0x12300cd0:      0x00060000:    dword 1
+0x12300cd4:      0x00000000:    dword 2
+0x12300cd8:      0x00000940:    dword 3
+Bad count in 3DPRIMITIVE
+0x12300cdc:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x12300ce0:      0x00000008:    vertex count
+0x12300ce4:      0x00000016:    start vertex
+0x12300ce8:      0x00000052:    instance count
+0x12300cec:      0x00000001:    start instance
+0x12300cf0:      0x00000000:    index bias
+0x12300cf8:      0x79120000: 3D UNKNOWN: 3d_965 opcode = 0x7912
+0x12300cfc:      0x00000008: MI_NOOP
+0x12300d00:      0x79160000: 3D UNKNOWN: 3d_965 opcode = 0x7916
+0x12300d04:      0x00080008: MI_NOOP
+0x12300d08:      0x78300000: 3D UNKNOWN: 3d_965 opcode = 0x7830
+0x12300d0c:      0x040002c0: MI_ARB_ON_OFF
+0x12300d10:      0x78330000: 3D UNKNOWN: 3d_965 opcode = 0x7833
+0x12300d14:      0x04000000: MI_ARB_ON_OFF
+0x12300d18:      0x78310000: 3D UNKNOWN: 3d_965 opcode = 0x7831
+0x12300d1c:      0x04000000: MI_ARB_ON_OFF
+0x12300d20:      0x78320000: 3D UNKNOWN: 3d_965 opcode = 0x7832
+0x12300d24:      0x04000000: MI_ARB_ON_OFF
+0x12300d28:      0x78260000: 3D UNKNOWN: 3d_965 opcode = 0x7826
+0x12300d2c:      0x00007a00: MI_NOOP
+0x12300d30:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
+0x12300d34:      0x00000000: MI_NOOP
+0x12300d38:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
+Bad count in 3DSTATE_CONSTANT_VS_STATE
+0x12300d3c:      0x00000006:    dword 1
+0x12300d40:      0x00000000:    dword 2
+0x12300d44:      0x00007000:    dword 3
+0x12300d48:      0x00000000:    dword 4
+0x12300d4c:      0x00000000:    dword 5
+0x12300d50:      0x00000000:    dword 6
+0x12300d54:      0x78100004: 3DSTATE_VS
+0x12300d58:      0x00000280:    kernel pointer
+0x12300d5c:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x12300d60:      0x00000000:    scratch offset
+0x12300d64:      0x00100800:    Dispatch GRF start 1, VUE read length 1, VUE read offset 0
+0x12300d68:      0xfe000401:    Max Threads 128, Vertex Cache enable, VS func enable
+0x12300d6c:      0x781e0001: 3D UNKNOWN: 3d_965 opcode = 0x781e
+0x12300d70:      0x00000000: MI_NOOP
+0x12300d74:      0x00000000: MI_NOOP
+0x12300d78:      0x78120002: 3DSTATE_CLIP
+0x12300d7c:      0x00170400:    UserClip distance cull test mask 0x0
+0x12300d80:      0x98000026:    Clip enable, API mode OGL, Viewport XY test enable, Viewport Z test enable, Guardband test disable, Clip mode 0, Perspective Divide enable, Non-Perspective Barycentric disable, Tri Provoking 2, Line Provoking 1, Trifan Provoking 2
+0x12300d84:      0x0003ffe0:    Min PointWidth 1, Max PointWidth 2047, Force Zero RTAIndex enable, Max VPIndex 0
+0x12300d88:      0x781f000c: 3D UNKNOWN: 3d_965 opcode = 0x781f
+0x12300d8c:      0x00600810: MI_NOOP write NOPID reg, val=0x200810
+0x12300d90:      0x02380000: MI_FLUSH
+0x12300d94:      0x00000000: MI_NOOP
+0x12300d98:      0xea9de040:    UNKNOWN
+0x12300d9c:      0x00007f93: MI_NOOP
+0x12300da0:      0x02279b80: MI_FLUSH
+0x12300da4:      0x00000000: MI_NOOP
+0x12300da8:      0x00000000: MI_NOOP
+0x12300dac:      0x00000000: MI_NOOP
+0x12300db0:      0x00000000: MI_NOOP
+0x12300db4:      0x00000001: MI_NOOP
+0x12300db8:      0x00000000: MI_NOOP
+0x12300dbc:      0x00000000: MI_NOOP
+Bad count in 3DSTATE_SF
+0x12300dc0:      0x78130005: 3DSTATE_SF
+0x12300dc4:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
+0x12300dc8:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
+0x12300dcc:      0x4c000808:    AA disable, CullMode 2, Scissor enable, Multisample m ode 0
+0x12300dd0:      0x00000000:    Last Pixel disable, SubPixel Precision 8, Use PixelWidth 0
+0x12300dd4:      0x00000000:    Global Depth Offset Constant 0.000000
+0x12300dd8:      0x00000000:    Global Depth Offset Scale 0.000000
+0x12300ddc:      0x78140001:    Global Depth Offset Clamp 12007187723301828176357047660445696.000000
+0x12300de0:      0xa0000040:    Attrib 1 (Override WY, Const Source 0, Swizzle Select 0, Source 0); Attrib 0 (Override , Const Source 0, Swizzle Select 1, Source 0)
+0x12300de4:      0x00000000:    Attrib 3 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 2 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300de8:      0x782a0000:    Attrib 5 (Override ZYX, Const Source 0, Swizzle Select 0, Source 10); Attrib 4 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300dec:      0x00007a00:    Attrib 7 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 6 (Override ZYX, Const Source 1, Swizzle Select 0, Source 0)
+0x12300df0:      0x782f0000:    Attrib 9 (Override ZYX, Const Source 0, Swizzle Select 0, Source 15); Attrib 8 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300df4:      0x00000000:    Attrib 11 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 10 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300df8:      0x78170005:    Attrib 13 (Override ZYX, Const Source 0, Swizzle Select 0, Source 23); Attrib 12 (Override , Const Source 0, Swizzle Select 0, Source 5)
+0x12300dfc:      0x00000000:    Attrib 15 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 14 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12300e00:      0x00000000:    Point Sprite TexCoord Enable
+0x12300e04:      0x00000000:    Const Interp Enable
+0x12300e08:      0x00000000:    Attrib 7-0 WrapShortest Enable
+0x12300e0c:      0x00000000:    Attrib 15-8 WrapShortest Enable
+Bad count in 3DSTATE_WM
+0x12300ddc:      0x78140001: 3DSTATE_WM
+0x12300de0:      0xa0000040:    kernel start pointer 0
+0x12300de4:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x12300de8:      0x782a0000:    scratch offset
+0x12300dec:      0x00007a00:    Depth Clear 0, Depth Resolve 0, HiZ Resolve 0, Dispatch GRF start[0] 0, start[1] 122, start[2] 0
+0x12300df0:      0x782f0000:    MaxThreads 61, PS KillPixel 0, PS computed Z 1, PS use sourceZ 0, Thread Dispatch 1, PS use sourceW 0, Dispatch32 0, Dispatch16 0, Dispatch8 0
+0x12300df4:      0x00000000:    Num SF output 0, Pos XY offset 0, ZW interp mode 0 , Barycentric interp mode 0x0, Point raster rule 0, Multisample mode 0, Multisample Dispatch mode 0
+0x12300df8:      0x78170005:    kernel start pointer 1
+0x12300dfc:      0x00000000:    kernel start pointer 2
+0x12300de8:      0x782a0000: 3D UNKNOWN: 3d_965 opcode = 0x782a
+0x12300dec:      0x00007a00: MI_NOOP
+0x12300df0:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
+0x12300df4:      0x00000000: MI_NOOP
+0x12300df8:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
+Bad count in 3DSTATE_CONSTANT_PS_STATE
+0x12300dfc:      0x00000000:    dword 1
+0x12300e00:      0x00000000:    dword 2
+0x12300e04:      0x00000000:    dword 3
+0x12300e08:      0x00000000:    dword 4
+0x12300e0c:      0x00000000:    dword 5
+0x12300e10:      0x00000000:    dword 6
+0x12300e14:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
+0x12300e18:      0x00000540: MI_NOOP
+0x12300e1c:      0x00010000: MI_NOOP
+0x12300e20:      0x00000000: MI_NOOP
+0x12300e24:      0x55000402: XY_MONO_SRC_COPY_BLT
+Bad count in XY_MONO_SRC_COPY_BLT
+0x12300e28:      0x00020000:    dword 1
+0x12300e2c:      0x00000000:    dword 2
+0x12300e30:      0x00000540:    dword 3
+0x12300e34:      0x78080003: 3DSTATE_VERTEX_BUFFERS
+0x12300e38:      0x0000400c:    buffer 0: sequential, pitch 12b
+0x12300e3c:      0x07b853f0:    buffer address
+0x12300e40:      0x07b89fff:    max index
+0x12300e44:      0x00000000:    mbz
+0x12300e48:      0x78090001: 3DSTATE_VERTEX_ELEMENTS
+0x12300e4c:      0x02400000:    buffer 0: invalid, type 0x0040, src offset 0x0000 bytes
+0x12300e50:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
+Bad count in 3DPRIMITIVE
+0x12300e54:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x12300e58:      0x00000008:    vertex count
+0x12300e5c:      0x0000002a:    start vertex
+0x12300e60:      0x00000000:    instance count
+0x12300e64:      0x00000001:    start instance
+0x12300e68:      0x00000000:    index bias
+Bad count in 3DPRIMITIVE
+0x12300e70:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x12300e74:      0x00000007:    vertex count
+0x12300e78:      0x00000028:    start vertex
+0x12300e7c:      0x0000002a:    instance count
+0x12300e80:      0x00000001:    start instance
+0x12300e84:      0x00000000:    index bias
+0x12300e8c:      0x78260000: 3D UNKNOWN: 3d_965 opcode = 0x7826
+0x12300e90:      0x00007a00: MI_NOOP
+0x12300e94:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
+0x12300e98:      0x00000000: MI_NOOP
+0x12300e9c:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
+Bad count in 3DSTATE_CONSTANT_VS_STATE
+0x12300ea0:      0x00000006:    dword 1
+0x12300ea4:      0x00000000:    dword 2
+0x12300ea8:      0x00006ec0:    dword 3
+0x12300eac:      0x00000000:    dword 4
+0x12300eb0:      0x00000000:    dword 5
+0x12300eb4:      0x00000000:    dword 6
+0x12300eb8:      0x78100004: 3DSTATE_VS
+0x12300ebc:      0x00000280:    kernel pointer
+0x12300ec0:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x12300ec4:      0x00000000:    scratch offset
+0x12300ec8:      0x00100800:    Dispatch GRF start 1, VUE read length 1, VUE read offset 0
+0x12300ecc:      0xfe000401:    Max Threads 128, Vertex Cache enable, VS func enable
+0x12300ed0:      0x782a0000: 3D UNKNOWN: 3d_965 opcode = 0x782a
+0x12300ed4:      0x00007a00: MI_NOOP
+0x12300ed8:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
+0x12300edc:      0x00000000: MI_NOOP
+0x12300ee0:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
+Bad count in 3DSTATE_CONSTANT_PS_STATE
+0x12300ee4:      0x00000000:    dword 1
+0x12300ee8:      0x00000000:    dword 2
+0x12300eec:      0x00000000:    dword 3
+0x12300ef0:      0x00000000:    dword 4
+0x12300ef4:      0x00000000:    dword 5
+0x12300ef8:      0x00000000:    dword 6
+0x12300efc:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
+0x12300f00:      0x00000540: MI_NOOP
+0x12300f04:      0x00010000: MI_NOOP
+0x12300f08:      0x00000000: MI_NOOP
+0x12300f0c:      0x55000402: XY_MONO_SRC_COPY_BLT
+Bad count in XY_MONO_SRC_COPY_BLT
+0x12300f10:      0x00020000:    dword 1
+0x12300f14:      0x00000000:    dword 2
+0x12300f18:      0x00000540:    dword 3
+Bad count in 3DPRIMITIVE
+0x12300f1c:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x12300f20:      0x00000008:    vertex count
+0x12300f24:      0x0000002a:    start vertex
+0x12300f28:      0x00000052:    instance count
+0x12300f2c:      0x00000001:    start instance
+0x12300f30:      0x00000000:    index bias
+Bad count in 3DPRIMITIVE
+0x12300f38:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x12300f3c:      0x00000007:    vertex count
+0x12300f40:      0x00000028:    start vertex
+0x12300f44:      0x0000007c:    instance count
+0x12300f48:      0x00000001:    start instance
+0x12300f4c:      0x00000000:    index bias
+0x12300f54:      0x79120000: 3D UNKNOWN: 3d_965 opcode = 0x7912
+0x12300f58:      0x00000008: MI_NOOP
+0x12300f5c:      0x79160000: 3D UNKNOWN: 3d_965 opcode = 0x7916
+0x12300f60:      0x00080008: MI_NOOP
+0x12300f64:      0x78300000: 3D UNKNOWN: 3d_965 opcode = 0x7830
+0x12300f68:      0x040002c0: MI_ARB_ON_OFF
+0x12300f6c:      0x78330000: 3D UNKNOWN: 3d_965 opcode = 0x7833
+0x12300f70:      0x04000000: MI_ARB_ON_OFF
+0x12300f74:      0x78310000: 3D UNKNOWN: 3d_965 opcode = 0x7831
+0x12300f78:      0x04000000: MI_ARB_ON_OFF
+0x12300f7c:      0x78320000: 3D UNKNOWN: 3d_965 opcode = 0x7832
+0x12300f80:      0x04000000: MI_ARB_ON_OFF
+0x12300f84:      0x78260000: 3D UNKNOWN: 3d_965 opcode = 0x7826
+0x12300f88:      0x00007a00: MI_NOOP
+0x12300f8c:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
+0x12300f90:      0x00000000: MI_NOOP
+0x12300f94:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
+Bad count in 3DSTATE_CONSTANT_VS_STATE
+0x12300f98:      0x00000006:    dword 1
+0x12300f9c:      0x00000000:    dword 2
+0x12300fa0:      0x00006d80:    dword 3
+0x12300fa4:      0x00000000:    dword 4
+0x12300fa8:      0x00000000:    dword 5
+0x12300fac:      0x00000000:    dword 6
+0x12300fb0:      0x78100004: 3DSTATE_VS
+0x12300fb4:      0x00000680:    kernel pointer
+0x12300fb8:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x12300fbc:      0x00000000:    scratch offset
+0x12300fc0:      0x00100800:    Dispatch GRF start 1, VUE read length 1, VUE read offset 0
+0x12300fc4:      0xfe000401:    Max Threads 128, Vertex Cache enable, VS func enable
+0x12300fc8:      0x781e0001: 3D UNKNOWN: 3d_965 opcode = 0x781e
+0x12300fcc:      0x00000000: MI_NOOP
+0x12300fd0:      0x00000000: MI_NOOP
+0x12300fd4:      0x781f000c: 3D UNKNOWN: 3d_965 opcode = 0x781f
+0x12300fd8:      0x00600810: MI_NOOP write NOPID reg, val=0x200810
+0x12300fdc:      0x02390000: MI_FLUSH
+0x12300fe0:      0x00000000: MI_NOOP
+0x12300fe4:      0x00000000: MI_NOOP
+0x12300fe8:      0x00000000: MI_NOOP
+0x12300fec:      0x0000000b: MI_NOOP
+0x12300ff0:      0x00000000: MI_NOOP
+0x12300ff4:      0xea9de040:    UNKNOWN
+0x12300ff8:      0x00007f93: MI_NOOP
+0x12300ffc:      0x00000000: MI_NOOP
+0x12301000:      0x00000001: MI_NOOP
+0x12301004:      0x00000000: MI_NOOP
+0x12301008:      0x00000000: MI_NOOP
+Bad count in 3DSTATE_SF
+0x1230100c:      0x78130005: 3DSTATE_SF
+0x12301010:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
+0x12301014:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
+0x12301018:      0x4c000808:    AA disable, CullMode 2, Scissor enable, Multisample m ode 0
+0x1230101c:      0x00000000:    Last Pixel disable, SubPixel Precision 8, Use PixelWidth 0
+0x12301020:      0x00000000:    Global Depth Offset Constant 0.000000
+0x12301024:      0x00000000:    Global Depth Offset Scale 0.000000
+0x12301028:      0x78080003:    Global Depth Offset Clamp 11033634538206626566768129396965376.000000
+0x1230102c:      0x00004018:    Attrib 1 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 0 (Override Z, Const Source 0, Swizzle Select 0, Source 24)
+0x12301030:      0x07b85bb8:    Attrib 3 (Override , Const Source 3, Swizzle Select 2, Source 24); Attrib 2 (Override ZX, Const Source 1, Swizzle Select 2, Source 24)
+0x12301034:      0x07b89fff:    Attrib 5 (Override , Const Source 3, Swizzle Select 2, Source 24); Attrib 4 (Override WX, Const Source 3, Swizzle Select 3, Source 31)
+0x12301038:      0x00000000:    Attrib 7 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 6 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x1230103c:      0x78090003:    Attrib 9 (Override ZYX, Const Source 0, Swizzle Select 0, Source 9); Attrib 8 (Override , Const Source 0, Swizzle Select 0, Source 3)
+0x12301040:      0x02400000:    Attrib 11 (Override , Const Source 1, Swizzle Select 1, Source 0); Attrib 10 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12301044:      0x11130000:    Attrib 13 (Override X, Const Source 0, Swizzle Select 0, Source 19); Attrib 12 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12301048:      0x0240000c:    Attrib 15 (Override , Const Source 1, Swizzle Select 1, Source 0); Attrib 14 (Override , Const Source 0, Swizzle Select 0, Source 12)
+0x1230104c:      0x11130000:    Point Sprite TexCoord Enable
+0x12301050:      0x7b000005:    Const Interp Enable
+0x12301054:      0x00000008:    Attrib 7-0 WrapShortest Enable
+0x12301058:      0x00000052:    Attrib 15-8 WrapShortest Enable
+0x12301028:      0x78080003: 3DSTATE_VERTEX_BUFFERS
+0x1230102c:      0x00004018:    buffer 0: sequential, pitch 24b
+0x12301030:      0x07b85bb8:    buffer address
+0x12301034:      0x07b89fff:    max index
+0x12301038:      0x00000000:    mbz
+0x1230103c:      0x78090003: 3DSTATE_VERTEX_ELEMENTS
+0x12301040:      0x02400000:    buffer 0: invalid, type 0x0040, src offset 0x0000 bytes
+0x12301044:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
+0x12301048:      0x0240000c:    buffer 0: invalid, type 0x0040, src offset 0x000c bytes
+0x1230104c:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
+Bad count in 3DPRIMITIVE
+0x12301050:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x12301054:      0x00000008:    vertex count
+0x12301058:      0x00000052:    start vertex
+0x1230105c:      0x00000000:    instance count
+0x12301060:      0x00000001:    start instance
+0x12301064:      0x00000000:    index bias
+0x1230106c:      0x78260000: 3D UNKNOWN: 3d_965 opcode = 0x7826
+0x12301070:      0x00007a00: MI_NOOP
+0x12301074:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
+0x12301078:      0x00000000: MI_NOOP
+0x1230107c:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
+Bad count in 3DSTATE_CONSTANT_VS_STATE
+0x12301080:      0x00000006:    dword 1
+0x12301084:      0x00000000:    dword 2
+0x12301088:      0x00006c40:    dword 3
+0x1230108c:      0x00000000:    dword 4
+0x12301090:      0x00000000:    dword 5
+0x12301094:      0x00000000:    dword 6
+0x12301098:      0x78100004: 3DSTATE_VS
+0x1230109c:      0x00000680:    kernel pointer
+0x123010a0:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x123010a4:      0x00000000:    scratch offset
+0x123010a8:      0x00100800:    Dispatch GRF start 1, VUE read length 1, VUE read offset 0
+0x123010ac:      0xfe000401:    Max Threads 128, Vertex Cache enable, VS func enable
+0x123010b0:      0x781e0001: 3D UNKNOWN: 3d_965 opcode = 0x781e
+0x123010b4:      0x00000000: MI_NOOP
+0x123010b8:      0x00000000: MI_NOOP
+0x123010bc:      0x78120002: 3DSTATE_CLIP
+0x123010c0:      0x00170400:    UserClip distance cull test mask 0x0
+0x123010c4:      0x98000026:    Clip enable, API mode OGL, Viewport XY test enable, Viewport Z test enable, Guardband test disable, Clip mode 0, Perspective Divide enable, Non-Perspective Barycentric disable, Tri Provoking 2, Line Provoking 1, Trifan Provoking 2
+0x123010c8:      0x0003ffe0:    Min PointWidth 1, Max PointWidth 2047, Force Zero RTAIndex enable, Max VPIndex 0
+0x123010cc:      0x781f000c: 3D UNKNOWN: 3d_965 opcode = 0x781f
+0x123010d0:      0x00600810: MI_NOOP write NOPID reg, val=0x200810
+0x123010d4:      0x02390000: MI_FLUSH
+0x123010d8:      0x00000000: MI_NOOP
+0x123010dc:      0xea9de040:    UNKNOWN
+0x123010e0:      0x00007f93: MI_NOOP
+0x123010e4:      0x02279b80: MI_FLUSH
+0x123010e8:      0x00000000: MI_NOOP
+0x123010ec:      0x00000000: MI_NOOP
+0x123010f0:      0x00000000: MI_NOOP
+0x123010f4:      0x00000000: MI_NOOP
+0x123010f8:      0x00000000: MI_NOOP
+0x123010fc:      0x00000000: MI_NOOP
+0x12301100:      0x00000000: MI_NOOP
+Bad count in 3DSTATE_SF
+0x12301104:      0x78130005: 3DSTATE_SF
+0x12301108:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
+0x1230110c:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
+0x12301110:      0x4c000808:    AA disable, CullMode 2, Scissor enable, Multisample m ode 0
+0x12301114:      0x00000000:    Last Pixel disable, SubPixel Precision 8, Use PixelWidth 0
+0x12301118:      0x00000000:    Global Depth Offset Constant 0.000000
+0x1230111c:      0x00000000:    Global Depth Offset Scale 0.000000
+0x12301120:      0x78140001:    Global Depth Offset Clamp 12007187723301828176357047660445696.000000
+0x12301124:      0xa0000840:    Attrib 1 (Override WY, Const Source 0, Swizzle Select 0, Source 0); Attrib 0 (Override , Const Source 0, Swizzle Select 1, Source 0)
+0x12301128:      0x00000000:    Attrib 3 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 2 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x1230112c:      0x782a0000:    Attrib 5 (Override ZYX, Const Source 0, Swizzle Select 0, Source 10); Attrib 4 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12301130:      0x00007a00:    Attrib 7 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 6 (Override ZYX, Const Source 1, Swizzle Select 0, Source 0)
+0x12301134:      0x782f0000:    Attrib 9 (Override ZYX, Const Source 0, Swizzle Select 0, Source 15); Attrib 8 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12301138:      0x00000000:    Attrib 11 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 10 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x1230113c:      0x78170005:    Attrib 13 (Override ZYX, Const Source 0, Swizzle Select 0, Source 23); Attrib 12 (Override , Const Source 0, Swizzle Select 0, Source 5)
+0x12301140:      0x00000000:    Attrib 15 (Override , Const Source 0, Swizzle Select 0, Source 0); Attrib 14 (Override , Const Source 0, Swizzle Select 0, Source 0)
+0x12301144:      0x00000000:    Point Sprite TexCoord Enable
+0x12301148:      0x00000000:    Const Interp Enable
+0x1230114c:      0x00000000:    Attrib 7-0 WrapShortest Enable
+0x12301150:      0x00000000:    Attrib 15-8 WrapShortest Enable
+Bad count in 3DSTATE_WM
+0x12301120:      0x78140001: 3DSTATE_WM
+0x12301124:      0xa0000840:    kernel start pointer 0
+0x12301128:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
+0x1230112c:      0x782a0000:    scratch offset
+0x12301130:      0x00007a00:    Depth Clear 0, Depth Resolve 0, HiZ Resolve 0, Dispatch GRF start[0] 0, start[1] 122, start[2] 0
+0x12301134:      0x782f0000:    MaxThreads 61, PS KillPixel 0, PS computed Z 1, PS use sourceZ 0, Thread Dispatch 1, PS use sourceW 0, Dispatch32 0, Dispatch16 0, Dispatch8 0
+0x12301138:      0x00000000:    Num SF output 0, Pos XY offset 0, ZW interp mode 0 , Barycentric interp mode 0x0, Point raster rule 0, Multisample mode 0, Multisample Dispatch mode 0
+0x1230113c:      0x78170005:    kernel start pointer 1
+0x12301140:      0x00000000:    kernel start pointer 2
+0x1230112c:      0x782a0000: 3D UNKNOWN: 3d_965 opcode = 0x782a
+0x12301130:      0x00007a00: MI_NOOP
+0x12301134:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
+0x12301138:      0x00000000: MI_NOOP
+0x1230113c:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
+Bad count in 3DSTATE_CONSTANT_PS_STATE
+0x12301140:      0x00000000:    dword 1
+0x12301144:      0x00000000:    dword 2
+0x12301148:      0x00000000:    dword 3
+0x1230114c:      0x00000000:    dword 4
+0x12301150:      0x00000000:    dword 5
+0x12301154:      0x00000000:    dword 6
+0x12301158:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
+0x1230115c:      0x00000940: MI_NOOP
+0x12301160:      0x00010000: MI_NOOP
+0x12301164:      0x00000000: MI_NOOP
+0x12301168:      0x55000402: XY_MONO_SRC_COPY_BLT
+Bad count in XY_MONO_SRC_COPY_BLT
+0x1230116c:      0x00060000:    dword 1
+0x12301170:      0x00000000:    dword 2
+0x12301174:      0x00000940:    dword 3
+Bad count in 3DPRIMITIVE
+0x12301178:      0x7b000005: 3DPRIMITIVE: fail sequential
+0x1230117c:      0x00000008:    vertex count
+0x12301180:      0x00000016:    start vertex
+0x12301184:      0x00000052:    instance count
+0x12301188:      0x00000001:    start instance
+0x1230118c:      0x00000000:    index bias
+0x12301194:      0x05000000: MI_BATCH_BUFFER_END

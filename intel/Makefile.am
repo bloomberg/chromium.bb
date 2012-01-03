@@ -57,6 +57,23 @@ libdrm_intelinclude_HEADERS = intel_bufmgr.h \
 # This may be interesting even outside of "make check", due to the -dump option.
 noinst_PROGRAMS = test_decode
 
+BATCHES = \
+	tests/gen4-3d.batch \
+	tests/gm45-3d.batch \
+	tests/gen5-3d.batch \
+	tests/gen6-3d.batch \
+	tests/gen7-3d.batch
+
+TESTS = \
+	$(BATCHES:.batch=.batch.sh)
+
+EXTRA_DIST = \
+	$(BATCHES) \
+	$(BATCHES:.batch=.batch.sh) \
+	$(BATCHES:.batch=.batch-ref.txt) \
+	$(BATCHES:.batch=.batch-ref.txt) \
+	tests/test-batch.sh
+
 test_decode_LDADD = libdrm_intel.la
 
 pkgconfig_DATA = libdrm_intel.pc
