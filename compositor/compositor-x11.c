@@ -100,6 +100,17 @@ x11_input_create(struct x11_compositor *c)
 	return 0;
 }
 
+static void
+x11_input_destroy(struct x11_compositor *compositor)
+{
+	struct x11_input *input = container_of(compositor->base.input_device,
+					       struct x11_input,
+					       base.input_device);
+
+	wlsc_input_device_fini(&input->base);
+	free(input);
+}
+
 static int
 x11_compositor_init_egl(struct x11_compositor *c)
 {
@@ -161,6 +172,17 @@ x11_compositor_init_egl(struct x11_compositor *c)
 	}
 
 	return 0;
+}
+
+static void
+x11_compositor_fini_egl(struct x11_compositor *compositor)
+{
+	eglMakeCurrent(compositor->base.display,
+		       EGL_NO_SURFACE, EGL_NO_SURFACE,
+		       EGL_NO_CONTEXT);
+
+	eglTerminate(compositor->base.display);
+	eglReleaseThread();
 }
 
 static int
@@ -745,8 +767,16 @@ x11_compositor_get_resources(struct x11_compositor *c)
 static void
 x11_destroy(struct wlsc_compositor *ec)
 {
-	wlsc_compositor_shutdown(ec);
+	struct x11_compositor *compositor = (struct x11_compositor *)ec;
 
+	wl_event_source_remove(compositor->xcb_source);
+	x11_input_destroy(compositor);
+
+	wlsc_compositor_shutdown(ec); /* destroys outputs, too */
+
+	x11_compositor_fini_egl(compositor);
+
+	XCloseDisplay(compositor->dpy);
 	free(ec);
 }
 
