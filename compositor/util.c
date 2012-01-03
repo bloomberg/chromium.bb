@@ -189,8 +189,10 @@ wlsc_zoom_frame(struct wlsc_animation *animation,
 
 	wlsc_spring_update(&zoom->spring, msecs);
 
-	if (wlsc_spring_done(&zoom->spring))
+	if (wlsc_spring_done(&zoom->spring)) {
 		wlsc_zoom_destroy(zoom);
+		return;
+	}
 
 	scale = zoom->start +
 		(zoom->stop - zoom->start) * zoom->spring.current;
