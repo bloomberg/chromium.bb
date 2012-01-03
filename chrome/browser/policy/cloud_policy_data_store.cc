@@ -29,7 +29,7 @@ CloudPolicyDataStore* CloudPolicyDataStore::CreateForDevicePolicies() {
 CloudPolicyDataStore::CloudPolicyDataStore(
     const em::DeviceRegisterRequest_Type policy_register_type,
     const std::string& policy_type)
-    : user_affiliation_(policy::USER_AFFILIATION_NONE),
+    : user_affiliation_(USER_AFFILIATION_NONE),
       policy_register_type_(policy_register_type),
       policy_type_(policy_type),
       token_cache_loaded_(false) {}
@@ -102,7 +102,7 @@ void CloudPolicyDataStore::set_user_name(const std::string& user_name) {
 }
 
 void CloudPolicyDataStore::set_user_affiliation(
-    policy::UserAffiliation user_affiliation) {
+    UserAffiliation user_affiliation) {
   user_affiliation_ = user_affiliation;
 }
 
@@ -147,7 +147,7 @@ const std::string& CloudPolicyDataStore::user_name() const {
   return user_name_;
 }
 
-policy::UserAffiliation CloudPolicyDataStore::user_affiliation() const {
+UserAffiliation CloudPolicyDataStore::user_affiliation() const {
   return user_affiliation_;
 }
 

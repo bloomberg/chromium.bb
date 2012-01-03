@@ -26,7 +26,6 @@ class URLRequestContextGetter;
 
 namespace policy {
 
-class DeviceManagementBackend;
 class DeviceManagementRequestJobImpl;
 class DeviceManagementService;
 
@@ -91,12 +90,6 @@ class DeviceManagementService : public content::URLFetcherDelegate {
  public:
   explicit DeviceManagementService(const std::string& server_url);
   virtual ~DeviceManagementService();
-
-  // Constructs a device management backend for use by client code. Ownership of
-  // the returned backend object is transferred to the caller.
-  // Marked virtual for the benefit of tests.
-  // TODO(mnissler): This is deprecated, remove. Use CreateJob() instead.
-  virtual DeviceManagementBackend* CreateBackend();
 
   // Creates a new device management request job. Ownership is transferred to
   // the caller.

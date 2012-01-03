@@ -14,8 +14,6 @@
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/chrome_net_log.h"
-#include "chrome/browser/policy/device_management_backend.h"
-#include "chrome/browser/policy/device_management_backend_impl.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
@@ -459,10 +457,6 @@ DeviceManagementService::~DeviceManagementService() {
   // All running jobs should have been cancelled by now.
   DCHECK(pending_jobs_.empty());
   DCHECK(queued_jobs_.empty());
-}
-
-DeviceManagementBackend* DeviceManagementService::CreateBackend() {
-  return new DeviceManagementBackendImpl(this);
 }
 
 DeviceManagementRequestJob* DeviceManagementService::CreateJob(
