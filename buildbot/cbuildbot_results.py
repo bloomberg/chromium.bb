@@ -9,16 +9,8 @@ import math
 
 from chromite.lib import cros_build_lib as cros_lib
 
-class Results(object):
+class _Results(object):
   """Static class that collects the results of our BuildStages as they run."""
-
-  # List of results for all stages that's built up as we run. Members are of
-  #  the form ('name', SUCCESS | FORGIVEN | Exception, None | description)
-  _results_log = []
-
-  # Stages run in a previous run and restored. Stored as a dictionary of
-  # names to previous records.
-  _previous = {}
 
   # Stored in the results log for a stage skipped because it was previously
   # completed successfully.
@@ -26,48 +18,52 @@ class Results(object):
   FORGIVEN = "Stage failed but was optional"
   SPLIT_TOKEN = "\_O_/"
 
-  @classmethod
-  def Clear(cls):
-    """Clear existing stage results."""
-    cls._results_log = []
-    cls._previous = {}
+  def __init__(self):
+    self.Clear()
 
-  @classmethod
-  def PreviouslyCompletedRecord(cls, name):
+  def Clear(self):
+    """Clear existing stage results."""
+
+    # List of results for all stages that's built up as we run. Members are of
+    #  the form ('name', SUCCESS | FORGIVEN | Exception, None | description)
+    self._results_log = []
+
+    # Stages run in a previous run and restored. Stored as a dictionary of
+    # names to previous records.
+    self._previous = {}
+
+  def PreviouslyCompletedRecord(self, name):
     """Check to see if this stage was previously completed.
 
        Returns:
          A boolean showing the stage was successful in the previous run.
     """
-    return cls._previous.get(name)
+    return self._previous.get(name)
 
-  @classmethod
-  def BuildSucceededSoFar(cls):
+  def BuildSucceededSoFar(self):
     """Return true if all stages so far have passing states.
 
     This method returns true if all was successful or forgiven.
     """
-    for entry in cls._results_log:
+    for entry in self._results_log:
       _, result, _, _ = entry
-      if not result in (cls.SUCCESS, cls.FORGIVEN):
+      if not result in (self.SUCCESS, self.FORGIVEN):
         return False
 
     return True
 
-  @classmethod
-  def WasStageSuccessful(cls, name):
+  def WasStageSuccessful(self, name):
     """Return true stage passed."""
     cros_lib.Info('Checking for %s' % name)
-    for entry in cls._results_log:
+    for entry in self._results_log:
       entry, result, _, _ = entry
       if entry == name:
         cros_lib.Info('Found %s' % result)
-        return result == cls.SUCCESS
+        return result == self.SUCCESS
 
     return False
 
-  @classmethod
-  def Record(cls, name, result, description=None, time=0):
+  def Record(self, name, result, description=None, time=0):
     """Store off an additional stage result.
 
        Args:
@@ -79,10 +75,9 @@ class Results(object):
          description:
            The textual backtrace of the exception, or None
     """
-    cls._results_log.append((name, result, description, time))
+    self._results_log.append((name, result, description, time))
 
-  @classmethod
-  def UpdateResult(cls, name, result, description=None):
+  def UpdateResult(self, name, result, description=None):
     """Updates a stage result with a different result.
 
        Args:
@@ -93,57 +88,52 @@ class Results(object):
           description:
            The textual backtrace of the exception, or None
     """
-    for index in range(len(cls._results_log)):
-      if cls._results_log[index][0] == name:
-        _, _, _, run_time = cls._results_log[index]
-        cls._results_log[index] = name, result, description, run_time
+    for index in range(len(self._results_log)):
+      if self._results_log[index][0] == name:
+        _, _, _, run_time = self._results_log[index]
+        self._results_log[index] = name, result, description, run_time
         break
 
-  @classmethod
-  def Get(cls):
+  def Get(self):
     """Fetch stage results.
 
        Returns:
          A list with one entry per stage run with a result.
     """
-    return cls._results_log
+    return self._results_log
 
-  @classmethod
-  def GetPrevious(cls):
+  def GetPrevious(self):
     """Fetch stage results.
 
        Returns:
          A list of stages names that were completed in a previous run.
     """
-    return cls._previous
+    return self._previous
 
-  @classmethod
-  def SaveCompletedStages(cls, out):
+  def SaveCompletedStages(self, out):
     """Save the successfully completed stages to the provided file |out|."""
-    for name, result, description, time in cls._results_log:
-      if result != cls.SUCCESS: break
-      out.write(cls.SPLIT_TOKEN.join([name, str(description), str(time)]))
+    for name, result, description, time in self._results_log:
+      if result != self.SUCCESS: break
+      out.write(self.SPLIT_TOKEN.join([name, str(description), str(time)]))
       out.write('\n')
 
-  @classmethod
-  def RestoreCompletedStages(cls, out):
+  def RestoreCompletedStages(self, out):
     """Load the successfully completed stages from the provided file |out|."""
     # Read the file, and strip off the newlines.
     for line in out:
-      record = line.strip().split(cls.SPLIT_TOKEN)
+      record = line.strip().split(self.SPLIT_TOKEN)
       if len(record) != 3:
         cros_lib.Warning('State file does not match expected format, ignoring.')
         # Wipe any partial state.
-        cls._previous = {}
+        self._previous = {}
         break
 
-      cls._previous[record[0]] = record
+      self._previous[record[0]] = record
 
 
-  @classmethod
-  def Report(cls, out, archive_url=None, current_version=None):
+  def Report(self, out, archive_url=None, current_version=None):
     """Generate a user friendly text display of the results data."""
-    results = cls._results_log
+    results = self._results_log
 
     line = '*' * 60 + '\n'
     edge = '*' * 2
@@ -164,11 +154,11 @@ class Results(object):
       timestr = datetime.timedelta(seconds=math.ceil(run_time))
 
       out.write(line)
-      if result == cls.SUCCESS:
+      if result == self.SUCCESS:
         # These was no error
         out.write('%s PASS %s (%s)\n' % (edge, name, timestr))
 
-      elif result == cls.FORGIVEN:
+      elif result == self.FORGIVEN:
         # The stage was executed previously, and skipped this time
         out.write('%s FAILED BUT FORGIVEN %s (%s)\n' %
                    (edge, name, timestr))
@@ -202,3 +192,5 @@ class Results(object):
       out.write('\n')
       out.write(first_exception)
       out.write('\n')
+
+Results = _Results()
