@@ -16,11 +16,9 @@ TestNavigationEntry::TestNavigationEntry()
 
 TestNavigationEntry::TestNavigationEntry(int page_id,
                                          const GURL& url,
-                                         const std::wstring& title,
-                                         const std::wstring& target_frame)
+                                         const string16& target_frame)
     : page_id_(page_id),
       url_(url),
-      title_(title),
       target_frame_(target_frame) {
 }
 

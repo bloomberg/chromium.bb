@@ -177,7 +177,7 @@ public:
 
     void LoadFile(const FilePath& file);
     void LoadURL(const GURL& url);
-    void LoadURLForFrame(const GURL& url, const std::wstring& frame_name);
+    void LoadURLForFrame(const GURL& url, const string16& frame_name);
     void GoBackOrForward(int offset);
     void Reload();
     bool Navigate(const TestNavigationEntry& entry, bool reload);

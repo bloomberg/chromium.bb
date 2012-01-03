@@ -484,20 +484,19 @@ void TestShell::ResetTestController() {
 }
 
 void TestShell::LoadFile(const FilePath& file) {
-  LoadURLForFrame(net::FilePathToFileURL(file), std::wstring());
+  LoadURLForFrame(net::FilePathToFileURL(file), string16());
 }
 
 void TestShell::LoadURL(const GURL& url) {
-  LoadURLForFrame(url, std::wstring());
+  LoadURLForFrame(url, string16());
 }
 
 bool TestShell::Navigate(const TestNavigationEntry& entry, bool reload) {
   // Get the right target frame for the entry.
   WebFrame* frame = webView()->mainFrame();
-  if (!entry.GetTargetFrame().empty()) {
-      frame = webView()->findFrameByName(
-          WideToUTF16Hack(entry.GetTargetFrame()));
-  }
+  if (!entry.GetTargetFrame().empty())
+      frame = webView()->findFrameByName(entry.GetTargetFrame());
+
   // TODO(mpcomplete): should we clear the target frame, or should
   // back/forward navigations maintain the target frame?
 

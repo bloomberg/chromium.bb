@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 
@@ -39,8 +40,7 @@ class TestNavigationEntry {
   TestNavigationEntry();
   TestNavigationEntry(int page_id,
                       const GURL& url,
-                      const std::wstring& title,
-                      const std::wstring& target_frame);
+                      const string16& target_frame);
 
   // Virtual to allow test_shell to extend the class.
   ~TestNavigationEntry();
@@ -48,10 +48,6 @@ class TestNavigationEntry {
   // Set / Get the URI
   void SetURL(const GURL& url) { url_ = url; }
   const GURL& GetURL() const { return url_; }
-
-  // Set / Get the title
-  void SetTitle(const std::wstring& a_title) { title_ = a_title; }
-  const std::wstring& GetTitle() const { return title_; }
 
   // Set / Get opaque state.
   // WARNING: This state is saved to the database and used to restore previous
@@ -65,7 +61,7 @@ class TestNavigationEntry {
   void SetPageID(int page_id) { page_id_ = page_id; }
   int32 GetPageID() const { return page_id_; }
 
-  const std::wstring& GetTargetFrame() const { return target_frame_; }
+  const string16& GetTargetFrame() const { return target_frame_; }
 
  private:
   // Describes the current page that the tab represents. This is not relevant
@@ -73,10 +69,9 @@ class TestNavigationEntry {
   int32 page_id_;
 
   GURL url_;
-  std::wstring title_;
   std::string state_;
 
-  std::wstring target_frame_;
+  string16 target_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationEntry);
 };
