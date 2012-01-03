@@ -16,6 +16,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "net/test/test_server.h"
@@ -284,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
 IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
   ASSERT_TRUE(pdf_test_server()->Start());
 
-  NavigationController* controller =
+  content::NavigationController* controller =
       &(browser()->GetSelectedWebContents()->GetController());
   content::NotificationRegistrar registrar;
   registrar.Add(this,
