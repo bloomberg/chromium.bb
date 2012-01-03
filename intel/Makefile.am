@@ -54,4 +54,9 @@ libdrm_intelincludedir = ${includedir}/libdrm
 libdrm_intelinclude_HEADERS = intel_bufmgr.h \
 			      intel_debug.h
 
+# This may be interesting even outside of "make check", due to the -dump option.
+noinst_PROGRAMS = test_decode
+
+test_decode_LDADD = libdrm_intel.la
+
 pkgconfig_DATA = libdrm_intel.pc

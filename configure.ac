@@ -114,6 +114,8 @@ AC_CHECK_FUNCS([clock_gettime], [CLOCK_LIB=],
                              [AC_MSG_ERROR([Couldn't find clock_gettime])])])
 AC_SUBST([CLOCK_LIB])
 
+AC_CHECK_FUNCS([open_memstream], [HAVE_OPEN_MEMSTREAM=yes])
+
 dnl Use lots of warning flags with with gcc and compatible compilers
 
 dnl Note: if you change the following variable, the cache is automatically
