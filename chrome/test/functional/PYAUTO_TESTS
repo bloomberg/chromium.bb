@@ -314,6 +314,8 @@
       '-find_in_page.FindMatchTests.testSearchInPDF',
       # crosbug.com/24496
       '-infobars.InfobarTest.testPluginCrashForMultiTabs',
+      # crbug.com/109035
+      '-infobars.InfobarTest.testPluginCrashInfobar',
       # Flaky: crosbug.com/14439
       '-instant',
       # crosbug.com/14256
@@ -336,6 +338,8 @@
       '-sync',
       # crbug.com/87837
       '-plugins.PluginsTest.testKillAndReloadAllPlugins',
+      # crbug.com/109035
+      '-plugins.PluginsTest.testBlockPluginException',
       # Deal with i18n chars.  crosbug.com/12639
       '-autofill.AutofillTest.testFillProfileCrazyCharacters',
       '-downloads.DownloadsTest.testCrazyFilenames',
@@ -350,6 +354,10 @@
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       # crbug.com/103379
       '-policy.PolicyTest.testDisable3DAPIs',
+      # crbug.com/109035
+      '-youtube.YoutubeTest.testPlayerBytes',
+      # crbug.com/109035
+      '-youtube.YoutubeTest.testPlayerResolution',
     ],
   },
 
