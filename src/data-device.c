@@ -27,36 +27,31 @@
 
 #include "compositor.h"
 
-void
-weston_data_source_unref(struct weston_data_source *source)
-{
-	source->refcount--;
-	if (source->refcount == 0)
-		free(source);
-}
-
 static void
 data_offer_accept(struct wl_client *client, struct wl_resource *resource,
 		  uint32_t time, const char *mime_type)
 {
-	struct weston_data_source *source = resource->data;
+	struct weston_data_offer *offer = resource->data;
 
 	/* FIXME: Check that client is currently focused by the input
 	 * device that is currently dragging this data source.  Should
 	 * this be a wl_data_device request? */
 
-	wl_resource_post_event(&source->resource,
-			       WL_DATA_SOURCE_TARGET, mime_type);
+	if (offer->source)
+		wl_resource_post_event(&offer->source->resource,
+				       WL_DATA_SOURCE_TARGET, mime_type);
 }
 
 static void
 data_offer_receive(struct wl_client *client, struct wl_resource *resource,
 		   const char *mime_type, int32_t fd)
 {
-	struct weston_data_source *source = resource->data;
+	struct weston_data_offer *offer = resource->data;
 
-	wl_resource_post_event(&source->resource,
-			       WL_DATA_SOURCE_SEND, mime_type, fd);
+	if (offer->source)
+		wl_resource_post_event(&offer->source->resource,
+				       WL_DATA_SOURCE_SEND, mime_type, fd);
+
 	close(fd);
 }
 
@@ -69,10 +64,10 @@ data_offer_destroy(struct wl_client *client, struct wl_resource *resource)
 static void
 destroy_data_offer(struct wl_resource *resource)
 {
-	struct weston_data_source *source = resource->data;
+	struct weston_data_offer *offer = resource->data;
 
-	weston_data_source_unref(source);
-	free(resource);
+	wl_list_remove(&offer->source_destroy_listener.link);
+	free(offer);
 }
 
 static const struct wl_data_offer_interface data_offer_interface = {
@@ -81,18 +76,13 @@ static const struct wl_data_offer_interface data_offer_interface = {
 	data_offer_destroy,
 };
 
-static struct wl_resource *
-data_source_create_offer(struct weston_data_source *source, 
-			 struct wl_resource *target)
+static void
+destroy_offer_data_source(struct wl_listener *listener,
+			  struct wl_resource *resource, uint32_t time)
 {
-	struct wl_resource *resource;
+	struct weston_data_offer *offer = resource->data;
 
-	resource = wl_client_new_object(target->client,
-					&wl_data_offer_interface,
-					&data_offer_interface, source);
-	resource->destroy = destroy_data_offer;
-
-	return resource;
+	offer->source = NULL;
 }
 
 static void
@@ -105,19 +95,36 @@ static struct wl_resource *
 weston_data_source_send_offer(struct weston_data_source *source,
 			    struct wl_resource *target)
 {
-	struct wl_resource *resource;
+	struct weston_data_offer *offer;
 	char **p, **end;
 
-	resource = source->create_offer(source, target);
-	source->refcount++;
+	offer = malloc(sizeof *offer);
+	if (offer == NULL)
+		return NULL;
 
-	wl_resource_post_event(target, WL_DATA_DEVICE_DATA_OFFER, resource);
+	offer->resource.destroy = destroy_data_offer;
+	offer->resource.object.id = 0;
+	offer->resource.object.interface = &wl_data_offer_interface;
+	offer->resource.object.implementation =
+		(void (**)(void)) &source->offer_interface;
+	offer->resource.data = offer;
+
+	offer->source = source;
+	offer->source_destroy_listener.func = destroy_offer_data_source;
+	wl_list_insert(&source->resource.destroy_listener_list,
+		       &offer->source_destroy_listener.link);
+
+	wl_client_add_resource(source->resource.client, &offer->resource);
+
+	wl_resource_post_event(target,
+			       WL_DATA_DEVICE_DATA_OFFER, &offer->resource);
 
 	end = source->mime_types.data + source->mime_types.size;
 	for (p = source->mime_types.data; p < end; p++)
-		wl_resource_post_event(resource, WL_DATA_OFFER_OFFER, *p);
+		wl_resource_post_event(&offer->resource,
+				       WL_DATA_OFFER_OFFER, *p);
 
-	return resource;
+	return &offer->resource;
 }
 
 static void
@@ -240,7 +247,6 @@ drag_grab_end(struct wl_grab *grab, uint32_t time)
 				       WL_DATA_DEVICE_DROP);
 
 	drag_set_focus(device, NULL, time, 0, 0);
-	weston_data_source_unref(device->drag_data_source);
 	device->drag_data_source = NULL;
 }
 
@@ -271,7 +277,6 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 
 	device->grab.interface = &drag_grab_interface;
 	device->drag_data_source = source_resource->data;
-	device->drag_data_source->refcount++;
 
 	target = pick_surface(&device->input_device, &sx, &sy);
 	wl_input_device_set_pointer_focus(&device->input_device,
@@ -314,17 +319,11 @@ weston_input_device_set_selection(struct weston_input_device *device,
 
 	if (device->selection_data_source) {
 		device->selection_data_source->cancel(device->selection_data_source);
-		/* FIXME: All non-active clients will probably hold a
-		 * reference to the selection data source, and thus it
-		 * won't get destroyed until every client has been
-		 * activated and seen the new selection event. */
 		wl_list_remove(&device->selection_data_source_listener.link);
-		weston_data_source_unref(device->selection_data_source);
 		device->selection_data_source = NULL;
 	}
 
 	device->selection_data_source = source;
-	source->refcount++;
 
 	focus = device->input_device.keyboard_focus_resource;
 	if (focus) {
@@ -379,7 +378,6 @@ destroy_data_source(struct wl_resource *resource)
 	wl_array_release(&source->mime_types);
 
 	source->resource.object.id = 0;
-	weston_data_source_unref(source);
 }
 
 static void
@@ -400,9 +398,8 @@ create_data_source(struct wl_client *client,
 	source->resource.object.implementation =
 		(void (**)(void)) &data_source_interface;
 	source->resource.data = source;
-	source->create_offer = data_source_create_offer;
+	source->offer_interface = &data_offer_interface;
 	source->cancel = data_source_cancel;
-	source->refcount = 1;
 
 	wl_array_init(&source->mime_types);
 	wl_client_add_resource(client, &source->resource);

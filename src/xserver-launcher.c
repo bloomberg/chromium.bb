@@ -237,18 +237,13 @@ static void
 data_offer_accept(struct wl_client *client, struct wl_resource *resource,
 		  uint32_t time, const char *mime_type)
 {
-	struct weston_data_source *source = resource->data;
-
-	wl_resource_post_event(&source->resource,
-			       WL_DATA_SOURCE_TARGET, mime_type);
 }
 
 static void
 data_offer_receive(struct wl_client *client, struct wl_resource *resource,
 		   const char *mime_type, int32_t fd)
 {
-	struct weston_data_source *source = resource->data;
-	struct weston_wm *wm = source->data;
+	struct weston_wm *wm = resource->data;
 
 	if (strcmp(mime_type, "text/plain;charset=utf-8") == 0) {
 		/* Get data for the utf8_string target */
@@ -274,34 +269,11 @@ data_offer_destroy(struct wl_client *client, struct wl_resource *resource)
 	wl_resource_destroy(resource, weston_compositor_get_time());
 }
 
-static void
-destroy_data_offer(struct wl_resource *resource)
-{
-	struct weston_data_source *source = resource->data;
-
-	weston_data_source_unref(source);
-	free(resource);
-}
-
 static const struct wl_data_offer_interface data_offer_interface = {
 	data_offer_accept,
 	data_offer_receive,
 	data_offer_destroy,
 };
-
-static struct wl_resource *
-data_source_create_offer(struct weston_data_source *source, 
-			 struct wl_resource *target)
-{
-	struct wl_resource *resource;
-
-	resource = wl_client_new_object(target->client,
-					&wl_data_offer_interface,
-					&data_offer_interface, source);
-	resource->destroy = destroy_data_offer;
-
-	return resource;
-}
 
 static void
 data_source_cancel(struct weston_data_source *source)
@@ -341,10 +313,9 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 		return;
 
 	wl_list_init(&source->resource.destroy_listener_list);
-	source->create_offer = data_source_create_offer;
+	source->offer_interface = &data_offer_interface;
 	source->cancel = data_source_cancel;
-	source->data = wm;
-	source->refcount = 1;
+	source->resource.data = wm;
 
 	wl_array_init(&source->mime_types);
 	value = xcb_get_property_value(reply);
@@ -361,7 +332,6 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 	weston_input_device_set_selection(device, source,
 					weston_compositor_get_time());
 
-	weston_data_source_unref(source);
 	free(reply);
 }
 
@@ -500,7 +470,7 @@ weston_xserver_set_selection(struct weston_input_device *device)
 	}
 
 	if (wm && has_text_plain &&
-	    source->create_offer != data_source_create_offer) {
+	    source->offer_interface != &data_offer_interface) {
 		xcb_set_selection_owner(wm->conn,
 					wm->selection_window,
 					wm->atom.clipboard,

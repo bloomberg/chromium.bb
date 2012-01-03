@@ -269,15 +269,17 @@ struct weston_surface {
 	struct wl_listener buffer_destroy_listener;
 };
 
+struct weston_data_offer {
+	struct wl_resource resource;
+	struct weston_data_source *source;
+	struct wl_listener source_destroy_listener;
+};
+
 struct weston_data_source {
 	struct wl_resource resource;
 	struct wl_array mime_types;
-	int refcount;
-	void *data;
 
-	struct wl_resource *(*create_offer)(struct weston_data_source *source, 
-					    struct wl_resource *target);
-
+	const struct wl_data_offer_interface *offer_interface;
 	void (*cancel)(struct weston_data_source *source);
 };
 
