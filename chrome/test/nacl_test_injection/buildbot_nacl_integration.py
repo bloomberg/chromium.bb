@@ -31,6 +31,10 @@ def Main(args):
     # TODO(ncbray): Reenable when this issue is resolved.
     # http://code.google.com/p/nativeclient/issues/detail?id=2091
     tests_to_disable.append('run_ppapi_bad_browser_test')
+    # TODO(wez): Reenable when he duplicate copy of the test has been removed.
+    # http://code.google.com/p/chromium/issues/detail?id=108379
+    tests_to_disable.append('earth_browser_test_c')
+    tests_to_disable.append('earth_browser_test_cc')
     # This thread safety stress test is flaky on at least Windows.
     # See http://code.google.com/p/nativeclient/issues/detail?id=2124
     # TODO(mseaborn): Reenable when this issue is resolved.
