@@ -1,5 +1,5 @@
 #! -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -3260,7 +3260,6 @@ nonvariant_tests = [
     #### ALPHABETICALLY SORTED ####
     'tests/barebones/nacl.scons',
     'tests/chrome_extension/nacl.scons',
-    'tests/earth/nacl.scons',
     'tests/exit_status/nacl.scons',
     'tests/imc_shm_mmap/nacl.scons',
     'tests/imc_sockets/nacl.scons',
