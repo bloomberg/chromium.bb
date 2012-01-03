@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 Google Inc. All rights reserved.
+# Copyright (c) 2012 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -44,7 +44,7 @@ def InstallNinja():
       'git clone https://github.com/martine/ninja.git ' + NINJA_WORK_DIR,
       shell=True)
   # Bootstrap.
-  subprocess.check_call('./bootstrap.sh', cwd=NINJA_WORK_DIR, shell=True)
+  subprocess.check_call('./bootstrap.py', cwd=NINJA_WORK_DIR, shell=True)
   # Copy out ninja.
   shutil.copyfile(os.path.join(NINJA_WORK_DIR, 'ninja' + EXE_SUFFIX),
                   NINJA_PATH)
