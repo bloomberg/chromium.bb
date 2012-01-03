@@ -225,7 +225,20 @@ x11_output_set_cursor(struct wlsc_output *output_base,
 static void
 x11_output_destroy(struct wlsc_output *output_base)
 {
-	return;
+	struct x11_output *output = (struct x11_output *)output_base;
+	struct x11_compositor *compositor =
+		(struct x11_compositor *)output->base.compositor;
+
+	wl_list_remove(&output->base.link);
+	wl_event_source_remove(output->finish_frame_timer);
+
+	eglDestroySurface(compositor->base.display, output->egl_surface);
+
+	xcb_destroy_window(compositor->conn, output->window);
+
+	wlsc_output_destroy(&output->base);
+
+	free(output);
 }
 
 static void
