@@ -103,7 +103,6 @@ struct wlsc_input_device {
 	int32_t hotspot_x, hotspot_y;
 	struct wl_list link;
 	uint32_t modifier_state;
-	struct wl_selection *selection;
 
 	struct wl_list drag_resource_list;
 	struct wlsc_data_source *drag_data_source;
