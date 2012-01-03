@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,8 +71,8 @@ std::string PasswordsSyncPerfTest::NextPassword() {
   return base::StringPrintf("password%d", password_number_++);
 }
 
-// Flaky on Windows, timing out on Mac, see http://crbug.com/105999
-#if defined(OS_WIN) || defined(OS_MACOSX)
+// Flaky on Windows, see http://crbug.com/105999
+#if defined(OS_WIN)
 #define MAYBE_P0 DISABLED_P0
 #else
 #define MAYBE_P0 P0
