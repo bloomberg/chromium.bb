@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -14,7 +14,8 @@ import re
 
 _EXCLUDED_PATHS = (
     r"^breakpad[\\\/].*",
-    r"^net/tools/spdyshark/[\\\/].*",
+    r"^native_client_sdk[\\\/].*",
+    r"^net[\\\/]tools[\\\/]spdyshark[\\\/].*",
     r"^skia[\\\/].*",
     r"^v8[\\\/].*",
     r".*MakeFile$",
