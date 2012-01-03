@@ -223,6 +223,9 @@ void
 wl_input_device_init(struct wl_input_device *device);
 
 void
+wl_input_device_release(struct wl_input_device *device);
+
+void
 wl_input_device_set_pointer_focus(struct wl_input_device *device,
 				  struct wl_surface *surface,
 				  uint32_t time,

@@ -411,11 +411,26 @@ wl_input_device_init(struct wl_input_device *device)
 {
 	memset(device, 0, sizeof *device);
 	wl_list_init(&device->resource_list);
+	wl_array_init(&device->keys);
 	device->pointer_focus_listener.func = lose_pointer_focus;
 	device->keyboard_focus_listener.func = lose_keyboard_focus;
 
 	device->x = 100;
 	device->y = 100;
+}
+
+WL_EXPORT void
+wl_input_device_release(struct wl_input_device *device)
+{
+	if (device->keyboard_focus_resource)
+		wl_list_remove(&device->keyboard_focus_listener.link);
+
+	if (device->pointer_focus_resource)
+		wl_list_remove(&device->pointer_focus_listener.link);
+
+	/* XXX: What about device->resource_list? */
+
+	wl_array_release(&device->keys);
 }
 
 static struct wl_resource *
