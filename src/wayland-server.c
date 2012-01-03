@@ -70,7 +70,6 @@ struct wl_display {
 	struct wl_event_loop *loop;
 	int run;
 
-	struct wl_list callback_list;
 	uint32_t id;
 
 	struct wl_list global_list;
@@ -660,7 +659,6 @@ wl_display_create(void)
 		return NULL;
 	}
 
-	wl_list_init(&display->callback_list);
 	wl_list_init(&display->global_list);
 	wl_list_init(&display->socket_list);
 	wl_list_init(&display->client_list);
