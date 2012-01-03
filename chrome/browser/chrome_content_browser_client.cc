@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/breakpad_mac.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
+#include "chrome/browser/extensions/extension_webkit_preferences.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
@@ -34,6 +36,7 @@
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
@@ -53,6 +56,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
+#include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -64,6 +68,9 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/browsing_instance.h"
+#include "content/browser/child_process_security_policy.h"
+#include "content/browser/gpu/gpu_data_manager.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/resource_context.h"
@@ -79,6 +86,7 @@
 #include "grit/ui_resources.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_options.h"
+#include "net/base/network_change_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -242,6 +250,19 @@ bool CertMatchesFilter(const net::X509Certificate& cert,
     return true;
   }
   return false;
+}
+
+// Fills |map| with the per-script font prefs under path |map_name|.
+void FillFontFamilyMap(const PrefService* prefs,
+                       const char* map_name,
+                       WebPreferences::ScriptFontFamilyMap* map) {
+  for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {
+    const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
+    std::string pref_name = base::StringPrintf("%s.%s", map_name, script);
+    std::string font_family = prefs->GetString(pref_name.c_str());
+    if (!font_family.empty())
+      map->push_back(std::make_pair(script, UTF8ToUTF16(font_family)));
+  }
 }
 
 }  // namespace
@@ -1099,18 +1120,271 @@ bool ChromeContentBrowserClient::IsFastShutdownPossible() {
 }
 
 WebPreferences ChromeContentBrowserClient::GetWebkitPrefs(RenderViewHost* rvh) {
-  return RenderViewHostDelegateHelper::GetWebkitPrefs(rvh);
+  Profile* profile = Profile::FromBrowserContext(
+      rvh->process()->GetBrowserContext());
+  PrefService* prefs = profile->GetPrefs();
+  WebPreferences web_prefs;
+
+  web_prefs.standard_font_family =
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalStandardFontFamily));
+  web_prefs.fixed_font_family =
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalFixedFontFamily));
+  web_prefs.serif_font_family =
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalSerifFontFamily));
+  web_prefs.sans_serif_font_family =
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalSansSerifFontFamily));
+  web_prefs.cursive_font_family =
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalCursiveFontFamily));
+  web_prefs.fantasy_font_family =
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalFantasyFontFamily));
+
+  FillFontFamilyMap(prefs, prefs::kWebKitStandardFontFamilyMap,
+                    &web_prefs.standard_font_family_map);
+  FillFontFamilyMap(prefs, prefs::kWebKitFixedFontFamilyMap,
+                    &web_prefs.fixed_font_family_map);
+  FillFontFamilyMap(prefs, prefs::kWebKitSerifFontFamilyMap,
+                    &web_prefs.serif_font_family_map);
+  FillFontFamilyMap(prefs, prefs::kWebKitSansSerifFontFamilyMap,
+                    &web_prefs.sans_serif_font_family_map);
+  FillFontFamilyMap(prefs, prefs::kWebKitCursiveFontFamilyMap,
+                    &web_prefs.cursive_font_family_map);
+  FillFontFamilyMap(prefs, prefs::kWebKitFantasyFontFamilyMap,
+                    &web_prefs.fantasy_font_family_map);
+
+  web_prefs.default_font_size =
+      prefs->GetInteger(prefs::kWebKitGlobalDefaultFontSize);
+  web_prefs.default_fixed_font_size =
+      prefs->GetInteger(prefs::kWebKitGlobalDefaultFixedFontSize);
+  web_prefs.minimum_font_size =
+      prefs->GetInteger(prefs::kWebKitGlobalMinimumFontSize);
+  web_prefs.minimum_logical_font_size =
+      prefs->GetInteger(prefs::kWebKitGlobalMinimumLogicalFontSize);
+
+  web_prefs.default_encoding = prefs->GetString(prefs::kGlobalDefaultCharset);
+
+  web_prefs.javascript_can_open_windows_automatically =
+      prefs->GetBoolean(
+          prefs::kWebKitGlobalJavascriptCanOpenWindowsAutomatically);
+  web_prefs.dom_paste_enabled =
+      prefs->GetBoolean(prefs::kWebKitDomPasteEnabled);
+  web_prefs.shrinks_standalone_images_to_fit =
+      prefs->GetBoolean(prefs::kWebKitShrinksStandaloneImagesToFit);
+  const DictionaryValue* inspector_settings =
+      prefs->GetDictionary(prefs::kWebKitInspectorSettings);
+  if (inspector_settings) {
+    for (DictionaryValue::key_iterator iter(inspector_settings->begin_keys());
+         iter != inspector_settings->end_keys(); ++iter) {
+      std::string value;
+      if (inspector_settings->GetStringWithoutPathExpansion(*iter, &value))
+          web_prefs.inspector_settings.push_back(
+              std::make_pair(*iter, value));
+    }
+  }
+  web_prefs.tabs_to_links = prefs->GetBoolean(prefs::kWebkitTabsToLinks);
+
+  {  // Command line switches are used for preferences with no user interface.
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    web_prefs.developer_extras_enabled = true;
+    web_prefs.javascript_enabled =
+        !command_line.HasSwitch(switches::kDisableJavaScript) &&
+        prefs->GetBoolean(prefs::kWebKitGlobalJavascriptEnabled);
+    web_prefs.dart_enabled = !command_line.HasSwitch(switches::kDisableDart);
+    web_prefs.web_security_enabled =
+        !command_line.HasSwitch(switches::kDisableWebSecurity) &&
+        prefs->GetBoolean(prefs::kWebKitWebSecurityEnabled);
+    web_prefs.plugins_enabled =
+        !command_line.HasSwitch(switches::kDisablePlugins) &&
+        prefs->GetBoolean(prefs::kWebKitGlobalPluginsEnabled);
+    web_prefs.java_enabled =
+        !command_line.HasSwitch(switches::kDisableJava) &&
+        prefs->GetBoolean(prefs::kWebKitJavaEnabled);
+    web_prefs.loads_images_automatically =
+        prefs->GetBoolean(prefs::kWebKitGlobalLoadsImagesAutomatically);
+    web_prefs.uses_page_cache =
+        command_line.HasSwitch(switches::kEnableFastback);
+    web_prefs.remote_fonts_enabled =
+        !command_line.HasSwitch(switches::kDisableRemoteFonts);
+    web_prefs.xss_auditor_enabled =
+        !command_line.HasSwitch(switches::kDisableXSSAuditor);
+    web_prefs.application_cache_enabled =
+        !command_line.HasSwitch(switches::kDisableApplicationCache);
+
+    web_prefs.local_storage_enabled =
+        !command_line.HasSwitch(switches::kDisableLocalStorage);
+    web_prefs.databases_enabled =
+        !command_line.HasSwitch(switches::kDisableDatabases);
+    web_prefs.webaudio_enabled =
+        !command_line.HasSwitch(switches::kDisableWebAudio);
+    web_prefs.experimental_webgl_enabled =
+        GpuProcessHost::gpu_enabled() &&
+        !command_line.HasSwitch(switches::kDisable3DAPIs) &&
+        !prefs->GetBoolean(prefs::kDisable3DAPIs) &&
+        !command_line.HasSwitch(switches::kDisableExperimentalWebGL);
+    web_prefs.gl_multisampling_enabled =
+        !command_line.HasSwitch(switches::kDisableGLMultisampling);
+    web_prefs.privileged_webgl_extensions_enabled =
+        command_line.HasSwitch(switches::kEnablePrivilegedWebGLExtensions);
+    web_prefs.site_specific_quirks_enabled =
+        !command_line.HasSwitch(switches::kDisableSiteSpecificQuirks);
+    web_prefs.allow_file_access_from_file_urls =
+        command_line.HasSwitch(switches::kAllowFileAccessFromFiles);
+    web_prefs.show_composited_layer_borders =
+        command_line.HasSwitch(switches::kShowCompositedLayerBorders);
+    web_prefs.show_composited_layer_tree =
+        command_line.HasSwitch(switches::kShowCompositedLayerTree);
+    web_prefs.show_fps_counter =
+        command_line.HasSwitch(switches::kShowFPSCounter);
+    web_prefs.accelerated_compositing_enabled =
+        GpuProcessHost::gpu_enabled() &&
+        !command_line.HasSwitch(switches::kDisableAcceleratedCompositing);
+    web_prefs.threaded_compositing_enabled =
+        command_line.HasSwitch(switches::kEnableThreadedCompositing);
+    web_prefs.force_compositing_mode =
+        command_line.HasSwitch(switches::kForceCompositingMode);
+    web_prefs.fixed_position_compositing_enabled =
+        command_line.HasSwitch(switches::kEnableCompositingForFixedPosition);
+    web_prefs.allow_webui_compositing =
+        command_line.HasSwitch(switches::kAllowWebUICompositing);
+    web_prefs.accelerated_2d_canvas_enabled =
+        GpuProcessHost::gpu_enabled() &&
+        !command_line.HasSwitch(switches::kDisableAccelerated2dCanvas);
+    web_prefs.accelerated_painting_enabled =
+        GpuProcessHost::gpu_enabled() &&
+        command_line.HasSwitch(switches::kEnableAcceleratedPainting);
+    web_prefs.accelerated_filters_enabled =
+        GpuProcessHost::gpu_enabled() &&
+        command_line.HasSwitch(switches::kEnableAcceleratedFilters);
+    web_prefs.accelerated_layers_enabled =
+        !command_line.HasSwitch(switches::kDisableAcceleratedLayers);
+    web_prefs.composite_to_texture_enabled =
+        command_line.HasSwitch(switches::kEnableCompositeToTexture);
+    web_prefs.accelerated_plugins_enabled =
+        !command_line.HasSwitch(switches::kDisableAcceleratedPlugins);
+    web_prefs.accelerated_video_enabled =
+        !command_line.HasSwitch(switches::kDisableAcceleratedVideo);
+    web_prefs.partial_swap_enabled =
+        command_line.HasSwitch(switches::kEnablePartialSwap);
+    web_prefs.memory_info_enabled =
+        prefs->GetBoolean(prefs::kEnableMemoryInfo);
+    web_prefs.interactive_form_validation_enabled =
+        !command_line.HasSwitch(switches::kDisableInteractiveFormValidation);
+    web_prefs.fullscreen_enabled =
+        !command_line.HasSwitch(switches::kDisableFullScreen);
+    web_prefs.allow_displaying_insecure_content =
+        prefs->GetBoolean(prefs::kWebKitAllowDisplayingInsecureContent);
+    web_prefs.allow_running_insecure_content =
+        prefs->GetBoolean(prefs::kWebKitAllowRunningInsecureContent);
+
+#if defined(OS_MACOSX)
+    bool default_enable_scroll_animator = true;
+#else
+    // On CrOS, the launcher always passes in the --enable flag.
+    bool default_enable_scroll_animator = false;
+#endif
+    web_prefs.enable_scroll_animator = default_enable_scroll_animator;
+    if (command_line.HasSwitch(switches::kEnableSmoothScrolling))
+      web_prefs.enable_scroll_animator = true;
+    if (command_line.HasSwitch(switches::kDisableSmoothScrolling))
+      web_prefs.enable_scroll_animator = false;
+
+    // The user stylesheet watcher may not exist in a testing profile.
+    if (profile->GetUserStyleSheetWatcher()) {
+      web_prefs.user_style_sheet_enabled = true;
+      web_prefs.user_style_sheet_location =
+          profile->GetUserStyleSheetWatcher()->user_style_sheet();
+    } else {
+      web_prefs.user_style_sheet_enabled = false;
+    }
+
+    web_prefs.visual_word_movement_enabled =
+        command_line.HasSwitch(switches::kEnableVisualWordMovement);
+    web_prefs.unified_textchecker_enabled =
+        command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures);
+    web_prefs.per_tile_painting_enabled =
+        command_line.HasSwitch(switches::kEnablePerTilePainting);
+  }
+
+  {  // Certain GPU features might have been blacklisted.
+    GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
+    DCHECK(gpu_data_manager);
+    uint32 blacklist_flags = gpu_data_manager->GetGpuFeatureFlags().flags();
+    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureAcceleratedCompositing)
+      web_prefs.accelerated_compositing_enabled = false;
+    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureWebgl)
+      web_prefs.experimental_webgl_enabled = false;
+    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas)
+      web_prefs.accelerated_2d_canvas_enabled = false;
+    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureMultisampling)
+      web_prefs.gl_multisampling_enabled = false;
+  }
+
+  web_prefs.uses_universal_detector =
+      prefs->GetBoolean(prefs::kWebKitUsesUniversalDetector);
+  web_prefs.text_areas_are_resizable =
+      prefs->GetBoolean(prefs::kWebKitTextAreasAreResizable);
+  web_prefs.hyperlink_auditing_enabled =
+      prefs->GetBoolean(prefs::kEnableHyperlinkAuditing);
+
+  // Make sure we will set the default_encoding with canonical encoding name.
+  web_prefs.default_encoding =
+      CharacterEncoding::GetCanonicalEncodingNameByAliasName(
+          web_prefs.default_encoding);
+  if (web_prefs.default_encoding.empty()) {
+    prefs->ClearPref(prefs::kGlobalDefaultCharset);
+    web_prefs.default_encoding = prefs->GetString(prefs::kGlobalDefaultCharset);
+  }
+  DCHECK(!web_prefs.default_encoding.empty());
+
+  if (ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+          rvh->process()->GetID())) {
+    web_prefs.loads_images_automatically = true;
+    web_prefs.javascript_enabled = true;
+  }
+
+  web_prefs.is_online = !net::NetworkChangeNotifier::IsOffline();
+
+  ExtensionService* service = profile->GetExtensionService();
+  if (service) {
+    const Extension* extension = service->extensions()->GetByID(
+        rvh->site_instance()->site().host());
+    extension_webkit_preferences::SetPreferences(
+        extension, rvh->delegate()->GetRenderViewType(), &web_prefs);
+  }
+
+  if (rvh->delegate()->GetRenderViewType() == chrome::VIEW_TYPE_NOTIFICATION) {
+    web_prefs.allow_scripts_to_close_windows = true;
+  } else if (rvh->delegate()->GetRenderViewType() ==
+             chrome::VIEW_TYPE_BACKGROUND_CONTENTS) {
+    // Disable all kinds of acceleration for background pages.
+    // See http://crbug.com/96005 and http://crbug.com/96006
+    web_prefs.force_compositing_mode = false;
+    web_prefs.accelerated_compositing_enabled = false;
+    web_prefs.accelerated_2d_canvas_enabled = false;
+    web_prefs.accelerated_video_enabled = false;
+    web_prefs.accelerated_painting_enabled = false;
+    web_prefs.accelerated_plugins_enabled = false;
+  }
+
+  return web_prefs;
 }
 
 void ChromeContentBrowserClient::UpdateInspectorSetting(
     RenderViewHost* rvh, const std::string& key, const std::string& value) {
-  RenderViewHostDelegateHelper::UpdateInspectorSetting(
-      rvh->process()->GetBrowserContext(), key, value);
+  content::BrowserContext* browser_context =
+      rvh->process()->GetBrowserContext();
+  DictionaryPrefUpdate update(
+      Profile::FromBrowserContext(browser_context)->GetPrefs(),
+      prefs::kWebKitInspectorSettings);
+  DictionaryValue* inspector_settings = update.Get();
+  inspector_settings->SetWithoutPathExpansion(key,
+                                              Value::CreateStringValue(value));
 }
 
 void ChromeContentBrowserClient::ClearInspectorSettings(RenderViewHost* rvh) {
-  RenderViewHostDelegateHelper::ClearInspectorSettings(
-      rvh->process()->GetBrowserContext());
+  content::BrowserContext* browser_context =
+      rvh->process()->GetBrowserContext();
+  Profile::FromBrowserContext(browser_context)->GetPrefs()->
+      ClearPref(prefs::kWebKitInspectorSettings);
 }
 
 void ChromeContentBrowserClient::BrowserURLHandlerCreated(

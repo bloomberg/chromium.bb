@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,24 +122,6 @@ class RenderViewHostDelegateViewHelper : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostDelegateViewHelper);
-};
-
-
-// Provides helper methods that provide common implementations of some
-// RenderViewHostDelegate methods.
-class RenderViewHostDelegateHelper {
- public:
-  static WebPreferences GetWebkitPrefs(RenderViewHost* rvh);
-
-  static void UpdateInspectorSetting(content::BrowserContext* browser_context,
-                                     const std::string& key,
-                                     const std::string& value);
-  static void ClearInspectorSettings(content::BrowserContext* browser_context);
-
- private:
-  RenderViewHostDelegateHelper();
-
-  DISALLOW_COPY_AND_ASSIGN(RenderViewHostDelegateHelper);
 };
 
 #endif  // CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_HOST_DELEGATE_HELPER_H_
