@@ -1198,11 +1198,15 @@ void ResourceDispatcherHost::CancelRequestsForContext(
     net::URLRequest* request = *i;
     ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
     // There is no strict requirement that this be the case, but currently
-    // downloads are the only requests that aren't cancelled when the associated
-    // processes go away. It may be OK for this invariant to change in the
-    // future, but if this assertion fires without the invariant changing, then
-    // it's indicative of a leak.
-    DCHECK(info->is_download());
+    // downloads and transferred requests are the only requests that aren't
+    // cancelled when the associated processes go away. It may be OK for this
+    // invariant to change in the future, but if this assertion fires without
+    // the invariant changing, then it's indicative of a leak.
+    GlobalRequestID request_id(info->child_id(), info->request_id());
+    bool is_transferred = IsTransferredNavigation(request_id);
+    DCHECK(info->is_download() || is_transferred);
+    if (is_transferred)
+      transferred_navigations_.erase(request_id);
     delete request;
   }
 
@@ -1251,6 +1255,8 @@ void ResourceDispatcherHost::RemovePendingRequest(
   if (info->ssl_client_auth_handler())
     info->ssl_client_auth_handler()->OnRequestCancelled();
   resource_queue_.RemoveRequest(iter->first);
+  transferred_navigations_.erase(
+      GlobalRequestID(info->child_id(), info->request_id()));
 
   delete iter->second;
   pending_requests_.erase(iter);
@@ -2241,4 +2247,10 @@ void ResourceDispatcherHost::MarkAsTransferredNavigation(
     const GlobalRequestID& transferred_request_id,
     net::URLRequest* ransferred_request) {
   transferred_navigations_[transferred_request_id] = ransferred_request;
+}
+
+bool ResourceDispatcherHost::IsTransferredNavigation(
+    const content::GlobalRequestID& transferred_request_id) const {
+  return transferred_navigations_.find(transferred_request_id) !=
+      transferred_navigations_.end();
 }

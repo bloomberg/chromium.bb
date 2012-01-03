@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -436,6 +436,13 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   };
 
   HttpAuthResourceType HttpAuthResourceTypeOf(net::URLRequest* request);
+
+  // Returns whether the URLRequest identified by |transferred_request_id| is
+  // currently in the process of being transferred to a different renderer.
+  // This happens if a request is redirected cross-site and needs to be resumed
+  // by a new render view.
+  bool IsTransferredNavigation(
+      const content::GlobalRequestID& transferred_request_id) const;
 
   PendingRequestList pending_requests_;
 
