@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,11 +65,11 @@ void TransportTextureHost::Destroy() {
   service_->RemoveRoute(host_id_);
 }
 
-void TransportTextureHost::GetTextures(TextureUpdateCallback* callback,
-                                       std::vector<int>* textures) {
+void TransportTextureHost::GetTextures(
+    const TextureUpdateCallback& callback, std::vector<int>* textures) {
   textures->resize(textures_.size());
   std::copy(textures_.begin(), textures_.end(), textures->begin());
-  update_callback_.reset(callback);
+  update_callback_ = callback;
 }
 
 int TransportTextureHost::GetPeerId() {
@@ -187,8 +187,8 @@ void TransportTextureHost::OnReleaseTextures() {
 }
 
 void TransportTextureHost::OnTextureUpdated(int texture_id) {
-  if (update_callback_.get())
-    update_callback_->Run(texture_id);
+  if (!update_callback_.is_null())
+    update_callback_.Run(texture_id);
 }
 
 #endif

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback_old.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
@@ -106,10 +105,10 @@ class TransportTextureHost
     : public base::RefCountedThreadSafe<TransportTextureHost>,
       public IPC::Channel::Listener {
  public:
-  typedef Callback1<int>::Type TextureUpdateCallback;
+  typedef base::Callback<void(int)> TextureUpdateCallback;
 
   // |io_message_loop| is where the IPC communication should happen.
-  // |render_message_loop| is where the GLES2 commands should be exeucted.
+  // |render_message_loop| is where the GLES2 commands should be executed.
   // |service| contains the route to this object.
   // |sender| is used to send IPC messages to GPU process.
   // |context| is the RendererGLContextt for generating textures.
@@ -143,7 +142,7 @@ class TransportTextureHost
   //
   // Note that this method doesn't generate any textures, it simply return
   // the list of textures generated.
-  void GetTextures(TextureUpdateCallback* callback,
+  void GetTextures(const TextureUpdateCallback& callback,
                    std::vector<int>* textures);
 
   // Return the peer ID of TransportTexture in the GPU process.
@@ -188,7 +187,7 @@ class TransportTextureHost
   std::vector<int> textures_;
 
   // Callback when a texture is updated.
-  scoped_ptr<TextureUpdateCallback> update_callback_;
+  TextureUpdateCallback update_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportTextureHost);
 };
