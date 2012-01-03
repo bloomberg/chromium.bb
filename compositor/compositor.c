@@ -367,6 +367,9 @@ destroy_surface(struct wl_resource *resource)
 
 	wl_list_remove(&surface->buffer_link);
 
+	pixman_region32_fini(&surface->damage);
+	pixman_region32_fini(&surface->opaque);
+
 	free(surface);
 }
 
