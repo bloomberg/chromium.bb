@@ -5141,7 +5141,7 @@
    ...
    fun:_ZN10extensions12_GLOBAL__N_112RestrictionsC1ERKS1_
    ...
-   fun:_ZN9Extension13InitFromValueEPN10extensions8ManifestEiPSs
+   fun:_ZN9Extension13InitFromValueEPN10extensions8ManifestEiPSbItN4base20string16_char_traitsESaItEE
    fun:_ZN9Extension6CreateERK8FilePathNS_8LocationERKN4base15DictionaryValueEiPSs
    fun:_ZNK26ExtensionMsg_Loaded_Params18ConvertToExtensionEv
    fun:_ZN19ExtensionDispatcher8OnLoadedERKSt6vectorI26ExtensionMsg_Loaded_ParamsSaIS1_EE
