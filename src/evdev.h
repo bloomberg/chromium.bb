@@ -21,15 +21,15 @@
  */
 
 void
-evdev_add_devices(struct udev *udev, struct wlsc_input_device
+evdev_add_devices(struct udev *udev, struct weston_input_device
 		  *input_base);
 
 void
-evdev_remove_devices(struct wlsc_input_device *input_base);
+evdev_remove_devices(struct weston_input_device *input_base);
 
 void
-evdev_input_create(struct wlsc_compositor *c, struct udev *udev,
+evdev_input_create(struct weston_compositor *c, struct udev *udev,
 		   const char *seat);
 
 void
-evdev_input_destroy(struct wlsc_input_device *input_base);
+evdev_input_destroy(struct weston_input_device *input_base);

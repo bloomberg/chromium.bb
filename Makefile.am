@@ -1,1 +1,1 @@
-SUBDIRS = shared compositor clients data
+SUBDIRS = shared src clients data

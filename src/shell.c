@@ -38,11 +38,11 @@
 struct shell_surface;
 
 struct wl_shell {
-	struct wlsc_compositor *compositor;
-	struct wlsc_shell shell;
+	struct weston_compositor *compositor;
+	struct weston_shell shell;
 
 	struct {
-		struct wlsc_process process;
+		struct weston_process process;
 		struct wl_client *client;
 		struct wl_resource *desktop_shell;
 	} child;
@@ -62,7 +62,7 @@ struct wl_shell {
 		int duration;
 		struct wl_resource *binding;
 		struct wl_list surfaces;
-		struct wlsc_process process;
+		struct weston_process process;
 	} screensaver;
 };
 
@@ -82,19 +82,19 @@ enum shell_surface_type {
 struct shell_surface {
 	struct wl_resource resource;
 
-	struct wlsc_surface *surface;
+	struct weston_surface *surface;
 	struct wl_listener surface_destroy_listener;
 
 	enum shell_surface_type type;
 	int32_t saved_x, saved_y;
 
-	struct wlsc_output *output;
+	struct weston_output *output;
 	struct wl_list link;
 };
 
-struct wlsc_move_grab {
+struct weston_move_grab {
 	struct wl_grab grab;
-	struct wlsc_surface *surface;
+	struct weston_surface *surface;
 	int32_t dx, dy;
 };
 
@@ -130,10 +130,10 @@ static void
 move_grab_motion(struct wl_grab *grab,
 		   uint32_t time, int32_t x, int32_t y)
 {
-	struct wlsc_move_grab *move = (struct wlsc_move_grab *) grab;
-	struct wlsc_surface *es = move->surface;
+	struct weston_move_grab *move = (struct weston_move_grab *) grab;
+	struct weston_surface *es = move->surface;
 
-	wlsc_surface_configure(es, x + move->dx, y + move->dy,
+	weston_surface_configure(es, x + move->dx, y + move->dy,
 			       es->width, es->height);
 }
 
@@ -156,10 +156,10 @@ static const struct wl_grab_interface move_grab_interface = {
 };
 
 static int
-wlsc_surface_move(struct wlsc_surface *es,
-		  struct wlsc_input_device *wd, uint32_t time)
+weston_surface_move(struct weston_surface *es,
+		  struct weston_input_device *wd, uint32_t time)
 {
-	struct wlsc_move_grab *move;
+	struct weston_move_grab *move;
 
 	move = malloc(sizeof *move);
 	if (!move)
@@ -184,14 +184,14 @@ static void
 shell_surface_move(struct wl_client *client, struct wl_resource *resource,
 		   struct wl_resource *input_resource, uint32_t time)
 {
-	struct wlsc_input_device *wd = input_resource->data;
+	struct weston_input_device *wd = input_resource->data;
 	struct shell_surface *shsurf = resource->data;
 
-	if (wlsc_surface_move(shsurf->surface, wd, time) < 0)
+	if (weston_surface_move(shsurf->surface, wd, time) < 0)
 		wl_resource_post_no_memory(resource);
 }
 
-struct wlsc_resize_grab {
+struct weston_resize_grab {
 	struct wl_grab grab;
 	uint32_t edges;
 	int32_t dx, dy, width, height;
@@ -202,7 +202,7 @@ static void
 resize_grab_motion(struct wl_grab *grab,
 		   uint32_t time, int32_t x, int32_t y)
 {
-	struct wlsc_resize_grab *resize = (struct wlsc_resize_grab *) grab;
+	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
 	struct wl_input_device *device = grab->input_device;
 	int32_t width, height;
 
@@ -246,12 +246,12 @@ static const struct wl_grab_interface resize_grab_interface = {
 };
 
 static int
-wlsc_surface_resize(struct shell_surface *shsurf,
-		    struct wlsc_input_device *wd,
+weston_surface_resize(struct shell_surface *shsurf,
+		    struct weston_input_device *wd,
 		    uint32_t time, uint32_t edges)
 {
-	struct wlsc_resize_grab *resize;
-	struct wlsc_surface *es = shsurf->surface;
+	struct weston_resize_grab *resize;
+	struct weston_surface *es = shsurf->surface;
 
 	/* FIXME: Reject if fullscreen */
 
@@ -286,12 +286,12 @@ shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
 		     struct wl_resource *input_resource, uint32_t time,
 		     uint32_t edges)
 {
-	struct wlsc_input_device *wd = input_resource->data;
+	struct weston_input_device *wd = input_resource->data;
 	struct shell_surface *shsurf = resource->data;
 
 	/* FIXME: Reject if fullscreen */
 
-	if (wlsc_surface_resize(shsurf, wd, time, edges) < 0)
+	if (weston_surface_resize(shsurf, wd, time, edges) < 0)
 		wl_resource_post_no_memory(resource);
 }
 
@@ -335,7 +335,7 @@ shell_surface_set_toplevel(struct wl_client *client,
 	if (reset_shell_surface_type(surface))
 		return;
 
-	wlsc_surface_damage(surface->surface);
+	weston_surface_damage(surface->surface);
 	surface->type = SHELL_SURFACE_TOPLEVEL;
 }
 
@@ -346,9 +346,9 @@ shell_surface_set_transient(struct wl_client *client,
 			    int x, int y, uint32_t flags)
 {
 	struct shell_surface *shsurf = resource->data;
-	struct wlsc_surface *es = shsurf->surface;
+	struct weston_surface *es = shsurf->surface;
 	struct shell_surface *pshsurf = parent_resource->data;
-	struct wlsc_surface *pes = pshsurf->surface;
+	struct weston_surface *pes = pshsurf->surface;
 
 	if (reset_shell_surface_type(shsurf))
 		return;
@@ -359,15 +359,15 @@ shell_surface_set_transient(struct wl_client *client,
 	es->x = pes->x + x;
 	es->y = pes->y + y;
 
-	wlsc_surface_damage(es);
+	weston_surface_damage(es);
 	shsurf->type = SHELL_SURFACE_TRANSIENT;
 }
 
-static struct wlsc_output *
-get_default_output(struct wlsc_compositor *compositor)
+static struct weston_output *
+get_default_output(struct weston_compositor *compositor)
 {
 	return container_of(compositor->output_list.next,
-			    struct wlsc_output, link);
+			    struct weston_output, link);
 }
 
 static void
@@ -376,8 +376,8 @@ shell_surface_set_fullscreen(struct wl_client *client,
 
 {
 	struct shell_surface *shsurf = resource->data;
-	struct wlsc_surface *es = shsurf->surface;
-	struct wlsc_output *output;
+	struct weston_surface *es = shsurf->surface;
+	struct weston_output *output;
 
 	if (reset_shell_surface_type(shsurf))
 		return;
@@ -392,7 +392,7 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	es->x = (output->current->width - es->width) / 2;
 	es->y = (output->current->height - es->height) / 2;
 	es->fullscreen_output = output;
-	wlsc_surface_damage(es);
+	weston_surface_damage(es);
 	shsurf->type = SHELL_SURFACE_FULLSCREEN;
 }
 
@@ -430,7 +430,7 @@ shell_handle_surface_destroy(struct wl_listener *listener,
 }
 
 static struct shell_surface *
-get_shell_surface(struct wlsc_surface *surface)
+get_shell_surface(struct weston_surface *surface)
 {
 	struct wl_list *lst = &surface->surface.resource.destroy_listener_list;
 	struct wl_listener *listener;
@@ -452,7 +452,7 @@ shell_get_shell_surface(struct wl_client *client,
 			uint32_t id,
 			struct wl_resource *surface_resource)
 {
-	struct wlsc_surface *surface = surface_resource->data;
+	struct weston_surface *surface = surface_resource->data;
 	struct shell_surface *shsurf;
 
 	if (get_shell_surface(surface)) {
@@ -493,7 +493,7 @@ static const struct wl_shell_interface shell_implementation = {
 };
 
 static void
-handle_screensaver_sigchld(struct wlsc_process *proc, int status)
+handle_screensaver_sigchld(struct weston_process *proc, int status)
 {
 	proc->pid = 0;
 }
@@ -507,7 +507,7 @@ launch_screensaver(struct wl_shell *shell)
 	if (!shell->screensaver.path)
 		return;
 
-	wlsc_client_launch(shell->compositor,
+	weston_client_launch(shell->compositor,
 			   &shell->screensaver.process,
 			   shell->screensaver.path,
 			   handle_screensaver_sigchld);
@@ -534,7 +534,7 @@ show_screensaver(struct wl_shell *shell, struct shell_surface *surface)
 
 	wl_list_remove(&surface->surface->link);
 	wl_list_insert(list, &surface->surface->link);
-	wlsc_surface_configure(surface->surface,
+	weston_surface_configure(surface->surface,
 			       surface->surface->x,
 			       surface->surface->y,
 			       surface->surface->width,
@@ -558,7 +558,7 @@ desktop_shell_set_background(struct wl_client *client,
 {
 	struct wl_shell *shell = resource->data;
 	struct shell_surface *shsurf = surface_resource->data;
-	struct wlsc_surface *surface = shsurf->surface;
+	struct weston_surface *surface = shsurf->surface;
 	struct shell_surface *priv;
 
 	if (reset_shell_surface_type(shsurf))
@@ -583,7 +583,7 @@ desktop_shell_set_background(struct wl_client *client,
 
 	wl_resource_post_event(resource,
 			       DESKTOP_SHELL_CONFIGURE,
-			       wlsc_compositor_get_time(), 0, surface_resource,
+			       weston_compositor_get_time(), 0, surface_resource,
 			       shsurf->output->current->width,
 			       shsurf->output->current->height);
 }
@@ -596,7 +596,7 @@ desktop_shell_set_panel(struct wl_client *client,
 {
 	struct wl_shell *shell = resource->data;
 	struct shell_surface *shsurf = surface_resource->data;
-	struct wlsc_surface *surface = shsurf->surface;
+	struct weston_surface *surface = shsurf->surface;
 	struct shell_surface *priv;
 
 	if (reset_shell_surface_type(shsurf))
@@ -621,7 +621,7 @@ desktop_shell_set_panel(struct wl_client *client,
 
 	wl_resource_post_event(resource,
 			       DESKTOP_SHELL_CONFIGURE,
-			       wlsc_compositor_get_time(), 0, surface_resource,
+			       weston_compositor_get_time(), 0, surface_resource,
 			       shsurf->output->current->width,
 			       shsurf->output->current->height);
 }
@@ -665,7 +665,7 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 static void
 resume_desktop(struct wl_shell *shell)
 {
-	struct wlsc_surface *surface;
+	struct weston_surface *surface;
 	struct wl_list *list;
 	struct shell_surface *tmp;
 
@@ -675,7 +675,7 @@ resume_desktop(struct wl_shell *shell)
 	terminate_screensaver(shell);
 
 	wl_list_for_each(surface, &shell->hidden_surface_list, link)
-		wlsc_surface_configure(surface, surface->x, surface->y,
+		weston_surface_configure(surface, surface->x, surface->y,
 				       surface->width, surface->height);
 
 	if (wl_list_empty(&shell->backgrounds)) {
@@ -692,9 +692,9 @@ resume_desktop(struct wl_shell *shell)
 	wl_list_init(&shell->hidden_surface_list);
 
 	shell->locked = false;
-	wlsc_compositor_repick(shell->compositor);
+	weston_compositor_repick(shell->compositor);
 	shell->compositor->idle_time = shell->compositor->option_idle_time;
-	wlsc_compositor_wake(shell->compositor);
+	weston_compositor_wake(shell->compositor);
 }
 
 static void
@@ -717,7 +717,7 @@ static const struct desktop_shell_interface desktop_shell_implementation = {
 };
 
 static enum shell_surface_type
-get_shell_surface_type(struct wlsc_surface *surface)
+get_shell_surface_type(struct weston_surface *surface)
 {
 	struct shell_surface *shsurf;
 
@@ -731,8 +731,8 @@ static void
 move_binding(struct wl_input_device *device, uint32_t time,
 	     uint32_t key, uint32_t button, uint32_t state, void *data)
 {
-	struct wlsc_surface *surface =
-		(struct wlsc_surface *) device->pointer_focus;
+	struct weston_surface *surface =
+		(struct weston_surface *) device->pointer_focus;
 
 	if (surface == NULL)
 		return;
@@ -747,15 +747,15 @@ move_binding(struct wl_input_device *device, uint32_t time,
 			break;
 	}
 
-	wlsc_surface_move(surface, (struct wlsc_input_device *) device, time);
+	weston_surface_move(surface, (struct weston_input_device *) device, time);
 }
 
 static void
 resize_binding(struct wl_input_device *device, uint32_t time,
 	       uint32_t key, uint32_t button, uint32_t state, void *data)
 {
-	struct wlsc_surface *surface =
-		(struct wlsc_surface *) device->pointer_focus;
+	struct weston_surface *surface =
+		(struct weston_surface *) device->pointer_focus;
 	uint32_t edges = 0;
 	int32_t x, y;
 	struct shell_surface *shsurf;
@@ -794,7 +794,7 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 	else
 		edges |= WL_SHELL_SURFACE_RESIZE_BOTTOM;
 
-	wlsc_surface_resize(shsurf, (struct wlsc_input_device *) device,
+	weston_surface_resize(shsurf, (struct weston_input_device *) device,
 			    time, edges);
 }
 
@@ -802,23 +802,23 @@ static void
 terminate_binding(struct wl_input_device *device, uint32_t time,
 		  uint32_t key, uint32_t button, uint32_t state, void *data)
 {
-	struct wlsc_compositor *compositor = data;
+	struct weston_compositor *compositor = data;
 
 	if (state)
 		wl_display_terminate(compositor->wl_display);
 }
 
 static void
-activate(struct wlsc_shell *base, struct wlsc_surface *es,
-	 struct wlsc_input_device *device, uint32_t time)
+activate(struct weston_shell *base, struct weston_surface *es,
+	 struct weston_input_device *device, uint32_t time)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
-	struct wlsc_compositor *compositor = shell->compositor;
+	struct weston_compositor *compositor = shell->compositor;
 
-	wlsc_surface_activate(es, device, time);
+	weston_surface_activate(es, device, time);
 
 	if (compositor->wxs)
-		wlsc_xserver_surface_activate(es);
+		weston_xserver_surface_activate(es);
 
 	switch (get_shell_surface_type(es)) {
 	case SHELL_SURFACE_BACKGROUND:
@@ -855,23 +855,23 @@ click_to_activate_binding(struct wl_input_device *device,
                          uint32_t time, uint32_t key,
 			  uint32_t button, uint32_t state, void *data)
 {
-	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
-	struct wlsc_compositor *compositor = data;
-	struct wlsc_surface *focus;
+	struct weston_input_device *wd = (struct weston_input_device *) device;
+	struct weston_compositor *compositor = data;
+	struct weston_surface *focus;
 
-	focus = (struct wlsc_surface *) device->pointer_focus;
+	focus = (struct weston_surface *) device->pointer_focus;
 	if (state && focus && device->grab == NULL)
 		activate(compositor->shell, focus, wd, time);
 }
 
 static void
-lock(struct wlsc_shell *base)
+lock(struct weston_shell *base)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	struct wl_list *surface_list = &shell->compositor->surface_list;
-	struct wlsc_surface *cur;
-	struct wlsc_surface *tmp;
-	struct wlsc_input_device *device;
+	struct weston_surface *cur;
+	struct weston_surface *tmp;
+	struct weston_input_device *device;
 	struct shell_surface *shsurf;
 	uint32_t time;
 
@@ -910,15 +910,15 @@ lock(struct wlsc_shell *base)
 
 	if (!wl_list_empty(&shell->screensaver.surfaces)) {
 		shell->compositor->idle_time = shell->screensaver.duration;
-		wlsc_compositor_wake(shell->compositor);
-		shell->compositor->state = WLSC_COMPOSITOR_IDLE;
+		weston_compositor_wake(shell->compositor);
+		shell->compositor->state = WESTON_COMPOSITOR_IDLE;
 	}
 
 	/* reset pointer foci */
-	wlsc_compositor_repick(shell->compositor);
+	weston_compositor_repick(shell->compositor);
 
 	/* reset keyboard foci */
-	time = wlsc_compositor_get_time();
+	time = weston_compositor_get_time();
 	wl_list_for_each(device, &shell->compositor->input_device_list, link) {
 		wl_input_device_set_keyboard_focus(&device->input_device,
 						   NULL, time);
@@ -930,12 +930,12 @@ lock(struct wlsc_shell *base)
 }
 
 static void
-unlock(struct wlsc_shell *base)
+unlock(struct weston_shell *base)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 
 	if (!shell->locked || shell->lock_surface) {
-		wlsc_compositor_wake(shell->compositor);
+		weston_compositor_wake(shell->compositor);
 		return;
 	}
 
@@ -954,20 +954,20 @@ unlock(struct wlsc_shell *base)
 }
 
 static void
-center_on_output(struct wlsc_surface *surface, struct wlsc_output *output)
+center_on_output(struct weston_surface *surface, struct weston_output *output)
 {
-	struct wlsc_mode *mode = output->current;
+	struct weston_mode *mode = output->current;
 
 	surface->x = output->x + (mode->width - surface->width) / 2;
 	surface->y = output->y + (mode->height - surface->height) / 2;
 }
 
 static void
-map(struct wlsc_shell *base,
-    struct wlsc_surface *surface, int32_t width, int32_t height)
+map(struct weston_shell *base,
+    struct weston_surface *surface, int32_t width, int32_t height)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
-	struct wlsc_compositor *compositor = shell->compositor;
+	struct weston_compositor *compositor = shell->compositor;
 	struct wl_list *list;
 	struct shell_surface *shsurf;
 	enum shell_surface_type surface_type = SHELL_SURFACE_NONE;
@@ -1020,8 +1020,8 @@ map(struct wlsc_shell *base,
 		/* lock surface always visible, on top */
 		wl_list_insert(&compositor->surface_list, &surface->link);
 
-		wlsc_compositor_repick(compositor);
-		wlsc_compositor_wake(compositor);
+		weston_compositor_repick(compositor);
+		weston_compositor_wake(compositor);
 		do_configure = 1;
 		break;
 	case SHELL_SURFACE_SCREENSAVER:
@@ -1029,9 +1029,9 @@ map(struct wlsc_shell *base,
 		if (shell->locked) {
 			show_screensaver(shell, shsurf);
 			compositor->idle_time = shell->screensaver.duration;
-			wlsc_compositor_wake(compositor);
+			weston_compositor_wake(compositor);
 			if (!shell->lock_surface)
-				compositor->state = WLSC_COMPOSITOR_IDLE;
+				compositor->state = WESTON_COMPOSITOR_IDLE;
 		}
 		do_configure = 0;
 		break;
@@ -1048,7 +1048,7 @@ map(struct wlsc_shell *base,
 	}
 
 	if (do_configure)
-		wlsc_surface_configure(surface,
+		weston_surface_configure(surface,
 				       surface->x, surface->y, width, height);
 
 	switch (surface_type) {
@@ -1057,20 +1057,20 @@ map(struct wlsc_shell *base,
 	case SHELL_SURFACE_FULLSCREEN:
 		if (!shell->locked)
 			activate(base, surface,
-				 (struct wlsc_input_device *)
+				 (struct weston_input_device *)
 					compositor->input_device,
-				 wlsc_compositor_get_time());
+				 weston_compositor_get_time());
 		break;
 	default:
 		break;
 	}
 
 	if (surface_type == SHELL_SURFACE_TOPLEVEL)
-		wlsc_zoom_run(surface, 0.8, 1.0, NULL, NULL);
+		weston_zoom_run(surface, 0.8, 1.0, NULL, NULL);
 }
 
 static void
-configure(struct wlsc_shell *base, struct wlsc_surface *surface,
+configure(struct weston_shell *base, struct weston_surface *surface,
 	  int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
@@ -1097,13 +1097,13 @@ configure(struct wlsc_shell *base, struct wlsc_surface *surface,
 	}
 
 	/*
-	 * wlsc_surface_configure() will assign an output, which means
+	 * weston_surface_configure() will assign an output, which means
 	 * the surface is supposed to be in compositor->surface_list.
 	 * Be careful with that, and make sure we stay on the right output.
 	 * XXX: would a fullscreen surface need the same handling?
 	 */
 	if (do_configure) {
-		wlsc_surface_configure(surface, x, y, width, height);
+		weston_surface_configure(surface, x, y, width, height);
 
 		if (surface_type == SHELL_SURFACE_SCREENSAVER)
 			surface->output = shsurf->output;
@@ -1111,7 +1111,7 @@ configure(struct wlsc_shell *base, struct wlsc_surface *surface,
 }
 
 static void
-desktop_shell_sigchld(struct wlsc_process *process, int status)
+desktop_shell_sigchld(struct weston_process *process, int status)
 {
 	struct wl_shell *shell =
 		container_of(process, struct wl_shell, child.process);
@@ -1125,7 +1125,7 @@ launch_desktop_shell_process(struct wl_shell *shell)
 {
 	const char *shell_exe = LIBEXECDIR "/wayland-desktop-shell";
 
-	shell->child.client = wlsc_client_launch(shell->compositor,
+	shell->child.client = weston_client_launch(shell->compositor,
 						 &shell->child.process,
 						 shell_exe,
 						 desktop_shell_sigchld);
@@ -1187,7 +1187,7 @@ screensaver_set_surface(struct wl_client *client,
 {
 	struct wl_shell *shell = resource->data;
 	struct shell_surface *surface = shell_surface_resource->data;
-	struct wlsc_output *output = output_resource->data;
+	struct weston_output *output = output_resource->data;
 
 	if (reset_shell_surface_type(surface))
 		return;
@@ -1235,10 +1235,10 @@ bind_screensaver(struct wl_client *client,
 }
 
 int
-shell_init(struct wlsc_compositor *ec);
+shell_init(struct weston_compositor *ec);
 
 WL_EXPORT int
-shell_init(struct wlsc_compositor *ec)
+shell_init(struct weston_compositor *ec)
 {
 	struct wl_shell *shell;
 
@@ -1277,14 +1277,14 @@ shell_init(struct wlsc_compositor *ec)
 	if (launch_desktop_shell_process(shell) != 0)
 		return -1;
 
-	wlsc_compositor_add_binding(ec, 0, BTN_LEFT, MODIFIER_SUPER,
+	weston_compositor_add_binding(ec, 0, BTN_LEFT, MODIFIER_SUPER,
 				    move_binding, shell);
-	wlsc_compositor_add_binding(ec, 0, BTN_MIDDLE, MODIFIER_SUPER,
+	weston_compositor_add_binding(ec, 0, BTN_MIDDLE, MODIFIER_SUPER,
 				    resize_binding, shell);
-	wlsc_compositor_add_binding(ec, KEY_BACKSPACE, 0,
+	weston_compositor_add_binding(ec, KEY_BACKSPACE, 0,
 				    MODIFIER_CTRL | MODIFIER_ALT,
 				    terminate_binding, ec);
-	wlsc_compositor_add_binding(ec, 0, BTN_LEFT, 0,
+	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0,
 				    click_to_activate_binding, ec);
 
 

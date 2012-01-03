@@ -54,7 +54,7 @@ static struct wl_list child_process_list;
 static int
 sigchld_handler(int signal_number, void *data)
 {
-	struct wlsc_process *p;
+	struct weston_process *p;
 	int status;
 	pid_t pid;
 
@@ -76,7 +76,7 @@ sigchld_handler(int signal_number, void *data)
 }
 
 WL_EXPORT void
-wlsc_watch_process(struct wlsc_process *process)
+weston_watch_process(struct weston_process *process)
 {
 	wl_list_insert(&child_process_list, &process->link);
 }
@@ -109,17 +109,17 @@ child_client_exec(int sockfd, const char *path)
 }
 
 WL_EXPORT struct wl_client *
-wlsc_client_launch(struct wlsc_compositor *compositor,
-		   struct wlsc_process *proc,
-		   const char *path,
-		   wlsc_process_cleanup_func_t cleanup)
+weston_client_launch(struct weston_compositor *compositor,
+		     struct weston_process *proc,
+		     const char *path,
+		     weston_process_cleanup_func_t cleanup)
 {
 	int sv[2];
 	pid_t pid;
 	struct wl_client *client;
 
 	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv) < 0) {
-		fprintf(stderr, "wlsc_client_launch: "
+		fprintf(stderr, "weston_client_launch: "
 			"socketpair failed while launching '%s': %m\n",
 			path);
 		return NULL;
@@ -129,7 +129,7 @@ wlsc_client_launch(struct wlsc_compositor *compositor,
 	if (pid == -1) {
 		close(sv[0]);
 		close(sv[1]);
-		fprintf(stderr,  "wlsc_client_launch: "
+		fprintf(stderr,  "weston_client_launch: "
 			"fork failed while launching '%s': %m\n", path);
 		return NULL;
 	}
@@ -144,7 +144,7 @@ wlsc_client_launch(struct wlsc_compositor *compositor,
 	client = wl_client_create(compositor->wl_display, sv[0]);
 	if (!client) {
 		close(sv[0]);
-		fprintf(stderr, "wlsc_client_launch: "
+		fprintf(stderr, "weston_client_launch: "
 			"wl_client_create failed while launching '%s'.\n",
 			path);
 		return NULL;
@@ -152,7 +152,7 @@ wlsc_client_launch(struct wlsc_compositor *compositor,
 
 	proc->pid = pid;
 	proc->cleanup = cleanup;
-	wlsc_watch_process(proc);
+	weston_watch_process(proc);
 
 	return client;
 }
@@ -161,8 +161,9 @@ static void
 surface_handle_buffer_destroy(struct wl_listener *listener,
 			      struct wl_resource *resource, uint32_t time)
 {
-	struct wlsc_surface *es = container_of(listener, struct wlsc_surface, 
-					       buffer_destroy_listener);
+	struct weston_surface *es =
+		container_of(listener, struct weston_surface, 
+			     buffer_destroy_listener);
 
 	es->buffer = NULL;
 }
@@ -172,14 +173,14 @@ output_handle_scanout_buffer_destroy(struct wl_listener *listener,
 				     struct wl_resource *resource,
 				     uint32_t time)
 {
-	struct wlsc_output *output =
-		container_of(listener, struct wlsc_output,
+	struct weston_output *output =
+		container_of(listener, struct weston_output,
 			     scanout_buffer_destroy_listener);
 
 	output->scanout_buffer = NULL;
 
 	if (!output->pending_scanout_buffer)
-		wlsc_compositor_schedule_repaint(output->compositor);
+		weston_compositor_schedule_repaint(output->compositor);
 }
 
 static void
@@ -187,21 +188,21 @@ output_handle_pending_scanout_buffer_destroy(struct wl_listener *listener,
 					     struct wl_resource *resource,
 					     uint32_t time)
 {
-	struct wlsc_output *output =
-		container_of(listener, struct wlsc_output,
+	struct weston_output *output =
+		container_of(listener, struct weston_output,
 			     pending_scanout_buffer_destroy_listener);
 
 	output->pending_scanout_buffer = NULL;
 
-	wlsc_compositor_schedule_repaint(output->compositor);
+	weston_compositor_schedule_repaint(output->compositor);
 }
 
 
-WL_EXPORT struct wlsc_surface *
-wlsc_surface_create(struct wlsc_compositor *compositor,
-		    int32_t x, int32_t y, int32_t width, int32_t height)
+WL_EXPORT struct weston_surface *
+weston_surface_create(struct weston_compositor *compositor,
+		      int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct wlsc_surface *surface;
+	struct weston_surface *surface;
 
 	surface = calloc(1, sizeof *surface);
 	if (surface == NULL)
@@ -218,7 +219,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	surface->surface.resource.client = NULL;
 
 	surface->compositor = compositor;
-	surface->visual = WLSC_NONE_VISUAL;
+	surface->visual = WESTON_NONE_VISUAL;
 	surface->image = EGL_NO_IMAGE_KHR;
 	surface->saved_texture = 0;
 	surface->x = x;
@@ -243,30 +244,30 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 }
 
 WL_EXPORT void
-wlsc_surface_damage_rectangle(struct wlsc_surface *surface,
+weston_surface_damage_rectangle(struct weston_surface *surface,
 			      int32_t x, int32_t y,
 			      int32_t width, int32_t height)
 {
-	struct wlsc_compositor *compositor = surface->compositor;
+	struct weston_compositor *compositor = surface->compositor;
 
 	pixman_region32_union_rect(&surface->damage,
 				   &surface->damage,
 				   surface->x + x, surface->y + y,
 				   width, height);
-	wlsc_compositor_schedule_repaint(compositor);
+	weston_compositor_schedule_repaint(compositor);
 }
 
 WL_EXPORT void
-wlsc_surface_damage(struct wlsc_surface *surface)
+weston_surface_damage(struct weston_surface *surface)
 {
-	wlsc_surface_damage_rectangle(surface, 0, 0,
+	weston_surface_damage_rectangle(surface, 0, 0,
 				      surface->width, surface->height);
 }
 
 WL_EXPORT void
-wlsc_surface_damage_below(struct wlsc_surface *surface)
+weston_surface_damage_below(struct weston_surface *surface)
 {
-	struct wlsc_surface *below;
+	struct weston_surface *below;
 
 	if (surface->output == NULL)
 		return;
@@ -274,31 +275,31 @@ wlsc_surface_damage_below(struct wlsc_surface *surface)
 	if (surface->link.next == &surface->compositor->surface_list)
 		return;
 
-	below = container_of(surface->link.next, struct wlsc_surface, link);
+	below = container_of(surface->link.next, struct weston_surface, link);
 
 	pixman_region32_union_rect(&below->damage,
 				   &below->damage,
 				   surface->x, surface->y,
 				   surface->width, surface->height);
-	wlsc_compositor_schedule_repaint(surface->compositor);
+	weston_compositor_schedule_repaint(surface->compositor);
 }
 
 WL_EXPORT void
-wlsc_surface_configure(struct wlsc_surface *surface,
-		       int x, int y, int width, int height)
+weston_surface_configure(struct weston_surface *surface,
+			 int x, int y, int width, int height)
 {
-	wlsc_surface_damage_below(surface);
+	weston_surface_damage_below(surface);
 
 	surface->x = x;
 	surface->y = y;
 	surface->width = width;
 	surface->height = height;
 
-	wlsc_surface_assign_output(surface);
-	wlsc_surface_damage(surface);
+	weston_surface_assign_output(surface);
+	weston_surface_damage(surface);
 
 	pixman_region32_fini(&surface->opaque);
-	if (surface->visual == WLSC_RGB_VISUAL)
+	if (surface->visual == WESTON_RGB_VISUAL)
 		pixman_region32_init_rect(&surface->opaque,
 					  surface->x, surface->y,
 					  surface->width, surface->height);
@@ -307,7 +308,7 @@ wlsc_surface_configure(struct wlsc_surface *surface,
 }
 
 WL_EXPORT uint32_t
-wlsc_compositor_get_time(void)
+weston_compositor_get_time(void)
 {
 	struct timeval tv;
 
@@ -317,17 +318,17 @@ wlsc_compositor_get_time(void)
 }
 
 WL_EXPORT void
-wlsc_compositor_repick(struct wlsc_compositor *compositor)
+weston_compositor_repick(struct weston_compositor *compositor)
 {
-	struct wlsc_input_device *device;
-	struct wlsc_surface *surface;
+	struct weston_input_device *device;
+	struct weston_surface *surface;
 	int32_t sx, sy;
 	uint32_t time;
 
 	if (!compositor->focus)
 		return;
 
-	time = wlsc_compositor_get_time();
+	time = weston_compositor_get_time();
 	wl_list_for_each(device, &compositor->input_device_list, link) {
 		if (device->input_device.grab)
 			continue;
@@ -344,14 +345,15 @@ wlsc_compositor_repick(struct wlsc_compositor *compositor)
 static void
 destroy_surface(struct wl_resource *resource)
 {
-	struct wlsc_surface *surface =
-		container_of(resource, struct wlsc_surface, surface.resource);
-	struct wlsc_compositor *compositor = surface->compositor;
+	struct weston_surface *surface =
+		container_of(resource,
+			     struct weston_surface, surface.resource);
+	struct weston_compositor *compositor = surface->compositor;
 
-	wlsc_surface_damage_below(surface);
+	weston_surface_damage_below(surface);
 
 	wl_list_remove(&surface->link);
-	wlsc_compositor_repick(compositor);
+	weston_compositor_repick(compositor);
 
 	if (surface->saved_texture == 0)
 		glDeleteTextures(1, &surface->texture);
@@ -371,10 +373,10 @@ destroy_surface(struct wl_resource *resource)
 }
 
 static void
-wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
+weston_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 {
-	struct wlsc_surface *es = (struct wlsc_surface *) surface;
-	struct wlsc_compositor *ec = es->compositor;
+	struct weston_surface *es = (struct weston_surface *) surface;
+	struct weston_compositor *ec = es->compositor;
 	struct wl_list *surfaces_attached_to;
 
 	if (es->saved_texture != 0)
@@ -395,13 +397,13 @@ wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 
 		switch (wl_shm_buffer_get_format(buffer)) {
 		case WL_SHM_FORMAT_ARGB32:
-			es->visual = WLSC_ARGB_VISUAL;
+			es->visual = WESTON_ARGB_VISUAL;
 			break;
 		case WL_SHM_FORMAT_PREMULTIPLIED_ARGB32:
-			es->visual = WLSC_PREMUL_ARGB_VISUAL;
+			es->visual = WESTON_PREMUL_ARGB_VISUAL;
 			break;
 		case WL_SHM_FORMAT_XRGB32:
-			es->visual = WLSC_RGB_VISUAL;
+			es->visual = WESTON_RGB_VISUAL;
 			break;
 		}
 
@@ -419,15 +421,15 @@ wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 		ec->image_target_texture_2d(GL_TEXTURE_2D, es->image);
 
 		/* FIXME: we need to get the visual from the wl_buffer */
-		es->visual = WLSC_PREMUL_ARGB_VISUAL;
+		es->visual = WESTON_PREMUL_ARGB_VISUAL;
 		es->pitch = es->width;
 	}
 }
 
 static int
-texture_region(struct wlsc_surface *es, pixman_region32_t *region)
+texture_region(struct weston_surface *es, pixman_region32_t *region)
 {
-	struct wlsc_compositor *ec = es->compositor;
+	struct weston_compositor *ec = es->compositor;
 	GLfloat *v, inv_width, inv_height;
 	pixman_box32_t *rectangles;
 	unsigned int *p;
@@ -472,17 +474,17 @@ texture_region(struct wlsc_surface *es, pixman_region32_t *region)
 }
 
 static void
-transform_vertex(struct wlsc_surface *surface,
+transform_vertex(struct weston_surface *surface,
 		 GLfloat x, GLfloat y, GLfloat u, GLfloat v, GLfloat *r)
 {
-	struct wlsc_vector t;
+	struct weston_vector t;
 
 	t.f[0] = x;
 	t.f[1] = y;
 	t.f[2] = 0.0;
 	t.f[3] = 1.0;
 
-	wlsc_matrix_transform(&surface->transform->matrix, &t);
+	weston_matrix_transform(&surface->transform->matrix, &t);
 
 	r[ 0] = t.f[0];
 	r[ 1] = t.f[1];
@@ -491,9 +493,9 @@ transform_vertex(struct wlsc_surface *surface,
 }
 
 static int
-texture_transformed_surface(struct wlsc_surface *es)
+texture_transformed_surface(struct weston_surface *es)
 {
-	struct wlsc_compositor *ec = es->compositor;
+	struct weston_compositor *ec = es->compositor;
 	GLfloat *v;
 	unsigned int *p;
 
@@ -517,10 +519,10 @@ texture_transformed_surface(struct wlsc_surface *es)
 }
 
 static void
-wlsc_surface_draw(struct wlsc_surface *es,
-		  struct wlsc_output *output, pixman_region32_t *clip)
+weston_surface_draw(struct weston_surface *es,
+		  struct weston_output *output, pixman_region32_t *clip)
 {
-	struct wlsc_compositor *ec = es->compositor;
+	struct weston_compositor *ec = es->compositor;
 	GLfloat *v;
 	pixman_region32_t repaint;
 	GLint filter;
@@ -533,15 +535,15 @@ wlsc_surface_draw(struct wlsc_surface *es,
 		return;
 
 	switch (es->visual) {
-	case WLSC_ARGB_VISUAL:
+	case WESTON_ARGB_VISUAL:
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
 		break;
-	case WLSC_PREMUL_ARGB_VISUAL:
+	case WESTON_PREMUL_ARGB_VISUAL:
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
 		break;
-	case WLSC_RGB_VISUAL:
+	case WESTON_RGB_VISUAL:
 		glDisable(GL_BLEND);
 		break;
 	default:
@@ -580,27 +582,27 @@ wlsc_surface_draw(struct wlsc_surface *es,
 }
 
 static void
-wlsc_surface_raise(struct wlsc_surface *surface)
+weston_surface_raise(struct weston_surface *surface)
 {
-	struct wlsc_compositor *compositor = surface->compositor;
+	struct weston_compositor *compositor = surface->compositor;
 
 	wl_list_remove(&surface->link);
 	wl_list_insert(&compositor->surface_list, &surface->link);
-	wlsc_compositor_repick(compositor);
-	wlsc_surface_damage(surface);
+	weston_compositor_repick(compositor);
+	weston_surface_damage(surface);
 }
 
 WL_EXPORT void
-wlsc_compositor_damage_all(struct wlsc_compositor *compositor)
+weston_compositor_damage_all(struct weston_compositor *compositor)
 {
-	struct wlsc_output *output;
+	struct weston_output *output;
 
 	wl_list_for_each(output, &compositor->output_list, link)
-		wlsc_output_damage(output);
+		weston_output_damage(output);
 }
 
 static inline void
-wlsc_buffer_post_release(struct wl_buffer *buffer)
+weston_buffer_post_release(struct wl_buffer *buffer)
 {
 	if (--buffer->busy_count > 0)
 		return;
@@ -610,50 +612,50 @@ wlsc_buffer_post_release(struct wl_buffer *buffer)
 }
 
 WL_EXPORT void
-wlsc_output_damage(struct wlsc_output *output)
+weston_output_damage(struct weston_output *output)
 {
-	struct wlsc_compositor *compositor = output->compositor;
-	struct wlsc_surface *es;
+	struct weston_compositor *compositor = output->compositor;
+	struct weston_surface *es;
 
 	if (wl_list_empty(&compositor->surface_list))
 		return;
 
 	es = container_of(compositor->surface_list.next,
-			  struct wlsc_surface, link);
+			  struct weston_surface, link);
 	pixman_region32_union(&es->damage, &es->damage, &output->region);
-	wlsc_compositor_schedule_repaint(compositor);
+	weston_compositor_schedule_repaint(compositor);
 }
 
 static void
-fade_frame(struct wlsc_animation *animation,
-	   struct wlsc_output *output, uint32_t msecs)
+fade_frame(struct weston_animation *animation,
+	   struct weston_output *output, uint32_t msecs)
 {
-	struct wlsc_compositor *compositor =
+	struct weston_compositor *compositor =
 		container_of(animation,
-			     struct wlsc_compositor, fade.animation);
+			     struct weston_compositor, fade.animation);
 
-	wlsc_spring_update(&compositor->fade.spring, msecs);
-	if (wlsc_spring_done(&compositor->fade.spring)) {
+	weston_spring_update(&compositor->fade.spring, msecs);
+	if (weston_spring_done(&compositor->fade.spring)) {
 		compositor->fade.spring.current =
 			compositor->fade.spring.target;
 		wl_list_remove(&animation->link);
 		wl_list_init(&animation->link);
 
 		if (compositor->fade.spring.current > 0.999) {
-			compositor->state = WLSC_COMPOSITOR_SLEEPING;
+			compositor->state = WESTON_COMPOSITOR_SLEEPING;
 			compositor->shell->lock(compositor->shell);
 		}
 	}
 
-	wlsc_output_damage(output);
+	weston_output_damage(output);
 }
 
 static void
-fade_output(struct wlsc_output *output,
+fade_output(struct weston_output *output,
 	    GLfloat tint, pixman_region32_t *region)
 {
-	struct wlsc_compositor *compositor = output->compositor;
-	struct wlsc_surface surface;
+	struct weston_compositor *compositor = output->compositor;
+	struct weston_surface surface;
 	GLfloat color[4] = { 0.0, 0.0, 0.0, tint };
 
 	surface.compositor = compositor;
@@ -667,23 +669,24 @@ fade_output(struct wlsc_output *output,
 	surface.alpha = compositor->current_alpha;
 
 	if (tint <= 1.0)
-		surface.visual = WLSC_PREMUL_ARGB_VISUAL;
+		surface.visual = WESTON_PREMUL_ARGB_VISUAL;
 	else
-		surface.visual = WLSC_RGB_VISUAL;
+		surface.visual = WESTON_RGB_VISUAL;
 
 	glUseProgram(compositor->solid_shader.program);
 	glUniformMatrix4fv(compositor->solid_shader.proj_uniform,
 			   1, GL_FALSE, output->matrix.d);
 	glUniform4fv(compositor->solid_shader.color_uniform, 1, color);
-	wlsc_surface_draw(&surface, output, region);
+	weston_surface_draw(&surface, output, region);
 }
 
 static void
-wlsc_output_set_cursor(struct wlsc_output *output,
-		       struct wl_input_device *dev, int force_sw)
+weston_output_set_cursor(struct weston_output *output,
+			 struct wl_input_device *dev, int force_sw)
 {
-	struct wlsc_compositor *ec = output->compositor;
-	struct wlsc_input_device *device = (struct wlsc_input_device *) dev;
+	struct weston_compositor *ec = output->compositor;
+	struct weston_input_device *device =
+		(struct weston_input_device *) dev;
 	pixman_region32_t cursor_region;
 	int use_hardware_cursor = 1, prior_was_hardware;
 
@@ -705,12 +708,12 @@ wlsc_output_set_cursor(struct wlsc_output *output,
 	prior_was_hardware = wl_list_empty(&device->sprite->link);
 	if (force_sw || output->set_hardware_cursor(output, device) < 0) {
 		if (prior_was_hardware) {
-			wlsc_surface_damage(device->sprite);
+			weston_surface_damage(device->sprite);
 			output->set_hardware_cursor(output, NULL);
 		}
 		use_hardware_cursor = 0;
 	} else if (!prior_was_hardware) {
-		wlsc_surface_damage_below(device->sprite);
+		weston_surface_damage_below(device->sprite);
 	}
 
 	/* Remove always to be on top. */
@@ -728,9 +731,9 @@ out:
 }
 
 static int
-setup_scanout_surface(struct wlsc_output *output, struct wlsc_surface *es)
+setup_scanout_surface(struct weston_output *output, struct weston_surface *es)
 {
-	if (es->visual != WLSC_RGB_VISUAL ||
+	if (es->visual != WESTON_RGB_VISUAL ||
 	    output->prepare_scanout_surface(output, es) != 0)
 		return -1;
 
@@ -745,10 +748,10 @@ setup_scanout_surface(struct wlsc_output *output, struct wlsc_surface *es)
 }
 
 static void
-wlsc_output_repaint(struct wlsc_output *output)
+weston_output_repaint(struct weston_output *output)
 {
-	struct wlsc_compositor *ec = output->compositor;
-	struct wlsc_surface *es;
+	struct weston_compositor *ec = output->compositor;
+	struct weston_surface *es;
 	pixman_region32_t opaque, new_damage, total_damage, repaint;
 
 	output->prepare_render(output);
@@ -760,7 +763,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 			   1, GL_FALSE, output->matrix.d);
 	glUniform1i(ec->texture_shader.tex_uniform, 0);
 
-	wlsc_output_set_cursor(output, ec->input_device,
+	weston_output_set_cursor(output, ec->input_device,
 			       ec->fade.spring.current >= 0.001);
 
 	pixman_region32_init(&new_damage);
@@ -781,7 +784,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 	pixman_region32_fini(&opaque);
 	pixman_region32_fini(&new_damage);
 
-	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
+	es = container_of(ec->surface_list.next, struct weston_surface, link);
 
 	if (setup_scanout_surface(output, es) == 0)
 		/* We're drawing nothing, just let the damage accumulate */
@@ -791,7 +794,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 		if (es->width < output->current->width ||
 		    es->height < output->current->height)
 			glClear(GL_COLOR_BUFFER_BIT);
-		wlsc_surface_draw(es, output, &total_damage);
+		weston_surface_draw(es, output, &total_damage);
 	} else {
 		wl_list_for_each(es, &ec->surface_list, link) {
 			pixman_region32_copy(&es->damage, &total_damage);
@@ -802,7 +805,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 			pixman_region32_init(&repaint);
 			pixman_region32_intersect(&repaint, &output->region,
 						  &es->damage);
-			wlsc_surface_draw(es, output, &repaint);
+			weston_surface_draw(es, output, &repaint);
 			pixman_region32_subtract(&es->damage,
 						 &es->damage, &output->region);
 		}
@@ -812,7 +815,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 		fade_output(output, ec->fade.spring.current, &total_damage);
 }
 
-struct wlsc_frame_callback {
+struct weston_frame_callback {
 	struct wl_resource resource;
 	struct wl_list link;
 };
@@ -820,12 +823,12 @@ struct wlsc_frame_callback {
 static void
 repaint(void *data, int msecs)
 {
-	struct wlsc_output *output = data;
-	struct wlsc_compositor *compositor = output->compositor;
-	struct wlsc_animation *animation, *next;
-	struct wlsc_frame_callback *cb, *cnext;
+	struct weston_output *output = data;
+	struct weston_compositor *compositor = output->compositor;
+	struct weston_animation *animation, *next;
+	struct weston_frame_callback *cb, *cnext;
 
-	wlsc_output_repaint(output);
+	weston_output_repaint(output);
 	output->repaint_needed = 0;
 	output->repaint_scheduled = 1;
 	output->present(output);
@@ -843,14 +846,14 @@ repaint(void *data, int msecs)
 static void
 idle_repaint(void *data)
 {
-	repaint(data, wlsc_compositor_get_time());
+	repaint(data, weston_compositor_get_time());
 }
 
 WL_EXPORT void
-wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
+weston_output_finish_frame(struct weston_output *output, int msecs)
 {
 	if (output->scanout_buffer) {
-		wlsc_buffer_post_release(output->scanout_buffer);
+		weston_buffer_post_release(output->scanout_buffer);
 		wl_list_remove(&output->scanout_buffer_destroy_listener.link);
 		output->scanout_buffer = NULL;
 	}
@@ -870,12 +873,12 @@ wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 }
 
 WL_EXPORT void
-wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor)
+weston_compositor_schedule_repaint(struct weston_compositor *compositor)
 {
-	struct wlsc_output *output;
+	struct weston_output *output;
 	struct wl_event_loop *loop;
 
-	if (compositor->state == WLSC_COMPOSITOR_SLEEPING)
+	if (compositor->state == WESTON_COMPOSITOR_SLEEPING)
 		return;
 
 	loop = wl_display_get_event_loop(compositor->wl_display);
@@ -890,20 +893,20 @@ wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor)
 }
 
 WL_EXPORT void
-wlsc_compositor_fade(struct wlsc_compositor *compositor, float tint)
+weston_compositor_fade(struct weston_compositor *compositor, float tint)
 {
 	int done;
 
-	done = wlsc_spring_done(&compositor->fade.spring);
+	done = weston_spring_done(&compositor->fade.spring);
 	compositor->fade.spring.target = tint;
-	if (wlsc_spring_done(&compositor->fade.spring))
+	if (weston_spring_done(&compositor->fade.spring))
 		return;
 
 	if (done)
 		compositor->fade.spring.timestamp =
-			wlsc_compositor_get_time();
+			weston_compositor_get_time();
 
-	wlsc_compositor_damage_all(compositor);
+	weston_compositor_damage_all(compositor);
 	if (wl_list_empty(&compositor->fade.animation.link))
 		wl_list_insert(compositor->animation_list.prev,
 			       &compositor->fade.animation.link);
@@ -912,14 +915,14 @@ wlsc_compositor_fade(struct wlsc_compositor *compositor, float tint)
 static void
 surface_destroy(struct wl_client *client, struct wl_resource *resource)
 {
-	wl_resource_destroy(resource, wlsc_compositor_get_time());
+	wl_resource_destroy(resource, weston_compositor_get_time());
 }
 
 WL_EXPORT void
-wlsc_surface_assign_output(struct wlsc_surface *es)
+weston_surface_assign_output(struct weston_surface *es)
 {
-	struct wlsc_compositor *ec = es->compositor;
-	struct wlsc_output *output, *new_output;
+	struct weston_compositor *ec = es->compositor;
+	struct weston_output *output, *new_output;
 	pixman_region32_t region;
 	uint32_t max, area;
 	pixman_box32_t *e;
@@ -953,12 +956,12 @@ surface_attach(struct wl_client *client,
 	       struct wl_resource *resource,
 	       struct wl_resource *buffer_resource, int32_t x, int32_t y)
 {
-	struct wlsc_surface *es = resource->data;
-	struct wlsc_shell *shell = es->compositor->shell;
+	struct weston_surface *es = resource->data;
+	struct weston_shell *shell = es->compositor->shell;
 	struct wl_buffer *buffer = buffer_resource->data;
 
 	if (es->buffer) {
-		wlsc_buffer_post_release(es->buffer);
+		weston_buffer_post_release(es->buffer);
 		wl_list_remove(&es->buffer_destroy_listener.link);
 	}
 
@@ -967,7 +970,7 @@ surface_attach(struct wl_client *client,
 	wl_list_insert(es->buffer->resource.destroy_listener_list.prev,
 		       &es->buffer_destroy_listener.link);
 
-	if (es->visual == WLSC_NONE_VISUAL) {
+	if (es->visual == WESTON_NONE_VISUAL) {
 		shell->map(shell, es, buffer->width, buffer->height);
 	} else if (x != 0 || y != 0 ||
 		   es->width != buffer->width ||
@@ -976,7 +979,7 @@ surface_attach(struct wl_client *client,
 				 buffer->width, buffer->height);
 	}
 
-	wlsc_buffer_attach(buffer, &es->surface);
+	weston_buffer_attach(buffer, &es->surface);
 }
 
 static void
@@ -984,15 +987,15 @@ surface_damage(struct wl_client *client,
 	       struct wl_resource *resource,
 	       int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct wlsc_surface *es = resource->data;
+	struct weston_surface *es = resource->data;
 
-	wlsc_surface_damage_rectangle(es, x, y, width, height);
+	weston_surface_damage_rectangle(es, x, y, width, height);
 }
 
 static void
 destroy_frame_callback(struct wl_resource *resource)
 {
-	struct wlsc_frame_callback *cb = resource->data;
+	struct weston_frame_callback *cb = resource->data;
 
 	wl_list_remove(&cb->link);
 	free(cb);
@@ -1002,8 +1005,8 @@ static void
 surface_frame(struct wl_client *client,
 	      struct wl_resource *resource, uint32_t callback)
 {
-	struct wlsc_frame_callback *cb;
-	struct wlsc_surface *es = resource->data;
+	struct weston_frame_callback *cb;
+	struct weston_surface *es = resource->data;
 
 	cb = malloc(sizeof *cb);
 	if (cb == NULL) {
@@ -1038,10 +1041,10 @@ static void
 compositor_create_surface(struct wl_client *client,
 			  struct wl_resource *resource, uint32_t id)
 {
-	struct wlsc_compositor *ec = resource->data;
-	struct wlsc_surface *surface;
+	struct weston_compositor *ec = resource->data;
+	struct weston_surface *surface;
 
-	surface = wlsc_surface_create(ec, 0, 0, 0, 0);
+	surface = weston_surface_create(ec, 0, 0, 0, 0);
 	if (surface == NULL) {
 		wl_resource_post_no_memory(resource);
 		return;
@@ -1063,23 +1066,23 @@ const static struct wl_compositor_interface compositor_interface = {
 };
 
 static void
-wlsc_surface_transform(struct wlsc_surface *surface,
+weston_surface_transform(struct weston_surface *surface,
 		       int32_t x, int32_t y, int32_t *sx, int32_t *sy)
 {
 	*sx = x - surface->x;
 	*sy = y - surface->y;
 }
 
-static struct wlsc_surface *
-wlsc_compositor_pick_surface(struct wlsc_compositor *compositor,
-			     int32_t x, int32_t y, int32_t *sx, int32_t *sy)
+static struct weston_surface *
+weston_compositor_pick_surface(struct weston_compositor *compositor,
+			       int32_t x, int32_t y, int32_t *sx, int32_t *sy)
 {
-	struct wlsc_surface *surface;
+	struct weston_surface *surface;
 
 	wl_list_for_each(surface, &compositor->surface_list, link) {
 		if (surface->surface.resource.client == NULL)
 			continue;
-		wlsc_surface_transform(surface, x, y, sx, sy);
+		weston_surface_transform(surface, x, y, sx, sy);
 		if (0 <= *sx && *sx < surface->width &&
 		    0 <= *sy && *sy < surface->height)
 			return surface;
@@ -1088,12 +1091,12 @@ wlsc_compositor_pick_surface(struct wlsc_compositor *compositor,
 	return NULL;
 }
 
-WL_EXPORT struct wlsc_surface *
+WL_EXPORT struct weston_surface *
 pick_surface(struct wl_input_device *device, int32_t *sx, int32_t *sy)
 {
-	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
+	struct weston_input_device *wd = (struct weston_input_device *) device;
 
-	return wlsc_compositor_pick_surface(wd->compositor,
+	return weston_compositor_pick_surface(wd->compositor,
 					    device->x, device->y, sx, sy);
 }
 
@@ -1102,16 +1105,16 @@ static void
 implicit_grab_motion(struct wl_grab *grab,
 		     uint32_t time, int32_t x, int32_t y)
 {
-	struct wlsc_input_device *device =
-		(struct wlsc_input_device *) grab->input_device;
-	struct wlsc_surface *es =
-		(struct wlsc_surface *) device->input_device.pointer_focus;
+	struct weston_input_device *device =
+		(struct weston_input_device *) grab->input_device;
+	struct weston_surface *es =
+		(struct weston_surface *) device->input_device.pointer_focus;
 	int32_t sx, sy;
 	struct wl_resource *resource;
 
 	resource = grab->input_device->pointer_focus_resource;
 	if (resource) {
-		wlsc_surface_transform(es, x, y, &sx, &sy);
+		weston_surface_transform(es, x, y, &sx, &sy);
 		wl_resource_post_event(resource, WL_INPUT_DEVICE_MOTION,
 				       time, x, y, sx, sy);
 	}
@@ -1141,48 +1144,48 @@ static const struct wl_grab_interface implicit_grab_interface = {
 };
 
 WL_EXPORT void
-wlsc_compositor_wake(struct wlsc_compositor *compositor)
+weston_compositor_wake(struct weston_compositor *compositor)
 {
-	compositor->state = WLSC_COMPOSITOR_ACTIVE;
-	wlsc_compositor_fade(compositor, 0.0);
+	compositor->state = WESTON_COMPOSITOR_ACTIVE;
+	weston_compositor_fade(compositor, 0.0);
 
 	wl_event_source_timer_update(compositor->idle_source,
 				     compositor->idle_time * 1000);
 }
 
 WL_EXPORT void
-wlsc_compositor_activity(struct wlsc_compositor *compositor)
+weston_compositor_activity(struct weston_compositor *compositor)
 {
-	if (compositor->state == WLSC_COMPOSITOR_ACTIVE) {
-		wlsc_compositor_wake(compositor);
+	if (compositor->state == WESTON_COMPOSITOR_ACTIVE) {
+		weston_compositor_wake(compositor);
 	} else {
 		compositor->shell->unlock(compositor->shell);
 	}
 }
 
 static void
-wlsc_compositor_idle_inhibit(struct wlsc_compositor *compositor)
+weston_compositor_idle_inhibit(struct weston_compositor *compositor)
 {
-	wlsc_compositor_activity(compositor);
+	weston_compositor_activity(compositor);
 	compositor->idle_inhibit++;
 }
 
 static void
-wlsc_compositor_idle_release(struct wlsc_compositor *compositor)
+weston_compositor_idle_release(struct weston_compositor *compositor)
 {
 	compositor->idle_inhibit--;
-	wlsc_compositor_activity(compositor);
+	weston_compositor_activity(compositor);
 }
 
 static int
 idle_handler(void *data)
 {
-	struct wlsc_compositor *compositor = data;
+	struct weston_compositor *compositor = data;
 
 	if (compositor->idle_inhibit)
 		return 1;
 
-	wlsc_compositor_fade(compositor, 1.0);
+	weston_compositor_fade(compositor, 1.0);
 
 	return 1;
 }
@@ -1190,16 +1193,16 @@ idle_handler(void *data)
 WL_EXPORT void
 notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 {
-	struct wlsc_surface *es;
-	struct wlsc_output *output;
+	struct weston_surface *es;
+	struct weston_output *output;
 	const struct wl_grab_interface *interface;
-	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
-	struct wlsc_compositor *ec = wd->compositor;
+	struct weston_input_device *wd = (struct weston_input_device *) device;
+	struct weston_compositor *ec = wd->compositor;
 	int32_t sx, sy;
 	int x_valid = 0, y_valid = 0;
 	int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
 
-	wlsc_compositor_activity(ec);
+	weston_compositor_activity(ec);
 
 	wl_list_for_each(output, &ec->output_list, link) {
 		if (output->x <= x && x <= output->x + output->current->width)
@@ -1251,41 +1254,41 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 	}
 
 	if (wd->sprite) {
-		wlsc_surface_damage_below(wd->sprite);
+		weston_surface_damage_below(wd->sprite);
 
 		wd->sprite->x = device->x - wd->hotspot_x;
 		wd->sprite->y = device->y - wd->hotspot_y;
 
-		wlsc_surface_damage(wd->sprite);
+		weston_surface_damage(wd->sprite);
 	}
 }
 
 WL_EXPORT void
-wlsc_surface_activate(struct wlsc_surface *surface,
-		      struct wlsc_input_device *device, uint32_t time)
+weston_surface_activate(struct weston_surface *surface,
+			struct weston_input_device *device, uint32_t time)
 {
-	wlsc_surface_raise(surface);
+	weston_surface_raise(surface);
 	wl_input_device_set_keyboard_focus(&device->input_device,
 					   &surface->surface, time);
-	wlsc_data_device_set_keyboard_focus(device);
+	weston_data_device_set_keyboard_focus(device);
 }
 
 WL_EXPORT void
 notify_button(struct wl_input_device *device,
 	      uint32_t time, int32_t button, int32_t state)
 {
-	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
-	struct wlsc_compositor *compositor = wd->compositor;
-	struct wlsc_surface *surface =
-		(struct wlsc_surface *) device->pointer_focus;
+	struct weston_input_device *wd = (struct weston_input_device *) device;
+	struct weston_compositor *compositor = wd->compositor;
+	struct weston_surface *surface =
+		(struct weston_surface *) device->pointer_focus;
 	int32_t sx, sy;
 
 	if (state)
-		wlsc_compositor_idle_inhibit(compositor);
+		weston_compositor_idle_inhibit(compositor);
 	else
-		wlsc_compositor_idle_release(compositor);
+		weston_compositor_idle_release(compositor);
 
-	wlsc_compositor_run_binding(compositor, wd, time, 0, button, state);
+	weston_compositor_run_binding(compositor, wd, time, 0, button, state);
 
 	if (state && surface && device->grab == NULL) {
 		wl_input_device_start_grab(device,
@@ -1307,7 +1310,7 @@ notify_button(struct wl_input_device *device,
 }
 
 static void
-update_modifier_state(struct wlsc_input_device *device,
+update_modifier_state(struct weston_input_device *device,
 		      uint32_t key, uint32_t state)
 {
 	uint32_t modifier;
@@ -1343,16 +1346,16 @@ WL_EXPORT void
 notify_key(struct wl_input_device *device,
 	   uint32_t time, uint32_t key, uint32_t state)
 {
-	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
-	struct wlsc_compositor *compositor = wd->compositor;
+	struct weston_input_device *wd = (struct weston_input_device *) device;
+	struct weston_compositor *compositor = wd->compositor;
 	uint32_t *k, *end;
 
 	if (state)
-		wlsc_compositor_idle_inhibit(compositor);
+		weston_compositor_idle_inhibit(compositor);
 	else
-		wlsc_compositor_idle_release(compositor);
+		weston_compositor_idle_release(compositor);
 
-	wlsc_compositor_run_binding(compositor, wd, time, key, 0, state);
+	weston_compositor_run_binding(compositor, wd, time, key, 0, state);
 
 	update_modifier_state(wd, key, state);
 	end = device->keys.data + device->keys.size;
@@ -1373,12 +1376,12 @@ notify_key(struct wl_input_device *device,
 
 WL_EXPORT void
 notify_pointer_focus(struct wl_input_device *device,
-		     uint32_t time, struct wlsc_output *output,
+		     uint32_t time, struct weston_output *output,
 		     int32_t x, int32_t y)
 {
-	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
-	struct wlsc_compositor *compositor = wd->compositor;
-	struct wlsc_surface *es;
+	struct weston_input_device *wd = (struct weston_input_device *) device;
+	struct weston_compositor *compositor = wd->compositor;
+	struct weston_surface *es;
 	int32_t sx, sy;
 
 	if (output) {
@@ -1399,18 +1402,18 @@ notify_pointer_focus(struct wl_input_device *device,
 
 WL_EXPORT void
 notify_keyboard_focus(struct wl_input_device *device,
-		      uint32_t time, struct wlsc_output *output,
+		      uint32_t time, struct weston_output *output,
 		      struct wl_array *keys)
 {
-	struct wlsc_input_device *wd =
-		(struct wlsc_input_device *) device;
-	struct wlsc_compositor *compositor = wd->compositor;
-	struct wlsc_surface *es;
+	struct weston_input_device *wd =
+		(struct weston_input_device *) device;
+	struct weston_compositor *compositor = wd->compositor;
+	struct weston_surface *es;
 	uint32_t *k, *end;
 
 	if (!wl_list_empty(&compositor->surface_list))
 		es = container_of(compositor->surface_list.next,
-				  struct wlsc_surface, link);
+				  struct weston_surface, link);
 	else
 		es = NULL;
 
@@ -1419,7 +1422,7 @@ notify_keyboard_focus(struct wl_input_device *device,
 		wd->modifier_state = 0;
 		end = device->keys.data + device->keys.size;
 		for (k = device->keys.data; k < end; k++) {
-			wlsc_compositor_idle_inhibit(compositor);
+			weston_compositor_idle_inhibit(compositor);
 			update_modifier_state(wd, *k, 1);
 		}
 
@@ -1429,7 +1432,7 @@ notify_keyboard_focus(struct wl_input_device *device,
 	} else {
 		end = device->keys.data + device->keys.size;
 		for (k = device->keys.data; k < end; k++)
-			wlsc_compositor_idle_release(compositor);
+			weston_compositor_idle_release(compositor);
 
 		wd->modifier_state = 0;
 		wl_input_device_set_keyboard_focus(&wd->input_device,
@@ -1458,8 +1461,8 @@ static void
 lose_touch_focus_resource(struct wl_listener *listener,
 			  struct wl_resource *resource, uint32_t time)
 {
-	struct wlsc_input_device *device =
-		container_of(listener, struct wlsc_input_device,
+	struct weston_input_device *device =
+		container_of(listener, struct weston_input_device,
 			     touch_focus_resource_listener);
 
 	device->touch_focus_resource = NULL;
@@ -1469,15 +1472,15 @@ static void
 lose_touch_focus(struct wl_listener *listener,
 		 struct wl_resource *resource, uint32_t time)
 {
-	struct wlsc_input_device *device =
-		container_of(listener, struct wlsc_input_device,
+	struct weston_input_device *device =
+		container_of(listener, struct weston_input_device,
 			     touch_focus_listener);
 
 	device->touch_focus = NULL;
 }
 
 static void
-touch_set_focus(struct wlsc_input_device *device,
+touch_set_focus(struct weston_input_device *device,
 		struct wl_surface *surface, uint32_t time)
 {
 	struct wl_input_device *input_device = &device->input_device;
@@ -1527,14 +1530,14 @@ WL_EXPORT void
 notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
              int x, int y, int touch_type)
 {
-	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
-	struct wlsc_compositor *ec = wd->compositor;
-	struct wlsc_surface *es;
+	struct weston_input_device *wd = (struct weston_input_device *) device;
+	struct weston_compositor *ec = wd->compositor;
+	struct weston_surface *es;
 	int32_t sx, sy;
 
 	switch (touch_type) {
 	case WL_INPUT_DEVICE_TOUCH_DOWN:
-		wlsc_compositor_idle_inhibit(ec);
+		weston_compositor_idle_inhibit(ec);
 
 		wd->num_tp++;
 
@@ -1542,11 +1545,11 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 		 * to that surface for the remainder of the touch session i.e.
 		 * until all touch points are up again. */
 		if (wd->num_tp == 1) {
-			es = wlsc_compositor_pick_surface(ec, x, y, &sx, &sy);
+			es = weston_compositor_pick_surface(ec, x, y, &sx, &sy);
 			touch_set_focus(wd, &es->surface, time);
 		} else if (wd->touch_focus) {
-			es = (struct wlsc_surface *) wd->touch_focus;
-			wlsc_surface_transform(es, x, y, &sx, &sy);
+			es = (struct weston_surface *) wd->touch_focus;
+			weston_surface_transform(es, x, y, &sx, &sy);
 		}
 
 		if (wd->touch_focus_resource && wd->touch_focus)
@@ -1556,18 +1559,18 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 					       touch_id, sx, sy);
 		break;
 	case WL_INPUT_DEVICE_TOUCH_MOTION:
-		es = (struct wlsc_surface *) wd->touch_focus;
+		es = (struct weston_surface *) wd->touch_focus;
 		if (!es)
 			break;
 
-		wlsc_surface_transform(es, x, y, &sx, &sy);
+		weston_surface_transform(es, x, y, &sx, &sy);
 		if (wd->touch_focus_resource)
 			wl_resource_post_event(wd->touch_focus_resource,
 					       touch_type, time,
 					       touch_id, sx, sy);
 		break;
 	case WL_INPUT_DEVICE_TOUCH_UP:
-		wlsc_compositor_idle_release(ec);
+		weston_compositor_idle_release(ec);
 		wd->num_tp--;
 
 		if (wd->touch_focus_resource)
@@ -1585,8 +1588,8 @@ input_device_attach(struct wl_client *client,
 		    uint32_t time,
 		    struct wl_resource *buffer_resource, int32_t x, int32_t y)
 {
-	struct wlsc_input_device *device = resource->data;
-	struct wlsc_compositor *compositor = device->compositor;
+	struct weston_input_device *device = resource->data;
+	struct weston_compositor *compositor = device->compositor;
 	struct wl_buffer *buffer;
 
 	if (time < device->input_device.pointer_focus_time)
@@ -1597,7 +1600,7 @@ input_device_attach(struct wl_client *client,
 		return;
 
 	if (device->sprite)
-		wlsc_surface_damage_below(device->sprite);
+		weston_surface_damage_below(device->sprite);
 
 	if (!buffer_resource) {
 		destroy_surface(&device->sprite->surface.resource);
@@ -1607,14 +1610,14 @@ input_device_attach(struct wl_client *client,
 
 	if (!device->sprite) {
 		device->sprite =
-			wlsc_surface_create(compositor,
+			weston_surface_create(compositor,
 					    device->input_device.x,
 					    device->input_device.y, 32, 32);
 		wl_list_init(&device->sprite->link);
 	}
 
 	buffer = buffer_resource->data;
-	wlsc_buffer_attach(buffer, &device->sprite->surface);
+	weston_buffer_attach(buffer, &device->sprite->surface);
 
 	device->hotspot_x = x;
 	device->hotspot_y = y;
@@ -1623,7 +1626,7 @@ input_device_attach(struct wl_client *client,
 	device->sprite->x = device->input_device.x - device->hotspot_x;
 	device->sprite->y = device->input_device.y - device->hotspot_y;
 
-	wlsc_surface_damage(device->sprite);
+	weston_surface_damage(device->sprite);
 }
 
 const static struct wl_input_device_interface input_device_interface = {
@@ -1650,8 +1653,8 @@ bind_input_device(struct wl_client *client,
 }
 
 WL_EXPORT void
-wlsc_input_device_init(struct wlsc_input_device *device,
-		       struct wlsc_compositor *ec)
+weston_input_device_init(struct weston_input_device *device,
+			 struct weston_compositor *ec)
 {
 	wl_input_device_init(&device->input_device);
 	wl_list_init(&device->drag_resource_list);
@@ -1678,8 +1681,8 @@ static void
 bind_output(struct wl_client *client,
 	    void *data, uint32_t version, uint32_t id)
 {
-	struct wlsc_output *output = data;
-	struct wlsc_mode *mode;
+	struct weston_output *output = data;
+	struct weston_mode *mode;
 	struct wl_resource *resource;
 
 	resource = wl_client_add_object(client,
@@ -1755,8 +1758,8 @@ compile_shader(GLenum type, const char *source)
 }
 
 static int
-wlsc_shader_init(struct wlsc_shader *shader,
-		 const char *vertex_source, const char *fragment_source)
+weston_shader_init(struct weston_shader *shader,
+		   const char *vertex_source, const char *fragment_source)
 {
 	char msg[512];
 	GLint status;
@@ -1788,7 +1791,7 @@ wlsc_shader_init(struct wlsc_shader *shader,
 }
 
 static int
-init_solid_shader(struct wlsc_shader *shader,
+init_solid_shader(struct weston_shader *shader,
 		  GLuint vertex_shader, const char *fragment_source)
 {
 	GLint status;
@@ -1819,14 +1822,14 @@ init_solid_shader(struct wlsc_shader *shader,
 }
 
 WL_EXPORT void
-wlsc_output_destroy(struct wlsc_output *output)
+weston_output_destroy(struct weston_output *output)
 {
 	pixman_region32_fini(&output->region);
 	pixman_region32_fini(&output->previous_damage);
 }
 
 WL_EXPORT void
-wlsc_output_move(struct wlsc_output *output, int x, int y)
+weston_output_move(struct weston_output *output, int x, int y)
 {
 	int flip;
 
@@ -1838,22 +1841,22 @@ wlsc_output_move(struct wlsc_output *output, int x, int y)
 				  output->current->width,
 				  output->current->height);
 
-	wlsc_matrix_init(&output->matrix);
-	wlsc_matrix_translate(&output->matrix,
+	weston_matrix_init(&output->matrix);
+	weston_matrix_translate(&output->matrix,
 			      -output->x - output->current->width / 2.0,
 			      -output->y - output->current->height / 2.0, 0);
 
 	flip = (output->flags & WL_OUTPUT_FLIPPED) ? -1 : 1;
-	wlsc_matrix_scale(&output->matrix,
+	weston_matrix_scale(&output->matrix,
 			  2.0 / output->current->width,
 			  flip * 2.0 / output->current->height, 1);
 
-	wlsc_output_damage(output);
+	weston_output_damage(output);
 }
 
 WL_EXPORT void
-wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
-		 int x, int y, int width, int height, uint32_t flags)
+weston_output_init(struct weston_output *output, struct weston_compositor *c,
+		   int x, int y, int width, int height, uint32_t flags)
 {
 	output->compositor = c;
 	output->x = x;
@@ -1862,7 +1865,7 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 	output->mm_height = height;
 
 	output->flags = flags;
-	wlsc_output_move(output, x, y);
+	weston_output_move(output, x, y);
 
 	output->scanout_buffer_destroy_listener.func =
 		output_handle_scanout_buffer_destroy;
@@ -1896,7 +1899,7 @@ shm_buffer_damaged(struct wl_buffer *buffer,
 		   int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	struct wl_list *surfaces_attached_to = buffer->user_data;
-	struct wlsc_surface *es;
+	struct weston_surface *es;
 	GLsizei tex_width = wl_shm_buffer_get_stride(buffer) / 4;
 
 	wl_list_for_each(es, surfaces_attached_to, buffer_link) {
@@ -1914,7 +1917,7 @@ static void
 shm_buffer_destroyed(struct wl_buffer *buffer)
 {
 	struct wl_list *surfaces_attached_to = buffer->user_data;
-	struct wlsc_surface *es, *next;
+	struct weston_surface *es, *next;
 
 	wl_list_for_each_safe(es, next, surfaces_attached_to, buffer_link) {
 		wl_list_remove(&es->buffer_link);
@@ -1934,14 +1937,14 @@ static void
 compositor_bind(struct wl_client *client,
 		void *data, uint32_t version, uint32_t id)
 {
-	struct wlsc_compositor *compositor = data;
+	struct weston_compositor *compositor = data;
 
 	wl_client_add_object(client, &wl_compositor_interface,
 			     &compositor_interface, id, compositor);
 }
 
 WL_EXPORT int
-wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
+weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 {
 	struct wl_event_loop *loop;
 	const char *extensions;
@@ -1984,17 +1987,17 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wl_list_init(&ec->output_list);
 	wl_list_init(&ec->binding_list);
 	wl_list_init(&ec->animation_list);
-	wlsc_spring_init(&ec->fade.spring, 30.0, 1.0, 1.0);
+	weston_spring_init(&ec->fade.spring, 30.0, 1.0, 1.0);
 	ec->fade.animation.frame = fade_frame;
 	wl_list_init(&ec->fade.animation.link);
 
 	screenshooter_create(ec);
 
-	wlsc_data_device_manager_init(ec);
+	weston_data_device_manager_init(ec);
 
 	glActiveTexture(GL_TEXTURE0);
 
-	if (wlsc_shader_init(&ec->texture_shader,
+	if (weston_shader_init(&ec->texture_shader,
 			     vertex_shader, texture_fragment_shader) < 0)
 		return -1;
 	if (init_solid_shader(&ec->solid_shader,
@@ -2006,15 +2009,15 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
 	wl_event_source_timer_update(ec->idle_source, ec->idle_time * 1000);
 
-	wlsc_compositor_schedule_repaint(ec);
+	weston_compositor_schedule_repaint(ec);
 
 	return 0;
 }
 
 WL_EXPORT void
-wlsc_compositor_shutdown(struct wlsc_compositor *ec)
+weston_compositor_shutdown(struct weston_compositor *ec)
 {
-	struct wlsc_output *output, *next;
+	struct weston_output *output, *next;
 
 	/* Destroy all outputs associated with this compositor */
 	wl_list_for_each_safe(output, next, &ec->output_list, link)
@@ -2062,12 +2065,12 @@ load_module(const char *name, const char *entrypoint, void **handle)
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
-	struct wlsc_compositor *ec;
+	struct weston_compositor *ec;
 	struct wl_event_loop *loop;
 	int o, xserver = 0;
 	void *shell_module, *backend_module;
-	int (*shell_init)(struct wlsc_compositor *ec);
-	struct wlsc_compositor
+	int (*shell_init)(struct weston_compositor *ec);
+	struct weston_compositor
 		*(*backend_init)(struct wl_display *display, char *options);
 	char *backend = NULL;
 	char *backend_options = "";
@@ -2160,7 +2163,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 
 	if (xserver)
-		wlsc_xserver_init(ec);
+		weston_xserver_init(ec);
 
 	if (wl_display_add_socket(display, option_socket_name)) {
 		fprintf(stderr, "failed to add socket: %m\n");
@@ -2170,7 +2173,7 @@ int main(int argc, char *argv[])
 	wl_display_run(display);
 
 	if (xserver)
-		wlsc_xserver_destroy(ec);
+		weston_xserver_destroy(ec);
 
 	if (ec->has_bind_display)
 		ec->unbind_display(ec->display, display);

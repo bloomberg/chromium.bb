@@ -1,6 +1,6 @@
-waylanddatadir = $(datadir)/wayland
+westondatadir = $(datadir)/weston
 
-dist_waylanddata_DATA =				\
+dist_westondata_DATA =				\
 	bottom_left_corner.png			\
 	bottom_right_corner.png			\
 	bottom_side.png				\

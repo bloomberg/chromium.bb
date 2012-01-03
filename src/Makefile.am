@@ -1,4 +1,4 @@
-bin_PROGRAMS = wayland-compositor
+bin_PROGRAMS = weston
 
 AM_CPPFLAGS =					\
 	-DDATADIR='"$(datadir)"'		\
@@ -7,12 +7,12 @@ AM_CPPFLAGS =					\
 	-DXSERVER_PATH='"@XSERVER_PATH@"'	\
 	$(COMPOSITOR_CFLAGS)
 
-wayland_compositor_LDFLAGS = -export-dynamic
-wayland_compositor_CFLAGS = $(GCC_CFLAGS)
-wayland_compositor_LDADD = \
+weston_LDFLAGS = -export-dynamic
+weston_CFLAGS = $(GCC_CFLAGS)
+weston_LDADD = \
 	$(COMPOSITOR_LIBS) $(DLOPEN_LIBS) $(XSERVER_LAUNCHER_LIBS)
 
-wayland_compositor_SOURCES =			\
+weston_SOURCES =			\
 	compositor.c				\
 	compositor.h				\
 	image-loader.c				\
@@ -32,7 +32,7 @@ xserver_launcher_sources =			\
 	hash.h
 endif
 
-moduledir = @libdir@/wayland
+moduledir = @libdir@/weston
 module_LTLIBRARIES =				\
 	$(desktop_shell)			\
 	$(tablet_shell)			\

@@ -34,7 +34,7 @@
 #include "compositor.h"
 
 struct tty {
-	struct wlsc_compositor *compositor;
+	struct weston_compositor *compositor;
 	int fd;
 	struct termios terminal_attributes;
 
@@ -89,7 +89,7 @@ on_tty_input(int fd, uint32_t mask, void *data)
 }
 
 struct tty *
-tty_create(struct wlsc_compositor *compositor, tty_vt_func_t vt_func,
+tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
            int tty_nr)
 {
 	struct termios raw_attributes;

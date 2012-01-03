@@ -29,8 +29,8 @@ clients_programs =				\
 	wscreensaver				\
 	eventdemo
 
-desktop_shell = wayland-desktop-shell
-tablet_shell = wayland-tablet-shell
+desktop_shell = weston-desktop-shell
+tablet_shell = weston-tablet-shell
 
 noinst_LIBRARIES = libtoytoolkit.a
 
@@ -84,18 +84,18 @@ wscreensaver_LDADD = $(toolkit_libs) -lGLU
 eventdemo_SOURCES = eventdemo.c
 eventdemo_LDADD = $(toolkit_libs)
 
-wayland_desktop_shell_SOURCES =			\
+weston_desktop_shell_SOURCES =			\
 	desktop-shell.c				\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c
-wayland_desktop_shell_LDADD = $(toolkit_libs)	\
+weston_desktop_shell_LDADD = $(toolkit_libs)	\
 	../shared/libconfig-parser.la
 
-wayland_tablet_shell_SOURCES =			\
+weston_tablet_shell_SOURCES =			\
 	tablet-shell.c				\
 	tablet-shell-client-protocol.h		\
 	tablet-shell-protocol.c
-wayland_tablet_shell_LDADD = $(toolkit_libs)	\
+weston_tablet_shell_LDADD = $(toolkit_libs)	\
 	../shared/libconfig-parser.la
 
 BUILT_SOURCES =					\

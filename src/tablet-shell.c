@@ -46,21 +46,21 @@ enum {
 struct tablet_shell {
 	struct wl_resource resource;
 
-	struct wlsc_shell shell;
+	struct weston_shell shell;
 
-	struct wlsc_compositor *compositor;
-	struct wlsc_process process;
-	struct wlsc_input_device *device;
+	struct weston_compositor *compositor;
+	struct weston_process process;
+	struct weston_input_device *device;
 	struct wl_client *client;
 
-	struct wlsc_surface *surface;
+	struct weston_surface *surface;
 
-	struct wlsc_surface *lockscreen_surface;
+	struct weston_surface *lockscreen_surface;
 	struct wl_listener lockscreen_listener;
 
-	struct wlsc_surface *home_surface;
+	struct weston_surface *home_surface;
 
-	struct wlsc_surface *switcher_surface;
+	struct weston_surface *switcher_surface;
 	struct wl_listener switcher_listener;
 
 	struct tablet_client *current_client;
@@ -74,12 +74,12 @@ struct tablet_client {
 	struct wl_resource resource;
 	struct tablet_shell *shell;
 	struct wl_client *client;
-	struct wlsc_surface *surface;
+	struct weston_surface *surface;
 	char *name;
 };
 
 static void
-tablet_shell_sigchld(struct wlsc_process *process, int status)
+tablet_shell_sigchld(struct weston_process *process, int status)
 {
 	struct tablet_shell *shell =
 		container_of(process, struct tablet_shell, process);
@@ -104,7 +104,7 @@ tablet_shell_set_state(struct tablet_shell *shell, int state)
 }
 
 static void
-tablet_shell_map(struct wlsc_shell *base, struct wlsc_surface *surface,
+tablet_shell_map(struct weston_shell *base, struct weston_surface *surface,
 		       int32_t width, int32_t height)
 {
 	struct tablet_shell *shell =
@@ -129,20 +129,20 @@ tablet_shell_map(struct wlsc_shell *base, struct wlsc_surface *surface,
 		   shell->current_client->client == surface->surface.resource.client) {
 		tablet_shell_set_state(shell, STATE_TASK);
 		shell->current_client->surface = surface;
-		wlsc_zoom_run(surface, 0.3, 1.0, NULL, NULL);
+		weston_zoom_run(surface, 0.3, 1.0, NULL, NULL);
 	}
 
 	wl_list_insert(&shell->compositor->surface_list, &surface->link);
-	wlsc_surface_configure(surface, surface->x, surface->y, width, height);
+	weston_surface_configure(surface, surface->x, surface->y, width, height);
 }
 
 static void
-tablet_shell_configure(struct wlsc_shell *base,
-			     struct wlsc_surface *surface,
+tablet_shell_configure(struct weston_shell *base,
+			     struct weston_surface *surface,
 			     int32_t x, int32_t y,
 			     int32_t width, int32_t height)
 {
-	wlsc_surface_configure(surface, x, y, width, height);
+	weston_surface_configure(surface, x, y, width, height);
 }
 
 static void
@@ -163,7 +163,7 @@ tablet_shell_set_lockscreen(struct wl_client *client,
 			    struct wl_resource *surface_resource)
 {
 	struct tablet_shell *shell = resource->data;
-	struct wlsc_surface *es = surface_resource->data;
+	struct weston_surface *es = surface_resource->data;
 
 	es->x = 0;
 	es->y = 0;
@@ -192,7 +192,7 @@ tablet_shell_set_switcher(struct wl_client *client,
 			  struct wl_resource *surface_resource)
 {
 	struct tablet_shell *shell = resource->data;
-	struct wlsc_surface *es = surface_resource->data;
+	struct weston_surface *es = surface_resource->data;
 
 	/* FIXME: Switcher should be centered and the compositor
 	 * should do the tinting of the background.  With the cache
@@ -220,25 +220,25 @@ tablet_shell_set_homescreen(struct wl_client *client,
 }
 
 static void
-minimize_zoom_done(struct wlsc_zoom *zoom, void *data)
+minimize_zoom_done(struct weston_zoom *zoom, void *data)
 {
 	struct tablet_shell *shell = data;
-	struct wlsc_compositor *compositor = shell->compositor;
-	struct wlsc_input_device *device =
-		(struct wlsc_input_device *) compositor->input_device;
+	struct weston_compositor *compositor = shell->compositor;
+	struct weston_input_device *device =
+		(struct weston_input_device *) compositor->input_device;
 
-	wlsc_surface_activate(shell->home_surface,
-			      device, wlsc_compositor_get_time());
+	weston_surface_activate(shell->home_surface,
+			      device, weston_compositor_get_time());
 }
 
 static void
 tablet_shell_switch_to(struct tablet_shell *shell,
-			     struct wlsc_surface *surface)
+			     struct weston_surface *surface)
 {
-	struct wlsc_compositor *compositor = shell->compositor;
-	struct wlsc_input_device *device =
-		(struct wlsc_input_device *) compositor->input_device;
-	struct wlsc_surface *current;
+	struct weston_compositor *compositor = shell->compositor;
+	struct weston_input_device *device =
+		(struct weston_input_device *) compositor->input_device;
+	struct weston_surface *current;
 
 	if (shell->state == STATE_SWITCHER) {
 		wl_list_remove(&shell->switcher_listener.link);
@@ -250,15 +250,15 @@ tablet_shell_switch_to(struct tablet_shell *shell,
 
 		if (shell->current_client && shell->current_client->surface) {
 			current = shell->current_client->surface;
-			wlsc_zoom_run(current, 1.0, 0.3,
+			weston_zoom_run(current, 1.0, 0.3,
 				      minimize_zoom_done, shell);
 		}
 	} else {
 		fprintf(stderr, "switch to %p\n", surface);
-		wlsc_surface_activate(surface, device,
-				      wlsc_compositor_get_time());
+		weston_surface_activate(surface, device,
+				      weston_compositor_get_time());
 		tablet_shell_set_state(shell, STATE_TASK);
-		wlsc_zoom_run(surface, 0.3, 1.0, NULL, NULL);
+		weston_zoom_run(surface, 0.3, 1.0, NULL, NULL);
 	}
 }
 
@@ -268,7 +268,7 @@ tablet_shell_show_grid(struct wl_client *client,
 		       struct wl_resource *surface_resource)
 {
 	struct tablet_shell *shell = resource->data;
-	struct wlsc_surface *es = surface_resource->data;
+	struct weston_surface *es = surface_resource->data;
 
 	tablet_shell_switch_to(shell, es);
 }
@@ -279,7 +279,7 @@ tablet_shell_show_panels(struct wl_client *client,
 			 struct wl_resource *surface_resource)
 {
 	struct tablet_shell *shell = resource->data;
-	struct wlsc_surface *es = surface_resource->data;
+	struct weston_surface *es = surface_resource->data;
 
 	tablet_shell_switch_to(shell, es);
 }
@@ -298,7 +298,7 @@ static void
 tablet_client_destroy(struct wl_client *client,
 		      struct wl_resource *resource)
 {
-	wl_resource_destroy(resource, wlsc_compositor_get_time());
+	wl_resource_destroy(resource, weston_compositor_get_time());
 }
 
 static void
@@ -325,7 +325,7 @@ tablet_shell_create_client(struct wl_client *client,
 			   uint32_t id, const char *name, int fd)
 {
 	struct tablet_shell *shell = resource->data;
-	struct wlsc_compositor *compositor = shell->compositor;
+	struct weston_compositor *compositor = shell->compositor;
 	struct tablet_client *tablet_client;
 
 	tablet_client = malloc(sizeof *tablet_client);
@@ -367,7 +367,7 @@ launch_ux_daemon(struct tablet_shell *shell)
 {
 	const char *shell_exe = LIBEXECDIR "/wayland-tablet-shell";
 
-	shell->client = wlsc_client_launch(shell->compositor,
+	shell->client = weston_client_launch(shell->compositor,
 					   &shell->process,
 					   shell_exe, tablet_shell_sigchld);
 }
@@ -389,7 +389,7 @@ toggle_switcher(struct tablet_shell *shell)
 }
 
 static void
-tablet_shell_lock(struct wlsc_shell *base)
+tablet_shell_lock(struct weston_shell *base)
 {
 	struct tablet_shell *shell =
 		container_of(base, struct tablet_shell, shell);
@@ -407,26 +407,26 @@ tablet_shell_lock(struct wlsc_shell *base)
 }
 
 static void
-tablet_shell_unlock(struct wlsc_shell *base)
+tablet_shell_unlock(struct weston_shell *base)
 {
 	struct tablet_shell *shell =
 		container_of(base, struct tablet_shell, shell);
 
-	wlsc_compositor_wake(shell->compositor);
+	weston_compositor_wake(shell->compositor);
 }
 
 static void
 go_home(struct tablet_shell *shell)
 {
-	struct wlsc_input_device *device =
-		(struct wlsc_input_device *) shell->compositor->input_device;
+	struct weston_input_device *device =
+		(struct weston_input_device *) shell->compositor->input_device;
 
 	if (shell->state == STATE_SWITCHER)
 		wl_resource_post_event(&shell->resource,
 				       TABLET_SHELL_HIDE_SWITCHER);
 
-	wlsc_surface_activate(shell->home_surface, device,
-			      wlsc_compositor_get_time());
+	weston_surface_activate(shell->home_surface, device,
+			      weston_compositor_get_time());
 
 	tablet_shell_set_state(shell, STATE_HOME);
 }
@@ -464,7 +464,7 @@ home_key_binding(struct wl_input_device *device, uint32_t time,
 	if (shell->state == STATE_LOCKED)
 		return;
 
-	shell->device = (struct wlsc_input_device *) device;
+	shell->device = (struct weston_input_device *) device;
 
 	if (state) {
 		wl_event_source_timer_update(shell->long_press_source, 500);
@@ -512,10 +512,10 @@ bind_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 }
 
 void
-shell_init(struct wlsc_compositor *compositor);
+shell_init(struct weston_compositor *compositor);
 
 WL_EXPORT void
-shell_init(struct wlsc_compositor *compositor)
+shell_init(struct weston_compositor *compositor)
 {
 	struct tablet_shell *shell;
 	struct wl_event_loop *loop;
@@ -535,15 +535,15 @@ shell_init(struct wlsc_compositor *compositor)
 	shell->long_press_source =
 		wl_event_loop_add_timer(loop, long_press_handler, shell);
 
-	wlsc_compositor_add_binding(compositor, KEY_LEFTMETA, 0, 0,
+	weston_compositor_add_binding(compositor, KEY_LEFTMETA, 0, 0,
 				    home_key_binding, shell);
-	wlsc_compositor_add_binding(compositor, KEY_RIGHTMETA, 0, 0,
+	weston_compositor_add_binding(compositor, KEY_RIGHTMETA, 0, 0,
 				    home_key_binding, shell);
-	wlsc_compositor_add_binding(compositor, KEY_LEFTMETA, 0,
+	weston_compositor_add_binding(compositor, KEY_LEFTMETA, 0,
 				    MODIFIER_SUPER, home_key_binding, shell);
-	wlsc_compositor_add_binding(compositor, KEY_RIGHTMETA, 0,
+	weston_compositor_add_binding(compositor, KEY_RIGHTMETA, 0,
 				    MODIFIER_SUPER, home_key_binding, shell);
- 	wlsc_compositor_add_binding(compositor, KEY_COMPOSE, 0, 0,
+ 	weston_compositor_add_binding(compositor, KEY_COMPOSE, 0, 0,
 				    menu_key_binding, shell);
 
 	compositor->shell = &shell->shell;

@@ -28,7 +28,7 @@
 #include "compositor.h"
 
 void
-wlsc_data_source_unref(struct wlsc_data_source *source)
+weston_data_source_unref(struct weston_data_source *source)
 {
 	source->refcount--;
 	if (source->refcount == 0)
@@ -39,7 +39,7 @@ static void
 data_offer_accept(struct wl_client *client, struct wl_resource *resource,
 		  uint32_t time, const char *mime_type)
 {
-	struct wlsc_data_source *source = resource->data;
+	struct weston_data_source *source = resource->data;
 
 	/* FIXME: Check that client is currently focused by the input
 	 * device that is currently dragging this data source.  Should
@@ -53,7 +53,7 @@ static void
 data_offer_receive(struct wl_client *client, struct wl_resource *resource,
 		   const char *mime_type, int32_t fd)
 {
-	struct wlsc_data_source *source = resource->data;
+	struct weston_data_source *source = resource->data;
 
 	wl_resource_post_event(&source->resource,
 			       WL_DATA_SOURCE_SEND, mime_type, fd);
@@ -63,15 +63,15 @@ data_offer_receive(struct wl_client *client, struct wl_resource *resource,
 static void
 data_offer_destroy(struct wl_client *client, struct wl_resource *resource)
 {
-	wl_resource_destroy(resource, wlsc_compositor_get_time());
+	wl_resource_destroy(resource, weston_compositor_get_time());
 }
 
 static void
 destroy_data_offer(struct wl_resource *resource)
 {
-	struct wlsc_data_source *source = resource->data;
+	struct weston_data_source *source = resource->data;
 
-	wlsc_data_source_unref(source);
+	weston_data_source_unref(source);
 	free(resource);
 }
 
@@ -82,7 +82,7 @@ static const struct wl_data_offer_interface data_offer_interface = {
 };
 
 static struct wl_resource *
-data_source_create_offer(struct wlsc_data_source *source, 
+data_source_create_offer(struct weston_data_source *source, 
 			 struct wl_resource *target)
 {
 	struct wl_resource *resource;
@@ -96,13 +96,13 @@ data_source_create_offer(struct wlsc_data_source *source,
 }
 
 static void
-data_source_cancel(struct wlsc_data_source *source)
+data_source_cancel(struct weston_data_source *source)
 {
 	wl_resource_post_event(&source->resource, WL_DATA_SOURCE_CANCELLED);
 }
 
 static struct wl_resource *
-wlsc_data_source_send_offer(struct wlsc_data_source *source,
+weston_data_source_send_offer(struct weston_data_source *source,
 			    struct wl_resource *target)
 {
 	struct wl_resource *resource;
@@ -125,7 +125,7 @@ data_source_offer(struct wl_client *client,
 		  struct wl_resource *resource,
 		  const char *type)
 {
-	struct wlsc_data_source *source = resource->data;
+	struct weston_data_source *source = resource->data;
 	char **p;
 
 	p = wl_array_add(&source->mime_types, sizeof *p);
@@ -138,7 +138,7 @@ data_source_offer(struct wl_client *client,
 static void
 data_source_destroy(struct wl_client *client, struct wl_resource *resource)
 {
-	wl_resource_destroy(resource, wlsc_compositor_get_time());
+	wl_resource_destroy(resource, weston_compositor_get_time());
 }
 
 static struct wl_data_source_interface data_source_interface = {
@@ -163,15 +163,15 @@ static void
 destroy_drag_focus(struct wl_listener *listener,
 		   struct wl_resource *resource, uint32_t time)
 {
-	struct wlsc_input_device *device =
-		container_of(listener, struct wlsc_input_device,
+	struct weston_input_device *device =
+		container_of(listener, struct weston_input_device,
 			     drag_focus_listener);
 
 	device->drag_focus_resource = NULL;
 }
 
 static void
-drag_set_focus(struct wlsc_input_device *device,
+drag_set_focus(struct weston_input_device *device,
 	       struct wl_surface *surface, uint32_t time,
 	       int32_t x, int32_t y)
 {
@@ -192,7 +192,7 @@ drag_set_focus(struct wlsc_input_device *device,
 		resource = find_resource(&device->drag_resource_list, 
 					 surface->resource.client);
 	if (surface && resource) {
-		offer = wlsc_data_source_send_offer(device->drag_data_source,
+		offer = weston_data_source_send_offer(device->drag_data_source,
 						    resource);
 
 		wl_resource_post_event(resource,
@@ -211,9 +211,9 @@ static void
 drag_grab_motion(struct wl_grab *grab,
 		 uint32_t time, int32_t x, int32_t y)
 {
-	struct wlsc_input_device *device =
-		container_of(grab, struct wlsc_input_device, grab);
-	struct wlsc_surface *es;
+	struct weston_input_device *device =
+		container_of(grab, struct weston_input_device, grab);
+	struct weston_surface *es;
 
 	es = pick_surface(&device->input_device, &x, &y);
 	drag_set_focus(device, &es->surface, time, x, y);
@@ -232,15 +232,15 @@ drag_grab_button(struct wl_grab *grab,
 static void
 drag_grab_end(struct wl_grab *grab, uint32_t time)
 {
-	struct wlsc_input_device *device =
-		container_of(grab, struct wlsc_input_device, grab);
+	struct weston_input_device *device =
+		container_of(grab, struct weston_input_device, grab);
 
 	if (device->drag_focus_resource)
 		wl_resource_post_event(device->drag_focus_resource,
 				       WL_DATA_DEVICE_DROP);
 
 	drag_set_focus(device, NULL, time, 0, 0);
-	wlsc_data_source_unref(device->drag_data_source);
+	weston_data_source_unref(device->drag_data_source);
 	device->drag_data_source = NULL;
 }
 
@@ -255,9 +255,9 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		       struct wl_resource *source_resource,
 		       struct wl_resource *surface_resource, uint32_t time)
 {
-	struct wlsc_input_device *device = resource->data;
-	struct wlsc_surface *surface = surface_resource->data;
-	struct wlsc_surface *target;
+	struct weston_input_device *device = resource->data;
+	struct weston_surface *surface = surface_resource->data;
+	struct weston_surface *target;
 	int32_t sx, sy;
 
 	/* FIXME: Check that client has implicit grab on the surface
@@ -290,8 +290,8 @@ static void
 destroy_selection_data_source(struct wl_listener *listener,
 			      struct wl_resource *resource, uint32_t time)
 {
-	struct wlsc_input_device *device =
-		container_of(listener, struct wlsc_input_device,
+	struct weston_input_device *device =
+		container_of(listener, struct weston_input_device,
 			     selection_data_source_listener);
 	struct wl_resource *data_device, *focus;
 
@@ -307,8 +307,8 @@ destroy_selection_data_source(struct wl_listener *listener,
 }
 
 void
-wlsc_input_device_set_selection(struct wlsc_input_device *device,
-				struct wlsc_data_source *source, uint32_t time)
+weston_input_device_set_selection(struct weston_input_device *device,
+				struct weston_data_source *source, uint32_t time)
 {
 	struct wl_resource *data_device, *focus, *offer;
 
@@ -319,7 +319,7 @@ wlsc_input_device_set_selection(struct wlsc_input_device *device,
 		 * won't get destroyed until every client has been
 		 * activated and seen the new selection event. */
 		wl_list_remove(&device->selection_data_source_listener.link);
-		wlsc_data_source_unref(device->selection_data_source);
+		weston_data_source_unref(device->selection_data_source);
 		device->selection_data_source = NULL;
 	}
 
@@ -331,7 +331,7 @@ wlsc_input_device_set_selection(struct wlsc_input_device *device,
 		data_device = find_resource(&device->drag_resource_list,
 					    focus->client);
 		if (data_device) {
-			offer = wlsc_data_source_send_offer(device->selection_data_source,
+			offer = weston_data_source_send_offer(device->selection_data_source,
 							    data_device);
 			wl_resource_post_event(data_device,
 					       WL_DATA_DEVICE_SELECTION,
@@ -339,7 +339,7 @@ wlsc_input_device_set_selection(struct wlsc_input_device *device,
 		}
 	}
 
-	wlsc_xserver_set_selection(device);
+	weston_xserver_set_selection(device);
 
 	device->selection_data_source_listener.func =
 		destroy_selection_data_source;
@@ -355,7 +355,7 @@ data_device_set_selection(struct wl_client *client,
 	if (!source_resource)
 		return;
 
-	wlsc_input_device_set_selection(resource->data,
+	weston_input_device_set_selection(resource->data,
 					source_resource->data, time);
 }
 
@@ -368,8 +368,8 @@ static const struct wl_data_device_interface data_device_interface = {
 static void
 destroy_data_source(struct wl_resource *resource)
 {
-	struct wlsc_data_source *source =
-		container_of(resource, struct wlsc_data_source, resource);
+	struct weston_data_source *source =
+		container_of(resource, struct weston_data_source, resource);
 	char **p, **end;
 
 	end = source->mime_types.data + source->mime_types.size;
@@ -379,14 +379,14 @@ destroy_data_source(struct wl_resource *resource)
 	wl_array_release(&source->mime_types);
 
 	source->resource.object.id = 0;
-	wlsc_data_source_unref(source);
+	weston_data_source_unref(source);
 }
 
 static void
 create_data_source(struct wl_client *client,
 		   struct wl_resource *resource, uint32_t id)
 {
-	struct wlsc_data_source *source;
+	struct weston_data_source *source;
 
 	source = malloc(sizeof *source);
 	if (source == NULL) {
@@ -419,7 +419,7 @@ get_data_device(struct wl_client *client,
 		struct wl_resource *manager_resource,
 		uint32_t id, struct wl_resource *input_device)
 {
-	struct wlsc_input_device *device = input_device->data;
+	struct weston_input_device *device = input_device->data;
 	struct wl_resource *resource;
 
 	resource =
@@ -444,10 +444,10 @@ bind_manager(struct wl_client *client,
 }
 
 WL_EXPORT void
-wlsc_data_device_set_keyboard_focus(struct wlsc_input_device *device)
+weston_data_device_set_keyboard_focus(struct weston_input_device *device)
 {
 	struct wl_resource *data_device, *focus, *offer;
-	struct wlsc_data_source *source;
+	struct weston_data_source *source;
 
 	focus = device->input_device.keyboard_focus_resource;
 	if (!focus)
@@ -460,14 +460,14 @@ wlsc_data_device_set_keyboard_focus(struct wlsc_input_device *device)
 
 	source = device->selection_data_source;
 	if (source) {
-		offer = wlsc_data_source_send_offer(source, data_device);
+		offer = weston_data_source_send_offer(source, data_device);
 		wl_resource_post_event(data_device,
 				       WL_DATA_DEVICE_SELECTION, offer);
 	}
 }
 
 WL_EXPORT int
-wlsc_data_device_manager_init(struct wlsc_compositor *compositor)
+weston_data_device_manager_init(struct weston_compositor *compositor)
 {
 	if (wl_display_add_global(compositor->wl_display,
 				  &wl_data_device_manager_interface,

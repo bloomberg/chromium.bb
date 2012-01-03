@@ -43,7 +43,7 @@
 #include "compositor.h"
 
 struct wayland_compositor {
-	struct wlsc_compositor	 base;
+	struct weston_compositor	 base;
 
 	struct {
 		struct wl_display *display;
@@ -63,7 +63,7 @@ struct wayland_compositor {
 };
 
 struct wayland_output {
-	struct wlsc_output	base;
+	struct weston_output	base;
 
 	struct {
 		struct wl_surface	*surface;
@@ -71,7 +71,7 @@ struct wayland_output {
 		struct wl_egl_window	*egl_window;
 	} parent;
 	EGLSurface egl_surface;
-	struct wlsc_mode	mode;
+	struct weston_mode	mode;
 };
 
 struct wayland_input {
@@ -83,14 +83,14 @@ struct wayland_input {
 static int
 wayland_input_create(struct wayland_compositor *c)
 {
-	struct wlsc_input_device *input;
+	struct weston_input_device *input;
 
 	input = malloc(sizeof *input);
 	if (input == NULL)
 		return -1;
 
 	memset(input, 0, sizeof *input);
-	wlsc_input_device_init(input, &c->base);
+	weston_input_device_init(input, &c->base);
 
 	c->base.input_device = &input->input_device;
 
@@ -162,10 +162,10 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 }
 
 static int
-wayland_output_prepare_render(struct wlsc_output *output_base)
+wayland_output_prepare_render(struct weston_output *output_base)
 {
 	struct wayland_output *output = (struct wayland_output *) output_base;
-	struct wlsc_compositor *ec = output->base.compositor;
+	struct weston_compositor *ec = output->base.compositor;
 
 	if (!eglMakeCurrent(ec->display, output->egl_surface,
 			    output->egl_surface, ec->context)) {
@@ -179,9 +179,9 @@ wayland_output_prepare_render(struct wlsc_output *output_base)
 static void
 frame_done(void *data, struct wl_callback *wl_callback, uint32_t time)
 {
-	struct wlsc_output *output = data;
+	struct weston_output *output = data;
 
-	wlsc_output_finish_frame(output, time);
+	weston_output_finish_frame(output, time);
 }
 
 static const struct wl_callback_listener frame_listener = {
@@ -189,7 +189,7 @@ static const struct wl_callback_listener frame_listener = {
 };
 
 static int
-wayland_output_present(struct wlsc_output *output_base)
+wayland_output_present(struct weston_output *output_base)
 {
 	struct wayland_output *output = (struct wayland_output *) output_base;
 	struct wayland_compositor *c =
@@ -207,24 +207,24 @@ wayland_output_present(struct wlsc_output *output_base)
 }
 
 static int
-wayland_output_prepare_scanout_surface(struct wlsc_output *output_base,
-				       struct wlsc_surface *es)
+wayland_output_prepare_scanout_surface(struct weston_output *output_base,
+				       struct weston_surface *es)
 {
 	return -1;
 }
 
 static int
-wayland_output_set_cursor(struct wlsc_output *output_base,
-			  struct wlsc_input_device *input)
+wayland_output_set_cursor(struct weston_output *output_base,
+			  struct weston_input_device *input)
 {
 	return -1;
 }
 
 static void
-wayland_output_destroy(struct wlsc_output *output_base)
+wayland_output_destroy(struct weston_output *output_base)
 {
 	struct wayland_output *output = (struct wayland_output *) output_base;
-	struct wlsc_compositor *ec = output->base.compositor;
+	struct weston_compositor *ec = output->base.compositor;
 
 	eglDestroySurface(ec->display, output->egl_surface);
 	wl_egl_window_destroy(output->parent.egl_window);
@@ -253,7 +253,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
 	output->base.current = &output->mode;
-	wlsc_output_init(&output->base, &c->base, 0, 0, width, height,
+	weston_output_init(&output->base, &c->base, 0, 0, width, height,
 			 WL_OUTPUT_FLIPPED);
 
 	output->parent.surface =
@@ -306,7 +306,7 @@ cleanup_surface:
 cleanup_window:
 	wl_egl_window_destroy(output->parent.egl_window);
 cleanup_output:
-	/* FIXME: cleanup wlsc_output */
+	/* FIXME: cleanup weston_output */
 	free(output);
 
 	return -1;
@@ -499,14 +499,14 @@ wayland_compositor_handle_event(int fd, uint32_t mask, void *data)
 }
 
 static void
-wayland_destroy(struct wlsc_compositor *ec)
+wayland_destroy(struct weston_compositor *ec)
 {
-	wlsc_compositor_shutdown(ec);
+	weston_compositor_shutdown(ec);
 
 	free(ec);
 }
 
-static struct wlsc_compositor *
+static struct weston_compositor *
 wayland_compositor_create(struct wl_display *display, int width, int height)
 {
 	struct wayland_compositor *c;
@@ -539,7 +539,7 @@ wayland_compositor_create(struct wl_display *display, int width, int height)
 	c->base.destroy = wayland_destroy;
 
 	/* Can't init base class until we have a current egl context */
-	if (wlsc_compositor_init(&c->base, display) < 0)
+	if (weston_compositor_init(&c->base, display) < 0)
 		return NULL;
 
 	if (wayland_compositor_create_output(c, width, height) < 0)
@@ -560,10 +560,10 @@ wayland_compositor_create(struct wl_display *display, int width, int height)
 	return &c->base;
 }
 
-struct wlsc_compositor *
+struct weston_compositor *
 backend_init(struct wl_display *display, char *options);
 
-WL_EXPORT struct wlsc_compositor *
+WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, char *options)
 {
 	int width = 1024, height = 640, i;

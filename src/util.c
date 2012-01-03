@@ -28,9 +28,9 @@
 #include "compositor.h"
 
 WL_EXPORT void
-wlsc_matrix_init(struct wlsc_matrix *matrix)
+weston_matrix_init(struct weston_matrix *matrix)
 {
-	static const struct wlsc_matrix identity = {
+	static const struct weston_matrix identity = {
 		{ 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1 }
 	};
 
@@ -38,9 +38,9 @@ wlsc_matrix_init(struct wlsc_matrix *matrix)
 }
 
 static void
-wlsc_matrix_multiply(struct wlsc_matrix *m, const struct wlsc_matrix *n)
+weston_matrix_multiply(struct weston_matrix *m, const struct weston_matrix *n)
 {
-	struct wlsc_matrix tmp;
+	struct weston_matrix tmp;
 	const GLfloat *row, *column;
 	div_t d;
 	int i, j;
@@ -57,30 +57,30 @@ wlsc_matrix_multiply(struct wlsc_matrix *m, const struct wlsc_matrix *n)
 }
 
 WL_EXPORT void
-wlsc_matrix_translate(struct wlsc_matrix *matrix, GLfloat x, GLfloat y, GLfloat z)
+weston_matrix_translate(struct weston_matrix *matrix, GLfloat x, GLfloat y, GLfloat z)
 {
-	struct wlsc_matrix translate = {
+	struct weston_matrix translate = {
 		{ 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  x, y, z, 1 }
 	};
 
-	wlsc_matrix_multiply(matrix, &translate);
+	weston_matrix_multiply(matrix, &translate);
 }
 
 WL_EXPORT void
-wlsc_matrix_scale(struct wlsc_matrix *matrix, GLfloat x, GLfloat y, GLfloat z)
+weston_matrix_scale(struct weston_matrix *matrix, GLfloat x, GLfloat y, GLfloat z)
 {
-	struct wlsc_matrix scale = {
+	struct weston_matrix scale = {
 		{ x, 0, 0, 0,  0, y, 0, 0,  0, 0, z, 0,  0, 0, 0, 1 }
 	};
 
-	wlsc_matrix_multiply(matrix, &scale);
+	weston_matrix_multiply(matrix, &scale);
 }
 
 WL_EXPORT void
-wlsc_matrix_transform(struct wlsc_matrix *matrix, struct wlsc_vector *v)
+weston_matrix_transform(struct weston_matrix *matrix, struct weston_vector *v)
 {
 	int i, j;
-	struct wlsc_vector t;
+	struct weston_vector t;
 
 	for (i = 0; i < 4; i++) {
 		t.f[i] = 0;
@@ -92,7 +92,7 @@ wlsc_matrix_transform(struct wlsc_matrix *matrix, struct wlsc_vector *v)
 }
 
 WL_EXPORT void
-wlsc_spring_init(struct wlsc_spring *spring,
+weston_spring_init(struct weston_spring *spring,
 		 double k, double current, double target)
 {
 	spring->k = k;
@@ -103,7 +103,7 @@ wlsc_spring_init(struct wlsc_spring *spring,
 }
 
 WL_EXPORT void
-wlsc_spring_update(struct wlsc_spring *spring, uint32_t msec)
+weston_spring_update(struct weston_spring *spring, uint32_t msec)
 {
 	double force, v, current, step;
 
@@ -140,25 +140,25 @@ wlsc_spring_update(struct wlsc_spring *spring, uint32_t msec)
 }
 
 WL_EXPORT int
-wlsc_spring_done(struct wlsc_spring *spring)
+weston_spring_done(struct weston_spring *spring)
 {
 	return fabs(spring->previous - spring->target) < 0.0002 &&
 		fabs(spring->current - spring->target) < 0.0002;
 }
 
-struct wlsc_zoom {
-	struct wlsc_surface *surface;
-	struct wlsc_animation animation;
-	struct wlsc_spring spring;
-	struct wlsc_transform transform;
+struct weston_zoom {
+	struct weston_surface *surface;
+	struct weston_animation animation;
+	struct weston_spring spring;
+	struct weston_transform transform;
 	struct wl_listener listener;
 	GLfloat start, stop;
-	void (*done)(struct wlsc_zoom *zoom, void *data);
+	void (*done)(struct weston_zoom *zoom, void *data);
 	void *data;
 };
 
 static void
-wlsc_zoom_destroy(struct wlsc_zoom *zoom)
+weston_zoom_destroy(struct weston_zoom *zoom)
 {
 	wl_list_remove(&zoom->animation.link);
 	wl_list_remove(&zoom->listener.link);
@@ -172,34 +172,34 @@ static void
 handle_zoom_surface_destroy(struct wl_listener *listener,
 			    struct wl_resource *resource, uint32_t time)
 {
-	struct wlsc_zoom *zoom =
-		container_of(listener, struct wlsc_zoom, listener);
+	struct weston_zoom *zoom =
+		container_of(listener, struct weston_zoom, listener);
 
-	wlsc_zoom_destroy(zoom);
+	weston_zoom_destroy(zoom);
 }
 
 static void
-wlsc_zoom_frame(struct wlsc_animation *animation,
-		struct wlsc_output *output, uint32_t msecs)
+weston_zoom_frame(struct weston_animation *animation,
+		struct weston_output *output, uint32_t msecs)
 {
-	struct wlsc_zoom *zoom =
-		container_of(animation, struct wlsc_zoom, animation);
-	struct wlsc_surface *es = zoom->surface;
+	struct weston_zoom *zoom =
+		container_of(animation, struct weston_zoom, animation);
+	struct weston_surface *es = zoom->surface;
 	GLfloat scale;
 
-	wlsc_spring_update(&zoom->spring, msecs);
+	weston_spring_update(&zoom->spring, msecs);
 
-	if (wlsc_spring_done(&zoom->spring))
-		wlsc_zoom_destroy(zoom);
+	if (weston_spring_done(&zoom->spring))
+		weston_zoom_destroy(zoom);
 
 	scale = zoom->start +
 		(zoom->stop - zoom->start) * zoom->spring.current;
-	wlsc_matrix_init(&zoom->transform.matrix);
-	wlsc_matrix_translate(&zoom->transform.matrix,
+	weston_matrix_init(&zoom->transform.matrix);
+	weston_matrix_translate(&zoom->transform.matrix,
 			      -(es->x + es->width / 2.0),
 			      -(es->y + es->height / 2.0), 0);
-	wlsc_matrix_scale(&zoom->transform.matrix, scale, scale, scale);
-	wlsc_matrix_translate(&zoom->transform.matrix,
+	weston_matrix_scale(&zoom->transform.matrix, scale, scale, scale);
+	weston_matrix_translate(&zoom->transform.matrix,
 			      es->x + es->width / 2.0,
 			      es->y + es->height / 2.0, 0);
 
@@ -207,17 +207,17 @@ wlsc_zoom_frame(struct wlsc_animation *animation,
 	if (es->alpha > 255)
 		es->alpha = 255;
 	scale = 1.0 / zoom->spring.current;
-	wlsc_matrix_init(&zoom->transform.inverse);
-	wlsc_matrix_scale(&zoom->transform.inverse, scale, scale, scale);
+	weston_matrix_init(&zoom->transform.inverse);
+	weston_matrix_scale(&zoom->transform.inverse, scale, scale, scale);
 
-	wlsc_compositor_damage_all(es->compositor);
+	weston_compositor_damage_all(es->compositor);
 }
 
-WL_EXPORT struct wlsc_zoom *
-wlsc_zoom_run(struct wlsc_surface *surface, GLfloat start, GLfloat stop,
-	      wlsc_zoom_done_func_t done, void *data)
+WL_EXPORT struct weston_zoom *
+weston_zoom_run(struct weston_surface *surface, GLfloat start, GLfloat stop,
+	      weston_zoom_done_func_t done, void *data)
 {
-	struct wlsc_zoom *zoom;
+	struct weston_zoom *zoom;
 
 	zoom = malloc(sizeof *zoom);
 	if (!zoom)
@@ -229,11 +229,11 @@ wlsc_zoom_run(struct wlsc_surface *surface, GLfloat start, GLfloat stop,
 	zoom->start = start;
 	zoom->stop = stop;
 	surface->transform = &zoom->transform;
-	wlsc_spring_init(&zoom->spring, 200.0, 0.0, 1.0);
+	weston_spring_init(&zoom->spring, 200.0, 0.0, 1.0);
 	zoom->spring.friction = 700;
-	zoom->spring.timestamp = wlsc_compositor_get_time();
-	zoom->animation.frame = wlsc_zoom_frame;
-	wlsc_zoom_frame(&zoom->animation, NULL, zoom->spring.timestamp);
+	zoom->spring.timestamp = weston_compositor_get_time();
+	zoom->animation.frame = weston_zoom_frame;
+	weston_zoom_frame(&zoom->animation, NULL, zoom->spring.timestamp);
 
 	zoom->listener.func = handle_zoom_surface_destroy;
 	wl_list_insert(surface->surface.resource.destroy_listener_list.prev,
@@ -245,21 +245,21 @@ wlsc_zoom_run(struct wlsc_surface *surface, GLfloat start, GLfloat stop,
 	return zoom;
 }
 
-struct wlsc_binding {
+struct weston_binding {
 	uint32_t key;
 	uint32_t button;
 	uint32_t modifier;
-	wlsc_binding_handler_t handler;
+	weston_binding_handler_t handler;
 	void *data;
 	struct wl_list link;
 };
 
-WL_EXPORT struct wlsc_binding *
-wlsc_compositor_add_binding(struct wlsc_compositor *compositor,
+WL_EXPORT struct weston_binding *
+weston_compositor_add_binding(struct weston_compositor *compositor,
 			    uint32_t key, uint32_t button, uint32_t modifier,
-			    wlsc_binding_handler_t handler, void *data)
+			    weston_binding_handler_t handler, void *data)
 {
-	struct wlsc_binding *binding;
+	struct weston_binding *binding;
 
 	binding = malloc(sizeof *binding);
 	if (binding == NULL)
@@ -276,19 +276,19 @@ wlsc_compositor_add_binding(struct wlsc_compositor *compositor,
 }
 
 WL_EXPORT void
-wlsc_binding_destroy(struct wlsc_binding *binding)
+weston_binding_destroy(struct weston_binding *binding)
 {
 	wl_list_remove(&binding->link);
 	free(binding);
 }
 
 WL_EXPORT void
-wlsc_compositor_run_binding(struct wlsc_compositor *compositor,
-			    struct wlsc_input_device *device,
+weston_compositor_run_binding(struct weston_compositor *compositor,
+			    struct weston_input_device *device,
 			    uint32_t time,
 			    uint32_t key, uint32_t button, int32_t state)
 {
-	struct wlsc_binding *b;
+	struct weston_binding *b;
 
 	wl_list_for_each(b, &compositor->binding_list, link) {
 		if (b->key == key && b->button == button &&

@@ -38,7 +38,7 @@
 #include "evdev.h"
 
 struct drm_compositor {
-	struct wlsc_compositor base;
+	struct weston_compositor base;
 
 	struct udev *udev;
 	struct wl_event_source *drm_source;
@@ -58,12 +58,12 @@ struct drm_compositor {
 };
 
 struct drm_mode {
-	struct wlsc_mode base;
+	struct weston_mode base;
 	drmModeModeInfo mode_info;
 };
 
 struct drm_output {
-	struct wlsc_output   base;
+	struct weston_output   base;
 
 	uint32_t crtc_id;
 	uint32_t connector_id;
@@ -79,7 +79,7 @@ struct drm_output {
 };
 
 static int
-drm_output_prepare_render(struct wlsc_output *output_base)
+drm_output_prepare_render(struct weston_output *output_base)
 {
 	struct drm_output *output = (struct drm_output *) output_base;
 
@@ -95,7 +95,7 @@ drm_output_prepare_render(struct wlsc_output *output_base)
 }
 
 static int
-drm_output_present(struct wlsc_output *output_base)
+drm_output_present(struct weston_output *output_base)
 {
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct drm_compositor *c =
@@ -139,12 +139,12 @@ page_flip_handler(int fd, unsigned int frame,
 	}
 
 	msecs = sec * 1000 + usec / 1000;
-	wlsc_output_finish_frame(&output->base, msecs);
+	weston_output_finish_frame(&output->base, msecs);
 }
 
 static int
-drm_output_prepare_scanout_surface(struct wlsc_output *output_base,
-				   struct wlsc_surface *es)
+drm_output_prepare_scanout_surface(struct weston_output *output_base,
+				   struct weston_surface *es)
 {
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct drm_compositor *c =
@@ -188,8 +188,8 @@ drm_output_prepare_scanout_surface(struct wlsc_output *output_base,
 }
 
 static int
-drm_output_set_cursor(struct wlsc_output *output_base,
-		      struct wlsc_input_device *eid)
+drm_output_set_cursor(struct weston_output *output_base,
+		      struct weston_input_device *eid)
 {
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct drm_compositor *c =
@@ -259,7 +259,7 @@ out:
 }
 
 static void
-drm_output_destroy(struct wlsc_output *output_base)
+drm_output_destroy(struct weston_output *output_base)
 {
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct drm_compositor *c =
@@ -294,7 +294,7 @@ drm_output_destroy(struct wlsc_output *output_base)
 	c->crtc_allocator &= ~(1 << output->crtc_id);
 	c->connector_allocator &= ~(1 << output->connector_id);
 
-	wlsc_output_destroy(&output->base);
+	weston_output_destroy(&output->base);
 	wl_list_remove(&output->base.link);
 
 	free(output);
@@ -542,7 +542,7 @@ create_output_for_connector(struct drm_compositor *ec,
 		goto err_fb;
 	}
 
-	wlsc_output_init(&output->base, &ec->base, x, y,
+	weston_output_init(&output->base, &ec->base, x, y,
 			 connector->mmWidth, connector->mmHeight, 0);
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
@@ -619,7 +619,7 @@ create_outputs(struct drm_compositor *ec, int option_connector)
 			}
 
 			x += container_of(ec->base.output_list.prev,
-					  struct wlsc_output,
+					  struct weston_output,
 					  link)->current->width;
 		}
 
@@ -669,9 +669,9 @@ update_outputs(struct drm_compositor *ec)
 		connected |= (1 << connector_id);
 
 		if (!(ec->connector_allocator & (1 << connector_id))) {
-			struct wlsc_output *last =
+			struct weston_output *last =
 				container_of(ec->base.output_list.prev,
-					     struct wlsc_output, link);
+					     struct weston_output, link);
 
 			/* XXX: not yet needed, we die with 0 outputs */
 			if (!wl_list_empty(&ec->base.output_list))
@@ -693,7 +693,7 @@ update_outputs(struct drm_compositor *ec)
 		wl_list_for_each_safe(output, next, &ec->base.output_list,
 				      base.link) {
 			if (x_offset != 0 || y_offset != 0) {
-				wlsc_output_move(&output->base,
+				weston_output_move(&output->base,
 						 output->base.x - x_offset,
 						 output->base.y - y_offset);
 			}
@@ -744,7 +744,7 @@ udev_drm_event(int fd, uint32_t mask, void *data)
 }
 
 static EGLImageKHR
-drm_compositor_create_cursor_image(struct wlsc_compositor *ec,
+drm_compositor_create_cursor_image(struct weston_compositor *ec,
 				   int32_t *width, int32_t *height)
 {
 	struct drm_compositor *c = (struct drm_compositor *) ec;
@@ -770,12 +770,12 @@ drm_compositor_create_cursor_image(struct wlsc_compositor *ec,
 }
 
 static void
-drm_destroy(struct wlsc_compositor *ec)
+drm_destroy(struct weston_compositor *ec)
 {
 	struct drm_compositor *d = (struct drm_compositor *) ec;
-	struct wlsc_input_device *input, *next;
+	struct weston_input_device *input, *next;
 
-	wlsc_compositor_shutdown(ec);
+	weston_compositor_shutdown(ec);
 	gbm_device_destroy(d->gbm);
 	tty_destroy(d->tty);
 
@@ -786,25 +786,25 @@ drm_destroy(struct wlsc_compositor *ec)
 }
 
 static void
-vt_func(struct wlsc_compositor *compositor, int event)
+vt_func(struct weston_compositor *compositor, int event)
 {
 	struct drm_compositor *ec = (struct drm_compositor *) compositor;
-	struct wlsc_output *output;
-	struct wlsc_input_device *input;
+	struct weston_output *output;
+	struct weston_input_device *input;
 
 	switch (event) {
 	case TTY_ENTER_VT:
 		compositor->focus = 1;
 		drmSetMaster(ec->drm.fd);
 		compositor->state = ec->prev_state;
-		wlsc_compositor_damage_all(compositor);
+		weston_compositor_damage_all(compositor);
 		wl_list_for_each(input, &compositor->input_device_list, link)
 			evdev_add_devices(ec->udev, input);
 		break;
 	case TTY_LEAVE_VT:
 		compositor->focus = 0;
 		ec->prev_state = compositor->state;
-		compositor->state = WLSC_COMPOSITOR_SLEEPING;
+		compositor->state = WESTON_COMPOSITOR_SLEEPING;
 
 		wl_list_for_each(input, &compositor->input_device_list, link)
 			evdev_remove_devices(input);
@@ -818,7 +818,7 @@ vt_func(struct wlsc_compositor *compositor, int event)
 
 static const char default_seat[] = "seat0";
 
-static struct wlsc_compositor *
+static struct weston_compositor *
 drm_compositor_create(struct wl_display *display,
 		      int connector, const char *seat, int tty)
 {
@@ -878,13 +878,13 @@ drm_compositor_create(struct wl_display *display,
 
 	ec->base.focus = 1;
 
-	ec->prev_state = WLSC_COMPOSITOR_ACTIVE;
+	ec->prev_state = WESTON_COMPOSITOR_ACTIVE;
 
 	glGenFramebuffers(1, &ec->base.fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, ec->base.fbo);
 
 	/* Can't init base class until we have a current egl context */
-	if (wlsc_compositor_init(&ec->base, display) < 0)
+	if (weston_compositor_init(&ec->base, display) < 0)
 		return NULL;
 
 	if (create_outputs(ec, connector) < 0) {
@@ -923,10 +923,10 @@ drm_compositor_create(struct wl_display *display,
 	return &ec->base;
 }
 
-struct wlsc_compositor *
+struct weston_compositor *
 backend_init(struct wl_display *display, char *options);
 
-WL_EXPORT struct wlsc_compositor *
+WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, char *options)
 {
 	int connector = 0, i;

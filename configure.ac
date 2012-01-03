@@ -141,7 +141,7 @@ WAYLAND_SCANNER_RULES(['$(top_srcdir)/protocol'])
 
 AC_CONFIG_FILES([Makefile
 		 shared/Makefile
-		 compositor/Makefile
+		 src/Makefile
 		 clients/Makefile
 		 data/Makefile])
 AC_OUTPUT

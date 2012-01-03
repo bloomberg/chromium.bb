@@ -45,7 +45,7 @@
 #include "compositor.h"
 
 struct x11_compositor {
-	struct wlsc_compositor	 base;
+	struct weston_compositor	 base;
 
 	Display			*dpy;
 	xcb_connection_t	*conn;
@@ -70,16 +70,16 @@ struct x11_compositor {
 };
 
 struct x11_output {
-	struct wlsc_output	base;
+	struct weston_output	base;
 
 	xcb_window_t		window;
 	EGLSurface		egl_surface;
-	struct wlsc_mode	mode;
+	struct weston_mode	mode;
 	struct wl_event_source *finish_frame_timer;
 };
 
 struct x11_input {
-	struct wlsc_input_device base;
+	struct weston_input_device base;
 };
 
 
@@ -93,7 +93,7 @@ x11_input_create(struct x11_compositor *c)
 		return -1;
 
 	memset(input, 0, sizeof *input);
-	wlsc_input_device_init(&input->base, &c->base);
+	weston_input_device_init(&input->base, &c->base);
 
 	c->base.input_device = &input->base.input_device;
 
@@ -164,10 +164,10 @@ x11_compositor_init_egl(struct x11_compositor *c)
 }
 
 static int
-x11_output_prepare_render(struct wlsc_output *output_base)
+x11_output_prepare_render(struct weston_output *output_base)
 {
 	struct x11_output *output = (struct x11_output *) output_base;
-	struct wlsc_compositor *ec = output->base.compositor;
+	struct weston_compositor *ec = output->base.compositor;
 
 	if (!eglMakeCurrent(ec->display, output->egl_surface,
 			    output->egl_surface, ec->context)) {
@@ -187,16 +187,16 @@ finish_frame_handler(void *data)
 	
 	gettimeofday(&tv, NULL);
 	msec = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	wlsc_output_finish_frame(&output->base, msec);
+	weston_output_finish_frame(&output->base, msec);
 
 	return 1;
 }
 
 static int
-x11_output_present(struct wlsc_output *output_base)
+x11_output_present(struct weston_output *output_base)
 {
 	struct x11_output *output = (struct x11_output *) output_base;
-	struct wlsc_compositor *ec = output->base.compositor;
+	struct weston_compositor *ec = output->base.compositor;
 
 	if (x11_output_prepare_render(&output->base))
 		return -1;
@@ -209,21 +209,21 @@ x11_output_present(struct wlsc_output *output_base)
 }
 
 static int
-x11_output_prepare_scanout_surface(struct wlsc_output *output_base,
-				   struct wlsc_surface *es)
+x11_output_prepare_scanout_surface(struct weston_output *output_base,
+				   struct weston_surface *es)
 {
 	return -1;
 }
 
 static int
-x11_output_set_cursor(struct wlsc_output *output_base,
-		      struct wlsc_input_device *input)
+x11_output_set_cursor(struct weston_output *output_base,
+		      struct weston_input_device *input)
 {
 	return -1;
 }
 
 static void
-x11_output_destroy(struct wlsc_output *output_base)
+x11_output_destroy(struct weston_output *output_base)
 {
 	return;
 }
@@ -300,7 +300,7 @@ x11_output_set_icon(struct x11_compositor *c,
 	uint32_t *icon, *pixels, stride;
 	int32_t width, height;
 
-	pixels = wlsc_load_image(filename, &width, &height, &stride);
+	pixels = weston_load_image(filename, &width, &height, &stride);
 	if (!pixels)
 		return;
 	icon = malloc(width * height * 4 + 8);
@@ -360,7 +360,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
 	output->base.current = &output->mode;
-	wlsc_output_init(&output->base, &c->base, x, y, width, height,
+	weston_output_init(&output->base, &c->base, x, y, width, height,
 			 WL_OUTPUT_FLIPPED);
 
 	values[1] = c->null_cursor;
@@ -482,7 +482,7 @@ x11_compositor_deliver_button_event(struct x11_compositor *c,
 	}
 
 	notify_button(c->base.input_device,
-		      wlsc_compositor_get_time(), button, state);
+		      weston_compositor_get_time(), button, state);
 }
 
 static int
@@ -538,7 +538,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				 * and fall through and handle the new
 				 * event below. */
 				notify_key(c->base.input_device,
-					   wlsc_compositor_get_time(),
+					   weston_compositor_get_time(),
 					   key_release->detail - 8, 0);
 				free(prev);
 				prev = NULL;
@@ -561,7 +561,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 
 			output = x11_compositor_find_output(c, focus_in->event);
 			notify_keyboard_focus(c->base.input_device,
-					      wlsc_compositor_get_time(),
+					      weston_compositor_get_time(),
 					      &output->base, &c->keys);
 
 			free(prev);
@@ -577,7 +577,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 		case XCB_KEY_PRESS:
 			key_press = (xcb_key_press_event_t *) event;
 			notify_key(c->base.input_device,
-				   wlsc_compositor_get_time(),
+				   weston_compositor_get_time(),
 				   key_press->detail - 8, 1);
 			break;
 		case XCB_KEY_RELEASE:
@@ -593,7 +593,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			motion_notify = (xcb_motion_notify_event_t *) event;
 			output = x11_compositor_find_output(c, motion_notify->event);
 			notify_motion(c->base.input_device,
-				      wlsc_compositor_get_time(),
+				      weston_compositor_get_time(),
 				      output->base.x + motion_notify->event_x,
 				      output->base.y + motion_notify->event_y);
 			break;
@@ -602,7 +602,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			/* FIXME: schedule output repaint */
 			/* output = x11_compositor_find_output(c, expose->window); */
 
-			wlsc_compositor_schedule_repaint(&c->base);
+			weston_compositor_schedule_repaint(&c->base);
 			break;
 
 		case XCB_ENTER_NOTIFY:
@@ -611,7 +611,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				break;
 			output = x11_compositor_find_output(c, enter_notify->event);
 			notify_pointer_focus(c->base.input_device,
-					     wlsc_compositor_get_time(),
+					     weston_compositor_get_time(),
 					     &output->base,
 					     output->base.x + enter_notify->event_x,
 					     output->base.y + enter_notify->event_y);
@@ -623,7 +623,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				break;
 			output = x11_compositor_find_output(c, enter_notify->event);
 			notify_pointer_focus(c->base.input_device,
-					     wlsc_compositor_get_time(),
+					     weston_compositor_get_time(),
 					     NULL,
 					     output->base.x + enter_notify->event_x,
 					     output->base.y + enter_notify->event_y);
@@ -650,7 +650,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			    focus_in->mode == XCB_NOTIFY_MODE_UNGRAB)
 				break;
 			notify_keyboard_focus(c->base.input_device,
-					      wlsc_compositor_get_time(),
+					      weston_compositor_get_time(),
 					      NULL, NULL);
 			break;
 
@@ -666,7 +666,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	case XCB_KEY_RELEASE:
 		key_release = (xcb_key_press_event_t *) prev;
 		notify_key(c->base.input_device,
-			   wlsc_compositor_get_time(),
+			   weston_compositor_get_time(),
 			   key_release->detail - 8, 0);
 		free(prev);
 		prev = NULL;
@@ -730,14 +730,14 @@ x11_compositor_get_resources(struct x11_compositor *c)
 }
 
 static void
-x11_destroy(struct wlsc_compositor *ec)
+x11_destroy(struct weston_compositor *ec)
 {
-	wlsc_compositor_shutdown(ec);
+	weston_compositor_shutdown(ec);
 
 	free(ec);
 }
 
-static struct wlsc_compositor *
+static struct weston_compositor *
 x11_compositor_create(struct wl_display *display,
 		      int width, int height, int count, int fullscreen)
 {
@@ -775,7 +775,7 @@ x11_compositor_create(struct wl_display *display,
 	c->base.destroy = x11_destroy;
 
 	/* Can't init base class until we have a current egl context */
-	if (wlsc_compositor_init(&c->base, display) < 0)
+	if (weston_compositor_init(&c->base, display) < 0)
 		return NULL;
 
 	for (i = 0, x = 0; i < count; i++) {
@@ -799,10 +799,10 @@ x11_compositor_create(struct wl_display *display,
 	return &c->base;
 }
 
-struct wlsc_compositor *
+struct weston_compositor *
 backend_init(struct wl_display *display, char *options);
 
-WL_EXPORT struct wlsc_compositor *
+WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, char *options)
 {
 	int width = 1024, height = 640, fullscreen = 0, count = 1, i;

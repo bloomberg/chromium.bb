@@ -27,7 +27,7 @@
 
 struct screenshooter {
 	struct wl_object base;
-	struct wlsc_compositor *ec;
+	struct weston_compositor *ec;
 };
 
 static void
@@ -36,7 +36,7 @@ screenshooter_shoot(struct wl_client *client,
 		    struct wl_resource *output_resource,
 		    struct wl_resource *buffer_resource)
 {
-	struct wlsc_output *output = output_resource->data;
+	struct weston_output *output = output_resource->data;
 	struct wl_buffer *buffer = buffer_resource->data;
 
 	if (!wl_buffer_is_shm(buffer))
@@ -65,7 +65,7 @@ bind_shooter(struct wl_client *client,
 }
 
 void
-screenshooter_create(struct wlsc_compositor *ec)
+screenshooter_create(struct weston_compositor *ec)
 {
 	struct screenshooter *shooter;
 

@@ -31,7 +31,7 @@
 #include "evdev.h"
 
 struct evdev_input {
-	struct wlsc_input_device base;
+	struct weston_input_device base;
 	struct wl_list devices_list;
 	struct udev_monitor *udev_monitor;
 	char *seat_id;
@@ -43,7 +43,7 @@ struct evdev_input_device {
 	struct evdev_input *master;
 	struct wl_list link;
 	struct wl_event_source *source;
-	struct wlsc_output *output;
+	struct weston_output *output;
 	char *devnode;
 	int fd;
 	struct {
@@ -324,7 +324,7 @@ evdev_flush_motion(struct evdev_input_device *device, uint32_t time)
 static int
 evdev_input_device_data(int fd, uint32_t mask, void *data)
 {
-	struct wlsc_compositor *ec;
+	struct weston_compositor *ec;
 	struct evdev_input_device *device = data;
 	struct input_event ev[8], *e, *end;
 	int len;
@@ -436,7 +436,7 @@ evdev_input_device_create(struct evdev_input *master,
 {
 	struct evdev_input_device *device;
 	struct wl_event_loop *loop;
-	struct wlsc_compositor *ec;
+	struct weston_compositor *ec;
 
 	device = malloc(sizeof *device);
 	if (device == NULL)
@@ -444,7 +444,7 @@ evdev_input_device_create(struct evdev_input *master,
 
 	ec = master->base.compositor;
 	device->output =
-		container_of(ec->output_list.next, struct wlsc_output, link);
+		container_of(ec->output_list.next, struct weston_output, link);
 
 	device->master = master;
 	device->is_touchpad = 0;
@@ -485,7 +485,7 @@ static const char default_seat[] = "seat0";
 static void
 device_added(struct udev_device *udev_device, struct evdev_input *master)
 {
-	struct wlsc_compositor *c;
+	struct weston_compositor *c;
 	const char *devnode;
 	const char *device_seat;
 
@@ -522,7 +522,7 @@ device_removed(struct udev_device *udev_device, struct evdev_input *master)
 }
 
 void
-evdev_add_devices(struct udev *udev, struct wlsc_input_device *input_base)
+evdev_add_devices(struct udev *udev, struct weston_input_device *input_base)
 {
 	struct evdev_input *input = (struct evdev_input *) input_base;
 	struct udev_enumerate *e;
@@ -578,7 +578,7 @@ static int
 evdev_config_udev_monitor(struct udev *udev, struct evdev_input *master)
 {
 	struct wl_event_loop *loop;
-	struct wlsc_compositor *c = master->base.compositor;
+	struct weston_compositor *c = master->base.compositor;
 
 	master->udev_monitor = udev_monitor_new_from_netlink(udev, "udev");
 	if (!master->udev_monitor)
@@ -600,7 +600,7 @@ evdev_config_udev_monitor(struct udev *udev, struct evdev_input *master)
 }
 
 void
-evdev_input_create(struct wlsc_compositor *c, struct udev *udev,
+evdev_input_create(struct weston_compositor *c, struct udev *udev,
 		   const char *seat)
 {
 	struct evdev_input *input;
@@ -610,7 +610,7 @@ evdev_input_create(struct wlsc_compositor *c, struct udev *udev,
 		return;
 
 	memset(input, 0, sizeof *input);
-	wlsc_input_device_init(&input->base, c);
+	weston_input_device_init(&input->base, c);
 
 	wl_list_init(&input->devices_list);
 	input->seat_id = strdup(seat);
@@ -626,7 +626,7 @@ evdev_input_create(struct wlsc_compositor *c, struct udev *udev,
 }
 
 void
-evdev_remove_devices(struct wlsc_input_device *input_base)
+evdev_remove_devices(struct weston_input_device *input_base)
 {
 	struct evdev_input *input = (struct evdev_input *) input_base;
 	struct evdev_input_device *device, *next;
@@ -642,7 +642,7 @@ evdev_remove_devices(struct wlsc_input_device *input_base)
 }
 
 void
-evdev_input_destroy(struct wlsc_input_device *input_base)
+evdev_input_destroy(struct weston_input_device *input_base)
 {
 	struct evdev_input *input = (struct evdev_input *) input_base;
 

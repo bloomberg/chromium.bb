@@ -45,7 +45,7 @@ struct xserver {
 	struct wl_resource resource;
 };
 
-struct wlsc_xserver {
+struct weston_xserver {
 	struct wl_display *wl_display;
 	struct wl_event_loop *loop;
 	struct wl_event_source *sigchld_source;
@@ -54,20 +54,20 @@ struct wlsc_xserver {
 	int unix_fd;
 	struct wl_event_source *unix_source;
 	int display;
-	struct wlsc_process process;
+	struct weston_process process;
 	struct wl_resource *resource;
 	struct wl_client *client;
-	struct wlsc_compositor *compositor;
-	struct wlsc_wm *wm;
+	struct weston_compositor *compositor;
+	struct weston_wm *wm;
 };
 
-struct wlsc_wm {
+struct weston_wm {
 	xcb_connection_t *conn;
 	const xcb_query_extension_reply_t *xfixes;
 	struct wl_event_source *source;
 	xcb_screen_t *screen;
 	struct hash_table *window_hash;
-	struct wlsc_xserver *server;
+	struct weston_xserver *server;
 
 	xcb_window_t selection_window;
 	int incr;
@@ -108,19 +108,19 @@ struct wlsc_wm {
 	} atom;
 };
 
-struct wlsc_wm_window {
+struct weston_wm_window {
 	xcb_window_t id;
-	struct wlsc_surface *surface;
+	struct weston_surface *surface;
 	struct wl_listener surface_destroy_listener;
 	char *class;
 	char *name;
-	struct wlsc_wm_window *transient_for;
+	struct weston_wm_window *transient_for;
 	uint32_t protocols;
 	xcb_atom_t type;
 };
 
-static struct wlsc_wm_window *
-get_wm_window(struct wlsc_surface *surface);
+static struct weston_wm_window *
+get_wm_window(struct weston_surface *surface);
 
 static const char *
 get_atom_name(xcb_connection_t *c, xcb_atom_t atom)
@@ -144,7 +144,7 @@ get_atom_name(xcb_connection_t *c, xcb_atom_t atom)
 }
 
 static void
-dump_property(struct wlsc_wm *wm, xcb_atom_t property,
+dump_property(struct weston_wm *wm, xcb_atom_t property,
 	      xcb_get_property_reply_t *reply)
 {
 	int32_t *incr_value;
@@ -196,7 +196,7 @@ dump_property(struct wlsc_wm *wm, xcb_atom_t property,
 }
 
 static void
-dump_window_properties(struct wlsc_wm *wm, xcb_window_t window)
+dump_window_properties(struct weston_wm *wm, xcb_window_t window)
 {
 	xcb_list_properties_cookie_t list_cookie;
 	xcb_list_properties_reply_t *list_reply;
@@ -237,7 +237,7 @@ static void
 data_offer_accept(struct wl_client *client, struct wl_resource *resource,
 		  uint32_t time, const char *mime_type)
 {
-	struct wlsc_data_source *source = resource->data;
+	struct weston_data_source *source = resource->data;
 
 	wl_resource_post_event(&source->resource,
 			       WL_DATA_SOURCE_TARGET, mime_type);
@@ -247,8 +247,8 @@ static void
 data_offer_receive(struct wl_client *client, struct wl_resource *resource,
 		   const char *mime_type, int32_t fd)
 {
-	struct wlsc_data_source *source = resource->data;
-	struct wlsc_wm *wm = source->data;
+	struct weston_data_source *source = resource->data;
+	struct weston_wm *wm = source->data;
 
 	if (strcmp(mime_type, "text/plain;charset=utf-8") == 0) {
 		/* Get data for the utf8_string target */
@@ -271,15 +271,15 @@ data_offer_receive(struct wl_client *client, struct wl_resource *resource,
 static void
 data_offer_destroy(struct wl_client *client, struct wl_resource *resource)
 {
-	wl_resource_destroy(resource, wlsc_compositor_get_time());
+	wl_resource_destroy(resource, weston_compositor_get_time());
 }
 
 static void
 destroy_data_offer(struct wl_resource *resource)
 {
-	struct wlsc_data_source *source = resource->data;
+	struct weston_data_source *source = resource->data;
 
-	wlsc_data_source_unref(source);
+	weston_data_source_unref(source);
 	free(resource);
 }
 
@@ -290,7 +290,7 @@ static const struct wl_data_offer_interface data_offer_interface = {
 };
 
 static struct wl_resource *
-data_source_create_offer(struct wlsc_data_source *source, 
+data_source_create_offer(struct weston_data_source *source, 
 			 struct wl_resource *target)
 {
 	struct wl_resource *resource;
@@ -304,15 +304,15 @@ data_source_create_offer(struct wlsc_data_source *source,
 }
 
 static void
-data_source_cancel(struct wlsc_data_source *source)
+data_source_cancel(struct weston_data_source *source)
 {
 }
 
 static void
-wlsc_wm_get_selection_targets(struct wlsc_wm *wm)
+weston_wm_get_selection_targets(struct weston_wm *wm)
 {
-	struct wlsc_data_source *source;
-	struct wlsc_input_device *device;
+	struct weston_data_source *source;
+	struct weston_input_device *device;
 	xcb_get_property_cookie_t cookie;
 	xcb_get_property_reply_t *reply;
 	xcb_atom_t *value;
@@ -356,19 +356,19 @@ wlsc_wm_get_selection_targets(struct wlsc_wm *wm)
 		}
 	}
 
-	device = (struct wlsc_input_device *)
+	device = (struct weston_input_device *)
 		wm->server->compositor->input_device;
-	wlsc_input_device_set_selection(device, source,
-					wlsc_compositor_get_time());
+	weston_input_device_set_selection(device, source,
+					weston_compositor_get_time());
 
-	wlsc_data_source_unref(source);
+	weston_data_source_unref(source);
 	free(reply);
 }
 
 static int
-wlsc_wm_write_property(int fd, uint32_t mask, void *data)
+weston_wm_write_property(int fd, uint32_t mask, void *data)
 {
-	struct wlsc_wm *wm = data;
+	struct weston_wm *wm = data;
 	unsigned char *property;
 	int len, remainder;
 
@@ -408,7 +408,7 @@ wlsc_wm_write_property(int fd, uint32_t mask, void *data)
 }
 
 static void
-wlsc_wm_get_selection_data(struct wlsc_wm *wm)
+weston_wm_get_selection_data(struct weston_wm *wm)
 {
 	xcb_get_property_cookie_t cookie;
 	xcb_get_property_reply_t *reply;
@@ -435,14 +435,14 @@ wlsc_wm_get_selection_data(struct wlsc_wm *wm)
 			wl_event_loop_add_fd(wm->server->loop,
 					     wm->data_source_fd,
 					     WL_EVENT_WRITABLE,
-					     wlsc_wm_write_property,
+					     weston_wm_write_property,
 					     wm);
 		wm->property_reply = reply;
 	}
 }
 
 static void
-wlsc_wm_get_incr_chunk(struct wlsc_wm *wm)
+weston_wm_get_incr_chunk(struct weston_wm *wm)
 {
 	xcb_get_property_cookie_t cookie;
 	xcb_get_property_reply_t *reply;
@@ -465,7 +465,7 @@ wlsc_wm_get_incr_chunk(struct wlsc_wm *wm)
 			wl_event_loop_add_fd(wm->server->loop,
 					     wm->data_source_fd,
 					     WL_EVENT_WRITABLE,
-					     wlsc_wm_write_property,
+					     weston_wm_write_property,
 					     wm);
 		wm->property_reply = reply;
 	} else {
@@ -476,11 +476,11 @@ wlsc_wm_get_incr_chunk(struct wlsc_wm *wm)
 }
 
 void
-wlsc_xserver_set_selection(struct wlsc_input_device *device)
+weston_xserver_set_selection(struct weston_input_device *device)
 {
-	struct wlsc_xserver *wxs = device->compositor->wxs;
-	struct wlsc_wm *wm = wxs->wm;
-	struct wlsc_data_source *source;
+	struct weston_xserver *wxs = device->compositor->wxs;
+	struct weston_wm *wm = wxs->wm;
+	struct weston_data_source *source;
 	const char **p, **end;
 	int has_text_plain = 0;
 
@@ -514,7 +514,7 @@ wlsc_xserver_set_selection(struct wlsc_input_device *device)
 }
 
 static void
-wlsc_wm_handle_configure_request(struct wlsc_wm *wm, xcb_generic_event_t *event)
+weston_wm_handle_configure_request(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_configure_request_event_t *configure_request = 
 		(xcb_configure_request_event_t *) event;
@@ -547,7 +547,7 @@ wlsc_wm_handle_configure_request(struct wlsc_wm *wm, xcb_generic_event_t *event)
 }
 
 static void
-wlsc_wm_handle_configure_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
+weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_configure_notify_event_t *configure_notify = 
 		(xcb_configure_notify_event_t *) event;
@@ -559,8 +559,8 @@ wlsc_wm_handle_configure_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 }
 
 static void
-wlsc_wm_activate(struct wlsc_wm *wm,
-		 struct wlsc_wm_window *window, xcb_timestamp_t time)
+weston_wm_activate(struct weston_wm *wm,
+		 struct weston_wm_window *window, xcb_timestamp_t time)
 {
 	xcb_client_message_event_t client_message;
 
@@ -580,13 +580,13 @@ wlsc_wm_activate(struct wlsc_wm *wm,
 }
 
 WL_EXPORT void
-wlsc_xserver_surface_activate(struct wlsc_surface *surface)
+weston_xserver_surface_activate(struct weston_surface *surface)
 {
-	struct wlsc_wm_window *window = get_wm_window(surface);
-	struct wlsc_xserver *wxs = surface->compositor->wxs;
+	struct weston_wm_window *window = get_wm_window(surface);
+	struct weston_xserver *wxs = surface->compositor->wxs;
 
 	if (window)
-		wlsc_wm_activate(wxs->wm, window, XCB_TIME_CURRENT_TIME);
+		weston_wm_activate(wxs->wm, window, XCB_TIME_CURRENT_TIME);
 	else if (wxs && wxs->wm)
 		xcb_set_input_focus (wxs->wm->conn,
 				     XCB_INPUT_FOCUS_POINTER_ROOT,
@@ -595,7 +595,7 @@ wlsc_xserver_surface_activate(struct wlsc_surface *surface)
 }
 
 static void
-wlsc_wm_handle_map_request(struct wlsc_wm *wm, xcb_generic_event_t *event)
+weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_map_request_event_t *map_request =
 		(xcb_map_request_event_t *) event;
@@ -609,9 +609,9 @@ wlsc_wm_handle_map_request(struct wlsc_wm *wm, xcb_generic_event_t *event)
 #define TYPE_WM_PROTOCOLS XCB_ATOM_CUT_BUFFER0
 
 static void
-wlsc_wm_handle_map_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
+weston_wm_handle_map_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 {
-#define F(field) offsetof(struct wlsc_wm_window, field)
+#define F(field) offsetof(struct weston_wm_window, field)
 
 	const struct {
 		xcb_atom_t atom;
@@ -629,7 +629,7 @@ wlsc_wm_handle_map_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 	xcb_map_notify_event_t *map_notify = (xcb_map_notify_event_t *) event;
 	xcb_get_property_cookie_t cookie[ARRAY_LENGTH(props)];
 	xcb_get_property_reply_t *reply;
-	struct wlsc_wm_window *window;
+	struct weston_wm_window *window;
 	void *p;
 	uint32_t *xid;
 	xcb_atom_t *atom;
@@ -666,7 +666,7 @@ wlsc_wm_handle_map_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 			break;
 		case XCB_ATOM_WINDOW:
 			xid = xcb_get_property_value(reply);
-			*(struct wlsc_wm_window **) p =
+			*(struct weston_wm_window **) p =
 				hash_table_lookup(wm->window_hash, *xid);
 			break;
 		case XCB_ATOM_ATOM:
@@ -684,13 +684,13 @@ wlsc_wm_handle_map_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 	fprintf(stderr, "window %d: name %s, class %s, transient_for %d\n",
 		window->id, window->name, window->class,
 		window->transient_for ? window->transient_for->id : 0);
-	wlsc_wm_activate(wm, window, XCB_TIME_CURRENT_TIME);
+	weston_wm_activate(wm, window, XCB_TIME_CURRENT_TIME);
 }
 
 static const int incr_chunk_size = 64 * 1024;
 
 static void
-wlsc_wm_send_selection_notify(struct wlsc_wm *wm, xcb_atom_t property)
+weston_wm_send_selection_notify(struct weston_wm *wm, xcb_atom_t property)
 {
 	xcb_selection_notify_event_t selection_notify;
 
@@ -709,7 +709,7 @@ wlsc_wm_send_selection_notify(struct wlsc_wm *wm, xcb_atom_t property)
 }
 
 static void
-wlsc_wm_send_targets(struct wlsc_wm *wm)
+weston_wm_send_targets(struct weston_wm *wm)
 {
 	xcb_atom_t targets[] = {
 		wm->atom.timestamp,
@@ -728,11 +728,11 @@ wlsc_wm_send_targets(struct wlsc_wm *wm)
 			    32, /* format */
 			    ARRAY_LENGTH(targets), targets);
 
-	wlsc_wm_send_selection_notify(wm, wm->selection_request.property);
+	weston_wm_send_selection_notify(wm, wm->selection_request.property);
 }
 
 static void
-wlsc_wm_send_timestamp(struct wlsc_wm *wm)
+weston_wm_send_timestamp(struct weston_wm *wm)
 {
 	xcb_change_property(wm->conn,
 			    XCB_PROP_MODE_REPLACE,
@@ -742,11 +742,11 @@ wlsc_wm_send_timestamp(struct wlsc_wm *wm)
 			    32, /* format */
 			    1, &wm->selection_timestamp);
 
-	wlsc_wm_send_selection_notify(wm, wm->selection_request.property);
+	weston_wm_send_selection_notify(wm, wm->selection_request.property);
 }
 
 static int
-wlsc_wm_flush_source_data(struct wlsc_wm *wm)
+weston_wm_flush_source_data(struct weston_wm *wm)
 {
 	int length;
 
@@ -766,9 +766,9 @@ wlsc_wm_flush_source_data(struct wlsc_wm *wm)
 }
 
 static int
-wlsc_wm_read_data_source(int fd, uint32_t mask, void *data)
+weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 {
-	struct wlsc_wm *wm = data;
+	struct weston_wm *wm = data;
 	int len, current, available;
 	void *p;
 
@@ -782,7 +782,7 @@ wlsc_wm_read_data_source(int fd, uint32_t mask, void *data)
 	len = read(fd, p, available);
 	if (len == -1) {
 		fprintf(stderr, "read error from data source: %m\n");
-		wlsc_wm_send_selection_notify(wm, XCB_ATOM_NONE);
+		weston_wm_send_selection_notify(wm, XCB_ATOM_NONE);
 		wl_event_source_remove(wm->property_source);
 		close(fd);
 		wl_array_release(&wm->source_data);
@@ -807,7 +807,7 @@ wlsc_wm_read_data_source(int fd, uint32_t mask, void *data)
 			wm->selection_property_set = 1;
 			wm->flush_property_on_delete = 1;
 			wl_event_source_remove(wm->property_source);
-			wlsc_wm_send_selection_notify(wm, wm->selection_request.property);
+			weston_wm_send_selection_notify(wm, wm->selection_request.property);
 		} else if (wm->selection_property_set) {
 			fprintf(stderr, "got %d bytes, waiting for "
 				"property delete\n", wm->source_data.size);
@@ -818,13 +818,13 @@ wlsc_wm_read_data_source(int fd, uint32_t mask, void *data)
 			fprintf(stderr, "got %d bytes, "
 				"property deleted, seting new property\n",
 				wm->source_data.size);
-			wlsc_wm_flush_source_data(wm);
+			weston_wm_flush_source_data(wm);
 		}
 	} else if (len == 0 && !wm->incr) {
 		fprintf(stderr, "non-incr transfer complete\n");
 		/* Non-incr transfer all done. */
-		wlsc_wm_flush_source_data(wm);
-		wlsc_wm_send_selection_notify(wm, wm->selection_request.property);
+		weston_wm_flush_source_data(wm);
+		weston_wm_send_selection_notify(wm, wm->selection_request.property);
 		xcb_flush(wm->conn);
 		wl_event_source_remove(wm->property_source);
 		close(fd);
@@ -841,7 +841,7 @@ wlsc_wm_read_data_source(int fd, uint32_t mask, void *data)
 			fprintf(stderr, "got %d bytes, "
 				"property deleted, seting new property\n",
 				wm->source_data.size);
-			wlsc_wm_flush_source_data(wm);
+			weston_wm_flush_source_data(wm);
 		}
 		xcb_flush(wm->conn);
 		wl_event_source_remove(wm->property_source);
@@ -855,15 +855,15 @@ wlsc_wm_read_data_source(int fd, uint32_t mask, void *data)
 }
 
 static void
-wlsc_wm_send_data(struct wlsc_wm *wm, xcb_atom_t target, const char *mime_type)
+weston_wm_send_data(struct weston_wm *wm, xcb_atom_t target, const char *mime_type)
 {
-	struct wlsc_input_device *device = (struct wlsc_input_device *)
+	struct weston_input_device *device = (struct weston_input_device *)
 		wm->server->compositor->input_device;
 	int p[2];
 
 	if (pipe2(p, O_CLOEXEC | O_NONBLOCK) == -1) {
 		fprintf(stderr, "pipe2 failed: %m\n");
-		wlsc_wm_send_selection_notify(wm, XCB_ATOM_NONE);
+		weston_wm_send_selection_notify(wm, XCB_ATOM_NONE);
 		return;
 	}
 
@@ -873,7 +873,7 @@ wlsc_wm_send_data(struct wlsc_wm *wm, xcb_atom_t target, const char *mime_type)
 	wm->property_source = wl_event_loop_add_fd(wm->server->loop,
 						   wm->data_source_fd,
 						   WL_EVENT_READABLE,
-						   wlsc_wm_read_data_source,
+						   weston_wm_read_data_source,
 						   wm);
 
 	wl_resource_post_event(&device->selection_data_source->resource,
@@ -882,7 +882,7 @@ wlsc_wm_send_data(struct wlsc_wm *wm, xcb_atom_t target, const char *mime_type)
 }
 
 static void
-wlsc_wm_send_incr_chunk(struct wlsc_wm *wm)
+weston_wm_send_incr_chunk(struct weston_wm *wm)
 {
 	fprintf(stderr, "property deleted\n");
 	int length;
@@ -892,14 +892,14 @@ wlsc_wm_send_incr_chunk(struct wlsc_wm *wm)
 		fprintf(stderr, "setting new property, %d bytes\n",
 			wm->source_data.size);
 		wm->flush_property_on_delete = 0;
-		length = wlsc_wm_flush_source_data(wm);
+		length = weston_wm_flush_source_data(wm);
 
 		if (wm->data_source_fd >= 0) {
 			wm->property_source =
 				wl_event_loop_add_fd(wm->server->loop,
 						     wm->data_source_fd,
 						     WL_EVENT_READABLE,
-						     wlsc_wm_read_data_source,
+						     weston_wm_read_data_source,
 						     wm);
 		} else if (length > 0) {
 			/* Transfer is all done, but queue a flush for
@@ -915,7 +915,7 @@ wlsc_wm_send_incr_chunk(struct wlsc_wm *wm)
 }
 
 static void
-wlsc_wm_handle_selection_request(struct wlsc_wm *wm,
+weston_wm_handle_selection_request(struct weston_wm *wm,
 				 xcb_generic_event_t *event)
 {
 	xcb_selection_request_event_t *selection_request =
@@ -933,21 +933,21 @@ wlsc_wm_handle_selection_request(struct wlsc_wm *wm,
 	wm->flush_property_on_delete = 0;
 
 	if (selection_request->target == wm->atom.targets) {
-		wlsc_wm_send_targets(wm);
+		weston_wm_send_targets(wm);
 	} else if (selection_request->target == wm->atom.timestamp) {
-		wlsc_wm_send_timestamp(wm);
+		weston_wm_send_timestamp(wm);
 	} else if (selection_request->target == wm->atom.utf8_string ||
 		   selection_request->target == wm->atom.text) {
-		wlsc_wm_send_data(wm, wm->atom.utf8_string,
+		weston_wm_send_data(wm, wm->atom.utf8_string,
 				  "text/plain;charset=utf-8");
 	} else {
 		fprintf(stderr, "can only handle UTF8_STRING targets...\n");
-		wlsc_wm_send_selection_notify(wm, XCB_ATOM_NONE);
+		weston_wm_send_selection_notify(wm, XCB_ATOM_NONE);
 	}
 }
 
 static void
-wlsc_wm_handle_property_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
+weston_wm_handle_property_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_property_notify_event_t *property_notify =
 		(xcb_property_notify_event_t *) event;
@@ -956,12 +956,12 @@ wlsc_wm_handle_property_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 		if (property_notify->state == XCB_PROPERTY_NEW_VALUE &&
 		    property_notify->atom == wm->atom.wl_selection &&
 		    wm->incr)
-			wlsc_wm_get_incr_chunk(wm);
+			weston_wm_get_incr_chunk(wm);
 	} else if (property_notify->window == wm->selection_request.requestor) {
 		if (property_notify->state == XCB_PROPERTY_DELETE &&
 		    property_notify->atom == wm->selection_request.property &&
 		    wm->incr)
-			wlsc_wm_send_incr_chunk(wm);
+			weston_wm_send_incr_chunk(wm);
 	} else if (property_notify->atom == XCB_ATOM_WM_CLASS) {
 		fprintf(stderr, "wm_class changed\n");
 	} else if (property_notify->atom == XCB_ATOM_WM_TRANSIENT_FOR) {
@@ -986,11 +986,11 @@ wlsc_wm_handle_property_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 }
 
 static void
-wlsc_wm_handle_create_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
+weston_wm_handle_create_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_create_notify_event_t *create_notify =
 		(xcb_create_notify_event_t *) event;
-	struct wlsc_wm_window *window;
+	struct weston_wm_window *window;
 	uint32_t values[1];
 
 	fprintf(stderr, "XCB_CREATE_NOTIFY (window %d)\n",
@@ -1012,11 +1012,11 @@ wlsc_wm_handle_create_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 }
 
 static void
-wlsc_wm_handle_destroy_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
+weston_wm_handle_destroy_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_destroy_notify_event_t *destroy_notify =
 		(xcb_destroy_notify_event_t *) event;
-	struct wlsc_wm_window *window;
+	struct weston_wm_window *window;
 
 	fprintf(stderr, "XCB_DESTROY_NOTIFY, win %d\n",
 		destroy_notify->window);
@@ -1036,7 +1036,7 @@ wlsc_wm_handle_destroy_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 }
 
 static void
-wlsc_wm_handle_selection_notify(struct wlsc_wm *wm,
+weston_wm_handle_selection_notify(struct weston_wm *wm,
 				xcb_generic_event_t *event)
 {
 	xcb_selection_notify_event_t *selection_notify =
@@ -1045,14 +1045,14 @@ wlsc_wm_handle_selection_notify(struct wlsc_wm *wm,
 	if (selection_notify->property == XCB_ATOM_NONE) {
 		/* convert selection failed */
 	} else if (selection_notify->target == wm->atom.targets) {
-		wlsc_wm_get_selection_targets(wm);
+		weston_wm_get_selection_targets(wm);
 	} else {
-		wlsc_wm_get_selection_data(wm);
+		weston_wm_get_selection_data(wm);
 	}
 }
 
 static void
-wlsc_wm_handle_xfixes_selection_notify(struct wlsc_wm *wm,
+weston_wm_handle_xfixes_selection_notify(struct weston_wm *wm,
 				       xcb_generic_event_t *event)
 {
 	xcb_xfixes_selection_notify_event_t *xfixes_selection_notify =
@@ -1080,52 +1080,52 @@ wlsc_wm_handle_xfixes_selection_notify(struct wlsc_wm *wm,
 }
 
 static int
-wlsc_wm_handle_event(int fd, uint32_t mask, void *data)
+weston_wm_handle_event(int fd, uint32_t mask, void *data)
 {
-	struct wlsc_wm *wm = data;
+	struct weston_wm *wm = data;
 	xcb_generic_event_t *event;
 	int count = 0;
 
 	while (event = xcb_poll_for_event(wm->conn), event != NULL) {
 		switch (event->response_type & ~0x80) {
 		case XCB_CREATE_NOTIFY:
-			wlsc_wm_handle_create_notify(wm, event);
+			weston_wm_handle_create_notify(wm, event);
 			break;
 		case XCB_MAP_REQUEST:
-			wlsc_wm_handle_map_request(wm, event);
+			weston_wm_handle_map_request(wm, event);
 			break;
 		case XCB_MAP_NOTIFY:
-			wlsc_wm_handle_map_notify(wm, event);
+			weston_wm_handle_map_notify(wm, event);
 			break;
 		case XCB_UNMAP_NOTIFY:
 			fprintf(stderr, "XCB_UNMAP_NOTIFY\n");
 			break;
 		case XCB_CONFIGURE_REQUEST:
-			wlsc_wm_handle_configure_request(wm, event);
+			weston_wm_handle_configure_request(wm, event);
 			break;
 		case XCB_CONFIGURE_NOTIFY:
-			wlsc_wm_handle_configure_notify(wm, event);
+			weston_wm_handle_configure_notify(wm, event);
 			break;
 		case XCB_DESTROY_NOTIFY:
-			wlsc_wm_handle_destroy_notify(wm, event);
+			weston_wm_handle_destroy_notify(wm, event);
 			break;
 		case XCB_MAPPING_NOTIFY:
 			fprintf(stderr, "XCB_MAPPING_NOTIFY\n");
 			break;
 		case XCB_PROPERTY_NOTIFY:
-			wlsc_wm_handle_property_notify(wm, event);
+			weston_wm_handle_property_notify(wm, event);
 			break;
 		case XCB_SELECTION_NOTIFY:
-			wlsc_wm_handle_selection_notify(wm, event);
+			weston_wm_handle_selection_notify(wm, event);
 			break;
 		case XCB_SELECTION_REQUEST:
-			wlsc_wm_handle_selection_request(wm, event);
+			weston_wm_handle_selection_request(wm, event);
 			break;
 		}
 
 		switch (event->response_type - wm->xfixes->first_event) {
 		case XCB_XFIXES_SELECTION_NOTIFY:
-			wlsc_wm_handle_xfixes_selection_notify(wm, event);
+			weston_wm_handle_xfixes_selection_notify(wm, event);
 			break;
 		}
 
@@ -1140,10 +1140,10 @@ wlsc_wm_handle_event(int fd, uint32_t mask, void *data)
 }
 
 static void
-wxs_wm_get_resources(struct wlsc_wm *wm)
+wxs_wm_get_resources(struct weston_wm *wm)
 {
 
-#define F(field) offsetof(struct wlsc_wm, field)
+#define F(field) offsetof(struct weston_wm, field)
 
 	static const struct { const char *name; int offset; } atoms[] = {
 		{ "WM_PROTOCOLS",	F(atom.wm_protocols) },
@@ -1206,10 +1206,10 @@ wxs_wm_get_resources(struct wlsc_wm *wm)
 	free(xfixes_reply);
 }
 
-static struct wlsc_wm *
-wlsc_wm_create(struct wlsc_xserver *wxs)
+static struct weston_wm *
+weston_wm_create(struct weston_xserver *wxs)
 {
-	struct wlsc_wm *wm;
+	struct weston_wm *wm;
 	struct wl_event_loop *loop;
 	xcb_screen_iterator_t s;
 	uint32_t values[1], mask;
@@ -1254,7 +1254,7 @@ wlsc_wm_create(struct wlsc_xserver *wxs)
 	wm->source =
 		wl_event_loop_add_fd(loop, sv[0],
 				     WL_EVENT_READABLE,
-				     wlsc_wm_handle_event, wm);
+				     weston_wm_handle_event, wm);
 	wl_event_source_check(wm->source);
 
 	wxs_wm_get_resources(wm);
@@ -1297,7 +1297,7 @@ wlsc_wm_create(struct wlsc_xserver *wxs)
 }
 
 static void
-wlsc_wm_destroy(struct wlsc_wm *wm)
+weston_wm_destroy(struct weston_wm *wm)
 {
 	/* FIXME: Free windows in hash. */
 	hash_table_destroy(wm->window_hash);
@@ -1307,9 +1307,9 @@ wlsc_wm_destroy(struct wlsc_wm *wm)
 }
 
 static int
-wlsc_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
+weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 {
-	struct wlsc_xserver *mxs = data;
+	struct weston_xserver *mxs = data;
 	char display[8], s[8], logfile[32];
 	int sv[2], flags;
 
@@ -1353,7 +1353,7 @@ wlsc_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 		close(sv[1]);
 		mxs->client = wl_client_create(mxs->wl_display, sv[0]);
 
-		wlsc_watch_process(&mxs->process);
+		weston_watch_process(&mxs->process);
 
 		wl_event_source_remove(mxs->abstract_source);
 		wl_event_source_remove(mxs->unix_source);
@@ -1368,7 +1368,7 @@ wlsc_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 }
 
 static void
-wlsc_xserver_shutdown(struct wlsc_xserver *wxs)
+weston_xserver_shutdown(struct weston_xserver *wxs)
 {
 	char path[256];
 
@@ -1383,15 +1383,15 @@ wlsc_xserver_shutdown(struct wlsc_xserver *wxs)
 	close(wxs->abstract_fd);
 	close(wxs->unix_fd);
 	if (wxs->wm)
-		wlsc_wm_destroy(wxs->wm);
+		weston_wm_destroy(wxs->wm);
 	wxs->loop = NULL;
 }
 
 static void
-wlsc_xserver_cleanup(struct wlsc_process *process, int status)
+weston_xserver_cleanup(struct weston_process *process, int status)
 {
-	struct wlsc_xserver *mxs =
-		container_of(process, struct wlsc_xserver, process);
+	struct weston_xserver *mxs =
+		container_of(process, struct weston_xserver, process);
 
 	mxs->process.pid = 0;
 	mxs->client = NULL;
@@ -1400,23 +1400,23 @@ wlsc_xserver_cleanup(struct wlsc_process *process, int status)
 	mxs->abstract_source =
 		wl_event_loop_add_fd(mxs->loop, mxs->abstract_fd,
 				     WL_EVENT_READABLE,
-				     wlsc_xserver_handle_event, mxs);
+				     weston_xserver_handle_event, mxs);
 
 	mxs->unix_source =
 		wl_event_loop_add_fd(mxs->loop, mxs->unix_fd,
 				     WL_EVENT_READABLE,
-				     wlsc_xserver_handle_event, mxs);
+				     weston_xserver_handle_event, mxs);
 
 	if (mxs->wm) {
 		fprintf(stderr, "xserver exited, code %d\n", status);
-		wlsc_wm_destroy(mxs->wm);
+		weston_wm_destroy(mxs->wm);
 		mxs->wm = NULL;
 	} else {
 		/* If the X server crashes before it binds to the
 		 * xserver interface, shut down and don't try
 		 * again. */
 		fprintf(stderr, "xserver crashing too fast: %d\n", status);
-		wlsc_xserver_shutdown(mxs);
+		weston_xserver_shutdown(mxs);
 	}
 }
 
@@ -1424,15 +1424,15 @@ static void
 surface_destroy(struct wl_listener *listener,
 		struct wl_resource *resource, uint32_t time)
 {
-	struct wlsc_wm_window *window =
+	struct weston_wm_window *window =
 		container_of(listener,
-			     struct wlsc_wm_window, surface_destroy_listener);
+			     struct weston_wm_window, surface_destroy_listener);
 
 	fprintf(stderr, "surface for xid %d destroyed\n", window->id);
 }
 
-static struct wlsc_wm_window *
-get_wm_window(struct wlsc_surface *surface)
+static struct weston_wm_window *
+get_wm_window(struct weston_surface *surface)
 {
 	struct wl_resource *resource = &surface->surface.resource;
 	struct wl_listener *listener;
@@ -1440,7 +1440,7 @@ get_wm_window(struct wlsc_surface *surface)
 	wl_list_for_each(listener, &resource->destroy_listener_list, link) {
 		if (listener->func == surface_destroy)
 			return container_of(listener,
-					    struct wlsc_wm_window,
+					    struct weston_wm_window,
 					    surface_destroy_listener);
 	}
 
@@ -1451,10 +1451,10 @@ static void
 xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 		      struct wl_resource *surface_resource, uint32_t id)
 {
-	struct wlsc_xserver *wxs = resource->data;
-	struct wlsc_wm *wm = wxs->wm;
+	struct weston_xserver *wxs = resource->data;
+	struct weston_wm *wm = wxs->wm;
 	struct wl_surface *surface = surface_resource->data;
-	struct wlsc_wm_window *window;
+	struct weston_wm_window *window;
 
 	if (client != wxs->client)
 		return;
@@ -1467,7 +1467,7 @@ xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 
 	fprintf(stderr, "set_window_id %d for surface %p\n", id, surface);
 
-	window->surface = (struct wlsc_surface *) surface;
+	window->surface = (struct weston_surface *) surface;
 	window->surface_destroy_listener.func = surface_destroy;
 	wl_list_insert(surface->resource.destroy_listener_list.prev,
 		       &window->surface_destroy_listener.link);
@@ -1481,7 +1481,7 @@ static void
 bind_xserver(struct wl_client *client,
 	     void *data, uint32_t version, uint32_t id)
 {
-	struct wlsc_xserver *wxs = data;
+	struct weston_xserver *wxs = data;
 
 	/* If it's a different client than the xserver we launched,
 	 * don't start the wm. */
@@ -1492,7 +1492,7 @@ bind_xserver(struct wl_client *client,
 		wl_client_add_object(client, &xserver_interface,
 				     &xserver_implementation, id, wxs);
 
-	wxs->wm = wlsc_wm_create(wxs);
+	wxs->wm = weston_wm_create(wxs);
 	if (wxs->wm == NULL) {
 		fprintf(stderr, "failed to create wm\n");
 	}
@@ -1624,16 +1624,16 @@ create_lockfile(int display, char *lockfile, size_t lsize)
 }
 
 int
-wlsc_xserver_init(struct wlsc_compositor *compositor)
+weston_xserver_init(struct weston_compositor *compositor)
 {
 	struct wl_display *display = compositor->wl_display;
-	struct wlsc_xserver *mxs;
+	struct weston_xserver *mxs;
 	char lockfile[256];
 
 	mxs = malloc(sizeof *mxs);
 	memset(mxs, 0, sizeof *mxs);
 
-	mxs->process.cleanup = wlsc_xserver_cleanup;
+	mxs->process.cleanup = weston_xserver_cleanup;
 	mxs->wl_display = display;
 	mxs->compositor = compositor;
 
@@ -1673,11 +1673,11 @@ wlsc_xserver_init(struct wlsc_compositor *compositor)
 	mxs->abstract_source =
 		wl_event_loop_add_fd(mxs->loop, mxs->abstract_fd,
 				     WL_EVENT_READABLE,
-				     wlsc_xserver_handle_event, mxs);
+				     weston_xserver_handle_event, mxs);
 	mxs->unix_source =
 		wl_event_loop_add_fd(mxs->loop, mxs->unix_fd,
 				     WL_EVENT_READABLE,
-				     wlsc_xserver_handle_event, mxs);
+				     weston_xserver_handle_event, mxs);
 
 	wl_display_add_global(display, &xserver_interface, mxs, bind_xserver);
 
@@ -1687,15 +1687,15 @@ wlsc_xserver_init(struct wlsc_compositor *compositor)
 }
 
 void
-wlsc_xserver_destroy(struct wlsc_compositor *compositor)
+weston_xserver_destroy(struct weston_compositor *compositor)
 {
-	struct wlsc_xserver *wxs = compositor->wxs;
+	struct weston_xserver *wxs = compositor->wxs;
 
 	if (!wxs)
 		return;
 
 	if (wxs->loop)
-		wlsc_xserver_shutdown(wxs);
+		weston_xserver_shutdown(wxs);
 
 	free(wxs);
 }
