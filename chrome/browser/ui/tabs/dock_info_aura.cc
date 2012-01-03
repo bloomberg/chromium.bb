@@ -1,19 +1,45 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/tabs/dock_info.h"
 
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/tabs/tab.h"
-#include "ui/gfx/screen.h"
-#if defined(OS_WIN)
-#include "base/win/scoped_gdi_object.h"
-#endif
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#include "ui/gfx/compositor/layer.h"
 
 // DockInfo -------------------------------------------------------------------
+
+namespace {
+
+aura::Window* GetLocalProcessWindowAtPointImpl(
+    const gfx::Point& screen_point,
+    const std::set<gfx::NativeView>& ignore,
+    aura::Window* window) {
+  if (ignore.find(window) != ignore.end())
+    return NULL;
+
+  if (!window->IsVisible())
+    return NULL;
+
+  if (window->layer()->type() == ui::Layer::LAYER_HAS_TEXTURE) {
+    gfx::Point window_point(screen_point);
+    aura::Window::ConvertPointToWindow(aura::RootWindow::GetInstance(), window,
+                                       &window_point);
+    return gfx::Rect(window->bounds().size()).Contains(window_point) ?
+        window : NULL;
+  }
+  for (aura::Window::Windows::const_reverse_iterator i =
+           window->children().rbegin(); i != window->children().rend(); ++i) {
+    aura::Window* result =
+        GetLocalProcessWindowAtPointImpl(screen_point, ignore, *i);
+    if (result)
+      return result;
+  }
+  return NULL;
+}
+
+}  // namespace
 
 // static
 DockInfo DockInfo::GetDockInfoAtPoint(const gfx::Point& screen_point,
@@ -23,21 +49,21 @@ DockInfo DockInfo::GetDockInfoAtPoint(const gfx::Point& screen_point,
   return DockInfo();
 }
 
+// static
 gfx::NativeView DockInfo::GetLocalProcessWindowAtPoint(
     const gfx::Point& screen_point,
     const std::set<gfx::NativeView>& ignore) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-  return NULL;
+  return GetLocalProcessWindowAtPointImpl(
+      screen_point, ignore, aura::RootWindow::GetInstance());
 }
 
 bool DockInfo::GetWindowBounds(gfx::Rect* bounds) const {
-  // TODO(beng):
-  NOTIMPLEMENTED();
+  if (!window())
+    return false;
+  *bounds = window_->bounds();
   return true;
 }
 
 void DockInfo::SizeOtherWindowTo(const gfx::Rect& bounds) const {
-  // TODO(beng):
-  NOTIMPLEMENTED();
+  window_->SetBounds(bounds);
 }
