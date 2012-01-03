@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,7 +85,8 @@ AsyncResourceHandler::AsyncResourceHandler(
       routing_id_(routing_id),
       host_zoom_map_(NULL),
       rdh_(resource_dispatcher_host),
-      next_buffer_size_(kInitialReadBufSize) {
+      next_buffer_size_(kInitialReadBufSize),
+      url_(url) {
 }
 
 AsyncResourceHandler::~AsyncResourceHandler() {
@@ -245,6 +246,12 @@ bool AsyncResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info) {
+  // If we crash here, figure out what URL the renderer was requesting.
+  // http://crbug.com/107692
+  char url_buf[128];
+  base::strlcpy(url_buf, url_.spec().c_str(), arraysize(url_buf));
+  base::debug::Alias(url_buf);
+
   TimeTicks completion_time = TimeTicks::Now();
   filter_->Send(new ResourceMsg_RequestComplete(routing_id_,
                                                 request_id,
