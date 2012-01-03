@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Google Inc. All rights reserved.
+# Copyright (c) 2012 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -652,7 +652,10 @@ class NinjaWriter:
     args = [self.ExpandSpecial(arg, self.base_to_build) for arg in args]
 
     command = cd + gyp.common.EncodePOSIXShellList(args)
-    self.ninja.rule(rule_name, command, description)
+    # GYP rules/actions express being no-ops by not touching their outputs.
+    # Avoid executing downstream dependencies in this case by specifying
+    # restat=1 to ninja.
+    self.ninja.rule(rule_name, command, description, restat=True)
     self.ninja.newline()
 
     return rule_name
