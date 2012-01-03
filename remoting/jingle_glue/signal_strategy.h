@@ -17,33 +17,55 @@ namespace remoting {
 
 class SignalStrategy {
  public:
-  class StatusObserver {
-   public:
-    enum State {
-      START,
-      CONNECTING,
-      CONNECTED,
-      CLOSED,
-    };
+  enum State {
+    // Connection is being established.
+    CONNECTING,
 
-    // Called when state of the connection is changed.
-    virtual void OnStateChange(State state) = 0;
-    virtual void OnJidChange(const std::string& full_jid) = 0;
+    // Signalling is connected.
+    CONNECTED,
+
+    // Connection is closed due to an error or because Disconnect()
+    // was called.
+    DISCONNECTED,
   };
 
+  // Callback interface for signaling event. Event handlers are not
+  // allowed to destroy SignalStrategy, but may add or remove other
+  // listeners.
   class Listener {
    public:
+    virtual ~Listener() {}
+
+    // Called after state of the connection has changed.
+    virtual void OnSignalStrategyStateChange(State state) {}
+
     // Must return true if the stanza was handled, false otherwise.
-    virtual bool OnIncomingStanza(const buzz::XmlElement* stanza) = 0;
+    virtual bool OnSignalStrategyIncomingStanza(
+        const buzz::XmlElement* stanza) { return false; }
   };
 
   SignalStrategy() {}
   virtual ~SignalStrategy() {}
-  virtual void Init(StatusObserver* observer) = 0;
-  virtual void Close() = 0;
+
+  // Starts connection attempt. If connection is currently active
+  // disconnects it and opens a new connection (implicit disconnect
+  // triggers CLOSED notification). Connection is finished
+  // asynchronously.
+  virtual void Connect() = 0;
+
+  // Disconnects current connection if connected. Triggers CLOSED
+  // notification.
+  virtual void Disconnect() = 0;
+
+  // Returns current state.
+  virtual State GetState() const = 0;
+
+  // Returns local JID or an empty string when not connected.
+  virtual std::string GetLocalJid() const = 0;
 
   // Add a |listener| that can listen to all incoming
-  // messages. Doesn't take ownership of the |listener|.
+  // messages. Doesn't take ownership of the |listener|. All listeners
+  // must be removed before this object is destroyed.
   virtual void AddListener(Listener* listener) = 0;
 
   // Remove a |listener| previously added with AddListener().

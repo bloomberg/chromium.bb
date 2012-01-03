@@ -40,7 +40,7 @@ class SessionConfig;
 class VideoReader;
 class VideoStub;
 
-class ConnectionToHost : public SignalStrategy::StatusObserver,
+class ConnectionToHost : public SignalStrategy::Listener,
                          public SessionManager::Listener {
  public:
   enum State {
@@ -89,12 +89,11 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
   virtual HostStub* host_stub();
 
   // SignalStrategy::StatusObserver interface.
-  virtual void OnStateChange(
-      SignalStrategy::StatusObserver::State state) OVERRIDE;
-  virtual void OnJidChange(const std::string& full_jid) OVERRIDE;
+  virtual void OnSignalStrategyStateChange(
+      SignalStrategy::State state) OVERRIDE;
 
   // SessionManager::Listener interface.
-  virtual void OnSessionManagerInitialized() OVERRIDE;
+  virtual void OnSessionManagerReady() OVERRIDE;
   virtual void OnIncomingSession(
       Session* session,
       SessionManager::IncomingSessionResponse* response) OVERRIDE;
@@ -106,10 +105,6 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
   State state() const;
 
  private:
-  // Called on the jingle thread after we've successfully to XMPP server. Starts
-  // P2P connection to the host.
-  void InitSession();
-
   // Callback for |session_|.
   void OnSessionStateChange(Session::State state);
 
@@ -143,7 +138,6 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
   VideoStub* video_stub_;
 
   scoped_ptr<SignalStrategy> signal_strategy_;
-  std::string local_jid_;
   scoped_ptr<SessionManager> session_manager_;
   scoped_ptr<Session> session_;
 

@@ -44,6 +44,8 @@ class LogToServerTest : public testing::Test {
 TEST_F(LogToServerTest, SendNow) {
   {
     InSequence s;
+    EXPECT_CALL(signal_strategy_, GetLocalJid())
+        .WillRepeatedly(Return("host@domain.com/1234"));
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, GetNextId());
     EXPECT_CALL(signal_strategy_, SendStanza(_))
@@ -52,8 +54,7 @@ TEST_F(LogToServerTest, SendNow) {
         .WillOnce(QuitMainMessageLoop(&message_loop_))
         .RetiresOnSaturation();
   }
-  log_to_server_->OnSignallingConnected(&signal_strategy_,
-                                        "host@domain.com/1234");
+  log_to_server_->OnSignallingConnected(&signal_strategy_);
   log_to_server_->OnClientAuthenticated("client@domain.com/5678");
   log_to_server_->OnSignallingDisconnected();
   message_loop_.Run();
@@ -62,6 +63,8 @@ TEST_F(LogToServerTest, SendNow) {
 TEST_F(LogToServerTest, SendLater) {
   {
     InSequence s;
+    EXPECT_CALL(signal_strategy_, GetLocalJid())
+        .WillRepeatedly(Return("host@domain.com/1234"));
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, GetNextId());
     EXPECT_CALL(signal_strategy_, SendStanza(_))
@@ -71,8 +74,7 @@ TEST_F(LogToServerTest, SendLater) {
         .RetiresOnSaturation();
   }
   log_to_server_->OnClientAuthenticated("client@domain.com/5678");
-  log_to_server_->OnSignallingConnected(&signal_strategy_,
-                                        "host@domain.com/1234");
+  log_to_server_->OnSignallingConnected(&signal_strategy_);
   log_to_server_->OnSignallingDisconnected();
   message_loop_.Run();
 }
@@ -80,6 +82,8 @@ TEST_F(LogToServerTest, SendLater) {
 TEST_F(LogToServerTest, SendTwoEntriesLater) {
   {
     InSequence s;
+    EXPECT_CALL(signal_strategy_, GetLocalJid())
+        .WillRepeatedly(Return("host@domain.com/1234"));
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, GetNextId());
     EXPECT_CALL(signal_strategy_, SendStanza(_))
@@ -90,8 +94,7 @@ TEST_F(LogToServerTest, SendTwoEntriesLater) {
   }
   log_to_server_->OnClientAuthenticated("client@domain.com/5678");
   log_to_server_->OnClientAuthenticated("client2@domain.com/6789");
-  log_to_server_->OnSignallingConnected(&signal_strategy_,
-                                        "host@domain.com/1234");
+  log_to_server_->OnSignallingConnected(&signal_strategy_);
   log_to_server_->OnSignallingDisconnected();
   message_loop_.Run();
 }

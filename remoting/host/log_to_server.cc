@@ -37,8 +37,7 @@ void LogToServer::LogSessionStateChange(bool connected) {
   Log(*entry.get());
 }
 
-void LogToServer::OnSignallingConnected(SignalStrategy* signal_strategy,
-                                        const std::string& full_jid) {
+void LogToServer::OnSignallingConnected(SignalStrategy* signal_strategy) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   iq_sender_.reset(new IqSender(signal_strategy));
   SendPendingEntries();

@@ -48,7 +48,11 @@ JingleSignalingConnector::~JingleSignalingConnector() {
                                        pending_requests_.end());
 }
 
-bool JingleSignalingConnector::OnIncomingStanza(
+void JingleSignalingConnector::OnSignalStrategyStateChange(
+    SignalStrategy::State state) {
+}
+
+bool JingleSignalingConnector::OnSignalStrategyIncomingStanza(
     const buzz::XmlElement* stanza) {
   if (session_manager_->IsSessionMessage(stanza)) {
     session_manager_->OnIncomingMessage(stanza);

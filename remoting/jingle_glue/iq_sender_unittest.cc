@@ -86,7 +86,7 @@ TEST_F(IqSenderTest, SendIq) {
   response->AddElement(result);
 
   EXPECT_CALL(callback_, OnReply(response.get()));
-  EXPECT_TRUE(sender_->OnIncomingStanza(response.get()));
+  EXPECT_TRUE(sender_->OnSignalStrategyIncomingStanza(response.get()));
 }
 
 }  // namespace remoting

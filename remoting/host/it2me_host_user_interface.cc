@@ -53,7 +53,7 @@ void It2MeHostUserInterface::InitFrom(DisconnectWindow* disconnect_window,
 }
 
 void It2MeHostUserInterface::OnSignallingConnected(
-    SignalStrategy* signal_strategy, const std::string& full_jid) {
+    SignalStrategy* signal_strategy) {
 }
 
 void It2MeHostUserInterface::OnSignallingDisconnected() {

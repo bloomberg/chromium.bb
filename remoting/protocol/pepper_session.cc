@@ -77,7 +77,7 @@ void PepperSession::StartConnection(
   // Send session-initiate message.
   JingleMessage message(peer_jid_, JingleMessage::SESSION_INITIATE,
                         session_id_);
-  message.from = session_manager_->local_jid_;
+  message.from = session_manager_->signal_strategy_->GetLocalJid();
   message.description.reset(
       new ContentDescription(candidate_config_->Clone(),
                              authenticator_->GetNextMessage()));

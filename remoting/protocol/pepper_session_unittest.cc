@@ -43,7 +43,7 @@ const char kClientJid[] = "host2@gmail.com/321";
 
 class MockSessionManagerListener : public SessionManager::Listener {
  public:
-  MOCK_METHOD0(OnSessionManagerInitialized, void());
+  MOCK_METHOD0(OnSessionManagerReady, void());
   MOCK_METHOD2(OnIncomingSession,
                void(Session*,
                     SessionManager::IncomingSessionResponse*));
@@ -94,22 +94,21 @@ class PepperSessionTest : public testing::Test {
     FakeSignalStrategy::Connect(host_signal_strategy_.get(),
                                 client_signal_strategy_.get());
 
-    EXPECT_CALL(host_server_listener_, OnSessionManagerInitialized())
+    EXPECT_CALL(host_server_listener_, OnSessionManagerReady())
         .Times(1);
     host_server_.reset(new JingleSessionManager(
         base::MessageLoopProxy::current()));
     host_server_->Init(
-        kHostJid, host_signal_strategy_.get(), &host_server_listener_, false);
+        host_signal_strategy_.get(), &host_server_listener_, false);
 
     host_server_->set_authenticator_factory(
         new FakeHostAuthenticatorFactory(auth_round_trips, auth_action, true));
 
-    EXPECT_CALL(client_server_listener_, OnSessionManagerInitialized())
+    EXPECT_CALL(client_server_listener_, OnSessionManagerReady())
         .Times(1);
     client_server_.reset(new PepperSessionManager(NULL));
     client_server_->Init(
-        kClientJid, client_signal_strategy_.get(),
-        &client_server_listener_, false);
+        client_signal_strategy_.get(), &client_server_listener_, false);
   }
 
   void CloseSessionManager() {

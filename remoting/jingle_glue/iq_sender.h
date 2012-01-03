@@ -48,7 +48,10 @@ class IqSender : public SignalStrategy::Listener {
                     const ReplyCallback& callback) WARN_UNUSED_RESULT;
 
   // SignalStrategy::Listener implementation.
-  virtual bool OnIncomingStanza(const buzz::XmlElement* stanza) OVERRIDE;
+  virtual void OnSignalStrategyStateChange(
+      SignalStrategy::State state) OVERRIDE;
+  virtual bool OnSignalStrategyIncomingStanza(
+      const buzz::XmlElement* stanza) OVERRIDE;
 
  private:
   typedef std::map<std::string, IqRequest*> IqRequestMap;

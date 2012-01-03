@@ -8,6 +8,7 @@
 #include <queue>
 #include <string>
 
+#include "base/observer_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/jingle_glue/iq_sender.h"
@@ -24,8 +25,10 @@ class FakeSignalStrategy : public SignalStrategy,
   virtual ~FakeSignalStrategy();
 
   // SignalStrategy interface.
-  virtual void Init(StatusObserver* observer) OVERRIDE;
-  virtual void Close() OVERRIDE;
+  virtual void Connect() OVERRIDE;
+  virtual void Disconnect() OVERRIDE;
+  virtual State GetState() const OVERRIDE;
+  virtual std::string GetLocalJid() const OVERRIDE;
   virtual void AddListener(Listener* listener) OVERRIDE;
   virtual void RemoveListener(Listener* listener) OVERRIDE;
   virtual bool SendStanza(buzz::XmlElement* stanza) OVERRIDE;
@@ -39,7 +42,7 @@ class FakeSignalStrategy : public SignalStrategy,
 
   std::string jid_;
   FakeSignalStrategy* peer_;
-  std::vector<Listener*> listeners_;
+  ObserverList<Listener, true> listeners_;
 
   int last_id_;
 

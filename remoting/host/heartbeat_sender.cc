@@ -65,13 +65,12 @@ bool HeartbeatSender::Init() {
   return true;
 }
 
-void HeartbeatSender::OnSignallingConnected(SignalStrategy* signal_strategy,
-                                            const std::string& full_jid) {
+void HeartbeatSender::OnSignallingConnected(SignalStrategy* signal_strategy) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(state_ == INITIALIZED || state_ == STOPPED);
   state_ = STARTED;
 
-  full_jid_ = full_jid;
+  full_jid_ = signal_strategy->GetLocalJid();
 
   iq_sender_.reset(new IqSender(signal_strategy));
 

@@ -89,11 +89,10 @@ class SessionManager : public base::NonThreadSafe {
     Listener() { }
     ~Listener() { }
 
-    // Called when the session manager has finished
-    // initialization. May be called from Init() or after Init()
-    // returns. Outgoing connections can be created after this method
-    // is called.
-    virtual void OnSessionManagerInitialized() = 0;
+    // Called when the session manager is ready to create outgoing
+    // sessions. May be called from Init() or after Init()
+    // returns.
+    virtual void OnSessionManagerReady() = 0;
 
     // Called when a new session is received. If the host decides to
     // accept the session it should set the |response| to
@@ -117,8 +116,7 @@ class SessionManager : public base::NonThreadSafe {
   // will also take ownership of these objects. On the client side
   // pass in NULL for |private_key| and empty string for
   // |certificate|.
-  virtual void Init(const std::string& local_jid,
-                    SignalStrategy* signal_strategy,
+  virtual void Init(SignalStrategy* signal_strategy,
                     Listener* listener,
                     bool allow_nat_traversal) = 0;
 

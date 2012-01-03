@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/jingle_session.h"
 #include "remoting/protocol/session_manager.h"
@@ -31,18 +32,17 @@ namespace protocol {
 // This class implements SessionClient for Chromoting sessions. It acts as a
 // server that accepts chromoting connections and can also make new connections
 // to other hosts.
-class JingleSessionManager
-    : public SessionManager,
-      public cricket::SessionClient {
+class JingleSessionManager : public SessionManager,
+                             public cricket::SessionClient,
+                             public SignalStrategy::Listener {
  public:
   virtual ~JingleSessionManager();
 
   JingleSessionManager(base::MessageLoopProxy* message_loop);
 
   // SessionManager interface.
-  virtual void Init(const std::string& local_jid,
-                    SignalStrategy* signal_strategy,
-                    Listener* listener,
+  virtual void Init(SignalStrategy* signal_strategy,
+                    SessionManager::Listener* listener,
                     bool allow_nat_traversal) OVERRIDE;
   virtual Session* Connect(
       const std::string& host_jid,
@@ -66,6 +66,10 @@ class JingleSessionManager
                             const cricket::ContentDescription* content,
                             buzz::XmlElement** elem,
                             cricket::WriteError* error) OVERRIDE;
+
+  // SignalStrategy::Listener interface.
+  virtual void OnSignalStrategyStateChange(
+      SignalStrategy::State state) OVERRIDE;
 
  private:
   friend class JingleSession;
@@ -95,11 +99,12 @@ class JingleSessionManager
   scoped_ptr<talk_base::NetworkManager> network_manager_;
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
 
-  std::string local_jid_;  // Full jid for the local side of the session.
   SignalStrategy* signal_strategy_;
   scoped_ptr<AuthenticatorFactory> authenticator_factory_;
-  Listener* listener_;
+  SessionManager::Listener* listener_;
   bool allow_nat_traversal_;
+
+  bool ready_;
 
   scoped_ptr<cricket::PortAllocator> port_allocator_;
   cricket::HttpPortAllocator* http_port_allocator_;

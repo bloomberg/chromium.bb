@@ -13,59 +13,57 @@
 
 namespace remoting {
 
-JavascriptSignalStrategy::JavascriptSignalStrategy(const std::string& your_jid)
-    : your_jid_(your_jid),
+JavascriptSignalStrategy::JavascriptSignalStrategy(const std::string& local_jid)
+    : local_jid_(local_jid),
       last_id_(0) {
 }
 
 JavascriptSignalStrategy::~JavascriptSignalStrategy() {
-  DCHECK(listeners_.empty());
-  Close();
+  DCHECK_EQ(listeners_.size(), 0U);
+  Disconnect();
 }
 
 void JavascriptSignalStrategy::AttachXmppProxy(
     scoped_refptr<XmppProxy> xmpp_proxy) {
   DCHECK(CalledOnValidThread());
   xmpp_proxy_ = xmpp_proxy;
+}
+
+void JavascriptSignalStrategy::Connect() {
+  DCHECK(CalledOnValidThread());
+
   xmpp_proxy_->AttachCallback(AsWeakPtr());
+  FOR_EACH_OBSERVER(Listener, listeners_,
+                    OnSignalStrategyStateChange(CONNECTED));
 }
 
-void JavascriptSignalStrategy::Init(StatusObserver* observer) {
+void JavascriptSignalStrategy::Disconnect() {
   DCHECK(CalledOnValidThread());
 
-  // Blast through each state since for a JavascriptSignalStrategy, we're
-  // already connected.
-  //
-  // TODO(ajwong): Clarify the status API contract to see if we have to actually
-  // walk through each state.
-  observer->OnStateChange(StatusObserver::START);
-  observer->OnStateChange(StatusObserver::CONNECTING);
-  observer->OnJidChange(your_jid_);
-  observer->OnStateChange(StatusObserver::CONNECTED);
-}
-
-void JavascriptSignalStrategy::Close() {
-  DCHECK(CalledOnValidThread());
-
-  if (xmpp_proxy_) {
+  if (xmpp_proxy_)
     xmpp_proxy_->DetachCallback();
-    xmpp_proxy_ = NULL;
-  }
+  FOR_EACH_OBSERVER(Listener, listeners_,
+                    OnSignalStrategyStateChange(DISCONNECTED));
+}
+
+SignalStrategy::State JavascriptSignalStrategy::GetState() const {
+  // TODO(sergeyu): Extend XmppProxy to provide status of the
+  // connection.
+  return CONNECTED;
+}
+
+std::string JavascriptSignalStrategy::GetLocalJid() const {
+  return local_jid_;
 }
 
 void JavascriptSignalStrategy::AddListener(Listener* listener) {
   DCHECK(CalledOnValidThread());
-  DCHECK(std::find(listeners_.begin(), listeners_.end(), listener) ==
-         listeners_.end());
-  listeners_.push_back(listener);
+  listeners_.AddObserver(listener);
 }
 
 void JavascriptSignalStrategy::RemoveListener(Listener* listener) {
   DCHECK(CalledOnValidThread());
-  std::vector<Listener*>::iterator it =
-      std::find(listeners_.begin(), listeners_.end(), listener);
-  CHECK(it != listeners_.end());
-  listeners_.erase(it);
+  listeners_.RemoveObserver(listener);
 }
 
 bool JavascriptSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
@@ -89,9 +87,10 @@ void JavascriptSignalStrategy::OnIq(const std::string& stanza_str) {
     return;
   }
 
-  for (std::vector<Listener*>::iterator it = listeners_.begin();
-       it != listeners_.end(); ++it) {
-    if ((*it)->OnIncomingStanza(stanza.get()))
+  ObserverListBase<Listener>::Iterator it(listeners_);
+  Listener* listener;
+  while ((listener = it.GetNext()) != NULL) {
+    if (listener->OnSignalStrategyIncomingStanza(stanza.get()))
       break;
   }
 }

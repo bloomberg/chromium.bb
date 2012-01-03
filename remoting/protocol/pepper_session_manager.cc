@@ -23,7 +23,8 @@ PepperSessionManager::PepperSessionManager(pp::Instance* pp_instance)
     : pp_instance_(pp_instance),
       signal_strategy_(NULL),
       listener_(NULL),
-      allow_nat_traversal_(false) {
+      allow_nat_traversal_(false),
+      ready_(false) {
 }
 
 PepperSessionManager::~PepperSessionManager() {
@@ -31,26 +32,17 @@ PepperSessionManager::~PepperSessionManager() {
 }
 
 void PepperSessionManager::Init(
-    const std::string& local_jid,
     SignalStrategy* signal_strategy,
     SessionManager::Listener* listener,
     bool allow_nat_traversal) {
   listener_ = listener;
-  local_jid_ = local_jid;
   signal_strategy_ = signal_strategy;
   iq_sender_.reset(new IqSender(signal_strategy_));
   allow_nat_traversal_ = allow_nat_traversal;
 
   signal_strategy_->AddListener(this);
 
-  // If NAT traversal is enabled then we need to request STUN/Relay info.
-  if (allow_nat_traversal) {
-    jingle_info_request_.reset(new JingleInfoRequest(signal_strategy_));
-    jingle_info_request_->Send(base::Bind(&PepperSessionManager::OnJingleInfo,
-                                          base::Unretained(this)));
-  } else {
-    listener_->OnSessionManagerInitialized();
-  }
+  OnSignalStrategyStateChange(signal_strategy_->GetState());
 }
 
 void PepperSessionManager::OnJingleInfo(
@@ -68,7 +60,10 @@ void PepperSessionManager::OnJingleInfo(
           << " Relay server: " << transport_config_.relay_server
           << " Relay token: " << transport_config_.relay_token;
 
-  listener_->OnSessionManagerInitialized();
+  if (!ready_) {
+    ready_ = true;
+    listener_->OnSessionManagerReady();
+  }
 }
 
 Session* PepperSessionManager::Connect(
@@ -104,7 +99,23 @@ void PepperSessionManager::set_authenticator_factory(
   authenticator_factory_.reset(authenticator_factory);
 }
 
-bool PepperSessionManager::OnIncomingStanza(const buzz::XmlElement* stanza) {
+void PepperSessionManager::OnSignalStrategyStateChange(
+    SignalStrategy::State state) {
+  // If NAT traversal is enabled then we need to request STUN/Relay info.
+  if (state == SignalStrategy::CONNECTED) {
+    if (allow_nat_traversal_) {
+      jingle_info_request_.reset(new JingleInfoRequest(signal_strategy_));
+      jingle_info_request_->Send(base::Bind(&PepperSessionManager::OnJingleInfo,
+                                            base::Unretained(this)));
+    } else if (!ready_) {
+      ready_ = true;
+      listener_->OnSessionManagerReady();
+    }
+  }
+}
+
+bool PepperSessionManager::OnSignalStrategyIncomingStanza(
+    const buzz::XmlElement* stanza) {
   if (!JingleMessage::IsJingleMessage(stanza))
     return false;
 

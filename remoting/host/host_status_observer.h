@@ -18,8 +18,7 @@ class HostStatusObserver {
   virtual ~HostStatusObserver() { }
 
   // Called when status of the signalling channel changes.
-  virtual void OnSignallingConnected(SignalStrategy* signal_strategy,
-                                     const std::string& full_jid) = 0;
+  virtual void OnSignallingConnected(SignalStrategy* signal_strategy) = 0;
   virtual void OnSignallingDisconnected() = 0;
 
   // Called when an unauthorized user attempts to connect to the host.

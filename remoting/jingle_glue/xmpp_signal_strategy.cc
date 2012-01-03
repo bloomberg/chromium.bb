@@ -23,20 +23,20 @@ XmppSignalStrategy::XmppSignalStrategy(JingleThread* jingle_thread,
      auth_token_(auth_token),
      auth_token_service_(auth_token_service),
      xmpp_client_(NULL),
-     observer_(NULL) {
+     state_(DISCONNECTED) {
 }
 
 XmppSignalStrategy::~XmppSignalStrategy() {
-  DCHECK(listeners_.empty());
-  Close();
+  DCHECK_EQ(listeners_.size(), 0U);
+  Disconnect();
 }
 
-void XmppSignalStrategy::Init(StatusObserver* observer) {
-  observer_ = observer;
-
-  buzz::Jid login_jid(username_);
+void XmppSignalStrategy::Connect() {
+  // Disconnect first if we are currently connected.
+  Disconnect();
 
   buzz::XmppClientSettings settings;
+  buzz::Jid login_jid(username_);
   settings.set_user(login_jid.node());
   settings.set_host(login_jid.domain());
   settings.set_resource("chromoting");
@@ -55,7 +55,7 @@ void XmppSignalStrategy::Init(StatusObserver* observer) {
   xmpp_client_->Start();
 }
 
-void XmppSignalStrategy::Close() {
+void XmppSignalStrategy::Disconnect() {
   if (xmpp_client_) {
     xmpp_client_->engine()->RemoveStanzaHandler(this);
 
@@ -67,17 +67,20 @@ void XmppSignalStrategy::Close() {
   }
 }
 
+SignalStrategy::State XmppSignalStrategy::GetState() const {
+  return state_;
+}
+
+std::string XmppSignalStrategy::GetLocalJid() const {
+  return xmpp_client_->jid().Str();
+}
+
 void XmppSignalStrategy::AddListener(Listener* listener) {
-  DCHECK(std::find(listeners_.begin(), listeners_.end(), listener) ==
-         listeners_.end());
-  listeners_.push_back(listener);
+  listeners_.AddObserver(listener);
 }
 
 void XmppSignalStrategy::RemoveListener(Listener* listener) {
-  std::vector<Listener*>::iterator it =
-      std::find(listeners_.begin(), listeners_.end(), listener);
-  CHECK(it != listeners_.end());
-  listeners_.erase(it);
+  listeners_.RemoveObserver(listener);
 }
 
 bool XmppSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
@@ -102,36 +105,44 @@ std::string XmppSignalStrategy::GetNextId() {
 }
 
 bool XmppSignalStrategy::HandleStanza(const buzz::XmlElement* stanza) {
-  for (std::vector<Listener*>::iterator it = listeners_.begin();
-       it != listeners_.end(); ++it) {
-    if ((*it)->OnIncomingStanza(stanza))
-      return true;
+  ObserverListBase<Listener>::Iterator it(listeners_);
+  Listener* listener;
+  while ((listener = it.GetNext()) != NULL) {
+    if (listener->OnSignalStrategyIncomingStanza(stanza))
+      break;
   }
   return false;
 }
 
 void XmppSignalStrategy::OnConnectionStateChanged(
     buzz::XmppEngine::State state) {
+  State new_state;
+
   switch (state) {
     case buzz::XmppEngine::STATE_START:
-      observer_->OnStateChange(StatusObserver::START);
-      break;
+      return;
+
     case buzz::XmppEngine::STATE_OPENING:
-      observer_->OnStateChange(StatusObserver::CONNECTING);
+      new_state = CONNECTING;
       break;
     case buzz::XmppEngine::STATE_OPEN:
-      observer_->OnJidChange(xmpp_client_->jid().Str());
-      observer_->OnStateChange(StatusObserver::CONNECTED);
+      new_state = CONNECTED;
       break;
     case buzz::XmppEngine::STATE_CLOSED:
-      observer_->OnStateChange(StatusObserver::CLOSED);
       // Client is destroyed by the TaskRunner after the client is
       // closed. Reset the pointer so we don't try to use it later.
       xmpp_client_ = NULL;
+      new_state = DISCONNECTED;
       break;
     default:
       NOTREACHED();
-      break;
+      return;
+  }
+
+  if (state_ != new_state) {
+    state_ = new_state;
+    FOR_EACH_OBSERVER(Listener, listeners_,
+                      OnSignalStrategyStateChange(new_state));
   }
 }
 
@@ -145,10 +156,7 @@ buzz::PreXmppAuth* XmppSignalStrategy::CreatePreXmppAuth(
   }
 
   return new notifier::GaiaTokenPreXmppAuth(
-      jid.Str(),
-      settings.auth_cookie(),
-      settings.token_service(),
-      mechanism);
+      jid.Str(), settings.auth_cookie(), settings.token_service(), mechanism);
 }
 
 }  // namespace remoting

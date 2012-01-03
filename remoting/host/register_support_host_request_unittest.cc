@@ -76,10 +76,12 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   XmlElement* sent_iq = NULL;
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId));
+  EXPECT_CALL(signal_strategy_, GetLocalJid())
+      .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, SendStanza(NotNull()))
       .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
 
-  request->OnSignallingConnected(&signal_strategy_, kTestJid);
+  request->OnSignallingConnected(&signal_strategy_);
   message_loop_.RunAllPending();
 
   // Verify format of the query.
@@ -134,7 +136,7 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   support_id_lifetime->AddText(kSupportIdLifetime);
   result->AddElement(support_id_lifetime);
 
-  EXPECT_TRUE(listener->OnIncomingStanza(response.get()));
+  EXPECT_TRUE(listener->OnSignalStrategyIncomingStanza(response.get()));
   message_loop_.RunAllPending();
 
   EXPECT_CALL(signal_strategy_, RemoveListener(listener));

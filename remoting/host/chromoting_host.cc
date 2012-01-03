@@ -93,11 +93,18 @@ void ChromotingHost::Start() {
     return;
   }
 
+  // Create and start XMPP connection.
   signal_strategy_.reset(
       new XmppSignalStrategy(context_->jingle_thread(), xmpp_login,
-                             xmpp_auth_token,
-                             xmpp_auth_service));
-  signal_strategy_->Init(this);
+                             xmpp_auth_token, xmpp_auth_service));
+  signal_strategy_->AddListener(this);
+  signal_strategy_->Connect();
+
+  // Create and start session manager.
+  session_manager_.reset(
+      new protocol::JingleSessionManager(context_->network_message_loop()));
+  session_manager_->Init(signal_strategy_.get(),
+                         this, allow_nat_traversal_);
 }
 
 // This method is called when we need to destroy the host process.
@@ -140,13 +147,9 @@ void ChromotingHost::Shutdown(const base::Closure& shutdown_task) {
 
   // Stop XMPP connection synchronously.
   if (signal_strategy_.get()) {
-    signal_strategy_->Close();
+    signal_strategy_->Disconnect();
+    signal_strategy_->RemoveListener(this);
     signal_strategy_.reset();
-
-    for (StatusObserverList::iterator it = status_observers_.begin();
-         it != status_observers_.end(); ++it) {
-      (*it)->OnSignallingDisconnected();
-    }
   }
 
   if (recorder_.get()) {
@@ -163,14 +166,10 @@ void ChromotingHost::AddStatusObserver(HostStatusObserver* observer) {
 
 void ChromotingHost::SetSharedSecret(const std::string& shared_secret) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
-  shared_secret_ = shared_secret;
-  have_shared_secret_ = true;
-  if (session_manager_.get()) {
-    session_manager_->set_authenticator_factory(
-        new protocol::V1HostAuthenticatorFactory(
-            key_pair_.GenerateCertificate(), key_pair_.private_key(),
-            shared_secret_));
-  }
+  session_manager_->set_authenticator_factory(
+      new protocol::V1HostAuthenticatorFactory(
+          key_pair_.GenerateCertificate(), key_pair_.private_key(),
+          shared_secret));
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -257,33 +256,18 @@ void ChromotingHost::OnSessionSequenceNumber(ClientSession* session,
 
 ////////////////////////////////////////////////////////////////////////////
 // SignalStrategy::StatusObserver implementations
-void ChromotingHost::OnStateChange(
-    SignalStrategy::StatusObserver::State state) {
+void ChromotingHost::OnSignalStrategyStateChange(
+    SignalStrategy::State state) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
-  if (state == SignalStrategy::StatusObserver::CONNECTED) {
-    LOG(INFO) << "Host connected as " << local_jid_;
-
-    // Create and start session manager.
-    protocol::JingleSessionManager* server =
-        new protocol::JingleSessionManager(context_->network_message_loop());
-
-    server->Init(local_jid_, signal_strategy_.get(),
-                 this, allow_nat_traversal_);
-
-    session_manager_.reset(server);
-    if (have_shared_secret_) {
-      session_manager_->set_authenticator_factory(
-          new protocol::V1HostAuthenticatorFactory(
-              key_pair_.GenerateCertificate(), key_pair_.private_key(),
-              shared_secret_));
-    }
+  if (state == SignalStrategy::CONNECTED) {
+    LOG(INFO) << "Host connected as " << signal_strategy_->GetLocalJid();
 
     for (StatusObserverList::iterator it = status_observers_.begin();
          it != status_observers_.end(); ++it) {
-      (*it)->OnSignallingConnected(signal_strategy_.get(), local_jid_);
+      (*it)->OnSignallingConnected(signal_strategy_.get());
     }
-  } else if (state == SignalStrategy::StatusObserver::CLOSED) {
+  } else if (state == SignalStrategy::DISCONNECTED) {
     LOG(INFO) << "Host disconnected from talk network.";
     for (StatusObserverList::iterator it = status_observers_.begin();
          it != status_observers_.end(); ++it) {
@@ -292,12 +276,7 @@ void ChromotingHost::OnStateChange(
   }
 }
 
-void ChromotingHost::OnJidChange(const std::string& full_jid) {
-  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
-  local_jid_ = full_jid;
-}
-
-void ChromotingHost::OnSessionManagerInitialized() {
+void ChromotingHost::OnSessionManagerReady() {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
   // Don't need to do anything here, just wait for incoming
   // connections.

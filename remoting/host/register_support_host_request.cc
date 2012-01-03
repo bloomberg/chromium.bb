@@ -53,15 +53,15 @@ bool RegisterSupportHostRequest::Init(HostConfig* config,
 }
 
 void RegisterSupportHostRequest::OnSignallingConnected(
-    SignalStrategy* signal_strategy,
-    const std::string& jid) {
+    SignalStrategy* signal_strategy) {
   DCHECK(!callback_.is_null());
 
   message_loop_ = MessageLoop::current();
 
   iq_sender_.reset(new IqSender(signal_strategy));
   request_.reset(iq_sender_->SendIq(
-      buzz::STR_SET, kChromotingBotJid, CreateRegistrationRequest(jid),
+      buzz::STR_SET, kChromotingBotJid,
+      CreateRegistrationRequest(signal_strategy->GetLocalJid()),
       base::Bind(&RegisterSupportHostRequest::ProcessResponse,
                  base::Unretained(this))));
 }

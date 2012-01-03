@@ -66,7 +66,10 @@ void IqSender::RemoveRequest(IqRequest* request) {
   }
 }
 
-bool IqSender::OnIncomingStanza(const buzz::XmlElement* stanza) {
+void IqSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
+}
+
+bool IqSender::OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) {
   if (stanza->Name() != buzz::QN_IQ) {
     LOG(WARNING) << "Received unexpected non-IQ packet " << stanza->Str();
     return false;

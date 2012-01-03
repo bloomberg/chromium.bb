@@ -48,8 +48,7 @@ class PepperSessionManager : public SessionManager,
   virtual ~PepperSessionManager();
 
   // SessionManager interface.
-  virtual void Init(const std::string& local_jid,
-                    SignalStrategy* signal_strategy,
+  virtual void Init(SignalStrategy* signal_strategy,
                     SessionManager::Listener* listener,
                     bool allow_nat_traversal) OVERRIDE;
   virtual Session* Connect(
@@ -62,7 +61,10 @@ class PepperSessionManager : public SessionManager,
       AuthenticatorFactory* authenticator_factory) OVERRIDE;
 
   // SignalStrategy::Listener interface.
-  virtual bool OnIncomingStanza(const buzz::XmlElement* stanza) OVERRIDE;
+  virtual void OnSignalStrategyStateChange(
+      SignalStrategy::State state) OVERRIDE;
+  virtual bool OnSignalStrategyIncomingStanza(
+      const buzz::XmlElement* stanza) OVERRIDE;
 
  private:
   friend class PepperSession;
@@ -83,12 +85,13 @@ class PepperSessionManager : public SessionManager,
 
   pp::Instance* pp_instance_;
 
-  std::string local_jid_;
   SignalStrategy* signal_strategy_;
   scoped_ptr<AuthenticatorFactory> authenticator_factory_;
   scoped_ptr<IqSender> iq_sender_;
   SessionManager::Listener* listener_;
   bool allow_nat_traversal_;
+
+  bool ready_;
 
   TransportConfig transport_config_;
 

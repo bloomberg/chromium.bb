@@ -62,7 +62,7 @@ class ScreenRecorder;
 //    incoming connection.
 class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                        public ClientSession::EventHandler,
-                       public SignalStrategy::StatusObserver,
+                       public SignalStrategy::Listener,
                        public protocol::SessionManager::Listener {
  public:
   // Factory methods that must be used to create ChromotingHost
@@ -98,10 +98,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void SetSharedSecret(const std::string& shared_secret);
 
   ////////////////////////////////////////////////////////////////////////////
-  // SignalStrategy::StatusObserver implementation.
-  virtual void OnStateChange(
-      SignalStrategy::StatusObserver::State state) OVERRIDE;
-  virtual void OnJidChange(const std::string& full_jid) OVERRIDE;
+  // SignalStrategy::Listener interface.
+  virtual void OnSignalStrategyStateChange(
+      SignalStrategy::State state) OVERRIDE;
 
   ////////////////////////////////////////////////////////////////////////////
   // ClientSession::EventHandler implementation.
@@ -112,7 +111,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                                        int64 sequence_number) OVERRIDE;
 
   // SessionManager::Listener implementation.
-  virtual void OnSessionManagerInitialized() OVERRIDE;
+  virtual void OnSessionManagerReady() OVERRIDE;
   virtual void OnIncomingSession(
       protocol::Session* session,
       protocol::SessionManager::IncomingSessionResponse* response) OVERRIDE;

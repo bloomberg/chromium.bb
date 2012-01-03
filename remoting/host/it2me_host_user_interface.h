@@ -42,8 +42,7 @@ class It2MeHostUserInterface : public HostStatusObserver {
 
   // HostStatusObserver implementation.  These methods will be called from the
   // network thread.
-  virtual void OnSignallingConnected(SignalStrategy* signal_strategy,
-                                     const std::string& full_jid) OVERRIDE;
+  virtual void OnSignallingConnected(SignalStrategy* signal_strategy) OVERRIDE;
   virtual void OnSignallingDisconnected() OVERRIDE;
   virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
   virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;

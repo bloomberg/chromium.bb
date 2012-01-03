@@ -34,33 +34,37 @@ FakeSignalStrategy::~FakeSignalStrategy() {
     delete pending_messages_.front();
     pending_messages_.pop();
   }
-  DCHECK(listeners_.empty());
 }
 
-void FakeSignalStrategy::Init(StatusObserver* observer) {
-  observer->OnStateChange(StatusObserver::START);
-  observer->OnStateChange(StatusObserver::CONNECTING);
-  observer->OnJidChange(jid_);
-  observer->OnStateChange(StatusObserver::CONNECTED);
-}
-
-void FakeSignalStrategy::Close() {
+void FakeSignalStrategy::Connect() {
   DCHECK(CalledOnValidThread());
+  FOR_EACH_OBSERVER(Listener, listeners_,
+                    OnSignalStrategyStateChange(CONNECTED));
+}
+
+void FakeSignalStrategy::Disconnect() {
+  DCHECK(CalledOnValidThread());
+  FOR_EACH_OBSERVER(Listener, listeners_,
+                    OnSignalStrategyStateChange(DISCONNECTED));
+}
+
+SignalStrategy::State FakeSignalStrategy::GetState() const {
+  return CONNECTED;
+}
+
+std::string FakeSignalStrategy::GetLocalJid() const {
+  DCHECK(CalledOnValidThread());
+  return jid_;
 }
 
 void FakeSignalStrategy::AddListener(Listener* listener) {
   DCHECK(CalledOnValidThread());
-  DCHECK(std::find(listeners_.begin(), listeners_.end(), listener) ==
-         listeners_.end());
-  listeners_.push_back(listener);
+  listeners_.AddObserver(listener);
 }
 
 void FakeSignalStrategy::RemoveListener(Listener* listener) {
   DCHECK(CalledOnValidThread());
-  std::vector<Listener*>::iterator it =
-      std::find(listeners_.begin(), listeners_.end(), listener);
-  CHECK(it != listeners_.end());
-  listeners_.erase(it);
+  listeners_.RemoveObserver(listener);
 }
 
 bool FakeSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
@@ -100,9 +104,10 @@ void FakeSignalStrategy::DeliverIncomingMessages() {
       return;
     }
 
-    for (std::vector<Listener*>::iterator it = listeners_.begin();
-         it != listeners_.end(); ++it) {
-      if ((*it)->OnIncomingStanza(stanza))
+    ObserverListBase<Listener>::Iterator it(listeners_);
+    Listener* listener;
+    while ((listener = it.GetNext()) != NULL) {
+      if (listener->OnSignalStrategyIncomingStanza(stanza))
         break;
     }
 

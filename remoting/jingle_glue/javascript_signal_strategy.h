@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/jingle_glue/xmpp_proxy.h"
 
@@ -23,14 +24,16 @@ class JavascriptSignalStrategy : public SignalStrategy,
                                  public XmppProxy::ResponseCallback,
                                  public base::NonThreadSafe {
  public:
-  explicit JavascriptSignalStrategy(const std::string& your_jid);
+  explicit JavascriptSignalStrategy(const std::string& local_jid);
   virtual ~JavascriptSignalStrategy();
 
   void AttachXmppProxy(scoped_refptr<XmppProxy> xmpp_proxy);
 
   // SignalStrategy interface.
-  virtual void Init(StatusObserver* observer) OVERRIDE;
-  virtual void Close() OVERRIDE;
+  virtual void Connect() OVERRIDE;
+  virtual void Disconnect() OVERRIDE;
+  virtual State GetState() const OVERRIDE;
+  virtual std::string GetLocalJid() const OVERRIDE;
   virtual void AddListener(Listener* listener) OVERRIDE;
   virtual void RemoveListener(Listener* listener) OVERRIDE;
   virtual bool SendStanza(buzz::XmlElement* stanza) OVERRIDE;
@@ -40,10 +43,10 @@ class JavascriptSignalStrategy : public SignalStrategy,
   virtual void OnIq(const std::string& stanza) OVERRIDE;
 
  private:
-  std::string your_jid_;
+  std::string local_jid_;
   scoped_refptr<XmppProxy> xmpp_proxy_;
 
-  std::vector<Listener*> listeners_;
+  ObserverList<Listener> listeners_;
 
   int last_id_;
 

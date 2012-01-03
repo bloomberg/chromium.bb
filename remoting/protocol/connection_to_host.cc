@@ -71,7 +71,11 @@ void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
   JavascriptSignalStrategy* strategy = new JavascriptSignalStrategy(your_jid);
   strategy->AttachXmppProxy(xmpp_proxy);
   signal_strategy_.reset(strategy);
-  signal_strategy_->Init(this);
+  signal_strategy_->AddListener(this);
+  signal_strategy_->Connect();
+
+  session_manager_.reset(new PepperSessionManager(pp_instance_));
+  session_manager_->Init(signal_strategy_.get(), this, allow_nat_traversal_);
 }
 
 void ConnectionToHost::Disconnect(const base::Closure& shutdown_task) {
@@ -90,51 +94,39 @@ void ConnectionToHost::Disconnect(const base::Closure& shutdown_task) {
   if (session_manager_.get())
     session_manager_.reset();
 
-  if (signal_strategy_.get())
+  if (signal_strategy_.get()) {
+    signal_strategy_->RemoveListener(this);
     signal_strategy_.reset();
+  }
 
   shutdown_task.Run();
-}
-
-void ConnectionToHost::InitSession() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-
-  session_manager_.reset(new PepperSessionManager(pp_instance_));
-  session_manager_->Init(
-      local_jid_, signal_strategy_.get(), this, allow_nat_traversal_);
 }
 
 const SessionConfig& ConnectionToHost::config() {
   return session_->config();
 }
 
-void ConnectionToHost::OnStateChange(
-    SignalStrategy::StatusObserver::State state) {
+void ConnectionToHost::OnSignalStrategyStateChange(
+    SignalStrategy::State state) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(event_callback_);
 
-  if (state == SignalStrategy::StatusObserver::CONNECTED) {
-    VLOG(1) << "Connected as: " << local_jid_;
-    InitSession();
-  } else if (state == SignalStrategy::StatusObserver::CLOSED) {
+  if (state == SignalStrategy::CONNECTED) {
+    VLOG(1) << "Connected as: " << signal_strategy_->GetLocalJid();
+  } else if (state == SignalStrategy::DISCONNECTED) {
     VLOG(1) << "Connection closed.";
     CloseOnError(NETWORK_FAILURE);
   }
 }
 
-void ConnectionToHost::OnJidChange(const std::string& full_jid) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  local_jid_ = full_jid;
-}
-
-void ConnectionToHost::OnSessionManagerInitialized() {
+void ConnectionToHost::OnSessionManagerReady() {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   // After SessionManager is initialized we can try to connect to the host.
   CandidateSessionConfig* candidate_config =
       CandidateSessionConfig::CreateDefault();
   V1ClientAuthenticator* authenticator =
-      new V1ClientAuthenticator(local_jid_, access_code_);
+      new V1ClientAuthenticator(signal_strategy_->GetLocalJid(), access_code_);
   session_.reset(session_manager_->Connect(
       host_jid_, authenticator, candidate_config,
       base::Bind(&ConnectionToHost::OnSessionStateChange,

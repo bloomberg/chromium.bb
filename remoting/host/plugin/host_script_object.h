@@ -68,8 +68,8 @@ class HostNPScriptObject : public HostStatusObserver {
   bool Enumerate(std::vector<std::string>* values);
 
   // remoting::HostStatusObserver implementation.
-  virtual void OnSignallingConnected(remoting::SignalStrategy* signal_strategy,
-                                     const std::string& full_jid) OVERRIDE;
+  virtual void OnSignallingConnected(
+      remoting::SignalStrategy* signal_strategy) OVERRIDE;
   virtual void OnSignallingDisconnected() OVERRIDE;
   virtual void OnAccessDenied() OVERRIDE;
   virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;

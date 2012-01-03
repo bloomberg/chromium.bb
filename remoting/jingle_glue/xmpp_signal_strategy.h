@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/observer_list.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
 
@@ -33,8 +34,10 @@ class XmppSignalStrategy : public SignalStrategy,
   virtual ~XmppSignalStrategy();
 
   // SignalStrategy interface.
-  virtual void Init(StatusObserver* observer) OVERRIDE;
-  virtual void Close() OVERRIDE;
+  virtual void Connect() OVERRIDE;
+  virtual void Disconnect() OVERRIDE;
+  virtual State GetState() const OVERRIDE;
+  virtual std::string GetLocalJid() const OVERRIDE;
   virtual void AddListener(Listener* listener) OVERRIDE;
   virtual void RemoveListener(Listener* listener) OVERRIDE;
   virtual bool SendStanza(buzz::XmlElement* stanza) OVERRIDE;
@@ -55,9 +58,9 @@ class XmppSignalStrategy : public SignalStrategy,
   std::string auth_token_service_;
   buzz::XmppClient* xmpp_client_;
 
-  StatusObserver* observer_;
-  std::vector<Listener*> listeners_;
+  State state_;
 
+  ObserverList<Listener> listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(XmppSignalStrategy);
 };
