@@ -14,9 +14,10 @@
 #include "content/common/content_export.h"
 
 class GURL;
-class TabContents;
 
 namespace content {
+
+class WebContents;
 
 // An optional delegate that listens for drags of bookmark data.
 class CONTENT_EXPORT WebDragDestDelegate {
@@ -24,7 +25,7 @@ class CONTENT_EXPORT WebDragDestDelegate {
   // Announces that a drag has started. It's valid that a drag starts, along
   // with over/enter/leave/drop notifications without receiving any bookmark
   // data.
-  virtual void DragInitialize(TabContents* contents) = 0;
+  virtual void DragInitialize(WebContents* contents) = 0;
 
   // Notifications of drag progression.
   virtual void OnDragOver() = 0;

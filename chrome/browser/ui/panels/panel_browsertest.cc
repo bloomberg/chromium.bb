@@ -47,6 +47,7 @@
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::WebContents;
 
 class PanelBrowserTest : public BasePanelBrowserTest {
  public:
@@ -1410,12 +1411,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, OnBeforeUnloadOnClose) {
       FilePath(FILE_PATH_LITERAL("onbeforeunload.html")));
   Panel* panel = CreatePanelWithParams(params);
   EXPECT_EQ(1, panel_manager->num_panels());
-  TabContents* tab_contents = panel->browser()->GetSelectedTabContents();
+  WebContents* web_contents = panel->browser()->GetSelectedWebContents();
 
   // Close panel and respond to the onbeforeunload dialog with cancel. This is
   // equivalent to clicking "Stay on this page"
   scoped_ptr<ui_test_utils::TitleWatcher> title_watcher(
-      new ui_test_utils::TitleWatcher(tab_contents, title_first_close));
+      new ui_test_utils::TitleWatcher(web_contents, title_first_close));
   panel->Close();
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   alert->native_dialog()->CancelAppModalDialog();
@@ -1425,7 +1426,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, OnBeforeUnloadOnClose) {
   // Close panel and respond to the onbeforeunload dialog with close. This is
   // equivalent to clicking the OS close button on the dialog.
   title_watcher.reset(
-      new ui_test_utils::TitleWatcher(tab_contents, title_second_close));
+      new ui_test_utils::TitleWatcher(web_contents, title_second_close));
   panel->Close();
   alert = ui_test_utils::WaitForAppModalDialog();
   alert->native_dialog()->CloseAppModalDialog();

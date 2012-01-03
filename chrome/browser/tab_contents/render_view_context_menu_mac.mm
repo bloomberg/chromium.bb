@@ -14,6 +14,8 @@
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 #include "grit/generated_resources.h"
 
+using content::WebContents;
+
 namespace {
 
 // Retrieves an NSMenuItem which has the specified command_id. This function
@@ -47,7 +49,7 @@ NSMenuItem* GetMenuItemByID(ui::MenuModel* model,
 // Relies on the tag being set to the command id.
 
 RenderViewContextMenuMac::RenderViewContextMenuMac(
-    TabContents* web_contents,
+    WebContents* web_contents,
     const ContextMenuParams& params,
     NSView* parent_view)
     : RenderViewContextMenu(web_contents, params),

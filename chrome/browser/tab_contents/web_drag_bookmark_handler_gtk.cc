@@ -13,20 +13,22 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 
+using content::WebContents;
+
 WebDragBookmarkHandlerGtk::WebDragBookmarkHandlerGtk()
     : tab_(NULL) {
 }
 
 WebDragBookmarkHandlerGtk::~WebDragBookmarkHandlerGtk() {}
 
-void WebDragBookmarkHandlerGtk::DragInitialize(TabContents* contents) {
+void WebDragBookmarkHandlerGtk::DragInitialize(WebContents* contents) {
   bookmark_drag_data_.Clear();
 
   // Ideally we would want to initialize the the TabContentsWrapper member in
   // the constructor. We cannot do that as the WebDragDestGtk object is
   // created during the construction of the TabContents object.  The
   // TabContentsWrapper is created much later.
-  DCHECK(tab_ ? (tab_->tab_contents() == contents) : true);
+  DCHECK(tab_ ? (tab_->web_contents() == contents) : true);
   if (!tab_)
     tab_ = TabContentsWrapper::GetCurrentWrapperForContents(contents);
 }

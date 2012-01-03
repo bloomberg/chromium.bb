@@ -14,7 +14,10 @@
 #include "ui/gfx/point.h"
 
 class RenderViewHost;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // An IDropSource implementation for a TabContents. Handles notifications sent
 // by an active drag-drop operation as the user mouses over other drop targets
@@ -23,8 +26,9 @@ class TabContents;
 class WebDragSource : public ui::DragSource,
                       public content::NotificationObserver {
  public:
-  // Create a new DragSource for a given HWND and TabContents.
-  WebDragSource(gfx::NativeWindow source_wnd, TabContents* tab_contents);
+  // Create a new DragSource for a given HWND and WebContents.
+  WebDragSource(gfx::NativeWindow source_wnd,
+                content::WebContents* web_contents);
   virtual ~WebDragSource();
 
   // content::NotificationObserver implementation.

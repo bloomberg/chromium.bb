@@ -18,13 +18,15 @@
 #include "ui/base/models/menu_model.h"
 #include "webkit/glue/context_menu.h"
 
+using content::WebContents;
+
 namespace {
 // Non-abstract RenderViewContextMenu class.
 class PlatformAppContextMenu : public RenderViewContextMenu {
  public:
-  PlatformAppContextMenu(TabContents* tab_contents,
-                            const ContextMenuParams& params)
-      : RenderViewContextMenu(tab_contents, params) {}
+  PlatformAppContextMenu(WebContents* web_contents,
+                         const ContextMenuParams& params)
+      : RenderViewContextMenu(web_contents, params) {}
 
  protected:
   // These two functions implement pure virtual methods of
@@ -108,10 +110,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
 
   // The empty app doesn't add any context menu items, so its menu should
   // be empty.
-  TabContents* tab_contents = new_browser->GetSelectedTabContents();
+  WebContents* web_contents = new_browser->GetSelectedWebContents();
   WebKit::WebContextMenuData data;
   ContextMenuParams params(data);
-  PlatformAppContextMenu* menu = new PlatformAppContextMenu(tab_contents,
+  PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
       params);
   menu->Init();
   ASSERT_FALSE(menu->menu_model().GetItemCount());
@@ -139,10 +141,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
 
   // The context_menu app has one context menu item. This is all that should
   // be in the menu, there should be no seperator.
-  TabContents* tab_contents = new_browser->GetSelectedTabContents();
+  WebContents* web_contents = new_browser->GetSelectedWebContents();
   WebKit::WebContextMenuData data;
   ContextMenuParams params(data);
-  PlatformAppContextMenu* menu = new PlatformAppContextMenu(tab_contents,
+  PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
       params);
   menu->Init();
   ASSERT_EQ(1, menu->menu_model().GetItemCount());

@@ -21,19 +21,18 @@
 #include "ui/gfx/point.h"
 
 class SkBitmap;
-class TabContents;
 struct WebDropData;
 
 namespace content {
 
-// WebDragSourceGtk takes care of managing the drag from a TabContents
+class WebContents;
+
+// WebDragSourceGtk takes care of managing the drag from a WebContents
 // with Gtk.
 class CONTENT_EXPORT WebDragSourceGtk : public MessageLoopForUI::Observer {
  public:
-  explicit WebDragSourceGtk(TabContents* tab_contents);
+  explicit WebDragSourceGtk(WebContents* web_contents);
   virtual ~WebDragSourceGtk();
-
-  TabContents* tab_contents() const { return tab_contents_; }
 
   // Starts a drag for the tab contents this WebDragSourceGtk was
   // created for.
@@ -62,7 +61,7 @@ class CONTENT_EXPORT WebDragSourceGtk : public MessageLoopForUI::Observer {
   gfx::NativeView GetContentNativeView() const;
 
   // The tab we're manging the drag for.
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
 
   // The drop data for the current drag (for drags that originate in the render
   // view). Non-NULL iff there is a current drag.

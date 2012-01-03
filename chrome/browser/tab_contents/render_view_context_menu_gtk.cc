@@ -17,6 +17,8 @@
 #include "ui/gfx/gtk_util.h"
 #include "webkit/glue/context_menu.h"
 
+using content::WebContents;
+
 namespace {
 
 // A callback function for gtk_container_foreach(). This callback just checks
@@ -72,7 +74,7 @@ GtkWidget* GetMenuItemByID(ui::MenuModel* model,
 }  // namespace
 
 RenderViewContextMenuGtk::RenderViewContextMenuGtk(
-    TabContents* web_contents,
+    WebContents* web_contents,
     const ContextMenuParams& params,
     guint32 triggering_event_time)
     : RenderViewContextMenu(web_contents, params),
@@ -87,7 +89,7 @@ void RenderViewContextMenuGtk::PlatformInit() {
 
   if (params_.is_editable) {
     RenderWidgetHostViewGtk* rwhv = static_cast<RenderWidgetHostViewGtk*>(
-        source_tab_contents_->GetRenderWidgetHostView());
+        source_web_contents_->GetRenderWidgetHostView());
 #if !defined(TOOLKIT_VIEWS)
     if (rwhv) {
       MenuGtk* menu = menu_gtk_.get();

@@ -46,6 +46,10 @@ class SkBitmap;
 class TabContents;
 class ToolbarModel;
 
+namespace content {
+class WebContents;
+}
+
 class LocationBarViewGtk : public AutocompleteEditController,
                            public LocationBar,
                            public LocationBarTesting,
@@ -67,8 +71,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   Browser* browser() const { return browser_; }
 
-  // Returns the current TabContents.
-  TabContents* GetTabContents() const;
+  // Returns the current WebContents.
+  content::WebContents* GetWebContents() const;
 
   // Sets |preview_enabled| for the PageActionViewGtk associated with this
   // |page_action|. If |preview_enabled| is true, the view will display the
@@ -153,7 +157,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
     GtkWidget* widget() { return alignment_.get(); }
 
     bool IsVisible();
-    void UpdateFromTabContents(TabContents* tab_contents);
+    void UpdateFromWebContents(content::WebContents* web_contents);
 
     // Overridden from ui::AnimationDelegate:
     virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
@@ -223,7 +227,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
     // Called to notify the PageAction that it should determine whether to be
     // visible or hidden. |contents| is the TabContents that is active, |url|
     // is the current page URL.
-    void UpdateVisibility(TabContents* contents, const GURL& url);
+    void UpdateVisibility(content::WebContents* contents, const GURL& url);
 
     // A callback from ImageLoadingTracker for when the image has loaded.
     virtual void OnImageLoaded(

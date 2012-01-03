@@ -18,8 +18,6 @@ namespace ui {
 class OSExchangeDataProviderAura;
 }
 
-class TabContents;
-
 class NativeTabContentsViewAura : public views::NativeWidgetAura,
                                   public NativeTabContentsView {
  public:
@@ -27,7 +25,7 @@ class NativeTabContentsViewAura : public views::NativeWidgetAura,
       internal::NativeTabContentsViewDelegate* delegate);
   virtual ~NativeTabContentsViewAura();
 
-  TabContents* GetTabContents() const;
+  content::WebContents* GetWebContents() const;
 
  private:
   // Overridden from NativeTabContentsView:

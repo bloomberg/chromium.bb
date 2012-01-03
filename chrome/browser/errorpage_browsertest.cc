@@ -36,7 +36,7 @@ class ErrorPageTest : public InProcessBrowserTest {
                                     const std::string& expected_title,
                                     int num_navigations) {
     ui_test_utils::TitleWatcher title_watcher(
-        browser()->GetSelectedTabContents(),
+        browser()->GetSelectedWebContents(),
         ASCIIToUTF16(expected_title));
 
     ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
@@ -77,7 +77,7 @@ class ErrorPageTest : public InProcessBrowserTest {
                                       int num_navigations,
                                       HistoryNavigationDirection direction) {
     ui_test_utils::TitleWatcher title_watcher(
-        browser()->GetSelectedTabContents(),
+        browser()->GetSelectedWebContents(),
         ASCIIToUTF16(expected_title));
 
     TestNavigationObserver test_navigation_observer(

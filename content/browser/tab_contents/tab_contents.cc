@@ -1547,8 +1547,8 @@ bool TabContents::UpdateTitleForEntry(NavigationEntryImpl* entry,
   TitleUpdatedDetails details(entry, explicit_set);
 
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED,
-      content::Source<TabContents>(this),
+      content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
+      content::Source<WebContents>(this),
       content::Details<TitleUpdatedDetails>(&details));
 
   return true;

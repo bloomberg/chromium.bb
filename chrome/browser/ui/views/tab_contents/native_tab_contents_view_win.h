@@ -10,8 +10,11 @@
 #include "ui/views/widget/native_widget_win.h"
 
 class WebDropTarget;
-class TabContents;
 class TabContentsDragWin;
+
+namespace content {
+class WebContents;
+}
 
 class NativeTabContentsViewWin : public views::NativeWidgetWin,
                                  public NativeTabContentsView {
@@ -22,7 +25,7 @@ class NativeTabContentsViewWin : public views::NativeWidgetWin,
 
   WebDropTarget* drop_target() const { return drop_target_.get(); }
 
-  TabContents* GetTabContents() const;
+  content::WebContents* GetWebContents() const;
 
   void EndDragging();
 

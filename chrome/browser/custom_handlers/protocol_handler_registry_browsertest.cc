@@ -22,8 +22,8 @@ namespace {
 
 class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
-  TestRenderViewContextMenu(TabContents* tab_contents, ContextMenuParams params)
-      : RenderViewContextMenu(tab_contents, params) { }
+  TestRenderViewContextMenu(WebContents* web_contents, ContextMenuParams params)
+      : RenderViewContextMenu(web_contents, params) { }
 
   virtual void PlatformInit() { }
   virtual bool GetAcceleratorForCommandId(
@@ -54,7 +54,7 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
     params.writing_direction_right_to_left = 0;
 #endif  // OS_MACOSX
     TestRenderViewContextMenu* menu = new TestRenderViewContextMenu(
-        browser()->GetSelectedTabContents(), params);
+        browser()->GetSelectedWebContents(), params);
     menu->Init();
     return menu;
   }

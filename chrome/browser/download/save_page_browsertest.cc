@@ -34,6 +34,7 @@
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::WebContents;
 
 namespace {
 
@@ -75,8 +76,8 @@ class SavePageBrowserTest : public InProcessBrowserTest {
     *dir = save_dir_.path().AppendASCII(prefix + "_files");
   }
 
-  TabContents* GetCurrentTab() const {
-    TabContents* current_tab = browser()->GetSelectedTabContents();
+  WebContents* GetCurrentTab() const {
+    WebContents* current_tab = browser()->GetSelectedWebContents();
     EXPECT_TRUE(current_tab);
     return current_tab;
   }
@@ -96,7 +97,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
     Browser* popup = ActiveDownloadsUI::GetPopup();
     EXPECT_TRUE(popup);
     ActiveDownloadsUI* downloads_ui = static_cast<ActiveDownloadsUI*>(
-        popup->GetSelectedTabContents()->GetWebUI());
+        popup->GetSelectedWebContents()->GetWebUI());
     EXPECT_TRUE(downloads_ui);
     return downloads_ui->GetDownloads();
   }

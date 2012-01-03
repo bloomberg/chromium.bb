@@ -17,6 +17,7 @@ class SavePackage;
 namespace content {
 
 class DownloadItem;
+class WebContents;
 
 // Browser's download manager: manages all downloads and destination view.
 class DownloadManagerDelegate {
@@ -47,7 +48,7 @@ class DownloadManagerDelegate {
   // Called when the download system wants to alert a TabContents that a
   // download has started, but the TabConetnts has gone away. This lets an
   // delegate return an alternative TabContents. The delegate can return NULL.
-  virtual TabContents* GetAlternativeTabContentsToNotifyForDownload() = 0;
+  virtual WebContents* GetAlternativeTabContentsToNotifyForDownload() = 0;
 
   // Tests if a file type should be opened automatically.
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) = 0;

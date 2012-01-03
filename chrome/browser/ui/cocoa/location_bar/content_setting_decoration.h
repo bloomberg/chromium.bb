@@ -17,7 +17,10 @@
 class ContentSettingImageModel;
 class LocationBarViewMac;
 class Profile;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 class ContentSettingDecoration : public ImageDecoration {
  public:
@@ -26,9 +29,9 @@ class ContentSettingDecoration : public ImageDecoration {
                            Profile* profile);
   virtual ~ContentSettingDecoration();
 
-  // Updates the image and visibility state based on the supplied TabContents.
+  // Updates the image and visibility state based on the supplied WebContents.
   // Returns true if the decoration's visible state changed.
-  bool UpdateFromTabContents(TabContents* tab_contents);
+  bool UpdateFromWebContents(content::WebContents* web_contents);
 
   // Overridden from |LocationBarDecoration|
   virtual bool AcceptsMousePress() OVERRIDE;

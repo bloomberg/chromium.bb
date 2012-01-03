@@ -160,7 +160,7 @@ class CONTENT_EXPORT DownloadManager
   virtual void DownloadUrl(const GURL& url,
                            const GURL& referrer,
                            const std::string& referrer_encoding,
-                           TabContents* tab_contents) = 0;
+                           content::WebContents* web_contents) = 0;
 
   // Download the object at the URL and save it to the specified path. The
   // download is treated as the temporary download and thus will not appear

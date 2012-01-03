@@ -88,7 +88,7 @@ TabContentsWrapper* BrowserNavigatorTest::CreateTabContents() {
       browser()->profile(),
       NULL,
       MSG_ROUTING_NONE,
-      browser()->GetSelectedTabContents(),
+      browser()->GetSelectedWebContents(),
       NULL);
 }
 

@@ -19,7 +19,7 @@
 
 class RenderViewContextMenuMac : public RenderViewContextMenu {
  public:
-  RenderViewContextMenuMac(TabContents* web_contents,
+  RenderViewContextMenuMac(content::WebContents* web_contents,
                            const ContextMenuParams& params,
                            NSView* parent_view);
   virtual ~RenderViewContextMenuMac();

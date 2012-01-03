@@ -57,6 +57,8 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::WebContents;
+
 namespace {
 
 // Vertical space between the bottom edge of the location_bar and the first run
@@ -328,8 +330,8 @@ int LocationBarViewMac::PageActionVisibleCount() {
   return result;
 }
 
-TabContents* LocationBarViewMac::GetTabContents() const {
-  return browser_->GetSelectedTabContents();
+WebContents* LocationBarViewMac::GetWebContents() const {
+  return browser_->GetSelectedWebContents();
 }
 
 PageActionDecoration* LocationBarViewMac::GetPageActionDecoration(
@@ -348,7 +350,7 @@ PageActionDecoration* LocationBarViewMac::GetPageActionDecoration(
 void LocationBarViewMac::SetPreviewEnabledPageAction(
     ExtensionAction* page_action, bool preview_enabled) {
   DCHECK(page_action);
-  TabContents* contents = GetTabContents();
+  WebContents* contents = GetWebContents();
   if (!contents)
     return;
   RefreshPageActionDecorations();
@@ -483,8 +485,8 @@ void LocationBarViewMac::Observe(int type,
                                  const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED: {
-      TabContents* contents = GetTabContents();
-      if (content::Details<TabContents>(contents) != details)
+      WebContents* contents = GetWebContents();
+      if (content::Details<WebContents>(contents) != details)
         return;
 
       [field_ updateCursorAndToolTipRects];
@@ -510,12 +512,12 @@ void LocationBarViewMac::PostNotification(NSString* notification) {
 
 bool LocationBarViewMac::RefreshContentSettingsDecorations() {
   const bool input_in_progress = toolbar_model_->input_in_progress();
-  TabContents* tab_contents =
-      input_in_progress ? NULL : browser_->GetSelectedTabContents();
+  WebContents* web_contents =
+      input_in_progress ? NULL : browser_->GetSelectedWebContents();
   bool icons_updated = false;
   for (size_t i = 0; i < content_setting_decorations_.size(); ++i) {
     icons_updated |=
-        content_setting_decorations_[i]->UpdateFromTabContents(tab_contents);
+        content_setting_decorations_[i]->UpdateFromWebContents(web_contents);
   }
   return icons_updated;
 }
@@ -561,7 +563,7 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
   if (page_action_decorations_.empty())
     return;
 
-  TabContents* contents = GetTabContents();
+  WebContents* contents = GetWebContents();
   if (!contents)
     return;
 

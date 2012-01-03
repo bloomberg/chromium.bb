@@ -234,11 +234,11 @@ bool RenderViewContextMenu::IsInternalResourcesURL(const GURL& url) {
 static const int kSpellcheckRadioGroup = 1;
 
 RenderViewContextMenu::RenderViewContextMenu(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     const ContextMenuParams& params)
     : params_(params),
-      source_tab_contents_(tab_contents),
-      profile_(Profile::FromBrowserContext(tab_contents->GetBrowserContext())),
+      source_web_contents_(web_contents),
+      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
       external_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(speech_input_submenu_model_(this)),
@@ -525,7 +525,7 @@ void RenderViewContextMenu::InitMenu() {
   bool has_selection = !params_.selection_text.empty();
 
   Browser* active_browser = BrowserList::FindBrowserWithWebContents(
-      source_tab_contents_);
+      source_web_contents_);
   if (active_browser && active_browser->is_app()) {
     const std::string ext_id = web_app::GetExtensionIdFromApplicationName(
         active_browser->app_name());
@@ -628,7 +628,7 @@ void RenderViewContextMenu::InitMenu() {
 
   if (!print_preview_menu_observer_.get()) {
     TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(source_tab_contents_);
+        TabContentsWrapper::GetCurrentWrapperForContents(source_web_contents_);
     print_preview_menu_observer_.reset(
         new PrintPreviewContextMenuObserver(wrapper));
   }
@@ -664,7 +664,7 @@ void RenderViewContextMenu::UpdateMenuItem(int command_id,
 }
 
 RenderViewHost* RenderViewContextMenu::GetRenderViewHost() const {
-  return source_tab_contents_->GetRenderViewHost();
+  return source_web_contents_->GetRenderViewHost();
 }
 
 Profile* RenderViewContextMenu::GetProfile() const {
@@ -1014,13 +1014,13 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   }
 
   if (id == IDC_PRINT &&
-      (source_tab_contents_->GetContentRestrictions() &
+      (source_web_contents_->GetContentRestrictions() &
           content::CONTENT_RESTRICTION_PRINT)) {
     return false;
   }
 
   if (id == IDC_SAVE_PAGE &&
-      (source_tab_contents_->GetContentRestrictions() &
+      (source_web_contents_->GetContentRestrictions() &
           content::CONTENT_RESTRICTION_SAVE)) {
     return false;
   }
@@ -1054,30 +1054,30 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
   switch (id) {
     case IDC_BACK:
-      return source_tab_contents_->GetController().CanGoBack();
+      return source_web_contents_->GetController().CanGoBack();
 
     case IDC_FORWARD:
-      return source_tab_contents_->GetController().CanGoForward();
+      return source_web_contents_->GetController().CanGoForward();
 
     case IDC_RELOAD:
-      return source_tab_contents_->GetDelegate() &&
-          source_tab_contents_->GetDelegate()->CanReloadContents(
-              source_tab_contents_);
+      return source_web_contents_->GetDelegate() &&
+          source_web_contents_->GetDelegate()->CanReloadContents(
+              source_web_contents_);
 
     case IDC_VIEW_SOURCE:
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:
-      return source_tab_contents_->GetController().CanViewSource();
+      return source_web_contents_->GetController().CanViewSource();
 
     case IDC_CONTENT_CONTEXT_INSPECTELEMENT:
       return IsDevCommandEnabled(id);
 
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO:
-      return source_tab_contents_->GetController().GetActiveEntry() != NULL;
+      return source_web_contents_->GetController().GetActiveEntry() != NULL;
 
     case IDC_CONTENT_CONTEXT_TRANSLATE: {
       TabContentsWrapper* tab_contents_wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              source_tab_contents_);
+              source_web_contents_);
       if (!tab_contents_wrapper)
         return false;
       TranslateTabHelper* helper = tab_contents_wrapper->translate_tab_helper();
@@ -1098,7 +1098,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
              (original_lang == chrome::kUnknownLanguageCode ||
                  TranslateManager::IsSupportedLanguage(original_lang)) &&
              !helper->language_state().IsPageTranslated() &&
-             !source_tab_contents_->GetInterstitialPage() &&
+             !source_web_contents_->GetInterstitialPage() &&
              TranslateManager::IsTranslatableURL(params_.page_url);
     }
 
@@ -1198,7 +1198,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       // rather than the display one (returned by GetURL) which may be
       // different (like having "view-source:" on the front).
       NavigationEntry* active_entry =
-          source_tab_contents_->GetController().GetActiveEntry();
+          source_web_contents_->GetController().GetActiveEntry();
       return SavePackage::IsSavableURL(
           (active_entry) ? active_entry->GetURL() : GURL());
     }
@@ -1370,7 +1370,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       return observer->ExecuteCommand(id);
   }
 
-  RenderViewHost* rvh = source_tab_contents_->GetRenderViewHost();
+  RenderViewHost* rvh = source_web_contents_->GetRenderViewHost();
 
   // Process custom actions range.
   if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
@@ -1388,7 +1388,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     std::map<int, ExtensionMenuItem::Id>::const_iterator i =
         extension_item_map_.find(id);
     if (i != extension_item_map_.end()) {
-      manager->ExecuteCommand(profile_, source_tab_contents_, params_,
+      manager->ExecuteCommand(profile_, source_web_contents_, params_,
                               i->second);
     }
     return;
@@ -1421,8 +1421,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           params_.link_url,
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
           params_.frame_id,
-          source_tab_contents_->GetDelegate() &&
-              source_tab_contents_->GetDelegate()->IsApplication() ?
+          source_web_contents_->GetDelegate() &&
+              source_web_contents_->GetDelegate()->IsApplication() ?
                   NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB,
           content::PAGE_TRANSITION_LINK);
       break;
@@ -1456,7 +1456,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       DownloadManager* dlm =
           DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
       dlm->DownloadUrl(url, referrer, params_.frame_charset,
-                       source_tab_contents_);
+                       source_web_contents_);
       break;
     }
 
@@ -1526,28 +1526,28 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_BACK:
-      source_tab_contents_->GetController().GoBack();
+      source_web_contents_->GetController().GoBack();
       break;
 
     case IDC_FORWARD:
-      source_tab_contents_->GetController().GoForward();
+      source_web_contents_->GetController().GoForward();
       break;
 
     case IDC_SAVE_PAGE:
-      source_tab_contents_->OnSavePage();
+      source_web_contents_->OnSavePage();
       break;
 
     case IDC_RELOAD:
       // Prevent the modal "Resubmit form post" dialog from appearing in the
       // context of an external context menu.
-      source_tab_contents_->GetController().Reload(!external_);
+      source_web_contents_->GetController().Reload(!external_);
       break;
 
     case IDC_PRINT:
       if (params_.media_type == WebContextMenuData::MediaTypeNone) {
         TabContentsWrapper* tab_contents_wrapper =
             TabContentsWrapper::GetCurrentWrapperForContents(
-                source_tab_contents_);
+                source_web_contents_);
         if (!tab_contents_wrapper)
           break;
         if (switches::IsPrintPreviewEnabled())
@@ -1560,7 +1560,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_VIEW_SOURCE:
-      source_tab_contents_->ViewSource();
+      source_web_contents_->ViewSource();
       break;
 
     case IDC_CONTENT_CONTEXT_INSPECTELEMENT:
@@ -1569,8 +1569,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO: {
       NavigationEntry* nav_entry =
-          source_tab_contents_->GetController().GetActiveEntry();
-      source_tab_contents_->ShowPageInfo(nav_entry->GetURL(),
+          source_web_contents_->GetController().GetActiveEntry();
+      source_web_contents_->ShowPageInfo(nav_entry->GetURL(),
                                          nav_entry->GetSSL(), true);
       break;
     }
@@ -1580,7 +1580,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       // selected, do nothing in that case.
       TabContentsWrapper* tab_contents_wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              source_tab_contents_);
+              source_web_contents_);
       if (!tab_contents_wrapper)
         return;
       TranslateTabHelper* helper = tab_contents_wrapper->translate_tab_helper();
@@ -1597,7 +1597,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       prefs.RemoveLanguageFromBlacklist(original_lang);
       prefs.RemoveSiteFromBlacklist(params_.page_url.HostNoBrackets());
       TranslateManager::GetInstance()->TranslatePage(
-          source_tab_contents_, original_lang, target_lang);
+          source_web_contents_, original_lang, target_lang);
       break;
     }
 
@@ -1606,7 +1606,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:
-      source_tab_contents_->ViewFrameSource(params_.frame_url,
+      source_web_contents_->ViewFrameSource(params_.frame_url,
                                             params_.frame_content_state);
       break;
 
@@ -1628,7 +1628,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         ssl.security_bits = security_bits;
         ssl.connection_status = connection_status;
       }
-      source_tab_contents_->ShowPageInfo(params_.frame_url, ssl,
+      source_web_contents_->ShowPageInfo(params_.frame_url, ssl,
                                          false);  // Don't show the history.
       break;
     }
@@ -1733,7 +1733,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
       TabContentsWrapper* tab_contents_wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              source_tab_contents_);
+              source_web_contents_);
       if (tab_contents_wrapper &&
           tab_contents_wrapper->search_engine_tab_helper() &&
           tab_contents_wrapper->search_engine_tab_helper()->delegate()) {
@@ -1781,7 +1781,7 @@ void RenderViewContextMenu::MenuWillShow(ui::SimpleMenuModel* source) {
   if (source != &menu_model_)
     return;
 
-  RenderWidgetHostView* view = source_tab_contents_->GetRenderWidgetHostView();
+  RenderWidgetHostView* view = source_web_contents_->GetRenderWidgetHostView();
   if (view)
     view->ShowingContextMenu(true);
 }
@@ -1791,10 +1791,10 @@ void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
   if (source != &menu_model_)
     return;
 
-  RenderWidgetHostView* view = source_tab_contents_->GetRenderWidgetHostView();
+  RenderWidgetHostView* view = source_web_contents_->GetRenderWidgetHostView();
   if (view)
     view->ShowingContextMenu(false);
-  RenderViewHost* rvh = source_tab_contents_->GetRenderViewHost();
+  RenderViewHost* rvh = source_web_contents_->GetRenderViewHost();
   if (rvh) {
     rvh->NotifyContextMenuClosed(params_.custom_context);
   }
@@ -1805,7 +1805,7 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     TabContentsWrapper* tab_contents_wrapper =
         TabContentsWrapper::GetCurrentWrapperForContents(
-            source_tab_contents_);
+            source_web_contents_);
     if (!tab_contents_wrapper)
       return false;
     // Don't enable the web inspector if JavaScript is disabled.
@@ -1833,14 +1833,14 @@ void RenderViewContextMenu::OpenURL(
     const GURL& url, const GURL& referrer, int64 frame_id,
     WindowOpenDisposition disposition,
     content::PageTransition transition) {
-  WebContents* new_contents = source_tab_contents_->OpenURL(OpenURLParams(
+  WebContents* new_contents = source_web_contents_->OpenURL(OpenURLParams(
       url, content::Referrer(referrer, params_.referrer_policy), disposition,
       transition, false));
   if (!new_contents)
     return;
 
   RetargetingDetails details;
-  details.source_web_contents = source_tab_contents_;
+  details.source_web_contents = source_web_contents_;
   details.source_frame_id = frame_id;
   details.target_url = url;
   details.target_web_contents = new_contents;
@@ -1848,18 +1848,18 @@ void RenderViewContextMenu::OpenURL(
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_RETARGETING,
       content::Source<Profile>(Profile::FromBrowserContext(
-          source_tab_contents_->GetBrowserContext())),
+          source_web_contents_->GetBrowserContext())),
       content::Details<RetargetingDetails>(&details));
 }
 
 void RenderViewContextMenu::CopyImageAt(int x, int y) {
-  source_tab_contents_->GetRenderViewHost()->CopyImageAt(x, y);
+  source_web_contents_->GetRenderViewHost()->CopyImageAt(x, y);
 }
 
 void RenderViewContextMenu::Inspect(int x, int y) {
   content::RecordAction(UserMetricsAction("DevTools_InspectElement"));
   DevToolsWindow::InspectElement(
-      source_tab_contents_->GetRenderViewHost(), x, y);
+      source_web_contents_->GetRenderViewHost(), x, y);
 }
 
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
@@ -1872,6 +1872,6 @@ void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
 void RenderViewContextMenu::MediaPlayerActionAt(
     const gfx::Point& location,
     const WebMediaPlayerAction& action) {
-  source_tab_contents_->GetRenderViewHost()->
+  source_web_contents_->GetRenderViewHost()->
       ExecuteMediaPlayerActionAtLocation(location, action);
 }

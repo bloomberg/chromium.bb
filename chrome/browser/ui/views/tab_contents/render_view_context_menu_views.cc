@@ -18,13 +18,15 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
+using content::WebContents;
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderViewContextMenuViews, public:
 
 RenderViewContextMenuViews::RenderViewContextMenuViews(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     const ContextMenuParams& params)
-    : RenderViewContextMenu(tab_contents, params),
+    : RenderViewContextMenu(web_contents, params),
       menu_(NULL) {
 }
 
@@ -33,7 +35,7 @@ RenderViewContextMenuViews::~RenderViewContextMenuViews() {
 
 void RenderViewContextMenuViews::RunMenuAt(int x, int y) {
   TabContentsViewViews* tab =
-      static_cast<TabContentsViewViews*>(source_tab_contents_->GetView());
+      static_cast<TabContentsViewViews*>(source_web_contents_->GetView());
   views::Widget* parent = tab->GetTopLevelWidget();
   if (menu_runner_->RunMenuAt(parent, NULL,
           gfx::Rect(gfx::Point(x, y), gfx::Size()),

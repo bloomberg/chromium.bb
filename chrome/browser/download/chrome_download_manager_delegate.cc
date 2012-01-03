@@ -44,6 +44,7 @@ using content::BrowserThread;
 using content::DownloadFile;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::WebContents;
 using safe_browsing::DownloadProtectionService;
 
 namespace {
@@ -159,12 +160,12 @@ bool ChromeDownloadManagerDelegate::OverrideIntermediatePath(
   return true;
 }
 
-TabContents* ChromeDownloadManagerDelegate::
+WebContents* ChromeDownloadManagerDelegate::
     GetAlternativeTabContentsToNotifyForDownload() {
   // Start the download in the last active browser. This is not ideal but better
   // than fully hiding the download from the user.
   Browser* last_active = BrowserList::GetLastActiveWithProfile(profile_);
-  return last_active ? last_active->GetSelectedTabContents() : NULL;
+  return last_active ? last_active->GetSelectedWebContents() : NULL;
 }
 
 

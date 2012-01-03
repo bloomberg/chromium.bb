@@ -17,7 +17,7 @@ struct ContextMenuParams;
 class RenderViewContextMenuGtk : public RenderViewContextMenu,
                                  public MenuGtk::Delegate {
  public:
-  RenderViewContextMenuGtk(TabContents* web_contents,
+  RenderViewContextMenuGtk(content::WebContents* web_contents,
                            const ContextMenuParams& params,
                            uint32_t triggering_event_time);
 

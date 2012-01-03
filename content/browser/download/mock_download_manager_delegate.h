@@ -31,7 +31,8 @@ class MockDownloadManagerDelegate : public content::DownloadManagerDelegate {
                                         void* data));
   MOCK_METHOD2(OverrideIntermediatePath, bool(content::DownloadItem* item,
                                               FilePath* intermediate_path));
-  MOCK_METHOD0(GetAlternativeTabContentsToNotifyForDownload, TabContents*());
+  MOCK_METHOD0(GetAlternativeTabContentsToNotifyForDownload,
+               content::WebContents*());
   MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const FilePath& path));
   MOCK_METHOD1(ShouldCompleteDownload, bool(content::DownloadItem* item));
   MOCK_METHOD1(ShouldOpenDownload, bool(content::DownloadItem* item));

@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_types.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 // Error messages.
 const char* const kFileTooBigError = "The MHTML file generated is too big.";
@@ -102,8 +103,8 @@ void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated(bool success) {
   mhtml_file_ = webkit_blob::DeletableFileReference::GetOrCreate(mhtml_path_,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 
-  TabContents* tab_contents = GetTabContents();
-  if (!tab_contents) {
+  WebContents* web_contents = GetWebContents();
+  if (!web_contents) {
     ReturnFailure(kTabClosedError);
     return;
   }
@@ -112,7 +113,7 @@ void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated(bool success) {
       base::Bind(&PageCaptureSaveAsMHTMLFunction::MHTMLGenerated, this);
 
   g_browser_process->mhtml_generation_manager()->GenerateMHTML(
-      tab_contents, mhtml_path_, callback);
+      web_contents, mhtml_path_, callback);
 }
 
 void PageCaptureSaveAsMHTMLFunction::MHTMLGenerated(const FilePath& file_path,
@@ -144,8 +145,8 @@ void PageCaptureSaveAsMHTMLFunction::ReturnFailure(const std::string& error) {
 void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64 file_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  TabContents* tab_contents = GetTabContents();
-  if (!tab_contents || !render_view_host()) {
+  WebContents* web_contents = GetWebContents();
+  if (!web_contents || !render_view_host()) {
     ReturnFailure(kTabClosedError);
     return;
   }
@@ -166,7 +167,7 @@ void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64 file_size) {
   // blob file from being deleted).
 }
 
-TabContents* PageCaptureSaveAsMHTMLFunction::GetTabContents() {
+WebContents* PageCaptureSaveAsMHTMLFunction::GetWebContents() {
   Browser* browser = NULL;
   TabContentsWrapper* tab_contents_wrapper = NULL;
 
@@ -174,5 +175,5 @@ TabContents* PageCaptureSaveAsMHTMLFunction::GetTabContents() {
       &browser, NULL, &tab_contents_wrapper, NULL)) {
     return NULL;
   }
-  return tab_contents_wrapper->tab_contents();
+  return tab_contents_wrapper->web_contents();
 }

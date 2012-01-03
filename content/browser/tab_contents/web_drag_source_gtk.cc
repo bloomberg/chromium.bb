@@ -31,11 +31,12 @@
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebDragOperationNone;
+using content::WebContents;
 
 namespace content {
 
-WebDragSourceGtk::WebDragSourceGtk(TabContents* tab_contents)
-    : tab_contents_(tab_contents),
+WebDragSourceGtk::WebDragSourceGtk(WebContents* web_contents)
+    : web_contents_(web_contents),
       drag_pixbuf_(NULL),
       drag_failed_(false),
       drag_widget_(gtk_invisible_new()),
@@ -76,7 +77,7 @@ void WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
   // Guard against re-starting before previous drag completed.
   if (drag_context_) {
     NOTREACHED();
-    tab_contents_->SystemDragEnded();
+    web_contents_->SystemDragEnded();
     return;
   }
 
@@ -145,7 +146,7 @@ void WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
   if (!drag_context_) {
     drag_failed_ = true;
     drop_data_.reset();
-    tab_contents_->SystemDragEnded();
+    web_contents_->SystemDragEnded();
     return;
   }
 
@@ -163,8 +164,8 @@ void WebDragSourceGtk::DidProcessEvent(GdkEvent* event) {
   GdkEventMotion* event_motion = reinterpret_cast<GdkEventMotion*>(event);
   gfx::Point client = ui::ClientPoint(GetContentNativeView());
 
-  if (tab_contents_->GetRenderViewHost()) {
-    tab_contents_->GetRenderViewHost()->DragSourceMovedTo(
+  if (web_contents_->GetRenderViewHost()) {
+    web_contents_->GetRenderViewHost()->DragSourceMovedTo(
         client.x(), client.y(),
         static_cast<int>(event_motion->x_root),
         static_cast<int>(event_motion->y_root));
@@ -249,9 +250,9 @@ void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
                 new DragDownloadFile(file_path,
                                      linked_ptr<net::FileStream>(file_stream),
                                      download_url_,
-                                     tab_contents_->GetURL(),
-                                     tab_contents_->GetEncoding(),
-                                     tab_contents_);
+                                     web_contents_->GetURL(),
+                                     web_contents_->GetEncoding(),
+                                     web_contents_);
             drag_file_downloader->Start(
                 new drag_download_util::PromiseFileFinalizer(
                     drag_file_downloader));
@@ -296,8 +297,8 @@ gboolean WebDragSourceGtk::OnDragFailed(GtkWidget* sender,
   gfx::Point root = ui::ScreenPoint(GetContentNativeView());
   gfx::Point client = ui::ClientPoint(GetContentNativeView());
 
-  if (tab_contents_->GetRenderViewHost()) {
-    tab_contents_->GetRenderViewHost()->DragSourceEndedAt(
+  if (web_contents_->GetRenderViewHost()) {
+    web_contents_->GetRenderViewHost()->DragSourceEndedAt(
         client.x(), client.y(), root.x(), root.y(),
         WebDragOperationNone);
   }
@@ -368,21 +369,21 @@ void WebDragSourceGtk::OnDragEnd(GtkWidget* sender,
     gfx::Point root = ui::ScreenPoint(GetContentNativeView());
     gfx::Point client = ui::ClientPoint(GetContentNativeView());
 
-    if (tab_contents_->GetRenderViewHost()) {
-      tab_contents_->GetRenderViewHost()->DragSourceEndedAt(
+    if (web_contents_->GetRenderViewHost()) {
+      web_contents_->GetRenderViewHost()->DragSourceEndedAt(
           client.x(), client.y(), root.x(), root.y(),
           content::GdkDragActionToWebDragOp(drag_context->action));
     }
   }
 
-  tab_contents_->SystemDragEnded();
+  web_contents_->SystemDragEnded();
 
   drop_data_.reset();
   drag_context_ = NULL;
 }
 
 gfx::NativeView WebDragSourceGtk::GetContentNativeView() const {
-  return tab_contents_->GetView()->GetContentNativeView();
+  return web_contents_->GetView()->GetContentNativeView();
 }
 
 gboolean WebDragSourceGtk::OnDragIconExpose(GtkWidget* sender,

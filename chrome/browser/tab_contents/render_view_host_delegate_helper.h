@@ -67,20 +67,20 @@ class RenderViewHostDelegateViewHelper : public content::NotificationObserver {
   // These methods are meant to be called from TabContentsView implementations.
   // They take care of notifying the WebContentsDelegate.
   TabContents* CreateNewWindowFromTabContents(
-      TabContents* tab_contents,
+      content::WebContents* web_contents,
       int route_id,
       const ViewHostMsg_CreateWindow_Params& params);
   // Mirrors the RenderViewHostDelegate::View Show methods.
-  TabContents* ShowCreatedWindow(TabContents* tab_contents,
+  TabContents* ShowCreatedWindow(content::WebContents* web_contents,
                                  int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
                                  bool user_gesture);
-  RenderWidgetHostView* ShowCreatedWidget(TabContents* tab_contents,
+  RenderWidgetHostView* ShowCreatedWidget(content::WebContents* web_contents,
                                           int route_id,
                                           const gfx::Rect& initial_pos);
-  RenderWidgetHostView* ShowCreatedFullscreenWidget(TabContents* tab_contents,
-                                                    int route_id);
+  RenderWidgetHostView* ShowCreatedFullscreenWidget(
+      content::WebContents* web_contents, int route_id);
 
  private:
   // content::NotificationObserver implementation

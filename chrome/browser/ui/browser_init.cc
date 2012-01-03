@@ -126,6 +126,7 @@
 using content::BrowserThread;
 using content::OpenURLParams;
 using content::Referrer;
+using content::WebContents;
 
 namespace {
 
@@ -926,7 +927,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationTab(Profile* profile) {
 
   RecordCmdLineAppHistogram();
 
-  TabContents* app_tab = Browser::OpenApplicationTab(profile, extension, GURL(),
+  WebContents* app_tab = Browser::OpenApplicationTab(profile, extension, GURL(),
                                                      NEW_FOREGROUND_TAB);
   return (app_tab != NULL);
 }
@@ -954,7 +955,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
       return false;
 
     RecordCmdLineAppHistogram();
-    TabContents* tab_in_app_window = Browser::OpenApplication(
+    WebContents* tab_in_app_window = Browser::OpenApplication(
         profile, extension, launch_container, GURL(), NEW_WINDOW);
     return (tab_in_app_window != NULL);
   }
@@ -982,7 +983,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
             extension_misc::APP_LAUNCH_CMD_LINE_APP_LEGACY,
             extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
       }
-      TabContents* app_tab = Browser::OpenAppShortcutWindow(
+      WebContents* app_tab = Browser::OpenAppShortcutWindow(
           profile,
           url,
           true);  // Update app info.

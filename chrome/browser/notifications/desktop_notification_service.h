@@ -29,6 +29,7 @@ class Profile;
 class TabContents;
 
 namespace content {
+class WebContents;
 struct ShowDesktopNotificationHostMsgParams;
 }
 
@@ -55,7 +56,7 @@ class DesktopNotificationService : public content::NotificationObserver,
                          int process_id,
                          int route_id,
                          int callback_context,
-                         TabContents* tab);
+                         content::WebContents* tab);
 
   // ShowNotification is called on the UI thread handling IPCs from a child
   // process, identified by |process_id| and |route_id|.  |source| indicates

@@ -46,6 +46,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
+using content::WebContents;
 using WebKit::WebNotificationPresenter;
 using WebKit::WebTextDirection;
 using WebKit::WebSecurityOrigin;
@@ -330,12 +331,12 @@ ContentSetting DesktopNotificationService::GetContentSetting(
 
 void DesktopNotificationService::RequestPermission(
     const GURL& origin, int process_id, int route_id, int callback_context,
-    TabContents* tab) {
+    WebContents* tab) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!tab) {
     Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
     if (browser)
-      tab = browser->GetSelectedTabContents();
+      tab = browser->GetSelectedWebContents();
   }
 
   if (!tab)

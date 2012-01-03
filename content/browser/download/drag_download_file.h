@@ -18,7 +18,9 @@
 #include "ui/base/dragdrop/download_file_interface.h"
 #include "ui/base/ui_export.h"
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 namespace net {
 class FileStream;
@@ -43,7 +45,7 @@ class CONTENT_EXPORT DragDownloadFile
                    const GURL& url,
                    const GURL& referrer,
                    const std::string& referrer_encoding,
-                   TabContents* tab_contents);
+                   content::WebContents* web_contents);
 
   // DownloadFileProvider methods.
   // Called on drag-and-drop thread (Windows).
@@ -94,7 +96,7 @@ class CONTENT_EXPORT DragDownloadFile
   GURL url_;
   GURL referrer_;
   std::string referrer_encoding_;
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
   MessageLoop* drag_message_loop_;
   FilePath temp_dir_path_;
 

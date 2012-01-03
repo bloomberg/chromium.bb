@@ -26,9 +26,12 @@ class ExtensionMenuItem;
 class PrintPreviewContextMenuObserver;
 class Profile;
 class RenderViewHost;
-class TabContents;
 class SpellingMenuObserver;
 class SpellCheckerSubMenuObserver;
+
+namespace content {
+class WebContents;
+}
 
 namespace gfx {
 class Point;
@@ -117,7 +120,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   static const size_t kMaxExtensionItemTitleLength;
   static const size_t kMaxSelectionTextLength;
 
-  RenderViewContextMenu(TabContents* tab_contents,
+  RenderViewContextMenu(content::WebContents* web_contents,
                         const ContextMenuParams& params);
 
   virtual ~RenderViewContextMenu();
@@ -163,7 +166,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   ExtensionMenuItem* GetExtensionMenuItem(int id) const;
 
   ContextMenuParams params_;
-  TabContents* source_tab_contents_;
+  content::WebContents* source_web_contents_;
   Profile* profile_;
 
   ui::SimpleMenuModel menu_model_;

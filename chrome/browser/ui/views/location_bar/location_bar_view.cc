@@ -68,13 +68,14 @@
 #include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
 #endif
 
+using content::WebContents;
 using views::View;
 
 namespace {
 
-TabContents* GetTabContentsFromDelegate(LocationBarView::Delegate* delegate) {
+WebContents* GetWebContentsFromDelegate(LocationBarView::Delegate* delegate) {
   const TabContentsWrapper* wrapper = delegate->GetTabContentsWrapper();
-  return wrapper ? wrapper->tab_contents() : NULL;
+  return wrapper ? wrapper->web_contents() : NULL;
 }
 
 // A utility function to cast OmniboxView to OmniboxViewViews.
@@ -366,7 +367,7 @@ void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
     return;
 
   DCHECK(page_action);
-  TabContents* contents = GetTabContentsFromDelegate(delegate_);
+  WebContents* contents = GetWebContentsFromDelegate(delegate_);
 
   RefreshPageActionViews();
   PageActionWithBadgeView* page_action_view =
@@ -376,8 +377,7 @@ void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
     return;
 
   page_action_view->image_view()->set_preview_enabled(preview_enabled);
-  page_action_view->UpdateVisibility(contents,
-      GURL(model_->GetText()));
+  page_action_view->UpdateVisibility(contents, GURL(model_->GetText()));
   Layout();
   SchedulePaint();
 }
@@ -882,7 +882,7 @@ SkBitmap LocationBarView::GetFavicon() const {
 }
 
 string16 LocationBarView::GetTitle() const {
-  return GetTabContentsFromDelegate(delegate_)->GetTitle();
+  return GetWebContentsFromDelegate(delegate_)->GetTitle();
 }
 
 InstantController* LocationBarView::GetInstant() {
@@ -919,8 +919,8 @@ void LocationBarView::LayoutView(views::View* view,
 void LocationBarView::RefreshContentSettingViews() {
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
-    (*i)->UpdateFromTabContents(model_->input_in_progress() ? NULL :
-                                GetTabContentsFromDelegate(delegate_));
+    (*i)->UpdateFromWebContents(model_->input_in_progress() ? NULL :
+                                GetWebContentsFromDelegate(delegate_));
   }
 }
 
@@ -970,7 +970,7 @@ void LocationBarView::RefreshPageActionViews() {
     }
   }
 
-  TabContents* contents = GetTabContentsFromDelegate(delegate_);
+  WebContents* contents = GetWebContentsFromDelegate(delegate_);
   if (!page_action_views_.empty() && contents) {
     GURL url = GURL(model_->GetText());
 
@@ -986,7 +986,7 @@ void LocationBarView::RefreshPageActionViews() {
         content::NotificationService::current()->Notify(
             chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
             content::Source<ExtensionAction>(action),
-            content::Details<TabContents>(contents));
+            content::Details<WebContents>(contents));
       }
     }
   }
@@ -1089,8 +1089,8 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
 int LocationBarView::GetDragOperationsForView(views::View* sender,
                                               const gfx::Point& p) {
   DCHECK((sender == location_icon_view_) || (sender == ev_bubble_view_));
-  TabContents* tab_contents = GetTabContentsFromDelegate(delegate_);
-  return (tab_contents && tab_contents->GetURL().is_valid() &&
+  WebContents* web_contents = GetWebContentsFromDelegate(delegate_);
+  return (web_contents && web_contents->GetURL().is_valid() &&
           !location_entry()->IsEditingOrEmpty()) ?
       (ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK) :
       ui::DragDropTypes::DRAG_NONE;

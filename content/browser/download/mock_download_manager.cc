@@ -94,7 +94,7 @@ int MockDownloadManager::RemoveAllDownloads() {
 void MockDownloadManager::DownloadUrl(const GURL& url,
                                       const GURL& referrer,
                                       const std::string& referrer_encoding,
-                                      TabContents* tab_contents) {
+                                      WebContents* web_contents) {
 }
 
 void MockDownloadManager::DownloadUrlToFile(

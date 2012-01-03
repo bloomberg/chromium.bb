@@ -25,8 +25,8 @@ using WebKit::WebDragOperationNone;
 
 namespace content {
 
-WebDragDestGtk::WebDragDestGtk(TabContents* tab_contents, GtkWidget* widget)
-    : tab_contents_(tab_contents),
+WebDragDestGtk::WebDragDestGtk(WebContents* web_contents, GtkWidget* widget)
+    : web_contents_(web_contents),
       widget_(widget),
       context_(NULL),
       data_requests_(0),
@@ -68,7 +68,7 @@ void WebDragDestGtk::UpdateDragStatus(WebDragOperation operation) {
 }
 
 void WebDragDestGtk::DragLeave() {
-  tab_contents_->GetRenderViewHost()->DragTargetDragLeave();
+  web_contents_->GetRenderViewHost()->DragTargetDragLeave();
 
   if (delegate())
     delegate()->OnDragLeave();
@@ -84,7 +84,7 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
     is_drop_target_ = false;
 
     if (delegate())
-      delegate()->DragInitialize(tab_contents_);
+      delegate()->DragInitialize(web_contents_);
 
     // text/plain must come before text/uri-list. This is a hack that works in
     // conjunction with OnDragDataReceived. Since some file managers populate
@@ -115,7 +115,7 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
                         time);
     }
   } else if (data_requests_ == 0) {
-    tab_contents_->GetRenderViewHost()->
+    web_contents_->GetRenderViewHost()->
         DragTargetDragOver(
             ui::ClientPoint(widget_),
             ui::ScreenPoint(widget_),
@@ -218,7 +218,7 @@ void WebDragDestGtk::OnDragDataReceived(
   if (data_requests_ == 0) {
     // Tell the renderer about the drag.
     // |x| and |y| are seemingly arbitrary at this point.
-    tab_contents_->GetRenderViewHost()->
+    web_contents_->GetRenderViewHost()->
         DragTargetDragEnter(*drop_data_.get(),
             ui::ClientPoint(widget_),
             ui::ScreenPoint(widget_),
@@ -252,7 +252,7 @@ gboolean WebDragDestGtk::OnDragDrop(GtkWidget* sender, GdkDragContext* context,
   // Cancel that drag leave!
   method_factory_.InvalidateWeakPtrs();
 
-  tab_contents_->GetRenderViewHost()->
+  web_contents_->GetRenderViewHost()->
       DragTargetDrop(ui::ClientPoint(widget_), ui::ScreenPoint(widget_));
 
   if (delegate())

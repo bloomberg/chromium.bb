@@ -36,6 +36,10 @@ class SkBitmap;
 class StarDecoration;
 class ToolbarModel;
 
+namespace content {
+class WebContents;
+}
+
 // A C++ bridge class that represents the location bar UI element to
 // the portable code.  Wires up an OmniboxViewMac instance to
 // the location bar text field, which handles most of the work.
@@ -102,8 +106,8 @@ class LocationBarViewMac : public AutocompleteEditController,
   // Layout the various decorations which live in the field.
   void Layout();
 
-  // Returns the current TabContents.
-  TabContents* GetTabContents() const;
+  // Returns the current WebContents.
+  content::WebContents* GetWebContents() const;
 
   // Sets preview_enabled_ for the PageActionImageView associated with this
   // |page_action|. If |preview_enabled|, the location bar will display the

@@ -25,9 +25,9 @@ namespace {
 
 class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
-  TestRenderViewContextMenu(TabContents* tab_contents,
+  TestRenderViewContextMenu(WebContents* web_contents,
                             const ContextMenuParams& params)
-      : RenderViewContextMenu(tab_contents, params) {
+      : RenderViewContextMenu(web_contents, params) {
   }
   virtual ~TestRenderViewContextMenu() {}
 
@@ -158,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationUserAction) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_userAction.html")) << message_;
 
-  TabContents* tab = browser()->GetSelectedTabContents();
+  WebContents* tab = browser()->GetSelectedWebContents();
   ui_test_utils::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
@@ -234,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationTargetBlank) {
   ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_targetBlank.html"))
       << message_;
 
-  TabContents* tab = browser()->GetSelectedTabContents();
+  WebContents* tab = browser()->GetSelectedWebContents();
   ui_test_utils::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
@@ -277,9 +277,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationTargetBlankIncognito) {
       "files/extensions/api_test/webnavigation/targetBlank/a.html");
 
   ui_test_utils::OpenURLOffTheRecord(browser()->profile(), url);
-  TabContents* tab = BrowserList::FindTabbedBrowser(
+  WebContents* tab = BrowserList::FindTabbedBrowser(
       browser()->profile()->GetOffTheRecordProfile(), false)->
-          GetSelectedTabContents();
+          GetSelectedWebContents();
 
   // There's a link with target=_blank on a.html. Click on it to open it in a
   // new tab.

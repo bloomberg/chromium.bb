@@ -346,6 +346,14 @@ class WebContents : public PageNavigator {
   // Returns true if |allowed| is true and the mouse has been successfully
   // locked.
   virtual bool GotResponseToLockMouseRequest(bool allowed) = 0;
+
+  // Returns true if the location bar should be focused by default rather than
+  // the page contents. The view calls this function when the tab is focused
+  // to see what it should do.
+  virtual bool FocusLocationBarByDefault() = 0;
+
+  // Focuses the location bar.
+  virtual void SetFocusToLocationBar(bool select_all) = 0;
 };
 
 }  // namespace content

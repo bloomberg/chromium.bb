@@ -456,10 +456,11 @@ class WindowedNotificationObserverWithDetails
 // Watches title changes on a tab, blocking until an expected title is set.
 class TitleWatcher : public content::NotificationObserver {
  public:
-  // |tab_contents| must be non-NULL and needs to stay alive for the
+  // |web_contents| must be non-NULL and needs to stay alive for the
   // entire lifetime of |this|. |expected_title| is the title that |this|
   // will wait for.
-  TitleWatcher(TabContents* tab_contents, const string16& expected_title);
+  TitleWatcher(content::WebContents* web_contents,
+               const string16& expected_title);
   virtual ~TitleWatcher();
 
   // Adds another title to watch for.
@@ -476,7 +477,7 @@ class TitleWatcher : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
   std::vector<string16> expected_titles_;
   content::NotificationRegistrar notification_registrar_;
 

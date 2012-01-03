@@ -31,7 +31,7 @@ class ShellDownloadManagerDelegate
                                   void* data) OVERRIDE;
   virtual bool OverrideIntermediatePath(DownloadItem* item,
                                         FilePath* intermediate_path) OVERRIDE;
-  virtual TabContents* GetAlternativeTabContentsToNotifyForDownload() OVERRIDE;
+  virtual WebContents* GetAlternativeTabContentsToNotifyForDownload() OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
   virtual bool ShouldCompleteDownload(DownloadItem* item) OVERRIDE;
   virtual bool ShouldOpenDownload(DownloadItem* item) OVERRIDE;

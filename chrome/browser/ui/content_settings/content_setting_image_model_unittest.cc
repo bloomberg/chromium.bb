@@ -29,7 +29,7 @@ class ContentSettingImageModelTest : public TabContentsWrapperTestHarness {
   DISALLOW_COPY_AND_ASSIGN(ContentSettingImageModelTest);
 };
 
-TEST_F(ContentSettingImageModelTest, UpdateFromTabContents) {
+TEST_F(ContentSettingImageModelTest, UpdateFromWebContents) {
   TabSpecificContentSettings* content_settings =
       contents_wrapper()->content_settings();
   scoped_ptr<ContentSettingImageModel> content_setting_image_model(
@@ -41,7 +41,7 @@ TEST_F(ContentSettingImageModelTest, UpdateFromTabContents) {
 
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES,
                                      std::string());
-  content_setting_image_model->UpdateFromTabContents(contents());
+  content_setting_image_model->UpdateFromWebContents(contents());
 
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_NE(0, content_setting_image_model->get_icon());
@@ -63,7 +63,7 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   net::CookieOptions options;
   content_settings->OnCookieChanged(
       GURL("http://google.com"), "A=B", options, false);
-  content_setting_image_model->UpdateFromTabContents(contents());
+  content_setting_image_model->UpdateFromWebContents(contents());
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_NE(0, content_setting_image_model->get_icon());
   EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());

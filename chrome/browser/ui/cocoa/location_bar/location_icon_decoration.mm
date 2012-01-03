@@ -16,6 +16,7 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using content::NavigationEntry;
+using content::WebContents;
 
 // The info-bubble point should look like it points to the bottom of the lock
 // icon. Determined with Pixie.app.
@@ -31,7 +32,7 @@ LocationIconDecoration::~LocationIconDecoration() {
 bool LocationIconDecoration::IsDraggable() {
   // Without a tab it will be impossible to get the information needed
   // to perform a drag.
-  if (!owner_->GetTabContents())
+  if (!owner_->GetWebContents())
     return false;
 
   // Do not drag if the user has been editing the location bar, or the
@@ -43,7 +44,7 @@ bool LocationIconDecoration::IsDraggable() {
 }
 
 NSPasteboard* LocationIconDecoration::GetDragPasteboard() {
-  TabContents* tab = owner_->GetTabContents();
+  WebContents* tab = owner_->GetWebContents();
   DCHECK(tab);  // See |IsDraggable()|.
 
   NSString* url = base::SysUTF8ToNSString(tab->GetURL().spec());
@@ -96,7 +97,7 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame) {
   if (owner_->location_entry()->IsEditingOrEmpty())
     return true;
 
-  TabContents* tab = owner_->GetTabContents();
+  WebContents* tab = owner_->GetWebContents();
   NavigationEntry* nav_entry = tab->GetController().GetActiveEntry();
   if (!nav_entry) {
     NOTREACHED();

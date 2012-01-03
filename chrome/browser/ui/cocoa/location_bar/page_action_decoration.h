@@ -14,7 +14,10 @@ class ExtensionAction;
 @class ExtensionActionContextMenu;
 class LocationBarViewMac;
 class Profile;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // PageActionDecoration is used to display the icon for a given Page
 // Action and notify the extension when the icon is clicked.
@@ -38,9 +41,9 @@ class PageActionDecoration : public ImageDecoration,
       SkBitmap* image, const ExtensionResource& resource, int index) OVERRIDE;
 
   // Called to notify the Page Action that it should determine whether
-  // to be visible or hidden. |contents| is the TabContents that is
+  // to be visible or hidden. |contents| is the WebContents that is
   // active, |url| is the current page URL.
-  void UpdateVisibility(TabContents* contents, const GURL& url);
+  void UpdateVisibility(content::WebContents* contents, const GURL& url);
 
   // Sets the tooltip for this Page Action image.
   void SetToolTip(NSString* tooltip);

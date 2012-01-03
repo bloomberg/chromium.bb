@@ -13,6 +13,8 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 
+using content::WebContents;
+
 namespace {
 
 // Tabs must be created as child widgets, otherwise they will be given
@@ -83,8 +85,8 @@ NativeTabContentsViewWin::NativeTabContentsViewWin(
 NativeTabContentsViewWin::~NativeTabContentsViewWin() {
 }
 
-TabContents* NativeTabContentsViewWin::GetTabContents() const {
-  return delegate_->GetTabContents();
+WebContents* NativeTabContentsViewWin::GetWebContents() const {
+  return delegate_->GetWebContents();
 }
 
 void NativeTabContentsViewWin::EndDragging() {
@@ -105,7 +107,7 @@ void NativeTabContentsViewWin::InitNativeTabContentsView() {
   // Remove the root view drop target so we can register our own.
   RevokeDragDrop(GetNativeView());
   drop_target_ = new WebDropTarget(GetNativeView(),
-                                   delegate_->GetTabContents());
+                                   delegate_->GetWebContents());
 }
 
 void NativeTabContentsViewWin::Unparent() {
@@ -298,7 +300,7 @@ void NativeTabContentsViewWin::ScrollCommon(UINT message, int scroll_type,
   if (!ScrollZoom(scroll_type)) {
     // Reflect scroll message to the view() to give it a chance
     // to process scrolling.
-    SendMessage(delegate_->GetTabContents()->GetView()->GetContentNativeView(),
+    SendMessage(delegate_->GetWebContents()->GetView()->GetContentNativeView(),
                 message, MAKELONG(scroll_type, position),
                 reinterpret_cast<LPARAM>(scrollbar));
   }

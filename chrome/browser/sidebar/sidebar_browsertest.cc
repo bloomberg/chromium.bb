@@ -10,6 +10,7 @@
 #include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -50,25 +51,26 @@ class SidebarTest : public ExtensionBrowserTest {
   }
 
   void ShowSidebarForCurrentTab() {
-    ShowSidebar(browser()->GetSelectedTabContents());
+    ShowSidebar(browser()->GetSelectedTabContentsWrapper()->tab_contents());
   }
 
   void ExpandSidebarForCurrentTab() {
-    ExpandSidebar(browser()->GetSelectedTabContents());
+    ExpandSidebar(browser()->GetSelectedTabContentsWrapper()->tab_contents());
   }
 
   void CollapseSidebarForCurrentTab() {
-    CollapseSidebar(browser()->GetSelectedTabContents());
+    CollapseSidebar(browser()->GetSelectedTabContentsWrapper()->tab_contents());
   }
 
   void HideSidebarForCurrentTab() {
-    HideSidebar(browser()->GetSelectedTabContents());
+    HideSidebar(browser()->GetSelectedTabContentsWrapper()->tab_contents());
   }
 
   void NavigateSidebarForCurrentTabTo(const std::string& test_page) {
     GURL url = test_server()->GetURL(test_page);
 
-    TabContents* tab = browser()->GetSelectedTabContents();
+    TabContents* tab =
+        browser()->GetSelectedTabContentsWrapper()->tab_contents();
 
     SidebarManager* sidebar_manager = SidebarManager::GetInstance();
     SidebarContainer* sidebar_container =
@@ -91,21 +93,21 @@ class SidebarTest : public ExtensionBrowserTest {
   void ExpandSidebar(TabContents* tab) {
     SidebarManager* sidebar_manager = SidebarManager::GetInstance();
     sidebar_manager->ExpandSidebar(tab, content_id_);
-    if (browser()->GetSelectedTabContents() == tab)
+    if (browser()->GetSelectedTabContentsWrapper()->tab_contents() == tab)
       EXPECT_GT(browser_view()->GetSidebarWidth(), 0);
   }
 
   void CollapseSidebar(TabContents* tab) {
     SidebarManager* sidebar_manager = SidebarManager::GetInstance();
     sidebar_manager->CollapseSidebar(tab, content_id_);
-    if (browser()->GetSelectedTabContents() == tab)
+    if (browser()->GetSelectedTabContentsWrapper()->tab_contents() == tab)
       EXPECT_EQ(0, browser_view()->GetSidebarWidth());
   }
 
   void HideSidebar(TabContents* tab) {
     SidebarManager* sidebar_manager = SidebarManager::GetInstance();
     sidebar_manager->HideSidebar(tab, content_id_);
-    if (browser()->GetSelectedTabContents() == tab)
+    if (browser()->GetSelectedTabContentsWrapper()->tab_contents() == tab)
       EXPECT_EQ(0, browser_view()->GetSidebarWidth());
   }
 

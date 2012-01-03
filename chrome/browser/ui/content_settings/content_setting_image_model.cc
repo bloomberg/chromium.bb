@@ -15,12 +15,14 @@
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::WebContents;
+
 class ContentSettingBlockedImageModel : public ContentSettingImageModel {
  public:
   explicit ContentSettingBlockedImageModel(
       ContentSettingsType content_settings_type);
 
-  virtual void UpdateFromTabContents(TabContents* tab_contents) OVERRIDE;
+  virtual void UpdateFromWebContents(WebContents* web_contents) OVERRIDE;
 
  private:
   static const int kAccessedIconIDs[];
@@ -35,14 +37,14 @@ class ContentSettingGeolocationImageModel : public ContentSettingImageModel {
  public:
   ContentSettingGeolocationImageModel();
 
-  virtual void UpdateFromTabContents(TabContents* tab_contents) OVERRIDE;
+  virtual void UpdateFromWebContents(WebContents* web_contents) OVERRIDE;
 };
 
 class ContentSettingNotificationsImageModel : public ContentSettingImageModel {
  public:
   ContentSettingNotificationsImageModel();
 
-  virtual void UpdateFromTabContents(TabContents* tab_contents) OVERRIDE;
+  virtual void UpdateFromWebContents(WebContents* web_contents) OVERRIDE;
 };
 
 const int ContentSettingBlockedImageModel::kBlockedIconIDs[] = {
@@ -99,10 +101,10 @@ ContentSettingBlockedImageModel::ContentSettingBlockedImageModel(
     : ContentSettingImageModel(content_settings_type) {
 }
 
-void ContentSettingBlockedImageModel::UpdateFromTabContents(
-    TabContents* tab_contents) {
+void ContentSettingBlockedImageModel::UpdateFromWebContents(
+    WebContents* web_contents) {
   set_visible(false);
-  if (!tab_contents)
+  if (!web_contents)
     return;
 
   const int* icon_ids = kBlockedIconIDs;
@@ -111,7 +113,7 @@ void ContentSettingBlockedImageModel::UpdateFromTabContents(
   // If a content type is blocked by default and was accessed, display the
   // accessed icon.
   TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
   TabSpecificContentSettings* content_settings = wrapper->content_settings();
   if (!content_settings->IsContentBlocked(get_content_settings_type())) {
     if (!content_settings->IsContentAccessed(get_content_settings_type()) ||
@@ -135,13 +137,13 @@ ContentSettingGeolocationImageModel::ContentSettingGeolocationImageModel()
     : ContentSettingImageModel(CONTENT_SETTINGS_TYPE_GEOLOCATION) {
 }
 
-void ContentSettingGeolocationImageModel::UpdateFromTabContents(
-    TabContents* tab_contents) {
+void ContentSettingGeolocationImageModel::UpdateFromWebContents(
+    WebContents* web_contents) {
   set_visible(false);
-  if (!tab_contents)
+  if (!web_contents)
     return;
   TabSpecificContentSettings* content_settings =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents)->
           content_settings();
   const GeolocationSettingsState& settings_state = content_settings->
       geolocation_settings_state();
@@ -165,8 +167,8 @@ ContentSettingNotificationsImageModel::ContentSettingNotificationsImageModel()
     : ContentSettingImageModel(CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
 }
 
-void ContentSettingNotificationsImageModel::UpdateFromTabContents(
-    TabContents* tab_contents) {
+void ContentSettingNotificationsImageModel::UpdateFromWebContents(
+    WebContents* web_contents) {
   // Notifications do not have a bubble.
   set_visible(false);
 }

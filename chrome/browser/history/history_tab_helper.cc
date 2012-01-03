@@ -19,12 +19,13 @@
 #include "content/public/common/frame_navigate_params.h"
 
 using content::NavigationEntry;
+using content::WebContents;
 
-HistoryTabHelper::HistoryTabHelper(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents),
+HistoryTabHelper::HistoryTabHelper(WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
       received_page_title_(false) {
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED,
-                 content::Source<TabContents>(tab_contents));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
+                 content::Source<WebContents>(web_contents));
 }
 
 HistoryTabHelper::~HistoryTabHelper() {
@@ -111,7 +112,7 @@ void HistoryTabHelper::DidNavigateAnyFrame(
 void HistoryTabHelper::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED);
+  DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED);
   TitleUpdatedDetails* title =
       content::Details<TitleUpdatedDetails>(details).ptr();
 

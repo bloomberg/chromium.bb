@@ -72,6 +72,7 @@
 
 using content::NavigationEntry;
 using content::OpenURLParams;
+using content::WebContents;
 
 namespace {
 
@@ -417,8 +418,8 @@ void LocationBarViewGtk::SetSiteTypeDragSource() {
                                       ui::CHROME_NAMED_URL);
 }
 
-TabContents* LocationBarViewGtk::GetTabContents() const {
-  return browser_->GetSelectedTabContents();
+WebContents* LocationBarViewGtk::GetWebContents() const {
+  return browser_->GetSelectedWebContents();
 }
 
 void LocationBarViewGtk::SetPreviewEnabledPageAction(
@@ -574,7 +575,7 @@ SkBitmap LocationBarViewGtk::GetFavicon() const {
 }
 
 string16 LocationBarViewGtk::GetTitle() const {
-  return GetTabContents()->GetTitle();
+  return GetWebContents()->GetTitle();
 }
 
 InstantController* LocationBarViewGtk::GetInstant() {
@@ -628,13 +629,13 @@ void LocationBarViewGtk::FocusSearch() {
 }
 
 void LocationBarViewGtk::UpdateContentSettingsIcons() {
-  TabContents* tab_contents = GetTabContents();
+  WebContents* web_contents = GetWebContents();
   bool any_visible = false;
   for (ScopedVector<ContentSettingImageViewGtk>::iterator i(
            content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
-    (*i)->UpdateFromTabContents(
-        toolbar_model_->input_in_progress() ? NULL : tab_contents);
+    (*i)->UpdateFromWebContents(
+        toolbar_model_->input_in_progress() ? NULL : web_contents);
     any_visible = (*i)->IsVisible() || any_visible;
   }
 
@@ -673,7 +674,7 @@ void LocationBarViewGtk::UpdatePageActions() {
         content::NotificationService::NoDetails());
   }
 
-  TabContents* contents = GetTabContents();
+  WebContents* contents = GetWebContents();
   if (!page_action_views_.empty() && contents) {
     GURL url = GURL(toolbar_model_->GetText());
 
@@ -1035,7 +1036,7 @@ void LocationBarViewGtk::ShowFirstRunBubbleInternal(
 
 gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
                                             GdkEventButton* event) {
-  TabContents* tab = GetTabContents();
+  WebContents* tab = GetWebContents();
 
   if (event->button == 1) {
     // Do not show page info if the user has been editing the location
@@ -1081,7 +1082,7 @@ void LocationBarViewGtk::OnIconDragData(GtkWidget* sender,
                                         GdkDragContext* context,
                                         GtkSelectionData* data,
                                         guint info, guint time) {
-  TabContents* tab = GetTabContents();
+  WebContents* tab = GetWebContents();
   if (!tab)
     return;
   ui::WriteURLWithName(data, tab->GetURL(), tab->GetTitle(), info);
@@ -1286,9 +1287,9 @@ bool LocationBarViewGtk::ContentSettingImageViewGtk::IsVisible() {
   return gtk_widget_get_visible(widget());
 }
 
-void LocationBarViewGtk::ContentSettingImageViewGtk::UpdateFromTabContents(
-    TabContents* tab_contents) {
-  content_setting_image_model_->UpdateFromTabContents(tab_contents);
+void LocationBarViewGtk::ContentSettingImageViewGtk::UpdateFromWebContents(
+    WebContents* web_contents) {
+  content_setting_image_model_->UpdateFromWebContents(web_contents);
   if (!content_setting_image_model_->is_visible()) {
     gtk_widget_hide(widget());
     return;
@@ -1303,9 +1304,9 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::UpdateFromTabContents(
   gtk_widget_show_all(widget());
 
   TabSpecificContentSettings* content_settings = NULL;
-  if (tab_contents) {
+  if (web_contents) {
     content_settings = TabContentsWrapper::GetCurrentWrapperForContents(
-        tab_contents)->content_settings();
+        web_contents)->content_settings();
   }
   if (!content_settings || content_settings->IsBlockageIndicated(
       content_setting_image_model_->get_content_settings_type()))
@@ -1496,7 +1497,7 @@ bool LocationBarViewGtk::PageActionViewGtk::IsVisible() {
 }
 
 void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
-    TabContents* contents, const GURL& url) {
+    WebContents* contents, const GURL& url) {
   // Save this off so we can pass it back to the extension when the action gets
   // executed. See PageActionImageView::OnMousePressed.
   current_tab_id_ = contents ? ExtensionTabUtil::GetTabId(contents) : -1;
@@ -1558,7 +1559,7 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
         content::Source<ExtensionAction>(page_action_),
-        content::Details<TabContents>(contents));
+        content::Details<WebContents>(contents));
   }
 }
 
@@ -1642,7 +1643,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnExposeEvent(
     GtkWidget* widget,
     GdkEventExpose* event) {
   TRACE_EVENT0("ui::gtk", "LocationBarViewGtk::PageActionViewGtk::OnExpose");
-  TabContents* contents = owner_->GetTabContents();
+  WebContents* contents = owner_->GetWebContents();
   if (!contents)
     return FALSE;
 

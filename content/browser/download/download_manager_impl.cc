@@ -759,9 +759,9 @@ int DownloadManagerImpl::RemoveAllDownloads() {
 void DownloadManagerImpl::DownloadUrl(const GURL& url,
                                       const GURL& referrer,
                                       const std::string& referrer_charset,
-                                      TabContents* tab_contents) {
+                                      WebContents* web_contents) {
   DownloadUrlToFile(url, referrer, referrer_charset, DownloadSaveInfo(),
-                    tab_contents);
+                    web_contents);
 }
 
 void DownloadManagerImpl::DownloadUrlToFile(const GURL& url,

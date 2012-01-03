@@ -31,6 +31,7 @@ struct SaveFileCreateInfo;
 
 namespace content {
 class DownloadManager;
+class WebContents;
 }
 
 // The SavePackage object manages the process of saving a page as only-html or
@@ -87,7 +88,7 @@ class CONTENT_EXPORT SavePackage
   // This contructor is used only for testing. We can bypass the file and
   // directory name generation / sanitization by providing well known paths
   // better suited for tests.
-  SavePackage(TabContents* tab_contents,
+  SavePackage(content::WebContents* web_contents,
               SavePackageType save_type,
               const FilePath& file_full_path,
               const FilePath& directory_full_path);

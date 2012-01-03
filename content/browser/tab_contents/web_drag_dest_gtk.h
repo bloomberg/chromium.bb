@@ -16,17 +16,16 @@
 #include "ui/base/gtk/gtk_signal.h"
 #include "webkit/glue/webdropdata.h"
 
-class TabContents;
-
 namespace content {
 
+class WebContents;
 class WebDragDestDelegate;
 
 // A helper class that handles DnD for drops in the renderer. In GTK parlance,
 // this handles destination-side DnD, but not source-side DnD.
 class CONTENT_EXPORT WebDragDestGtk {
  public:
-  WebDragDestGtk(TabContents* tab_contents, GtkWidget* widget);
+  WebDragDestGtk(WebContents* web_contents, GtkWidget* widget);
   ~WebDragDestGtk();
 
   // This is called when the renderer responds to a drag motion event. We must
@@ -64,7 +63,7 @@ class CONTENT_EXPORT WebDragDestGtk {
   CHROMEGTK_CALLBACK_4(WebDragDestGtk, gboolean, OnDragDrop, GdkDragContext*,
                        gint, gint, guint);
 
-  TabContents* tab_contents_;
+  WebContents* web_contents_;
 
   // The render view.
   GtkWidget* widget_;

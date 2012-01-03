@@ -337,7 +337,7 @@ void PrerenderContents::StartPrerendering(
   // Register for new windows from any source.
   notification_registrar_.Add(
       this, content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED,
-      content::Source<TabContents>(new_contents));
+      content::Source<WebContents>(new_contents));
 
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
@@ -470,8 +470,8 @@ void PrerenderContents::Observe(int type,
 
     case content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED: {
       if (prerender_contents_.get()) {
-        CHECK(content::Source<TabContents>(source).ptr() ==
-              prerender_contents_->tab_contents());
+        CHECK(content::Source<WebContents>(source).ptr() ==
+              prerender_contents_->web_contents());
         // Since we don't want to permit child windows that would have a
         // window.opener property, terminate prerendering.
         Destroy(FINAL_STATUS_CREATE_NEW_WINDOW);

@@ -1073,7 +1073,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
   const Extension* extension_app = GetExtension();
 
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
-  TabContents* app_window =
+  WebContents* app_window =
       Browser::OpenApplication(browser()->profile(),
                                extension_app,
                                extension_misc::LAUNCH_WINDOW,

@@ -12,16 +12,20 @@
 
 class InterstitialDropTarget;
 class RenderViewHost;
-class TabContents;
 class TabContentsWrapper;
+
+namespace content {
+class WebContents;
+}
+
 // A helper object that provides drop capabilities to a TabContents. The
-// DropTarget handles drags that enter the region of the TabContents by
+// DropTarget handles drags that enter the region of the WebContents by
 // passing on the events to the renderer.
 class WebDropTarget : public ui::DropTarget {
  public:
   // Create a new WebDropTarget associating it with the given HWND and
-  // TabContents.
-  WebDropTarget(HWND source_hwnd, TabContents* contents);
+  // WebContents.
+  WebDropTarget(HWND source_hwnd, content::WebContents* contents);
   virtual ~WebDropTarget();
 
   void set_drag_cursor(WebKit::WebDragOperation op) {
@@ -47,8 +51,8 @@ class WebDropTarget : public ui::DropTarget {
                        DWORD effect);
 
  private:
-  // Our associated TabContents.
-  TabContents* tab_contents_;
+  // Our associated WebContents.
+  content::WebContents* web_contents_;
 
   // The TabContentsWrapper for |tab_contents_|.
   // Weak reference; may be NULL if the contents aren't contained in a wrapper

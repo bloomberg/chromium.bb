@@ -173,6 +173,6 @@ NavigationController* ToolbarModel::GetNavigationController() const {
   // This |current_tab| can be NULL during the initialization of the
   // toolbar during window creation (i.e. before any tabs have been added
   // to the window).
-  TabContents* current_tab = browser_->GetSelectedTabContents();
+  WebContents* current_tab = browser_->GetSelectedWebContents();
   return current_tab ? &current_tab->GetController() : NULL;
 }

@@ -22,7 +22,7 @@ class HistoryAddPageArgs;
 class HistoryTabHelper : public content::WebContentsObserver,
                          public content::NotificationObserver {
  public:
-  explicit HistoryTabHelper(TabContents* tab_contents);
+  explicit HistoryTabHelper(content::WebContents* web_contents);
   virtual ~HistoryTabHelper();
 
   // Updates history with the specified navigation. This is called by

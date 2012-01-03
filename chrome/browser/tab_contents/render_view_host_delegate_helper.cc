@@ -25,6 +25,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
+using content::WebContents;
+
 RenderViewHostDelegateViewHelper::RenderViewHostDelegateViewHelper() {
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                  content::NotificationService::AllSources());
@@ -219,24 +221,24 @@ RenderWidgetHostView* RenderViewHostDelegateViewHelper::GetCreatedWidget(
 }
 
 TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
   TabContents* new_contents = CreateNewWindow(
       route_id,
-      Profile::FromBrowserContext(tab_contents->GetBrowserContext()),
-      tab_contents->GetSiteInstance(),
-      tab_contents->GetWebUITypeForCurrentState(),
-      tab_contents,
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+      web_contents->GetSiteInstance(),
+      web_contents->GetWebUITypeForCurrentState(),
+      static_cast<TabContents*>(web_contents),
       params.window_container_type,
       params.frame_name);
 
   if (new_contents) {
-    if (tab_contents->GetDelegate())
-      tab_contents->GetDelegate()->WebContentsCreated(new_contents);
+    if (web_contents->GetDelegate())
+      web_contents->GetDelegate()->WebContentsCreated(new_contents);
 
     RetargetingDetails details;
-    details.source_web_contents = tab_contents;
+    details.source_web_contents = web_contents;
     details.source_frame_id = params.opener_frame_id;
     details.target_url = params.target_url;
     details.target_web_contents = new_contents;
@@ -244,12 +246,12 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_RETARGETING,
         content::Source<Profile>(
-            Profile::FromBrowserContext(tab_contents->GetBrowserContext())),
+            Profile::FromBrowserContext(web_contents->GetBrowserContext())),
         content::Details<RetargetingDetails>(&details));
   } else {
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED,
-        content::Source<TabContents>(tab_contents),
+        content::Source<WebContents>(web_contents),
         content::Details<const ViewHostMsg_CreateWindow_Params>(&params));
   }
 
@@ -257,26 +259,26 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
 }
 
 TabContents* RenderViewHostDelegateViewHelper::ShowCreatedWindow(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     int route_id,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_pos,
     bool user_gesture) {
-  TabContents* contents = GetCreatedWindow(route_id);
+  WebContents* contents = GetCreatedWindow(route_id);
   if (contents) {
-    tab_contents->AddNewContents(
+    web_contents->AddNewContents(
         contents, disposition, initial_pos, user_gesture);
   }
-  return contents;
+  return static_cast<TabContents*>(contents);
 }
 
 RenderWidgetHostView* RenderViewHostDelegateViewHelper::ShowCreatedWidget(
-    TabContents* tab_contents, int route_id, const gfx::Rect& initial_pos) {
-  if (tab_contents->GetDelegate())
-    tab_contents->GetDelegate()->RenderWidgetShowing();
+    WebContents* web_contents, int route_id, const gfx::Rect& initial_pos) {
+  if (web_contents->GetDelegate())
+    web_contents->GetDelegate()->RenderWidgetShowing();
 
   RenderWidgetHostView* widget_host_view = GetCreatedWidget(route_id);
-  widget_host_view->InitAsPopup(tab_contents->GetRenderWidgetHostView(),
+  widget_host_view->InitAsPopup(web_contents->GetRenderWidgetHostView(),
                                 initial_pos);
   widget_host_view->GetRenderWidgetHost()->Init();
   return widget_host_view;
@@ -284,12 +286,12 @@ RenderWidgetHostView* RenderViewHostDelegateViewHelper::ShowCreatedWidget(
 
 RenderWidgetHostView*
     RenderViewHostDelegateViewHelper::ShowCreatedFullscreenWidget(
-        TabContents* tab_contents, int route_id) {
-  if (tab_contents->GetDelegate())
-    tab_contents->GetDelegate()->RenderWidgetShowing();
+        content::WebContents* web_contents, int route_id) {
+  if (web_contents->GetDelegate())
+    web_contents->GetDelegate()->RenderWidgetShowing();
 
   RenderWidgetHostView* widget_host_view = GetCreatedWidget(route_id);
-  widget_host_view->InitAsFullscreen(tab_contents->GetRenderWidgetHostView());
+  widget_host_view->InitAsFullscreen(web_contents->GetRenderWidgetHostView());
   widget_host_view->GetRenderWidgetHost()->Init();
   return widget_host_view;
 }

@@ -20,7 +20,7 @@ class WebDragBookmarkHandlerGtk : public content::WebDragDestDelegate {
   virtual ~WebDragBookmarkHandlerGtk();
 
   // Overridden from content::WebDragDestDelegate:
-  virtual void DragInitialize(TabContents* contents) OVERRIDE;
+  virtual void DragInitialize(content::WebContents* contents) OVERRIDE;
   virtual GdkAtom GetBookmarkTargetAtom() const OVERRIDE;
   virtual void OnReceiveDataFromGtk(GtkSelectionData* data) OVERRIDE;
   virtual void OnReceiveProcessedData(const GURL& url,

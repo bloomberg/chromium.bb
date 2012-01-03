@@ -910,27 +910,27 @@ void WindowedNotificationObserver::Observe(
   }
 }
 
-TitleWatcher::TitleWatcher(TabContents* tab_contents,
+TitleWatcher::TitleWatcher(WebContents* web_contents,
                            const string16& expected_title)
-    : tab_contents_(tab_contents),
+    : web_contents_(web_contents),
       expected_title_observed_(false),
       quit_loop_on_observation_(false) {
-  EXPECT_TRUE(tab_contents != NULL);
+  EXPECT_TRUE(web_contents != NULL);
   expected_titles_.push_back(expected_title);
   notification_registrar_.Add(this,
-                              content::NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED,
-                              content::Source<TabContents>(tab_contents));
+                              content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
+                              content::Source<WebContents>(web_contents));
 
   // When navigating through the history, the restored NavigationEntry's title
   // will be used. If the entry ends up having the same title after we return
   // to it, as will usually be the case, the
-  // NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED will then be suppressed, since the
+  // NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED will then be suppressed, since the
   // NavigationEntry's title hasn't changed.
   notification_registrar_.Add(
       this,
       content::NOTIFICATION_LOAD_STOP,
       content::Source<content::NavigationController>(
-          &tab_contents->GetController()));
+          &web_contents->GetController()));
 }
 
 void TitleWatcher::AlsoWaitForTitle(const string16& expected_title) {
@@ -951,13 +951,13 @@ const string16& TitleWatcher::WaitAndGetTitle() {
 void TitleWatcher::Observe(int type,
                            const content::NotificationSource& source,
                            const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED) {
-    TabContents* source_contents = content::Source<TabContents>(source).ptr();
-    ASSERT_EQ(tab_contents_, source_contents);
+  if (type == content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED) {
+    WebContents* source_contents = content::Source<WebContents>(source).ptr();
+    ASSERT_EQ(web_contents_, source_contents);
   } else if (type == content::NOTIFICATION_LOAD_STOP) {
     content::NavigationController* controller =
         content::Source<content::NavigationController>(source).ptr();
-    ASSERT_EQ(&tab_contents_->GetController(), controller);
+    ASSERT_EQ(&web_contents_->GetController(), controller);
   } else {
     FAIL() << "Unexpected notification received.";
   }
@@ -965,7 +965,7 @@ void TitleWatcher::Observe(int type,
   std::vector<string16>::const_iterator it =
       std::find(expected_titles_.begin(),
                 expected_titles_.end(),
-                tab_contents_->GetTitle());
+                web_contents_->GetTitle());
   if (it == expected_titles_.end())
     return;
   observed_title_ = *it;

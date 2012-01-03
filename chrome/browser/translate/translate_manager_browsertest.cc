@@ -46,6 +46,7 @@
 #endif
 
 using content::BrowserThread;
+using content::WebContents;
 using testing::_;
 using testing::Pointee;
 using testing::Property;
@@ -297,7 +298,7 @@ namespace {
 class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
   static TestRenderViewContextMenu* CreateContextMenu(
-      TabContents* tab_contents) {
+      WebContents* web_contents) {
     ContextMenuParams params;
     params.media_type = WebKit::WebContextMenuData::MediaTypeNone;
     params.x = 0;
@@ -306,14 +307,14 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     params.media_flags = 0;
     params.spellcheck_enabled = false;
     params.is_editable = false;
-    params.page_url = tab_contents->GetController().GetActiveEntry()->GetURL();
+    params.page_url = web_contents->GetController().GetActiveEntry()->GetURL();
 #if defined(OS_MACOSX)
     params.writing_direction_default = 0;
     params.writing_direction_left_to_right = 0;
     params.writing_direction_right_to_left = 0;
 #endif  // OS_MACOSX
     params.edit_flags = WebContextMenuData::CanTranslate;
-    return new TestRenderViewContextMenu(tab_contents, params);
+    return new TestRenderViewContextMenu(web_contents, params);
   }
 
   bool IsItemPresent(int id) {
@@ -326,9 +327,9 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
       ui::Accelerator* accelerator) { return false; }
 
  private:
-  TestRenderViewContextMenu(TabContents* tab_contents,
+  TestRenderViewContextMenu(WebContents* web_contents,
                             const ContextMenuParams& params)
-      : RenderViewContextMenu(tab_contents, params) {
+      : RenderViewContextMenu(web_contents, params) {
   }
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewContextMenu);

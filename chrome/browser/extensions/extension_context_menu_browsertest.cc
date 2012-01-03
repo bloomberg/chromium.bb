@@ -18,8 +18,9 @@
 #include "ui/base/models/menu_model.h"
 #include "webkit/glue/context_menu.h"
 
-using ui::MenuModel;
 using WebKit::WebContextMenuData;
+using content::WebContents;
+using ui::MenuModel;
 
 namespace {
 // This test class helps us sidestep platform-specific issues with popping up a
@@ -27,9 +28,9 @@ namespace {
 // RenderViewContextMenu where extension items get added and executed.
 class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
-  TestRenderViewContextMenu(TabContents* tab_contents,
+  TestRenderViewContextMenu(WebContents* web_contents,
                             const ContextMenuParams& params)
-      : RenderViewContextMenu(tab_contents, params) {}
+      : RenderViewContextMenu(web_contents, params) {}
 
   virtual ~TestRenderViewContextMenu() {}
 
@@ -136,14 +137,14 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
                                         const GURL& page_url,
                                         const GURL& link_url,
                                         const GURL& frame_url) {
-    TabContents* tab_contents = browser->GetSelectedTabContents();
+    WebContents* web_contents = browser->GetSelectedWebContents();
     WebContextMenuData data;
     ContextMenuParams params(data);
     params.page_url = page_url;
     params.link_url = link_url;
     params.frame_url = frame_url;
     TestRenderViewContextMenu* menu =
-        new TestRenderViewContextMenu(tab_contents, params);
+        new TestRenderViewContextMenu(web_contents, params);
     menu->Init();
     return menu;
   }

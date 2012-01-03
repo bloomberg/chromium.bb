@@ -120,7 +120,7 @@ enum NotificationType {
   NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
 
   // A new window was requested but was not created. The source will be a
-  // Source<TabContents> corresponding to the tab the request originated from.
+  // Source<WebContents> corresponding to the tab the request originated from.
   // Details are the ViewHostMsg_CreateWindow_Params object that were used in
   // the request.
   NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED,
@@ -243,9 +243,9 @@ enum NotificationType {
   NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
 
   // This notification is sent after TabContents' title is updated. The source
-  // is a Source<TabContents> with a pointer to the TabContents. The details
+  // is a Source<WebContents> with a pointer to the WebContents. The details
   // is a Details<TitleUpdatedDetails> that contains more information.
-  NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED,
+  NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
 
   // This notification is sent when a WebContents is being hidden, e.g. due
   // to switching away from this tab.  The source is a Source<WebContents>.

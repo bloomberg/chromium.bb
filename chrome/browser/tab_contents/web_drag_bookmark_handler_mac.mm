@@ -10,14 +10,16 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
+using content::WebContents;
+
 WebDragBookmarkHandlerMac::WebDragBookmarkHandlerMac()
     : tab_(NULL) {
 }
 
 WebDragBookmarkHandlerMac::~WebDragBookmarkHandlerMac() {}
 
-void WebDragBookmarkHandlerMac::DragInitialize(TabContents* contents) {
-  DCHECK(tab_ ? (tab_->tab_contents() == contents) : true);
+void WebDragBookmarkHandlerMac::DragInitialize(WebContents* contents) {
+  DCHECK(tab_ ? (tab_->web_contents() == contents) : true);
   if (!tab_)
     tab_ = TabContentsWrapper::GetCurrentWrapperForContents(contents);
 

@@ -32,10 +32,10 @@ class TabContentsViewViews : public views::Widget,
                              public TabContentsView,
                              public internal::NativeTabContentsViewDelegate {
  public:
-  // The corresponding TabContents is passed in the constructor, and manages our
+  // The corresponding WebContents is passed in the constructor, and manages our
   // lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split.
-  explicit TabContentsViewViews(TabContents* tab_contents);
+  explicit TabContentsViewViews(content::WebContents* web_contents);
   virtual ~TabContentsViewViews();
 
   // Intermediate code to pass comiplation. This will be removed as a
@@ -107,7 +107,7 @@ class TabContentsViewViews : public views::Widget,
 
  private:
   // Overridden from internal::NativeTabContentsViewDelegate:
-  virtual TabContents* GetTabContents() OVERRIDE;
+  virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual bool IsShowingSadTab() const OVERRIDE;
   virtual void OnNativeTabContentsViewShown() OVERRIDE;
   virtual void OnNativeTabContentsViewHidden() OVERRIDE;
@@ -144,8 +144,8 @@ class TabContentsViewViews : public views::Widget,
 
   // ---------------------------------------------------------------------------
 
-  // The TabContents whose contents we display.
-  TabContents* tab_contents_;
+  // The WebContents whose contents we display.
+  content::WebContents* web_contents_;
 
   // Common implementations of some RenderViewHostDelegate::View methods.
   RenderViewHostDelegateViewHelper delegate_view_helper_;

@@ -25,6 +25,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
+using content::WebContents;
+
 namespace {
 
 // How far to offset up from the bottom of the view to get the top
@@ -171,11 +173,11 @@ ContentSettingDecoration::~ContentSettingDecoration() {
   [animation_ stopAnimation];
 }
 
-bool ContentSettingDecoration::UpdateFromTabContents(
-    TabContents* tab_contents) {
+bool ContentSettingDecoration::UpdateFromWebContents(
+    WebContents* web_contents) {
   bool was_visible = IsVisible();
   int old_icon = content_setting_image_model_->get_icon();
-  content_setting_image_model_->UpdateFromTabContents(tab_contents);
+  content_setting_image_model_->UpdateFromWebContents(web_contents);
   SetVisible(content_setting_image_model_->is_visible());
   bool decoration_changed = was_visible != IsVisible() ||
       old_icon != content_setting_image_model_->get_icon();
@@ -193,7 +195,7 @@ bool ContentSettingDecoration::UpdateFromTabContents(
 
     // Check if the animation has already run.
     TabSpecificContentSettings* content_settings =
-        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
+        TabContentsWrapper::GetCurrentWrapperForContents(web_contents)->
             content_settings();
     ContentSettingsType content_type =
         content_setting_image_model_->get_content_settings_type();

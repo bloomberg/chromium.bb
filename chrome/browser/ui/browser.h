@@ -266,9 +266,9 @@ class Browser : public TabHandlerDelegate,
   static void OpenURLOffTheRecord(Profile* profile, const GURL& url);
 
   // Open |extension| in |container|, using |disposition| if container type is
-  // TAB. Returns the TabContents* that was created or NULL. If non-empty,
+  // TAB. Returns the WebContents* that was created or NULL. If non-empty,
   // |override_url| is used in place of the app launch url.
-  static TabContents* OpenApplication(
+  static content::WebContents* OpenApplication(
       Profile* profile,
       const Extension* extension,
       extension_misc::LaunchContainer container,
@@ -282,7 +282,7 @@ class Browser : public TabHandlerDelegate,
   // Browser::Type::EXTENSION_APP (if |extension| is non-NULL).
   // If |app_browser| is not NULL, it is set to the browser that hosts the
   // returned tab.
-  static TabContents* OpenApplicationWindow(
+  static content::WebContents* OpenApplicationWindow(
       Profile* profile,
       const Extension* extension,
       extension_misc::LaunchContainer container,
@@ -295,17 +295,18 @@ class Browser : public TabHandlerDelegate,
   // and shortcuts that open an installed application.  This function
   // is used to open the former.  To open the latter, use
   // Browser::OpenApplicationWindow().
-  static TabContents* OpenAppShortcutWindow(Profile* profile,
-                                            const GURL& url,
-                                            bool update_shortcut);
+  static content::WebContents* OpenAppShortcutWindow(Profile* profile,
+                                                     const GURL& url,
+                                                     bool update_shortcut);
 
   // Open an application for |extension| using |disposition|.  Returns NULL if
   // there are no appropriate existing browser windows for |profile|. If
   // non-empty, |override_url| is used in place of the app launch url.
-  static TabContents* OpenApplicationTab(Profile* profile,
-                                         const Extension* extension,
-                                         const GURL& override_url,
-                                         WindowOpenDisposition disposition);
+  static content::WebContents* OpenApplicationTab(
+      Profile* profile,
+      const Extension* extension,
+      const GURL& override_url,
+      WindowOpenDisposition disposition);
 
   // Opens a new window and opens the bookmark manager.
   static void OpenBookmarkManagerWindow(Profile* profile);
@@ -396,14 +397,6 @@ class Browser : public TabHandlerDelegate,
   // A convenient version of the above which returns the TCW's WebContents.
   content::WebContents* GetSelectedWebContents() const;
   TabContentsWrapper* GetTabContentsWrapperAt(int index) const;
-  // Same as above but correctly handles if GetSelectedTabContents() is NULL
-  // in the model before dereferencing to get the raw TabContents.
-  // TODO(pinkerton): These should really be returning TabContentsWrapper
-  // objects, but that would require changing about 50+ other files. In order
-  // to keep changes localized, the default is to return a TabContents. Note
-  // this differs from the TabStripModel because it has far fewer clients.
-  // TODO(dpapad): Rename to GetActiveTabContents().
-  TabContents* GetSelectedTabContents() const;
   TabContents* GetTabContentsAt(int index) const;
   void ActivateTabAt(int index, bool user_gesture);
   bool IsTabPinned(int index) const;
@@ -783,7 +776,7 @@ class Browser : public TabHandlerDelegate,
       TabContentsFactory(Profile* profile,
                          SiteInstance* site_instance,
                          int routing_id,
-                         const TabContents* base_tab_contents,
+                         const content::WebContents* base_web_contents,
                          SessionStorageNamespace* session_storage_namespace);
 
   // Overridden from TabHandlerDelegate:

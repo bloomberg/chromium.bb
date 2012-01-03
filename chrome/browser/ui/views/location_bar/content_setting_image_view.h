@@ -18,6 +18,10 @@ class ContentSettingBubbleContents;
 class LocationBarView;
 class TabContents;
 
+namespace content {
+class WebContents;
+}
+
 namespace views {
 class MouseEvent;
 }
@@ -33,7 +37,7 @@ class ContentSettingImageView : public views::ImageView,
 
   // |new_navigation| true if this is a new navigation, false if the tab was
   // just switched to.
-  void UpdateFromTabContents(TabContents* tab_contents);
+  void UpdateFromWebContents(content::WebContents* web_contents);
 
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;

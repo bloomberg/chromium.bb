@@ -23,6 +23,7 @@
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebInputEvent;
+using content::WebContents;
 
 namespace {
 
@@ -32,7 +33,7 @@ namespace {
 // FocusThroughTabTraversal(bool) forwards the "move focus forward" effect to
 // webkit.
 gboolean OnFocus(GtkWidget* widget, GtkDirectionType focus,
-                 TabContents* tab_contents) {
+                 WebContents* web_contents) {
   // If we already have focus, let the next widget have a shot at it. We will
   // reach this situation after the call to gtk_widget_child_focus() in
   // TakeFocus().
@@ -41,7 +42,7 @@ gboolean OnFocus(GtkWidget* widget, GtkDirectionType focus,
 
   gtk_widget_grab_focus(widget);
   bool reverse = focus == GTK_DIR_TAB_BACKWARD;
-  tab_contents->FocusThroughTabTraversal(reverse);
+  web_contents->FocusThroughTabTraversal(reverse);
   return TRUE;
 }
 
@@ -85,7 +86,7 @@ NativeTabContentsViewGtk::NativeTabContentsViewGtk(
       delegate_(delegate),
       ignore_next_char_event_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(drag_source_(
-          new content::WebDragSourceGtk(delegate->GetTabContents()))) {
+          new content::WebDragSourceGtk(delegate->GetWebContents()))) {
 }
 
 NativeTabContentsViewGtk::~NativeTabContentsViewGtk() {
@@ -138,7 +139,7 @@ RenderWidgetHostView* NativeTabContentsViewGtk::CreateRenderWidgetHostView(
       new RenderWidgetHostViewGtk(render_widget_host);
   view->InitAsChild();
   g_signal_connect(view->native_view(), "focus",
-                   G_CALLBACK(OnFocus), delegate_->GetTabContents());
+                   G_CALLBACK(OnFocus), delegate_->GetWebContents());
   g_signal_connect(view->native_view(), "scroll-event",
                    G_CALLBACK(OnMouseScroll), delegate_);
 
@@ -146,8 +147,8 @@ RenderWidgetHostView* NativeTabContentsViewGtk::CreateRenderWidgetHostView(
   views::NativeWidgetGtk::RegisterChildExposeHandler(view->native_view());
 
   // Renderer target DnD.
-  if (delegate_->GetTabContents()->ShouldAcceptDragAndDrop()) {
-    drag_dest_.reset(new content::WebDragDestGtk(delegate_->GetTabContents(),
+  if (delegate_->GetWebContents()->ShouldAcceptDragAndDrop()) {
+    drag_dest_.reset(new content::WebDragDestGtk(delegate_->GetWebContents(),
                                                  view->native_view()));
     bookmark_handler_gtk_.reset(new WebDragBookmarkHandlerGtk);
     drag_dest_->set_delegate(bookmark_handler_gtk_.get());

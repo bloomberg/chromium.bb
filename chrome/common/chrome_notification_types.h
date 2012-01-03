@@ -477,7 +477,7 @@ enum NotificationType {
   NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
 
   // Sent when a page action's visibility has changed. The source is the
-  // ExtensionAction* that changed. The details are a TabContents*.
+  // ExtensionAction* that changed. The details are a WebContents*.
   NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
 
   // Sent by an extension to notify the browser about the results of a unit

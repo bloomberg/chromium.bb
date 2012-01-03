@@ -66,7 +66,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void DownloadUrl(const GURL& url,
                            const GURL& referrer,
                            const std::string& referrer_encoding,
-                           TabContents* tab_contents) OVERRIDE;
+                           content::WebContents* web_contents) OVERRIDE;
   virtual void DownloadUrlToFile(const GURL& url,
                                  const GURL& referrer,
                                  const std::string& referrer_encoding,

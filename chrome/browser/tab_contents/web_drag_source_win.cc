@@ -33,15 +33,15 @@ static void GetCursorPositions(gfx::NativeWindow wnd, gfx::Point* client,
 // WebDragSource, public:
 
 WebDragSource::WebDragSource(gfx::NativeWindow source_wnd,
-                             TabContents* tab_contents)
+                             WebContents* web_contents)
     : ui::DragSource(),
       source_wnd_(source_wnd),
-      render_view_host_(tab_contents->GetRenderViewHost()),
+      render_view_host_(web_contents->GetRenderViewHost()),
       effect_(DROPEFFECT_NONE) {
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
-                 content::Source<WebContents>(tab_contents));
+                 content::Source<WebContents>(web_contents));
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-                 content::Source<WebContents>(tab_contents));
+                 content::Source<WebContents>(web_contents));
 }
 
 WebDragSource::~WebDragSource() {

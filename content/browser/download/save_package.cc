@@ -47,6 +47,7 @@ using base::Time;
 using content::BrowserThread;
 using content::DownloadItem;
 using content::NavigationEntry;
+using content::WebContents;
 using WebKit::WebPageSerializerClient;
 
 namespace {
@@ -114,18 +115,18 @@ const FilePath::CharType SavePackage::kDefaultHtmlExtension[] =
     FILE_PATH_LITERAL("html");
 #endif
 
-SavePackage::SavePackage(TabContents* tab_contents,
+SavePackage::SavePackage(WebContents* web_contents,
                          SavePackageType save_type,
                          const FilePath& file_full_path,
                          const FilePath& directory_full_path)
-    : content::WebContentsObserver(tab_contents),
+    : content::WebContentsObserver(web_contents),
       file_manager_(NULL),
       download_manager_(NULL),
       download_(NULL),
       page_url_(GetUrlToBeSaved()),
       saved_main_file_path_(file_full_path),
       saved_main_directory_path_(directory_full_path),
-      title_(tab_contents->GetTitle()),
+      title_(web_contents->GetTitle()),
       start_tick_(base::TimeTicks::Now()),
       finished_(false),
       user_canceled_(false),
@@ -133,7 +134,7 @@ SavePackage::SavePackage(TabContents* tab_contents,
       save_type_(save_type),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(tab_contents->GetRenderProcessHost()->GetID()),
+      tab_id_(web_contents->GetRenderProcessHost()->GetID()),
       unique_id_(g_save_package_id++) {
   DCHECK(page_url_.is_valid());
   DCHECK(save_type_ == SAVE_AS_ONLY_HTML ||

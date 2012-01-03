@@ -118,10 +118,10 @@ void TabContentsDragWin::StartDragging(const WebDropData& drop_data,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   drag_source_ = new WebDragSource(view_->GetNativeView(),
-                                   view_->GetTabContents());
+                                   view_->GetWebContents());
 
-  const GURL& page_url = view_->GetTabContents()->GetURL();
-  const std::string& page_encoding = view_->GetTabContents()->GetEncoding();
+  const GURL& page_url = view_->GetWebContents()->GetURL();
+  const std::string& page_encoding = view_->GetWebContents()->GetEncoding();
 
   // If it is not drag-out, do the drag-and-drop in the current UI thread.
   if (drop_data.download_metadata.empty()) {
@@ -213,7 +213,7 @@ void TabContentsDragWin::PrepareDragForDownload(
                            download_url,
                            page_url,
                            page_encoding,
-                           view_->GetTabContents());
+                           view_->GetWebContents());
   ui::OSExchangeData::DownloadFileInfo file_download(FilePath(),
                                                      download_file.get());
   data->SetDownloadFileInfo(file_download);

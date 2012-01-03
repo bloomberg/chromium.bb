@@ -1690,8 +1690,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
   // DownloadUrl always prompts; return acceptance of whatever it prompts.
   NullSelectFile(browser());
 
-  TabContents* tab_contents = browser()->GetSelectedTabContents();
-  ASSERT_TRUE(tab_contents);
+  WebContents* web_contents = browser()->GetSelectedWebContents();
+  ASSERT_TRUE(web_contents);
 
   DownloadTestObserver* observer(
     new DownloadTestObserver(
@@ -1700,7 +1700,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
         false,                   // Ignore select file.
         DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   DownloadManagerForBrowser(browser())->DownloadUrl(
-      url, GURL(""), "", tab_contents);
+      url, GURL(""), "", web_contents);
   observer->WaitForFinished();
   EXPECT_TRUE(observer->select_file_dialog_seen());
 
@@ -1715,8 +1715,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToFile) {
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
 
-  TabContents* tab_contents = browser()->GetSelectedTabContents();
-  ASSERT_TRUE(tab_contents);
+  WebContents* web_contents = browser()->GetSelectedWebContents();
+  ASSERT_TRUE(web_contents);
 
   ScopedTempDir other_directory;
   ASSERT_TRUE(other_directory.CreateUniqueTempDir());
@@ -1727,7 +1727,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToFile) {
 
   DownloadTestObserver* observer(CreateWaiter(browser(), 1));
   DownloadManagerForBrowser(browser())->DownloadUrlToFile(
-      url, GURL(""), "", save_info, tab_contents);
+      url, GURL(""), "", save_info, web_contents);
   observer->WaitForFinished();
 
   // Check state.

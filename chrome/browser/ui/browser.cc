@@ -634,13 +634,13 @@ void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 }
 
 // static
-TabContents* Browser::OpenApplication(
+WebContents* Browser::OpenApplication(
     Profile* profile,
     const Extension* extension,
     extension_misc::LaunchContainer container,
     const GURL& override_url,
     WindowOpenDisposition disposition) {
-  TabContents* tab = NULL;
+  WebContents* tab = NULL;
   ExtensionPrefs* prefs = profile->GetExtensionService()->extension_prefs();
   prefs->SetActiveBit(extension->id(), true);
 
@@ -666,7 +666,7 @@ TabContents* Browser::OpenApplication(
 }
 
 // static
-TabContents* Browser::OpenApplicationWindow(
+WebContents* Browser::OpenApplicationWindow(
     Profile* profile,
     const Extension* extension,
     extension_misc::LaunchContainer container,
@@ -707,7 +707,7 @@ TabContents* Browser::OpenApplicationWindow(
 
   TabContentsWrapper* wrapper =
       browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_START_PAGE);
-  TabContents* contents = wrapper->tab_contents();
+  WebContents* contents = wrapper->web_contents();
   contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   contents->GetRenderViewHost()->SyncRendererPrefs();
   browser->window()->Show();
@@ -718,11 +718,11 @@ TabContents* Browser::OpenApplicationWindow(
   return contents;
 }
 
-TabContents* Browser::OpenAppShortcutWindow(Profile* profile,
+WebContents* Browser::OpenAppShortcutWindow(Profile* profile,
                                             const GURL& url,
                                             bool update_shortcut) {
   Browser* app_browser;
-  TabContents* tab = OpenApplicationWindow(
+  WebContents* tab = OpenApplicationWindow(
       profile,
       NULL,  // this is a URL app.  No extension.
       extension_misc::LAUNCH_WINDOW,
@@ -745,12 +745,12 @@ TabContents* Browser::OpenAppShortcutWindow(Profile* profile,
 }
 
 // static
-TabContents* Browser::OpenApplicationTab(Profile* profile,
+WebContents* Browser::OpenApplicationTab(Profile* profile,
                                          const Extension* extension,
                                          const GURL& override_url,
                                          WindowOpenDisposition disposition) {
   Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
-  TabContents* contents = NULL;
+  WebContents* contents = NULL;
   if (!browser) {
     // No browser for this profile, need to open a new one.
     browser = Browser::Create(profile);
@@ -790,7 +790,7 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
   params.disposition = disposition;
 
   if (disposition == CURRENT_TAB) {
-    TabContents* existing_tab = browser->GetSelectedTabContents();
+    WebContents* existing_tab = browser->GetSelectedWebContents();
     TabStripModel* model = browser->tabstrip_model();
     int tab_index = model->GetWrapperIndex(existing_tab);
 
@@ -809,7 +809,7 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
     contents = existing_tab;
   } else {
     browser::Navigate(&params);
-    contents = params.target_contents->tab_contents();
+    contents = params.target_contents->web_contents();
   }
 
   // TODO(skerner):  If we are already in full screen mode, and the user
@@ -1196,13 +1196,6 @@ TabContentsWrapper* Browser::GetTabContentsWrapperAt(int index) const {
   return tabstrip_model()->GetTabContentsAt(index);
 }
 
-TabContents* Browser::GetSelectedTabContents() const {
-  TabContentsWrapper* wrapper = GetSelectedTabContentsWrapper();
-  if (wrapper)
-    return wrapper->tab_contents();
-  return NULL;
-}
-
 TabContents* Browser::GetTabContentsAt(int index) const {
   TabContentsWrapper* wrapper = tabstrip_model()->GetTabContentsAt(index);
   if (wrapper)
@@ -1308,7 +1301,7 @@ TabContents* Browser::AddRestoredTab(
       profile(),
       tab_util::GetSiteInstanceForNewTab(NULL, profile_, restore_url),
       MSG_ROUTING_NONE,
-      GetSelectedTabContents(),
+      GetSelectedWebContents(),
       session_storage_namespace);
   TabContents* new_tab = wrapper->tab_contents();
   wrapper->extension_tab_helper()->SetExtensionAppById(extension_app_id);
@@ -1358,7 +1351,7 @@ void Browser::ReplaceRestoredTab(
       profile(),
       tab_util::GetSiteInstanceForNewTab(NULL, profile_, restore_url),
       MSG_ROUTING_NONE,
-      GetSelectedTabContents(),
+      GetSelectedWebContents(),
       session_storage_namespace);
   wrapper->extension_tab_helper()->SetExtensionAppById(extension_app_id);
   TabContents* replacement = wrapper->tab_contents();
@@ -3098,7 +3091,7 @@ TabContentsWrapper* Browser::CreateTabContentsForURL(
     SiteInstance* instance) const {
   TabContentsWrapper* contents = TabContentsFactory(profile, instance,
       MSG_ROUTING_NONE,
-      GetSelectedTabContents(), NULL);
+      GetSelectedWebContents(), NULL);
   if (!defer_load) {
     // Load the initial URL before adding the new tab contents to the tab strip
     // so that the tab contents has navigation state.
@@ -3762,7 +3755,7 @@ void Browser::OnStartDownload(WebContents* source,
     // Panels.
     // Don't show the animation if the selected tab is not visible (i.e. the
     // window is minimized, we're in a unit test, etc.).
-    TabContents* shelf_tab = shelf->browser()->GetSelectedTabContents();
+    WebContents* shelf_tab = shelf->browser()->GetSelectedWebContents();
     if ((download->GetTotalBytes() > 0) &&
         !ChromeDownloadManagerDelegate::IsExtensionDownload(download) &&
         platform_util::IsVisible(shelf_tab->GetNativeView()) &&
@@ -5165,12 +5158,13 @@ TabContentsWrapper* Browser::TabContentsFactory(
     Profile* profile,
     SiteInstance* site_instance,
     int routing_id,
-    const TabContents* base_tab_contents,
+    const WebContents* base_web_contents,
     SessionStorageNamespace* session_storage_namespace) {
-  TabContents* new_contents = new TabContents(profile, site_instance,
-                                              routing_id, base_tab_contents,
-                                              session_storage_namespace);
-  TabContentsWrapper* wrapper = new TabContentsWrapper(new_contents);
+  WebContents* new_contents = WebContents::Create(
+      profile, site_instance, routing_id, base_web_contents,
+      session_storage_namespace);
+  TabContentsWrapper* wrapper = new TabContentsWrapper(
+      static_cast<TabContents*>(new_contents));
   return wrapper;
 }
 

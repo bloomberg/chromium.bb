@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_NATIVE_TAB_CONTENTS_VIEW_DELEGATE_H_
 #pragma once
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 namespace gfx {
 class Size;
 }
@@ -22,7 +24,7 @@ class NativeTabContentsViewDelegate {
  public:
   virtual ~NativeTabContentsViewDelegate() {}
 
-  virtual TabContents* GetTabContents() = 0;
+  virtual content::WebContents* GetWebContents() = 0;
 
   // TODO(beng):
   // This can die with OnNativeTabContentsViewMouseDown/Move().

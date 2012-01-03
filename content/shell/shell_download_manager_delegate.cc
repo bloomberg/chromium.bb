@@ -142,7 +142,7 @@ bool ShellDownloadManagerDelegate::OverrideIntermediatePath(
   return false;
 }
 
-TabContents* ShellDownloadManagerDelegate::
+WebContents* ShellDownloadManagerDelegate::
     GetAlternativeTabContentsToNotifyForDownload() {
   return NULL;
 }

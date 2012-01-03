@@ -21,6 +21,8 @@
 #include "content/public/browser/notification_service.h"
 #include "skia/ext/skia_utils_mac.h"
 
+using content::WebContents;
+
 namespace {
 
 // Distance to offset the bubble pointer from the bottom of the max
@@ -137,7 +139,7 @@ void PageActionDecoration::OnImageLoaded(
     owner_->UpdatePageActions();
 }
 
-void PageActionDecoration::UpdateVisibility(TabContents* contents,
+void PageActionDecoration::UpdateVisibility(WebContents* contents,
                                             const GURL& url) {
   // Save this off so we can pass it back to the extension when the action gets
   // executed. See PageActionDecoration::OnMousePressed.
@@ -189,7 +191,7 @@ void PageActionDecoration::UpdateVisibility(TabContents* contents,
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
         content::Source<ExtensionAction>(page_action_),
-        content::Details<TabContents>(contents));
+        content::Details<WebContents>(contents));
   }
 }
 

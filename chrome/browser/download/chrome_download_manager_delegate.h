@@ -60,7 +60,8 @@ class ChromeDownloadManagerDelegate
                                   void* data) OVERRIDE;
   virtual bool OverrideIntermediatePath(content::DownloadItem* item,
                                         FilePath* intermediate_path) OVERRIDE;
-  virtual TabContents* GetAlternativeTabContentsToNotifyForDownload() OVERRIDE;
+  virtual content::WebContents*
+      GetAlternativeTabContentsToNotifyForDownload() OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
   virtual bool ShouldCompleteDownload(content::DownloadItem* item) OVERRIDE;
   virtual bool ShouldOpenDownload(content::DownloadItem* item) OVERRIDE;
