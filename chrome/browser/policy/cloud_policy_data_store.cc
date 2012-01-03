@@ -7,7 +7,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
-#include "chrome/browser/policy/proto/device_management_constants.h"
 
 namespace em = enterprise_management;
 
@@ -18,19 +17,19 @@ CloudPolicyDataStore::~CloudPolicyDataStore() {}
 // static
 CloudPolicyDataStore* CloudPolicyDataStore::CreateForUserPolicies() {
   return new CloudPolicyDataStore(em::DeviceRegisterRequest::USER,
-                                  kChromeUserPolicyType);
+                                  dm_protocol::kChromeUserPolicyType);
 }
 
 // static
 CloudPolicyDataStore* CloudPolicyDataStore::CreateForDevicePolicies() {
   return new CloudPolicyDataStore(em::DeviceRegisterRequest::DEVICE,
-                                  kChromeDevicePolicyType);
+                                  dm_protocol::kChromeDevicePolicyType);
 }
 
 CloudPolicyDataStore::CloudPolicyDataStore(
     const em::DeviceRegisterRequest_Type policy_register_type,
     const std::string& policy_type)
-    : user_affiliation_(USER_AFFILIATION_NONE),
+    : user_affiliation_(policy::USER_AFFILIATION_NONE),
       policy_register_type_(policy_register_type),
       policy_type_(policy_type),
       token_cache_loaded_(false) {}
@@ -103,7 +102,7 @@ void CloudPolicyDataStore::set_user_name(const std::string& user_name) {
 }
 
 void CloudPolicyDataStore::set_user_affiliation(
-    UserAffiliation user_affiliation) {
+    policy::UserAffiliation user_affiliation) {
   user_affiliation_ = user_affiliation;
 }
 
@@ -148,8 +147,7 @@ const std::string& CloudPolicyDataStore::user_name() const {
   return user_name_;
 }
 
-CloudPolicyDataStore::UserAffiliation
-    CloudPolicyDataStore::user_affiliation() const {
+policy::UserAffiliation CloudPolicyDataStore::user_affiliation() const {
   return user_affiliation_;
 }
 

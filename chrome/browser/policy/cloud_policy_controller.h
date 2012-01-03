@@ -8,23 +8,26 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
-#include "chrome/browser/policy/device_management_backend.h"
+
+namespace enterprise_management {
+class DeviceManagementResponse;
+}
 
 namespace policy {
 
 class CloudPolicyCacheBase;
 class DelayedWorkScheduler;
+class DeviceManagementRequestJob;
 class DeviceManagementService;
 class DeviceTokenFetcher;
 class PolicyNotifier;
 
 // Coordinates the actions of DeviceTokenFetcher, CloudPolicyDataStore,
-// DeviceManagementBackend, and CloudPolicyCache: calls their methods and
-// listens to their callbacks/notifications.
-class CloudPolicyController
-    : public DeviceManagementBackend::DevicePolicyResponseDelegate,
-      public CloudPolicyDataStore::Observer {
+// and CloudPolicyCache: calls their methods and listens to their
+// callbacks/notifications.
+class CloudPolicyController : public CloudPolicyDataStore::Observer {
  public:
   // All parameters are weak pointers.
   CloudPolicyController(DeviceManagementService* service,
@@ -47,10 +50,10 @@ class CloudPolicyController
   // a fetch was attempted.
   void RefreshPolicies();
 
-  // DevicePolicyResponseDelegate implementation:
-  virtual void HandlePolicyResponse(
-      const enterprise_management::DevicePolicyResponse& response) OVERRIDE;
-  virtual void OnError(DeviceManagementBackend::ErrorCode code) OVERRIDE;
+  // Policy request response handler.
+  void OnPolicyFetchCompleted(
+      DeviceManagementStatus status,
+      const enterprise_management::DeviceManagementResponse& response);
 
   // CloudPolicyDataStore::Observer implementation:
   virtual void OnDeviceTokenChanged() OVERRIDE;
@@ -120,7 +123,7 @@ class CloudPolicyController
   CloudPolicyCacheBase* cache_;
   CloudPolicyDataStore* data_store_;
   DeviceTokenFetcher* token_fetcher_;
-  scoped_ptr<DeviceManagementBackend> backend_;
+  scoped_ptr<DeviceManagementRequestJob> request_job_;
   ControllerState state_;
   PolicyNotifier* notifier_;
 

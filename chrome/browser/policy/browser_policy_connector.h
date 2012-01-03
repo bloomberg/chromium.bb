@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,17 +11,17 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/policy/cloud_policy_data_store.h"
+#include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/configuration_policy_handler_list.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class TestingBrowserProcess;
 class TokenService;
 
 namespace policy {
 
+class CloudPolicyDataStore;
 class CloudPolicyProvider;
 class CloudPolicySubsystem;
 class ConfigurationPolicyProvider;
@@ -123,8 +123,7 @@ class BrowserPolicyConnector : public content::NotificationObserver {
 
   // Works out the user affiliation by checking the given |user_name| against
   // the installation attributes.
-  policy::CloudPolicyDataStore::UserAffiliation GetUserAffiliation(
-      const std::string& user_name);
+  UserAffiliation GetUserAffiliation(const std::string& user_name);
 
  private:
   // content::NotificationObserver method overrides:

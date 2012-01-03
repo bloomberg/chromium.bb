@@ -12,7 +12,6 @@
 #include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
-#include "chrome/browser/policy/proto/device_management_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

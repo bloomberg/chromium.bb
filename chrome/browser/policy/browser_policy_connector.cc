@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,10 @@
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/gaia/token_service.h"
+#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/cloud_policy_provider.h"
 #include "chrome/browser/policy/cloud_policy_provider_impl.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/network_configuration_updater.h"
 #include "chrome/browser/policy/user_policy_cache.h"
@@ -343,19 +343,19 @@ const ConfigurationPolicyHandlerList*
   return &handler_list_;
 }
 
-CloudPolicyDataStore::UserAffiliation
-    BrowserPolicyConnector::GetUserAffiliation(const std::string& user_name) {
+UserAffiliation BrowserPolicyConnector::GetUserAffiliation(
+    const std::string& user_name) {
 #if defined(OS_CHROMEOS)
   if (install_attributes_.get()) {
     size_t pos = user_name.find('@');
     if (pos != std::string::npos &&
         user_name.substr(pos + 1) == install_attributes_->GetDomain()) {
-      return CloudPolicyDataStore::USER_AFFILIATION_MANAGED;
+      return USER_AFFILIATION_MANAGED;
     }
   }
 #endif
 
-  return CloudPolicyDataStore::USER_AFFILIATION_NONE;
+  return USER_AFFILIATION_NONE;
 }
 
 void BrowserPolicyConnector::Observe(

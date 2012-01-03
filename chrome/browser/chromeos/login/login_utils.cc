@@ -744,7 +744,7 @@ void LoginUtilsImpl::PrepareProfile(
       using_oauth_ &&
       authenticator_.get() &&
       (connector->GetUserAffiliation(username) ==
-          policy::CloudPolicyDataStore::USER_AFFILIATION_MANAGED);
+           policy::USER_AFFILIATION_MANAGED);
 
   // Initialize user policy before the profile is created so the profile
   // initialization code sees the cached policy settings.

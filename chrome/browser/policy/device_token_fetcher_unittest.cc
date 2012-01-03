@@ -9,8 +9,7 @@
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/logging_work_scheduler.h"
 #include "chrome/browser/policy/mock_cloud_policy_data_store.h"
-#include "chrome/browser/policy/mock_device_management_backend.h"
-#include "chrome/browser/policy/mock_device_management_service_old.h"
+#include "chrome/browser/policy/mock_device_management_service.h"
 #include "chrome/browser/policy/policy_notifier.h"
 #include "chrome/browser/policy/user_policy_cache.h"
 #include "content/test/test_browser_thread.h"
@@ -34,15 +33,15 @@ class DeviceTokenFetcherTest : public testing::Test {
       : ui_thread_(BrowserThread::UI, &loop_),
         file_thread_(BrowserThread::FILE, &loop_) {
     EXPECT_TRUE(temp_user_data_dir_.CreateUniqueTempDir());
+    successful_registration_response_.mutable_register_response()->
+        set_device_management_token("fake_token");
   }
 
   virtual void SetUp() {
     cache_.reset(new UserPolicyCache(
         temp_user_data_dir_.path().AppendASCII("DeviceTokenFetcherTest"),
         false  /* wait_for_policy_fetch */));
-    EXPECT_CALL(service_, CreateBackend())
-        .Times(AnyNumber())
-        .WillRepeatedly(MockDeviceManagementServiceProxyBackend(&backend_));
+    EXPECT_CALL(service_, StartJob(_)).Times(AnyNumber());
     data_store_.reset(CloudPolicyDataStore::CreateForUserPolicies());
     data_store_->AddObserver(&observer_);
   }
@@ -71,13 +70,13 @@ class DeviceTokenFetcherTest : public testing::Test {
   }
 
   MessageLoop loop_;
-  MockDeviceManagementBackend backend_;
-  MockDeviceManagementServiceOld service_;
+  MockDeviceManagementService service_;
   scoped_ptr<CloudPolicyCacheBase> cache_;
   scoped_ptr<CloudPolicyDataStore> data_store_;
   MockCloudPolicyDataStoreObserver observer_;
   PolicyNotifier notifier_;
   ScopedTempDir temp_user_data_dir_;
+  em::DeviceManagementResponse successful_registration_response_;
 
  private:
   content::TestBrowserThread ui_thread_;
@@ -86,8 +85,9 @@ class DeviceTokenFetcherTest : public testing::Test {
 
 TEST_F(DeviceTokenFetcherTest, FetchToken) {
   testing::InSequence s;
-  EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _, _)).WillOnce(
-      MockDeviceManagementBackendSucceedRegister());
+  EXPECT_CALL(service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION))
+      .WillOnce(service_.SucceedJob(successful_registration_response_));
   DeviceTokenFetcher fetcher(&service_, cache_.get(), data_store_.get(),
                              &notifier_);
   EXPECT_CALL(observer_, OnDeviceTokenChanged());
@@ -99,8 +99,11 @@ TEST_F(DeviceTokenFetcherTest, FetchToken) {
   EXPECT_NE("", token);
 
   // Calling FetchToken() again should result in a new token being fetched.
-  EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _, _)).WillOnce(
-      MockDeviceManagementBackendSucceedRegister());
+  successful_registration_response_.mutable_register_response()->
+      set_device_management_token("new_fake_token");
+  EXPECT_CALL(service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION))
+      .WillOnce(service_.SucceedJob(successful_registration_response_));
   EXPECT_CALL(observer_, OnDeviceTokenChanged());
   FetchToken(&fetcher);
   loop_.RunAllPending();
@@ -112,10 +115,10 @@ TEST_F(DeviceTokenFetcherTest, FetchToken) {
 
 TEST_F(DeviceTokenFetcherTest, RetryOnError) {
   testing::InSequence s;
-  EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _, _)).WillOnce(
-      MockDeviceManagementBackendFailRegister(
-          DeviceManagementBackend::kErrorRequestFailed)).WillOnce(
-      MockDeviceManagementBackendSucceedRegister());
+  EXPECT_CALL(service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION))
+      .WillOnce(service_.FailJob(DM_STATUS_REQUEST_FAILED))
+      .WillOnce(service_.SucceedJob(successful_registration_response_));
   DeviceTokenFetcher fetcher(&service_, cache_.get(), data_store_.get(),
                              &notifier_, new DummyWorkScheduler);
   EXPECT_CALL(observer_, OnDeviceTokenChanged());
@@ -126,9 +129,9 @@ TEST_F(DeviceTokenFetcherTest, RetryOnError) {
 }
 
 TEST_F(DeviceTokenFetcherTest, UnmanagedDevice) {
-  EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _, _)).WillOnce(
-      MockDeviceManagementBackendFailRegister(
-          DeviceManagementBackend::kErrorServiceManagementNotSupported));
+  EXPECT_CALL(service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION))
+      .WillOnce(service_.FailJob(DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED));
   EXPECT_FALSE(cache_->is_unmanaged());
   DeviceTokenFetcher fetcher(&service_, cache_.get(), data_store_.get(),
                              &notifier_);
@@ -149,8 +152,9 @@ TEST_F(DeviceTokenFetcherTest, DontSetFetchingDone) {
 
 TEST_F(DeviceTokenFetcherTest, DontSetFetchingDoneWithoutPolicyFetch) {
   CreateNewWaitingCache();
-  EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _, _)).WillOnce(
-      MockDeviceManagementBackendSucceedRegister());
+  EXPECT_CALL(service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION))
+      .WillOnce(service_.SucceedJob(successful_registration_response_));
   EXPECT_CALL(observer_, OnDeviceTokenChanged());
   DeviceTokenFetcher fetcher(&service_, cache_.get(), data_store_.get(),
                              &notifier_);
@@ -172,9 +176,9 @@ TEST_F(DeviceTokenFetcherTest, SetFetchingDoneWhenUnmanaged) {
 
 TEST_F(DeviceTokenFetcherTest, SetFetchingDoneOnFailures) {
   CreateNewWaitingCache();
-  EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _, _)).WillOnce(
-      MockDeviceManagementBackendFailRegister(
-          DeviceManagementBackend::kErrorRequestFailed));
+  EXPECT_CALL(service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION))
+      .WillOnce(service_.FailJob(DM_STATUS_REQUEST_FAILED));
   DeviceTokenFetcher fetcher(&service_, cache_.get(), data_store_.get(),
                              &notifier_);
   FetchToken(&fetcher);

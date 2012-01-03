@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
 #if defined(OS_CHROMEOS)
@@ -82,7 +83,7 @@ class CloudPolicyDataStore {
   void set_machine_id(const std::string& machine_id);
   void set_machine_model(const std::string& machine_model);
   void set_user_name(const std::string& user_name);
-  void set_user_affiliation(UserAffiliation user_affiliation);
+  void set_user_affiliation(policy::UserAffiliation user_affiliation);
 
 #if defined(OS_CHROMEOS)
   void set_device_status_collector(DeviceStatusCollector* collector);
@@ -101,7 +102,7 @@ class CloudPolicyDataStore {
   const std::string& policy_type() const;
   bool token_cache_loaded() const;
   const std::string& user_name() const;
-  UserAffiliation user_affiliation() const;
+  policy::UserAffiliation user_affiliation() const;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -121,7 +122,7 @@ class CloudPolicyDataStore {
 
   // Data necessary for constructing policy requests.
   std::string device_token_;
-  UserAffiliation user_affiliation_;
+  policy::UserAffiliation user_affiliation_;
 
   // Constants that won't change over the life-time of a cloud policy
   // subsystem.
