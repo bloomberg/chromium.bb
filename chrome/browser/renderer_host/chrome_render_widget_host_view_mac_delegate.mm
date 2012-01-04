@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -228,19 +228,19 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
       // 2. Pass min:0 max:1 (instead of min:-1 max:1). This way, gestureAmount
       //    will become less than 0, but on the quick swipe back to the left,
       //    NSEventPhaseCancelled is sent instead.
-      // The overshoot behavior of (2) looks nicer with the current UI, so let's
-      // do that for now.
-      [theEvent trackSwipeEventWithOptions:0
-                  dampenAmountThresholdMin:goForward ? -1 : 0
-                                       max:goForward ?  0 : 1
+      // The current UI looks nicer with (1) so that swiping the opposite
+      // direction after the initial swipe doesn't cause the shield to move
+      // in the wrong direction.
+      [theEvent trackSwipeEventWithOptions:NSEventSwipeTrackingLockDirection
+                  dampenAmountThresholdMin:-1
+                                       max:1
                               usingHandler:^(CGFloat gestureAmount,
                                              NSEventPhase phase,
                                              BOOL isComplete,
                                              BOOL *stop) {
           if (phase == NSEventPhaseBegan) {
-            NSWindow* window =
-                [render_widget_host_->view()->GetNativeView() window];
-            [historyOverlay showPanelForWindow:window];
+            [historyOverlay showPanelForView:
+                render_widget_host_->view()->GetNativeView()];
             return;
           }
 

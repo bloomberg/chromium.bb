@@ -375,6 +375,8 @@
         <include name="IDR_STATUS_TRAY_ICON_PRESSED" file="chromium/product_logo_22.png" type="BINDATA" />
       </if>
       <if expr="is_macosx">
+        <include name="IDR_SWIPE_BACK" file="back_large.png" type="BINDATA" />
+        <include name="IDR_SWIPE_FORWARD" file="forward_large.png" type="BINDATA" />
         <include name="IDR_TABPOSE_CLOSE" file="tabpose_close.png" type="BINDATA" />
       </if>
       <include name="IDR_THEME_BUTTON_BACKGROUND" file="notused.png" type="BINDATA" />

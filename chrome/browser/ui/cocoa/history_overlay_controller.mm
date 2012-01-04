@@ -1,87 +1,79 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
 
+#include "base/logging.h"
+#include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
+
 #import <QuartzCore/QuartzCore.h>
 
 #include <cmath>
 
-// OverlayFrameView ////////////////////////////////////////////////////////////
+// Constants ///////////////////////////////////////////////////////////////////
 
-// The content view of the window that draws a custom frame.
-@interface OverlayFrameView : NSView {
+// The radius of the circle drawn in the shield.
+const CGFloat kShieldRadius = 70;
+
+// The diameter of the circle and the width of its bounding box.
+const CGFloat kShieldWidth = kShieldRadius * 2;
+
+// The height of the shield.
+const CGFloat kShieldHeight = 140;
+
+// The amount of |gestureAmount| at which AppKit considers the gesture
+// completed. This was derived more via art than science.
+const CGFloat kGestureCompleteProgress = 0.3;
+
+// HistoryOverlayView //////////////////////////////////////////////////////////
+
+// The content view that draws the semicircle and the arrow.
+@interface HistoryOverlayView : NSView {
  @private
-  NSTextField* message_;  // Weak, owned by the view hierarchy.
+  HistoryOverlayMode mode_;
+  CGFloat progress_;
 }
-- (void)setMessageText:(NSString*)text;
+@property(nonatomic) CGFloat progress;
+- (id)initWithMode:(HistoryOverlayMode)mode
+             image:(NSImage*)image;
 @end
 
-// The content view of the window that draws a custom frame.
-@implementation OverlayFrameView
+@implementation HistoryOverlayView
 
-- (id)initWithFrame:(NSRect)frameRect {
-  if ((self = [super initWithFrame:frameRect])) {
-    scoped_nsobject<NSTextField> message(
-        // The frame will be fixed up when |-setMessageText:| is called.
-        [[NSTextField alloc] initWithFrame:NSZeroRect]);
-    message_ = message.get();
-    [message_ setEditable:NO];
-    [message_ setSelectable:NO];
-    [message_ setBezeled:NO];
-    [message_ setDrawsBackground:NO];
-    [message_ setFont:[NSFont boldSystemFontOfSize:72]];
-    [message_ setTextColor:[NSColor whiteColor]];
-    [self addSubview:message_];
+@synthesize progress = progress_;
+
+- (id)initWithMode:(HistoryOverlayMode)mode
+             image:(NSImage*)image {
+  NSRect frame = NSMakeRect(0, 0, kShieldWidth, kShieldHeight);
+  if ((self = [super initWithFrame:frame])) {
+    mode_ = mode;
+
+    // If going backward, the arrow needs to be in the right half of the circle,
+    // so offset the X position.
+    CGFloat offset = mode_ == kHistoryOverlayModeBack ? kShieldRadius : 0;
+    NSRect arrowRect = NSMakeRect(offset, 0, kShieldRadius, kShieldHeight);
+    arrowRect = NSInsetRect(arrowRect, 10, 0);  // Give a little padding.
+
+    scoped_nsobject<NSImageView> imageView(
+        [[NSImageView alloc] initWithFrame:arrowRect]);
+    [imageView setImage:image];
+    [self addSubview:imageView];
   }
   return self;
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-  const CGFloat kCornerRadius = 5.0;
-  NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:[self bounds]
-                                                       xRadius:kCornerRadius
-                                                       yRadius:kCornerRadius];
-
-  NSColor* fillColor = [NSColor colorWithCalibratedWhite:0.2 alpha:0.85];
+  NSRect ovalRect = NSMakeRect(0, 0, kShieldWidth, kShieldHeight);
+  NSBezierPath* path = [NSBezierPath bezierPathWithOvalInRect:ovalRect];
+  NSColor* fillColor =
+      // Clamp the minimum ligtness to be 0.666.
+      [NSColor colorWithCalibratedWhite:std::min(2.0/3.0 - progress_, 2.0/3.0)
+                                  alpha:0.85];
   [fillColor set];
   [path fill];
-}
-
-- (void)setMessageText:(NSString*)text {
-  const CGFloat kHorizontalPadding = 30;  // In view coordinates.
-
-  // Style the string.
-  scoped_nsobject<NSMutableAttributedString> attrString(
-      [[NSMutableAttributedString alloc] initWithString:text]);
-  scoped_nsobject<NSShadow> textShadow([[NSShadow alloc] init]);
-  [textShadow.get() setShadowColor:[NSColor colorWithCalibratedWhite:0
-                                                               alpha:0.6]];
-  [textShadow.get() setShadowOffset:NSMakeSize(0, -1)];
-  [textShadow setShadowBlurRadius:1.0];
-  [attrString addAttribute:NSShadowAttributeName
-                     value:textShadow
-                     range:NSMakeRange(0, [text length])];
-  [message_ setAttributedStringValue:attrString];
-
-  // Fix up the frame of the string.
-  [message_ sizeToFit];
-  NSRect messageFrame = [message_ frame];
-  NSRect frameInViewSpace =
-      [message_ convertRect:[[self window] frame] fromView:nil];
-
-  if (NSWidth(messageFrame) > NSWidth(frameInViewSpace))
-    frameInViewSpace.size.width = NSWidth(messageFrame) + kHorizontalPadding;
-
-  messageFrame.origin.x =
-      (NSWidth(frameInViewSpace) - NSWidth(messageFrame)) / 2;
-  messageFrame.origin.y =
-      (NSHeight(frameInViewSpace) - NSHeight(messageFrame)) / 2;
-
-  [[self window] setFrame:[message_ convertRect:frameInViewSpace toView:nil]
-                  display:YES];
-  [message_ setFrame:messageFrame];
 }
 
 @end
@@ -91,90 +83,72 @@
 @implementation HistoryOverlayController
 
 - (id)initForMode:(HistoryOverlayMode)mode {
-  const NSRect kWindowFrame = NSMakeRect(0, 0, 120, 70);
-  scoped_nsobject<NSWindow> window(
-      [[NSWindow alloc] initWithContentRect:kWindowFrame
-                                  styleMask:NSBorderlessWindowMask
-                                    backing:NSBackingStoreBuffered
-                                      defer:NO]);
-  if ((self = [super initWithWindow:window])) {
+  if ((self = [super init])) {
     mode_ = mode;
-
-    [window setDelegate:self];
-    [window setBackgroundColor:[NSColor clearColor]];
-    [window setOpaque:NO];
-    [window setHasShadow:NO];
-
-    // Create the content view. Take the frame from the existing content view.
-    NSRect frame = [[window contentView] frame];
-    scoped_nsobject<OverlayFrameView> frameView(
-        [[OverlayFrameView alloc] initWithFrame:frame]);
-    contentView_ = frameView.get();
-    [window setContentView:contentView_];
-
-    const unichar kBackArrowCharacter = 0x2190;
-    const unichar kForwardArrowCharacter = 0x2192;
-
-    unichar commandChar = mode_ == kHistoryOverlayModeForward ?
-        kForwardArrowCharacter : kBackArrowCharacter;
-    NSString* text =
-        [NSString stringWithCharacters:&commandChar length:1];
-    [contentView_ setMessageText:text];
+    DCHECK(mode == kHistoryOverlayModeBack ||
+           mode == kHistoryOverlayModeForward);
   }
   return self;
 }
 
-- (void)setProgress:(CGFloat)gestureAmount {
-  const CGFloat kVerticalPositionRatio = 0.65;
-  NSRect windowFrame = [parent_ frame];
-  CGFloat minX = NSMinX(windowFrame);
-  CGFloat maxX = NSMaxX(windowFrame) - NSWidth([[self window] frame]);
-  CGFloat x = 0;
-  if (mode_ == kHistoryOverlayModeForward)
-    x = maxX + gestureAmount * (maxX - minX);
-  else if (mode_ == kHistoryOverlayModeBack)
-    x = minX + gestureAmount * (maxX - minX);
-  NSPoint p = [parent_ frame].origin;
-  p.x = x;
-  p.y += (NSHeight(windowFrame) - NSHeight([[self window] frame])) *
-         kVerticalPositionRatio;
-  [[self window] setFrameOrigin:p];
+- (void)loadView {
+  const gfx::Image& image =
+      ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          mode_ == kHistoryOverlayModeBack ? IDR_SWIPE_BACK
+                                           : IDR_SWIPE_FORWARD);
+  contentView_.reset(
+      [[HistoryOverlayView alloc] initWithMode:mode_
+                                         image:image.ToNSImage()]);
+  self.view = contentView_;
+}
 
-  CGFloat alpha =
-      -(std::abs(gestureAmount) - 1) * (std::abs(gestureAmount) - 1) + 1;
-  [[self window] setAlphaValue:alpha];
+- (void)setProgress:(CGFloat)gestureAmount {
+  NSRect parentFrame = [parent_ frame];
+  // Scale the gesture amount so that the progress is indicative of the gesture
+  // being completed.
+  gestureAmount = std::abs(gestureAmount) / kGestureCompleteProgress;
+
+  // Compute the new position based on the progress.
+  NSRect frame = self.view.frame;
+  frame.origin.y = (NSHeight(parentFrame) / 2) - (kShieldHeight / 2);
+
+  CGFloat width = std::min(kShieldRadius * gestureAmount, kShieldRadius);
+  if (mode_ == kHistoryOverlayModeForward)
+    frame.origin.x = NSMaxX(parentFrame) - width;
+  else if (mode_ == kHistoryOverlayModeBack)
+    frame.origin.x = NSMinX(parentFrame) - kShieldWidth + width;
+
+  self.view.frame = frame;
+  [contentView_ setProgress:gestureAmount];
+  [contentView_ setNeedsDisplay:YES];
+}
+
+- (void)showPanelForView:(NSView*)view {
+  parent_.reset([view retain]);
+  [self setProgress:0];  // Set initial view position.
+  [[parent_ superview] addSubview:self.view
+                       positioned:NSWindowAbove
+                       relativeTo:parent_];
 }
 
 - (void)dismiss {
   const CGFloat kFadeOutDurationSeconds = 0.2;
 
-  NSWindow* overlayWindow = [self window];
+  NSView* overlay = self.view;
 
   scoped_nsobject<CAAnimation> animation(
-      [[overlayWindow animationForKey:@"alphaValue"] copy]);
+      [[overlay animationForKey:@"alphaValue"] copy]);
   [animation setDelegate:self];
   [animation setDuration:kFadeOutDurationSeconds];
   NSMutableDictionary* dictionary =
       [NSMutableDictionary dictionaryWithCapacity:1];
   [dictionary setObject:animation forKey:@"alphaValue"];
-  [overlayWindow setAnimations:dictionary];
-  [[overlayWindow animator] setAlphaValue:0.0];
-}
-
-- (void)windowWillClose:(NSNotification*)notification {
-  // Release all animations because CAAnimation retains its delegate (self),
-  // which will cause a retain cycle. Break it!
-  [[self window] setAnimations:[NSDictionary dictionary]];
-}
-
-- (void)showPanelForWindow:(NSWindow*)window {
-  parent_.reset([window retain]);
-  [self setProgress:0];  // Set initial window position.
-  [self showWindow:self];
+  [overlay setAnimations:dictionary];
+  [[overlay animator] setAlphaValue:0.0];
 }
 
 - (void)animationDidStop:(CAAnimation*)theAnimation finished:(BOOL)finished {
-  [self close];
+  [self.view removeFromSuperview];
 }
 
 @end

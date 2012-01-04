@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,40 +8,39 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"
 
-@class OverlayFrameView;
+@class HistoryOverlayView;
 
 enum HistoryOverlayMode {
   kHistoryOverlayModeBack,
   kHistoryOverlayModeForward
 };
 
-// The HistoryOverlayController manages the overlay HUD panel which displays
-// navigation gesture icons within a browser window.
-@interface HistoryOverlayController : NSWindowController<NSWindowDelegate> {
+// The HistoryOverlayController manages a view that is inserted atop the web
+// contents to provide visual feedback when the user is performing history
+// navigation gestures.
+@interface HistoryOverlayController : NSViewController {
  @private
   HistoryOverlayMode mode_;
-
-  // The content view of the window that this controller manages.
-  OverlayFrameView* contentView_;  // Weak, owned by the window.
-
-  scoped_nsobject<NSWindow> parent_;
+  // Strongly typed reference of self.view.
+  scoped_nsobject<HistoryOverlayView> contentView_;
+  // The view above which self.view is inserted as a subview.
+  scoped_nsobject<NSView> parent_;
 }
 
 // Designated initializer.
 - (id)initForMode:(HistoryOverlayMode)mode;
 
-// Shows the panel.
-- (void)showPanelForWindow:(NSWindow*)window;
+// Shows the shield above |view|.
+- (void)showPanelForView:(NSView*)view;
 
 // Updates the appearance of the overlay based on track gesture progress.
 - (void)setProgress:(CGFloat)gestureAmount;
 
-// Schedules a fade-out animation and then closes the window,
-// which will release the controller.
+// Fades the shield out and removes it from the view hierarchy.
 - (void)dismiss;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_OVERLAY_PANEL_CONTROLLER_H_
