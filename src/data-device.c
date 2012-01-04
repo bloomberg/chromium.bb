@@ -106,15 +106,16 @@ weston_data_source_send_offer(struct weston_data_source *source,
 	offer->resource.object.id = 0;
 	offer->resource.object.interface = &wl_data_offer_interface;
 	offer->resource.object.implementation =
-		(void (**)(void)) &source->offer_interface;
+		(void (**)(void)) source->offer_interface;
 	offer->resource.data = offer;
+	wl_list_init(&offer->resource.destroy_listener_list);
 
 	offer->source = source;
 	offer->source_destroy_listener.func = destroy_offer_data_source;
 	wl_list_insert(&source->resource.destroy_listener_list,
 		       &offer->source_destroy_listener.link);
 
-	wl_client_add_resource(source->resource.client, &offer->resource);
+	wl_client_add_resource(target->client, &offer->resource);
 
 	wl_resource_post_event(target,
 			       WL_DATA_DEVICE_DATA_OFFER, &offer->resource);
@@ -398,6 +399,8 @@ create_data_source(struct wl_client *client,
 	source->resource.object.implementation =
 		(void (**)(void)) &data_source_interface;
 	source->resource.data = source;
+	wl_list_init(&source->resource.destroy_listener_list);
+
 	source->offer_interface = &data_offer_interface;
 	source->cancel = data_source_cancel;
 

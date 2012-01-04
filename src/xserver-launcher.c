@@ -243,7 +243,8 @@ static void
 data_offer_receive(struct wl_client *client, struct wl_resource *resource,
 		   const char *mime_type, int32_t fd)
 {
-	struct weston_wm *wm = resource->data;
+	struct weston_data_offer *offer = resource->data;
+	struct weston_wm *wm = offer->source->resource.data;
 
 	if (strcmp(mime_type, "text/plain;charset=utf-8") == 0) {
 		/* Get data for the utf8_string target */
