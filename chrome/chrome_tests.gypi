@@ -3051,6 +3051,185 @@
       ],  # conditions
     },  # target browser_tests
     {
+      # Executable that runs each perf browser test in a new process.
+      'target_name': 'performance_browser_tests',
+      'type': 'executable',
+      'msvs_cygwin_shell': 0,
+      'msvs_cygwin_dirs': ['<(DEPTH)/third_party/cygwin'],
+      'dependencies': [
+        'browser',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        'chrome',
+        'chrome_resources.gyp:chrome_resources',
+        'chrome_resources.gyp:chrome_strings',
+        'renderer',
+        'test_support_common',
+        '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
+        '../base/base.gyp:test_support_base',
+        '../net/net.gyp:net',
+        '../net/net.gyp:net_test_support',
+        '../skia/skia.gyp:skia',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/cld/cld.gyp:cld',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
+        '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+        '../v8/tools/gyp/v8.gyp:v8',
+        '../webkit/webkit.gyp:test_shell_test_support',
+        # Runtime dependencies
+        '../third_party/mesa/mesa.gyp:osmesa',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:copy_TestNetscapePlugIn',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'defines': [
+        'HAS_OUT_OF_PROC_TEST_RUNNER',
+        'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
+      ],
+      'sources': [
+        'app/breakpad_mac_stubs.mm',
+        'app/chrome_command_ids.h',
+        'app/chrome_dll.rc',
+        'app/chrome_dll_resource.h',
+        'app/chrome_version.rc.version',
+        'test/base/chrome_render_view_test.cc',
+        'test/base/chrome_render_view_test.h',
+        'test/base/chrome_test_launcher.cc',
+        'test/perf/browser_perf_test.cc',
+        'test/perf/browser_perf_test.h',
+        'test/perf/rendering/latency_tests.cc',
+        '../content/app/startup_helper_win.cc',
+        '../content/test/test_launcher.cc',
+        '../content/test/test_launcher.h',
+      ],
+      'rules': [
+        {
+          'rule_name': 'js2webui',
+          'extension': 'js',
+          'msvs_external_rule': 1,
+          'inputs': [
+            '<(gypv8sh)',
+            '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
+            '<(mock_js)',
+            '<(test_api_js)',
+            '<(js2gtest)',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT)-gen.cc',
+            '<(PRODUCT_DIR)/test_data/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).js',
+          ],
+          'process_outputs_as_sources': 1,
+          'action': [
+            'python',
+            '<@(_inputs)',
+            'webui',
+            '<(RULE_INPUT_PATH)',
+            'chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).js',
+            '<@(_outputs)',
+          ],
+        },
+      ],
+      'conditions': [
+        ['OS!="linux" or toolkit_views==1', {
+          'sources!': [
+            'browser/extensions/browser_action_test_util_gtk.cc',
+          ],
+        }],
+        ['OS=="win"', {
+          'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
+          ],
+          'include_dirs': [
+            '<(DEPTH)/third_party/wtl/include',
+          ],
+          'dependencies': [
+            'chrome_version_resources',
+            'installer_util_strings',
+            '../sandbox/sandbox.gyp:sandbox',
+          ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
+          ],
+          'configurations': {
+            'Debug_Base': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_debug_link_nonincremental)',
+                },
+              },
+            },
+          }
+        }, { # else: OS != "win"
+          'sources!': [
+            'app/chrome_command_ids.h',
+            'app/chrome_dll.rc',
+            'app/chrome_dll_resource.h',
+            'app/chrome_version.rc.version',
+          ],
+        }],
+        ['toolkit_uses_gtk == 1', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+          ],
+        }],
+        ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
+          'dependencies': [
+            '../build/linux/system.gyp:ssl',
+          ],
+        }],
+        ['OS=="mac"', {
+          'include_dirs': [
+            '../third_party/GTM',
+          ],
+          # TODO(mark): We really want this for all non-static library
+          # targets, but when we tried to pull it up to the common.gypi
+          # level, it broke other things like the ui, startup, and
+          # page_cycler tests. *shrug*
+          'xcode_settings': {
+            'OTHER_LDFLAGS': [
+              '-Wl,-ObjC',
+            ],
+          },
+          # See the comment in this section of the unit_tests target for an
+          # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
+          'dependencies+++': [
+            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+          ],
+        }, { # else: OS != "mac"
+          'sources!': [
+            'browser/extensions/browser_action_test_util_mac.mm',
+          ],
+        }],
+        ['os_posix == 1 and OS != "mac"', {
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        }],
+      ],  # conditions
+    },  # target performance_browser_tests
+    {
       # Executable that runs safebrowsing test in a new process.
       'target_name': 'safe_browsing_tests',
       'type': 'executable',

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1036,6 +1036,12 @@ void RenderWidgetHost::OnMsgUpdateRect(
             UserMetricsAction("BadMessageTerminate_RWH1"));
         process()->ReceivedBadMessage();
       } else {
+        UNSHIPPED_TRACE_EVENT_INSTANT2("test_latency", "UpdateRect",
+            "x+y", params.bitmap_rect.x() + params.bitmap_rect.y(),
+            "color", 0xffffff & *static_cast<uint32*>(dib->memory()));
+        UNSHIPPED_TRACE_EVENT_INSTANT1("test_latency", "UpdateRectWidth",
+            "width", params.bitmap_rect.width());
+
         // Scroll the backing store.
         if (!params.scroll_rect.IsEmpty()) {
           ScrollBackingStoreRect(params.dx, params.dy,

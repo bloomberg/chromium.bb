@@ -1,0 +1,159 @@
+<html>
+<head>
+<script type="text/javascript">
+/**
+ * @fileoverview This page executes various animation behaviors based on URL
+ *               arguments to test input latency. There are two main modes of
+ *               operation: webgl and software. Both modes use
+ *               requestAnimationFrame to drive the update rate. The basic task
+ *               of the page is to collect mouse input coordinates in the input
+ *               handler and render with the latest input coordinate in RAF. The
+ *               latency test will look at the rendering trace data to detect
+ *               the latest mouse coordinate that affected the frame. For
+ *               software runs, the pixel at 0,0 on the page must contain the
+ *               mouse coordinate encoded as a color.
+ */
+
+var frameCountWarmup = 5;
+var frameCount = 0;
+var gl = null;
+var mouseX = 0;
+var testParams = {};
+var testIsRunning = true;
+
+function parseParams() {
+  var query = window.location.search.substring(1);
+  if (!query)
+    return;
+  var params = query.split('&');
+  for (var i = 0, len = params.length; i < len; i++) {
+    var pair = params[i].split('=');
+    if (pair.length == 1)
+      testParams[pair[0]] = true;
+    else
+      testParams[pair[0]] = pair[1];
+  }
+}
+
+function setCoordinates(e) {
+  // Prevent the page from dirtying when the test has already ended. Otherwise,
+  // on OSX some tests never get the domAutomationController FINISHED message.
+  if (!testIsRunning)
+    return;
+
+  // Ignore mouse events with wrong Y coordinate.
+  if (e.clientY != parseInt(testParams.y))
+    return;
+
+  mouseX = e.clientX;
+  if (testParams.inputDirty) {
+    document.getElementById('text').firstChild.textContent =
+        mouseX.toString();
+  }
+  if (testParams.inputHeavy) {
+    sleep(parseInt(testParams.delayTimeMS));
+  }
+}
+
+function init() {
+  parseParams();
+
+  if (testParams.mode == 'webgl') {
+    var canvas = document.getElementById('canvas');
+    if (!canvas)
+      return false;
+    canvas.width = parseInt(testParams.canvasWidth);
+    canvas.height = parseInt(testParams.canvasWidth);
+    try {
+      // Specify antialiasing to ensure that we get a BlitFramebufferEXT in
+      // the trace when the compositor consumes a webgl frame.
+      gl = canvas.getContext('webgl', { antialias: true });
+    } catch (e) {}
+    if (!gl) {
+      try {
+        gl = canvas.getContext('experimental-webgl');
+      } catch (e) {
+        return false;
+      }
+    }
+    return true;
+  } else if (testParams.mode == 'software') {
+    var table = document.getElementById('table');
+    table.style.backgroundColor = '#ff00ff';
+    return true;
+  }
+}
+
+function onLoad() {
+  if (init())
+    window.webkitRequestAnimationFrame(draw);
+  else
+    endTest();
+}
+
+function sleep(milliseconds) {
+  var start = Date.now();
+  while(Date.now() - start <= milliseconds);
+}
+
+function draw() {
+  if (testParams.rafHeavy) {
+    sleep(parseInt(testParams.delayTimeMS));
+  }
+
+  if (testParams.mode == 'webgl') {
+    gl.viewport(0, 0, testParams.canvasWidth, testParams.canvasWidth);
+    if (testParams.paintHeavy) {
+      gl.clearColor(0, 0, 0.0, 1.0);
+      for (var i = 0; i < 1000; ++i)
+        gl.clear(gl.COLOR_BUFFER_BIT);
+    }
+    gl.clearColor(mouseX, testParams.clearColorGreen, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+  } else if (testParams.mode == 'software') {
+    var table = document.getElementById('table');
+    // Encode mouse x value into color channels (support up to 64k x values).
+    var g = (mouseX & 0xff00) >> 8;
+    var b = (mouseX & 0xff);
+    table.style.backgroundColor = 'rgb(0, ' + g + ', ' + b + ')';
+    // When no inputs are coming in, the first table won't change. Since we
+    // still need to cause a paint, toggle the color of another element:
+    var table2 = document.getElementById('table2');
+    table2.style.backgroundColor = (frameCount & 1) ? 'gray' : 'silver';
+    if (testParams.paintHeavy) {
+      var body = document.getElementById('body');
+      body.style.backgroundColor = (frameCount & 1) ? 'silver' : 'gray';
+    }
+  }
+
+  frameCount++;
+  if (frameCount == parseInt(testParams.numFrames)) {
+    if (testParams.mode == 'webgl')
+      gl.finish();
+    endTest();
+  } else {
+    window.webkitRequestAnimationFrame(draw);
+  }
+}
+
+function endTest() {
+  testIsRunning = false;
+  domAutomationController.setAutomationId(1);
+  domAutomationController.send('FINISHED');
+}
+</script>
+</head>
+<style>
+#table {
+  height: 10px;
+  width: 10px;
+}
+</style>
+<body id="body" style="margin:0px" onload="onLoad()"
+      onmousemove="setCoordinates(event)">
+<table id="table"><tr/></table>
+<table id="table2"><tr/></table>
+<canvas id="canvas"></canvas>
+<p><b id="text">x</b></p>
+</body>
+</html>
