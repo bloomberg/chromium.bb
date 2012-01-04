@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,7 +131,7 @@ void SendLog(struct mg_connection* connection,
 void SimulateHang(struct mg_connection* connection,
                   const struct mg_request_info* request_info,
                   void* user_data) {
-  base::PlatformThread::Sleep(1000 * 60 * 5);
+  base::PlatformThread::Sleep(base::TimeDelta::FromMinutes(5));
 }
 
 void SendNoContentResponse(struct mg_connection* connection,

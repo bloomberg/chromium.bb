@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,7 +113,7 @@ class TabSwitchingUITest : public UIPerfTest {
         log_has_been_dumped = file_util::ReadFileToString(log_file_name_,
                                                           &contents);
         if (!log_has_been_dumped)
-          base::PlatformThread::Sleep(100);
+          base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
       } while (!log_has_been_dumped && max_tries--);
       ASSERT_TRUE(log_has_been_dumped) << "Failed to read the log file";
 

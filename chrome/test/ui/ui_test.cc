@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -324,6 +324,7 @@ void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
 bool UITestBase::WaitForBookmarkBarVisibilityChange(BrowserProxy* browser,
                                                     bool wait_for_open) {
   const int kCycles = 10;
+  const TimeDelta kDelay = TestTimeouts::action_timeout() / kCycles;
   for (int i = 0; i < kCycles; i++) {
     bool visible = false;
     bool animating = true;
@@ -334,7 +335,7 @@ bool UITestBase::WaitForBookmarkBarVisibilityChange(BrowserProxy* browser,
       return true;  // Bookmark bar visibility change complete.
 
     // Give it a chance to catch up.
-    base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms() / kCycles);
+    base::PlatformThread::Sleep(kDelay);
   }
 
   ADD_FAILURE() << "Timeout reached in WaitForBookmarkBarVisibilityChange";
@@ -397,13 +398,13 @@ int UITestBase::GetTabCount(int window_index) {
 
 void UITestBase::WaitUntilTabCount(int tab_count) {
   const int kMaxIntervals = 10;
-  const int kIntervalMs = TestTimeouts::action_timeout_ms() / kMaxIntervals;
+  const TimeDelta kDelay = TestTimeouts::action_timeout() / kMaxIntervals;
 
   for (int i = 0; i < kMaxIntervals; ++i) {
     if (GetTabCount() == tab_count)
       return;
 
-    base::PlatformThread::Sleep(kIntervalMs);
+    base::PlatformThread::Sleep(kDelay);
   }
 
   ADD_FAILURE() << "Timeout reached in WaitUntilTabCount";
@@ -448,7 +449,7 @@ bool UITestBase::CloseBrowser(BrowserProxy* browser,
   if (*application_closed) {
     int exit_code = -1;
     EXPECT_TRUE(launcher_->WaitForBrowserProcessToQuit(
-                    TestTimeouts::action_max_timeout_ms(), &exit_code));
+        TestTimeouts::action_max_timeout_ms(), &exit_code));
     EXPECT_EQ(0, exit_code);  // Expect a clean shutown.
   }
 
@@ -599,10 +600,12 @@ void UITest::WaitForFinish(const std::string &name,
 }
 
 bool UITest::EvictFileFromSystemCacheWrapper(const FilePath& path) {
-  for (int i = 0; i < 10; i++) {
+  const int kCycles = 10;
+  const TimeDelta kDelay = TestTimeouts::action_timeout() / kCycles;
+  for (int i = 0; i < kCycles; i++) {
     if (file_util::EvictFileFromSystemCache(path))
       return true;
-    base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms() / 10);
+    base::PlatformThread::Sleep(kDelay);
   }
   return false;
 }
@@ -617,6 +620,7 @@ void UITest::WaitForGeneratedFileAndCheck(
   base::PlatformFileInfo previous, current;
   bool exist = false;
   const int kCycles = 20;
+  const TimeDelta kDelay = TestTimeouts::action_timeout() / kCycles;
   for (int i = 0; i < kCycles; ++i) {
     if (exist) {
       file_util::GetFileInfo(generated_file, &current);
@@ -627,7 +631,7 @@ void UITest::WaitForGeneratedFileAndCheck(
       file_util::GetFileInfo(generated_file, &previous);
       exist = true;
     }
-    base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms() / kCycles);
+    base::PlatformThread::Sleep(kDelay);
   }
   EXPECT_TRUE(exist);
 
@@ -655,11 +659,11 @@ bool UITest::WaitUntilJavaScriptCondition(TabProxy* tab,
                                           const std::wstring& frame_xpath,
                                           const std::wstring& jscript,
                                           int timeout_ms) {
-  const int kIntervalMs = 250;
-  const int kMaxIntervals = timeout_ms / kIntervalMs;
+  const TimeDelta kDelay = TimeDelta::FromMilliseconds(250);
+  const int kMaxDelays = timeout_ms / kDelay.InMilliseconds();
 
   // Wait until the test signals it has completed.
-  for (int i = 0; i < kMaxIntervals; ++i) {
+  for (int i = 0; i < kMaxDelays; ++i) {
     bool done_value = false;
     bool success = tab->ExecuteAndExtractBool(frame_xpath, jscript,
                                               &done_value);
@@ -669,7 +673,7 @@ bool UITest::WaitUntilJavaScriptCondition(TabProxy* tab,
     if (done_value)
       return true;
 
-    base::PlatformThread::Sleep(kIntervalMs);
+    base::PlatformThread::Sleep(kDelay);
   }
 
   ADD_FAILURE() << "Timeout reached in WaitUntilJavaScriptCondition";
@@ -681,16 +685,16 @@ bool UITest::WaitUntilCookieValue(TabProxy* tab,
                                   const char* cookie_name,
                                   int timeout_ms,
                                   const char* expected_value) {
-  const int kIntervalMs = 250;
-  const int kMaxIntervals = timeout_ms / kIntervalMs;
+  const TimeDelta kDelay = TimeDelta::FromMilliseconds(250);
+  const int kMaxDelays = timeout_ms / kDelay.InMilliseconds();
 
   std::string cookie_value;
-  for (int i = 0; i < kMaxIntervals; ++i) {
+  for (int i = 0; i < kMaxDelays; ++i) {
     EXPECT_TRUE(tab->GetCookieByName(url, cookie_name, &cookie_value));
     if (cookie_value == expected_value)
       return true;
 
-    base::PlatformThread::Sleep(kIntervalMs);
+    base::PlatformThread::Sleep(kDelay);
   }
 
   ADD_FAILURE() << "Timeout reached in WaitUntilCookieValue";
@@ -701,16 +705,16 @@ std::string UITest::WaitUntilCookieNonEmpty(TabProxy* tab,
                                             const GURL& url,
                                             const char* cookie_name,
                                             int timeout_ms) {
-  const int kIntervalMs = 250;
-  const int kMaxIntervals = timeout_ms / kIntervalMs;
+  const TimeDelta kDelay = TimeDelta::FromMilliseconds(250);
+  const int kMaxDelays = timeout_ms / kDelay.InMilliseconds();
 
-  for (int i = 0; i < kMaxIntervals; ++i) {
+  for (int i = 0; i < kMaxDelays; ++i) {
     std::string cookie_value;
     EXPECT_TRUE(tab->GetCookieByName(url, cookie_name, &cookie_value));
     if (!cookie_value.empty())
       return cookie_value;
 
-    base::PlatformThread::Sleep(kIntervalMs);
+    base::PlatformThread::Sleep(kDelay);
   }
 
   ADD_FAILURE() << "Timeout reached in WaitUntilCookieNonEmpty";
@@ -728,6 +732,7 @@ bool UITest::WaitForDownloadShelfInvisible(BrowserProxy* browser) {
 bool UITest::WaitForFindWindowVisibilityChange(BrowserProxy* browser,
                                                bool wait_for_open) {
   const int kCycles = 10;
+  const TimeDelta kDelay = TestTimeouts::action_timeout() / kCycles;
   for (int i = 0; i < kCycles; i++) {
     bool visible = false;
     if (!browser->IsFindWindowFullyVisible(&visible))
@@ -736,7 +741,7 @@ bool UITest::WaitForFindWindowVisibilityChange(BrowserProxy* browser,
       return true;  // Find window visibility change complete.
 
     // Give it a chance to catch up.
-    base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms() / kCycles);
+    base::PlatformThread::Sleep(kDelay);
   }
 
   ADD_FAILURE() << "Timeout reached in WaitForFindWindowVisibilityChange";
@@ -777,6 +782,7 @@ void UITest::NavigateToURLAsync(const GURL& url) {
 bool UITest::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
                                                   bool wait_for_open) {
   const int kCycles = 10;
+  const TimeDelta kDelay = TestTimeouts::action_timeout() / kCycles;
   int fail_count = 0;
   int incorrect_state_count = 0;
   base::Time start = base::Time::Now();
@@ -796,7 +802,7 @@ bool UITest::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
     incorrect_state_count++;
 
     // Give it a chance to catch up.
-    base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms() / kCycles);
+    base::PlatformThread::Sleep(kDelay);
   }
 
   LOG(INFO) << "Elapsed time: " << (base::Time::Now() - start).InSecondsF()

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@
 #include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::TimeDelta;
 
 // Change current directory so that chrome.dll from current folder
 // will not be used as fall back.
@@ -39,12 +40,13 @@ bool MiniInstallerTestUtil::ChangeCurrentDirectory(FilePath* current_path) {
 // Checks for all requested running processes and kills them.
 void MiniInstallerTestUtil::CloseProcesses(
     const std::wstring& executable_name) {
-  int timer = 0;
+  TimeDelta timer;
+  const TimeDelta kDelay = TimeDelta::FromMilliseconds(200);
   while ((base::GetProcessCount(executable_name, NULL) > 0) &&
-         (timer < 20000)) {
+         (timer < TimeDelta::FromSeconds(20))) {
     base::KillProcesses(executable_name, 1, NULL);
-    base::PlatformThread::Sleep(200);
-    timer = timer + 200;
+    base::PlatformThread::Sleep(kDelay);
+    timer += kDelay;
   }
   ASSERT_EQ(0, base::GetProcessCount(executable_name, NULL));
 }
@@ -73,14 +75,16 @@ void MiniInstallerTestUtil::SendEnterKeyToWindow() {
 void MiniInstallerTestUtil::VerifyProcessLaunch(
     const wchar_t* process_name, bool expected_status) {
   LOG(INFO) << "Verifying process is launched: " << process_name;
-  int timer = 0, wait_time = 60000;
+  TimeDelta timer;
+  TimeDelta waitTime = TimeDelta::FromMinutes(1);
+  const TimeDelta kDelay = TimeDelta::FromMilliseconds(200);
   if (!expected_status)
-    wait_time = 8000;
+    waitTime = TimeDelta::FromSeconds(8);
 
   while ((base::GetProcessCount(process_name, NULL) == 0) &&
-         (timer < wait_time)) {
-    base::PlatformThread::Sleep(200);
-    timer = timer + 200;
+         (timer < waitTime)) {
+    base::PlatformThread::Sleep(kDelay);
+    timer += kDelay;
   }
 
   if (expected_status)
@@ -91,13 +95,15 @@ void MiniInstallerTestUtil::VerifyProcessLaunch(
 
 bool MiniInstallerTestUtil::VerifyProcessClose(
     const wchar_t* process_name) {
-  int timer = 0;
+  TimeDelta timer;
+  const TimeDelta kDelay = TimeDelta::FromMilliseconds(200);
   if (base::GetProcessCount(process_name, NULL) > 0) {
     LOG(INFO) << "Waiting for this process to end: " << process_name;
     while ((base::GetProcessCount(process_name, NULL) > 0) &&
-           (timer < TestTimeouts::large_test_timeout_ms())) {
-      base::PlatformThread::Sleep(200);
-      timer = timer + 200;
+           (timer < TimeDelta::FromMilliseconds(
+               TestTimeouts::large_test_timeout_ms()))) {
+      base::PlatformThread::Sleep(kDelay);
+      timer += kDelay;
     }
   } else {
     if (base::GetProcessCount(process_name, NULL) != 0)

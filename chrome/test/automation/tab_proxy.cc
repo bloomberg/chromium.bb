@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -365,7 +365,8 @@ bool TabProxy::WaitForChildWindowCountToChange(int count, int* new_count,
                                                int wait_timeout) {
   int intervals = std::max(wait_timeout / automation::kSleepTime, 1);
   for (int i = 0; i < intervals; ++i) {
-    base::PlatformThread::Sleep(automation::kSleepTime);
+    base::PlatformThread::Sleep(
+        base::TimeDelta::FromMilliseconds(automation::kSleepTime));
     bool succeeded = GetConstrainedWindowCount(new_count);
     if (!succeeded)
       return false;
@@ -393,7 +394,8 @@ bool TabProxy::WaitForBlockedPopupCountToChangeTo(int target_count,
                                                   int wait_timeout) {
   int intervals = std::max(wait_timeout / automation::kSleepTime, 1);
   for (int i = 0; i < intervals; ++i) {
-    base::PlatformThread::Sleep(automation::kSleepTime);
+    base::PlatformThread::Sleep(
+        base::TimeDelta::FromMilliseconds(automation::kSleepTime));
     int new_count = -1;
     bool succeeded = GetBlockedPopupCount(&new_count);
     if (!succeeded)

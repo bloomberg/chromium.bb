@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1409,7 +1409,7 @@ Error* Session::FindElementsHelper(const FrameId& frame_id,
         return new Error(kNoSuchElement);
       break;
     }
-    base::PlatformThread::Sleep(50);
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
   }
   return NULL;
 }

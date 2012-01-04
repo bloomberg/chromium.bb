@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@
 #include "chrome/test/mini_installer_test/mini_installer_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::TimeDelta;
 using base::win::RegKey;
 using installer::InstallationValidator;
 
@@ -485,16 +486,17 @@ void ChromeMiniInstaller::CleanChromeInstall() {
 
 bool ChromeMiniInstaller::CloseUninstallWindow() {
   HWND hndl = NULL;
-  int timer = 0;
+  TimeDelta timer;
+  const TimeDelta kDelay = TimeDelta::FromMilliseconds(200);
   std::wstring window_name;
   if (is_chrome_frame_)
     window_name = mini_installer_constants::kChromeFrameAppName;
   else
     window_name = mini_installer_constants::kChromeUninstallDialogName;
-  while (hndl == NULL && timer < 5000) {
+  while (hndl == NULL && timer < TimeDelta::FromSeconds(5)) {
     hndl = FindWindow(NULL, window_name.c_str());
-    base::PlatformThread::Sleep(200);
-    timer = timer + 200;
+    base::PlatformThread::Sleep(kDelay);
+    timer += kDelay;
   }
 
   if (!is_chrome_frame_) {
@@ -512,20 +514,22 @@ bool ChromeMiniInstaller::CloseUninstallWindow() {
 
 // Closes Chrome browser.
 bool ChromeMiniInstaller::CloseChromeBrowser() {
-  int timer = 0;
+  TimeDelta timer;
+  const TimeDelta kShortDelay = TimeDelta::FromMilliseconds(100);
+  const TimeDelta kLongDelay = TimeDelta::FromSeconds(1);
   HWND handle = NULL;
   // This loop iterates through all of the top-level Windows
   // named Chrome_WidgetWin_0 and closes them
   while ((base::GetProcessCount(installer::kChromeExe, NULL) > 0) &&
-         (timer < 40000)) {
+         (timer < TimeDelta::FromSeconds(40))) {
     // Chrome may have been launched, but the window may not have appeared
     // yet. Wait for it to appear for 10 seconds, but exit if it takes longer
     // than that.
-    while (!handle && timer < 10000) {
+    while (!handle && timer < TimeDelta::FromSeconds(10)) {
       handle = FindWindowEx(NULL, handle, L"Chrome_WidgetWin_0", NULL);
       if (!handle) {
-        base::PlatformThread::Sleep(100);
-        timer = timer + 100;
+        base::PlatformThread::Sleep(kShortDelay);
+        timer += kShortDelay;
       }
     }
     if (!handle)
@@ -534,8 +538,8 @@ bool ChromeMiniInstaller::CloseChromeBrowser() {
     LRESULT _result = SendMessage(handle, WM_CLOSE, 1, 0);
     if (_result != 0)
       return false;
-    base::PlatformThread::Sleep(1000);
-    timer = timer + 1000;
+    base::PlatformThread::Sleep(kLongDelay);
+    timer += kLongDelay;
   }
   if (base::GetProcessCount(installer::kChromeExe, NULL) > 0) {
     printf("Chrome.exe is still running even after closing all windows\n");
@@ -566,12 +570,13 @@ bool ChromeMiniInstaller::CheckRegistryKey(const std::wstring& key_path) {
 bool ChromeMiniInstaller::CheckRegistryKeyOnUninstall(
     const std::wstring& key_path) {
   RegKey key;
-  int timer = 0;
+  TimeDelta timer;
+  const TimeDelta kDelay = TimeDelta::FromMilliseconds(200);
   while ((key.Open(GetRootRegistryKey(), key_path.c_str(),
                    KEY_ALL_ACCESS) == ERROR_SUCCESS) &&
-         (timer < 20000)) {
-    base::PlatformThread::Sleep(200);
-    timer = timer + 200;
+         (timer < TimeDelta::FromSeconds(20))) {
+    base::PlatformThread::Sleep(kDelay);
+    timer += kDelay;
   }
   return CheckRegistryKey(key_path);
 }
@@ -734,7 +739,7 @@ void ChromeMiniInstaller::VerifyInstall(bool over_install) {
   else if (!system_install_ && !over_install)
     MiniInstallerTestUtil::VerifyProcessLaunch(installer::kChromeExe, true);
 
-  base::PlatformThread::Sleep(800);
+  base::PlatformThread::Sleep(TimeDelta::FromMilliseconds(800));
   FindChromeShortcut();
   LaunchChrome(true);
 }

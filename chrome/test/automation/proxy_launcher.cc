@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,7 +117,7 @@ bool ProxyLauncher::WaitForBrowserLaunch(bool wait_for_initial_loads) {
 #if defined(OS_WIN)
     // TODO(phajdan.jr): Get rid of this Sleep when logging_chrome_uitest
     // stops "relying" on it.
-    base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
+    base::PlatformThread::Sleep(TestTimeouts::action_timeout());
 #endif
   }
 
@@ -557,7 +557,8 @@ bool NamedProxyLauncher::InitializeConnection(const LaunchState& state,
     channel_initialized = IPC::Channel::IsNamedServerInitialized(channel_id_);
     if (channel_initialized)
       break;
-    base::PlatformThread::Sleep(automation::kSleepTime);
+    base::PlatformThread::Sleep(
+        base::TimeDelta::FromMilliseconds(automation::kSleepTime));
   }
   if (!channel_initialized) {
     LOG(ERROR) << "Failed to wait for testing channel presence.";

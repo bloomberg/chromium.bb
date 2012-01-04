@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -455,7 +455,8 @@ bool AutomatedUITest::DoAction(const std::string& action) {
     did_complete_action = true;
   } else if (LowerCaseEqualsASCII(action, "sleep")) {
     // This is for debugging, it probably shouldn't be used real tests.
-    base::PlatformThread::Sleep(kDebuggingTimeoutMsec);
+    base::PlatformThread::Sleep(
+        base::TimeDelta::FromMilliseconds(kDebuggingTimeoutMsec));
     did_complete_action = true;
   } else if (LowerCaseEqualsASCII(action, "star")) {
     did_complete_action = StarPage();
@@ -499,8 +500,10 @@ bool AutomatedUITest::DoAction(const std::string& action) {
     xml_writer_.AddAttribute("failed_to_complete", "yes");
   xml_writer_.EndElement();
 
-  if (post_action_delay_)
-    base::PlatformThread::Sleep(1000 * post_action_delay_);
+  if (post_action_delay_) {
+    base::PlatformThread::Sleep(
+        base::TimeDelta::FromSeconds(post_action_delay_));
+  }
 
   return did_complete_action;
 }

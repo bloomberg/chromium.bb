@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -341,11 +341,11 @@ class PageLoadTest : public UITest {
               if (browser->BringToFront()) {
                 // Sleep for 2 seconds between commands.
                 // This used to be settable but the flag went away.
-                int sleep_time_ms = 2000;
+                base::TimeDelta sleep_time = base::TimeDelta::FromSeconds(2);
                 window->SimulateOSKeyPress(ui::VKEY_NEXT, 0);
-                base::PlatformThread::Sleep(sleep_time_ms);
+                base::PlatformThread::Sleep(sleep_time);
                 window->SimulateOSKeyPress(ui::VKEY_NEXT, 0);
-                base::PlatformThread::Sleep(sleep_time_ms);
+                base::PlatformThread::Sleep(sleep_time);
               }
             }
           }
