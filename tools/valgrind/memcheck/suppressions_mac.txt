@@ -2163,7 +2163,6 @@
    fun:_ZN4base25DefaultLazyInstanceTraitsIN7leveldb12_GLOBAL__N_111ChromiumEnvEE3NewEPv
    fun:_ZN4base12LazyInstanceIN7leveldb12_GLOBAL__N_111ChromiumEnvENS_23LeakyLazyInstanceTraitsIS3_EEE7PointerEv
    fun:_ZN7leveldb7OptionsC2Ev
-   fun:_ZN7leveldb7OptionsC1Ev
    fun:_ZN7fileapi27FileSystemDirectoryDatabase4InitEv
    fun:_ZN7fileapi27FileSystemDirectoryDatabase11GetFileInfoExPNS0_8FileInfoE
    fun:_ZN7fileapi59FileSystemDirectoryDatabaseTest_TestMissingFileGetInfo_Test8TestBodyEv
