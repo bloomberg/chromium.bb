@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -98,10 +98,11 @@ class ChromeosSecurity(pyauto.PyUITest):
       full_actual_info: A list of dictionaries describing the actual information
                         for all extensions.
     """
-    # Skip the Web Store; it's integral to Chrome and is redundant to check on
-    # ChromeOS.  This can reduce the number of times we have to update the
-    # baseline for this test.
-    actual_set.discard('Chrome Web Store')
+    # Skip the Web Store and Bookmark Manager; they are integral to Chrome and
+    # are redundant to check on ChromeOS.  This can reduce the number of times
+    # we have to update the baseline for this test.
+    for extension_name in ['Chrome Web Store', 'Bookmark Manager']:
+      actual_set.discard(extension_name)
 
     def _GetSetDifferenceMessage(expected_set, actual_set):
       strings = []
