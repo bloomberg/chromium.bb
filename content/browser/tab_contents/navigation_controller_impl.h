@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_NAVIGATION_CONTROLLER_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_NAVIGATION_CONTROLLER_H_
+#ifndef CONTENT_BROWSER_TAB_CONTENTS_NAVIGATION_CONTROLLER_IMPL_H_
+#define CONTENT_BROWSER_TAB_CONTENTS_NAVIGATION_CONTROLLER_IMPL_H_
 #pragma once
 
 #include "build/build_config.h"
@@ -23,14 +23,13 @@ class NavigationEntryImpl;
 struct LoadCommittedDetails;
 }
 
-// TODO(jam): rename to NavigationControllerImpl once chrome only uses the i/f.
-class CONTENT_EXPORT NavigationController
+class CONTENT_EXPORT NavigationControllerImpl
     : public NON_EXPORTED_BASE(content::NavigationController) {
  public:
-  NavigationController(TabContents* tab_contents,
-                       content::BrowserContext* browser_context,
-                       SessionStorageNamespace* session_storage_namespace);
-  virtual ~NavigationController();
+  NavigationControllerImpl(TabContents* tab_contents,
+                           content::BrowserContext* browser_context,
+                           SessionStorageNamespace* session_storage_namespace);
+  virtual ~NavigationControllerImpl();
 
   // NavigationController implementation:
   virtual content::WebContents* GetWebContents() const OVERRIDE;
@@ -255,7 +254,7 @@ class CONTENT_EXPORT NavigationController
   // adjust any of the members that reference entries_
   // (last_committed_entry_index_, pending_entry_index_ or
   // transient_entry_index_).
-  void InsertEntriesFrom(const NavigationController& source, int max_index);
+  void InsertEntriesFrom(const NavigationControllerImpl& source, int max_index);
 
   // ---------------------------------------------------------------------------
 
@@ -318,7 +317,7 @@ class CONTENT_EXPORT NavigationController
   // NO_RELOAD otherwise.
   ReloadType pending_reload_;
 
-  DISALLOW_COPY_AND_ASSIGN(NavigationController);
+  DISALLOW_COPY_AND_ASSIGN(NavigationControllerImpl);
 };
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_NAVIGATION_CONTROLLER_H_
+#endif  // CONTENT_BROWSER_TAB_CONTENTS_NAVIGATION_CONTROLLER_IMPL_H_

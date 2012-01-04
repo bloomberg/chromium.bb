@@ -18,7 +18,7 @@
 //  #include "chrome/browser/sessions/session_types.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
@@ -46,7 +46,7 @@ class NavigationControllerTest : public RenderViewHostTestHarness {
 };
 
 void RegisterForAllNavNotifications(TestNotificationTracker* tracker,
-                                    NavigationController* controller) {
+                                    NavigationControllerImpl* controller) {
   tracker->ListenFor(content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                      content::Source<content::NavigationController>(
                          controller));
@@ -1393,7 +1393,7 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
 // content::NOTIFICATION_NAV_LIST_PRUNED method.
 class PrunedListener : public content::NotificationObserver {
  public:
-  explicit PrunedListener(NavigationController* controller)
+  explicit PrunedListener(NavigationControllerImpl* controller)
       : notification_count_(0) {
     registrar_.Add(this, content::NOTIFICATION_NAV_LIST_PRUNED,
                    content::Source<content::NavigationController>(controller));
@@ -1422,10 +1422,10 @@ class PrunedListener : public content::NotificationObserver {
 
 // Tests that we limit the number of navigation entries created correctly.
 TEST_F(NavigationControllerTest, EnforceMaxNavigationCount) {
-  size_t original_count = NavigationController::max_entry_count();
+  size_t original_count = NavigationControllerImpl::max_entry_count();
   const int kMaxEntryCount = 5;
 
-  NavigationController::set_max_entry_count_for_testing(kMaxEntryCount);
+  NavigationControllerImpl::set_max_entry_count_for_testing(kMaxEntryCount);
 
   int url_index;
   // Load up to the max count, all entries should be there.
@@ -1472,7 +1472,7 @@ TEST_F(NavigationControllerTest, EnforceMaxNavigationCount) {
   EXPECT_EQ(controller().GetEntryAtIndex(0)->GetURL(),
             GURL("http:////www.a.com/4"));
 
-  NavigationController::set_max_entry_count_for_testing(original_count);
+  NavigationControllerImpl::set_max_entry_count_for_testing(original_count);
 }
 
 // Tests that we can do a restore and navigate to the restored entries and
@@ -1482,7 +1482,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   // Create a NavigationController with a restored set of tabs.
   GURL url("http://foo");
   std::vector<NavigationEntry*> entries;
-  NavigationEntry* entry = NavigationController::CreateNavigationEntry(
+  NavigationEntry* entry = NavigationControllerImpl::CreateNavigationEntry(
       url, content::Referrer(), content::PAGE_TRANSITION_RELOAD, false,
       std::string(), browser_context());
   entry->SetPageID(0);
@@ -1491,7 +1491,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   entries.push_back(entry);
   TabContents our_contents(
       browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL);
-  NavigationController& our_controller = our_contents.GetControllerImpl();
+  NavigationControllerImpl& our_controller = our_contents.GetControllerImpl();
   our_controller.Restore(0, true, &entries);
   ASSERT_EQ(0u, entries.size());
 
@@ -1549,7 +1549,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   // Create a NavigationController with a restored set of tabs.
   GURL url("http://foo");
   std::vector<NavigationEntry*> entries;
-  NavigationEntry* entry = NavigationController::CreateNavigationEntry(
+  NavigationEntry* entry = NavigationControllerImpl::CreateNavigationEntry(
       url, content::Referrer(), content::PAGE_TRANSITION_RELOAD, false,
       std::string(), browser_context());
   entry->SetPageID(0);
@@ -1558,7 +1558,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   entries.push_back(entry);
   TabContents our_contents(
       browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL);
-  NavigationController& our_controller = our_contents.GetControllerImpl();
+  NavigationControllerImpl& our_controller = our_contents.GetControllerImpl();
   our_controller.Restore(0, true, &entries);
   ASSERT_EQ(0u, entries.size());
 
@@ -2012,7 +2012,8 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   NavigateAndCommit(url2);
 
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
-  NavigationController& other_controller = other_contents->GetControllerImpl();
+  NavigationControllerImpl& other_controller =
+      other_contents->GetControllerImpl();
   other_contents->NavigateAndCommit(url3);
   other_contents->ExpectSetHistoryLengthAndPrune(
       NavigationEntryImpl::FromNavigationEntry(
@@ -2043,7 +2044,8 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
   controller().GoBack();
 
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
-  NavigationController& other_controller = other_contents->GetControllerImpl();
+  NavigationControllerImpl& other_controller =
+      other_contents->GetControllerImpl();
   other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);
   other_controller.CopyStateFromAndPrune(&controller());
 
@@ -2068,7 +2070,8 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   controller().GoBack();
 
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
-  NavigationController& other_controller = other_contents->GetControllerImpl();
+  NavigationControllerImpl& other_controller =
+      other_contents->GetControllerImpl();
   other_controller.LoadURL(
       url3, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);

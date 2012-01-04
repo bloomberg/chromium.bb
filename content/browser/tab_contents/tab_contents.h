@@ -18,7 +18,7 @@
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents.h"
@@ -119,7 +119,7 @@ class CONTENT_EXPORT TabContents
   }
 
   // Like GetController from WebContents, but returns the concrete object.
-  NavigationController& GetControllerImpl();
+  NavigationControllerImpl& GetControllerImpl();
 
   // content::WebContents ------------------------------------------------------
   virtual const base::PropertyBag* GetPropertyBag() const OVERRIDE;
@@ -326,7 +326,7 @@ class CONTENT_EXPORT TabContents
       RenderViewHost* render_view_host) OVERRIDE;
   virtual void UpdateRenderViewSizeForRenderManager() OVERRIDE;
   virtual void NotifySwappedFromRenderManager() OVERRIDE;
-  virtual NavigationController& GetControllerForRenderManager() OVERRIDE;
+  virtual NavigationControllerImpl& GetControllerForRenderManager() OVERRIDE;
   virtual WebUI* CreateWebUIForRenderManager(const GURL& url) OVERRIDE;
   virtual content::NavigationEntry*
       GetLastCommittedNavigationEntryForRenderManager() OVERRIDE;
@@ -352,7 +352,7 @@ class CONTENT_EXPORT TabContents
   void RemoveObserver(content::WebContentsObserver* observer);
 
  private:
-  friend class NavigationController;
+  friend class NavigationControllerImpl;
 
   FRIEND_TEST_ALL_PREFIXES(TabContentsTest, NoJSMessageOnInterstitials);
   FRIEND_TEST_ALL_PREFIXES(TabContentsTest, UpdateTitle);
@@ -505,7 +505,7 @@ class CONTENT_EXPORT TabContents
   content::WebContentsDelegate* delegate_;
 
   // Handles the back/forward list and loading.
-  NavigationController controller_;
+  NavigationControllerImpl controller_;
 
   // The corresponding view.
   scoped_ptr<TabContentsView> view_;

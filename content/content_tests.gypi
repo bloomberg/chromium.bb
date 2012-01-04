@@ -233,7 +233,7 @@
         'browser/speech/speech_recognition_request_unittest.cc',
         'browser/speech/speech_recognizer_unittest.cc',
         'browser/ssl/ssl_host_state_unittest.cc',
-        'browser/tab_contents/navigation_controller_unittest.cc',
+        'browser/tab_contents/navigation_controller_impl_unittest.cc',
         'browser/tab_contents/navigation_entry_impl_unittest.cc',
         'browser/tab_contents/render_view_host_manager_unittest.cc',
         'browser/tab_contents/tab_contents_delegate_unittest.cc',

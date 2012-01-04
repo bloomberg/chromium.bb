@@ -252,7 +252,7 @@ void PrintPreviewMessageHandler::NavigateToPendingEntry(
   if (tab == preview_tab) {
     // Cloud print sign-in reloads the page.
     DCHECK(PrintPreviewTabController::IsPrintPreviewURL(url));
-    DCHECK_EQ(NavigationController::RELOAD, reload_type);
+    DCHECK_EQ(content::NavigationController::RELOAD, reload_type);
     return;
   }
   // If |tab| is navigating and it has a print preview tab, notify |tab| to

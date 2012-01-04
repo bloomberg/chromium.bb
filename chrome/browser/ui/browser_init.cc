@@ -1547,7 +1547,7 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
   DCHECK(profile);
   if (process_startup) {
     if (command_line.HasSwitch(switches::kDisablePromptOnRepost))
-      NavigationController::DisablePromptOnRepost();
+      content::NavigationController::DisablePromptOnRepost();
 
     RegisterComponentsForUpdate(command_line);
 

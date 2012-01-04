@@ -1755,7 +1755,8 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneSourceInterstitial) {
   // Create another NavigationController.
   GURL url3("http://foo2");
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
-  NavigationController& other_controller = other_contents->GetControllerImpl();
+  NavigationControllerImpl& other_controller =
+      other_contents->GetControllerImpl();
   other_contents->NavigateAndCommit(url3);
   other_contents->ExpectSetHistoryLengthAndPrune(
       NavigationEntryImpl::FromNavigationEntry(
@@ -1782,7 +1783,8 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneTargetInterstitial) {
 
   // Create another NavigationController.
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
-  NavigationController& other_controller = other_contents->GetControllerImpl();
+  NavigationControllerImpl& other_controller =
+      other_contents->GetControllerImpl();
 
   // Navigate it to url2.
   GURL url2("http://foo2");

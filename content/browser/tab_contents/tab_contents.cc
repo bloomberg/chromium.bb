@@ -144,11 +144,11 @@ ViewMsg_Navigate_Type::Value GetNavigationType(
     content::BrowserContext* browser_context, const NavigationEntryImpl& entry,
     content::NavigationController::ReloadType reload_type) {
   switch (reload_type) {
-    case NavigationController::RELOAD:
+    case NavigationControllerImpl::RELOAD:
       return ViewMsg_Navigate_Type::RELOAD;
-    case NavigationController::RELOAD_IGNORING_CACHE:
+    case NavigationControllerImpl::RELOAD_IGNORING_CACHE:
       return ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
-    case NavigationController::NO_RELOAD:
+    case NavigationControllerImpl::NO_RELOAD:
       break;  // Fall through to rest of function.
   }
 
@@ -160,7 +160,7 @@ ViewMsg_Navigate_Type::Value GetNavigationType(
 }
 
 void MakeNavigateParams(const NavigationEntryImpl& entry,
-                        const NavigationController& controller,
+                        const NavigationControllerImpl& controller,
                         content::WebContentsDelegate* delegate,
                         content::NavigationController::ReloadType reload_type,
                         ViewMsg_Navigate_Params* params) {
@@ -291,7 +291,7 @@ TabContents::~TabContents() {
   SetDelegate(NULL);
 }
 
-NavigationController& TabContents::GetControllerImpl() {
+NavigationControllerImpl& TabContents::GetControllerImpl() {
   return controller_;
 }
 
@@ -1346,7 +1346,7 @@ void TabContents::OnGoToEntryAtOffset(int offset) {
         content::PageTransitionFromInt(
             entry->GetTransitionType() |
             content::PAGE_TRANSITION_FORWARD_BACK));
-    NavigateToEntry(*entry, NavigationController::NO_RELOAD);
+    NavigateToEntry(*entry, NavigationControllerImpl::NO_RELOAD);
 
     // If the entry is being restored and doesn't have a SiteInstance yet, fill
     // it in now that we know. This allows us to find the entry when it commits.
@@ -2161,7 +2161,7 @@ void TabContents::NotifySwappedFromRenderManager() {
   NotifySwapped();
 }
 
-NavigationController& TabContents::GetControllerForRenderManager() {
+NavigationControllerImpl& TabContents::GetControllerForRenderManager() {
   return GetControllerImpl();
 }
 

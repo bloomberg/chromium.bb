@@ -12,7 +12,7 @@
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
@@ -379,7 +379,8 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   // NOTE: This is only called when ShouldTransitionCrossSite is true.
 
   const GURL& dest_url = entry.GetURL();
-  NavigationController& controller = delegate_->GetControllerForRenderManager();
+  NavigationControllerImpl& controller =
+      delegate_->GetControllerForRenderManager();
   content::BrowserContext* browser_context = controller.GetBrowserContext();
 
   // If the entry has an instance already we should use it.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_controller_impl.h"
 
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -45,7 +45,7 @@ const int kInvalidateAll = 0xFFFFFFFF;
 // Invoked when entries have been pruned, or removed. For example, if the
 // current entries are [google, digg, yahoo], with the current entry google,
 // and the user types in cnet, then digg and yahoo are pruned.
-void NotifyPrunedEntries(NavigationController* nav_controller,
+void NotifyPrunedEntries(NavigationControllerImpl* nav_controller,
                          bool from_front,
                          int count) {
   content::PrunedDetails details;
@@ -108,12 +108,12 @@ bool AreURLsInPageNavigation(const GURL& existing_url, const GURL& new_url) {
 
 }  // namespace
 
-// NavigationController ---------------------------------------------------
+// NavigationControllerImpl ----------------------------------------------------
 
 const size_t kMaxEntryCountForTestingNotSet = -1;
 
 // static
-size_t NavigationController::max_entry_count_for_testing_ =
+size_t NavigationControllerImpl::max_entry_count_for_testing_ =
     kMaxEntryCountForTestingNotSet;
 
  // Should Reload check for post data? The default is true, but is set to false
@@ -161,7 +161,7 @@ void NavigationController::DisablePromptOnRepost() {
 
 }  // namespace content
 
-NavigationController::NavigationController(
+NavigationControllerImpl::NavigationControllerImpl(
     TabContents* contents,
     BrowserContext* browser_context,
     SessionStorageNamespace* session_storage_namespace)
@@ -183,7 +183,7 @@ NavigationController::NavigationController(
   }
 }
 
-NavigationController::~NavigationController() {
+NavigationControllerImpl::~NavigationControllerImpl() {
   DiscardNonCommittedEntriesInternal();
 
   content::NotificationService::current()->Notify(
@@ -192,19 +192,20 @@ NavigationController::~NavigationController() {
       content::NotificationService::NoDetails());
 }
 
-WebContents* NavigationController::GetWebContents() const {
+WebContents* NavigationControllerImpl::GetWebContents() const {
   return tab_contents_;
 }
 
-BrowserContext* NavigationController::GetBrowserContext() const {
+BrowserContext* NavigationControllerImpl::GetBrowserContext() const {
   return browser_context_;
 }
 
-void NavigationController::SetBrowserContext(BrowserContext* browser_context) {
+void NavigationControllerImpl::SetBrowserContext(
+    BrowserContext* browser_context) {
   browser_context_ = browser_context;
 }
 
-void NavigationController::Restore(
+void NavigationControllerImpl::Restore(
     int selected_navigation,
     bool from_last_session,
     std::vector<NavigationEntry*>* entries) {
@@ -225,15 +226,15 @@ void NavigationController::Restore(
   FinishRestore(selected_navigation, from_last_session);
 }
 
-void NavigationController::Reload(bool check_for_repost) {
+void NavigationControllerImpl::Reload(bool check_for_repost) {
   ReloadInternal(check_for_repost, RELOAD);
 }
-void NavigationController::ReloadIgnoringCache(bool check_for_repost) {
+void NavigationControllerImpl::ReloadIgnoringCache(bool check_for_repost) {
   ReloadInternal(check_for_repost, RELOAD_IGNORING_CACHE);
 }
 
-void NavigationController::ReloadInternal(bool check_for_repost,
-                                          ReloadType reload_type) {
+void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
+                                              ReloadType reload_type) {
   // Reloading a transient entry does nothing.
   if (transient_entry_index_ != -1)
     return;
@@ -269,12 +270,12 @@ void NavigationController::ReloadInternal(bool check_for_repost,
   }
 }
 
-void NavigationController::CancelPendingReload() {
+void NavigationControllerImpl::CancelPendingReload() {
   DCHECK(pending_reload_ != NO_RELOAD);
   pending_reload_ = NO_RELOAD;
 }
 
-void NavigationController::ContinuePendingReload() {
+void NavigationControllerImpl::ContinuePendingReload() {
   if (pending_reload_ == NO_RELOAD) {
     NOTREACHED();
   } else {
@@ -283,17 +284,17 @@ void NavigationController::ContinuePendingReload() {
   }
 }
 
-bool NavigationController::IsInitialNavigation() {
+bool NavigationControllerImpl::IsInitialNavigation() {
   return last_document_loaded_.is_null();
 }
 
-NavigationEntryImpl* NavigationController::GetEntryWithPageID(
+NavigationEntryImpl* NavigationControllerImpl::GetEntryWithPageID(
     SiteInstance* instance, int32 page_id) const {
   int index = GetEntryIndexWithPageID(instance, page_id);
   return (index != -1) ? entries_[index].get() : NULL;
 }
 
-void NavigationController::LoadEntry(NavigationEntryImpl* entry) {
+void NavigationControllerImpl::LoadEntry(NavigationEntryImpl* entry) {
   // Don't navigate to URLs disabled by policy. This prevents showing the URL
   // on the Omnibar when it is also going to be blocked by
   // ChildProcessSecurityPolicy::CanRequestURL.
@@ -319,7 +320,7 @@ void NavigationController::LoadEntry(NavigationEntryImpl* entry) {
   NavigateToPendingEntry(NO_RELOAD);
 }
 
-NavigationEntry* NavigationController::GetActiveEntry() const {
+NavigationEntry* NavigationControllerImpl::GetActiveEntry() const {
   if (transient_entry_index_ != -1)
     return entries_[transient_entry_index_].get();
   if (pending_entry_)
@@ -327,7 +328,7 @@ NavigationEntry* NavigationController::GetActiveEntry() const {
   return GetLastCommittedEntry();
 }
 
-NavigationEntry* NavigationController::GetVisibleEntry() const {
+NavigationEntry* NavigationControllerImpl::GetVisibleEntry() const {
   if (transient_entry_index_ != -1)
     return entries_[transient_entry_index_].get();
   // Only return the pending_entry for new (non-history), browser-initiated
@@ -343,7 +344,7 @@ NavigationEntry* NavigationController::GetVisibleEntry() const {
   return GetLastCommittedEntry();
 }
 
-int NavigationController::GetCurrentEntryIndex() const {
+int NavigationControllerImpl::GetCurrentEntryIndex() const {
   if (transient_entry_index_ != -1)
     return transient_entry_index_;
   if (pending_entry_index_ != -1)
@@ -351,13 +352,13 @@ int NavigationController::GetCurrentEntryIndex() const {
   return last_committed_entry_index_;
 }
 
-NavigationEntry* NavigationController::GetLastCommittedEntry() const {
+NavigationEntry* NavigationControllerImpl::GetLastCommittedEntry() const {
   if (last_committed_entry_index_ == -1)
     return NULL;
   return entries_[last_committed_entry_index_].get();
 }
 
-bool NavigationController::CanViewSource() const {
+bool NavigationControllerImpl::CanViewSource() const {
   bool is_supported_mime_type = net::IsSupportedNonImageMimeType(
       tab_contents_->GetContentsMimeType().c_str());
   NavigationEntry* active_entry = GetActiveEntry();
@@ -365,20 +366,20 @@ bool NavigationController::CanViewSource() const {
     is_supported_mime_type && !tab_contents_->GetInterstitialPage();
 }
 
-int NavigationController::GetLastCommittedEntryIndex() const {
+int NavigationControllerImpl::GetLastCommittedEntryIndex() const {
   return last_committed_entry_index_;
 }
 
-int NavigationController::GetEntryCount() const {
+int NavigationControllerImpl::GetEntryCount() const {
   return static_cast<int>(entries_.size());
 }
 
-NavigationEntry* NavigationController::GetEntryAtIndex(
+NavigationEntry* NavigationControllerImpl::GetEntryAtIndex(
     int index) const {
   return entries_.at(index).get();
 }
 
-NavigationEntry* NavigationController::GetEntryAtOffset(
+NavigationEntry* NavigationControllerImpl::GetEntryAtOffset(
     int offset) const {
   int index = (transient_entry_index_ != -1) ?
                   transient_entry_index_ + offset :
@@ -389,16 +390,16 @@ NavigationEntry* NavigationController::GetEntryAtOffset(
   return entries_[index].get();
 }
 
-bool NavigationController::CanGoBack() const {
+bool NavigationControllerImpl::CanGoBack() const {
   return entries_.size() > 1 && GetCurrentEntryIndex() > 0;
 }
 
-bool NavigationController::CanGoForward() const {
+bool NavigationControllerImpl::CanGoForward() const {
   int index = GetCurrentEntryIndex();
   return index >= 0 && index < (static_cast<int>(entries_.size()) - 1);
 }
 
-void NavigationController::GoBack() {
+void NavigationControllerImpl::GoBack() {
   if (!CanGoBack()) {
     NOTREACHED();
     return;
@@ -417,7 +418,7 @@ void NavigationController::GoBack() {
   NavigateToPendingEntry(NO_RELOAD);
 }
 
-void NavigationController::GoForward() {
+void NavigationControllerImpl::GoForward() {
   if (!CanGoForward()) {
     NOTREACHED();
     return;
@@ -443,7 +444,7 @@ void NavigationController::GoForward() {
   NavigateToPendingEntry(NO_RELOAD);
 }
 
-void NavigationController::GoToIndex(int index) {
+void NavigationControllerImpl::GoToIndex(int index) {
   if (index < 0 || index >= static_cast<int>(entries_.size())) {
     NOTREACHED();
     return;
@@ -470,7 +471,7 @@ void NavigationController::GoToIndex(int index) {
   NavigateToPendingEntry(NO_RELOAD);
 }
 
-void NavigationController::GoToOffset(int offset) {
+void NavigationControllerImpl::GoToOffset(int offset) {
   int index = (transient_entry_index_ != -1) ?
                   transient_entry_index_ + offset :
                   last_committed_entry_index_ + offset;
@@ -480,14 +481,14 @@ void NavigationController::GoToOffset(int offset) {
   GoToIndex(index);
 }
 
-void NavigationController::RemoveEntryAtIndex(int index) {
+void NavigationControllerImpl::RemoveEntryAtIndex(int index) {
   if (index == last_committed_entry_index_)
     return;
 
   RemoveEntryAtIndexInternal(index);
 }
 
-void NavigationController::UpdateVirtualURLToURL(
+void NavigationControllerImpl::UpdateVirtualURLToURL(
     NavigationEntryImpl* entry, const GURL& new_url) {
   GURL new_virtual_url(new_url);
   if (BrowserURLHandler::GetInstance()->ReverseURLRewrite(
@@ -496,7 +497,7 @@ void NavigationController::UpdateVirtualURLToURL(
   }
 }
 
-void NavigationController::AddTransientEntry(NavigationEntryImpl* entry) {
+void NavigationControllerImpl::AddTransientEntry(NavigationEntryImpl* entry) {
   // Discard any current transient entry, we can only have one at a time.
   int index = 0;
   if (last_committed_entry_index_ != -1)
@@ -508,7 +509,7 @@ void NavigationController::AddTransientEntry(NavigationEntryImpl* entry) {
   tab_contents_->NotifyNavigationStateChanged(kInvalidateAll);
 }
 
-void NavigationController::TransferURL(
+void NavigationControllerImpl::TransferURL(
     const GURL& url,
     const content::Referrer& referrer,
     content::PageTransition transition,
@@ -527,7 +528,7 @@ void NavigationController::TransferURL(
   LoadEntry(entry);
 }
 
-void NavigationController::LoadURL(
+void NavigationControllerImpl::LoadURL(
     const GURL& url,
     const content::Referrer& referrer,
     content::PageTransition transition,
@@ -542,7 +543,7 @@ void NavigationController::LoadURL(
   LoadEntry(entry);
 }
 
-void NavigationController::LoadURLFromRenderer(
+void NavigationControllerImpl::LoadURLFromRenderer(
     const GURL& url,
     const content::Referrer& referrer,
     content::PageTransition transition,
@@ -557,11 +558,11 @@ void NavigationController::LoadURLFromRenderer(
   LoadEntry(entry);
 }
 
-void NavigationController::DocumentLoadedInFrame() {
+void NavigationControllerImpl::DocumentLoadedInFrame() {
   last_document_loaded_ = base::TimeTicks::Now();
 }
 
-bool NavigationController::RendererDidNavigate(
+bool NavigationControllerImpl::RendererDidNavigate(
     const ViewHostMsg_FrameNavigate_Params& params,
     content::LoadCommittedDetails* details) {
 
@@ -645,7 +646,7 @@ bool NavigationController::RendererDidNavigate(
   return true;
 }
 
-content::NavigationType NavigationController::ClassifyNavigation(
+content::NavigationType NavigationControllerImpl::ClassifyNavigation(
     const ViewHostMsg_FrameNavigate_Params& params) const {
   if (params.page_id == -1) {
     // The renderer generates the page IDs, and so if it gives us the invalid
@@ -770,7 +771,7 @@ content::NavigationType NavigationController::ClassifyNavigation(
   return content::NAVIGATION_TYPE_EXISTING_PAGE;
 }
 
-bool NavigationController::IsRedirect(
+bool NavigationControllerImpl::IsRedirect(
   const ViewHostMsg_FrameNavigate_Params& params) {
   // For main frame transition, we judge by params.transition.
   // Otherwise, by params.redirects.
@@ -780,7 +781,7 @@ bool NavigationController::IsRedirect(
   return params.redirects.size() > 1;
 }
 
-void NavigationController::RendererDidNavigateToNewPage(
+void NavigationControllerImpl::RendererDidNavigateToNewPage(
     const ViewHostMsg_FrameNavigate_Params& params, bool* did_replace_entry) {
   NavigationEntryImpl* new_entry;
   bool update_virtual_url;
@@ -816,7 +817,7 @@ void NavigationController::RendererDidNavigateToNewPage(
   InsertOrReplaceEntry(new_entry, *did_replace_entry);
 }
 
-void NavigationController::RendererDidNavigateToExistingPage(
+void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     const ViewHostMsg_FrameNavigate_Params& params) {
   // We should only get here for main frame navigations.
   DCHECK(content::PageTransitionIsMainFrame(params.transition));
@@ -860,7 +861,7 @@ void NavigationController::RendererDidNavigateToExistingPage(
       GetEntryIndexWithPageID(tab_contents_->GetSiteInstance(), params.page_id);
 }
 
-void NavigationController::RendererDidNavigateToSamePage(
+void NavigationControllerImpl::RendererDidNavigateToSamePage(
     const ViewHostMsg_FrameNavigate_Params& params) {
   // This mode implies we have a pending entry that's the same as an existing
   // entry for this page ID. This entry is guaranteed to exist by
@@ -881,7 +882,7 @@ void NavigationController::RendererDidNavigateToSamePage(
   DiscardNonCommittedEntries();
 }
 
-void NavigationController::RendererDidNavigateInPage(
+void NavigationControllerImpl::RendererDidNavigateInPage(
     const ViewHostMsg_FrameNavigate_Params& params, bool* did_replace_entry) {
   DCHECK(content::PageTransitionIsMainFrame(params.transition)) <<
       "WebKit should only tell us about in-page navs for the main frame.";
@@ -909,7 +910,7 @@ void NavigationController::RendererDidNavigateInPage(
       GetEntryIndexWithPageID(tab_contents_->GetSiteInstance(), params.page_id);
 }
 
-void NavigationController::RendererDidNavigateNewSubframe(
+void NavigationControllerImpl::RendererDidNavigateNewSubframe(
     const ViewHostMsg_FrameNavigate_Params& params) {
   if (content::PageTransitionStripQualifier(params.transition) ==
       content::PAGE_TRANSITION_AUTO_SUBFRAME) {
@@ -929,7 +930,7 @@ void NavigationController::RendererDidNavigateNewSubframe(
   InsertOrReplaceEntry(new_entry, false);
 }
 
-bool NavigationController::RendererDidNavigateAutoSubframe(
+bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
     const ViewHostMsg_FrameNavigate_Params& params) {
   // We're guaranteed to have a previously committed entry, and we now need to
   // handle navigation inside of a subframe in it without creating a new entry.
@@ -955,7 +956,7 @@ bool NavigationController::RendererDidNavigateAutoSubframe(
   return false;
 }
 
-int NavigationController::GetIndexOfEntry(
+int NavigationControllerImpl::GetIndexOfEntry(
     const NavigationEntryImpl* entry) const {
   const NavigationEntries::const_iterator i(std::find(
       entries_.begin(),
@@ -964,17 +965,17 @@ int NavigationController::GetIndexOfEntry(
   return (i == entries_.end()) ? -1 : static_cast<int>(i - entries_.begin());
 }
 
-bool NavigationController::IsURLInPageNavigation(const GURL& url) const {
+bool NavigationControllerImpl::IsURLInPageNavigation(const GURL& url) const {
   NavigationEntry* last_committed = GetLastCommittedEntry();
   if (!last_committed)
     return false;
   return AreURLsInPageNavigation(last_committed->GetURL(), url);
 }
 
-void NavigationController::CopyStateFrom(
+void NavigationControllerImpl::CopyStateFrom(
     const content::NavigationController& temp) {
-  const NavigationController& source =
-      static_cast<const NavigationController&>(temp);
+  const NavigationControllerImpl& source =
+      static_cast<const NavigationControllerImpl&>(temp);
   // Verify that we look new.
   DCHECK(GetEntryCount() == 0 && !GetPendingEntry());
 
@@ -989,9 +990,10 @@ void NavigationController::CopyStateFrom(
   FinishRestore(source.last_committed_entry_index_, false);
 }
 
-void NavigationController::CopyStateFromAndPrune(
+void NavigationControllerImpl::CopyStateFromAndPrune(
     content::NavigationController* temp) {
-  NavigationController* source = static_cast<NavigationController*>(temp);
+  NavigationControllerImpl* source =
+      static_cast<NavigationControllerImpl*>(temp);
   // The SiteInstance and page_id of the last committed entry needs to be
   // remembered at this point, in case there is only one committed entry
   // and it is pruned.
@@ -1039,7 +1041,7 @@ void NavigationController::CopyStateFromAndPrune(
                                           minimum_page_id);
 }
 
-void NavigationController::PruneAllButActive() {
+void NavigationControllerImpl::PruneAllButActive() {
   if (transient_entry_index_ != -1) {
     // There is a transient entry. Prune up to it.
     DCHECK_EQ(GetEntryCount() - 1, transient_entry_index_);
@@ -1077,27 +1079,28 @@ void NavigationController::PruneAllButActive() {
   }
 }
 
-SSLManager* NavigationController::GetSSLManager() {
+SSLManager* NavigationControllerImpl::GetSSLManager() {
   return &ssl_manager_;
 }
 
-void NavigationController::SetMaxRestoredPageID(int32 max_id) {
+void NavigationControllerImpl::SetMaxRestoredPageID(int32 max_id) {
   max_restored_page_id_ = max_id;
 }
 
-int32 NavigationController::GetMaxRestoredPageID() const {
+int32 NavigationControllerImpl::GetMaxRestoredPageID() const {
   return max_restored_page_id_;
 }
 
 SessionStorageNamespace*
-    NavigationController::GetSessionStorageNamespace() const {
+    NavigationControllerImpl::GetSessionStorageNamespace() const {
   return session_storage_namespace_;
 }
-bool NavigationController::NeedsReload() const {
+
+bool NavigationControllerImpl::NeedsReload() const {
   return needs_reload_;
 }
 
-void NavigationController::RemoveEntryAtIndexInternal(int index) {
+void NavigationControllerImpl::RemoveEntryAtIndexInternal(int index) {
   DCHECK(index < GetEntryCount());
   DCHECK(index != last_committed_entry_index_);
 
@@ -1108,7 +1111,7 @@ void NavigationController::RemoveEntryAtIndexInternal(int index) {
     last_committed_entry_index_--;
 }
 
-void NavigationController::DiscardNonCommittedEntries() {
+void NavigationControllerImpl::DiscardNonCommittedEntries() {
   bool transient = transient_entry_index_ != -1;
   DiscardNonCommittedEntriesInternal();
 
@@ -1119,16 +1122,16 @@ void NavigationController::DiscardNonCommittedEntries() {
   }
 }
 
-NavigationEntry* NavigationController::GetPendingEntry() const {
+NavigationEntry* NavigationControllerImpl::GetPendingEntry() const {
   return pending_entry_;
 }
 
-int NavigationController::GetPendingEntryIndex() const {
+int NavigationControllerImpl::GetPendingEntryIndex() const {
   return pending_entry_index_;
 }
 
-void NavigationController::InsertOrReplaceEntry(NavigationEntryImpl* entry,
-                                                bool replace) {
+void NavigationControllerImpl::InsertOrReplaceEntry(NavigationEntryImpl* entry,
+                                                    bool replace) {
   DCHECK(entry->GetTransitionType() != content::PAGE_TRANSITION_AUTO_SUBFRAME);
 
   // Copy the pending entry's unique ID to the committed entry.
@@ -1175,7 +1178,7 @@ void NavigationController::InsertOrReplaceEntry(NavigationEntryImpl* entry,
   tab_contents_->UpdateMaxPageID(entry->GetPageID());
 }
 
-void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
+void NavigationControllerImpl::NavigateToPendingEntry(ReloadType reload_type) {
   needs_reload_ = false;
 
   // If we were navigating to a slow-to-commit page, and the user performs
@@ -1228,7 +1231,7 @@ void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
   }
 }
 
-void NavigationController::NotifyNavigationEntryCommitted(
+void NavigationControllerImpl::NotifyNavigationEntryCommitted(
     content::LoadCommittedDetails* details) {
   details->entry = GetActiveEntry();
   content::NotificationDetails notification_details =
@@ -1251,18 +1254,18 @@ void NavigationController::NotifyNavigationEntryCommitted(
 }
 
 // static
-size_t NavigationController::max_entry_count() {
+size_t NavigationControllerImpl::max_entry_count() {
   if (max_entry_count_for_testing_ != kMaxEntryCountForTestingNotSet)
      return max_entry_count_for_testing_;
   return content::kMaxSessionHistoryEntries;
 }
 
-void NavigationController::SetActive(bool is_active) {
+void NavigationControllerImpl::SetActive(bool is_active) {
   if (is_active && needs_reload_)
     LoadIfNecessary();
 }
 
-void NavigationController::LoadIfNecessary() {
+void NavigationControllerImpl::LoadIfNecessary() {
   if (!needs_reload_)
     return;
 
@@ -1273,8 +1276,8 @@ void NavigationController::LoadIfNecessary() {
   NavigateToPendingEntry(NO_RELOAD);
 }
 
-void NavigationController::NotifyEntryChanged(const NavigationEntry* entry,
-                                              int index) {
+void NavigationControllerImpl::NotifyEntryChanged(const NavigationEntry* entry,
+                                                  int index) {
   content::EntryChangedDetails det;
   det.changed_entry = entry;
   det.index = index;
@@ -1284,8 +1287,8 @@ void NavigationController::NotifyEntryChanged(const NavigationEntry* entry,
       content::Details<content::EntryChangedDetails>(&det));
 }
 
-void NavigationController::FinishRestore(int selected_index,
-                                         bool from_last_session) {
+void NavigationControllerImpl::FinishRestore(int selected_index,
+                                             bool from_last_session) {
   DCHECK(selected_index >= 0 && selected_index < GetEntryCount());
   ConfigureEntriesForRestore(&entries_, from_last_session);
 
@@ -1294,7 +1297,7 @@ void NavigationController::FinishRestore(int selected_index,
   last_committed_entry_index_ = selected_index;
 }
 
-void NavigationController::DiscardNonCommittedEntriesInternal() {
+void NavigationControllerImpl::DiscardNonCommittedEntriesInternal() {
   if (pending_entry_index_ == -1)
     delete pending_entry_;
   pending_entry_ = NULL;
@@ -1303,7 +1306,7 @@ void NavigationController::DiscardNonCommittedEntriesInternal() {
   DiscardTransientEntry();
 }
 
-void NavigationController::DiscardTransientEntry() {
+void NavigationControllerImpl::DiscardTransientEntry() {
   if (transient_entry_index_ == -1)
     return;
   entries_.erase(entries_.begin() + transient_entry_index_);
@@ -1312,7 +1315,7 @@ void NavigationController::DiscardTransientEntry() {
   transient_entry_index_ = -1;
 }
 
-int NavigationController::GetEntryIndexWithPageID(
+int NavigationControllerImpl::GetEntryIndexWithPageID(
     SiteInstance* instance, int32 page_id) const {
   for (int i = static_cast<int>(entries_.size()) - 1; i >= 0; --i) {
     if ((entries_[i]->site_instance() == instance) &&
@@ -1322,14 +1325,14 @@ int NavigationController::GetEntryIndexWithPageID(
   return -1;
 }
 
-NavigationEntry* NavigationController::GetTransientEntry() const {
+NavigationEntry* NavigationControllerImpl::GetTransientEntry() const {
   if (transient_entry_index_ == -1)
     return NULL;
   return entries_[transient_entry_index_].get();
 }
 
-void NavigationController::InsertEntriesFrom(
-    const NavigationController& source,
+void NavigationControllerImpl::InsertEntriesFrom(
+    const NavigationControllerImpl& source,
     int max_index) {
   DCHECK_LE(max_index, source.GetEntryCount());
   size_t insert_index = 0;

@@ -16,7 +16,7 @@
 #include "content/public/browser/notification_registrar.h"
 
 class InterstitialPage;
-class NavigationController;
+class NavigationControllerImpl;
 class RenderViewHost;
 class RenderWidgetHostView;
 class WebUI;
@@ -63,7 +63,7 @@ class CONTENT_EXPORT RenderViewHostManager
         RenderViewHost* render_view_host) = 0;
     virtual void UpdateRenderViewSizeForRenderManager() = 0;
     virtual void NotifySwappedFromRenderManager() = 0;
-    virtual NavigationController& GetControllerForRenderManager() = 0;
+    virtual NavigationControllerImpl& GetControllerForRenderManager() = 0;
 
     // Creates a WebUI object for the given URL if one applies. Ownership of the
     // returned pointer will be passed to the caller. If no WebUI applies,

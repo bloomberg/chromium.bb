@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/test_render_view_host.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/navigation_entry.h"

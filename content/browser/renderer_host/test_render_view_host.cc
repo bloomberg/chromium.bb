@@ -7,7 +7,7 @@
 #include "content/browser/renderer_host/test_backing_store.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/dom_storage_common.h"
@@ -310,7 +310,7 @@ RenderViewHostTestHarness::RenderViewHostTestHarness()
 RenderViewHostTestHarness::~RenderViewHostTestHarness() {
 }
 
-NavigationController& RenderViewHostTestHarness::controller() {
+NavigationControllerImpl& RenderViewHostTestHarness::controller() {
   return contents()->GetControllerImpl();
 }
 

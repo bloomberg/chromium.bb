@@ -56,7 +56,7 @@ void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
 
 // static
 void SSLManager::NotifySSLInternalStateChanged(
-    NavigationController* controller) {
+    NavigationControllerImpl* controller) {
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
       content::Source<content::BrowserContext>(controller->GetBrowserContext()),
@@ -101,7 +101,7 @@ bool SSLManager::DeserializeSecurityInfo(const std::string& state,
          pickle.ReadInt(&iter, ssl_connection_status);
 }
 
-SSLManager::SSLManager(NavigationController* controller)
+SSLManager::SSLManager(NavigationControllerImpl* controller)
     : backend_(controller),
       policy_(new SSLPolicy(&backend_)),
       controller_(controller) {
