@@ -17,6 +17,8 @@
 #include "content/public/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+class NavigationController;
+
 namespace content {
 class BrowserContext;
 class RenderProcessHostFactory;
@@ -26,7 +28,6 @@ namespace gfx {
 class Rect;
 }
 
-class NavigationController;
 class SiteInstance;
 class TestTabContents;
 struct ViewHostMsg_FrameNavigate_Params;

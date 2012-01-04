@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 
 namespace {

@@ -52,7 +52,7 @@ using content::WebContents;
 class AutoLoginRedirector : public content::NotificationObserver {
  public:
   AutoLoginRedirector(TokenService* token_service,
-                      NavigationController* navigation_controller,
+                      content::NavigationController* navigation_controller,
                       const std::string& args);
   virtual ~AutoLoginRedirector();
 
@@ -66,7 +66,7 @@ class AutoLoginRedirector : public content::NotificationObserver {
   // to the desired page.
   void RedirectToMergeSession(const std::string& token);
 
-  NavigationController* navigation_controller_;
+  content::NavigationController* navigation_controller_;
   const std::string args_;
   content::NotificationRegistrar registrar_;
 
@@ -75,7 +75,7 @@ class AutoLoginRedirector : public content::NotificationObserver {
 
 AutoLoginRedirector::AutoLoginRedirector(
     TokenService* token_service,
-    NavigationController* navigation_controller,
+    content::NavigationController* navigation_controller,
     const std::string& args)
     : navigation_controller_(navigation_controller),
       args_(args) {
@@ -141,7 +141,7 @@ void AutoLoginRedirector::RedirectToMergeSession(const std::string& token) {
 class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   AutoLoginInfoBarDelegate(InfoBarTabHelper* owner,
-                           NavigationController* navigation_controller,
+                           content::NavigationController* navigation_controller,
                            TokenService* token_service,
                            PrefService* pref_service,
                            const std::string& username,
@@ -157,7 +157,7 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
-  NavigationController* navigation_controller_;
+  content::NavigationController* navigation_controller_;
   TokenService* token_service_;
   PrefService* pref_service_;
   std::string username_;
@@ -168,7 +168,7 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
 
 AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(
     InfoBarTabHelper* owner,
-    NavigationController* navigation_controller,
+    content::NavigationController* navigation_controller,
     TokenService* token_service,
     PrefService* pref_service,
     const std::string& username,

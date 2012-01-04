@@ -49,14 +49,19 @@ class NavigationController {
       const std::string& extra_headers,
       BrowserContext* browser_context);
 
+  // Disables checking for a repost and prompting the user. This is used during
+  // testing.
+  static void DisablePromptOnRepost();
+
   virtual ~NavigationController() {}
 
   // Returns the web contents associated with this controller. Non-NULL except
   // during set-up of the tab.
   virtual WebContents* GetWebContents() const = 0;
 
-  // Returns the browser context for this controller. It can never be NULL.
+  // Get/set the browser context for this controller. It can never be NULL.
   virtual BrowserContext* GetBrowserContext() const = 0;
+  virtual void SetBrowserContext(BrowserContext* browser_context) = 0;
 
   // Initializes this NavigationController with the given saved navigations,
   // using selected_navigation as the currently loaded entry. Before this call
@@ -231,6 +236,10 @@ class NavigationController {
   // (which must be at the given index). This will keep things in sync like
   // the saved session.
   virtual void NotifyEntryChanged(const NavigationEntry* entry, int index) = 0;
+
+  // Copies the navigation state from the given controller to this one. This
+  // one should be empty (just created).
+  virtual void CopyStateFrom(const NavigationController& source) = 0;
 
   // A variant of CopyStateFrom. Removes all entries from this except the last
   // entry, inserts all entries from |source| before and including the active

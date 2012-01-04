@@ -278,7 +278,7 @@ void LoginHandler::NotifyAuthNeeded() {
 
   content::NotificationService* service =
       content::NotificationService::current();
-  NavigationController* controller = NULL;
+  content::NavigationController* controller = NULL;
 
   TabContents* requesting_contents = GetTabContentsForLogin();
   if (requesting_contents)
@@ -297,7 +297,7 @@ void LoginHandler::NotifyAuthCancelled() {
 
   content::NotificationService* service =
       content::NotificationService::current();
-  NavigationController* controller = NULL;
+  content::NavigationController* controller = NULL;
 
   TabContents* requesting_contents = GetTabContentsForLogin();
   if (requesting_contents)
@@ -321,7 +321,8 @@ void LoginHandler::NotifyAuthSupplied(const string16& username,
 
   content::NotificationService* service =
       content::NotificationService::current();
-  NavigationController* controller = &requesting_contents->GetController();
+  content::NavigationController* controller =
+      &requesting_contents->GetController();
   AuthSuppliedLoginNotificationDetails details(this, username, password);
 
   service->Notify(

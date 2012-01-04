@@ -86,7 +86,7 @@ TabContents* TestTabContents::Clone() {
   TabContents* tc = new TestTabContents(
       GetBrowserContext(),
       SiteInstance::CreateSiteInstance(GetBrowserContext()));
-  tc->GetController().CopyStateFrom(controller_);
+  tc->GetControllerImpl().CopyStateFrom(controller_);
   return tc;
 }
 

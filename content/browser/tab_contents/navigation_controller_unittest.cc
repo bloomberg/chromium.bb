@@ -1491,7 +1491,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   entries.push_back(entry);
   TabContents our_contents(
       browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL);
-  NavigationController& our_controller = our_contents.GetController();
+  NavigationController& our_controller = our_contents.GetControllerImpl();
   our_controller.Restore(0, true, &entries);
   ASSERT_EQ(0u, entries.size());
 
@@ -1558,7 +1558,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   entries.push_back(entry);
   TabContents our_contents(
       browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL);
-  NavigationController& our_controller = our_contents.GetController();
+  NavigationController& our_controller = our_contents.GetControllerImpl();
   our_controller.Restore(0, true, &entries);
   ASSERT_EQ(0u, entries.size());
 
@@ -2012,7 +2012,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   NavigateAndCommit(url2);
 
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
-  NavigationController& other_controller = other_contents->GetController();
+  NavigationController& other_controller = other_contents->GetControllerImpl();
   other_contents->NavigateAndCommit(url3);
   other_contents->ExpectSetHistoryLengthAndPrune(
       NavigationEntryImpl::FromNavigationEntry(
@@ -2043,7 +2043,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
   controller().GoBack();
 
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
-  NavigationController& other_controller = other_contents->GetController();
+  NavigationController& other_controller = other_contents->GetControllerImpl();
   other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);
   other_controller.CopyStateFromAndPrune(&controller());
 
@@ -2068,7 +2068,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   controller().GoBack();
 
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
-  NavigationController& other_controller = other_contents->GetController();
+  NavigationController& other_controller = other_contents->GetControllerImpl();
   other_controller.LoadURL(
       url3, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);

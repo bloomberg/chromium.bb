@@ -28,10 +28,10 @@
 #include "chrome/common/print_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
@@ -303,7 +303,8 @@ void CloudPrintFlowHandler::RegisterMessages() {
   // Register for appropriate notifications, and re-direct the URL
   // to the real server URL, now that we've gotten an HTML dialog
   // going.
-  NavigationController* controller = &web_ui()->web_contents()->GetController();
+  content::NavigationController* controller =
+      &web_ui()->web_contents()->GetController();
   NavigationEntry* pending_entry = controller->GetPendingEntry();
   if (pending_entry) {
     Profile* profile = Profile::FromWebUI(web_ui());

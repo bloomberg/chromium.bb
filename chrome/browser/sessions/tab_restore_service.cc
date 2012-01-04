@@ -27,8 +27,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 
 using base::Time;
@@ -218,7 +218,7 @@ void TabRestoreService::RemoveObserver(TabRestoreServiceObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void TabRestoreService::CreateHistoricalTab(NavigationController* tab,
+void TabRestoreService::CreateHistoricalTab(content::NavigationController* tab,
                                             int index) {
   if (restoring_)
     return;
@@ -486,7 +486,7 @@ void TabRestoreService::Save() {
 void TabRestoreService::PopulateTab(Tab* tab,
                                     int index,
                                     TabRestoreServiceDelegate* delegate,
-                                    NavigationController* controller) {
+                                    content::NavigationController* controller) {
   const int pending_index = controller->GetPendingEntryIndex();
   int entry_count = controller->GetEntryCount();
   if (entry_count == 0 && pending_index == 0)

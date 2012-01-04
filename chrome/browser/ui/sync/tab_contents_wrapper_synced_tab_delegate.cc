@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/sync/tab_contents_wrapper_synced_tab_delegate.h"
 
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 
 using content::NavigationEntry;

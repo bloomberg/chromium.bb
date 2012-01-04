@@ -16,7 +16,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/ssl_status.h"

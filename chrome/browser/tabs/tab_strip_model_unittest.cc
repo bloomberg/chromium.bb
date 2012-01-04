@@ -29,8 +29,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
@@ -640,7 +640,7 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
   // background with opener_contents set as their opener.
 
   TabContentsWrapper* opener_contents = CreateTabContents();
-  NavigationController* opener =
+  content::NavigationController* opener =
       &opener_contents->tab_contents()->GetController();
   tabstrip.AppendTabContents(opener_contents, true);
   TabContentsWrapper* contents1 = CreateTabContents();
@@ -679,7 +679,8 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
 
   // For a tab that has opened no other tabs, the return value should always be
   // -1...
-  NavigationController* o1 = &contents1->tab_contents()->GetController();
+  content::NavigationController* o1 =
+      &contents1->tab_contents()->GetController();
   EXPECT_EQ(-1, tabstrip.GetIndexOfNextTabContentsOpenedBy(o1, 3, false));
   EXPECT_EQ(-1, tabstrip.GetIndexOfLastTabContentsOpenedBy(o1, 3));
 
@@ -792,7 +793,7 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
   EXPECT_TRUE(tabstrip.empty());
 
   TabContentsWrapper* opener_contents = CreateTabContents();
-  NavigationController* opener =
+  content::NavigationController* opener =
       &opener_contents->tab_contents()->GetController();
   tabstrip.AppendTabContents(opener_contents, true);
 

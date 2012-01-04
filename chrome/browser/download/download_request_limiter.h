@@ -15,11 +15,11 @@
 #include "content/public/browser/notification_registrar.h"
 
 class DownloadRequestInfoBarDelegate;
-class NavigationController;
 class TabContents;
 class TabContentsWrapper;
 
 namespace content {
+class NavigationController;
 class WebContents;
 }
 
@@ -82,8 +82,8 @@ class DownloadRequestLimiter
     // is used. |originating_controller| is typically null, but differs from
     // |controller| in the case of a constrained popup requesting the download.
     TabDownloadState(DownloadRequestLimiter* host,
-                     NavigationController* controller,
-                     NavigationController* originating_controller);
+                     content::NavigationController* controller,
+                     content::NavigationController* originating_controller);
     virtual ~TabDownloadState();
 
     // Status of the download.
@@ -116,7 +116,7 @@ class DownloadRequestLimiter
     bool is_showing_prompt() const { return (infobar_ != NULL); }
 
     // NavigationController we're tracking.
-    NavigationController* controller() const { return controller_; }
+    content::NavigationController* controller() const { return controller_; }
 
     // Invoked from DownloadRequestDialogDelegate. Notifies the delegates and
     // changes the status appropriately. Virtual for testing.
@@ -145,7 +145,7 @@ class DownloadRequestLimiter
 
     DownloadRequestLimiter* host_;
 
-    NavigationController* controller_;
+    content::NavigationController* controller_;
 
     // Host of the first page the download started on. This may be empty.
     std::string initial_page_host_;
@@ -215,8 +215,8 @@ class DownloadRequestLimiter
   // The returned TabDownloadState is owned by the DownloadRequestLimiter and
   // deleted when no longer needed (the Remove method is invoked).
   TabDownloadState* GetDownloadState(
-      NavigationController* controller,
-      NavigationController* originating_controller,
+      content::NavigationController* controller,
+      content::NavigationController* originating_controller,
       bool create);
 
   // CanDownloadOnIOThread invokes this on the UI thread. This determines the
@@ -248,7 +248,7 @@ class DownloadRequestLimiter
   // if the state is other than ALLOW_ONE_DOWNLOAD. Similarly once the state
   // transitions from anything but ALLOW_ONE_DOWNLOAD back to ALLOW_ONE_DOWNLOAD
   // the TabDownloadState is removed and deleted (by way of Remove).
-  typedef std::map<NavigationController*, TabDownloadState*> StateMap;
+  typedef std::map<content::NavigationController*, TabDownloadState*> StateMap;
   StateMap state_map_;
 
   static TestingDelegate* delegate_;

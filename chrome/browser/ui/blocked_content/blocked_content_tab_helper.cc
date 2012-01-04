@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_container.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"

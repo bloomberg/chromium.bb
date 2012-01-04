@@ -16,7 +16,7 @@
 #include "chrome/common/chrome_view_type.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"

@@ -168,7 +168,7 @@ class WindowedNavigationObserver
 class WindowedLoadStopObserver
     : public WindowedNavigationObserver<content::NOTIFICATION_LOAD_STOP> {
  public:
-  WindowedLoadStopObserver(NavigationController* controller,
+  WindowedLoadStopObserver(content::NavigationController* controller,
                            int notification_count)
       : WindowedNavigationObserver<content::NOTIFICATION_LOAD_STOP>(controller),
         remaining_notification_count_(notification_count) {}
@@ -244,7 +244,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, PrefetchAuthCancels) {
   TabContentsWrapper* contents =
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents);
-  NavigationController* controller = &contents->web_contents()->GetController();
+  content::NavigationController* controller =
+      &contents->web_contents()->GetController();
   LoginPromptBrowserTestObserver observer;
 
   observer.Register(content::Source<content::NavigationController>(controller));
@@ -271,7 +272,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents);
 
-  NavigationController* controller = &contents->web_contents()->GetController();
+  content::NavigationController* controller =
+      &contents->web_contents()->GetController();
 
   LoginPromptBrowserTestObserver observer;
   observer.Register(content::Source<content::NavigationController>(controller));
@@ -370,7 +372,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MultipleRealmCancellation) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents);
 
-  NavigationController* controller = &contents->web_contents()->GetController();
+  content::NavigationController* controller =
+      &contents->web_contents()->GetController();
   LoginPromptBrowserTestObserver observer;
 
   observer.Register(content::Source<content::NavigationController>(controller));
@@ -423,7 +426,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MultipleRealmConfirmation) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents);
 
-  NavigationController* controller = &contents->web_contents()->GetController();
+  content::NavigationController* controller =
+      &contents->web_contents()->GetController();
   LoginPromptBrowserTestObserver observer;
 
   observer.Register(content::Source<content::NavigationController>(controller));
@@ -476,7 +480,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, IncorrectConfirmation) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents);
 
-  NavigationController* controller = &contents->web_contents()->GetController();
+  content::NavigationController* controller =
+      &contents->web_contents()->GetController();
   LoginPromptBrowserTestObserver observer;
 
   observer.Register(content::Source<content::NavigationController>(controller));
@@ -548,7 +553,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, NoLoginPromptForFavicon) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents);
 
-  NavigationController* controller = &contents->web_contents()->GetController();
+  content::NavigationController* controller =
+      &contents->web_contents()->GetController();
   LoginPromptBrowserTestObserver observer;
 
   observer.Register(content::Source<content::NavigationController>(controller));
@@ -605,7 +611,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, BlockCrossdomainPrompt) {
   TabContentsWrapper* contents = browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents);
 
-  NavigationController* controller = &contents->web_contents()->GetController();
+  content::NavigationController* controller =
+      &contents->web_contents()->GetController();
   LoginPromptBrowserTestObserver observer;
   observer.Register(content::Source<content::NavigationController>(controller));
 
@@ -672,7 +679,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, SupplyRedundantAuths) {
   TabContentsWrapper* contents_1 =
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents_1);
-  NavigationController* controller_1 =
+  content::NavigationController* controller_1 =
       &contents_1->web_contents()->GetController();
 
   // Open a new tab.
@@ -687,7 +694,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, SupplyRedundantAuths) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents_2);
   ASSERT_NE(contents_1, contents_2);
-  NavigationController* controller_2 =
+  content::NavigationController* controller_2 =
       &contents_2->web_contents()->GetController();
 
   LoginPromptBrowserTestObserver observer;
@@ -742,7 +749,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, CancelRedundantAuths) {
   TabContentsWrapper* contents_1 =
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents_1);
-  NavigationController* controller_1 =
+  content::NavigationController* controller_1 =
       &contents_1->web_contents()->GetController();
 
   // Open a new tab.
@@ -757,7 +764,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, CancelRedundantAuths) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents_2);
   ASSERT_NE(contents_1, contents_2);
-  NavigationController* controller_2 =
+  content::NavigationController* controller_2 =
       &contents_2->web_contents()->GetController();
 
   LoginPromptBrowserTestObserver observer;
@@ -813,7 +820,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   TabContentsWrapper* contents =
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents);
-  NavigationController* controller = &contents->web_contents()->GetController();
+  content::NavigationController* controller =
+      &contents->web_contents()->GetController();
 
   // Open an incognito window.
   Browser* browser_incognito = CreateIncognitoBrowser();
@@ -823,7 +831,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
       browser_incognito->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(contents_incognito);
   ASSERT_NE(contents, contents_incognito);
-  NavigationController* controller_incognito =
+  content::NavigationController* controller_incognito =
       &contents_incognito->web_contents()->GetController();
 
   LoginPromptBrowserTestObserver observer;

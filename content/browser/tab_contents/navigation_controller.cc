@@ -31,6 +31,7 @@
 #include "net/base/net_util.h"
 #include "webkit/glue/webkit_glue.h"
 
+using content::BrowserContext;
 using content::GlobalRequestID;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
@@ -115,17 +116,19 @@ const size_t kMaxEntryCountForTestingNotSet = -1;
 size_t NavigationController::max_entry_count_for_testing_ =
     kMaxEntryCountForTestingNotSet;
 
-// static
-bool NavigationController::check_for_repost_ = true;
+ // Should Reload check for post data? The default is true, but is set to false
+// when testing.
+static bool g_check_for_repost = true;
 
+namespace content {
 // static
-NavigationEntry* content::NavigationController::CreateNavigationEntry(
+NavigationEntry* NavigationController::CreateNavigationEntry(
       const GURL& url,
-      const content::Referrer& referrer,
-      content::PageTransition transition,
+      const Referrer& referrer,
+      PageTransition transition,
       bool is_renderer_initiated,
       const std::string& extra_headers,
-      content::BrowserContext* browser_context) {
+      BrowserContext* browser_context) {
   // Allow the browser URL handler to rewrite the URL. This will, for example,
   // remove "view-source:" from the beginning of the URL to get the URL that
   // will actually be loaded. This real URL won't be shown to the user, just
@@ -151,9 +154,16 @@ NavigationEntry* content::NavigationController::CreateNavigationEntry(
   return entry;
 }
 
+// static
+void NavigationController::DisablePromptOnRepost() {
+  g_check_for_repost = false;
+}
+
+}  // namespace content
+
 NavigationController::NavigationController(
     TabContents* contents,
-    content::BrowserContext* browser_context,
+    BrowserContext* browser_context,
     SessionStorageNamespace* session_storage_namespace)
     : browser_context_(browser_context),
       pending_entry_(NULL),
@@ -186,8 +196,12 @@ WebContents* NavigationController::GetWebContents() const {
   return tab_contents_;
 }
 
-content::BrowserContext* NavigationController::GetBrowserContext() const {
+BrowserContext* NavigationController::GetBrowserContext() const {
   return browser_context_;
+}
+
+void NavigationController::SetBrowserContext(BrowserContext* browser_context) {
+  browser_context_ = browser_context;
 }
 
 void NavigationController::Restore(
@@ -232,7 +246,7 @@ void NavigationController::ReloadInternal(bool check_for_repost,
     return;
   }
 
-  if (check_for_repost_ && check_for_repost &&
+  if (g_check_for_repost && check_for_repost &&
       GetEntryAtIndex(current_index)->GetHasPostData()) {
     // The user is asking to reload a page with POST data. Prompt to make sure
     // they really want to do this. If they do, the dialog will call us back
@@ -957,7 +971,10 @@ bool NavigationController::IsURLInPageNavigation(const GURL& url) const {
   return AreURLsInPageNavigation(last_committed->GetURL(), url);
 }
 
-void NavigationController::CopyStateFrom(const NavigationController& source) {
+void NavigationController::CopyStateFrom(
+    const content::NavigationController& temp) {
+  const NavigationController& source =
+      static_cast<const NavigationController&>(temp);
   // Verify that we look new.
   DCHECK(GetEntryCount() == 0 && !GetPendingEntry());
 
@@ -1231,11 +1248,6 @@ void NavigationController::NotifyNavigationEntryCommitted(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<content::NavigationController>(this),
       notification_details);
-}
-
-// static
-void NavigationController::DisablePromptOnRepost() {
-  check_for_repost_ = false;
 }
 
 // static

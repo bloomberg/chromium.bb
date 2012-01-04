@@ -146,12 +146,12 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/interstitial_page.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -1373,7 +1373,7 @@ bool Browser::CanRestoreTab() {
 
 bool Browser::NavigateToIndexWithDisposition(int index,
                                              WindowOpenDisposition disp) {
-  NavigationController& controller =
+  content::NavigationController& controller =
       GetOrCloneTabForDisposition(disp)->GetController();
   if (index < 0 || index >= controller.GetEntryCount())
     return false;
@@ -3103,7 +3103,7 @@ TabContentsWrapper* Browser::CreateTabContentsForURL(
 }
 
 bool Browser::CanDuplicateContentsAt(int index) {
-  NavigationController& nc = GetTabContentsAt(index)->GetController();
+  content::NavigationController& nc = GetTabContentsAt(index)->GetController();
   return nc.GetWebContents() && nc.GetLastCommittedEntry();
 }
 
@@ -4596,7 +4596,7 @@ void Browser::UpdateCommandsForTabState() {
     return;
 
   // Navigation commands
-  NavigationController& nc = current_tab->GetController();
+  content::NavigationController& nc = current_tab->GetController();
   command_updater_.UpdateCommandEnabled(IDC_BACK, nc.CanGoBack());
   command_updater_.UpdateCommandEnabled(IDC_FORWARD, nc.CanGoForward());
   command_updater_.UpdateCommandEnabled(IDC_RELOAD,

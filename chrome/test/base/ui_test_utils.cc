@@ -44,10 +44,10 @@
 #include "chrome/test/automation/javascript_execution_controller.h"
 #include "chrome/test/base/bookmark_load_observer.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -314,7 +314,7 @@ bool GetCurrentTabTitle(const Browser* browser, string16* title) {
   return true;
 }
 
-void WaitForNavigations(NavigationController* controller,
+void WaitForNavigations(content::NavigationController* controller,
                         int number_of_navigations) {
   TestNavigationObserver observer(
       content::Source<content::NavigationController>(controller), NULL,
@@ -450,7 +450,7 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
                    base::Unretained(MessageLoopForUI::current())));
     return;
   } else if (web_contents) {
-    NavigationController* controller = &web_contents->GetController();
+    content::NavigationController* controller = &web_contents->GetController();
     WaitForNavigations(controller, number_of_navigations);
     return;
   }

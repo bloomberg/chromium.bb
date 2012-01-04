@@ -12,9 +12,9 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -28,8 +28,8 @@ using content::WebContents;
 
 DownloadRequestLimiter::TabDownloadState::TabDownloadState(
     DownloadRequestLimiter* host,
-    NavigationController* controller,
-    NavigationController* originating_controller)
+    content::NavigationController* controller,
+    content::NavigationController* originating_controller)
     : host_(host),
       controller_(controller),
       status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
@@ -231,8 +231,8 @@ void DownloadRequestLimiter::SetTestingDelegate(TestingDelegate* delegate) {
 }
 
 DownloadRequestLimiter::TabDownloadState* DownloadRequestLimiter::
-    GetDownloadState(NavigationController* controller,
-                     NavigationController* originating_controller,
+    GetDownloadState(content::NavigationController* controller,
+                     content::NavigationController* originating_controller,
                      bool create) {
   DCHECK(controller);
   StateMap::iterator i = state_map_.find(controller);

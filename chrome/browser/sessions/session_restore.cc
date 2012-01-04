@@ -31,9 +31,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "net/base/network_change_notifier.h"
@@ -69,11 +69,11 @@ class TabLoader : public content::NotificationObserver,
   virtual ~TabLoader();
 
   // Schedules a tab for loading.
-  void ScheduleLoad(NavigationController* controller);
+  void ScheduleLoad(content::NavigationController* controller);
 
   // Notifies the loader that a tab has been scheduled for loading through
   // some other mechanism.
-  void TabIsLoading(NavigationController* controller);
+  void TabIsLoading(content::NavigationController* controller);
 
   // Invokes |LoadNextTab| to load a tab.
   //
@@ -168,7 +168,7 @@ TabLoader::~TabLoader() {
   net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
 }
 
-void TabLoader::ScheduleLoad(NavigationController* controller) {
+void TabLoader::ScheduleLoad(content::NavigationController* controller) {
   DCHECK(controller);
   DCHECK(find(tabs_to_load_.begin(), tabs_to_load_.end(), controller) ==
          tabs_to_load_.end());
@@ -176,7 +176,7 @@ void TabLoader::ScheduleLoad(NavigationController* controller) {
   RegisterForNotifications(controller);
 }
 
-void TabLoader::TabIsLoading(NavigationController* controller) {
+void TabLoader::TabIsLoading(content::NavigationController* controller) {
   DCHECK(controller);
   DCHECK(find(tabs_loading_.begin(), tabs_loading_.end(), controller) ==
          tabs_loading_.end());

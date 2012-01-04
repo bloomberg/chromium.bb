@@ -46,8 +46,8 @@
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -1072,7 +1072,8 @@ bool UpdateTabFunction::RunImpl() {
                   NULL, &tab_strip, &contents, &tab_index, &error_)) {
     return false;
   }
-  NavigationController& controller = contents->web_contents()->GetController();
+  content::NavigationController& controller =
+      contents->web_contents()->GetController();
 
   // TODO(rafaelw): handle setting remaining tab properties:
   // -title

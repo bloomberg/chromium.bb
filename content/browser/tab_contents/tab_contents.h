@@ -118,13 +118,16 @@ class CONTENT_EXPORT TabContents
     return java_bridge_dispatcher_host_manager_.get();
   }
 
+  // Like GetController from WebContents, but returns the concrete object.
+  NavigationController& GetControllerImpl();
+
   // content::WebContents ------------------------------------------------------
   virtual const base::PropertyBag* GetPropertyBag() const OVERRIDE;
   virtual base::PropertyBag* GetPropertyBag() OVERRIDE;
   virtual content::WebContentsDelegate* GetDelegate() OVERRIDE;
   virtual void SetDelegate(content::WebContentsDelegate* delegate) OVERRIDE;
-  virtual NavigationController& GetController() OVERRIDE;
-  virtual const NavigationController& GetController() const OVERRIDE;
+  virtual content::NavigationController& GetController() OVERRIDE;
+  virtual const content::NavigationController& GetController() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual void SetViewType(content::ViewType type) OVERRIDE;
   virtual content::ViewType GetViewType() const OVERRIDE;

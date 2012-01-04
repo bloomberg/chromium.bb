@@ -22,7 +22,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_tab_strip_model_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"

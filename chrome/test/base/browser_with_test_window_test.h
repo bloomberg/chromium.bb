@@ -19,7 +19,6 @@
 #endif
 
 class GURL;
-class NavigationController;
 
 #if defined(USE_AURA)
 namespace aura {
@@ -30,6 +29,7 @@ class TestActivationClient;
 #endif
 
 namespace content {
+class NavigationController;
 class WebContents;
 }
 
@@ -91,13 +91,13 @@ class BrowserWithTestWindowTest : public testing::Test {
 
   // Commits the pending load on the given controller. It will keep the
   // URL of the pending load. If there is no pending load, this does nothing.
-  void CommitPendingLoad(NavigationController* controller);
+  void CommitPendingLoad(content::NavigationController* controller);
 
   // Creates a pending navigation on the given navigation controller to the
   // given URL with the default parameters and the commits the load with a page
   // ID one larger than any seen. This emulates what happens on a new
   // navigation.
-  void NavigateAndCommit(NavigationController* controller,
+  void NavigateAndCommit(content::NavigationController* controller,
                          const GURL& url);
 
   // Navigates the current tab. This is a wrapper around NavigateAndCommit.

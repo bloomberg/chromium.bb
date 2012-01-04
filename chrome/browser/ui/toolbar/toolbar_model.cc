@@ -15,9 +15,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/cert_store.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/content_constants.h"
@@ -44,7 +44,8 @@ string16 ToolbarModel::GetText() const {
   GURL url(chrome::kAboutBlankURL);
   std::string languages;  // Empty if we don't have a |navigation_controller|.
 
-  NavigationController* navigation_controller = GetNavigationController();
+  content::NavigationController* navigation_controller =
+      GetNavigationController();
   if (navigation_controller) {
     Profile* profile =
         Profile::FromBrowserContext(navigation_controller->GetBrowserContext());
@@ -74,7 +75,8 @@ bool ToolbarModel::ShouldDisplayURL() const {
   // - The view-source test must come before the WebUI test because of the case
   //   of view-source:chrome://newtab, which should display its URL despite what
   //   chrome://newtab's WebUI says.
-  NavigationController* controller = GetNavigationController();
+  content::NavigationController* controller =
+      GetNavigationController();
   NavigationEntry* entry = controller ? controller->GetVisibleEntry() : NULL;
   if (entry) {
     if (entry->IsViewSourceMode() ||
@@ -97,7 +99,8 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
   if (input_in_progress_)  // When editing, assume no security style.
     return NONE;
 
-  NavigationController* navigation_controller = GetNavigationController();
+  content::NavigationController* navigation_controller =
+      GetNavigationController();
   if (!navigation_controller)  // We might not have a controller on init.
     return NONE;
 
@@ -169,7 +172,7 @@ string16 ToolbarModel::GetEVCertName(const net::X509Certificate& cert) {
       UTF8ToUTF16(cert.subject().country_name));
 }
 
-NavigationController* ToolbarModel::GetNavigationController() const {
+content::NavigationController* ToolbarModel::GetNavigationController() const {
   // This |current_tab| can be NULL during the initialization of the
   // toolbar during window creation (i.e. before any tabs have been added
   // to the window).

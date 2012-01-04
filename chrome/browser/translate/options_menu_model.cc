@@ -10,7 +10,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"

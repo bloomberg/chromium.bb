@@ -11,8 +11,8 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search_engines/template_url_fetcher_ui_callbacks.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -92,7 +92,8 @@ void SearchEngineTabHelper::OnPageHasOSDD(
       return;
   }
 
-  const NavigationController& controller = web_contents()->GetController();
+  const content::NavigationController& controller =
+      web_contents()->GetController();
   const NavigationEntry* entry = controller.GetLastCommittedEntry();
   DCHECK(entry);
 
@@ -142,7 +143,8 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   if (profile->IsOffTheRecord())
     return;
 
-  const NavigationController& controller = web_contents()->GetController();
+  const content::NavigationController& controller =
+      web_contents()->GetController();
   int last_index = controller.GetLastCommittedEntryIndex();
   // When there was no previous page, the last index will be 0. This is
   // normally due to a form submit that opened in a new tab.

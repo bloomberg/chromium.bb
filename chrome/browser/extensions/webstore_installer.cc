@@ -22,10 +22,10 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/download/download_types.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_file.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -104,7 +104,7 @@ void GetDownloadFilePath(const std::string& id,
 
 WebstoreInstaller::WebstoreInstaller(Profile* profile,
                                      Delegate* delegate,
-                                     NavigationController* controller,
+                                     content::NavigationController* controller,
                                      const std::string& id,
                                      int flags)
     : profile_(profile),

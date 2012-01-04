@@ -15,7 +15,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_transition_types.h"
 
-class NavigationController;
 class Profile;
 class TabContents;
 class TabContentsWrapper;
@@ -300,26 +299,29 @@ class TabStripModel : public content::NotificationObserver {
   bool TabsAreLoading() const;
 
   // Returns the controller controller that opened the TabContents at |index|.
-  NavigationController* GetOpenerOfTabContentsAt(int index);
+  content::NavigationController* GetOpenerOfTabContentsAt(int index);
 
   // Returns the index of the next TabContents in the sequence of TabContentses
   // spawned by the specified NavigationController after |start_index|.
   // If |use_group| is true, the group property of the tab is used instead of
   // the opener to find the next tab. Under some circumstances the group
   // relationship may exist but the opener may not.
-  int GetIndexOfNextTabContentsOpenedBy(const NavigationController* opener,
-                                        int start_index,
-                                        bool use_group) const;
+  int GetIndexOfNextTabContentsOpenedBy(
+      const content::NavigationController* opener,
+      int start_index,
+      bool use_group) const;
 
   // Returns the index of the first TabContents in the model opened by the
   // specified opener.
-  int GetIndexOfFirstTabContentsOpenedBy(const NavigationController* opener,
-                                         int start_index) const;
+  int GetIndexOfFirstTabContentsOpenedBy(
+      const content::NavigationController* opener,
+      int start_index) const;
 
   // Returns the index of the last TabContents in the model opened by the
   // specified opener, starting at |start_index|.
-  int GetIndexOfLastTabContentsOpenedBy(const NavigationController* opener,
-                                        int start_index) const;
+  int GetIndexOfLastTabContentsOpenedBy(
+      const content::NavigationController* opener,
+      int start_index) const;
 
   // Called by the Browser when a navigation is about to occur in the specified
   // TabContents. Depending on the tab, and the transition type of the
@@ -568,11 +570,12 @@ class TabStripModel : public content::NotificationObserver {
   // fall back to check the group relationship as well.
   struct TabContentsData;
   static bool OpenerMatches(const TabContentsData* data,
-                            const NavigationController* opener,
+                            const content::NavigationController* opener,
                             bool use_group);
 
   // Sets the group/opener of any tabs that reference |tab| to NULL.
-  void ForgetOpenersAndGroupsReferencing(const NavigationController* tab);
+  void ForgetOpenersAndGroupsReferencing(
+      const content::NavigationController* tab);
 
   // Our delegate.
   TabStripModelDelegate* delegate_;
@@ -593,7 +596,7 @@ class TabStripModel : public content::NotificationObserver {
 
     // Create a relationship between this TabContents and other TabContentses.
     // Used to identify which TabContents to select next after one is closed.
-    void SetGroup(NavigationController* a_group) {
+    void SetGroup(content::NavigationController* a_group) {
       group = a_group;
       opener = a_group;
     }
@@ -615,12 +618,12 @@ class TabStripModel : public content::NotificationObserver {
     // navigation within that tab, the group relationship is lost). This
     // property can safely be used to implement features that depend on a
     // logical group of related tabs.
-    NavigationController* group;
+    content::NavigationController* group;
     // The owner models the same relationship as group, except it is more
     // easily discarded, e.g. when the user switches to a tab not part of the
     // same group. This property is used to determine what tab to select next
     // when one is closed.
-    NavigationController* opener;
+    content::NavigationController* opener;
     // True if our group should be reset the moment selection moves away from
     // this Tab. This is the case for tabs opened in the foreground at the end
     // of the TabStrip while viewing another Tab. If these tabs are closed

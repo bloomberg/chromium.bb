@@ -19,8 +19,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
@@ -65,7 +65,7 @@ CloudPrintSigninFlowHandler::CloudPrintSigninFlowHandler(
 
 void CloudPrintSigninFlowHandler::RegisterMessages() {
   if (web_ui() && web_ui()->web_contents()) {
-    NavigationController* controller =
+    content::NavigationController* controller =
         &web_ui()->web_contents()->GetController();
     NavigationEntry* pending_entry = controller->GetPendingEntry();
     if (pending_entry)

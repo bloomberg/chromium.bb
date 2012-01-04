@@ -10,13 +10,13 @@
 
 #include "chrome/browser/sessions/session_id.h"
 
-class NavigationController;
 class Profile;
 class SessionStorageNamespace;
 class TabContents;
 class TabNavigation;
 
 namespace content {
+class NavigationController;
 class WebContents;
 }
 
@@ -63,7 +63,7 @@ class TabRestoreServiceDelegate {
 
   // see BrowserList::GetBrowserForController
   static TabRestoreServiceDelegate* FindDelegateForController(
-      const NavigationController* controller,
+      const content::NavigationController* controller,
       int* index);
 
   // see BrowserList::FindBrowserWithID

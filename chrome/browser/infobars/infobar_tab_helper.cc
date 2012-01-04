@@ -9,7 +9,7 @@
 #include "chrome/browser/tab_contents/insecure_content_infobar_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 

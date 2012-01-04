@@ -20,8 +20,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "googleurl/src/gurl.h"
@@ -308,21 +308,21 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesGoBackScriptCommand:(NSScriptCommand*)command {
-  NavigationController& navigationController =
+  content::NavigationController& navigationController =
       tabContents_->tab_contents()->GetController();
   if (navigationController.CanGoBack())
     navigationController.GoBack();
 }
 
 - (void)handlesGoForwardScriptCommand:(NSScriptCommand*)command {
-  NavigationController& navigationController =
+  content::NavigationController& navigationController =
       tabContents_->tab_contents()->GetController();
   if (navigationController.CanGoForward())
     navigationController.GoForward();
 }
 
 - (void)handlesReloadScriptCommand:(NSScriptCommand*)command {
-  NavigationController& navigationController =
+  content::NavigationController& navigationController =
       tabContents_->tab_contents()->GetController();
   const bool checkForRepost = true;
   navigationController.Reload(checkForRepost);

@@ -16,8 +16,11 @@
 #include "googleurl/src/gurl.h"
 
 class FilePath;
-class NavigationController;
 class Profile;
+
+namespace content {
+class NavigationController;
+}
 
 // Downloads and installs extensions from the web store.
 class WebstoreInstaller : public content::NotificationObserver,
@@ -47,7 +50,7 @@ class WebstoreInstaller : public content::NotificationObserver,
   // Note: the delegate should stay alive until being called back.
   WebstoreInstaller(Profile* profile,
                     Delegate* delegate,
-                    NavigationController* controller,
+                    content::NavigationController* controller,
                     const std::string& id,
                     int flags);
   virtual ~WebstoreInstaller();
@@ -80,7 +83,7 @@ class WebstoreInstaller : public content::NotificationObserver,
   content::NotificationRegistrar registrar_;
   Profile* profile_;
   Delegate* delegate_;
-  NavigationController* controller_;
+  content::NavigationController* controller_;
   std::string id_;
   int flags_;
   GURL download_url_;

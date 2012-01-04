@@ -16,7 +16,7 @@
 #include "content/browser/cert_store.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"

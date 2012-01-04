@@ -4,9 +4,11 @@
 
 #include "chrome/browser/tab_contents/language_state.h"
 
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+
+using content::NavigationController;
 
 LanguageState::LanguageState(NavigationController* nav_controller)
     : navigation_controller_(nav_controller),

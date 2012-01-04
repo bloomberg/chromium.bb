@@ -25,9 +25,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -154,7 +154,7 @@ void TabStripModel::InsertTabContentsAt(int index,
       // confusing by having multiple groups active at the same time.
       ForgetAllOpeners();
     }
-    data->opener = &selected_contents->tab_contents()->GetController();
+    data->opener = &selected_contents->web_contents()->GetController();
   }
 
   contents_data_.insert(contents_data_.begin() + index, data);
@@ -178,7 +178,7 @@ TabContentsWrapper* TabStripModel::ReplaceTabContentsAt(
   TabContentsWrapper* old_contents = GetContentsAt(index);
 
   ForgetOpenersAndGroupsReferencing(
-      &(old_contents->tab_contents()->GetController()));
+      &(old_contents->web_contents()->GetController()));
 
   contents_data_[index]->contents = new_contents;
 
@@ -246,7 +246,7 @@ TabContentsWrapper* TabStripModel::DetachTabContentsAt(int index) {
   delete contents_data_.at(index);
   contents_data_.erase(contents_data_.begin() + index);
   ForgetOpenersAndGroupsReferencing(
-      &(removed_contents->tab_contents()->GetController()));
+      &(removed_contents->web_contents()->GetController()));
   if (empty())
     closing_all_ = true;
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
@@ -432,13 +432,16 @@ bool TabStripModel::TabsAreLoading() const {
   return false;
 }
 
-NavigationController* TabStripModel::GetOpenerOfTabContentsAt(int index) {
+content::NavigationController* TabStripModel::GetOpenerOfTabContentsAt(
+    int index) {
   DCHECK(ContainsIndex(index));
   return contents_data_.at(index)->opener;
 }
 
 int TabStripModel::GetIndexOfNextTabContentsOpenedBy(
-    const NavigationController* opener, int start_index, bool use_group) const {
+    const content::NavigationController* opener,
+    int start_index,
+    bool use_group) const {
   DCHECK(opener);
   DCHECK(ContainsIndex(start_index));
 
@@ -456,7 +459,7 @@ int TabStripModel::GetIndexOfNextTabContentsOpenedBy(
 }
 
 int TabStripModel::GetIndexOfFirstTabContentsOpenedBy(
-    const NavigationController* opener,
+    const content::NavigationController* opener,
     int start_index) const {
   DCHECK(opener);
   DCHECK(ContainsIndex(start_index));
@@ -469,7 +472,7 @@ int TabStripModel::GetIndexOfFirstTabContentsOpenedBy(
 }
 
 int TabStripModel::GetIndexOfLastTabContentsOpenedBy(
-    const NavigationController* opener, int start_index) const {
+    const content::NavigationController* opener, int start_index) const {
   DCHECK(opener);
   DCHECK(ContainsIndex(start_index));
 
@@ -1089,7 +1092,7 @@ void TabStripModel::GetIndicesWithSameDomain(int index,
 
 void TabStripModel::GetIndicesWithSameOpener(int index,
                                              std::vector<int>* indices) {
-  NavigationController* opener = contents_data_[index]->group;
+  content::NavigationController* opener = contents_data_[index]->group;
   if (!opener) {
     // If there is no group, find all tabs with the selected tab as the opener.
     opener = &(GetTabContentsAt(index)->tab_contents()->GetController());
@@ -1318,13 +1321,13 @@ void TabStripModel::MoveSelectedTabsToImpl(int index,
 
 // static
 bool TabStripModel::OpenerMatches(const TabContentsData* data,
-                                  const NavigationController* opener,
+                                  const content::NavigationController* opener,
                                   bool use_group) {
   return data->opener == opener || (use_group && data->group == opener);
 }
 
 void TabStripModel::ForgetOpenersAndGroupsReferencing(
-    const NavigationController* tab) {
+    const content::NavigationController* tab) {
   for (TabContentsDataVector::const_iterator i = contents_data_.begin();
        i != contents_data_.end(); ++i) {
     if ((*i)->group == tab)

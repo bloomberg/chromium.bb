@@ -196,7 +196,7 @@ void InterstitialPage::Show() {
     // Give sub-classes a chance to set some states on the navigation entry.
     UpdateEntry(entry);
 
-    tab_->GetController().AddTransientEntry(entry);
+    tab_->GetControllerImpl().AddTransientEntry(entry);
   }
 
   DCHECK(!render_view_host_);

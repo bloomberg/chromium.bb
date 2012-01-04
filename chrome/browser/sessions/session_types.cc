@@ -7,7 +7,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 
 using content::NavigationEntry;
@@ -62,7 +62,7 @@ TabNavigation& TabNavigation::operator=(const TabNavigation& tab) {
 // static
 NavigationEntry* TabNavigation::ToNavigationEntry(
     int page_id, Profile *profile) const {
-  NavigationEntry* entry = NavigationController::CreateNavigationEntry(
+  NavigationEntry* entry = content::NavigationController::CreateNavigationEntry(
       virtual_url_,
       referrer_,
       // Use a transition type of reload so that we don't incorrectly

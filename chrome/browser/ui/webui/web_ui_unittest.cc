@@ -9,8 +9,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,7 +26,7 @@ class WebUITest : public TabContentsWrapperTestHarness {
   // values. This must be increasing for the life of the tests.
   static void DoNavigationTest(TabContentsWrapper* wrapper, int page_id) {
     TabContents* contents = wrapper->tab_contents();
-    NavigationController* controller = &contents->GetController();
+    content::NavigationController* controller = &contents->GetController();
 
     // Start a pending load.
     GURL new_tab_url(chrome::kChromeUINewTabURL);

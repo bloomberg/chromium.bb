@@ -180,7 +180,7 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   if (existing_contents) {
     tab_contents_.reset(existing_contents);
-    tab_contents_->tab_contents()->GetController().set_browser_context(profile);
+    tab_contents_->web_contents()->GetController().SetBrowserContext(profile);
   } else {
     TabContents* new_contents = new TabContents(profile, NULL, MSG_ROUTING_NONE,
                                                 NULL, NULL);
@@ -201,7 +201,7 @@ bool ExternalTabContainer::Init(Profile* profile,
         content::BINDINGS_POLICY_EXTERNAL_HOST);
   }
 
-  NavigationController* controller =
+  content::NavigationController* controller =
       &tab_contents_->web_contents()->GetController();
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  content::Source<content::NavigationController>(controller));

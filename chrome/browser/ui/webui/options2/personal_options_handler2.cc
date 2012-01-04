@@ -33,7 +33,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"

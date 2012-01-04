@@ -24,7 +24,7 @@
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "ui/base/keycodes/keyboard_codes.h"

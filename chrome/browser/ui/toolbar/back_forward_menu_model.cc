@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -335,7 +335,7 @@ int BackForwardMenuModel::GetChapterStopCount(int history_items) const {
 int BackForwardMenuModel::GetIndexOfNextChapterStop(int start_from,
                                                     bool forward) const {
   WebContents* contents = GetWebContents();
-  NavigationController& controller = contents->GetController();
+  content::NavigationController& controller = contents->GetController();
 
   int max_count = controller.GetEntryCount();
   if (start_from < 0 || start_from >= max_count)
@@ -445,7 +445,7 @@ int BackForwardMenuModel::MenuIndexToNavEntryIndex(int index) const {
 
 NavigationEntry* BackForwardMenuModel::GetNavigationEntry(int index) const {
   int controller_index = MenuIndexToNavEntryIndex(index);
-  NavigationController& controller = GetWebContents()->GetController();
+  content::NavigationController& controller = GetWebContents()->GetController();
   if (controller_index >= 0 && controller_index < controller.GetEntryCount())
     return controller.GetEntryAtIndex(controller_index);
 

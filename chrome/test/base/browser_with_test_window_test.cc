@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
@@ -72,7 +72,7 @@ void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
 }
 
 void BrowserWithTestWindowTest::CommitPendingLoad(
-    NavigationController* controller) {
+  content::NavigationController* controller) {
   if (!controller->GetPendingEntry())
     return;  // Nothing to commit.
 
@@ -115,7 +115,7 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
 }
 
 void BrowserWithTestWindowTest::NavigateAndCommit(
-    NavigationController* controller,
+    content::NavigationController* controller,
     const GURL& url) {
   controller->LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());

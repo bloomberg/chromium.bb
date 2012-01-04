@@ -291,6 +291,10 @@ TabContents::~TabContents() {
   SetDelegate(NULL);
 }
 
+NavigationController& TabContents::GetControllerImpl() {
+  return controller_;
+}
+
 bool TabContents::OnMessageReceived(const IPC::Message& message) {
   if (GetWebUI() && GetWebUI()->OnMessageReceived(message))
     return true;
@@ -352,11 +356,11 @@ void TabContents::RunFileChooser(
   delegate_->RunFileChooser(this, params);
 }
 
-NavigationController& TabContents::GetController() {
+content::NavigationController& TabContents::GetController() {
   return controller_;
 }
 
-const NavigationController& TabContents::GetController() const {
+const content::NavigationController& TabContents::GetController() const {
   return controller_;
 }
 
@@ -642,7 +646,7 @@ TabContents* TabContents::Clone() {
       GetBrowserContext(),
       SiteInstance::CreateSiteInstance(GetBrowserContext()),
       MSG_ROUTING_NONE, this, NULL);
-  tc->GetController().CopyStateFrom(controller_);
+  tc->GetControllerImpl().CopyStateFrom(controller_);
   return tc;
 }
 
@@ -1283,7 +1287,7 @@ void TabContents::OnDidLoadResourceFromMemoryCache(
 void TabContents::OnDidDisplayInsecureContent() {
   content::RecordAction(UserMetricsAction("SSL.DisplayedInsecureContent"));
   displayed_insecure_content_ = true;
-  SSLManager::NotifySSLInternalStateChanged(&GetController());
+  SSLManager::NotifySSLInternalStateChanged(&GetControllerImpl());
 }
 
 void TabContents::OnDidRunInsecureContent(
@@ -1297,7 +1301,7 @@ void TabContents::OnDidRunInsecureContent(
   }
   controller_.GetSSLManager()->DidRunInsecureContent(security_origin);
   displayed_insecure_content_ = true;
-  SSLManager::NotifySSLInternalStateChanged(&GetController());
+  SSLManager::NotifySSLInternalStateChanged(&GetControllerImpl());
 }
 
 void TabContents::OnDocumentLoadedInFrame(int64 frame_id) {
@@ -2158,7 +2162,7 @@ void TabContents::NotifySwappedFromRenderManager() {
 }
 
 NavigationController& TabContents::GetControllerForRenderManager() {
-  return GetController();
+  return GetControllerImpl();
 }
 
 WebUI* TabContents::CreateWebUIForRenderManager(const GURL& url) {

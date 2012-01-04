@@ -35,6 +35,8 @@ class CONTENT_EXPORT NavigationController
   // NavigationController implementation:
   virtual content::WebContents* GetWebContents() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
+  virtual void SetBrowserContext(
+      content::BrowserContext* browser_context) OVERRIDE;
   virtual void Restore(
       int selected_navigation,
       bool from_last_session,
@@ -87,14 +89,11 @@ class CONTENT_EXPORT NavigationController
   virtual void ReloadIgnoringCache(bool check_for_repost) OVERRIDE;
   virtual void NotifyEntryChanged(const content::NavigationEntry* entry,
                                  int index) OVERRIDE;
+  virtual void CopyStateFrom(
+      const content::NavigationController& source) OVERRIDE;
   virtual void CopyStateFromAndPrune(
       content::NavigationController* source) OVERRIDE;
   virtual void PruneAllButActive() OVERRIDE;
-
-  // Sets the browser context for this controller.
-  void set_browser_context(content::BrowserContext* browser_context) {
-    browser_context_ = browser_context;
-  }
 
   // Returns the index of the specified entry, or -1 if entry is not contained
   // in this NavigationController.
@@ -165,15 +164,7 @@ class CONTENT_EXPORT NavigationController
   // refs without reload, only change to "#" which we don't count as empty).
   bool IsURLInPageNavigation(const GURL& url) const;
 
-  // Copies the navigation state from the given controller to this one. This
-  // one should be empty (just created).
-  void CopyStateFrom(const NavigationController& source);
-
   // Random data ---------------------------------------------------------------
-
-  // Disables checking for a repost and prompting the user. This is used during
-  // testing.
-  static void DisablePromptOnRepost();
 
   // Maximum number of entries before we start removing entries from the front.
   static void set_max_entry_count_for_testing(size_t max_entry_count) {
@@ -319,10 +310,6 @@ class CONTENT_EXPORT NavigationController
 
   // The session storage id that any (indirectly) owned RenderView should use.
   scoped_refptr<SessionStorageNamespace> session_storage_namespace_;
-
-  // Should Reload check for post data? The default is true, but is set to false
-  // when testing.
-  static bool check_for_repost_;
 
   // The maximum number of entries that a navigation controller can store.
   static size_t max_entry_count_for_testing_;

@@ -5,8 +5,8 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

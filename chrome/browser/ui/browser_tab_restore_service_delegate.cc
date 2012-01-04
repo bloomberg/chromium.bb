@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/navigation_controller.h"
 
 using content::WebContents;
 
@@ -82,7 +82,7 @@ TabRestoreServiceDelegate* TabRestoreServiceDelegate::Create(Profile* profile) {
 
 // static
 TabRestoreServiceDelegate* TabRestoreServiceDelegate::FindDelegateForController(
-    const NavigationController* controller,
+    const content::NavigationController* controller,
     int* index) {
   Browser* browser = Browser::GetBrowserForController(controller, index);
   if (browser)

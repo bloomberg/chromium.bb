@@ -10,9 +10,8 @@
 
 #include "base/basictypes.h"
 
-class NavigationController;
-
 namespace content {
+class NavigationController;
 struct LoadCommittedDetails;
 }
 
@@ -27,7 +26,7 @@ struct LoadCommittedDetails;
 
 class LanguageState {
  public:
-  explicit LanguageState(NavigationController* nav_controller);
+  explicit LanguageState(content::NavigationController* nav_controller);
   ~LanguageState();
 
   // Should be called when the page did a new navigation (whether it is a main
@@ -83,7 +82,7 @@ class LanguageState {
   std::string prev_current_lang_;
 
   // The navigation controller of the tab we are associated with.
-  NavigationController* navigation_controller_;
+  content::NavigationController* navigation_controller_;
 
   // Whether it is OK to offer to translate the page.  Some pages explictly
   // specify that they should not be translated by the browser (this is the case

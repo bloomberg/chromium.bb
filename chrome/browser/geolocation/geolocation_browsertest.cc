@@ -28,7 +28,7 @@
 #include "content/browser/geolocation/location_arbitrator.h"
 #include "content/browser/geolocation/mock_location_provider.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/web_contents.h"

@@ -18,7 +18,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class InterstitialPage;
-class NavigationController;
 class RenderViewHost;
 class RenderViewHostManager;
 class RenderWidgetHostView;
@@ -44,6 +43,7 @@ struct LoadStateWithParam;
 namespace content {
 
 class BrowserContext;
+class NavigationController;
 class RenderProcessHost;
 class WebContentsDelegate;
 struct RendererPreferences;
@@ -81,8 +81,8 @@ class WebContents : public PageNavigator {
   virtual void SetDelegate(WebContentsDelegate* delegate) = 0;
 
   // Gets the controller for this tab contents.
-  virtual ::NavigationController& GetController() = 0;
-  virtual const ::NavigationController& GetController() const = 0;
+  virtual NavigationController& GetController() = 0;
+  virtual const NavigationController& GetController() const = 0;
 
   // Returns the user browser context associated with this WebContents (via the
   // NavigationController).

@@ -9,7 +9,9 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 
+namespace content {
 class NavigationController;
+}
 
 // This class is used to continue or cancel a pending reload when the
 // repost form warning is shown. It is owned by the platform-dependent
@@ -36,7 +38,7 @@ class RepostFormWarningController : public TabModalConfirmDialogDelegate {
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Weak pointer; this dialog is cancelled when the WebContents is closed.
-  NavigationController* navigation_controller_;
+  content::NavigationController* navigation_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(RepostFormWarningController);
 };

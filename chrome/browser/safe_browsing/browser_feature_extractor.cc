@@ -21,8 +21,8 @@
 #include "chrome/browser/safe_browsing/browser_features.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
@@ -49,11 +49,12 @@ static void AddFeature(const std::string& feature_name,
   VLOG(2) << "Browser feature: " << feature->name() << " " << feature->value();
 }
 
-static void AddNavigationFeatures(const std::string& feature_prefix,
-                                  const NavigationController& controller,
-                                  int index,
-                                  const std::vector<GURL>& redirect_chain,
-                                  ClientPhishingRequest* request) {
+static void AddNavigationFeatures(
+    const std::string& feature_prefix,
+    const content::NavigationController& controller,
+    int index,
+    const std::vector<GURL>& redirect_chain,
+    ClientPhishingRequest* request) {
   NavigationEntry* entry = controller.GetEntryAtIndex(index);
   bool is_secure_referrer = entry->GetReferrer().url.SchemeIsSecure();
   if (!is_secure_referrer) {
@@ -155,7 +156,7 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
   }
 
   // Extract features pertaining to this navigation.
-  const NavigationController& controller = tab_->GetController();
+  const content::NavigationController& controller = tab_->GetController();
   int url_index = -1;
   int first_host_index = -1;
 

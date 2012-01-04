@@ -2979,7 +2979,8 @@ void TestingAutomationProvider::GetNavigationInfo(
     return;
   }
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  const NavigationController& controller = tab_contents->GetController();
+  const content::NavigationController& controller =
+      tab_contents->GetController();
   NavigationEntry* nav_entry = controller.GetActiveEntry();
   DCHECK(nav_entry);
 
@@ -3543,7 +3544,7 @@ void TestingAutomationProvider::OmniboxAcceptInput(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  NavigationController& controller =
+  content::NavigationController& controller =
       browser->GetSelectedWebContents()->GetController();
   new OmniboxAcceptNotificationObserver(&controller, this, reply_message);
   browser->window()->GetLocationBar()->AcceptInput();
@@ -6193,7 +6194,7 @@ void TestingAutomationProvider::GoForward(
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  NavigationController& controller = tab_contents->GetController();
+  content::NavigationController& controller = tab_contents->GetController();
   if (!controller.CanGoForward()) {
     DictionaryValue dict;
     dict.SetBoolean("did_go_forward", false);
@@ -6217,7 +6218,7 @@ void TestingAutomationProvider::GoBack(
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  NavigationController& controller = tab_contents->GetController();
+  content::NavigationController& controller = tab_contents->GetController();
   if (!controller.CanGoBack()) {
     DictionaryValue dict;
     dict.SetBoolean("did_go_back", false);
@@ -6241,7 +6242,7 @@ void TestingAutomationProvider::ReloadJSON(
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  NavigationController& controller = tab_contents->GetController();
+  content::NavigationController& controller = tab_contents->GetController();
   new NavigationNotificationObserver(&controller, this, reply_message,
                                      1, false, true);
   controller.Reload(false);

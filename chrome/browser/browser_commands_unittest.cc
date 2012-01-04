@@ -8,8 +8,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/test/test_browser_thread.h"
 
@@ -72,7 +72,7 @@ TEST_F(BrowserCommandsTest, DuplicateTab) {
   ASSERT_EQ(2, browser()->tab_count());
 
   // Verify the stack of urls.
-  NavigationController& controller =
+  content::NavigationController& controller =
       browser()->GetTabContentsAt(1)->GetController();
   ASSERT_EQ(3, controller.GetEntryCount());
   ASSERT_EQ(2, controller.GetCurrentEntryIndex());

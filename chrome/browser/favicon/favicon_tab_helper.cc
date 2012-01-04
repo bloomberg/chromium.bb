@@ -11,10 +11,10 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/icon_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -48,7 +48,8 @@ void FaviconTabHelper::FetchFavicon(const GURL& url) {
 SkBitmap FaviconTabHelper::GetFavicon() const {
   // Like GetTitle(), we also want to use the favicon for the last committed
   // entry rather than a pending navigation entry.
-  const NavigationController& controller = web_contents()->GetController();
+  const content::NavigationController& controller =
+      web_contents()->GetController();
   NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
     return entry->GetFavicon().bitmap;
@@ -60,7 +61,8 @@ SkBitmap FaviconTabHelper::GetFavicon() const {
 }
 
 bool FaviconTabHelper::FaviconIsValid() const {
-  const NavigationController& controller = web_contents()->GetController();
+  const content::NavigationController& controller =
+      web_contents()->GetController();
   NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
     return entry->GetFavicon().valid;
@@ -74,7 +76,8 @@ bool FaviconTabHelper::FaviconIsValid() const {
 
 bool FaviconTabHelper::ShouldDisplayFavicon() {
   // Always display a throbber during pending loads.
-  const NavigationController& controller = web_contents()->GetController();
+  const content::NavigationController& controller =
+      web_contents()->GetController();
   if (controller.GetLastCommittedEntry() && controller.GetPendingEntry())
     return true;
 
