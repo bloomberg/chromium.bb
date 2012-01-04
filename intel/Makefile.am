@@ -62,6 +62,7 @@ BATCHES = \
 	tests/gm45-3d.batch \
 	tests/gen5-3d.batch \
 	tests/gen6-3d.batch \
+	tests/gen7-2d-copy.batch \
 	tests/gen7-3d.batch
 
 TESTS = \
