@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -268,7 +268,7 @@ void AdvancedOptionsHandler::RegisterMessages() {
 #endif
 
   auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
-  default_font_size_.Init(prefs::kWebKitDefaultFontSize, prefs, this);
+  default_font_size_.Init(prefs::kWebKitGlobalDefaultFontSize, prefs, this);
   default_zoom_level_.Init(prefs::kDefaultZoomLevel, prefs, this);
 #if !defined(OS_CHROMEOS)
   proxy_prefs_.reset(
@@ -342,7 +342,7 @@ void AdvancedOptionsHandler::Observe(
       if (cloud_print_connector_ui_enabled_)
         SetupCloudPrintConnectorSection();
 #endif
-    } else if (*pref_name == prefs::kWebKitDefaultFontSize) {
+    } else if (*pref_name == prefs::kWebKitGlobalDefaultFontSize) {
       SetupFontSizeSelector();
     } else if (*pref_name == prefs::kDefaultZoomLevel) {
       SetupPageZoomSelector();

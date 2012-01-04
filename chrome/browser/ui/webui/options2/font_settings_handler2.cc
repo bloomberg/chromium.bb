@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,15 +81,19 @@ void FontSettingsHandler::RegisterMessages() {
   FontSettingsUtilities::ValidateSavedFonts(pref_service);
 
   // Register for preferences that we need to observe manually.
-  standard_font_.Init(prefs::kWebKitStandardFontFamily, pref_service, this);
-  serif_font_.Init(prefs::kWebKitSerifFontFamily, pref_service, this);
-  sans_serif_font_.Init(prefs::kWebKitSansSerifFontFamily, pref_service, this);
-  fixed_font_.Init(prefs::kWebKitFixedFontFamily, pref_service, this);
-  font_encoding_.Init(prefs::kDefaultCharset, pref_service, this);
-  default_font_size_.Init(prefs::kWebKitDefaultFontSize, pref_service, this);
-  default_fixed_font_size_.Init(prefs::kWebKitDefaultFixedFontSize,
+  standard_font_.Init(prefs::kWebKitGlobalStandardFontFamily,
+                      pref_service, this);
+  serif_font_.Init(prefs::kWebKitGlobalSerifFontFamily, pref_service, this);
+  sans_serif_font_.Init(prefs::kWebKitGlobalSansSerifFontFamily,
+                        pref_service, this);
+  fixed_font_.Init(prefs::kWebKitGlobalFixedFontFamily, pref_service, this);
+  font_encoding_.Init(prefs::kGlobalDefaultCharset, pref_service, this);
+  default_font_size_.Init(prefs::kWebKitGlobalDefaultFontSize,
+                          pref_service, this);
+  default_fixed_font_size_.Init(prefs::kWebKitGlobalDefaultFixedFontSize,
                                 pref_service, this);
-  minimum_font_size_.Init(prefs::kWebKitMinimumFontSize, pref_service, this);
+  minimum_font_size_.Init(prefs::kWebKitGlobalMinimumFontSize,
+                          pref_service, this);
 
   web_ui()->RegisterMessageCallback("fetchFontsData",
       base::Bind(&FontSettingsHandler::HandleFetchFontsData,
@@ -150,20 +154,20 @@ void FontSettingsHandler::Observe(int type,
                                   const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     std::string* pref_name = content::Details<std::string>(details).ptr();
-    if (*pref_name == prefs::kWebKitStandardFontFamily) {
+    if (*pref_name == prefs::kWebKitGlobalStandardFontFamily) {
       SetUpStandardFontSample();
-    } else if (*pref_name == prefs::kWebKitSerifFontFamily) {
+    } else if (*pref_name == prefs::kWebKitGlobalSerifFontFamily) {
       SetUpSerifFontSample();
-    } else if (*pref_name == prefs::kWebKitSansSerifFontFamily) {
+    } else if (*pref_name == prefs::kWebKitGlobalSansSerifFontFamily) {
       SetUpSansSerifFontSample();
-    } else if (*pref_name == prefs::kWebKitFixedFontFamily ||
-               *pref_name == prefs::kWebKitDefaultFixedFontSize) {
+    } else if (*pref_name == prefs::kWebKitGlobalFixedFontFamily ||
+               *pref_name == prefs::kWebKitGlobalDefaultFixedFontSize) {
       SetUpFixedFontSample();
-    } else if (*pref_name == prefs::kWebKitDefaultFontSize) {
+    } else if (*pref_name == prefs::kWebKitGlobalDefaultFontSize) {
       SetUpStandardFontSample();
       SetUpSerifFontSample();
       SetUpSansSerifFontSample();
-    } else if (*pref_name == prefs::kWebKitMinimumFontSize) {
+    } else if (*pref_name == prefs::kWebKitGlobalMinimumFontSize) {
       SetUpMinimumFontSample();
     }
   }
