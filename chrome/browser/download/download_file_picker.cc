@@ -8,15 +8,16 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/download/save_package.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::DownloadManager;
+using content::WebContents;
 
 DownloadFilePicker::DownloadFilePicker(
     DownloadManager* download_manager,
-    TabContents* tab_contents,
+    WebContents* web_contents,
     const FilePath& suggested_path,
     void* params)
     : download_manager_(download_manager) {
@@ -29,14 +30,14 @@ DownloadFilePicker::DownloadFilePicker(
     file_type_info.extensions[0].push_back(extension);
   }
   file_type_info.include_all_files = true;
-  gfx::NativeWindow owning_window = tab_contents ?
-      platform_util::GetTopLevel(tab_contents->GetNativeView()) : NULL;
+  gfx::NativeWindow owning_window = web_contents ?
+      platform_util::GetTopLevel(web_contents->GetNativeView()) : NULL;
 
   select_file_dialog_->SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE,
                                   string16(),
                                   suggested_path,
                                   &file_type_info, 0, FILE_PATH_LITERAL(""),
-                                  tab_contents, owning_window, params);
+                                  web_contents, owning_window, params);
 }
 
 DownloadFilePicker::~DownloadFilePicker() {

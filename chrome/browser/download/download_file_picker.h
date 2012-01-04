@@ -10,14 +10,17 @@
 #include "content/public/browser/download_manager.h"
 
 class FilePath;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // Handles showing a dialog to the user to ask for the filename for a download.
 class DownloadFilePicker : public content::DownloadManager::Observer,
                            public SelectFileDialog::Listener {
  public:
   DownloadFilePicker(content::DownloadManager* download_manager,
-                     TabContents* tab_contents,
+                     content::WebContents* web_contents,
                      const FilePath& suggested_path,
                      void* params);
   virtual ~DownloadFilePicker();

@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 
 using content::WebContents;
 
@@ -51,7 +51,7 @@ void WebDragBookmarkHandlerMac::OnDrop() {
 
     // Focus the target browser.
     Browser* browser = Browser::GetBrowserForController(
-        &tab_->tab_contents()->GetController(), NULL);
+        &tab_->web_contents()->GetController(), NULL);
     if (browser)
       browser->window()->Show();
   }

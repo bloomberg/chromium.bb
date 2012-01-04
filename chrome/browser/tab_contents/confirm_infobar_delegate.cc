@@ -4,7 +4,6 @@
 
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_details.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

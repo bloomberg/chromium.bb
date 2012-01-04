@@ -7,14 +7,14 @@
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 
 using content::WebContents;
 
-TranslateTabHelper::TranslateTabHelper(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents),
-      language_state_(&tab_contents->GetController()) {
+TranslateTabHelper::TranslateTabHelper(WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
+      language_state_(&web_contents->GetController()) {
 }
 
 TranslateTabHelper::~TranslateTabHelper() {

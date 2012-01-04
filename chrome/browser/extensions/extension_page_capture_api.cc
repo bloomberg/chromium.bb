@@ -12,11 +12,12 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
 using content::WebContents;

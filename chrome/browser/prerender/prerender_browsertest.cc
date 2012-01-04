@@ -408,7 +408,7 @@ class FakeDevToolsClientHost : public DevToolsClientHost {
   virtual void InspectedTabClosing() OVERRIDE {}
   virtual void FrameNavigating(const std::string& url) OVERRIDE {}
   virtual void DispatchOnInspectorFrontend(const std::string& msg) OVERRIDE {}
-  virtual void TabReplaced(TabContents* new_tab) OVERRIDE {}
+  virtual void TabReplaced(WebContents* new_tab) OVERRIDE {}
 };
 
 }  // namespace

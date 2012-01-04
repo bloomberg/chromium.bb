@@ -42,9 +42,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -1073,7 +1073,7 @@ void AutocompleteEditModel::DoPrerender(const AutocompleteMatch& match) {
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(tab->profile());
   if (prerender_manager) {
-    RenderViewHost* current_host = tab->tab_contents()->GetRenderViewHost();
+    RenderViewHost* current_host = tab->web_contents()->GetRenderViewHost();
     prerender_manager->AddPrerenderFromOmnibox(
         match.destination_url, current_host->session_storage_namespace());
   }

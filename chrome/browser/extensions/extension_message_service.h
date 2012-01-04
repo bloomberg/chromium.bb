@@ -17,7 +17,10 @@
 #include "ipc/ipc_message.h"
 
 class Profile;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // This class manages message and event passing between renderer processes.
 // It maintains a list of processes that are listening to events and a set of
@@ -103,7 +106,7 @@ class ExtensionMessageService
   // the code doesn't detect whether the extension actually exists.
   int OpenSpecialChannelToTab(
       const std::string& extension_id, const std::string& channel_name,
-      TabContents* target_tab_contents, IPC::Message::Sender* source);
+      content::WebContents* target_web_contents, IPC::Message::Sender* source);
 
   // Closes the message channel associated with the given port, and notifies
   // the other side.

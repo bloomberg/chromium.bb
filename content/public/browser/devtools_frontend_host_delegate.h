@@ -51,7 +51,7 @@ class DevToolsFrontendHostDelegate {
 
   // Invoked when tab inspected by this devtools frontend is replaced by
   // another tab. This is triggered by TabStripModel::ReplaceTabContentsAt.
-  virtual void TabReplaced(TabContents* new_tab) = 0;
+  virtual void TabReplaced(WebContents* new_tab) = 0;
 };
 
 }  // namespace content

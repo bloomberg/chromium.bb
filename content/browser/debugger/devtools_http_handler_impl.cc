@@ -69,7 +69,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
                    data));
   }
 
-  virtual void TabReplaced(TabContents* new_tab) {
+  virtual void TabReplaced(WebContents* new_tab) {
   }
 
  private:
@@ -282,19 +282,20 @@ static PageList GeneratePageList(
   for (Tabs::iterator it = inspectable_tabs.begin();
        it != inspectable_tabs.end(); ++it) {
 
-    TabContents* tab_contents = *it;
-    NavigationController& controller = tab_contents->GetController();
+    WebContents* web_contents = *it;
+    NavigationController& controller = web_contents->GetController();
 
     NavigationEntry* entry = controller.GetActiveEntry();
     if (entry == NULL || !entry->GetURL().is_valid())
       continue;
 
     DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-        tab_contents->GetRenderViewHost());
+        web_contents->GetRenderViewHost());
     DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
         GetDevToolsClientHostFor(agent);
     PageInfo page_info;
-    page_info.id = TabContentsIDHelper::GetID(tab_contents);
+    page_info.id = TabContentsIDHelper::GetID(
+        static_cast<TabContents*>(web_contents));
     page_info.attached = client_host != NULL;
     page_info.url = entry->GetURL().spec();
     page_info.title = UTF16ToUTF8(net::EscapeForHTML(entry->GetTitle()));

@@ -12,10 +12,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/download/save_package.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -120,16 +122,16 @@ SavePackageFilePicker::SavePackageFilePicker(
 
   if (g_should_prompt_for_filename) {
     select_file_dialog_ = SelectFileDialog::Create(this);
-    TabContents* tab_contents = save_package_->tab_contents();
+    WebContents* web_contents = save_package_->web_contents();
     select_file_dialog_->SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE,
                                     string16(),
                                     suggested_path,
                                     &file_type_info,
                                     file_type_index,
                                     default_extension,
-                                    tab_contents,
+                                    web_contents,
                                     platform_util::GetTopLevel(
-                                        tab_contents->GetNativeView()),
+                                        web_contents->GetNativeView()),
                                     NULL);
   } else {
     // Just use 'suggested_path' instead of opening the dialog prompt.
@@ -153,10 +155,10 @@ void SavePackageFilePicker::FileSelected(const FilePath& path,
          index <= kSelectFileCompleteIndex);
 
   if (save_package_) {
-    TabContents* tab_contents = save_package_->tab_contents();
+    WebContents* web_contents = save_package_->web_contents();
     SavePackage::SavePackageType save_type = kIndexToSaveType[index];
     Profile* profile =
-        Profile::FromBrowserContext(tab_contents->GetBrowserContext());
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
     PrefService* prefs = profile->GetPrefs();
     if (select_file_dialog_ &&
         select_file_dialog_->HasMultipleFileTypeChoices())
@@ -171,7 +173,7 @@ void SavePackageFilePicker::FileSelected(const FilePath& path,
 #endif
     // If user change the default saving directory, we will remember it just
     // like IE and FireFox.
-    if (!tab_contents->GetBrowserContext()->IsOffTheRecord() &&
+    if (!web_contents->GetBrowserContext()->IsOffTheRecord() &&
         save_file_path.GetValue() != path_string) {
       save_file_path.SetValue(path_string);
     }

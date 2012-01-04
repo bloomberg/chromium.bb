@@ -36,7 +36,6 @@
 #include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_file.h"
 #include "content/public/browser/download_item.h"
@@ -388,7 +387,7 @@ void DragDownload(const DownloadItem* download,
   if (mime_type.empty())
     net::GetMimeTypeFromFile(full_path, &mime_type);
 
-  // Add URL so that we can load supported files when dragged to TabContents.
+  // Add URL so that we can load supported files when dragged to WebContents.
   if (net::IsSupportedMimeType(mime_type)) {
     data.SetURL(net::FilePathToFileURL(full_path),
                 download->GetFileNameToReportUser().LossyDisplayName());

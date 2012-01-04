@@ -43,7 +43,7 @@ BookmarkBubbleNotificationBridge::BookmarkBubbleNotificationBridge(
     : controller_(controller), selector_(selector) {
   // registrar_ will automatically RemoveAll() when destroyed so we
   // don't need to do so explicitly.
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
                  content::NotificationService::AllSources());

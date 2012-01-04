@@ -35,7 +35,7 @@ class DevToolsFrontendHost : public DevToolsClientHost,
   virtual void DispatchOnInspectorFrontend(const std::string& message) OVERRIDE;
   virtual void InspectedTabClosing() OVERRIDE;
   virtual void FrameNavigating(const std::string& url) OVERRIDE;
-  virtual void TabReplaced(TabContents* new_tab) OVERRIDE;
+  virtual void TabReplaced(WebContents* new_tab) OVERRIDE;
 
   // content::RenderViewHostObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

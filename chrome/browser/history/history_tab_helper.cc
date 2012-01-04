@@ -8,7 +8,6 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/title_updated_details.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -16,6 +15,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 
 using content::NavigationEntry;

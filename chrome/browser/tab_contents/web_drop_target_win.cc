@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/clipboard_util_win.h"

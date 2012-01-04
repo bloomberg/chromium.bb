@@ -224,11 +224,11 @@ enum NotificationType {
   NOTIFICATION_TAB_CLOSED,
 
   // This notification is sent when a render view host has connected to a
-  // renderer process. The source is a Source<TabContents> with a pointer to
-  // the TabContents.  A TAB_CONTENTS_DISCONNECTED notification is
+  // renderer process. The source is a Source<WebContents> with a pointer to
+  // the WebContents.  A WEB_CONTENTS_DISCONNECTED notification is
   // guaranteed before the source pointer becomes junk.  No details are
   // expected.
-  NOTIFICATION_TAB_CONTENTS_CONNECTED,
+  NOTIFICATION_WEB_CONTENTS_CONNECTED,
 
   // This notification is sent when a TabContents swaps its render view host
   // with another one, possibly changing processes. The source is a

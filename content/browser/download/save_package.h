@@ -124,6 +124,7 @@ class CONTENT_EXPORT SavePackage
   int tab_id() const { return tab_id_; }
   int id() const { return unique_id_; }
   TabContents* tab_contents() const;
+  content::WebContents* web_contents() const;
 
   void GetSaveInfo();
 

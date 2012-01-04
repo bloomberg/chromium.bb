@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 
 namespace prerender {
 
@@ -166,7 +166,7 @@ class PrerenderTabHelper::HoverData {
 };
 
 PrerenderTabHelper::PrerenderTabHelper(TabContentsWrapper* tab)
-    : content::WebContentsObserver(tab->tab_contents()),
+    : content::WebContentsObserver(tab->web_contents()),
       tab_(tab),
       pplt_load_start_(),
       last_hovers_(new HoverData[kNumHoverThresholds]) {

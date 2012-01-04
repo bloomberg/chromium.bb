@@ -194,7 +194,7 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
       action_on_load_(DEVTOOLS_TOGGLE_ACTION_NONE),
       frontend_host_(NULL) {
   frontend_host_ = DevToolsClientHost::CreateDevToolsFrontendHost(
-      tab_contents->tab_contents(),
+      tab_contents->web_contents(),
       this);
   g_instances.Get().push_back(this);
   // Wipe out page icon so that the default application icon is used.
@@ -257,7 +257,7 @@ void DevToolsWindow::InspectedTabClosing() {
   }
 }
 
-void DevToolsWindow::TabReplaced(TabContents* new_tab) {
+void DevToolsWindow::TabReplaced(WebContents* new_tab) {
   TabContentsWrapper* new_tab_wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(new_tab);
   DCHECK(new_tab_wrapper);

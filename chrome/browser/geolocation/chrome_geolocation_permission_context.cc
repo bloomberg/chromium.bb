@@ -24,13 +24,13 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/geolocation/geolocation_provider.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -471,7 +471,7 @@ void GeolocationInfoBarQueueController::Observe(
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end();) {
     if (i->infobar_delegate == NULL &&
-        web_contents == tab_util::GetTabContentsByID(i->render_process_id,
+        web_contents == tab_util::GetWebContentsByID(i->render_process_id,
                                                      i->render_view_id)) {
       i = pending_infobar_requests_.erase(i);
     } else {
@@ -482,8 +482,8 @@ void GeolocationInfoBarQueueController::Observe(
 
 void GeolocationInfoBarQueueController::ShowQueuedInfoBar(int render_process_id,
                                                           int render_view_id) {
-  TabContents* tab_contents =
-      tab_util::GetTabContentsByID(render_process_id, render_view_id);
+  WebContents* tab_contents =
+      tab_util::GetWebContentsByID(render_process_id, render_view_id);
   TabContentsWrapper* wrapper = NULL;
   if (tab_contents)
     wrapper = TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
@@ -521,15 +521,15 @@ GeolocationInfoBarQueueController::PendingInfoBarRequests::iterator
   if (!delegate)
     return pending_infobar_requests_.erase(i);
 
-  TabContents* tab_contents =
-      tab_util::GetTabContentsByID(i->render_process_id, i->render_view_id);
-  if (!tab_contents)
+  WebContents* web_contents =
+      tab_util::GetWebContentsByID(i->render_process_id, i->render_view_id);
+  if (!web_contents)
     return pending_infobar_requests_.erase(i);
 
-  // TabContents will destroy the InfoBar, which will remove from our vector
+  // WebContents will destroy the InfoBar, which will remove from our vector
   // asynchronously.
   TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
   wrapper->infobar_tab_helper()->RemoveInfoBar(i->infobar_delegate);
   return ++i;
 }
@@ -581,9 +581,9 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
     }
   }
 
-  TabContents* tab_contents =
-      tab_util::GetTabContentsByID(render_process_id, render_view_id);
-  if (!tab_contents || tab_contents->GetViewType() !=
+  WebContents* web_contents =
+      tab_util::GetWebContentsByID(render_process_id, render_view_id);
+  if (!web_contents || web_contents->GetViewType() !=
           content::VIEW_TYPE_TAB_CONTENTS) {
     // The tab may have gone away, or the request may not be from a tab at all.
     // TODO(mpcomplete): the request could be from a background page or
@@ -597,7 +597,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
     return;
   }
 
-  GURL embedder = tab_contents->GetURL();
+  GURL embedder = web_contents->GetURL();
   if (!requesting_frame.is_valid() || !embedder.is_valid()) {
     LOG(WARNING) << "Attempt to use geolocation from an invalid URL: "
                  << requesting_frame << "," << embedder

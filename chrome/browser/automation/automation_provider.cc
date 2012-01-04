@@ -82,10 +82,10 @@
 #include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/ssl/ssl_manager.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/web_contents.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
@@ -634,7 +634,7 @@ void AutomationProvider::OverrideEncoding(int tab_handle,
       }
     } else {
       // There is no UI, Chrome probably runs as Chrome-Frame mode.
-      // Try to get TabContents and call its override_encoding method.
+      // Try to get WebContents and call its override_encoding method.
       WebContents* contents = nav->GetWebContents();
       if (!contents)
         return;

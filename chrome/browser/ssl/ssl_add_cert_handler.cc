@@ -10,14 +10,15 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/cert_database.h"
 #include "net/base/net_errors.h"
 #include "net/base/x509_certificate.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 SSLAddCertHandler::SSLAddCertHandler(net::URLRequest* request,
                                      net::X509Certificate* cert,
@@ -86,7 +87,7 @@ void SSLAddCertHandler::Finished(bool add_cert) {
 }
 
 void SSLAddCertHandler::CallVerifyClientCertificateError(int cert_error) {
-  TabContents* tab = tab_util::GetTabContentsByID(
+  WebContents* tab = tab_util::GetWebContentsByID(
       render_process_host_id_, render_view_id_);
   if (!tab)
     return;
@@ -98,7 +99,7 @@ void SSLAddCertHandler::CallVerifyClientCertificateError(int cert_error) {
 
 void SSLAddCertHandler::CallAddClientCertificate(bool add_cert,
                                                  int cert_error) {
-  TabContents* tab = tab_util::GetTabContentsByID(
+  WebContents* tab = tab_util::GetWebContentsByID(
       render_process_host_id_, render_view_id_);
   if (!tab)
     return;

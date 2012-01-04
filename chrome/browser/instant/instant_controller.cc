@@ -27,8 +27,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/focus/focus_manager.h"
@@ -269,8 +269,8 @@ TabContentsWrapper* InstantController::CommitCurrentPreview(
     InstantCommitType type) {
   DCHECK(loader_.get());
   TabContentsWrapper* tab = ReleasePreviewContents(type);
-  tab->tab_contents()->GetController().CopyStateFromAndPrune(
-      &tab_contents_->tab_contents()->GetController());
+  tab->web_contents()->GetController().CopyStateFromAndPrune(
+      &tab_contents_->web_contents()->GetController());
   delegate_->CommitInstant(tab);
   CompleteRelease(tab);
   return tab;
@@ -305,7 +305,7 @@ void InstantController::OnAutocompleteLostFocus(
   }
 
   RenderWidgetHostView* rwhv =
-      GetPreviewContents()->tab_contents()->GetRenderWidgetHostView();
+      GetPreviewContents()->web_contents()->GetRenderWidgetHostView();
   if (!view_gaining_focus || !rwhv) {
     DestroyPreviewContents();
     return;
@@ -331,7 +331,7 @@ void InstantController::OnAutocompleteLostFocus(
 #endif
 
   gfx::NativeView tab_view =
-      GetPreviewContents()->tab_contents()->GetNativeView();
+      GetPreviewContents()->web_contents()->GetNativeView();
   // Focus is going to the renderer.
   if (rwhv->GetNativeView() == view_gaining_focus ||
       tab_view == view_gaining_focus) {

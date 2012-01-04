@@ -27,9 +27,9 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
-FaviconTabHelper::FaviconTabHelper(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents),
-      profile_(Profile::FromBrowserContext(tab_contents->GetBrowserContext())) {
+FaviconTabHelper::FaviconTabHelper(WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
+      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
   favicon_handler_.reset(new FaviconHandler(profile_, this,
                                             FaviconHandler::FAVICON));
   if (chrome::kEnableTouchIcon)

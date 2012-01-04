@@ -100,7 +100,7 @@ void ShellDownloadManagerDelegate::RestartDownload(
 }
 
 void ShellDownloadManagerDelegate::ChooseDownloadPath(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     const FilePath& suggested_path,
     void* data) {
   FilePath result;
@@ -111,7 +111,7 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
   OPENFILENAME save_as;
   ZeroMemory(&save_as, sizeof(save_as));
   save_as.lStructSize = sizeof(OPENFILENAME);
-  save_as.hwndOwner = tab_contents->GetNativeView();
+  save_as.hwndOwner = web_contents->GetNativeView();
   save_as.lpstrFile = file_name;
   save_as.nMaxFile = arraysize(file_name);
 
@@ -143,7 +143,7 @@ bool ShellDownloadManagerDelegate::OverrideIntermediatePath(
 }
 
 WebContents* ShellDownloadManagerDelegate::
-    GetAlternativeTabContentsToNotifyForDownload() {
+    GetAlternativeWebContentsToNotifyForDownload() {
   return NULL;
 }
 
@@ -190,7 +190,7 @@ void ShellDownloadManagerDelegate::RemoveItemsFromPersistentStoreBetween(
 }
 
 void ShellDownloadManagerDelegate::GetSaveDir(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     FilePath* website_save_dir,
     FilePath* download_save_dir) {
 }

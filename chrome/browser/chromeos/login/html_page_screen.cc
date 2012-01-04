@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/views/handle_web_keyboard_event.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "ui/views/events/event.h"
 

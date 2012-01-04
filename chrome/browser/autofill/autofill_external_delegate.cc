@@ -9,7 +9,7 @@
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -26,7 +26,7 @@ AutofillExternalDelegate::AutofillExternalDelegate(
 
 void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int listIndex) {
   RenderViewHost* host =
-      tab_contents_wrapper_->tab_contents()->GetRenderViewHost();
+      tab_contents_wrapper_->web_contents()->GetRenderViewHost();
   host->Send(new AutofillMsg_SelectAutofillSuggestionAtIndex(
                  host->routing_id(),
                  listIndex));

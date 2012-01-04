@@ -61,7 +61,7 @@ class DevToolsWindow : private content::NotificationObserver,
 
   // Overridden from DevToolsClientHost.
   virtual void InspectedTabClosing() OVERRIDE;
-  virtual void TabReplaced(TabContents* new_tab) OVERRIDE;
+  virtual void TabReplaced(content::WebContents* new_tab) OVERRIDE;
   RenderViewHost* GetRenderViewHost();
 
   void Show(DevToolsToggleAction action);

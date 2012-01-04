@@ -9,8 +9,8 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

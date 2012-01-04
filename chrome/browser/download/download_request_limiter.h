@@ -15,7 +15,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class DownloadRequestInfoBarDelegate;
-class TabContents;
 class TabContentsWrapper;
 
 namespace content {
@@ -109,7 +108,7 @@ class DownloadRequestLimiter
     // Asks the user if they really want to allow the download.
     // See description above CanDownloadOnIOThread for details on lifetime of
     // callback.
-    void PromptUserForDownload(TabContents* tab,
+    void PromptUserForDownload(content::WebContents* tab,
                                DownloadRequestLimiter::Callback* callback);
 
     // Are we showing a prompt to the user?
@@ -173,7 +172,7 @@ class DownloadRequestLimiter
 
   // Returns the download status for a page. This does not change the state in
   // anyway.
-  DownloadStatus GetDownloadStatus(TabContents* tab);
+  DownloadStatus GetDownloadStatus(content::WebContents* tab);
 
   // Updates the state of the page as necessary and notifies the callback.
   // WARNING: both this call and the callback are invoked on the io thread.

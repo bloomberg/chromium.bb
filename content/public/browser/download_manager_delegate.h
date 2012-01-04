@@ -11,7 +11,6 @@
 #include "base/time.h"
 
 class FilePath;
-class TabContents;
 class SavePackage;
 
 namespace content {
@@ -35,7 +34,7 @@ class DownloadManagerDelegate {
   // Asks the user for the path for a download. The delegate calls
   // DownloadManager::FileSelected or DownloadManager::FileSelectionCanceled to
   // give the answer.
-  virtual void ChooseDownloadPath(TabContents* tab_contents,
+  virtual void ChooseDownloadPath(WebContents* web_contents,
                                   const FilePath& suggested_path,
                                   void* data) = 0;
 
@@ -45,10 +44,10 @@ class DownloadManagerDelegate {
   virtual bool OverrideIntermediatePath(DownloadItem* item,
                                         FilePath* intermediate_path) = 0;
 
-  // Called when the download system wants to alert a TabContents that a
+  // Called when the download system wants to alert a WebContents that a
   // download has started, but the TabConetnts has gone away. This lets an
-  // delegate return an alternative TabContents. The delegate can return NULL.
-  virtual WebContents* GetAlternativeTabContentsToNotifyForDownload() = 0;
+  // delegate return an alternative WebContents. The delegate can return NULL.
+  virtual WebContents* GetAlternativeWebContentsToNotifyForDownload() = 0;
 
   // Tests if a file type should be opened automatically.
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) = 0;
@@ -103,7 +102,7 @@ class DownloadManagerDelegate {
       base::Time remove_end) = 0;
 
   // Retrieve the directories to save html pages and downloads to.
-  virtual void GetSaveDir(TabContents* tab_contents,
+  virtual void GetSaveDir(WebContents* web_contents,
                           FilePath* website_save_dir,
                           FilePath* download_save_dir) = 0;
 

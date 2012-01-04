@@ -32,11 +32,11 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/web_contents.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/app_controller_cppsafe_mac.h"
@@ -539,7 +539,7 @@ void SessionService::Observe(int type,
         return;
       TabClosed(tab->restore_tab_helper()->window_id(),
                 tab->restore_tab_helper()->session_id(),
-                tab->tab_contents()->GetClosedByUserGesture());
+                tab->web_contents()->GetClosedByUserGesture());
       RecordSessionUpdateHistogramData(content::NOTIFICATION_TAB_CLOSED,
           &last_updated_tab_closed_time_);
       break;
@@ -562,7 +562,7 @@ void SessionService::Observe(int type,
         TabNavigationPathPrunedFromBack(
             tab->restore_tab_helper()->window_id(),
             tab->restore_tab_helper()->session_id(),
-            tab->tab_contents()->GetController().GetEntryCount());
+            tab->web_contents()->GetController().GetEntryCount());
       }
       RecordSessionUpdateHistogramData(content::NOTIFICATION_NAV_LIST_PRUNED,
           &last_updated_nav_list_pruned_time_);
@@ -592,7 +592,7 @@ void SessionService::Observe(int type,
       if (!tab || tab->profile() != profile())
         return;
       int current_entry_index =
-          tab->tab_contents()->GetController().GetCurrentEntryIndex();
+          tab->web_contents()->GetController().GetCurrentEntryIndex();
       SetSelectedNavigationIndex(tab->restore_tab_helper()->window_id(),
                                  tab->restore_tab_helper()->session_id(),
                                  current_entry_index);
@@ -600,7 +600,7 @@ void SessionService::Observe(int type,
           tab->restore_tab_helper()->window_id(),
           tab->restore_tab_helper()->session_id(),
           current_entry_index,
-          *tab->tab_contents()->GetController().GetEntryAtIndex(
+          *tab->web_contents()->GetController().GetEntryAtIndex(
               current_entry_index));
       content::Details<content::LoadCommittedDetails> changed(details);
       if (changed->type == content::NAVIGATION_TYPE_NEW_PAGE ||
@@ -1116,14 +1116,14 @@ void SessionService::BuildCommandsForTab(
   const SessionID& session_id(tab->restore_tab_helper()->session_id());
   commands->push_back(CreateSetTabWindowCommand(window_id, session_id));
   const int current_index =
-      tab->tab_contents()->GetController().GetCurrentEntryIndex();
+      tab->web_contents()->GetController().GetCurrentEntryIndex();
   const int min_index = std::max(0,
                                  current_index - max_persist_navigation_count);
   const int max_index =
       std::min(current_index + max_persist_navigation_count,
-               tab->tab_contents()->GetController().GetEntryCount());
+               tab->web_contents()->GetController().GetEntryCount());
   const int pending_index =
-      tab->tab_contents()->GetController().GetPendingEntryIndex();
+      tab->web_contents()->GetController().GetPendingEntryIndex();
   if (tab_to_available_range) {
     (*tab_to_available_range)[session_id.id()] =
         std::pair<int, int>(min_index, max_index);
@@ -1132,7 +1132,7 @@ void SessionService::BuildCommandsForTab(
     commands->push_back(CreatePinnedStateCommand(session_id, true));
   }
   TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab->tab_contents());
+      TabContentsWrapper::GetCurrentWrapperForContents(tab->web_contents());
   if (wrapper->extension_tab_helper()->extension_app()) {
     commands->push_back(
         CreateSetTabExtensionAppIDCommand(
@@ -1141,8 +1141,8 @@ void SessionService::BuildCommandsForTab(
   }
   for (int i = min_index; i < max_index; ++i) {
     const NavigationEntry* entry = (i == pending_index) ?
-        tab->tab_contents()->GetController().GetPendingEntry() :
-        tab->tab_contents()->GetController().GetEntryAtIndex(i);
+        tab->web_contents()->GetController().GetPendingEntry() :
+        tab->web_contents()->GetController().GetEntryAtIndex(i);
     DCHECK(entry);
     if (ShouldTrackEntry(entry->GetVirtualURL())) {
       commands->push_back(

@@ -12,7 +12,7 @@
 
 class TranslateTabHelper : public content::WebContentsObserver {
  public:
-  explicit TranslateTabHelper(TabContents* tab_contents);
+  explicit TranslateTabHelper(content::WebContents* web_contents);
   virtual ~TranslateTabHelper();
 
   LanguageState& language_state() { return language_state_; }

@@ -76,10 +76,10 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/process_type.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -394,7 +394,7 @@ void TabStripNotificationObserver::Observe(
   if (type == notification_) {
     if (type == content::NOTIFICATION_TAB_PARENTED) {
       ObserveTab(&(content::Source<TabContentsWrapper>(source).ptr()->
-                     tab_contents()->GetController()));
+                     web_contents()->GetController()));
     } else {
       ObserveTab(content::Source<NavigationController>(source).ptr());
     }
@@ -2675,7 +2675,7 @@ AllViewsStoppedLoadingObserver::AllViewsStoppedLoadingObserver(
           browser->GetTabContentsWrapperAt(i);
       StartObserving(contents_wrapper->automation_tab_helper());
       if (contents_wrapper->automation_tab_helper()->has_pending_loads())
-        pending_tabs_.insert(contents_wrapper->tab_contents());
+        pending_tabs_.insert(contents_wrapper->web_contents());
     }
   }
   CheckIfNoMorePendingLoads();
@@ -2753,7 +2753,7 @@ void NewTabObserver::Observe(int type,
   DCHECK_EQ(content::NOTIFICATION_TAB_PARENTED, type);
   NavigationController* controller =
       &(content::Source<TabContentsWrapper>(source).ptr()->
-          tab_contents()->GetController());
+          web_contents()->GetController());
   if (automation_) {
     // TODO(phajdan.jr): Clean up this hack. We write the correct return type
     // here, but don't send the message. NavigationNotificationObserver

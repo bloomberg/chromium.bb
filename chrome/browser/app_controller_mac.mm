@@ -61,7 +61,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"

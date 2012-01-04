@@ -31,7 +31,7 @@ class ExtensionDevToolsBridge : public content::DevToolsClientHost {
   // DevToolsClientHost, called to dispatch a message on this client.
   virtual void DispatchOnInspectorFrontend(const std::string& message) OVERRIDE;
 
-  virtual void TabReplaced(TabContents* new_tab) OVERRIDE;
+  virtual void TabReplaced(content::WebContents* new_tab) OVERRIDE;
 
  private:
   virtual void FrameNavigating(const std::string& url) OVERRIDE {}

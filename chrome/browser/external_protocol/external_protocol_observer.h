@@ -11,7 +11,7 @@
 // TabContents relating to external protocols.
 class ExternalProtocolObserver : public content::WebContentsObserver {
  public:
-  explicit ExternalProtocolObserver(TabContents* tab_contents);
+  explicit ExternalProtocolObserver(content::WebContents* web_contents);
   virtual ~ExternalProtocolObserver();
 
   // content::WebContentsObserver overrides.

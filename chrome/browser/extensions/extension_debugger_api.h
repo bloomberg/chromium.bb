@@ -16,10 +16,13 @@
 // Base debugger function.
 
 class ExtensionDevToolsClientHost;
-class TabContents;
 
 namespace base {
 class DictionaryValue;
+}
+
+namespace content {
+class WebContents;
 }
 
 class DebuggerFunction : public AsyncExtensionFunction {
@@ -30,7 +33,7 @@ class DebuggerFunction : public AsyncExtensionFunction {
   bool InitTabContents();
   bool InitClientHost();
 
-  TabContents* contents_;
+  content::WebContents* contents_;
   int tab_id_;
   ExtensionDevToolsClientHost* client_host_;
 };

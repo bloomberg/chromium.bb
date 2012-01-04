@@ -5,10 +5,11 @@
 #include "chrome/browser/external_protocol/external_protocol_observer.h"
 
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "content/browser/tab_contents/tab_contents.h"
 
-ExternalProtocolObserver::ExternalProtocolObserver(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents) {
+using content::WebContents;
+
+ExternalProtocolObserver::ExternalProtocolObserver(WebContents* web_contents)
+    : content::WebContentsObserver(web_contents) {
 }
 
 ExternalProtocolObserver::~ExternalProtocolObserver() {

@@ -24,7 +24,7 @@ struct PageSizeMargins;
 // TabContents that owns it.
 class PrintPreviewMessageHandler : public content::WebContentsObserver {
  public:
-  explicit PrintPreviewMessageHandler(TabContents* tab_contents);
+  explicit PrintPreviewMessageHandler(content::WebContents* web_contents);
   virtual ~PrintPreviewMessageHandler();
 
   // content::WebContentsObserver implementation.
@@ -33,10 +33,10 @@ class PrintPreviewMessageHandler : public content::WebContentsObserver {
       content::NavigationController::ReloadType reload_type) OVERRIDE;
 
  private:
-  // Gets the print preview tab associated with the TabContents being observed.
+  // Gets the print preview tab associated with the WebContents being observed.
   TabContentsWrapper* GetPrintPreviewTab();
 
-  // Helper function to return the TabContentsWrapper for tab_contents().
+  // Helper function to return the TabContentsWrapper for web_contents().
   TabContentsWrapper* tab_contents_wrapper();
 
   // Common code between failure handlers. Returns a PrintPreviewUI* if there

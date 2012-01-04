@@ -12,10 +12,11 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -46,7 +47,7 @@ void BackgroundPrintingManager::OwnPrintPreviewTab(
                  content::Source<TabContentsWrapper>(preview_tab));
 
   // OwnInitiatorTabContents() may have already added this notification.
-  TabContents* preview_contents = preview_tab->tab_contents();
+  WebContents* preview_contents = preview_tab->web_contents();
   if (!registrar_.IsRegistered(
           this,
           content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
@@ -61,7 +62,7 @@ void BackgroundPrintingManager::OwnPrintPreviewTab(
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.
   content::RenderProcessHost* rph =
-      preview_tab->tab_contents()->GetRenderProcessHost();
+      preview_tab->web_contents()->GetRenderProcessHost();
   if (!registrar_.IsRegistered(this,
                                content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                                content::Source<content::RenderProcessHost>(
@@ -79,8 +80,7 @@ void BackgroundPrintingManager::OwnPrintPreviewTab(
       tab_controller->GetInitiatorTab(preview_tab);
   if (!initiator_tab)
     return;
-  static_cast<RenderViewHostDelegate*>(
-      initiator_tab->tab_contents())->Activate();
+  initiator_tab->web_contents()->GetRenderViewHost()->delegate()->Activate();
 }
 
 void BackgroundPrintingManager::Observe(
@@ -116,7 +116,7 @@ void BackgroundPrintingManager::OnRendererProcessClosed(
   TabContentsWrapperSet::const_iterator it;
   for (it = begin(); it != end(); ++it) {
     TabContentsWrapper* preview_tab = *it;
-    if (preview_tab->tab_contents()->GetRenderProcessHost() == rph) {
+    if (preview_tab->web_contents()->GetRenderProcessHost() == rph) {
       preview_tabs_pending_deletion.insert(preview_tab);
     }
   }
@@ -136,7 +136,7 @@ void BackgroundPrintingManager::OnTabContentsDestroyed(
     TabContentsWrapper* preview_tab) {
   // Always need to remove this notification since the tab is gone.
   registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                    content::Source<WebContents>(preview_tab->tab_contents()));
+                    content::Source<WebContents>(preview_tab->web_contents()));
 
   if (!HasPrintPreviewTab(preview_tab)) {
     NOTREACHED();
@@ -149,7 +149,7 @@ void BackgroundPrintingManager::OnTabContentsDestroyed(
       HasSharedRenderProcessHost(printing_tabs_pending_deletion_, preview_tab);
   if (!shared_rph) {
     content::RenderProcessHost* rph =
-        preview_tab->tab_contents()->GetRenderProcessHost();
+        preview_tab->web_contents()->GetRenderProcessHost();
     registrar_.Remove(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                       content::Source<content::RenderProcessHost>(rph));
   }
@@ -177,13 +177,13 @@ void BackgroundPrintingManager::DeletePreviewTab(TabContentsWrapper* tab) {
 bool BackgroundPrintingManager::HasSharedRenderProcessHost(
     const TabContentsWrapperSet& set,
     TabContentsWrapper* tab) {
-  content::RenderProcessHost* rph = tab->tab_contents()->GetRenderProcessHost();
+  content::RenderProcessHost* rph = tab->web_contents()->GetRenderProcessHost();
   for (TabContentsWrapperSet::const_iterator it = set.begin();
        it != set.end();
        ++it) {
     TabContentsWrapper* iter_tab = *it;
     if ((iter_tab != tab) &&
-        (iter_tab->tab_contents()->GetRenderProcessHost() == rph)) {
+        (iter_tab->web_contents()->GetRenderProcessHost() == rph)) {
       return true;
     }
   }

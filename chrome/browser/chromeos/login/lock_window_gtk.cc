@@ -28,9 +28,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/screen.h"
@@ -79,7 +79,7 @@ LockWindow* LockWindow::Create() {
 
 void LockWindowGtk::Grab(DOMView* dom_view) {
   // Grab on the RenderWidgetHostView hosting the WebUI login screen.
-  grab_widget_ = dom_view->dom_contents()->tab_contents()->
+  grab_widget_ = dom_view->dom_contents()->web_contents()->
       GetRenderWidgetHostView()->GetNativeView();
   ClearGtkGrab();
 

@@ -29,9 +29,9 @@
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_manager.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "webkit/glue/webkit_glue.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -42,6 +42,8 @@ using content::DevToolsClientHost;
 using content::DevToolsManager;
 
 namespace keys = extension_debugger_api_constants;
+
+using content::WebContents;
 
 class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
@@ -69,14 +71,14 @@ class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
 class ExtensionDevToolsClientHost : public DevToolsClientHost,
                                     public content::NotificationObserver {
  public:
-  ExtensionDevToolsClientHost(TabContents* tab_contents,
+  ExtensionDevToolsClientHost(WebContents* web_contents,
                               const std::string& extension_id,
                               const std::string& extension_name,
                               int tab_id);
 
   ~ExtensionDevToolsClientHost();
 
-  bool MatchesContentsAndExtensionId(TabContents* tab_contents,
+  bool MatchesContentsAndExtensionId(WebContents* web_contents,
                                      const std::string& extension_id);
   void Close();
   void InfoBarDestroyed();
@@ -87,7 +89,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   // DevToolsClientHost interface
   virtual void InspectedTabClosing();
   virtual void DispatchOnInspectorFrontend(const std::string& message);
-  virtual void TabReplaced(TabContents* tab_contents);
+  virtual void TabReplaced(WebContents* web_contents);
   virtual void FrameNavigating(const std::string& url) {}
 
  private:
@@ -98,7 +100,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);
 
-  TabContents* tab_contents_;
+  WebContents* web_contents_;
   std::string extension_id_;
   int tab_id_;
   content::NotificationRegistrar registrar_;
@@ -157,11 +159,11 @@ class AttachedClientHosts {
 }  // namespace
 
 ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     const std::string& extension_id,
     const std::string& extension_name,
     int tab_id)
-    : tab_contents_(tab_contents),
+    : web_contents_(web_contents),
       extension_id_(extension_id),
       tab_id_(tab_id),
       last_request_id_(0),
@@ -170,17 +172,17 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
 
   // Detach from debugger when extension unloads.
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents_->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile));
 
   // Attach to debugger and tell it we are ready.
   DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-      tab_contents_->GetRenderViewHost());
+      web_contents_->GetRenderViewHost());
   DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(agent, this);
 
   TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents_);
   infobar_delegate_ = new ExtensionDevToolsInfoBarDelegate(
       wrapper->infobar_tab_helper(), extension_name, this);
   wrapper->infobar_tab_helper()->AddInfoBar(infobar_delegate_);
@@ -190,7 +192,7 @@ ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
   if (infobar_delegate_) {
     infobar_delegate_->ClearClientHost();
     TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
+        TabContentsWrapper::GetCurrentWrapperForContents(web_contents_);
     InfoBarTabHelper* helper = wrapper->infobar_tab_helper();
     if(helper)
       helper->RemoveInfoBar(infobar_delegate_);
@@ -199,9 +201,9 @@ ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
 }
 
 bool ExtensionDevToolsClientHost::MatchesContentsAndExtensionId(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     const std::string& extension_id) {
-  return tab_contents == tab_contents_ && extension_id_ == extension_id;
+  return web_contents == web_contents_ && extension_id_ == extension_id;
 }
 
 // DevToolsClientHost interface
@@ -211,8 +213,8 @@ void ExtensionDevToolsClientHost::InspectedTabClosing() {
 }
 
 void ExtensionDevToolsClientHost::TabReplaced(
-    TabContents* tab_contents) {
-  tab_contents_ = tab_contents;
+    WebContents* web_contents) {
+  web_contents_ = web_contents;
 }
 
 void ExtensionDevToolsClientHost::Close() {
@@ -245,7 +247,7 @@ void ExtensionDevToolsClientHost::SendMessageToBackend(
 
 void ExtensionDevToolsClientHost::SendDetachedEvent() {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents_->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   if (profile != NULL && profile->GetExtensionEventRouter()) {
     ListValue args;
     args.Append(CreateDebuggeeId(tab_id_));
@@ -272,7 +274,7 @@ void ExtensionDevToolsClientHost::Observe(
 void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
     const std::string& message) {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents_->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   if (profile == NULL || !profile->GetExtensionEventRouter())
     return;
 
@@ -369,7 +371,7 @@ bool DebuggerFunction::InitTabContents() {
         base::IntToString(tab_id_));
     return false;
   }
-  contents_ = wrapper->tab_contents();
+  contents_ = wrapper->web_contents();
 
   if (ChromeWebUIFactory::GetInstance()->HasWebUIScheme(contents_->GetURL())) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(

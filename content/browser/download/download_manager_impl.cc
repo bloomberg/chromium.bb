@@ -312,7 +312,7 @@ void DownloadManagerImpl::RestartDownload(int32 download_id) {
 
   if (download->PromptUserForSaveLocation()) {
     // We must ask the user for the place to put the download.
-    TabContents* contents = download->GetTabContents();
+    WebContents* contents = download->GetTabContents();
 
     // |id_ptr| will be deleted in either FileSelected() or
     // FileSelectionCancelled().
@@ -994,7 +994,7 @@ void DownloadManagerImpl::ShowDownloadInBrowser(DownloadItem* download) {
   // If the contents no longer exists, we ask the embedder to suggest another
   // tab.
   if (!content)
-    content = delegate_->GetAlternativeTabContentsToNotifyForDownload();
+    content = delegate_->GetAlternativeWebContentsToNotifyForDownload();
 
   if (content && content->GetDelegate())
     content->GetDelegate()->OnStartDownload(content, download);

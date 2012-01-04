@@ -11,8 +11,8 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -20,6 +20,8 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -33,10 +35,10 @@ const int kMessageWidth = 400;
 // static
 void ExternalProtocolHandler::RunExternalProtocolDialog(
     const GURL& url, int render_process_host_id, int routing_id) {
-  TabContents* tab_contents = tab_util::GetTabContentsByID(
+  WebContents* web_contents = tab_util::GetWebContentsByID(
       render_process_host_id, routing_id);
-  DCHECK(tab_contents);
-  new ExternalProtocolDialog(tab_contents, url);
+  DCHECK(web_contents);
+  new ExternalProtocolDialog(web_contents, url);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -93,7 +95,7 @@ views::Widget* ExternalProtocolDialog::GetWidget() {
 ///////////////////////////////////////////////////////////////////////////////
 // ExternalProtocolDialog, private:
 
-ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
+ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
                                                const GURL& url)
     : creation_time_(base::TimeTicks::Now()),
       scheme_(url.scheme()) {
@@ -116,10 +118,10 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
       l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT));
 
   gfx::NativeWindow parent_window;
-  if (tab_contents) {
-    parent_window = tab_contents->GetView()->GetTopLevelNativeWindow();
+  if (web_contents) {
+    parent_window = web_contents->GetView()->GetTopLevelNativeWindow();
   } else {
-    // Dialog is top level if we don't have a tab_contents associated with us.
+    // Dialog is top level if we don't have a web_contents associated with us.
     parent_window = NULL;
   }
   browser::CreateViewsWindow(parent_window, this, STYLE_GENERIC)->Show();

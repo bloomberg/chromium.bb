@@ -17,7 +17,7 @@
 #import "chrome/common/mac/objc_zombie.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 
 // The implementation of NSExceptions break various assumptions in the
 // Chrome code.  This category defines a replacement for
@@ -479,7 +479,7 @@ void SwizzleInit() {
          ++it) {
       if (TabContentsWrapper* contents = *it) {
         if (RenderViewHost* rvh =
-                contents->tab_contents()->GetRenderViewHost()) {
+                contents->web_contents()->GetRenderViewHost()) {
           rvh->EnableRendererAccessibility();
         }
       }

@@ -1155,6 +1155,10 @@ TabContents* SavePackage::tab_contents() const {
       static_cast<TabContents*>(content::WebContentsObserver::web_contents());
 }
 
+WebContents* SavePackage::web_contents() const {
+  return tab_contents();
+}
+
 void SavePackage::GetSaveInfo() {
   // Can't use tab_contents_ in the file thread, so get the data that we need
   // before calling to it.

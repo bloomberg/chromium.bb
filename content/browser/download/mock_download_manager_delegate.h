@@ -26,12 +26,12 @@ class MockDownloadManagerDelegate : public content::DownloadManagerDelegate {
   MOCK_METHOD1(SetDownloadManager, void(content::DownloadManager* dm));
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD1(ShouldStartDownload, bool(int32 download_id));
-  MOCK_METHOD3(ChooseDownloadPath, void(TabContents* tab_contents,
+  MOCK_METHOD3(ChooseDownloadPath, void(content::WebContents* web_contents,
                                         const FilePath& suggested_path,
                                         void* data));
   MOCK_METHOD2(OverrideIntermediatePath, bool(content::DownloadItem* item,
                                               FilePath* intermediate_path));
-  MOCK_METHOD0(GetAlternativeTabContentsToNotifyForDownload,
+  MOCK_METHOD0(GetAlternativeWebContentsToNotifyForDownload,
                content::WebContents*());
   MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const FilePath& path));
   MOCK_METHOD1(ShouldCompleteDownload, bool(content::DownloadItem* item));
@@ -48,7 +48,7 @@ class MockDownloadManagerDelegate : public content::DownloadManagerDelegate {
   MOCK_METHOD2(RemoveItemsFromPersistentStoreBetween, void(
       base::Time remove_begin,
       base::Time remove_end));
-  MOCK_METHOD3(GetSaveDir, void(TabContents* tab_contents,
+  MOCK_METHOD3(GetSaveDir, void(content::WebContents* web_contents,
                                 FilePath* website_save_dir,
                                 FilePath* download_save_dir));
   MOCK_METHOD3(ChooseSavePath, void(

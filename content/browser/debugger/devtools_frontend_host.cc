@@ -15,9 +15,10 @@ namespace content {
 
 // static
 DevToolsClientHost* DevToolsClientHost::CreateDevToolsFrontendHost(
-    TabContents* client_tab_contents,
+    WebContents* client_web_contents,
     DevToolsFrontendHostDelegate* delegate) {
-  return new DevToolsFrontendHost(client_tab_contents, delegate);
+  return new DevToolsFrontendHost(
+      static_cast<TabContents*>(client_web_contents), delegate);
 }
 
 // static
@@ -54,7 +55,7 @@ void DevToolsFrontendHost::FrameNavigating(const std::string& url) {
   delegate_->FrameNavigating(url);
 }
 
-void DevToolsFrontendHost::TabReplaced(TabContents* new_tab) {
+void DevToolsFrontendHost::TabReplaced(WebContents* new_tab) {
   delegate_->TabReplaced(new_tab);
 }
 

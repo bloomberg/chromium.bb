@@ -28,10 +28,12 @@
 #include "chrome/common/chrome_view_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -1036,7 +1038,7 @@ void TaskManager::ActivateProcess(int index) {
   TabContentsWrapper* chosen_tab_contents =
       model_->GetResourceTabContents(index);
   if (chosen_tab_contents) {
-    static_cast<RenderViewHostDelegate*>(chosen_tab_contents->tab_contents())->
+    chosen_tab_contents->web_contents()->GetRenderViewHost()->delegate()->
         Activate();
   }
 }

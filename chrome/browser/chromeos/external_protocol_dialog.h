@@ -13,7 +13,10 @@
 #include "ui/views/window/dialog_delegate.h"
 
 class GURL;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 namespace views {
 class MessageBoxView;
@@ -25,7 +28,7 @@ class MessageBoxView;
 class ExternalProtocolDialog : public views::DialogDelegate {
  public:
   // RunExternalProtocolDialog calls this private constructor.
-  ExternalProtocolDialog(TabContents* tab_contents, const GURL& url);
+  ExternalProtocolDialog(content::WebContents* web_contents, const GURL& url);
 
   virtual ~ExternalProtocolDialog();
 

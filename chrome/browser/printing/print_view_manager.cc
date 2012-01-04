@@ -21,10 +21,10 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
@@ -65,7 +65,7 @@ static base::LazyInstance<ScriptedPrintPreviewClosureMap>
 namespace printing {
 
 PrintViewManager::PrintViewManager(TabContentsWrapper* tab)
-    : content::WebContentsObserver(tab->tab_contents()),
+    : content::WebContentsObserver(tab->web_contents()),
       tab_(tab),
       number_pages_(0),
       printing_succeeded_(false),
@@ -102,10 +102,10 @@ bool PrintViewManager::AdvancedPrintNow() {
       tab_controller->GetPrintPreviewForTab(tab_);
   if (print_preview_tab) {
     // Preview tab exist for current tab or current tab is preview tab.
-    if (!print_preview_tab->tab_contents()->GetWebUI())
+    if (!print_preview_tab->web_contents()->GetWebUI())
       return false;
     PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-        print_preview_tab->tab_contents()->GetWebUI());
+        print_preview_tab->web_contents()->GetWebUI());
     print_preview_ui->OnShowSystemDialog();
     return true;
   } else {

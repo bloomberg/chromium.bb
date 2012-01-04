@@ -11,7 +11,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"

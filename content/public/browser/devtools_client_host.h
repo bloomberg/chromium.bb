@@ -16,9 +16,10 @@ class Message;
 }
 
 class RenderViewHost;
-class TabContents;
 
 namespace content {
+
+class WebContents;
 
 class DevToolsFrontendHostDelegate;
 
@@ -42,12 +43,12 @@ class CONTENT_EXPORT DevToolsClientHost {
 
   // Invoked when a tab is replaced by another tab. This is triggered by
   // TabStripModel::ReplaceTabContentsAt.
-  virtual void TabReplaced(TabContents* new_tab) = 0;
+  virtual void TabReplaced(WebContents* new_tab) = 0;
 
   // Creates DevToolsClientHost for TabContents containing default DevTools
   // frontend implementation.
   static DevToolsClientHost* CreateDevToolsFrontendHost(
-      TabContents* client_tab_contents,
+      WebContents* client_web_contents,
       DevToolsFrontendHostDelegate* delegate);
 
   // Sets up DevToolsClient on the corresponding RenderView.

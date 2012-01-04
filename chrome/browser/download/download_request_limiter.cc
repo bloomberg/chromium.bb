@@ -12,12 +12,12 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
 using content::BrowserThread;
@@ -71,7 +71,7 @@ void DownloadRequestLimiter::TabDownloadState::OnUserGesture() {
 }
 
 void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
-    TabContents* tab,
+    WebContents* tab,
     DownloadRequestLimiter::Callback* callback) {
   callbacks_.push_back(callback);
 
@@ -197,7 +197,7 @@ DownloadRequestLimiter::~DownloadRequestLimiter() {
 }
 
 DownloadRequestLimiter::DownloadStatus
-    DownloadRequestLimiter::GetDownloadStatus(TabContents* tab) {
+    DownloadRequestLimiter::GetDownloadStatus(WebContents* tab) {
   TabDownloadState* state = GetDownloadState(&tab->GetController(), NULL, false);
   return state ? state->download_status() : ALLOW_ONE_DOWNLOAD;
 }
@@ -253,8 +253,8 @@ void DownloadRequestLimiter::CanDownload(int render_process_host_id,
                                          Callback* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  TabContents* originating_tab =
-      tab_util::GetTabContentsByID(render_process_host_id, render_view_id);
+  WebContents* originating_tab =
+      tab_util::GetWebContentsByID(render_process_host_id, render_view_id);
   if (!originating_tab) {
     // The tab was closed, don't allow the download.
     ScheduleNotification(callback, false);
@@ -291,7 +291,7 @@ void DownloadRequestLimiter::CanDownloadImpl(
   }
 
   TabDownloadState* state = GetDownloadState(
-      &effective_wrapper->tab_contents()->GetController(),
+      &effective_wrapper->web_contents()->GetController(),
       &tab->GetController(), true);
   switch (state->download_status()) {
     case ALLOW_ALL_DOWNLOADS:
@@ -312,7 +312,7 @@ void DownloadRequestLimiter::CanDownloadImpl(
       break;
 
     case PROMPT_BEFORE_DOWNLOAD:
-      state->PromptUserForDownload(effective_wrapper->tab_contents(), callback);
+      state->PromptUserForDownload(effective_wrapper->web_contents(), callback);
       state->increment_download_count();
       break;
 

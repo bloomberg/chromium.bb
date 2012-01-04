@@ -21,7 +21,7 @@ BrowserListTabContentsProvider::GetInspectableTabs() {
        end = BrowserList::end(); it != end; ++it) {
     TabStripModel* model = (*it)->tabstrip_model();
     for (int i = 0, size = model->count(); i < size; ++i)
-      tabs.push_back(model->GetTabContentsAt(i)->tab_contents());
+      tabs.push_back(model->GetTabContentsAt(i)->web_contents());
   }
   return tabs;
 }

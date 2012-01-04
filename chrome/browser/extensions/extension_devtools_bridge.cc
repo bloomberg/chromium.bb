@@ -15,13 +15,14 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_manager.h"
+#include "content/public/browser/web_contents.h"
 
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
 using content::DevToolsManager;
+using content::WebContents;
 
 ExtensionDevToolsBridge::ExtensionDevToolsBridge(int tab_id,
                                                  Profile* profile)
@@ -61,7 +62,7 @@ bool ExtensionDevToolsBridge::RegisterAsDevToolsClientHost() {
                                    &contents, &tab_index)) {
     DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
     DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-        contents->tab_contents()->GetRenderViewHost());
+        contents->web_contents()->GetRenderViewHost());
     if (devtools_manager->GetDevToolsClientHostFor(agent))
       return false;
 
@@ -119,7 +120,7 @@ void ExtensionDevToolsBridge::DispatchOnInspectorFrontend(
       on_page_event_name_, json, profile_, GURL());
 }
 
-void ExtensionDevToolsBridge::TabReplaced(TabContents* new_tab) {
+void ExtensionDevToolsBridge::TabReplaced(WebContents* new_tab) {
   // We don't update the tab id as it needs to remain the same so that we can
   // properly unregister.
 }

@@ -24,7 +24,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
 
@@ -87,7 +87,7 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   CHECK(browser);
   CHECK(contents);
   if (!GetExtension()->CanExecuteScriptOnPage(
-          contents->tab_contents()->GetURL(), NULL, &error_)) {
+          contents->web_contents()->GetURL(), NULL, &error_)) {
     return false;
   }
 
@@ -224,11 +224,11 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
   params.code = code_string;
   params.all_frames = all_frames_;
   params.in_main_world = false;
-  contents->tab_contents()->GetRenderViewHost()->Send(
+  contents->web_contents()->GetRenderViewHost()->Send(
       new ExtensionMsg_ExecuteCode(
-          contents->tab_contents()->GetRenderViewHost()->routing_id(), params));
+          contents->web_contents()->GetRenderViewHost()->routing_id(), params));
 
-  Observe(contents->tab_contents());
+  Observe(contents->web_contents());
   AddRef();  // balanced in OnExecuteCodeFinished()
   return true;
 }

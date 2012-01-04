@@ -55,13 +55,13 @@ class ChromeDownloadManagerDelegate
 
   virtual void Shutdown() OVERRIDE;
   virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;
-  virtual void ChooseDownloadPath(TabContents* tab_contents,
+  virtual void ChooseDownloadPath(content::WebContents* web_contents,
                                   const FilePath& suggested_path,
                                   void* data) OVERRIDE;
   virtual bool OverrideIntermediatePath(content::DownloadItem* item,
                                         FilePath* intermediate_path) OVERRIDE;
   virtual content::WebContents*
-      GetAlternativeTabContentsToNotifyForDownload() OVERRIDE;
+      GetAlternativeWebContentsToNotifyForDownload() OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
   virtual bool ShouldCompleteDownload(content::DownloadItem* item) OVERRIDE;
   virtual bool ShouldOpenDownload(content::DownloadItem* item) OVERRIDE;
@@ -78,7 +78,7 @@ class ChromeDownloadManagerDelegate
   virtual void RemoveItemsFromPersistentStoreBetween(
       base::Time remove_begin,
       base::Time remove_end) OVERRIDE;
-  virtual void GetSaveDir(TabContents* tab_contents,
+  virtual void GetSaveDir(content::WebContents* web_contents,
                           FilePath* website_save_dir,
                           FilePath* download_save_dir) OVERRIDE;
   virtual void ChooseSavePath(const base::WeakPtr<SavePackage>& save_package,

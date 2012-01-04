@@ -19,10 +19,12 @@
 #include "chrome/browser/ui/gtk/sad_tab_gtk.h"
 #endif
 
+using content::WebContents;
+
 SadTabObserver::SadTabObserver(TabContents* tab_contents)
     : content::WebContentsObserver(tab_contents) {
-  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
-                 content::Source<TabContents>(tab_contents));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
+                 content::Source<WebContents>(tab_contents));
 }
 
 SadTabObserver::~SadTabObserver() {
@@ -46,7 +48,7 @@ void SadTabObserver::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_TAB_CONTENTS_CONNECTED:
+    case content::NOTIFICATION_WEB_CONTENTS_CONNECTED:
       if (HasSadTab()) {
         web_contents()->GetView()->RemoveOverlayView();
         ReleaseSadTab();

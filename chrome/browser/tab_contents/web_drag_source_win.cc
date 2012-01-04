@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "chrome/browser/tab_contents/web_drag_utils_win.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 
 using WebKit::WebDragOperationNone;
 using content::BrowserThread;

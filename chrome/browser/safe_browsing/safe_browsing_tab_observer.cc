@@ -12,9 +12,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 
 #if defined(ENABLE_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
@@ -40,7 +40,7 @@ SafeBrowsingTabObserver::SafeBrowsingTabObserver(
     if (prefs->GetBoolean(prefs::kSafeBrowsingEnabled) &&
         g_browser_process->safe_browsing_detection_service()) {
       safebrowsing_detection_host_.reset(
-          ClientSideDetectionHost::Create(wrapper_->tab_contents()));
+          ClientSideDetectionHost::Create(wrapper_->web_contents()));
     }
   }
 #endif
@@ -84,13 +84,13 @@ void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
       g_browser_process->safe_browsing_detection_service()) {
     if (!safebrowsing_detection_host_.get()) {
       safebrowsing_detection_host_.reset(
-          ClientSideDetectionHost::Create(wrapper_->tab_contents()));
+          ClientSideDetectionHost::Create(wrapper_->web_contents()));
     }
   } else {
     safebrowsing_detection_host_.reset();
   }
 
-  RenderViewHost* rvh = wrapper_->tab_contents()->GetRenderViewHost();
+  RenderViewHost* rvh = wrapper_->web_contents()->GetRenderViewHost();
   rvh->Send(new ChromeViewMsg_SetClientSidePhishingDetection(rvh->routing_id(),
                                                              safe_browsing));
 #endif

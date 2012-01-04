@@ -154,7 +154,7 @@ class PickSuggestedFileDelegate : public ChromeDownloadManagerDelegate {
         DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager());
   }
 
-  virtual void ChooseDownloadPath(TabContents* tab_contents,
+  virtual void ChooseDownloadPath(WebContents* web_contents,
                                   const FilePath& suggested_path,
                                   void* data) OVERRIDE {
     if (download_manager_)

@@ -9,17 +9,17 @@
 #include <string>
 #include <vector>
 
-class TabContents;
-
 namespace net {
 class URLRequestContext;
 }
 
 namespace content {
 
+class WebContents;
+
 class DevToolsHttpHandlerDelegate {
  public:
-  typedef std::vector<TabContents*> InspectableTabs;
+  typedef std::vector<WebContents*> InspectableTabs;
   virtual ~DevToolsHttpHandlerDelegate() {}
 
   // Should return the list of inspectable tabs. Called on the UI thread.

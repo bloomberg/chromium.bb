@@ -18,10 +18,13 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/site_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
+
+using content::WebContents;
 
 // Since we have 2 ports for every channel, we just index channels by half the
 // port ID.
@@ -165,7 +168,7 @@ void ExtensionMessageService::OpenChannelToExtension(
   MessagePort receiver(
       GetExtensionProcess(profile, target_extension_id),
       MSG_ROUTING_CONTROL);
-  TabContents* source_contents = tab_util::GetTabContentsByID(
+  WebContents* source_contents = tab_util::GetWebContentsByID(
       source_process_id, source_routing_id);
 
   // Include info about the opener's tab (if it was a tab).
@@ -194,12 +197,12 @@ void ExtensionMessageService::OpenChannelToTab(
   MessagePort receiver;
   if (ExtensionTabUtil::GetTabById(tab_id, profile, true,
                                    NULL, NULL, &contents, NULL)) {
-    receiver.sender = contents->tab_contents()->GetRenderViewHost();
+    receiver.sender = contents->web_contents()->GetRenderViewHost();
     receiver.routing_id =
-        contents->tab_contents()->GetRenderViewHost()->routing_id();
+        contents->web_contents()->GetRenderViewHost()->routing_id();
   }
 
-  if (contents && contents->tab_contents()->GetController().NeedsReload()) {
+  if (contents && contents->web_contents()->GetController().NeedsReload()) {
     // The tab isn't loaded yet. Don't attempt to connect. Treat this as a
     // disconnect.
     DispatchOnDisconnect(MessagePort(source, MSG_ROUTING_CONTROL),
@@ -207,7 +210,7 @@ void ExtensionMessageService::OpenChannelToTab(
     return;
   }
 
-  TabContents* source_contents = tab_util::GetTabContentsByID(
+  WebContents* source_contents = tab_util::GetWebContentsByID(
       source_process_id, source_routing_id);
 
   // Include info about the opener's tab (if it was a tab).
@@ -284,10 +287,10 @@ int ExtensionMessageService::OpenSpecialChannelToExtension(
 
 int ExtensionMessageService::OpenSpecialChannelToTab(
     const std::string& extension_id, const std::string& channel_name,
-    TabContents* target_tab_contents, IPC::Message::Sender* source) {
-  DCHECK(target_tab_contents);
+    WebContents* target_web_contents, IPC::Message::Sender* source) {
+  DCHECK(target_web_contents);
 
-  if (target_tab_contents->GetController().NeedsReload()) {
+  if (target_web_contents->GetController().NeedsReload()) {
     // The tab isn't loaded yet. Don't attempt to connect.
     return -1;
   }
@@ -298,8 +301,8 @@ int ExtensionMessageService::OpenSpecialChannelToTab(
   AllocatePortIdPair(&port1_id, &port2_id);
 
   MessagePort receiver(
-      target_tab_contents->GetRenderViewHost(),
-      target_tab_contents->GetRenderViewHost()->routing_id());
+      target_web_contents->GetRenderViewHost(),
+      target_web_contents->GetRenderViewHost()->routing_id());
   if (!OpenChannelImpl(source, "null", receiver, port2_id,
                        extension_id, extension_id, channel_name))
     return -1;

@@ -1573,8 +1573,8 @@ void TabContents::NotifySwapped() {
 void TabContents::NotifyConnected() {
   notify_disconnection_ = true;
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
-      content::Source<TabContents>(this),
+      content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
+      content::Source<WebContents>(this),
       content::NotificationService::NoDetails());
 }
 

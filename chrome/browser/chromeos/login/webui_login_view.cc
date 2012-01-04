@@ -21,8 +21,8 @@
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget.h"
@@ -148,10 +148,10 @@ void WebUILoginView::Init(views::Widget* login_window) {
   webui_login_->Init(ProfileManager::GetDefaultProfile(), NULL);
   webui_login_->SetVisible(true);
 
-  TabContents* tab_contents = webui_login_->dom_contents()->tab_contents();
-  tab_contents->SetDelegate(this);
+  WebContents* web_contents = webui_login_->dom_contents()->web_contents();
+  web_contents->SetDelegate(this);
 
-  tab_watcher_.reset(new TabFirstRenderWatcher(tab_contents, this));
+  tab_watcher_.reset(new TabFirstRenderWatcher(web_contents, this));
 }
 
 std::string WebUILoginView::GetClassName() const {
@@ -209,7 +209,7 @@ void WebUILoginView::LoadURL(const GURL & url) {
 }
 
 WebUI* WebUILoginView::GetWebUI() {
-  return webui_login_->dom_contents()->tab_contents()->GetWebUI();
+  return webui_login_->dom_contents()->web_contents()->GetWebUI();
 }
 
 void WebUILoginView::SetStatusAreaEnabled(bool enable) {
@@ -408,7 +408,7 @@ bool WebUILoginView::TakeFocus(bool reverse) {
 
 void WebUILoginView::ReturnFocus(bool reverse) {
   // Return the focus to the web contents.
-  webui_login_->dom_contents()->tab_contents()->
+  webui_login_->dom_contents()->web_contents()->
       FocusThroughTabTraversal(reverse);
   GetWidget()->Activate();
 }

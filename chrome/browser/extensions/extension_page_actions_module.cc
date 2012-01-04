@@ -18,8 +18,8 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 
 using content::NavigationEntry;
 
@@ -83,7 +83,7 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
 
   // Make sure the URL hasn't changed.
   NavigationEntry* entry =
-      contents->tab_contents()->GetController().GetActiveEntry();
+      contents->web_contents()->GetController().GetActiveEntry();
   if (!entry || url != entry->GetURL().spec()) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(kUrlNotActiveError, url);
     return false;

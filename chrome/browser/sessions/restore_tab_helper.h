@@ -14,7 +14,7 @@
 // window of the tab.
 class RestoreTabHelper : public content::WebContentsObserver {
  public:
-  explicit RestoreTabHelper(TabContents* contents);
+  explicit RestoreTabHelper(content::WebContents* contents);
   virtual ~RestoreTabHelper();
 
   // Returns the identifier used by session restore for this tab.
@@ -28,8 +28,6 @@ class RestoreTabHelper : public content::WebContentsObserver {
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
 
  private:
-  TabContents* contents_;
-
   // Unique identifier of the tab for session restore. This id is only unique
   // within the current session, and is not guaranteed to be unique across
   // sessions.

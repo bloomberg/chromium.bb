@@ -63,7 +63,7 @@ class CONTENT_EXPORT DevToolsManagerImpl
 
   // Invoked when a tab is replaced by another tab. This is triggered by
   // TabStripModel::ReplaceTabContentsAt.
-  virtual void TabReplaced(TabContents* old_tab, TabContents* new_tab) OVERRIDE;
+  virtual void TabReplaced(WebContents* old_tab, WebContents* new_tab) OVERRIDE;
 
   // Closes all open developer tools windows.
   virtual void CloseAllClientHosts() OVERRIDE;

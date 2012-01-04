@@ -17,6 +17,8 @@
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
+using content::WebContents;
+
 // Watch for bookmark pulse notifications so we can confirm they were sent.
 @interface BookmarkPulseObserver : NSObject {
   int notifications_;
@@ -474,8 +476,8 @@ TEST_F(BookmarkBubbleControllerTest, BubbleGoesAwayOnNewTab) {
   // we fake the notification that would be triggered by a tab
   // creation. See TabContents::NotifyConnected().
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
-      content::Source<TabContents>(NULL),
+      content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
+      content::Source<WebContents>(NULL),
       content::NotificationService::NoDetails());
 
   // Confirm bubble going bye-bye.

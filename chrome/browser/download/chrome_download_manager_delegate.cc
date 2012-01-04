@@ -32,11 +32,11 @@
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/download/download_status_updater.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/download_file.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -125,12 +125,12 @@ bool ChromeDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
 }
 
 void ChromeDownloadManagerDelegate::ChooseDownloadPath(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     const FilePath& suggested_path,
     void* data) {
   // Deletes itself.
   new DownloadFilePicker(
-      download_manager_, tab_contents, suggested_path, data);
+      download_manager_, web_contents, suggested_path, data);
 }
 
 bool ChromeDownloadManagerDelegate::OverrideIntermediatePath(
@@ -161,7 +161,7 @@ bool ChromeDownloadManagerDelegate::OverrideIntermediatePath(
 }
 
 WebContents* ChromeDownloadManagerDelegate::
-    GetAlternativeTabContentsToNotifyForDownload() {
+    GetAlternativeWebContentsToNotifyForDownload() {
   // Start the download in the last active browser. This is not ideal but better
   // than fully hiding the download from the user.
   Browser* last_active = BrowserList::GetLastActiveWithProfile(profile_);
@@ -276,11 +276,11 @@ void ChromeDownloadManagerDelegate::RemoveItemsFromPersistentStoreBetween(
   download_history_->RemoveEntriesBetween(remove_begin, remove_end);
 }
 
-void ChromeDownloadManagerDelegate::GetSaveDir(TabContents* tab_contents,
+void ChromeDownloadManagerDelegate::GetSaveDir(WebContents* web_contents,
                                                FilePath* website_save_dir,
                                                FilePath* download_save_dir) {
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
 
   // Check whether the preference has the preferred directory for saving file.

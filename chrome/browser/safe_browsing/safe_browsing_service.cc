@@ -33,11 +33,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -47,6 +47,7 @@
 
 using content::BrowserThread;
 using content::NavigationEntry;
+using content::WebContents;
 
 namespace {
 
@@ -1036,11 +1037,11 @@ void SafeBrowsingService::DoDisplayBlockingPage(
   }
 
   // The tab might have been closed.
-  TabContents* tab_contents =
-      tab_util::GetTabContentsByID(resource.render_process_host_id,
+  WebContents* web_contents =
+      tab_util::GetWebContentsByID(resource.render_process_host_id,
                                    resource.render_view_id);
 
-  if (!tab_contents) {
+  if (!web_contents) {
     // The tab is gone and we did not have a chance at showing the interstitial.
     // Just act as if "Don't Proceed" were chosen.
     std::vector<UnsafeResource> resources;
@@ -1054,9 +1055,9 @@ void SafeBrowsingService::DoDisplayBlockingPage(
 
   if (resource.threat_type != SafeBrowsingService::SAFE &&
       CanReportStats()) {
-    GURL page_url = tab_contents->GetURL();
+    GURL page_url = web_contents->GetURL();
     GURL referrer_url;
-    NavigationEntry* entry = tab_contents->GetController().GetActiveEntry();
+    NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
     if (entry)
       referrer_url = entry->GetReferrer().url;
 

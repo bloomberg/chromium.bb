@@ -60,6 +60,7 @@ using content::BrowserThread;
 using content::DownloadFile;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::WebContents;
 
 namespace {
 
@@ -92,7 +93,7 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
         mark_content_dangerous_(false) {
   }
 
-  virtual void ChooseDownloadPath(TabContents* tab_contents,
+  virtual void ChooseDownloadPath(WebContents* web_contents,
                                   const FilePath& suggested_path,
                                   void* data) OVERRIDE {
     if (!expected_suggested_path_.empty()) {

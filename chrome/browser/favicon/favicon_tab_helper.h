@@ -31,7 +31,7 @@ class SkBitmap;
 class FaviconTabHelper : public content::WebContentsObserver,
                          public FaviconHandlerDelegate {
  public:
-  explicit FaviconTabHelper(TabContents* tab_contents);
+  explicit FaviconTabHelper(content::WebContents* web_contents);
   virtual ~FaviconTabHelper();
 
   // Initiates loading the favicon for the specified url.

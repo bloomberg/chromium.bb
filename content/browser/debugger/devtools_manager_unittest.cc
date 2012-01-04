@@ -54,7 +54,7 @@ class TestDevToolsClientHost : public DevToolsClientHost {
     last_sent_message = &message;
   }
 
-  virtual void TabReplaced(TabContents* new_tab) {
+  virtual void TabReplaced(WebContents* new_tab) {
   }
 
   static void ResetCounters() {
