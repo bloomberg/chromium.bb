@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1199,6 +1199,10 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   g_set_application_name(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str());
 #endif
 
+  // These members must be initialized before returning from this function.
+  master_prefs_.reset(new FirstRun::MasterPrefs);
+  browser_init_.reset(new BrowserInit);
+
   std::string try_chrome =
       parsed_command_line().GetSwitchValueASCII(switches::kTryChromeAgain);
   if (!try_chrome.empty()) {
@@ -1230,12 +1234,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   RegisterTranslateableItems();
 #endif
 
-  browser_init_.reset(new BrowserInit);
-
   // On first run, we need to process the predictor preferences before the
   // browser's profile_manager object is created, but after ResourceBundle
   // is initialized.
-  master_prefs_.reset(new FirstRun::MasterPrefs);
   first_run_ui_bypass_ = false;  // True to skip first run UI.
   if (is_first_run_) {
     first_run_ui_bypass_ = !FirstRun::ProcessMasterPreferences(
