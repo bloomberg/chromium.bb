@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -255,8 +255,6 @@ bool ServiceProcessControl::Shutdown() {
 ServiceProcessControl* ServiceProcessControl::GetInstance() {
   return Singleton<ServiceProcessControl>::get();
 }
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(ServiceProcessControl);
 
 ServiceProcessControl::Launcher::Launcher(ServiceProcessControl* process,
                                           CommandLine* cmd_line)

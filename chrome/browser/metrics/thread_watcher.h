@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -548,10 +548,5 @@ class ShutdownWatcherHelper {
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownWatcherHelper);
 };
-
-// DISABLE_RUNNABLE_METHOD_REFCOUNT is a convenience macro for disabling
-// refcounting of ThreadWatcher and ThreadWatcherList classes.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(ThreadWatcher);
-DISABLE_RUNNABLE_METHOD_REFCOUNT(ThreadWatcherList);
 
 #endif  // CHROME_BROWSER_METRICS_THREAD_WATCHER_H_

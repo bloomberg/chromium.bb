@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -697,10 +697,10 @@ void Predictor::FinalizeInitializationOnIOThread(
   initial_observer_.reset(new InitialObserver());
   host_resolver_ = io_thread->globals()->host_resolver.get();
 
-  // ScopedRunnableMethodFactory instances need to be created and destroyed
+  // base::WeakPtrFactory instances need to be created and destroyed
   // on the same thread. The predictor lives on the IO thread and will die
   // from there so now that we're on the IO thread we need to properly
-  // initialize the ScopedrunnableMethodFactory.
+  // initialize the base::WeakPtrFactory.
   // TODO(groby): Check if WeakPtrFactory has the same constraint.
   weak_factory_.reset(new base::WeakPtrFactory<Predictor>(this));
 

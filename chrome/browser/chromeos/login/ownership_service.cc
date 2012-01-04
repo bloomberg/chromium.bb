@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,8 +55,8 @@ void OwnershipService::Prewarm() {
     // This can happen only for particular test: OwnershipServiceTest. It uses
     // mocks and for that uses OwnershipService not as a regular singleton but
     // as a resurrecting object. This behaviour conflicts with
-    // DISABLE_RUNNABLE_METHOD_REFCOUNT.  So avoid posting task in those
-    // circumstances in order to avoid accessing already deleted object.
+    // base::Unretained().  So avoid posting task in those circumstances
+    // in order to avoid accessing already deleted object.
   }
 }
 

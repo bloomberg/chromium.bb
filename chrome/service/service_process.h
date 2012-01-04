@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,10 +141,6 @@ class ServiceProcess : public CloudPrintProxy::Client {
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcess);
 };
-
-// Disable refcounting for runnable method because it is really not needed
-// when we post tasks on the main message loop.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(ServiceProcess);
 
 extern ServiceProcess* g_service_process;
 

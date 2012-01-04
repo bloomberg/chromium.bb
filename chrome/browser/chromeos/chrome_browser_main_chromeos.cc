@@ -171,10 +171,6 @@ class StubLogin : public chromeos::LoginStatusConsumer,
   bool profile_prepared_;
 };
 
-// Allows authenticator to be invoked without adding refcounting. The instances
-// will delete themselves upon completion.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(StubLogin);
-
 void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
                                        Profile* profile) {
   if (parsed_command_line.HasSwitch(switches::kLoginManager)) {

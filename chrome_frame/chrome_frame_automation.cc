@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -503,11 +503,6 @@ bool ProxyFactory::ReleaseAutomationServer(void* server_id,
 static base::LazyInstance<ProxyFactory,
                           base::LeakyLazyInstanceTraits<ProxyFactory> >
     g_proxy_factory = LAZY_INSTANCE_INITIALIZER;
-
-template <> struct RunnableMethodTraits<ChromeFrameAutomationClient> {
-  static void RetainCallee(ChromeFrameAutomationClient* obj) {}
-  static void ReleaseCallee(ChromeFrameAutomationClient* obj) {}
-};
 
 ChromeFrameAutomationClient::ChromeFrameAutomationClient()
     : chrome_frame_delegate_(NULL),

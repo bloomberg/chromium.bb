@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -230,8 +230,6 @@ class CustomThreadWatcher : public ThreadWatcher {
   }
 };
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(CustomThreadWatcher);
-
 class ThreadWatcherTest : public ::testing::Test {
  public:
   static const TimeDelta kSleepTime;
@@ -316,10 +314,6 @@ class ThreadWatcherTest : public ::testing::Test {
   scoped_ptr<content::TestBrowserThread> io_thread_;
   scoped_ptr<WatchDogThread> watchdog_thread_;
 };
-
-// DISABLE_RUNNABLE_METHOD_REFCOUNT is a convenience macro for disabling
-// refcounting of ThreadWatcherTest classes.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(ThreadWatcherTest);
 
 // Define static constants.
 const TimeDelta ThreadWatcherTest::kSleepTime =

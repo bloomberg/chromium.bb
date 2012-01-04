@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,11 +63,6 @@ using content::DownloadItem;
 namespace history {
 class HistoryTest;
 }
-
-// Specialize RunnableMethodTraits for HistoryTest so we can create callbacks.
-// None of these callbacks can outlast the test, so there is not need to retain
-// the HistoryTest object.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(history::HistoryTest);
 
 namespace history {
 

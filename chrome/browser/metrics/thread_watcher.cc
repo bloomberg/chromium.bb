@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -721,11 +721,6 @@ static base::LazyInstance<base::Lock,
 
 // The singleton of this class.
 static WatchDogThread* g_watchdog_thread = NULL;
-
-
-// The WatchDogThread object must outlive any tasks posted to the IO thread
-// before the Quit task.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(WatchDogThread);
 
 WatchDogThread::WatchDogThread() : Thread("BrowserWatchdog") {
 }

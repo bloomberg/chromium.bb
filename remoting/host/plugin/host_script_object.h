@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -218,7 +218,5 @@ class HostNPScriptObject : public HostStatusObserver {
 };
 
 }  // namespace remoting
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::HostNPScriptObject);
 
 #endif  // REMOTING_HOST_PLUGIN_HOST_SCRIPT_OBJECT_H_
