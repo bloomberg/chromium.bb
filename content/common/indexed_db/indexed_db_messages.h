@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -400,8 +400,13 @@ IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_IndexKeyPath,
 
 // WebIDBIndex::unique() message.
 IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_IndexUnique,
-                            int32, /* idb_unique_id */
+                            int32, /* idb_index_id */
                             bool /* unique */)
+
+// WebIDBIndex::multiEntry() message.
+IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_IndexMultiEntry,
+                            int32, /* idb_index_id */
+                            bool /* multi_entry */)
 
 // WebIDBIndex::openObjectCursor() message.
 IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_IndexOpenObjectCursor,

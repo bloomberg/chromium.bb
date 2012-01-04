@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,6 +126,13 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug84933Test) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug106883Test) {
   const GURL url = testUrl(FilePath(FILE_PATH_LITERAL("bug_106883.html")));
+
+  // Just navigate to the URL. Test will crash if it fails.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug109187Test) {
+  const GURL url = testUrl(FilePath(FILE_PATH_LITERAL("bug_109187.html")));
 
   // Just navigate to the URL. Test will crash if it fails.
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);

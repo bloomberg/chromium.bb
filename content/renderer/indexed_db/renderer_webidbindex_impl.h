@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@ class RendererWebIDBIndexImpl : public WebKit::WebIDBIndex {
   virtual WebKit::WebString storeName() const;
   virtual WebKit::WebString keyPath() const;
   virtual bool unique() const;
+  virtual bool multiEntry() const;
 
   virtual void openObjectCursor(const WebKit::WebIDBKeyRange& range,
                                 unsigned short direction,

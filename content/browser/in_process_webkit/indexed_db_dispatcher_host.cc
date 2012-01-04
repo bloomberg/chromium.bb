@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -520,6 +520,7 @@ bool IndexedDBDispatcherHost::IndexDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexStoreName, OnStoreName)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexKeyPath, OnKeyPath)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexUnique, OnUnique)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexMultiEntry, OnMultiEntry)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexOpenObjectCursor,
                                     OnOpenObjectCursor)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexOpenKeyCursor, OnOpenKeyCursor)
@@ -557,6 +558,12 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnKeyPath(
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnUnique(
     int32 object_id, bool* unique) {
   parent_->SyncGetter<bool>(&map_, object_id, unique, &WebIDBIndex::unique);
+}
+
+void IndexedDBDispatcherHost::IndexDispatcherHost::OnMultiEntry(
+    int32 object_id, bool* multi_entry) {
+  parent_->SyncGetter<bool>(
+      &map_, object_id, multi_entry, &WebIDBIndex::multiEntry);
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnOpenObjectCursor(

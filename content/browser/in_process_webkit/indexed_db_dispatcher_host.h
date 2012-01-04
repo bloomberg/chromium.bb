@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -155,6 +155,7 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     void OnStoreName(int32 idb_index_id, string16* store_name);
     void OnKeyPath(int32 idb_index_id, NullableString16* key_path);
     void OnUnique(int32 idb_index_id, bool* unique);
+    void OnMultiEntry(int32 idb_index_id, bool* multi_entry);
     void OnOpenObjectCursor(
         const IndexedDBHostMsg_IndexOpenCursor_Params& params,
         WebKit::WebExceptionCode* ec);

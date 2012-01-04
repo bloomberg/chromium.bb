@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,6 +54,13 @@ bool RendererWebIDBIndexImpl::unique() const {
   bool result;
   ChildThread::current()->Send(
       new IndexedDBHostMsg_IndexUnique(idb_index_id_, &result));
+  return result;
+}
+
+bool RendererWebIDBIndexImpl::multiEntry() const {
+  bool result;
+  ChildThread::current()->Send(
+      new IndexedDBHostMsg_IndexMultiEntry(idb_index_id_, &result));
   return result;
 }
 
