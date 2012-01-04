@@ -27,7 +27,7 @@ import chromite.bin.parallel_emerge as parallel_emerge
 import portage.package.ebuild.config as portcfg
 import portage.tests.resolver.ResolverPlayground as respgnd
 
-# pylint: disable=W0212,R0904,W0102,W0201,E1120
+# pylint: disable=W0212,R0904,W0102,W0201,E1120,E1101
 DEFAULT_PORTDIR = '/usr/portage'
 
 # Configuration for generating a temporary valid ebuild hierarchy.
@@ -284,6 +284,62 @@ def _GenDepsGraphVerifier(pkgs):
   """Generate a graph verification function for the given package."""
   return lambda deps_graph: _VerifyDepsGraph(deps_graph, pkgs)
 
+class ManifestLine(object):
+  """Class to represent a Manifest line."""
+
+  __slots__ = (
+      'type',    # DIST, EBUILD, etc.
+      'file',
+      'size',
+      'RMD160',
+      'SHA1',
+      'SHA256',
+      )
+
+  __attrlist__ = __slots__
+
+  def __init__(self, line=None, **kwargs):
+    """Parse |line| from manifest file."""
+    if line:
+      tokens = line.split()
+      self.type = tokens[0]
+      self.file = tokens[1]
+      self.size = tokens[2]
+      self.RMD160 = tokens[4]
+      self.SHA1 = tokens[6]
+      self.SHA256 = tokens[8]
+
+      assert tokens[3] == 'RMD160'
+      assert tokens[5] == 'SHA1'
+      assert tokens[7] == 'SHA256'
+
+    # Entries in kwargs are overwrites.
+    for attr in self.__attrlist__:
+      if attr in kwargs or not hasattr(self, attr):
+        setattr(self, attr, kwargs.get(attr))
+
+  def __str__(self):
+    return ('%s %s %s RMD160 %s SHA1 %s SHA256 %s' %
+            (self.type, self.file, self.size,
+            self.RMD160, self.SHA1, self.SHA256))
+
+  def __eq__(self, other):
+    """Equality support."""
+
+    if type(self) != type(other):
+      return False
+
+    no_attr = object()
+    for attr in self.__attrlist__:
+      if getattr(self, attr, no_attr) != getattr(other, attr, no_attr):
+        return False
+
+    return True
+
+  def __ne__(self, other):
+    """Inequality for completeness."""
+    return not self == other
+
 
 class RunCommandResult(object):
   """Class to simulate result of cros_lib.RunCommand."""
@@ -343,6 +399,12 @@ class CpuTestBase(test_lib.MoxTestCase):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
+
+    self.playground = None
+    self.playground_envvars = None
+
+  def tearDown(self):
+    self._TearDownPlayground()
 
   def _SetUpPlayground(self, ebuilds=EBUILDS, installed=INSTALLED, world=WORLD,
                        active=True):
@@ -459,7 +521,7 @@ class CpuTestBase(test_lib.MoxTestCase):
 ########################
 
 class CopyUpstreamTest(CpuTestBase):
-  """Test Upgrader._CopyUpstreamPackage and _CopyUpstreamEclass"""
+  """Test Upgrader._CopyUpstreamPackage, _CopyUpstreamEclass, _CreateManifest"""
 
   # This is a hack until crosbug.com/21965 is completed and upstreamed
   # to Portage.  Insert eclass simulation into tree.
@@ -551,9 +613,6 @@ class CopyUpstreamTest(CpuTestBase):
       result = cpu.Upgrader._IdentifyNeededEclass(mocked_upgrader, cpv)
     self.mox.VerifyAll()
 
-    # Cleanup
-    self._TearDownPlayground()
-
     return result
 
   def testIdentifyNeededEclassMissing(self):
@@ -574,13 +633,14 @@ class CopyUpstreamTest(CpuTestBase):
   # _CopyUpstreamEclass
   #
 
+  @test_lib.tempdir_decorator
   def _TestCopyUpstreamEclass(self, eclass, do_copy,
                               local_copy_identical=None, error=None):
     """Test Upgrader._CopyUpstreamEclass"""
 
     self._SetUpPlayground()
     upstream_portdir = self._GetPlaygroundPortdir()
-    portage_stable = tempfile.mkdtemp()
+    portage_stable = self.tempdir
     mocked_upgrader = self._MockUpgrader(_curr_board=None,
                                          _upstream_repo=upstream_portdir,
                                          _stable_repo=portage_stable,
@@ -633,10 +693,6 @@ class CopyUpstreamTest(CpuTestBase):
     else:
       self.assertFalse(result)
 
-    # Cleanup
-    self._TearDownPlayground()
-    shutil.rmtree(portage_stable)
-
   def testCopyUpstreamEclassCopyBecauseMissing(self):
     self._TestCopyUpstreamEclass('inheritme',
                                  do_copy=True)
@@ -660,6 +716,7 @@ class CopyUpstreamTest(CpuTestBase):
   # _CopyUpstreamPackage
   #
 
+  @test_lib.tempdir_decorator
   def _TestCopyUpstreamPackage(self, catpkg, verrev, success,
                                existing_files, extra_upstream_files,
                                error=None):
@@ -680,7 +737,7 @@ class CopyUpstreamTest(CpuTestBase):
 
     # Prepare dummy portage-stable dir, with extra previously
     # existing files simulated if requested.
-    portage_stable = tempfile.mkdtemp()
+    portage_stable = self.tempdir
     if existing_files:
       pkg_dir = os.path.join(portage_stable, catpkg)
       os.makedirs(pkg_dir)
@@ -693,11 +750,9 @@ class CopyUpstreamTest(CpuTestBase):
                                          _stable_repo=portage_stable,
                                          )
 
-    # Add test-specific mocks/stubs
-
     # Replay script
     if success:
-      def git_rm(*args, **kwargs):
+      def git_rm(*args, **_kwargs):
         # Identify file that psuedo-git is to remove, then remove it.
         # As with real "git rm", if the dir is then empty remove that.
         pkgdir, pkgfile = args[0], args[1].split()[-1]
@@ -713,6 +768,8 @@ class CopyUpstreamTest(CpuTestBase):
                                 redirect_stdout=True
                                 ).WithSideEffects(git_rm).InAnyOrder()
 
+      mocked_upgrader._CreateManifest(os.path.join(upstream_portdir, catpkg),
+                                      pkgdir, ebuild)
       mocked_upgrader._RunGit(mocked_upgrader._stable_repo,
                               'add ' + catpkg)
       mocked_upgrader._IdentifyNeededEclass(upstream_cpv).AndReturn(None)
@@ -731,19 +788,20 @@ class CopyUpstreamTest(CpuTestBase):
 
     if success:
       self.assertEquals(result, upstream_cpv)
+
       # Verify that ebuild has been copied into portage-stable.
       ebuild_path = os.path.join(portage_stable, catpkg, ebuild)
-      self.assertTrue(os.path.exists(ebuild_path))
-      # Verify that any extra files upstream are also copied
+      self.assertTrue(os.path.exists(ebuild_path),
+                      msg='Missing expected ebuild after copy from upstream')
+
+      # Verify that any extra files upstream are also copied.
       for extra_file in extra_upstream_files:
         file_path = os.path.join(portage_stable, catpkg, extra_file)
-        self.assertTrue(os.path.exists(file_path))
+        msg = ('Missing expected extra file %s after copy from upstream' %
+               extra_file)
+        self.assertTrue(os.path.exists(file_path), msg=msg)
     else:
       self.assertTrue(result is None)
-
-    # Cleanup
-    self._TearDownPlayground()
-    shutil.rmtree(portage_stable)
 
   def testCopyUpstreamPackageEmptyStable(self):
     existing_files = []
@@ -783,6 +841,158 @@ class CopyUpstreamTest(CpuTestBase):
     self._TestCopyUpstreamPackage('dev-libs/F', '2-r1', True,
                                   existing_files,
                                   extra_upstream_files)
+
+
+  def _SetupManifestTest(self, ebuild,
+                         upstream_mlines, current_mlines):
+    upstream_dir = tempfile.mkdtemp(dir=self.tempdir)
+    current_dir = tempfile.mkdtemp(dir=self.tempdir)
+
+    upstream_manifest = os.path.join(upstream_dir, 'Manifest')
+    current_manifest = os.path.join(current_dir, 'Manifest')
+
+    if upstream_mlines:
+      with open(upstream_manifest, 'w') as f:
+        for mline in upstream_mlines:
+          f.write('%s\n' % mline)
+
+    if current_mlines:
+      with open(current_manifest, 'w') as f:
+        for mline in current_mlines:
+          f.write('%s\n' % mline)
+
+    ebuild_path = os.path.join(current_dir, ebuild)
+
+    # Add test-specific mocks/stubs
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+
+    # Prepare test replay script.
+    run_result = RunCommandResult(returncode=0, output='')
+    cros_lib.RunCommand(['ebuild', ebuild_path, 'manifest'],
+                        exit_code=True, error_ok=True, print_cmd=False,
+                        redirect_stdout=True, combine_stdout_stderr=True
+                        ).AndReturn(run_result)
+    self.mox.ReplayAll()
+
+    return (upstream_dir, current_dir)
+
+  def _AssertManifestContents(self, manifest_path, expected_manifest_lines):
+    manifest_lines = []
+    with open(manifest_path, 'r') as f:
+      for line in f:
+        manifest_lines.append(ManifestLine(line))
+
+    msg = ('Manifest contents not as expected.  Expected:\n%s\n'
+           '\nBut got:\n%s\n' %
+           ('\n'.join([str(ml) for ml in expected_manifest_lines]),
+            '\n'.join([str(ml) for ml in manifest_lines])))
+    self.assertTrue(manifest_lines == expected_manifest_lines, msg=msg)
+    self.assertFalse(manifest_lines != expected_manifest_lines, msg=msg)
+
+  @test_lib.tempdir_decorator
+  def testCreateManifestNew(self):
+    """Test case with upstream but no current Manifest."""
+
+    mocked_upgrader = self._MockUpgrader()
+
+    ebuild = 'some-pkg.ebuild'
+    upst_mlines = [ManifestLine(type='DIST',
+                                file='fileA',
+                                size='100',
+                                RMD160='abc',
+                                SHA1='123',
+                                SHA256='abc123'
+                                ),
+                   ManifestLine(type='EBUILD',
+                                file=ebuild,
+                                size='254',
+                                RMD160='def',
+                                SHA1='456',
+                                SHA256='def456'
+                                ),
+                   ]
+    upstream_dir, current_dir = self._SetupManifestTest(ebuild,
+                                                        upst_mlines, None)
+
+    upstream_manifest = os.path.join(upstream_dir, 'Manifest')
+    current_manifest = os.path.join(current_dir, 'Manifest')
+
+    # Run test verification.
+    self.assertFalse(os.path.exists(current_manifest))
+    cpu.Upgrader._CreateManifest(mocked_upgrader,
+                                 upstream_dir, current_dir, ebuild)
+    self.mox.VerifyAll()
+    self.assertTrue(filecmp.cmp(upstream_manifest, current_manifest))
+
+  @test_lib.tempdir_decorator
+  def testCreateManifestMerge(self):
+    """Test case with upstream but no current Manifest."""
+
+    mocked_upgrader = self._MockUpgrader()
+
+    ebuild = 'some-pkg.ebuild'
+    curr_mlines = [ManifestLine(type='DIST',
+                                file='fileA',
+                                size='101',
+                                RMD160='abc',
+                                SHA1='123',
+                                SHA256='abc123'
+                                ),
+                   ManifestLine(type='DIST',
+                                file='fileC',
+                                size='321',
+                                RMD160='cde',
+                                SHA1='345',
+                                SHA256='cde345'
+                                ),
+                   ManifestLine(type='EBUILD',
+                                file=ebuild,
+                                size='254',
+                                RMD160='def',
+                                SHA1='789',
+                                SHA256='def789'
+                                ),
+                   ]
+    upst_mlines = [ManifestLine(type='DIST',
+                                file='fileA',
+                                size='100',
+                                RMD160='abc',
+                                SHA1='123',
+                                SHA256='abc123'
+                                ),
+                   # This file is different from current manifest.
+                   # It should be picked up by _CreateManifest.
+                   ManifestLine(type='DIST',
+                                file='fileB',
+                                size='345',
+                                RMD160='bcd',
+                                SHA1='234',
+                                SHA256='bcd234'
+                                ),
+                   ManifestLine(type='EBUILD',
+                                file=ebuild,
+                                size='254',
+                                RMD160='def',
+                                SHA1='789',
+                                SHA256='def789'
+                                ),
+                   ]
+
+    upstream_dir, current_dir = self._SetupManifestTest(ebuild,
+                                                        upst_mlines,
+                                                        curr_mlines)
+
+    current_manifest = os.path.join(current_dir, 'Manifest')
+
+    # Run test verification.
+    self.assertTrue(os.path.exists(current_manifest))
+    cpu.Upgrader._CreateManifest(mocked_upgrader,
+                                 upstream_dir, current_dir, ebuild)
+    self.mox.VerifyAll()
+
+    expected_mlines = curr_mlines + upst_mlines[1:2]
+    self._AssertManifestContents(current_manifest, expected_mlines)
+
 
 ##################################
 ### GetPackageUpgradeStateTest ###
@@ -930,8 +1140,6 @@ class EmergeableTest(CpuTestBase):
       print('Emerge output:\n%s' % output)
 
     self.assertEquals(code, expect)
-
-    self._TearDownPlayground()
 
   def testAreEmergeableOnePkg(self):
     """Should pass, one cpv target."""
@@ -1556,10 +1764,7 @@ class TreeInspectTest(CpuTestBase):
     result = cpu.Upgrader._FindUpstreamCPV(mocked_upgrader, pkg_arg,
                                            unstable_ok)
     self.mox.VerifyAll()
-
     self.assertTrue(bool(ebuild_expect) == bool(result))
-
-    self._TearDownPlayground()
 
     return result
 
@@ -1635,8 +1840,6 @@ class TreeInspectTest(CpuTestBase):
     # Verify
     result = cpu.Upgrader._FindCurrentCPV(mocked_upgrader, pkg_arg)
     self.mox.VerifyAll()
-
-    self._TearDownPlayground()
 
     return result
 
@@ -1779,11 +1982,11 @@ class RunBoardTest(CpuTestBase):
       cpu.Upgrader.PrepareToRun(mocked_upgrader)
     self.mox.VerifyAll()
 
+  @test_lib.tempdir_decorator
   def testPrepareToRunUpstreamRepoNew(self):
-    tmpdir = tempfile.mkdtemp()
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
-                                         _upstream_repo=tmpdir,
+                                         _upstream_repo=self.tempdir,
                                          _curr_board=None)
 
     # Add test-specific mocks/stubs
@@ -1813,10 +2016,9 @@ class RunBoardTest(CpuTestBase):
 
     self.mox.UnsetStubs()
 
-    readme_path = tmpdir + '-README'
+    readme_path = self.tempdir + '-README'
     self.assertTrue(os.path.exists(readme_path))
     os.remove(readme_path)
-    os.rmdir(tmpdir)
 
   def _TestRunBoard(self, pinfolist, upgrade=False, staged_changes=False):
     """Test Upgrader.RunBoard."""
@@ -2758,8 +2960,6 @@ class GetCurrentVersionsTest(CpuTestBase):
     result = cpu.Upgrader._GetCurrentVersions(mocked_upgrader, target_pinfolist)
     self.mox.VerifyAll()
 
-    self._TearDownPlayground()
-
     return result
 
   def testGetCurrentVersionsTwoPkgs(self):
@@ -2801,8 +3001,6 @@ class GetCurrentVersionsTest(CpuTestBase):
     # Verify
     result = cpu.Upgrader._GetCurrentVersions(mocked_upgrader, target_pinfolist)
     self.mox.VerifyAll()
-
-    self._TearDownPlayground()
 
     return result
 
@@ -3041,8 +3239,6 @@ class GetPreOrderDepGraphTest(CpuTestBase):
     golden_deps_set = _GetGoldenDepsSet(pkg)
     self.assertEquals(set(deps_list), golden_deps_set)
     self.mox.VerifyAll()
-
-    self._TearDownPlayground()
 
   def testGetPreOrderDepGraphDevLibsA(self):
     return self._TestGetPreOrderDepGraph('dev-libs/A')

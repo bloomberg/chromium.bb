@@ -673,22 +673,21 @@ class Upgrader(object):
       raise RuntimeError('Cannot find upstream ebuild at "%s"' %
                          upstream_ebuild_path)
 
-    # If pkgdir already exists, remove it and everything in it.
+    # If pkgdir already exists, remove everything in it except Manifest.
     # Note that git will remove a parent directory when it removes
     # the last item in the directory.
     if os.path.exists(pkgdir):
       items = os.listdir(pkgdir)
       for item in items:
-        src = os.path.join(upstream_pkgdir, item)
-        self._RunGit(pkgdir, 'rm -rf ' + item, redirect_stdout=True)
+        if item != 'Manifest':
+          src = os.path.join(upstream_pkgdir, item)
+          self._RunGit(pkgdir, 'rm -rf ' + item, redirect_stdout=True)
 
-    os.makedirs(pkgdir)
+    if not os.path.exists(pkgdir):
+      os.makedirs(pkgdir)
 
     # Grab all non-blacklisted, non-ebuilds from upstream plus the specific
     # ebuild requested.
-    # TODO: Selectively exclude files under the 'files' directory that clearly
-    # apply to other package versions.  For example, 'files/foo-1.2.3-bar.patch'
-    # when upgrading to foo-3.2.1.  Must do this carefully.
     items = os.listdir(upstream_pkgdir)
     for item in items:
       if os.path.basename(item) not in BLACKLISTED_FILES:
@@ -700,6 +699,10 @@ class Upgrader(object):
           else:
             shutil.copy2(src, dst)
 
+    # Create a new Manifest file for this package.
+    self._CreateManifest(upstream_pkgdir, pkgdir, ebuild)
+
+    # Add all new files to git.
     self._RunGit(self._stable_repo, 'add ' + catpkgsubdir)
 
     # Now copy any eclasses that this package requires.
@@ -708,6 +711,63 @@ class Upgrader(object):
       eclass = self._IdentifyNeededEclass(upstream_cpv)
 
     return upstream_cpv
+
+  def _CreateManifest(self, upstream_pkgdir, pkgdir, ebuild):
+    """Create a trusted Manifest from available Manifests.
+
+    Combine the current Manifest in |pkgdir| (if it exists) with
+    the Manifest from |upstream_pkgdir| to create a new trusted
+    Manifest.  Supplement with 'ebuild manifest' command.
+
+    It is assumed that a Manifest exists in |upstream_pkgdir|, but
+    there may not be one in |pkgdir|.  The new |ebuild| in pkgdir
+    should be used for 'ebuild manifest' command.
+
+    The algorithm is this:
+    1) Remove all lines in upstream Manifest that duplicate
+    lines in current Manifest.
+    2) Concatenate the result of 1) onto the current Manifest.
+    3) Run 'ebuild manifest' to add to results.
+    """
+    upstream_manifest = os.path.join(upstream_pkgdir, 'Manifest')
+    current_manifest = os.path.join(pkgdir, 'Manifest')
+
+    if os.path.exists(current_manifest):
+      # Determine which files have DIST entries in current_manifest.
+      dists = set()
+      with open(current_manifest, 'r') as f:
+        for line in f:
+          tokens = line.split()
+          if len(tokens) > 1 and tokens[0] == 'DIST':
+            dists.add(tokens[1])
+
+      # Find DIST lines in upstream manifest not overlapping with current.
+      new_lines = []
+      with open(upstream_manifest, 'r') as f:
+        for line in f:
+          tokens = line.split()
+          if len(tokens) > 1 and tokens[0] == 'DIST' and tokens[1] not in dists:
+            new_lines.append(line)
+
+      # Write all new_lines to current_manifest.
+      if new_lines:
+        with open(current_manifest, 'a') as f:
+          f.writelines(new_lines)
+    else:
+      # Use upstream_manifest as a starting point.
+      shutil.copyfile(upstream_manifest, current_manifest)
+
+    manifest_cmd = ['ebuild', os.path.join(pkgdir, ebuild), 'manifest']
+    manifest_result = cros_lib.RunCommand(manifest_cmd, exit_code=True,
+                                          error_ok=True, print_cmd=False,
+                                          redirect_stdout=True,
+                                          combine_stdout_stderr=True)
+
+    if manifest_result.returncode != 0:
+      raise RuntimeError('Failed "ebuild manifest" for upgraded package.\n'
+                         'Output of %r:\n%s' %
+                         (' '.join(manifest_cmd), manifest_result.output))
+
 
   def _CopyUpstreamEclass(self, eclass):
     """Upgrades eclass in |eclass| to upstream copy.
@@ -1701,6 +1761,7 @@ def _CreateOptParser():
 
   class MyOptParser(optparse.OptionParser):
     """Override default epilog formatter, which strips newlines."""
+    # pylint: disable=R0904
     def format_epilog(self, formatter):
       return self.epilog
 
