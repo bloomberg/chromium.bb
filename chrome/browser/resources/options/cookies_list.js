@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -518,6 +518,8 @@ cr.define('options', function() {
             var name = info[i][0];
             if (name != 'id' && this.data[name])
               nodes[name].textContent = this.data[name];
+            else
+              nodes[name].textContent = '';
           }
           table = infoNodes[this.data.type].table;
         }
