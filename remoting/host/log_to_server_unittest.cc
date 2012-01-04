@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,14 +31,16 @@ class LogToServerTest : public testing::Test {
   LogToServerTest() {}
   virtual void SetUp() OVERRIDE {
     message_loop_proxy_ = base::MessageLoopProxy::current();
-    log_to_server_.reset(new LogToServer(message_loop_proxy_));
+    EXPECT_CALL(signal_strategy_, AddListener(_));
+    log_to_server_.reset(new LogToServer(&signal_strategy_));
+    EXPECT_CALL(signal_strategy_, RemoveListener(_));
   }
 
  protected:
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
-  scoped_ptr<LogToServer> log_to_server_;
   MessageLoop message_loop_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   MockSignalStrategy signal_strategy_;
+  scoped_ptr<LogToServer> log_to_server_;
 };
 
 TEST_F(LogToServerTest, SendNow) {
@@ -54,13 +56,14 @@ TEST_F(LogToServerTest, SendNow) {
         .WillOnce(QuitMainMessageLoop(&message_loop_))
         .RetiresOnSaturation();
   }
-  log_to_server_->OnSignallingConnected(&signal_strategy_);
+  log_to_server_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
   log_to_server_->OnClientAuthenticated("client@domain.com/5678");
-  log_to_server_->OnSignallingDisconnected();
+  log_to_server_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
   message_loop_.Run();
 }
 
 TEST_F(LogToServerTest, SendLater) {
+  log_to_server_->OnClientAuthenticated("client@domain.com/5678");
   {
     InSequence s;
     EXPECT_CALL(signal_strategy_, GetLocalJid())
@@ -73,13 +76,14 @@ TEST_F(LogToServerTest, SendLater) {
         .WillOnce(QuitMainMessageLoop(&message_loop_))
         .RetiresOnSaturation();
   }
-  log_to_server_->OnClientAuthenticated("client@domain.com/5678");
-  log_to_server_->OnSignallingConnected(&signal_strategy_);
-  log_to_server_->OnSignallingDisconnected();
+  log_to_server_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
+  log_to_server_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
   message_loop_.Run();
 }
 
 TEST_F(LogToServerTest, SendTwoEntriesLater) {
+  log_to_server_->OnClientAuthenticated("client@domain.com/5678");
+  log_to_server_->OnClientAuthenticated("client2@domain.com/6789");
   {
     InSequence s;
     EXPECT_CALL(signal_strategy_, GetLocalJid())
@@ -92,10 +96,8 @@ TEST_F(LogToServerTest, SendTwoEntriesLater) {
         .WillOnce(QuitMainMessageLoop(&message_loop_))
         .RetiresOnSaturation();
   }
-  log_to_server_->OnClientAuthenticated("client@domain.com/5678");
-  log_to_server_->OnClientAuthenticated("client2@domain.com/6789");
-  log_to_server_->OnSignallingConnected(&signal_strategy_);
-  log_to_server_->OnSignallingDisconnected();
+  log_to_server_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
+  log_to_server_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
   message_loop_.Run();
 }
 

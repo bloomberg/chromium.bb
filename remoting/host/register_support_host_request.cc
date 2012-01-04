@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,58 +36,49 @@ const char kSupportIdLifetimeTag[] = "support-id-lifetime";
 }
 
 RegisterSupportHostRequest::RegisterSupportHostRequest()
-    : message_loop_(NULL) {
+    : signal_strategy_(NULL) {
 }
 
 RegisterSupportHostRequest::~RegisterSupportHostRequest() {
+  if (signal_strategy_)
+    signal_strategy_->RemoveListener(this);
 }
 
-bool RegisterSupportHostRequest::Init(HostConfig* config,
+bool RegisterSupportHostRequest::Init(SignalStrategy* signal_strategy,
+                                      HostConfig* config,
                                       const RegisterCallback& callback) {
-  callback_ = callback;
-
   if (!key_pair_.Load(config)) {
     return false;
   }
+
+  callback_ = callback;
+  signal_strategy_ = signal_strategy;
+  signal_strategy_->AddListener(this);
+  iq_sender_.reset(new IqSender(signal_strategy_));
+
   return true;
 }
 
-void RegisterSupportHostRequest::OnSignallingConnected(
-    SignalStrategy* signal_strategy) {
-  DCHECK(!callback_.is_null());
+void RegisterSupportHostRequest::OnSignalStrategyStateChange(
+    SignalStrategy::State state) {
+  if (state == SignalStrategy::CONNECTED) {
+    DCHECK(!callback_.is_null());
 
-  message_loop_ = MessageLoop::current();
-
-  iq_sender_.reset(new IqSender(signal_strategy));
-  request_.reset(iq_sender_->SendIq(
-      buzz::STR_SET, kChromotingBotJid,
-      CreateRegistrationRequest(signal_strategy->GetLocalJid()),
-      base::Bind(&RegisterSupportHostRequest::ProcessResponse,
-                 base::Unretained(this))));
-}
-
-void RegisterSupportHostRequest::OnSignallingDisconnected() {
-  if (!message_loop_) {
-    // We will reach here with |message_loop_| NULL if the Host's
-    // XMPP connection attempt fails.
-    CHECK(!callback_.is_null());
-    DCHECK(!request_.get());
-    callback_.Run(false, std::string(), base::TimeDelta());
-    return;
+    request_.reset(iq_sender_->SendIq(
+        buzz::STR_SET, kChromotingBotJid,
+        CreateRegistrationRequest(signal_strategy_->GetLocalJid()),
+        base::Bind(&RegisterSupportHostRequest::ProcessResponse,
+                   base::Unretained(this))));
+  } else if (state == SignalStrategy::DISCONNECTED) {
+    // We will reach here if signaling fails to connect.
+    CallCallback(false, std::string(), base::TimeDelta());
   }
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-  request_.reset();
-  iq_sender_.reset();
 }
 
-// Ignore any notifications other than signalling
-// connected/disconnected events.
-void RegisterSupportHostRequest::OnAccessDenied() { }
-void RegisterSupportHostRequest::OnClientAuthenticated(
-    const std::string& jid) { }
-void RegisterSupportHostRequest::OnClientDisconnected(
-    const std::string& jid) { }
-void RegisterSupportHostRequest::OnShutdown() { }
+bool RegisterSupportHostRequest::OnSignalStrategyIncomingStanza(
+    const buzz::XmlElement* stanza) {
+  return false;
+}
 
 XmlElement* RegisterSupportHostRequest::CreateRegistrationRequest(
     const std::string& jid) {
@@ -176,13 +167,24 @@ bool RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
   return true;
 }
 
-
 void RegisterSupportHostRequest::ProcessResponse(const XmlElement* response) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
   std::string support_id;
   base::TimeDelta lifetime;
   bool success = ParseResponse(response, &support_id, &lifetime);
-  callback_.Run(success, support_id, lifetime);
+  CallCallback(success, support_id, lifetime);
+}
+
+void RegisterSupportHostRequest::CallCallback(
+    bool success, const std::string& support_id, base::TimeDelta lifetime) {
+  // Cleanup state before calling the callback.
+  request_.reset();
+  iq_sender_.reset();
+  signal_strategy_->RemoveListener(this);
+  signal_strategy_ = NULL;
+
+  RegisterCallback callback = callback_;
+  callback_.Reset();
+  callback.Run(success, support_id, lifetime);
 }
 
 }  // namespace remoting

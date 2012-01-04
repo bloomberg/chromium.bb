@@ -18,7 +18,6 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/screen_recorder.h"
-#include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/host_stub.h"
@@ -32,16 +31,9 @@ using remoting::protocol::InputStub;
 
 namespace remoting {
 
-// static
-ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
-                                       MutableHostConfig* config,
-                                       DesktopEnvironment* environment,
-                                       bool allow_nat_traversal) {
-  return new ChromotingHost(context, config, environment, allow_nat_traversal);
-}
-
 ChromotingHost::ChromotingHost(ChromotingHostContext* context,
                                MutableHostConfig* config,
+                               SignalStrategy* signal_strategy,
                                DesktopEnvironment* environment,
                                bool allow_nat_traversal)
     : context_(context),
@@ -49,10 +41,13 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       config_(config),
       allow_nat_traversal_(allow_nat_traversal),
       have_shared_secret_(false),
+      signal_strategy_(signal_strategy),
       stopping_recorders_(0),
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
       is_it2me_(false) {
+  DCHECK(context_);
+  DCHECK(signal_strategy);
   DCHECK(desktop_environment_);
   desktop_environment_->set_host(this);
 }
@@ -69,7 +64,6 @@ void ChromotingHost::Start() {
   }
 
   LOG(INFO) << "Starting host";
-  DCHECK(!signal_strategy_.get());
 
   // Make sure this object is not started.
   if (state_ != kInitial)
@@ -82,29 +76,10 @@ void ChromotingHost::Start() {
     return;
   }
 
-  // Use an XMPP connection to the Talk network for session signalling.
-  std::string xmpp_login;
-  std::string xmpp_auth_token;
-  std::string xmpp_auth_service;
-  if (!config_->GetString(kXmppLoginConfigPath, &xmpp_login) ||
-      !config_->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token) ||
-      !config_->GetString(kXmppAuthServiceConfigPath, &xmpp_auth_service)) {
-    LOG(ERROR) << "XMPP credentials are not defined in the config.";
-    return;
-  }
-
-  // Create and start XMPP connection.
-  signal_strategy_.reset(
-      new XmppSignalStrategy(context_->jingle_thread(), xmpp_login,
-                             xmpp_auth_token, xmpp_auth_service));
-  signal_strategy_->AddListener(this);
-  signal_strategy_->Connect();
-
   // Create and start session manager.
   session_manager_.reset(
       new protocol::JingleSessionManager(context_->network_message_loop()));
-  session_manager_->Init(signal_strategy_.get(),
-                         this, allow_nat_traversal_);
+  session_manager_->Init(signal_strategy_, this, allow_nat_traversal_);
 }
 
 // This method is called when we need to destroy the host process.
@@ -143,13 +118,6 @@ void ChromotingHost::Shutdown(const base::Closure& shutdown_task) {
     context_->network_message_loop()->DeleteSoon(
         FROM_HERE, session_manager_.release());
     have_shared_secret_ = false;
-  }
-
-  // Stop XMPP connection synchronously.
-  if (signal_strategy_.get()) {
-    signal_strategy_->Disconnect();
-    signal_strategy_->RemoveListener(this);
-    signal_strategy_.reset();
   }
 
   if (recorder_.get()) {
@@ -252,28 +220,6 @@ void ChromotingHost::OnSessionSequenceNumber(ClientSession* session,
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
   if (recorder_.get())
     recorder_->UpdateSequenceNumber(sequence_number);
-}
-
-////////////////////////////////////////////////////////////////////////////
-// SignalStrategy::StatusObserver implementations
-void ChromotingHost::OnSignalStrategyStateChange(
-    SignalStrategy::State state) {
-  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
-
-  if (state == SignalStrategy::CONNECTED) {
-    LOG(INFO) << "Host connected as " << signal_strategy_->GetLocalJid();
-
-    for (StatusObserverList::iterator it = status_observers_.begin();
-         it != status_observers_.end(); ++it) {
-      (*it)->OnSignallingConnected(signal_strategy_.get());
-    }
-  } else if (state == SignalStrategy::DISCONNECTED) {
-    LOG(INFO) << "Host disconnected from talk network.";
-    for (StatusObserverList::iterator it = status_observers_.begin();
-         it != status_observers_.end(); ++it) {
-      (*it)->OnSignallingDisconnected();
-    }
-  }
 }
 
 void ChromotingHost::OnSessionManagerReady() {

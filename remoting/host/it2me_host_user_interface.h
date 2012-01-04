@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,8 +42,6 @@ class It2MeHostUserInterface : public HostStatusObserver {
 
   // HostStatusObserver implementation.  These methods will be called from the
   // network thread.
-  virtual void OnSignallingConnected(SignalStrategy* signal_strategy) OVERRIDE;
-  virtual void OnSignallingDisconnected() OVERRIDE;
   virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
   virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
   virtual void OnAccessDenied() OVERRIDE;

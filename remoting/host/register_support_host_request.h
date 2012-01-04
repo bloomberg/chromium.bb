@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/host/host_key_pair.h"
-#include "remoting/host/host_status_observer.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class MessageLoop;
@@ -29,12 +29,11 @@ namespace remoting {
 class IqRequest;
 class IqSender;
 
-// RegisterSupportHostRequest sends support host registeration request
-// to the Chromoting Bot. It listens to the status of the host using
-// HostStatusObserver interface and sends the request when signalling
-// channel is connected. When a response is received from the bot, it
-// calls the callback specified in the Init() method.
-class RegisterSupportHostRequest : public HostStatusObserver {
+// RegisterSupportHostRequest sends a request to register the host for
+// a SupportID, as soon as the associated SignalStrategy becomes
+// connected. When a response is received from the bot, it calls the
+// callback specified in the Init() method.
+class RegisterSupportHostRequest : public SignalStrategy::Listener {
  public:
   // First parameter is set to true on success. Second parameter is
   // the new SessionID received from the bot. Third parameter is the
@@ -45,23 +44,22 @@ class RegisterSupportHostRequest : public HostStatusObserver {
   RegisterSupportHostRequest();
   virtual ~RegisterSupportHostRequest();
 
-  // Provide the configuration to use to register the host, and a
-  // callback to invoke when a registration response is received.
-  // |callback| is called when registration response is received from
-  // the server. Ownership of |callback| is given to the request
-  // object. Caller must ensure that the callback object is valid
-  // while signalling connection exists. Returns false on falure
-  // (e.g. config is invalid). Callback is never called if the bot
-  // malfunctions and doesn't respond to the request.
-  bool Init(HostConfig* config, const RegisterCallback& callback);
+  // Initializes the registration to use the |signal_startegy| and to
+  // notify |callback| upon completion or failure.  Returns false on
+  // falure (e.g. config is invalid). Callback is never called if the
+  // bot malfunctions and doesn't respond to the request.
+  //
+  // TODO(sergeyu): This class should have timeout for the bot
+  // response.
+  bool Init(SignalStrategy* signal_strategy,
+            HostConfig* config,
+            const RegisterCallback& callback);
 
   // HostStatusObserver implementation.
-  virtual void OnSignallingConnected(SignalStrategy* signal_strategy) OVERRIDE;
-  virtual void OnSignallingDisconnected() OVERRIDE;
-  virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
-  virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
-  virtual void OnAccessDenied() OVERRIDE;
-  virtual void OnShutdown() OVERRIDE;
+  virtual void OnSignalStrategyStateChange(
+      SignalStrategy::State state) OVERRIDE;
+  virtual bool OnSignalStrategyIncomingStanza(
+      const buzz::XmlElement* stanza) OVERRIDE;
 
  private:
   void DoSend();
@@ -74,7 +72,10 @@ class RegisterSupportHostRequest : public HostStatusObserver {
   bool ParseResponse(const buzz::XmlElement* response,
                      std::string* support_id, base::TimeDelta* lifetime);
 
-  MessageLoop* message_loop_;
+  void CallCallback(
+      bool success, const std::string& support_id, base::TimeDelta lifetime);
+
+  SignalStrategy* signal_strategy_;
   RegisterCallback callback_;
   scoped_ptr<IqSender> iq_sender_;
   scoped_ptr<IqRequest> request_;

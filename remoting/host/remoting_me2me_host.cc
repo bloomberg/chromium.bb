@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -29,6 +29,7 @@
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/json_host_config.h"
+#include "remoting/jingle_glue/xmpp_signal_strategy.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_util.h"
@@ -91,22 +92,50 @@ class HostProcess {
       return 1;
     }
 
+    // Use an XMPP connection to the Talk network for session signalling.
+    std::string xmpp_login;
+    std::string xmpp_auth_token;
+    if (!auth_config_->GetString(kXmppLoginConfigPath, &xmpp_login) ||
+        !auth_config_->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token)) {
+      LOG(ERROR) << "XMPP credentials are not defined in the config.";
+      return 1;
+    }
+
+    std::string xmpp_auth_service;
+    if (!auth_config_->GetString(remoting::kXmppAuthServiceConfigPath,
+                                 &xmpp_auth_service)) {
+      // For the me2me host, we assume we use the ClientLogin token for
+      // chromiumsync because we do not have an HTTP stack with which we can
+      // easily request an OAuth2 access token even if we had a RefreshToken for
+      // the account.
+      xmpp_auth_service = remoting::kChromotingTokenDefaultServiceName;
+    }
+
+    // Create and start XMPP connection.
+    scoped_ptr<SignalStrategy> signal_strategy(
+        new XmppSignalStrategy(context.jingle_thread(), xmpp_login,
+                               xmpp_auth_token, xmpp_auth_service));
+
     // Create the DesktopEnvironment and ChromotingHost.
     scoped_ptr<DesktopEnvironment> desktop_environment(
         DesktopEnvironment::Create(&context));
 
-    host_ = ChromotingHost::Create(
-        &context, host_config_, desktop_environment.get(), false);
+    host_ = new ChromotingHost(
+        &context, host_config_, signal_strategy.get(),
+        desktop_environment.get(), false);
 
     // Initialize HeartbeatSender.
     scoped_ptr<remoting::HeartbeatSender> heartbeat_sender(
-        new remoting::HeartbeatSender(context.network_message_loop(),
-                                      host_config_));
-    if (!heartbeat_sender->Init()) {
+        new remoting::HeartbeatSender());
+    if (!heartbeat_sender->Init(signal_strategy.get(), host_config_)) {
       context.Stop();
       return 1;
     }
-    host_->AddStatusObserver(heartbeat_sender.get());
+
+    // Post a task to start XMPP connection.
+    context.network_message_loop()->PostTask(
+        FROM_HERE, base::Bind(&remoting::SignalStrategy::Connect,
+                              base::Unretained(signal_strategy.get())));
 
     // Run the ChromotingHost until the shutdown task is executed.
     host_->Start();
@@ -134,13 +163,13 @@ class HostProcess {
   bool LoadConfig(base::MessageLoopProxy* message_loop_proxy) {
     host_config_ =
         new remoting::JsonHostConfig(host_config_path_, message_loop_proxy);
-    scoped_refptr<remoting::JsonHostConfig> auth_config =
+    auth_config_ =
         new remoting::JsonHostConfig(auth_config_path_, message_loop_proxy);
 
     std::string failed_path;
     if (!host_config_->Read()) {
       failed_path = host_config_path_.value();
-    } else if (!auth_config->Read()) {
+    } else if (!auth_config_->Read()) {
       failed_path = auth_config_path_.value();
     }
     if (!failed_path.empty()) {
@@ -148,25 +177,13 @@ class HostProcess {
       return false;
     }
 
-    // Copy the needed keys from |auth_config| into |host_config|.
-    std::string value;
-    auth_config->GetString(kXmppAuthTokenConfigPath, &value);
-    host_config_->SetString(kXmppAuthTokenConfigPath, value);
-    auth_config->GetString(kXmppLoginConfigPath, &value);
-    host_config_->SetString(kXmppLoginConfigPath, value);
-
-    // For the Me2Me host, we assume we always use the ClientLogin token for
-    // chromiumsync because we do not have an HTTP stack with which we can
-    // easily request an OAuth2 access token even if we had a RefreshToken for
-    // the account.
-    host_config_->SetString(kXmppAuthServiceConfigPath,
-                           kChromotingTokenDefaultServiceName);
     return true;
   }
 
   FilePath auth_config_path_;
   FilePath host_config_path_;
 
+  scoped_refptr<remoting::JsonHostConfig> auth_config_;
   scoped_refptr<remoting::JsonHostConfig> host_config_;
 
   scoped_refptr<ChromotingHost> host_;

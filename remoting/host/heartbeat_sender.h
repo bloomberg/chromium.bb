@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,12 +8,12 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "remoting/host/host_key_pair.h"
-#include "remoting/host/host_status_observer.h"
-#include "base/gtest_prod_util.h"
+#include "remoting/jingle_glue/signal_strategy.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -62,25 +62,20 @@ class MutableHostConfig;
 // optional. Host uses default heartbeat interval if it doesn't find
 // set-interval tag in the result Iq stanza it receives from the
 // server.
-//
-// TODO(sergeyu): Is it enough to sign JID and nothing else?
-class HeartbeatSender : public HostStatusObserver {
+class HeartbeatSender : public SignalStrategy::Listener {
  public:
-  HeartbeatSender(base::MessageLoopProxy* main_loop,
-                  MutableHostConfig* config);
+  HeartbeatSender();
   virtual ~HeartbeatSender();
 
-  // Initializes heart-beating for |jingle_client_| with |config_|. Returns
-  // false if the config is invalid (e.g. private key cannot be parsed).
-  bool Init();
+  // Initializes the HeartbeatSender. Returns false if the |config| is
+  // invalid (e.g. private key cannot be parsed). SignalStrategy must
+  // outlive this object. Heartbeats will start when the supplied
+  // SignalStrategy enters the CONNECTED state.
+  bool Init(SignalStrategy* signal_strategy, MutableHostConfig* config);
 
-  // HostStatusObserver implementation.
-  virtual void OnSignallingConnected(SignalStrategy* signal_strategy) OVERRIDE;
-  virtual void OnSignallingDisconnected() OVERRIDE;
-  virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
-  virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
-  virtual void OnAccessDenied() OVERRIDE;
-  virtual void OnShutdown() OVERRIDE;
+  // SignalStrategy::Listener interface.
+  virtual void OnSignalStrategyStateChange(
+      SignalStrategy::State state) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, DoSendStanza);
@@ -104,11 +99,9 @@ class HeartbeatSender : public HostStatusObserver {
   buzz::XmlElement* CreateSignature();
 
   State state_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
-  scoped_refptr<MutableHostConfig> config_;
+  SignalStrategy* signal_strategy_;
   std::string host_id_;
   HostKeyPair key_pair_;
-  std::string full_jid_;
   scoped_ptr<IqSender> iq_sender_;
   scoped_ptr<IqRequest> request_;
   int interval_ms_;

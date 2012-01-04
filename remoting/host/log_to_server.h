@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/server_log_entry.h"
+#include "remoting/jingle_glue/signal_strategy.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -22,25 +23,25 @@ class XmlElement;
 
 namespace remoting {
 
+class ChromotingHost;
 class IqSender;
 
-/**
- * A class that sends log entries to a server.
- *
- * The class is not thread-safe.
- */
-class LogToServer : public HostStatusObserver {
+// LogToServer sends log entries to a server.
+class LogToServer : public HostStatusObserver,
+                    public SignalStrategy::Listener {
  public:
-  explicit LogToServer(base::MessageLoopProxy* message_loop);
+  explicit LogToServer(SignalStrategy* signal_strategy);
   virtual ~LogToServer();
 
   // Logs a session state change.
   // Currently, this is either connection or disconnection.
   void LogSessionStateChange(bool connected);
 
-  // HostStatusObserver implementation.
-  virtual void OnSignallingConnected(SignalStrategy* signal_strategy) OVERRIDE;
-  virtual void OnSignallingDisconnected() OVERRIDE;
+  // SignalStrategy::Listener interface.
+  virtual void OnSignalStrategyStateChange(
+      SignalStrategy::State state) OVERRIDE;
+
+  // HostStatusObserver interface.
   virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
   virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
   virtual void OnAccessDenied() OVERRIDE;
@@ -50,7 +51,8 @@ class LogToServer : public HostStatusObserver {
   void Log(const ServerLogEntry& entry);
   void SendPendingEntries();
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<ChromotingHost> host_;
+  SignalStrategy* signal_strategy_;
   scoped_ptr<IqSender> iq_sender_;
   std::deque<ServerLogEntry> pending_entries_;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,13 +50,6 @@ void It2MeHostUserInterface::InitFrom(DisconnectWindow* disconnect_window,
   disconnect_window_.reset(disconnect_window);
   continue_window_.reset(continue_window);
   local_input_monitor_.reset(monitor);
-}
-
-void It2MeHostUserInterface::OnSignallingConnected(
-    SignalStrategy* signal_strategy) {
-}
-
-void It2MeHostUserInterface::OnSignallingDisconnected() {
 }
 
 void It2MeHostUserInterface::OnClientAuthenticated(const std::string& jid) {

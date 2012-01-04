@@ -68,9 +68,6 @@ class HostNPScriptObject : public HostStatusObserver {
   bool Enumerate(std::vector<std::string>* values);
 
   // remoting::HostStatusObserver implementation.
-  virtual void OnSignallingConnected(
-      remoting::SignalStrategy* signal_strategy) OVERRIDE;
-  virtual void OnSignallingDisconnected() OVERRIDE;
   virtual void OnAccessDenied() OVERRIDE;
   virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
   virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
@@ -177,10 +174,11 @@ class HostNPScriptObject : public HostStatusObserver {
   base::PlatformThreadId np_thread_id_;
   scoped_refptr<PluginMessageLoopProxy> plugin_message_loop_proxy_;
 
+  ChromotingHostContext host_context_;
+  scoped_refptr<MutableHostConfig> host_config_;
+  scoped_ptr<SignalStrategy> signal_strategy_;
   scoped_ptr<RegisterSupportHostRequest> register_request_;
   scoped_ptr<LogToServer> log_to_server_;
-  scoped_refptr<MutableHostConfig> host_config_;
-  ChromotingHostContext host_context_;
   scoped_ptr<DesktopEnvironment> desktop_environment_;
   scoped_ptr<It2MeHostUserInterface> it2me_host_user_interface_;
 

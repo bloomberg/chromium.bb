@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,10 +16,6 @@ class HostStatusObserver {
  public:
   HostStatusObserver() { }
   virtual ~HostStatusObserver() { }
-
-  // Called when status of the signalling channel changes.
-  virtual void OnSignallingConnected(SignalStrategy* signal_strategy) = 0;
-  virtual void OnSignallingDisconnected() = 0;
 
   // Called when an unauthorized user attempts to connect to the host.
   virtual void OnAccessDenied() = 0;

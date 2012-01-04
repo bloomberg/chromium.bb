@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
+#include "base/observer_list.h"
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/host_key_pair.h"
@@ -37,6 +38,13 @@ const char kSupportId[] = "AB4RF3";
 const char kSupportIdLifetime[] = "300";
 const char kStanzaId[] = "123";
 
+ACTION_P(AddListener, list) {
+  list->AddObserver(arg0);
+}
+ACTION_P(RemoveListener, list) {
+  list->RemoveObserver(arg0);
+}
+
 class MockCallback {
  public:
   MOCK_METHOD3(OnResponse, void(bool result, const std::string& support_id,
@@ -51,37 +59,40 @@ class RegisterSupportHostRequestTest : public testing::Test {
   virtual void SetUp() {
     config_ = new InMemoryHostConfig();
     config_->SetString(kPrivateKeyConfigPath, kTestHostKeyPair);
+
+    EXPECT_CALL(signal_strategy_, AddListener(NotNull()))
+        .WillRepeatedly(AddListener(&signal_strategy_listeners_));
+    EXPECT_CALL(signal_strategy_, RemoveListener(NotNull()))
+        .WillRepeatedly(RemoveListener(&signal_strategy_listeners_));
+    EXPECT_CALL(signal_strategy_, GetLocalJid())
+        .WillRepeatedly(Return(kTestJid));
   }
 
-  MockSignalStrategy signal_strategy_;
   MessageLoop message_loop_;
+  MockSignalStrategy signal_strategy_;
+  ObserverList<SignalStrategy::Listener, true> signal_strategy_listeners_;
   scoped_refptr<InMemoryHostConfig> config_;
   MockCallback callback_;
 };
+
 
 TEST_F(RegisterSupportHostRequestTest, Send) {
   // |iq_request| is freed by RegisterSupportHostRequest.
   int64 start_time = static_cast<int64>(base::Time::Now().ToDoubleT());
 
-  SignalStrategy::Listener* listener;
-  EXPECT_CALL(signal_strategy_, AddListener(NotNull()))
-      .WillOnce(SaveArg<0>(&listener));
-
   scoped_ptr<RegisterSupportHostRequest> request(
       new RegisterSupportHostRequest());
   ASSERT_TRUE(request->Init(
-      config_, base::Bind(&MockCallback::OnResponse,
-                          base::Unretained(&callback_))));
+      &signal_strategy_, config_, base::Bind(&MockCallback::OnResponse,
+                                            base::Unretained(&callback_))));
 
   XmlElement* sent_iq = NULL;
   EXPECT_CALL(signal_strategy_, GetNextId())
       .WillOnce(Return(kStanzaId));
-  EXPECT_CALL(signal_strategy_, GetLocalJid())
-      .WillRepeatedly(Return(kTestJid));
   EXPECT_CALL(signal_strategy_, SendStanza(NotNull()))
       .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
 
-  request->OnSignallingConnected(&signal_strategy_);
+  request->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
   message_loop_.RunAllPending();
 
   // Verify format of the query.
@@ -136,10 +147,17 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   support_id_lifetime->AddText(kSupportIdLifetime);
   result->AddElement(support_id_lifetime);
 
-  EXPECT_TRUE(listener->OnSignalStrategyIncomingStanza(response.get()));
-  message_loop_.RunAllPending();
+  int consumed = 0;
+  ObserverListBase<SignalStrategy::Listener>::Iterator it(
+      signal_strategy_listeners_);
+  SignalStrategy::Listener* listener;
+  while ((listener = it.GetNext()) != NULL) {
+    if (listener->OnSignalStrategyIncomingStanza(response.get()))
+      consumed++;
+  }
+  EXPECT_EQ(1, consumed);
 
-  EXPECT_CALL(signal_strategy_, RemoveListener(listener));
+  message_loop_.RunAllPending();
 }
 
 }  // namespace remoting

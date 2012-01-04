@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
+#include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/base/auth_token_util.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -337,13 +338,6 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
   return true;
 }
 
-void HostNPScriptObject::OnSignallingConnected(
-    SignalStrategy* signal_strategy) {
-}
-
-void HostNPScriptObject::OnSignallingDisconnected() {
-}
-
 void HostNPScriptObject::OnAccessDenied() {
   DCHECK(host_context_.network_message_loop()->BelongsToCurrentThread());
 
@@ -475,11 +469,7 @@ void HostNPScriptObject::FinishConnect(
     return;
   }
 
-  // Store the supplied user ID and token to the Host configuration.
   scoped_refptr<MutableHostConfig> host_config = new InMemoryHostConfig();
-  host_config->SetString(kXmppLoginConfigPath, uid);
-  host_config->SetString(kXmppAuthTokenConfigPath, auth_token);
-  host_config->SetString(kXmppAuthServiceConfigPath, auth_service);
 
   // Generate a key pair for the Host to use.
   // TODO(wez): Move this to the worker thread.
@@ -487,10 +477,16 @@ void HostNPScriptObject::FinishConnect(
   host_key_pair.Generate();
   host_key_pair.Save(host_config);
 
+  // Create and start XMPP connection.
+  scoped_ptr<SignalStrategy> signal_strategy(
+      new XmppSignalStrategy(host_context_.jingle_thread(), uid,
+                             auth_token, auth_service));
+
   // Request registration of the host for support.
   scoped_ptr<RegisterSupportHostRequest> register_request(
       new RegisterSupportHostRequest());
   if (!register_request->Init(
+          signal_strategy.get(),
           host_config.get(),
           base::Bind(&HostNPScriptObject::OnReceivedSupportID,
                      base::Unretained(this)))) {
@@ -507,17 +503,17 @@ void HostNPScriptObject::FinishConnect(
 
   // Beyond this point nothing can fail, so save the config and request.
   host_config_ = host_config;
+  signal_strategy_.reset(signal_strategy.release());
   register_request_.reset(register_request.release());
 
   // Create the Host.
   LOG(INFO) << "NAT state: " << nat_traversal_enabled_;
-  host_ = ChromotingHost::Create(
-      &host_context_, host_config_, desktop_environment_.get(),
-      nat_traversal_enabled_);
+  host_ = new ChromotingHost(
+      &host_context_, host_config_, signal_strategy_.get(),
+      desktop_environment_.get(), nat_traversal_enabled_);
   host_->AddStatusObserver(this);
-  host_->AddStatusObserver(register_request_.get());
   if (enable_log_to_server_) {
-    log_to_server_.reset(new LogToServer(host_context_.network_message_loop()));
+    log_to_server_.reset(new LogToServer(signal_strategy_.get()));
     host_->AddStatusObserver(log_to_server_.get());
   }
   host_->set_it2me(true);
@@ -530,6 +526,11 @@ void HostNPScriptObject::FinishConnect(
     base::AutoLock auto_lock(ui_strings_lock_);
     host_->SetUiStrings(ui_strings_);
   }
+
+  // Post a task to start XMPP connection.
+  host_context_.network_message_loop()->PostTask(
+      FROM_HERE, base::Bind(&SignalStrategy::Connect,
+                            base::Unretained(signal_strategy_.get())));
 
   // Start the Host.
   host_->Start();

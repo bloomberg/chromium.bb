@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,68 +34,61 @@ const char kSetIntervalTag[] = "set-interval";
 const int64 kDefaultHeartbeatIntervalMs = 5 * 60 * 1000;  // 5 minutes.
 }
 
-HeartbeatSender::HeartbeatSender(base::MessageLoopProxy* message_loop,
-                                 MutableHostConfig* config)
-
+HeartbeatSender::HeartbeatSender()
     : state_(CREATED),
-      message_loop_(message_loop),
-      config_(config),
+      signal_strategy_(NULL),
       interval_ms_(kDefaultHeartbeatIntervalMs) {
-  DCHECK(config_);
 }
 
 HeartbeatSender::~HeartbeatSender() {
-  DCHECK(state_ == CREATED || state_ == INITIALIZED || state_ == STOPPED);
+  if (signal_strategy_)
+    signal_strategy_->RemoveListener(this);
 }
 
-bool HeartbeatSender::Init() {
+bool HeartbeatSender::Init(SignalStrategy* signal_strategy,
+                           MutableHostConfig* config) {
   DCHECK(state_ == CREATED);
 
-  if (!config_->GetString(kHostIdConfigPath, &host_id_)) {
+  if (!config->GetString(kHostIdConfigPath, &host_id_)) {
     LOG(ERROR) << "host_id is not defined in the config.";
     return false;
   }
 
-  if (!key_pair_.Load(config_)) {
+  if (!key_pair_.Load(config)) {
     return false;
   }
 
+  DCHECK(signal_strategy);
+  signal_strategy_ = signal_strategy;
+  signal_strategy_->AddListener(this);
+
   state_ = INITIALIZED;
+
+  // Update the state if the |signal_strategy_| is already connected.
+  OnSignalStrategyStateChange(signal_strategy_->GetState());
 
   return true;
 }
 
-void HeartbeatSender::OnSignallingConnected(SignalStrategy* signal_strategy) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(state_ == INITIALIZED || state_ == STOPPED);
-  state_ = STARTED;
+void HeartbeatSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
+  if (state == SignalStrategy::CONNECTED) {
+    DCHECK(state_ == INITIALIZED || state_ == STOPPED);
+    state_ = STARTED;
 
-  full_jid_ = signal_strategy->GetLocalJid();
+    iq_sender_.reset(new IqSender(signal_strategy_));
 
-  iq_sender_.reset(new IqSender(signal_strategy));
-
-  DoSendStanza();
-  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(interval_ms_), this,
-               &HeartbeatSender::DoSendStanza);
+    DoSendStanza();
+    timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(interval_ms_),
+                 this, &HeartbeatSender::DoSendStanza);
+  } else if (state == SignalStrategy::DISCONNECTED) {
+    state_ = STOPPED;
+    request_.reset();
+    iq_sender_.reset();
+    timer_.Stop();
+  }
 }
-
-void HeartbeatSender::OnSignallingDisconnected() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  state_ = STOPPED;
-  request_.reset();
-  iq_sender_.reset();
-  timer_.Stop();
-}
-
-// Ignore any notifications other than signalling
-// connected/disconnected events.
-void HeartbeatSender::OnAccessDenied() { }
-void HeartbeatSender::OnClientAuthenticated(const std::string& jid) { }
-void HeartbeatSender::OnClientDisconnected(const std::string& jid) { }
-void HeartbeatSender::OnShutdown() { }
 
 void HeartbeatSender::DoSendStanza() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STARTED);
 
   VLOG(1) << "Sending heartbeat stanza to " << kChromotingBotJid;
@@ -106,8 +99,6 @@ void HeartbeatSender::DoSendStanza() {
 }
 
 void HeartbeatSender::ProcessResponse(const XmlElement* response) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-
   std::string type = response->Attr(buzz::QN_TYPE);
   if (type == buzz::STR_ERROR) {
     LOG(ERROR) << "Received error in response to heartbeat: "
@@ -167,7 +158,7 @@ XmlElement* HeartbeatSender::CreateSignature() {
   signature_tag->AddAttr(
       QName(kChromotingXmlNamespace, kSignatureTimeAttr), time_str);
 
-  std::string message = full_jid_ + ' ' + time_str;
+  std::string message = signal_strategy_->GetLocalJid() + ' ' + time_str;
   std::string signature(key_pair_.GetSignature(message));
   signature_tag->AddText(signature);
 

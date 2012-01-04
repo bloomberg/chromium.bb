@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
 #include "remoting/base/constants.h"
+#include "remoting/host/chromoting_host.h"
 #include "remoting/host/server_log_entry.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/jingle_thread.h"
@@ -23,11 +24,13 @@ namespace {
 const char kLogCommand[] = "log";
 }  // namespace
 
-LogToServer::LogToServer(base::MessageLoopProxy* message_loop)
-    : message_loop_(message_loop) {
+LogToServer::LogToServer(SignalStrategy* signal_strategy)
+    : signal_strategy_(signal_strategy) {
+  signal_strategy_->AddListener(this);
 }
 
 LogToServer::~LogToServer() {
+  signal_strategy_->RemoveListener(this);
 }
 
 void LogToServer::LogSessionStateChange(bool connected) {
@@ -37,18 +40,13 @@ void LogToServer::LogSessionStateChange(bool connected) {
   Log(*entry.get());
 }
 
-void LogToServer::OnSignallingConnected(SignalStrategy* signal_strategy) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  iq_sender_.reset(new IqSender(signal_strategy));
-  SendPendingEntries();
-}
-
-void LogToServer::OnSignallingDisconnected() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  iq_sender_.reset();
-}
-
-void LogToServer::OnAccessDenied() {
+void LogToServer::OnSignalStrategyStateChange(SignalStrategy::State state) {
+  if (state == SignalStrategy::CONNECTED) {
+    iq_sender_.reset(new IqSender(signal_strategy_));
+    SendPendingEntries();
+  } else if (state == SignalStrategy::DISCONNECTED) {
+    iq_sender_.reset();
+  }
 }
 
 void LogToServer::OnClientAuthenticated(const std::string& jid) {
@@ -59,18 +57,18 @@ void LogToServer::OnClientDisconnected(const std::string& jid) {
   LogSessionStateChange(false);
 }
 
+void LogToServer::OnAccessDenied() {
+}
+
 void LogToServer::OnShutdown() {
 }
 
 void LogToServer::Log(const ServerLogEntry& entry) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
   pending_entries_.push_back(entry);
   SendPendingEntries();
 }
 
 void LogToServer::SendPendingEntries() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-
   if (iq_sender_ == NULL) {
     return;
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,17 +62,15 @@ class ScreenRecorder;
 //    incoming connection.
 class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                        public ClientSession::EventHandler,
-                       public SignalStrategy::Listener,
                        public protocol::SessionManager::Listener {
  public:
-  // Factory methods that must be used to create ChromotingHost
-  // instances. It does NOT take ownership of |context|, and
-  // |environment|, but they should not be deleted until returned host
-  // is destroyed.
-  static ChromotingHost* Create(ChromotingHostContext* context,
-                                MutableHostConfig* config,
-                                DesktopEnvironment* environment,
-                                bool allow_nat_traversal);
+  // The caller must ensure that |context|, |signal_strategy| and
+  // |environment| out-live the host.
+  ChromotingHost(ChromotingHostContext* context,
+                 MutableHostConfig* config,
+                 SignalStrategy* signal_strategy,
+                 DesktopEnvironment* environment,
+                 bool allow_nat_traversal);
 
   // Asynchronously start the host process.
   //
@@ -96,11 +94,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // rejected if shared secret isn't set. Must be called on the
   // network thread after the host is started.
   void SetSharedSecret(const std::string& shared_secret);
-
-  ////////////////////////////////////////////////////////////////////////////
-  // SignalStrategy::Listener interface.
-  virtual void OnSignalStrategyStateChange(
-      SignalStrategy::State state) OVERRIDE;
 
   ////////////////////////////////////////////////////////////////////////////
   // ClientSession::EventHandler implementation.
@@ -152,11 +145,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
     kStopped,
   };
 
-  // Caller keeps ownership of |context| and |environment|.
-  ChromotingHost(ChromotingHostContext* context,
-                 MutableHostConfig* config,
-                 DesktopEnvironment* environment,
-                 bool allow_nat_traversal);
   virtual ~ChromotingHost();
 
   // Creates encoder for the specified configuration.
@@ -196,8 +184,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   bool have_shared_secret_;
 
   // Connection objects.
-  scoped_ptr<SignalStrategy> signal_strategy_;
-  std::string local_jid_;
+  SignalStrategy* signal_strategy_;
   scoped_ptr<protocol::SessionManager> session_manager_;
 
   // StatusObserverList is thread-safe and can be used on any thread.

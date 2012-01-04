@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -42,6 +42,7 @@
 #include "remoting/host/log_to_server.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/register_support_host_request.h"
+#include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/proto/video.pb.h"
 
 #if defined(TOOLKIT_USES_GTK)
@@ -56,8 +57,6 @@ HMODULE g_hModule = NULL;
 
 using remoting::ChromotingHost;
 using remoting::DesktopEnvironment;
-using remoting::kChromotingTokenDefaultServiceName;
-using remoting::kXmppAuthServiceConfigPath;
 using remoting::It2MeHostUserInterface;
 using remoting::protocol::CandidateSessionConfig;
 using remoting::protocol::ChannelConfig;
@@ -98,10 +97,6 @@ class SimpleHost {
     // It needs to be a UI message loop to keep runloops spinning on the Mac.
     MessageLoop message_loop(MessageLoop::TYPE_UI);
 
-    remoting::ChromotingHostContext context(
-        base::MessageLoopProxy::current());
-    context.Start();
-
     base::Thread file_io_thread("FileIO");
     file_io_thread.Start();
 
@@ -112,36 +107,37 @@ class SimpleHost {
     if (!config->Read()) {
       LOG(ERROR) << "Failed to read configuration file "
                  << config_path.value();
-      context.Stop();
       return 1;
     }
 
-    // For the simple host, we assume we always use the ClientLogin token for
-    // chromiumsync because we do not have an HTTP stack with which we can
-    // easily request an OAuth2 access token even if we had a RefreshToken for
-    // the account.
-    config->SetString(kXmppAuthServiceConfigPath,
-                      kChromotingTokenDefaultServiceName);
+    remoting::ChromotingHostContext context(
+        base::MessageLoopProxy::current());
+    context.Start();
 
-    // Initialize AccessVerifier.
-    // TODO(jamiewalch): For the IT2Me case, the access verifier is passed to
-    // RegisterSupportHostRequest::Init, so transferring ownership of it to the
-    // ChromotingHost could cause a crash condition if SetIT2MeAccessCode is
-    // called after the ChromotingHost is destroyed (for example, at shutdown).
-    // Fix this.
-    scoped_ptr<remoting::RegisterSupportHostRequest> register_request;
-    scoped_ptr<remoting::HeartbeatSender> heartbeat_sender;
-    scoped_ptr<remoting::LogToServer> log_to_server;
-    if (is_it2me_) {
-      register_request.reset(new remoting::RegisterSupportHostRequest());
-      if (!register_request->Init(
-              config, base::Bind(&SimpleHost::SetIT2MeAccessCode,
-                                 base::Unretained(this)))) {
-        return 1;
-      }
+    // Use an XMPP connection to the Talk network for session signalling.
+    std::string xmpp_login;
+    std::string xmpp_auth_token;
+    if (!config->GetString(remoting::kXmppLoginConfigPath, &xmpp_login) ||
+        !config->GetString(remoting::kXmppAuthTokenConfigPath,
+                           &xmpp_auth_token)) {
+      LOG(ERROR) << "XMPP credentials are not defined in the config.";
+      return 1;
     }
-    log_to_server.reset(new remoting::LogToServer(
-        context.network_message_loop()));
+    std::string xmpp_auth_service;
+    if (!config->GetString(remoting::kXmppAuthServiceConfigPath,
+                           &xmpp_auth_service)) {
+      // For the simple host, we assume we always use the ClientLogin token for
+      // chromiumsync because we do not have an HTTP stack with which we can
+      // easily request an OAuth2 access token even if we had a RefreshToken for
+      // the account.
+      xmpp_auth_service = remoting::kChromotingTokenDefaultServiceName;
+    }
+
+    // Create and start XMPP connection.
+    scoped_ptr<remoting::SignalStrategy> signal_strategy(
+        new remoting::XmppSignalStrategy(context.jingle_thread(), xmpp_login,
+                                         xmpp_auth_token, xmpp_auth_service));
+
 
     // Construct a chromoting host.
     scoped_ptr<DesktopEnvironment> desktop_environment;
@@ -157,9 +153,13 @@ class SimpleHost {
       desktop_environment.reset(DesktopEnvironment::Create(&context));
     }
 
-    host_ = ChromotingHost::Create(
-        &context, config, desktop_environment.get(), false);
+    host_ = new ChromotingHost(&context, config, signal_strategy.get(),
+                               desktop_environment.get(), false);
     host_->set_it2me(is_it2me_);
+
+    scoped_ptr<remoting::LogToServer> log_to_server;
+    log_to_server.reset(new remoting::LogToServer(signal_strategy.get()));
+    host_->AddStatusObserver(log_to_server.get());
 
     scoped_ptr<It2MeHostUserInterface> it2me_host_user_interface;
     if (is_it2me_) {
@@ -173,18 +173,27 @@ class SimpleHost {
       host_->set_protocol_config(protocol_config_.release());
     }
 
+    scoped_ptr<remoting::RegisterSupportHostRequest> register_request;
+    scoped_ptr<remoting::HeartbeatSender> heartbeat_sender;
     if (is_it2me_) {
-      host_->AddStatusObserver(register_request.get());
+      register_request.reset(new remoting::RegisterSupportHostRequest());
+      if (!register_request->Init(signal_strategy.get(), config,
+                                  base::Bind(&SimpleHost::SetIT2MeAccessCode,
+                                             base::Unretained(this)))) {
+        return 1;
+      }
     } else {
       // Initialize HeartbeatSender.
       heartbeat_sender.reset(
-          new remoting::HeartbeatSender(context.network_message_loop(),
-                                        config));
-      if (!heartbeat_sender->Init())
+          new remoting::HeartbeatSender());
+      if (!heartbeat_sender->Init(signal_strategy.get(), config))
         return 1;
-      host_->AddStatusObserver(heartbeat_sender.get());
     }
-    host_->AddStatusObserver(log_to_server.get());
+
+    // Post a task to start XMPP connection.
+    context.network_message_loop()->PostTask(
+        FROM_HERE, base::Bind(&remoting::SignalStrategy::Connect,
+                              base::Unretained(signal_strategy.get())));
 
     // Let the chromoting host run until the shutdown task is executed.
     host_->Start();
