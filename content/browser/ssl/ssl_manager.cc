@@ -110,7 +110,7 @@ SSLManager::SSLManager(NavigationControllerImpl* controller)
 
   // Subscribe to various notifications.
   registrar_.Add(this, content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
-                 content::Source<:NavigationController>(controller_));
+                 content::Source<NavigationController>(controller_));
   registrar_.Add(
       this, content::NOTIFICATION_RESOURCE_RESPONSE_STARTED,
       content::Source<WebContents>(controller_->tab_contents()));
