@@ -2312,3 +2312,19 @@
    fun:_ZN7WebCore10ScrollView5paintEPNS_15GraphicsContextERKNS_7IntRectE
    fun:_ZN6WebKit12WebFrameImpl16paintWithContextERN7WebCore15GraphicsContextERKNS_7WebRectE
 }
+{
+   bug_109061
+   Memcheck:Leak
+   fun:calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:_internal_class_createInstance
+   fun:+[NSObject allocWithZone:]
+   fun:+[NSObject alloc]
+   fun:-[NSApplication(NSWindowsMenu) setWindowsMenu:]
+   fun:-[NSMenu _finishedMakingConnections]
+   fun:-[NSSet makeObjectsPerformSelector:]
+   fun:-[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:]
+   fun:-[NSNib instantiateNibWithExternalNameTable:]
+   fun:-[NSNib instantiateNibWithOwner:topLevelObjects:]
+   fun:_ZN38MainMenuTest_CloseTabPerformClose_Test8TestBodyEv
+}
