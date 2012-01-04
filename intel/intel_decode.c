@@ -66,6 +66,8 @@ struct drm_intel_decode {
 	 * and is used by the intel-gpu-tools.
 	 */
 	bool dump_past_end;
+
+	bool overflowed;
 };
 
 static FILE *out;
@@ -107,6 +109,14 @@ instr_out(struct drm_intel_decode *ctx, unsigned int index,
 	const char *parseinfo;
 	uint32_t offset = ctx->hw_offset + index * 4;
 
+	if (index > ctx->count) {
+		if (!ctx->overflowed) {
+			fprintf(out, "ERROR: Decode attempted to continue beyond end of batchbuffer\n");
+			ctx->overflowed = true;
+		}
+		return;
+	}
+
 	if (offset == head_offset)
 		parseinfo = "HEAD";
 	else if (offset == tail_offset)
@@ -127,7 +137,6 @@ decode_mi(struct drm_intel_decode *ctx)
 	unsigned int opcode, len = -1;
 	const char *post_sync_op = "";
 	uint32_t *data = ctx->data;
-	uint32_t count = ctx->count;
 
 	struct {
 		uint32_t opcode;
@@ -254,9 +263,6 @@ decode_mi(struct drm_intel_decode *ctx)
 			instr_out(ctx, 0, "%s\n",
 				  opcodes_mi[opcode].name);
 			for (i = 1; i < len; i++) {
-				if (i >= count)
-					BUFFER_FAIL(count, len,
-						    opcodes_mi[opcode].name);
 				instr_out(ctx, i, "dword %d\n", i);
 			}
 
@@ -317,7 +323,6 @@ decode_2d(struct drm_intel_decode *ctx)
 {
 	unsigned int opcode, len;
 	uint32_t *data = ctx->data;
-	uint32_t count = ctx->count;
 
 	struct {
 		uint32_t opcode;
@@ -362,8 +367,6 @@ decode_2d(struct drm_intel_decode *ctx)
 		len = (data[0] & 0x000000ff) + 2;
 		if (len != 3)
 			fprintf(out, "Bad count in XY_SCANLINES_BLT\n");
-		if (count < 3)
-			BUFFER_FAIL(count, len, "XY_SCANLINES_BLT");
 
 		instr_out(ctx, 1, "dest (%d,%d)\n",
 			  data[1] & 0xffff, data[1] >> 16);
@@ -376,8 +379,6 @@ decode_2d(struct drm_intel_decode *ctx)
 		len = (data[0] & 0x000000ff) + 2;
 		if (len != 8)
 			fprintf(out, "Bad count in XY_SETUP_BLT\n");
-		if (count < 8)
-			BUFFER_FAIL(count, len, "XY_SETUP_BLT");
 
 		decode_2d_br01(ctx);
 		instr_out(ctx, 2, "cliprect (%d,%d)\n",
@@ -396,8 +397,6 @@ decode_2d(struct drm_intel_decode *ctx)
 		len = (data[0] & 0x000000ff) + 2;
 		if (len != 3)
 			fprintf(out, "Bad count in XY_SETUP_CLIP_BLT\n");
-		if (count < 3)
-			BUFFER_FAIL(count, len, "XY_SETUP_CLIP_BLT");
 
 		instr_out(ctx, 1, "cliprect (%d,%d)\n",
 			  data[1] & 0xffff, data[2] >> 16);
@@ -411,8 +410,6 @@ decode_2d(struct drm_intel_decode *ctx)
 		if (len != 9)
 			fprintf(out,
 				"Bad count in XY_SETUP_MONO_PATTERN_SL_BLT\n");
-		if (count < 9)
-			BUFFER_FAIL(count, len, "XY_SETUP_MONO_PATTERN_SL_BLT");
 
 		decode_2d_br01(ctx);
 		instr_out(ctx, 2, "cliprect (%d,%d)\n",
@@ -432,8 +429,6 @@ decode_2d(struct drm_intel_decode *ctx)
 		len = (data[0] & 0x000000ff) + 2;
 		if (len != 6)
 			fprintf(out, "Bad count in XY_COLOR_BLT\n");
-		if (count < 6)
-			BUFFER_FAIL(count, len, "XY_COLOR_BLT");
 
 		decode_2d_br01(ctx);
 		instr_out(ctx, 2, "(%d,%d)\n",
@@ -449,8 +444,6 @@ decode_2d(struct drm_intel_decode *ctx)
 		len = (data[0] & 0x000000ff) + 2;
 		if (len != 8)
 			fprintf(out, "Bad count in XY_SRC_COPY_BLT\n");
-		if (count < 8)
-			BUFFER_FAIL(count, len, "XY_SRC_COPY_BLT");
 
 		decode_2d_br01(ctx);
 		instr_out(ctx, 2, "dst (%d,%d)\n",
@@ -484,9 +477,6 @@ decode_2d(struct drm_intel_decode *ctx)
 			}
 
 			for (i = 1; i < len; i++) {
-				if (i >= count)
-					BUFFER_FAIL(count, len,
-						    opcodes_2d[opcode].name);
 				instr_out(ctx, i, "dword %d\n", i);
 			}
 
@@ -1183,7 +1173,6 @@ decode_3d_1d(struct drm_intel_decode *ctx)
 	const char *format, *zformat, *type;
 	uint32_t opcode;
 	uint32_t *data = ctx->data;
-	uint32_t count = ctx->count;
 	uint32_t devid = ctx->devid;
 
 	struct {
@@ -1225,43 +1214,25 @@ decode_3d_1d(struct drm_intel_decode *ctx)
 		len = (data[0] & 0x000000ff) + 1;
 		i = 1;
 		if (data[0] & (0x01 << 8)) {
-			if (i + 2 >= count)
-				BUFFER_FAIL(count, len,
-					    "3DSTATE_LOAD_INDIRECT");
 			instr_out(ctx, i++, "SIS.0\n");
 			instr_out(ctx, i++, "SIS.1\n");
 		}
 		if (data[0] & (0x02 << 8)) {
-			if (i + 1 >= count)
-				BUFFER_FAIL(count, len,
-					    "3DSTATE_LOAD_INDIRECT");
 			instr_out(ctx, i++, "DIS.0\n");
 		}
 		if (data[0] & (0x04 << 8)) {
-			if (i + 2 >= count)
-				BUFFER_FAIL(count, len,
-					    "3DSTATE_LOAD_INDIRECT");
 			instr_out(ctx, i++, "SSB.0\n");
 			instr_out(ctx, i++, "SSB.1\n");
 		}
 		if (data[0] & (0x08 << 8)) {
-			if (i + 2 >= count)
-				BUFFER_FAIL(count, len,
-					    "3DSTATE_LOAD_INDIRECT");
 			instr_out(ctx, i++, "MSB.0\n");
 			instr_out(ctx, i++, "MSB.1\n");
 		}
 		if (data[0] & (0x10 << 8)) {
-			if (i + 2 >= count)
-				BUFFER_FAIL(count, len,
-					    "3DSTATE_LOAD_INDIRECT");
 			instr_out(ctx, i++, "PSP.0\n");
 			instr_out(ctx, i++, "PSP.1\n");
 		}
 		if (data[0] & (0x20 << 8)) {
-			if (i + 2 >= count)
-				BUFFER_FAIL(count, len,
-					    "3DSTATE_LOAD_INDIRECT");
 			instr_out(ctx, i++, "PSC.0\n");
 			instr_out(ctx, i++, "PSC.1\n");
 		}
@@ -1277,10 +1248,6 @@ decode_3d_1d(struct drm_intel_decode *ctx)
 		i = 1;
 		for (word = 0; word <= 8; word++) {
 			if (data[0] & (1 << (4 + word))) {
-				if (i >= count)
-					BUFFER_FAIL(count, len,
-						    "3DSTATE_LOAD_STATE_IMMEDIATE_1");
-
 				/* save vertex state for decode */
 				if (!IS_GEN2(devid)) {
 					int tex_num;
@@ -1668,10 +1635,6 @@ decode_3d_1d(struct drm_intel_decode *ctx)
 		i = 1;
 		for (word = 6; word <= 14; word++) {
 			if (data[0] & (1 << word)) {
-				if (i >= count)
-					BUFFER_FAIL(count, len,
-						    "3DSTATE_LOAD_STATE_IMMEDIATE_2");
-
 				if (word == 6)
 					instr_out(ctx, i++,
 						  "TBCF\n");
@@ -1725,10 +1688,6 @@ decode_3d_1d(struct drm_intel_decode *ctx)
 			if (data[1] & (1 << map)) {
 				int width, height, pitch, dword;
 				const char *tiling;
-
-				if (i + 3 >= count)
-					BUFFER_FAIL(count, len,
-						    "3DSTATE_MAP_STATE");
 
 				dword = data[i];
 				instr_out(ctx, i++,
@@ -1929,9 +1888,6 @@ decode_3d_1d(struct drm_intel_decode *ctx)
 		i = 2;
 		for (c = 0; c <= 31; c++) {
 			if (data[1] & (1 << c)) {
-				if (i + 4 >= count)
-					BUFFER_FAIL(count, len,
-						    "3DSTATE_PIXEL_SHADER_CONSTANTS");
 				instr_out(ctx, i, "C%d.X = %f\n", c,
 					  int_as_float(data[i]));
 				i++;
@@ -1962,9 +1918,6 @@ decode_3d_1d(struct drm_intel_decode *ctx)
 		for (instr = 0; instr < (len - 1) / 3; instr++) {
 			char instr_prefix[10];
 
-			if (i + 3 >= count)
-				BUFFER_FAIL(count, len,
-					    "3DSTATE_PIXEL_SHADER_PROGRAM");
 			sprintf(instr_prefix, "PS%03d", instr);
 			i915_decode_instruction(ctx, i,
 						instr_prefix);
@@ -1982,9 +1935,7 @@ decode_3d_1d(struct drm_intel_decode *ctx)
 			if (data[1] & (1 << sampler)) {
 				uint32_t dword;
 				const char *mip_filter = "";
-				if (i + 3 >= count)
-					BUFFER_FAIL(count, len,
-						    "3DSTATE_SAMPLER_STATE");
+
 				dword = data[i];
 				switch ((dword >> 20) & 0x3) {
 				case 0:
@@ -2047,9 +1998,6 @@ decode_3d_1d(struct drm_intel_decode *ctx)
 		if (len != 2)
 			fprintf(out,
 				"Bad count in 3DSTATE_DEST_BUFFER_VARIABLES\n");
-		if (count < 2)
-			BUFFER_FAIL(count, len,
-				    "3DSTATE_DEST_BUFFER_VARIABLES");
 
 		instr_out(ctx, 0,
 			  "3DSTATE_DEST_BUFFER_VARIABLES\n");
@@ -2120,8 +2068,6 @@ decode_3d_1d(struct drm_intel_decode *ctx)
 			if (len != 3)
 				fprintf(out,
 					"Bad count in 3DSTATE_BUFFER_INFO\n");
-			if (count < 3)
-				BUFFER_FAIL(count, len, "3DSTATE_BUFFER_INFO");
 
 			switch ((data[1] >> 24) & 0x7) {
 			case 0x3:
@@ -2155,8 +2101,6 @@ decode_3d_1d(struct drm_intel_decode *ctx)
 		if (len != 3)
 			fprintf(out,
 				"Bad count in 3DSTATE_SCISSOR_RECTANGLE\n");
-		if (count < 3)
-			BUFFER_FAIL(count, len, "3DSTATE_SCISSOR_RECTANGLE");
 
 		instr_out(ctx, 0, "3DSTATE_SCISSOR_RECTANGLE\n");
 		instr_out(ctx, 1, "(%d,%d)\n",
@@ -2171,8 +2115,6 @@ decode_3d_1d(struct drm_intel_decode *ctx)
 		if (len != 5)
 			fprintf(out,
 				"Bad count in 3DSTATE_DRAWING_RECTANGLE\n");
-		if (count < 5)
-			BUFFER_FAIL(count, len, "3DSTATE_DRAWING_RECTANGLE");
 
 		instr_out(ctx, 0, "3DSTATE_DRAWING_RECTANGLE\n");
 		instr_out(ctx, 1, "%s\n",
@@ -2190,8 +2132,6 @@ decode_3d_1d(struct drm_intel_decode *ctx)
 
 		if (len != 7)
 			fprintf(out, "Bad count in 3DSTATE_CLEAR_PARAMETERS\n");
-		if (count < 7)
-			BUFFER_FAIL(count, len, "3DSTATE_CLEAR_PARAMETERS");
 
 		instr_out(ctx, 0, "3DSTATE_CLEAR_PARAMETERS\n");
 		instr_out(ctx, 1, "prim_type=%s, clear=%s%s%s\n",
@@ -2228,9 +2168,6 @@ decode_3d_1d(struct drm_intel_decode *ctx)
 			}
 
 			for (i = 1; i < len; i++) {
-				if (i >= count)
-					BUFFER_FAIL(count, len,
-						    opcode_3d_1d->name);
 				instr_out(ctx, i, "dword %d\n", i);
 			}
 
@@ -2488,9 +2425,6 @@ decode_3d_primitive(struct drm_intel_decode *ctx)
 			goto out;
 		} else {
 			/* sequential vertex access */
-			if (count < 2)
-				BUFFER_FAIL(count, 2,
-					    "3DPRIMITIVE seq indirect");
 			instr_out(ctx, 0,
 				  "3DPRIMITIVE sequential indirect %s, %d starting from "
 				  "%d\n", primtype, len, data[1] & 0xffff);
@@ -2512,7 +2446,6 @@ decode_3d(struct drm_intel_decode *ctx)
 	uint32_t opcode;
 	unsigned int idx;
 	uint32_t *data = ctx->data;
-	uint32_t count = ctx->count;
 
 	struct {
 		uint32_t opcode;
@@ -2558,9 +2491,6 @@ decode_3d(struct drm_intel_decode *ctx)
 			}
 
 			for (i = 1; i < len; i++) {
-				if (i >= count)
-					BUFFER_FAIL(count, len,
-						    opcode_3d->name);
 				instr_out(ctx, i, "dword %d\n", i);
 			}
 			return len;
@@ -2700,8 +2630,6 @@ i965_decode_urb_fence(struct drm_intel_decode *ctx, int len)
 
 	if (len != 3)
 		fprintf(out, "Bad count in URB_FENCE\n");
-	if (ctx->count < 3)
-		BUFFER_FAIL(ctx->count, len, "URB_FENCE");
 
 	vs_fence = data[1] & 0x3ff;
 	gs_fence = (data[1] >> 10) & 0x3ff;
@@ -2776,7 +2704,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 	unsigned int i, j, sba_len;
 	const char *desc1 = NULL;
 	uint32_t *data = ctx->data;
-	uint32_t count = ctx->count;
 	uint32_t devid = ctx->devid;
 
 	struct {
@@ -2863,8 +2790,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 			sba_len = 6;
 		if (len != sba_len)
 			fprintf(out, "Bad count in STATE_BASE_ADDRESS\n");
-		if (len != sba_len)
-			BUFFER_FAIL(count, len, "STATE_BASE_ADDRESS");
 
 		state_base_out(ctx, i++, "general");
 		state_base_out(ctx, i++, "surface");
@@ -2886,8 +2811,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		if (len != 7)
 			fprintf(out,
 				"Bad count in 3DSTATE_PIPELINED_POINTERS\n");
-		if (count < 7)
-			BUFFER_FAIL(count, len, "3DSTATE_PIPELINED_POINTERS");
 
 		instr_out(ctx, 0, "3DSTATE_PIPELINED_POINTERS\n");
 		instr_out(ctx, 1, "VS state\n");
@@ -2903,9 +2826,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 			fprintf(out,
 				"Bad count in 3DSTATE_BINDING_TABLE_POINTERS\n");
 		if (len == 6) {
-			if (count < 6)
-				BUFFER_FAIL(count, len,
-					    "3DSTATE_BINDING_TABLE_POINTERS");
 			instr_out(ctx, 0,
 				  "3DSTATE_BINDING_TABLE_POINTERS\n");
 			instr_out(ctx, 1, "VS binding table\n");
@@ -2914,10 +2834,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 			instr_out(ctx, 4, "SF binding table\n");
 			instr_out(ctx, 5, "WM binding table\n");
 		} else {
-			if (count < 4)
-				BUFFER_FAIL(count, len,
-					    "3DSTATE_BINDING_TABLE_POINTERS");
-
 			instr_out(ctx, 0,
 				  "3DSTATE_BINDING_TABLE_POINTERS: VS mod %d, "
 				  "GS mod %d, PS mod %d\n",
@@ -2935,9 +2851,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		if (len != 4)
 			fprintf(out,
 				"Bad count in 3DSTATE_SAMPLER_STATE_POINTERS\n");
-		if (count < 4)
-			BUFFER_FAIL(count, len,
-				    "3DSTATE_SAMPLER_STATE_POINTERS");
 		instr_out(ctx, 0,
 			  "3DSTATE_SAMPLER_STATE_POINTERS: VS mod %d, "
 			  "GS mod %d, PS mod %d\n", (data[0] & (1 << 8)) != 0,
@@ -2951,8 +2864,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		len = (data[0] & 0xff) + 2;
 		if (len != 3)
 			fprintf(out, "Bad count in 3DSTATE_URB\n");
-		if (count < 3)
-			BUFFER_FAIL(count, len, "3DSTATE_URB");
 		instr_out(ctx, 0, "3DSTATE_URB\n");
 		instr_out(ctx, 1,
 			  "VS entries %d, alloc size %d (1024bit row)\n",
@@ -2966,8 +2877,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		len = (data[0] & 0xff) + 2;
 		if ((len - 1) % 4 != 0)
 			fprintf(out, "Bad count in 3DSTATE_VERTEX_BUFFERS\n");
-		if (count < len)
-			BUFFER_FAIL(count, len, "3DSTATE_VERTEX_BUFFERS");
 		instr_out(ctx, 0, "3DSTATE_VERTEX_BUFFERS\n");
 
 		for (i = 1; i < len;) {
@@ -2994,8 +2903,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		len = (data[0] & 0xff) + 2;
 		if ((len + 1) % 2 != 0)
 			fprintf(out, "Bad count in 3DSTATE_VERTEX_ELEMENTS\n");
-		if (count < len)
-			BUFFER_FAIL(count, len, "3DSTATE_VERTEX_ELEMENTS");
 		instr_out(ctx, 0, "3DSTATE_VERTEX_ELEMENTS\n");
 
 		for (i = 1; i < len;) {
@@ -3023,9 +2930,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		if (len != 4)
 			fprintf(out,
 				"Bad count in 3DSTATE_VIEWPORT_STATE_POINTERS\n");
-		if (count < len)
-			BUFFER_FAIL(count, len,
-				    "3DSTATE_VIEWPORT_STATE_POINTERS");
 		instr_out(ctx, 0,
 			  "3DSTATE_VIEWPORT_STATE_POINTERS\n");
 		instr_out(ctx, 1, "clip\n");
@@ -3037,8 +2941,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		len = (data[0] & 0xff) + 2;
 		if (len != 3)
 			fprintf(out, "Bad count in 3DSTATE_INDEX_BUFFER\n");
-		if (count < len)
-			BUFFER_FAIL(count, len, "3DSTATE_INDEX_BUFFER");
 		instr_out(ctx, 0, "3DSTATE_INDEX_BUFFER\n");
 		instr_out(ctx, 1, "beginning buffer address\n");
 		instr_out(ctx, 2, "ending buffer address\n");
@@ -3049,8 +2951,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		if (len != 4)
 			fprintf(out,
 				"Bad count in 3DSTATE_CC_STATE_POINTERS\n");
-		if (count < 4)
-			BUFFER_FAIL(count, len, "3DSTATE_CC_STATE_POINTERS");
 		instr_out(ctx, 0, "3DSTATE_CC_STATE_POINTERS\n");
 		instr_out(ctx, 1, "blend change %d\n", data[1] & 1);
 		instr_out(ctx, 2, "depth stencil change %d\n",
@@ -3062,8 +2962,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		len = (data[0] & 0xff) + 2;
 		if (len != 2)
 			fprintf(out, "Bad count in 3DSTATE_SCISSOR_POINTERS\n");
-		if (count < 2)
-			BUFFER_FAIL(count, len, "3DSTATE_SCISSOR_POINTERS");
 		instr_out(ctx, 0, "3DSTATE_SCISSOR_POINTERS\n");
 		instr_out(ctx, 1, "scissor rect offset\n");
 		return len;
@@ -3072,8 +2970,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		len = (data[0] & 0xff) + 2;
 		if (len != 6)
 			fprintf(out, "Bad count in 3DSTATE_VS\n");
-		if (count < 6)
-			BUFFER_FAIL(count, len, "3DSTATE_VS");
 		instr_out(ctx, 0, "3DSTATE_VS\n");
 		instr_out(ctx, 1, "kernel pointer\n");
 		instr_out(ctx, 2,
@@ -3097,8 +2993,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		len = (data[0] & 0xff) + 2;
 		if (len != 7)
 			fprintf(out, "Bad count in 3DSTATE_GS\n");
-		if (count < 7)
-			BUFFER_FAIL(count, len, "3DSTATE_GS");
 		instr_out(ctx, 0, "3DSTATE_GS\n");
 		instr_out(ctx, 1, "kernel pointer\n");
 		instr_out(ctx, 2,
@@ -3127,8 +3021,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		len = (data[0] & 0xff) + 2;
 		if (len != 4)
 			fprintf(out, "Bad count in 3DSTATE_CLIP\n");
-		if (count < 4)
-			BUFFER_FAIL(count, len, "3DSTATE_CLIP");
 		instr_out(ctx, 0, "3DSTATE_CLIP\n");
 		instr_out(ctx, 1,
 			  "UserClip distance cull test mask 0x%x\n",
@@ -3160,8 +3052,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		len = (data[0] & 0xff) + 2;
 		if (len != 20)
 			fprintf(out, "Bad count in 3DSTATE_SF\n");
-		if (count < 20)
-			BUFFER_FAIL(count, len, "3DSTATE_SF");
 		instr_out(ctx, 0, "3DSTATE_SF\n");
 		instr_out(ctx, 1,
 			  "Attrib Out %d, Attrib Swizzle %sable, VUE read length %d, "
@@ -3226,8 +3116,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		len = (data[0] & 0xff) + 2;
 		if (len != 9)
 			fprintf(out, "Bad count in 3DSTATE_WM\n");
-		if (count < 9)
-			BUFFER_FAIL(count, len, "3DSTATE_WM");
 		instr_out(ctx, 0, "3DSTATE_WM\n");
 		instr_out(ctx, 1, "kernel start pointer 0\n");
 		instr_out(ctx, 2,
@@ -3271,8 +3159,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		if (len != 4)
 			fprintf(out,
 				"Bad count in 3DSTATE_DRAWING_RECTANGLE\n");
-		if (count < 4)
-			BUFFER_FAIL(count, len, "3DSTATE_DRAWING_RECTANGLE");
 
 		instr_out(ctx, 0, "3DSTATE_DRAWING_RECTANGLE\n");
 		instr_out(ctx, 1, "top left: %d,%d\n",
@@ -3287,8 +3173,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 	case 0x7905:
 		if (len < 5 || len > 7)
 			fprintf(out, "Bad count in 3DSTATE_DEPTH_BUFFER\n");
-		if (count < len)
-			BUFFER_FAIL(count, len, "3DSTATE_DEPTH_BUFFER");
 
 		instr_out(ctx, 0, "3DSTATE_DEPTH_BUFFER\n");
 		if (IS_GEN5(devid) || IS_GEN6(devid))
@@ -3330,8 +3214,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 			len = (data[0] & 0xff) + 2;
 			if (len != 4 && len != 5)
 				fprintf(out, "Bad count in PIPE_CONTROL\n");
-			if (count < len)
-				BUFFER_FAIL(count, len, "PIPE_CONTROL");
 
 			switch ((data[1] >> 14) & 0x3) {
 			case 0:
@@ -3399,8 +3281,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 			len = (data[0] & 0xff) + 2;
 			if (len != 4)
 				fprintf(out, "Bad count in PIPE_CONTROL\n");
-			if (count < len)
-				BUFFER_FAIL(count, len, "PIPE_CONTROL");
 
 			switch ((data[0] >> 14) & 0x3) {
 			case 0:
@@ -3432,8 +3312,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		len = (data[0] & 0xff) + 2;
 		if (len != 6)
 			fprintf(out, "Bad count in 3DPRIMITIVE\n");
-		if (count < len)
-			BUFFER_FAIL(count, len, "3DPRIMITIVE");
 
 		instr_out(ctx, 0,
 			  "3DPRIMITIVE: %s %s\n",
@@ -3464,9 +3342,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 			}
 
 			for (i = 1; i < len; i++) {
-				if (i >= count)
-					BUFFER_FAIL(count, len,
-						    opcode_3d->name);
 				instr_out(ctx, i, "dword %d\n", i);
 			}
 			return len;
@@ -3484,7 +3359,6 @@ decode_3d_i830(struct drm_intel_decode *ctx)
 	unsigned int idx;
 	uint32_t opcode;
 	uint32_t *data = ctx->data;
-	uint32_t count = ctx->count;
 
 	struct {
 		uint32_t opcode;
@@ -3537,9 +3411,6 @@ decode_3d_i830(struct drm_intel_decode *ctx)
 			}
 
 			for (i = 1; i < len; i++) {
-				if (i >= count)
-					BUFFER_FAIL(count, len,
-						    opcode_3d->name);
 				instr_out(ctx, i, "dword %d\n", i);
 			}
 			return len;
@@ -3616,11 +3487,21 @@ drm_intel_decode(struct drm_intel_decode *ctx)
 	int ret;
 	unsigned int index = 0;
 	uint32_t devid;
+	int size = ctx->base_count * 4;
+	void *temp;
 
 	if (!ctx)
 		return;
 
-	ctx->data = ctx->base_data;
+	/* Put a scratch page full of obviously undefined data after
+	 * the batchbuffer.  This lets us avoid a bunch of length
+	 * checking in statically sized packets.
+	 */
+	temp = malloc(size + 4096);
+	memcpy(temp, ctx->base_data, size);
+	memset((char *)temp + size, 0xd0, 4096);
+	ctx->data = temp;
+
 	ctx->hw_offset = ctx->base_hw_offset;
 	ctx->count = ctx->base_count;
 
@@ -3685,4 +3566,6 @@ drm_intel_decode(struct drm_intel_decode *ctx)
 		ctx->data += index;
 		ctx->hw_offset += 4 * index;
 	}
+
+	free(temp);
 }
