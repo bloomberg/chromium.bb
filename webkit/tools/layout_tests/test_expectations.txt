@@ -6,3 +6,29 @@
 // until the changes can be landed upstream.
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
+
+// Skia roll past r2924 requires rebaselining on all platforms
+
+BUGTOMHUDSON : fast/backgrounds/animated-svg-as-mask.html = IMAGE
+BUGTOMHUDSON : svg/W3C-SVG-1.1/coords-coord-01-t.svg = IMAGE
+BUGTOMHUDSON : svg/W3C-SVG-1.1/coords-coord-02-t.svg = IMAGE
+BUGTOMHUDSON : svg/W3C-SVG-1.1/paths-data-13-t.svg = IMAGE
+BUGTOMHUDSON : svg/W3C-SVG-1.1/render-groups-01-b.svg = IMAGE
+BUGTOMHUDSON : svg/W3C-SVG-1.1/render-groups-03-t.svg = IMAGE
+BUGTOMHUDSON : svg/W3C-SVG-1.1/text-align-08-b.svg = IMAGE
+BUGTOMHUDSON : svg/as-background-image/animated-svg-as-background.html = IMAGE
+BUGTOMHUDSON : svg/css/group-with-shadow.svg = IMAGE
+BUGTOMHUDSON : svg/custom/fractional-rects.svg = IMAGE
+BUGTOMHUDSON : svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = IMAGE
+BUGTOMHUDSON : svg/custom/use-css-no-effect-on-shadow-tree.svg = IMAGE
+BUGTOMHUDSON : svg/text/text-align-01-b.svg = IMAGE
+BUGTOMHUDSON : svg/text/text-deco-01-b.svg = IMAGE
+BUGTOMHUDSON : svg/text/text-path-01-b.svg = IMAGE
+BUGTOMHUDSON : svg/text/text-text-03-b.svg = IMAGE
+BUGTOMHUDSON : svg/text/text-text-07-t.svg = IMAGE
+BUGTOMHUDSON : svg/zoom/page/zoom-svg-through-object-with-percentage-size.xhtml = IMAGE
+BUGTOMHUDSON MAC : fast/repaint/shadow-multiple-vertical.html = IMAGE
+BUGTOMHUDSON MAC : svg/W3C-SVG-1.1/masking-path-02-b.svg = IMAGE
+BUGTOMHUDSON MAC : svg/carto.net/button.svg = IMAGE
+BUGTOMHUDSON MAC : svg/custom/glyph-selection-lang-attribute.svg = IMAGE
+
