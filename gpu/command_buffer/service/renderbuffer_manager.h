@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,7 +69,7 @@ class RenderbufferManager {
       return has_been_bound_ && !IsDeleted();
     }
 
-    uint32 EstimatedSize();
+    size_t EstimatedSize();
 
    private:
     friend class RenderbufferManager;
@@ -158,7 +158,7 @@ class RenderbufferManager {
 
   int num_uncleared_renderbuffers_;
 
-  uint32 mem_represented_;
+  size_t mem_represented_;
 
   // Info for each renderbuffer in the system.
   typedef base::hash_map<GLuint, RenderbufferInfo::Ref> RenderbufferInfoMap;

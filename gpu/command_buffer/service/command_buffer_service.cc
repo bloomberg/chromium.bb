@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/process_util.h"
+#include "base/debug/trace_event.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 
 using ::base::SharedMemory;
@@ -21,16 +22,20 @@ CommandBufferService::CommandBufferService()
       token_(0),
       generation_(0),
       error_(error::kNoError),
-      context_lost_reason_(error::kUnknown) {
+      context_lost_reason_(error::kUnknown),
+      shared_memory_bytes_allocated_(0) {
   // Element zero is always NULL.
   registered_objects_.push_back(Buffer());
 }
 
 CommandBufferService::~CommandBufferService() {
   for (size_t i = 0; i < registered_objects_.size(); ++i) {
-    if (registered_objects_[i].shared_memory)
+    if (registered_objects_[i].shared_memory) {
+      shared_memory_bytes_allocated_ -= registered_objects_[i].size;
       delete registered_objects_[i].shared_memory;
+    }
   }
+  // TODO(gman): Should we report 0 bytes to TRACE here?
 }
 
 bool CommandBufferService::Initialize() {
@@ -106,6 +111,10 @@ int32 CommandBufferService::CreateTransferBuffer(size_t size,
   if (!buffer.CreateAnonymous(size))
     return -1;
 
+  shared_memory_bytes_allocated_ += size;
+  TRACE_COUNTER_ID1(
+      "CommandBuffer", "SharedMemory", this, shared_memory_bytes_allocated_);
+
   return RegisterTransferBuffer(&buffer, size, id_request);
 }
 
@@ -179,6 +188,10 @@ void CommandBufferService::DestroyTransferBuffer(int32 handle) {
 
   if (static_cast<size_t>(handle) >= registered_objects_.size())
     return;
+
+  shared_memory_bytes_allocated_ -= registered_objects_[handle].size;
+  TRACE_COUNTER_ID1(
+      "CommandBuffer", "SharedMemory", this, shared_memory_bytes_allocated_);
 
   delete registered_objects_[handle].shared_memory;
   registered_objects_[handle] = Buffer();

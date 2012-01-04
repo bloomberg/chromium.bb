@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,25 +10,6 @@
 
 namespace gpu {
 namespace gles2 {
-
-static uint32 BytesPerPixel(GLenum format) {
-  switch (format) {
-    case GL_STENCIL_INDEX8:
-      return 1;
-    case GL_RGBA4:
-    case GL_RGB565:
-    case GL_RGB5_A1:
-    case GL_DEPTH_COMPONENT16:
-      return 2;
-    case GL_DEPTH24_STENCIL8:
-    case GL_RGB8_OES:
-    case GL_RGBA8_OES:
-    case GL_DEPTH_COMPONENT24:
-      return 4;
-    default:
-      return 0;
-  }
-}
 
 RenderbufferManager::RenderbufferManager(
     GLint max_renderbuffer_size, GLint max_samples)
@@ -43,8 +24,9 @@ RenderbufferManager::~RenderbufferManager() {
   DCHECK(renderbuffer_infos_.empty());
 }
 
-uint32 RenderbufferManager::RenderbufferInfo::EstimatedSize() {
-  return width_ * height_ * samples_ * BytesPerPixel(internal_format_);
+size_t RenderbufferManager::RenderbufferInfo::EstimatedSize() {
+  return width_ * height_ * samples_ *
+         GLES2Util::RenderbufferBytesPerPixel(internal_format_);
 }
 
 void RenderbufferManager::UpdateMemRepresented() {
