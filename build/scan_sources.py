@@ -37,7 +37,7 @@ class PathConverter(object):
 
   def exists(self, pathname):
     ospath = self.ToNativePath(pathname)
-    return os.path.exists(ospath)
+    return os.path.exists(ospath) and not os.path.isdir(ospath)
 
   def getcwd(self):
     return self.ToPosixPath(os.getcwd())
