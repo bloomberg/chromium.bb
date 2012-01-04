@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -309,14 +309,14 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLTeapot) {
   // revision number in SetRefImageNoOlderThan(#revision).
   SetRefImageRevisionNoOlderThan(0);
 
+  gfx::Size container_size(500, 500);
+  ResizeTabContainer(browser(), container_size);
+
   ui_test_utils::DOMMessageQueue message_queue;
   ui_test_utils::NavigateToURL(
       browser(),
       net::FilePathToFileURL(test_data_dir_.AppendASCII("webgl_teapot").
           AppendASCII("teapot.html")));
-
-  gfx::Size container_size(500, 500);
-  ResizeTabContainer(browser(), container_size);
 
   // Wait for message from teapot page indicating the GL calls have been issued.
   ASSERT_TRUE(message_queue.WaitForMessage(NULL));
