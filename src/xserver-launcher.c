@@ -624,6 +624,11 @@ weston_wm_handle_map_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 		if (!reply)
 			/* Bad window, typically */
 			continue;
+		if (reply->type == XCB_ATOM_NONE) {
+			/* No such property */
+			free(reply);
+			continue;
+		}
 
 		p = ((char *) window + props[i].offset);
 
