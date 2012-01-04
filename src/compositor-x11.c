@@ -358,8 +358,8 @@ static int
 x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			     int width, int height, int fullscreen)
 {
-	static const char name[] = "Wayland Compositor";
-	static const char class[] = "wayland-1\0Wayland Compositor";
+	static const char name[] = "Weston Compositor";
+	static const char class[] = "weston-1\0Weston Compositor";
 	struct x11_output *output;
 	xcb_screen_iterator_t iter;
 	struct wm_normal_hints normal_hints;
@@ -434,7 +434,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			    c->atom.wm_class, c->atom.string, 8,
 			    sizeof class, class);
 
-	x11_output_set_icon(c, output, DATADIR "/wayland/wayland.png");
+	x11_output_set_icon(c, output, DATADIR "/weston/wayland.png");
 
 	xcb_map_window(c->conn, output->window);
 
