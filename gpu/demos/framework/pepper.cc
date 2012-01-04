@@ -13,6 +13,7 @@
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
 #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
+#include "ppapi/utility/completion_callback_factory.h"
 
 namespace gpu {
 namespace demos {

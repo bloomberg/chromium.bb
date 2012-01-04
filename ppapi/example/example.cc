@@ -32,6 +32,7 @@
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/view.h"
+#include "ppapi/utility/completion_callback_factory.h"
 
 static const int kStepsPerCircle = 800;
 

@@ -47,9 +47,6 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/mouse_lock.h"
-#include "ppapi/cpp/non_thread_safe_ref_count.h"
-#include "ppapi/cpp/paint_aggregator.h"
-#include "ppapi/cpp/paint_manager.h"
 #include "ppapi/cpp/private/flash_fullscreen.h"
 #include "ppapi/cpp/private/instance_private.h"
 #include "ppapi/cpp/point.h"
@@ -60,5 +57,8 @@
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/url_response_info.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/utility/graphics/paint_aggregator.h"
+#include "ppapi/utility/graphics/paint_manager.h"
+#include "ppapi/utility/non_thread_safe_ref_count.h"
 
 #endif  // PPAPI_TESTS_ALL_CPP_INCLUDES_H_

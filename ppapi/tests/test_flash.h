@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/tests/test_case.h"
+#include "ppapi/utility/completion_callback_factory.h"
 
 struct PPB_Flash;
 

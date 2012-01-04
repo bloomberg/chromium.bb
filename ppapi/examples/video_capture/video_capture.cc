@@ -20,6 +20,7 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/lib/gl/include/GLES2/gl2.h"
+#include "ppapi/utility/completion_callback_factory.h"
 
 // Assert |context_| isn't holding any GL Errors.  Done as a macro instead of a
 // function to preserve line number information in the failure message.

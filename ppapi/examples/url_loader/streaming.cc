@@ -11,12 +11,12 @@
 // URLLoader.FinishSthreamingToFile once the "Open" callback is complete, and
 // then call URLResponseInfo.GetBodyAsFileRef once the file stream is complete.
 
-#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/url_response_info.h"
+#include "ppapi/utility/completion_callback_factory.h"
 
 // Buffer size for reading network data.
 const int kBufSize = 1024;
