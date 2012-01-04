@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,13 +6,12 @@
 
 #include <cairo/cairo.h>
 
+#include <algorithm>
 #include <cstdarg>
-
 #include <map>
 
 #include "base/environment.h"
 #include "base/i18n/rtl.h"
-#include "base/linux_util.h"
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
 #include "base/string_number_conversions.h"
@@ -32,8 +31,6 @@
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/events.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
@@ -53,8 +50,8 @@
 #endif
 
 // These conflict with base/tracked_objects.h, so need to come last.
-#include <gdk/gdkx.h>
-#include <gtk/gtk.h>
+#include <gdk/gdkx.h>  // NOLINT
+#include <gtk/gtk.h>   // NOLINT
 
 using content::WebContents;
 
@@ -129,7 +126,7 @@ int GetCharacterWidthForPixels(GtkWidget* widget, int pixel_width) {
 void OnLabelRealize(GtkWidget* label, gpointer pixel_width) {
   gtk_label_set_width_chars(
       GTK_LABEL(label),
-      GetCharacterWidthForPixels(label,GPOINTER_TO_INT(pixel_width)));
+      GetCharacterWidthForPixels(label, GPOINTER_TO_INT(pixel_width)));
 }
 
 // Ownership of |icon_list| is passed to the caller.
@@ -803,24 +800,8 @@ GdkColor AverageColors(GdkColor color_one, GdkColor color_two) {
 }
 
 void SetAlwaysShowImage(GtkWidget* image_menu_item) {
-  // Compile time check: if it's available, just use the API.
-  // GTK_CHECK_VERSION is TRUE if the passed version is compatible.
-#if GTK_CHECK_VERSION(2, 16, 1)
   gtk_image_menu_item_set_always_show_image(
       GTK_IMAGE_MENU_ITEM(image_menu_item), TRUE);
-#else
-  // Run time check: if the API is not available, set the property manually.
-  // This will still only work with GTK 2.16+ as the property doesn't exist
-  // in earlier versions.
-  // gtk_check_version() returns NULL if the passed version is compatible.
-  if (!gtk_check_version(2, 16, 1)) {
-    GValue true_value = { 0 };
-    g_value_init(&true_value, G_TYPE_BOOLEAN);
-    g_value_set_boolean(&true_value, TRUE);
-    g_object_set_property(G_OBJECT(image_menu_item), "always-show-image",
-                          &true_value);
-  }
-#endif
 }
 
 gfx::Rect GetWidgetRectRelativeToToplevel(GtkWidget* widget) {

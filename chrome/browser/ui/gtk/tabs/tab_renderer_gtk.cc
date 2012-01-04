@@ -1,4 +1,4 @@
- // Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@
 #include "skia/ext/image_operations.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/animation/throb_animation.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -42,10 +43,6 @@
 #include "ui/gfx/skbitmap_operations.h"
 
 using content::WebContents;
-
-#if !GTK_CHECK_VERSION(2, 22, 0)
-#define gtk_button_get_event_window(button) button->event_window
-#endif  // Gtk+ >= 2.22
 
 namespace {
 

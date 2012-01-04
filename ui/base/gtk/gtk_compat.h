@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,13 @@
 //
 // This file is organized first by version, and then with each version,
 // alphabetically by method.
+//
+// For official builds, we want to support RHEL 6, which uses GTK 2.18, but the
+// official builder is Ubuntu Lucid with GTK 2.20. Thus for official builds, we
+// define the GTK 2.20.0 compatibility functions even though the system GTK
+// provides the functions.
 
-#if !GTK_CHECK_VERSION(2, 20, 0)
+#if !GTK_CHECK_VERSION(2, 20, 0) || defined(OFFICIAL_BUILD)
 inline gboolean gtk_widget_get_mapped(GtkWidget* widget) {
   return GTK_WIDGET_MAPPED(widget);
 }
@@ -44,13 +49,17 @@ inline void gtk_widget_set_realized(GtkWidget* widget,
   else
     GTK_WIDGET_UNSET_FLAGS(widget, GTK_REALIZED);
 }
-#endif
+#endif  // !GTK_CHECK_VERSION(2, 20, 0) || defined(OFFICIAL_BUILD)
 
 #if !GTK_CHECK_VERSION(2, 22, 0)
 inline gint gdk_visual_get_depth(GdkVisual* visual) {
   return visual->depth;
 }
-#endif
+
+inline GdkWindow* gtk_button_get_event_window(GtkButton* button) {
+  return button->event_window;
+}
+#endif  // !GTK_CHECK_VERSION(2, 22, 0)
 
 #if !GTK_CHECK_VERSION(2, 24, 0)
 inline void gdk_pixmap_get_size(GdkPixmap* pixmap, gint* width, gint* height) {
@@ -72,6 +81,6 @@ inline int gdk_window_get_width(GdkWindow* window) {
   gdk_drawable_get_size(GDK_DRAWABLE(window), &width, NULL);
   return width;
 }
-#endif
+#endif  // !GTK_CHECK_VERSION(2, 24, 0)
 
 #endif  // UI_BASE_GTK_GTK_COMPAT_H_

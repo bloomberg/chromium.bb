@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -237,10 +237,8 @@ class OmniboxViewGtk : public OmniboxView,
   // listen to focus change events on it.
   CHROMEGTK_CALLBACK_1(OmniboxViewGtk, void, HandleHierarchyChanged,
                        GtkWidget*);
-#if GTK_CHECK_VERSION(2, 20, 0)
   CHROMEGTK_CALLBACK_1(OmniboxViewGtk, void, HandlePreEditChanged,
                        const gchar*);
-#endif
   // Undo/redo operations won't trigger "begin-user-action" and
   // "end-user-action" signals, so we need to hook into "undo" and "redo"
   // signals and call OnBeforePossibleChange()/OnAfterPossibleChange() by
@@ -521,14 +519,15 @@ class OmniboxViewGtk : public OmniboxView,
   // the focus with model_->has_focus().
   bool update_popup_without_focus_;
 
-#if GTK_CHECK_VERSION(2, 20, 0)
+  // On GTK 2.20+ |pre_edit_| and |pre_edit_size_before_change_| will be used.
+  const bool supports_pre_edit_;
+
   // Stores the text being composed by the input method.
   string16 pre_edit_;
 
   // Tracking pre-edit state before and after a possible change. We don't need
   // to track pre-edit_'s content, as it'll be treated as part of text content.
   size_t pre_edit_size_before_change_;
-#endif
 
   // The view that is going to be focused next. Only valid while handling
   // "focus-out" events.
