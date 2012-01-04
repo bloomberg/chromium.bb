@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -61,13 +61,15 @@ if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
   rm -rf "$TOOLCHAINLOC/$TOOLCHAINNAME"
   cp -a {tools/,}"$TOOLCHAINLOC/$TOOLCHAINNAME"
 else
-  echo @@@BUILD_STEP tar_toolchain@@@
   (
     cd tools
+    echo @@@BUILD_STEP canonicalize timestamps@@@
+    ./canonicalize_timestamps.sh "${this_toolchain}"
+    echo @@@BUILD_STEP tar_toolchain@@@
     tar Scf toolchain.tar "${this_toolchain}"
     xz -k -9 toolchain.tar
     bzip2 -k -9 toolchain.tar
-    gzip -9 toolchain.tar
+    gzip -n -9 toolchain.tar
     for i in gz bz2 xz ; do
       chmod a+x toolchain.tar.$i
       echo "$(SHA1=$(sha1sum -b toolchain.tar.$i) ; echo ${SHA1:0:40})" \

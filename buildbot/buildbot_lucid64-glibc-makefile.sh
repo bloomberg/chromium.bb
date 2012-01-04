@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -111,16 +111,19 @@ else
     gs://nativeclient-archive2/between_builders/x86_glibc/r"$rev"/glibc_x86.tar.gz
   echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r"$rev"/@@@
 
-  echo @@@BUILD_STEP tar_toolchain@@@
   (
     cd tools
+    echo @@@BUILD_STEP sparsify_toolchain@@@
     cp --archive --sparse=always "${this_toolchain}" "${this_toolchain}_sparse"
     rm -rf "${this_toolchain}"
     mv "${this_toolchain}_sparse" "${this_toolchain}"
+    echo @@@BUILD_STEP canonicalize timestamps@@@
+    ./canonicalize_timestamps.sh "${this_toolchain}"
+    echo @@@BUILD_STEP tar_toolchain@@@
     tar Scf toolchain.tar "${this_toolchain}"
     xz -k -9 toolchain.tar
     bzip2 -k -9 toolchain.tar
-    gzip -9 toolchain.tar
+    gzip -n -9 toolchain.tar
     for i in gz bz2 xz ; do
       chmod a+r toolchain.tar.$i
       echo "$(SHA1=$(sha1sum -b toolchain.tar.$i) ; echo ${SHA1:0:40})" \

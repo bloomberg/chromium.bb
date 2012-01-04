@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -42,8 +42,13 @@ echo @@@BUILD_STEP compile_toolchain@@@
 mkdir -p ../toolchain/${PLATFORM}_x86
 make -j8 clean buildbot-build-with-newlib
 
+echo @@@BUILD_STEP canonicalize timestamps@@@
+./canonicalize_timestamps.sh sdk
+
 echo @@@BUILD_STEP tar_toolchain@@@
-tar cvfz naclsdk.tgz sdk/
+# We don't just use tar's z flag because we want to pass the -n option
+# to gzip so that it won't embed a timestamp in the compressed file.
+tar cvf - sdk | gzip -n -9 > naclsdk.tgz
 chmod a+r naclsdk.tgz
 if [ "$PLATFORM" = "mac" ] ; then
   echo "$(SHA1=$(openssl sha1 naclsdk.tgz) ; echo ${SHA1/* /})"
