@@ -6,7 +6,7 @@
     "page": "bg.html"
   },
   "browser_action": {
-    "popup": "view_checks.html"
+    "default_popup": "view_checks.html"
   },
   "permissions": [
     "tabs",

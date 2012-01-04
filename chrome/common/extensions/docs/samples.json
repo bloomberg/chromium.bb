@@ -242,7 +242,6 @@
       "description": "",
       "features": [
         "browser_action",
-        "popup",
         "tabs"
       ],
       "icon": null,
@@ -254,12 +253,12 @@
         "http:\/\/",
         "https:\/\/"
       ],
-      "search_string": "A BROWSER ACTION WITH A POPUP THAT CHANGES THE PAGE COLOR.  BROWSER_ACTION POPUP TABS CHROME.TABS.EXECUTESCRIPT",
+      "search_string": "A BROWSER ACTION WITH A POPUP THAT CHANGES THE PAGE COLOR.  BROWSER_ACTION TABS CHROME.TABS.EXECUTESCRIPT",
       "source_files": [
         "manifest.json",
         "popup.html"
       ],
-      "source_hash": "c8d14b6893e75a62f3bd150d5d2cc5bb785bc411",
+      "source_hash": "b016d5b2a4f51f7d13c3030fe18073b2329be4be",
       "zip_path": "examples\/api\/browserAction\/set_page_color.zip"
     },
     {
@@ -301,8 +300,7 @@
       "crx_path": null,
       "description": "Returns accept languages of the browser",
       "features": [
-        "browser_action",
-        "popup"
+        "browser_action"
       ],
       "icon": null,
       "id": "fbf0aa1a09a15ff8cc4fc7de4fd176d6c663d07a",
@@ -310,7 +308,7 @@
       "packaged_app": false,
       "path": "examples\/api\/i18n\/getMessage\/",
       "protocols": [],
-      "search_string": "ACCEPTLANGUAGE RETURNS ACCEPT LANGUAGES OF THE BROWSER BROWSER_ACTION POPUP CHROME.I18N.GETACCEPTLANGUAGES CHROME.I18N.GETMESSAGE",
+      "search_string": "ACCEPTLANGUAGE RETURNS ACCEPT LANGUAGES OF THE BROWSER BROWSER_ACTION CHROME.I18N.GETACCEPTLANGUAGES CHROME.I18N.GETMESSAGE",
       "source_files": [
         "_locales\/en_US\/messages.json",
         "_locales\/es\/messages.json",
@@ -318,7 +316,7 @@
         "manifest.json",
         "popup.html"
       ],
-      "source_hash": "67f203e2773eebf401d0aa0a9709d961e506d875",
+      "source_hash": "1875c022f58e1db83f134957840a36c7dfc1989f",
       "zip_path": "examples\/api\/i18n\/getMessage.zip"
     },
     {
@@ -413,7 +411,6 @@
       "features": [
         "browser_action",
         "experimental",
-        "popup",
         "privacy"
       ],
       "icon": null,
@@ -422,14 +419,14 @@
       "packaged_app": false,
       "path": "examples\/api\/preferences\/enableReferrer\/",
       "protocols": [],
-      "search_string": "BLOCK\/ALLOW REFERRER API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION EXPERIMENTAL POPUP PRIVACY CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
+      "search_string": "BLOCK\/ALLOW REFERRER API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION EXPERIMENTAL PRIVACY CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
       "source_files": [
         "manifest.json",
         "popup.css",
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "c2114f2faf51a5fdc08002cab3a5bdaefb2073cd",
+      "source_hash": "baa56eed23cb02c9fb88f73e15723bdfbb31ac4a",
       "zip_path": "examples\/api\/preferences\/enableReferrer.zip"
     },
     {
@@ -441,7 +438,6 @@
       "features": [
         "browser_action",
         "experimental",
-        "popup",
         "privacy"
       ],
       "icon": null,
@@ -450,14 +446,14 @@
       "packaged_app": false,
       "path": "examples\/api\/preferences\/allowThirdPartyCookies\/",
       "protocols": [],
-      "search_string": "BLOCK\/ALLOW THIRD-PARTY COOKIES API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION EXPERIMENTAL POPUP PRIVACY CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
+      "search_string": "BLOCK\/ALLOW THIRD-PARTY COOKIES API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION EXPERIMENTAL PRIVACY CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
       "source_files": [
         "manifest.json",
         "popup.css",
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "7ccf3f2ab08bbde36f62df34e93fc57eaff2fa3a",
+      "source_hash": "fd25990fb70c9c6769f42dd93a569e117313d199",
       "zip_path": "examples\/api\/preferences\/allowThirdPartyCookies.zip"
     },
     {
@@ -607,8 +603,7 @@
         "background_page",
         "browser_action",
         "notifications",
-        "options_page",
-        "popup"
+        "options_page"
       ],
       "icon": "icon.png",
       "id": "0e790e035a4a00b6f1def5ef9a7d7be1bce95ab5",
@@ -619,14 +614,14 @@
         "http:\/\/",
         "http:\/\/"
       ],
-      "search_string": "CHROMIUM BUILDBOT MONITOR DISPLAYS THE STATUS OF THE CHROMIUM BUILDBOT IN THE TOOLBAR.  CLICK TO SEE MORE DETAILED STATUS IN A POPUP. BACKGROUND_PAGE BROWSER_ACTION NOTIFICATIONS OPTIONS_PAGE POPUP CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.GETURL",
+      "search_string": "CHROMIUM BUILDBOT MONITOR DISPLAYS THE STATUS OF THE CHROMIUM BUILDBOT IN THE TOOLBAR.  CLICK TO SEE MORE DETAILED STATUS IN A POPUP. BACKGROUND_PAGE BROWSER_ACTION NOTIFICATIONS OPTIONS_PAGE CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.GETURL",
       "source_files": [
         "bg.html",
         "manifest.json",
         "options.html",
         "popup.html"
       ],
-      "source_hash": "ad985dc5b3e2b40826042be1d7b77c07fadfcc68",
+      "source_hash": "9d75adec07b5baa95d14df78e4fae51bfca4639d",
       "zip_path": "examples\/extensions\/buildbot.zip"
     },
     {
@@ -723,7 +718,6 @@
       "features": [
         "browser_action",
         "contentSettings",
-        "popup",
         "tabs"
       ],
       "icon": null,
@@ -732,13 +726,13 @@
       "packaged_app": false,
       "path": "examples\/api\/contentSettings\/",
       "protocols": [],
-      "search_string": "CONTENT SETTINGS SHOWS THE CONTENT SETTINGS FOR THE CURRENT SITE. BROWSER_ACTION CONTENTSETTINGS POPUP TABS CHROME.TABS.GET CHROME.TABS.GETSELECTED",
+      "search_string": "CONTENT SETTINGS SHOWS THE CONTENT SETTINGS FOR THE CURRENT SITE. BROWSER_ACTION CONTENTSETTINGS TABS CHROME.TABS.GET CHROME.TABS.GETSELECTED",
       "source_files": [
         "manifest.json",
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "95619d1c264bb65ac6f8ff105d34830ec87af284",
+      "source_hash": "18befdb7d7db7b85c4dcf337b30445e83eba9e7c",
       "zip_path": "examples\/api\/contentSettings.zip"
     },
     {
@@ -847,8 +841,7 @@
       "description": "A sample extension which uses Google Analytics to track usage.",
       "features": [
         "background_page",
-        "browser_action",
-        "popup"
+        "browser_action"
       ],
       "icon": "analytics-extension-icon-128.png",
       "id": "763a08e9b06595d785568a8d392b95a2f3700258",
@@ -856,14 +849,14 @@
       "packaged_app": false,
       "path": "examples\/tutorials\/analytics\/",
       "protocols": [],
-      "search_string": "EVENT TRACKING WITH GOOGLE ANALYTICS A SAMPLE EXTENSION WHICH USES GOOGLE ANALYTICS TO TRACK USAGE. BACKGROUND_PAGE BROWSER_ACTION POPUP",
+      "search_string": "EVENT TRACKING WITH GOOGLE ANALYTICS A SAMPLE EXTENSION WHICH USES GOOGLE ANALYTICS TO TRACK USAGE. BACKGROUND_PAGE BROWSER_ACTION",
       "source_files": [
         "analytics.js",
         "background.html",
         "manifest.json",
         "popup.html"
       ],
-      "source_hash": "b02f040a3eb56f8a0e780549954f69172d62dcd3",
+      "source_hash": "62b0a587de92a0c6153e389fadb6f4c417e94a68",
       "zip_path": "examples\/tutorials\/analytics.zip"
     },
     {
@@ -1007,7 +1000,6 @@
         "background_page",
         "browser_action",
         "options_page",
-        "popup",
         "tabs"
       ],
       "icon": "img\/docs_spreadsheets-128.gif",
@@ -1021,7 +1013,7 @@
         "https:\/\/",
         "https:\/\/"
       ],
-      "search_string": "GOOGLE DOCUMENT LIST VIEWER DEMONSTRATES HOW TO USE OAUTH TO CONNECT THE GOOGLE DOCUMENTS LIST DATA API. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE POPUP TABS CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE",
+      "search_string": "GOOGLE DOCUMENT LIST VIEWER DEMONSTRATES HOW TO USE OAUTH TO CONNECT THE GOOGLE DOCUMENTS LIST DATA API. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE",
       "source_files": [
         "background.html",
         "chrome_ex_oauth.html",
@@ -1032,7 +1024,7 @@
         "options.html",
         "popup.html"
       ],
-      "source_hash": "284e44d603a62348dd1b7e98e593f3f4b877b124",
+      "source_hash": "266673cc7266d0058a0f8bf33f39acfd51e419ac",
       "zip_path": "examples\/extensions\/gdocs.zip"
     },
     {
@@ -1133,7 +1125,6 @@
         "background_page",
         "browser_action",
         "options_page",
-        "popup",
         "tabs"
       ],
       "icon": "128.png",
@@ -1145,7 +1136,7 @@
         "https:\/\/",
         "http:\/\/"
       ],
-      "search_string": "GOOGLE WAVE NOTIFIER FIND OUT WHEN YOU HAVE NEW WAVES AND PREVIEW THEM FAST. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE POPUP TABS CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE",
+      "search_string": "GOOGLE WAVE NOTIFIER FIND OUT WHEN YOU HAVE NEW WAVES AND PREVIEW THEM FAST. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE",
       "source_files": [
         "background.html",
         "chrome_ex_oauth.html",
@@ -1156,7 +1147,7 @@
         "popup.html",
         "prettyload.js"
       ],
-      "source_hash": "9f360bf8772e8a23862d854ea088e0bec867ba02",
+      "source_hash": "74301387f364a87cd1364cb96fd017376be3ca16",
       "zip_path": "examples\/extensions\/wave.zip"
     },
     {
@@ -1164,8 +1155,7 @@
       "crx_path": null,
       "description": "The first extension that I made.",
       "features": [
-        "browser_action",
-        "popup"
+        "browser_action"
       ],
       "icon": null,
       "id": "14b9651fda4e57b2a5914ba73a779812201b750a",
@@ -1175,12 +1165,12 @@
       "protocols": [
         "http:\/\/"
       ],
-      "search_string": "HELLO WORLD THE FIRST EXTENSION THAT I MADE. BROWSER_ACTION POPUP",
+      "search_string": "HELLO WORLD THE FIRST EXTENSION THAT I MADE. BROWSER_ACTION",
       "source_files": [
         "manifest.json",
         "popup.html"
       ],
-      "source_hash": "1a3139dcb7f3e3499023703643e7056c61235123",
+      "source_hash": "f8c01d82bfac2dd8fd8eb57022e7a12e316ecf60",
       "zip_path": "examples\/tutorials\/getstarted.zip"
     },
     {
@@ -1392,7 +1382,6 @@
       "features": [
         "background_page",
         "page_action",
-        "popup",
         "tabs"
       ],
       "icon": "icon.png",
@@ -1404,7 +1393,7 @@
         "https:\/\/",
         "https:\/\/"
       ],
-      "search_string": "MAPPY FINDS ADDRESSES IN THE WEB PAGE YOURE ON AND POPS UP A MAP WINDOW. BACKGROUND_PAGE PAGE_ACTION POPUP TABS CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.ONREQUEST CHROME.PAGEACTION.HIDE CHROME.PAGEACTION.SETTITLE CHROME.PAGEACTION.SHOW CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONSELECTIONCHANGED CHROME.TABS.ONUPDATED CHROME.TABS.SENDREQUEST",
+      "search_string": "MAPPY FINDS ADDRESSES IN THE WEB PAGE YOURE ON AND POPS UP A MAP WINDOW. BACKGROUND_PAGE PAGE_ACTION TABS CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.ONREQUEST CHROME.PAGEACTION.HIDE CHROME.PAGEACTION.SETTITLE CHROME.PAGEACTION.SHOW CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONSELECTIONCHANGED CHROME.TABS.ONUPDATED CHROME.TABS.SENDREQUEST",
       "source_files": [
         "background.html",
         "background.js",
@@ -1414,7 +1403,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "8446b89f4eb2d8cb6b49e306e87845b9dd385af5",
+      "source_hash": "10d02cc1f3436a091b36444677c8f1f4762d4813",
       "zip_path": "examples\/extensions\/mappy.zip"
     },
     {
@@ -1462,7 +1451,6 @@
       "description": "Times how long it takes to send a message to a content script and back.",
       "features": [
         "browser_action",
-        "popup",
         "tabs"
       ],
       "icon": null,
@@ -1471,13 +1459,13 @@
       "packaged_app": false,
       "path": "examples\/api\/messaging\/timer\/",
       "protocols": [],
-      "search_string": "MESSAGE TIMER TIMES HOW LONG IT TAKES TO SEND A MESSAGE TO A CONTENT SCRIPT AND BACK. BROWSER_ACTION POPUP TABS CHROME.EXTENSION.ONCONNECT CHROME.EXTENSION.ONREQUEST CHROME.TABS.CONNECT CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.SENDREQUEST",
+      "search_string": "MESSAGE TIMER TIMES HOW LONG IT TAKES TO SEND A MESSAGE TO A CONTENT SCRIPT AND BACK. BROWSER_ACTION TABS CHROME.EXTENSION.ONCONNECT CHROME.EXTENSION.ONREQUEST CHROME.TABS.CONNECT CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.SENDREQUEST",
       "source_files": [
         "manifest.json",
         "page.js",
         "popup.html"
       ],
-      "source_hash": "927cf398a95a665beb64f56a4bfb791b98a8ee96",
+      "source_hash": "653bfc40d0e3bac43d79de31b44338c314ae70a9",
       "zip_path": "examples\/api\/messaging\/timer.zip"
     },
     {
@@ -1494,7 +1482,6 @@
       "features": [
         "bookmarks",
         "browser_action",
-        "popup",
         "tabs"
       ],
       "icon": null,
@@ -1503,12 +1490,12 @@
       "packaged_app": false,
       "path": "examples\/api\/bookmarks\/basic\/",
       "protocols": [],
-      "search_string": "MY BOOKMARKS A BROWSER ACTION WITH A POPUP DUMP OF ALL BOOKMARKS, INCLUDING SEARCH, ADD, EDIT AND DELETE. BOOKMARKS BROWSER_ACTION POPUP TABS CHROME.BOOKMARKS.CREATE CHROME.BOOKMARKS.GET CHROME.BOOKMARKS.GETTREE CHROME.BOOKMARKS.REMOVE CHROME.BOOKMARKS.UPDATE CHROME.TABS.CREATE",
+      "search_string": "MY BOOKMARKS A BROWSER ACTION WITH A POPUP DUMP OF ALL BOOKMARKS, INCLUDING SEARCH, ADD, EDIT AND DELETE. BOOKMARKS BROWSER_ACTION TABS CHROME.BOOKMARKS.CREATE CHROME.BOOKMARKS.GET CHROME.BOOKMARKS.GETTREE CHROME.BOOKMARKS.REMOVE CHROME.BOOKMARKS.UPDATE CHROME.TABS.CREATE",
       "source_files": [
         "manifest.json",
         "popup.html"
       ],
-      "source_hash": "5fd4c8e159a36d2462e9691db12d77a27684d6b7",
+      "source_hash": "825556bebc0df5d0ff8980f1c6ff86fdf748e03f",
       "zip_path": "examples\/api\/bookmarks\/basic.zip"
     },
     {
@@ -1519,7 +1506,6 @@
       "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.",
       "features": [
         "browser_action",
-        "popup",
         "tabs"
       ],
       "icon": "news_icon.png",
@@ -1530,7 +1516,7 @@
       "protocols": [
         "http:\/\/"
       ],
-      "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.TABS.CREATE",
+      "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION TABS CHROME.TABS.CREATE",
       "source_files": [
         "feed.css",
         "feed.html",
@@ -1539,7 +1525,7 @@
         "feed_iframe.js",
         "manifest.json"
       ],
-      "source_hash": "800a1cfe78a6ff8a82c85ef3bc52e71a42e9c664",
+      "source_hash": "94237b23194b8a616a2c653b44115f69b81dca23",
       "zip_path": "examples\/extensions\/news_a11y.zip"
     },
     {
@@ -1551,7 +1537,6 @@
       "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.",
       "features": [
         "browser_action",
-        "popup",
         "tabs"
       ],
       "icon": "news_icon.png",
@@ -1563,7 +1548,7 @@
         "http:\/\/",
         "http:\/\/"
       ],
-      "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE",
+      "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION TABS CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE",
       "source_files": [
         "_locales\/en\/messages.json",
         "_locales\/es\/messages.json",
@@ -1571,7 +1556,7 @@
         "feed.html",
         "manifest.json"
       ],
-      "source_hash": "381268f1183beaeba8d6596e736dc2c00a55fd21",
+      "source_hash": "28bc748e2db872cac1a990910bf4e8519b97abd2",
       "zip_path": "examples\/extensions\/news_i18n.zip"
     },
     {
@@ -1586,7 +1571,6 @@
         "background_page",
         "browser_action",
         "options_page",
-        "popup",
         "tabs"
       ],
       "icon": "images\/news_icon.png",
@@ -1597,7 +1581,7 @@
       "protocols": [
         "http:\/\/"
       ],
-      "search_string": "NEWS READER (BY GOOGLE) DISPLAYS THE LATEST STORIES FROM GOOGLE NEWS IN A POPUP. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE POPUP TABS CHROME.EXTENSION.GETURL CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE",
+      "search_string": "NEWS READER (BY GOOGLE) DISPLAYS THE LATEST STORIES FROM GOOGLE NEWS IN A POPUP. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.EXTENSION.GETURL CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE",
       "source_files": [
         "_locales\/en\/messages.json",
         "css\/feed.css",
@@ -1610,7 +1594,7 @@
         "views\/feed.html",
         "views\/options.html"
       ],
-      "source_hash": "cc21920e101dd4d4c535f4842e3f0ab4be285166",
+      "source_hash": "596192adf488028334952cb6d7a8e9103f3ec9b0",
       "zip_path": "examples\/extensions\/news.zip"
     },
     {
@@ -1892,7 +1876,6 @@
       "features": [
         "browser_action",
         "experimental",
-        "popup",
         "tabs"
       ],
       "icon": null,
@@ -1901,12 +1884,12 @@
       "packaged_app": false,
       "path": "examples\/api\/processes\/process_monitor\/",
       "protocols": [],
-      "search_string": "PROCESS MONITOR ADDS A BROWSER ACTION THAT MONITORS RESOURCE USAGE OF ALL BROWSER PROCESSES. BROWSER_ACTION EXPERIMENTAL POPUP TABS",
+      "search_string": "PROCESS MONITOR ADDS A BROWSER ACTION THAT MONITORS RESOURCE USAGE OF ALL BROWSER PROCESSES. BROWSER_ACTION EXPERIMENTAL TABS",
       "source_files": [
         "manifest.json",
         "popup.html"
       ],
-      "source_hash": "a4d002a65d5ec54ef4495f8b5552a260119df739",
+      "source_hash": "268ab065e8bafff9bf1578799a975f769513d99b",
       "zip_path": "examples\/api\/processes\/process_monitor.zip"
     },
     {
@@ -1925,7 +1908,6 @@
       "features": [
         "background_page",
         "browser_action",
-        "popup",
         "proxy"
       ],
       "icon": "icon128.png",
@@ -1934,7 +1916,7 @@
       "packaged_app": false,
       "path": "examples\/extensions\/proxy_configuration\/",
       "protocols": [],
-      "search_string": "PROXY EXTENSION API SAMPLE SET CHROME-SPECIFIC PROXIES; A DEMONSTRATION OF CHROMES PROXY API BACKGROUND_PAGE BROWSER_ACTION POPUP PROXY CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE CHROME.PROXY.ONPROXYERROR",
+      "search_string": "PROXY EXTENSION API SAMPLE SET CHROME-SPECIFIC PROXIES; A DEMONSTRATION OF CHROMES PROXY API BACKGROUND_PAGE BROWSER_ACTION PROXY CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE CHROME.PROXY.ONPROXYERROR",
       "source_files": [
         "_locales\/en\/messages.json",
         "background.html",
@@ -1950,7 +1932,7 @@
         "test\/proxy_form_controller_test.js",
         "test\/unittest.css"
       ],
-      "source_hash": "10dfb898ef11aa9507bb07bcaa7cca5c51879f19",
+      "source_hash": "0779acfa5607a407a1a91805e48574e89b80151b",
       "zip_path": "examples\/extensions\/proxy_configuration.zip"
     },
     {
@@ -2038,7 +2020,6 @@
       "features": [
         "browser_action",
         "experimental",
-        "popup",
         "tabs"
       ],
       "icon": null,
@@ -2049,14 +2030,14 @@
       "protocols": [
         "chrome:\/\/"
       ],
-      "search_string": "SHOW TABS IN PROCESS ADDS A BROWSER ACTION SHOWING WHICH TABS SHARE THE CURRENT TABS PROCESS. BROWSER_ACTION EXPERIMENTAL POPUP TABS CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.UPDATE",
+      "search_string": "SHOW TABS IN PROCESS ADDS A BROWSER ACTION SHOWING WHICH TABS SHARE THE CURRENT TABS PROCESS. BROWSER_ACTION EXPERIMENTAL TABS CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.UPDATE",
       "source_files": [
         "manifest.json",
         "popup.css",
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "c71a35cc8266d8cbe800e48cf3366c27dbffb3fa",
+      "source_hash": "e9f60ed594a2b594ece02259a2835fe92476508d",
       "zip_path": "examples\/api\/processes\/show_tabs.zip"
     },
     {
@@ -2253,7 +2234,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "c6b0eeeedd4de32aa5909ad59944ec27dbc797e8",
+      "source_hash": "b50c9d5f148bae3712fb2037cd428587a31b7fab",
       "zip_path": "examples\/extensions\/talking_alarm_clock.zip"
     },
     {
@@ -2424,7 +2405,6 @@
         "background_page",
         "browser_action",
         "extension",
-        "popup",
         "webNavigation"
       ],
       "icon": null,
@@ -2433,7 +2413,7 @@
       "packaged_app": false,
       "path": "examples\/api\/webNavigation\/basic\/",
       "protocols": [],
-      "search_string": "WEBNAVIGATION TECH DEMO DEMONSTRATION OF THE WEBNAVIGATION EXTENSION API. BACKGROUND_PAGE BROWSER_ACTION EXTENSION POPUP WEBNAVIGATION CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE CHROME.WEBNAVIGATION.ONBEFORENAVIGATE CHROME.WEBNAVIGATION.ONCOMMITTED CHROME.WEBNAVIGATION.ONCOMPLETED CHROME.WEBNAVIGATION.ONCREATEDNAVIGATIONTARGET CHROME.WEBNAVIGATION.ONERROROCCURRED CHROME.WEBNAVIGATION.ONREFERENCEFRAGMENTUPDATED",
+      "search_string": "WEBNAVIGATION TECH DEMO DEMONSTRATION OF THE WEBNAVIGATION EXTENSION API. BACKGROUND_PAGE BROWSER_ACTION EXTENSION WEBNAVIGATION CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE CHROME.WEBNAVIGATION.ONBEFORENAVIGATE CHROME.WEBNAVIGATION.ONCOMMITTED CHROME.WEBNAVIGATION.ONCOMPLETED CHROME.WEBNAVIGATION.ONCREATEDNAVIGATIONTARGET CHROME.WEBNAVIGATION.ONERROROCCURRED CHROME.WEBNAVIGATION.ONREFERENCEFRAGMENTUPDATED",
       "source_files": [
         "_locales\/en\/messages.json",
         "background.html",
@@ -2444,7 +2424,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "449424bf09813438d65a988ef3249d59c01462e2",
+      "source_hash": "8caa97e5f4561e2887b0680eef1a455a762ca9f3",
       "zip_path": "examples\/api\/webNavigation\/basic.zip"
     },
     {

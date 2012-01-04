@@ -4,8 +4,8 @@
   "manifest_version": 2,
   "description": "apitest for popups",
   "browser_action": {
-      "name": "grow",
-      "icons": ["chromium.png"],
-      "popup": "popup.html"
+      "default_title": "grow",
+      "default_icon": "chromium.png",
+      "default_popup": "popup.html"
   }
 }

@@ -5,7 +5,7 @@
   "permissions": [ "experimental", "privacy" ],
   "browser_action": {
      "default_icon": "advicedog.jpg",
-     "popup":        "popup.html"
+     "default_popup": "popup.html"
    },
    "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self'"
 }

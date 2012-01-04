@@ -11,7 +11,7 @@
   "browser_action": {
     "default_title": "List your Google Docs",
     "default_icon": "img/docs_spreadsheets-32.gif",
-    "popup": "popup.html"
+    "default_popup": "popup.html"
   },
   "permissions": [
     "tabs",

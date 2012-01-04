@@ -13,6 +13,6 @@
   "browser_action": {
     "default_icon": "unauthorized.png",
     "default_title": "Preview new waves",
-    "popup": "popup.html"
+    "default_popup": "popup.html"
   }
 }

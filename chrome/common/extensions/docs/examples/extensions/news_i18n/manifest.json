@@ -6,7 +6,7 @@
   "browser_action": {
     "default_title": "__MSG_default_title__",
     "default_icon": "news_action.png",
-    "popup": "feed.html"
+    "default_popup": "feed.html"
   },
   "permissions": [
     "tabs",

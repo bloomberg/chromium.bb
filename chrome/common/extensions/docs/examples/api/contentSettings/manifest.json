@@ -5,7 +5,7 @@
   "permissions": [ "contentSettings", "tabs" ],
   "browser_action": {
      "default_icon": "contentSettings.png",
-     "popup":        "popup.html"
+     "default_popup": "popup.html"
   },
   "content_security_policy": "default-src 'self'"
 }

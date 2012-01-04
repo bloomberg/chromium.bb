@@ -76,7 +76,6 @@ namespace extension_manifest_keys {
   extern const char kPageActionIcons[];
   extern const char kPageActionId[];
   extern const char kPageActionPopup[];
-  extern const char kPageActionPopupHeight[];
   extern const char kPageActionPopupPath[];
   extern const char kPageActions[];
   extern const char kPermissions[];

@@ -15,7 +15,7 @@
   "page_action": {
       "default_name": "Display Map",
       "default_icon": "marker.png",
-      "popup": "popup.html"
+      "default_popup": "popup.html"
   },
   "content_security_policy": "default-src 'none'; style-src 'self'; script-src 'self'; connect-src https://maps.googleapis.com; img-src https://maps.google.com"
 }

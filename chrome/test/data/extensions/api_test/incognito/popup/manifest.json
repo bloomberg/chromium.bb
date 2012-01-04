@@ -5,6 +5,6 @@
   "description": "apitest for popups in incognito mode",
   "permissions": [ "tabs" ],
   "browser_action": {
-    "popup": "popup.html"
+    "default_popup": "popup.html"
   }
 }

@@ -6,8 +6,6 @@
 
   "background_page": "background.html",
 
-  "popup": "popup.html",
-
   "browser_action": {
     "default_icon": "clock-19.png",
     "default_title": "Talking Alarm Clock",

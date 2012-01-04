@@ -74,7 +74,6 @@ const char kPageActionDefaultTitle[] = "default_title";
 const char kPageActionIcons[] = "icons";
 const char kPageActionId[] = "id";
 const char kPageActionPopup[] = "popup";
-const char kPageActionPopupHeight[] = "height";
 const char kPageActionPopupPath[] = "path";
 const char kPageActions[] = "page_actions";
 const char kPermissions[] = "permissions";
@@ -320,8 +319,6 @@ const char kInvalidPageActionOldAndNewKeys[] =
     "use both.";
 const char kInvalidPageActionPopup[] =
     "Invalid type for page action popup.";
-const char kInvalidPageActionPopupHeight[] =
-    "Invalid value for page action popup height [*].";
 const char kInvalidPageActionPopupPath[] =
     "Invalid value for page action popup path [*].";
 const char kInvalidPageActionsList[] =

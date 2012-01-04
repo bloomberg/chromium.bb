@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_sidebar_defaults.h"
@@ -1029,4 +1030,21 @@ TEST_F(ExtensionManifestTest, BackgroundPage) {
   extension = LoadAndExpectSuccess(Manifest(manifest.get(), ""));
   ASSERT_TRUE(extension);
   EXPECT_FALSE(extension->background_url().is_valid());
+}
+
+TEST_F(ExtensionManifestTest, PageActionManifestVersion2) {
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess("page_action_manifest_version_2.json"));
+  ASSERT_TRUE(extension.get());
+  ASSERT_TRUE(extension->page_action());
+
+  EXPECT_EQ("", extension->page_action()->id());
+  EXPECT_EQ(0u, extension->page_action()->icon_paths()->size());
+  EXPECT_EQ("", extension->page_action()->GetTitle(
+      ExtensionAction::kDefaultTabId));
+  EXPECT_FALSE(extension->page_action()->HasPopup(
+      ExtensionAction::kDefaultTabId));
+
+  LoadAndExpectError("page_action_manifest_version_2b.json",
+                     errors::kInvalidPageActionPopup);
 }

@@ -661,30 +661,30 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
   // visibility.
   result->SetIsVisible(ExtensionAction::kDefaultTabId, false);
 
-  // TODO(EXTENSIONS_DEPRECATED): icons list is obsolete.
-  ListValue* icons = NULL;
-  if (extension_action->HasKey(keys::kPageActionIcons) &&
-      extension_action->GetList(keys::kPageActionIcons, &icons)) {
-    for (ListValue::const_iterator iter = icons->begin();
-         iter != icons->end(); ++iter) {
-      std::string path;
-      if (!(*iter)->GetAsString(&path) || path.empty()) {
-        *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
+  if (manifest_version_ == 1) {
+    ListValue* icons = NULL;
+    if (extension_action->HasKey(keys::kPageActionIcons) &&
+        extension_action->GetList(keys::kPageActionIcons, &icons)) {
+      for (ListValue::const_iterator iter = icons->begin();
+           iter != icons->end(); ++iter) {
+        std::string path;
+        if (!(*iter)->GetAsString(&path) || path.empty()) {
+          *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
+          return NULL;
+        }
+
+        result->icon_paths()->push_back(path);
+      }
+    }
+
+    std::string id;
+    if (extension_action->HasKey(keys::kPageActionId)) {
+      if (!extension_action->GetString(keys::kPageActionId, &id)) {
+        *error = ASCIIToUTF16(errors::kInvalidPageActionId);
         return NULL;
       }
-
-      result->icon_paths()->push_back(path);
+      result->set_id(id);
     }
-  }
-
-  // TODO(EXTENSIONS_DEPRECATED): Read the page action |id| (optional).
-  std::string id;
-  if (extension_action->HasKey(keys::kPageActionId)) {
-    if (!extension_action->GetString(keys::kPageActionId, &id)) {
-      *error = ASCIIToUTF16(errors::kInvalidPageActionId);
-      return NULL;
-    }
-    result->set_id(id);
   }
 
   std::string default_icon;
@@ -707,7 +707,7 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
       *error = ASCIIToUTF16(errors::kInvalidPageActionDefaultTitle);
       return NULL;
     }
-  } else if (extension_action->HasKey(keys::kName)) {
+  } else if (manifest_version_ == 1 && extension_action->HasKey(keys::kName)) {
     if (!extension_action->GetString(keys::kName, &title)) {
       *error = ASCIIToUTF16(errors::kInvalidPageActionName);
       return NULL;
@@ -720,9 +720,8 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
   if (extension_action->HasKey(keys::kPageActionDefaultPopup))
     popup_key = keys::kPageActionDefaultPopup;
 
-  // For backward compatibility, alias old key "popup" to new
-  // key "default_popup".
-  if (extension_action->HasKey(keys::kPageActionPopup)) {
+  if (manifest_version_ == 1 &&
+      extension_action->HasKey(keys::kPageActionPopup)) {
     if (popup_key) {
       *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidPageActionOldAndNewKeys,
@@ -739,9 +738,8 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
 
     if (extension_action->GetString(popup_key, &url_str)) {
       // On success, |url_str| is set.  Nothing else to do.
-    } else if (extension_action->GetDictionary(popup_key, &popup)) {
-      // TODO(EXTENSIONS_DEPRECATED): popup is now a string only.
-      // Support the old dictionary format for backward compatibility.
+    } else if (manifest_version_ == 1 &&
+               extension_action->GetDictionary(popup_key, &popup)) {
       if (!popup->GetString(keys::kPageActionPopupPath, &url_str)) {
         *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidPageActionPopupPath, "<missing>");
@@ -1923,7 +1921,7 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
   // Initialize page action (optional).
   DictionaryValue* page_action_value = NULL;
 
-  if (manifest->HasKey(keys::kPageActions)) {
+  if (manifest_version_ == 1 && manifest->HasKey(keys::kPageActions)) {
     ListValue* list_value = NULL;
     if (!manifest->GetList(keys::kPageActions, &list_value)) {
       *error = ASCIIToUTF16(errors::kInvalidPageActionsList);
