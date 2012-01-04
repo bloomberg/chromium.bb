@@ -1351,7 +1351,7 @@
         "chrome.windows.get",
         "chrome.windows.getCurrent"
       ],
-      "crx_path": "examples\/api\/debugger\/live-headers.crx",
+      "crx_path": null,
       "description": "Displays the live log with the http requests headers",
       "features": [
         "background_page",
