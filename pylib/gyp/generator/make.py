@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Google Inc. All rights reserved.
+# Copyright (c) 2012 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -636,107 +636,6 @@ target_outputs = {}
 target_link_deps = {}
 
 
-class MacPrefixHeader(object):
-  """A class that helps with emulating Xcode's GCC_PREFIX_HEADER feature. If
-  GCC_PREFIX_HEADER isn't present (in most gyp targets on mac, and always on
-  non-mac systems), all methods of this class are no-ops."""
-
-  def __init__(self, path_provider):
-    # This doesn't support per-configuration prefix headers. Good enough
-    # for now.
-    self.header = None
-    self.compile_headers = False
-    if path_provider.flavor == 'mac':
-      self.header = path_provider.xcode_settings.GetPerTargetSetting(
-          'GCC_PREFIX_HEADER')
-      self.compile_headers = path_provider.xcode_settings.GetPerTargetSetting(
-          'GCC_PRECOMPILE_PREFIX_HEADER', default='NO') != 'NO'
-    self.compiled_headers = {}
-    if self.header:
-      self.header = path_provider.Absolutify(self.header)
-      if self.compile_headers:
-        for lang in ['c', 'cc', 'm', 'mm']:
-          self.compiled_headers[lang] = path_provider.Pchify(self.header, lang)
-
-  def _Gch(self, lang):
-    """Returns the actual file name of the prefix header for language |lang|."""
-    assert self.compile_headers
-    return self.compiled_headers[lang] + '.gch'
-
-  def WriteObjDependencies(self, compilable, objs, writer):
-    """Writes dependencies from the object files in |objs| to the corresponding
-    precompiled header file. |compilable[i]| has to be the source file belonging
-    to |objs[i]|."""
-    if not self.header or not self.compile_headers:
-      return
-
-    writer.WriteLn('# Dependencies from obj files to their precompiled headers')
-    for source, obj in zip(compilable, objs):
-      ext = os.path.splitext(source)[1]
-      lang = {
-        '.c': 'c',
-        '.cpp': 'cc', '.cc': 'cc', '.cxx': 'cc',
-        '.m': 'm',
-        '.mm': 'mm',
-      }.get(ext, None)
-      if lang:
-        writer.WriteLn('%s: %s' % (obj, self._Gch(lang)))
-    writer.WriteLn('# End precompiled header dependencies')
-
-  def GetInclude(self, lang):
-    """Gets the cflags to include the prefix header for language |lang|."""
-    if self.compile_headers and lang in self.compiled_headers:
-      return '-include %s ' % self.compiled_headers[lang]
-    elif self.header:
-      return '-include %s ' % self.header
-    else:
-      return ''
-
-  def WritePchTargets(self, writer):
-    """Writes make rules to compile the prefix headers."""
-    if not self.header or not self.compile_headers:
-      return
-
-    writer.WriteLn(self._Gch('c') + ": GYP_PCH_CFLAGS := "
-                 "-x c-header "
-                 "$(DEFS_$(BUILDTYPE)) "
-                 "$(INCS_$(BUILDTYPE)) "
-                 "$(CFLAGS_$(BUILDTYPE)) "
-                 "$(CFLAGS_C_$(BUILDTYPE))")
-
-    writer.WriteLn(self._Gch('cc') + ": GYP_PCH_CCFLAGS := "
-                 "-x c++-header "
-                 "$(DEFS_$(BUILDTYPE)) "
-                 "$(INCS_$(BUILDTYPE)) "
-                 "$(CFLAGS_$(BUILDTYPE)) "
-                 "$(CFLAGS_CC_$(BUILDTYPE))")
-
-    writer.WriteLn(self._Gch('m') + ": GYP_PCH_OBJCFLAGS := "
-                 "-x objective-c-header "
-                 "$(DEFS_$(BUILDTYPE)) "
-                 "$(INCS_$(BUILDTYPE)) "
-                 "$(CFLAGS_$(BUILDTYPE)) "
-                 "$(CFLAGS_C_$(BUILDTYPE)) "
-                 "$(CFLAGS_OBJC_$(BUILDTYPE))")
-
-    writer.WriteLn(self._Gch('mm') + ": GYP_PCH_OBJCXXFLAGS := "
-                 "-x objective-c++-header "
-                 "$(DEFS_$(BUILDTYPE)) "
-                 "$(INCS_$(BUILDTYPE)) "
-                 "$(CFLAGS_$(BUILDTYPE)) "
-                 "$(CFLAGS_CC_$(BUILDTYPE)) "
-                 "$(CFLAGS_OBJCC_$(BUILDTYPE))")
-
-    for lang in self.compiled_headers:
-      writer.WriteLn('%s: %s FORCE_DO_CMD' % (self._Gch(lang), self.header))
-      writer.WriteLn('\t@$(call do_cmd,pch_%s,1)' % lang)
-      writer.WriteLn('')
-      assert ' ' not in self._Gch(lang), (
-          "Spaces in gch filenames not supported (%s)"  % self._Gch(lang))
-      writer.WriteLn('all_deps += %s' % self._Gch(lang))
-      writer.WriteLn('')
-
-
 class MakefileWriter:
   """MakefileWriter packages up the writing of one target-specific foobar.mk.
 
@@ -820,6 +719,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
     if self.flavor == 'mac':
       self.xcode_settings = gyp.xcode_emulation.XcodeSettings(spec)
+    else:
+      self.xcode_settings = None
 
     deps, link_deps = self.ComputeDeps(spec)
 
@@ -882,7 +783,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     if all_sources:
       self.WriteSources(
           configs, deps, all_sources, extra_outputs,
-          extra_link_deps, part_of_all, MacPrefixHeader(self))
+          extra_link_deps, part_of_all,
+          gyp.xcode_emulation.MacPrefixHeader(
+              self.xcode_settings, self.Absolutify, self.Pchify))
       sources = filter(Compilable, all_sources)
       if sources:
         self.WriteLn(SHARED_HEADER_SUFFIX_RULES_COMMENT1)
@@ -1342,7 +1245,12 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
                                    'before any of us.',
                          order_only = True)
 
-    precompiled_header.WriteObjDependencies(compilable, objs, self)
+    pchdeps = precompiled_header.GetObjDependencies(compilable, objs )
+    if pchdeps:
+      self.WriteLn('# Dependencies from obj files to their precompiled headers')
+      for source, obj, gch in pchdeps:
+        self.WriteLn('%s: %s' % (obj, gch))
+      self.WriteLn('# End precompiled header dependencies')
 
     if objs:
       extra_link_deps.append('$(OBJS)')
@@ -1353,38 +1261,70 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       self.WriteLn("$(OBJS): GYP_CFLAGS := "
                    "$(DEFS_$(BUILDTYPE)) "
                    "$(INCS_$(BUILDTYPE)) "
-                   "%s" % precompiled_header.GetInclude('c') +
+                   "%s " % precompiled_header.GetInclude('c') +
                    "$(CFLAGS_$(BUILDTYPE)) "
                    "$(CFLAGS_C_$(BUILDTYPE))")
       self.WriteLn("$(OBJS): GYP_CXXFLAGS := "
                    "$(DEFS_$(BUILDTYPE)) "
                    "$(INCS_$(BUILDTYPE)) "
-                   "%s" % precompiled_header.GetInclude('cc') +
+                   "%s " % precompiled_header.GetInclude('cc') +
                    "$(CFLAGS_$(BUILDTYPE)) "
                    "$(CFLAGS_CC_$(BUILDTYPE))")
       if self.flavor == 'mac':
         self.WriteLn("$(OBJS): GYP_OBJCFLAGS := "
                      "$(DEFS_$(BUILDTYPE)) "
                      "$(INCS_$(BUILDTYPE)) "
-                     "%s" % precompiled_header.GetInclude('m') +
+                     "%s " % precompiled_header.GetInclude('m') +
                      "$(CFLAGS_$(BUILDTYPE)) "
                      "$(CFLAGS_C_$(BUILDTYPE)) "
                      "$(CFLAGS_OBJC_$(BUILDTYPE))")
         self.WriteLn("$(OBJS): GYP_OBJCXXFLAGS := "
                      "$(DEFS_$(BUILDTYPE)) "
                      "$(INCS_$(BUILDTYPE)) "
-                     "%s" % precompiled_header.GetInclude('mm') +
+                     "%s " % precompiled_header.GetInclude('mm') +
                      "$(CFLAGS_$(BUILDTYPE)) "
                      "$(CFLAGS_CC_$(BUILDTYPE)) "
                      "$(CFLAGS_OBJCC_$(BUILDTYPE))")
 
-    precompiled_header.WritePchTargets(self)
+    self.WritePchTargets(precompiled_header.GetGchBuildCommands())
 
     # If there are any object files in our input file list, link them into our
     # output.
     extra_link_deps += filter(Linkable, sources)
 
     self.WriteLn()
+
+  def WritePchTargets(self, pch_commands):
+    """Writes make rules to compile prefix headers."""
+    if not pch_commands:
+      return
+
+    for gch, lang_flag, lang, input in pch_commands:
+      extra_flags = {
+        'c': '$(CFLAGS_C_$(BUILDTYPE))',
+        'cc': '$(CFLAGS_CC_$(BUILDTYPE))',
+        'm': '$(CFLAGS_C_$(BUILDTYPE)) $(CFLAGS_OBJC_$(BUILDTYPE))',
+        'mm': '$(CFLAGS_CC_$(BUILDTYPE)) $(CFLAGS_OBJCC_$(BUILDTYPE))',
+      }[lang]
+      var_name = {
+        'c': 'GYP_PCH_CFLAGS',
+        'cc': 'GYP_PCH_CCFLAGS',
+        'm': 'GYP_PCH_OBJCFLAGS',
+        'mm': 'GYP_PCH_OBJCCFLAGS',
+      }[lang]
+      self.WriteLn("%s: %s := %s " % (gch, var_name, lang_flag) +
+                   "$(DEFS_$(BUILDTYPE)) "
+                   "$(INCS_$(BUILDTYPE)) "
+                   "$(CFLAGS_$(BUILDTYPE)) " +
+                   extra_flags)
+
+      self.WriteLn('%s: %s FORCE_DO_CMD' % (gch, input))
+      self.WriteLn('\t@$(call do_cmd,pch_%s,1)' % lang)
+      self.WriteLn('')
+      assert ' ' not in gch, (
+          "Spaces in gch filenames not supported (%s)"  % gch)
+      self.WriteLn('all_deps += %s' % gch)
+      self.WriteLn('')
 
 
   def ComputeOutputBasename(self, spec):
@@ -2067,6 +2007,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
   def Pchify(self, path, lang):
     """Convert a prefix header path to its output directory form."""
+    path = self.Absolutify(path)
     if '$(' in path:
       path = path.replace('$(obj)/', '$(obj).%s/$(TARGET)/pch-%s' %
                           (self.toolset, lang))

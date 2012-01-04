@@ -229,6 +229,8 @@ class NinjaWriter:
 
     if self.flavor == 'mac':
       self.xcode_settings = gyp.xcode_emulation.XcodeSettings(spec)
+    else:
+      self.xcode_settings = None
 
     # Compute predepends for all rules.
     # actions_depends is the dependencies this target depends on before running
@@ -265,7 +267,10 @@ class NinjaWriter:
     sources = spec.get('sources', []) + extra_sources
     if sources:
       link_deps = self.WriteSources(
-          config_name, config, sources, compile_depends)
+          config_name, config, sources, compile_depends,
+          gyp.xcode_emulation.MacPrefixHeader(
+              self.xcode_settings, self.GypPathToNinja,
+              lambda path, lang: self.GypPathToUniqueOutput(path + '-' + lang)))
       # Some actions/rules output 'sources' that are already object files.
       link_deps += [self.GypPathToNinja(f) for f in sources if f.endswith('.o')]
 
@@ -427,7 +432,8 @@ class NinjaWriter:
 
     return outputs
 
-  def WriteSources(self, config_name, config, sources, predepends):
+  def WriteSources(self, config_name, config, sources, predepends,
+                   precompiled_header):
     """Write build rules to compile all of |sources|."""
     if self.toolset == 'host':
       self.ninja.variable('cc', '$cc_host')
@@ -437,8 +443,10 @@ class NinjaWriter:
       cflags = self.xcode_settings.GetCflags(config_name)
       cflags_c = self.xcode_settings.GetCflagsC(config_name)
       cflags_cc = self.xcode_settings.GetCflagsCC(config_name)
-      cflags_objc = self.xcode_settings.GetCflagsObjC(config_name)
-      cflags_objcc = self.xcode_settings.GetCflagsObjCC(config_name)
+      cflags_objc = ['$cflags_c'] + \
+                    self.xcode_settings.GetCflagsObjC(config_name)
+      cflags_objcc = ['$cflags_cc'] + \
+                     self.xcode_settings.GetCflagsObjCC(config_name)
     else:
       cflags = config.get('cflags', [])
       cflags_c = config.get('cflags_c', [])
@@ -450,14 +458,26 @@ class NinjaWriter:
     self.WriteVariableList('includes',
                            ['-I' + self.GypPathToNinja(i)
                             for i in config.get('include_dirs', [])])
+
+    pch_commands = precompiled_header.GetGchBuildCommands()
+    if self.flavor == 'mac':
+      self.WriteVariableList('cflags_pch_c',
+                             [precompiled_header.GetInclude('c')])
+      self.WriteVariableList('cflags_pch_cc',
+                             [precompiled_header.GetInclude('cc')])
+      self.WriteVariableList('cflags_pch_objc',
+                             [precompiled_header.GetInclude('m')])
+      self.WriteVariableList('cflags_pch_objcc',
+                             [precompiled_header.GetInclude('mm')])
+
     self.WriteVariableList('cflags', map(self.ExpandSpecial, cflags))
     self.WriteVariableList('cflags_c', map(self.ExpandSpecial, cflags_c))
     self.WriteVariableList('cflags_cc', map(self.ExpandSpecial, cflags_cc))
     if self.flavor == 'mac':
       self.WriteVariableList('cflags_objc', map(self.ExpandSpecial,
-                                             cflags_objc))
+                                                cflags_objc))
       self.WriteVariableList('cflags_objcc', map(self.ExpandSpecial,
-                                              cflags_objcc))
+                                                 cflags_objcc))
     self.ninja.newline()
     outputs = []
     for source in sources:
@@ -476,11 +496,32 @@ class NinjaWriter:
         continue
       input = self.GypPathToNinja(source)
       output = self.GypPathToUniqueOutput(filename + '.o')
+      implicit = precompiled_header.GetObjDependencies([input], [output])
       self.ninja.build(output, command, input,
+                       implicit=[gch for _, _, gch in implicit],
                        order_only=predepends)
       outputs.append(output)
+
+    self.WritePchTargets(pch_commands)
+
     self.ninja.newline()
     return outputs
+
+  def WritePchTargets(self, pch_commands):
+    """Writes ninja rules to compile prefix headers."""
+    if not pch_commands:
+      return
+
+    for gch, lang_flag, lang, input in pch_commands:
+      var_name = {
+        'c': 'cflags_pch_c',
+        'cc': 'cflags_pch_cc',
+        'm': 'cflags_pch_objc',
+        'mm': 'cflags_pch_objcc',
+      }[lang]
+
+      cmd = { 'c': 'cc', 'cc': 'cxx', 'm': 'objc', 'mm': 'objcxx', }.get(lang)
+      self.ninja.build(gch, cmd, input, variables=[(var_name, lang_flag)])
 
   def WriteTarget(self, spec, config_name, config, final_deps, order_only):
     if spec['type'] == 'none':
@@ -743,13 +784,13 @@ def GenerateOutput(target_list, target_dicts, data, params):
     'cc',
     description='CC $out',
     command=('$cc -MMD -MF $out.d $defines $includes $cflags $cflags_c '
-             '-c $in -o $out'),
+             '$cflags_pch_c -c $in -o $out'),
     depfile='$out.d')
   master_ninja.rule(
     'cxx',
     description='CXX $out',
     command=('$cxx -MMD -MF $out.d $defines $includes $cflags $cflags_cc '
-             '-c $in -o $out'),
+             '$cflags_pch_cc -c $in -o $out'),
     depfile='$out.d')
   if flavor != 'mac':
     master_ninja.rule(
@@ -775,14 +816,14 @@ def GenerateOutput(target_list, target_dicts, data, params):
     master_ninja.rule(
       'objc',
       description='OBJC $out',
-      command=('$cc -MMD -MF $out.d $defines $includes $cflags $cflags_c '
-               '$cflags_objc -c $in -o $out'),
+      command=('$cc -MMD -MF $out.d $defines $includes $cflags $cflags_objc '
+               '$cflags_pch_objc -c $in -o $out'),
       depfile='$out.d')
     master_ninja.rule(
       'objcxx',
       description='OBJCXX $out',
-      command=('$cxx -MMD -MF $out.d $defines $includes $cflags $cflags_cc '
-               '$cflags_objcc -c $in -o $out'),
+      command=('$cxx -MMD -MF $out.d $defines $includes $cflags $cflags_objcc '
+               '$cflags_pch_objcc -c $in -o $out'),
       depfile='$out.d')
     master_ninja.rule(
       'alink',
