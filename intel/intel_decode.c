@@ -2704,6 +2704,46 @@ state_max_out(struct drm_intel_decode *ctx, unsigned int index,
 }
 
 static int
+gen7_3DSTATE_URB_unit(struct drm_intel_decode *ctx, const char *unit)
+{
+    int start_kb = ((ctx->data[1] >> 25) & 0x3f) * 8;
+    /* the field is # of 512-bit rows - 1, we print bytes */
+    int entry_size = (((ctx->data[1] >> 16) & 0x1ff) + 1);
+    int nr_entries = ctx->data[1] & 0xffff;
+
+    instr_out(ctx, 0, "3DSTATE_URB_%s\n", unit);
+    instr_out(ctx, 1,
+	      "%dKB start, size=%d 64B rows, nr_entries=%d, total size %dB\n",
+	      start_kb, entry_size, nr_entries, nr_entries * 64 * entry_size);
+
+    return 2;
+}
+
+static int
+gen7_3DSTATE_URB_VS(struct drm_intel_decode *ctx)
+{
+	return gen7_3DSTATE_URB_unit(ctx, "VS");
+}
+
+static int
+gen7_3DSTATE_URB_HS(struct drm_intel_decode *ctx)
+{
+	return gen7_3DSTATE_URB_unit(ctx, "HS");
+}
+
+static int
+gen7_3DSTATE_URB_DS(struct drm_intel_decode *ctx)
+{
+	return gen7_3DSTATE_URB_unit(ctx, "DS");
+}
+
+static int
+gen7_3DSTATE_URB_GS(struct drm_intel_decode *ctx)
+{
+	return gen7_3DSTATE_URB_unit(ctx, "GS");
+}
+
+static int
 decode_3d_965(struct drm_intel_decode *ctx)
 {
 	uint32_t opcode;
@@ -2750,6 +2790,10 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		{ 0x7816, 0x00ff, 5, 5, "3DSTATE_CONSTANT_GS_STATE" },
 		{ 0x7817, 0x00ff, 5, 5, "3DSTATE_CONSTANT_PS_STATE" },
 		{ 0x7818, 0xffff, 2, 2, "3DSTATE_SAMPLE_MASK" },
+		{ 0x7830, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_URB_VS },
+		{ 0x7831, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_URB_HS },
+		{ 0x7832, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_URB_DS },
+		{ 0x7833, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_URB_GS },
 		{ 0x7900, 0xffff, 4, 4, "3DSTATE_DRAWING_RECTANGLE" },
 		{ 0x7901, 0xffff, 5, 5, "3DSTATE_CONSTANT_COLOR" },
 		{ 0x7905, 0xffff, 5, 7, "3DSTATE_DEPTH_BUFFER" },
