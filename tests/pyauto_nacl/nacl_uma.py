@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -224,6 +224,15 @@ Histogram: NaCl.OSArch recorded 2 samples, average = 1.0 (flags = 0x1)
         1)
 
   def testCrash(self):
+
+    # TODO(mcgrathr): ppapi_crash itself is flaky on Win64 and disabled.
+    # Don't run this version of it until that is sorted out.
+    # See http://code.google.com/p/chromium/issues/detail?id=98721
+    if sys.platform.startswith('win'):
+      print 'ppapi_crash test is disabled on Windows!'
+      print 'See http://code.google.com/p/chromium/issues/detail?id=98721'
+      return
+
     # Note: This number must match the number of tests in ppapi_crash.html,
     # which now lives in the native_client/tests/ppapi_browser/crash directory
     # of the Chromium repository.
