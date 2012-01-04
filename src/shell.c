@@ -170,8 +170,10 @@ weston_surface_move(struct weston_surface *es,
 	move->surface = es;
 
 	if (wl_input_device_update_grab(&wd->input_device,
-					&move->grab, &es->surface, time) < 0)
+					&move->grab, &es->surface, time) < 0) {
+		free(move);
 		return 0;
+	}
 
 	wl_input_device_set_pointer_focus(&wd->input_device,
 					  NULL, time, 0, 0, 0, 0);
@@ -268,15 +270,19 @@ weston_surface_resize(struct shell_surface *shsurf,
 
 	if (edges == 0 || edges > 15 ||
 	    (edges & 3) == 3 || (edges & 12) == 12)
-		return 0;
+		goto err_out;
 
 	if (wl_input_device_update_grab(&wd->input_device,
 					&resize->grab, &es->surface, time) < 0)
-		return 0;
+		goto err_out;
 
 	wl_input_device_set_pointer_focus(&wd->input_device,
 					  NULL, time, 0, 0, 0, 0);
 
+	return 0;
+
+err_out:
+	free(resize);
 	return 0;
 }
 
