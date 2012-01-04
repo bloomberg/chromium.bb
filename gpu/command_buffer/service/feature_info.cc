@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -413,34 +413,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     validators_.texture_parameter.AddValue(GL_TEXTURE_USAGE_ANGLE);
   }
 
-  bool allow_texture_storage = true;
-#if defined(OS_LINUX)
-  if (!disallowed_features_.driver_bug_workarounds) {
-    // Disable GL_EXT_texture_storage on Linux, newer Nvidia drivers
-    // don't support our implementation. See crbug.com/107782. The bug is
-    // present on 285.x.x but not on 280.x.x so we will disable this feature
-    // on driver versions greater than 280.
-    const char* vendor_str =
-        reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-    bool is_nvidia = vendor_str &&
-        (strcmp(vendor_str, "NVIDIA Corporation") == 0);
-    if (is_nvidia) {
-      base::StringPiece version =
-          reinterpret_cast<const char*>(glGetString(GL_VERSION));
-      int version_num = 0;
-      size_t begin_version = version.find_last_of(' ') + 1;
-      size_t size_version = version.find_first_of('.', begin_version) -
-                            begin_version;
-      if (base::StringToInt(version.substr(begin_version, size_version),
-                            &version_num))
-        allow_texture_storage = (version_num <= 280);
-      else
-        allow_texture_storage = false;
-    }
-  }
-#endif
-
-  if (allow_texture_storage && ext.HaveAndDesire("GL_EXT_texture_storage")) {
+  if (ext.HaveAndDesire("GL_EXT_texture_storage")) {
     AddExtensionString("GL_EXT_texture_storage");
     validators_.texture_parameter.AddValue(GL_TEXTURE_IMMUTABLE_FORMAT_EXT);
     if (enable_texture_format_bgra8888)

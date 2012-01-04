@@ -168,6 +168,14 @@ static bool StringIsValidForGLES(const char* str) {
   return true;
 }
 
+static inline GLenum GetTexInternalFormat(GLenum internal_format) {
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+    if (internal_format == GL_BGRA_EXT || internal_format == GL_BGRA8_EXT)
+      return GL_RGBA8;
+  }
+  return internal_format;
+}
+
 static void WrappedTexImage2D(
     GLenum target,
     GLint level,
@@ -178,11 +186,9 @@ static void WrappedTexImage2D(
     GLenum format,
     GLenum type,
     const void* pixels) {
-  GLenum gl_internal_format = internal_format;
+  GLenum gl_internal_format = GetTexInternalFormat(internal_format);
   if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-    if (format == GL_BGRA_EXT && internal_format == GL_BGRA_EXT) {
-      gl_internal_format = GL_RGBA;
-    } else if (type == GL_FLOAT) {
+    if (type == GL_FLOAT) {
       if (format == GL_RGBA) {
         gl_internal_format = GL_RGBA32F_ARB;
       } else if (format == GL_RGB) {
@@ -1649,15 +1655,15 @@ bool Texture::AllocateStorage(const gfx::Size& size, GLenum format) {
   ScopedGLErrorSuppressor suppressor(decoder_);
   ScopedTexture2DBinder binder(decoder_, id_);
 
-  glTexImage2D(GL_TEXTURE_2D,
-               0,  // mip level
-               format,
-               size.width(),
-               size.height(),
-               0,  // border
-               format,
-               GL_UNSIGNED_BYTE,
-               NULL);
+  WrappedTexImage2D(GL_TEXTURE_2D,
+                    0,  // mip level
+                    format,
+                    size.width(),
+                    size.height(),
+                    0,  // border
+                    format,
+                    GL_UNSIGNED_BYTE,
+                    NULL);
 
   size_ = size;
 
@@ -7965,7 +7971,8 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
     return;
   }
   CopyRealGLErrorsToWrapper();
-  glTexStorage2DEXT(target, levels, internal_format, width, height);
+  glTexStorage2DEXT(target, levels, GetTexInternalFormat(internal_format),
+                    width, height);
   GLenum error = PeekGLError();
   if (error == GL_NO_ERROR) {
     GLenum format = ExtractFormatFromStorageFormat(internal_format);
