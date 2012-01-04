@@ -2889,7 +2889,11 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		{ 0x7800, 0xffff, 7, 7, "3DSTATE_PIPELINED_POINTERS" },
 		{ 0x7801, 0x00ff, 4, 6, "3DSTATE_BINDING_TABLE_POINTERS" },
 		{ 0x7802, 0x00ff, 4, 4, "3DSTATE_SAMPLER_STATE_POINTERS" },
+		{ 0x7805, 0x00ff, 7, 7, "3DSTATE_DEPTH_BUFFER", 7 },
 		{ 0x7805, 0x00ff, 3, 3, "3DSTATE_URB" },
+		{ 0x7804, 0x00ff, 3, 3, "3DSTATE_CLEAR_PARAMS" },
+		{ 0x7806, 0x00ff, 3, 3, "3DSTATE_STENCIL_BUFFER" },
+		{ 0x7807, 0x00ff, 4, 4, "3DSTATE_HIER_DEPTH_BUFFER" },
 		{ 0x7808, 0x00ff, 5, 257, "3DSTATE_VERTEX_BUFFERS" },
 		{ 0x7809, 0x00ff, 3, 256, "3DSTATE_VERTEX_ELEMENTS" },
 		{ 0x780a, 0x00ff, 3, 3, "3DSTATE_INDEX_BUFFER" },
@@ -2901,7 +2905,9 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		{ 0x7810, 0x00ff, 6, 6, "3DSTATE_VS" },
 		{ 0x7811, 0x00ff, 7, 7, "3DSTATE_GS" },
 		{ 0x7812, 0x00ff, 4, 4, "3DSTATE_CLIP" },
-		{ 0x7813, 0x00ff, 20, 20, "3DSTATE_SF" },
+		{ 0x7813, 0x00ff, 20, 20, "3DSTATE_SF", 6 },
+		{ 0x7813, 0x00ff, 7, 7, "3DSTATE_SF", 7 },
+		{ 0x7814, 0x00ff, 3, 3, "3DSTATE_WM", 7 },
 		{ 0x7814, 0x00ff, 9, 9, "3DSTATE_WM" },
 		{ 0x7815, 0x00ff, 5, 5, "3DSTATE_CONSTANT_VS_STATE", 6 },
 		{ 0x7815, 0x00ff, 7, 7, "3DSTATE_CONSTANT_VS", 7, gen7_3DSTATE_CONSTANT_VS },
@@ -2912,10 +2918,24 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		{ 0x7818, 0xffff, 2, 2, "3DSTATE_SAMPLE_MASK" },
 		{ 0x7819, 0x00ff, 7, 7, "3DSTATE_CONSTANT_HS", 7, gen7_3DSTATE_CONSTANT_HS },
 		{ 0x781a, 0x00ff, 7, 7, "3DSTATE_CONSTANT_DS", 7, gen7_3DSTATE_CONSTANT_DS },
+		{ 0x781b, 0x00ff, 7, 7, "3DSTATE_HS" },
+		{ 0x781c, 0x00ff, 4, 4, "3DSTATE_TE" },
+		{ 0x781d, 0x00ff, 6, 6, "3DSTATE_DS" },
+		{ 0x781e, 0x00ff, 3, 3, "3DSTATE_STREAMOUT" },
+		{ 0x781f, 0x00ff, 14, 14, "3DSTATE_SBE" },
+		{ 0x7820, 0x00ff, 8, 8, "3DSTATE_PS" },
 		{ 0x7821, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_VIEWPORT_STATE_POINTERS_SF_CLIP },
 		{ 0x7823, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_VIEWPORT_STATE_POINTERS_CC },
 		{ 0x7824, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_BLEND_STATE_POINTERS },
 		{ 0x7825, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_DEPTH_STENCIL_STATE_POINTERS },
+		{ 0x7826, 0x00ff, 2, 2, "3DSTATE_BINDING_TABLE_POINTERS_VS" },
+		{ 0x7827, 0x00ff, 2, 2, "3DSTATE_BINDING_TABLE_POINTERS_HS" },
+		{ 0x7828, 0x00ff, 2, 2, "3DSTATE_BINDING_TABLE_POINTERS_DS" },
+		{ 0x7829, 0x00ff, 2, 2, "3DSTATE_BINDING_TABLE_POINTERS_GS" },
+		{ 0x782a, 0x00ff, 2, 2, "3DSTATE_BINDING_TABLE_POINTERS_PS" },
+		{ 0x782b, 0x00ff, 2, 2, "3DSTATE_SAMPLER_STATE_POINTERS_VS" },
+		{ 0x782e, 0x00ff, 2, 2, "3DSTATE_SAMPLER_STATE_POINTERS_GS" },
+		{ 0x782f, 0x00ff, 2, 2, "3DSTATE_SAMPLER_STATE_POINTERS_PS" },
 		{ 0x7830, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_URB_VS },
 		{ 0x7831, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_URB_HS },
 		{ 0x7832, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_URB_DS },
@@ -2933,7 +2953,12 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		{ 0x790d, 0xffff, 3, 3, "3DSTATE_MULTISAMPLE", 6 },
 		{ 0x790d, 0xffff, 4, 4, "3DSTATE_MULTISAMPLE", 7 },
 		{ 0x7910, 0xffff, 2, 2, "3DSTATE_CLEAR_PARAMS" },
+		{ 0x7912, 0x00ff, 2, 2, "3DSTATE_PUSH_CONSTANT_ALLOC_VS" },
+		{ 0x7916, 0x00ff, 2, 2, "3DSTATE_PUSH_CONSTANT_ALLOC_PS" },
+		{ 0x7917, 0x00ff, 2, 2+128*2, "3DSTATE_SO_DECL_LIST" },
+		{ 0x7918, 0x00ff, 4, 4, "3DSTATE_SO_BUFFER" },
 		{ 0x7a00, 0x00ff, 4, 6, "PIPE_CONTROL" },
+		{ 0x7b00, 0x00ff, 7, 7, "3DPRIMITIVE", 7 },
 		{ 0x7b00, 0x00ff, 6, 6, "3DPRIMITIVE" },
 	}, *opcode_3d = NULL;
 
@@ -3059,6 +3084,10 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		instr_out(ctx, 3, "WM sampler state\n");
 		return len;
 	case 0x7805:
+		/* Actually 3DSTATE_DEPTH_BUFFER on gen7. */
+		if (ctx->gen == 7)
+			break;
+
 		instr_out(ctx, 0, "3DSTATE_URB\n");
 		instr_out(ctx, 1,
 			  "VS entries %d, alloc size %d (1024bit row)\n",
@@ -3211,6 +3240,9 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x7813:
+		if (ctx->gen == 7)
+			break;
+
 		instr_out(ctx, 0, "3DSTATE_SF\n");
 		instr_out(ctx, 1,
 			  "Attrib Out %d, Attrib Swizzle %sable, VUE read length %d, "
@@ -3456,6 +3488,9 @@ decode_3d_965(struct drm_intel_decode *ctx)
 			return len;
 		}
 	case 0x7b00:
+		if (ctx->gen == 7)
+			break;
+
 		instr_out(ctx, 0,
 			  "3DPRIMITIVE: %s %s\n",
 			  get_965_prim_type(data[0]),
