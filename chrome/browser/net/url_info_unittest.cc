@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,8 +57,8 @@ TEST(UrlHostInfoTest, StateChangeTest) {
   }
 
   // Run similar test with a shortened expiration, so we can trigger it.
-  const int kMockExpirationTime(300);  // Vastly reduced expiration time.
-  info.set_cache_expiration(TimeDelta::FromMilliseconds(kMockExpirationTime));
+  const TimeDelta kMockExpirationTime = TimeDelta::FromMilliseconds(300);
+  info.set_cache_expiration(kMockExpirationTime);
 
   // That was a nice life when the object was found.... but next time it won't
   // be found.  We'll sleep for a while, and then come back with not-found.
@@ -67,18 +67,19 @@ TEST(UrlHostInfoTest, StateChangeTest) {
   info.SetAssignedState();
   EXPECT_FALSE(info.NeedsDnsUpdate());
   // Greater than minimal expected network latency on DNS lookup.
-  base::PlatformThread::Sleep(25);
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(25));
   before_resolution_complete = TimeTicks::Now();
   info.SetNoSuchNameState();
   // "Immediately" check to see if we need an update yet (we shouldn't).
   if (info.NeedsDnsUpdate()) {
     // The test bot must be really slow, so we can verify that.
-    EXPECT_GT((TimeTicks::Now() - before_resolution_complete).InMilliseconds(),
+    EXPECT_GT((TimeTicks::Now() - before_resolution_complete),
               kMockExpirationTime);
     return;
   }
   // Wait over 300ms, so it should definately be considered out of cache.
-  base::PlatformThread::Sleep(kMockExpirationTime + 20);
+  base::PlatformThread::Sleep(kMockExpirationTime +
+                              TimeDelta::FromMilliseconds(20));
   EXPECT_TRUE(info.NeedsDnsUpdate()) << "expiration time not honored";
 }
 

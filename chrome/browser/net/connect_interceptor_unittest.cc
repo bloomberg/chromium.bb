@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,7 @@ TEST(ConnectInterceptorTest, TimedCacheEviction) {
   cache.SetRecentlySeen(url);
 
   // Sleep at least long enough to cause an eviction.
-  base::PlatformThread::Sleep(30);
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(30));
 
   EXPECT_FALSE(cache.WasRecentlySeen(url));
 }
