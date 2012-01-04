@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,17 +6,35 @@
 #define CHROME_BROWSER_PLUGIN_INSTALLER_H_
 #pragma once
 
+#include "base/observer_list.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 
+class FilePath;
+class PluginInstallerObserver;
+
+namespace net {
+class URLRequestContextGetter;
+}
+
 class PluginInstaller {
  public:
+  enum State {
+    kStateIdle,
+    kStateDownloading,
+  };
+
   PluginInstaller(const std::string& identifier,
                   const GURL& plugin_url,
                   const GURL& help_url,
                   const string16& name,
                   bool url_for_display);
   ~PluginInstaller();
+
+  void AddObserver(PluginInstallerObserver* observer);
+  void RemoveObserver(PluginInstallerObserver* observer);
+
+  State state() const { return state_; }
 
   // Unique identifier for the plug-in. Should be kept in sync with the
   // identifier in plugin_list.cc.
@@ -35,7 +53,14 @@ class PluginInstaller {
   // URL to open when the user clicks on the "Problems installing?" link.
   const GURL& help_url() const { return help_url_; }
 
+  void StartInstalling(net::URLRequestContextGetter* request_context);
+
  private:
+  void DidFinishDownload(const FilePath& downloaded_file);
+
+  State state_;
+  ObserverList<PluginInstallerObserver> observers_;
+
   std::string identifier_;
   GURL plugin_url_;
   GURL help_url_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,6 +133,10 @@ bool MissingPlugin::OnMessageReceived(const IPC::Message& message) {
                         OnFoundMissingPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_DidNotFindMissingPlugin,
                         OnDidNotFindMissingPlugin)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_StartedDownloadingPlugin,
+                        OnStartedDownloadingPlugin)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_FinishedDownloadingPlugin,
+                        OnFinishedDownloadingPlugin)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -145,6 +149,14 @@ void MissingPlugin::OnFoundMissingPlugin(const string16& plugin_name) {
 
 void MissingPlugin::OnDidNotFindMissingPlugin() {
   SetMessage(l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_FOUND));
+}
+
+void MissingPlugin::OnStartedDownloadingPlugin() {
+  SetMessage(l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOADING));
+}
+
+void MissingPlugin::OnFinishedDownloadingPlugin() {
+  SetMessage(l10n_util::GetStringUTF16(IDS_PLUGIN_INSTALLING));
 }
 
 void MissingPlugin::SetMessage(const string16& message) {

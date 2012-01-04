@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
+#include "chrome/browser/plugin_download_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/automation_proxy.h"
@@ -39,6 +40,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/ui_test.h"
 #include "content/browser/net/url_request_mock_http_job.h"
+#include "content/test/test_browser_thread.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
@@ -49,7 +51,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
-#include "chrome/browser/plugin_download_helper.h"
 #endif
 
 class PluginTest : public UITest {
@@ -249,7 +250,9 @@ TEST_F(PluginTest, Silverlight) {
   TestPlugin("silverlight.html", "",
              TestTimeouts::action_max_timeout_ms(), false);
 }
+#endif  // defined(OS_WIN)
 
+#if !defined(OS_CHROMEOS)
 namespace {
 
 class TestURLRequestContextGetter : public net::URLRequestContextGetter {
@@ -276,37 +279,38 @@ class TestURLRequestContextGetter : public net::URLRequestContextGetter {
 };
 
 }  // namespace
+
 // This class provides functionality to test the plugin installer download
 // file functionality.
-class PluginInstallerDownloadTest
-    : public PluginDownloadUrlHelper::DownloadDelegate,
-      public testing::Test {
+class PluginInstallerDownloadTest : public testing::Test {
  public:
   PluginInstallerDownloadTest()
-      : success_(false),
-        download_helper_(NULL) {}
+      : message_loop_(MessageLoop::TYPE_IO),
+        file_thread_(content::BrowserThread::FILE, &message_loop_),
+        download_helper_(NULL),
+        success_(false) {}
   ~PluginInstallerDownloadTest() {}
 
   void Start() {
     initial_download_path_ = PluginTest::GetTestUrl("flash.html", "", false);
-    download_helper_ = new PluginDownloadUrlHelper(
-        initial_download_path_.spec(), NULL,
-        static_cast<PluginDownloadUrlHelper::DownloadDelegate*>(this));
+    download_helper_ = new PluginDownloadUrlHelper();
     TestURLRequestContextGetter* context_getter =
         new TestURLRequestContextGetter;
-    download_helper_->InitiateDownload(context_getter,
-                                       context_getter->GetIOMessageLoopProxy());
+    download_helper_->InitiateDownload(
+        initial_download_path_,
+        context_getter,
+        base::Bind(&PluginInstallerDownloadTest::OnDownloadCompleted,
+                   base::Unretained(this)));
 
-    MessageLoop::current()->PostDelayedTask(
+    message_loop_.PostDelayedTask(
         FROM_HERE, MessageLoop::QuitClosure(),
         TestTimeouts::action_max_timeout_ms());
   }
 
-  virtual void OnDownloadCompleted(const FilePath& download_path,
-                                   bool success) {
-    success_ = success;
+  void OnDownloadCompleted(const FilePath& download_path) {
+    success_ = true;
     final_download_path_ = download_path;
-    MessageLoop::current()->Quit();
+    message_loop_.Quit();
     download_helper_ = NULL;
   }
 
@@ -323,6 +327,8 @@ class PluginInstallerDownloadTest
   }
 
  private:
+  MessageLoop message_loop_;
+  content::TestBrowserThread file_thread_;
   FilePath final_download_path_;
   PluginDownloadUrlHelper* download_helper_;
   bool success_;
@@ -332,12 +338,11 @@ class PluginInstallerDownloadTest
 // This test validates that the plugin downloader downloads the specified file
 // to a temporary path with the same file name.
 TEST_F(PluginInstallerDownloadTest, PluginInstallerDownloadPathTest) {
-  MessageLoop loop(MessageLoop::TYPE_IO);
   Start();
-  loop.Run();
+  MessageLoop::current()->Run();
 
   EXPECT_TRUE(success());
   EXPECT_TRUE(initial_download_path().BaseName().value() ==
               final_download_path().BaseName().value());
 }
-#endif  // defined(OS_WIN)
+#endif  // !defined(OS_CHROMEOS)

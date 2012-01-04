@@ -5209,8 +5209,23 @@ Because search results are requested even while you're typing your query, your d
       <message name="IDS_PLUGIN_SEARCHING" desc="The placeholder text when searching for a missing plug-in.">
         Looking for plug-in...
       </message>
+      <message name="IDS_PLUGIN_DOWNLOADING" desc="The placeholder text when downloading a missing plug-in.">
+        Downloading plug-in...
+      </message>
+      <message name="IDS_PLUGIN_INSTALLING" desc="The placeholder text when installing a missing plug-in.">
+        After installing the plug-in, reload the page.
+      </message>
       <message name="IDS_PLUGIN_FOUND" desc="The placeholder text for a known plug-in that is not installed.">
         The <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> plug-in is required to display this content.
+      </message>
+      <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_TITLE" desc="Title of the plug-in installation confirmation dialog.">
+        <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> plug-in needed
+      </message>
+      <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_MSG" desc="Message of the plug-in installation confirmation dialog.">
+        Please confirm that you would like to install the <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> plug-in. You should only install plug-ins that you trust.
+      </message>
+      <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_ACCEPT_BUTTON" desc="Button title to install a missing plug-in.">
+        Get Plug-in
       </message>
       <message name="IDS_PLUGIN_DISABLED" desc="The placeholder text for a disabled plug-in.">
         The <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in has been disabled. To re-enable it, please go to <ph name="CHROME_PLUGINS_LINK">chrome://plugins</ph>.

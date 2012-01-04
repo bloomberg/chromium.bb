@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -437,6 +437,14 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_FoundMissingPlugin,
 
 // Notifies a missing plug-in placeholder that no plug-in has been found.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_DidNotFindMissingPlugin)
+
+// Notifies a missing plug-in placeholder that we have started downloading
+// the plug-in.
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_StartedDownloadingPlugin)
+
+// Notifies a missing plug-in placeholder that we have finished downloading
+// the plug-in.
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_FinishedDownloadingPlugin)
 
 // Specifies the URL as the first parameter (a wstring) and thumbnail as
 // binary data as the second parameter.

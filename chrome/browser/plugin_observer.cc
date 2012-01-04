@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/plugin_observer.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -13,9 +14,12 @@
 #include "chrome/browser/plugin_finder.h"
 #include "chrome/browser/plugin_installer.h"
 #include "chrome/browser/plugin_installer_infobar_delegate.h"
+#include "chrome/browser/plugin_installer_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -24,6 +28,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_group.h"
@@ -32,6 +37,7 @@
 using content::OpenURLParams;
 using content::Referrer;
 using content::UserMetricsAction;
+using content::WebContents;
 
 namespace {
 
@@ -289,10 +295,100 @@ bool OutdatedPluginInfoBarDelegate::LinkClicked(
   return PluginInfoBarDelegate::LinkClicked(disposition);
 }
 
+class ConfirmInstallDialogDelegate : public TabModalConfirmDialogDelegate,
+                                     public PluginInstallerObserver {
+ public:
+  ConfirmInstallDialogDelegate(WebContents* web_contents,
+                               PluginInstaller* installer);
+
+  // TabModalConfirmDialogDelegate methods:
+  virtual string16 GetTitle() OVERRIDE;
+  virtual string16 GetMessage() OVERRIDE;
+  virtual string16 GetAcceptButtonTitle() OVERRIDE;
+  virtual void OnAccepted() OVERRIDE;
+  virtual void OnCanceled() OVERRIDE;
+
+  // PluginInstallerObserver methods:
+  virtual void DidStartDownload() OVERRIDE;
+
+ private:
+  net::URLRequestContextGetter* request_context_;
+};
+
+ConfirmInstallDialogDelegate::ConfirmInstallDialogDelegate(
+    WebContents* web_contents,
+    PluginInstaller* installer)
+    : TabModalConfirmDialogDelegate(web_contents),
+      PluginInstallerObserver(installer),
+      request_context_(web_contents->GetBrowserContext()->GetRequestContext()) {
+}
+
+string16 ConfirmInstallDialogDelegate::GetTitle() {
+  return l10n_util::GetStringFUTF16(
+      IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_TITLE, installer()->name());
+}
+
+string16 ConfirmInstallDialogDelegate::GetMessage() {
+  return l10n_util::GetStringFUTF16(IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_MSG,
+                                    installer()->name());
+}
+
+string16 ConfirmInstallDialogDelegate::GetAcceptButtonTitle() {
+  return l10n_util::GetStringUTF16(
+      IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_ACCEPT_BUTTON);
+}
+
+void ConfirmInstallDialogDelegate::OnAccepted() {
+  installer()->StartInstalling(request_context_);
+}
+
+void ConfirmInstallDialogDelegate::OnCanceled() {
+}
+
+void ConfirmInstallDialogDelegate::DidStartDownload() {
+  Cancel();
+}
+
 }  // namespace
 
-
 // PluginObserver -------------------------------------------------------------
+
+class PluginObserver::MissingPluginHost : public PluginInstallerObserver {
+ public:
+  MissingPluginHost(PluginObserver* observer,
+                    int routing_id,
+                    PluginInstaller* installer)
+      : PluginInstallerObserver(installer),
+        observer_(observer),
+        routing_id_(routing_id) {
+    switch (installer->state()) {
+      case PluginInstaller::kStateIdle: {
+        observer->Send(new ChromeViewMsg_FoundMissingPlugin(routing_id_,
+                                                            installer->name()));
+        break;
+      }
+      case PluginInstaller::kStateDownloading: {
+        DidStartDownload();
+        break;
+      }
+    }
+  }
+
+  // PluginInstallerObserver methods:
+  virtual void DidStartDownload() OVERRIDE {
+    observer_->Send(new ChromeViewMsg_StartedDownloadingPlugin(routing_id_));
+  }
+
+  virtual void DidFinishDownload() OVERRIDE {
+    observer_->Send(new ChromeViewMsg_FinishedDownloadingPlugin(routing_id_));
+  }
+
+ private:
+  // Weak pointer; owns us.
+  PluginObserver* observer_;
+
+  int routing_id_;
+};
 
 PluginObserver::PluginObserver(TabContentsWrapper* tab_contents)
     : content::WebContentsObserver(tab_contents->tab_contents()),
@@ -341,14 +437,17 @@ void PluginObserver::OnFindMissingPlugin(int placeholder_id,
 void PluginObserver::FoundMissingPlugin(int placeholder_id,
                                         const std::string& mime_type,
                                         PluginInstaller* installer) {
-  Send(new ChromeViewMsg_FoundMissingPlugin(placeholder_id, installer->name()));
+  missing_plugins_.push_back(
+      new MissingPluginHost(this, placeholder_id, installer));
   InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
-  infobar_helper->AddInfoBar(new PluginInstallerInfoBarDelegate(
+  PluginInstallerInfoBarDelegate* delegate = new PluginInstallerInfoBarDelegate(
+      installer,
       infobar_helper,
       installer->name(),
       installer->help_url(),
       base::Bind(&PluginObserver::InstallMissingPlugin,
-                 weak_ptr_factory_.GetWeakPtr(), installer)));
+                 weak_ptr_factory_.GetWeakPtr(), installer));
+  infobar_helper->AddInfoBar(delegate);
 }
 
 void PluginObserver::DidNotFindMissingPlugin(int placeholder_id,
@@ -364,6 +463,8 @@ void PluginObserver::InstallMissingPlugin(PluginInstaller* installer) {
                           WebKit::WebReferrerPolicyDefault),
         NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED, false));
   } else {
-    NOTIMPLEMENTED();
+    browser::ShowTabModalConfirmDialog(
+        new ConfirmInstallDialogDelegate(web_contents(), installer),
+        tab_contents_);
   }
 }

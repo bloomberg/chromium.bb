@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PLUGIN_OBSERVER_H_
 #pragma once
 
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -23,6 +24,8 @@ class PluginObserver : public content::WebContentsObserver {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
+  class MissingPluginHost;
+
   void OnBlockedOutdatedPlugin(const string16& name, const GURL& update_url);
   void OnFindMissingPlugin(int placeholder_id, const std::string& mime_type);
 
@@ -36,6 +39,8 @@ class PluginObserver : public content::WebContentsObserver {
   base::WeakPtrFactory<PluginObserver> weak_ptr_factory_;
 
   TabContentsWrapper* tab_contents_;
+
+  ScopedVector<MissingPluginHost> missing_plugins_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginObserver);
 };

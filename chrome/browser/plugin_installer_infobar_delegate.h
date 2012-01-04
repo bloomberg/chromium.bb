@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,16 +7,21 @@
 #pragma once
 
 #include "base/callback.h"
+#include "chrome/browser/plugin_installer_observer.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "googleurl/src/gurl.h"
 
 // The main purpose for this class is to popup/close the infobar when there is
 // a missing plugin.
-class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate {
+class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
+                                       public PluginInstallerObserver {
  public:
   // Shows an infobar asking whether to install the plugin with the name
   // |plugin_name|. When the user accepts, |callback| is called.
-  PluginInstallerInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+  // If |installer| is not NULL, registers itself as its observer, to dismiss
+  // the infobar if it's accepted in another tab.
+  PluginInstallerInfoBarDelegate(PluginInstaller* installer,
+                                 InfoBarTabHelper* infobar_helper,
                                  const string16& plugin_name,
                                  const GURL& learn_more_url,
                                  const base::Closure& callback);
@@ -34,6 +39,9 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
+
+  // PluginInstallerObserver:
+  virtual void DidStartDownload() OVERRIDE;
 
   string16 plugin_name_;
   GURL learn_more_url_;

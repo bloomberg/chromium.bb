@@ -50,8 +50,7 @@
       "lang": "en-US",
       "name": "RealPlayer",
       "identifier": "realplayer",
-      "url": "http://www.real.com/realplayer/download",
-      "displayurl": true
+      "url": "http://director.real.com/realplayer?type=rpsp_mac"
     },
     {
       "mime_types": [
@@ -174,8 +173,7 @@
       "lang": "en-US",
       "name": "DivX Web Player",
       "identifier": "divx-player",
-      "url": "http://www.divx.com/en/downloads/divx/mac",
-      "displayurl": true
+      "url": "http://www.divx.com/en/downloads/divx/mac"
     }
   ]
 }

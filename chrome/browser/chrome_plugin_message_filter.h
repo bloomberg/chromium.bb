@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/native_widget_types.h"
 
+class FilePath;
 class PluginProcessHost;
 
 namespace net {
@@ -35,16 +36,13 @@ class ChromePluginMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnDownloadUrl(const std::string& url,
                      gfx::NativeWindow caller_window,
                      int render_process_id);
-  // Helper function to issue the download request on the file thread.
-  static void OnDownloadUrlOnFileThread(
-      const std::string& url,
-      gfx::NativeWindow caller_window,
-      net::URLRequestContextGetter* context);
   // Helper function to handle the initial portions of the download request
   // on the UI thread.
   static void OnDownloadUrlOnUIThread(const std::string& url,
                                       gfx::NativeWindow caller_window,
                                       int render_process_id);
+  static void OnPluginDownloadFinished(gfx::NativeWindow caller_window,
+                                       const FilePath& response_file);
 #endif
   void OnGetPluginFinderUrl(std::string* plugin_finder_url);
   void OnMissingPluginStatus(int status,

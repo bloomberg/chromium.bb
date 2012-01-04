@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chrome_plugin_message_filter.h"
 
 #include "base/bind.h"
+#include "base/file_path.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/plugin_installer_infobar_delegate.h"
@@ -68,33 +69,45 @@ void ChromePluginMessageFilter::OnDownloadUrl(const std::string& url,
                  render_process_id));
 }
 
+// static
 void ChromePluginMessageFilter::OnDownloadUrlOnUIThread(
     const std::string& url,
     gfx::NativeWindow caller_window,
     int render_process_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::RenderProcessHost* host =
       content::RenderProcessHost::FromID(render_process_id);
   if (!host) {
     return;
   }
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ChromePluginMessageFilter::OnDownloadUrlOnFileThread,
-                 url, caller_window,
-                 host->GetBrowserContext()->GetRequestContext()));
+  // |download_url_helper| will delete itself after running the callback.
+  PluginDownloadUrlHelper* download_url_helper =
+      new PluginDownloadUrlHelper();
+  download_url_helper->InitiateDownload(
+      GURL(url),
+      host->GetBrowserContext()->GetRequestContext(),
+      base::Bind(&ChromePluginMessageFilter::OnPluginDownloadFinished,
+                 caller_window));
 }
 
-void ChromePluginMessageFilter::OnDownloadUrlOnFileThread(
-    const std::string& url,
+// static
+void ChromePluginMessageFilter::OnPluginDownloadFinished(
     gfx::NativeWindow caller_window,
-    net::URLRequestContextGetter* context) {
-  PluginDownloadUrlHelper* download_url_helper =
-      new PluginDownloadUrlHelper(url, caller_window, NULL);
-  download_url_helper->InitiateDownload(
-      context,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+    const FilePath& response_file) {
+  FilePath::StringType path = response_file.value();
+  COPYDATASTRUCT download_file_data = {0};
+  download_file_data.cbData =
+      static_cast<unsigned long>((path.length() + 1) *
+      sizeof(FilePath::CharType));
+  download_file_data.lpData = const_cast<FilePath::CharType *>(path.c_str());
+  download_file_data.dwData = !path.empty();
+
+  if (::IsWindow(caller_window)) {
+    ::SendMessage(caller_window, WM_COPYDATA, NULL,
+                  reinterpret_cast<LPARAM>(&download_file_data));
+  }
 }
-#endif
+#endif  // OS_WIN
 
 void ChromePluginMessageFilter::OnGetPluginFinderUrl(
     std::string* plugin_finder_url) {
@@ -137,7 +150,7 @@ void ChromePluginMessageFilter::HandleMissingPluginStatus(
 
   if (status == webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE) {
     infobar_helper->AddInfoBar(new PluginInstallerInfoBarDelegate(
-        infobar_helper, string16(), GURL(),
+        NULL, infobar_helper, string16(), GURL(),
         base::Bind(&ChromePluginMessageFilter::InstallMissingPlugin,
                    base::Unretained(window))));
     return;

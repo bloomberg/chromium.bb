@@ -1780,6 +1780,8 @@
         'browser/plugin_installer.h',
         'browser/plugin_installer_infobar_delegate.cc',
         'browser/plugin_installer_infobar_delegate.h',
+        'browser/plugin_installer_observer.cc',
+        'browser/plugin_installer_observer.h',
         'browser/plugin_observer.cc',
         'browser/plugin_observer.h',
         'browser/plugin_prefs.cc',
@@ -4762,10 +4764,6 @@
             # Exclude try chrome dialog.
             ['exclude', '^browser/first_run/try_chrome_dialog_view.cc'],
             ['exclude', '^browser/first_run/try_chrome_dialog_view.h'],
-
-            # Exclude plugin download helper.
-            ['exclude', '^browser/plugin_download_helper.cc'],
-            ['exclude', '^browser/plugin_download_helper.h'],
           ],
           'conditions': [
             ['OS=="linux" or use_aura==1',{

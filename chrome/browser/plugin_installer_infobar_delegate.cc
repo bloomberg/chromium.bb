@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,11 +18,13 @@ using content::OpenURLParams;
 using content::Referrer;
 
 PluginInstallerInfoBarDelegate::PluginInstallerInfoBarDelegate(
+    PluginInstaller* installer,
     InfoBarTabHelper* infobar_helper,
     const string16& plugin_name,
     const GURL& learn_more_url,
     const base::Closure& callback)
     : ConfirmInfoBarDelegate(infobar_helper),
+      PluginInstallerObserver(installer),
       plugin_name_(plugin_name),
       learn_more_url_(learn_more_url),
       callback_(callback) {
@@ -83,4 +85,8 @@ bool PluginInstallerInfoBarDelegate::LinkClicked(
       content::PAGE_TRANSITION_LINK, false);
   owner()->web_contents()->OpenURL(params);
   return false;
+}
+
+void PluginInstallerInfoBarDelegate::DidStartDownload() {
+  owner()->RemoveInfoBar(this);
 }
