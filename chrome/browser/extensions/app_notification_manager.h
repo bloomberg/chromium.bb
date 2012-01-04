@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/app_notification_storage.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/api/syncable_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -26,7 +27,9 @@ class Profile;
 
 // This class keeps track of notifications for installed apps.
 class AppNotificationManager
-    : public base::RefCountedThreadSafe<AppNotificationManager>,
+    : public base::RefCountedThreadSafe<
+          AppNotificationManager,
+          content::BrowserThread::DeleteOnUIThread>,
       public content::NotificationObserver,
       public SyncableService {
  public:

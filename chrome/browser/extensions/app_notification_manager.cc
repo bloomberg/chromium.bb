@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "chrome/browser/sync/protocol/app_notification_specifics.pb.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
 using content::BrowserThread;
@@ -35,11 +34,6 @@ class GuidComparator
     return notif->guid() == guid;
   }
 };
-
-void DeleteStorageOnFileThread(AppNotificationStorage* storage) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  delete storage;
-}
 
 const AppNotification* FindByGuid(const AppNotificationList& list,
                                   const std::string& guid) {
@@ -81,11 +75,11 @@ AppNotificationManager::AppNotificationManager(Profile* profile)
 }
 
 AppNotificationManager::~AppNotificationManager() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Post a task to delete our storage on the file thread.
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&DeleteStorageOnFileThread, storage_.release()));
+  BrowserThread::DeleteSoon(BrowserThread::FILE,
+                            FROM_HERE,
+                            storage_.release());
 }
 
 void AppNotificationManager::Init() {
