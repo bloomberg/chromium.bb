@@ -3,6 +3,8 @@
   "name": "chrome.terminalPrivate.apitest",
   "version": "0.1",
   "description": "end-to-end test for terminalPrivate api. Test opens two crosh processes, starts infinite loop that echos 'aaaa' in both of them and observes output.",
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "permissions": ["terminalPrivate"]
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1244,6 +1244,53 @@ bool Extension::LoadWebIntentServices(const extensions::Manifest* manifest,
   return true;
 }
 
+bool Extension::LoadBackgroundPage(
+    const extensions::Manifest* manifest,
+    const ExtensionAPIPermissionSet& api_permissions,
+    string16* error) {
+  base::Value* background_page_value = NULL;
+  if (!manifest->Get(keys::kBackgroundPage, &background_page_value)) {
+    if (manifest_version_ == 1)
+      manifest->Get(keys::kBackgroundPageLegacy, &background_page_value);
+  }
+
+  if (!background_page_value)
+    return true;
+
+  std::string background_str;
+  if (!background_page_value->GetAsString(&background_str)) {
+    *error = ASCIIToUTF16(errors::kInvalidBackground);
+    return false;
+  }
+
+  if (is_hosted_app()) {
+    // Make sure "background" permission is set.
+    if (!api_permissions.count(ExtensionAPIPermission::kBackground)) {
+      *error = ASCIIToUTF16(errors::kBackgroundPermissionNeeded);
+      return false;
+    }
+    // Hosted apps require an absolute URL.
+    GURL bg_page(background_str);
+    if (!bg_page.is_valid()) {
+      *error = ASCIIToUTF16(errors::kInvalidBackgroundInHostedApp);
+      return false;
+    }
+
+    if (!(bg_page.SchemeIs("https") ||
+          (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kAllowHTTPBackgroundPage) &&
+           bg_page.SchemeIs("http")))) {
+      *error = ASCIIToUTF16(errors::kInvalidBackgroundInHostedApp);
+      return false;
+    }
+    background_url_ = bg_page;
+  } else {
+    background_url_ = GetResourceURL(background_str);
+  }
+
+  return true;
+}
+
 // static
 bool Extension::IsTrustedId(const std::string& id) {
   // See http://b/4946060 for more details.
@@ -1978,39 +2025,8 @@ bool Extension::InitFromValue(extensions::Manifest* manifest, int flags,
     }
   }
 
-  // Initialize background url (optional).
-  if (manifest->HasKey(keys::kBackground)) {
-    std::string background_str;
-    if (!manifest->GetString(keys::kBackground, &background_str)) {
-      *error = ASCIIToUTF16(errors::kInvalidBackground);
-      return false;
-    }
-
-    if (is_hosted_app()) {
-      // Make sure "background" permission is set.
-      if (!api_permissions.count(ExtensionAPIPermission::kBackground)) {
-        *error = ASCIIToUTF16(errors::kBackgroundPermissionNeeded);
-        return false;
-      }
-      // Hosted apps require an absolute URL.
-      GURL bg_page(background_str);
-      if (!bg_page.is_valid()) {
-        *error = ASCIIToUTF16(errors::kInvalidBackgroundInHostedApp);
-        return false;
-      }
-
-      if (!(bg_page.SchemeIs("https") ||
-           (CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kAllowHTTPBackgroundPage) &&
-            bg_page.SchemeIs("http")))) {
-        *error = ASCIIToUTF16(errors::kInvalidBackgroundInHostedApp);
-        return false;
-      }
-      background_url_ = bg_page;
-    } else {
-      background_url_ = GetResourceURL(background_str);
-    }
-  }
+  if (!LoadBackgroundPage(manifest, api_permissions, error))
+    return false;
 
   if (manifest->HasKey(keys::kDefaultLocale)) {
     if (!manifest->GetString(keys::kDefaultLocale, &default_locale_) ||

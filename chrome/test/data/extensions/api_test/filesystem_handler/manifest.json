@@ -4,7 +4,9 @@
   "version": "0.1",
   "manifest_version": 2,
   "description": "Tests of chrome.fileSystem.* methods",
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "file_browser_handlers": [
     {
       "id" : "TextAction",

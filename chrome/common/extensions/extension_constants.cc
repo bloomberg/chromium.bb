@@ -15,7 +15,9 @@ namespace extension_manifest_keys {
 const char kAllFrames[] = "all_frames";
 const char kAltKey[] = "altKey";
 const char kApp[] = "app";
-const char kBackground[] = "background_page";
+const char kBackground[] = "background";
+const char kBackgroundPage[] = "background.page";
+const char kBackgroundPageLegacy[] = "background_page";
 const char kBrowserAction[] = "browser_action";
 const char kChromeURLOverrides[] = "chrome_url_overrides";
 const char kContentScripts[] = "content_scripts";

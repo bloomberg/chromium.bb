@@ -3,5 +3,7 @@
   "version" : "0.1",
   "manifest_version": 2,
   "permissions": [ "contextMenus", "tabs" ],
-  "background_page": "background.html"
+  "background": {
+    "page": "background.html"
+  }
 }

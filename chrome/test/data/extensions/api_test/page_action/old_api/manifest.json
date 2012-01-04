@@ -2,7 +2,9 @@
   "name": "Test of old-style page actions API",
   "version": "1.0",
   "manifest_version": 2,
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "permissions": ["tabs"],
   "page_actions": [
     { "id": "action",
@@ -10,5 +12,7 @@
       "icons": ["icon.png"]
     }
   ],
-  "background_page": "background.html"
+  "background": {
+    "page": "background.html"
+  }
 }

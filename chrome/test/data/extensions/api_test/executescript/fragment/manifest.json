@@ -3,7 +3,9 @@
   "version": "1.0",
   "manifest_version": 2,
   "description": "Tests execute script running after navigation to a fragments within a page",
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "permissions": ["tabs", "http://*/*"],
   "content_scripts": [
     {"matches": ["http://*/*"], "js": ["content_script.js"]}

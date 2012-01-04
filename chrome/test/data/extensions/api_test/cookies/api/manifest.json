@@ -3,7 +3,9 @@
   "version": "0.1",
   "manifest_version": 2,
   "description": "end-to-end browser test for chrome.experimental.cookies API",
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "permissions": [
     "cookies",
     "tabs",

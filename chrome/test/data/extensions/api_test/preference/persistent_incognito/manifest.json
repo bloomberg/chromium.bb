@@ -4,5 +4,7 @@
   "manifest_version": 2,
   "description" : "Preference API Test Extension (Incognito)",
   "permissions": [ "experimental", "privacy" ],
-  "background_page": "test.html"
+  "background": {
+    "page": "test.html"
+  }
 }

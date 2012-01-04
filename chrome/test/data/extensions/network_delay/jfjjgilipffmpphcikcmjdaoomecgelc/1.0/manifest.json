@@ -3,6 +3,8 @@
   "version": "1.0",
   "manifest_version": 2,
   "name": "My startup delay extension 1",
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "permissions": ["tabs", "webRequest", "webRequestBlocking"]
 }

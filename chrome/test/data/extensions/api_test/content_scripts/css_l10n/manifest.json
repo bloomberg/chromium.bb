@@ -3,7 +3,9 @@
   "description": "Checks that messages in CSS content scripts get localized.",
   "version": "0.1",
   "manifest_version": 2,
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "default_locale": "en",
   "content_scripts": [
     {

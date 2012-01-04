@@ -4,5 +4,7 @@
   "manifest_version": 2,
   "description": "Tests messages which require permissions.",
   "permissions": ["http://a.com/"],
-  "background_page": "test.html"
+  "background": {
+    "page": "test.html"
+  }
 }

@@ -3,7 +3,9 @@
   "version": "1.0",
   "manifest_version": 2,
   "description": "Tests content scripts running with navigation to fragments within a page",
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "permissions": ["tabs"],
   "content_scripts": [
     { "matches": ["http://*/*"], "js": ["content_script.js"] }

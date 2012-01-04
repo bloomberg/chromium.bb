@@ -17,6 +17,8 @@ namespace extension_manifest_keys {
   extern const char kAltKey[];
   extern const char kApp[];
   extern const char kBackground[];
+  extern const char kBackgroundPage[];
+  extern const char kBackgroundPageLegacy[];
   extern const char kBrowserAction[];
   extern const char kBrowseURLs[];
   extern const char kChromeURLOverrides[];

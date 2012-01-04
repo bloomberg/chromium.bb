@@ -2,7 +2,9 @@
   "name": "A page action with a popup displaying a simple message",
   "version": "1.0",
   "manifest_version": 2,
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "permissions": [
     "tabs", "http://*/*", "https://*/*"
   ],

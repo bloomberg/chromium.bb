@@ -4,7 +4,9 @@
   "manifest_version": 2,
   "description": "end-to-end browser test for chrome.experimental.socket API",
   "platform_app": true,
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "app": {
     "launch": {
       "container": "shell",

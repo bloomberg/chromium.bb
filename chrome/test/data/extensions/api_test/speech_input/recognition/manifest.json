@@ -3,7 +3,9 @@
   "version": "0.1",
   "manifest_version": 2,
   "description": "browser test for chrome.experimental.speechInput API",
-  "background_page": "test.html",
+  "background": {
+    "page": "test.html"
+  },
   "permissions": ["experimental"],
   "web_accessible_resources": ["test.html"]
 }

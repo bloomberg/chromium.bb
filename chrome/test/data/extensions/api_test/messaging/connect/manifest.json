@@ -4,7 +4,9 @@
   "manifest_version": 2,
   "description": "Tests connect from a content script.",
   "permissions": ["tabs"],
-  "background_page": "test.html",
+  "background": {
+    "page": "test.html"
+  },
   "content_scripts": [
     {
       "matches": ["http://*/*"],

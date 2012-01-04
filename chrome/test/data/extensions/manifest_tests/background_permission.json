@@ -13,5 +13,7 @@
   "permissions": [
     "notifications"
   ],
-  "background_page": "foo.html"
+  "background": {
+    "page": "foo.html"
+  }
 }

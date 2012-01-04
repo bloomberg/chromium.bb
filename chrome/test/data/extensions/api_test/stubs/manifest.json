@@ -2,7 +2,9 @@
   "name": "Content Script Extension API Stubs Test",
   "version": "1.0",
   "manifest_version": 2,
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "content_scripts": [
     {
       "matches": ["http://*/*"],

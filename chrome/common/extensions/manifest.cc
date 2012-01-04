@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,6 +54,7 @@ struct Restrictions {
     map[keys::kOptionalPermissions] = all_but_themes;
     map[keys::kOptionsPage] = all_but_themes;
     map[keys::kBackground] = all_but_themes;
+    map[keys::kBackgroundPageLegacy] = all_but_themes;
     map[keys::kOfflineEnabled] = all_but_themes;
     map[keys::kMinimumChromeVersion] = all_but_themes;
     map[keys::kRequirements] = all_but_themes;

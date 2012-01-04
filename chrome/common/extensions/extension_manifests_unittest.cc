@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1009,4 +1009,24 @@ TEST_F(ExtensionManifestTest, PlatformAppOnlyPermissions) {
   for (ExtensionAPIPermissionSet::const_iterator i = apis.begin();
        i != apis.end(); ++i)
     EXPECT_NE(platform_app, info->GetByID(*i)->type_restrictions());
+}
+
+TEST_F(ExtensionManifestTest, BackgroundPage) {
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess("background_page.json"));
+  ASSERT_TRUE(extension);
+  EXPECT_EQ("/foo.html", extension->background_url().path());
+
+  std::string error;
+  scoped_ptr<DictionaryValue> manifest(
+      LoadManifestFile("background_page_legacy.json", &error));
+  ASSERT_TRUE(manifest.get());
+  extension = LoadAndExpectSuccess(Manifest(manifest.get(), ""));
+  ASSERT_TRUE(extension);
+  EXPECT_EQ("/foo.html", extension->background_url().path());
+
+  manifest->SetInteger(keys::kManifestVersion, 2);
+  extension = LoadAndExpectSuccess(Manifest(manifest.get(), ""));
+  ASSERT_TRUE(extension);
+  EXPECT_FALSE(extension->background_url().is_valid());
 }

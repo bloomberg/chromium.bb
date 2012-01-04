@@ -2,5 +2,7 @@
   "name": "Extension v1",
   "version": "1.0",
   "manifest_version": 2,
-  "background_page": "bg.html"
+  "background": {
+    "page": "bg.html"
+  }
 }

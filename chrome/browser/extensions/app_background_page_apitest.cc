@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,7 +126,9 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
       "    }"
       "  },"
       "  \"permissions\": [\"background\"],"
-      "  \"background_page\": \"http://a.com:%d/test.html\""
+      "  \"background\": {"
+      "    \"page\": \"http://a.com:%d/test.html\""
+      "  }"
       "}",
       test_server()->host_port_pair().port(),
       test_server()->host_port_pair().port());
@@ -185,7 +187,9 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoPagesWithManifest) {
       "      \"web_url\": \"http://a.com:%d/\""
       "    }"
       "  },"
-      "  \"background_page\": \"http://a.com:%d/bg.html\","
+      "  \"background\": {"
+      "    \"page\": \"http://a.com:%d/bg.html\""
+      "  },"
       "  \"permissions\": [\"background\"]"
       "}",
       test_server()->host_port_pair().port(),
@@ -216,8 +220,8 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenPopupFromBGPage) {
       "      \"web_url\": \"http://a.com:%d/\""
       "    }"
       "  },"
-      "  \"background_page\": \"http://a.com:%d/files/extensions/api_test/"
-      "app_background_page/bg_open/bg_open_bg.html\","
+      "  \"background\": { \"page\": \"http://a.com:%d/files/extensions/api_test/"
+      "app_background_page/bg_open/bg_open_bg.html\" },"
       "  \"permissions\": [\"background\"]"
       "}",
       test_server()->host_port_pair().port(),

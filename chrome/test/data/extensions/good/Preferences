@@ -20,7 +20,9 @@
                 "128": "icon_128.png"
               },
               "default_locale": "en_US",
-              "background_page": "backgroundpage.html",
+              "background": {
+                "page": "backgroundpage.html"
+              },
               "permissions": ["tabs", "http://*.google.com/*", "https://*.google.com/*"],
               "content_scripts": [
                 {
@@ -48,7 +50,9 @@
               "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDRS2GUBOUAO5VZ2CMRId/eRR8/e9V42nUvY5XG+0sZ+JDHEjIQdq8qQy7HqdqEpCXKPMSPuMiC2t2HE9/hpL89SblNn3mwYPtSJGQdZvAzuv6SB0oA6jZ66V7+h/k0noGD3Tcu+Ko/vfkt5wCx2uHVK29k5JR/vGr0klaoVezGlwIDAQAB",
               "version": "1.0",
               "name": "My extension 3",
-              "background_page": "background.html",
+              "background": {
+                "page": "background.html"
+              },
               "permissions": ["tabs"]
             }
          },
@@ -67,7 +71,9 @@
                 { "path": "content_plugin.dll", "public": true },
                 { "path": "extension_plugin.dll" }
               ],
-              "background_page": "background.html"
+              "background": {
+                "page": "background.html"
+              }
             }
          }
       }

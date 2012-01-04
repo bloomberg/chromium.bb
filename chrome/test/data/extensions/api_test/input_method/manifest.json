@@ -4,7 +4,9 @@
   "version": "0.1",
   "manifest_version": 2,
   "description": "Input method events tests.",
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "permissions": [ "inputMethodPrivate" ]
 }
 

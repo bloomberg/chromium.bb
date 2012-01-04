@@ -2,6 +2,8 @@
   "description": "Extension for Auto-Update testing",
   "name": "Auto-Update Test",
   "version": "2.0",
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "update_url": "http://localhost/autoupdate/manifest"
 }

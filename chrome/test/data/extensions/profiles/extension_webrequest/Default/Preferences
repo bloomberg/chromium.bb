@@ -37,7 +37,9 @@
             "install_time": "12943416715915765",
             "location": 1,
             "manifest": {
-               "background_page": "background.html",
+               "background": {
+                 "page": "background.html"
+               },
                "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDuUZGKCDbff6IRaxa4Pue7PPkxwPaNhGT3JEqppEsNWFjM80imEdqMbf3lrWqEfaHgaNku7nlpwPO1mu3/4Hr+XdNa5MhfnOnuPee4hyTLwOs3Vzz81wpbdzUxZSi2OmqMyI5oTaBYICfNHLwcuc65N5dbt6WKGeKgTpp4v7j7zwIDAQAB",
                "name": "Webrequest",
                "permissions": [ "experimental", "webRequest" ],

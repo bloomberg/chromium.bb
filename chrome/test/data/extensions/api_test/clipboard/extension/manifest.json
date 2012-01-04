@@ -3,6 +3,8 @@
   "version": "0.1",
   "manifest_version": 2,
   "description": "end-to-end browser test for clipboard permissions",
-  "background_page": "test.html",
+  "background": {
+    "page": "test.html"
+  },
   "permissions": ["clipboardRead"]
 }

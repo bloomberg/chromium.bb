@@ -4,5 +4,7 @@
   "version" : "0.1",
   "description" : "browser test for chrome.systemPrivate.getIncognitoModeVailability",
   "permissions": ["systemPrivate"],
-  "background_page": "test.html"
+  "background": {
+    "page": "test.html"
+  }
 }

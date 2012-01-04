@@ -3,7 +3,9 @@
   "version": "1.0",
   "manifest_version": 2,
   "description": "Tests that a chrome-extension iframe gets messaging privileges",
-  "background_page": "test.html",
+  "background": {
+    "page": "test.html"
+  },
   "permissions": ["tabs"],
   "content_scripts": [
     {

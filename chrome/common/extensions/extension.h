@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -669,6 +669,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                         string16* error);
   bool LoadWebIntentServices(const extensions::Manifest* manifest,
                              string16* error);
+  bool LoadBackgroundPage(const extensions::Manifest* manifest,
+                          const ExtensionAPIPermissionSet& api_permissions,
+                          string16* error);
 
   // Helper method to load an ExtensionAction from the page_action or
   // browser_action entries in the manifest.

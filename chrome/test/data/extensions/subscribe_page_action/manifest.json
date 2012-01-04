@@ -1,5 +1,7 @@
 {
-   "background_page": "background.html",
+   "background": {
+     "page": "background.html"
+   },
    "content_scripts": [ {
       "js": [ "sniff_common.js", "doc_start.js" ],
       "matches": [ "http://*/*", "https://*/*" ],

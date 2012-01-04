@@ -1,5 +1,7 @@
 {
-   "background_page": "background.html",
+   "background": {
+     "page": "background.html"
+   },
    "description": "Test whether whitelisted extensions can run scripts everywhere using executeScript",
    "name": "AllUrls execute permissions",
    "permissions": [ "tabs", "<all_urls>" ],

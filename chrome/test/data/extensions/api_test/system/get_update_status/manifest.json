@@ -3,7 +3,9 @@
   "name": "chrome.systemPrivate.getUpdateStatus",
   "version": "0.1",
   "description": "browser test for chrome.systemPriavte.getUpdateStatus API",
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "permissions": [
     "systemPrivate"
    ]

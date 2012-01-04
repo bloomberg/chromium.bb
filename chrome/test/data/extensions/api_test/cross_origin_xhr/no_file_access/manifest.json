@@ -3,6 +3,8 @@
   "version": "1.0",
   "manifest_version": 2,
   "description": "Tests bug 104547",
-  "background_page": "test.html",
+  "background": {
+    "page": "test.html"
+  },
   "permissions": [ "<all_urls>" ]
 }

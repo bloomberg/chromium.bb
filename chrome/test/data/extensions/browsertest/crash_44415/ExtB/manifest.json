@@ -6,6 +6,8 @@
         "default_icon": "icon.png",
         "popup": "popup.html"
     },
-    "background_page": "background.html",
+    "background": {
+      "page": "background.html"
+    },
     "permissions": [ "tabs", "http://*/*" ]
 }

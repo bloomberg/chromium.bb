@@ -4,6 +4,8 @@
   "version": "0.1",
   "manifest_version": 2,
   "description": "end-to-end browser test for chrome.metricsPrivate API",
-  "background_page": "test.html",
+  "background": {
+    "page": "test.html"
+  },
   "permissions": ["metricsPrivate"]
 }

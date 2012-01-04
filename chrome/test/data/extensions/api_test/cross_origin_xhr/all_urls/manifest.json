@@ -3,7 +3,9 @@
   "version": "1.0",
   "manifest_version": 2,
   "description": "Tests bug #98418",
-  "background_page": "test.html",
+  "background": {
+    "page": "test.html"
+  },
   "content_scripts": [{
     "matches": ["<all_urls>"],
     "js": ["content_script.js"],

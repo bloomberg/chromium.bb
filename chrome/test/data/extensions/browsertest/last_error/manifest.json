@@ -3,6 +3,8 @@
   "description": "Used by browsertest to test the setting of lastError for callbacks.",
   "version": "0.1",
   "manifest_version": 2,
-  "background_page": "bg.html",
+  "background": {
+    "page": "bg.html"
+  },
   "permissions": ["tabs"]
 }

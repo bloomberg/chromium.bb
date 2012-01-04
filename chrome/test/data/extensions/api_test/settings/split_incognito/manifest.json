@@ -4,6 +4,8 @@
   "manifest_version": 2,
   "description": "Tests the API in split incognito mode",
   "permissions": ["experimental"],
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "incognito": "split"
 }

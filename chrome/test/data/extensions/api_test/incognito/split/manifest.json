@@ -3,7 +3,9 @@
   "version": "0.1",
   "manifest_version": 2,
   "description": "test that an incognito extension in split mode behaves properly",
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "incognito": "split",
   "permissions": ["tabs", "bookmarks", "http://*/*"]
 }

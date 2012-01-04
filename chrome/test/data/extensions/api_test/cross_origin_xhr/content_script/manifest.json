@@ -3,7 +3,9 @@
   "version": "0.1",
   "manifest_version": 2,
   "description": "Sanity check that cross-origin XHR works for extension content scripts.",
-  "background_page": "test.html",
+  "background": {
+    "page": "test.html"
+  },
   "content_scripts": [ {
       "js": [ "content_script.js" ],
       "matches": [ "http://localhost/*" ]

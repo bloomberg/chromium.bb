@@ -2,7 +2,9 @@
   "name": "chrome.experimental.accessibility",
   "version": "0.1",
   "description": "browser test for chrome.experimental.accessibility.getAlertsForTab API",
-  "background_page": "background.html",
+  "background": {
+    "page": "background.html"
+  },
   "permissions": [
     "tabs",
     "experimental"

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -161,7 +161,7 @@ TEST_F(ComponentLoaderTest, ParseManifest) {
 
   std::string string_value;
   manifest.reset(component_loader_.ParseManifest(manifest_contents_));
-  ASSERT_TRUE(manifest->GetString("background_page", &string_value));
+  ASSERT_TRUE(manifest->GetString("background.page", &string_value));
   ASSERT_EQ("backgroundpage.html", string_value);
 }
 
