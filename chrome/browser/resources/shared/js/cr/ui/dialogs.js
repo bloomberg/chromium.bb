@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,20 +76,10 @@ cr.define('cr.ui.dialogs', function() {
   BaseDialog.prototype.onCancel_ = null;
 
   BaseDialog.prototype.onContainerKeyDown_ = function(event) {
-    switch (event.keyCode) {
-      case 13:  // Enter
-        if (!this.okButton_.disabled) {
-          this.onOkClick_(event);
-          event.preventDefault();
-        }
-        return;
-
-      case 27:  // Escape
-        if (!this.cancelButton_.disabled) {
-          this.onCancelClick_(event);
-          event.preventDefault();
-        }
-        return;
+    // Handle Escape.
+    if (event.keyCode == 27 && !this.cancelButton_.disabled) {
+      this.onCancelClick_(event);
+      event.preventDefault();
     }
   };
 
@@ -215,6 +205,7 @@ cr.define('cr.ui.dialogs', function() {
     this.input_ = this.document_.createElement('input');
     this.input_.setAttribute('type', 'text');
     this.input_.addEventListener('focus', this.onInputFocus.bind(this));
+    this.input_.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.initialFocusElement_ = this.input_;
     this.frame_.insertBefore(this.input_, this.text_.nextSibling);
   }
@@ -223,6 +214,11 @@ cr.define('cr.ui.dialogs', function() {
 
   PromptDialog.prototype.onInputFocus = function(event) {
     this.input_.select();
+  };
+
+  PromptDialog.prototype.onKeyDown_ = function(event) {
+    if (event.keyCode == 13)  // Enter
+      this.onOkClick_(event);
   };
 
   PromptDialog.prototype.show = function(message, defaultValue, onOk, onCancel,
