@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1635,8 +1635,7 @@ class DownloadObserver : public content::DownloadManager::Observer {
 
 // Verify that the download shelf is opened in the existing tabbed browser
 // when a download is started in a Panel.
-// http://crbug.com/108357
-IN_PROC_BROWSER_TEST_F(PanelDownloadTest, DISABLED_Download) {
+IN_PROC_BROWSER_TEST_F(PanelDownloadTest, Download) {
   Profile* profile = browser()->profile();
   ASSERT_TRUE(CreateDownloadDirectory(profile));
   Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
@@ -1684,8 +1683,7 @@ IN_PROC_BROWSER_TEST_F(PanelDownloadTest, DISABLED_Download) {
 // Verify that a new tabbed browser is created to display a download
 // shelf when a download is started in a Panel and there is no existing
 // tabbed browser.
-// http://crbug.com/108357
-IN_PROC_BROWSER_TEST_F(PanelDownloadTest, DISABLED_DownloadNoTabbedBrowser) {
+IN_PROC_BROWSER_TEST_F(PanelDownloadTest, DownloadNoTabbedBrowser) {
   Profile* profile = browser()->profile();
   ASSERT_TRUE(CreateDownloadDirectory(profile));
   Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,

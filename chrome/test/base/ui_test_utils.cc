@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -402,9 +402,11 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     int browser_test_flags) {
   if (disposition == CURRENT_TAB && browser->GetSelectedWebContents())
     WaitForLoadStop(browser->GetSelectedWebContents());
+  content::NavigationController* controller =
+      browser->GetSelectedWebContents() ?
+      &browser->GetSelectedWebContents()->GetController() : NULL;
   TestNavigationObserver same_tab_observer(
-      content::Source<content::NavigationController>(
-          &browser->GetSelectedWebContents()->GetController()),
+      content::Source<content::NavigationController>(controller),
       NULL,
       number_of_navigations);
 
