@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -223,8 +223,7 @@ int NaCl_page_alloc_randomized(void   **p,
   for (tries = 0; tries < kNumTries; ++tries) {
 #if NACL_HOST_WORDSIZE == 32
     addr = NaClGlobalSecureRngUint32();
-    NaClLog(LOG_INFO, "NaCl_page_alloc_randomized: 0x%"NACL_PRIxPTR"\n",
-            addr);
+    NaClLog(2, "NaCl_page_alloc_randomized: 0x%"NACL_PRIxPTR"\n", addr);
     /*
      * Windows permits 2-3 GB of user address space, depending on
      * 4-gigabyte tuning (4GT) parameter.  We ask for somewhere in the
@@ -234,8 +233,7 @@ int NaCl_page_alloc_randomized(void   **p,
                    & ((~(uintptr_t) 0) >> 1));
 #elif NACL_HOST_WORDSIZE == 64
     addr = NaClGlobalSecureRngUint32();
-    NaClLog(LOG_INFO, "NaCl_page_alloc_randomized: 0x%"NACL_PRIxPTR"\n",
-            addr);
+    NaClLog(2, "NaCl_page_alloc_randomized: 0x%"NACL_PRIxPTR"\n", addr);
     /*
      * 64-bit windows permits 8 TB of user address space, and we keep
      * the low 16 bits free (64K alignment), so we just have 43-16=27
@@ -247,7 +245,7 @@ int NaCl_page_alloc_randomized(void   **p,
 # error "where am i?"
 #endif
 
-    NaClLog(LOG_INFO, "NaCl_page_alloc_randomized: hint 0x%"NACL_PRIxPTR"\n",
+    NaClLog(2, "NaCl_page_alloc_randomized: hint 0x%"NACL_PRIxPTR"\n",
             (uintptr_t) *p);
     neg_errno = NaCl_page_alloc_at_addr(p, size);
     if (0 == neg_errno) {

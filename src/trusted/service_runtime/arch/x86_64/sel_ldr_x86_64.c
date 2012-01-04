@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -26,7 +26,7 @@ int NaClMakeDispatchThunk(struct NaClApp *nap) {
   uintptr_t             dispatch_thunk = 0;
   uintptr_t             get_tls_fast_path = 0;
 
-  NaClLog(LOG_WARNING, "Entered NaClMakeDispatchThunk\n");
+  NaClLog(2, "Entered NaClMakeDispatchThunk\n");
   if (0 != nap->dispatch_thunk) {
     NaClLog(LOG_ERROR, " dispatch_thunk already initialized!\n");
     return 1;
@@ -40,7 +40,7 @@ int NaClMakeDispatchThunk(struct NaClApp *nap) {
     retval = 0;
     goto cleanup;
   }
-  NaClLog(LOG_INFO, "NaClMakeDispatchThunk: got addr 0x%"NACL_PRIxPTR"\n",
+  NaClLog(2, "NaClMakeDispatchThunk: got addr 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) thunk_addr);
 
   if (0 != (error = NaCl_mprotect(thunk_addr,
