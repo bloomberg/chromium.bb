@@ -56,15 +56,6 @@ class BASE_EXPORT Task {
   virtual void Run() = 0;
 };
 
-class BASE_EXPORT CancelableTask : public Task {
- public:
-  CancelableTask();
-  virtual ~CancelableTask();
-
-  // Not all tasks support cancellation.
-  virtual void Cancel() = 0;
-};
-
 template<typename T>
 void DeletePointer(T* obj) {
   delete obj;
@@ -77,22 +68,8 @@ void ReleasePointer(T* obj) {
 
 namespace base {
 
-// ScopedTaskRunner is akin to scoped_ptr for Tasks.  It ensures that the Task
-// is executed and deleted no matter how the current scope exits.
-class BASE_EXPORT ScopedTaskRunner {
- public:
-  // Takes ownership of the task.
-  explicit ScopedTaskRunner(Task* task);
-  ~ScopedTaskRunner();
-
-  Task* Release();
-
- private:
-  Task* task_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ScopedTaskRunner);
-};
-
+// ScopedClosureRunner is akin to scoped_ptr for Closures. It ensures that the
+// Closure is executed and deleted no matter how the current scope exits.
 class BASE_EXPORT ScopedClosureRunner {
  public:
   explicit ScopedClosureRunner(const Closure& closure);
