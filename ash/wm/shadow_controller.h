@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ class Shadow;
 // shadows as needed.
 class ASH_EXPORT ShadowController : public aura::RootWindowObserver,
                                            public aura::WindowObserver {
-public:
+ public:
   class TestApi {
    public:
     explicit TestApi(ShadowController* controller) : controller_(controller) {}
@@ -83,7 +83,7 @@ public:
   DISALLOW_COPY_AND_ASSIGN(ShadowController);
 };
 
-}  // namepsace internal
-}  // namepsace ash
+}  // namespace internal
+}  // namespace ash
 
 #endif  // ASH_WM_SHADOW_CONTROLLER_H_

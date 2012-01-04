@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@
 #include "ash/wm/default_container_event_filter.h"
 #include "ash/wm/default_container_layout_manager.h"
 #include "ash/wm/modal_container_layout_manager.h"
+#include "ash/wm/power_button_controller.h"
 #include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/shadow_controller.h"
@@ -224,23 +225,21 @@ void Shell::Init() {
   // Force a layout.
   root_window->layout_manager()->OnWindowResized();
 
-  // Initialize InputMethodEventFilter. The filter must be added first since it
-  // has the highest priority.
+  // InputMethodEventFilter must be added first since it has the highest
+  // priority.
   DCHECK(!GetRootWindowEventFilterCount());
   input_method_filter_.reset(new internal::InputMethodEventFilter);
   AddRootWindowEventFilter(input_method_filter_.get());
 
-  // Initialize AcceleratorFilter.
   accelerator_filter_.reset(new internal::AcceleratorFilter);
   AddRootWindowEventFilter(accelerator_filter_.get());
 
-  // Initialize TooltipController.
   tooltip_controller_.reset(new internal::TooltipController);
   AddRootWindowEventFilter(tooltip_controller_.get());
   aura::client::SetTooltipClient(tooltip_controller_.get());
 
-  // Initialize drag drop controller.
   drag_drop_controller_.reset(new internal::DragDropController);
+  power_button_controller_.reset(new PowerButtonController);
 }
 
 bool Shell::DefaultToCompactWindowMode(const gfx::Size& monitor_size,

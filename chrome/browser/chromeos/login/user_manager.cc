@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -596,8 +596,8 @@ void UserManager::NotifyLocalStateChanged() {
 // Protected constructor and destructor.
 UserManager::UserManager()
     : ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_(new UserImageLoader)),
-      guest_user_(kGuestUser),
-      stub_user_(kStubUser),
+      guest_user_(kGuestUser, true),
+      stub_user_(kStubUser, false),
       logged_in_user_(NULL),
       current_user_is_owner_(false),
       current_user_is_new_(false),
@@ -980,7 +980,7 @@ void UserManager::OnDownloadComplete(ProfileDownloader* downloader,
 }
 
 User* UserManager::CreateUser(const std::string& email) const {
-  User* user = new User(email);
+  User* user = new User(email, email == kGuestUser);
   user->set_oauth_token_status(LoadUserOAuthStatus(email));
   // Used to determine whether user's display name is unique.
   ++display_name_count_[user->GetDisplayName()];

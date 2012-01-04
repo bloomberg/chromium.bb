@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
-    // Monitor the D-Bus signal for power supply polling signals.
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
         power_manager::kPowerSupplyPollSignal,
@@ -84,7 +83,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
-    // Monitor the D-Bus signal for power state changed signals.
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
         power_manager::kPowerStateChangedSignal,
@@ -93,7 +91,14 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
-    // Monitor the D-Bus signal for screen lock and unlock signals.
+    power_manager_proxy_->ConnectToSignal(
+        power_manager::kPowerManagerInterface,
+        power_manager::kButtonEventSignal,
+        base::Bind(&PowerManagerClientImpl::ButtonEventSignalReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+
     power_manager_proxy_->ConnectToSignal(
         chromium::kChromiumInterface,
         chromium::kLockScreenSignal,
@@ -101,6 +106,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
+
     power_manager_proxy_->ConnectToSignal(
         chromium::kChromiumInterface,
         chromium::kUnlockScreenSignal,
@@ -235,7 +241,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  // Called when a brightness change signal is received.
   void BrightnessChangedReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     int32 brightness_level = 0;
@@ -252,7 +257,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
                       BrightnessChanged(brightness_level, user_initiated));
   }
 
-  // Called when a response for DecreaseScreenBrightness() is received.
   void OnDecreaseScreenBrightness(dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to decrease screen brightness";
@@ -261,7 +265,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
     VLOG(1) << "screen brightness increased: " << response->ToString();
   }
 
-  // Called when a response for IncreaseScreenBrightness() is received.
   void OnIncreaseScreenBrightness(dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to increase screen brightness";
@@ -270,7 +273,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
     VLOG(1) << "screen brightness increased: " << response->ToString();
   }
 
-  // Called when a power state changed signal is received.
   void PowerStateChangedSignalReceived(dbus::Signal* signal) {
     VLOG(1) << "Received power state changed signal.";
     dbus::MessageReader reader(signal);
@@ -281,17 +283,38 @@ class PowerManagerClientImpl : public PowerManagerClient {
     }
     if (power_state_string != "on")
       return;
-    // Notify all observers of resume event.
     FOR_EACH_OBSERVER(Observer, observers_, SystemResumed());
   }
 
-  // Called when a power supply polling signal is received.
+  void ButtonEventSignalReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    std::string button_name;
+    bool down = false;
+    int64 timestamp_internal = 0;
+    if (!reader.PopString(&button_name) ||
+        !reader.PopBool(&down) ||
+        !reader.PopInt64(&timestamp_internal)) {
+      LOG(ERROR) << "Button signal had incorrect parameters: "
+                 << signal->ToString();
+      return;
+    }
+    base::TimeTicks timestamp =
+        base::TimeTicks::FromInternalValue(timestamp_internal);
+
+    if (button_name == power_manager::kPowerButtonName) {
+      FOR_EACH_OBSERVER(
+          Observer, observers_, PowerButtonStateChanged(down, timestamp));
+    } else if (button_name == power_manager::kLockButtonName) {
+      FOR_EACH_OBSERVER(
+          Observer, observers_, LockButtonStateChanged(down, timestamp));
+    }
+  }
+
   void PowerSupplyPollReceived(dbus::Signal* unused_signal) {
     VLOG(1) << "Received power supply poll signal.";
     RequestStatusUpdate();
   }
 
-  // Called when GetAllPropertiesMethod call is complete.
   void OnGetAllPropertiesMethod(dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Error calling " << power_manager::kGetAllPropertiesMethod;
@@ -408,7 +431,6 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   }
 
   virtual void RequestRestart() OVERRIDE {}
-
   virtual void RequestShutdown() OVERRIDE {}
 
   virtual void CalculateIdleTime(const CalculateIdleTimeCallback& callback)
@@ -417,11 +439,8 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   }
 
   virtual void NotifyScreenLockRequested() OVERRIDE {}
-
   virtual void NotifyScreenLockCompleted() OVERRIDE {}
-
   virtual void NotifyScreenUnlockRequested() OVERRIDE {}
-
   virtual void NotifyScreenUnlockCompleted() OVERRIDE {}
 
  private:

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,9 +10,12 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 
+namespace base {
+class TimeTicks;
+}
 namespace dbus {
 class Bus;
-}  // namespace
+}
 
 namespace chromeos {
 
@@ -56,6 +59,14 @@ class PowerManagerClient {
 
     // Called when the system resumes from suspend.
     virtual void SystemResumed() {}
+
+    // Called when the power button is pressed or released.
+    virtual void PowerButtonStateChanged(bool down,
+                                         const base::TimeTicks& timestamp) {}
+
+    // Called when the lock button is pressed or released.
+    virtual void LockButtonStateChanged(bool down,
+                                        const base::TimeTicks& timestamp) {}
 
     // Called when the screen is locked.
     virtual void LockScreen() {}

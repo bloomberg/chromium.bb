@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ class Window;
 
 class AURA_EXPORT RootWindowObserver {
  public:
-  // Invoked after the RootWindowObserver is resized.
+  // Invoked after the RootWindow is resized.
   virtual void OnRootWindowResized(const gfx::Size& new_size) {}
 
   // Invoked when a new window is initialized.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,7 @@ namespace ash {
 
 class AcceleratorController;
 class Launcher;
+class PowerButtonController;
 class ShellDelegate;
 
 namespace internal {
@@ -83,9 +84,11 @@ class ASH_EXPORT Shell {
   AcceleratorController* accelerator_controller() {
     return accelerator_controller_.get();
   }
-
   internal::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
+  }
+  PowerButtonController* power_button_controller() {
+    return power_button_controller_.get();
   }
 
   ShellDelegate* delegate() { return delegate_.get(); }
@@ -138,6 +141,7 @@ class ASH_EXPORT Shell {
   scoped_ptr<internal::WorkspaceController> workspace_controller_;
   scoped_ptr<internal::ShadowController> shadow_controller_;
   scoped_ptr<internal::TooltipController> tooltip_controller_;
+  scoped_ptr<PowerButtonController> power_button_controller_;
 
   // An event filter that pre-handles all key events to send them to an IME.
   scoped_ptr<internal::InputMethodEventFilter> input_method_filter_;

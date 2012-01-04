@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,6 +62,8 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/chromeos/legacy_window_manager/initial_browser_window_observer.h"
+#include "chrome/browser/chromeos/power/power_button_controller_delegate_chromeos.h"
+#include "chrome/browser/chromeos/power/power_button_observer.h"
 #endif
 
 class MessageLoopObserver : public MessageLoopForUI::Observer {
@@ -394,6 +396,14 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   if (parsed_command_line().HasSwitch(switches::kEnableBluetooth)) {
     chromeos::BluetoothManager::Initialize();
   }
+
+#if defined(USE_AURA)
+  // This is dependent on the ash::Shell singleton already having been
+  // initialized.
+  power_button_observer_.reset(new chromeos::PowerButtonObserver);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
+      power_button_observer_.get());
+#endif
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }

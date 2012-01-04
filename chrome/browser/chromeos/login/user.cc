@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,12 +19,13 @@ const int kStubImageResourceID = IDR_PROFILE_PICTURE_LOADING;
 
 }  // namespace
 
-User::User(const std::string& email)
+User::User(const std::string& email, bool is_guest)
     : email_(email),
       display_email_(email),
       oauth_token_status_(OAUTH_TOKEN_STATUS_UNKNOWN),
       image_index_(kInvalidImageIndex),
-      image_is_stub_(false) {
+      image_is_stub_(false),
+      is_guest_(is_guest) {
   image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
       kDefaultImageResources[0]);
 }

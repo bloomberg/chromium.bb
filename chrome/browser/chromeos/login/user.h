@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,11 +62,13 @@ class User {
   // The displayed (non-canonical) user email.
   std::string display_email() const { return display_email_; }
 
+  bool is_guest() const { return is_guest_; }
+
  private:
   friend class UserManager;
 
   // Do not allow anyone else to create new User instances.
-  explicit User(const std::string& email);
+  User(const std::string& email, bool is_guest);
   ~User();
 
   // Setters are private so only UserManager can call them.
@@ -95,6 +97,9 @@ class User {
 
   // True if current user image is a stub set by a |SetStubImage| call.
   bool image_is_stub_;
+
+  // Is this a guest account?
+  bool is_guest_;
 
   DISALLOW_COPY_AND_ASSIGN(User);
 };

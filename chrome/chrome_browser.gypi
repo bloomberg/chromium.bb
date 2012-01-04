@@ -742,6 +742,10 @@
         'browser/chromeos/panels/panel_scroller_container.h',
         'browser/chromeos/panels/panel_scroller_header.cc',
         'browser/chromeos/panels/panel_scroller_header.h',
+        'browser/chromeos/power/power_button_controller_delegate_chromeos.cc',
+        'browser/chromeos/power/power_button_controller_delegate_chromeos.h',
+        'browser/chromeos/power/power_button_observer.cc',
+        'browser/chromeos/power/power_button_observer.h',
         'browser/chromeos/preferences.cc',
         'browser/chromeos/preferences.h',
         'browser/chromeos/prerender_condition_network.cc',
@@ -5179,9 +5183,12 @@
                 'browser/ui/toolbar/bookmark_sub_menu_model.cc',
               ],
             }],
-            # chromeos notifications are not used in aura.
             ['chromeos==1 and use_aura==0', {
               'sources/': [
+                ['exclude', '^browser/chromeos/power/power_button_controller_delegate_chromeos.cc'],
+                ['exclude', '^browser/chromeos/power/power_button_controller_delegate_chromeos.h'],
+                ['exclude', '^browser/chromeos/power/power_button_observer.cc'],
+                ['exclude', '^browser/chromeos/power/power_button_observer.h'],
                 ['exclude', '^browser/notifications/balloon_collection_impl.cc'],
                 ['exclude', '^browser/notifications/balloon_collection_impl.h'],
                 ['exclude', '^browser/notifications/balloon_collection_views.cc'],
