@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -454,7 +454,7 @@ WebString TestWebViewDelegate::autoCorrectWord(const WebString& word) {
 void TestWebViewDelegate::runModalAlertDialog(
     WebFrame* frame, const WebString& message) {
   if (!shell_->layout_test_mode()) {
-    ShowJavaScriptAlert(UTF16ToWideHack(message));
+    ShowJavaScriptAlert(message);
   } else {
     printf("ALERT: %s\n", message.utf8().data());
   }
@@ -768,8 +768,8 @@ void TestWebViewDelegate::didStartProvisionalLoad(WebFrame* frame) {
   }
 
   if (shell_->layout_test_controller()->StopProvisionalFrameLoads()) {
-    printf("%S - stopping load in didStartProvisionalLoadForFrame callback\n",
-           GetFrameDescription(frame).c_str());
+    printf("%s - stopping load in didStartProvisionalLoadForFrame callback\n",
+           UTF16ToUTF8(GetFrameDescription(frame)).c_str());
     frame->stopLoading();
   }
   UpdateAddressBar(frame->view());
@@ -836,8 +836,8 @@ void TestWebViewDelegate::didReceiveTitle(
 void TestWebViewDelegate::didFinishDocumentLoad(WebFrame* frame) {
   unsigned pending_unload_events = frame->unloadListenerCount();
   if (pending_unload_events) {
-    printf("%S - has %u onunload handler(s)\n",
-        GetFrameDescription(frame).c_str(), pending_unload_events);
+    printf("%s - has %u onunload handler(s)\n",
+        UTF16ToUTF8(GetFrameDescription(frame)).c_str(), pending_unload_events);
   }
 }
 
@@ -1137,20 +1137,21 @@ void TestWebViewDelegate::UpdateSessionHistory(WebFrame* frame) {
   entry->SetContentState(webkit_glue::HistoryItemToString(history_item));
 }
 
-std::wstring TestWebViewDelegate::GetFrameDescription(WebFrame* webframe) {
-  std::wstring name = UTF16ToWideHack(webframe->name());
+string16 TestWebViewDelegate::GetFrameDescription(WebFrame* webframe) {
+  std::string name = UTF16ToUTF8(webframe->name());
 
   if (webframe == shell_->webView()->mainFrame()) {
     if (name.length())
-      return L"main frame \"" + name + L"\"";
+      name = "main frame \"" + name + "\"";
     else
-      return L"main frame";
+      name = "main frame";
   } else {
     if (name.length())
-      return L"frame \"" + name + L"\"";
+      name = "frame \"" + name + "\"";
     else
-      return L"frame (anonymous)";
+      name = "frame (anonymous)";
   }
+  return UTF8ToUTF16(name);
 }
 
 void TestWebViewDelegate::set_fake_window_rect(const WebRect& rect) {

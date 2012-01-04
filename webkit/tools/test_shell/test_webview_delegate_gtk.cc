@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -252,10 +252,10 @@ void TestWebViewDelegate::UpdateSelectionClipboard(bool is_empty_selection) {
 
 // Private methods ------------------------------------------------------------
 
-void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {
+void TestWebViewDelegate::ShowJavaScriptAlert(const string16& message) {
   GtkWidget* dialog = gtk_message_dialog_new(
       shell_->mainWnd(), GTK_DIALOG_MODAL, GTK_MESSAGE_INFO,
-      GTK_BUTTONS_OK, "%s", WideToUTF8(message).c_str());
+      GTK_BUTTONS_OK, "%s", UTF16ToUTF8(message).c_str());
   gtk_window_set_title(GTK_WINDOW(dialog), "JavaScript Alert");
   gtk_dialog_run(GTK_DIALOG(dialog));  // Runs a nested message loop.
   gtk_widget_destroy(dialog);

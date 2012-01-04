@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,6 @@
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
 using std::string;
-using std::wstring;
 
 using WebKit::WebBindings;
 using WebKit::WebConsoleMessage;
@@ -269,11 +268,12 @@ void LayoutTestController::PolicyDelegateDone() {
 
 void LayoutTestController::fallbackMethod(
     const CppArgumentList& args, CppVariant* result) {
-  std::wstring message(L"JavaScript ERROR: unknown method called on LayoutTestController");
+  std::string message(
+      "JavaScript ERROR: unknown method called on LayoutTestController");
   if (!shell_->layout_test_mode()) {
     logging::LogMessage("CONSOLE:", 0).stream() << message;
   } else {
-    printf("CONSOLE MESSAGE: %S\n", message.c_str());
+    printf("CONSOLE MESSAGE: %s\n", message.c_str());
   }
   result->SetNull();
 }

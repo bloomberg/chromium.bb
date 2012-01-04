@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -205,9 +205,9 @@ void TestWebViewDelegate::UpdateSelectionClipboard(bool is_empty_selection) {
 
 // Private methods ------------------------------------------------------------
 
-void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {
+void TestWebViewDelegate::ShowJavaScriptAlert(const string16& message) {
   NSString *text =
-      [NSString stringWithUTF8String:WideToUTF8(message).c_str()];
+      [NSString stringWithUTF8String:UTF16ToUTF8(message).c_str()];
   NSAlert *alert = [NSAlert alertWithMessageText:@"JavaScript Alert"
                                    defaultButton:@"OK"
                                  alternateButton:nil

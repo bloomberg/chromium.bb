@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ FilePath GetMD5SumPath(const FilePath& path) {
 }
 
 #if defined(CALCULATE_MD5_SUMS)
-void SaveMD5Sum(const std::wstring& path, const WebKit::WebImage& web_image) {
+void SaveMD5Sum(const FilePath& path, const WebKit::WebImage& web_image) {
   // Calculate MD5 sum.
   base::MD5Digest digest;
   web_image.getSkBitmap().lockPixels();
@@ -209,7 +209,7 @@ void  ImageDecoderTest::TestWebKitImageDecoder(const FilePath& image_path,
   // image dats to the size is returned.
   WebKit::WebSize size(decoder->getImage(desired_frame_index).size());
   const WebKit::WebImage& image = WebKit::WebImage::fromData(data, size);
-  SaveMD5Sum(md5_sum_path.value(), image);
+  SaveMD5Sum(md5_sum_path, image);
 #else
   VerifyImage(*decoder, image_path, md5_sum_path, desired_frame_index);
 #endif
