@@ -188,6 +188,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   void SetWebKitFocus(bool has_focus);
   void SetContentAreaFocus(bool has_focus);
 
+  // Notification about page visibility. The default is "visible".
+  void PageVisibilityChanged(bool is_visible);
+
   // Notifications that the view has rendered the page and that it has been
   // flushed to the screen. These messages are used to send Flush callbacks to
   // the plugin for DeviceContext2D.

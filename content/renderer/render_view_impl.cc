@@ -4309,8 +4309,11 @@ void RenderViewImpl::OnWasHidden() {
     webview()->setVisibilityState(visibilityState(), false);
   }
 
+  // Inform PPAPI plugins that their page is no longer visible.
+  pepper_delegate_.PageVisibilityChanged(false);
+
 #if defined(OS_MACOSX)
-  // Inform plugins that their container is no longer visible.
+  // Inform NPAPI plugins that their container is no longer visible.
   std::set<WebPluginDelegateProxy*>::iterator plugin_it;
   for (plugin_it = plugin_delegates_.begin();
        plugin_it != plugin_delegates_.end(); ++plugin_it) {
@@ -4328,8 +4331,11 @@ void RenderViewImpl::OnWasRestored(bool needs_repainting) {
     webview()->setVisibilityState(visibilityState(), false);
   }
 
+  // Inform PPAPI plugins that their page is visible.
+  pepper_delegate_.PageVisibilityChanged(true);
+
 #if defined(OS_MACOSX)
-  // Inform plugins that their container is now visible.
+  // Inform NPAPI plugins that their container is now visible.
   std::set<WebPluginDelegateProxy*>::iterator plugin_it;
   for (plugin_it = plugin_delegates_.begin();
        plugin_it != plugin_delegates_.end(); ++plugin_it) {

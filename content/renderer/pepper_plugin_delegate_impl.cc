@@ -1349,6 +1349,13 @@ void PepperPluginDelegateImpl::OnSetFocus(bool has_focus) {
     (*i)->SetContentAreaFocus(has_focus);
 }
 
+void PepperPluginDelegateImpl::PageVisibilityChanged(bool is_visible) {
+  for (std::set<webkit::ppapi::PluginInstance*>::iterator i =
+           active_instances_.begin();
+       i != active_instances_.end(); ++i)
+    (*i)->PageVisibilityChanged(is_visible);
+}
+
 bool PepperPluginDelegateImpl::IsPluginFocused() const {
   return focused_plugin_ != NULL;
 }
@@ -2026,6 +2033,10 @@ void PepperPluginDelegateImpl::DidReceiveMouseEvent(
 
 bool PepperPluginDelegateImpl::IsInFullscreenMode() {
   return render_view_->is_fullscreen();
+}
+
+bool PepperPluginDelegateImpl::IsPageVisible() const {
+  return !render_view_->is_hidden();
 }
 
 bool PepperPluginDelegateImpl::OnMessageReceived(const IPC::Message& message) {

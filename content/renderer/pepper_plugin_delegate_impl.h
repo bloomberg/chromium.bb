@@ -174,6 +174,9 @@ class PepperPluginDelegateImpl
   // notifies all of the plugins.
   void OnSetFocus(bool has_focus);
 
+  // Notification that the page visibility has changed. The default is visible.
+  void PageVisibilityChanged(bool is_visible);
+
   // IME status.
   bool IsPluginFocused() const;
   gfx::Rect GetCaretBounds() const;
@@ -382,6 +385,7 @@ class PepperPluginDelegateImpl
   virtual void DidReceiveMouseEvent(
       webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual bool IsInFullscreenMode() OVERRIDE;
+  virtual bool IsPageVisible() const OVERRIDE;
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

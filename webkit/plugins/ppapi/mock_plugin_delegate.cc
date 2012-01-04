@@ -364,5 +364,9 @@ bool MockPluginDelegate::IsInFullscreenMode() {
   return false;
 }
 
+bool MockPluginDelegate::IsPageVisible() const {
+  return true;
+}
+
 }  // namespace ppapi
 }  // namespace webkit

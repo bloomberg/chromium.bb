@@ -98,6 +98,7 @@ class CONTENT_EXPORT RenderWidget
   gfx::Size size() const { return size_; }
   bool has_focus() const { return has_focus_; }
   bool is_fullscreen() const { return is_fullscreen_; }
+  bool is_hidden() const { return is_hidden_; }
 
   // IPC::Channel::Listener
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -272,8 +273,6 @@ class CONTENT_EXPORT RenderWidget
   // use this method so that we can properly inform the RenderThread of our
   // state.
   void SetHidden(bool hidden);
-
-  bool is_hidden() const { return is_hidden_; }
 
   void WillToggleFullscreen();
   void DidToggleFullscreen();

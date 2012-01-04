@@ -314,6 +314,8 @@ PluginInstance::PluginInstance(
   module_->InstanceCreated(this);
   delegate_->InstanceCreated(this);
   message_channel_.reset(new MessageChannel(this));
+
+  view_data_.is_page_visible = delegate->IsPageVisible();
 }
 
 PluginInstance::~PluginInstance() {
@@ -797,6 +799,14 @@ void PluginInstance::SetContentAreaFocus(bool has_focus) {
     instance_interface_->DidChangeFocus(pp_instance(),
                                         PP_FromBool(PluginHasFocus()));
   }
+}
+
+void PluginInstance::PageVisibilityChanged(bool is_visible) {
+  if (is_visible == view_data_.is_page_visible)
+    return;  // Nothing to do.
+  ViewData old_data = view_data_;
+  view_data_.is_page_visible = is_visible;
+  SendDidChangeView(old_data);
 }
 
 void PluginInstance::ViewInitiatedPaint() {

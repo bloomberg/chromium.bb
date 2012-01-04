@@ -154,6 +154,7 @@ class MockPluginDelegate : public PluginDelegate {
                                const WebKit::WebCursorInfo& cursor);
   virtual void DidReceiveMouseEvent(PluginInstance* instance);
   virtual bool IsInFullscreenMode();
+  virtual bool IsPageVisible() const;
 };
 
 }  // namespace ppapi

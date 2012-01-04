@@ -19,6 +19,7 @@
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/view.h"
 
 // Separate left and right frequency to make sure we didn't swap L & R.
 // Sounds pretty horrible, though...
@@ -35,6 +36,7 @@ class MyInstance : public pp::Instance {
  public:
   explicit MyInstance(PP_Instance instance)
       : pp::Instance(instance),
+        visible_(false),
         sample_rate_(kDefaultSampleRate),
         sample_count_(0),
         audio_wave_l_(0.0),
@@ -60,6 +62,12 @@ class MyInstance : public pp::Instance {
     return audio_.StartPlayback();
   }
 
+  virtual void DidChangeView(const pp::View& view) {
+    // The frequency will change depending on whether the page is in the
+    // foreground or background.
+    visible_ = view.IsPageVisible();
+  }
+
  private:
   static void SineWaveCallbackTrampoline(void* samples,
                                          uint32_t num_bytes,
@@ -68,8 +76,10 @@ class MyInstance : public pp::Instance {
   }
 
   void SineWaveCallback(void* samples, uint32_t num_bytes) {
-    double delta_l = 2.0 * M_PI * kLeftFrequency / sample_rate_;
-    double delta_r = 2.0 * M_PI * kRightFrequency / sample_rate_;
+    double delta_l = 2.0 * M_PI * kLeftFrequency / sample_rate_ /
+        (visible_ ? 1 : 2);
+    double delta_r = 2.0 * M_PI * kRightFrequency / sample_rate_ /
+        (visible_ ? 1 : 2);
 
     // Use per channel audio wave value to avoid clicks on buffer boundries.
     double wave_l = audio_wave_l_;
@@ -91,6 +101,8 @@ class MyInstance : public pp::Instance {
     audio_wave_l_ = wave_l;
     audio_wave_r_ = wave_r;
   }
+
+  bool visible_;
 
   PP_AudioSampleRate sample_rate_;
   uint32_t sample_count_;

@@ -514,6 +514,9 @@ class PluginDelegate {
 
   // Determines if the browser entered fullscreen mode.
   virtual bool IsInFullscreenMode() = 0;
+
+  // Returns true if the containing page is visible.
+  virtual bool IsPageVisible() const = 0;
 };
 
 }  // namespace ppapi
