@@ -18,10 +18,10 @@
 0x12300044:      0x00000001:    dynamic state upper bound disabled
 0x12300048:      0x00000001:    indirect state upper bound disabled
 0x1230004c:      0x00000001:    instruction state upper bound disabled
-0x12300050:      0x78230000: 3D UNKNOWN: 3d_965 opcode = 0x7823
-0x12300054:      0x00007fe0: MI_NOOP
-0x12300058:      0x78210000: 3D UNKNOWN: 3d_965 opcode = 0x7821
-0x1230005c:      0x00007fc0: MI_NOOP
+0x12300050:      0x78230000: 3DSTATE_VIEWPORT_STATE_POINTERS_CC
+0x12300054:      0x00007fe0:    pointer to CC viewport
+0x12300058:      0x78210000: 3DSTATE_VIEWPORT_STATE_POINTERS_SF_CLIP
+0x1230005c:      0x00007fc0:    pointer to SF_CLIP viewport
 0x12300060:      0x79120000: 3D UNKNOWN: 3d_965 opcode = 0x7912
 0x12300064:      0x00000008: MI_NOOP
 0x12300068:      0x79160000: 3D UNKNOWN: 3d_965 opcode = 0x7916
@@ -34,15 +34,12 @@
 0x12300084:      0x04000000:    16KB start, size=1 64B rows, nr_entries=0, total size 0B
 0x12300088:      0x78320000: 3DSTATE_URB_DS
 0x1230008c:      0x04000000:    16KB start, size=1 64B rows, nr_entries=0, total size 0B
-0x12300090:      0x78240000: 3D UNKNOWN: 3d_965 opcode = 0x7824
-0x12300094:      0x00007f81: MI_NOOP
-Bad length 2 in 3DSTATE_CC_STATE_POINTERS, expeted 4-4
+0x12300090:      0x78240000: 3DSTATE_BLEND_STATE_POINTERS
+0x12300094:      0x00007f81:    pointer to BLEND_STATE at 0x00007f80 (changed)
 0x12300098:      0x780e0000: 3DSTATE_CC_STATE_POINTERS
-0x1230009c:      0x00007f41:    blend change 1
-0x123000a0:      0x78250000:    depth stencil change 0
-0x123000a4:      0x00007f01:    cc change 1
-0x123000a0:      0x78250000: 3D UNKNOWN: 3d_965 opcode = 0x7825
-0x123000a4:      0x00007f01: MI_NOOP
+0x1230009c:      0x00007f41:    pointer to COLOR_CALC_STATE at 0x00007f40 (changed)
+0x123000a0:      0x78250000: 3DSTATE_DEPTH_STENCIL_STATE_POINTERS
+0x123000a4:      0x00007f01:    pointer to DEPTH_STENCIL_STATE at 0x00007f00 (changed)
 Bad length 7 in 3DSTATE_CONSTANT_GS_STATE, expeted 5-5
 0x123000a8:      0x78160005: 3DSTATE_CONSTANT_GS_STATE
 0x123000ac:      0x00000000:    dword 1
@@ -245,13 +242,10 @@ Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x1230036c:      0x04000000:    16KB start, size=1 64B rows, nr_entries=0, total size 0B
 0x12300370:      0x78320000: 3DSTATE_URB_DS
 0x12300374:      0x04000000:    16KB start, size=1 64B rows, nr_entries=0, total size 0B
-Bad length 2 in 3DSTATE_CC_STATE_POINTERS, expeted 4-4
 0x12300378:      0x780e0000: 3DSTATE_CC_STATE_POINTERS
-0x1230037c:      0x00007d01:    blend change 1
-0x12300380:      0x78250000:    depth stencil change 0
-0x12300384:      0x00007cc1:    cc change 1
-0x12300380:      0x78250000: 3D UNKNOWN: 3d_965 opcode = 0x7825
-0x12300384:      0x00007cc1: MI_NOOP
+0x1230037c:      0x00007d01:    pointer to COLOR_CALC_STATE at 0x00007d00 (changed)
+0x12300380:      0x78250000: 3DSTATE_DEPTH_STENCIL_STATE_POINTERS
+0x12300384:      0x00007cc1:    pointer to DEPTH_STENCIL_STATE at 0x00007cc0 (changed)
 0x12300388:      0x78260000: 3D UNKNOWN: 3d_965 opcode = 0x7826
 0x1230038c:      0x00007a00: MI_NOOP
 0x12300390:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b

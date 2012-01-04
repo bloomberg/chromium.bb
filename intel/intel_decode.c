@@ -2704,6 +2704,71 @@ state_max_out(struct drm_intel_decode *ctx, unsigned int index,
 }
 
 static int
+gen7_3DSTATE_VIEWPORT_STATE_POINTERS_CC(struct drm_intel_decode *ctx)
+{
+	instr_out(ctx, 0, "3DSTATE_VIEWPORT_STATE_POINTERS_CC\n");
+	instr_out(ctx, 1, "pointer to CC viewport\n");
+
+	return 2;
+}
+
+static int
+gen7_3DSTATE_VIEWPORT_STATE_POINTERS_SF_CLIP(struct drm_intel_decode *ctx)
+{
+	instr_out(ctx, 0, "3DSTATE_VIEWPORT_STATE_POINTERS_SF_CLIP\n");
+	instr_out(ctx, 1, "pointer to SF_CLIP viewport\n");
+
+	return 2;
+}
+
+static int
+gen7_3DSTATE_BLEND_STATE_POINTERS(struct drm_intel_decode *ctx)
+{
+	instr_out(ctx, 0, "3DSTATE_BLEND_STATE_POINTERS\n");
+	instr_out(ctx, 1, "pointer to BLEND_STATE at 0x%08x (%s)\n",
+		  ctx->data[1] & ~1,
+		  (ctx->data[1] & 1) ? "changed" : "unchanged");
+
+	return 2;
+}
+
+static int
+gen7_3DSTATE_DEPTH_STENCIL_STATE_POINTERS(struct drm_intel_decode *ctx)
+{
+	instr_out(ctx, 0, "3DSTATE_DEPTH_STENCIL_STATE_POINTERS\n");
+	instr_out(ctx, 1,
+		  "pointer to DEPTH_STENCIL_STATE at 0x%08x (%s)\n",
+		  ctx->data[1] & ~1,
+		  (ctx->data[1] & 1) ? "changed" : "unchanged");
+
+	return 2;
+}
+
+static int
+gen6_3DSTATE_CC_STATE_POINTERS(struct drm_intel_decode *ctx)
+{
+	instr_out(ctx, 0, "3DSTATE_CC_STATE_POINTERS\n");
+	instr_out(ctx, 1, "blend change %d\n", ctx->data[1] & 1);
+	instr_out(ctx, 2, "depth stencil change %d\n",
+		  ctx->data[2] & 1);
+	instr_out(ctx, 3, "cc change %d\n", ctx->data[3] & 1);
+
+	return 4;
+}
+
+static int
+gen7_3DSTATE_CC_STATE_POINTERS(struct drm_intel_decode *ctx)
+{
+	instr_out(ctx, 0, "3DSTATE_CC_STATE_POINTERS\n");
+	instr_out(ctx, 1, "pointer to COLOR_CALC_STATE at 0x%08x "
+		  "(%s)\n",
+		  ctx->data[1] & ~1,
+		  (ctx->data[1] & 1) ? "changed" : "unchanged");
+
+	return 2;
+}
+
+static int
 gen7_3DSTATE_URB_unit(struct drm_intel_decode *ctx, const char *unit)
 {
     int start_kb = ((ctx->data[1] >> 25) & 0x3f) * 8;
@@ -2779,7 +2844,8 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		{ 0x780a, 0x00ff, 3, 3, "3DSTATE_INDEX_BUFFER" },
 		{ 0x780b, 0xffff, 1, 1, "3DSTATE_VF_STATISTICS" },
 		{ 0x780d, 0x00ff, 4, 4, "3DSTATE_VIEWPORT_STATE_POINTERS" },
-		{ 0x780e, 0xffff, 4, 4, "3DSTATE_CC_STATE_POINTERS" },
+		{ 0x780e, 0xffff, 4, 4, NULL, 6, gen6_3DSTATE_CC_STATE_POINTERS },
+		{ 0x780e, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_CC_STATE_POINTERS },
 		{ 0x780f, 0x00ff, 2, 2, "3DSTATE_SCISSOR_POINTERS" },
 		{ 0x7810, 0x00ff, 6, 6, "3DSTATE_VS" },
 		{ 0x7811, 0x00ff, 7, 7, "3DSTATE_GS" },
@@ -2790,6 +2856,10 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		{ 0x7816, 0x00ff, 5, 5, "3DSTATE_CONSTANT_GS_STATE" },
 		{ 0x7817, 0x00ff, 5, 5, "3DSTATE_CONSTANT_PS_STATE" },
 		{ 0x7818, 0xffff, 2, 2, "3DSTATE_SAMPLE_MASK" },
+		{ 0x7821, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_VIEWPORT_STATE_POINTERS_SF_CLIP },
+		{ 0x7823, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_VIEWPORT_STATE_POINTERS_CC },
+		{ 0x7824, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_BLEND_STATE_POINTERS },
+		{ 0x7825, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_DEPTH_STENCIL_STATE_POINTERS },
 		{ 0x7830, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_URB_VS },
 		{ 0x7831, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_URB_HS },
 		{ 0x7832, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_URB_DS },
@@ -3004,14 +3074,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		instr_out(ctx, 0, "3DSTATE_INDEX_BUFFER\n");
 		instr_out(ctx, 1, "beginning buffer address\n");
 		instr_out(ctx, 2, "ending buffer address\n");
-		return len;
-
-	case 0x780e:
-		instr_out(ctx, 0, "3DSTATE_CC_STATE_POINTERS\n");
-		instr_out(ctx, 1, "blend change %d\n", data[1] & 1);
-		instr_out(ctx, 2, "depth stencil change %d\n",
-			  data[2] & 1);
-		instr_out(ctx, 3, "cc change %d\n", data[3] & 1);
 		return len;
 
 	case 0x780f:
