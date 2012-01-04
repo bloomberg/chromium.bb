@@ -40,14 +40,13 @@
 0x1230009c:      0x00007f41:    pointer to COLOR_CALC_STATE at 0x00007f40 (changed)
 0x123000a0:      0x78250000: 3DSTATE_DEPTH_STENCIL_STATE_POINTERS
 0x123000a4:      0x00007f01:    pointer to DEPTH_STENCIL_STATE at 0x00007f00 (changed)
-Bad length 7 in 3DSTATE_CONSTANT_GS_STATE, expeted 5-5
-0x123000a8:      0x78160005: 3DSTATE_CONSTANT_GS_STATE
-0x123000ac:      0x00000000:    dword 1
-0x123000b0:      0x00000000:    dword 2
-0x123000b4:      0x00000000:    dword 3
-0x123000b8:      0x00000000:    dword 4
-0x123000bc:      0x00000000:    dword 5
-0x123000c0:      0x00000000:    dword 6
+0x123000a8:      0x78160005: 3DSTATE_CONSTANT_GS
+0x123000ac:      0x00000000:    len 0 = 0, len 1 = 0
+0x123000b0:      0x00000000:    len 2 = 0, len 3 = 0
+0x123000b4:      0x00000000:    pointer to constbuf 0
+0x123000b8:      0x00000000:    pointer to constbuf 1
+0x123000bc:      0x00000000:    pointer to constbuf 2
+0x123000c0:      0x00000000:    pointer to constbuf 3
 0x123000c4:      0x78110005: 3DSTATE_GS
 0x123000c8:      0x00000000:    kernel pointer
 0x123000cc:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -57,13 +56,13 @@ Bad length 7 in 3DSTATE_CONSTANT_GS_STATE, expeted 5-5
 0x123000dc:      0x00000000:    Reorder disable, Discard Adjaceny disable, GS disable
 0x123000e0:      0x78290000: 3D UNKNOWN: 3d_965 opcode = 0x7829
 0x123000e4:      0x00000000: MI_NOOP
-0x123000e8:      0x78190005: 3D UNKNOWN: 3d_965 opcode = 0x7819
-0x123000ec:      0x00000000: MI_NOOP
-0x123000f0:      0x00000000: MI_NOOP
-0x123000f4:      0x00000000: MI_NOOP
-0x123000f8:      0x00000000: MI_NOOP
-0x123000fc:      0x00000000: MI_NOOP
-0x12300100:      0x00000000: MI_NOOP
+0x123000e8:      0x78190005: 3DSTATE_CONSTANT_HS
+0x123000ec:      0x00000000:    len 0 = 0, len 1 = 0
+0x123000f0:      0x00000000:    len 2 = 0, len 3 = 0
+0x123000f4:      0x00000000:    pointer to constbuf 0
+0x123000f8:      0x00000000:    pointer to constbuf 1
+0x123000fc:      0x00000000:    pointer to constbuf 2
+0x12300100:      0x00000000:    pointer to constbuf 3
 0x12300104:      0x781b0005: 3D UNKNOWN: 3d_965 opcode = 0x781b
 0x12300108:      0x00000000: MI_NOOP
 0x1230010c:      0x00000000: MI_NOOP
@@ -77,13 +76,13 @@ Bad length 7 in 3DSTATE_CONSTANT_GS_STATE, expeted 5-5
 0x1230012c:      0x00000000: MI_NOOP
 0x12300130:      0x00000000: MI_NOOP
 0x12300134:      0x00000000: MI_NOOP
-0x12300138:      0x781a0005: 3D UNKNOWN: 3d_965 opcode = 0x781a
-0x1230013c:      0x00000000: MI_NOOP
-0x12300140:      0x00000000: MI_NOOP
-0x12300144:      0x00000000: MI_NOOP
-0x12300148:      0x00000000: MI_NOOP
-0x1230014c:      0x00000000: MI_NOOP
-0x12300150:      0x00000000: MI_NOOP
+0x12300138:      0x781a0005: 3DSTATE_CONSTANT_DS
+0x1230013c:      0x00000000:    len 0 = 0, len 1 = 0
+0x12300140:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300144:      0x00000000:    pointer to constbuf 0
+0x12300148:      0x00000000:    pointer to constbuf 1
+0x1230014c:      0x00000000:    pointer to constbuf 2
+0x12300150:      0x00000000:    pointer to constbuf 3
 0x12300154:      0x781d0004: 3D UNKNOWN: 3d_965 opcode = 0x781d
 0x12300158:      0x00000000: MI_NOOP
 0x1230015c:      0x00000000: MI_NOOP
@@ -96,14 +95,13 @@ Bad length 7 in 3DSTATE_CONSTANT_GS_STATE, expeted 5-5
 0x12300178:      0x00007d40: MI_NOOP
 0x1230017c:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300180:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
-0x12300184:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-0x12300188:      0x00000000:    dword 1
-0x1230018c:      0x00000000:    dword 2
-0x12300190:      0x00000000:    dword 3
-0x12300194:      0x00000000:    dword 4
-0x12300198:      0x00000000:    dword 5
-0x1230019c:      0x00000000:    dword 6
+0x12300184:      0x78150005: 3DSTATE_CONSTANT_VS
+0x12300188:      0x00000000:    len 0 = 0, len 1 = 0
+0x1230018c:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300190:      0x00000000:    pointer to constbuf 0
+0x12300194:      0x00000000:    pointer to constbuf 1
+0x12300198:      0x00000000:    pointer to constbuf 2
+0x1230019c:      0x00000000:    pointer to constbuf 3
 0x123001a0:      0x78100004: 3DSTATE_VS
 0x123001a4:      0x00000000:    kernel pointer
 0x123001a8:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -166,14 +164,13 @@ Bad length 3 in 3DSTATE_WM, expeted 9-9
 0x12300238:      0x00007d40: MI_NOOP
 0x1230023c:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12300240:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
-0x12300244:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-0x12300248:      0x00000001:    dword 1
-0x1230024c:      0x00000000:    dword 2
-0x12300250:      0x00007ee0:    dword 3
-0x12300254:      0x00000000:    dword 4
-0x12300258:      0x00000000:    dword 5
-0x1230025c:      0x00000000:    dword 6
+0x12300244:      0x78170005: 3DSTATE_CONSTANT_PS
+0x12300248:      0x00000001:    len 0 = 1, len 1 = 0
+0x1230024c:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300250:      0x00007ee0:    pointer to constbuf 0
+0x12300254:      0x00000000:    pointer to constbuf 1
+0x12300258:      0x00000000:    pointer to constbuf 2
+0x1230025c:      0x00000000:    pointer to constbuf 3
 0x12300260:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
 0x12300264:      0x00000100: MI_NOOP
 0x12300268:      0x00000000: MI_NOOP
@@ -250,14 +247,13 @@ Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x1230038c:      0x00007a00: MI_NOOP
 0x12300390:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300394:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
-0x12300398:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-0x1230039c:      0x00000006:    dword 1
-0x123003a0:      0x00000000:    dword 2
-0x123003a4:      0x00007b80:    dword 3
-0x123003a8:      0x00000000:    dword 4
-0x123003ac:      0x00000000:    dword 5
-0x123003b0:      0x00000000:    dword 6
+0x12300398:      0x78150005: 3DSTATE_CONSTANT_VS
+0x1230039c:      0x00000006:    len 0 = 6, len 1 = 0
+0x123003a0:      0x00000000:    len 2 = 0, len 3 = 0
+0x123003a4:      0x00007b80:    pointer to constbuf 0
+0x123003a8:      0x00000000:    pointer to constbuf 1
+0x123003ac:      0x00000000:    pointer to constbuf 2
+0x123003b0:      0x00000000:    pointer to constbuf 3
 0x123003b4:      0x78100004: 3DSTATE_VS
 0x123003b8:      0x00000280:    kernel pointer
 0x123003bc:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -320,14 +316,13 @@ Bad length 3 in 3DSTATE_WM, expeted 9-9
 0x1230044c:      0x00007a00: MI_NOOP
 0x12300450:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12300454:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
-0x12300458:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-0x1230045c:      0x00000000:    dword 1
-0x12300460:      0x00000000:    dword 2
-0x12300464:      0x00000000:    dword 3
-0x12300468:      0x00000000:    dword 4
-0x1230046c:      0x00000000:    dword 5
-0x12300470:      0x00000000:    dword 6
+0x12300458:      0x78170005: 3DSTATE_CONSTANT_PS
+0x1230045c:      0x00000000:    len 0 = 0, len 1 = 0
+0x12300460:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300464:      0x00000000:    pointer to constbuf 0
+0x12300468:      0x00000000:    pointer to constbuf 1
+0x1230046c:      0x00000000:    pointer to constbuf 2
+0x12300470:      0x00000000:    pointer to constbuf 3
 0x12300474:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
 0x12300478:      0x00000540: MI_NOOP
 0x1230047c:      0x00010000: MI_NOOP
@@ -386,14 +381,13 @@ Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300558:      0x00007a00: MI_NOOP
 0x1230055c:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300560:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
-0x12300564:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-0x12300568:      0x00000006:    dword 1
-0x1230056c:      0x00000000:    dword 2
-0x12300570:      0x000078c0:    dword 3
-0x12300574:      0x00000000:    dword 4
-0x12300578:      0x00000000:    dword 5
-0x1230057c:      0x00000000:    dword 6
+0x12300564:      0x78150005: 3DSTATE_CONSTANT_VS
+0x12300568:      0x00000006:    len 0 = 6, len 1 = 0
+0x1230056c:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300570:      0x000078c0:    pointer to constbuf 0
+0x12300574:      0x00000000:    pointer to constbuf 1
+0x12300578:      0x00000000:    pointer to constbuf 2
+0x1230057c:      0x00000000:    pointer to constbuf 3
 0x12300580:      0x78100004: 3DSTATE_VS
 0x12300584:      0x00000280:    kernel pointer
 0x12300588:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -404,14 +398,13 @@ Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
 0x1230059c:      0x00007a00: MI_NOOP
 0x123005a0:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x123005a4:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
-0x123005a8:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-0x123005ac:      0x00000000:    dword 1
-0x123005b0:      0x00000000:    dword 2
-0x123005b4:      0x00000000:    dword 3
-0x123005b8:      0x00000000:    dword 4
-0x123005bc:      0x00000000:    dword 5
-0x123005c0:      0x00000000:    dword 6
+0x123005a8:      0x78170005: 3DSTATE_CONSTANT_PS
+0x123005ac:      0x00000000:    len 0 = 0, len 1 = 0
+0x123005b0:      0x00000000:    len 2 = 0, len 3 = 0
+0x123005b4:      0x00000000:    pointer to constbuf 0
+0x123005b8:      0x00000000:    pointer to constbuf 1
+0x123005bc:      0x00000000:    pointer to constbuf 2
+0x123005c0:      0x00000000:    pointer to constbuf 3
 0x123005c4:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
 0x123005c8:      0x00000540: MI_NOOP
 0x123005cc:      0x00010000: MI_NOOP
@@ -451,14 +444,13 @@ Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300650:      0x00007a00: MI_NOOP
 0x12300654:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300658:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
-0x1230065c:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-0x12300660:      0x00000006:    dword 1
-0x12300664:      0x00000000:    dword 2
-0x12300668:      0x00007780:    dword 3
-0x1230066c:      0x00000000:    dword 4
-0x12300670:      0x00000000:    dword 5
-0x12300674:      0x00000000:    dword 6
+0x1230065c:      0x78150005: 3DSTATE_CONSTANT_VS
+0x12300660:      0x00000006:    len 0 = 6, len 1 = 0
+0x12300664:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300668:      0x00007780:    pointer to constbuf 0
+0x1230066c:      0x00000000:    pointer to constbuf 1
+0x12300670:      0x00000000:    pointer to constbuf 2
+0x12300674:      0x00000000:    pointer to constbuf 3
 0x12300678:      0x78100004: 3DSTATE_VS
 0x1230067c:      0x00000680:    kernel pointer
 0x12300680:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -524,14 +516,13 @@ Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300738:      0x00007a00: MI_NOOP
 0x1230073c:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300740:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
-0x12300744:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-0x12300748:      0x00000006:    dword 1
-0x1230074c:      0x00000000:    dword 2
-0x12300750:      0x00007640:    dword 3
-0x12300754:      0x00000000:    dword 4
-0x12300758:      0x00000000:    dword 5
-0x1230075c:      0x00000000:    dword 6
+0x12300744:      0x78150005: 3DSTATE_CONSTANT_VS
+0x12300748:      0x00000006:    len 0 = 6, len 1 = 0
+0x1230074c:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300750:      0x00007640:    pointer to constbuf 0
+0x12300754:      0x00000000:    pointer to constbuf 1
+0x12300758:      0x00000000:    pointer to constbuf 2
+0x1230075c:      0x00000000:    pointer to constbuf 3
 0x12300760:      0x78100004: 3DSTATE_VS
 0x12300764:      0x00000680:    kernel pointer
 0x12300768:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -594,14 +585,13 @@ Bad length 3 in 3DSTATE_WM, expeted 9-9
 0x123007f8:      0x00007a00: MI_NOOP
 0x123007fc:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12300800:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
-0x12300804:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-0x12300808:      0x00000000:    dword 1
-0x1230080c:      0x00000000:    dword 2
-0x12300810:      0x00000000:    dword 3
-0x12300814:      0x00000000:    dword 4
-0x12300818:      0x00000000:    dword 5
-0x1230081c:      0x00000000:    dword 6
+0x12300804:      0x78170005: 3DSTATE_CONSTANT_PS
+0x12300808:      0x00000000:    len 0 = 0, len 1 = 0
+0x1230080c:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300810:      0x00000000:    pointer to constbuf 0
+0x12300814:      0x00000000:    pointer to constbuf 1
+0x12300818:      0x00000000:    pointer to constbuf 2
+0x1230081c:      0x00000000:    pointer to constbuf 3
 0x12300820:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
 0x12300824:      0x00000940: MI_NOOP
 0x12300828:      0x00010000: MI_NOOP
@@ -634,14 +624,13 @@ Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300890:      0x00007a00: MI_NOOP
 0x12300894:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300898:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
-0x1230089c:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-0x123008a0:      0x00000006:    dword 1
-0x123008a4:      0x00000000:    dword 2
-0x123008a8:      0x00007500:    dword 3
-0x123008ac:      0x00000000:    dword 4
-0x123008b0:      0x00000000:    dword 5
-0x123008b4:      0x00000000:    dword 6
+0x1230089c:      0x78150005: 3DSTATE_CONSTANT_VS
+0x123008a0:      0x00000006:    len 0 = 6, len 1 = 0
+0x123008a4:      0x00000000:    len 2 = 0, len 3 = 0
+0x123008a8:      0x00007500:    pointer to constbuf 0
+0x123008ac:      0x00000000:    pointer to constbuf 1
+0x123008b0:      0x00000000:    pointer to constbuf 2
+0x123008b4:      0x00000000:    pointer to constbuf 3
 0x123008b8:      0x78100004: 3DSTATE_VS
 0x123008bc:      0x00000280:    kernel pointer
 0x123008c0:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -704,14 +693,13 @@ Bad length 3 in 3DSTATE_WM, expeted 9-9
 0x12300950:      0x00007a00: MI_NOOP
 0x12300954:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12300958:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
-0x1230095c:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-0x12300960:      0x00000000:    dword 1
-0x12300964:      0x00000000:    dword 2
-0x12300968:      0x00000000:    dword 3
-0x1230096c:      0x00000000:    dword 4
-0x12300970:      0x00000000:    dword 5
-0x12300974:      0x00000000:    dword 6
+0x1230095c:      0x78170005: 3DSTATE_CONSTANT_PS
+0x12300960:      0x00000000:    len 0 = 0, len 1 = 0
+0x12300964:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300968:      0x00000000:    pointer to constbuf 0
+0x1230096c:      0x00000000:    pointer to constbuf 1
+0x12300970:      0x00000000:    pointer to constbuf 2
+0x12300974:      0x00000000:    pointer to constbuf 3
 0x12300978:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
 0x1230097c:      0x00000540: MI_NOOP
 0x12300980:      0x00010000: MI_NOOP
@@ -747,14 +735,13 @@ Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x123009f4:      0x00007a00: MI_NOOP
 0x123009f8:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x123009fc:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
-0x12300a00:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-0x12300a04:      0x00000006:    dword 1
-0x12300a08:      0x00000000:    dword 2
-0x12300a0c:      0x000073c0:    dword 3
-0x12300a10:      0x00000000:    dword 4
-0x12300a14:      0x00000000:    dword 5
-0x12300a18:      0x00000000:    dword 6
+0x12300a00:      0x78150005: 3DSTATE_CONSTANT_VS
+0x12300a04:      0x00000006:    len 0 = 6, len 1 = 0
+0x12300a08:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300a0c:      0x000073c0:    pointer to constbuf 0
+0x12300a10:      0x00000000:    pointer to constbuf 1
+0x12300a14:      0x00000000:    pointer to constbuf 2
+0x12300a18:      0x00000000:    pointer to constbuf 3
 0x12300a1c:      0x78100004: 3DSTATE_VS
 0x12300a20:      0x00000280:    kernel pointer
 0x12300a24:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -765,14 +752,13 @@ Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
 0x12300a38:      0x00007a00: MI_NOOP
 0x12300a3c:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12300a40:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
-0x12300a44:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-0x12300a48:      0x00000000:    dword 1
-0x12300a4c:      0x00000000:    dword 2
-0x12300a50:      0x00000000:    dword 3
-0x12300a54:      0x00000000:    dword 4
-0x12300a58:      0x00000000:    dword 5
-0x12300a5c:      0x00000000:    dword 6
+0x12300a44:      0x78170005: 3DSTATE_CONSTANT_PS
+0x12300a48:      0x00000000:    len 0 = 0, len 1 = 0
+0x12300a4c:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300a50:      0x00000000:    pointer to constbuf 0
+0x12300a54:      0x00000000:    pointer to constbuf 1
+0x12300a58:      0x00000000:    pointer to constbuf 2
+0x12300a5c:      0x00000000:    pointer to constbuf 3
 0x12300a60:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
 0x12300a64:      0x00000540: MI_NOOP
 0x12300a68:      0x00010000: MI_NOOP
@@ -812,14 +798,13 @@ Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300aec:      0x00007a00: MI_NOOP
 0x12300af0:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300af4:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
-0x12300af8:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-0x12300afc:      0x00000006:    dword 1
-0x12300b00:      0x00000000:    dword 2
-0x12300b04:      0x00007280:    dword 3
-0x12300b08:      0x00000000:    dword 4
-0x12300b0c:      0x00000000:    dword 5
-0x12300b10:      0x00000000:    dword 6
+0x12300af8:      0x78150005: 3DSTATE_CONSTANT_VS
+0x12300afc:      0x00000006:    len 0 = 6, len 1 = 0
+0x12300b00:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300b04:      0x00007280:    pointer to constbuf 0
+0x12300b08:      0x00000000:    pointer to constbuf 1
+0x12300b0c:      0x00000000:    pointer to constbuf 2
+0x12300b10:      0x00000000:    pointer to constbuf 3
 0x12300b14:      0x78100004: 3DSTATE_VS
 0x12300b18:      0x00000680:    kernel pointer
 0x12300b1c:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -885,14 +870,13 @@ Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300bd4:      0x00007a00: MI_NOOP
 0x12300bd8:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300bdc:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
-0x12300be0:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-0x12300be4:      0x00000006:    dword 1
-0x12300be8:      0x00000000:    dword 2
-0x12300bec:      0x00007140:    dword 3
-0x12300bf0:      0x00000000:    dword 4
-0x12300bf4:      0x00000000:    dword 5
-0x12300bf8:      0x00000000:    dword 6
+0x12300be0:      0x78150005: 3DSTATE_CONSTANT_VS
+0x12300be4:      0x00000006:    len 0 = 6, len 1 = 0
+0x12300be8:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300bec:      0x00007140:    pointer to constbuf 0
+0x12300bf0:      0x00000000:    pointer to constbuf 1
+0x12300bf4:      0x00000000:    pointer to constbuf 2
+0x12300bf8:      0x00000000:    pointer to constbuf 3
 0x12300bfc:      0x78100004: 3DSTATE_VS
 0x12300c00:      0x00000680:    kernel pointer
 0x12300c04:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -955,14 +939,13 @@ Bad length 3 in 3DSTATE_WM, expeted 9-9
 0x12300c94:      0x00007a00: MI_NOOP
 0x12300c98:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12300c9c:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
-0x12300ca0:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-0x12300ca4:      0x00000000:    dword 1
-0x12300ca8:      0x00000000:    dword 2
-0x12300cac:      0x00000000:    dword 3
-0x12300cb0:      0x00000000:    dword 4
-0x12300cb4:      0x00000000:    dword 5
-0x12300cb8:      0x00000000:    dword 6
+0x12300ca0:      0x78170005: 3DSTATE_CONSTANT_PS
+0x12300ca4:      0x00000000:    len 0 = 0, len 1 = 0
+0x12300ca8:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300cac:      0x00000000:    pointer to constbuf 0
+0x12300cb0:      0x00000000:    pointer to constbuf 1
+0x12300cb4:      0x00000000:    pointer to constbuf 2
+0x12300cb8:      0x00000000:    pointer to constbuf 3
 0x12300cbc:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
 0x12300cc0:      0x00000940: MI_NOOP
 0x12300cc4:      0x00010000: MI_NOOP
@@ -995,14 +978,13 @@ Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300d2c:      0x00007a00: MI_NOOP
 0x12300d30:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300d34:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
-0x12300d38:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-0x12300d3c:      0x00000006:    dword 1
-0x12300d40:      0x00000000:    dword 2
-0x12300d44:      0x00007000:    dword 3
-0x12300d48:      0x00000000:    dword 4
-0x12300d4c:      0x00000000:    dword 5
-0x12300d50:      0x00000000:    dword 6
+0x12300d38:      0x78150005: 3DSTATE_CONSTANT_VS
+0x12300d3c:      0x00000006:    len 0 = 6, len 1 = 0
+0x12300d40:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300d44:      0x00007000:    pointer to constbuf 0
+0x12300d48:      0x00000000:    pointer to constbuf 1
+0x12300d4c:      0x00000000:    pointer to constbuf 2
+0x12300d50:      0x00000000:    pointer to constbuf 3
 0x12300d54:      0x78100004: 3DSTATE_VS
 0x12300d58:      0x00000280:    kernel pointer
 0x12300d5c:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -1065,14 +1047,13 @@ Bad length 3 in 3DSTATE_WM, expeted 9-9
 0x12300dec:      0x00007a00: MI_NOOP
 0x12300df0:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12300df4:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
-0x12300df8:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-0x12300dfc:      0x00000000:    dword 1
-0x12300e00:      0x00000000:    dword 2
-0x12300e04:      0x00000000:    dword 3
-0x12300e08:      0x00000000:    dword 4
-0x12300e0c:      0x00000000:    dword 5
-0x12300e10:      0x00000000:    dword 6
+0x12300df8:      0x78170005: 3DSTATE_CONSTANT_PS
+0x12300dfc:      0x00000000:    len 0 = 0, len 1 = 0
+0x12300e00:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300e04:      0x00000000:    pointer to constbuf 0
+0x12300e08:      0x00000000:    pointer to constbuf 1
+0x12300e0c:      0x00000000:    pointer to constbuf 2
+0x12300e10:      0x00000000:    pointer to constbuf 3
 0x12300e14:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
 0x12300e18:      0x00000540: MI_NOOP
 0x12300e1c:      0x00010000: MI_NOOP
@@ -1108,14 +1089,13 @@ Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300e90:      0x00007a00: MI_NOOP
 0x12300e94:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300e98:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
-0x12300e9c:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-0x12300ea0:      0x00000006:    dword 1
-0x12300ea4:      0x00000000:    dword 2
-0x12300ea8:      0x00006ec0:    dword 3
-0x12300eac:      0x00000000:    dword 4
-0x12300eb0:      0x00000000:    dword 5
-0x12300eb4:      0x00000000:    dword 6
+0x12300e9c:      0x78150005: 3DSTATE_CONSTANT_VS
+0x12300ea0:      0x00000006:    len 0 = 6, len 1 = 0
+0x12300ea4:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300ea8:      0x00006ec0:    pointer to constbuf 0
+0x12300eac:      0x00000000:    pointer to constbuf 1
+0x12300eb0:      0x00000000:    pointer to constbuf 2
+0x12300eb4:      0x00000000:    pointer to constbuf 3
 0x12300eb8:      0x78100004: 3DSTATE_VS
 0x12300ebc:      0x00000280:    kernel pointer
 0x12300ec0:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -1126,14 +1106,13 @@ Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
 0x12300ed4:      0x00007a00: MI_NOOP
 0x12300ed8:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12300edc:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
-0x12300ee0:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-0x12300ee4:      0x00000000:    dword 1
-0x12300ee8:      0x00000000:    dword 2
-0x12300eec:      0x00000000:    dword 3
-0x12300ef0:      0x00000000:    dword 4
-0x12300ef4:      0x00000000:    dword 5
-0x12300ef8:      0x00000000:    dword 6
+0x12300ee0:      0x78170005: 3DSTATE_CONSTANT_PS
+0x12300ee4:      0x00000000:    len 0 = 0, len 1 = 0
+0x12300ee8:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300eec:      0x00000000:    pointer to constbuf 0
+0x12300ef0:      0x00000000:    pointer to constbuf 1
+0x12300ef4:      0x00000000:    pointer to constbuf 2
+0x12300ef8:      0x00000000:    pointer to constbuf 3
 0x12300efc:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
 0x12300f00:      0x00000540: MI_NOOP
 0x12300f04:      0x00010000: MI_NOOP
@@ -1173,14 +1152,13 @@ Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300f88:      0x00007a00: MI_NOOP
 0x12300f8c:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300f90:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
-0x12300f94:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-0x12300f98:      0x00000006:    dword 1
-0x12300f9c:      0x00000000:    dword 2
-0x12300fa0:      0x00006d80:    dword 3
-0x12300fa4:      0x00000000:    dword 4
-0x12300fa8:      0x00000000:    dword 5
-0x12300fac:      0x00000000:    dword 6
+0x12300f94:      0x78150005: 3DSTATE_CONSTANT_VS
+0x12300f98:      0x00000006:    len 0 = 6, len 1 = 0
+0x12300f9c:      0x00000000:    len 2 = 0, len 3 = 0
+0x12300fa0:      0x00006d80:    pointer to constbuf 0
+0x12300fa4:      0x00000000:    pointer to constbuf 1
+0x12300fa8:      0x00000000:    pointer to constbuf 2
+0x12300fac:      0x00000000:    pointer to constbuf 3
 0x12300fb0:      0x78100004: 3DSTATE_VS
 0x12300fb4:      0x00000680:    kernel pointer
 0x12300fb8:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -1246,14 +1224,13 @@ Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12301070:      0x00007a00: MI_NOOP
 0x12301074:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12301078:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
-0x1230107c:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-0x12301080:      0x00000006:    dword 1
-0x12301084:      0x00000000:    dword 2
-0x12301088:      0x00006c40:    dword 3
-0x1230108c:      0x00000000:    dword 4
-0x12301090:      0x00000000:    dword 5
-0x12301094:      0x00000000:    dword 6
+0x1230107c:      0x78150005: 3DSTATE_CONSTANT_VS
+0x12301080:      0x00000006:    len 0 = 6, len 1 = 0
+0x12301084:      0x00000000:    len 2 = 0, len 3 = 0
+0x12301088:      0x00006c40:    pointer to constbuf 0
+0x1230108c:      0x00000000:    pointer to constbuf 1
+0x12301090:      0x00000000:    pointer to constbuf 2
+0x12301094:      0x00000000:    pointer to constbuf 3
 0x12301098:      0x78100004: 3DSTATE_VS
 0x1230109c:      0x00000680:    kernel pointer
 0x123010a0:      0x00010000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -1316,14 +1293,13 @@ Bad length 3 in 3DSTATE_WM, expeted 9-9
 0x12301130:      0x00007a00: MI_NOOP
 0x12301134:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12301138:      0x00000000: MI_NOOP
-Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
-0x1230113c:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-0x12301140:      0x00000000:    dword 1
-0x12301144:      0x00000000:    dword 2
-0x12301148:      0x00000000:    dword 3
-0x1230114c:      0x00000000:    dword 4
-0x12301150:      0x00000000:    dword 5
-0x12301154:      0x00000000:    dword 6
+0x1230113c:      0x78170005: 3DSTATE_CONSTANT_PS
+0x12301140:      0x00000000:    len 0 = 0, len 1 = 0
+0x12301144:      0x00000000:    len 2 = 0, len 3 = 0
+0x12301148:      0x00000000:    pointer to constbuf 0
+0x1230114c:      0x00000000:    pointer to constbuf 1
+0x12301150:      0x00000000:    pointer to constbuf 2
+0x12301154:      0x00000000:    pointer to constbuf 3
 0x12301158:      0x78200006: 3D UNKNOWN: 3d_965 opcode = 0x7820
 0x1230115c:      0x00000940: MI_NOOP
 0x12301160:      0x00010000: MI_NOOP

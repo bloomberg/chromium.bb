@@ -2809,6 +2809,57 @@ gen7_3DSTATE_URB_GS(struct drm_intel_decode *ctx)
 }
 
 static int
+gen7_3DSTATE_CONSTANT(struct drm_intel_decode *ctx, const char *unit)
+{
+	int rlen[4];
+
+	rlen[0] = (ctx->data[1] >> 0) & 0xffff;
+	rlen[1] = (ctx->data[1] >> 16) & 0xffff;
+	rlen[2] = (ctx->data[2] >> 0) & 0xffff;
+	rlen[3] = (ctx->data[2] >> 16) & 0xffff;
+
+	instr_out(ctx, 0, "3DSTATE_CONSTANT_%s\n", unit);
+	instr_out(ctx, 1, "len 0 = %d, len 1 = %d\n", rlen[0], rlen[1]);
+	instr_out(ctx, 2, "len 2 = %d, len 3 = %d\n", rlen[2], rlen[3]);
+	instr_out(ctx, 3, "pointer to constbuf 0\n");
+	instr_out(ctx, 4, "pointer to constbuf 1\n");
+	instr_out(ctx, 5, "pointer to constbuf 2\n");
+	instr_out(ctx, 6, "pointer to constbuf 3\n");
+
+	return 7;
+}
+
+static int
+gen7_3DSTATE_CONSTANT_VS(struct drm_intel_decode *ctx)
+{
+	return gen7_3DSTATE_CONSTANT(ctx, "VS");
+}
+
+static int
+gen7_3DSTATE_CONSTANT_GS(struct drm_intel_decode *ctx)
+{
+	return gen7_3DSTATE_CONSTANT(ctx, "GS");
+}
+
+static int
+gen7_3DSTATE_CONSTANT_PS(struct drm_intel_decode *ctx)
+{
+	return gen7_3DSTATE_CONSTANT(ctx, "PS");
+}
+
+static int
+gen7_3DSTATE_CONSTANT_DS(struct drm_intel_decode *ctx)
+{
+	return gen7_3DSTATE_CONSTANT(ctx, "DS");
+}
+
+static int
+gen7_3DSTATE_CONSTANT_HS(struct drm_intel_decode *ctx)
+{
+	return gen7_3DSTATE_CONSTANT(ctx, "HS");
+}
+
+static int
 decode_3d_965(struct drm_intel_decode *ctx)
 {
 	uint32_t opcode;
@@ -2852,10 +2903,15 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		{ 0x7812, 0x00ff, 4, 4, "3DSTATE_CLIP" },
 		{ 0x7813, 0x00ff, 20, 20, "3DSTATE_SF" },
 		{ 0x7814, 0x00ff, 9, 9, "3DSTATE_WM" },
-		{ 0x7815, 0x00ff, 5, 5, "3DSTATE_CONSTANT_VS_STATE" },
-		{ 0x7816, 0x00ff, 5, 5, "3DSTATE_CONSTANT_GS_STATE" },
-		{ 0x7817, 0x00ff, 5, 5, "3DSTATE_CONSTANT_PS_STATE" },
+		{ 0x7815, 0x00ff, 5, 5, "3DSTATE_CONSTANT_VS_STATE", 6 },
+		{ 0x7815, 0x00ff, 7, 7, "3DSTATE_CONSTANT_VS", 7, gen7_3DSTATE_CONSTANT_VS },
+		{ 0x7816, 0x00ff, 5, 5, "3DSTATE_CONSTANT_GS_STATE", 6 },
+		{ 0x7816, 0x00ff, 7, 7, "3DSTATE_CONSTANT_GS", 7, gen7_3DSTATE_CONSTANT_GS },
+		{ 0x7817, 0x00ff, 5, 5, "3DSTATE_CONSTANT_PS_STATE", 6 },
+		{ 0x7817, 0x00ff, 7, 7, "3DSTATE_CONSTANT_PS", 7, gen7_3DSTATE_CONSTANT_PS },
 		{ 0x7818, 0xffff, 2, 2, "3DSTATE_SAMPLE_MASK" },
+		{ 0x7819, 0x00ff, 7, 7, "3DSTATE_CONSTANT_HS", 7, gen7_3DSTATE_CONSTANT_HS },
+		{ 0x781a, 0x00ff, 7, 7, "3DSTATE_CONSTANT_DS", 7, gen7_3DSTATE_CONSTANT_DS },
 		{ 0x7821, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_VIEWPORT_STATE_POINTERS_SF_CLIP },
 		{ 0x7823, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_VIEWPORT_STATE_POINTERS_CC },
 		{ 0x7824, 0x00ff, 2, 2, NULL, 7, gen7_3DSTATE_BLEND_STATE_POINTERS },
