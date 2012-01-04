@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -151,6 +151,33 @@ class CONTENT_EXPORT AudioDevice
   virtual void OnVolume(double volume) OVERRIDE;
 
  private:
+  // Encapsulate socket into separate class to avoid double-close.
+  // Class is ref-counted to avoid potential race condition if audio device
+  // is deleted simultaneously with audio thread stopping.
+  class AudioSocket : public base::RefCountedThreadSafe<AudioSocket> {
+   public:
+    explicit AudioSocket(base::SyncSocket::Handle socket_handle)
+        : socket_(socket_handle) {
+    }
+    base::SyncSocket* socket() {
+      return &socket_;
+    }
+    void Close() {
+      // Close() should be thread-safe, obtain the lock.
+      base::AutoLock auto_lock(lock_);
+      socket_.Close();
+    }
+
+   private:
+    // Magic required by ref_counted.h to avoid any code deleting the object
+    // accidently while there are references to it.
+    friend class base::RefCountedThreadSafe<AudioSocket>;
+    ~AudioSocket() { }
+
+    base::Lock lock_;
+    base::SyncSocket socket_;
+  };
+
   // Methods called on IO thread ----------------------------------------------
   // The following methods are tasks posted on the IO thread that needs to
   // be executed on that thread. They interact with AudioMessageFilter and
@@ -220,11 +247,11 @@ class CONTENT_EXPORT AudioDevice
   // Data transfer between browser and render process uses a combination
   // of sync sockets and shared memory to provide lowest possible latency.
   base::SharedMemoryHandle shared_memory_handle_;
-  base::SyncSocket::Handle socket_handle_;
+  scoped_refptr<AudioSocket> audio_socket_;
   int memory_length_;
 
   // Protects lifetime of:
-  // socket_handle_
+  // audio_socket_
   // audio_thread_
   base::Lock lock_;
 

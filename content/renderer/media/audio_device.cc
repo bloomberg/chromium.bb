@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,6 @@ AudioDevice::AudioDevice()
       play_on_start_(true),
       is_started_(false),
       shared_memory_handle_(base::SharedMemory::NULLHandle()),
-      socket_handle_(base::SyncSocket::kInvalidHandle),
       memory_length_(0) {
   filter_ = RenderThreadImpl::current()->audio_message_filter();
 }
@@ -46,7 +45,6 @@ AudioDevice::AudioDevice(size_t buffer_size,
       play_on_start_(true),
       is_started_(false),
       shared_memory_handle_(base::SharedMemory::NULLHandle()),
-      socket_handle_(base::SyncSocket::kInvalidHandle),
       memory_length_(0) {
   filter_ = RenderThreadImpl::current()->audio_message_filter();
   Initialize(buffer_size,
@@ -260,7 +258,7 @@ void AudioDevice::OnLowLatencyCreated(
 
   DCHECK_GE(length, buffer_size_ * sizeof(int16) * channels_);
 
-  socket_handle_ = socket_handle;
+  audio_socket_ = new AudioSocket(socket_handle);
   {
     // Synchronize with ShutDownAudioThread().
     base::AutoLock auto_lock(lock_);
@@ -292,14 +290,14 @@ void AudioDevice::Run() {
 
   base::SharedMemory shared_memory(shared_memory_handle_, false);
   shared_memory.Map(media::TotalSharedMemorySizeInBytes(memory_length_));
-  base::SyncSocket socket(socket_handle_);
+  scoped_refptr<AudioSocket> audio_socket(audio_socket_);
 
   int pending_data;
   const int samples_per_ms = static_cast<int>(sample_rate_) / 1000;
   const int bytes_per_ms = channels_ * (bits_per_sample_ / 8) * samples_per_ms;
 
   while (sizeof(pending_data) ==
-      socket.Receive(&pending_data, sizeof(pending_data))) {
+      audio_socket->socket()->Receive(&pending_data, sizeof(pending_data))) {
     if (pending_data == media::AudioOutputController::kPauseMark) {
       memset(shared_memory.memory(), 0, memory_length_);
       media::SetActualDataSizeInBytes(&shared_memory, memory_length_, 0);
@@ -319,6 +317,7 @@ void AudioDevice::Run() {
                                     memory_length_,
                                     num_frames * channels_ * sizeof(int16));
   }
+  audio_socket->Close();
 }
 
 size_t AudioDevice::FireRenderCallback(int16* data) {
@@ -346,11 +345,9 @@ void AudioDevice::ShutDownAudioThread() {
   // Synchronize with OnLowLatencyCreated().
   base::AutoLock auto_lock(lock_);
   if (audio_thread_.get()) {
-    // Close the socket handler to terminate the main thread function in the
+    // Close the socket to terminate the main thread function in the
     // audio thread.
-    {
-      base::SyncSocket socket(socket_handle_);
-    }
+    audio_socket_->Close();
     audio_thread_->Join();
     audio_thread_.reset(NULL);
   }
