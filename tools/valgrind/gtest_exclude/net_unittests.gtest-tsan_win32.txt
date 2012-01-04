@@ -40,9 +40,4 @@ SSLClientSocketTest.*
 HostResolverImplTest.OnlyAbortExistingRequestsOnIPAddressChange
 
 # See http://crbug.com/50346
-DiskCacheEntryTest.InternalAsyncIO
-DiskCacheEntryTest.ExternalAsyncIO
-DiskCacheEntryTest.ExternalSyncIO
-DiskCacheEntryTest.ExternalSyncIONoBuffer
-DiskCacheEntryTest.ExternalAsyncIONoBuffer
-DiskCacheEntryTest.StreamAccess
+DiskCacheEntryTest.*
