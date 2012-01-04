@@ -21,6 +21,7 @@
  * IN THE SOFTWARE.
  */
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -38,6 +39,12 @@ struct drm_intel_decode {
 
 	/** PCI device ID. */
 	uint32_t devid;
+
+	/**
+	 * Shorthand device identifier: 3 is 915, 4 is 965, 5 is
+	 * Ironlake, etc.
+	 */
+	int gen;
 
 	/** GPU address of the start of the current packet. */
 	uint32_t hw_offset;
@@ -2711,6 +2718,7 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		int unsigned min_len;
 		int unsigned max_len;
 		const char *name;
+		int gen;
 	} opcodes_3d[] = {
 		{ 0x6000, 3, 3, "URB_FENCE" },
 		{ 0x6001, 2, 2, "CS_URB_STATE" },
@@ -3327,6 +3335,11 @@ decode_3d_965(struct drm_intel_decode *ctx)
 
 	for (idx = 0; idx < ARRAY_SIZE(opcodes_3d); idx++) {
 		opcode_3d = &opcodes_3d[idx];
+
+		/* If it's marked as only for a specific gen, skip. */
+		if (opcode_3d->gen && opcode_3d->gen != ctx->gen)
+			continue;
+
 		if ((data[0] & 0xffff0000) >> 16 == opcode_3d->opcode) {
 			unsigned int i;
 			len = 1;
@@ -3433,6 +3446,21 @@ drm_intel_decode_context_alloc(uint32_t devid)
 
 	ctx->devid = devid;
 	ctx->out = stdout;
+
+	if (IS_GEN7(devid))
+		ctx->gen = 7;
+	else if (IS_GEN6(devid))
+		ctx->gen = 6;
+	else if (IS_GEN5(devid))
+		ctx->gen = 5;
+	else if (IS_GEN4(devid))
+		ctx->gen = 4;
+	else if (IS_9XX(devid))
+		ctx->gen = 3;
+	else {
+		assert(IS_GEN2(devid));
+		ctx->gen = 2;
+	}
 
 	return ctx;
 }
