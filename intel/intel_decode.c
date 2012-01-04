@@ -2719,6 +2719,7 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		int unsigned max_len;
 		const char *name;
 		int gen;
+		int (*func)(struct drm_intel_decode *ctx);
 	} opcodes_3d[] = {
 		{ 0x6000, 3, 3, "URB_FENCE" },
 		{ 0x6001, 2, 2, "CS_URB_STATE" },
@@ -3341,7 +3342,12 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		if (opcode_3d->gen && opcode_3d->gen != ctx->gen)
 			continue;
 
-		if ((data[0] & 0xffff0000) >> 16 == opcode_3d->opcode) {
+		if ((data[0] & 0xffff0000) >> 16 != opcode_3d->opcode)
+			continue;
+
+		if (opcode_3d->func) {
+			return opcode_3d->func(ctx);
+		} else {
 			unsigned int i;
 			len = 1;
 
