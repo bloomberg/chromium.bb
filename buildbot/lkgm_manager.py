@@ -202,11 +202,11 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     with open(manifest, 'w+') as manifest_file:
       manifest_dom.writexml(manifest_file)
 
-  def CreateNewCandidate(self, patches=None, retries=3):
+  def CreateNewCandidate(self, validation_pool=None, retries=3):
     """Gets the version number of the next build spec to build.
       Args:
-        patches: An array of GerritPatches that should be built with this
-          manifest as part of a Commit Queue run.
+        validation_pool: Validation pool to apply to the manifest before
+          publishing.
         retries: Number of retries for updating the status.
       Returns:
         next_build: a string of the next build number for the builder to consume
@@ -226,9 +226,20 @@ class LKGMManager(manifest_version.BuildSpecsManager):
               chrome_branch=version_info.chrome_branch,
               incr_type=self.incr_type)
         self._PrepSpecChanges()
-        self.current_version = self._CreateNewBuildSpec(version_info)
+        self.current_version = self._CreateNewBuildSpec(version_info,
+                                                        sync=False)
         path_to_new_build_spec = self.GetLocalManifest(self.current_version)
-        if patches: self.AddPatchesToManifest(path_to_new_build_spec, patches)
+        if validation_pool:
+          if validation_pool.ApplyPoolIntoRepo(self.cros_source.directory):
+            self.AddPatchesToManifest(path_to_new_build_spec,
+                                      validation_pool.changes)
+          else:
+            # We were requested to use a validation pool but no changes applied
+            # cleanly. Unset the version as we shouldn't do anything as there
+            # is nothing to build.
+            self.current_version = None
+            return None
+
         if self.current_version:
           logging.debug('Using build spec: %s', self.current_version)
           commit_message = 'Automatic: Start %s %s' % (self.build_name,

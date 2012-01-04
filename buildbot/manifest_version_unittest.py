@@ -18,6 +18,7 @@ if __name__ == '__main__':
   sys.path.append(constants.SOURCE_ROOT)
 
 from chromite.buildbot import cbuildbot_config
+from chromite.buildbot import configure_repo
 from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
@@ -81,13 +82,13 @@ class HelperMethodsTest(unittest.TestCase):
     init_cmd = ['repo', 'init', '-u', constants.MANIFEST_URL, '--repo-url',
                 constants.REPO_URL, '-m', 'minilayout.xml']
     cros_lib.RunCommand(init_cmd, cwd=GIT_DIR, input='\n\ny\n')
+    configure_repo.FixBrokenExistingRepos(GIT_DIR)
     cros_lib.RunCommand(('repo sync --jobs 8').split(), cwd=GIT_DIR)
     git_dir = os.path.join(GIT_DIR, GIT_TEST_PATH)
     cros_lib.RunCommand(['git',
                          'config',
                          'url.%s.insteadof' % constants.GERRIT_SSH_URL,
                          constants.GIT_HTTP_URL], cwd=git_dir)
-
     manifest_version.PrepForChanges(git_dir, dry_run=True)
 
     # Change something.

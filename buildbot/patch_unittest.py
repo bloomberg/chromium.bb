@@ -236,12 +236,12 @@ class GerritPatchTest(mox.MoxTestBase):
     my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
     cros_lib.GetProjectDir(build_root, 'tacos/chromite').AndReturn(project_dir)
     # Ignore git fetch.
-    cros_lib.RunCommand(mox.IgnoreArg(), cwd=project_dir)
+    cros_lib.RunCommand(mox.IgnoreArg(), cwd=project_dir, print_cmd=False)
     cros_patch._GetProjectManifestBranch(
         build_root, 'tacos/chromite').AndReturn('m/master')
     cros_lib.RunCommand(
         ['git', 'log', '-z', 'm/master..FETCH_HEAD^'], cwd=project_dir,
-        redirect_stdout=True).AndReturn(git_log)
+        redirect_stdout=True, print_cmd=False).AndReturn(git_log)
 
     self.mox.ReplayAll()
     deps = my_patch.GerritDependencies(build_root)
