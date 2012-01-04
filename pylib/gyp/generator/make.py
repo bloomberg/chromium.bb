@@ -459,7 +459,7 @@ cmd_objcxx = $(CXX.$(TOOLSET)) $(GYP_OBJCXXFLAGS) $(DEPFLAGS) -c -o $@ $<
 quiet_cmd_pch_c = CXX($(TOOLSET)) $@
 cmd_pch_c = $(CC.$(TOOLSET)) $(GYP_PCH_CFLAGS) $(DEPFLAGS) $(CXXFLAGS.$(TOOLSET)) -c -o $@ $<
 quiet_cmd_pch_cc = CXX($(TOOLSET)) $@
-cmd_pch_cc = $(CC.$(TOOLSET)) $(GYP_PCH_CCFLAGS) $(DEPFLAGS) $(CXXFLAGS.$(TOOLSET)) -c -o $@ $<
+cmd_pch_cc = $(CC.$(TOOLSET)) $(GYP_PCH_CXXFLAGS) $(DEPFLAGS) $(CXXFLAGS.$(TOOLSET)) -c -o $@ $<
 quiet_cmd_pch_m = CXX($(TOOLSET)) $@
 cmd_pch_m = $(CC.$(TOOLSET)) $(GYP_PCH_OBJCFLAGS) $(DEPFLAGS) -c -o $@ $<
 quiet_cmd_pch_mm = CXX($(TOOLSET)) $@
@@ -1308,9 +1308,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       }[lang]
       var_name = {
         'c': 'GYP_PCH_CFLAGS',
-        'cc': 'GYP_PCH_CCFLAGS',
+        'cc': 'GYP_PCH_CXXFLAGS',
         'm': 'GYP_PCH_OBJCFLAGS',
-        'mm': 'GYP_PCH_OBJCCFLAGS',
+        'mm': 'GYP_PCH_OBJCXXFLAGS',
       }[lang]
       self.WriteLn("%s: %s := %s " % (gch, var_name, lang_flag) +
                    "$(DEFS_$(BUILDTYPE)) "
