@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -306,7 +306,9 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
       GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
       GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
       NULL);
+#if !GTK_CHECK_VERSION(2, 22, 0)
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog_), FALSE);
+#endif
 
   if (show_tree_) {
     GtkWidget* action_area = GTK_DIALOG(dialog_)->action_area;

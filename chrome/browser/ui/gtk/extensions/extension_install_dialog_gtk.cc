@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,7 +91,9 @@ ExtensionInstallDialog::ExtensionInstallDialog(
       GTK_DIALOG(dialog_),
       UTF16ToUTF8(prompt.GetAcceptButtonLabel()).c_str(),
       GTK_RESPONSE_ACCEPT);
+#if !GTK_CHECK_VERSION(2, 22, 0)
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog_), FALSE);
+#endif
 
   GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_));
   gtk_box_set_spacing(GTK_BOX(content_area), ui::kContentAreaSpacing);

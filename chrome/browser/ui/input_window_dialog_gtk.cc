@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,9 @@ InputWindowDialogGtk::InputWindowDialogGtk(GtkWindow* parent,
                   NULL)),
       delegate_(delegate) {
   gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_ACCEPT);
+#if !GTK_CHECK_VERSION(2, 22, 0)
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog_), FALSE);
+#endif
   gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
 
   GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_));

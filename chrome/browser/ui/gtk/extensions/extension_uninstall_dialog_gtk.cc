@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -68,7 +68,9 @@ void ExtensionUninstallDialogGtk::Show() {
       l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON).c_str(),
       GTK_RESPONSE_ACCEPT,
       NULL);
+#if !GTK_CHECK_VERSION(2, 22, 0)
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog_), FALSE);
+#endif
 
   // Create a two column layout.
   GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_));
