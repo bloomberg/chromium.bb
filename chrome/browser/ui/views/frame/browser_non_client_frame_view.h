@@ -34,9 +34,13 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
 
-  // Overriden from views::View.
+#if defined(OS_WIN)
+  // Overriden from views::View. For some reason just the do-nothing override
+  // causes view's gtk version to crash. TODO(cpu): remove ifdef when
+  // views:gtk is gone.
   virtual void VisibilityChanged(views::View* starting_from,
                                  bool is_visible) OVERRIDE;
+#endif
 
  protected:
   BrowserView* browser_view() const { return browser_view_; }
