@@ -457,6 +457,9 @@ weston_wm_set_selection(struct weston_selection_listener *listener,
 	const char **p, **end;
 	int has_text_plain = 0;
 
+	if (source->offer_interface == &data_offer_interface)
+		return;
+
 	fprintf(stderr, "set selection\n");
 
 	p = source->mime_types.data;
@@ -470,8 +473,7 @@ weston_wm_set_selection(struct weston_selection_listener *listener,
 		p++;
 	}
 
-	if (wm && has_text_plain &&
-	    source->offer_interface != &data_offer_interface) {
+	if (has_text_plain) {
 		xcb_set_selection_owner(wm->conn,
 					wm->selection_window,
 					wm->atom.clipboard,
