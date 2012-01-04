@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,7 @@ void CoreOptionsHandler::GetStaticLocalizedValues(
     base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   // Main
-  localized_strings->SetString("title",
+  localized_strings->SetString("optionsPageTitle",
       l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
 
   // Managed prefs

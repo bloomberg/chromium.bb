@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -383,40 +383,6 @@ cr.define('options', function() {
    */
   OptionsPage.register = function(page) {
     this.registeredPages[page.name.toLowerCase()] = page;
-    // Create and add new page <li> element to navbar.
-    var pageNav = document.createElement('li');
-    pageNav.id = page.name + 'PageNav';
-    pageNav.className = 'navbar-item';
-    pageNav.setAttribute('pageName', page.name);
-    pageNav.setAttribute('role', 'tab');
-    pageNav.textContent = page.pageDiv.querySelector('h1').textContent;
-    pageNav.tabIndex = -1;
-    pageNav.onclick = function(event) {
-      OptionsPage.navigateToPage(this.getAttribute('pageName'));
-    };
-    pageNav.onkeydown = function(event) {
-        if ((event.keyCode == 37 || event.keyCode==38) &&
-             this.previousSibling && this.previousSibling.onkeydown) {
-        // Left and up arrow moves back one tab.
-        OptionsPage.navigateToPage(
-            this.previousSibling.getAttribute('pageName'));
-        this.previousSibling.focus();
-        } else if ((event.keyCode == 39 || event.keyCode == 40) &&
-                    this.nextSibling) {
-        // Right and down arrows move forward one tab.
-        OptionsPage.navigateToPage(this.nextSibling.getAttribute('pageName'));
-        this.nextSibling.focus();
-      }
-    };
-    pageNav.onkeypress = function(event) {
-      // Enter or space
-      if (event.keyCode == 13 || event.keyCode == 32) {
-        OptionsPage.navigateToPage(this.getAttribute('pageName'));
-      }
-    };
-    var navbar = $('navbar');
-    navbar.appendChild(pageNav);
-    page.tab = pageNav;
     page.initializePage();
   };
 
@@ -687,7 +653,6 @@ cr.define('options', function() {
     // position:fixed doesn't seem to work for horizontal scrolling in RTL mode,
     // so only adjust in LTR mode (where scroll values will be positive).
     if (scrollHorizontalOffset >= 0) {
-      $('navbar-container').style.left = -scrollHorizontalOffset + 'px';
       var subpageBackdrop = $('subpage-backdrop');
       subpageBackdrop.style.left = subpageBackdrop.horizontalOffset -
           scrollHorizontalOffset + 'px';
@@ -767,10 +732,6 @@ cr.define('options', function() {
         event.clientY == -document.body.scrollTop) {
       return;
     }
-
-    // Don't interfere with navbar clicks.
-    if ($('navbar').contains(event.target))
-      return;
 
     // Figure out which page the click happened in.
     for (var level = topPage.nestingLevel; level >= 0; level--) {
@@ -912,23 +873,7 @@ cr.define('options', function() {
         return;
 
       this.setContainerVisibility_(visible);
-      if (visible) {
-        this.pageDiv.hidden = false;
-
-        if (this.tab) {
-          this.tab.classList.add('navbar-item-selected');
-          this.tab.setAttribute('aria-selected', 'true');
-          this.tab.tabIndex = 0;
-        }
-      } else {
-        this.pageDiv.hidden = true;
-
-        if (this.tab) {
-          this.tab.classList.remove('navbar-item-selected');
-          this.tab.setAttribute('aria-selected', 'false');
-          this.tab.tabIndex = -1;
-        }
-      }
+      this.pageDiv.hidden = !visible;
 
       OptionsPage.updatePageFreezeStates();
 

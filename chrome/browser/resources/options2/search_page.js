@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,6 +130,7 @@ cr.define('options', function() {
       var self = this;
 
       // Create a search field element.
+      // TODO(csilv): Move this into the HTML.
       var searchField = document.createElement('input');
       searchField.id = 'search-field';
       searchField.type = 'search';
@@ -137,16 +138,6 @@ cr.define('options', function() {
       searchField.placeholder = localStrings.getString('searchPlaceholder');
       searchField.setAttribute('aria-label', searchField.placeholder);
       this.searchField = searchField;
-
-      // Replace the contents of the navigation tab with the search field.
-      self.tab.textContent = '';
-      self.tab.appendChild(searchField);
-      self.tab.onclick = self.tab.onkeydown = self.tab.onkeypress = undefined;
-      self.tab.tabIndex = -1;
-      self.tab.setAttribute('role', '');
-
-      // Don't allow the focus on the search navbar. http://crbug.com/77989
-      self.tab.onfocus = self.tab.blur;
 
       // Handle search events. (No need to throttle, WebKit's search field
       // will do that automatically.)
@@ -184,9 +175,6 @@ cr.define('options', function() {
       // Install handler for key presses.
       document.addEventListener('keydown',
                                 this.keyDownEventHandler_.bind(this));
-
-      // Focus the search field by default.
-      searchField.focus();
     },
 
     /**

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -228,11 +228,6 @@ function load() {
 
   if (navigator.plugins['Shockwave Flash'])
     document.documentElement.setAttribute('hasFlashPlugin', '');
-
-  // Clicking on the Settings title brings up the 'Basics' page.
-  $('navbar-content-title').onclick = function() {
-    OptionsPage.navigateToPage(BrowserOptions.getInstance().name);
-  };
 }
 
 document.addEventListener('DOMContentLoaded', load);
