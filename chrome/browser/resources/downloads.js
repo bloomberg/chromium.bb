@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,8 +71,8 @@ function Downloads() {
   this.newestTime_ = -1;
 
   // Icon load request queue.
-  this.iconLoadQueue = [];
-  this.isIconLoading = false;
+  this.iconLoadQueue_ = [];
+  this.isIconLoading_ = false;
 }
 
 /**
@@ -178,23 +178,25 @@ Downloads.prototype.scheduleIconLoad = function(elem, iconURL) {
   // Sends request to the next icon in the queue and schedules
   // call to itself when the icon is loaded.
   function loadNext() {
-    if (self.iconLoadQueue.length == 0) {
-      self.isIconLoading = false;
-    } else {
-      self.isIconLoading = true;
-      var request = self.iconLoadQueue.pop();
+    self.isIconLoading_ = true;
+    while (self.iconLoadQueue_.length > 0) {
+      var request = self.iconLoadQueue_.shift();
+      var oldSrc = request.element.src;
       request.element.onabort = request.element.onerror =
           request.element.onload = loadNext;
       request.element.src = request.url;
+      if (oldSrc != request.element.src)
+        return;
     }
+    self.isIconLoading_ = false;
   }
 
   // Create new request
   var loadRequest = {element: elem, url: iconURL};
-  this.iconLoadQueue.push(loadRequest);
+  this.iconLoadQueue_.push(loadRequest);
 
   // Start loading if none scheduled yet
-  if (!this.isIconLoading)
+  if (!this.isIconLoading_)
     loadNext();
 }
 
@@ -391,8 +393,8 @@ Download.prototype.update = function(download) {
     this.danger_.style.display = 'block';
     this.safe_.style.display = 'none';
   } else {
-    this.scheduleIconLoad(this.nodeImg_,
-                          'chrome://fileicon/' + this.filePath_);
+    downloads.scheduleIconLoad(this.nodeImg_,
+                               'chrome://fileicon/' + this.filePath_);
 
     if (this.state_ == Download.States.COMPLETE &&
         !this.fileExternallyRemoved_) {
@@ -584,6 +586,10 @@ Download.prototype.cancel_ = function() {
 ///////////////////////////////////////////////////////////////////////////////
 // Page:
 var downloads, localStrings, resultsTimeout;
+
+// TODO(benjhayden): Rename Downloads to DownloadManager, downloads to
+// downloadManager or theDownloadManager or DownloadManager.get() to prevent
+// confusing Downloads with Download.
 
 /**
  * The FIFO array that stores updates of download files to be appeared
