@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "content/common/child_process.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/gpu/transport_texture.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "ui/gfx/gl/gl_context.h"
@@ -60,15 +59,6 @@ GpuChannel::~GpuChannel() {
   if (renderer_process_)
     CloseHandle(renderer_process_);
 #endif
-}
-
-TransportTexture* GpuChannel::GetTransportTexture(int32 route_id) {
-  return transport_textures_.Lookup(route_id);
-}
-
-void GpuChannel::DestroyTransportTexture(int32 route_id) {
-  transport_textures_.Remove(route_id);
-  router_.RemoveRoute(route_id);
 }
 
 bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
@@ -227,8 +217,6 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
                                     OnCreateOffscreenCommandBuffer)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_DestroyCommandBuffer,
                                     OnDestroyCommandBuffer)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateTransportTexture,
-        OnCreateTransportTexture)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_Echo, OnEcho);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_WillGpuSwitchOccur,
                                     OnWillGpuSwitchOccur)
@@ -372,24 +360,6 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id,
 
   if (reply_message)
     Send(reply_message);
-}
-
-void GpuChannel::OnCreateTransportTexture(int32 context_route_id,
-                                          int32 host_id) {
- #if defined(ENABLE_GPU)
-   GpuCommandBufferStub* stub = stubs_.Lookup(context_route_id);
-   int32 route_id = GenerateRouteID();
-
-   scoped_ptr<TransportTexture> transport(
-       new TransportTexture(this, channel_.get(), stub->decoder(),
-                            host_id, route_id));
-   router_.AddRoute(route_id, transport.get());
-   transport_textures_.AddWithID(transport.release(), route_id);
-
-   IPC::Message* msg = new GpuTransportTextureHostMsg_TransportTextureCreated(
-       host_id, route_id);
-   Send(msg);
- #endif
 }
 
 void GpuChannel::OnEcho(const IPC::Message& message) {

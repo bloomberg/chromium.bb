@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -162,8 +162,6 @@
     'common/gpu/image_transport_surface_win.cc',
     'common/gpu/media/gpu_video_decode_accelerator.cc',
     'common/gpu/media/gpu_video_decode_accelerator.h',
-    'common/gpu/transport_texture.cc',
-    'common/gpu/transport_texture.h',
     'common/handle_enumerator_win.cc',
     'common/handle_enumerator_win.h',
     'common/hi_res_timer_manager_posix.cc',

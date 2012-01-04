@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,6 @@
 class GpuChannelManager;
 struct GPUCreateCommandBufferConfig;
 class GpuWatchdog;
-class TransportTexture;
 
 namespace base {
 class MessageLoopProxy;
@@ -97,13 +96,6 @@ class GpuChannel : public IPC::Channel::Listener,
   // Destroy channel and all contained contexts.
   void DestroySoon();
 
-  // Get the TransportTexture by ID.
-  TransportTexture* GetTransportTexture(int32 route_id);
-
-  // Destroy the TransportTexture by ID. This method is only called by
-  // TransportTexture to delete and detach itself.
-  void DestroyTransportTexture(int32 route_id);
-
   // Generate a route ID guaranteed to be unique for this channel.
   int GenerateRouteID();
 
@@ -129,8 +121,6 @@ class GpuChannel : public IPC::Channel::Listener,
       const GPUCreateCommandBufferConfig& init_params,
       IPC::Message* reply_message);
   void OnDestroyCommandBuffer(int32 route_id, IPC::Message* reply_message);
-
-  void OnCreateTransportTexture(int32 context_route_id, int32 host_id);
 
   void OnEcho(const IPC::Message& message);
 
@@ -171,10 +161,6 @@ class GpuChannel : public IPC::Channel::Listener,
   typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;
   StubMap stubs_;
 #endif  // defined (ENABLE_GPU)
-
-  // A collection of transport textures created.
-  typedef IDMap<TransportTexture, IDMapOwnPointer> TransportTextureMap;
-  TransportTextureMap transport_textures_;
 
   bool log_messages_;  // True if we should log sent and received messages.
   gpu::gles2::DisallowedFeatures disallowed_features_;

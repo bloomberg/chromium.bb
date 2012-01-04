@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -66,10 +66,6 @@
     'renderer/gpu/gpu_video_decode_accelerator_host.h',
     'renderer/gpu/renderer_gl_context.cc',
     'renderer/gpu/renderer_gl_context.h',
-    'renderer/gpu/transport_texture_host.cc',
-    'renderer/gpu/transport_texture_host.h',
-    'renderer/gpu/transport_texture_service.cc',
-    'renderer/gpu/transport_texture_service.h',
     'renderer/gpu/webgraphicscontext3d_command_buffer_impl.cc',
     'renderer/gpu/webgraphicscontext3d_command_buffer_impl.h',
     'renderer/idle_user_detector.cc',

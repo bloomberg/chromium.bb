@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,10 +102,6 @@ class GpuChannelHost : public IPC::Message::Sender,
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxy* command_buffer);
 
-  TransportTextureService* transport_texture_service() {
-    return transport_texture_service_.get();
-  }
-
   // Add a route for the current message loop.
   void AddRoute(int route_id, base::WeakPtr<IPC::Channel::Listener> listener);
   void RemoveRoute(int route_id);
@@ -183,10 +179,6 @@ class GpuChannelHost : public IPC::Message::Sender,
   // A lock to guard against concurrent access to members like the proxies map
   // for calls from contexts that may live on the compositor or main thread.
   mutable base::Lock context_lock_;
-
-  // This is a MessageFilter to intercept IPC messages related to transport
-  // textures. These messages are routed to TransportTextureHost.
-  scoped_refptr<TransportTextureService> transport_texture_service_;
 
   // A filter for sending messages from thread other than the main thread.
   scoped_refptr<IPC::SyncMessageFilter> sync_filter_;

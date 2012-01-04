@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "content/common/child_process.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/renderer/gpu/command_buffer_proxy.h"
-#include "content/renderer/gpu/transport_texture_service.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "googleurl/src/gurl.h"
@@ -109,8 +108,7 @@ void GpuChannelHost::MessageFilter::OnChannelError() {
 }
 
 GpuChannelHost::GpuChannelHost()
-    : state_(kUnconnected),
-      transport_texture_service_(new TransportTextureService()) {
+    : state_(kUnconnected) {
 }
 
 GpuChannelHost::~GpuChannelHost() {
@@ -131,8 +129,6 @@ void GpuChannelHost::Connect(
       ChildProcess::current()->GetShutDownEvent());
 
   channel_->AddFilter(sync_filter_.get());
-
-  channel_->AddFilter(transport_texture_service_.get());
 
   channel_filter_ = new MessageFilter(this);
 

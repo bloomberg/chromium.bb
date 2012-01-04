@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -286,11 +286,6 @@ IPC_SYNC_MESSAGE_CONTROL2_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
 IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
                             int32 /* instance_id */)
 
-// Create a TransportTexture corresponding to |host_id|.
-IPC_MESSAGE_CONTROL2(GpuChannelMsg_CreateTransportTexture,
-                     int32, /* context_route_id */
-                     int32 /* host_id */)
-
 // Request that the GPU process reply with the given message.
 IPC_MESSAGE_CONTROL1(GpuChannelMsg_Echo,
                      IPC::Message /* reply */)
@@ -423,40 +418,6 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_Destroyed,
 IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_EchoAck)
 
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetSurfaceVisible, bool /* visible */)
-
-// --------------------------------------------------------------------------
-// TransportTexture messages
-//
-// These are messages sent from renderer process to the GPU proess.
-
-// Destroy corresponding TransportTexture in the GPU process.
-IPC_MESSAGE_ROUTED0(GpuTransportTextureMsg_Destroy)
-
-// Notify that the textures have been created. IDs are in client context.
-IPC_MESSAGE_ROUTED1(GpuTransportTextureMsg_TexturesCreated,
-                    std::vector<int> /* texture IDs */)
-
-// --------------------------------------------------------------------------
-//
-// These are messages sent from GPU process to the renderer process.
-
-// TransportTexture is created in the GPU process with the ID.
-IPC_MESSAGE_ROUTED1(GpuTransportTextureHostMsg_TransportTextureCreated,
-                    int32 /* id */)
-
-// Allocate video frames for output of the hardware video decoder.
-IPC_MESSAGE_ROUTED4(GpuTransportTextureHostMsg_CreateTextures,
-                    int32,  /* Number of texturess to generate */
-                    uint32, /* Width of the texture */
-                    uint32, /* Height of the texture */
-                    int32   /* Format of the texture */)
-
-// Instruct the renderer to release all generated textures.
-IPC_MESSAGE_ROUTED0(GpuTransportTextureHostMsg_ReleaseTextures)
-
-// Notify a texture has been updated. The texture id is in the client context.
-IPC_MESSAGE_ROUTED1(GpuTransportTextureHostMsg_TextureUpdated,
-                    int /* texture_id */)
 
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Messages

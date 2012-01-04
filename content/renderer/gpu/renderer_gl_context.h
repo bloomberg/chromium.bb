@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,6 @@
 class GpuChannelHost;
 class CommandBufferProxy;
 class GURL;
-class TransportTextureHost;
 
 namespace gpu {
 namespace gles2 {
@@ -162,9 +161,6 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext>,
 
   // Sends an IPC message with the new state of surface visibility
   bool SetSurfaceVisible(bool visibility);
-
-  // Create a TransportTextureHost object associated with the context.
-  scoped_refptr<TransportTextureHost> CreateTransportTextureHost();
 
   // TODO(gman): Remove this
   void DisableShaderTranslation();

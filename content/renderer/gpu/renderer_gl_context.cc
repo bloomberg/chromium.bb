@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,6 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/gpu/command_buffer_proxy.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/gpu/transport_texture_host.h"
-#include "content/renderer/gpu/transport_texture_service.h"
 #include "content/renderer/render_widget.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
@@ -236,12 +234,6 @@ bool RendererGLContext::SwapBuffers() {
 
 bool RendererGLContext::Echo(const base::Closure& task) {
   return command_buffer_->Echo(task);
-}
-
-scoped_refptr<TransportTextureHost>
-RendererGLContext::CreateTransportTextureHost() {
-  return channel_->transport_texture_service()->CreateTransportTextureHost(
-      this, command_buffer_->route_id());
 }
 
 RendererGLContext::Error RendererGLContext::GetError() {
