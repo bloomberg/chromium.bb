@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,6 +70,8 @@ CapsLockMenuButton::CapsLockMenuButton(StatusAreaButton::Delegate* delegate)
   UpdateUIFromCurrentCapsLock(input_method::XKeyboard::CapsLockIsEnabled());
   if (SystemKeyEventListener::GetInstance())
     SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
+  else
+    LOG(ERROR) << "SystemKeyEventListener not initialized!";
 }
 
 CapsLockMenuButton::~CapsLockMenuButton() {

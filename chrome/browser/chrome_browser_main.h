@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   virtual void PostDestroyThreads() OVERRIDE;
 
   // Additional stages for ChromeBrowserMainExtraParts. These stages are called
-  // in order from PreMainMessageLoopStart(). See implementation for details.
+  // in order from PreMainMessageLoopRun(). See implementation for details.
   virtual void PreProfileInit();
   virtual void PostProfileInit();
   virtual void PreBrowserStart();

@@ -259,6 +259,81 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
   ChromeBrowserMainPartsLinux::PreMainMessageLoopStart();
 }
 
+void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
+  MessageLoopForUI* message_loop = MessageLoopForUI::current();
+  message_loop->AddObserver(g_message_loop_observer.Pointer());
+
+  // Initialize DBusThreadManager for the browser. This must be done after
+  // the main message loop is started, as it uses the message loop.
+  chromeos::DBusThreadManager::Initialize();
+
+  // Initialize the brightness observer so that we'll display an onscreen
+  // indication of brightness changes during login.
+  brightness_observer_.reset(new chromeos::BrightnessObserver());
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
+      brightness_observer_.get());
+  // Initialize the session manager observer so that we'll take actions
+  // per signals sent from the session manager.
+  session_manager_observer_.reset(new chromeos::SessionManagerObserver);
+  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+      AddObserver(session_manager_observer_.get());
+
+  // Initialize the disk mount manager.
+  chromeos::disks::DiskMountManager::Initialize();
+
+  // Initialize the system event observer.
+  chromeos::accessibility::SystemEventObserver::Initialize();
+
+  // Initialize the network change notifier for Chrome OS. The network
+  // change notifier starts to monitor changes from the power manager and
+  // the network manager.
+  chromeos::CrosNetworkChangeNotifierFactory::GetInstance()->Init();
+
+  // Likewise, initialize the upgrade detector for Chrome OS. The upgrade
+  // detector starts to monitor changes from the update engine.
+  UpgradeDetectorChromeos::GetInstance()->Init();
+
+  if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
+    // Enable Num Lock on X start up for http://crosbug.com/p/5795 and
+    // http://crosbug.com/p/6245. We don't do this for Chromium OS since many
+    // netbooks do not work as intended when Num Lock is on (e.g. On a netbook
+    // with a small keyboard, u, i, o, p, ... keys might be repurposed as
+    // cursor keys when Num Lock is on).
+#if defined(GOOGLE_CHROME_BUILD)
+      chromeos::input_method::InputMethodManager::GetInstance()->
+          GetXKeyboard()->SetNumLockEnabled(true);
+#endif
+
+#if defined(USE_AURA)
+      initial_browser_window_observer_.reset(
+          new chromeos::InitialBrowserWindowObserver);
+#endif
+  }
+
+  ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
+}
+
+// Threads are initialized MainMessageLoopStart and MainMessageLoopRun.
+
+void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
+  // Initialize the audio handler on ChromeOS.
+  chromeos::AudioHandler::Initialize();
+
+  // Listen for system key events so that the user will be able to adjust the
+  // volume on the login screen, if Chrome is running on Chrome OS
+  // (i.e. not Linux desktop), and in non-test mode.
+  // Note: SystemKeyEventListener depends on the DBus thread.
+  if (chromeos::system::runtime_environment::IsRunningOnChromeOS() &&
+      !parameters().ui_task) {  // ui_task is non-NULL when running tests.
+    chromeos::SystemKeyEventListener::Initialize();
+  }
+
+  // Listen for XI_HierarchyChanged events.
+  chromeos::XInputHierarchyChangedEventListener::GetInstance();
+
+  ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
+}
+
 void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- immediately before Profile creation().
@@ -351,20 +426,6 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 
   metrics()->StartExternalMetrics();
 
-  // Initialize the audio handler on ChromeOS.
-  chromeos::AudioHandler::Initialize();
-
-  // Listen for system key events so that the user will be able to adjust the
-  // volume on the login screen, if Chrome is running on Chrome OS
-  // (i.e. not Linux desktop), and in non-test mode.
-  if (chromeos::system::runtime_environment::IsRunningOnChromeOS() &&
-      !parameters().ui_task) {  // ui_task is non-NULL when running tests.
-    chromeos::SystemKeyEventListener::Initialize();
-  }
-
-  // Listen for XI_HierarchyChanged events.
-  chromeos::XInputHierarchyChangedEventListener::GetInstance();
-
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- immediately after ChildProcess::WaitForDebugger().
 
@@ -402,60 +463,6 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
 #endif
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
-}
-
-void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
-  MessageLoopForUI* message_loop = MessageLoopForUI::current();
-  message_loop->AddObserver(g_message_loop_observer.Pointer());
-
-  // Initialize DBusThreadManager for the browser. This must be done after
-  // the main message loop is started, as it uses the message loop.
-  chromeos::DBusThreadManager::Initialize();
-
-  // Initialize the brightness observer so that we'll display an onscreen
-  // indication of brightness changes during login.
-  brightness_observer_.reset(new chromeos::BrightnessObserver());
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      brightness_observer_.get());
-  // Initialize the session manager observer so that we'll take actions
-  // per signals sent from the session manager.
-  session_manager_observer_.reset(new chromeos::SessionManagerObserver);
-  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
-      AddObserver(session_manager_observer_.get());
-
-  // Initialize the disk mount manager.
-  chromeos::disks::DiskMountManager::Initialize();
-
-  // Initialize the system event observer.
-  chromeos::accessibility::SystemEventObserver::Initialize();
-
-  // Initialize the network change notifier for Chrome OS. The network
-  // change notifier starts to monitor changes from the power manager and
-  // the network manager.
-  chromeos::CrosNetworkChangeNotifierFactory::GetInstance()->Init();
-
-  // Likewise, initialize the upgrade detector for Chrome OS. The upgrade
-  // detector starts to monitor changes from the update engine.
-  UpgradeDetectorChromeos::GetInstance()->Init();
-
-  if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
-    // Enable Num Lock on X start up for http://crosbug.com/p/5795 and
-    // http://crosbug.com/p/6245. We don't do this for Chromium OS since many
-    // netbooks do not work as intended when Num Lock is on (e.g. On a netbook
-    // with a small keyboard, u, i, o, p, ... keys might be repurposed as
-    // cursor keys when Num Lock is on).
-#if defined(GOOGLE_CHROME_BUILD)
-      chromeos::input_method::InputMethodManager::GetInstance()->
-          GetXKeyboard()->SetNumLockEnabled(true);
-#endif
-
-#if defined(USE_AURA)
-      initial_browser_window_observer_.reset(
-          new chromeos::InitialBrowserWindowObserver);
-#endif
-  }
-
-  ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
 }
 
 // Shut down services before the browser process, etc are destroyed.
