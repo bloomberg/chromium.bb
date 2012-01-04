@@ -1046,6 +1046,7 @@ weston_wm_handle_xfixes_selection_notify(struct weston_wm *wm,
 		return;
 	}
 
+	wm->incr = 0;
 	xcb_convert_selection(wm->conn, wm->selection_window,
 			      wm->atom.clipboard,
 			      wm->atom.targets,
