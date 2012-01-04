@@ -12,7 +12,7 @@ outputs.
 import TestGyp
 import os
 
-test = TestGyp.TestGyp(formats=['ninja', 'make'])
+test = TestGyp.TestGyp(formats=['ninja', 'make', 'xcode'])
 
 test.run_gyp('restat.gyp', chdir='src')
 
