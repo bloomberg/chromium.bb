@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,15 +148,6 @@ Widget* CreateChildNativeWidget() {
 bool WidgetHasMouseCapture(const Widget* widget) {
   return static_cast<const internal::NativeWidgetPrivate*>(widget->
       native_widget())->HasMouseCapture();
-}
-
-ui::WindowShowState GetWidgetShowState(const Widget* widget) {
-  gfx::Rect bounds;
-  ui::WindowShowState show_state;
-
-  static_cast<const internal::NativeWidgetPrivate*>(widget->
-      native_widget())->GetWindowPlacement(&bounds, &show_state);
-  return show_state;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -772,42 +763,6 @@ TEST_F(WidgetTest, GetRestoredBounds) {
   EXPECT_GT(toplevel->GetRestoredBounds().height(), 0);
 }
 #endif
-
-// Test that window state is not changed after getting out of full screen.
-TEST_F(WidgetTest, ExitFullscreenRestoreState) {
-  Widget* toplevel = CreateTopLevelPlatformWidget();
-
-  toplevel->Show();
-  RunPendingMessages();
-
-  // This should be a normal state window.
-  EXPECT_EQ(ui::SHOW_STATE_NORMAL, GetWidgetShowState(toplevel));
-
-  toplevel->SetFullscreen(true);
-  RunPendingMessages();
-  toplevel->SetFullscreen(false);
-  RunPendingMessages();
-
-  // And it should still be in normal state after getting out of full screen.
-  EXPECT_EQ(ui::SHOW_STATE_NORMAL, GetWidgetShowState(toplevel));
-
-  // Now, make it maximized.
-  toplevel->Maximize();
-  RunPendingMessages();
-  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, GetWidgetShowState(toplevel));
-
-  toplevel->SetFullscreen(true);
-  RunPendingMessages();
-  toplevel->SetFullscreen(false);
-  RunPendingMessages();
-
-  // And it stays maximized after getting out of full screen.
-  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, GetWidgetShowState(toplevel));
-
-  // Clean up.
-  toplevel->Close();
-  RunPendingMessages();
-}
 
 }  // namespace
 }  // namespace views

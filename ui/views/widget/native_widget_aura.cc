@@ -132,8 +132,7 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
 #if defined(USE_X11)
       should_handle_menu_key_release_(false),
 #endif
-      cursor_(gfx::kNullCursor),
-      saved_window_state_(ui::SHOW_STATE_DEFAULT) {
+      cursor_(gfx::kNullCursor) {
 }
 
 NativeWidgetAura::~NativeWidgetAura() {
@@ -493,17 +492,9 @@ void NativeWidgetAura::Restore() {
 }
 
 void NativeWidgetAura::SetFullscreen(bool fullscreen) {
-  if (IsFullscreen() == fullscreen)
-    return;  // Nothing to do.
-
-  // Save window state before entering full screen so that it could restored
-  // when exiting full screen.
-  if (fullscreen)
-    saved_window_state_ = window_->GetIntProperty(aura::client::kShowStateKey);
-
   window_->SetIntProperty(
       aura::client::kShowStateKey,
-      fullscreen ? ui::SHOW_STATE_FULLSCREEN : saved_window_state_);
+      fullscreen ? ui::SHOW_STATE_FULLSCREEN : ui::SHOW_STATE_NORMAL);
 }
 
 bool NativeWidgetAura::IsFullscreen() const {
