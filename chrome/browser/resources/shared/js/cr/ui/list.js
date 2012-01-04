@@ -956,7 +956,7 @@ cr.define('cr.ui', function() {
         }
 
         var index = item.listIndex;
-        if (!(index in cachedItems) || index < currentIndex) {
+        if (cachedItems[index] != item || index < currentIndex) {
           remove(this);
         } else if (index == currentIndex) {
           newCachedItems[currentIndex] = item;
@@ -1089,9 +1089,9 @@ cr.define('cr.ui', function() {
       var leadIndex = sm.leadIndex;
 
       if (this.pinnedItem_ &&
-          this.pinnedItem_ != cachedItems[leadIndex] &&
-          this.pinnedItem_.hidden) {
-        this.removeChild(this.pinnedItem_);
+          this.pinnedItem_ != cachedItems[leadIndex]) {
+        if (this.pinnedItem_.hidden)
+          this.removeChild(this.pinnedItem_);
         this.pinnedItem_ = undefined;
       }
       this.pinnedItem_ = this.pinnedItem_ || cachedItems[leadIndex];
