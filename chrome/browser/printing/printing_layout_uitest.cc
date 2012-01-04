@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -167,7 +167,7 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
       }
       if (found_emf && found_prn)
         break;
-      base::PlatformThread::Sleep(100);
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
     }
     EXPECT_TRUE(found_emf) << ".PRN file is: " << prn_file;
     EXPECT_TRUE(found_prn) << ".EMF file is: " << emf_file;
@@ -259,13 +259,13 @@ class DismissTheWindow : public base::DelegateSimpleThread::Delegate {
           break;
         }
       }
-      base::PlatformThread::Sleep(10);
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
     }
 
     // Now verify that it indeed closed itself.
     while (IsWindow(dialog_window)) {
       CloseDialogWindow(dialog_window);
-      base::PlatformThread::Sleep(10);
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
     }
   }
 
