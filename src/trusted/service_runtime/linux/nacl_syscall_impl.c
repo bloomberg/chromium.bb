@@ -338,12 +338,11 @@ int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
   retval = NaClGetTimeOfDay(&now);
   if (0 == retval) {
     /*
-     * To make it harder to distinguish Linux platforms from Windows,
-     * coarsen the time to the same level we get on Windows -
-     * milliseconds, unless in "debug" mode.
+     * Coarsen the time to the same level we get on Windows -
+     * 10 microseconds.
      */
     if (!NaClHighResolutionTimerEnabled()) {
-      now.nacl_abi_tv_usec = (now.nacl_abi_tv_usec / 1000) * 1000;
+      now.nacl_abi_tv_usec = (now.nacl_abi_tv_usec / 10) * 10;
     }
     CHECK(now.nacl_abi_tv_usec >= 0);
     CHECK(now.nacl_abi_tv_usec < NACL_MICROS_PER_UNIT);
