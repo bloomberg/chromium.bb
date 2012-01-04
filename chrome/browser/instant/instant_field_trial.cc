@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,17 +46,17 @@ void InstantFieldTrial::Activate() {
   if (base::FieldTrialList::IsOneTimeRandomizationEnabled())
     trial->UseOneTimeRandomization();
 
-  g_instant_experiment_a = trial->AppendGroup("InstantExperimentA", 50);
-  g_instant_experiment_b = trial->AppendGroup("InstantExperimentB", 50);
+  g_instant_experiment_a = trial->AppendGroup("InstantExperimentA", 5);
+  g_instant_experiment_b = trial->AppendGroup("InstantExperimentB", 5);
 
-  g_hidden_experiment_a = trial->AppendGroup("HiddenExperimentA", 50);
-  g_hidden_experiment_b = trial->AppendGroup("HiddenExperimentB", 50);
+  g_hidden_experiment_a = trial->AppendGroup("HiddenExperimentA", 5);
+  g_hidden_experiment_b = trial->AppendGroup("HiddenExperimentB", 5);
 
-  g_silent_experiment_a = trial->AppendGroup("SilentExperimentA", 340);
-  g_silent_experiment_b = trial->AppendGroup("SilentExperimentB", 340);
+  g_silent_experiment_a = trial->AppendGroup("SilentExperimentA", 5);
+  g_silent_experiment_b = trial->AppendGroup("SilentExperimentB", 5);
 
-  g_suggest_experiment_a = trial->AppendGroup("SuggestExperimentA", 50);
-  g_suggest_experiment_b = trial->AppendGroup("SuggestExperimentB", 50);
+  g_suggest_experiment_a = trial->AppendGroup("SuggestExperimentA", 5);
+  g_suggest_experiment_b = trial->AppendGroup("SuggestExperimentB", 5);
 
   g_uma_control_a = trial->AppendGroup("UmaControlA", 5);
   g_uma_control_b = trial->AppendGroup("UmaControlB", 5);
