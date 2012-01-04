@@ -322,9 +322,16 @@ WL_EXPORT void
 wl_client_add_resource(struct wl_client *client,
 		       struct wl_resource *resource)
 {
+	if (resource->object.id == 0)
+		resource->object.id =
+			wl_map_insert_new(&client->objects,
+					  WL_MAP_SERVER_SIDE, resource);
+	else
+		wl_map_insert_at(&client->objects,
+				 resource->object.id, resource);
+
 	resource->client = client;
 	wl_list_init(&resource->destroy_listener_list);
-	wl_map_insert_at(&client->objects, resource->object.id, resource);
 }
 
 WL_EXPORT void
