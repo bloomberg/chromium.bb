@@ -4720,7 +4720,7 @@
    ...
    fun:_ZN24NavigationControllerImpl9LoadEntryEPN7content19NavigationEntryImplE
    fun:_ZN24NavigationControllerImpl7LoadURLERK4GURLRKN7content8ReferrerENS3_14PageTransitionERKSs
-   fun:_ZN12_GLOBAL__N_117LoadURLInContentsEP11TabContentsRK4GURLPN7browser14NavigateParamsERKSs
+   fun:_ZN12_GLOBAL__N_117LoadURLInContentsEPN7content11WebContentsERK4GURLPN7browser14NavigateParamsERKSs
    fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
    fun:_ZN7Browser30ShowSingletonTabOverwritingNTPERKN7browser14NavigateParamsE
    fun:_ZN7Browser16ShowDownloadsTabEv
