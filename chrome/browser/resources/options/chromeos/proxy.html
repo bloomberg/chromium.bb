@@ -1,4 +1,4 @@
-<div id="proxyPage" class="page" hidden>
+<div id="proxyPage" class="page vbox" hidden>
   <div id="info-banner" class="managed-prefs-banner" hidden>
     <span id="banner-icon" class="managed-prefs-icon"></span>
     <span id="banner-text" class="managed-prefs-text"></span>
@@ -128,11 +128,11 @@
       </div>
     </div>
   </section>
-  <section id="advancedConfig">
+  <section id="advancedConfig" class="vbox stretch">
     <h3 i18n-content="advanced_proxy_config"></h3>
-    <div class="option">
+    <div class="option vbox flex">
       <div i18n-content="proxyBypass"></div>
-      <list id="ignoredHostList"></list>
+      <list id="ignoredHostList" class="stretch"></list>
       <input id="newHost" type="url" size="30">
       <button id="addHost" i18n-content="addHost"></button>
       <button id="removeHost" i18n-content="removeHost"></button>

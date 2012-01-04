@@ -414,6 +414,13 @@ list > * {
   margin: 0;
 }
 
+list > .spacer {
+  /* The above height rule should not apply to spacers. When redraw is called
+     on the list they will be given an explicit element height but this ensures
+     they have 0 height to begin with. */
+  height: 0;
+}
+
 list:not([disabled]) > :hover {
   background-color: #e4ecf7;
 }

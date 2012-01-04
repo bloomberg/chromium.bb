@@ -1,0 +1,16 @@
+/* These additional styles constrain the size of the proxy page to the height of
+   the dialog containing them. */
+html {
+  height: 100%;
+}
+
+body {
+  -webkit-box-sizing: border-box;
+  height: 100%;
+  margin: 0;
+  padding: 8px;
+}
+
+#proxyPage {
+  height: 100%;
+}
