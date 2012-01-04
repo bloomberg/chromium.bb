@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -370,7 +370,7 @@ void AcceleratedSurface::DoPresentAndAcknowledge(
       size.width(), size.height(),
       SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOMOVE |SWP_NOOWNERZORDER |
           SWP_NOREDRAW | SWP_NOSENDCHANGING | SWP_NOSENDCHANGING |
-          SWP_ASYNCWINDOWPOS);
+          SWP_ASYNCWINDOWPOS | SWP_NOZORDER);
 
   // Wait for the StretchRect to complete before notifying the GPU process
   // that it is safe to write to its backing store again.
