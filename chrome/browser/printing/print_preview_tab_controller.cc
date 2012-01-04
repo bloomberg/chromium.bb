@@ -40,6 +40,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "webkit/plugins/webplugininfo.h"
 
+using content::NavigationController;
 using content::WebContents;
 using content::WebUIMessageHandler;
 
@@ -222,8 +223,8 @@ void PrintPreviewTabController::Observe(
       break;
     }
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      content::NavigationController* controller =
-          content::Source<content::NavigationController>(source).ptr();
+      NavigationController* controller =
+          content::Source<NavigationController>(source).ptr();
       TabContentsWrapper* wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(
               controller->GetWebContents());
@@ -416,8 +417,7 @@ void PrintPreviewTabController::AddObservers(TabContentsWrapper* tab) {
                  content::Source<WebContents>(contents));
   registrar_.Add(
       this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<content::NavigationController>(
-          &contents->GetController()));
+      content::Source<NavigationController>(&contents->GetController()));
 
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.
@@ -437,8 +437,7 @@ void PrintPreviewTabController::RemoveObservers(TabContentsWrapper* tab) {
                     content::Source<WebContents>(contents));
   registrar_.Remove(
       this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<content::NavigationController>(
-          &contents->GetController()));
+      content::Source<NavigationController>(&contents->GetController()));
 
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.

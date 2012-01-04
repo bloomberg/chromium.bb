@@ -29,6 +29,7 @@
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::NavigationController;
 using content::WebContents;
 using content::WebUIMessageHandler;
 
@@ -182,7 +183,7 @@ void WebUIBrowserTest::PreLoadJavascriptLibraries(
 
 void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   TestNavigationObserver navigation_observer(
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->web_contents()->
               GetController()),
       this, 1);

@@ -50,6 +50,7 @@
 #include "net/url_request/url_request_status.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
@@ -261,8 +262,8 @@ void TranslateManager::Observe(int type,
                                const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      content::NavigationController* controller =
-          content::Source<content::NavigationController>(source).ptr();
+      NavigationController* controller =
+          content::Source<NavigationController>(source).ptr();
       content::LoadCommittedDetails* load_details =
           content::Details<content::LoadCommittedDetails>(details).ptr();
       NavigationEntry* entry = controller->GetActiveEntry();

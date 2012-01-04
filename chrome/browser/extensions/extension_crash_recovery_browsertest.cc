@@ -23,6 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
 
+using content::NavigationController;
 using content::WebContents;
 
 class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
@@ -474,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        content::Source<content::NavigationController>(
+        content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->web_contents()->
                 GetController()));
     browser()->Reload(CURRENT_TAB);

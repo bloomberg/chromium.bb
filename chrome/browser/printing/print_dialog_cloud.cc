@@ -106,6 +106,7 @@
 // bringing up the dialog) isn't what we want.
 
 using content::BrowserThread;
+using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -303,7 +304,7 @@ void CloudPrintFlowHandler::RegisterMessages() {
   // Register for appropriate notifications, and re-direct the URL
   // to the real server URL, now that we've gotten an HTML dialog
   // going.
-  content::NavigationController* controller =
+  NavigationController* controller =
       &web_ui()->web_contents()->GetController();
   NavigationEntry* pending_entry = controller->GetPendingEntry();
   if (pending_entry) {
@@ -312,7 +313,7 @@ void CloudPrintFlowHandler::RegisterMessages() {
         CloudPrintURL(profile).GetCloudPrintServiceDialogURL());
   }
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 content::Source<content::NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
 }
 
 void CloudPrintFlowHandler::Observe(

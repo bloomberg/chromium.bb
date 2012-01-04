@@ -69,6 +69,7 @@
 #include "ui/aura/root_window.h"
 #endif
 
+using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
@@ -315,10 +316,10 @@ bool GetCurrentTabTitle(const Browser* browser, string16* title) {
   return true;
 }
 
-void WaitForNavigations(content::NavigationController* controller,
+void WaitForNavigations(NavigationController* controller,
                         int number_of_navigations) {
   TestNavigationObserver observer(
-      content::Source<content::NavigationController>(controller), NULL,
+      content::Source<NavigationController>(controller), NULL,
       number_of_navigations);
   observer.WaitForObservation(
       base::Bind(&ui_test_utils::RunMessageLoop),
@@ -342,7 +343,7 @@ void WaitForBrowserActionUpdated(ExtensionAction* browser_action) {
 void WaitForLoadStop(WebContents* tab) {
   WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(&tab->GetController()));
+      content::Source<NavigationController>(&tab->GetController()));
   // In many cases, the load may have finished before we get here.  Only wait if
   // the tab still has a pending navigation.
   if (!tab->IsLoading())
@@ -403,11 +404,11 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     int browser_test_flags) {
   if (disposition == CURRENT_TAB && browser->GetSelectedWebContents())
     WaitForLoadStop(browser->GetSelectedWebContents());
-  content::NavigationController* controller =
+  NavigationController* controller =
       browser->GetSelectedWebContents() ?
       &browser->GetSelectedWebContents()->GetController() : NULL;
   TestNavigationObserver same_tab_observer(
-      content::Source<content::NavigationController>(controller),
+      content::Source<NavigationController>(controller),
       NULL,
       number_of_navigations);
 
@@ -453,7 +454,7 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
                    base::Unretained(MessageLoopForUI::current())));
     return;
   } else if (web_contents) {
-    content::NavigationController* controller = &web_contents->GetController();
+    NavigationController* controller = &web_contents->GetController();
     WaitForNavigations(controller, number_of_navigations);
     return;
   }
@@ -932,8 +933,7 @@ TitleWatcher::TitleWatcher(WebContents* web_contents,
   notification_registrar_.Add(
       this,
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
-          &web_contents->GetController()));
+      content::Source<NavigationController>(&web_contents->GetController()));
 }
 
 void TitleWatcher::AlsoWaitForTitle(const string16& expected_title) {
@@ -958,8 +958,8 @@ void TitleWatcher::Observe(int type,
     WebContents* source_contents = content::Source<WebContents>(source).ptr();
     ASSERT_EQ(web_contents_, source_contents);
   } else if (type == content::NOTIFICATION_LOAD_STOP) {
-    content::NavigationController* controller =
-        content::Source<content::NavigationController>(source).ptr();
+    NavigationController* controller =
+        content::Source<NavigationController>(source).ptr();
     ASSERT_EQ(&web_contents_->GetController(), controller);
   } else {
     FAIL() << "Unexpected notification received.";

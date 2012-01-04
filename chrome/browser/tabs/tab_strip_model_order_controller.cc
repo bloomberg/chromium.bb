@@ -7,6 +7,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/public/browser/web_contents.h"
 
+using content::NavigationController;
+
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripModelOrderController, public:
 
@@ -39,7 +41,7 @@ int TabStripModelOrderController::DetermineInsertionIndex(
       // tab, insert it adjacent to the tab that opened that link.
       return tabstrip_->active_index() + delta;
     }
-    content::NavigationController* opener =
+    NavigationController* opener =
         &tabstrip_->GetActiveTabContents()->web_contents()->GetController();
     // Get the index of the next item opened by this tab, and insert after
     // it...
@@ -69,12 +71,12 @@ int TabStripModelOrderController::DetermineNewSelectedIndex(
     int removing_index) const {
   int tab_count = tabstrip_->count();
   DCHECK(removing_index >= 0 && removing_index < tab_count);
-  content::NavigationController* parent_opener =
+  NavigationController* parent_opener =
       tabstrip_->GetOpenerOfTabContentsAt(removing_index);
   // First see if the index being removed has any "child" tabs. If it does, we
   // want to select the first in that child group, not the next tab in the same
   // group of the removed tab.
-  content::NavigationController* removed_controller =
+  NavigationController* removed_controller =
       &tabstrip_->GetTabContentsAt(removing_index)->
           web_contents()->GetController();
   // The parent opener should never be the same as the controller being removed.
@@ -114,7 +116,7 @@ void TabStripModelOrderController::ActiveTabChanged(
     TabContentsWrapper* new_contents,
     int index,
     bool user_gesture) {
-  content::NavigationController* old_opener = NULL;
+  NavigationController* old_opener = NULL;
   if (old_contents) {
     int index = tabstrip_->GetIndexOfTabContents(old_contents);
     if (index != TabStripModel::kNoTab) {
@@ -126,8 +128,7 @@ void TabStripModelOrderController::ActiveTabChanged(
         tabstrip_->ForgetGroup(old_contents);
     }
   }
-  content::NavigationController* new_opener =
-      tabstrip_->GetOpenerOfTabContentsAt(index);
+  NavigationController* new_opener = tabstrip_->GetOpenerOfTabContentsAt(index);
 
   if (user_gesture && new_opener != old_opener &&
       ((old_contents == NULL && new_opener == NULL) ||

@@ -32,6 +32,7 @@
 #include "ui/base/text/text_elider.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 using webkit::forms::PasswordForm;
 
 class LoginHandlerImpl;
@@ -278,7 +279,7 @@ void LoginHandler::NotifyAuthNeeded() {
 
   content::NotificationService* service =
       content::NotificationService::current();
-  content::NavigationController* controller = NULL;
+  NavigationController* controller = NULL;
 
   TabContents* requesting_contents = GetTabContentsForLogin();
   if (requesting_contents)
@@ -287,7 +288,7 @@ void LoginHandler::NotifyAuthNeeded() {
   LoginNotificationDetails details(this);
 
   service->Notify(chrome::NOTIFICATION_AUTH_NEEDED,
-                  content::Source<content::NavigationController>(controller),
+                  content::Source<NavigationController>(controller),
                   content::Details<LoginNotificationDetails>(&details));
 }
 
@@ -297,7 +298,7 @@ void LoginHandler::NotifyAuthCancelled() {
 
   content::NotificationService* service =
       content::NotificationService::current();
-  content::NavigationController* controller = NULL;
+  NavigationController* controller = NULL;
 
   TabContents* requesting_contents = GetTabContentsForLogin();
   if (requesting_contents)
@@ -306,7 +307,7 @@ void LoginHandler::NotifyAuthCancelled() {
   LoginNotificationDetails details(this);
 
   service->Notify(chrome::NOTIFICATION_AUTH_CANCELLED,
-                  content::Source<content::NavigationController>(controller),
+                  content::Source<NavigationController>(controller),
                   content::Details<LoginNotificationDetails>(&details));
 }
 
@@ -321,13 +322,13 @@ void LoginHandler::NotifyAuthSupplied(const string16& username,
 
   content::NotificationService* service =
       content::NotificationService::current();
-  content::NavigationController* controller =
+  NavigationController* controller =
       &requesting_contents->GetController();
   AuthSuppliedLoginNotificationDetails details(this, username, password);
 
   service->Notify(
       chrome::NOTIFICATION_AUTH_SUPPLIED,
-      content::Source<content::NavigationController>(controller),
+      content::Source<NavigationController>(controller),
       content::Details<AuthSuppliedLoginNotificationDetails>(&details));
 }
 

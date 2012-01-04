@@ -28,6 +28,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::NavigationController;
 using content::NavigationEntry;
 
 namespace {
@@ -124,7 +125,7 @@ void SSLBlockingPage::UpdateEntry(NavigationEntry* entry) {
   entry->GetSSL().security_bits = ssl_info.security_bits;
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
-      content::Source<content::NavigationController>(&tab()->GetController()),
+      content::Source<NavigationController>(&tab()->GetController()),
       content::NotificationService::NoDetails());
 }
 

@@ -41,6 +41,7 @@ using content::BrowserThread;
 using content::DevToolsManager;
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
+using content::NavigationController;
 using content::WebContents;
 using content::WorkerService;
 using content::WorkerServiceObserver;
@@ -414,7 +415,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     if (client_contents->IsLoading()) {
       ui_test_utils::WindowedNotificationObserver observer(
           content::NOTIFICATION_LOAD_STOP,
-          content::Source<content::NavigationController>(
+          content::Source<NavigationController>(
               &client_contents->GetController()));
       observer.Wait();
     }
@@ -527,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestReattachAfterCrash) {
   ui_test_utils::CrashTab(GetInspectedTab());
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->web_contents()->
               GetController()));
   browser()->Reload(CURRENT_TAB);

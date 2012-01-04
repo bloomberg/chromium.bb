@@ -34,6 +34,7 @@
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::WebContents;
@@ -211,9 +212,9 @@ void InterstitialPage::Show() {
                               content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                               content::Source<WebContents>(tab_));
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<content::NavigationController>(&tab_->GetController()));
+      content::Source<NavigationController>(&tab_->GetController()));
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-      content::Source<content::NavigationController>(&tab_->GetController()));
+      content::Source<NavigationController>(&tab_->GetController()));
 }
 
 void InterstitialPage::Hide() {

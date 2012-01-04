@@ -89,6 +89,7 @@
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::NavigationController;
 using content::WebContents;
 
 // Holds onto start and stop timestamps for a particular tab
@@ -233,7 +234,7 @@ void NewTabUILoadObserver::Observe(int type,
 
 NavigationControllerRestoredObserver::NavigationControllerRestoredObserver(
     AutomationProvider* automation,
-    content::NavigationController* controller,
+    NavigationController* controller,
     IPC::Message* reply_message)
     : automation_(automation->AsWeakPtr()),
       controller_(controller),
@@ -273,7 +274,7 @@ void NavigationControllerRestoredObserver::SendDone() {
 }
 
 NavigationNotificationObserver::NavigationNotificationObserver(
-    content::NavigationController* controller,
+    NavigationController* controller,
     AutomationProvider* automation,
     IPC::Message* reply_message,
     int number_of_navigations,
@@ -290,7 +291,7 @@ NavigationNotificationObserver::NavigationNotificationObserver(
     return;
   }
   DCHECK_LT(0, navigations_remaining_);
-  content::Source<content::NavigationController> source(controller_);
+  content::Source<NavigationController> source(controller_);
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
   registrar_.Add(this, content::NOTIFICATION_LOAD_START, source);
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP, source);
@@ -395,7 +396,7 @@ void TabStripNotificationObserver::Observe(
       ObserveTab(&(content::Source<TabContentsWrapper>(source).ptr()->
                      tab_contents()->GetController()));
     } else {
-      ObserveTab(content::Source<content::NavigationController>(source).ptr());
+      ObserveTab(content::Source<NavigationController>(source).ptr());
     }
     delete this;
   } else {
@@ -415,7 +416,7 @@ TabAppendedNotificationObserver::TabAppendedNotificationObserver(
 TabAppendedNotificationObserver::~TabAppendedNotificationObserver() {}
 
 void TabAppendedNotificationObserver::ObserveTab(
-    content::NavigationController* controller) {
+    NavigationController* controller) {
   if (!automation_)
     return;
 
@@ -443,7 +444,7 @@ TabClosedNotificationObserver::TabClosedNotificationObserver(
 TabClosedNotificationObserver::~TabClosedNotificationObserver() {}
 
 void TabClosedNotificationObserver::ObserveTab(
-    content::NavigationController* controller) {
+    NavigationController* controller) {
   if (!automation_)
     return;
 
@@ -885,8 +886,8 @@ void BrowserOpenedNotificationObserver::Observe(
         content::Source<Browser>(source).ptr());
   } else if (type == content::NOTIFICATION_LOAD_STOP) {
     // Only send the result if the loaded tab is in the new window.
-    content::NavigationController* controller =
-      content::Source<content::NavigationController>(source).ptr();
+    NavigationController* controller =
+        content::Source<NavigationController>(source).ptr();
     TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
         controller->GetWebContents());
     int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
@@ -1900,13 +1901,13 @@ void AutomationProviderBrowsingDataObserver::OnBrowsingDataRemoverDone() {
 }
 
 OmniboxAcceptNotificationObserver::OmniboxAcceptNotificationObserver(
-    content::NavigationController* controller,
+    NavigationController* controller,
     AutomationProvider* automation,
     IPC::Message* reply_message)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
       controller_(controller) {
-  content::Source<content::NavigationController> source(controller_);
+  content::Source<NavigationController> source(controller_);
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP, source);
   // Pages requiring auth don't send LOAD_STOP.
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_NEEDED, source);
@@ -2198,7 +2199,7 @@ void NTPInfoObserver::OnTopSitesReceived(
 }
 
 AppLaunchObserver::AppLaunchObserver(
-    content::NavigationController* controller,
+    NavigationController* controller,
     AutomationProvider* automation,
     IPC::Message* reply_message,
     extension_misc::LaunchContainer launch_container)
@@ -2209,7 +2210,7 @@ AppLaunchObserver::AppLaunchObserver(
       new_window_id_(extension_misc::kUnknownWindowId) {
   if (launch_container_ == extension_misc::LAUNCH_TAB) {
     // Need to wait for the currently-active tab to reload.
-    content::Source<content::NavigationController> source(controller_);
+    content::Source<NavigationController> source(controller_);
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP, source);
   } else {
     // Need to wait for a new tab in a new window to load.
@@ -2236,8 +2237,8 @@ void AppLaunchObserver::Observe(int type,
       return;
     } else {
       // The app has launched only if the loaded tab is in the new window.
-      content::NavigationController* controller =
-          content::Source<content::NavigationController>(source).ptr();
+      NavigationController* controller =
+          content::Source<NavigationController>(source).ptr();
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
               controller->GetWebContents());
@@ -2750,7 +2751,7 @@ void NewTabObserver::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   DCHECK_EQ(content::NOTIFICATION_TAB_PARENTED, type);
-  content::NavigationController* controller =
+  NavigationController* controller =
       &(content::Source<TabContentsWrapper>(source).ptr()->
           tab_contents()->GetController());
   if (automation_) {
@@ -2971,8 +2972,8 @@ void BrowserOpenedWithNewProfileNotificationObserver::Observe(
         content::Source<Browser>(source).ptr());
   } else if (type == content::NOTIFICATION_LOAD_STOP) {
     // Only send the result if the loaded tab is in the new window.
-    content::NavigationController* controller =
-        content::Source<content::NavigationController>(source).ptr();
+    NavigationController* controller =
+        content::Source<NavigationController>(source).ptr();
     TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
         controller->GetWebContents());
     int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;

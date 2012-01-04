@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 
+using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
@@ -92,8 +93,7 @@ void SearchEngineTabHelper::OnPageHasOSDD(
       return;
   }
 
-  const content::NavigationController& controller =
-      web_contents()->GetController();
+  const NavigationController& controller = web_contents()->GetController();
   const NavigationEntry* entry = controller.GetLastCommittedEntry();
   DCHECK(entry);
 
@@ -143,8 +143,7 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   if (profile->IsOffTheRecord())
     return;
 
-  const content::NavigationController& controller =
-      web_contents()->GetController();
+  const NavigationController& controller = web_contents()->GetController();
   int last_index = controller.GetLastCommittedEntryIndex();
   // When there was no previous page, the last index will be 0. This is
   // normally due to a form submit that opened in a new tab.

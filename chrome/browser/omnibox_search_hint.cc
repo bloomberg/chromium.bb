@@ -38,6 +38,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::NavigationController;
 using content::NavigationEntry;
 
 // The URLs of search engines for which we want to trigger the infobar.
@@ -154,12 +155,11 @@ bool HintInfoBar::Accept() {
 // OmniboxSearchHint ----------------------------------------------------------
 
 OmniboxSearchHint::OmniboxSearchHint(TabContentsWrapper* tab) : tab_(tab) {
-  content::NavigationController* controller =
-      &(tab->web_contents()->GetController());
+  NavigationController* controller = &(tab->web_contents()->GetController());
   notification_registrar_.Add(
       this,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<content::NavigationController>(controller));
+      content::Source<NavigationController>(controller));
   // Fill the search_engine_urls_ map, used for faster look-up (overkill?).
   for (size_t i = 0; i < arraysize(kSearchEngineURLs); ++i)
     search_engine_urls_[kSearchEngineURLs[i]] = 1;

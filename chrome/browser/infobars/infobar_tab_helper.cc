@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 
+using content::NavigationController;
 using content::WebContents;
 
 InfoBarTabHelper::InfoBarTabHelper(WebContents* web_contents)
@@ -58,7 +59,7 @@ void InfoBarTabHelper::AddInfoBar(InfoBarDelegate* delegate) {
   if (infobars_.size() == 1) {
     registrar_.Add(
         this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::Source<content::NavigationController>(
+        content::Source<NavigationController>(
             &web_contents()->GetController()));
   }
 }
@@ -124,7 +125,7 @@ void InfoBarTabHelper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
   if (infobars_.empty()) {
     registrar_.Remove(
         this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::Source<content::NavigationController>(
+        content::Source<NavigationController>(
             &web_contents()->GetController()));
   }
 }
@@ -183,7 +184,7 @@ void InfoBarTabHelper::Observe(int type,
   switch (type) {
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       DCHECK(&web_contents()->GetController() ==
-             content::Source<content::NavigationController>(source).ptr());
+             content::Source<NavigationController>(source).ptr());
 
       content::LoadCommittedDetails& committed_details =
           *(content::Details<content::LoadCommittedDetails>(details).ptr());

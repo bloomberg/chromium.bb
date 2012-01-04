@@ -10,6 +10,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 
+using content::NavigationController;
 using content::NavigationEntry;
 
 ExtensionNavigationObserver::ExtensionNavigationObserver(Profile* profile)
@@ -28,8 +29,8 @@ void ExtensionNavigationObserver::Observe(
     return;
   }
 
-  content::NavigationController* controller =
-      content::Source<content::NavigationController>(source).ptr();
+  NavigationController* controller =
+      content::Source<NavigationController>(source).ptr();
   if (!profile_->IsSameProfile(
           Profile::FromBrowserContext(controller->GetBrowserContext())))
     return;
@@ -43,7 +44,7 @@ void ExtensionNavigationObserver::RegisterForNotifications() {
 }
 
 void ExtensionNavigationObserver::PromptToEnableExtensionIfNecessary(
-    content::NavigationController* nav_controller) {
+    NavigationController* nav_controller) {
   // Bail out if we're already running a prompt.
   if (!in_progress_prompt_extension_id_.empty())
     return;
@@ -80,7 +81,7 @@ void ExtensionNavigationObserver::InstallUIProceed() {
   ExtensionService* extension_service = profile_->GetExtensionService();
   const Extension* extension = extension_service->GetExtensionById(
       in_progress_prompt_extension_id_, true);
-  content::NavigationController* nav_controller =
+  NavigationController* nav_controller =
       in_progress_prompt_navigation_controller_;
   CHECK(extension);
   CHECK(nav_controller);

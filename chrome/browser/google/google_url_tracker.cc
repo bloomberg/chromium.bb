@@ -32,6 +32,7 @@
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::NavigationController;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
@@ -323,8 +324,8 @@ void GoogleURLTracker::Observe(int type,
                                const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {
-      content::NavigationController* controller =
-          content::Source<content::NavigationController>(source).ptr();
+      NavigationController* controller =
+          content::Source<NavigationController>(source).ptr();
       OnNavigationPending(source, controller->GetPendingEntry()->GetURL());
       break;
     }
@@ -332,7 +333,7 @@ void GoogleURLTracker::Observe(int type,
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
     case content::NOTIFICATION_TAB_CLOSED:
       OnNavigationCommittedOrTabClosed(
-          content::Source<content::NavigationController>(source).ptr()->
+          content::Source<NavigationController>(source).ptr()->
               GetWebContents(), type);
       break;
 
@@ -358,16 +359,16 @@ void GoogleURLTracker::SearchCommitted() {
 void GoogleURLTracker::OnNavigationPending(
     const content::NotificationSource& source,
     const GURL& pending_url) {
-  controller_ = content::Source<content::NavigationController>(source).ptr();
+  controller_ = content::Source<NavigationController>(source).ptr();
   search_url_ = pending_url;
   registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                     content::NotificationService::AllSources());
   // Start listening for the commit notification. We also need to listen for the
   // tab close command since that means the load will never commit.
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 content::Source<content::NavigationController>(controller_));
+                 content::Source<NavigationController>(controller_));
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
-                 content::Source<content::NavigationController>(controller_));
+                 content::Source<NavigationController>(controller_));
 }
 
 void GoogleURLTracker::OnNavigationCommittedOrTabClosed(

@@ -30,6 +30,7 @@
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 using content::WebContents;
 
 AutoLoginPrompter::AutoLoginPrompter(
@@ -40,7 +41,7 @@ AutoLoginPrompter::AutoLoginPrompter(
       username_(username),
       args_(args) {
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 content::Source<content::NavigationController>(
+                 content::Source<NavigationController>(
                     &web_contents_->GetController()));
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::Source<WebContents>(web_contents_));

@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_source.h"
 #include "ui/gfx/rect.h"
 
+using content::NavigationController;
 using content::WebContents;
 
 // The minimum space between the FindInPage window and the search result.
@@ -94,7 +95,7 @@ void FindBarController::ChangeTabContents(TabContentsWrapper* contents) {
   registrar_.Add(
       this,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &tab_contents_->web_contents()->GetController()));
 
   MaybeSetPrepopulateText();
@@ -133,8 +134,8 @@ void FindBarController::Observe(int type,
       }
     }
   } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    content::NavigationController* source_controller =
-        content::Source<content::NavigationController>(source).ptr();
+    NavigationController* source_controller =
+        content::Source<NavigationController>(source).ptr();
     if (source_controller == &tab_contents_->web_contents()->GetController()) {
       content::LoadCommittedDetails* commit_details =
           content::Details<content::LoadCommittedDetails>(details).ptr();

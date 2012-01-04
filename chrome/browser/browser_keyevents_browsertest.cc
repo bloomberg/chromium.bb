@@ -25,6 +25,8 @@
 #include "net/test/test_server.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
+using content::NavigationController;
+
 namespace {
 
 const char kTestingPage[] = "files/keyevents_test.html";
@@ -712,7 +714,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
 
   ui_test_utils::WindowedNotificationObserver wait_for_tab_closed(
       content::NOTIFICATION_TAB_CLOSED,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetWebContentsAt(1)->GetController()));
 
   // Press Ctrl/Cmd+W, which will close the tab.

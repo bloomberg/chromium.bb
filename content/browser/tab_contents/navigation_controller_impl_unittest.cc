@@ -34,6 +34,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 using base::Time;
+using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::WebContents;
@@ -48,13 +49,13 @@ class NavigationControllerTest : public RenderViewHostTestHarness {
 void RegisterForAllNavNotifications(TestNotificationTracker* tracker,
                                     NavigationControllerImpl* controller) {
   tracker->ListenFor(content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                     content::Source<content::NavigationController>(
+                     content::Source<NavigationController>(
                          controller));
   tracker->ListenFor(content::NOTIFICATION_NAV_LIST_PRUNED,
-                     content::Source<content::NavigationController>(
+                     content::Source<NavigationController>(
                          controller));
   tracker->ListenFor(content::NOTIFICATION_NAV_ENTRY_CHANGED,
-                     content::Source<content::NavigationController>(
+                     content::Source<NavigationController>(
                          controller));
 }
 
@@ -1396,7 +1397,7 @@ class PrunedListener : public content::NotificationObserver {
   explicit PrunedListener(NavigationControllerImpl* controller)
       : notification_count_(0) {
     registrar_.Add(this, content::NOTIFICATION_NAV_LIST_PRUNED,
-                   content::Source<content::NavigationController>(controller));
+                   content::Source<NavigationController>(controller));
   }
 
   virtual void Observe(int type,

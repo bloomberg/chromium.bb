@@ -61,6 +61,7 @@
 namespace keys = extension_tabs_module_constants;
 namespace errors = extension_manifest_errors;
 
+using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
@@ -1072,8 +1073,7 @@ bool UpdateTabFunction::RunImpl() {
                   NULL, &tab_strip, &contents, &tab_index, &error_)) {
     return false;
   }
-  content::NavigationController& controller =
-      contents->web_contents()->GetController();
+  NavigationController& controller = contents->web_contents()->GetController();
 
   // TODO(rafaelw): handle setting remaining tab properties:
   // -title
@@ -1639,11 +1639,11 @@ bool DetectTabLanguageFunction::RunImpl() {
                  content::Source<WebContents>(contents->web_contents()));
   registrar_.Add(
       this, content::NOTIFICATION_TAB_CLOSING,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &(contents->web_contents()->GetController())));
   registrar_.Add(
       this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &(contents->web_contents()->GetController())));
   return true;
 }

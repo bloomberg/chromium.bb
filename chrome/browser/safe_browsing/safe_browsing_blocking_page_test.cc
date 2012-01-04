@@ -27,6 +27,7 @@
 #include "content/test/test_browser_thread.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 using content::WebContents;
 
 // A SafeBrowingService class that allows us to inject the malicious URLs.
@@ -430,7 +431,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareProceed) {
   ui_test_utils::NavigateToURL(browser(), url);
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->web_contents()->
               GetController()));
   SendCommand("\"proceed\"");    // Simulate the user clicking "proceed"
@@ -462,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingProceed) {
 
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->web_contents()->
               GetController()));
   SendCommand("\"proceed\"");   // Simulate the user clicking "proceed".
@@ -481,7 +482,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingReportError) {
 
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->web_contents()->
               GetController()));
   SendCommand("\"reportError\"");   // Simulate the user clicking "report error"
@@ -504,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
 
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->web_contents()->
               GetController()));
   SendCommand("\"learnMore\"");   // Simulate the user clicking "learn more"
@@ -527,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareIframeDontProceed) {
 
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->web_contents()->
               GetController()));
   SendCommand("\"takeMeBack\"");    // Simulate the user clicking "back"

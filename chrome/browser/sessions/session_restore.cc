@@ -42,6 +42,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #endif
 
+using content::NavigationController;
 using content::WebContents;
 
 // Are we in the process of restoring?
@@ -69,11 +70,11 @@ class TabLoader : public content::NotificationObserver,
   virtual ~TabLoader();
 
   // Schedules a tab for loading.
-  void ScheduleLoad(content::NavigationController* controller);
+  void ScheduleLoad(NavigationController* controller);
 
   // Notifies the loader that a tab has been scheduled for loading through
   // some other mechanism.
-  void TabIsLoading(content::NavigationController* controller);
+  void TabIsLoading(NavigationController* controller);
 
   // Invokes |LoadNextTab| to load a tab.
   //
@@ -81,8 +82,8 @@ class TabLoader : public content::NotificationObserver,
   void StartLoading();
 
  private:
-  typedef std::set<content::NavigationController*> TabsLoading;
-  typedef std::list<content::NavigationController*> TabsToLoad;
+  typedef std::set<NavigationController*> TabsLoading;
+  typedef std::list<NavigationController*> TabsToLoad;
   typedef std::set<RenderWidgetHost*> RenderWidgetHostSet;
 
   // Loads the next tab. If there are no more tabs to load this deletes itself,
@@ -101,7 +102,7 @@ class TabLoader : public content::NotificationObserver,
   // Removes the listeners from the specified tab and removes the tab from
   // the set of tabs to load and list of tabs we're waiting to get a load
   // from.
-  void RemoveTab(content::NavigationController* tab);
+  void RemoveTab(NavigationController* tab);
 
   // Invoked from |force_load_timer_|. Doubles |force_load_delay_| and invokes
   // |LoadNextTab| to load the next tab
@@ -109,14 +110,13 @@ class TabLoader : public content::NotificationObserver,
 
   // Returns the RenderWidgetHost associated with a tab if there is one,
   // NULL otherwise.
-  static RenderWidgetHost* GetRenderWidgetHost(
-      content::NavigationController* tab);
+  static RenderWidgetHost* GetRenderWidgetHost(NavigationController* tab);
 
   // Register for necessary notificaitons on a tab navigation controller.
-  void RegisterForNotifications(content::NavigationController* controller);
+  void RegisterForNotifications(NavigationController* controller);
 
   // Called when a tab goes away or a load completes.
-  void HandleTabClosedOrLoaded(content::NavigationController* controller);
+  void HandleTabClosedOrLoaded(NavigationController* controller);
 
   content::NotificationRegistrar registrar_;
 
@@ -168,7 +168,7 @@ TabLoader::~TabLoader() {
   net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
 }
 
-void TabLoader::ScheduleLoad(content::NavigationController* controller) {
+void TabLoader::ScheduleLoad(NavigationController* controller) {
   DCHECK(controller);
   DCHECK(find(tabs_to_load_.begin(), tabs_to_load_.end(), controller) ==
          tabs_to_load_.end());
@@ -176,7 +176,7 @@ void TabLoader::ScheduleLoad(content::NavigationController* controller) {
   RegisterForNotifications(controller);
 }
 
-void TabLoader::TabIsLoading(content::NavigationController* controller) {
+void TabLoader::TabIsLoading(NavigationController* controller) {
   DCHECK(controller);
   DCHECK(find(tabs_loading_.begin(), tabs_loading_.end(), controller) ==
          tabs_loading_.end());
@@ -205,7 +205,7 @@ void TabLoader::StartLoading() {
 
 void TabLoader::LoadNextTab() {
   if (!tabs_to_load_.empty()) {
-    content::NavigationController* tab = tabs_to_load_.front();
+    NavigationController* tab = tabs_to_load_.front();
     DCHECK(tab);
     tabs_loading_.insert(tab);
     tabs_to_load_.pop_front();
@@ -244,8 +244,8 @@ void TabLoader::Observe(int type,
       // Add this render_widget_host to the set of those we're waiting for
       // paints on. We want to only record stats for paints that occur after
       // a load has finished.
-      content::NavigationController* tab =
-          content::Source<content::NavigationController>(source).ptr();
+      NavigationController* tab =
+          content::Source<NavigationController>(source).ptr();
       RenderWidgetHost* render_widget_host = GetRenderWidgetHost(tab);
       DCHECK(render_widget_host);
       render_widget_hosts_loading_.insert(render_widget_host);
@@ -262,8 +262,8 @@ void TabLoader::Observe(int type,
       break;
     }
     case content::NOTIFICATION_LOAD_STOP: {
-      content::NavigationController* tab =
-          content::Source<content::NavigationController>(source).ptr();
+      NavigationController* tab =
+          content::Source<NavigationController>(source).ptr();
       render_widget_hosts_to_paint_.insert(GetRenderWidgetHost(tab));
       HandleTabClosedOrLoaded(tab);
       break;
@@ -328,13 +328,13 @@ void TabLoader::OnOnlineStateChanged(bool online) {
   }
 }
 
-void TabLoader::RemoveTab(content::NavigationController* tab) {
+void TabLoader::RemoveTab(NavigationController* tab) {
   registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                     content::Source<WebContents>(tab->GetWebContents()));
   registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP,
-                    content::Source<content::NavigationController>(tab));
+                    content::Source<NavigationController>(tab));
   registrar_.Remove(this, content::NOTIFICATION_LOAD_START,
-                    content::Source<content::NavigationController>(tab));
+                    content::Source<NavigationController>(tab));
 
   TabsLoading::iterator i = tabs_loading_.find(tab);
   if (i != tabs_loading_.end())
@@ -351,8 +351,7 @@ void TabLoader::ForceLoadTimerFired() {
   LoadNextTab();
 }
 
-RenderWidgetHost* TabLoader::GetRenderWidgetHost(
-    content::NavigationController* tab) {
+RenderWidgetHost* TabLoader::GetRenderWidgetHost(NavigationController* tab) {
   WebContents* web_contents = tab->GetWebContents();
   if (web_contents) {
     RenderWidgetHostView* render_widget_host_view =
@@ -363,18 +362,17 @@ RenderWidgetHost* TabLoader::GetRenderWidgetHost(
   return NULL;
 }
 
-void TabLoader::RegisterForNotifications(
-    content::NavigationController* controller) {
+void TabLoader::RegisterForNotifications(NavigationController* controller) {
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::Source<WebContents>(controller->GetWebContents()));
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 content::Source<content::NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
-                 content::Source<content::NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
   ++tab_count_;
 }
 
-void TabLoader::HandleTabClosedOrLoaded(content::NavigationController* tab) {
+void TabLoader::HandleTabClosedOrLoaded(NavigationController* tab) {
   RemoveTab(tab);
   if (loading_)
     LoadNextTab();

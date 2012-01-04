@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_types.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 
+using content::NavigationController;
 using content::WebContents;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -169,8 +170,7 @@ void TabContentsContainer::AddObservers() {
   registrar_.Add(
       this,
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      content::Source<content::NavigationController>(
-          &web_contents_->GetController()));
+      content::Source<NavigationController>(&web_contents_->GetController()));
 
   registrar_.Add(
       this,

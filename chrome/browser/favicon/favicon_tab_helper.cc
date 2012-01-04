@@ -23,6 +23,7 @@
 #include "ui/gfx/image/image.h"
 
 using content::FaviconStatus;
+using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
@@ -48,8 +49,7 @@ void FaviconTabHelper::FetchFavicon(const GURL& url) {
 SkBitmap FaviconTabHelper::GetFavicon() const {
   // Like GetTitle(), we also want to use the favicon for the last committed
   // entry rather than a pending navigation entry.
-  const content::NavigationController& controller =
-      web_contents()->GetController();
+  const NavigationController& controller = web_contents()->GetController();
   NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
     return entry->GetFavicon().bitmap;
@@ -61,8 +61,7 @@ SkBitmap FaviconTabHelper::GetFavicon() const {
 }
 
 bool FaviconTabHelper::FaviconIsValid() const {
-  const content::NavigationController& controller =
-      web_contents()->GetController();
+  const NavigationController& controller = web_contents()->GetController();
   NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
     return entry->GetFavicon().valid;
@@ -76,8 +75,7 @@ bool FaviconTabHelper::FaviconIsValid() const {
 
 bool FaviconTabHelper::ShouldDisplayFavicon() {
   // Always display a throbber during pending loads.
-  const content::NavigationController& controller =
-      web_contents()->GetController();
+  const NavigationController& controller = web_contents()->GetController();
   if (controller.GetLastCommittedEntry() && controller.GetPendingEntry())
     return true;
 
@@ -156,8 +154,8 @@ void FaviconTabHelper::NotifyFaviconUpdated() {
 
 void FaviconTabHelper::NavigateToPendingEntry(
     const GURL& url,
-    content::NavigationController::ReloadType reload_type) {
-  if (reload_type != content::NavigationController::NO_RELOAD &&
+    NavigationController::ReloadType reload_type) {
+  if (reload_type != NavigationController::NO_RELOAD &&
       !profile_->IsOffTheRecord()) {
     FaviconService* favicon_service =
         profile_->GetFaviconService(Profile::IMPLICIT_ACCESS);

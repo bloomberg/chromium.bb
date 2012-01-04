@@ -58,6 +58,7 @@ using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
+using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::WebContents;
@@ -206,12 +207,12 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
   registrar_.Add(
       this,
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &tab_contents_->web_contents()->GetController()));
   registrar_.Add(
       this,
       content::NOTIFICATION_TAB_CLOSING,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &tab_contents_->web_contents()->GetController()));
   registrar_.Add(
       this,
@@ -383,7 +384,7 @@ bool DevToolsWindow::FindInspectedBrowserAndTabIndex(Browser** browser,
   if (!inspected_tab_)
     return false;
 
-  const content::NavigationController& controller =
+  const NavigationController& controller =
       inspected_tab_->tab_contents()->GetController();
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end(); ++it) {
@@ -483,7 +484,7 @@ void DevToolsWindow::Observe(int type,
     DoAction();
     AddDevToolsExtensionsToClient();
   } else if (type == content::NOTIFICATION_TAB_CLOSING) {
-    if (content::Source<content::NavigationController>(source).ptr() ==
+    if (content::Source<NavigationController>(source).ptr() ==
             &tab_contents_->web_contents()->GetController()) {
       // This happens when browser closes all of its tabs as a result
       // of window.Close event.

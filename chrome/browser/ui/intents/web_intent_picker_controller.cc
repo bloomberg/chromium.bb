@@ -26,6 +26,8 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "webkit/glue/web_intent_service_data.h"
 
+using content::NavigationController;
+
 namespace {
 
 // Gets the favicon service for the profile in |tab_contents|.
@@ -116,12 +118,11 @@ WebIntentPickerController::WebIntentPickerController(
           picker_(NULL),
           pending_async_count_(0),
           service_tab_(NULL) {
-  content::NavigationController* controller =
-      &wrapper->tab_contents()->GetController();
+  NavigationController* controller = &wrapper->tab_contents()->GetController();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
-                 content::Source<content::NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
-                 content::Source<content::NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
 }
 
 WebIntentPickerController::~WebIntentPickerController() {

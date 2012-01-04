@@ -17,6 +17,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::NavigationController;
 using content::WebContents;
 
 RepostFormWarningController::RepostFormWarningController(
@@ -24,7 +25,7 @@ RepostFormWarningController::RepostFormWarningController(
     : TabModalConfirmDialogDelegate(web_contents),
       navigation_controller_(&web_contents->GetController()) {
   registrar_.Add(this, content::NOTIFICATION_REPOST_WARNING_SHOWN,
-                 content::Source<content::NavigationController>(
+                 content::Source<NavigationController>(
                     navigation_controller_));
 }
 

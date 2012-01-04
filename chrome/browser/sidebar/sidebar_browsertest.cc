@@ -23,6 +23,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 
+using content::NavigationController;
+
 namespace {
 
 const char kSimplePage[] = "files/sidebar/simple_page.html";
@@ -79,7 +81,7 @@ class SidebarTest : public ExtensionBrowserTest {
 
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        content::Source<content::NavigationController>(
+        content::Source<NavigationController>(
             &client_contents->GetController()));
     sidebar_manager->NavigateSidebar(tab, content_id_, url);
     observer.Wait();

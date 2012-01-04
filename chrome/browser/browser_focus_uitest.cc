@@ -50,6 +50,7 @@
 #include "base/string_util.h"
 #endif
 
+using content::NavigationController;
 using content::WebContents;
 
 #if defined(OS_MACOSX)
@@ -853,7 +854,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        content::Source<content::NavigationController>(
+        content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->web_contents()->
                 GetController()));
     browser()->Reload(CURRENT_TAB);
@@ -869,7 +870,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        content::Source<content::NavigationController>(
+        content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->web_contents()->
                 GetController()));
     browser()->Reload(CURRENT_TAB);
@@ -892,7 +893,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnReloadCrashedTab) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        content::Source<content::NavigationController>(
+        content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->web_contents()->
                 GetController()));
     browser()->Reload(CURRENT_TAB);

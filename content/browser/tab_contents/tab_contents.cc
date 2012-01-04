@@ -112,6 +112,7 @@ using content::DevToolsManagerImpl;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::GlobalRequestID;
+using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::OpenURLParams;
@@ -142,7 +143,7 @@ BOOL CALLBACK InvalidateWindow(HWND hwnd, LPARAM lparam) {
 
 ViewMsg_Navigate_Type::Value GetNavigationType(
     content::BrowserContext* browser_context, const NavigationEntryImpl& entry,
-    content::NavigationController::ReloadType reload_type) {
+    NavigationController::ReloadType reload_type) {
   switch (reload_type) {
     case NavigationControllerImpl::RELOAD:
       return ViewMsg_Navigate_Type::RELOAD;
@@ -162,7 +163,7 @@ ViewMsg_Navigate_Type::Value GetNavigationType(
 void MakeNavigateParams(const NavigationEntryImpl& entry,
                         const NavigationControllerImpl& controller,
                         content::WebContentsDelegate* delegate,
-                        content::NavigationController::ReloadType reload_type,
+                        NavigationController::ReloadType reload_type,
                         ViewMsg_Navigate_Params* params) {
   params->page_id = entry.GetPageID();
   params->pending_history_list_offset = controller.GetIndexOfEntry(&entry);
@@ -356,11 +357,11 @@ void TabContents::RunFileChooser(
   delegate_->RunFileChooser(this, params);
 }
 
-content::NavigationController& TabContents::GetController() {
+NavigationController& TabContents::GetController() {
   return controller_;
 }
 
-const content::NavigationController& TabContents::GetController() const {
+const NavigationController& TabContents::GetController() const {
   return controller_;
 }
 
@@ -783,7 +784,7 @@ WebContents* TabContents::OpenURL(const OpenURLParams& params) {
 }
 
 bool TabContents::NavigateToPendingEntry(
-    content::NavigationController::ReloadType reload_type) {
+    NavigationController::ReloadType reload_type) {
   return NavigateToEntry(
       *NavigationEntryImpl::FromNavigationEntry(controller_.GetPendingEntry()),
       reload_type);
@@ -791,7 +792,7 @@ bool TabContents::NavigateToPendingEntry(
 
 bool TabContents::NavigateToEntry(
     const NavigationEntryImpl& entry,
-    content::NavigationController::ReloadType reload_type) {
+    NavigationController::ReloadType reload_type) {
   // The renderer will reject IPC messages with URLs longer than
   // this limit, so don't attempt to navigate with a longer URL.
   if (entry.GetURL().spec().size() > content::kMaxURLChars)
@@ -1246,7 +1247,7 @@ void TabContents::OnDidFailProvisionalLoadWithError(
 
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
-      content::Source<content::NavigationController>(&controller_),
+      content::Source<NavigationController>(&controller_),
       content::Details<ProvisionalLoadDetails>(&details));
 
   FOR_EACH_OBSERVER(WebContentsObserver,
@@ -1280,7 +1281,7 @@ void TabContents::OnDidLoadResourceFromMemoryCache(
 
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
-      content::Source<content::NavigationController>(&controller_),
+      content::Source<NavigationController>(&controller_),
       content::Details<LoadFromMemoryCacheDetails>(&details));
 }
 
@@ -1442,7 +1443,7 @@ void TabContents::SetIsLoading(bool is_loading,
   if (details)
       det = content::Details<LoadNotificationDetails>(details);
   content::NotificationService::current()->Notify(type,
-      content::Source<content::NavigationController>(&controller_),
+      content::Source<NavigationController>(&controller_),
       det);
 }
 

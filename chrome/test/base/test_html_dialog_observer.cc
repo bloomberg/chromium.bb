@@ -15,6 +15,8 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 
+using content::NavigationController;
+
 TestHtmlDialogObserver::TestHtmlDialogObserver(
     JsInjectionReadyObserver* js_injection_ready_observer)
     : js_injection_ready_observer_(js_injection_ready_observer),
@@ -47,13 +49,13 @@ void TestHtmlDialogObserver::Observe(
       // TabContents::NavigateToEntry. The new RenderView is later told to
       // navigate in this method, ensuring that this is not a race condition.
       registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                     content::Source<content::NavigationController>(
+                     content::Source<NavigationController>(
                          &web_ui_->web_contents()->GetController()));
       break;
     case content::NOTIFICATION_LOAD_STOP:
       DCHECK(web_ui_);
       registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP,
-                        content::Source<content::NavigationController>(
+                        content::Source<NavigationController>(
                             &web_ui_->web_contents()->GetController()));
       done_ = true;
       // If the message loop is running stop it.

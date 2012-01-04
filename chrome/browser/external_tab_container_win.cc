@@ -67,6 +67,7 @@
 #include "ui/views/layout/grid_layout.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::SSLStatus;
@@ -201,14 +202,14 @@ bool ExternalTabContainer::Init(Profile* profile,
         content::BINDINGS_POLICY_EXTERNAL_HOST);
   }
 
-  content::NavigationController* controller =
+  NavigationController* controller =
       &tab_contents_->web_contents()->GetController();
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 content::Source<content::NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
-                 content::Source<content::NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 content::Source<content::NavigationController>(controller));
+                 content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
                  content::Source<WebContents>(tab_contents_->web_contents()));
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
@@ -258,7 +259,7 @@ void ExternalTabContainer::Uninitialize() {
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED,
-        content::Source<content::NavigationController>(
+        content::Source<NavigationController>(
             &tab_contents_->web_contents()->GetController()),
         content::Details<ExternalTabContainer>(this));
 

@@ -31,6 +31,7 @@
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/widget/root_view.h"
 
+using content::NavigationController;
 using content::WebContents;
 
 namespace {
@@ -249,7 +250,7 @@ void AutomationProvider::PrintAsync(int tab_handle) {
 
 ExternalTabContainer* AutomationProvider::GetExternalTabForHandle(int handle) {
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationController* tab = tab_tracker_->GetResource(handle);
     return ExternalTabContainer::GetContainerForTab(
         tab->GetWebContents()->GetNativeView());
   }
@@ -291,7 +292,7 @@ void AutomationProvider::OnForwardContextMenuCommandToChrome(int tab_handle,
   if (!tab_tracker_->ContainsHandle(tab_handle))
     return;
 
-  content::NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+  NavigationController* tab = tab_tracker_->GetResource(tab_handle);
   if (!tab) {
     NOTREACHED();
     return;
@@ -371,7 +372,7 @@ void AutomationProvider::NavigateInExternalTab(
   *status = AUTOMATION_MSG_NAVIGATION_ERROR;
 
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationController* tab = tab_tracker_->GetResource(handle);
     tab->LoadURL(
         url,
         content::Referrer(referrer, WebKit::WebReferrerPolicyDefault),
@@ -386,7 +387,7 @@ void AutomationProvider::NavigateExternalTabAtIndex(
   *status = AUTOMATION_MSG_NAVIGATION_ERROR;
 
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationController* tab = tab_tracker_->GetResource(handle);
     tab->GoToIndex(navigation_index);
     *status = AUTOMATION_MSG_NAVIGATION_SUCCESS;
   }
@@ -402,7 +403,7 @@ void AutomationProvider::OnRunUnloadHandlers(
 
 void AutomationProvider::OnSetZoomLevel(int handle, int zoom_level) {
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationController* tab = tab_tracker_->GetResource(handle);
     if (tab->GetWebContents() && tab->GetWebContents()->GetRenderViewHost()) {
       RenderViewHost* host = tab->GetWebContents()->GetRenderViewHost();
       content::PageZoom zoom = static_cast<content::PageZoom>(zoom_level);

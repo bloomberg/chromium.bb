@@ -155,6 +155,7 @@ using content::BrowserThread;
 using content::ChildProcessHost;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::NavigationController;
 using content::NavigationEntry;
 using content::PluginService;
 using content::OpenURLParams;
@@ -571,8 +572,7 @@ void TestingAutomationProvider::CloseTab(int tab_handle,
                                          bool wait_until_closed,
                                          IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(tab_handle)) {
-    content::NavigationController* controller =
-        tab_tracker_->GetResource(tab_handle);
+    NavigationController* controller = tab_tracker_->GetResource(tab_handle);
     int index;
     Browser* browser = Browser::GetBrowserForController(controller, &index);
     DCHECK(browser);
@@ -614,8 +614,7 @@ void TestingAutomationProvider::ShowCollectedCookiesDialog(
     int handle, bool* success) {
   *success = false;
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* controller =
-        tab_tracker_->GetResource(handle);
+    NavigationController* controller = tab_tracker_->GetResource(handle);
     WebContents* tab_contents = controller->GetWebContents();
     Browser* browser = Browser::GetBrowserForController(controller, NULL);
     browser->ShowCollectedCookiesDialog(
@@ -628,7 +627,7 @@ void TestingAutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
     int handle, const GURL& url, int number_of_navigations,
     IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationController* tab = tab_tracker_->GetResource(handle);
 
     // Simulate what a user would do. Activate the tab and then navigate.
     // We could allow navigating in a background tab in future.
@@ -665,7 +664,7 @@ void TestingAutomationProvider::NavigationAsyncWithDisposition(
   *status = false;
 
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationController* tab = tab_tracker_->GetResource(handle);
 
     // Simulate what a user would do. Activate the tab and then navigate.
     // We could allow navigating in a background tab in future.
@@ -685,7 +684,7 @@ void TestingAutomationProvider::NavigationAsyncWithDisposition(
 void TestingAutomationProvider::Reload(int handle,
                                        IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = FindAndActivateTab(tab);
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_RELOAD)) {
       new NavigationNotificationObserver(
@@ -705,7 +704,7 @@ void TestingAutomationProvider::SetAuth(int tab_handle,
                                         const std::wstring& password,
                                         IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(tab_handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
     LoginHandlerMap::iterator iter = login_handler_map_.find(tab);
 
     if (iter != login_handler_map_.end()) {
@@ -728,7 +727,7 @@ void TestingAutomationProvider::SetAuth(int tab_handle,
 void TestingAutomationProvider::CancelAuth(int tab_handle,
                                            IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(tab_handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
     LoginHandlerMap::iterator iter = login_handler_map_.find(tab);
 
     if (iter != login_handler_map_.end()) {
@@ -750,7 +749,7 @@ void TestingAutomationProvider::NeedsAuth(int tab_handle, bool* needs_auth) {
   *needs_auth = false;
 
   if (tab_tracker_->ContainsHandle(tab_handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
     LoginHandlerMap::iterator iter = login_handler_map_.find(tab);
 
     if (iter != login_handler_map_.end()) {
@@ -766,7 +765,7 @@ void TestingAutomationProvider::GetRedirectsFrom(int tab_handle,
   if (redirect_query_) {
     LOG(ERROR) << "Can only handle one redirect query at once.";
   } else if (tab_tracker_->ContainsHandle(tab_handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
     Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
     HistoryService* history_service =
         profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
@@ -1286,7 +1285,7 @@ void TestingAutomationProvider::GetTabTitle(int handle,
                                             std::wstring* title) {
   *title_string_size = -1;  // -1 is the error code
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationController* tab = tab_tracker_->GetResource(handle);
     NavigationEntry* entry = tab->GetActiveEntry();
     if (entry != NULL) {
       *title = UTF16ToWideHack(entry->GetTitleForDisplay(""));
@@ -1301,7 +1300,7 @@ void TestingAutomationProvider::GetTabIndex(int handle, int* tabstrip_index) {
   *tabstrip_index = -1;  // -1 is the error code
 
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = Browser::GetBrowserForController(tab, NULL);
     *tabstrip_index = browser->tabstrip_model()->GetIndexOfController(tab);
   }
@@ -1312,7 +1311,7 @@ void TestingAutomationProvider::GetTabURL(int handle,
                                           GURL* url) {
   *success = false;
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationController* tab = tab_tracker_->GetResource(handle);
     // Return what the user would see in the location bar.
     *url = tab->GetActiveEntry()->GetVirtualURL();
     *success = true;
@@ -1401,7 +1400,7 @@ void TestingAutomationProvider::GetConstrainedWindowCount(int handle,
                                                           int* count) {
   *count = -1;  // -1 is the error code
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* nav_controller = tab_tracker_->GetResource(handle);
+    NavigationController* nav_controller = tab_tracker_->GetResource(handle);
     WebContents* web_contents = nav_controller->GetWebContents();
     if (web_contents) {
       TabContentsWrapper* wrapper =
@@ -1431,7 +1430,7 @@ void TestingAutomationProvider::HandleInspectElementRequest(
 void TestingAutomationProvider::GetDownloadDirectory(
     int handle, FilePath* download_directory) {
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationController* tab = tab_tracker_->GetResource(handle);
     DownloadManager* dlm = tab->GetBrowserContext()->GetDownloadManager();
     *download_directory =
         DownloadPrefs::FromDownloadManager(dlm)->download_path();
@@ -1525,8 +1524,7 @@ void TestingAutomationProvider::ShowInterstitialPage(
     const std::string& html_text,
     IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(tab_handle)) {
-    content::NavigationController* controller =
-        tab_tracker_->GetResource(tab_handle);
+    NavigationController* controller = tab_tracker_->GetResource(tab_handle);
     WebContents* web_contents = controller->GetWebContents();
 
     new NavigationNotificationObserver(controller, this, reply_message, 1,
@@ -1559,7 +1557,7 @@ void TestingAutomationProvider::WaitForTabToBeRestored(
     int tab_handle,
     IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(tab_handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
     restore_tracker_.reset(
         new NavigationControllerRestoredObserver(this, tab, reply_message));
   } else {
@@ -1576,7 +1574,7 @@ void TestingAutomationProvider::GetSecurityState(
     net::CertStatus* ssl_cert_status,
     int* insecure_content_status) {
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationController* tab = tab_tracker_->GetResource(handle);
     NavigationEntry* entry = tab->GetActiveEntry();
     *success = true;
     *security_style = entry->GetSSL().security_style;
@@ -1595,7 +1593,7 @@ void TestingAutomationProvider::GetPageType(
     bool* success,
     content::PageType* page_type) {
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationController* tab = tab_tracker_->GetResource(handle);
     NavigationEntry* entry = tab->GetActiveEntry();
     *page_type = entry->GetPageType();
     *success = true;
@@ -1622,7 +1620,7 @@ void TestingAutomationProvider::ActionOnSSLBlockingPage(
     bool proceed,
     IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationController* tab = tab_tracker_->GetResource(handle);
     NavigationEntry* entry = tab->GetActiveEntry();
     if (entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
       WebContents* web_contents = tab->GetWebContents();
@@ -1672,7 +1670,7 @@ void TestingAutomationProvider::IsMenuCommandEnabled(int browser_handle,
 
 void TestingAutomationProvider::PrintNow(int tab_handle,
                                          IPC::Message* reply_message) {
-  content::NavigationController* tab = NULL;
+  NavigationController* tab = NULL;
   WebContents* web_contents = GetWebContentsForHandle(tab_handle, &tab);
   if (web_contents) {
     FindAndActivateTab(tab);
@@ -1713,7 +1711,7 @@ void TestingAutomationProvider::SavePage(int tab_handle,
     return;
   }
 
-  content::NavigationController* nav = tab_tracker_->GetResource(tab_handle);
+  NavigationController* nav = tab_tracker_->GetResource(tab_handle);
   Browser* browser = FindAndActivateTab(nav);
   if (!browser->command_updater()->IsCommandEnabled(IDC_SAVE_PAGE)) {
     *success = false;
@@ -1972,8 +1970,7 @@ void TestingAutomationProvider::RemoveBookmark(int handle,
 void TestingAutomationProvider::GetInfoBarCount(int handle, size_t* count) {
   *count = static_cast<size_t>(-1);  // -1 means error.
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* nav_controller =
-        tab_tracker_->GetResource(handle);
+    NavigationController* nav_controller = tab_tracker_->GetResource(handle);
     if (nav_controller) {
       TabContentsWrapper* wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(
@@ -1990,8 +1987,7 @@ void TestingAutomationProvider::ClickInfoBarAccept(
     IPC::Message* reply_message) {
   bool success = false;
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* nav_controller =
-        tab_tracker_->GetResource(handle);
+    NavigationController* nav_controller = tab_tracker_->GetResource(handle);
     if (nav_controller) {
       InfoBarTabHelper* infobar_helper =
           TabContentsWrapper::GetCurrentWrapperForContents(
@@ -2030,7 +2026,7 @@ void TestingAutomationProvider::GetLastNavigationTime(
 void TestingAutomationProvider::WaitForNavigation(int handle,
                                                   int64 last_navigation_time,
                                                   IPC::Message* reply_message) {
-  content::NavigationController* controller = tab_tracker_->GetResource(handle);
+  NavigationController* controller = tab_tracker_->GetResource(handle);
   base::Time time(tab_tracker_->GetLastNavigationTime(handle));
 
   if (time.ToInternalValue() > last_navigation_time || !controller) {
@@ -2161,7 +2157,7 @@ void TestingAutomationProvider::WaitForAppModalDialogToBeShown(
 void TestingAutomationProvider::GoBackBlockUntilNavigationsComplete(
     int handle, int number_of_navigations, IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = FindAndActivateTab(tab);
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_BACK)) {
       new NavigationNotificationObserver(tab, this, reply_message,
@@ -2179,7 +2175,7 @@ void TestingAutomationProvider::GoBackBlockUntilNavigationsComplete(
 void TestingAutomationProvider::GoForwardBlockUntilNavigationsComplete(
     int handle, int number_of_navigations, IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(handle)) {
-    content::NavigationController* tab = tab_tracker_->GetResource(handle);
+    NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = FindAndActivateTab(tab);
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_FORWARD)) {
       new NavigationNotificationObserver(tab, this, reply_message,
@@ -2222,8 +2218,7 @@ void TestingAutomationProvider::SetShelfVisibility(int handle, bool visible) {
 void TestingAutomationProvider::GetBlockedPopupCount(int handle, int* count) {
   *count = -1;  // -1 is the error code
   if (tab_tracker_->ContainsHandle(handle)) {
-      content::NavigationController* nav_controller =
-          tab_tracker_->GetResource(handle);
+      NavigationController* nav_controller = tab_tracker_->GetResource(handle);
       TabContentsWrapper* tab_contents =
           TabContentsWrapper::GetCurrentWrapperForContents(
               nav_controller->GetWebContents());
@@ -2978,8 +2973,7 @@ void TestingAutomationProvider::GetNavigationInfo(
     return;
   }
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  const content::NavigationController& controller =
-      web_contents->GetController();
+  const NavigationController& controller = web_contents->GetController();
   NavigationEntry* nav_entry = controller.GetActiveEntry();
   DCHECK(nav_entry);
 
@@ -3543,7 +3537,7 @@ void TestingAutomationProvider::OmniboxAcceptInput(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  content::NavigationController& controller =
+  NavigationController& controller =
       browser->GetSelectedWebContents()->GetController();
   new OmniboxAcceptNotificationObserver(&controller, this, reply_message);
   browser->window()->GetLocationBar()->AcceptInput();
@@ -6193,7 +6187,7 @@ void TestingAutomationProvider::GoForward(
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  content::NavigationController& controller = web_contents->GetController();
+  NavigationController& controller = web_contents->GetController();
   if (!controller.CanGoForward()) {
     DictionaryValue dict;
     dict.SetBoolean("did_go_forward", false);
@@ -6217,7 +6211,7 @@ void TestingAutomationProvider::GoBack(
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  content::NavigationController& controller = web_contents->GetController();
+  NavigationController& controller = web_contents->GetController();
   if (!controller.CanGoBack()) {
     DictionaryValue dict;
     dict.SetBoolean("did_go_back", false);
@@ -6241,7 +6235,7 @@ void TestingAutomationProvider::ReloadJSON(
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  content::NavigationController& controller = web_contents->GetController();
+  NavigationController& controller = web_contents->GetController();
   new NavigationNotificationObserver(&controller, this, reply_message,
                                      1, false, true);
   controller.Reload(false);
@@ -6570,8 +6564,7 @@ void TestingAutomationProvider::WaitForInfoBarCount(
     return;
   }
 
-  content::NavigationController* controller =
-      tab_tracker_->GetResource(tab_handle);
+  NavigationController* controller = tab_tracker_->GetResource(tab_handle);
   if (!controller) {
     AutomationMsg_WaitForInfoBarCount::WriteReplyParams(reply_message_, false);
     Send(reply_message_);
@@ -6588,7 +6581,7 @@ void TestingAutomationProvider::WaitForInfoBarCount(
 void TestingAutomationProvider::GetPageCurrentEncoding(
     int tab_handle, std::string* current_encoding) {
   if (tab_tracker_->ContainsHandle(tab_handle)) {
-    content::NavigationController* nav = tab_tracker_->GetResource(tab_handle);
+    NavigationController* nav = tab_tracker_->GetResource(tab_handle);
     Browser* browser = FindAndActivateTab(nav);
     if (browser->command_updater()->IsCommandEnabled(IDC_ENCODING_MENU))
       *current_encoding = nav->GetWebContents()->GetEncoding();
@@ -6634,7 +6627,7 @@ void TestingAutomationProvider::LoadBlockedPlugins(int tab_handle,
                                                    bool* success) {
   *success = false;
   if (tab_tracker_->ContainsHandle(tab_handle)) {
-    content::NavigationController* nav = tab_tracker_->GetResource(tab_handle);
+    NavigationController* nav = tab_tracker_->GetResource(tab_handle);
     if (!nav)
       return;
     WebContents* contents = nav->GetWebContents();
@@ -6660,8 +6653,7 @@ void TestingAutomationProvider::GetParentBrowserOfTab(int tab_handle,
                                                       bool* success) {
   *success = false;
   if (tab_tracker_->ContainsHandle(tab_handle)) {
-    content::NavigationController* controller =
-        tab_tracker_->GetResource(tab_handle);
+    NavigationController* controller = tab_tracker_->GetResource(tab_handle);
     int index;
     Browser* browser = Browser::GetBrowserForController(controller, &index);
     if (browser) {

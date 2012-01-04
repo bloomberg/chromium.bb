@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
+using content::NavigationController;
 using content::WebContents;
 
 @interface TabContentsController(Private)
@@ -68,8 +69,7 @@ void TabContentsNotificationBridge::ChangeWebContents(WebContents* contents) {
     registrar_.Add(
         this,
         content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-        content::Source<content::NavigationController>(
-            &contents->GetController()));
+        content::Source<NavigationController>(&contents->GetController()));
   }
 }
 

@@ -34,6 +34,7 @@
 #include "webkit/fileapi/file_system_types.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
@@ -469,8 +470,7 @@ void TabSpecificContentSettings::Observe(
   DCHECK(type == chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED);
 
   content::Details<const ContentSettingsDetails> settings_details(details);
-  const content::NavigationController& controller =
-      web_contents()->GetController();
+  const NavigationController& controller = web_contents()->GetController();
   NavigationEntry* entry = controller.GetActiveEntry();
   GURL entry_url;
   if (entry)

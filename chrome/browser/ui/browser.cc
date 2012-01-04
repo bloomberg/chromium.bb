@@ -207,6 +207,7 @@
 #endif
 
 using base::TimeDelta;
+using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::PluginService;
@@ -1179,7 +1180,7 @@ int Browser::active_index() const {
 }
 
 int Browser::GetIndexOfController(
-    const content::NavigationController* controller) const {
+    const NavigationController* controller) const {
   return tab_handler_->GetTabStripModel()->GetIndexOfController(controller);
 }
 
@@ -1373,7 +1374,7 @@ bool Browser::CanRestoreTab() {
 
 bool Browser::NavigateToIndexWithDisposition(int index,
                                              WindowOpenDisposition disp) {
-  content::NavigationController& controller =
+  NavigationController& controller =
       GetOrCloneTabForDisposition(disp)->GetController();
   if (index < 0 || index >= controller.GetEntryCount())
     return false;
@@ -2521,7 +2522,7 @@ bool Browser::RunUnloadEventsHelper(TabContents* contents) {
 
 // static
 Browser* Browser::GetBrowserForController(
-    const content::NavigationController* controller, int* index_result) {
+    const NavigationController* controller, int* index_result) {
   BrowserList::const_iterator it;
   for (it = BrowserList::begin(); it != BrowserList::end(); ++it) {
     int index = (*it)->tab_handler_->GetTabStripModel()->GetIndexOfController(
@@ -3103,7 +3104,7 @@ TabContentsWrapper* Browser::CreateTabContentsForURL(
 }
 
 bool Browser::CanDuplicateContentsAt(int index) {
-  content::NavigationController& nc = GetWebContentsAt(index)->GetController();
+  NavigationController& nc = GetWebContentsAt(index)->GetController();
   return nc.GetWebContents() && nc.GetLastCommittedEntry();
 }
 
@@ -3273,7 +3274,7 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
   fullscreen_controller_->OnTabClosing(contents->tab_contents());
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CLOSING,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &contents->web_contents()->GetController()),
       content::NotificationService::NoDetails());
 
@@ -4109,7 +4110,7 @@ void Browser::Observe(int type,
       // closing of this one.
       if (GetSelectedWebContents() &&
           &GetSelectedWebContents()->GetController() ==
-          content::Source<content::NavigationController>(source).ptr())
+          content::Source<NavigationController>(source).ptr())
         UpdateToolbar(false);
       break;
 
@@ -4596,7 +4597,7 @@ void Browser::UpdateCommandsForTabState() {
     return;
 
   // Navigation commands
-  content::NavigationController& nc = current_tab->GetController();
+  NavigationController& nc = current_tab->GetController();
   command_updater_.UpdateCommandEnabled(IDC_BACK, nc.CanGoBack());
   command_updater_.UpdateCommandEnabled(IDC_FORWARD, nc.CanGoForward());
   command_updater_.UpdateCommandEnabled(IDC_RELOAD,

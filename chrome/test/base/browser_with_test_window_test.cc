@@ -20,6 +20,7 @@
 #include "content/public/common/page_transition_types.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 using content::WebContents;
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()
@@ -72,7 +73,7 @@ void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
 }
 
 void BrowserWithTestWindowTest::CommitPendingLoad(
-  content::NavigationController* controller) {
+  NavigationController* controller) {
   if (!controller->GetPendingEntry())
     return;  // Nothing to commit.
 
@@ -115,7 +116,7 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
 }
 
 void BrowserWithTestWindowTest::NavigateAndCommit(
-    content::NavigationController* controller,
+    NavigationController* controller,
     const GURL& url) {
   controller->LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());

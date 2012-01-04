@@ -62,6 +62,7 @@
 #include "chrome/browser/browser_process.h"
 #endif
 
+using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
@@ -1158,7 +1159,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
 
   ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedWebContents()->GetController()));
   browser()->GoBack(CURRENT_TAB);
   back_nav_load_observer.Wait();
@@ -1166,7 +1167,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
 
   ui_test_utils::WindowedNotificationObserver forward_nav_load_observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedWebContents()->GetController()));
   browser()->GoForward(CURRENT_TAB);
   // This check will happen before the navigation completes, since the browser

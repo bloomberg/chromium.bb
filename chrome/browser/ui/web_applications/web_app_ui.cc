@@ -28,6 +28,7 @@
 #endif
 
 using content::BrowserThread;
+using content::NavigationController;
 
 namespace {
 
@@ -103,7 +104,7 @@ UpdateShortcutWorker::UpdateShortcutWorker(TabContentsWrapper* tab_contents)
   registrar_.Add(
       this,
       content::NOTIFICATION_TAB_CLOSING,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &tab_contents_->web_contents()->GetController()));
 }
 
@@ -117,7 +118,7 @@ void UpdateShortcutWorker::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_TAB_CLOSING &&
-      content::Source<content::NavigationController>(source).ptr() ==
+      content::Source<NavigationController>(source).ptr() ==
         &tab_contents_->web_contents()->GetController()) {
     // Underlying tab is closing.
     tab_contents_ = NULL;

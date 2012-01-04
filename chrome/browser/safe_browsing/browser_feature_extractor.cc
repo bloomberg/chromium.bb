@@ -29,6 +29,7 @@
 #include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
@@ -51,7 +52,7 @@ static void AddFeature(const std::string& feature_name,
 
 static void AddNavigationFeatures(
     const std::string& feature_prefix,
-    const content::NavigationController& controller,
+    const NavigationController& controller,
     int index,
     const std::vector<GURL>& redirect_chain,
     ClientPhishingRequest* request) {
@@ -156,7 +157,7 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
   }
 
   // Extract features pertaining to this navigation.
-  const content::NavigationController& controller = tab_->GetController();
+  const NavigationController& controller = tab_->GetController();
   int url_index = -1;
   int first_host_index = -1;
 

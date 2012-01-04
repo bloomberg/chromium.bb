@@ -32,6 +32,7 @@
 #include "content/public/browser/web_contents.h"
 
 using base::Time;
+using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
@@ -218,7 +219,7 @@ void TabRestoreService::RemoveObserver(TabRestoreServiceObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void TabRestoreService::CreateHistoricalTab(content::NavigationController* tab,
+void TabRestoreService::CreateHistoricalTab(NavigationController* tab,
                                             int index) {
   if (restoring_)
     return;
@@ -486,7 +487,7 @@ void TabRestoreService::Save() {
 void TabRestoreService::PopulateTab(Tab* tab,
                                     int index,
                                     TabRestoreServiceDelegate* delegate,
-                                    content::NavigationController* controller) {
+                                    NavigationController* controller) {
   const int pending_index = controller->GetPendingEntryIndex();
   int entry_count = controller->GetEntryCount();
   if (entry_count == 0 && pending_index == 0)

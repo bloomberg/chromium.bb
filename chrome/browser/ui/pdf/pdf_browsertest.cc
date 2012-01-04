@@ -25,6 +25,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/screen.h"
 
+using content::NavigationController;
 using content::WebContents;
 
 namespace {
@@ -285,12 +286,12 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
 IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
   ASSERT_TRUE(pdf_test_server()->Start());
 
-  content::NavigationController* controller =
+  NavigationController* controller =
       &(browser()->GetSelectedWebContents()->GetController());
   content::NotificationRegistrar registrar;
   registrar.Add(this,
                 content::NOTIFICATION_LOAD_STOP,
-                content::Source<content::NavigationController>(controller));
+                content::Source<NavigationController>(controller));
   std::string base_url = std::string("files/");
 
   file_util::FileEnumerator file_enumerator(
@@ -351,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_OnLoadAndReload) {
 
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedWebContents()->GetController()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
       browser()->GetSelectedWebContents()->GetRenderViewHost(),

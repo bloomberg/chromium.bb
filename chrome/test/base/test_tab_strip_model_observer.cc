@@ -12,6 +12,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
 
+using content::NavigationController;
+
 TestTabStripModelObserver::TestTabStripModelObserver(
     TabStripModel* tab_strip_model,
     JsInjectionReadyObserver* js_injection_ready_observer)
@@ -42,7 +44,7 @@ void TestTabStripModelObserver::ObservePrintPreviewTabContents(
     TabContentsWrapper* preview_tab =
         tab_controller->GetPrintPreviewForTab(contents);
     if (preview_tab) {
-      RegisterAsObserver(content::Source<content::NavigationController>(
+      RegisterAsObserver(content::Source<NavigationController>(
           &preview_tab->web_contents()->GetController()));
     }
   }

@@ -33,6 +33,7 @@
 
 using content::BrowserContext;
 using content::GlobalRequestID;
+using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::UserMetricsAction;
@@ -53,7 +54,7 @@ void NotifyPrunedEntries(NavigationControllerImpl* nav_controller,
   details.count = count;
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_LIST_PRUNED,
-      content::Source<content::NavigationController>(nav_controller),
+      content::Source<NavigationController>(nav_controller),
       content::Details<content::PrunedDetails>(&details));
 }
 
@@ -188,7 +189,7 @@ NavigationControllerImpl::~NavigationControllerImpl() {
 
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_TAB_CLOSED,
-      content::Source<content::NavigationController>(this),
+      content::Source<NavigationController>(this),
       content::NotificationService::NoDetails());
 }
 
@@ -254,7 +255,7 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
     // with check_for_repost = false.
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_REPOST_WARNING_SHOWN,
-        content::Source<content::NavigationController>(this),
+        content::Source<NavigationController>(this),
         content::NotificationService::NoDetails());
 
     pending_reload_ = reload_type;
@@ -315,7 +316,7 @@ void NavigationControllerImpl::LoadEntry(NavigationEntryImpl* entry) {
   pending_entry_ = entry;
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_PENDING,
-      content::Source<content::NavigationController>(this),
+      content::Source<NavigationController>(this),
       content::Details<NavigationEntry>(entry));
   NavigateToPendingEntry(NO_RELOAD);
 }
@@ -973,7 +974,7 @@ bool NavigationControllerImpl::IsURLInPageNavigation(const GURL& url) const {
 }
 
 void NavigationControllerImpl::CopyStateFrom(
-    const content::NavigationController& temp) {
+    const NavigationController& temp) {
   const NavigationControllerImpl& source =
       static_cast<const NavigationControllerImpl&>(temp);
   // Verify that we look new.
@@ -991,7 +992,7 @@ void NavigationControllerImpl::CopyStateFrom(
 }
 
 void NavigationControllerImpl::CopyStateFromAndPrune(
-    content::NavigationController* temp) {
+    NavigationController* temp) {
   NavigationControllerImpl* source =
       static_cast<NavigationControllerImpl*>(temp);
   // The SiteInstance and page_id of the last committed entry needs to be
@@ -1249,7 +1250,7 @@ void NavigationControllerImpl::NotifyNavigationEntryCommitted(
 
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<content::NavigationController>(this),
+      content::Source<NavigationController>(this),
       notification_details);
 }
 
@@ -1283,7 +1284,7 @@ void NavigationControllerImpl::NotifyEntryChanged(const NavigationEntry* entry,
   det.index = index;
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_CHANGED,
-      content::Source<content::NavigationController>(this),
+      content::Source<NavigationController>(this),
       content::Details<content::EntryChangedDetails>(&det));
 }
 

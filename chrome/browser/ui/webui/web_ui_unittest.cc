@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 
 class WebUITest : public TabContentsWrapperTestHarness {
  public:
@@ -26,7 +27,7 @@ class WebUITest : public TabContentsWrapperTestHarness {
   // values. This must be increasing for the life of the tests.
   static void DoNavigationTest(TabContentsWrapper* wrapper, int page_id) {
     TabContents* contents = wrapper->tab_contents();
-    content::NavigationController* controller = &contents->GetController();
+    NavigationController* controller = &contents->GetController();
 
     // Start a pending load.
     GURL new_tab_url(chrome::kChromeUINewTabURL);

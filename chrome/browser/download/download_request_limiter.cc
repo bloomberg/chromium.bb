@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
@@ -28,15 +29,14 @@ using content::WebContents;
 
 DownloadRequestLimiter::TabDownloadState::TabDownloadState(
     DownloadRequestLimiter* host,
-    content::NavigationController* controller,
-    content::NavigationController* originating_controller)
+    NavigationController* controller,
+    NavigationController* originating_controller)
     : host_(host),
       controller_(controller),
       status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
       download_count_(0),
       infobar_(NULL) {
-  content::Source<content::NavigationController> notification_source(
-      controller);
+  content::Source<NavigationController> notification_source(controller);
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                  notification_source);
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED, notification_source);
@@ -103,8 +103,7 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
     const content::NotificationDetails& details) {
   if ((type != content::NOTIFICATION_NAV_ENTRY_PENDING &&
        type != content::NOTIFICATION_TAB_CLOSED) ||
-      content::Source<content::NavigationController>(source).ptr() !=
-          controller_) {
+      content::Source<NavigationController>(source).ptr() != controller_) {
     NOTREACHED();
     return;
   }
@@ -231,8 +230,8 @@ void DownloadRequestLimiter::SetTestingDelegate(TestingDelegate* delegate) {
 }
 
 DownloadRequestLimiter::TabDownloadState* DownloadRequestLimiter::
-    GetDownloadState(content::NavigationController* controller,
-                     content::NavigationController* originating_controller,
+    GetDownloadState(NavigationController* controller,
+                     NavigationController* originating_controller,
                      bool create) {
   DCHECK(controller);
   StateMap::iterator i = state_map_.find(controller);

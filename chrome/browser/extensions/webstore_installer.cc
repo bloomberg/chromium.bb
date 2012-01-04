@@ -34,6 +34,7 @@
 
 using content::BrowserThread;
 using content::DownloadFile;
+using content::NavigationController;
 
 namespace {
 
@@ -104,7 +105,7 @@ void GetDownloadFilePath(const std::string& id,
 
 WebstoreInstaller::WebstoreInstaller(Profile* profile,
                                      Delegate* delegate,
-                                     content::NavigationController* controller,
+                                     NavigationController* controller,
                                      const std::string& id,
                                      int flags)
     : profile_(profile),

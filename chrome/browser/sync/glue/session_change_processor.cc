@@ -27,6 +27,7 @@
 #include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 using content::WebContents;
 
 namespace browser_sync {
@@ -38,8 +39,7 @@ namespace {
 SyncedTabDelegate* ExtractSyncedTabDelegate(
     const content::NotificationSource& source) {
   TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
-      content::Source<content::NavigationController>(source).ptr()->
-          GetWebContents());
+      content::Source<NavigationController>(source).ptr()->GetWebContents());
   if (!tab)
     return NULL;
   return tab->synced_tab_delegate();

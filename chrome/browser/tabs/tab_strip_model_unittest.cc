@@ -41,6 +41,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 using content::WebContents;
 using testing::_;
 
@@ -640,7 +641,7 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
   // background with opener_contents set as their opener.
 
   TabContentsWrapper* opener_contents = CreateTabContents();
-  content::NavigationController* opener =
+  NavigationController* opener =
       &opener_contents->tab_contents()->GetController();
   tabstrip.AppendTabContents(opener_contents, true);
   TabContentsWrapper* contents1 = CreateTabContents();
@@ -679,8 +680,7 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
 
   // For a tab that has opened no other tabs, the return value should always be
   // -1...
-  content::NavigationController* o1 =
-      &contents1->tab_contents()->GetController();
+  NavigationController* o1 = &contents1->tab_contents()->GetController();
   EXPECT_EQ(-1, tabstrip.GetIndexOfNextTabContentsOpenedBy(o1, 3, false));
   EXPECT_EQ(-1, tabstrip.GetIndexOfLastTabContentsOpenedBy(o1, 3));
 
@@ -793,7 +793,7 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
   EXPECT_TRUE(tabstrip.empty());
 
   TabContentsWrapper* opener_contents = CreateTabContents();
-  content::NavigationController* opener =
+  NavigationController* opener =
       &opener_contents->tab_contents()->GetController();
   tabstrip.AppendTabContents(opener_contents, true);
 

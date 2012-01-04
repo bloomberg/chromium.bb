@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/mock_host_resolver.h"
 
+using content::NavigationController;
 using content::WebContents;
 
 namespace {
@@ -121,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
   ui_test_utils::CrashTab(tab1);
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->web_contents()->
               GetController()));
   browser()->Reload(CURRENT_TAB);

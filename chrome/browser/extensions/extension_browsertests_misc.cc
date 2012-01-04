@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #endif
 
+using content::NavigationController;
 using content::WebContents;
 
 const std::string kSubscribePage = "/subscribe.html";
@@ -811,7 +812,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        content::Source<content::NavigationController>(
+        content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->web_contents()->
                 GetController()));
     browser()->Reload(CURRENT_TAB);
@@ -838,7 +839,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        content::Source<content::NavigationController>(
+        content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->web_contents()->
                 GetController()));
     browser()->Reload(CURRENT_TAB);

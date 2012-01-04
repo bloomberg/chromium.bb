@@ -19,6 +19,7 @@
 #include "content/public/common/speech_input_result.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
+using content::NavigationController;
 using content::WebContents;
 
 namespace speech_input {
@@ -165,8 +166,7 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
     WebContents* web_contents = browser()->GetSelectedWebContents();
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        content::Source<content::NavigationController>(
-            &web_contents->GetController()));
+        content::Source<NavigationController>(&web_contents->GetController()));
     web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
     mouse_event.type = WebKit::WebInputEvent::MouseUp;
     web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);

@@ -33,11 +33,12 @@
 #include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 using content::WebContents;
 
 namespace {
 
-RenderWidgetHost* GetRenderWidgetHost(content::NavigationController* tab) {
+RenderWidgetHost* GetRenderWidgetHost(NavigationController* tab) {
   WebContents* web_contents = tab->GetWebContents();
   if (web_contents) {
     RenderWidgetHostView* render_widget_host_view =
@@ -440,8 +441,8 @@ void BootTimesLoader::Observe(
       break;
     }
     case content::NOTIFICATION_LOAD_START: {
-      content::NavigationController* tab =
-          content::Source<content::NavigationController>(source).ptr();
+      NavigationController* tab =
+          content::Source<NavigationController>(source).ptr();
       RenderWidgetHost* rwh = GetRenderWidgetHost(tab);
       DCHECK(rwh);
       AddLoginTimeMarker("TabLoad-Start: " + GetTabUrl(rwh), false);
@@ -449,8 +450,8 @@ void BootTimesLoader::Observe(
       break;
     }
     case content::NOTIFICATION_LOAD_STOP: {
-      content::NavigationController* tab =
-          content::Source<content::NavigationController>(source).ptr();
+      NavigationController* tab =
+          content::Source<NavigationController>(source).ptr();
       RenderWidgetHost* rwh = GetRenderWidgetHost(tab);
       if (render_widget_hosts_loading_.find(rwh) !=
           render_widget_hosts_loading_.end()) {

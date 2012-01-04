@@ -15,6 +15,7 @@
 #include "content/test/test_navigation_observer.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 
 class ErrorPageTest : public InProcessBrowserTest {
  public:
@@ -81,7 +82,7 @@ class ErrorPageTest : public InProcessBrowserTest {
         ASCIIToUTF16(expected_title));
 
     TestNavigationObserver test_navigation_observer(
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
             &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
                 GetController()),
         NULL,

@@ -26,6 +26,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "googleurl/src/gurl.h"
 
+using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
@@ -308,21 +309,21 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesGoBackScriptCommand:(NSScriptCommand*)command {
-  content::NavigationController& navigationController =
+  NavigationController& navigationController =
       tabContents_->tab_contents()->GetController();
   if (navigationController.CanGoBack())
     navigationController.GoBack();
 }
 
 - (void)handlesGoForwardScriptCommand:(NSScriptCommand*)command {
-  content::NavigationController& navigationController =
+  NavigationController& navigationController =
       tabContents_->tab_contents()->GetController();
   if (navigationController.CanGoForward())
     navigationController.GoForward();
 }
 
 - (void)handlesReloadScriptCommand:(NSScriptCommand*)command {
-  content::NavigationController& navigationController =
+  NavigationController& navigationController =
       tabContents_->tab_contents()->GetController();
   const bool checkForRepost = true;
   navigationController.Reload(checkForRepost);

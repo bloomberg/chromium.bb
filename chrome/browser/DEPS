@@ -30,7 +30,7 @@ include_rules = [
   # TODO(jam): this needs to be removed, and only use content/public. BUG=98716
   "+content/browser",
   "-content/browser/notification_service_impl.h",
-  "-content/browser/tab_contents/navigation_controller.h",
+  "-content/browser/tab_contents/navigation_controller_impl.h",
   "-content/browser/tab_contents/navigation_entry_impl.h",
   "-content/browser/plugin_service_impl.h",
   "-content/browser/worker_service_impl.h",

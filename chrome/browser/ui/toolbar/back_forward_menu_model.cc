@@ -30,6 +30,7 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/codec/png_codec.h"
 
+using content::NavigationController;
 using content::NavigationEntry;
 using content::UserMetricsAction;
 using content::WebContents;
@@ -335,7 +336,7 @@ int BackForwardMenuModel::GetChapterStopCount(int history_items) const {
 int BackForwardMenuModel::GetIndexOfNextChapterStop(int start_from,
                                                     bool forward) const {
   WebContents* contents = GetWebContents();
-  content::NavigationController& controller = contents->GetController();
+  NavigationController& controller = contents->GetController();
 
   int max_count = controller.GetEntryCount();
   if (start_from < 0 || start_from >= max_count)
@@ -445,7 +446,7 @@ int BackForwardMenuModel::MenuIndexToNavEntryIndex(int index) const {
 
 NavigationEntry* BackForwardMenuModel::GetNavigationEntry(int index) const {
   int controller_index = MenuIndexToNavEntryIndex(index);
-  content::NavigationController& controller = GetWebContents()->GetController();
+  NavigationController& controller = GetWebContents()->GetController();
   if (controller_index >= 0 && controller_index < controller.GetEntryCount())
     return controller.GetEntryAtIndex(controller_index);
 

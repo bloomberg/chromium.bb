@@ -42,6 +42,7 @@
 #include "ui/gfx/image/image_util.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 
 namespace history {
 
@@ -845,8 +846,8 @@ void TopSites::Observe(int type,
     }
     StartQueryForMostVisited();
   } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    content::NavigationController* controller =
-        content::Source<content::NavigationController>(source).ptr();
+    NavigationController* controller =
+        content::Source<NavigationController>(source).ptr();
     Profile* profile = Profile::FromBrowserContext(
         controller->GetWebContents()->GetBrowserContext());
     if (profile == profile_ && !IsFull()) {

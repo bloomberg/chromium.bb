@@ -25,6 +25,7 @@
 #include "printing/print_job_constants.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 
 namespace {
 
@@ -246,13 +247,13 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
 
 void PrintPreviewMessageHandler::NavigateToPendingEntry(
     const GURL& url,
-    content::NavigationController::ReloadType reload_type) {
+    NavigationController::ReloadType reload_type) {
   TabContentsWrapper* tab = tab_contents_wrapper();
   TabContentsWrapper* preview_tab = GetPrintPreviewTab();
   if (tab == preview_tab) {
     // Cloud print sign-in reloads the page.
     DCHECK(PrintPreviewTabController::IsPrintPreviewURL(url));
-    DCHECK_EQ(content::NavigationController::RELOAD, reload_type);
+    DCHECK_EQ(NavigationController::RELOAD, reload_type);
     return;
   }
   // If |tab| is navigating and it has a print preview tab, notify |tab| to

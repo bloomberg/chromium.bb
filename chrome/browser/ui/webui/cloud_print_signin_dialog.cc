@@ -29,6 +29,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 
 using content::BrowserThread;
+using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -65,14 +66,14 @@ CloudPrintSigninFlowHandler::CloudPrintSigninFlowHandler(
 
 void CloudPrintSigninFlowHandler::RegisterMessages() {
   if (web_ui() && web_ui()->web_contents()) {
-    content::NavigationController* controller =
+    NavigationController* controller =
         &web_ui()->web_contents()->GetController();
     NavigationEntry* pending_entry = controller->GetPendingEntry();
     if (pending_entry)
       pending_entry->SetURL(CloudPrintURL(
           Profile::FromWebUI(web_ui())).GetCloudPrintSigninURL());
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                   content::Source<content::NavigationController>(controller));
+                   content::Source<NavigationController>(controller));
   }
 }
 

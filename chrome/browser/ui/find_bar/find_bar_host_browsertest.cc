@@ -38,6 +38,8 @@
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #endif
 
+using content::NavigationController;
+
 const std::string kSimplePage = "404_is_enough_for_us.html";
 const std::string kFramePage = "files/find_in_page/frames.html";
 const std::string kFrameData = "files/find_in_page/framedata_general.html";
@@ -587,7 +589,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
   // Reload the tab and make sure Find window doesn't go away.
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
               GetController()));
   browser()->Reload(CURRENT_TAB);
@@ -1114,7 +1116,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
   // End the find session, click on the link.
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
+      content::Source<NavigationController>(
           &tab->tab_contents()->GetController()));
   tab->find_tab_helper()->StopFinding(FindBarController::kActivateSelection);
   observer.Wait();

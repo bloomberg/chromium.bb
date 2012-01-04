@@ -27,6 +27,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 
+using content::NavigationController;
 using content::OpenURLParams;
 using content::Referrer;
 
@@ -91,7 +92,7 @@ void SyncPromoHandler::RegisterMessages() {
           IsViewSourceMode()) {
     // Listen to see if the tab we're in gets closed.
     registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
-        content::Source<content::NavigationController>(
+        content::Source<NavigationController>(
             &web_ui()->web_contents()->GetController()));
     // Listen to see if the window we're in gets closed.
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
