@@ -6,11 +6,14 @@
 #define REMOTING_CLIENT_RECTANGLE_UPDATE_DECODER_H_
 
 #include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/video_frame.h"
 #include "remoting/base/decoder.h"
 
-class MessageLoop;
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
 
 namespace remoting {
 
@@ -27,7 +30,7 @@ class SessionConfig;
 class RectangleUpdateDecoder :
     public base::RefCountedThreadSafe<RectangleUpdateDecoder> {
  public:
-  RectangleUpdateDecoder(MessageLoop* message_loop,
+  RectangleUpdateDecoder(base::MessageLoopProxy* message_loop,
                          FrameConsumer* consumer);
 
   // Initializes decoder with the infromation from the protocol config.
@@ -70,8 +73,7 @@ class RectangleUpdateDecoder :
   // Callback for FrameConsumer::OnPartialFrameOutput()
   void OnFrameConsumed(RectVector* rects);
 
-  // Pointers to infrastructure objects.  Not owned.
-  MessageLoop* message_loop_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
   FrameConsumer* consumer_;
 
   SkISize screen_size_;

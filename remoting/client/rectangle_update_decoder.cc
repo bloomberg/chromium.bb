@@ -5,8 +5,9 @@
 #include "remoting/client/rectangle_update_decoder.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "remoting/base/decoder.h"
 #include "remoting/base/decoder_row_based.h"
 #include "remoting/base/decoder_vp8.h"
@@ -19,8 +20,8 @@ using remoting::protocol::SessionConfig;
 
 namespace remoting {
 
-RectangleUpdateDecoder::RectangleUpdateDecoder(MessageLoop* message_loop,
-                                               FrameConsumer* consumer)
+RectangleUpdateDecoder::RectangleUpdateDecoder(
+    base::MessageLoopProxy* message_loop, FrameConsumer* consumer)
     : message_loop_(message_loop),
       consumer_(consumer),
       screen_size_(SkISize::Make(0, 0)),
@@ -47,7 +48,7 @@ void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
 
 void RectangleUpdateDecoder::DecodePacket(const VideoPacket* packet,
                                           const base::Closure& done) {
-  if (message_loop_ != MessageLoop::current()) {
+  if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::DecodePacket,
                               this, packet, done));
@@ -58,7 +59,7 @@ void RectangleUpdateDecoder::DecodePacket(const VideoPacket* packet,
 
 void RectangleUpdateDecoder::AllocateFrame(const VideoPacket* packet,
                                            const base::Closure& done) {
-  if (message_loop_ != MessageLoop::current()) {
+  if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::AllocateFrame,
                               this, packet, done));
@@ -102,7 +103,7 @@ void RectangleUpdateDecoder::AllocateFrame(const VideoPacket* packet,
 
 void RectangleUpdateDecoder::ProcessPacketData(
     const VideoPacket* packet, const base::Closure& done) {
-  if (message_loop_ != MessageLoop::current()) {
+  if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::ProcessPacketData,
                               this, packet, done));
@@ -127,7 +128,7 @@ void RectangleUpdateDecoder::ProcessPacketData(
 }
 
 void RectangleUpdateDecoder::SetOutputSize(const SkISize& size) {
-  if (message_loop_ != MessageLoop::current()) {
+  if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::SetOutputSize,
                               this, size));
@@ -150,7 +151,7 @@ void RectangleUpdateDecoder::SetOutputSize(const SkISize& size) {
 }
 
 void RectangleUpdateDecoder::UpdateClipRect(const SkIRect& new_clip_rect) {
-  if (message_loop_ != MessageLoop::current()) {
+  if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::UpdateClipRect,
                               this, new_clip_rect));
@@ -174,7 +175,7 @@ void RectangleUpdateDecoder::UpdateClipRect(const SkIRect& new_clip_rect) {
 }
 
 void RectangleUpdateDecoder::RefreshFullFrame() {
-  if (message_loop_ != MessageLoop::current()) {
+  if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::RefreshFullFrame, this));
     return;
@@ -205,7 +206,7 @@ void RectangleUpdateDecoder::SubmitToConsumer() {
 }
 
 void RectangleUpdateDecoder::DoRefresh() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (refresh_rects_.empty())
     return;
@@ -216,7 +217,7 @@ void RectangleUpdateDecoder::DoRefresh() {
 }
 
 void RectangleUpdateDecoder::OnFrameConsumed(RectVector* rects) {
-  if (message_loop_ != MessageLoop::current()) {
+  if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::OnFrameConsumed,
                               this, rects));
