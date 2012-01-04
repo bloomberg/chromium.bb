@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,13 +14,15 @@
 #include "base/logging.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/interpolated_transform.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {
 
 namespace {
 
-void PrintLayerHierarchyImp(const Layer* layer, int indent) {
+void PrintLayerHierarchyImp(const Layer* layer, int indent,
+                            gfx::Point mouse_location) {
   if (!layer->visible())
     return;
 
@@ -28,8 +30,17 @@ void PrintLayerHierarchyImp(const Layer* layer, int indent) {
   std::string indent_str(indent, ' ');
   std::string content_indent_str(indent+1, ' ');
 
+  layer->transform().TransformPointReverse(mouse_location);
+  bool mouse_inside_layer_bounds = layer->bounds().Contains(mouse_location);
+  mouse_location.Offset(-layer->bounds().x(), -layer->bounds().y());
+
   buf << UTF8ToWide(indent_str);
-  buf << L'+' << UTF8ToWide(layer->name()) << L' ' << layer;
+  if (mouse_inside_layer_bounds)
+    buf << L'*';
+  else
+    buf << L'+';
+
+  buf << UTF8ToWide(layer->name()) << L' ' << layer;
 
   buf << L'\n' << UTF8ToWide(content_indent_str);
   buf << L"bounds: " << layer->bounds().x() << L',' << layer->bounds().y();
@@ -77,13 +88,13 @@ void PrintLayerHierarchyImp(const Layer* layer, int indent) {
   std::cout << buf.str() << std::endl;
 
   for (size_t i = 0, count = layer->children().size(); i < count; ++i)
-    PrintLayerHierarchyImp(layer->children()[i], indent + 3);
+    PrintLayerHierarchyImp(layer->children()[i], indent + 3, mouse_location);
 }
 
 }  // namespace
 
-void PrintLayerHierarchy(const Layer* layer) {
-  PrintLayerHierarchyImp(layer, 0);
+void PrintLayerHierarchy(const Layer* layer, gfx::Point mouse_location) {
+  PrintLayerHierarchyImp(layer, 0, mouse_location);
 }
 
 } // namespace ui

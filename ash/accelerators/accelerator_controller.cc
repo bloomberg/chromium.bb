@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,7 +113,9 @@ bool HandleToggleRootWindowFullScreen() {
 }
 
 bool HandlePrintLayerHierarchy() {
-  ui::PrintLayerHierarchy(aura::RootWindow::GetInstance()->layer());
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  ui::PrintLayerHierarchy(root_window->layer(),
+                          root_window->last_mouse_location());
   return true;
 }
 #endif
