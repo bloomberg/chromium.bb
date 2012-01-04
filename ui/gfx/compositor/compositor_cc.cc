@@ -23,10 +23,12 @@
 
 namespace {
 
+const double kDefaultRefreshRate = 60.0;
+const double kTestRefreshRate = 100.0;
+
 webkit_glue::WebThreadImpl* g_compositor_thread = NULL;
 
-// If true a context is used that results in no rendering to the screen.
-bool test_context_enabled = false;
+bool test_compositor_enabled = false;
 
 }  // anonymous namespace
 
@@ -138,6 +140,8 @@ CompositorCC::CompositorCC(CompositorDelegate* delegate,
       command_line->HasSwitch(switches::kUIShowFPSCounter);
   settings.showPlatformLayerTree =
       command_line->HasSwitch(switches::kUIShowLayerTree);
+  settings.refreshRate = test_compositor_enabled ?
+      kTestRefreshRate : kDefaultRefreshRate;
   settings.partialSwapEnabled =
       command_line->HasSwitch(switches::kUIEnablePartialSwap);
 
@@ -246,7 +250,8 @@ void CompositorCC::applyScrollDelta(const WebKit::WebSize&) {
 
 WebKit::WebGraphicsContext3D* CompositorCC::createContext3D() {
   WebKit::WebGraphicsContext3D* context;
-  if (test_context_enabled) {
+  if (test_compositor_enabled) {
+    // Use context that results in no rendering to the screen.
     context = new TestWebGraphicsContext3D();
   } else {
     gfx::GLShareGroup* share_group =
@@ -284,12 +289,12 @@ Compositor* Compositor::Create(CompositorDelegate* owner,
 COMPOSITOR_EXPORT void SetupTestCompositor() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableTestCompositor)) {
-    test_context_enabled = true;
+    test_compositor_enabled = true;
   }
 }
 
 COMPOSITOR_EXPORT void DisableTestCompositor() {
-  test_context_enabled = false;
+  test_compositor_enabled = false;
 }
 
 }  // namespace ui
