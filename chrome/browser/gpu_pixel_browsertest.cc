@@ -307,7 +307,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLTeapot) {
   // If test baseline needs to be updated after a given revision, update the
   // revision number in SetRefImageNoOlderThan(#revision).
-  SetRefImageRevisionNoOlderThan(0);
+  SetRefImageRevisionNoOlderThan(116356);
 
   gfx::Size container_size(500, 500);
   ResizeTabContainer(browser(), container_size);
