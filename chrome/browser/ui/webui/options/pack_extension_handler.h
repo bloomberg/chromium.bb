@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,8 @@ class PackExtensionHandler : public OptionsPageUIHandler,
   virtual void OnPackSuccess(const FilePath& crx_file,
                              const FilePath& key_file) OVERRIDE;
 
-  virtual void OnPackFailure(const std::string& error) OVERRIDE;
+  virtual void OnPackFailure(const std::string& error,
+                             ExtensionCreator::ErrorType) OVERRIDE;
 
  private:
   // Javascript callback to start packing an extension.
@@ -42,6 +43,12 @@ class PackExtensionHandler : public OptionsPageUIHandler,
 
   // Used to package the extension.
   scoped_refptr<PackExtensionJob> pack_job_;
+
+  // Path to directory containing extension data
+  std::string extension_path_;
+
+  // Path for private key file, if specified, otherwise empty.
+  std::string private_key_path_;
 
   DISALLOW_COPY_AND_ASSIGN(PackExtensionHandler);
 };

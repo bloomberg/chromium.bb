@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,8 @@ void ExtensionsStartupUtil::OnPackSuccess(
           crx_path, output_private_key_path)));
 }
 
-void ExtensionsStartupUtil::OnPackFailure(const std::string& error_message) {
+void ExtensionsStartupUtil::OnPackFailure(const std::string& error_message,
+                                          ExtensionCreator::ErrorType type) {
   ShowPackExtensionMessage(L"Extension Packaging Error",
                            UTF8ToWide(error_message));
 }
@@ -58,8 +59,10 @@ bool ExtensionsStartupUtil::PackExtension(const CommandLine& cmd_line) {
     private_key_path = cmd_line.GetSwitchValuePath(switches::kPackExtensionKey);
   }
 
-  // Launch a job to perform the packing on the file thread.
-  pack_job_ = new PackExtensionJob(this, src_dir, private_key_path);
+  // Launch a job to perform the packing on the file thread.  Ignore warnings
+  // from the packing process. (e.g. Overwrite any existing crx file.)
+  pack_job_ = new PackExtensionJob(this, src_dir, private_key_path,
+                                   ExtensionCreator::kOverwriteCRX);
   pack_job_->set_asynchronous(false);
   pack_job_->Start();
 

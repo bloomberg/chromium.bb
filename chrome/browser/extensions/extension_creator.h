@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,25 +24,41 @@ class FilePath;
 // generated randomly (and optionally written to |output_private_key_path|.
 class ExtensionCreator {
  public:
-  ExtensionCreator() {}
+  ExtensionCreator();
+
+  // Settings to specify treatment of special or ignorable error conditions.
+  enum RunFlags {
+    kNoRunFlags = 0x0,
+    kOverwriteCRX = 0x1
+  };
+
+  // Categories of error that may need special handling on the UI end.
+  enum ErrorType { kOther, kCRXExists };
 
   bool Run(const FilePath& extension_dir,
            const FilePath& crx_path,
            const FilePath& private_key_path,
-           const FilePath& private_key_output_path);
+           const FilePath& private_key_output_path,
+           int run_flags);
 
   // Returns the error message that will be present if Run(...) returned false.
   std::string error_message() { return error_message_; }
 
+  ErrorType error_type() { return error_type_; }
+
  private:
   // Verifies input directory's existence. |extension_dir| is the source
-  // directory that should contain all the extension resources.
+  // directory that should contain all the extension resources. |crx_path| is
+  // the path to which final crx will be written.
   // |private_key_path| is the optional path to an existing private key to sign
   // the extension. If not provided, a random key will be created (in which case
   // it is written to |private_key_output_path| -- if provided).
+  // |flags| is a bitset of RunFlags values.
   bool InitializeInput(const FilePath& extension_dir,
+                       const FilePath& crx_path,
                        const FilePath& private_key_path,
-                       const FilePath& private_key_output_path);
+                       const FilePath& private_key_output_path,
+                       int run_flags);
 
   // Reads private key from |private_key_path|.
   crypto::RSAPrivateKey* ReadInputKey(const FilePath& private_key_path);
@@ -68,6 +84,9 @@ class ExtensionCreator {
 
   // Holds a message for any error that is raised during Run(...).
   std::string error_message_;
+
+  // Type of error that was raised, if any.
+  ErrorType error_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionCreator);
 };

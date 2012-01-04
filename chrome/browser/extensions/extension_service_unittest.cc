@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -579,7 +579,8 @@ class ExtensionServiceTest
     ASSERT_TRUE(creator->Run(dir_path,
                              crx_path,
                              pem_path,
-                             pem_output_path));
+                             pem_output_path,
+                             ExtensionCreator::kOverwriteCRX));
 
     ASSERT_TRUE(file_util::PathExists(crx_path));
   }
@@ -978,7 +979,8 @@ class PackExtensionTestClient : public PackExtensionJob::Client {
                           const FilePath& expected_private_key_path);
   virtual void OnPackSuccess(const FilePath& crx_path,
                              const FilePath& private_key_path);
-  virtual void OnPackFailure(const std::string& error_message);
+  virtual void OnPackFailure(const std::string& error_message,
+                             ExtensionCreator::ErrorType type);
 
  private:
   const FilePath expected_crx_path_;
@@ -1008,8 +1010,13 @@ void PackExtensionTestClient::OnPackSuccess(const FilePath& crx_path,
 }
 
 // The tests are designed so that we never expect to see a packing error.
-void PackExtensionTestClient::OnPackFailure(const std::string& error_message) {
-  FAIL() << "Packing should not fail.";
+void PackExtensionTestClient::OnPackFailure(const std::string& error_message,
+                                            ExtensionCreator::ErrorType type) {
+  if (type == ExtensionCreator::kCRXExists)
+     FAIL() << "Packing should not fail.";
+  else
+     FAIL() << "Existing CRX should have been overwritten.";
+
 }
 
 // Test loading good extensions from the profile directory.
@@ -1638,14 +1645,32 @@ TEST_F(ExtensionServiceTest, PackExtension) {
 
   scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
   ASSERT_TRUE(creator->Run(input_directory, crx_path, FilePath(),
-      privkey_path));
+      privkey_path, ExtensionCreator::kNoRunFlags));
+  ASSERT_TRUE(file_util::PathExists(crx_path));
+  ASSERT_TRUE(file_util::PathExists(privkey_path));
+
+  // Repeat the run with the pem file gone, and no special flags
+  // Should refuse to overwrite the existing crx.
+  file_util::Delete(privkey_path, false);
+  ASSERT_FALSE(creator->Run(input_directory, crx_path, FilePath(),
+      privkey_path, ExtensionCreator::kNoRunFlags));
+
+  // OK, now try it with a flag to overwrite existing crx.  Should work.
+  ASSERT_TRUE(creator->Run(input_directory, crx_path, FilePath(),
+      privkey_path, ExtensionCreator::kOverwriteCRX));
+
+  // Repeat the run allowing existing crx, but the existing pem is still
+  // an error.  Should fail.
+  ASSERT_FALSE(creator->Run(input_directory, crx_path, FilePath(),
+      privkey_path, ExtensionCreator::kOverwriteCRX));
 
   ASSERT_TRUE(file_util::PathExists(privkey_path));
   InstallCRX(crx_path, INSTALL_NEW);
 
   // Try packing with invalid paths.
   creator.reset(new ExtensionCreator());
-  ASSERT_FALSE(creator->Run(FilePath(), FilePath(), FilePath(), FilePath()));
+  ASSERT_FALSE(creator->Run(FilePath(), FilePath(), FilePath(), FilePath(),
+               ExtensionCreator::kOverwriteCRX));
 
   // Try packing an empty directory. Should fail because an empty directory is
   // not a valid extension.
@@ -1653,7 +1678,7 @@ TEST_F(ExtensionServiceTest, PackExtension) {
   ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
   creator.reset(new ExtensionCreator());
   ASSERT_FALSE(creator->Run(temp_dir2.path(), crx_path, privkey_path,
-                            FilePath()));
+                            FilePath(), ExtensionCreator::kOverwriteCRX));
 
   // Try packing with an invalid manifest.
   std::string invalid_manifest_content = "I am not a manifest.";
@@ -1662,7 +1687,7 @@ TEST_F(ExtensionServiceTest, PackExtension) {
       invalid_manifest_content.c_str(), invalid_manifest_content.size()));
   creator.reset(new ExtensionCreator());
   ASSERT_FALSE(creator->Run(temp_dir2.path(), crx_path, privkey_path,
-                            FilePath()));
+                            FilePath(), ExtensionCreator::kOverwriteCRX));
 }
 
 // Test Packaging and installing an extension whose name contains punctuation.
@@ -1717,9 +1742,9 @@ TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
         temp_dir.path().Append(expected_private_key_names[i]);
     PackExtensionTestClient pack_client(expected_crx_path,
                                         expected_private_key_path);
-    scoped_refptr<PackExtensionJob> packer(new PackExtensionJob(&pack_client,
-                                                                output_dir,
-                                                                FilePath()));
+    scoped_refptr<PackExtensionJob> packer(
+        new PackExtensionJob(&pack_client, output_dir, FilePath(),
+                             ExtensionCreator::kOverwriteCRX));
     packer->Start();
 
     // The packer will post a notification task to the current thread's message
@@ -1761,7 +1786,7 @@ TEST_F(ExtensionServiceTest, PackExtensionOpenSSLKey) {
 
   scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
   ASSERT_TRUE(creator->Run(input_directory, crx_path, privkey_path,
-      FilePath()));
+      FilePath(), ExtensionCreator::kOverwriteCRX));
 
   InstallCRX(crx_path, INSTALL_NEW);
 }

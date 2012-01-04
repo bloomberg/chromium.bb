@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,8 @@ class ExtensionsStartupUtil : public PackExtensionJob::Client {
 
   virtual void OnPackSuccess(const FilePath& crx_path,
                              const FilePath& output_private_key_path) OVERRIDE;
-  virtual void OnPackFailure(const std::string& error_message) OVERRIDE;
+  virtual void OnPackFailure(const std::string& error_message,
+                             ExtensionCreator::ErrorType type) OVERRIDE;
 
   // Handle --pack-extension flag from the |cmd_line| by packing the specified
   // extension. Returns false if the pack job failed.

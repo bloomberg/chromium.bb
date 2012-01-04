@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,10 @@ using content::BrowserThread;
 
 PackExtensionJob::PackExtensionJob(Client* client,
                                    const FilePath& root_directory,
-                                   const FilePath& key_file)
-    : client_(client), key_file_(key_file), asynchronous_(true) {
+                                   const FilePath& key_file,
+                                   int run_flags)
+    : client_(client), key_file_(key_file), asynchronous_(true),
+      run_flags_(run_flags) {
   root_directory_ = root_directory.StripTrailingSeparators();
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&client_thread_id_));
 }
@@ -50,7 +52,8 @@ void PackExtensionJob::Run() {
   // TODO(aa): Need to internationalize the errors that ExtensionCreator
   // returns. See bug 20734.
   ExtensionCreator creator;
-  if (creator.Run(root_directory_, crx_file_out_, key_file_, key_file_out_)) {
+  if (creator.Run(root_directory_, crx_file_out_, key_file_, key_file_out_,
+                  run_flags_)) {
     if (asynchronous_) {
       BrowserThread::PostTask(
           client_thread_id_, FROM_HERE,
@@ -64,9 +67,10 @@ void PackExtensionJob::Run() {
           client_thread_id_, FROM_HERE,
           base::Bind(
               &PackExtensionJob::ReportFailureOnClientThread, this,
-              creator.error_message()));
+              creator.error_message(), creator.error_type()));
     } else {
-      ReportFailureOnClientThread(creator.error_message());
+      ReportFailureOnClientThread(creator.error_message(),
+          creator.error_type());
     }
   }
 }
@@ -76,9 +80,11 @@ void PackExtensionJob::ReportSuccessOnClientThread() {
     client_->OnPackSuccess(crx_file_out_, key_file_out_);
 }
 
-void PackExtensionJob::ReportFailureOnClientThread(const std::string& error) {
+void PackExtensionJob::ReportFailureOnClientThread(
+    const std::string& error,
+    ExtensionCreator::ErrorType error_type) {
   if (client_)
-    client_->OnPackFailure(error);
+    client_->OnPackFailure(error, error_type);
 }
 
 // static
