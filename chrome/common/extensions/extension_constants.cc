@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -460,6 +460,11 @@ const char kGalleryUpdateHttpUrl[] =
     "http://clients2.google.com/service/update2/crx";
 const char kGalleryUpdateHttpsUrl[] =
     "https://clients2.google.com/service/update2/crx";
+// TODO(battre): Delete the HTTP URL once the blacklist is downloaded via HTTPS.
+const char kExtensionBlocklistUrlPrefix[] =
+    "http://www.gstatic.com/chrome/extensions/blacklist";
+const char kExtensionBlocklistHttpsUrlPrefix[] =
+    "https://www.gstatic.com/chrome/extensions/blacklist";
 
 GURL GetWebstoreUpdateUrl(bool secure) {
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
@@ -472,6 +477,17 @@ GURL GetWebstoreUpdateUrl(bool secure) {
 bool IsWebstoreUpdateUrl(const GURL& update_url) {
   return update_url == GetWebstoreUpdateUrl(false) ||
          update_url == GetWebstoreUpdateUrl(true);
+}
+
+bool IsBlacklistUpdateUrl(const GURL& url) {
+  // The extension blacklist URL is returned from the update service and
+  // therefore not determined by Chromium. If the location of the blacklist file
+  // ever changes, we need to update this function. A DCHECK in the
+  // ExtensionUpdater ensures that we notice a change. This is the full URL
+  // of a blacklist:
+  // http://www.gstatic.com/chrome/extensions/blacklist/l_0_0_0_7.txt
+  return StartsWithASCII(url.spec(), kExtensionBlocklistUrlPrefix, true) ||
+      StartsWithASCII(url.spec(), kExtensionBlocklistHttpsUrlPrefix, true);
 }
 
 const char kGalleryBrowsePrefix[] = "https://chrome.google.com/webstore";

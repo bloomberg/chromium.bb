@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -775,8 +775,15 @@ void ExtensionUpdater::HandleManifestResults(
     const UpdateManifest::Result* update = &(results->list.at(updates[i]));
     const std::string& id = update->extension_id;
     in_progress_ids_.insert(id);
-    if (id != std::string(kBlacklistAppID))
+    if (id != std::string(kBlacklistAppID)) {
       NotifyUpdateFound(update->extension_id);
+    } else {
+      // The URL of the blacklist file is returned by the server and we need to
+      // be sure that we continue to be able to reliably detect whether a URL
+      // references a blacklist file.
+      DCHECK(extension_urls::IsBlacklistUpdateUrl(update->crx_url))
+          << update->crx_url;
+    }
     FetchUpdatedExtension(update->extension_id, update->crx_url,
         update->package_hash, update->version);
   }

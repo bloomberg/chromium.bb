@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -313,6 +313,9 @@ namespace extension_urls {
 
   // Returns whether the URL is the webstore update URL (secure or not).
   bool IsWebstoreUpdateUrl(const GURL& update_url);
+
+  // Returns true if the URL points to an extension blacklist.
+  bool IsBlacklistUpdateUrl(const GURL& url);
 
   // The greatest common prefixes of the main extensions gallery's browse and
   // download URLs.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -134,6 +136,22 @@ bool IsRequestFromExtension(const net::URLRequest* request,
   return extension_info_map->process_map().Contains(info->child_id());
 }
 
+// Returns true if the URL is sensitive and requests to this URL must not be
+// modified/canceled by extensions, e.g. because it is targeted to the webstore
+// to check for updates, extension blacklisting, etc.
+bool IsSensitiveURL(const GURL& url) {
+  bool is_webstore_gallery_url =
+      StartsWithASCII(url.spec(), extension_urls::kGalleryBrowsePrefix, true);
+  bool is_google_com_chrome_url =
+      EndsWith(url.host(), "google.com", true) &&
+      StartsWithASCII(url.path(), "/chrome", true);
+  std::string url_without_query =
+      url.spec().substr(0, url.spec().find_first_of('?'));
+  return is_webstore_gallery_url || is_google_com_chrome_url ||
+      extension_urls::IsWebstoreUpdateUrl(GURL(url_without_query)) ||
+      extension_urls::IsBlacklistUpdateUrl(url);
+}
+
 // Returns true if the scheme is one we want to allow extensions to have access
 // to. Extensions still need specific permissions for a given URL, which is
 // covered by CanExtensionAccessURL.
@@ -144,6 +162,11 @@ bool HasWebRequestScheme(const GURL& url) {
           url.SchemeIs(chrome::kHttpScheme) ||
           url.SchemeIs(chrome::kHttpsScheme) ||
           url.SchemeIs(chrome::kExtensionScheme));
+}
+
+// Returns true if requests for |url| shall not be reported to extensions.
+bool HideRequestForURL(const GURL& url) {
+  return IsSensitiveURL(url) || !HasWebRequestScheme(url);
 }
 
 bool CanExtensionAccessURL(const Extension* extension, const GURL& url) {
@@ -529,15 +552,12 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     GURL* new_url) {
-  // TODO(jochen): Figure out what to do with events from the system context.
-  if (!profile)
+  // We hide events from the system context as well as sensitive requests.
+  if (!profile || HideRequestForURL(request->url()))
     return net::OK;
 
   if (IsPageLoad(request))
     NotifyPageLoad();
-
-  if (!HasWebRequestScheme(request->url()))
-    return net::OK;
 
   request_time_tracker_->LogRequestStartTime(request->identifier(),
                                              base::Time::Now(),
@@ -575,11 +595,8 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
-  // TODO(jochen): Figure out what to do with events from the system context.
-  if (!profile)
-    return net::OK;
-
-  if (!HasWebRequestScheme(request->url()))
+  // We hide events from the system context as well as sensitive requests.
+  if (!profile || HideRequestForURL(request->url()))
     return net::OK;
 
   if (GetAndSetSignaled(request->identifier(), kOnBeforeSendHeaders))
@@ -615,10 +632,8 @@ void ExtensionWebRequestEventRouter::OnSendHeaders(
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request,
     const net::HttpRequestHeaders& headers) {
-  if (!profile)
-    return;
-
-  if (!HasWebRequestScheme(request->url()))
+  // We hide events from the system context as well as sensitive requests.
+  if (!profile || HideRequestForURL(request->url()))
     return;
 
   if (GetAndSetSignaled(request->identifier(), kOnSendHeaders))
@@ -650,10 +665,8 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
     const net::CompletionCallback& callback,
     net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers) {
-  if (!profile)
-    return net::OK;
-
-  if (!HasWebRequestScheme(request->url()))
+  // We hide events from the system context as well as sensitive requests.
+  if (!profile || HideRequestForURL(request->url()))
     return net::OK;
 
   int extra_info_spec = 0;
@@ -701,11 +714,8 @@ ExtensionWebRequestEventRouter::OnAuthRequired(
     const net::NetworkDelegate::AuthCallback& callback,
     net::AuthCredentials* credentials) {
   // No profile means that this is for authentication challenges in the
-  // system context. Skip in that case.
-  if (!profile)
-    return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
-
-  if (!HasWebRequestScheme(request->url()))
+  // system context. Skip in that case. Also skip sensitive requests.
+  if (!profile || HideRequestForURL(request->url()))
     return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 
   int extra_info_spec = 0;
@@ -749,10 +759,8 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request,
     const GURL& new_location) {
-  if (!profile)
-    return;
-
-  if (!HasWebRequestScheme(request->url()))
+  // We hide events from the system context as well as sensitive requests.
+  if (!profile || HideRequestForURL(request->url()))
     return;
 
   if (GetAndSetSignaled(request->identifier(), kOnBeforeRedirect))
@@ -796,10 +804,8 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
     void* profile,
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request) {
-  if (!profile)
-    return;
-
-  if (!HasWebRequestScheme(request->url()))
+  // We hide events from the system context as well as sensitive requests.
+  if (!profile || HideRequestForURL(request->url()))
     return;
 
   // OnResponseStarted is even triggered, when the request was cancelled.
@@ -841,10 +847,8 @@ void ExtensionWebRequestEventRouter::OnCompleted(
     void* profile,
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request) {
-  if (!profile)
-    return;
-
-  if (!HasWebRequestScheme(request->url()))
+  // We hide events from the system context as well as sensitive requests.
+  if (!profile || HideRequestForURL(request->url()))
     return;
 
   request_time_tracker_->LogRequestEndTime(request->identifier(),
@@ -889,10 +893,8 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
     void* profile,
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request) {
-  if (!profile)
-      return;
-
-  if (!HasWebRequestScheme(request->url()))
+  // We hide events from the system context as well as sensitive requests.
+  if (!profile || HideRequestForURL(request->url()))
     return;
 
   request_time_tracker_->LogRequestEndTime(request->identifier(),
