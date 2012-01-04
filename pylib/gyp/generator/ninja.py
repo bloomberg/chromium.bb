@@ -766,6 +766,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
       OpenOutput(os.path.join(options.toplevel_dir, builddir, 'build.ninja')),
       width=120)
 
+  # Put build-time support tools in out/{config_name}.
+  gyp.common.CopyTool(flavor, os.path.join(options.toplevel_dir, builddir))
+
   # TODO: compute cc/cxx/ld/etc. by command-line arguments and system tests.
   master_ninja.variable('cc', os.environ.get('CC', 'gcc'))
   master_ninja.variable('cxx', os.environ.get('CXX', 'g++'))
