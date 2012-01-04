@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -693,6 +693,7 @@ void CreatePrintDialogForBytes(scoped_refptr<RefCountedBytes> data,
 }
 
 bool CreatePrintDialogFromCommandLine(const CommandLine& command_line) {
+  DCHECK(command_line.HasSwitch(switches::kCloudPrintFile));
   if (!command_line.GetSwitchValuePath(switches::kCloudPrintFile).empty()) {
     FilePath cloud_print_file;
     cloud_print_file =

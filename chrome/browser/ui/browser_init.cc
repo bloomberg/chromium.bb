@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1623,7 +1623,8 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
 
   // If we are just displaying a print dialog we shouldn't open browser
   // windows.
-  if (print_dialog_cloud::CreatePrintDialogFromCommandLine(command_line)) {
+  if (command_line.HasSwitch(switches::kCloudPrintFile) &&
+      print_dialog_cloud::CreatePrintDialogFromCommandLine(command_line)) {
     silent_launch = true;
   }
 
