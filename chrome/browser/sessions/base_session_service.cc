@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/sessions/base_session_service.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
@@ -163,10 +164,14 @@ SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
                         entry.GetTitle());
 
   if (entry.GetHasPostData()) {
+    UMA_HISTOGRAM_MEMORY_KB("SessionService.ContentStateSizeWithPost",
+                            entry.GetContentState().size() / 1024);
     // Remove the form data, it may contain sensitive information.
     WriteStringToPickle(pickle, &bytes_written, max_state_size,
         webkit_glue::RemoveFormDataFromHistoryState(entry.GetContentState()));
   } else {
+    UMA_HISTOGRAM_MEMORY_KB("SessionService.ContentStateSize",
+                            entry.GetContentState().size() / 1024);
     WriteStringToPickle(pickle, &bytes_written, max_state_size,
                         entry.GetContentState());
   }
