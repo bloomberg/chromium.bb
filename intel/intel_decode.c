@@ -2725,13 +2725,13 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		{ 0x6000, 0x00ff, 3, 3, "URB_FENCE" },
 		{ 0x6001, 0xffff, 2, 2, "CS_URB_STATE" },
 		{ 0x6002, 0x00ff, 2, 2, "CONSTANT_BUFFER" },
-		{ 0x6101, 0xffff, 6, 6, "STATE_BASE_ADDRESS" },
+		{ 0x6101, 0xffff, 6, 10, "STATE_BASE_ADDRESS" },
 		{ 0x6102, 0xffff, 2, 2, "STATE_SIP" },
 		{ 0x6104, 0xffff, 1, 1, "3DSTATE_PIPELINE_SELECT" },
 		{ 0x680b, 0xffff, 1, 1, "3DSTATE_VF_STATISTICS" },
 		{ 0x6904, 0xffff, 1, 1, "3DSTATE_PIPELINE_SELECT" },
 		{ 0x7800, 0xffff, 7, 7, "3DSTATE_PIPELINED_POINTERS" },
-		{ 0x7801, 0x00ff, 6, 6, "3DSTATE_BINDING_TABLE_POINTERS" },
+		{ 0x7801, 0x00ff, 4, 6, "3DSTATE_BINDING_TABLE_POINTERS" },
 		{ 0x7802, 0x00ff, 4, 4, "3DSTATE_SAMPLER_STATE_POINTERS" },
 		{ 0x7805, 0x00ff, 3, 3, "3DSTATE_URB" },
 		{ 0x7808, 0x00ff, 5, 257, "3DSTATE_VERTEX_BUFFERS" },
@@ -2786,6 +2786,13 @@ decode_3d_965(struct drm_intel_decode *ctx)
 			len = 1;
 		else
 			len = (data[0] & opcode_3d->len_mask) + 2;
+
+		if (len < opcode_3d->min_len ||
+		    len > opcode_3d->max_len) {
+			fprintf(out, "Bad length %d in %s, expeted %d-%d\n",
+				len, opcode_3d->name,
+				opcode_3d->min_len, opcode_3d->max_len);
+		}
 	} else {
 		len = (data[0] & 0x0000ffff) + 2;
 	}
@@ -2838,10 +2845,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 
 		return len;
 	case 0x7800:
-		if (len != 7)
-			fprintf(out,
-				"Bad count in 3DSTATE_PIPELINED_POINTERS\n");
-
 		instr_out(ctx, 0, "3DSTATE_PIPELINED_POINTERS\n");
 		instr_out(ctx, 1, "VS state\n");
 		instr_out(ctx, 2, "GS state\n");
@@ -2876,9 +2879,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 
 		return len;
 	case 0x7802:
-		if (len != 4)
-			fprintf(out,
-				"Bad count in 3DSTATE_SAMPLER_STATE_POINTERS\n");
 		instr_out(ctx, 0,
 			  "3DSTATE_SAMPLER_STATE_POINTERS: VS mod %d, "
 			  "GS mod %d, PS mod %d\n", (data[0] & (1 << 8)) != 0,
@@ -2889,8 +2889,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		instr_out(ctx, 3, "WM sampler state\n");
 		return len;
 	case 0x7805:
-		if (len != 3)
-			fprintf(out, "Bad count in 3DSTATE_URB\n");
 		instr_out(ctx, 0, "3DSTATE_URB\n");
 		instr_out(ctx, 1,
 			  "VS entries %d, alloc size %d (1024bit row)\n",
@@ -2951,9 +2949,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x780d:
-		if (len != 4)
-			fprintf(out,
-				"Bad count in 3DSTATE_VIEWPORT_STATE_POINTERS\n");
 		instr_out(ctx, 0,
 			  "3DSTATE_VIEWPORT_STATE_POINTERS\n");
 		instr_out(ctx, 1, "clip\n");
@@ -2962,17 +2957,12 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x780a:
-		if (len != 3)
-			fprintf(out, "Bad count in 3DSTATE_INDEX_BUFFER\n");
 		instr_out(ctx, 0, "3DSTATE_INDEX_BUFFER\n");
 		instr_out(ctx, 1, "beginning buffer address\n");
 		instr_out(ctx, 2, "ending buffer address\n");
 		return len;
 
 	case 0x780e:
-		if (len != 4)
-			fprintf(out,
-				"Bad count in 3DSTATE_CC_STATE_POINTERS\n");
 		instr_out(ctx, 0, "3DSTATE_CC_STATE_POINTERS\n");
 		instr_out(ctx, 1, "blend change %d\n", data[1] & 1);
 		instr_out(ctx, 2, "depth stencil change %d\n",
@@ -2981,15 +2971,11 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x780f:
-		if (len != 2)
-			fprintf(out, "Bad count in 3DSTATE_SCISSOR_POINTERS\n");
 		instr_out(ctx, 0, "3DSTATE_SCISSOR_POINTERS\n");
 		instr_out(ctx, 1, "scissor rect offset\n");
 		return len;
 
 	case 0x7810:
-		if (len != 6)
-			fprintf(out, "Bad count in 3DSTATE_VS\n");
 		instr_out(ctx, 0, "3DSTATE_VS\n");
 		instr_out(ctx, 1, "kernel pointer\n");
 		instr_out(ctx, 2,
@@ -3010,8 +2996,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x7811:
-		if (len != 7)
-			fprintf(out, "Bad count in 3DSTATE_GS\n");
 		instr_out(ctx, 0, "3DSTATE_GS\n");
 		instr_out(ctx, 1, "kernel pointer\n");
 		instr_out(ctx, 2,
@@ -3037,8 +3021,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x7812:
-		if (len != 4)
-			fprintf(out, "Bad count in 3DSTATE_CLIP\n");
 		instr_out(ctx, 0, "3DSTATE_CLIP\n");
 		instr_out(ctx, 1,
 			  "UserClip distance cull test mask 0x%x\n",
@@ -3067,8 +3049,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x7813:
-		if (len != 20)
-			fprintf(out, "Bad count in 3DSTATE_SF\n");
 		instr_out(ctx, 0, "3DSTATE_SF\n");
 		instr_out(ctx, 1,
 			  "Attrib Out %d, Attrib Swizzle %sable, VUE read length %d, "
@@ -3130,8 +3110,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x7814:
-		if (len != 9)
-			fprintf(out, "Bad count in 3DSTATE_WM\n");
 		instr_out(ctx, 0, "3DSTATE_WM\n");
 		instr_out(ctx, 1, "kernel start pointer 0\n");
 		instr_out(ctx, 2,
@@ -3172,10 +3150,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x7900:
-		if (len != 4)
-			fprintf(out,
-				"Bad count in 3DSTATE_DRAWING_RECTANGLE\n");
-
 		instr_out(ctx, 0, "3DSTATE_DRAWING_RECTANGLE\n");
 		instr_out(ctx, 1, "top left: %d,%d\n",
 			  data[1] & 0xffff, (data[1] >> 16) & 0xffff);
@@ -3187,9 +3161,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x7905:
-		if (len < 5 || len > 7)
-			fprintf(out, "Bad count in 3DSTATE_DEPTH_BUFFER\n");
-
 		instr_out(ctx, 0, "3DSTATE_DEPTH_BUFFER\n");
 		if (IS_GEN5(devid) || IS_GEN6(devid))
 			instr_out(ctx, 1,
@@ -3323,9 +3294,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 			return len;
 		}
 	case 0x7b00:
-		if (len != 6)
-			fprintf(out, "Bad count in 3DPRIMITIVE\n");
-
 		instr_out(ctx, 0,
 			  "3DPRIMITIVE: %s %s\n",
 			  get_965_prim_type(data[0]),
@@ -3345,11 +3313,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 			unsigned int i;
 
 			instr_out(ctx, 0, "%s\n", opcode_3d->name);
-			if (len < opcode_3d->min_len ||
-			    len > opcode_3d->max_len) {
-				fprintf(out, "Bad count in %s\n",
-					opcode_3d->name);
-			}
 
 			for (i = 1; i < len; i++) {
 				instr_out(ctx, i, "dword %d\n", i);

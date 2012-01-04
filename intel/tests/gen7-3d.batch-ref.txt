@@ -36,15 +36,15 @@
 0x1230008c:      0x04000000: MI_ARB_ON_OFF
 0x12300090:      0x78240000: 3D UNKNOWN: 3d_965 opcode = 0x7824
 0x12300094:      0x00007f81: MI_NOOP
-Bad count in 3DSTATE_CC_STATE_POINTERS
+Bad length 2 in 3DSTATE_CC_STATE_POINTERS, expeted 4-4
 0x12300098:      0x780e0000: 3DSTATE_CC_STATE_POINTERS
 0x1230009c:      0x00007f41:    blend change 1
 0x123000a0:      0x78250000:    depth stencil change 0
 0x123000a4:      0x00007f01:    cc change 1
 0x123000a0:      0x78250000: 3D UNKNOWN: 3d_965 opcode = 0x7825
 0x123000a4:      0x00007f01: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_GS_STATE, expeted 5-5
 0x123000a8:      0x78160005: 3DSTATE_CONSTANT_GS_STATE
-Bad count in 3DSTATE_CONSTANT_GS_STATE
 0x123000ac:      0x00000000:    dword 1
 0x123000b0:      0x00000000:    dword 2
 0x123000b4:      0x00000000:    dword 3
@@ -99,8 +99,8 @@ Bad count in 3DSTATE_CONSTANT_GS_STATE
 0x12300178:      0x00007d40: MI_NOOP
 0x1230017c:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300180:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
 0x12300184:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300188:      0x00000000:    dword 1
 0x1230018c:      0x00000000:    dword 2
 0x12300190:      0x00000000:    dword 3
@@ -134,7 +134,7 @@ Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300200:      0x00000000: MI_NOOP
 0x12300204:      0x00000000: MI_NOOP
 0x12300208:      0x00000000: MI_NOOP
-Bad count in 3DSTATE_SF
+Bad length 7 in 3DSTATE_SF, expeted 20-20
 0x1230020c:      0x78130005: 3DSTATE_SF
 0x12300210:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
 0x12300214:      0x22000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
@@ -155,7 +155,7 @@ Bad count in 3DSTATE_SF
 0x12300250:      0x00007ee0:    Const Interp Enable
 0x12300254:      0x00000000:    Attrib 7-0 WrapShortest Enable
 0x12300258:      0x00000000:    Attrib 15-8 WrapShortest Enable
-Bad count in 3DSTATE_WM
+Bad length 3 in 3DSTATE_WM, expeted 9-9
 0x12300228:      0x78140001: 3DSTATE_WM
 0x1230022c:      0xa0000040:    kernel start pointer 0
 0x12300230:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -169,8 +169,8 @@ Bad count in 3DSTATE_WM
 0x12300238:      0x00007d40: MI_NOOP
 0x1230023c:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12300240:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
 0x12300244:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-Bad count in 3DSTATE_CONSTANT_PS_STATE
 0x12300248:      0x00000001:    dword 1
 0x1230024c:      0x00000000:    dword 2
 0x12300250:      0x00007ee0:    dword 3
@@ -200,7 +200,7 @@ Bad count in XY_MONO_SRC_COPY_BLT
 0x123002ac:      0x00002000:    no write, depth stall, 
 0x123002b0:      0x00000000:    
 0x123002b4:      0x00000000:    
-Bad count in 3DSTATE_URB
+Bad length 7 in 3DSTATE_URB, expeted 3-3
 0x123002b8:      0x78050005: 3DSTATE_URB
 0x123002bc:      0x380c05ff:    VS entries 1535, alloc size 13 (1024bit row)
 0x123002c0:      0x167f9000:    GS entries 912, alloc size 1 (1024bit row)
@@ -226,7 +226,7 @@ Bad count in 3DSTATE_URB
 0x12300320:      0x78090001: 3DSTATE_VERTEX_ELEMENTS
 0x12300324:      0x02400000:    buffer 0: invalid, type 0x0040, src offset 0x0000 bytes
 0x12300328:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x1230032c:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x12300330:      0x00000006:    vertex count
 0x12300334:      0x00000004:    start vertex
@@ -245,7 +245,7 @@ Bad count in 3DPRIMITIVE
 0x1230036c:      0x04000000: MI_ARB_ON_OFF
 0x12300370:      0x78320000: 3D UNKNOWN: 3d_965 opcode = 0x7832
 0x12300374:      0x04000000: MI_ARB_ON_OFF
-Bad count in 3DSTATE_CC_STATE_POINTERS
+Bad length 2 in 3DSTATE_CC_STATE_POINTERS, expeted 4-4
 0x12300378:      0x780e0000: 3DSTATE_CC_STATE_POINTERS
 0x1230037c:      0x00007d01:    blend change 1
 0x12300380:      0x78250000:    depth stencil change 0
@@ -256,8 +256,8 @@ Bad count in 3DSTATE_CC_STATE_POINTERS
 0x1230038c:      0x00007a00: MI_NOOP
 0x12300390:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300394:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
 0x12300398:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x1230039c:      0x00000006:    dword 1
 0x123003a0:      0x00000000:    dword 2
 0x123003a4:      0x00007b80:    dword 3
@@ -291,7 +291,7 @@ Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300414:      0x00000001: MI_NOOP
 0x12300418:      0x00000000: MI_NOOP
 0x1230041c:      0x00000000: MI_NOOP
-Bad count in 3DSTATE_SF
+Bad length 7 in 3DSTATE_SF, expeted 20-20
 0x12300420:      0x78130005: 3DSTATE_SF
 0x12300424:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
 0x12300428:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
@@ -312,7 +312,7 @@ Bad count in 3DSTATE_SF
 0x12300464:      0x00000000:    Const Interp Enable
 0x12300468:      0x00000000:    Attrib 7-0 WrapShortest Enable
 0x1230046c:      0x00000000:    Attrib 15-8 WrapShortest Enable
-Bad count in 3DSTATE_WM
+Bad length 3 in 3DSTATE_WM, expeted 9-9
 0x1230043c:      0x78140001: 3DSTATE_WM
 0x12300440:      0xa0000040:    kernel start pointer 0
 0x12300444:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -326,8 +326,8 @@ Bad count in 3DSTATE_WM
 0x1230044c:      0x00007a00: MI_NOOP
 0x12300450:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12300454:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
 0x12300458:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-Bad count in 3DSTATE_CONSTANT_PS_STATE
 0x1230045c:      0x00000000:    dword 1
 0x12300460:      0x00000000:    dword 2
 0x12300464:      0x00000000:    dword 3
@@ -355,7 +355,7 @@ Bad count in XY_MONO_SRC_COPY_BLT
 0x123004b8:      0x00002000:    no write, depth stall, 
 0x123004bc:      0x00000000:    
 0x123004c0:      0x00000000:    
-Bad count in 3DSTATE_URB
+Bad length 7 in 3DSTATE_URB, expeted 3-3
 0x123004c4:      0x78050005: 3DSTATE_URB
 0x123004c8:      0x380c05ff:    VS entries 1535, alloc size 13 (1024bit row)
 0x123004cc:      0x167f9000:    GS entries 912, alloc size 1 (1024bit row)
@@ -374,14 +374,14 @@ Bad count in 3DSTATE_URB
 0x12300510:      0x07b82000:    buffer address
 0x12300514:      0x07b89fff:    max index
 0x12300518:      0x00000000:    mbz
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x1230051c:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x12300520:      0x00000008:    vertex count
 0x12300524:      0x00000052:    start vertex
 0x12300528:      0x00000000:    instance count
 0x1230052c:      0x00000001:    start instance
 0x12300530:      0x00000000:    index bias
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300538:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x1230053c:      0x00000007:    vertex count
 0x12300540:      0x00000050:    start vertex
@@ -392,8 +392,8 @@ Bad count in 3DPRIMITIVE
 0x12300558:      0x00007a00: MI_NOOP
 0x1230055c:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300560:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
 0x12300564:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300568:      0x00000006:    dword 1
 0x1230056c:      0x00000000:    dword 2
 0x12300570:      0x000078c0:    dword 3
@@ -410,8 +410,8 @@ Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x1230059c:      0x00007a00: MI_NOOP
 0x123005a0:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x123005a4:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
 0x123005a8:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-Bad count in 3DSTATE_CONSTANT_PS_STATE
 0x123005ac:      0x00000000:    dword 1
 0x123005b0:      0x00000000:    dword 2
 0x123005b4:      0x00000000:    dword 3
@@ -427,14 +427,14 @@ Bad count in XY_MONO_SRC_COPY_BLT
 0x123005d8:      0x00020000:    dword 1
 0x123005dc:      0x00000000:    dword 2
 0x123005e0:      0x00000540:    dword 3
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x123005e4:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x123005e8:      0x00000008:    vertex count
 0x123005ec:      0x00000052:    start vertex
 0x123005f0:      0x000000a2:    instance count
 0x123005f4:      0x00000001:    start instance
 0x123005f8:      0x00000000:    index bias
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300600:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x12300604:      0x00000007:    vertex count
 0x12300608:      0x00000050:    start vertex
@@ -457,8 +457,8 @@ Bad count in 3DPRIMITIVE
 0x12300650:      0x00007a00: MI_NOOP
 0x12300654:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300658:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
 0x1230065c:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300660:      0x00000006:    dword 1
 0x12300664:      0x00000000:    dword 2
 0x12300668:      0x00007780:    dword 3
@@ -488,7 +488,7 @@ Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x123006c8:      0x00000001: MI_NOOP
 0x123006cc:      0x00000000: MI_NOOP
 0x123006d0:      0x00000000: MI_NOOP
-Bad count in 3DSTATE_SF
+Bad length 7 in 3DSTATE_SF, expeted 20-20
 0x123006d4:      0x78130005: 3DSTATE_SF
 0x123006d8:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
 0x123006dc:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
@@ -519,7 +519,7 @@ Bad count in 3DSTATE_SF
 0x1230070c:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
 0x12300710:      0x0240000c:    buffer 0: invalid, type 0x0040, src offset 0x000c bytes
 0x12300714:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300718:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x1230071c:      0x00000008:    vertex count
 0x12300720:      0x000000a2:    start vertex
@@ -530,8 +530,8 @@ Bad count in 3DPRIMITIVE
 0x12300738:      0x00007a00: MI_NOOP
 0x1230073c:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300740:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
 0x12300744:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300748:      0x00000006:    dword 1
 0x1230074c:      0x00000000:    dword 2
 0x12300750:      0x00007640:    dword 3
@@ -565,7 +565,7 @@ Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x123007c0:      0x00000000: MI_NOOP
 0x123007c4:      0x00000000: MI_NOOP
 0x123007c8:      0x00000000: MI_NOOP
-Bad count in 3DSTATE_SF
+Bad length 7 in 3DSTATE_SF, expeted 20-20
 0x123007cc:      0x78130005: 3DSTATE_SF
 0x123007d0:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
 0x123007d4:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
@@ -586,7 +586,7 @@ Bad count in 3DSTATE_SF
 0x12300810:      0x00000000:    Const Interp Enable
 0x12300814:      0x00000000:    Attrib 7-0 WrapShortest Enable
 0x12300818:      0x00000000:    Attrib 15-8 WrapShortest Enable
-Bad count in 3DSTATE_WM
+Bad length 3 in 3DSTATE_WM, expeted 9-9
 0x123007e8:      0x78140001: 3DSTATE_WM
 0x123007ec:      0xa0000840:    kernel start pointer 0
 0x123007f0:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -600,8 +600,8 @@ Bad count in 3DSTATE_WM
 0x123007f8:      0x00007a00: MI_NOOP
 0x123007fc:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12300800:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
 0x12300804:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-Bad count in 3DSTATE_CONSTANT_PS_STATE
 0x12300808:      0x00000000:    dword 1
 0x1230080c:      0x00000000:    dword 2
 0x12300810:      0x00000000:    dword 3
@@ -617,7 +617,7 @@ Bad count in XY_MONO_SRC_COPY_BLT
 0x12300834:      0x00060000:    dword 1
 0x12300838:      0x00000000:    dword 2
 0x1230083c:      0x00000940:    dword 3
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300840:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x12300844:      0x00000008:    vertex count
 0x12300848:      0x0000002a:    start vertex
@@ -640,8 +640,8 @@ Bad count in 3DPRIMITIVE
 0x12300890:      0x00007a00: MI_NOOP
 0x12300894:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300898:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
 0x1230089c:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x123008a0:      0x00000006:    dword 1
 0x123008a4:      0x00000000:    dword 2
 0x123008a8:      0x00007500:    dword 3
@@ -675,7 +675,7 @@ Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300918:      0x00000001: MI_NOOP
 0x1230091c:      0x00000000: MI_NOOP
 0x12300920:      0x00000000: MI_NOOP
-Bad count in 3DSTATE_SF
+Bad length 7 in 3DSTATE_SF, expeted 20-20
 0x12300924:      0x78130005: 3DSTATE_SF
 0x12300928:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
 0x1230092c:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
@@ -696,7 +696,7 @@ Bad count in 3DSTATE_SF
 0x12300968:      0x00000000:    Const Interp Enable
 0x1230096c:      0x00000000:    Attrib 7-0 WrapShortest Enable
 0x12300970:      0x00000000:    Attrib 15-8 WrapShortest Enable
-Bad count in 3DSTATE_WM
+Bad length 3 in 3DSTATE_WM, expeted 9-9
 0x12300940:      0x78140001: 3DSTATE_WM
 0x12300944:      0xa0000040:    kernel start pointer 0
 0x12300948:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -710,8 +710,8 @@ Bad count in 3DSTATE_WM
 0x12300950:      0x00007a00: MI_NOOP
 0x12300954:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12300958:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
 0x1230095c:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-Bad count in 3DSTATE_CONSTANT_PS_STATE
 0x12300960:      0x00000000:    dword 1
 0x12300964:      0x00000000:    dword 2
 0x12300968:      0x00000000:    dword 3
@@ -735,14 +735,14 @@ Bad count in XY_MONO_SRC_COPY_BLT
 0x123009ac:      0x78090001: 3DSTATE_VERTEX_ELEMENTS
 0x123009b0:      0x02400000:    buffer 0: invalid, type 0x0040, src offset 0x0000 bytes
 0x123009b4:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x123009b8:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x123009bc:      0x00000008:    vertex count
 0x123009c0:      0x0000002a:    start vertex
 0x123009c4:      0x00000000:    instance count
 0x123009c8:      0x00000001:    start instance
 0x123009cc:      0x00000000:    index bias
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x123009d4:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x123009d8:      0x00000007:    vertex count
 0x123009dc:      0x00000028:    start vertex
@@ -753,8 +753,8 @@ Bad count in 3DPRIMITIVE
 0x123009f4:      0x00007a00: MI_NOOP
 0x123009f8:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x123009fc:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
 0x12300a00:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300a04:      0x00000006:    dword 1
 0x12300a08:      0x00000000:    dword 2
 0x12300a0c:      0x000073c0:    dword 3
@@ -771,8 +771,8 @@ Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300a38:      0x00007a00: MI_NOOP
 0x12300a3c:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12300a40:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
 0x12300a44:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-Bad count in 3DSTATE_CONSTANT_PS_STATE
 0x12300a48:      0x00000000:    dword 1
 0x12300a4c:      0x00000000:    dword 2
 0x12300a50:      0x00000000:    dword 3
@@ -788,14 +788,14 @@ Bad count in XY_MONO_SRC_COPY_BLT
 0x12300a74:      0x00020000:    dword 1
 0x12300a78:      0x00000000:    dword 2
 0x12300a7c:      0x00000540:    dword 3
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300a80:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x12300a84:      0x00000008:    vertex count
 0x12300a88:      0x0000002a:    start vertex
 0x12300a8c:      0x00000052:    instance count
 0x12300a90:      0x00000001:    start instance
 0x12300a94:      0x00000000:    index bias
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300a9c:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x12300aa0:      0x00000007:    vertex count
 0x12300aa4:      0x00000028:    start vertex
@@ -818,8 +818,8 @@ Bad count in 3DPRIMITIVE
 0x12300aec:      0x00007a00: MI_NOOP
 0x12300af0:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300af4:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
 0x12300af8:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300afc:      0x00000006:    dword 1
 0x12300b00:      0x00000000:    dword 2
 0x12300b04:      0x00007280:    dword 3
@@ -849,7 +849,7 @@ Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300b64:      0x00000001: MI_NOOP
 0x12300b68:      0x00000000: MI_NOOP
 0x12300b6c:      0x00000000: MI_NOOP
-Bad count in 3DSTATE_SF
+Bad length 7 in 3DSTATE_SF, expeted 20-20
 0x12300b70:      0x78130005: 3DSTATE_SF
 0x12300b74:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
 0x12300b78:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
@@ -880,7 +880,7 @@ Bad count in 3DSTATE_SF
 0x12300ba8:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
 0x12300bac:      0x0240000c:    buffer 0: invalid, type 0x0040, src offset 0x000c bytes
 0x12300bb0:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300bb4:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x12300bb8:      0x00000008:    vertex count
 0x12300bbc:      0x00000052:    start vertex
@@ -891,8 +891,8 @@ Bad count in 3DPRIMITIVE
 0x12300bd4:      0x00007a00: MI_NOOP
 0x12300bd8:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300bdc:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
 0x12300be0:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300be4:      0x00000006:    dword 1
 0x12300be8:      0x00000000:    dword 2
 0x12300bec:      0x00007140:    dword 3
@@ -926,7 +926,7 @@ Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300c5c:      0x00000000: MI_NOOP
 0x12300c60:      0x00000000: MI_NOOP
 0x12300c64:      0x00000000: MI_NOOP
-Bad count in 3DSTATE_SF
+Bad length 7 in 3DSTATE_SF, expeted 20-20
 0x12300c68:      0x78130005: 3DSTATE_SF
 0x12300c6c:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
 0x12300c70:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
@@ -947,7 +947,7 @@ Bad count in 3DSTATE_SF
 0x12300cac:      0x00000000:    Const Interp Enable
 0x12300cb0:      0x00000000:    Attrib 7-0 WrapShortest Enable
 0x12300cb4:      0x00000000:    Attrib 15-8 WrapShortest Enable
-Bad count in 3DSTATE_WM
+Bad length 3 in 3DSTATE_WM, expeted 9-9
 0x12300c84:      0x78140001: 3DSTATE_WM
 0x12300c88:      0xa0000840:    kernel start pointer 0
 0x12300c8c:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -961,8 +961,8 @@ Bad count in 3DSTATE_WM
 0x12300c94:      0x00007a00: MI_NOOP
 0x12300c98:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12300c9c:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
 0x12300ca0:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-Bad count in 3DSTATE_CONSTANT_PS_STATE
 0x12300ca4:      0x00000000:    dword 1
 0x12300ca8:      0x00000000:    dword 2
 0x12300cac:      0x00000000:    dword 3
@@ -978,7 +978,7 @@ Bad count in XY_MONO_SRC_COPY_BLT
 0x12300cd0:      0x00060000:    dword 1
 0x12300cd4:      0x00000000:    dword 2
 0x12300cd8:      0x00000940:    dword 3
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300cdc:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x12300ce0:      0x00000008:    vertex count
 0x12300ce4:      0x00000016:    start vertex
@@ -1001,8 +1001,8 @@ Bad count in 3DPRIMITIVE
 0x12300d2c:      0x00007a00: MI_NOOP
 0x12300d30:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300d34:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
 0x12300d38:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300d3c:      0x00000006:    dword 1
 0x12300d40:      0x00000000:    dword 2
 0x12300d44:      0x00007000:    dword 3
@@ -1036,7 +1036,7 @@ Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300db4:      0x00000001: MI_NOOP
 0x12300db8:      0x00000000: MI_NOOP
 0x12300dbc:      0x00000000: MI_NOOP
-Bad count in 3DSTATE_SF
+Bad length 7 in 3DSTATE_SF, expeted 20-20
 0x12300dc0:      0x78130005: 3DSTATE_SF
 0x12300dc4:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
 0x12300dc8:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
@@ -1057,7 +1057,7 @@ Bad count in 3DSTATE_SF
 0x12300e04:      0x00000000:    Const Interp Enable
 0x12300e08:      0x00000000:    Attrib 7-0 WrapShortest Enable
 0x12300e0c:      0x00000000:    Attrib 15-8 WrapShortest Enable
-Bad count in 3DSTATE_WM
+Bad length 3 in 3DSTATE_WM, expeted 9-9
 0x12300ddc:      0x78140001: 3DSTATE_WM
 0x12300de0:      0xa0000040:    kernel start pointer 0
 0x12300de4:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -1071,8 +1071,8 @@ Bad count in 3DSTATE_WM
 0x12300dec:      0x00007a00: MI_NOOP
 0x12300df0:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12300df4:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
 0x12300df8:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-Bad count in 3DSTATE_CONSTANT_PS_STATE
 0x12300dfc:      0x00000000:    dword 1
 0x12300e00:      0x00000000:    dword 2
 0x12300e04:      0x00000000:    dword 3
@@ -1096,14 +1096,14 @@ Bad count in XY_MONO_SRC_COPY_BLT
 0x12300e48:      0x78090001: 3DSTATE_VERTEX_ELEMENTS
 0x12300e4c:      0x02400000:    buffer 0: invalid, type 0x0040, src offset 0x0000 bytes
 0x12300e50:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300e54:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x12300e58:      0x00000008:    vertex count
 0x12300e5c:      0x0000002a:    start vertex
 0x12300e60:      0x00000000:    instance count
 0x12300e64:      0x00000001:    start instance
 0x12300e68:      0x00000000:    index bias
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300e70:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x12300e74:      0x00000007:    vertex count
 0x12300e78:      0x00000028:    start vertex
@@ -1114,8 +1114,8 @@ Bad count in 3DPRIMITIVE
 0x12300e90:      0x00007a00: MI_NOOP
 0x12300e94:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300e98:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
 0x12300e9c:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300ea0:      0x00000006:    dword 1
 0x12300ea4:      0x00000000:    dword 2
 0x12300ea8:      0x00006ec0:    dword 3
@@ -1132,8 +1132,8 @@ Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300ed4:      0x00007a00: MI_NOOP
 0x12300ed8:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12300edc:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
 0x12300ee0:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-Bad count in 3DSTATE_CONSTANT_PS_STATE
 0x12300ee4:      0x00000000:    dword 1
 0x12300ee8:      0x00000000:    dword 2
 0x12300eec:      0x00000000:    dword 3
@@ -1149,14 +1149,14 @@ Bad count in XY_MONO_SRC_COPY_BLT
 0x12300f10:      0x00020000:    dword 1
 0x12300f14:      0x00000000:    dword 2
 0x12300f18:      0x00000540:    dword 3
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300f1c:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x12300f20:      0x00000008:    vertex count
 0x12300f24:      0x0000002a:    start vertex
 0x12300f28:      0x00000052:    instance count
 0x12300f2c:      0x00000001:    start instance
 0x12300f30:      0x00000000:    index bias
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12300f38:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x12300f3c:      0x00000007:    vertex count
 0x12300f40:      0x00000028:    start vertex
@@ -1179,8 +1179,8 @@ Bad count in 3DPRIMITIVE
 0x12300f88:      0x00007a00: MI_NOOP
 0x12300f8c:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12300f90:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
 0x12300f94:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12300f98:      0x00000006:    dword 1
 0x12300f9c:      0x00000000:    dword 2
 0x12300fa0:      0x00006d80:    dword 3
@@ -1210,7 +1210,7 @@ Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12301000:      0x00000001: MI_NOOP
 0x12301004:      0x00000000: MI_NOOP
 0x12301008:      0x00000000: MI_NOOP
-Bad count in 3DSTATE_SF
+Bad length 7 in 3DSTATE_SF, expeted 20-20
 0x1230100c:      0x78130005: 3DSTATE_SF
 0x12301010:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
 0x12301014:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
@@ -1241,7 +1241,7 @@ Bad count in 3DSTATE_SF
 0x12301044:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
 0x12301048:      0x0240000c:    buffer 0: invalid, type 0x0040, src offset 0x000c bytes
 0x1230104c:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12301050:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x12301054:      0x00000008:    vertex count
 0x12301058:      0x00000052:    start vertex
@@ -1252,8 +1252,8 @@ Bad count in 3DPRIMITIVE
 0x12301070:      0x00007a00: MI_NOOP
 0x12301074:      0x782b0000: 3D UNKNOWN: 3d_965 opcode = 0x782b
 0x12301078:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_VS_STATE, expeted 5-5
 0x1230107c:      0x78150005: 3DSTATE_CONSTANT_VS_STATE
-Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x12301080:      0x00000006:    dword 1
 0x12301084:      0x00000000:    dword 2
 0x12301088:      0x00006c40:    dword 3
@@ -1287,7 +1287,7 @@ Bad count in 3DSTATE_CONSTANT_VS_STATE
 0x123010f8:      0x00000000: MI_NOOP
 0x123010fc:      0x00000000: MI_NOOP
 0x12301100:      0x00000000: MI_NOOP
-Bad count in 3DSTATE_SF
+Bad length 7 in 3DSTATE_SF, expeted 20-20
 0x12301104:      0x78130005: 3DSTATE_SF
 0x12301108:      0x00003403:    Attrib Out 0, Attrib Swizzle disable, VUE read length 6, VUE read offset 0
 0x1230110c:      0x62000000:    Legacy Global DepthBias disable, FrontFace fill 0, BF fill 0, VP transform disable, FrontWinding_CW
@@ -1308,7 +1308,7 @@ Bad count in 3DSTATE_SF
 0x12301148:      0x00000000:    Const Interp Enable
 0x1230114c:      0x00000000:    Attrib 7-0 WrapShortest Enable
 0x12301150:      0x00000000:    Attrib 15-8 WrapShortest Enable
-Bad count in 3DSTATE_WM
+Bad length 3 in 3DSTATE_WM, expeted 9-9
 0x12301120:      0x78140001: 3DSTATE_WM
 0x12301124:      0xa0000840:    kernel start pointer 0
 0x12301128:      0x00000000:    SPF=0, VME=0, Sampler Count 0, Binding table count 0
@@ -1322,8 +1322,8 @@ Bad count in 3DSTATE_WM
 0x12301130:      0x00007a00: MI_NOOP
 0x12301134:      0x782f0000: 3D UNKNOWN: 3d_965 opcode = 0x782f
 0x12301138:      0x00000000: MI_NOOP
+Bad length 7 in 3DSTATE_CONSTANT_PS_STATE, expeted 5-5
 0x1230113c:      0x78170005: 3DSTATE_CONSTANT_PS_STATE
-Bad count in 3DSTATE_CONSTANT_PS_STATE
 0x12301140:      0x00000000:    dword 1
 0x12301144:      0x00000000:    dword 2
 0x12301148:      0x00000000:    dword 3
@@ -1339,7 +1339,7 @@ Bad count in XY_MONO_SRC_COPY_BLT
 0x1230116c:      0x00060000:    dword 1
 0x12301170:      0x00000000:    dword 2
 0x12301174:      0x00000940:    dword 3
-Bad count in 3DPRIMITIVE
+Bad length 7 in 3DPRIMITIVE, expeted 6-6
 0x12301178:      0x7b000005: 3DPRIMITIVE: fail sequential
 0x1230117c:      0x00000008:    vertex count
 0x12301180:      0x00000016:    start vertex
