@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/range/range.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/selection_model.h"
@@ -70,7 +70,11 @@ const SkColor kCursorColor = SK_ColorBLACK;
 struct UI_EXPORT StyleRange {
   StyleRange();
 
-  Font font;
+  // TODO(asvitkine): Add RenderText support for font weight. Add a |bold| style
+  // flag here, to be handled in RenderText's layout phase. For example, in
+  // RenderTextLinux, generate the new font description with font weight style
+  // option, create a Pango attribute from it, and append the attribute to
+  // layout.
   SkColor foreground;
   bool strike;
   bool underline;
@@ -104,6 +108,11 @@ class UI_EXPORT RenderText {
 
   const string16& text() const { return text_; }
   void SetText(const string16& text);
+
+  const FontList& font_list() const { return font_list_; }
+  void SetFontList(const FontList& font_list);
+  // Get the first font in |font_list_|.
+  const Font& GetFont() const;
 
   const SelectionModel& selection_model() const { return selection_model_; }
 
@@ -188,12 +197,12 @@ class UI_EXPORT RenderText {
   virtual base::i18n::TextDirection GetTextDirection();
 
   // Get the width of the entire string.
-  virtual int GetStringWidth();
+  virtual int GetStringWidth() = 0;
 
-  virtual void Draw(Canvas* canvas);
+  void Draw(Canvas* canvas);
 
   // Gets the SelectionModel from a visual point in local coordinates.
-  virtual SelectionModel FindCursorPosition(const Point& point);
+  virtual SelectionModel FindCursorPosition(const Point& point) = 0;
 
   // Get the visual bounds of a cursor at |selection|. These bounds typically
   // represent a vertical line, but if |insert_mode| is true they contain the
@@ -317,6 +326,9 @@ class UI_EXPORT RenderText {
 
   // Logical UTF-16 string data to be drawn.
   string16 text_;
+
+  // A list of fonts used to render |text_|.
+  FontList font_list_;
 
   // Logical selection range and visual cursor position.
   SelectionModel selection_model_;

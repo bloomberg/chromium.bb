@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,8 +27,6 @@ TEST_F(RenderTextTest, DefaultStyle) {
   render_text->SetText(ASCIIToUTF16("abc"));
   EXPECT_EQ(1U, render_text->style_ranges().size());
   StyleRange style;
-  EXPECT_EQ(style.font.GetFontName(),
-            render_text->style_ranges()[0].font.GetFontName());
   EXPECT_EQ(style.foreground, render_text->style_ranges()[0].foreground);
   EXPECT_EQ(ui::Range(0, 3), render_text->style_ranges()[0].range);
   EXPECT_EQ(style.strike, render_text->style_ranges()[0].strike);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <pango/pangocairo.h>
 #include <algorithm>
+#include <string>
 #include <vector>
 
 #include "base/debug/trace_event.h"
@@ -242,10 +243,10 @@ void RenderTextLinux::EnsureLayout() {
     cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
 
     layout_ = pango_cairo_create_layout(cr);
-    SetupPangoLayout(
+    SetupPangoLayoutWithFontDescription(
         layout_,
         text(),
-        default_style().font,
+        font_list().GetFontDescriptionString(),
         display_rect().width(),
         base::i18n::GetFirstStrongCharacterDirection(text()),
         CanvasSkia::DefaultCanvasTextAlignment());
@@ -257,7 +258,6 @@ void RenderTextLinux::EnsureLayout() {
     // TODO(xji): If RenderText will be used for displaying purpose, such as
     // label, we will need to remove the single-line-mode setting.
     pango_layout_set_single_paragraph_mode(layout_, true);
-    SetupPangoAttributes(layout_);
 
     current_line_ = pango_layout_get_line_readonly(layout_, 0);
     pango_layout_line_ref(current_line_);
@@ -646,47 +646,6 @@ void RenderTextLinux::ResetLayout() {
     selection_visual_bounds_.clear();
   layout_text_ = NULL;
   layout_text_len_ = 0;
-}
-
-void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
-  PangoAttrList* attrs = pango_attr_list_new();
-
-  PlatformFont* default_platform_font = default_style().font.platform_font();
-
-  PangoAttribute* pango_attr;
-  for (StyleRanges::const_iterator i = style_ranges().begin();
-       i < style_ranges().end(); ++i) {
-    size_t start = std::min(i->range.start(), text().length());
-    size_t end = std::min(i->range.end(), text().length());
-    if (start >= end)
-      continue;
-
-    const Font& font = i->font;
-    // In Pango, different fonts means different runs, and it breaks Arabic
-    // shaping acorss run boundaries. So, set font only when it is different
-    // from the default font.
-    // TODO(xji): we'll eventually need to split up StyleRange into components
-    // (ColorRange, FontRange, etc.) so that we can combine adjacent ranges
-    // with the same Fonts (to avoid unnecessarily splitting up runs)
-    if (font.platform_font() != default_platform_font) {
-      PangoFontDescription* desc = font.GetNativeFont();
-      pango_attr = pango_attr_font_desc_new(desc);
-      AppendPangoAttribute(start, end, pango_attr, attrs);
-      pango_font_description_free(desc);
-    }
-  }
-
-  pango_layout_set_attributes(layout, attrs);
-  pango_attr_list_unref(attrs);
-}
-
-void RenderTextLinux::AppendPangoAttribute(size_t start,
-                                           size_t end,
-                                           PangoAttribute* pango_attr,
-                                           PangoAttrList* attrs) {
-  pango_attr->start_index = Utf16IndexToUtf8Index(start);
-  pango_attr->end_index = Utf16IndexToUtf8Index(end);
-  pango_attr_list_insert(attrs, pango_attr);
 }
 
 // TODO(xji): Keep a vector of runs to avoid using a singly-linked list.

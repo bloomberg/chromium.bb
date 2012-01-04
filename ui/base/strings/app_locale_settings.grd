@@ -192,7 +192,7 @@
       <if expr="pp_ifdef('chromeos')">
         <!-- The font name like: 'Font Name, 10' -->
         <message name="IDS_UI_FONT_FAMILY_CROS" use_name_for_id="true">
-          default
+          Chrome Droid Sans,Droid Sans Fallback,sans-serif, 13px
         </message>
       </if>
     </messages>

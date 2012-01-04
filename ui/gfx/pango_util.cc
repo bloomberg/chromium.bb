@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,12 +169,12 @@ void DrawTextOntoCairoSurface(cairo_t* cr,
 }
 
 // Pass a width greater than 0 to force wrapping and eliding.
-void SetupPangoLayout(PangoLayout* layout,
-                      const string16& text,
-                      const Font& font,
-                      int width,
-                      base::i18n::TextDirection text_direction,
-                      int flags) {
+static void SetupPangoLayoutWithoutFont(
+    PangoLayout* layout,
+    const string16& text,
+    int width,
+    base::i18n::TextDirection text_direction,
+    int flags) {
   cairo_font_options_t* cairo_font_options = GetCairoFontOptions();
   // This needs to be done early on; it has no effect when called just before
   // pango_cairo_show_layout().
@@ -221,10 +221,6 @@ void SetupPangoLayout(PangoLayout* layout,
                                        resolution);
   }
 
-  PangoFontDescription* desc = font.GetNativeFont();
-  pango_layout_set_font_description(layout, desc);
-  pango_font_description_free(desc);
-
   // Set text and accelerator character if needed.
   if (flags & Canvas::SHOW_PREFIX) {
     // Escape the text string to be used as markup.
@@ -252,6 +248,34 @@ void SetupPangoLayout(PangoLayout* layout,
 
     pango_layout_set_text(layout, utf8.data(), utf8.size());
   }
+}
+
+void SetupPangoLayout(PangoLayout* layout,
+                      const string16& text,
+                      const Font& font,
+                      int width,
+                      base::i18n::TextDirection text_direction,
+                      int flags) {
+  SetupPangoLayoutWithoutFont(layout, text, width, text_direction, flags);
+
+  PangoFontDescription* desc = font.GetNativeFont();
+  pango_layout_set_font_description(layout, desc);
+  pango_font_description_free(desc);
+}
+
+void SetupPangoLayoutWithFontDescription(
+    PangoLayout* layout,
+    const string16& text,
+    const std::string& font_description,
+    int width,
+    base::i18n::TextDirection text_direction,
+    int flags) {
+  SetupPangoLayoutWithoutFont(layout, text, width, text_direction, flags);
+
+  PangoFontDescription* desc = pango_font_description_from_string(
+      font_description.c_str());
+  pango_layout_set_font_description(layout, desc);
+  pango_font_description_free(desc);
 }
 
 void AdjustTextRectBasedOnLayout(PangoLayout* layout,

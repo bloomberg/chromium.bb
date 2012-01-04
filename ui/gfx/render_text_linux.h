@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,15 +77,6 @@ class RenderTextLinux : public RenderText {
 
   // Unref |layout_| and |pango_line_|. Set them to NULL.
   void ResetLayout();
-
-  // Setup pango attribute: foreground, background, font, strike.
-  void SetupPangoAttributes(PangoLayout* layout);
-
-  // Append one pango attribute |pango_attr| into pango attribute list |attrs|.
-  void AppendPangoAttribute(size_t start,
-                            size_t end,
-                            PangoAttribute* pango_attr,
-                            PangoAttrList* attrs);
 
   // Returns |run|'s visually previous run.
   // The complexity is O(n) since it is a single-linked list.

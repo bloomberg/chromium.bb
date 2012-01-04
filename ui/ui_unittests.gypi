@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -75,6 +75,7 @@
         'gfx/color_analysis_unittest.cc',
         'gfx/color_utils_unittest.cc',
         'gfx/font_unittest.cc',
+        'gfx/font_list_unittest.cc',
         'gfx/image/image_mac_unittest.mm',
         'gfx/image/image_unittest.cc',
         'gfx/image/image_unittest_util.h',
