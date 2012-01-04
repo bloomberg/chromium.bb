@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,6 +96,8 @@ DownloadManagerImpl::DownloadManagerImpl(
 
 DownloadManagerImpl::~DownloadManagerImpl() {
   DCHECK(!shutdown_needed_);
+  if (status_updater_.get() != NULL)
+    status_updater_->RemoveDelegate(this);
 }
 
 DownloadId DownloadManagerImpl::GetNextId() {
@@ -169,17 +171,12 @@ void DownloadManagerImpl::Shutdown() {
   history_downloads_.clear();
   STLDeleteElements(&downloads_to_delete);
 
-  // We'll have nothing more to report to the observers after this point.
-  observers_.Clear();
-
   DCHECK(save_page_downloads_.empty());
 
   file_manager_ = NULL;
   delegate_->Shutdown();
 
-  if (status_updater_)
-    status_updater_->RemoveDelegate(this);
-  status_updater_.reset();
+  shutdown_needed_ = false;
 }
 
 void DownloadManagerImpl::GetTemporaryDownloads(

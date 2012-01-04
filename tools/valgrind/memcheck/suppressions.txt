@@ -2343,6 +2343,13 @@
    fun:_ZN11webkit_glue16WebURLLoaderImpl7Context18OnReceivedResponseERKNS_20ResourceResponseInfoEb
 }
 {
+   bug_58449
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN11ProfileImpl18GetDownloadManagerEv
+}
+{
    bug_58546
    Memcheck:Leak
    fun:_Znw*
@@ -3922,6 +3929,14 @@
    fun:_ZN*DownloadManagerTest_*
 }
 {
+   bug_93006b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15DownloadManager4InitEP7Profile
+   fun:_ZN19DownloadManagerTestC2Ev
+   fun:_ZN*DownloadManagerTest_*
+}
+{
    bug_93006c
    Memcheck:Leak
    fun:_Znw*
@@ -4676,6 +4691,42 @@
    fun:_ZN8SkCanvas19updateDeviceCMCacheEv
    fun:_ZN10SkDrawIterC1EP8SkCanvasb
    fun:_ZN8SkCanvas8draw*ERK6Sk*RK7SkPaint
+}
+{
+   bug_102255
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15DownloadService18GetDownloadManagerEv
+   fun:_ZN29ExtensionDownloadsEventRouterC*
+   fun:_ZN16ExtensionService16InitEventRoutersEv
+   fun:_ZN16ExtensionService7ObserveEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
+   ...
+   fun:_ZN23NotificationServiceImpl6NotifyEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
+   fun:_ZN14ProfileManager16OnImportFinishedEP7Profile
+   fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
+}
+{
+   bug_102255b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15DownloadService18GetDownloadManagerEv
+   fun:_ZN11DownloadsUIC1EPN7content11WebContentsE
+   fun:_ZN12_GLOBAL__N_18NewWebUII11DownloadsUIEEP11ChromeWebUIP11TabContentsRK4GURL
+   fun:_ZNK18ChromeWebUIFactory17CreateWebUIForURLEP11TabContentsRK4GURL
+   fun:_ZNK22TestChromeWebUIFactory17CreateWebUIForURLEP11TabContentsRK4GURL
+   fun:_ZN11TabContents27CreateWebUIForRenderManagerERK4GURL
+   fun:_ZN21RenderViewHostManager30UpdateRendererStateForNavigateERKN7content19NavigationEntryImplE
+   fun:_ZN21RenderViewHostManager8NavigateERKN7content19NavigationEntryImplE
+   ...
+   fun:_ZN24NavigationControllerImpl9LoadEntryEPN7content19NavigationEntryImplE
+   fun:_ZN24NavigationControllerImpl7LoadURLERK4GURLRKN7content8ReferrerENS3_14PageTransitionERKSs
+   fun:_ZN12_GLOBAL__N_117LoadURLInContentsEPN7content11WebContentsERK4GURLPN7browser14NavigateParamsERKSs
+   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
+   fun:_ZN7Browser30ShowSingletonTabOverwritingNTPERKN7browser14NavigateParamsE
+   fun:_ZN7Browser16ShowDownloadsTabEv
+   fun:_ZN7Browser29ExecuteCommandWithDispositionEi21WindowOpenDisposition
+   fun:_ZN7Browser14ExecuteCommandEi
+   fun:_ZN25TestingAutomationProvider21ExecuteBrowserCommandEiiPN3IPC7MessageE
 }
 {
    bug_102257
