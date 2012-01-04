@@ -1604,28 +1604,6 @@
    fun:chromeos::OncNetworkParserTest_TestCreateNetworkWifi*_Test::TestBody
 }
 {
-   bug_100146
-   Heapcheck:Leak
-   fun:base::internal::WeakReferenceOwner::GetRef
-   fun:base::SupportsWeakPtr::AsWeakPtr
-   fun:Iterator
-   fun:DownloadManager::Shutdown
-   fun:DownloadService::Shutdown
-   fun:ProfileKeyedServiceFactory::ProfileShutdown
-   fun:ProfileDependencyManager::DestroyProfileServices
-   fun:~OffTheRecordProfileImpl
-   fun:~scoped_ptr
-   fun:~ProfileImpl
-   fun:~scoped_ptr
-   fun:~ProfileInfo
-   ...
-   fun:~map
-   fun:~ProfileManager
-   fun:~ProfileManagerWithoutInit
-   fun:scoped_ptr::reset
-   fun:ProfileManagerTest::TearDown
-}
-{
    bug_100608
    Heapcheck:Leak
    ...

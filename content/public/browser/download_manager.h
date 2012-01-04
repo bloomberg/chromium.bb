@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -57,8 +57,7 @@ class WebContents;
 
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManager
-    : public base::RefCountedThreadSafe<
-          DownloadManager, content::BrowserThread::DeleteOnUIThread> {
+    : public base::RefCountedThreadSafe<DownloadManager> {
  public:
   virtual ~DownloadManager() {}
 
