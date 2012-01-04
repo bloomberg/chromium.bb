@@ -462,6 +462,10 @@
       # crbug.com/98681
       '-nacl_sdk.NaClSDKTest.testNaClSDK',
       '-nacl_sdk.NaClSDKTest.testVerifyPrereleaseGallery',
+      # crbug.com/109148
+      '-extensions.ExtensionsTest.testTriggerBrowserAction',
+      '-extensions.ExtensionsTest.testTriggerPageAction',
+      '-extensions.ExtensionsTest.testTriggerPageActionWithPopup',
     ],
 
     'win': [
