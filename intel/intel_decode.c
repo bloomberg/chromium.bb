@@ -2707,7 +2707,7 @@ static int
 decode_3d_965(struct drm_intel_decode *ctx)
 {
 	uint32_t opcode;
-	unsigned int idx, len;
+	unsigned int len;
 	unsigned int i, j, sba_len;
 	const char *desc1 = NULL;
 	uint32_t *data = ctx->data;
@@ -2715,62 +2715,83 @@ decode_3d_965(struct drm_intel_decode *ctx)
 
 	struct {
 		uint32_t opcode;
+		uint32_t len_mask;
 		int unsigned min_len;
 		int unsigned max_len;
 		const char *name;
 		int gen;
 		int (*func)(struct drm_intel_decode *ctx);
 	} opcodes_3d[] = {
-		{ 0x6000, 3, 3, "URB_FENCE" },
-		{ 0x6001, 2, 2, "CS_URB_STATE" },
-		{ 0x6002, 2, 2, "CONSTANT_BUFFER" },
-		{ 0x6101, 6, 6, "STATE_BASE_ADDRESS" },
-		{ 0x6102, 2, 2, "STATE_SIP" },
-		{ 0x6104, 1, 1, "3DSTATE_PIPELINE_SELECT" },
-		{ 0x680b, 1, 1, "3DSTATE_VF_STATISTICS" },
-		{ 0x6904, 1, 1, "3DSTATE_PIPELINE_SELECT" },
-		{ 0x7800, 7, 7, "3DSTATE_PIPELINED_POINTERS" },
-		{ 0x7801, 6, 6, "3DSTATE_BINDING_TABLE_POINTERS" },
-		{ 0x7808, 5, 257, "3DSTATE_VERTEX_BUFFERS" },
-		{ 0x7809, 3, 256, "3DSTATE_VERTEX_ELEMENTS" },
-		{ 0x780a, 3, 3, "3DSTATE_INDEX_BUFFER" },
-		{ 0x780b, 1, 1, "3DSTATE_VF_STATISTICS" },
-		{ 0x7900, 4, 4, "3DSTATE_DRAWING_RECTANGLE" },
-		{ 0x7901, 5, 5, "3DSTATE_CONSTANT_COLOR" },
-		{ 0x7905, 5, 7, "3DSTATE_DEPTH_BUFFER" },
-		{ 0x7906, 2, 2, "3DSTATE_POLY_STIPPLE_OFFSET" },
-		{ 0x7907, 33, 33, "3DSTATE_POLY_STIPPLE_PATTERN" },
-		{ 0x7908, 3, 3, "3DSTATE_LINE_STIPPLE" },
-		{ 0x7909, 2, 2, "3DSTATE_GLOBAL_DEPTH_OFFSET_CLAMP" },
-		{ 0x7909, 2, 2, "3DSTATE_CLEAR_PARAMS" },
-		{ 0x790a, 3, 3, "3DSTATE_AA_LINE_PARAMETERS" },
-		{ 0x790b, 4, 4, "3DSTATE_GS_SVB_INDEX" },
-		{ 0x790d, 3, 3, "3DSTATE_MULTISAMPLE", 6 },
-		{ 0x790d, 4, 4, "3DSTATE_MULTISAMPLE", 7 },
-		{ 0x7910, 2, 2, "3DSTATE_CLEAR_PARAMS" },
-		{ 0x7b00, 6, 6, "3DPRIMITIVE" },
-		{ 0x7802, 4, 4, "3DSTATE_SAMPLER_STATE_POINTERS" },
-		{ 0x7805, 3, 3, "3DSTATE_URB" },
-		{ 0x780d, 4, 4, "3DSTATE_VIEWPORT_STATE_POINTERS" },
-		{ 0x780e, 4, 4, "3DSTATE_CC_STATE_POINTERS" },
-		{ 0x780f, 2, 2, "3DSTATE_SCISSOR_STATE_POINTERS" },
-		{ 0x7810, 6, 6, "3DSTATE_VS_STATE" },
-		{ 0x7811, 7, 7, "3DSTATE_GS_STATE" },
-		{ 0x7812, 4, 4, "3DSTATE_CLIP_STATE" },
-		{ 0x7813, 20, 20, "3DSTATE_SF_STATE" },
-		{ 0x7814, 9, 9, "3DSTATE_WM_STATE" },
-		{ 0x7815, 5, 5, "3DSTATE_CONSTANT_VS_STATE" },
-		{ 0x7816, 5, 5, "3DSTATE_CONSTANT_GS_STATE" },
-		{ 0x7817, 5, 5, "3DSTATE_CONSTANT_PS_STATE" },
-		{ 0x7818, 2, 2, "3DSTATE_SAMPLE_MASK"},
-	}, *opcode_3d;
-
-	len = (data[0] & 0x0000ffff) + 2;
+		{ 0x6000, 0x00ff, 3, 3, "URB_FENCE" },
+		{ 0x6001, 0xffff, 2, 2, "CS_URB_STATE" },
+		{ 0x6002, 0x00ff, 2, 2, "CONSTANT_BUFFER" },
+		{ 0x6101, 0xffff, 6, 6, "STATE_BASE_ADDRESS" },
+		{ 0x6102, 0xffff, 2, 2, "STATE_SIP" },
+		{ 0x6104, 0xffff, 1, 1, "3DSTATE_PIPELINE_SELECT" },
+		{ 0x680b, 0xffff, 1, 1, "3DSTATE_VF_STATISTICS" },
+		{ 0x6904, 0xffff, 1, 1, "3DSTATE_PIPELINE_SELECT" },
+		{ 0x7800, 0xffff, 7, 7, "3DSTATE_PIPELINED_POINTERS" },
+		{ 0x7801, 0x00ff, 6, 6, "3DSTATE_BINDING_TABLE_POINTERS" },
+		{ 0x7802, 0x00ff, 4, 4, "3DSTATE_SAMPLER_STATE_POINTERS" },
+		{ 0x7805, 0x00ff, 3, 3, "3DSTATE_URB" },
+		{ 0x7808, 0x00ff, 5, 257, "3DSTATE_VERTEX_BUFFERS" },
+		{ 0x7809, 0x00ff, 3, 256, "3DSTATE_VERTEX_ELEMENTS" },
+		{ 0x780a, 0x00ff, 3, 3, "3DSTATE_INDEX_BUFFER" },
+		{ 0x780b, 0xffff, 1, 1, "3DSTATE_VF_STATISTICS" },
+		{ 0x780d, 0x00ff, 4, 4, "3DSTATE_VIEWPORT_STATE_POINTERS" },
+		{ 0x780e, 0xffff, 4, 4, "3DSTATE_CC_STATE_POINTERS" },
+		{ 0x780f, 0x00ff, 2, 2, "3DSTATE_SCISSOR_POINTERS" },
+		{ 0x7810, 0x00ff, 6, 6, "3DSTATE_VS" },
+		{ 0x7811, 0x00ff, 7, 7, "3DSTATE_GS" },
+		{ 0x7812, 0x00ff, 4, 4, "3DSTATE_CLIP" },
+		{ 0x7813, 0x00ff, 20, 20, "3DSTATE_SF" },
+		{ 0x7814, 0x00ff, 9, 9, "3DSTATE_WM" },
+		{ 0x7815, 0x00ff, 5, 5, "3DSTATE_CONSTANT_VS_STATE" },
+		{ 0x7816, 0x00ff, 5, 5, "3DSTATE_CONSTANT_GS_STATE" },
+		{ 0x7817, 0x00ff, 5, 5, "3DSTATE_CONSTANT_PS_STATE" },
+		{ 0x7818, 0xffff, 2, 2, "3DSTATE_SAMPLE_MASK" },
+		{ 0x7900, 0xffff, 4, 4, "3DSTATE_DRAWING_RECTANGLE" },
+		{ 0x7901, 0xffff, 5, 5, "3DSTATE_CONSTANT_COLOR" },
+		{ 0x7905, 0xffff, 5, 7, "3DSTATE_DEPTH_BUFFER" },
+		{ 0x7906, 0xffff, 2, 2, "3DSTATE_POLY_STIPPLE_OFFSET" },
+		{ 0x7907, 0xffff, 33, 33, "3DSTATE_POLY_STIPPLE_PATTERN" },
+		{ 0x7908, 0xffff, 3, 3, "3DSTATE_LINE_STIPPLE" },
+		{ 0x7909, 0xffff, 2, 2, "3DSTATE_GLOBAL_DEPTH_OFFSET_CLAMP" },
+		{ 0x7909, 0xffff, 2, 2, "3DSTATE_CLEAR_PARAMS" },
+		{ 0x790a, 0xffff, 3, 3, "3DSTATE_AA_LINE_PARAMETERS" },
+		{ 0x790b, 0xffff, 4, 4, "3DSTATE_GS_SVB_INDEX" },
+		{ 0x790d, 0xffff, 3, 3, "3DSTATE_MULTISAMPLE", 6 },
+		{ 0x790d, 0xffff, 4, 4, "3DSTATE_MULTISAMPLE", 7 },
+		{ 0x7910, 0xffff, 2, 2, "3DSTATE_CLEAR_PARAMS" },
+		{ 0x7a00, 0x00ff, 4, 6, "PIPE_CONTROL" },
+		{ 0x7b00, 0x00ff, 6, 6, "3DPRIMITIVE" },
+	}, *opcode_3d = NULL;
 
 	opcode = (data[0] & 0xffff0000) >> 16;
+
+	for (i = 0; i < ARRAY_SIZE(opcodes_3d); i++) {
+		if (opcode != opcodes_3d[i].opcode)
+			continue;
+
+		/* If it's marked as not our gen, skip. */
+		if (opcodes_3d[i].gen && opcodes_3d[i].gen != ctx->gen)
+			continue;
+
+		opcode_3d = &opcodes_3d[i];
+		break;
+	}
+
+	if (opcode_3d) {
+		if (opcode_3d->max_len == 1)
+			len = 1;
+		else
+			len = (data[0] & opcode_3d->len_mask) + 2;
+	} else {
+		len = (data[0] & 0x0000ffff) + 2;
+	}
+
 	switch (opcode) {
 	case 0x6000:
-		len = (data[0] & 0x000000ff) + 2;
 		return i965_decode_urb_fence(ctx, len);
 	case 0x6001:
 		instr_out(ctx, 0, "CS_URB_STATE\n");
@@ -2780,7 +2801,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 			  (((data[1] >> 4) & 0x1f) + 1) * 64, data[1] & 0x7);
 		return len;
 	case 0x6002:
-		len = (data[0] & 0x000000ff) + 2;
 		instr_out(ctx, 0, "CONSTANT_BUFFER: %s\n",
 			  (data[0] >> 8) & 1 ? "valid" : "invalid");
 		instr_out(ctx, 1,
@@ -2831,7 +2851,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		instr_out(ctx, 6, "CC state\n");
 		return len;
 	case 0x7801:
-		len = (data[0] & 0x000000ff) + 2;
 		if (len != 6 && len != 4)
 			fprintf(out,
 				"Bad count in 3DSTATE_BINDING_TABLE_POINTERS\n");
@@ -2857,7 +2876,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 
 		return len;
 	case 0x7802:
-		len = (data[0] & 0xff) + 2;
 		if (len != 4)
 			fprintf(out,
 				"Bad count in 3DSTATE_SAMPLER_STATE_POINTERS\n");
@@ -2871,7 +2889,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		instr_out(ctx, 3, "WM sampler state\n");
 		return len;
 	case 0x7805:
-		len = (data[0] & 0xff) + 2;
 		if (len != 3)
 			fprintf(out, "Bad count in 3DSTATE_URB\n");
 		instr_out(ctx, 0, "3DSTATE_URB\n");
@@ -2884,7 +2901,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x7808:
-		len = (data[0] & 0xff) + 2;
 		if ((len - 1) % 4 != 0)
 			fprintf(out, "Bad count in 3DSTATE_VERTEX_BUFFERS\n");
 		instr_out(ctx, 0, "3DSTATE_VERTEX_BUFFERS\n");
@@ -2910,7 +2926,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x7809:
-		len = (data[0] & 0xff) + 2;
 		if ((len + 1) % 2 != 0)
 			fprintf(out, "Bad count in 3DSTATE_VERTEX_ELEMENTS\n");
 		instr_out(ctx, 0, "3DSTATE_VERTEX_ELEMENTS\n");
@@ -2936,7 +2951,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x780d:
-		len = (data[0] & 0xff) + 2;
 		if (len != 4)
 			fprintf(out,
 				"Bad count in 3DSTATE_VIEWPORT_STATE_POINTERS\n");
@@ -2948,7 +2962,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x780a:
-		len = (data[0] & 0xff) + 2;
 		if (len != 3)
 			fprintf(out, "Bad count in 3DSTATE_INDEX_BUFFER\n");
 		instr_out(ctx, 0, "3DSTATE_INDEX_BUFFER\n");
@@ -2957,7 +2970,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x780e:
-		len = (data[0] & 0xff) + 2;
 		if (len != 4)
 			fprintf(out,
 				"Bad count in 3DSTATE_CC_STATE_POINTERS\n");
@@ -2969,7 +2981,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x780f:
-		len = (data[0] & 0xff) + 2;
 		if (len != 2)
 			fprintf(out, "Bad count in 3DSTATE_SCISSOR_POINTERS\n");
 		instr_out(ctx, 0, "3DSTATE_SCISSOR_POINTERS\n");
@@ -2977,7 +2988,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x7810:
-		len = (data[0] & 0xff) + 2;
 		if (len != 6)
 			fprintf(out, "Bad count in 3DSTATE_VS\n");
 		instr_out(ctx, 0, "3DSTATE_VS\n");
@@ -3000,7 +3010,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x7811:
-		len = (data[0] & 0xff) + 2;
 		if (len != 7)
 			fprintf(out, "Bad count in 3DSTATE_GS\n");
 		instr_out(ctx, 0, "3DSTATE_GS\n");
@@ -3028,7 +3037,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x7812:
-		len = (data[0] & 0xff) + 2;
 		if (len != 4)
 			fprintf(out, "Bad count in 3DSTATE_CLIP\n");
 		instr_out(ctx, 0, "3DSTATE_CLIP\n");
@@ -3059,7 +3067,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x7813:
-		len = (data[0] & 0xff) + 2;
 		if (len != 20)
 			fprintf(out, "Bad count in 3DSTATE_SF\n");
 		instr_out(ctx, 0, "3DSTATE_SF\n");
@@ -3123,7 +3130,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 
 	case 0x7814:
-		len = (data[0] & 0xff) + 2;
 		if (len != 9)
 			fprintf(out, "Bad count in 3DSTATE_WM\n");
 		instr_out(ctx, 0, "3DSTATE_WM\n");
@@ -3221,7 +3227,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 	case 0x7a00:
 		if (IS_GEN6(devid) || IS_GEN7(devid)) {
 			unsigned int i;
-			len = (data[0] & 0xff) + 2;
 			if (len != 4 && len != 5)
 				fprintf(out, "Bad count in PIPE_CONTROL\n");
 
@@ -3288,7 +3293,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 			}
 			return len;
 		} else {
-			len = (data[0] & 0xff) + 2;
 			if (len != 4)
 				fprintf(out, "Bad count in PIPE_CONTROL\n");
 
@@ -3319,7 +3323,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 			return len;
 		}
 	case 0x7b00:
-		len = (data[0] & 0xff) + 2;
 		if (len != 6)
 			fprintf(out, "Bad count in 3DPRIMITIVE\n");
 
@@ -3335,30 +3338,17 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		return len;
 	}
 
-	for (idx = 0; idx < ARRAY_SIZE(opcodes_3d); idx++) {
-		opcode_3d = &opcodes_3d[idx];
-
-		/* If it's marked as only for a specific gen, skip. */
-		if (opcode_3d->gen && opcode_3d->gen != ctx->gen)
-			continue;
-
-		if ((data[0] & 0xffff0000) >> 16 != opcode_3d->opcode)
-			continue;
-
+	if (opcode_3d) {
 		if (opcode_3d->func) {
 			return opcode_3d->func(ctx);
 		} else {
 			unsigned int i;
-			len = 1;
 
 			instr_out(ctx, 0, "%s\n", opcode_3d->name);
-			if (opcode_3d->max_len > 1) {
-				len = (data[0] & 0xff) + 2;
-				if (len < opcode_3d->min_len ||
-				    len > opcode_3d->max_len) {
-					fprintf(out, "Bad count in %s\n",
-						opcode_3d->name);
-				}
+			if (len < opcode_3d->min_len ||
+			    len > opcode_3d->max_len) {
+				fprintf(out, "Bad count in %s\n",
+					opcode_3d->name);
 			}
 
 			for (i = 1; i < len; i++) {
