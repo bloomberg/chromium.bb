@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -36,14 +36,15 @@ def IsEquivelent(intext, outtext):
     outwords = outline.split()
 
     if not inwords or not outwords: return False
-    if inwords[0] != outwords[0] or inwords[0] != '/*': return False
+    if inwords[0] != outwords[0] or inwords[0] not in ('/*', '*'): return False
 
     # Neither the year, nor the modified date need an exact match
     if inwords[1] == 'Copyright':
       if inwords[4:] == outwords[4:]: continue
-    elif inwords[1] == 'From':
-      if inwords[0:4] == outwords[0:4]:
-        continue
+    elif inwords[1] == 'From': # Un-wrapped modified date.
+      if inwords[0:4] == outwords[0:4]: continue
+    elif inwords[1] == 'modified': # Wrapped modified date.
+      if inwords[0:2] == outwords[0:2]: continue
     return False
   return True
 
@@ -173,4 +174,3 @@ if __name__ == '__main__':
   os.remove(filename)
   if not errors: InfoOut.Log('All tests pass.')
   sys.exit(errors)
-

@@ -1,9 +1,11 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From trusted/ppb_file_chooser_trusted.idl modified Tue Oct 11 11:43:26 2011. */
+/* From trusted/ppb_file_chooser_trusted.idl,
+ *   modified Wed Jan  4 09:12:36 2012.
+ */
 
 #ifndef PPAPI_C_TRUSTED_PPB_FILE_CHOOSER_TRUSTED_H_
 #define PPAPI_C_TRUSTED_PPB_FILE_CHOOSER_TRUSTED_H_

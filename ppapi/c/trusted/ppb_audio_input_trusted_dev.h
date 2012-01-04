@@ -1,9 +1,11 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From trusted/ppb_audio_input_trusted_dev.idl modified Mon Nov 21 12:37:35 2011. */
+/* From trusted/ppb_audio_input_trusted_dev.idl,
+ *   modified Wed Jan  4 09:11:42 2012.
+ */
 
 #ifndef PPAPI_C_TRUSTED_PPB_AUDIO_INPUT_TRUSTED_DEV_H_
 #define PPAPI_C_TRUSTED_PPB_AUDIO_INPUT_TRUSTED_DEV_H_

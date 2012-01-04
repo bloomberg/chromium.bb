@@ -1,9 +1,11 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From private/ppb_net_address_private.idl modified Wed Nov  9 12:53:35 2011. */
+/* From private/ppb_net_address_private.idl,
+ *   modified Wed Jan  4 09:10:03 2012.
+ */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NET_ADDRESS_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NET_ADDRESS_PRIVATE_H_

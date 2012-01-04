@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -130,9 +130,17 @@ class HGen(GeneratorByFile):
     assert(fileinfo.IsA('Comment'))
 
     out.Write('%s\n' % cgen.Copyright(cright_node))
-    out.Write('/* From %s modified %s. */\n\n'% (
-        filenode.GetProperty('NAME').replace(os.sep,'/'),
-        filenode.GetProperty('DATETIME')))
+
+    # Wrap the From ... modified ... comment if it would be >80 characters.
+    from_text = 'From %s' % (
+        filenode.GetProperty('NAME').replace(os.sep,'/'))
+    modified_text = 'modified %s.' % (
+        filenode.GetProperty('DATETIME'))
+    if len(from_text) + len(modified_text) < 74:
+      out.Write('/* %s %s */\n\n' % (from_text, modified_text))
+    else:
+      out.Write('/* %s,\n *   %s\n */\n\n' % (from_text, modified_text))
+
     out.Write('#ifndef %s\n#define %s\n\n' % (def_guard, def_guard))
     # Generate set of includes
 
