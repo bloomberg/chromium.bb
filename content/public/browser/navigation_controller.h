@@ -51,7 +51,7 @@ class NavigationController {
 
   // Disables checking for a repost and prompting the user. This is used during
   // testing.
-  static void DisablePromptOnRepost();
+  CONTENT_EXPORT static void DisablePromptOnRepost();
 
   virtual ~NavigationController() {}
 
