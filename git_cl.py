@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -446,8 +446,23 @@ or verify this branch is set up to track another (via the --track argument to
   def GetDescription(self, pretty=False):
     if not self.has_description:
       if self.GetIssue():
-        self.description = self.RpcServer().get_description(
-            int(self.GetIssue())).strip()
+        issue = int(self.GetIssue())
+        try:
+          self.description = self.RpcServer().get_description(issue).strip()
+        except urllib2.HTTPError, e:
+          if e.code == 404:
+            DieWithError(
+                ('\nWhile fetching the description for issue %d, received a '
+                 '404 (not found)\n'
+                 'error. It is likely that you deleted this '
+                 'issue on the server. If this is the\n'
+                 'case, please run\n\n'
+                 '    git cl issue 0\n\n'
+                 'to clear the association with the deleted issue. Then run '
+                 'this command again.') % issue)
+          else:
+            DieWithError(
+                '\nFailed to fetch issue description. HTTP error ' + e.code)
       self.has_description = True
     if pretty:
       wrapper = textwrap.TextWrapper()
