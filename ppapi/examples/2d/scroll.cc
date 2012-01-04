@@ -4,14 +4,14 @@
 
 #include <math.h>
 
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/paint_manager.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var.h"
-#include "ppapi/utility/completion_callback_factory.h"
-#include "ppapi/utility/graphics/paint_manager.h"
 
 static const int kSquareSpacing = 98;
 static const int kSquareSize = 5;

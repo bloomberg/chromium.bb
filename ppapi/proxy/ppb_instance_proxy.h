@@ -8,13 +8,13 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/ppb_instance_shared.h"
 #include "ppapi/thunk/ppb_instance_api.h"
-#include "ppapi/utility/completion_callback_factory.h"
 
 // Windows headers interfere with this file.
 #ifdef PostMessage

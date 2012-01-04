@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ppapi/utility/completion_callback_factory.h"
+#include "ppapi/cpp/completion_callback.h"
 
 #if defined(__native_client__)
 #include "ppapi/cpp/instance.h"

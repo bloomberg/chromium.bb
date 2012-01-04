@@ -10,7 +10,6 @@ include_rules = [
   "+ppapi/c",
   "+ppapi/cpp",
   "+ppapi/tests",
-  "+ppapi/utility",
 ]
 # checkdeps.py shouldn't check include paths for files in clang, which aren't
 # part of the chrome build.

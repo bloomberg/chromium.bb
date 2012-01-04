@@ -13,9 +13,9 @@
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/ppb_audio_config.h"
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
-#include "ppapi/utility/completion_callback_factory.h"
 
 struct PPB_AudioInput_Dev;
 

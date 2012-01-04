@@ -151,6 +151,11 @@
       'cpp/module_impl.h',
       'cpp/mouse_lock.cc',
       'cpp/mouse_lock.h',
+      'cpp/non_thread_safe_ref_count.h',
+      'cpp/paint_aggregator.cc',
+      'cpp/paint_aggregator.h',
+      'cpp/paint_manager.cc',
+      'cpp/paint_manager.h',
       'cpp/point.h',
       'cpp/rect.cc',
       'cpp/rect.h',
@@ -247,14 +252,6 @@
       'cpp/trusted/file_chooser_trusted.h',
       'cpp/trusted/file_io_trusted.cc',
       'cpp/trusted/file_io_trusted.h',
-
-      # Utility sources.
-      'utility/completion_callback_factory.h',
-      'utility/non_thread_safe_ref_count.h',
-      'utility/graphics/paint_aggregator.cc',
-      'utility/graphics/paint_aggregator.h',
-      'utility/graphics/paint_manager.cc',
-      'utility/graphics/paint_manager.h',
     ],
     #
     # Common Testing source for trusted and untrusted (NaCl) pugins.

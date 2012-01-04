@@ -14,7 +14,8 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/delayed_callback.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
-#include "ppapi/utility/completion_callback_factory.h"
+
+#include "ppapi/cpp/completion_callback.h"
 
 namespace plugin {
 

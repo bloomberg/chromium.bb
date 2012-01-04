@@ -11,7 +11,6 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/private/instance_private.h"
 #include "ppapi/cpp/private/var_private.h"
-#include "ppapi/utility/completion_callback_factory.h"
 
 class MyInstance : public pp::InstancePrivate {
  public:

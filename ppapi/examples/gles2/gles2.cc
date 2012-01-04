@@ -24,7 +24,6 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/examples/gles2/testdata.h"
 #include "ppapi/lib/gl/include/GLES2/gl2.h"
-#include "ppapi/utility/completion_callback_factory.h"
 
 // Use assert as a poor-man's CHECK, even in non-debug mode.
 // Since <assert.h> redefines assert on every inclusion (it doesn't use

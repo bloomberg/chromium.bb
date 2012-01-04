@@ -8,6 +8,7 @@
 
 #include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/ppb_input_event.h"
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"
@@ -17,7 +18,6 @@
 #include "ppapi/cpp/mouse_lock.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var.h"
-#include "ppapi/utility/completion_callback_factory.h"
 
 class MyInstance : public pp::Instance, public pp::MouseLock {
  public:

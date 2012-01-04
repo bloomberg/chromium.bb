@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_UTILITY_GRAPHICS_PAINT_AGGREGATOR_H_
-#define PPAPI_UTILITY_GRAPHICS_PAINT_AGGREGATOR_H_
+#ifndef PPAPI_CPP_PAINT_AGGREGATOR_H_
+#define PPAPI_CPP_PAINT_AGGREGATOR_H_
 
 #include <stddef.h>
 #include <vector>
@@ -171,4 +171,4 @@ class PaintAggregator {
 
 }  // namespace pp
 
-#endif  // PPAPI_UTILITY_PAINT_AGGREGATOR_H_
+#endif  // PPAPI_CPP_PAINT_AGGREGATOR_H_

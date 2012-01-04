@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_UTILITY_NON_THREAD_SAFE_REF_COUNT_H_
-#define PPAPI_UTILITY_NON_THREAD_SAFE_REF_COUNT_H_
+#ifndef PPAPI_CPP_NON_THREAD_SAFE_REF_COUNT_H_
+#define PPAPI_CPP_NON_THREAD_SAFE_REF_COUNT_H_
 
 #include "ppapi/cpp/core.h"
 #include "ppapi/cpp/logging.h"
@@ -57,4 +57,4 @@ class NonThreadSafeRefCount {
 
 }  // namespace pp
 
-#endif  // PPAPI_UTILITY_NON_THREAD_SAFE_REF_COUNT_H_
+#endif  // PPAPI_CPP_NON_THREAD_SAFE_REF_COUNT_H_

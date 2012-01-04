@@ -11,7 +11,6 @@
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
-#include "ppapi/utility/completion_callback_factory.h"
 
 namespace ppapi {
 
