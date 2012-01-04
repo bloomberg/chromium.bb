@@ -1681,6 +1681,7 @@ weston_input_device_init(struct weston_input_device *device,
 	wl_list_insert(ec->input_device_list.prev, &device->link);
 
 	device->selection_data_source = NULL;
+	wl_list_init(&device->selection_listener_list);
 }
 
 WL_EXPORT void

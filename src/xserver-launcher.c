@@ -81,6 +81,7 @@ struct weston_wm {
 	xcb_timestamp_t selection_timestamp;
 	int selection_property_set;
 	int flush_property_on_delete;
+	struct weston_selection_listener selection_listener;
 
 	struct {
 		xcb_atom_t		 wm_protocols;
@@ -446,22 +447,21 @@ weston_wm_get_incr_chunk(struct weston_wm *wm)
 	}
 }
 
-void
-weston_xserver_set_selection(struct weston_input_device *device)
+static void
+weston_wm_set_selection(struct weston_selection_listener *listener,
+			struct weston_input_device *device)
 {
-	struct weston_xserver *wxs = device->compositor->wxs;
-	struct weston_wm *wm = wxs->wm;
-	struct weston_data_source *source;
+	struct weston_wm *wm =
+		container_of(listener, struct weston_wm, selection_listener);
+	struct weston_data_source *source = device->selection_data_source;
 	const char **p, **end;
 	int has_text_plain = 0;
 
 	fprintf(stderr, "set selection\n");
 
-	source = device->selection_data_source;
 	p = source->mime_types.data;
 	end = (const char **)
 		((char *) source->mime_types.data + source->mime_types.size);
-
 	while (p < end) {
 		fprintf(stderr, "  %s\n", *p);
 		if (strcmp(*p, "text/plain") == 0 ||
@@ -1186,6 +1186,7 @@ wxs_wm_get_resources(struct weston_wm *wm)
 static struct weston_wm *
 weston_wm_create(struct weston_xserver *wxs)
 {
+	struct weston_input_device *device;
 	struct weston_wm *wm;
 	struct wl_event_loop *loop;
 	xcb_screen_iterator_t s;
@@ -1268,6 +1269,12 @@ weston_wm_create(struct weston_xserver *wxs)
 					  wm->atom.clipboard, mask);
 
 	xcb_flush(wm->conn);
+
+	device = (struct weston_input_device *) wxs->compositor->input_device;
+	wm->selection_listener.func = weston_wm_set_selection;
+	wl_list_insert(&device->selection_listener_list,
+		       &wm->selection_listener.link);
+
 	fprintf(stderr, "created wm\n");
 
 	return wm;
@@ -1280,6 +1287,7 @@ weston_wm_destroy(struct weston_wm *wm)
 	hash_table_destroy(wm->window_hash);
 	xcb_disconnect(wm->conn);
 	wl_event_source_remove(wm->source);
+	wl_list_remove(&wm->selection_listener.link);
 	free(wm);
 }
 

@@ -96,6 +96,12 @@ struct weston_output {
 	void (*destroy)(struct weston_output *output);
 };
 
+struct weston_selection_listener {
+	void (*func)(struct weston_selection_listener *listener,
+		     struct weston_input_device *device);
+	struct wl_list link;
+};
+
 struct weston_input_device {
 	struct wl_input_device input_device;
 	struct weston_compositor *compositor;
@@ -113,6 +119,7 @@ struct weston_input_device {
 	struct weston_data_source *selection_data_source;
 	struct wl_listener selection_data_source_listener;
 	struct wl_grab grab;
+	struct wl_list selection_listener_list;
 
 	uint32_t num_tp;
 	struct wl_surface *touch_focus;

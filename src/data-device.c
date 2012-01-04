@@ -317,6 +317,7 @@ weston_input_device_set_selection(struct weston_input_device *device,
 				struct weston_data_source *source, uint32_t time)
 {
 	struct wl_resource *data_device, *focus, *offer;
+	struct weston_selection_listener *listener, *next;
 
 	if (device->selection_data_source) {
 		device->selection_data_source->cancel(device->selection_data_source);
@@ -339,7 +340,9 @@ weston_input_device_set_selection(struct weston_input_device *device,
 		}
 	}
 
-	weston_xserver_set_selection(device);
+	wl_list_for_each_safe(listener, next,
+			      &device->selection_listener_list, link)
+		listener->func(listener, device);
 
 	device->selection_data_source_listener.func =
 		destroy_selection_data_source;
