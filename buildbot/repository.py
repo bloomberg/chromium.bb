@@ -16,7 +16,7 @@ import re
 import shutil
 import tempfile
 
-from chromite.buildbot import portage_utilities
+from chromite.buildbot import portage_utilities, configure_repo
 from chromite.lib import cros_build_lib as cros_lib
 
 # File that marks a buildroot as being used by a trybot
@@ -27,23 +27,6 @@ _DEFAULT_SYNC_JOBS = 4
 class SrcCheckOutException(Exception):
   """Exception gets thrown for failure to sync sources"""
   pass
-
-
-def FixExternalRepoPushUrls(buildroot):
-  """Set up SSH push for public repo's."""
-  shell_code = ('[ "${REPO_REMOTE}" = "cros" ] || exit 0; ' +
-                'git config "remote.${REPO_REMOTE}.pushurl" ' +
-                '"%(host)s/${REPO_PROJECT}"')
-  cros_lib.RunCommand(['repo', '--time', 'forall', '-c',
-                       shell_code % {'host': constants.GERRIT_SSH_URL},
-                      ], cwd=buildroot)
-
-def FixBrokenExistingRepos(buildroot):
-  """remove hardcoded insteadof urls people have litered in the builders"""
-
-  cros_lib.RunCommand(['repo', '--time', 'forall', '-c',
-    'git config --remove-section "url.%s" 2> /dev/null' %
-     constants.GERRIT_SSH_URL], cwd=buildroot, error_ok=True)
 
 
 def InARepoRepository(directory):
@@ -195,12 +178,12 @@ class RepoRepository(object):
         cros_lib.RunCommand(['repo', 'selfupdate'],
                              cwd=self.directory)
 
-      FixBrokenExistingRepos(self.directory)
+      configure_repo.FixBrokenExistingRepos(self.directory)
 
       cros_lib.OldRunCommand(['repo', '--time', 'sync', '--jobs', str(jobs)],
                              cwd=self.directory, num_retries=2)
 
-      FixExternalRepoPushUrls(self.directory)
+      configure_repo.FixExternalRepoPushUrls(self.directory)
 
     except cros_lib.RunCommandError, e:
       err_msg = 'Failed to sync sources %s' % e.message
