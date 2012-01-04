@@ -112,7 +112,9 @@ class TabRendererGtk : public ui::AnimationDelegate,
   // WebContents. If only the loading state was updated, the loading_only flag
   // should be specified. If other things change, set this flag to false to
   // update everything.
-  void UpdateData(content::WebContents* contents, bool app, bool loading_only);
+  virtual void UpdateData(content::WebContents* contents,
+                          bool app,
+                          bool loading_only);
 
   // Sets the blocked state of the tab.
   void SetBlocked(bool pinned);
