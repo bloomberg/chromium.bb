@@ -1,6 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include <algorithm>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -362,8 +364,8 @@ const TemplateURL* DefaultSearchProviderChange::SetDefaultSearchProvider(
 
   // Check if this provider already exists and add it otherwise.
   TemplateURLService::TemplateURLVector::const_iterator i =
-      find_if(urls.begin(), urls.end(),
-              TemplateURLIsSame(search_provider->get()));
+      std::find_if(urls.begin(), urls.end(),
+                   TemplateURLIsSame(search_provider->get()));
   if (i != urls.end()) {
     VLOG(1) << "Provider already exists";
     new_default_provider = *i;
