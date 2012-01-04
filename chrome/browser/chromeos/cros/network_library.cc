@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -783,7 +783,7 @@ bool VirtualNetwork::NeedMoreInfoToConnect() const {
 }
 
 std::string VirtualNetwork::GetProviderTypeString() const {
-  switch (this->provider_type_) {
+  switch (provider_type_) {
     case PROVIDER_TYPE_L2TP_IPSEC_PSK:
       return l10n_util::GetStringUTF8(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_PSK);
@@ -804,8 +804,13 @@ std::string VirtualNetwork::GetProviderTypeString() const {
 }
 
 void VirtualNetwork::SetCACertNSS(const std::string& ca_cert_nss) {
-  SetStringProperty(
-      flimflam::kL2tpIpsecCaCertNssProperty, ca_cert_nss, &ca_cert_nss_);
+  if (provider_type_ == PROVIDER_TYPE_OPEN_VPN) {
+    SetStringProperty(
+        flimflam::kOpenVPNCaCertNSSProperty, ca_cert_nss, &ca_cert_nss_);
+  } else {
+    SetStringProperty(
+        flimflam::kL2tpIpsecCaCertNssProperty, ca_cert_nss, &ca_cert_nss_);
+  }
 }
 
 void VirtualNetwork::SetL2TPIPsecPSKCredentials(
@@ -841,7 +846,6 @@ void VirtualNetwork::SetOpenVPNCredentials(
     const std::string& username,
     const std::string& user_passphrase,
     const std::string& otp) {
-  // TODO(kmixter): Are we missing setting the CaCert property?
   SetStringProperty(flimflam::kOpenVPNClientCertIdProperty,
                     client_cert_id, &client_cert_id_);
   SetStringProperty(flimflam::kOpenVPNUserProperty, username, &username_);
