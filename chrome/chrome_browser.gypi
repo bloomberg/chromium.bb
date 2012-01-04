@@ -2473,6 +2473,8 @@
         'browser/ui/app_modal_dialogs/message_box_handler.cc',
         'browser/ui/app_modal_dialogs/message_box_handler.h',
         'browser/ui/app_modal_dialogs/native_app_modal_dialog.h',
+        'browser/ui/auto_login_info_bar_delegate.cc',
+        'browser/ui/auto_login_info_bar_delegate.h',
         'browser/ui/auto_login_prompter.cc',
         'browser/ui/auto_login_prompter.h',
         'browser/ui/blocked_content/blocked_content_container.cc',
