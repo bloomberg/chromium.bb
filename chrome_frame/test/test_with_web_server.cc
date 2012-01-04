@@ -406,8 +406,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_NavigateURLRelative) {
 
 const wchar_t kNavigateSimpleObjectFocus[] = L"simple_object_focus.html";
 
-// Disabled, http://crbug.com/108508
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeIE_ObjectFocus) {
+TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_ObjectFocus) {
   SimpleBrowserTest(IE, kNavigateSimpleObjectFocus);
 }
 
@@ -556,8 +555,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabIE_CFInstallDismiss) {
 
 const wchar_t kInitializeHiddenPage[] = L"initialize_hidden.html";
 
-// Disabled, http://crbug.com/108508
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeIE_InitializeHidden) {
+TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_InitializeHidden) {
   SimpleBrowserTest(IE, kInitializeHiddenPage);
 }
 
