@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,13 @@
 #include "base/utf_string_conversions.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/views/events/event.h"
+#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/view.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -179,6 +182,7 @@ class DragDropControllerTest : public AuraShellTestBase {
     drag_drop_controller_.reset(new TestDragDropController);
     drag_drop_controller_->set_should_block_during_drag_drop(false);
     aura::client::SetDragDropClient(drag_drop_controller_.get());
+    views_delegate_.reset(new views::TestViewsDelegate);
   }
 
   void TearDown() OVERRIDE {
@@ -193,15 +197,16 @@ class DragDropControllerTest : public AuraShellTestBase {
 
  protected:
   scoped_ptr<TestDragDropController> drag_drop_controller_;
+  scoped_ptr<views::TestViewsDelegate> views_delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DragDropControllerTest);
 };
 
 TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
-  views::Widget* widget = CreateNewWidget();
+  scoped_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
-  AddViewToWidgetAndResize(widget, drag_view);
+  AddViewToWidgetAndResize(widget.get(), drag_view);
   gfx::Point point = gfx::Rect(drag_view->bounds()).CenterPoint();
   ui::OSExchangeData data;
   data.SetString(UTF8ToUTF16("I am being dragged"));
@@ -242,16 +247,15 @@ TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
   EXPECT_EQ(1, drag_view->num_drops_);
   EXPECT_EQ(0, drag_view->num_drag_exits_);
   EXPECT_TRUE(drag_view->drag_done_received_);
-  delete widget;
 }
 
 TEST_F(DragDropControllerTest, DragDropInMultipleViewsSingleWidgetTest) {
-  views::Widget* widget = CreateNewWidget();
+  scoped_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view1 = new DragTestView;
-  AddViewToWidgetAndResize(widget, drag_view1);
+  AddViewToWidgetAndResize(widget.get(), drag_view1);
   gfx::Point point = drag_view1->bounds().CenterPoint();
   DragTestView* drag_view2 = new DragTestView;
-  AddViewToWidgetAndResize(widget, drag_view2);
+  AddViewToWidgetAndResize(widget.get(), drag_view2);
 
   ui::OSExchangeData data;
   data.SetString(UTF8ToUTF16("I am being dragged"));
@@ -301,17 +305,16 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsSingleWidgetTest) {
   EXPECT_EQ(1, drag_view2->num_drops_);
   EXPECT_EQ(0, drag_view2->num_drag_exits_);
   EXPECT_FALSE(drag_view2->drag_done_received_);
-  delete widget;
 }
 
 TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
-  views::Widget* widget1 = CreateNewWidget();
+  scoped_ptr<views::Widget> widget1(CreateNewWidget());
   DragTestView* drag_view1 = new DragTestView;
-  AddViewToWidgetAndResize(widget1, drag_view1);
+  AddViewToWidgetAndResize(widget1.get(), drag_view1);
   gfx::Point point = drag_view1->bounds().CenterPoint();
-  views::Widget* widget2 = CreateNewWidget();
+  scoped_ptr<views::Widget> widget2(CreateNewWidget());
   DragTestView* drag_view2 = new DragTestView;
-  AddViewToWidgetAndResize(widget2, drag_view2);
+  AddViewToWidgetAndResize(widget2.get(), drag_view2);
   gfx::Rect widget1_bounds = widget1->GetClientAreaScreenBounds();
   gfx::Rect widget2_bounds = widget2->GetClientAreaScreenBounds();
   widget2->SetBounds(gfx::Rect(widget1_bounds.width(), 0,
@@ -365,14 +368,12 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
   EXPECT_EQ(1, drag_view2->num_drops_);
   EXPECT_EQ(0, drag_view2->num_drag_exits_);
   EXPECT_FALSE(drag_view2->drag_done_received_);
-  delete widget1;
-  delete widget2;
 }
 
 TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
-  views::Widget* widget = CreateNewWidget();
+  scoped_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
-  AddViewToWidgetAndResize(widget, drag_view);
+  AddViewToWidgetAndResize(widget.get(), drag_view);
   gfx::Point point = gfx::Rect(drag_view->bounds()).CenterPoint();
   ui::OSExchangeData data;
   data.SetString(UTF8ToUTF16("I am being dragged"));
@@ -425,7 +426,29 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
   EXPECT_EQ(0, drag_view->num_drops_);
   EXPECT_EQ(0, drag_view->num_drag_exits_);
   EXPECT_TRUE(drag_view->drag_done_received_);
-  delete widget;
+}
+
+TEST_F(DragDropControllerTest, DragCopiesDataToClipboardTest) {
+  scoped_ptr<views::Widget> widget(CreateNewWidget());
+  DragTestView* drag_view = new DragTestView;
+  AddViewToWidgetAndResize(widget.get(), drag_view);
+  gfx::Point point = gfx::Rect(drag_view->bounds()).CenterPoint();
+  ui::OSExchangeData data;
+  std::string data_str("I am being dragged");
+  data.SetString(ASCIIToUTF16(data_str));
+
+  aura::MouseEvent event(ui::ET_MOUSE_PRESSED, point, ui::EF_LEFT_MOUSE_BUTTON);
+  aura::RootWindow::GetInstance()->DispatchMouseEvent(&event);
+  aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, point,
+      ui::EF_LEFT_MOUSE_BUTTON);
+  aura::RootWindow::GetInstance()->DispatchMouseEvent(&drag_event);
+
+  ui::Clipboard* cb = views::ViewsDelegate::views_delegate->GetClipboard();
+  EXPECT_TRUE(cb->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
+      ui::Clipboard::BUFFER_STANDARD));
+  std::string result;
+  cb->ReadAsciiText(ui::Clipboard::BUFFER_STANDARD, &result);
+  EXPECT_EQ(data_str, result);
 }
 
 }  // namespace test

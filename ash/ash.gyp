@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -178,6 +178,8 @@
         'ash',
       ],
       'sources': [
+        '../ui/views/test/test_views_delegate.cc',
+        '../ui/views/test/test_views_delegate.h',
         'accelerators/accelerator_controller_unittest.cc',
         'drag_drop/drag_drop_controller_unittest.cc',
         'ime/input_method_event_filter_unittest.cc',

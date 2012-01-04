@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace ash {
@@ -58,6 +59,8 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
   gfx::Point location = RootWindow::GetInstance()->last_mouse_location();
   const ui::OSExchangeDataProviderAura& provider =
       static_cast<const ui::OSExchangeDataProviderAura&>(data.provider());
+  provider.WriteDataToClipboard(
+      views::ViewsDelegate::views_delegate->GetClipboard());
 
   drag_image_.reset(new DragImageView);
   drag_image_->SetImage(provider.drag_image());

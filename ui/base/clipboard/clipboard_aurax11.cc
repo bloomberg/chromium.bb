@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 namespace ui {
 
 namespace {
+const char kMimeTypeFilename[] = "chromium/filename";
 const char kMimeTypeBitmap[] = "image/bmp";
 const char kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
 
@@ -340,6 +341,17 @@ const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
 // static
 const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
   return GetPlainTextFormatType();
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetFilenameFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeFilename));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetFilenameWFormatType() {
+  return Clipboard::GetFilenameFormatType();
 }
 
 // static
