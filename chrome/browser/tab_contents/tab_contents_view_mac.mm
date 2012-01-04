@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -272,14 +272,16 @@ void TabContentsViewMac::TakeFocus(bool reverse) {
 void TabContentsViewMac::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
-  delegate_view_helper_.CreateNewWindowFromTabContents(
-      tab_contents_, route_id, params);
+  delegate_view_helper_.CreateNewWindow(tab_contents_, route_id, params);
 }
 
 void TabContentsViewMac::CreateNewWidget(
     int route_id, WebKit::WebPopupType popup_type) {
-  RenderWidgetHostView* widget_view = delegate_view_helper_.CreateNewWidget(
-      route_id, popup_type, tab_contents_->GetRenderProcessHost());
+  RenderWidgetHostView* widget_view =
+      delegate_view_helper_.CreateNewWidget(tab_contents_,
+                                            route_id,
+                                            false,
+                                            popup_type);
 
   // A RenderWidgetHostViewMac has lifetime scoped to the view. We'll retain it
   // to allow it to survive the trip without being hosted.
@@ -290,8 +292,10 @@ void TabContentsViewMac::CreateNewWidget(
 
 void TabContentsViewMac::CreateNewFullscreenWidget(int route_id) {
   RenderWidgetHostView* widget_view =
-      delegate_view_helper_.CreateNewFullscreenWidget(
-          route_id, tab_contents_->GetRenderProcessHost());
+      delegate_view_helper_.CreateNewWidget(tab_contents_,
+                                            route_id,
+                                            true,
+                                            WebKit::WebPopupTypeNone);
 
   // A RenderWidgetHostViewMac has lifetime scoped to the view. We'll retain it
   // to allow it to survive the trip without being hosted.
@@ -310,8 +314,11 @@ void TabContentsViewMac::ShowCreatedWindow(int route_id,
 
 void TabContentsViewMac::ShowCreatedWidget(
     int route_id, const gfx::Rect& initial_pos) {
-  RenderWidgetHostView* widget_host_view = delegate_view_helper_.
-      ShowCreatedWidget(tab_contents_, route_id, initial_pos);
+  RenderWidgetHostView* widget_host_view =
+      delegate_view_helper_.ShowCreatedWidget(tab_contents_,
+                                              route_id,
+                                              false,
+                                              initial_pos);
 
   // A RenderWidgetHostViewMac has lifetime scoped to the view. Now that it's
   // properly embedded (or purposefully ignored) we can release the retain we
@@ -322,8 +329,11 @@ void TabContentsViewMac::ShowCreatedWidget(
 }
 
 void TabContentsViewMac::ShowCreatedFullscreenWidget(int route_id) {
-  RenderWidgetHostView* widget_host_view = delegate_view_helper_.
-      ShowCreatedFullscreenWidget(tab_contents_, route_id);
+  RenderWidgetHostView* widget_host_view =
+      delegate_view_helper_.ShowCreatedWidget(tab_contents_,
+                                              route_id,
+                                              true,
+                                              gfx::Rect());
 
   // A RenderWidgetHostViewMac has lifetime scoped to the view. Now that it's
   // properly embedded (or purposely ignored) we can release the retain we took

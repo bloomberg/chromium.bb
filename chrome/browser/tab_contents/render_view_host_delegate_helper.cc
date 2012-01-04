@@ -15,7 +15,6 @@
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_widget_fullscreen_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance.h"
@@ -101,7 +100,7 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
                                            ASCIIToUTF16(extension->id()));
 }
 
-TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
+TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowImpl(
     int route_id,
     Profile* profile,
     SiteInstance* site,
@@ -154,26 +153,20 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
 }
 
 RenderWidgetHostView* RenderViewHostDelegateViewHelper::CreateNewWidget(
-    int route_id, WebKit::WebPopupType popup_type,
-    content::RenderProcessHost* process) {
+    WebContents* web_contents,
+    int route_id,
+    bool is_fullscreen,
+    WebKit::WebPopupType popup_type) {
+  content::RenderProcessHost* process = web_contents->GetRenderProcessHost();
   RenderWidgetHost* widget_host =
       new RenderWidgetHost(process, route_id);
   RenderWidgetHostView* widget_view =
       RenderWidgetHostView::CreateViewForWidget(widget_host);
-  // Popups should not get activated.
-  widget_view->set_popup_type(popup_type);
+  if (!is_fullscreen) {
+    // Popups should not get activated.
+    widget_view->set_popup_type(popup_type);
+  }
   // Save the created widget associated with the route so we can show it later.
-  pending_widget_views_[route_id] = widget_view;
-  return widget_view;
-}
-
-RenderWidgetHostView*
-RenderViewHostDelegateViewHelper::CreateNewFullscreenWidget(
-    int route_id, content::RenderProcessHost* process) {
-  RenderWidgetFullscreenHost* fullscreen_widget_host =
-      new RenderWidgetFullscreenHost(process, route_id);
-  RenderWidgetHostView* widget_view =
-      RenderWidgetHostView::CreateViewForWidget(fullscreen_widget_host);
   pending_widget_views_[route_id] = widget_view;
   return widget_view;
 }
@@ -220,11 +213,11 @@ RenderWidgetHostView* RenderViewHostDelegateViewHelper::GetCreatedWidget(
   return widget_host_view;
 }
 
-TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
+TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
     WebContents* web_contents,
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
-  TabContents* new_contents = CreateNewWindow(
+  TabContents* new_contents = CreateNewWindowImpl(
       route_id,
       Profile::FromBrowserContext(web_contents->GetBrowserContext()),
       web_contents->GetSiteInstance(),
@@ -273,25 +266,20 @@ TabContents* RenderViewHostDelegateViewHelper::ShowCreatedWindow(
 }
 
 RenderWidgetHostView* RenderViewHostDelegateViewHelper::ShowCreatedWidget(
-    WebContents* web_contents, int route_id, const gfx::Rect& initial_pos) {
+    WebContents* web_contents,
+    int route_id,
+    bool is_fullscreen,
+    const gfx::Rect& initial_pos) {
   if (web_contents->GetDelegate())
     web_contents->GetDelegate()->RenderWidgetShowing();
 
   RenderWidgetHostView* widget_host_view = GetCreatedWidget(route_id);
-  widget_host_view->InitAsPopup(web_contents->GetRenderWidgetHostView(),
-                                initial_pos);
-  widget_host_view->GetRenderWidgetHost()->Init();
-  return widget_host_view;
-}
-
-RenderWidgetHostView*
-    RenderViewHostDelegateViewHelper::ShowCreatedFullscreenWidget(
-        content::WebContents* web_contents, int route_id) {
-  if (web_contents->GetDelegate())
-    web_contents->GetDelegate()->RenderWidgetShowing();
-
-  RenderWidgetHostView* widget_host_view = GetCreatedWidget(route_id);
-  widget_host_view->InitAsFullscreen(web_contents->GetRenderWidgetHostView());
+  if (is_fullscreen) {
+    widget_host_view->InitAsFullscreen(web_contents->GetRenderWidgetHostView());
+  } else {
+    widget_host_view->InitAsPopup(web_contents->GetRenderWidgetHostView(),
+                                  initial_pos);
+  }
   widget_host_view->GetRenderWidgetHost()->Init();
   return widget_host_view;
 }

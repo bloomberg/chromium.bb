@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -490,8 +490,6 @@
     'browser/renderer_host/render_view_host_delegate.h',
     'browser/renderer_host/render_view_host_factory.cc',
     'browser/renderer_host/render_view_host_factory.h',
-    'browser/renderer_host/render_widget_fullscreen_host.cc',
-    'browser/renderer_host/render_widget_fullscreen_host.h',
     'browser/renderer_host/render_widget_helper.cc',
     'browser/renderer_host/render_widget_helper.h',
     'browser/renderer_host/render_widget_host.cc',

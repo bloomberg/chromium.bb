@@ -31,6 +31,7 @@ struct ViewHostMsg_CreateWindow_Params;
 namespace content {
 class BrowserContext;
 class RenderProcessHost;
+class WebContents;
 }
 
 namespace gfx {
@@ -38,49 +39,38 @@ class Rect;
 }
 
 // Provides helper methods that provide common implementations of some
-// RenderViewHostDelegate::View methods.
+// TabContentsView methods.
 class RenderViewHostDelegateViewHelper : public content::NotificationObserver {
  public:
   RenderViewHostDelegateViewHelper();
   virtual ~RenderViewHostDelegateViewHelper();
 
-  // Creates a new RenderWidgetHost and saves it for later retrieval by
-  // GetCreatedWidget.
-  RenderWidgetHostView* CreateNewWidget(int route_id,
-                                        WebKit::WebPopupType popup_type,
-                                        content::RenderProcessHost* process);
+  // Creates a new window; call |ShowCreatedWindow| below to show it.
+  TabContents* CreateNewWindow(content::WebContents* web_contents,
+                               int route_id,
+                               const ViewHostMsg_CreateWindow_Params& params);
 
-  RenderWidgetHostView* CreateNewFullscreenWidget(
-      int route_id, content::RenderProcessHost* process);
+  // Creates a new popup or fullscreen widget; call |ShowCreatedWidget| below to
+  // show it. If |is_fullscreen| is true it is a fullscreen widget, if not then
+  // a pop-up. |popup_type| is only meaningful for a pop-up.
+  RenderWidgetHostView* CreateNewWidget(content::WebContents* web_contents,
+                                        int route_id,
+                                        bool is_fullscreen,
+                                        WebKit::WebPopupType popup_type);
 
-  // Finds the new RenderWidgetHost and returns it. Note that this can only be
-  // called once as this call also removes it from the internal map.
-  RenderWidgetHostView* GetCreatedWidget(int route_id);
-
-  // Finds the new RenderViewHost/Delegate by route_id, initializes it for
-  // for renderer-initiated creation, and returns the TabContents that needs
-  // to be shown, if there is one (i.e. not a BackgroundContents). Note that
-  // this can only be called once as this call also removes it from the internal
-  // map.
-  TabContents* GetCreatedWindow(int route_id);
-
-  // These methods are meant to be called from TabContentsView implementations.
-  // They take care of notifying the WebContentsDelegate.
-  TabContents* CreateNewWindowFromTabContents(
-      content::WebContents* web_contents,
-      int route_id,
-      const ViewHostMsg_CreateWindow_Params& params);
-  // Mirrors the RenderViewHostDelegate::View Show methods.
+  // Shows a window created with |CreateNewWindow| above.
   TabContents* ShowCreatedWindow(content::WebContents* web_contents,
                                  int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
                                  bool user_gesture);
+
+  // Shows a widget created with |CreateNewWidget| above. |initial_pos| is only
+  // meaningful for non-fullscreen widgets.
   RenderWidgetHostView* ShowCreatedWidget(content::WebContents* web_contents,
                                           int route_id,
+                                          bool is_fullscreen,
                                           const gfx::Rect& initial_pos);
-  RenderWidgetHostView* ShowCreatedFullscreenWidget(
-      content::WebContents* web_contents, int route_id);
 
  private:
   // content::NotificationObserver implementation
@@ -92,7 +82,7 @@ class RenderViewHostDelegateViewHelper : public content::NotificationObserver {
   // BackgroundContents (if the window_container_type ==
   // WINDOW_CONTAINER_TYPE_BACKGROUND and permissions allow) or a TabContents.
   // If a TabContents is created, it is returned. Otherwise NULL is returned.
-  TabContents* CreateNewWindow(
+  TabContents* CreateNewWindowImpl(
       int route_id,
       Profile* profile,
       SiteInstance* site,
@@ -107,6 +97,17 @@ class RenderViewHostDelegateViewHelper : public content::NotificationObserver {
       SiteInstance* site,
       const GURL& opener_url,
       const string16& frame_name);
+
+  // Finds the new RenderWidgetHost and returns it. Note that this can only be
+  // called once as this call also removes it from the internal map.
+  RenderWidgetHostView* GetCreatedWidget(int route_id);
+
+  // Finds the new RenderViewHost/Delegate by route_id, initializes it for
+  // for renderer-initiated creation, and returns the TabContents that needs
+  // to be shown, if there is one (i.e. not a BackgroundContents). Note that
+  // this can only be called once as this call also removes it from the internal
+  // map.
+  TabContents* GetCreatedWindow(int route_id);
 
   // Tracks created RenderViewHost objects that have not been shown yet.
   // They are identified by the route ID passed to CreateNewWindow.

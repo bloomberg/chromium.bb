@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -301,19 +301,22 @@ void TabContentsViewViews::CloseTab() {
 void TabContentsViewViews::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
-  delegate_view_helper_.CreateNewWindowFromTabContents(
-      web_contents_, route_id, params);
+  delegate_view_helper_.CreateNewWindow(web_contents_, route_id, params);
 }
 
 void TabContentsViewViews::CreateNewWidget(
     int route_id, WebKit::WebPopupType popup_type) {
-  delegate_view_helper_.CreateNewWidget(route_id, popup_type,
-      web_contents_->GetRenderProcessHost());
+  delegate_view_helper_.CreateNewWidget(web_contents_,
+                                        route_id,
+                                        false,
+                                        popup_type);
 }
 
 void TabContentsViewViews::CreateNewFullscreenWidget(int route_id) {
-  delegate_view_helper_.CreateNewFullscreenWidget(
-      route_id, web_contents_->GetRenderProcessHost());
+  delegate_view_helper_.CreateNewWidget(web_contents_,
+                                        route_id,
+                                        true,
+                                        WebKit::WebPopupTypeNone);
 }
 
 void TabContentsViewViews::ShowCreatedWindow(int route_id,
@@ -326,12 +329,17 @@ void TabContentsViewViews::ShowCreatedWindow(int route_id,
 
 void TabContentsViewViews::ShowCreatedWidget(
     int route_id, const gfx::Rect& initial_pos) {
-  delegate_view_helper_.ShowCreatedWidget(
-      web_contents_, route_id, initial_pos);
+  delegate_view_helper_.ShowCreatedWidget(web_contents_,
+                                          route_id,
+                                          false,
+                                          initial_pos);
 }
 
 void TabContentsViewViews::ShowCreatedFullscreenWidget(int route_id) {
-  delegate_view_helper_.ShowCreatedFullscreenWidget(web_contents_, route_id);
+  delegate_view_helper_.ShowCreatedWidget(web_contents_,
+                                          route_id,
+                                          true,
+                                          gfx::Rect());
 }
 
 void TabContentsViewViews::ShowContextMenu(const ContextMenuParams& params) {
