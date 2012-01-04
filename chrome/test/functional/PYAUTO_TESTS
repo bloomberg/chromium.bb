@@ -466,6 +466,8 @@
       '-extensions.ExtensionsTest.testTriggerBrowserAction',
       '-extensions.ExtensionsTest.testTriggerPageAction',
       '-extensions.ExtensionsTest.testTriggerPageActionWithPopup',
+      # crbug.com/109160
+      '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
     ],
 
     'win': [
