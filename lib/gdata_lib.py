@@ -6,6 +6,7 @@
 
 """Library for interacting with gdata (i.e. Google Docs, Tracker, etc)."""
 
+import functools
 import getpass
 import os
 import re
@@ -87,36 +88,50 @@ class Creds(object):
 
 
 class RetrySpreadsheetsService(gdata.spreadsheet.service.SpreadsheetsService):
-  """The entire purpose of this class is to remove some flakiness from
-  interactions with Google Docs spreadsheet service.  It does this by
-  overriding the low-level http 'request' method to support retries.
-  The original is implemented in base class atom.service.AtomService.
+  """Extend SpreadsheetsService to put retry logic around http request method.
 
-  As documented in http://code.google.com/p/chromium-os/issues/detail?id=23819,
-  the two errors we see in the builder are:
-  gdata.service.RequestError and gdata.service.CaptchaRequired
-  Both of these errors, as seen so far, come from a 403 status response.  For
-  now that is the only status response that warrants a retry.
+  The entire purpose of this class is to remove some flakiness from
+  interactions with Google Docs spreadsheet service, in the form of
+  certain 40* http error responses to http requests.  This is documented in
+  http://code.google.com/p/chromium-os/issues/detail?id=23819.
+  There are two "request" methods that need to be wrapped in retry logic.
+  1) The request method on self.  Original implementation is in
+     base class atom.service.AtomService.
+  2) The request method on self.http_client.  The class of self.http_client
+     can actually vary, so the original implementation of the request
+     method can also vary.
   """
+  # pylint: disable=R0904
 
   TRY_MAX = 5
   RETRYABLE_STATUSES = (403,)
 
-  def request(self, *args, **kwargs):
-    """Override request method to allow for retries with flaky http requests
+  def __init__(self, *args, **kwargs):
+    gdata.spreadsheet.service.SpreadsheetsService.__init__(self, *args,
+                                                           **kwargs)
 
-    This is retry wrapper around the request method of the base class.
+    # Wrap self.http_client.request with retry wrapper.  This request method
+    # is used by ProgrammaticLogin(), at least.
+    if hasattr(self, 'http_client'):
+      self.http_client.request = functools.partial(self._RetryRequest,
+                                                   self.http_client.request)
+
+    self.request = functools.partial(self._RetryRequest, self.request)
+
+  def _RetryRequest(self, func, *args, **kwargs):
+    """Retry wrapper for bound |func|, passing |args| and |kwargs|.
+
+    This retry wrapper can be used for any http request |func| that provides
+    an http status code via the .status attribute of the returned value.
 
     Retry when the status value on the return object is in RETRYABLE_STATUSES,
     and run up to TRY_MAX times.  If successful (whether or not retries
     were necessary) return the last return value returned from base method.
     If unsuccessful return the first return value returned from base method.
     """
-    func = gdata.spreadsheet.service.SpreadsheetsService.request
-
     first_retval = None
     for try_ix in xrange(1, self.TRY_MAX + 1):
-      retval = func(self, *args, **kwargs)
+      retval = func(*args, **kwargs)
       if retval.status not in self.RETRYABLE_STATUSES:
         return retval
       else:

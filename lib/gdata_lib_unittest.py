@@ -9,6 +9,7 @@ import getpass
 import re
 import unittest
 
+import atom.service
 import gdata.spreadsheet.service
 import mox
 
@@ -100,11 +101,11 @@ class CredsTest(test_lib.MoxTestCase):
 
   @test_lib.tempfile_decorator
   def testStoreLoadCreds(self):
-    # Replay script
+    # This is the replay script for the test.
     mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
     self.mox.ReplayAll()
 
-    # Verify
+    # This is the test verification.
     with self.OutputCapturer():
       gdata_lib.Creds.__init__(mocked_creds, user=self.USER,
                                password=self.PASSWORD)
@@ -131,21 +132,21 @@ class CredsTest(test_lib.MoxTestCase):
   def testCredsInitFromFile(self):
     open(self.tempfile, 'w').close()
 
-    # Replay script
+    # This is the replay script for the test.
     mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
     mocked_creds.LoadCreds(self.tempfile)
     self.mox.ReplayAll()
 
-    # Verify
+    # This is the test verification.
     gdata_lib.Creds.__init__(mocked_creds, cred_file=self.tempfile)
     self.mox.VerifyAll()
 
   def testCredsInitFromUserPassword(self):
-    # Replay script
+    # This is the replay script for the test.
     mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
     self.mox.ReplayAll()
 
-    # Verify
+    # This is the test verification.
     gdata_lib.Creds.__init__(mocked_creds, user=self.USER,
                              password=self.PASSWORD)
     self.mox.VerifyAll()
@@ -156,12 +157,12 @@ class CredsTest(test_lib.MoxTestCase):
     # Add test-specific mocks/stubs
     self.mox.StubOutWithMock(getpass, 'getpass')
 
-    # Replay script
+    # This is the replay script for the test.
     mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
     getpass.getpass(mox.IgnoreArg()).AndReturn(self.PASSWORD)
     self.mox.ReplayAll()
 
-    # Verify
+    # This is the test verification.
     gdata_lib.Creds.__init__(mocked_creds, user=self.USER)
     self.mox.VerifyAll()
     self.assertEquals(self.USER, mocked_creds.user)
@@ -172,31 +173,128 @@ class RetrySpreadsheetsServiceTest(test_lib.MoxTestCase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
 
-  def _TestRequest(self, statuses, expected_status_index, success):
-    mocked_ss = self.mox.CreateMock(gdata_lib.RetrySpreadsheetsService)
-    self.mox.StubOutWithMock(gdata.spreadsheet.service.SpreadsheetsService,
-                             'request')
+  def testRequest(self):
+    """Test that calling request method invokes _RetryRequest wrapper."""
+    # pylint: disable=W0212
+
+    self.mox.StubOutWithMock(gdata_lib.RetrySpreadsheetsService,
+                             '_RetryRequest')
+
+    # Use a real RetrySpreadsheetsService object rather than a mocked
+    # one, because the .request method only exists if __init__ is run.
+    # Also split up __new__ and __init__ in order to grab the original
+    # rss.request method (inherited from base class at that point).
+    rss = gdata_lib.RetrySpreadsheetsService.__new__(
+        gdata_lib.RetrySpreadsheetsService)
+    orig_request = rss.request
+    rss.__init__()
 
     args = ('GET', 'http://foo.bar')
 
-    # Replay script
+    # This is the replay script for the test.
+    gdata_lib.RetrySpreadsheetsService._RetryRequest(orig_request, *args
+                                                     ).AndReturn('wrapped')
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    retval = rss.request(*args)
+    self.mox.VerifyAll()
+    self.assertEquals('wrapped', retval)
+
+  def _TestHttpClientRetryRequest(self, statuses):
+    """Test retry logic in http_client request during ProgrammaticLogin.
+
+    |statuses| is list of http codes to simulate, where 200 means success.
+    """
+    expect_success = statuses[-1] == 200
+
+    self.mox.StubOutWithMock(atom.http.ProxiedHttpClient, 'request')
+    rss = gdata_lib.RetrySpreadsheetsService()
+
+    args = ('POST', 'https://www.google.com/accounts/ClientLogin')
+    def _read():
+      return 'Some response text'
+
+    # This is the replay script for the test.
+    # Simulate the return codes in statuses.
+    for status in statuses:
+      retstatus = test_lib.EasyAttr(status=status, read=_read)
+      atom.http.ProxiedHttpClient.request(*args,
+                                          data=mox.IgnoreArg(),
+                                          headers=mox.IgnoreArg()
+                                          ).AndReturn(retstatus)
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    with self.OutputCapturer():
+      if expect_success:
+        rss.ProgrammaticLogin()
+      else:
+        self.assertRaises(gdata.service.Error, rss.ProgrammaticLogin)
+      self.mox.VerifyAll()
+
+    if not expect_success:
+      # Retries did not help, request still failed.
+      regexp = re.compile(r'^Giving up on HTTP request')
+      self.AssertOutputContainsWarning(regexp=regexp)
+    elif len(statuses) > 1:
+      # Warning expected if retries were needed.
+      self.AssertOutputContainsWarning()
+    else:
+      # First try worked, expect no warnings.
+      self.AssertOutputContainsWarning(invert=True)
+
+  def testHttpClientRetryRequest(self):
+    self._TestHttpClientRetryRequest([200])
+
+  def testHttpClientRetryRequest403(self):
+    self._TestHttpClientRetryRequest([403, 200])
+
+  def testHttpClientRetryRequest403x2(self):
+    self._TestHttpClientRetryRequest([403, 403, 200])
+
+  def testHttpClientRetryRequest403x3(self):
+    self._TestHttpClientRetryRequest([403, 403, 403, 200])
+
+  def testHttpClientRetryRequest403x4(self):
+    self._TestHttpClientRetryRequest([403, 403, 403, 403, 200])
+
+  def testHttpClientRetryRequest403x5(self):
+    # This one should exhaust the retries.
+    self._TestHttpClientRetryRequest([403, 403, 403, 403, 403])
+
+  def _TestRetryRequest(self, statuses):
+    """Test retry logic for request method.
+
+    |statuses| is list of http codes to simulate, where 200 means success.
+    """
+    expect_success = statuses[-1] == 200
+    expected_status_index = len(statuses) - 1 if expect_success else 0
+
+    mocked_ss = self.mox.CreateMock(gdata_lib.RetrySpreadsheetsService)
+    args = ('GET', 'http://foo.bar')
+
+    # This is the replay script for the test.
     for ix, status in enumerate(statuses):
       # Add index of status to track which status the request function is
       # returning.  It is expected to return the last return status if
       # successful (retries or not), but first return status if failed.
       retval = test_lib.EasyAttr(status=status, index=ix)
-      gdata.spreadsheet.service.SpreadsheetsService.request(mocked_ss, *args
-                                                            ).AndReturn(retval)
+      mocked_ss.request(*args).AndReturn(retval)
+
     self.mox.ReplayAll()
 
-    # Verity
+    # This is the test verification.
     with self.OutputCapturer():
-      retval = gdata_lib.RetrySpreadsheetsService.request(mocked_ss, *args)
+      # pylint: disable=W0212
+      rval = gdata_lib.RetrySpreadsheetsService._RetryRequest(mocked_ss,
+                                                              mocked_ss.request,
+                                                              *args)
       self.mox.VerifyAll()
-      self.assertEquals(statuses[expected_status_index], retval.status)
-      self.assertEquals(expected_status_index, retval.index)
+      self.assertEquals(statuses[expected_status_index], rval.status)
+      self.assertEquals(expected_status_index, rval.index)
 
-    if not success:
+    if not expect_success:
       # Retries did not help, request still failed.
       regexp = re.compile(r'^Giving up on HTTP request')
       self.AssertOutputContainsWarning(regexp=regexp)
@@ -207,74 +305,24 @@ class RetrySpreadsheetsServiceTest(test_lib.MoxTestCase):
       # First try worked, expect no warnings.
       self.AssertOutputContainsWarning(invert=True)
 
-  def testRequest(self):
-    self._TestRequest([200], 0, True)
+  def testRetryRequest(self):
+    self._TestRetryRequest([200])
 
-  def testRequest403(self):
-    self._TestRequest([403, 200], 1, True)
+  def testRetryRequest403(self):
+    self._TestRetryRequest([403, 200])
 
-  def testRequest403x2(self):
-    self._TestRequest([403, 403, 200], 2, True)
+  def testRetryRequest403x2(self):
+    self._TestRetryRequest([403, 403, 200])
 
-  def testRequest403x3(self):
-    self._TestRequest([403, 403, 403, 200], 3, True)
+  def testRetryRequest403x3(self):
+    self._TestRetryRequest([403, 403, 403, 200])
 
-  def testRequest403x4(self):
-    self._TestRequest([403, 403, 403, 403, 200], 4, True)
+  def testRetryRequest403x4(self):
+    self._TestRetryRequest([403, 403, 403, 403, 200])
 
-  def testRequest403x5(self):
+  def testRetryRequest403x5(self):
     # This one should exhaust the retries.
-    self._TestRequest([403, 403, 403, 403, 403], 0, False)
-
-class MyError1(RuntimeError):
-  pass
-
-class MyError2(RuntimeError):
-  pass
-
-class MyError3(RuntimeError):
-  pass
-
-class Foo(object):
-  Error1Msg = 'You told me to raise Error1'
-  Error2Msg = 'You told me to raise Error2'
-  Error3Msg = 'You told me to raise Error3'
-
-  def __init__(self, first, last):
-    self.first = first
-    self.last = last
-    self.error2_count = 0
-    self.error2_max = 1
-
-  def GetFullName(self):
-    return '%s %s' % (self.first, self.last)
-
-  def GetFirst(self):
-    return self.first
-
-  def GetLast(self):
-    return self.last
-
-  def RaiseError1(self, returnval=None, doit=True):
-    if doit:
-      raise MyError1(self.Error1Msg)
-
-    return returnval
-
-  def RaiseError2(self, returnval=None, doit=True):
-    """Raise error only first |self.error2_max| times run for this object."""
-    if doit:
-      self.error2_count += 1
-      if self.error2_count <= self.error2_max:
-        raise MyError2(self.Error2Msg)
-
-    return returnval
-
-  def RaiseError3(self, returnval=None, doit=True):
-    if doit:
-      raise MyError3(self.Error1Msg)
-
-    return returnval
+    self._TestRetryRequest([403, 403, 403, 403, 403])
 
 
 if __name__ == '__main__':
