@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,8 +86,8 @@ TEST_F(ProtoValueConversionsTest, PasswordSpecificsData) {
   EXPECT_EQ("<redacted>", password_value);
 }
 
-TEST_F(ProtoValueConversionsTest, AppNotificationSpecificsToValue) {
-  TestSpecificsToValue(AppNotificationSpecificsToValue);
+TEST_F(ProtoValueConversionsTest, AppNotificationToValue) {
+  TestSpecificsToValue(AppNotificationToValue);
 }
 
 TEST_F(ProtoValueConversionsTest, AppSettingSpecificsToValue) {

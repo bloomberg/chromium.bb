@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -16,12 +16,16 @@ package sync_pb;
 
 import "sync.proto";
 
-// Properties of ann app notification.
+// Properties of an app notification.
 
 // An App Notification, to be delivered from Chrome Apps to the
 // Chrome browser through the Notification API.
-message AppNotificationSpecifics {
-  // Globally unique id.
+message AppNotification {
+  // Globally unique id. This is more robust for uniquely identifying each
+  // notification and hence gives us flexibility in the future. In absence
+  // of this, unique id would be (app_id, creation_timestamp_ms). But that
+  // relies on creation_timestamp_ms being high resolution and is not
+  // globally unique - only unique for a given user.
   optional string guid = 1;
   // Metadata, not shown directly to the user.
   // The unique App Id, as created by the webstore and used to 
@@ -41,5 +45,5 @@ message AppNotificationSpecifics {
 }
 
 extend EntitySpecifics {
-  optional AppNotificationSpecifics app_notification = 45184;
+  optional AppNotification app_notification = 45184;
 }

@@ -1,0 +1,64 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol for communication between sync client and server.
+
+// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
+// any fields in this file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
+package sync_pb;
+
+message SyncEnums {
+  // These events are sent by |SyncManager| class. Note: In the code they each
+  // of these events have some additional info but we are not sending them to
+  // server.
+  enum EventType {
+    AUTH_ERROR = 1; // Auth error. Note this gets generated even during
+                    // successful auth with the error set to none.
+    UPDATED_TOKEN = 2; // Client received an updated token.
+    PASSPHRASE_REQUIRED = 3; // Cryptographer needs passphrase.
+    PASSPHRASE_ACCEPTED = 4; // Passphrase was accepted by cryptographer.
+    INITIALIZATION_COMPLETE = 5; // Sync Initialization is complete.
+
+    // |STOP_SYNCING_PERMANENTLY| event should never be seen by the server in
+    // the absence of bugs.
+    STOP_SYNCING_PERMANENTLY = 6; // Server sent stop syncing permanently.
+
+    ENCRYPTED_TYPES_CHANGED = 9; // Set of encrypted types has changed.
+    ENCRYPTION_COMPLETE = 7; // Client has finished encrypting all data.
+    ACTIONABLE_ERROR = 8; // Client received an actionable error.
+  }
+
+  enum ErrorType {
+    SUCCESS            = 0;
+    ACCESS_DENIED      = 1;   // Returned when the user doesn't have access to
+                              // store (instead of HTTP 401).
+    NOT_MY_BIRTHDAY    = 2;   // Returned when the server and client disagree on
+                              // the store birthday.
+    THROTTLED          = 3;   // Returned when the store has exceeded the
+                              // allowed bandwidth utilization.
+    AUTH_EXPIRED       = 4;   // Auth token or cookie has expired.
+    USER_NOT_ACTIVATED = 5;   // User doesn't have the Chrome bit set on that
+                              // Google Account.
+    AUTH_INVALID       = 6;   // Auth token or cookie is otherwise invalid.
+    CLEAR_PENDING      = 7;   // A clear of the user data is pending (e.g.
+                              // initiated by privacy request).  Client should
+                              // come back later.
+    TRANSIENT_ERROR    = 8;   // A transient error occured (eg. backend
+                              // timeout). Client should try again later.
+    MIGRATION_DONE     = 9;   // Migration has finished for one or more data
+                              // types.  Client should clear the cache for
+                              // these data types only and then re-sync with
+                              // a server.
+    UNKNOWN            = 100; // Unknown value. This should never be explicitly
+                              // used; it is the default value when an
+                              // out-of-date client parses a value it doesn't
+                              // recognize.
+  }
+}

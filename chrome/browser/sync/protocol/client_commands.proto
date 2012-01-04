@@ -1,0 +1,31 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol for communication between sync client and server.
+
+// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
+// any fields in this file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
+package sync_pb;
+
+message ClientCommand {
+  // Time to wait before sending any requests to the server.
+  optional int32 set_sync_poll_interval = 1;  // in seconds
+  optional int32 set_sync_long_poll_interval = 2;  // in seconds
+
+  optional int32 max_commit_batch_size = 3;
+
+  // Number of seconds to delay between a sessions
+  // action and sending a commit message to the
+  // server
+  optional int32 sessions_commit_delay_seconds = 4;
+
+  // Number of seconds to delay before the throttled client should retry.
+  optional int32 throttle_delay_seconds = 5;
+};

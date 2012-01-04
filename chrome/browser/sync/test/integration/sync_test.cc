@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -629,27 +629,27 @@ void SyncTest::TriggerAuthError() {
 
 namespace {
 
-sync_pb::ClientToServerResponse::ErrorType
+sync_pb::SyncEnums::ErrorType
     GetClientToServerResponseErrorType(
         browser_sync::SyncProtocolErrorType error) {
   switch (error) {
     case browser_sync::SYNC_SUCCESS:
-      return sync_pb::ClientToServerResponse::SUCCESS;
+      return sync_pb::SyncEnums::SUCCESS;
     case browser_sync::NOT_MY_BIRTHDAY:
-      return sync_pb::ClientToServerResponse::NOT_MY_BIRTHDAY;
+      return sync_pb::SyncEnums::NOT_MY_BIRTHDAY;
     case browser_sync::THROTTLED:
-      return sync_pb::ClientToServerResponse::THROTTLED;
+      return sync_pb::SyncEnums::THROTTLED;
     case browser_sync::CLEAR_PENDING:
-      return sync_pb::ClientToServerResponse::CLEAR_PENDING;
+      return sync_pb::SyncEnums::CLEAR_PENDING;
     case browser_sync::TRANSIENT_ERROR:
-      return sync_pb::ClientToServerResponse::TRANSIENT_ERROR;
+      return sync_pb::SyncEnums::TRANSIENT_ERROR;
     case browser_sync::MIGRATION_DONE:
-      return sync_pb::ClientToServerResponse::MIGRATION_DONE;
+      return sync_pb::SyncEnums::MIGRATION_DONE;
     case browser_sync::UNKNOWN_ERROR:
-      return sync_pb::ClientToServerResponse::UNKNOWN;
+      return sync_pb::SyncEnums::UNKNOWN;
     default:
       NOTREACHED();
-      return sync_pb::ClientToServerResponse::UNKNOWN;
+      return sync_pb::SyncEnums::UNKNOWN;
   }
 }
 

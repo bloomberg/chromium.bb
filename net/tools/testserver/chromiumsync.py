@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -31,6 +31,7 @@ import preference_specifics_pb2
 import search_engine_specifics_pb2
 import session_specifics_pb2
 import sync_pb2
+import sync_enums_pb2
 import theme_specifics_pb2
 import typed_url_specifics_pb2
 
@@ -960,7 +961,7 @@ class TestServer(object):
   def CheckSendError(self):
      """Raises SyncInducedError if needed."""
      if (self.account.induced_error.error_type !=
-         sync_pb2.ClientToServerResponse.UNKNOWN):
+         sync_enums_pb2.SyncEnums.UNKNOWN):
        raise SyncInducedError
 
   def HandleMigrate(self, path):
@@ -1062,7 +1063,7 @@ class TestServer(object):
       contents = request.message_contents
 
       response = sync_pb2.ClientToServerResponse()
-      response.error_code = sync_pb2.ClientToServerResponse.SUCCESS
+      response.error_code = sync_enums_pb2.SyncEnums.SUCCESS
       self.CheckStoreBirthday(request)
       response.store_birthday = self.account.store_birthday
       self.CheckTransientError();
@@ -1093,7 +1094,7 @@ class TestServer(object):
       print 'MIGRATION_DONE: <%s>' % (ShortDatatypeListSummary(error.datatypes))
       response = sync_pb2.ClientToServerResponse()
       response.store_birthday = self.account.store_birthday
-      response.error_code = sync_pb2.ClientToServerResponse.MIGRATION_DONE
+      response.error_code = sync_enums_pb2.SyncEnums.MIGRATION_DONE
       response.migrated_data_type_id[:] = [
           SyncTypeToProtocolDataTypeId(x) for x in error.datatypes]
       return (200, response.SerializeToString())
@@ -1102,14 +1103,14 @@ class TestServer(object):
       print 'NOT_MY_BIRTHDAY'
       response = sync_pb2.ClientToServerResponse()
       response.store_birthday = self.account.store_birthday
-      response.error_code = sync_pb2.ClientToServerResponse.NOT_MY_BIRTHDAY
+      response.error_code = sync_enums_pb2.SyncEnums.NOT_MY_BIRTHDAY
       return (200, response.SerializeToString())
     except TransientError, error:
       ### This is deprecated now. Would be removed once test cases are removed.
       print_context('<-')
       print 'TRANSIENT_ERROR'
       response.store_birthday = self.account.store_birthday
-      response.error_code = sync_pb2.ClientToServerResponse.TRANSIENT_ERROR
+      response.error_code = sync_enums_pb2.SyncEnums.TRANSIENT_ERROR
       return (200, response.SerializeToString())
     except SyncInducedError, error:
       print_context('<-')

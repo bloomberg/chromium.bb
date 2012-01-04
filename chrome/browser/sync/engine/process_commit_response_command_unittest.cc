@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -164,7 +164,7 @@ class ProcessCommitResponseCommandTestWithParam
 
     sync_pb::ClientToServerResponse* response =
         sync_state->mutable_commit_response();
-    response->set_error_code(sync_pb::ClientToServerResponse::SUCCESS);
+    response->set_error_code(sync_pb::SyncEnums::SUCCESS);
     sync_pb::CommitResponse_EntryResponse* entry_response =
         response->mutable_commit()->add_entryresponse();
     entry_response->set_response_type(CommitResponse::SUCCESS);

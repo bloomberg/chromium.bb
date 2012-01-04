@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -134,8 +134,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   void FailNextPostBufferToPathCall() { fail_next_postbuffer_ = true; }
 
-  void SetClearUserDataResponseStatus(
-      sync_pb::ClientToServerResponse::ErrorType errortype);
+  void SetClearUserDataResponseStatus(sync_pb::SyncEnums::ErrorType errortype);
 
   // A visitor class to allow a test to change some monitoring state atomically
   // with the action of overriding the response codes sent back to the Syncer
@@ -322,8 +321,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   MidCommitObserver* mid_commit_observer_;
 
   // The clear data response we'll return in the next response
-  sync_pb::ClientToServerResponse::ErrorType
-      clear_user_data_response_errortype_;
+  sync_pb::SyncEnums::ErrorType clear_user_data_response_errortype_;
 
   // The AUTHENTICATE response we'll return for auth requests.
   sync_pb::AuthenticateResponse auth_response_;

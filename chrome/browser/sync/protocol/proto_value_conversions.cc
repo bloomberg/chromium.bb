@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -185,8 +185,8 @@ DictionaryValue* DeviceInformationToValue(
   return value;
 }
 
-DictionaryValue* AppNotificationSpecificsToValue(
-    const sync_pb::AppNotificationSpecifics& proto) {
+DictionaryValue* AppNotificationToValue(
+    const sync_pb::AppNotification& proto) {
   DictionaryValue* value = new DictionaryValue();
   SET_STR(guid);
   SET_STR(app_id);
@@ -374,7 +374,7 @@ DictionaryValue* EntitySpecificsToValue(
     const sync_pb::EntitySpecifics& specifics) {
   DictionaryValue* value = new DictionaryValue();
   SET_EXTENSION(sync_pb, app, AppSpecificsToValue);
-  SET_EXTENSION(sync_pb, app_notification, AppNotificationSpecificsToValue);
+  SET_EXTENSION(sync_pb, app_notification, AppNotificationToValue);
   SET_EXTENSION(sync_pb, app_setting, AppSettingSpecificsToValue);
   SET_EXTENSION(sync_pb, autofill, AutofillSpecificsToValue);
   SET_EXTENSION(sync_pb, autofill_profile, AutofillProfileSpecificsToValue);

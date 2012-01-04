@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
+#include "chrome/browser/sync/protocol/sync_enums.pb.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -160,9 +161,9 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
   if (response->ParseFromString(params.buffer_out)) {
     // TODO(tim): This is an egregious layering violation (bug 35060).
     switch (response->error_code()) {
-      case ClientToServerResponse::ACCESS_DENIED:
-      case ClientToServerResponse::AUTH_INVALID:
-      case ClientToServerResponse::USER_NOT_ACTIVATED:
+      case sync_pb::SyncEnums::ACCESS_DENIED:
+      case sync_pb::SyncEnums::AUTH_INVALID:
+      case sync_pb::SyncEnums::USER_NOT_ACTIVATED:
         // Fires on ScopedServerStatusWatcher
         params.response.server_status = HttpResponse::SYNC_AUTH_ERROR;
         return false;
@@ -217,25 +218,25 @@ bool IsVeryFirstGetUpdates(const ClientToServerMessage& message) {
 }
 
 SyncProtocolErrorType ConvertSyncProtocolErrorTypePBToLocalType(
-    const sync_pb::ClientToServerResponse::ErrorType& error_type) {
+    const sync_pb::SyncEnums::ErrorType& error_type) {
   switch (error_type) {
-    case ClientToServerResponse::SUCCESS:
+    case sync_pb::SyncEnums::SUCCESS:
       return browser_sync::SYNC_SUCCESS;
-    case ClientToServerResponse::NOT_MY_BIRTHDAY:
+    case sync_pb::SyncEnums::NOT_MY_BIRTHDAY:
       return browser_sync::NOT_MY_BIRTHDAY;
-    case ClientToServerResponse::THROTTLED:
+    case sync_pb::SyncEnums::THROTTLED:
       return browser_sync::THROTTLED;
-    case ClientToServerResponse::CLEAR_PENDING:
+    case sync_pb::SyncEnums::CLEAR_PENDING:
       return browser_sync::CLEAR_PENDING;
-    case ClientToServerResponse::TRANSIENT_ERROR:
+    case sync_pb::SyncEnums::TRANSIENT_ERROR:
       return browser_sync::TRANSIENT_ERROR;
-    case ClientToServerResponse::MIGRATION_DONE:
+    case sync_pb::SyncEnums::MIGRATION_DONE:
       return browser_sync::MIGRATION_DONE;
-    case ClientToServerResponse::UNKNOWN:
+    case sync_pb::SyncEnums::UNKNOWN:
       return browser_sync::UNKNOWN_ERROR;
-    case ClientToServerResponse::USER_NOT_ACTIVATED:
-    case ClientToServerResponse::AUTH_INVALID:
-    case ClientToServerResponse::ACCESS_DENIED:
+    case sync_pb::SyncEnums::USER_NOT_ACTIVATED:
+    case sync_pb::SyncEnums::AUTH_INVALID:
+    case sync_pb::SyncEnums::ACCESS_DENIED:
       return browser_sync::INVALID_CREDENTIAL;
     default:
       NOTREACHED();
@@ -276,7 +277,7 @@ browser_sync::SyncProtocolError ConvertErrorPBToLocalType(
 
   if (error.error_data_type_ids_size() > 0) {
     // THROTTLED is currently the only error code that uses |error_data_types|.
-    DCHECK_EQ(error.error_type(), ClientToServerResponse::THROTTLED);
+    DCHECK_EQ(error.error_type(), sync_pb::SyncEnums::THROTTLED);
     for (int i = 0; i < error.error_data_type_ids_size(); ++i) {
       sync_protocol_error.error_data_types.Put(
           syncable::GetModelTypeFromExtensionFieldNumber(
@@ -289,11 +290,11 @@ browser_sync::SyncProtocolError ConvertErrorPBToLocalType(
 
 // TODO(lipalani) : Rename these function names as per the CR for issue 7740067.
 browser_sync::SyncProtocolError ConvertLegacyErrorCodeToNewError(
-    const sync_pb::ClientToServerResponse::ErrorType& error_type) {
+    const sync_pb::SyncEnums::ErrorType& error_type) {
   browser_sync::SyncProtocolError error;
   error.error_type = ConvertSyncProtocolErrorTypePBToLocalType(error_type);
-  if (error_type == ClientToServerResponse::CLEAR_PENDING ||
-      error_type == ClientToServerResponse::NOT_MY_BIRTHDAY) {
+  if (error_type == sync_pb::SyncEnums::CLEAR_PENDING ||
+      error_type == sync_pb::SyncEnums::NOT_MY_BIRTHDAY) {
       error.action = browser_sync::DISABLE_SYNC_ON_CLIENT;
   }  // There is no other action we can compute for legacy server.
   return error;

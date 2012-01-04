@@ -507,7 +507,7 @@ SyncData AppNotificationManager::CreateSyncDataFromNotification(
     const AppNotification& notification) {
   DCHECK(!notification.is_local());
   sync_pb::EntitySpecifics specifics;
-  sync_pb::AppNotificationSpecifics* notif_specifics =
+  sync_pb::AppNotification* notif_specifics =
       specifics.MutableExtension(sync_pb::app_notification);
   notif_specifics->set_app_id(notification.extension_id());
   notif_specifics->set_creation_timestamp_ms(
@@ -524,7 +524,7 @@ SyncData AppNotificationManager::CreateSyncDataFromNotification(
 // static
 AppNotification* AppNotificationManager::CreateNotificationFromSyncData(
     const SyncData& sync_data) {
-  sync_pb::AppNotificationSpecifics specifics =
+  sync_pb::AppNotification specifics =
       sync_data.GetSpecifics().GetExtension(sync_pb::app_notification);
 
   // Check for mandatory fields.

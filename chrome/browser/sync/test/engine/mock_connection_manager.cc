@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -29,6 +29,7 @@ using sync_pb::CommitMessage;
 using sync_pb::CommitResponse;
 using sync_pb::CommitResponse_EntryResponse;
 using sync_pb::GetUpdatesMessage;
+using sync_pb::SyncEnums;
 using sync_pb::SyncEntity;
 using syncable::DirectoryManager;
 using syncable::FIRST_REAL_MODEL_TYPE;
@@ -114,12 +115,12 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
 
   // Default to an ok connection.
   params->response.server_status = HttpResponse::SERVER_CONNECTION_OK;
-  response.set_error_code(ClientToServerResponse::SUCCESS);
+  response.set_error_code(SyncEnums::SUCCESS);
   const string current_store_birthday = store_birthday();
   response.set_store_birthday(current_store_birthday);
   if (post.has_store_birthday() && post.store_birthday() !=
       current_store_birthday) {
-    response.set_error_code(ClientToServerResponse::NOT_MY_BIRTHDAY);
+    response.set_error_code(SyncEnums::NOT_MY_BIRTHDAY);
     response.set_error_message("Merry Unbirthday!");
     response.SerializeToString(&params->buffer_out);
     store_birthday_sent_ = true;
@@ -149,12 +150,12 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
   {
     base::AutoLock lock(response_code_override_lock_);
     if (throttling_) {
-      response.set_error_code(ClientToServerResponse::THROTTLED);
+      response.set_error_code(SyncEnums::THROTTLED);
       throttling_ = false;
     }
 
     if (fail_with_auth_invalid_)
-      response.set_error_code(ClientToServerResponse::AUTH_INVALID);
+      response.set_error_code(SyncEnums::AUTH_INVALID);
   }
 
   response.SerializeToString(&params->buffer_out);
@@ -451,7 +452,7 @@ void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,
 }
 
 void MockConnectionManager::SetClearUserDataResponseStatus(
-  sync_pb::ClientToServerResponse::ErrorType errortype ) {
+  sync_pb::SyncEnums::ErrorType errortype ) {
   // Note: this is not a thread-safe set, ok for now.  NOT ok if tests
   // run the syncer on the background thread while this method is called.
   clear_user_data_response_errortype_ = errortype;
@@ -473,11 +474,11 @@ void MockConnectionManager::ProcessAuthenticate(
   EXPECT_FALSE(auth_token.empty());
 
   if (auth_token != valid_auth_token_) {
-    response->set_error_code(ClientToServerResponse::AUTH_INVALID);
+    response->set_error_code(SyncEnums::AUTH_INVALID);
     return;
   }
 
-  response->set_error_code(ClientToServerResponse::SUCCESS);
+  response->set_error_code(SyncEnums::SUCCESS);
   response->mutable_authenticate()->CopyFrom(auth_response_);
   auth_response_.Clear();
 }

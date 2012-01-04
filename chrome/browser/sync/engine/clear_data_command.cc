@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,8 +57,7 @@ void ClearDataCommand::ExecuteImpl(SyncSession* session) {
 
   // Clear pending indicates that the server has received our clear message
   if (!ok || !client_to_server_response.has_error_code() ||
-      client_to_server_response.error_code() !=
-      sync_pb::ClientToServerResponse::SUCCESS) {
+      client_to_server_response.error_code() != sync_pb::SyncEnums::SUCCESS) {
     // On failure, subsequent requests to the server will cause it to attempt
     // to resume the clear.  The client will handle disabling of sync in
     // response to a store birthday error from the server.
@@ -79,4 +78,3 @@ void ClearDataCommand::ExecuteImpl(SyncSession* session) {
 }
 
 }  // namespace browser_sync
-

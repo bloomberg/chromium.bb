@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,8 +106,7 @@ TEST_F(ClearDataCommandTest, ClearDataCommandExpectSuccess) {
   TestScopedSessionEventListener reg(context(), handler.get());
 
   dir->set_store_birthday(mock_server()->store_birthday());
-  mock_server()->SetClearUserDataResponseStatus(
-      sync_pb::ClientToServerResponse::SUCCESS);
+  mock_server()->SetClearUserDataResponseStatus(sync_pb::SyncEnums::SUCCESS);
   on_should_stop_syncing_permanently_called_ = false;
 
   command_.Execute(session());
@@ -124,4 +123,3 @@ TEST_F(ClearDataCommandTest, ClearDataCommandExpectSuccess) {
 }
 
 }  // namespace browser_sync
-
