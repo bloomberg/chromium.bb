@@ -4354,8 +4354,6 @@
             ['exclude', '^browser/google/google_update.cc'],
             ['exclude', '^browser/google/google_update.h'],
             ['exclude', '^browser/hang_monitor/'],
-            ['exclude', '^browser/plugin_download_helper.cc'],
-            ['exclude', '^browser/plugin_download_helper.h'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_views*'],
             ['exclude', '^browser/tab_contents/web_drag_source_win.cc'],
             ['exclude', '^browser/tab_contents/web_drag_source_win.h'],
