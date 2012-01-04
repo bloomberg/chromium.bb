@@ -61,11 +61,6 @@ void DeletePointer(T* obj) {
   delete obj;
 }
 
-template<typename T>
-void ReleasePointer(T* obj) {
-  obj->Release();
-}
-
 namespace base {
 
 // ScopedClosureRunner is akin to scoped_ptr for Closures. It ensures that the
