@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2331,7 +2331,8 @@ void ExtensionService::OnExternalExtensionFileFound(
         LOG(WARNING) << "Found external version of extension " << id
                      << "that is older than current version. Current version "
                      << "is: " << existing->VersionString() << ". New version "
-                     << "is: " << version << ". Keeping current version.";
+                     << "is: " << version->GetString()
+                     << ". Keeping current version.";
         return;
     }
   }
