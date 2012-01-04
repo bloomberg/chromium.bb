@@ -8,8 +8,8 @@
 #include "base/compiler_specific.h"
 #include "ppapi/shared_impl/callback_tracker.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/var_tracker.h"
-#include "webkit/plugins/ppapi/host_resource_tracker.h"
 #include "webkit/plugins/ppapi/host_var_tracker.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
@@ -39,9 +39,6 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
       ::ppapi::ApiID id) OVERRIDE;
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
 
-  HostResourceTracker* host_resource_tracker() {
-    return &host_resource_tracker_;
-  }
   HostVarTracker* host_var_tracker() {
     return &host_var_tracker_;
   }
@@ -83,7 +80,7 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
 
   WEBKIT_PLUGINS_EXPORT static HostGlobals* host_globals_;
 
-  HostResourceTracker host_resource_tracker_;
+  ::ppapi::ResourceTracker resource_tracker_;
   HostVarTracker host_var_tracker_;
 
   // Tracks all live instances and their associated data.

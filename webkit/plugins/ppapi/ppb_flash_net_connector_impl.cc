@@ -12,7 +12,8 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
-using ::ppapi::thunk::PPB_Flash_NetConnector_API;
+using ppapi::thunk::PPB_Flash_NetConnector_API;
+using ppapi::TrackedCallback;
 
 namespace webkit {
 namespace ppapi {
@@ -46,7 +47,7 @@ int32_t PPB_Flash_NetConnector_Impl::ConnectTcp(
   if (!callback.func)
     return PP_ERROR_BLOCKS_MAIN_THREAD;
 
-  if (callback_.get() && !callback_->completed())
+  if (TrackedCallback::IsPending(callback_))
     return PP_ERROR_INPROGRESS;
 
   PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
@@ -55,9 +56,7 @@ int32_t PPB_Flash_NetConnector_Impl::ConnectTcp(
   int32_t rv = plugin_instance->delegate()->ConnectTcp(this, host, port);
   if (rv == PP_OK_COMPLETIONPENDING) {
     // Record callback and output buffers.
-    callback_ = new TrackedCompletionCallback(
-        plugin_instance->module()->GetCallbackTracker(),
-        pp_resource(), callback);
+    callback_ = new TrackedCallback(this, callback);
     socket_out_ = socket_out;
     local_addr_out_ = local_addr_out;
     remote_addr_out_ = remote_addr_out;
@@ -81,7 +80,7 @@ int32_t PPB_Flash_NetConnector_Impl::ConnectTcpAddress(
   if (!callback.func)
     return PP_ERROR_BLOCKS_MAIN_THREAD;
 
-  if (callback_.get() && !callback_->completed())
+  if (TrackedCallback::IsPending(callback_))
     return PP_ERROR_INPROGRESS;
 
   PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
@@ -90,9 +89,7 @@ int32_t PPB_Flash_NetConnector_Impl::ConnectTcpAddress(
   int32_t rv = plugin_instance->delegate()->ConnectTcpAddress(this, addr);
   if (rv == PP_OK_COMPLETIONPENDING) {
     // Record callback and output buffers.
-    callback_ = new TrackedCompletionCallback(
-        plugin_instance->module()->GetCallbackTracker(),
-        pp_resource(), callback);
+    callback_ = new TrackedCallback(this, callback);
     socket_out_ = socket_out;
     local_addr_out_ = local_addr_out;
     remote_addr_out_ = remote_addr_out;
@@ -124,16 +121,10 @@ void PPB_Flash_NetConnector_Impl::CompleteConnectTcp(
     }
   }
 
-  // Theoretically, the plugin should be allowed to try another |ConnectTcp()|
-  // from the callback.
-  scoped_refptr<TrackedCompletionCallback> callback;
-  callback.swap(callback_);
-  // Wipe everything else out for safety.
   socket_out_ = NULL;
   local_addr_out_ = NULL;
   remote_addr_out_ = NULL;
-
-  callback->Run(rv);  // Will complete abortively if necessary.
+  TrackedCallback::ClearAndRun(&callback_, rv);
 }
 
 }  // namespace ppapi

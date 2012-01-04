@@ -17,6 +17,10 @@
 
 struct PP_CompletionCallback;
 
+namespace ppapi {
+class TrackedCallback;
+}
+
 namespace WebKit {
 class WebString;
 }
@@ -25,7 +29,6 @@ namespace webkit {
 namespace ppapi {
 
 class PPB_FileRef_Impl;
-class TrackedCompletionCallback;
 
 class PPB_FileChooser_Impl : public ::ppapi::Resource,
                              public ::ppapi::thunk::PPB_FileChooser_API {
@@ -77,7 +80,7 @@ class PPB_FileChooser_Impl : public ::ppapi::Resource,
  private:
   PP_FileChooserMode_Dev mode_;
   std::string accept_mime_types_;
-  scoped_refptr<TrackedCompletionCallback> callback_;
+  scoped_refptr< ::ppapi::TrackedCallback> callback_;
   std::vector< scoped_refptr<PPB_FileRef_Impl> > chosen_files_;
   size_t next_chosen_file_index_;
 };

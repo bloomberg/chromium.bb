@@ -14,7 +14,8 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
-using ::ppapi::thunk::PPB_Flash_Menu_API;
+using ppapi::thunk::PPB_Flash_Menu_API;
+using ppapi::TrackedCallback;
 
 namespace webkit {
 namespace ppapi {
@@ -138,7 +139,7 @@ int32_t PPB_Flash_Menu_Impl::Show(const PP_Point* location,
   if (!callback.func)
     return PP_ERROR_BLOCKS_MAIN_THREAD;
 
-  if (callback_.get() && !callback_->completed())
+  if (TrackedCallback::IsPending(callback_))
     return PP_ERROR_INPROGRESS;
 
   PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
@@ -149,9 +150,7 @@ int32_t PPB_Flash_Menu_Impl::Show(const PP_Point* location,
       plugin_instance, this, gfx::Point(location->x, location->y));
   if (rv == PP_OK_COMPLETIONPENDING) {
     // Record callback and output buffers.
-    callback_ = new TrackedCompletionCallback(
-        plugin_instance->module()->GetCallbackTracker(),
-        pp_resource(), callback);
+    callback_ = new TrackedCallback(this, callback);
     selected_id_out_ = selected_id_out;
   } else {
     // This should never be completed synchronously successfully.
@@ -182,11 +181,8 @@ void PPB_Flash_Menu_Impl::CompleteShow(int32_t result,
     }
   }
 
-  scoped_refptr<TrackedCompletionCallback> callback;
-  callback.swap(callback_);
   selected_id_out_ = NULL;
-
-  callback->Run(rv);  // Will complete abortively if necessary.
+  TrackedCallback::ClearAndRun(&callback_, rv);
 }
 
 }  // namespace ppapi

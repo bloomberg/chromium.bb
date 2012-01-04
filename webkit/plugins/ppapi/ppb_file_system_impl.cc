@@ -83,8 +83,7 @@ int32_t PPB_FileSystem_Impl::Open(int64_t expected_size,
   if (!plugin_instance->delegate()->OpenFileSystem(
           plugin_instance->container()->element().document().url(),
           file_system_type, expected_size,
-          new FileCallbacks(plugin_instance->module()->AsWeakPtr(),
-                            pp_resource(), callback, NULL,
+          new FileCallbacks(this, callback, NULL,
                             scoped_refptr<PPB_FileSystem_Impl>(this), NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;

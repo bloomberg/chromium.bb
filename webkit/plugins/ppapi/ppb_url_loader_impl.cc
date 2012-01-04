@@ -36,6 +36,7 @@ using ppapi::Resource;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_URLLoader_API;
 using ppapi::thunk::PPB_URLRequestInfo_API;
+using ppapi::TrackedCallback;
 using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -317,7 +318,7 @@ void PPB_URLLoader_Impl::didReceiveData(WebURLLoader* loader,
   if (user_buffer_) {
     RunCallback(FillUserBuffer());
   } else {
-    DCHECK(!pending_callback_.get() || pending_callback_->completed());
+    DCHECK(!TrackedCallback::IsPending(pending_callback_));
   }
 
   // To avoid letting the network stack download an entire stream all at once,
@@ -374,7 +375,7 @@ void PPB_URLLoader_Impl::FinishLoading(int32_t done_status) {
   // If the client hasn't called any function that takes a callback since
   // the initial call to Open, or called ReadResponseBody and got a
   // synchronous return, then the callback will be NULL.
-  if (pending_callback_.get() && !pending_callback_->completed())
+  if (TrackedCallback::IsPending(pending_callback_))
     RunCallback(done_status_);
 }
 
@@ -383,7 +384,7 @@ int32_t PPB_URLLoader_Impl::ValidateCallback(PP_CompletionCallback callback) {
   if (!callback.func)
     return PP_ERROR_BLOCKS_MAIN_THREAD;
 
-  if (pending_callback_.get() && !pending_callback_->completed())
+  if (TrackedCallback::IsPending(pending_callback_))
     return PP_ERROR_INPROGRESS;
 
   return PP_OK;
@@ -391,14 +392,13 @@ int32_t PPB_URLLoader_Impl::ValidateCallback(PP_CompletionCallback callback) {
 
 void PPB_URLLoader_Impl::RegisterCallback(PP_CompletionCallback callback) {
   DCHECK(callback.func);
-  DCHECK(!pending_callback_.get() || pending_callback_->completed());
+  DCHECK(!TrackedCallback::IsPending(pending_callback_));
 
   PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
   if (!plugin_module)
     return;
 
-  pending_callback_ = new TrackedCompletionCallback(
-      plugin_module->GetCallbackTracker(), pp_resource(), callback);
+  pending_callback_ = new TrackedCallback(this, callback);
 }
 
 void PPB_URLLoader_Impl::RunCallback(int32_t result) {
@@ -407,10 +407,7 @@ void PPB_URLLoader_Impl::RunCallback(int32_t result) {
     CHECK(main_document_loader_);
     return;
   }
-
-  scoped_refptr<TrackedCompletionCallback> callback;
-  callback.swap(pending_callback_);
-  callback->Run(result);  // Will complete abortively if necessary.
+  TrackedCallback::ClearAndRun(&pending_callback_, result);
 }
 
 size_t PPB_URLLoader_Impl::FillUserBuffer() {

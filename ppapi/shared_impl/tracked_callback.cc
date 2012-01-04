@@ -73,6 +73,29 @@ void TrackedCallback::Run(int32_t result) {
   }
 }
 
+// static
+bool TrackedCallback::IsPending(
+    const scoped_refptr<TrackedCallback>& callback) {
+  if (!callback.get())
+    return false;
+  return !callback->completed();
+}
+
+// static
+void TrackedCallback::ClearAndRun(scoped_refptr<TrackedCallback>* callback,
+                                  int32_t result) {
+  scoped_refptr<TrackedCallback> temp;
+  temp.swap(*callback);
+  temp->Run(result);
+}
+
+// static
+void TrackedCallback::ClearAndAbort(scoped_refptr<TrackedCallback>* callback) {
+  scoped_refptr<TrackedCallback> temp;
+  temp.swap(*callback);
+  temp->Abort();
+}
+
 void TrackedCallback::MarkAsCompleted() {
   DCHECK(!completed());
 

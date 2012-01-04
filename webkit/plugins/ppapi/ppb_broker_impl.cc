@@ -10,8 +10,9 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
-using ::ppapi::PlatformFileToInt;
-using ::ppapi::thunk::PPB_Broker_API;
+using ppapi::PlatformFileToInt;
+using ppapi::thunk::PPB_Broker_API;
+using ppapi::TrackedCallback;
 
 namespace webkit {
 namespace ppapi {
@@ -60,15 +61,11 @@ int32_t PPB_Broker_Impl::Connect(PP_CompletionCallback connect_callback) {
   // and BrokerConnected is called before ConnectToPpapiBroker returns.
   // Because it must be created now, it must be aborted and cleared if
   // ConnectToPpapiBroker fails.
-  connect_callback_ = new TrackedCompletionCallback(
-      plugin_instance->module()->GetCallbackTracker(), pp_resource(),
-      connect_callback);
+  connect_callback_ = new TrackedCallback(this, connect_callback);
 
   broker_ = plugin_instance->delegate()->ConnectToPpapiBroker(this);
   if (!broker_) {
-    scoped_refptr<TrackedCompletionCallback> callback;
-    callback.swap(connect_callback_);
-    callback->Abort();
+    TrackedCallback::ClearAndAbort(&connect_callback_);
     return PP_ERROR_FAILED;
   }
 
@@ -92,11 +89,9 @@ void PPB_Broker_Impl::BrokerConnected(int32_t handle, int32_t result) {
   pipe_handle_ = handle;
 
   // Synchronous calls are not supported.
-  DCHECK(connect_callback_.get() && !connect_callback_->completed());
+  DCHECK(TrackedCallback::IsPending(connect_callback_));
 
-  scoped_refptr<TrackedCompletionCallback> callback;
-  callback.swap(connect_callback_);
-  callback->Run(result);  // Will complete abortively if necessary.
+  TrackedCallback::ClearAndRun(&connect_callback_, result);
 }
 
 }  // namespace ppapi

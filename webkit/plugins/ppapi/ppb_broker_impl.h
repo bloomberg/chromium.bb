@@ -11,10 +11,10 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_broker_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 namespace webkit {
@@ -43,7 +43,7 @@ class WEBKIT_PLUGINS_EXPORT PPB_Broker_Impl
   PluginDelegate::PpapiBroker* broker_;
 
   // Callback invoked from BrokerConnected.
-  scoped_refptr<TrackedCompletionCallback> connect_callback_;
+  scoped_refptr< ::ppapi::TrackedCallback> connect_callback_;
 
   // Pipe handle for the plugin instance to use to communicate with the broker.
   // Never owned by this object.

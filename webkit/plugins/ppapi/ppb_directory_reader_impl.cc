@@ -97,8 +97,7 @@ int32_t PPB_DirectoryReader_Impl::GetNextEntry(
 
   if (!plugin_instance->delegate()->ReadDirectory(
           directory_ref_->GetFileSystemURL(),
-          new FileCallbacks(plugin_instance->module()->AsWeakPtr(),
-                            pp_resource(), callback, NULL, NULL, this)))
+          new FileCallbacks(this, callback, NULL, NULL, this)))
     return PP_ERROR_FAILED;
 
   return PP_OK_COMPLETIONPENDING;

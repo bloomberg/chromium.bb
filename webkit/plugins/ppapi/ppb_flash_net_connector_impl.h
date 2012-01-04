@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_flash_net_connector_api.h"
-#include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 namespace webkit {
@@ -49,7 +49,7 @@ class PPB_Flash_NetConnector_Impl
 
  private:
   // Any pending callback (for |ConnectTcp()| or |ConnectTcpAddress()|).
-  scoped_refptr<TrackedCompletionCallback> callback_;
+  scoped_refptr< ::ppapi::TrackedCallback> callback_;
 
   // Output buffers to be filled in when the callback is completed successfully
   // (|{local,remote}_addr_out| are optional and may be null).

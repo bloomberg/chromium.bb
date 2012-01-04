@@ -21,19 +21,21 @@ namespace base {
 class FilePath;
 }
 
+namespace ppapi {
+class Resource;
+class TrackedCallback;
+}
+
 namespace webkit {
 namespace ppapi {
 
 class PPB_DirectoryReader_Impl;
 class PPB_FileSystem_Impl;
-class PluginModule;
-class TrackedCompletionCallback;
 
 // Instances of this class are deleted by FileSystemDispatcher.
 class FileCallbacks : public fileapi::FileSystemCallbackDispatcher {
  public:
-  FileCallbacks(const base::WeakPtr<PluginModule>& module,
-                PP_Resource resource_id,
+  FileCallbacks(::ppapi::Resource* resource,
                 PP_CompletionCallback callback,
                 PP_FileInfo* info,
                 scoped_refptr<PPB_FileSystem_Impl> file_system,
@@ -52,12 +54,12 @@ class FileCallbacks : public fileapi::FileSystemCallbackDispatcher {
   virtual void DidFail(base::PlatformFileError error_code);
   virtual void DidWrite(int64 bytes, bool complete);
 
-  scoped_refptr<TrackedCompletionCallback> GetTrackedCompletionCallback() const;
+  scoped_refptr< ::ppapi::TrackedCallback> GetTrackedCallback() const;
 
  private:
   void RunCallback(base::PlatformFileError error_code);
 
-  scoped_refptr<TrackedCompletionCallback> callback_;
+  scoped_refptr< ::ppapi::TrackedCallback> callback_;
   PP_FileInfo* info_;
   scoped_refptr<PPB_FileSystem_Impl> file_system_;
   scoped_refptr<PPB_DirectoryReader_Impl> directory_reader_;

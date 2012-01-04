@@ -173,8 +173,7 @@ int32_t PPB_FileRef_Impl::MakeDirectory(PP_Bool make_ancestors,
     return PP_ERROR_FAILED;
   if (!plugin_instance->delegate()->MakeDirectory(
           GetFileSystemURL(), PP_ToBool(make_ancestors),
-          new FileCallbacks(plugin_instance->module()->AsWeakPtr(),
-                            pp_resource(), callback, NULL, NULL, NULL)))
+          new FileCallbacks(this, callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -194,8 +193,7 @@ int32_t PPB_FileRef_Impl::Touch(PP_Time last_access_time,
           GetFileSystemURL(),
           PPTimeToTime(last_access_time),
           PPTimeToTime(last_modified_time),
-          new FileCallbacks(plugin_instance->module()->AsWeakPtr(),
-                            pp_resource(), callback, NULL, NULL, NULL)))
+          new FileCallbacks(this, callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -211,8 +209,7 @@ int32_t PPB_FileRef_Impl::Delete(PP_CompletionCallback callback) {
     return PP_ERROR_FAILED;
   if (!plugin_instance->delegate()->Delete(
           GetFileSystemURL(),
-          new FileCallbacks(plugin_instance->module()->AsWeakPtr(),
-                            pp_resource(), callback, NULL, NULL, NULL)))
+          new FileCallbacks(this, callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -238,8 +235,7 @@ int32_t PPB_FileRef_Impl::Rename(PP_Resource new_pp_file_ref,
     return PP_ERROR_FAILED;
   if (!plugin_instance->delegate()->Rename(
           GetFileSystemURL(), new_file_ref->GetFileSystemURL(),
-          new FileCallbacks(plugin_instance->module()->AsWeakPtr(),
-                            pp_resource(), callback, NULL, NULL, NULL)))
+          new FileCallbacks(this, callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }

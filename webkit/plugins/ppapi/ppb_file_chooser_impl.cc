@@ -13,6 +13,7 @@
 #include "base/sys_string_conversions.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/shared_impl/var.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserCompletion.h"
@@ -20,7 +21,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -30,6 +30,7 @@
 
 using ppapi::StringVar;
 using ppapi::thunk::PPB_FileChooser_API;
+using ppapi::TrackedCallback;
 using WebKit::WebCString;
 using WebKit::WebFileChooserCompletion;
 using WebKit::WebFileChooserParams;
@@ -123,7 +124,7 @@ int32_t PPB_FileChooser_Impl::ValidateCallback(
   if (!callback.func)
     return PP_ERROR_BLOCKS_MAIN_THREAD;
 
-  if (callback_.get() && !callback_->completed())
+  if (TrackedCallback::IsPending(callback_))
     return PP_ERROR_INPROGRESS;
 
   return PP_OK;
@@ -132,20 +133,17 @@ int32_t PPB_FileChooser_Impl::ValidateCallback(
 void PPB_FileChooser_Impl::RegisterCallback(
     const PP_CompletionCallback& callback) {
   DCHECK(callback.func);
-  DCHECK(!callback_.get() || callback_->completed());
+  DCHECK(!TrackedCallback::IsPending(callback_));
 
   PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
   if (!plugin_module)
     return;
 
-  callback_ = new TrackedCompletionCallback(plugin_module->GetCallbackTracker(),
-                                            pp_resource(), callback);
+  callback_ = new TrackedCallback(this, callback);
 }
 
 void PPB_FileChooser_Impl::RunCallback(int32_t result) {
-  scoped_refptr<TrackedCompletionCallback> callback;
-  callback.swap(callback_);
-  callback->Run(result);  // Will complete abortively if necessary.
+  TrackedCallback::ClearAndRun(&callback_, result);
 }
 
 int32_t PPB_FileChooser_Impl::Show(const PP_CompletionCallback& callback) {

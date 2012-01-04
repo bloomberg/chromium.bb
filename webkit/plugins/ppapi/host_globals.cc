@@ -51,7 +51,7 @@ HostGlobals::~HostGlobals() {
 }
 
 ::ppapi::ResourceTracker* HostGlobals::GetResourceTracker() {
-  return &host_resource_tracker_;
+  return &resource_tracker_;
 }
 
 ::ppapi::VarTracker* HostGlobals::GetVarTracker() {
@@ -65,7 +65,7 @@ HostGlobals::~HostGlobals() {
   if (found == instance_map_.end())
     return NULL;
 
-  return found->second->instance->module()->GetNewCallbackTracker();
+  return found->second->instance->module()->GetCallbackTracker();
 }
 
 ::ppapi::FunctionGroupBase* HostGlobals::GetFunctionAPI(PP_Instance pp_instance,
@@ -173,18 +173,18 @@ PP_Instance HostGlobals::AddInstance(PluginInstance* instance) {
   instance_map_[new_instance] = linked_ptr<InstanceData>(new InstanceData);
   instance_map_[new_instance]->instance = instance;
 
-  host_resource_tracker_.DidCreateInstance(new_instance);
+  resource_tracker_.DidCreateInstance(new_instance);
   return new_instance;
 }
 
 void HostGlobals::InstanceDeleted(PP_Instance instance) {
-  host_resource_tracker_.DidDeleteInstance(instance);
+  resource_tracker_.DidDeleteInstance(instance);
   host_var_tracker_.ForceFreeNPObjectsForInstance(instance);
   instance_map_.erase(instance);
 }
 
 void HostGlobals::InstanceCrashed(PP_Instance instance) {
-  host_resource_tracker_.DidDeleteInstance(instance);
+  resource_tracker_.DidDeleteInstance(instance);
   host_var_tracker_.ForceFreeNPObjectsForInstance(instance);
 }
 

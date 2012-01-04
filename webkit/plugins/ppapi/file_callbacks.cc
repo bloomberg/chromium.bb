@@ -10,27 +10,26 @@
 #include "ppapi/c/ppb_file_system.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/time_conversion.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "webkit/fileapi/file_system_types.h"
-#include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 
+using ppapi::Resource;
 using ppapi::TimeToPPTime;
+using ppapi::TrackedCallback;
 
 namespace webkit {
 namespace ppapi {
 
 FileCallbacks::FileCallbacks(
-    const base::WeakPtr<PluginModule>& module,
-    PP_Resource resource_id,
+    Resource* resource,
     PP_CompletionCallback callback,
     PP_FileInfo* info,
     scoped_refptr<PPB_FileSystem_Impl> file_system,
     scoped_refptr<PPB_DirectoryReader_Impl> directory_reader)
-    : callback_(new TrackedCompletionCallback(module->GetCallbackTracker(),
-                                              resource_id,
-                                              callback)),
+    : callback_(new TrackedCallback(resource, callback)),
       info_(info),
       file_system_(file_system),
       directory_reader_(directory_reader) {

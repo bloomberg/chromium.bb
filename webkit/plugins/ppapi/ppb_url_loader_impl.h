@@ -13,9 +13,9 @@
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/shared_impl/ppb_url_request_info_shared.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_url_loader_api.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
-#include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace WebKit {
@@ -140,7 +140,7 @@ class PPB_URLLoader_Impl : public ::ppapi::Resource,
   scoped_ptr<WebKit::WebURLLoader> loader_;
 
   scoped_refptr<PPB_URLResponseInfo_Impl> response_info_;
-  scoped_refptr<TrackedCompletionCallback> pending_callback_;
+  scoped_refptr< ::ppapi::TrackedCallback> pending_callback_;
   std::deque<char> buffer_;
   int64_t bytes_sent_;
   int64_t total_bytes_to_be_sent_;

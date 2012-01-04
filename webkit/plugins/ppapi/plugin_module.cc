@@ -93,10 +93,8 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "webkit/plugins/plugin_switches.h"
-#include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/host_resource_tracker.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
@@ -221,7 +219,7 @@ void QuitMessageLoop(PP_Instance instance) {
 }
 
 uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {
-  return HostGlobals::Get()->host_resource_tracker()->GetLiveObjectsForInstance(
+  return HostGlobals::Get()->GetResourceTracker()->GetLiveObjectsForInstance(
       instance_id);
 }
 
@@ -417,7 +415,6 @@ PluginModule::PluginModule(const std::string& name,
                            const FilePath& path,
                            PluginDelegate::ModuleLifetime* lifetime_delegate)
     : lifetime_delegate_(lifetime_delegate),
-      old_callback_tracker_(new CallbackTracker),
       callback_tracker_(new ::ppapi::CallbackTracker),
       is_in_destructor_(false),
       is_crashed_(false),
@@ -448,7 +445,6 @@ PluginModule::~PluginModule() {
 
   GetLivePluginSet()->erase(this);
 
-  old_callback_tracker_->AbortAll();
   callback_tracker_->AbortAll();
 
   if (entry_points_.shutdown_module)
@@ -557,11 +553,7 @@ void PluginModule::InstanceDeleted(PluginInstance* instance) {
   instances_.erase(instance);
 }
 
-scoped_refptr<CallbackTracker> PluginModule::GetCallbackTracker() {
-  return old_callback_tracker_;
-}
-
-scoped_refptr< ::ppapi::CallbackTracker> PluginModule::GetNewCallbackTracker() {
+scoped_refptr< ::ppapi::CallbackTracker> PluginModule::GetCallbackTracker() {
   return callback_tracker_;
 }
 

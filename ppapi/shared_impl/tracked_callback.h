@@ -63,6 +63,8 @@ class PPAPI_SHARED_EXPORT TrackedCallback
   // Run the callback with the given result. If the callback had previously been
   // marked as to be aborted (by |PostAbort()|), |result| will be ignored and
   // the callback will be run with result |PP_ERROR_ABORTED|.
+  //
+  // See also ClearAndRun().
   void Run(int32_t result);
 
   // Returns the ID of the resource which "owns" the callback, or 0 if the
@@ -76,6 +78,24 @@ class PPAPI_SHARED_EXPORT TrackedCallback
   // case whenever |Abort()| or |PostAbort()| is called before a non-abortive
   // completion.
   bool aborted() const { return aborted_; }
+
+  // Helper to determine if the given callback is set and not yet completed.
+  // The normal pattern is to use a scoped_refptr to hold a callback. This
+  // function tells you if the operation is currently in progress by checking
+  // both the null-ness of the scoped_refptr, as well as the completion state
+  // of the callback (which may still be out-standing via a PostAbort).
+  static bool IsPending(const scoped_refptr<TrackedCallback>& callback);
+
+  // Runs the given callback, clearing the given scoped_refptr before execution.
+  // This is useful for cases where there can be only one pending callback, and
+  // the presence of the callback indicates is one is pending. Such code would
+  // normally want to clear it before execution so the plugin can issue a new
+  // request.
+  static void ClearAndRun(scoped_refptr<TrackedCallback>* callback,
+                          int32_t result);
+
+  // Same as ClearAndRun except it calls Abort().
+  static void ClearAndAbort(scoped_refptr<TrackedCallback>* callback);
 
  private:
   // This class is ref counted.

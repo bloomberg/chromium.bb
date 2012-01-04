@@ -59,10 +59,9 @@ class PPAPI_SHARED_EXPORT ResourceTracker {
   // the given resource. It's called from the resource destructor.
   virtual void RemoveResource(Resource* object);
 
-  // Calls LastPluginRefWasDeleted on the given resource object. This is
-  // provided because the derived class in webkit/plugins/ppapi needs to
-  // perform additional operations at this time.
-  virtual void LastPluginRefWasDeleted(Resource* object);
+  // Calls LastPluginRefWasDeleted on the given resource object and cancels
+  // pending callbacks for the resource.
+  void LastPluginRefWasDeleted(Resource* object);
 
  private:
   typedef std::set<PP_Resource> ResourceSet;
