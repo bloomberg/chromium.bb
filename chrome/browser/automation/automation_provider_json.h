@@ -19,11 +19,14 @@ class Browser;
 class Extension;
 class Profile;
 class RenderViewHost;
-class TabContents;
 
 namespace base {
 class DictionaryValue;
 class Value;
+}
+
+namespace content {
+class WebContents;
 }
 
 namespace IPC {
@@ -71,7 +74,7 @@ bool GetBrowserFromJSONArgs(base::DictionaryValue* args,
 // and a key 'tab_index' which refers to the index of the tab in that browser.
 // Returns true on success and sets |tab|. Otherwise, |error| will be set.
 bool GetTabFromJSONArgs(base::DictionaryValue* args,
-                        TabContents** tab,
+                        content::WebContents** tab,
                         std::string* error) WARN_UNUSED_RESULT;
 
 // Gets the browser and tab specified by the given dictionary |args|. |args|
@@ -81,7 +84,7 @@ bool GetTabFromJSONArgs(base::DictionaryValue* args,
 // will be set.
 bool GetBrowserAndTabFromJSONArgs(base::DictionaryValue* args,
                                   Browser** browser,
-                                  TabContents** tab,
+                                  content::WebContents** tab,
                                   std::string* error) WARN_UNUSED_RESULT;
 
 // Gets an automation ID from the given value in the given dicitionary |args|.

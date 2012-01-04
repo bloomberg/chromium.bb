@@ -20,7 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class BrowserInitTest : public ExtensionBrowserTest {
@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest,
   // The new browser should have one tab for each URL.
   ASSERT_EQ(static_cast<int>(urls.size()), new_browser->tab_count());
   for (size_t i=0; i < urls.size(); i++) {
-    EXPECT_EQ(urls[i], new_browser->GetTabContentsAt(i)->GetURL());
+    EXPECT_EQ(urls[i], new_browser->GetWebContentsAt(i)->GetURL());
   }
 }
 

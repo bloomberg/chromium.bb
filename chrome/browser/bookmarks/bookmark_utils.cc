@@ -25,8 +25,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
@@ -674,7 +674,7 @@ void GetURLsForOpenTabs(
     std::vector<std::pair<GURL, string16> >* urls) {
   for (int i = 0; i < browser->tab_count(); ++i) {
     std::pair<GURL, string16> entry;
-    GetURLAndTitleToBookmark(browser->GetTabContentsAt(i), &(entry.first),
+    GetURLAndTitleToBookmark(browser->GetWebContentsAt(i), &(entry.first),
                              &(entry.second));
     urls->push_back(entry);
   }

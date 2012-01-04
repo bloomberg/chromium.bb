@@ -78,10 +78,10 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -453,7 +453,7 @@ bool SessionCrashedInfoBarDelegate::Accept() {
   uint32 behavior = 0;
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   if (browser && browser->tab_count() == 1
-      && browser->GetTabContentsAt(0)->GetURL() ==
+      && browser->GetWebContentsAt(0)->GetURL() ==
       GURL(chrome::kChromeUINewTabURL)) {
     // There is only one tab and its the new tab page, make session restore
     // clobber it.

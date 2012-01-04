@@ -24,7 +24,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_client_host.h"
@@ -32,6 +32,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/worker_service.h"
 #include "content/public/browser/worker_service_observer.h"
 #include "net/test/test_server.h"
@@ -40,6 +41,7 @@ using content::BrowserThread;
 using content::DevToolsManager;
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
+using content::WebContents;
 using content::WorkerService;
 using content::WorkerServiceObserver;
 
@@ -143,8 +145,8 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     observer.Wait();
   }
 
-  TabContents* GetInspectedTab() {
-    return browser()->GetTabContentsAt(0);
+  WebContents* GetInspectedTab() {
+    return browser()->GetWebContentsAt(0);
   }
 
   void CloseDevToolsWindow() {
@@ -408,7 +410,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
         agent_host,
         window_->devtools_client_host());
     RenderViewHost* client_rvh = window_->GetRenderViewHost();
-    TabContents* client_contents = client_rvh->delegate()->GetAsTabContents();
+    WebContents* client_contents = client_rvh->delegate()->GetAsWebContents();
     if (client_contents->IsLoading()) {
       ui_test_utils::WindowedNotificationObserver observer(
           content::NOTIFICATION_LOAD_STOP,

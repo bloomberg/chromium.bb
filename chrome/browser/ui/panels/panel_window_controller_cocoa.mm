@@ -40,6 +40,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 
+using content::WebContents;
+
 const int kMinimumWindowSize = 1;
 const double kBoundsAnimationSpeedPixelsPerSecond = 1000;
 const double kBoundsAnimationMaxDurationSeconds = 0.18;
@@ -182,10 +184,10 @@ enum {
   // we always deactivate the controls here. If we're created as an active
   // panel, we'll get a NSWindowDidBecomeKeyNotification and reactivate the web
   // view properly. See crbug.com/97831 for more details.
-  TabContents* tab_contents = [contentsController_ tabContents];
+  WebContents* web_contents = [contentsController_ webContents];
   // RWHV may be NULL in unit tests.
-  if (tab_contents && tab_contents->GetRenderWidgetHostView())
-    tab_contents->GetRenderWidgetHostView()->SetActive(false);
+  if (web_contents && web_contents->GetRenderWidgetHostView())
+    web_contents->GetRenderWidgetHostView()->SetActive(false);
   [window setFrame:frame display:YES animate:YES];
 
   [self enableTabContentsViewAutosizing];
@@ -249,14 +251,14 @@ enum {
   [findBarCocoaController positionFindBarViewAtMaxY:maxY maxWidth:maxWidth];
 }
 
-- (void)tabInserted:(TabContents*)contents {
-  [contentsController_ changeTabContents:contents];
+- (void)tabInserted:(WebContents*)contents {
+  [contentsController_ changeWebContents:contents];
   DCHECK(![[contentsController_ view] isHidden]);
 }
 
-- (void)tabDetached:(TabContents*)contents {
-  DCHECK(contents == [contentsController_ tabContents]);
-  [contentsController_ changeTabContents:NULL];
+- (void)tabDetached:(WebContents*)contents {
+  DCHECK(contents == [contentsController_ webContents]);
+  [contentsController_ changeWebContents:NULL];
   [[contentsController_ view] setHidden:YES];
 }
 
@@ -541,7 +543,7 @@ enum {
 
   // We need to activate the controls (in the "WebView"). To do this, get the
   // selected TabContents's RenderWidgetHostViewMac and tell it to activate.
-  if (TabContents* contents = [contentsController_ tabContents]) {
+  if (WebContents* contents = [contentsController_ webContents]) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(true);
   }
@@ -569,7 +571,7 @@ enum {
 
   // We need to deactivate the controls (in the "WebView"). To do this, get the
   // selected TabContents's RenderWidgetHostView and tell it to deactivate.
-  if (TabContents* contents = [contentsController_ tabContents]) {
+  if (WebContents* contents = [contentsController_ webContents]) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(false);
   }

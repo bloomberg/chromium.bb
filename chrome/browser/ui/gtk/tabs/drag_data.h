@@ -15,6 +15,7 @@ class TabContentsWrapper;
 class TabGtk;
 
 namespace content {
+class WebContents;
 class WebContentsDelegate;
 }
 
@@ -92,8 +93,8 @@ class DragData {
   // Convenience for |source_tab_drag_data()->contents_|.
   TabContentsWrapper* GetSourceTabContentsWrapper();
 
-  // Convenience for |source_tab_drag_data()->contents_->tab_contents()|.
-  TabContents* GetSourceTabContents();
+  // Convenience for |source_tab_drag_data()->contents_->web_contents()|.
+  content::WebContents* GetSourceWebContents();
 
   // Convenience for getting the DraggedTabData corresponding to the tab that
   // was under the mouse pointer when the user started dragging.

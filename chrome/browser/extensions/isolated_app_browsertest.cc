@@ -13,17 +13,20 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/browser/site_instance.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/mock_host_resolver.h"
+
+using content::WebContents;
 
 namespace {
 
 class IsolatedAppTest : public ExtensionBrowserTest {
  public:
   // Returns whether the given tab's current URL has the given cookie.
-  bool WARN_UNUSED_RESULT HasCookie(TabContents* contents, std::string cookie) {
+  bool WARN_UNUSED_RESULT HasCookie(WebContents* contents, std::string cookie) {
     int value_size;
     std::string actual_cookie;
     automation_util::GetCookies(contents->GetURL(), contents, &value_size,
@@ -31,7 +34,7 @@ class IsolatedAppTest : public ExtensionBrowserTest {
     return actual_cookie.find(cookie) != std::string::npos;
   }
 
-  const Extension* GetInstalledApp(TabContents* contents) {
+  const Extension* GetInstalledApp(WebContents* contents) {
     const Extension* installed_app = NULL;
     Profile* profile =
         Profile::FromBrowserContext(contents->GetBrowserContext());
@@ -83,9 +86,9 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
   ASSERT_EQ(3, browser()->tab_count());
 
   // Ensure first two tabs have installed apps.
-  TabContents* tab1 = browser()->GetTabContentsAt(0);
-  TabContents* tab2 = browser()->GetTabContentsAt(1);
-  TabContents* tab3 = browser()->GetTabContentsAt(2);
+  WebContents* tab1 = browser()->GetWebContentsAt(0);
+  WebContents* tab2 = browser()->GetWebContentsAt(1);
+  WebContents* tab3 = browser()->GetWebContentsAt(2);
   ASSERT_TRUE(GetInstalledApp(tab1));
   ASSERT_TRUE(GetInstalledApp(tab2));
   ASSERT_TRUE(!GetInstalledApp(tab3));
@@ -119,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<content::NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+          &browser()->GetSelectedTabContentsWrapper()->web_contents()->
               GetController()));
   browser()->Reload(CURRENT_TAB);
   observer.Wait();
@@ -155,15 +158,15 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, NoCookieIsolationWithoutApp) {
   ASSERT_EQ(3, browser()->tab_count());
 
   // Check that tabs see each others' cookies.
-  EXPECT_TRUE(HasCookie(browser()->GetTabContentsAt(0), "app2=4"));
-  EXPECT_TRUE(HasCookie(browser()->GetTabContentsAt(0), "normalPage=5"));
-  EXPECT_TRUE(HasCookie(browser()->GetTabContentsAt(0), "nonAppFrame=6"));
-  EXPECT_TRUE(HasCookie(browser()->GetTabContentsAt(1), "app1=3"));
-  EXPECT_TRUE(HasCookie(browser()->GetTabContentsAt(1), "normalPage=5"));
-  EXPECT_TRUE(HasCookie(browser()->GetTabContentsAt(1), "nonAppFrame=6"));
-  EXPECT_TRUE(HasCookie(browser()->GetTabContentsAt(2), "app1=3"));
-  EXPECT_TRUE(HasCookie(browser()->GetTabContentsAt(2), "app2=4"));
-  EXPECT_TRUE(HasCookie(browser()->GetTabContentsAt(2), "nonAppFrame=6"));
+  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(0), "app2=4"));
+  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(0), "normalPage=5"));
+  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(0), "nonAppFrame=6"));
+  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(1), "app1=3"));
+  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(1), "normalPage=5"));
+  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(1), "nonAppFrame=6"));
+  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(2), "app1=3"));
+  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(2), "app2=4"));
+  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(2), "nonAppFrame=6"));
 }
 
 // Ensure that an isolated app never shares a process with WebUIs, non-isolated
@@ -238,25 +241,25 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, ProcessOverflow) {
   // Get tab processes.
   ASSERT_EQ(9, browser()->tab_count());
   content::RenderProcessHost* isolated1_host =
-      browser()->GetTabContentsAt(0)->GetRenderProcessHost();
+      browser()->GetWebContentsAt(0)->GetRenderProcessHost();
   content::RenderProcessHost* ntp1_host =
-      browser()->GetTabContentsAt(1)->GetRenderProcessHost();
+      browser()->GetWebContentsAt(1)->GetRenderProcessHost();
   content::RenderProcessHost* hosted1_host =
-      browser()->GetTabContentsAt(2)->GetRenderProcessHost();
+      browser()->GetWebContentsAt(2)->GetRenderProcessHost();
   content::RenderProcessHost* web1_host =
-      browser()->GetTabContentsAt(3)->GetRenderProcessHost();
+      browser()->GetWebContentsAt(3)->GetRenderProcessHost();
 
   content::RenderProcessHost* isolated2_host =
-      browser()->GetTabContentsAt(4)->GetRenderProcessHost();
+      browser()->GetWebContentsAt(4)->GetRenderProcessHost();
   content::RenderProcessHost* ntp2_host =
-      browser()->GetTabContentsAt(5)->GetRenderProcessHost();
+      browser()->GetWebContentsAt(5)->GetRenderProcessHost();
   content::RenderProcessHost* hosted2_host =
-      browser()->GetTabContentsAt(6)->GetRenderProcessHost();
+      browser()->GetWebContentsAt(6)->GetRenderProcessHost();
   content::RenderProcessHost* web2_host =
-      browser()->GetTabContentsAt(7)->GetRenderProcessHost();
+      browser()->GetWebContentsAt(7)->GetRenderProcessHost();
 
   content::RenderProcessHost* second_isolated1_host =
-      browser()->GetTabContentsAt(8)->GetRenderProcessHost();
+      browser()->GetWebContentsAt(8)->GetRenderProcessHost();
 
   // Get extension processes.
   ExtensionProcessManager* process_manager =

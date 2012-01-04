@@ -1479,7 +1479,7 @@ enum {
 // TabContentsControllerDelegate protocol.
 - (void)tabContentsViewFrameWillChange:(TabContentsController*)source
                              frameRect:(NSRect)frameRect {
-  TabContents* contents = [source tabContents];
+  WebContents* contents = [source webContents];
   RenderWidgetHostView* render_widget_host_view = contents ?
       contents->GetRenderWidgetHostView() : NULL;
   if (!render_widget_host_view)
@@ -1518,14 +1518,15 @@ enum {
 }
 
 // TabStripControllerDelegate protocol.
-- (void)onActivateTabWithContents:(TabContents*)contents {
+- (void)onActivateTabWithContents:(WebContents*)contents {
   // Update various elements that are interested in knowing the current
   // TabContents.
 
   // Update all the UI bits.
   windowShim_->UpdateTitleBar();
 
-  [sidebarController_ updateSidebarForTabContents:contents];
+  [sidebarController_ updateSidebarForTabContents:
+      static_cast<TabContents*>(contents)];
   [devToolsController_ updateDevToolsForWebContents:contents
                                         withProfile:browser_->profile()];
 
@@ -1546,7 +1547,7 @@ enum {
   [devToolsController_ ensureContentsVisible];
 }
 
-- (void)onReplaceTabWithContents:(TabContents*)contents {
+- (void)onReplaceTabWithContents:(WebContents*)contents {
   // Simply remove the preview view if it exists; the tab strip
   // controller will reinstall the view as the active view.
   [previewableContentsController_ hidePreview];
@@ -1554,7 +1555,7 @@ enum {
 }
 
 - (void)onTabChanged:(TabStripModelObserver::TabChangeType)change
-        withContents:(TabContents*)contents {
+        withContents:(WebContents*)contents {
   // Update titles if this is the currently selected tab and if it isn't just
   // the loading state which changed.
   if (change != TabStripModelObserver::LOADING_ONLY)
@@ -1569,7 +1570,7 @@ enum {
     [self updateBookmarkBarVisibilityWithAnimation:NO];
 }
 
-- (void)onTabDetachedWithContents:(TabContents*)contents {
+- (void)onTabDetachedWithContents:(WebContents*)contents {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(contents);
   [infoBarContainerController_ tabDetachedWithContents:wrapper];

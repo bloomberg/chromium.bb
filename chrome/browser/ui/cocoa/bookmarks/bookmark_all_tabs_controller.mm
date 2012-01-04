@@ -11,9 +11,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+using content::WebContents;
 
 @implementation BookmarkAllTabsController
 
@@ -45,9 +47,9 @@
   TabStripModel* tabstrip_model = browser->tabstrip_model();
   const int tabCount = tabstrip_model->count();
   for (int i = 0; i < tabCount; ++i) {
-    TabContents* tc = tabstrip_model->GetTabContentsAt(i)->tab_contents();
-    const string16 tabTitle = tc->GetTitle();
-    const GURL& tabURL(tc->GetURL());
+    WebContents* wc = tabstrip_model->GetTabContentsAt(i)->web_contents();
+    const string16 tabTitle = wc->GetTitle();
+    const GURL& tabURL(wc->GetURL());
     ActiveTabNameURLPair tabPair(tabTitle, tabURL);
     activeTabPairsVector_.push_back(tabPair);
   }

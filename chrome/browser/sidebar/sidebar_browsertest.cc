@@ -112,7 +112,7 @@ class SidebarTest : public ExtensionBrowserTest {
   }
 
   TabContents* tab_contents(int i) {
-    return browser()->GetTabContentsAt(i);
+    return browser()->GetTabContentsWrapperAt(i)->tab_contents();
   }
 
   BrowserView* browser_view() const {

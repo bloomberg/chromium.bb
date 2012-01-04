@@ -20,7 +20,7 @@ using content::WebContents;
 @interface TabContentsController(Private)
 // Forwards frame update to |delegate_| (ResizeNotificationView calls it).
 - (void)tabContentsViewFrameWillChange:(NSRect)frameRect;
-// Notification from TabContents (forwarded by TabContentsNotificationBridge).
+// Notification from WebContents (forwarded by TabContentsNotificationBridge).
 - (void)tabContentsRenderViewHostChanged:(RenderViewHost*)oldHost
                                  newHost:(RenderViewHost*)newHost;
 @end
@@ -100,9 +100,9 @@ void TabContentsNotificationBridge::ChangeWebContents(WebContents* contents) {
 
 
 @implementation TabContentsController
-@synthesize tabContents = contents_;
+@synthesize webContents = contents_;
 
-- (id)initWithContents:(TabContents*)contents
+- (id)initWithContents:(WebContents*)contents
               delegate:(id<TabContentsControllerDelegate>)delegate {
   if ((self = [super initWithNibName:nil bundle:nil])) {
     contents_ = contents;
@@ -165,7 +165,7 @@ void TabContentsNotificationBridge::ChangeWebContents(WebContents* contents) {
                                           NSViewHeightSizable];
 }
 
-- (void)changeTabContents:(TabContents*)newContents {
+- (void)changeWebContents:(WebContents*)newContents {
   contents_ = newContents;
   tabContentsBridge_->ChangeWebContents(contents_);
 }
@@ -189,7 +189,7 @@ void TabContentsNotificationBridge::ChangeWebContents(WebContents* contents) {
   // The RWHV is ripped out of the view hierarchy on tab switches, so it never
   // formally resigns first responder status.  Handle this by explicitly sending
   // a Blur() message to the renderer, but only if the RWHV currently has focus.
-  RenderViewHost* rvh = [self tabContents]->GetRenderViewHost();
+  RenderViewHost* rvh = [self webContents]->GetRenderViewHost();
   if (rvh && rvh->view() && rvh->view()->HasFocus())
     rvh->Blur();
 }
@@ -200,13 +200,13 @@ void TabContentsNotificationBridge::ChangeWebContents(WebContents* contents) {
   // logic will restore focus to the appropriate view.
 }
 
-- (void)tabDidChange:(TabContents*)updatedContents {
+- (void)tabDidChange:(WebContents*)updatedContents {
   // Calling setContentView: here removes any first responder status
   // the view may have, so avoid changing the view hierarchy unless
   // the view is different.
-  if ([self tabContents] != updatedContents) {
-    [self changeTabContents:updatedContents];
-    if ([self tabContents])
+  if ([self webContents] != updatedContents) {
+    [self changeWebContents:updatedContents];
+    if ([self webContents])
       [self ensureContentsVisible];
   }
 }

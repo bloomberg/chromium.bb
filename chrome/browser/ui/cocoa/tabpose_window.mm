@@ -32,7 +32,7 @@
 #include "content/browser/renderer_host/backing_store_mac.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -225,7 +225,7 @@ void ThumbnailLoader::LoadThumbnail() {
 
   // Medium term, we want to show thumbs of the actual info bar views, which
   // means I need to create InfoBarControllers here.
-  NSWindow* window = [contents_->tab_contents()->GetNativeView() window];
+  NSWindow* window = [contents_->web_contents()->GetNativeView() window];
   NSWindowController* windowController = [window windowController];
   if ([windowController isKindOfClass:[BrowserWindowController class]]) {
     BrowserWindowController* bwc =
@@ -253,14 +253,14 @@ void ThumbnailLoader::LoadThumbnail() {
   int bottomOffset = 0;
   TabContentsWrapper* devToolsContents =
       DevToolsWindow::GetDevToolsContents(contents_->web_contents());
-  if (devToolsContents && devToolsContents->tab_contents() &&
-      devToolsContents->tab_contents()->GetRenderViewHost() &&
-      devToolsContents->tab_contents()->GetRenderViewHost()->view()) {
+  if (devToolsContents && devToolsContents->web_contents() &&
+      devToolsContents->web_contents()->GetRenderViewHost() &&
+      devToolsContents->web_contents()->GetRenderViewHost()->view()) {
     // The devtool's size might not be up-to-date, but since its height doesn't
     // change on window resize, and since most users don't use devtools, this is
     // good enough.
     bottomOffset +=
-        devToolsContents->tab_contents()->GetRenderViewHost()->view()->
+        devToolsContents->web_contents()->GetRenderViewHost()->view()->
             GetViewBounds().height();
     bottomOffset += 1;  // :-( Divider line between web contents and devtools.
   }
@@ -285,7 +285,7 @@ void ThumbnailLoader::LoadThumbnail() {
 }
 
 - (void)drawInContext:(CGContextRef)context {
-  RenderWidgetHost* rwh = contents_->tab_contents()->GetRenderViewHost();
+  RenderWidgetHost* rwh = contents_->web_contents()->GetRenderViewHost();
   // NULL if renderer crashed.
   RenderWidgetHostView* rwhv = rwh ? rwh->view() : NULL;
   if (!rwhv) {
@@ -431,7 +431,7 @@ class Tile {
 
   // Returns an unelided title. The view logic is responsible for eliding.
   const string16& title() const {
-    return contents_->tab_contents()->GetTitle();
+    return contents_->web_contents()->GetTitle();
   }
 
   TabContentsWrapper* tab_contents() const { return contents_; }

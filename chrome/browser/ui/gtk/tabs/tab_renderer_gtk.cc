@@ -41,6 +41,8 @@
 #include "ui/gfx/platform_font_pango.h"
 #include "ui/gfx/skbitmap_operations.h"
 
+using content::WebContents;
+
 #if !GTK_CHECK_VERSION(2, 22, 0)
 #define gtk_button_get_event_window(button) button->event_window
 #endif  // Gtk+ >= 2.22
@@ -322,7 +324,7 @@ void TabRendererGtk::Observe(int type,
       theme_service_->GetColor(ThemeService::COLOR_BACKGROUND_TAB_TEXT);
 }
 
-void TabRendererGtk::UpdateData(TabContents* contents,
+void TabRendererGtk::UpdateData(WebContents* contents,
                                 bool app,
                                 bool loading_only) {
   DCHECK(contents);

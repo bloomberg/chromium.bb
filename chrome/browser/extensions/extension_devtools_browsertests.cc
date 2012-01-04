@@ -18,16 +18,17 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/net_util.h"
 
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
+using content::WebContents;
 
 // Looks for an ExtensionHost whose URL has the given path component (including
 // leading slash).  Also verifies that the expected number of hosts are loaded.
@@ -64,9 +65,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, FLAKY_TimelineApi) {
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
 
   // Grab the tab_id of whatever tab happens to be first.
-  TabContents* tab_contents = browser()->GetTabContentsAt(0);
-  ASSERT_TRUE(tab_contents);
-  int tab_id = ExtensionTabUtil::GetTabId(tab_contents);
+  WebContents* web_contents = browser()->GetWebContentsAt(0);
+  ASSERT_TRUE(web_contents);
+  int tab_id = ExtensionTabUtil::GetTabId(web_contents);
 
   // Test setup.
   bool result = false;
@@ -79,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, FLAKY_TimelineApi) {
   // Setting the events should have caused an ExtensionDevToolsBridge to be
   // registered for the tab's RenderViewHost.
   DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-      tab_contents->GetRenderViewHost());
+      web_contents->GetRenderViewHost());
   DevToolsClientHost* devtools_client_host =
       devtools_manager->GetDevToolsClientHostFor(agent);
   ASSERT_TRUE(devtools_client_host);
@@ -96,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, FLAKY_TimelineApi) {
   result = false;
   devtools_manager->UnregisterDevToolsClientHostFor(
       DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-          tab_contents->GetRenderViewHost()));
+          web_contents->GetRenderViewHost()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testReceiveTabCloseEvent()", &result));
   EXPECT_TRUE(result);
@@ -121,9 +122,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
 
   // Grab the tab_id of whatever tab happens to be first.
-  TabContents* tab_contents = browser()->GetTabContentsAt(0);
-  ASSERT_TRUE(tab_contents);
-  int tab_id = ExtensionTabUtil::GetTabId(tab_contents);
+  WebContents* web_contents = browser()->GetWebContentsAt(0);
+  ASSERT_TRUE(web_contents);
+  int tab_id = ExtensionTabUtil::GetTabId(web_contents);
 
   // Test setup.
   bool result = false;
@@ -137,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
   // to be registered for the tab's RenderViewHost.
   ASSERT_TRUE(devtools_manager->GetDevToolsClientHostFor(
       DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-          tab_contents->GetRenderViewHost())));
+          web_contents->GetRenderViewHost())));
 
   // Register listeners from the second extension as well.
   std::wstring script = base::StringPrintf(L"registerListenersForTab(%d)",
@@ -154,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
   EXPECT_TRUE(result);
   ASSERT_TRUE(devtools_manager->GetDevToolsClientHostFor(
       DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-          tab_contents->GetRenderViewHost())));
+          web_contents->GetRenderViewHost())));
 
   // Removing the listeners from the second extension should tear the bridge
   // down.
@@ -164,5 +165,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
   EXPECT_TRUE(result);
   ASSERT_FALSE(devtools_manager->GetDevToolsClientHostFor(
       DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-          tab_contents->GetRenderViewHost())));
+          web_contents->GetRenderViewHost())));
 }

@@ -27,9 +27,9 @@ int BrowserTabRestoreServiceDelegate::GetSelectedIndex() const {
   return browser_->active_index();
 }
 
-TabContents* BrowserTabRestoreServiceDelegate::GetTabContentsAt(
+WebContents* BrowserTabRestoreServiceDelegate::GetWebContentsAt(
     int index) const {
-  return browser_->GetTabContentsAt(index);
+  return browser_->GetWebContentsAt(index);
 }
 
 WebContents* BrowserTabRestoreServiceDelegate::GetSelectedWebContents() const {
@@ -40,7 +40,7 @@ bool BrowserTabRestoreServiceDelegate::IsTabPinned(int index) const {
   return browser_->IsTabPinned(index);
 }
 
-TabContents* BrowserTabRestoreServiceDelegate::AddRestoredTab(
+WebContents* BrowserTabRestoreServiceDelegate::AddRestoredTab(
       const std::vector<TabNavigation>& navigations,
       int tab_index,
       int selected_navigation,

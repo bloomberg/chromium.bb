@@ -29,8 +29,8 @@
 #include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -137,21 +137,21 @@ Browser* GetBrowserAt(int index) {
   return *(BrowserList::begin() + index);
 }
 
-TabContents* GetTabContentsAt(int browser_index, int tab_index) {
+WebContents* GetWebContentsAt(int browser_index, int tab_index) {
   if (tab_index < 0)
     return NULL;
   Browser* browser = GetBrowserAt(browser_index);
   if (!browser || tab_index >= browser->tab_count())
     return NULL;
-  return browser->GetTabContentsAt(tab_index);
+  return browser->GetWebContentsAt(tab_index);
 }
 
-Browser* GetBrowserForTab(TabContents* tab) {
+Browser* GetBrowserForTab(WebContents* tab) {
   BrowserList::const_iterator browser_iter = BrowserList::begin();
   for (; browser_iter != BrowserList::end(); ++browser_iter) {
     Browser* browser = *browser_iter;
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
-      if (browser->GetTabContentsAt(tab_index) == tab)
+      if (browser->GetWebContentsAt(tab_index) == tab)
         return browser;
     }
   }
@@ -160,7 +160,7 @@ Browser* GetBrowserForTab(TabContents* tab) {
 
 net::URLRequestContextGetter* GetRequestContext(WebContents* contents) {
   // Since we may be on the UI thread don't call GetURLRequestContext().
-  // Get the request context specific to the current TabContents and app.
+  // Get the request context specific to the current WebContents and app.
   return contents->GetBrowserContext()->GetRequestContextForRenderProcess(
       contents->GetRenderProcessHost()->GetID());
 }
@@ -438,7 +438,7 @@ AutomationId GetIdForExtension(const Extension* extension) {
   return AutomationId(AutomationId::kTypeExtension, extension->id());
 }
 
-bool GetTabForId(const AutomationId& id, TabContents** tab) {
+bool GetTabForId(const AutomationId& id, WebContents** tab) {
   if (id.type() != AutomationId::kTypeTab)
     return false;
 
@@ -449,7 +449,7 @@ bool GetTabForId(const AutomationId& id, TabContents** tab) {
       TabContentsWrapper* wrapper = browser->GetTabContentsWrapperAt(tab_index);
       if (base::IntToString(wrapper->restore_tab_helper()->session_id().id()) ==
               id.id()) {
-        *tab = wrapper->tab_contents();
+        *tab = wrapper->web_contents();
         return true;
       }
     }
@@ -486,7 +486,7 @@ bool GetRenderViewForId(
     RenderViewHost** rvh) {
   switch (id.type()) {
     case AutomationId::kTypeTab: {
-      TabContents* tab;
+      WebContents* tab;
       if (!GetTabForId(id, &tab))
         return false;
       *rvh = tab->GetRenderViewHost();
@@ -521,7 +521,7 @@ bool GetExtensionForId(
 bool DoesObjectWithIdExist(const AutomationId& id, Profile* profile) {
   switch (id.type()) {
     case AutomationId::kTypeTab: {
-      TabContents* tab;
+      WebContents* tab;
       return GetTabForId(id, &tab);
     }
     case AutomationId::kTypeExtensionPopup:

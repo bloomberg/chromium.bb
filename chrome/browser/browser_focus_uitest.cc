@@ -24,9 +24,9 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/interstitial_page.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "net/test/test_server.h"
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_WIN)
@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocus) {
 
       // Activate the location bar or the page.
       if (kFocusPage[i][j]) {
-        browser()->GetTabContentsAt(j)->GetView()->Focus();
+        browser()->GetWebContentsAt(j)->GetView()->Focus();
       } else {
         browser()->FocusLocationBar();
       }

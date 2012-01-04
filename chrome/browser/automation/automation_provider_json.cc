@@ -14,10 +14,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/automation_id.h"
 #include "chrome/common/automation_messages.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 
 using automation::Error;
 using automation::ErrorCode;
+using content::WebContents;
 
 AutomationJSONReply::AutomationJSONReply(AutomationProvider* provider,
                                          IPC::Message* reply_message)
@@ -70,7 +71,7 @@ bool GetBrowserFromJSONArgs(
     AutomationId id;
     if (!GetAutomationIdFromJSONArgs(args, "auto_id", &id, error))
       return false;
-    TabContents* tab;
+    WebContents* tab;
     if (!automation_util::GetTabForId(id, &tab)) {
       *error = "'auto_id' does not refer to an open tab";
       return false;
@@ -98,7 +99,7 @@ bool GetBrowserFromJSONArgs(
 
 bool GetTabFromJSONArgs(
     DictionaryValue* args,
-    TabContents** tab,
+    WebContents** tab,
     std::string* error) {
   if (args->HasKey("auto_id")) {
     AutomationId id;
@@ -118,7 +119,7 @@ bool GetTabFromJSONArgs(
       *error = "'tab_index' missing or invalid";
       return false;
     }
-    *tab = automation_util::GetTabContentsAt(browser_index, tab_index);
+    *tab = automation_util::GetWebContentsAt(browser_index, tab_index);
     if (!*tab) {
       *error = "Cannot locate tab from given indices";
       return false;
@@ -130,7 +131,7 @@ bool GetTabFromJSONArgs(
 bool GetBrowserAndTabFromJSONArgs(
     DictionaryValue* args,
     Browser** browser,
-    TabContents** tab,
+    WebContents** tab,
     std::string* error) {
   return GetBrowserFromJSONArgs(args, browser, error) &&
          GetTabFromJSONArgs(args, tab, error);
@@ -165,7 +166,7 @@ bool GetRenderViewFromJSONArgs(
     }
   } else {
     // If the render view id is not specified, check for browser/tab indices.
-    TabContents* tab = NULL;
+    WebContents* tab = NULL;
     if (!GetTabFromJSONArgs(args, &tab, error))
       return false;
     *rvh = tab->GetRenderViewHost();

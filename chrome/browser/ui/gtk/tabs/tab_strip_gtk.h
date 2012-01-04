@@ -412,7 +412,7 @@ class TabStripGtk : public TabStripModelObserver,
 
   // Starts various types of TabStrip animations.
   void StartInsertTabAnimation(int index);
-  void StartRemoveTabAnimation(int index, TabContents* contents);
+  void StartRemoveTabAnimation(int index, content::WebContents* contents);
   void StartMoveTabAnimation(int from_index, int to_index);
   void StartMiniTabAnimation(int index);
   void StartMiniMoveTabAnimation(int from_index,

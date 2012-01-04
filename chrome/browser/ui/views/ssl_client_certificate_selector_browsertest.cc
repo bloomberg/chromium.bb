@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/views/ssl_client_certificate_selector.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/ssl/ssl_client_auth_handler_mock.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/cert_test_util.h"
 #include "net/base/x509_certificate.h"
 #include "net/url_request/url_request.h"
@@ -142,11 +142,11 @@ class SSLClientCertificateSelectorMultiTabTest
 
     AddTabAtIndex(1, GURL("about:blank"), content::PAGE_TRANSITION_LINK);
     AddTabAtIndex(2, GURL("about:blank"), content::PAGE_TRANSITION_LINK);
-    ASSERT_TRUE(NULL != browser()->GetTabContentsAt(0));
-    ASSERT_TRUE(NULL != browser()->GetTabContentsAt(1));
-    ASSERT_TRUE(NULL != browser()->GetTabContentsAt(2));
-    ui_test_utils::WaitForLoadStop(browser()->GetTabContentsAt(1));
-    ui_test_utils::WaitForLoadStop(browser()->GetTabContentsAt(2));
+    ASSERT_TRUE(NULL != browser()->GetWebContentsAt(0));
+    ASSERT_TRUE(NULL != browser()->GetWebContentsAt(1));
+    ASSERT_TRUE(NULL != browser()->GetWebContentsAt(2));
+    ui_test_utils::WaitForLoadStop(browser()->GetWebContentsAt(1));
+    ui_test_utils::WaitForLoadStop(browser()->GetWebContentsAt(2));
 
     selector_1_ = new SSLClientCertificateSelector(
         browser()->GetTabContentsWrapperAt(1),

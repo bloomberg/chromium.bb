@@ -5,7 +5,7 @@
 #include "chrome/browser/tabs/tab_strip_model_order_controller.h"
 
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripModelOrderController, public:
@@ -131,9 +131,9 @@ void TabStripModelOrderController::ActiveTabChanged(
 
   if (user_gesture && new_opener != old_opener &&
       ((old_contents == NULL && new_opener == NULL) ||
-          new_opener != &old_contents->tab_contents()->GetController()) &&
+          new_opener != &old_contents->web_contents()->GetController()) &&
       ((new_contents == NULL && old_opener == NULL) ||
-          old_opener != &new_contents->tab_contents()->GetController())) {
+          old_opener != &new_contents->web_contents()->GetController())) {
     tabstrip_->ForgetAllOpeners();
   }
 }

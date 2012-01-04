@@ -44,11 +44,11 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
 #include "grit/chromium_strings.h"
@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(0, browser()->active_index());
-  TabContents* second_tab = browser()->GetTabContentsAt(1);
+  WebContents* second_tab = browser()->GetWebContentsAt(1);
   ASSERT_TRUE(second_tab);
   second_tab->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
       string16(),
@@ -348,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_SingleBeforeUnloadAfterWindowClose) {
   // Close the new window with JavaScript, which should show a single
   // beforeunload dialog.  Then show another alert, to make it easy to verify
   // that a second beforeunload dialog isn't shown.
-  browser()->GetTabContentsAt(0)->GetRenderViewHost()->
+  browser()->GetWebContentsAt(0)->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(),
                                   ASCIIToUTF16("w.close(); alert('bar');"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
@@ -616,9 +616,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ConvertTabToAppShortcut) {
   ASSERT_TRUE(http_url.SchemeIs(chrome::kHttpScheme));
 
   ASSERT_EQ(1, browser()->tab_count());
-  TabContents* initial_tab = browser()->GetTabContentsAt(0);
-  TabContents* app_tab = browser()->AddSelectedTabWithURL(
-      http_url, content::PAGE_TRANSITION_TYPED)->tab_contents();
+  WebContents* initial_tab = browser()->GetWebContentsAt(0);
+  WebContents* app_tab = browser()->AddSelectedTabWithURL(
+      http_url, content::PAGE_TRANSITION_TYPED)->web_contents();
   ASSERT_EQ(2, browser()->tab_count());
   ASSERT_EQ(1u, BrowserList::GetBrowserCount(browser()->profile()));
 
@@ -643,12 +643,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ConvertTabToAppShortcut) {
 
   // Check that the tab contents is in the new browser, and not in the old.
   ASSERT_EQ(1, browser()->tab_count());
-  ASSERT_EQ(initial_tab, browser()->GetTabContentsAt(0));
+  ASSERT_EQ(initial_tab, browser()->GetWebContentsAt(0));
 
   // Check that the appliaction browser has a single tab, and that tab contains
   // the content that we app-ified.
   ASSERT_EQ(1, app_browser->tab_count());
-  ASSERT_EQ(app_tab, app_browser->GetTabContentsAt(0));
+  ASSERT_EQ(app_tab, app_browser->GetWebContentsAt(0));
 
   // Normal tabs should accept load drops.
   EXPECT_TRUE(initial_tab->GetMutableRendererPrefs()->can_accept_load_drops);
@@ -1044,7 +1044,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   EXPECT_FALSE(new_model->IsTabPinned(2));
 
   EXPECT_EQ(browser()->profile()->GetHomePage(),
-      new_model->GetTabContentsAt(2)->tab_contents()->GetURL());
+      new_model->GetTabContentsAt(2)->web_contents()->GetURL());
 
   EXPECT_TRUE(
       new_model->GetTabContentsAt(0)->extension_tab_helper()->extension_app() ==

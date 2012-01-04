@@ -10,7 +10,6 @@
 
 #include "base/memory/scoped_ptr.h"
 
-class TabContents;
 class TabContentsNotificationBridge;
 @class TabContentsController;
 
@@ -28,8 +27,8 @@ class WebContents;
 
 @end
 
-// A class that controls the TabContents view. It manages displaying the
-// native view for a given TabContents.
+// A class that controls the WebContents view. It manages displaying the
+// native view for a given WebContents.
 // Note that just creating the class does not display the view. We defer
 // inserting it until the box is the correct size to avoid multiple resize
 // messages to the renderer. You must call |-ensureContentsVisible| to display
@@ -37,14 +36,14 @@ class WebContents;
 
 @interface TabContentsController : NSViewController {
  @private
-  TabContents* contents_;  // weak
+   content::WebContents* contents_;  // weak
   // Delegate to be notified about size changes.
   id<TabContentsControllerDelegate> delegate_;  // weak
   scoped_ptr<TabContentsNotificationBridge> tabContentsBridge_;
 }
-@property(readonly, nonatomic) TabContents* tabContents;
+@property(readonly, nonatomic) content::WebContents* webContents;
 
-- (id)initWithContents:(TabContents*)contents
+- (id)initWithContents:(content::WebContents*)contents
               delegate:(id<TabContentsControllerDelegate>)delegate;
 
 // Call when the tab contents is about to be replaced with the currently
@@ -58,7 +57,7 @@ class WebContents;
 // Call to change the underlying web contents object. View is not changed,
 // call |-ensureContentsVisible| to display the |newContents|'s render widget
 // host view.
-- (void)changeTabContents:(TabContents*)newContents;
+- (void)changeWebContents:(content::WebContents*)newContents;
 
 // Called when the tab contents is the currently selected tab and is about to be
 // removed from the view hierarchy.
@@ -72,7 +71,7 @@ class WebContents;
 // Called when the tab contents is updated in some non-descript way (the
 // notification from the model isn't specific). |updatedContents| could reflect
 // an entirely new tab contents object.
-- (void)tabDidChange:(TabContents*)updatedContents;
+- (void)tabDidChange:(content::WebContents*)updatedContents;
 
 @end
 

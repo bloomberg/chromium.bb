@@ -14,12 +14,12 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
@@ -164,8 +164,8 @@ WebContents* TabFinder::FindTabInBrowser(Browser* browser, const GURL& url) {
     return NULL;
 
   for (int i = 0; i < browser->tab_count(); ++i) {
-    if (TabMatchesURL(browser->GetTabContentsAt(i), url))
-      return browser->GetTabContentsAt(i);
+    if (TabMatchesURL(browser->GetWebContentsAt(i), url))
+      return browser->GetWebContentsAt(i);
   }
   return NULL;
 }

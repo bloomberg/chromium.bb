@@ -44,13 +44,14 @@
 #include "chrome/test/automation/javascript_execution_controller.h"
 #include "chrome/test/base/bookmark_load_observer.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/test/test_navigation_observer.h"
 #include "googleurl/src/gurl.h"
@@ -84,7 +85,7 @@ class DOMOperationObserver : public content::NotificationObserver,
  public:
   explicit DOMOperationObserver(RenderViewHost* render_view_host)
       : content::WebContentsObserver(
-            render_view_host->delegate()->GetAsTabContents()),
+            render_view_host->delegate()->GetAsWebContents()),
         did_respond_(false) {
     registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    content::Source<RenderViewHost>(render_view_host));
@@ -128,7 +129,7 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
     current_find_request_id_ =
         parent_tab->find_tab_helper()->current_find_request_id();
     registrar_.Add(this, chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
-                   content::Source<WebContents>(parent_tab_->tab_contents()));
+                   content::Source<WebContents>(parent_tab_->web_contents()));
     ui_test_utils::RunMessageLoop();
   }
 
@@ -434,7 +435,7 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
   WebContents* web_contents = NULL;
   if (disposition == NEW_BACKGROUND_TAB) {
     // We've opened up a new tab, but not selected it.
-    web_contents = browser->GetTabContentsAt(browser->active_index() + 1);
+    web_contents = browser->GetWebContentsAt(browser->active_index() + 1);
     EXPECT_TRUE(web_contents != NULL)
         << " Unable to wait for navigation to \"" << url.spec()
         << "\" because the new tab is not available yet";

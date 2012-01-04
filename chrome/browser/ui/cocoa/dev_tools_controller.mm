@@ -119,8 +119,7 @@ const int kMinContentsSize = 50;
     }
   }
 
-  [contentsController_ changeTabContents:
-      static_cast<TabContents*>(devToolsContents)];
+  [contentsController_ changeWebContents:devToolsContents];
 }
 
 - (void)showDevToolsContainer:(Profile*)profile {

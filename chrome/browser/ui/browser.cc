@@ -1196,10 +1196,10 @@ TabContentsWrapper* Browser::GetTabContentsWrapperAt(int index) const {
   return tabstrip_model()->GetTabContentsAt(index);
 }
 
-TabContents* Browser::GetTabContentsAt(int index) const {
+WebContents* Browser::GetWebContentsAt(int index) const {
   TabContentsWrapper* wrapper = tabstrip_model()->GetTabContentsAt(index);
   if (wrapper)
-    return wrapper->tab_contents();
+    return wrapper->web_contents();
   return NULL;
 }
 
@@ -1287,7 +1287,7 @@ void Browser::BookmarkBarSizeChanged(bool is_animating) {
   window_->ToolbarSizeChanged(is_animating);
 }
 
-TabContents* Browser::AddRestoredTab(
+WebContents* Browser::AddRestoredTab(
     const std::vector<TabNavigation>& navigations,
     int tab_index,
     int selected_navigation,
@@ -1303,7 +1303,7 @@ TabContents* Browser::AddRestoredTab(
       MSG_ROUTING_NONE,
       GetSelectedWebContents(),
       session_storage_namespace);
-  TabContents* new_tab = wrapper->tab_contents();
+  WebContents* new_tab = wrapper->web_contents();
   wrapper->extension_tab_helper()->SetExtensionAppById(extension_app_id);
   std::vector<NavigationEntry*> entries;
   TabNavigation::CreateNavigationEntriesFromTabNavigations(
@@ -3103,7 +3103,7 @@ TabContentsWrapper* Browser::CreateTabContentsForURL(
 }
 
 bool Browser::CanDuplicateContentsAt(int index) {
-  content::NavigationController& nc = GetTabContentsAt(index)->GetController();
+  content::NavigationController& nc = GetWebContentsAt(index)->GetController();
   return nc.GetWebContents() && nc.GetLastCommittedEntry();
 }
 
@@ -4811,7 +4811,7 @@ void Browser::ProcessPendingUIUpdates() {
        i != scheduled_updates_.end(); ++i) {
     bool found = false;
     for (int tab = 0; tab < tab_count(); tab++) {
-      if (GetTabContentsAt(tab) == i->first) {
+      if (GetWebContentsAt(tab) == i->first) {
         found = true;
         break;
       }

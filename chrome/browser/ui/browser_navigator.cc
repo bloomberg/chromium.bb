@@ -30,9 +30,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_url_handler.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "net/http/http_util.h"
 
 using content::GlobalRequestID;
@@ -245,7 +247,7 @@ Profile* GetSourceProfile(browser::NavigateParams* params,
   return params->browser->profile();
 }
 
-void LoadURLInContents(TabContents* target_contents,
+void LoadURLInContents(WebContents* target_contents,
                        const GURL& url,
                        browser::NavigateParams* params,
                        const std::string& extra_headers) {
@@ -483,8 +485,8 @@ void Navigate(NavigateParams* params) {
     }
 
     if (params->disposition != CURRENT_TAB) {
-      TabContents* source_contents = params->source_contents ?
-          params->source_contents->tab_contents() : NULL;
+      WebContents* source_contents = params->source_contents ?
+          params->source_contents->web_contents() : NULL;
       params->target_contents =
           Browser::TabContentsFactory(
               params->browser->profile(),
@@ -504,7 +506,7 @@ void Navigate(NavigateParams* params) {
       // in the background, tell it that it's hidden.
       if ((params->tabstrip_add_types & TabStripModel::ADD_ACTIVE) == 0) {
         // TabStripModel::AddTabContents invokes HideContents if not foreground.
-        params->target_contents->tab_contents()->WasHidden();
+        params->target_contents->web_contents()->WasHidden();
       }
     } else {
       // ... otherwise if we're loading in the current tab, the target is the
@@ -514,8 +516,8 @@ void Navigate(NavigateParams* params) {
     }
 
     if (user_initiated) {
-      static_cast<RenderViewHostDelegate*>(params->target_contents->
-          tab_contents())->OnUserGesture();
+      params->target_contents->web_contents()->GetRenderViewHost()->
+          delegate()->OnUserGesture();
     }
 
     InitializeExtraHeaders(params, params->target_contents->profile(),
@@ -527,7 +529,7 @@ void Navigate(NavigateParams* params) {
       // Perform the actual navigation, tracking whether it came from the
       // renderer.
 
-      LoadURLInContents(params->target_contents->tab_contents(),
+      LoadURLInContents(params->target_contents->web_contents(),
                         url, params, extra_headers);
     }
   } else {
@@ -543,7 +545,7 @@ void Navigate(NavigateParams* params) {
       (params->disposition == NEW_FOREGROUND_TAB ||
        params->disposition == NEW_WINDOW) &&
       (params->tabstrip_add_types & TabStripModel::ADD_INHERIT_OPENER))
-    params->source_contents->tab_contents()->Focus();
+    params->source_contents->web_contents()->Focus();
 
   if (params->source_contents == params->target_contents) {
     // The navigation occurred in the source tab.
@@ -569,7 +571,7 @@ void Navigate(NavigateParams* params) {
   }
 
   if (singleton_index >= 0) {
-    TabContents* target = params->browser->GetTabContentsAt(singleton_index);
+    WebContents* target = params->browser->GetWebContentsAt(singleton_index);
 
     if (target->IsCrashed()) {
       target->GetController().Reload(true);
@@ -588,7 +590,7 @@ void Navigate(NavigateParams* params) {
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_TAB_ADDED,
         content::Source<content::WebContentsDelegate>(params->browser),
-        content::Details<WebContents>(params->target_contents->tab_contents()));
+        content::Details<WebContents>(params->target_contents->web_contents()));
   }
 }
 
@@ -625,9 +627,9 @@ int GetIndexOfSingletonTab(browser::NavigateParams* params) {
       replacements.ClearQuery();
     }
 
-    if (CompareURLsWithReplacements(tab->tab_contents()->GetURL(),
+    if (CompareURLsWithReplacements(tab->web_contents()->GetURL(),
                                     params->url, replacements) ||
-        CompareURLsWithReplacements(tab->tab_contents()->GetURL(),
+        CompareURLsWithReplacements(tab->web_contents()->GetURL(),
                                     rewritten_url, replacements)) {
       params->target_contents = tab;
       return tab_index;

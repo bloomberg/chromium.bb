@@ -31,8 +31,11 @@ class Size;
 }  // namespace gfx
 
 class CustomDrawButton;
-class TabContents;
 class GtkThemeService;
+
+namespace content {
+class WebContents;
+}
 
 namespace ui {
 class SlideAnimation;
@@ -106,10 +109,10 @@ class TabRendererGtk : public ui::AnimationDelegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // TabContents. If only the loading state was updated, the loading_only flag
+  // WebContents. If only the loading state was updated, the loading_only flag
   // should be specified. If other things change, set this flag to false to
   // update everything.
-  virtual void UpdateData(TabContents* contents, bool app, bool loading_only);
+  void UpdateData(content::WebContents* contents, bool app, bool loading_only);
 
   // Sets the blocked state of the tab.
   void SetBlocked(bool pinned);

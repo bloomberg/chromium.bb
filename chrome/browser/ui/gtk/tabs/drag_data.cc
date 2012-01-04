@@ -10,6 +10,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
+using content::WebContents;
+
 DraggedTabData::DraggedTabData()
     : tab_(NULL),
       contents_(NULL),
@@ -97,9 +99,9 @@ TabContentsWrapper* DragData::GetSourceTabContentsWrapper() {
   return GetSourceTabData()->contents_;
 }
 
-TabContents* DragData::GetSourceTabContents() {
+WebContents* DragData::GetSourceWebContents() {
   TabContentsWrapper* contents = GetSourceTabData()->contents_;
-  return contents ? contents->tab_contents(): NULL;
+  return contents ? contents->web_contents(): NULL;
 }
 
 DraggedTabData* DragData::GetSourceTabData() {

@@ -19,7 +19,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -259,7 +259,7 @@ void NetInternalsTest::MessageHandler::AddCacheEntry(
 
 void NetInternalsTest::MessageHandler::NavigateToPrerender(
     const ListValue* list_value) {
-  RenderViewHost* host = browser()->GetTabContentsAt(1)->GetRenderViewHost();
+  RenderViewHost* host = browser()->GetWebContentsAt(1)->GetRenderViewHost();
   host->ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16("Click()"));
 }
 

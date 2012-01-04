@@ -8,15 +8,16 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 #include "content/test/test_browser_thread.h"
 
 typedef BrowserWithTestWindowTest BrowserCommandsTest;
 
 using content::OpenURLParams;
 using content::Referrer;
+using content::WebContents;
 
 // Tests IDC_SELECT_TAB_0, IDC_SELECT_NEXT_TAB, IDC_SELECT_PREVIOUS_TAB and
 // IDC_SELECT_LAST_TAB.
@@ -73,7 +74,7 @@ TEST_F(BrowserCommandsTest, DuplicateTab) {
 
   // Verify the stack of urls.
   content::NavigationController& controller =
-      browser()->GetTabContentsAt(1)->GetController();
+      browser()->GetWebContentsAt(1)->GetController();
   ASSERT_EQ(3, controller.GetEntryCount());
   ASSERT_EQ(2, controller.GetCurrentEntryIndex());
   ASSERT_TRUE(url1 == controller.GetEntryAtIndex(0)->GetURL());
@@ -120,14 +121,14 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   ASSERT_EQ(2, browser()->tab_count());
 
   // The original tab should be unchanged.
-  TabContents* zeroth = browser()->GetTabContentsAt(0);
+  WebContents* zeroth = browser()->GetWebContentsAt(0);
   EXPECT_EQ(url2, zeroth->GetURL());
   EXPECT_TRUE(zeroth->GetController().CanGoBack());
   EXPECT_FALSE(zeroth->GetController().CanGoForward());
 
   // The new tab should be like the first one but navigated back.
-  TabContents* first = browser()->GetTabContentsAt(1);
-  EXPECT_EQ(url1, browser()->GetTabContentsAt(1)->GetURL());
+  WebContents* first = browser()->GetWebContentsAt(1);
+  EXPECT_EQ(url1, browser()->GetWebContentsAt(1)->GetURL());
   EXPECT_FALSE(first->GetController().CanGoBack());
   EXPECT_TRUE(first->GetController().CanGoForward());
 
@@ -149,7 +150,7 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
 
   // There should be a new tab navigated forward.
   ASSERT_EQ(3, browser()->tab_count());
-  TabContents* second = browser()->GetTabContentsAt(2);
+  WebContents* second = browser()->GetWebContentsAt(2);
   EXPECT_EQ(url2, second->GetURL());
   EXPECT_TRUE(second->GetController().CanGoBack());
   EXPECT_FALSE(second->GetController().CanGoForward());

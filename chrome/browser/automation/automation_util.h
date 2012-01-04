@@ -18,7 +18,6 @@ class ExtensionHost;
 class GURL;
 class Profile;
 class RenderViewHost;
-class TabContents;
 class TabContentsWrapper;
 
 namespace content {
@@ -43,10 +42,10 @@ Browser* GetBrowserAt(int index);
 
 // Returns the tab at |tab_index| within the browser at |browser_index| in the
 // |BrowserList|. If any of these indices are invalid, NULL will be returned.
-TabContents* GetTabContentsAt(int browser_index, int tab_index);
+content::WebContents* GetWebContentsAt(int browser_index, int tab_index);
 
 // Returns the browser that contains the given tab, or NULL if none exists.
-Browser* GetBrowserForTab(TabContents* tab);
+Browser* GetBrowserForTab(content::WebContents* tab);
 
 // Gets the size and value of the cookie string for |url| in the given tab.
 // Can be called from any thread.
@@ -100,7 +99,7 @@ AutomationId GetIdForExtensionView(const ExtensionHost* ext_host);
 AutomationId GetIdForExtension(const Extension* extension);
 
 // Gets the tab for the given ID. Returns true on success.
-bool GetTabForId(const AutomationId& id, TabContents** tab);
+bool GetTabForId(const AutomationId& id, content::WebContents** tab);
 
 // Gets the render view for the given ID. Returns true on success.
 bool GetRenderViewForId(const AutomationId& id,

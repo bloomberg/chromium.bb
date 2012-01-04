@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_util.h"
 
@@ -138,7 +138,7 @@ void AppendToTabIdList(Browser* browser, ListValue* tab_ids) {
   for (int i = 0; i < tab_strip->count(); ++i) {
     tab_ids->Append(Value::CreateIntegerValue(
         ExtensionTabUtil::GetTabId(
-            tab_strip->GetTabContentsAt(i)->tab_contents())));
+            tab_strip->GetTabContentsAt(i)->web_contents())));
   }
 }
 

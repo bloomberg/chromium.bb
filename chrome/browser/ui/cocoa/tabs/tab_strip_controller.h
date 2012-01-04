@@ -27,7 +27,6 @@ class Browser;
 class ConstrainedWindowMac;
 class TabStripModelObserverBridge;
 class TabStripModel;
-class TabContents;
 
 // The interface for the tab strip controller's delegate.
 // Delegating TabStripModelObserverBridge's events (in lieu of directly
@@ -37,17 +36,17 @@ class TabContents;
 @protocol TabStripControllerDelegate
 
 // Stripped down version of TabStripModelObserverBridge:selectTabWithContents.
-- (void)onActivateTabWithContents:(TabContents*)contents;
+- (void)onActivateTabWithContents:(content::WebContents*)contents;
 
 // Stripped down version of TabStripModelObserverBridge:tabReplacedWithContents.
-- (void)onReplaceTabWithContents:(TabContents*)contents;
+- (void)onReplaceTabWithContents:(content::WebContents*)contents;
 
 // Stripped down version of TabStripModelObserverBridge:tabChangedWithContents.
 - (void)onTabChanged:(TabStripModelObserver::TabChangeType)change
-        withContents:(TabContents*)contents;
+        withContents:(content::WebContents*)contents;
 
 // Stripped down version of TabStripModelObserverBridge:tabDetachedWithContents.
-- (void)onTabDetachedWithContents:(TabContents*)contents;
+- (void)onTabDetachedWithContents:(content::WebContents*)contents;
 
 @end
 

@@ -76,7 +76,8 @@ const int kMinWebWidth = 50;
       sidebarContents = activeSidebar->sidebar_contents();
   }
 
-  TabContents* oldSidebarContents = [contentsController_ tabContents];
+  TabContents* oldSidebarContents = static_cast<TabContents*>(
+      [contentsController_ webContents]);
   if (oldSidebarContents == sidebarContents)
     return;
 
@@ -141,7 +142,7 @@ const int kMinWebWidth = 50;
     }
   }
 
-  [contentsController_ changeTabContents:sidebarContents];
+  [contentsController_ changeWebContents:sidebarContents];
 }
 
 - (void)resizeSidebarToNewWidth:(CGFloat)width {

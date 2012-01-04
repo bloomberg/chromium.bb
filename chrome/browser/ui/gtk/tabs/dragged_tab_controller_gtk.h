@@ -58,7 +58,7 @@ class DraggedTabControllerGtk : public content::NotificationObserver,
   // Retrieve the tab that corresponds to |contents| if it is being dragged by
   // this controller, or NULL if |contents| does not correspond to any tab
   // being dragged.
-  TabGtk* GetDraggedTabForContents(TabContents* contents);
+  TabGtk* GetDraggedTabForContents(content::WebContents* contents);
 
   // Returns true if |tab| matches any tab being dragged.
   bool IsDraggingTab(const TabGtk* tab);

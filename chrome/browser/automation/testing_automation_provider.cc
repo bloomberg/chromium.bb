@@ -117,13 +117,13 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/ssl_status.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/common_param_traits.h"
 #include "net/base/cookie_store.h"
@@ -184,7 +184,7 @@ void SendMouseClick(int flags) {
 
 class AutomationInterstitialPage : public InterstitialPage {
  public:
-  AutomationInterstitialPage(TabContents* tab,
+  AutomationInterstitialPage(WebContents* tab,
                              const GURL& url,
                              const std::string& contents)
       : InterstitialPage(tab, true, url),
@@ -1262,8 +1262,8 @@ void TestingAutomationProvider::GetTab(int win_handle,
   if (browser_tracker_->ContainsHandle(win_handle) && (tab_index >= 0)) {
     Browser* browser = browser_tracker_->GetResource(win_handle);
     if (tab_index < browser->tab_count()) {
-      TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
-      *tab_handle = tab_tracker_->Add(&tab_contents->GetController());
+      WebContents* web_contents = browser->GetWebContentsAt(tab_index);
+      *tab_handle = tab_tracker_->Add(&web_contents->GetController());
     }
   }
 }
@@ -1533,7 +1533,7 @@ void TestingAutomationProvider::ShowInterstitialPage(
                                        false, false);
 
     AutomationInterstitialPage* interstitial =
-        new AutomationInterstitialPage(static_cast<TabContents*>(web_contents),
+        new AutomationInterstitialPage(web_contents,
                                        GURL("about:interstitial"),
                                        html_text);
     interstitial->Show();
@@ -1627,8 +1627,7 @@ void TestingAutomationProvider::ActionOnSSLBlockingPage(
     if (entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
       WebContents* web_contents = tab->GetWebContents();
       InterstitialPage* ssl_blocking_page =
-          InterstitialPage::GetInterstitialPage(
-              static_cast<TabContents*>(web_contents));
+          InterstitialPage::GetInterstitialPage(web_contents);
       if (ssl_blocking_page) {
         if (proceed) {
           new NavigationNotificationObserver(tab, this, reply_message, 1,
@@ -2624,11 +2623,11 @@ void TestingAutomationProvider::SetWindowDimensions(
   AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 
-ListValue* TestingAutomationProvider::GetInfobarsInfo(TabContents* tc) {
+ListValue* TestingAutomationProvider::GetInfobarsInfo(WebContents* wc) {
   // Each infobar may have different properties depending on the type.
   ListValue* infobars = new ListValue;
   InfoBarTabHelper* infobar_helper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tc)->
+      TabContentsWrapper::GetCurrentWrapperForContents(wc)->
           infobar_tab_helper();
   for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
     DictionaryValue* infobar_item = new DictionaryValue;
@@ -2859,13 +2858,13 @@ void TestingAutomationProvider::GetBrowserInfo(
     // one dictionary item per tab.
     ListValue* tabs = new ListValue;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      TabContents* tc = browser->GetTabContentsAt(i);
+      WebContents* wc = browser->GetWebContentsAt(i);
       DictionaryValue* tab = new DictionaryValue;
       tab->SetInteger("index", i);
-      tab->SetString("url", tc->GetURL().spec());
+      tab->SetString("url", wc->GetURL().spec());
       tab->SetInteger("renderer_pid",
-                      base::GetProcId(tc->GetRenderProcessHost()->GetHandle()));
-      tab->Set("infobars", GetInfobarsInfo(tc));
+                      base::GetProcId(wc->GetRenderProcessHost()->GetHandle()));
+      tab->Set("infobars", GetInfobarsInfo(wc));
       tab->SetBoolean("pinned", browser->IsTabPinned(i));
       tabs->Append(tab);
     }
@@ -2972,15 +2971,15 @@ void TestingAutomationProvider::GetNavigationInfo(
     IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
   int tab_index;
-  TabContents* tab_contents = NULL;
+  WebContents* web_contents = NULL;
   if (!args->GetInteger("tab_index", &tab_index) ||
-      !(tab_contents = browser->GetTabContentsAt(tab_index))) {
+      !(web_contents = browser->GetWebContentsAt(tab_index))) {
     reply.SendError("tab_index missing or invalid.");
     return;
   }
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   const content::NavigationController& controller =
-      tab_contents->GetController();
+      web_contents->GetController();
   NavigationEntry* nav_entry = controller.GetActiveEntry();
   DCHECK(nav_entry);
 
@@ -3561,8 +3560,8 @@ void TestingAutomationProvider::GetInstantInfo(Browser* browser,
     info->SetBoolean("active", (instant->GetPreviewContents() != NULL));
     info->SetBoolean("current", instant->IsCurrent());
     if (instant->GetPreviewContents() &&
-        instant->GetPreviewContents()->tab_contents()) {
-      TabContents* contents = instant->GetPreviewContents()->tab_contents();
+        instant->GetPreviewContents()->web_contents()) {
+      WebContents* contents = instant->GetPreviewContents()->web_contents();
       info->SetBoolean("loading", contents->IsLoading());
       info->SetString("location", contents->GetURL().spec());
       info->SetString("title", contents->GetTitle());
@@ -3700,7 +3699,7 @@ void TestingAutomationProvider::SaveTabContents(
   int tab_index = 0;
   FilePath::StringType filename;
   FilePath::StringType parent_directory;
-  TabContents* tab_contents = NULL;
+  WebContents* web_contents = NULL;
 
   if (!args->GetInteger("tab_index", &tab_index) ||
       !args->GetString("filename", &filename)) {
@@ -3708,8 +3707,8 @@ void TestingAutomationProvider::SaveTabContents(
         .SendError("tab_index or filename param missing");
     return;
   } else {
-    tab_contents = browser->GetTabContentsAt(tab_index);
-    if (!tab_contents) {
+    web_contents = browser->GetWebContentsAt(tab_index);
+    if (!web_contents) {
       AutomationJSONReply(this, reply_message).SendError("no tab at tab_index");
       return;
     }
@@ -3717,7 +3716,7 @@ void TestingAutomationProvider::SaveTabContents(
   // We're doing a SAVE_AS_ONLY_HTML so the the directory path isn't
   // used.  Nevertheless, SavePackage requires it be valid.  Sigh.
   parent_directory = FilePath(filename).DirName().value();
-  if (!tab_contents->SavePage(
+  if (!web_contents->SavePage(
           FilePath(filename),
           FilePath(parent_directory),
           SavePackage::SAVE_AS_ONLY_HTML)) {
@@ -4033,9 +4032,9 @@ TabContentsWrapper* GetTabContentsWrapperFromDict(const Browser* browser,
 
 // Get the TranslateInfoBarDelegate from TabContents.
 TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(
-    TabContents* tab_contents) {
+    WebContents* web_contents) {
   InfoBarTabHelper* infobar_helper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents)->
           infobar_tab_helper();
   for (size_t i = 0; i < infobar_helper->infobar_count(); i++) {
     InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(i);
@@ -4083,7 +4082,7 @@ void TestingAutomationProvider::FindInPage(
         SendError("Must include find_next boolean.");
     return;
   }
-  SendFindRequest(tab_contents->tab_contents(),
+  SendFindRequest(tab_contents->web_contents(),
                   true,
                   search_string,
                   forward,
@@ -4106,22 +4105,22 @@ void TestingAutomationProvider::GetTranslateInfo(
     return;
   }
 
-  TabContents* tab_contents = tab_contents_wrapper->tab_contents();
+  WebContents* web_contents = tab_contents_wrapper->web_contents();
   // Get the translate bar if there is one and pass it to the observer.
   // The observer will check for null and populate the information accordingly.
   TranslateInfoBarDelegate* translate_bar =
-      GetTranslateInfoBarDelegate(tab_contents);
+      GetTranslateInfoBarDelegate(web_contents);
 
   TabLanguageDeterminedObserver* observer = new TabLanguageDeterminedObserver(
-      this, reply_message, tab_contents, translate_bar);
+      this, reply_message, web_contents, translate_bar);
   // If the language for the page hasn't been loaded yet, then just make
   // the observer, otherwise call observe directly.
   TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
-      tab_contents)->translate_tab_helper();
+      web_contents)->translate_tab_helper();
   std::string language = helper->language_state().original_language();
   if (!language.empty()) {
     observer->Observe(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-                      content::Source<WebContents>(tab_contents),
+                      content::Source<WebContents>(web_contents),
                       content::Details<std::string>(&language));
   }
 }
@@ -4142,9 +4141,9 @@ void TestingAutomationProvider::SelectTranslateOption(
     return;
   }
 
-  TabContents* tab_contents = tab_contents_wrapper->tab_contents();
+  WebContents* web_contents = tab_contents_wrapper->web_contents();
   TranslateInfoBarDelegate* translate_bar =
-      GetTranslateInfoBarDelegate(tab_contents);
+      GetTranslateInfoBarDelegate(web_contents);
   if (!translate_bar) {
     AutomationJSONReply(this, reply_message)
         .SendError("There is no translate bar open.");
@@ -4158,7 +4157,7 @@ void TestingAutomationProvider::SelectTranslateOption(
 
   if (option == "translate_page") {
     // Make a new notification observer which will send the reply.
-    new PageTranslatedObserver(this, reply_message, tab_contents);
+    new PageTranslatedObserver(this, reply_message, web_contents);
     translate_bar->Translate();
     return;
   } else if (option == "set_target_language") {
@@ -4185,7 +4184,7 @@ void TestingAutomationProvider::SelectTranslateOption(
     // the new language. The observer will wait until the page has been
     // translated to reply.
     if (translate_bar->type() == TranslateInfoBarDelegate::AFTER_TRANSLATE) {
-      new PageTranslatedObserver(this, reply_message, tab_contents);
+      new PageTranslatedObserver(this, reply_message, web_contents);
       translate_bar->SetTargetLanguage(target_language_index);
       return;
     }
@@ -4203,7 +4202,7 @@ void TestingAutomationProvider::SelectTranslateOption(
     }
     // Clicking 'Always Translate' triggers a translation. The observer will
     // wait until the translation is complete before sending the reply.
-    new PageTranslatedObserver(this, reply_message, tab_contents);
+    new PageTranslatedObserver(this, reply_message, web_contents);
     translate_bar->AlwaysTranslatePageLanguage();
     return;
   }
@@ -4271,8 +4270,8 @@ void TestingAutomationProvider::GetBlockedPopupsInfo(
   for (std::vector<TabContentsWrapper*>::const_iterator it =
            blocked_contents.begin(); it != blocked_contents.end(); ++it) {
     DictionaryValue* item = new DictionaryValue;
-    item->SetString("url", (*it)->tab_contents()->GetURL().spec());
-    item->SetString("title", (*it)->tab_contents()->GetTitle());
+    item->SetString("url", (*it)->web_contents()->GetURL().spec());
+    item->SetString("title", (*it)->web_contents()->GetTitle());
     blocked_popups_list->Append(item);
   }
   return_value->Set("blocked_popups", blocked_popups_list);
@@ -4553,10 +4552,10 @@ void TestingAutomationProvider::SetExtensionStateById(
 namespace {
 
 // Selects the given |browser| and |tab| if not selected already.
-void EnsureTabSelected(Browser* browser, TabContents* tab) {
+void EnsureTabSelected(Browser* browser, WebContents* tab) {
   TabContentsWrapper* active =
       browser->tabstrip_model()->GetActiveTabContents();
-  if (!active || active->tab_contents() != tab ||
+  if (!active || active->web_contents() != tab ||
       browser != BrowserList::GetLastActive()) {
     browser->ActivateTabAt(
         browser->tabstrip_model()->GetIndexOfController(&tab->GetController()),
@@ -4573,7 +4572,7 @@ void TestingAutomationProvider::TriggerPageActionById(
     IPC::Message* reply_message) {
   std::string error;
   Browser* browser;
-  TabContents* tab;
+  WebContents* tab;
   if (!GetBrowserAndTabFromJSONArgs(args, &browser, &tab, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
@@ -4626,7 +4625,7 @@ void TestingAutomationProvider::TriggerBrowserActionById(
     IPC::Message* reply_message) {
   std::string error;
   Browser* browser;
-  TabContents* tab;
+  WebContents* tab;
   if (!GetBrowserAndTabFromJSONArgs(args, &browser, &tab, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
@@ -4850,9 +4849,9 @@ void TestingAutomationProvider::SubmitAutofillForm(
   base::SStringPrintf(&set_automation_id,
                       "window.domAutomationController.setAutomationId(%d);",
                       reply_message->routing_id());
-  tab_contents->tab_contents()->GetRenderViewHost()->
+  tab_contents->web_contents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(frame_xpath, UTF8ToUTF16(set_automation_id));
-  tab_contents->tab_contents()->GetRenderViewHost()->
+  tab_contents->web_contents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(frame_xpath, javascript);
 }
 
@@ -4867,8 +4866,8 @@ void TestingAutomationProvider::AutofillTriggerSuggestions(
     return;
   }
 
-  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
-  if (!tab_contents) {
+  WebContents* web_contents = browser->GetWebContentsAt(tab_index);
+  if (!web_contents) {
     AutomationJSONReply(this, reply_message).SendError(
         StringPrintf("No such tab at index %d", tab_index));
     return;
@@ -4876,8 +4875,8 @@ void TestingAutomationProvider::AutofillTriggerSuggestions(
 
   new AutofillDisplayedObserver(
       chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS,
-      tab_contents->GetRenderViewHost(), this, reply_message);
-  SendWebKeyPressEventAsync(ui::VKEY_DOWN, tab_contents);
+      web_contents->GetRenderViewHost(), this, reply_message);
+  SendWebKeyPressEventAsync(ui::VKEY_DOWN, web_contents);
 }
 
 void TestingAutomationProvider::AutofillHighlightSuggestion(
@@ -4891,8 +4890,8 @@ void TestingAutomationProvider::AutofillHighlightSuggestion(
     return;
   }
 
-  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
-  if (!tab_contents) {
+  WebContents* web_contents = browser->GetWebContentsAt(tab_index);
+  if (!web_contents) {
     AutomationJSONReply(this, reply_message).SendError(
         StringPrintf("No such tab at index %d", tab_index));
     return;
@@ -4909,8 +4908,8 @@ void TestingAutomationProvider::AutofillHighlightSuggestion(
 
   new AutofillDisplayedObserver(
       chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-      tab_contents->GetRenderViewHost(), this, reply_message);
-  SendWebKeyPressEventAsync(key_code, tab_contents);
+      web_contents->GetRenderViewHost(), this, reply_message);
+  SendWebKeyPressEventAsync(key_code, web_contents);
 }
 
 void TestingAutomationProvider::AutofillAcceptSelection(
@@ -4924,8 +4923,8 @@ void TestingAutomationProvider::AutofillAcceptSelection(
     return;
   }
 
-  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
-  if (!tab_contents) {
+  WebContents* web_contents = browser->GetWebContentsAt(tab_index);
+  if (!web_contents) {
     AutomationJSONReply(this, reply_message).SendError(
         StringPrintf("No such tab at index %d", tab_index));
     return;
@@ -4933,8 +4932,8 @@ void TestingAutomationProvider::AutofillAcceptSelection(
 
   new AutofillDisplayedObserver(
       chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
-      tab_contents->GetRenderViewHost(), this, reply_message);
-  SendWebKeyPressEventAsync(ui::VKEY_RETURN, tab_contents);
+      web_contents->GetRenderViewHost(), this, reply_message);
+  SendWebKeyPressEventAsync(ui::VKEY_RETURN, web_contents);
 }
 
 // Sample json output: { "success": true }
@@ -5662,17 +5661,17 @@ void TestingAutomationProvider::BuildSimpleWebKeyEvent(
 
 void TestingAutomationProvider::SendWebKeyPressEventAsync(
     int key_code,
-    TabContents* tab_contents) {
+    WebContents* web_contents) {
   // Create and send a "key down" event for the specified key code.
   NativeWebKeyboardEvent event_down;
   BuildSimpleWebKeyEvent(WebKit::WebInputEvent::RawKeyDown, key_code,
                          &event_down);
-  tab_contents->GetRenderViewHost()->ForwardKeyboardEvent(event_down);
+  web_contents->GetRenderViewHost()->ForwardKeyboardEvent(event_down);
 
   // Create and send a corresponding "key up" event.
   NativeWebKeyboardEvent event_up;
   BuildSimpleWebKeyEvent(WebKit::WebInputEvent::KeyUp, key_code, &event_up);
-  tab_contents->GetRenderViewHost()->ForwardKeyboardEvent(event_up);
+  web_contents->GetRenderViewHost()->ForwardKeyboardEvent(event_up);
 }
 
 void TestingAutomationProvider::SendWebkitKeyEvent(
@@ -5720,15 +5719,15 @@ void TestingAutomationProvider::SendOSLevelKeyEventToTab(
 
   std::string error;
   Browser* browser;
-  TabContents* tab_contents;
-  if (!GetBrowserAndTabFromJSONArgs(args, &browser, &tab_contents, &error)) {
+  WebContents* web_contents;
+  if (!GetBrowserAndTabFromJSONArgs(args, &browser, &web_contents, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
   // The key events will be sent to the browser window, we need the current tab
   // containing the element we send the text in to be shown.
   browser->ActivateTabAt(
-      browser->GetIndexOfController(&tab_contents->GetController()), true);
+      browser->GetIndexOfController(&web_contents->GetController()), true);
 
   BrowserWindow* browser_window = browser->window();
   if (!browser_window) {
@@ -6090,8 +6089,8 @@ void TestingAutomationProvider::NavigateToURL(
   int navigation_count;
   std::string url, error;
   Browser* browser;
-  TabContents* tab_contents;
-  if (!GetBrowserAndTabFromJSONArgs(args, &browser, &tab_contents, &error)) {
+  WebContents* web_contents;
+  if (!GetBrowserAndTabFromJSONArgs(args, &browser, &web_contents, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
@@ -6106,9 +6105,9 @@ void TestingAutomationProvider::NavigateToURL(
     return;
   }
   new NavigationNotificationObserver(
-      &tab_contents->GetController(), this, reply_message,
+      &web_contents->GetController(), this, reply_message,
       navigation_count, false, true);
-  browser->OpenURLFromTab(tab_contents, OpenURLParams(
+  browser->OpenURLFromTab(web_contents, OpenURLParams(
       GURL(url), content::Referrer(), CURRENT_TAB,
       content::PAGE_TRANSITION_TYPED, false));
 }
@@ -6188,13 +6187,13 @@ void TestingAutomationProvider::GoForward(
   if (SendErrorIfModalDialogActive(this, reply_message))
     return;
 
-  TabContents* tab_contents;
+  WebContents* web_contents;
   std::string error;
-  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+  if (!GetTabFromJSONArgs(args, &web_contents, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  content::NavigationController& controller = tab_contents->GetController();
+  content::NavigationController& controller = web_contents->GetController();
   if (!controller.CanGoForward()) {
     DictionaryValue dict;
     dict.SetBoolean("did_go_forward", false);
@@ -6212,13 +6211,13 @@ void TestingAutomationProvider::GoBack(
   if (SendErrorIfModalDialogActive(this, reply_message))
     return;
 
-  TabContents* tab_contents;
+  WebContents* web_contents;
   std::string error;
-  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+  if (!GetTabFromJSONArgs(args, &web_contents, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  content::NavigationController& controller = tab_contents->GetController();
+  content::NavigationController& controller = web_contents->GetController();
   if (!controller.CanGoBack()) {
     DictionaryValue dict;
     dict.SetBoolean("did_go_back", false);
@@ -6236,13 +6235,13 @@ void TestingAutomationProvider::ReloadJSON(
   if (SendErrorIfModalDialogActive(this, reply_message))
     return;
 
-  TabContents* tab_contents;
+  WebContents* web_contents;
   std::string error;
-  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+  if (!GetTabFromJSONArgs(args, &web_contents, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  content::NavigationController& controller = tab_contents->GetController();
+  content::NavigationController& controller = web_contents->GetController();
   new NavigationNotificationObserver(&controller, this, reply_message,
                                      1, false, true);
   controller.Reload(false);
@@ -6254,10 +6253,10 @@ void TestingAutomationProvider::CaptureEntirePageJSON(
   if (SendErrorIfModalDialogActive(this, reply_message))
     return;
 
-  TabContents* tab_contents;
+  WebContents* web_contents;
   std::string error;
 
-  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+  if (!GetTabFromJSONArgs(args, &web_contents, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
@@ -6269,13 +6268,13 @@ void TestingAutomationProvider::CaptureEntirePageJSON(
     return;
   }
 
-  RenderViewHost* render_view = tab_contents->GetRenderViewHost();
+  RenderViewHost* render_view = web_contents->GetRenderViewHost();
   if (render_view) {
     FilePath path(path_str);
     // This will delete itself when finished.
     PageSnapshotTaker* snapshot_taker = new PageSnapshotTaker(
         this, reply_message,
-        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents), path);
+        TabContentsWrapper::GetCurrentWrapperForContents(web_contents), path);
     snapshot_taker->Start();
   } else {
     AutomationJSONReply(this, reply_message)
@@ -6394,7 +6393,7 @@ void TestingAutomationProvider::CloseTabJSON(
     DictionaryValue* args, IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
   Browser* browser;
-  TabContents* tab;
+  WebContents* tab;
   std::string error;
   // Close tabs synchronously.
   if (GetBrowserAndTabFromJSONArgs(args, &browser, &tab, &error)) {
@@ -6421,14 +6420,14 @@ void TestingAutomationProvider::ActivateTabJSON(
 
   AutomationJSONReply reply(this, reply_message);
   Browser* browser;
-  TabContents* tab_contents;
+  WebContents* web_contents;
   std::string error;
-  if (!GetBrowserAndTabFromJSONArgs(args, &browser, &tab_contents, &error)) {
+  if (!GetBrowserAndTabFromJSONArgs(args, &browser, &web_contents, &error)) {
     reply.SendError(error);
     return;
   }
   browser->ActivateTabAt(
-      browser->GetIndexOfController(&tab_contents->GetController()), true);
+      browser->GetIndexOfController(&web_contents->GetController()), true);
   reply.SendSuccess(NULL);
 }
 
@@ -6470,7 +6469,7 @@ void TestingAutomationProvider::IsPageActionVisible(
     IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
 
-  TabContents* tab;
+  WebContents* tab;
   std::string error;
   if (!GetTabFromJSONArgs(args, &tab, &error)) {
     reply.SendError(error);

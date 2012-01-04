@@ -388,11 +388,11 @@ class TestingAutomationProvider : public AutomationProvider,
                            base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
-  // Get info about infobars in the given TabContents object.
+  // Get info about infobars in the given WebContents object.
   // This includes info about the type of infobars, the message text,
   // buttons, etc.
   // Caller owns the returned object.
-  ListValue* GetInfobarsInfo(TabContents* tc);
+  ListValue* GetInfobarsInfo(content::WebContents* tc);
 
   // Perform actions on an infobar like dismiss, accept, cancel.
   // Uses the JSON interface for input/output.
@@ -855,7 +855,7 @@ class TestingAutomationProvider : public AutomationProvider,
   // A key press is a combination of a "key down" event and a "key up" event.
   // This function does not wait before returning.
   void SendWebKeyPressEventAsync(int key_code,
-                                 TabContents* tab_contents);
+                                 content::WebContents* web_contents);
 
   // Launches the specified app from the currently-selected tab.
   void LaunchApp(Browser* browser,

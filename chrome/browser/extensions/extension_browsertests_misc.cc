@@ -25,10 +25,11 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 #include "webkit/glue/webpreferences.h"
@@ -126,9 +127,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebKitPrefsBackgroundPage) {
   ExtensionProcessManager* manager =
         browser()->profile()->GetExtensionProcessManager();
   ExtensionHost* host = FindHostWithPath(manager, "/backgroundpage.html", 1);
-  WebPreferences prefs =
-      static_cast<RenderViewHostDelegate*>(host->host_contents())->
-          GetWebkitPrefs();
+  WebPreferences prefs = host->render_view_host()->delegate()->GetWebkitPrefs();
   ASSERT_FALSE(prefs.experimental_webgl_enabled);
   ASSERT_FALSE(prefs.accelerated_compositing_enabled);
   ASSERT_FALSE(prefs.accelerated_2d_canvas_enabled);
@@ -813,7 +812,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<content::NavigationController>(
-            &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+            &browser()->GetSelectedTabContentsWrapper()->web_contents()->
                 GetController()));
     browser()->Reload(CURRENT_TAB);
     observer.Wait();
@@ -840,7 +839,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<content::NavigationController>(
-            &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+            &browser()->GetSelectedTabContentsWrapper()->web_contents()->
                 GetController()));
     browser()->Reload(CURRENT_TAB);
     observer.Wait();
@@ -929,7 +928,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
   ASSERT_EQ(2, tab_strip->count());
 
   EXPECT_EQ(extension->GetResourceURL("options.html"),
-            tab_strip->GetTabContentsAt(1)->tab_contents()->GetURL());
+            tab_strip->GetTabContentsAt(1)->web_contents()->GetURL());
 }
 
 //==============================================================================

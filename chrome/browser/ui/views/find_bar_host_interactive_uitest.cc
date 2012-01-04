@@ -15,8 +15,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "net/test/test_server.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_CrashEscHandlers) {
   browser()->ActivateTabAt(0, true);
 
   // Close tab B.
-  browser()->CloseTabContents(browser()->GetTabContentsAt(1));
+  browser()->CloseTabContents(browser()->GetWebContentsAt(1));
 
   // Click on the location bar so that Find box loses focus.
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::ClickOnView(browser(),

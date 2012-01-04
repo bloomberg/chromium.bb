@@ -244,15 +244,15 @@ void PrerenderContents::StartPrerendering(
   gfx::Rect tab_bounds;
   if (source_render_view_host) {
     DCHECK(source_render_view_host->view() != NULL);
-    TabContents* source_tc =
-        source_render_view_host->delegate()->GetAsTabContents();
-    if (source_tc) {
+    WebContents* source_wc =
+        source_render_view_host->delegate()->GetAsWebContents();
+    if (source_wc) {
       // So that history merging will work, get the max page ID
       // of the old page as a starting id.
-      starting_page_id_ = source_tc->GetMaxPageID();
+      starting_page_id_ = source_wc->GetMaxPageID();
 
       // Set the size of the new TC to that of the old TC.
-      source_tc->GetView()->GetContainerBounds(&tab_bounds);
+      source_wc->GetView()->GetContainerBounds(&tab_bounds);
     }
   } else {
     int max_page_id = -1;
@@ -264,9 +264,9 @@ void PrerenderContents::StartPrerendering(
       const Browser* browser = *browser_iter;
       int num_tabs = browser->tab_count();
       for (int tab_index = 0; tab_index < num_tabs; ++tab_index) {
-        TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
-        if (tab_contents != NULL)
-          max_page_id = std::max(max_page_id, tab_contents->GetMaxPageID());
+        WebContents* web_contents = browser->GetWebContentsAt(tab_index);
+        if (web_contents != NULL)
+          max_page_id = std::max(max_page_id, web_contents->GetMaxPageID());
       }
     }
     starting_page_id_ = max_page_id;
@@ -276,9 +276,9 @@ void PrerenderContents::StartPrerendering(
     // but we shouldn't be prerendering in that case anyway.
     Browser* active_browser = BrowserList::GetLastActiveWithProfile(profile_);
     if (active_browser) {
-      TabContents* active_tab_contents = active_browser->GetTabContentsAt(
+      WebContents* active_web_contents = active_browser->GetWebContentsAt(
           active_browser->active_index());
-      active_tab_contents->GetView()->GetContainerBounds(&tab_bounds);
+      active_web_contents->GetView()->GetContainerBounds(&tab_bounds);
     }
   }
 
@@ -693,11 +693,11 @@ Value* PrerenderContents::GetAsValue() const {
 }
 
 bool PrerenderContents::IsCrossSiteNavigationPending() const {
-  if (!prerender_contents_.get() || !prerender_contents_->tab_contents())
+  if (!prerender_contents_.get() || !prerender_contents_->web_contents())
     return false;
-  const TabContents* tab_contents = prerender_contents_->tab_contents();
-  return (tab_contents->GetSiteInstance() !=
-          tab_contents->GetPendingSiteInstance());
+  const WebContents* web_contents = prerender_contents_->web_contents();
+  return (web_contents->GetSiteInstance() !=
+          web_contents->GetPendingSiteInstance());
 }
 
 

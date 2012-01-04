@@ -12,7 +12,6 @@
 
 class Profile;
 class SessionStorageNamespace;
-class TabContents;
 class TabNavigation;
 
 namespace content {
@@ -38,10 +37,10 @@ class TabRestoreServiceDelegate {
   virtual int GetSelectedIndex() const = 0;
 
   // see Browser methods with the same names
-  virtual TabContents* GetTabContentsAt(int index) const = 0;
+  virtual content::WebContents* GetWebContentsAt(int index) const = 0;
   virtual content::WebContents* GetSelectedWebContents() const = 0;
   virtual bool IsTabPinned(int index) const = 0;
-  virtual TabContents* AddRestoredTab(
+  virtual content::WebContents* AddRestoredTab(
       const std::vector<TabNavigation>& navigations,
       int tab_index,
       int selected_navigation,

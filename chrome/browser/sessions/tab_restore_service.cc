@@ -27,9 +27,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 
 using base::Time;
 using content::NavigationEntry;
@@ -252,7 +252,7 @@ void TabRestoreService::BrowserClosing(TabRestoreServiceDelegate* delegate) {
     PopulateTab(&(window->tabs[entry_index]),
                 tab_index,
                 delegate,
-                &delegate->GetTabContentsAt(tab_index)->GetController());
+                &delegate->GetWebContentsAt(tab_index)->GetController());
     if (window->tabs[entry_index].navigations.empty()) {
       window->tabs.erase(window->tabs.begin() + entry_index);
     } else {
@@ -354,7 +354,7 @@ void TabRestoreService::RestoreEntryById(TabRestoreServiceDelegate* delegate,
       delegate = TabRestoreServiceDelegate::Create(profile());
       for (size_t tab_i = 0; tab_i < window->tabs.size(); ++tab_i) {
         const Tab& tab = window->tabs[tab_i];
-        TabContents* restored_tab =
+        WebContents* restored_tab =
             delegate->AddRestoredTab(tab.navigations, delegate->GetTabCount(),
                                      tab.current_navigation_index,
                                      tab.extension_app_id,

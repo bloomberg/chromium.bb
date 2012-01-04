@@ -6,7 +6,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 
 namespace keys = extension_tabs_module_constants;
 namespace errors = extension_manifest_errors;
@@ -90,7 +90,7 @@ ListValue* ExtensionTabUtil::CreateTabList(const Browser* browser) {
   TabStripModel* tab_strip = browser->tabstrip_model();
   for (int i = 0; i < tab_strip->count(); ++i) {
     tab_list->Append(ExtensionTabUtil::CreateTabValue(
-        tab_strip->GetTabContentsAt(i)->tab_contents(), tab_strip, i));
+        tab_strip->GetTabContentsAt(i)->web_contents(), tab_strip, i));
   }
 
   return tab_list;
@@ -199,7 +199,7 @@ bool ExtensionTabUtil::GetDefaultTab(Browser* browser,
   *contents = browser->GetSelectedTabContentsWrapper();
   if (*contents) {
     if (tab_id)
-      *tab_id = ExtensionTabUtil::GetTabId((*contents)->tab_contents());
+      *tab_id = ExtensionTabUtil::GetTabId((*contents)->web_contents());
     return true;
   }
 

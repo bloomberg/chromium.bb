@@ -305,12 +305,12 @@ int PanelBrowserWindowCocoa::TitleOnlyHeight() const {
 void PanelBrowserWindowCocoa::TabInsertedAt(TabContentsWrapper* contents,
                                             int index,
                                             bool foreground) {
-  [controller_ tabInserted:contents->tab_contents()];
+  [controller_ tabInserted:contents->web_contents()];
 }
 
 void PanelBrowserWindowCocoa::TabDetachedAt(TabContentsWrapper* contents,
                                             int index) {
-  [controller_ tabDetached:contents->tab_contents()];
+  [controller_ tabDetached:contents->web_contents()];
 }
 
 // NativePanelTesting implementation.

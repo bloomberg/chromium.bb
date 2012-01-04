@@ -120,7 +120,7 @@ class TabGtk : public TabRendererGtk,
   virtual bool IsVisible() const OVERRIDE;
   virtual void SetVisible(bool visible) const OVERRIDE;
   virtual void CloseButtonClicked() OVERRIDE;
-  virtual void UpdateData(TabContents* contents,
+  virtual void UpdateData(content::WebContents* contents,
                           bool app,
                           bool loading_only) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;

@@ -21,7 +21,7 @@
 #import "chrome/browser/ui/cocoa/applescript/tab_applescript.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 
 @interface WindowAppleScript(WindowAppleScriptPrivateMethods)
 // The NSWindow that corresponds to this window.
@@ -151,7 +151,7 @@
 
   for (int i = 0; i < browser_->tab_count(); ++i) {
     // Check to see if tab is closing.
-    if (browser_->GetTabContentsAt(i)->IsBeingDestroyed()) {
+    if (browser_->GetWebContentsAt(i)->IsBeingDestroyed()) {
       continue;
     }
 
@@ -176,7 +176,7 @@
   TabContentsWrapper* contents =
       browser_->AddSelectedTabWithURL(GURL(chrome::kChromeUINewTabURL),
                                       content::PAGE_TRANSITION_TYPED);
-  contents->tab_contents()->SetNewTabStartTime(newTabStartTime);
+  contents->web_contents()->SetNewTabStartTime(newTabStartTime);
   [aTab setTabContent:contents];
 }
 
@@ -194,14 +194,14 @@
   params.disposition = NEW_FOREGROUND_TAB;
   params.tabstrip_index = index;
   browser::Navigate(&params);
-  params.target_contents->tab_contents()->SetNewTabStartTime(
+  params.target_contents->web_contents()->SetNewTabStartTime(
       newTabStartTime);
 
   [aTab setTabContent:params.target_contents];
 }
 
 - (void)removeFromTabsAtIndex:(int)index {
-  browser_->CloseTabContents(browser_->GetTabContentsAt(index));
+  browser_->CloseTabContents(browser_->GetWebContentsAt(index));
 }
 
 - (NSNumber*)orderedIndex {

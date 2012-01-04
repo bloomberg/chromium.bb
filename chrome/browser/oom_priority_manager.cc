@@ -23,12 +23,12 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/zygote_host_linux.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 
 #if !defined(OS_CHROMEOS)
 #error This file only meant to be compiled on ChromeOS
@@ -39,17 +39,18 @@ using base::TimeTicks;
 using base::ProcessHandle;
 using base::ProcessMetrics;
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
 // Returns a unique ID for a TabContents.  Do not cast back to a pointer, as
 // the TabContents could be deleted if the user closed the tab.
-int64 IdFromTabContents(TabContents* tab_contents) {
-  return reinterpret_cast<int64>(tab_contents);
+int64 IdFromTabContents(WebContents* web_contents) {
+  return reinterpret_cast<int64>(web_contents);
 }
 
 // Discards a tab with the given unique ID.  Returns true if discard occurred.
-bool DiscardTabById(int64 target_tab_contents_id) {
+bool DiscardTabById(int64 target_web_contents_id) {
   for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
        browser_iterator != BrowserList::end(); ++browser_iterator) {
     Browser* browser = *browser_iterator;
@@ -58,9 +59,9 @@ bool DiscardTabById(int64 target_tab_contents_id) {
       // Can't discard tabs that are already discarded.
       if (model->IsTabDiscarded(idx))
         continue;
-      TabContents* tab_contents = model->GetTabContentsAt(idx)->tab_contents();
-      int64 tab_contents_id = IdFromTabContents(tab_contents);
-      if (tab_contents_id == target_tab_contents_id) {
+      WebContents* web_contents = model->GetTabContentsAt(idx)->web_contents();
+      int64 web_contents_id = IdFromTabContents(web_contents);
+      if (web_contents_id == target_web_contents_id) {
         model->DiscardTabContentsAt(idx);
         return true;
       }
@@ -266,7 +267,7 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
     Browser* browser = *browser_iterator;
     const TabStripModel* model = browser->tabstrip_model();
     for (int i = 0; i < model->count(); i++) {
-      TabContents* contents = model->GetTabContentsAt(i)->tab_contents();
+      WebContents* contents = model->GetTabContentsAt(i)->web_contents();
       if (!contents->IsCrashed()) {
         TabStats stats;
         stats.last_selected = contents->GetLastSelectedTime();

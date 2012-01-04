@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 
 using content::NavigationEntry;
 
@@ -57,9 +57,9 @@ static void EncodePinnedTab(TabStripModel* model,
     values->Append(value.release());
   } else {
     NavigationEntry* entry =
-        tab_contents->tab_contents()->GetController().GetActiveEntry();
-    if (!entry && tab_contents->tab_contents()->GetController().GetEntryCount())
-      entry = tab_contents->tab_contents()->GetController().GetEntryAtIndex(0);
+        tab_contents->web_contents()->GetController().GetActiveEntry();
+    if (!entry && tab_contents->web_contents()->GetController().GetEntryCount())
+      entry = tab_contents->web_contents()->GetController().GetEntryAtIndex(0);
     if (entry) {
       value->SetString(kURL, entry->GetURL().spec());
       values->Append(value.release());

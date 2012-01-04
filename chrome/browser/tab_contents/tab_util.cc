@@ -9,9 +9,12 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
+
+using content::WebContents;
 
 namespace tab_util {
 
@@ -34,7 +37,7 @@ content::WebContents* GetWebContentsByID(int render_process_id,
   return render_view_host->delegate()->GetAsWebContents();
 }
 
-SiteInstance* GetSiteInstanceForNewTab(TabContents* source_contents,
+SiteInstance* GetSiteInstanceForNewTab(WebContents* source_contents,
                                        Profile* profile,
                                        const GURL& url) {
   // If url is a WebUI or extension, we need to be sure to use the right type

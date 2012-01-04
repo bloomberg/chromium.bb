@@ -24,6 +24,8 @@
 #include "ui/base/gtk/scoped_handle_gtk.h"
 #include "ui/gfx/path.h"
 
+using content::WebContents;
+
 namespace {
 
 // Returns the width of the title for the current font, in pixels.
@@ -264,7 +266,7 @@ void TabGtk::CloseButtonClicked() {
   delegate_->CloseTab(this);
 }
 
-void TabGtk::UpdateData(TabContents* contents, bool app, bool loading_only) {
+void TabGtk::UpdateData(WebContents* contents, bool app, bool loading_only) {
   TabRendererGtk::UpdateData(contents, app, loading_only);
   // Cache the title width so we don't recalculate it every time the tab is
   // resized.

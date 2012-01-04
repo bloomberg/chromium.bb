@@ -16,6 +16,8 @@
 #include "content/public/common/result_codes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::WebContents;
+
 class ChildProcessSecurityPolicyInProcessBrowserTest
     : public InProcessBrowserTest {
  public:
@@ -41,7 +43,7 @@ IN_PROC_BROWSER_TEST_F(ChildProcessSecurityPolicyInProcessBrowserTest, NoLeak) {
   EXPECT_EQ(
       ChildProcessSecurityPolicy::GetInstance()->security_state_.size(), 1U);
 
-  TabContents* tab = browser()->GetTabContentsAt(0);
+  WebContents* tab = browser()->GetWebContentsAt(0);
   ASSERT_TRUE(tab != NULL);
   base::KillProcess(tab->GetRenderProcessHost()->GetHandle(),
                     content::RESULT_CODE_KILLED, true);

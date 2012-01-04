@@ -19,20 +19,22 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+using content::WebContents;
+
 @interface TestTabStripControllerDelegate
     : NSObject<TabStripControllerDelegate> {
 }
 @end
 
 @implementation TestTabStripControllerDelegate
-- (void)onActivateTabWithContents:(TabContents*)contents {
+- (void)onActivateTabWithContents:(WebContents*)contents {
 }
-- (void)onReplaceTabWithContents:(TabContents*)contents {
+- (void)onReplaceTabWithContents:(WebContents*)contents {
 }
 - (void)onTabChanged:(TabStripModelObserver::TabChangeType)change
-        withContents:(TabContents*)contents {
+        withContents:(WebContents*)contents {
 }
-- (void)onTabDetachedWithContents:(TabContents*)contents {
+- (void)onTabDetachedWithContents:(WebContents*)contents {
 }
 @end
 

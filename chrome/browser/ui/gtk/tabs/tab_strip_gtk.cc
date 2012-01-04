@@ -29,8 +29,8 @@
 #include "chrome/browser/ui/gtk/tabs/tab_strip_menu_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
@@ -43,6 +43,8 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/point.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -333,7 +335,7 @@ class InsertTabAnimation : public TabStripGtk::TabAnimation {
 // Handles removal of a Tab from |index|
 class RemoveTabAnimation : public TabStripGtk::TabAnimation {
  public:
-  RemoveTabAnimation(TabStripGtk* tabstrip, int index, TabContents* contents)
+  RemoveTabAnimation(TabStripGtk* tabstrip, int index, WebContents* contents)
       : TabAnimation(tabstrip, REMOVE),
         index_(index) {
     int tab_count = tabstrip->GetTabCount();
@@ -850,9 +852,9 @@ void TabStripGtk::UpdateLoadingAnimations() {
     } else {
       TabRendererGtk::AnimationState state;
       TabContentsWrapper* contents = model_->GetTabContentsAt(index);
-      if (!contents || !contents->tab_contents()->IsLoading()) {
+      if (!contents || !contents->web_contents()->IsLoading()) {
         state = TabGtk::ANIMATION_NONE;
-      } else if (contents->tab_contents()->IsWaitingForResponse()) {
+      } else if (contents->web_contents()->IsWaitingForResponse()) {
         state = TabGtk::ANIMATION_WAITING;
       } else {
         state = TabGtk::ANIMATION_LOADING;
@@ -983,7 +985,7 @@ void TabStripGtk::TabInsertedAt(TabContentsWrapper* contents,
   // again.
   if (IsDragSessionActive()) {
     tab = drag_controller_->GetDraggedTabForContents(
-        contents->tab_contents());
+        contents->web_contents());
     if (tab) {
       // If the Tab was detached, it would have been animated closed but not
       // removed, so we need to reset this property.
@@ -1007,7 +1009,7 @@ void TabStripGtk::TabInsertedAt(TabContentsWrapper* contents,
   if (!contains_tab) {
     TabData d = { tab, gfx::Rect() };
     tab_data_.insert(tab_data_.begin() + index, d);
-    tab->UpdateData(contents->tab_contents(), model_->IsAppTab(index), false);
+    tab->UpdateData(contents->web_contents(), model_->IsAppTab(index), false);
   }
   tab->set_mini(model_->IsMiniTab(index));
   tab->set_app(model_->IsAppTab(index));
@@ -1032,7 +1034,7 @@ void TabStripGtk::TabInsertedAt(TabContentsWrapper* contents,
 
 void TabStripGtk::TabDetachedAt(TabContentsWrapper* contents, int index) {
   GenerateIdealBounds();
-  StartRemoveTabAnimation(index, contents->tab_contents());
+  StartRemoveTabAnimation(index, contents->web_contents());
   // Have to do this _after_ calling StartRemoveTabAnimation, so that any
   // previous remove is completed fully and index is valid in sync with the
   // model index.
@@ -1120,7 +1122,7 @@ void TabStripGtk::TabChangedAt(TabContentsWrapper* contents, int index,
     // We'll receive another notification of the change asynchronously.
     return;
   }
-  tab->UpdateData(contents->tab_contents(),
+  tab->UpdateData(contents->web_contents(),
                   model_->IsAppTab(index),
                   change_type == LOADING_ONLY);
   tab->UpdateFromModel();
@@ -1944,7 +1946,7 @@ void TabStripGtk::StartInsertTabAnimation(int index) {
   active_animation_->Start();
 }
 
-void TabStripGtk::StartRemoveTabAnimation(int index, TabContents* contents) {
+void TabStripGtk::StartRemoveTabAnimation(int index, WebContents* contents) {
   if (active_animation_.get()) {
     // Some animations (e.g. MoveTabAnimation) cause there to be a Layout when
     // they're completed (which includes canceled). Since |tab_data_| is now

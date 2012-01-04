@@ -397,7 +397,8 @@ class Browser : public TabHandlerDelegate,
   // A convenient version of the above which returns the TCW's WebContents.
   content::WebContents* GetSelectedWebContents() const;
   TabContentsWrapper* GetTabContentsWrapperAt(int index) const;
-  TabContents* GetTabContentsAt(int index) const;
+  // A convenient version of the above which returns the TCW's WebContents.
+  content::WebContents* GetWebContentsAt(int index) const;
   void ActivateTabAt(int index, bool user_gesture);
   bool IsTabPinned(int index) const;
   bool IsTabDiscarded(int index) const;
@@ -433,14 +434,15 @@ class Browser : public TabHandlerDelegate,
   // extension. If |pin| is true and |tab_index|/ is the last pinned tab, then
   // the newly created tab is pinned. If |from_last_session| is true,
   // |navigations| are from the previous session.
-  TabContents* AddRestoredTab(const std::vector<TabNavigation>& navigations,
-                              int tab_index,
-                              int selected_navigation,
-                              const std::string& extension_app_id,
-                              bool select,
-                              bool pin,
-                              bool from_last_session,
-                              SessionStorageNamespace* storage_namespace);
+  content::WebContents* AddRestoredTab(
+      const std::vector<TabNavigation>& navigations,
+      int tab_index,
+      int selected_navigation,
+      const std::string& extension_app_id,
+      bool select,
+      bool pin,
+      bool from_last_session,
+      SessionStorageNamespace* storage_namespace);
   // Creates a new tab with the already-created WebContents 'new_contents'.
   // The window for the added contents will be reparented correctly when this
   // method returns.  If |disposition| is NEW_POPUP, |pos| should hold the

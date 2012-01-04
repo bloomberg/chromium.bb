@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
@@ -171,7 +171,7 @@ void CustomHomePagesTableModel::SetToCurrentlyOpenPages() {
       continue;  // Skip incognito browsers.
 
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
-      const GURL url = browser->GetTabContentsAt(tab_index)->GetURL();
+      const GURL url = browser->GetWebContentsAt(tab_index)->GetURL();
       if (!url.is_empty() &&
           !(url.SchemeIs(chrome::kChromeUIScheme) &&
             url.host() == chrome::kChromeUISettingsHost))
