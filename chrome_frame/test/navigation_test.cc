@@ -17,9 +17,9 @@
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 #include "testing/gmock_mutant.h"
 
-using testing::_;
 using testing::InSequence;
 using testing::StrEq;
+using testing::_;
 
 namespace chrome_frame_test {
 
@@ -991,8 +991,9 @@ ACTION(VerifySeleniumCoreTestResults) {
       " Actual number of tests run: " << num_tests;
 }
 
+// Crashes flakily: http://crbug.com/109114
 // Tests refreshing causes a page load.
-TEST_F(FullTabSeleniumTest, Core) {
+TEST_F(FullTabSeleniumTest, DISABLED_Core) {
   // Please see http://code.google.com/p/chromium/issues/detail?id=60987
   // for more information on why this test is disabled for Vista with IE7.
   if (base::win::GetVersion() == base::win::VERSION_VISTA &&
