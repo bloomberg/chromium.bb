@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,8 +85,6 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "toolbarShowBookmarksBar", IDS_OPTIONS_TOOLBAR_SHOW_BOOKMARKS_BAR },
     { "defaultSearchGroupName", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME },
     { "defaultSearchManageEngines", IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES },
-    { "instantName", IDS_INSTANT_PREF },
-    { "instantWarningText", IDS_INSTANT_PREF_WARNING },
     { "instantConfirmTitle", IDS_INSTANT_OPT_IN_TITLE },
     { "instantConfirmMessage", IDS_INSTANT_OPT_IN_MESSAGE },
     { "defaultBrowserGroupName", IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME },
@@ -96,6 +94,12 @@ void BrowserOptionsHandler::GetLocalizedValues(
   RegisterTitle(localized_strings, "browserPage",
                 IDS_OPTIONS_GENERAL_TAB_LABEL);
 
+  localized_strings->SetString("defaultSearchGroupLabel",
+      l10n_util::GetStringFUTF16(IDS_SEARCH_PREF_EXPLANATION,
+          l10n_util::GetStringUTF16(IDS_OMNIBOX_LEARN_MORE_URL)));
+  localized_strings->SetString("instantPrefAndWarning",
+      l10n_util::GetStringFUTF16(IDS_INSTANT_PREF_WITH_WARNING,
+          l10n_util::GetStringUTF16(IDS_INSTANT_LEARN_MORE_URL)));
   localized_strings->SetString("instantLearnMoreLink",
       ASCIIToUTF16(browser::InstantLearnMoreURL().spec()));
   localized_strings->SetString("defaultBrowserUnknown",

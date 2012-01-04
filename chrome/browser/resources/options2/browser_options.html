@@ -91,6 +91,8 @@
     <section>
       <h3 i18n-content="defaultSearchGroupName"></h3>
         <div id="defaultSearchEngineGroup">
+          <div id="defaultSearchGroupLabel"
+               i18n-values=".innerHTML:defaultSearchGroupLabel"></div>
           <div>
             <select id="defaultSearchEngine" class="weakrtl"></select>
             <button id="defaultSearchManageEnginesButton"
@@ -103,13 +105,8 @@
                   checked="checked" hidden>
               <input id="instantEnabledCheckbox" type="checkbox"
                   pref="instant.enabled">
-              <span i18n-content="instantName"></span>
+              <span i18n-values=".innerHTML:instantPrefAndWarning"></span>
             </label>
-          </div>
-          <div class="suboption informational-text">
-            <span i18n-content="instantWarningText"></span>
-            <a target="_blank" i18n-values="href:instantLearnMoreLink"
-               i18n-content="learnMore"></a>
           </div>
         </div>
     </section>

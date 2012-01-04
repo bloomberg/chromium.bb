@@ -66,7 +66,11 @@
 #defaultSearchEngine {
   display: block;
   -webkit-box-flex: 1;
-  max-width: 200px;
+  max-width: 100px;
+}
+
+#defaultSearchGroupLabel {
+  margin-bottom: 5px;
 }
 
 #defaultSearchManageEnginesButton {

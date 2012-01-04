@@ -5107,6 +5107,17 @@ With Instant enabled and if supported by your default search engine, search resu
 Because search results are requested even while you're typing your query, your default search engine may be logging these as search queries.
 '''
       </message>
+      <message name="IDS_SEARCH_PREF_EXPLANATION" desc="Description of the search engine preference">
+        Set which search engine is used when searching from the
+        <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>omnibox<ph name="END_LINK">&lt;/a&gt;</ph>.
+      </message>
+      <message name="IDS_OMNIBOX_LEARN_MORE_URL" desc="URL of help center page explaining what the omnibox is">
+        http://support.google.com/chrome/bin/answer.py?answer=95440&amp;hl=[GRITLANGCODE]
+      </message>
+      <message name="IDS_INSTANT_PREF_WITH_WARNING" desc="Preference for enabling instant, along with the warning that used to be displayed beneath it.">
+        Enable Instant for faster searching and navigation (input may be
+        <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>logged<ph name="END_LINK">&lt;/a&gt;</ph>).
+      </message>
       <message name="IDS_INSTANT_PREF" desc="Preference for enabling instant">
         Enable Instant for faster searching
       </message>
