@@ -152,6 +152,7 @@ cr.define('ntp4', function() {
       learnMoreLink.onclick = infoBubble.hide.bind(infoBubble);
 
       infoBubble.show();
+      chrome.send('introMessageSeen');
     }
 
     var serverpromo = localStrings.getString('serverpromo');
