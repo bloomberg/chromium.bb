@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -347,7 +347,12 @@ class DrMemorySuppression(Suppression):
     self.instr = instr
 
     # Construct the regex.
-    regex = '{\n%s\nname=.*\n' % report_type
+    regex = '{\n'
+    if report_type == 'LEAK':
+      regex += '(POSSIBLE )?LEAK'
+    else:
+      regex += report_type
+    regex += '\nname=.*\n'
 
     # TODO(rnk): Implement http://crbug.com/107416#c5 .
     # drmemory_analyze.py doesn't generate suppressions with an instruction in
@@ -784,6 +789,26 @@ def SelfTest():
   # Make sure we don't wildcard away the "not" part and match ntdll.dll by
   # accident.
   TestStack(stack_not_ntdll, suppress_in_any, suppress_in_ntdll,
+            suppression_parser=ReadDrMemorySuppressions)
+
+  # Suppress a POSSIBLE LEAK with LEAK.
+  stack_foo_possible = """{
+    POSSIBLE LEAK
+    name=foo possible
+    *!foo
+  }"""
+  suppress_foo_possible = [ "POSSIBLE LEAK\n*!foo\n" ]
+  suppress_foo_leak = [ "LEAK\n*!foo\n" ]
+  TestStack(stack_foo_possible, suppress_foo_possible + suppress_foo_leak, [],
+            suppression_parser=ReadDrMemorySuppressions)
+
+  # Don't suppress LEAK with POSSIBLE LEAK.
+  stack_foo_leak = """{
+    LEAK
+    name=foo leak
+    *!foo
+  }"""
+  TestStack(stack_foo_leak, suppress_foo_leak, suppress_foo_possible,
             suppression_parser=ReadDrMemorySuppressions)
 
   # Test that the presubmit checks work.
