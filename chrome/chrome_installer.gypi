@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -187,13 +187,15 @@
             '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.rc',
             'installer/util/installation_validation_helper.cc',
             'installer/util/installation_validation_helper.h',
-            'test/mini_installer_test/run_all_unittests.cc',
-            'test/mini_installer_test/chrome_mini_installer.cc',
-            'test/mini_installer_test/chrome_mini_installer.h',
+            'test/mini_installer_test/installer_path_provider.cc',
+            'test/mini_installer_test/installer_path_provider.h',
+            'test/mini_installer_test/installer_test_util.cc',
+            'test/mini_installer_test/installer_test_util.h',
             'test/mini_installer_test/mini_installer_test_constants.cc',
             'test/mini_installer_test/mini_installer_test_constants.h',
-            'test/mini_installer_test/mini_installer_test_util.cc',
-            'test/mini_installer_test/mini_installer_test_util.h',
+            'test/mini_installer_test/run_all_unittests.cc',
+            'test/mini_installer_test/switch_builder.cc',
+            'test/mini_installer_test/switch_builder.h',
             'test/mini_installer_test/test.cc',
           ],
           'msvs_settings': {
