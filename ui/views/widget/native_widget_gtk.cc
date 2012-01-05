@@ -378,14 +378,12 @@ NativeWidgetGtk::~NativeWidgetGtk() {
     DCHECK(widget_ == NULL);
     delete delegate_;
   } else {
-    // Disconnect from GObjectDestructorFILO and widget because we're
+    // Disconnect from GObjectDestructorFILO because we're
     // deleting the NativeWidgetGtk.
     bool has_widget = !!widget_;
-    if (has_widget) {
-      signal_registrar_.reset();
+    if (has_widget)
       ui::GObjectDestructorFILO::GetInstance()->Disconnect(
           G_OBJECT(widget_), &OnDestroyedThunk, this);
-    }
     CloseNow();
     // Call OnNativeWidgetDestroyed because we're not calling
     // OnDestroyedThunk
