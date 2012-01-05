@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@ var BASE_INSTRUCTIONS = {
   top: 194,
   left: 370,
   width: 498,
-  height: 112
+  height: 142
 };
 
 var MODIFIER_TO_CLASS = {
@@ -419,6 +419,15 @@ function initLayout() {
   instructionsHideText.className = 'keyboard-overlay-instructions-hide-text';
   instructionsHideText.innerHTML = templateData.keyboardOverlayInstructionsHide;
   instructions.appendChild(instructionsHideText);
+  var learnMoreLinkText = document.createElement('div');
+  learnMoreLinkText.id = 'learn-more-text';
+  learnMoreLinkText.className = 'keyboard-overlay-learn-more-text';
+  learnMoreLinkText.addEventListener('click', learnMoreClicked);
+  var learnMoreLinkAnchor = document.createElement('a');
+  learnMoreLinkAnchor.href = templateData.keyboardOverlayLearnMoreURL;
+  learnMoreLinkAnchor.textContent = templateData.keyboardOverlayLearnMore;
+  learnMoreLinkText.appendChild(learnMoreLinkAnchor);
+  instructions.appendChild(learnMoreLinkText);
   keyboard.appendChild(instructions);
 }
 
@@ -471,6 +480,15 @@ function initKeyboardOverlayId(inputMethodId) {
   }
   initLayout();
   update([]);
+}
+
+/**
+ * Handles click events of the learn more link.
+ */
+function learnMoreClicked(e) {
+  chrome.send('openLearnMorePage');
+  chrome.send('DialogClose');
+  e.preventDefault();
 }
 
 document.addEventListener('DOMContentLoaded', init);

@@ -13869,6 +13869,9 @@ Battery full
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION" desc="Label for cellular network modem PRL (Preferred Roaming List) version under chrome://options/internet">
         PRL version:
       </message>
+      <message name="IDS_KEYBOARD_OVERLAY_LEARN_MORE" desc="The text of the learn more link on the keyboard overlay.">
+        Learn more
+      </message>
       <message name="IDS_KEYBOARD_OVERLAY_TITLE" desc="The title of the keyboard overlay.">
         Keyboard Overlay
       </message>

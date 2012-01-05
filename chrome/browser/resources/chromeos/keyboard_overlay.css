@@ -40,6 +40,19 @@ body {
   vertical-align: middle;
 }
 
+.keyboard-overlay-learn-more-text {
+  -webkit-box-flex: 1;
+  font-size: 90%;
+  margin: 0 auto 13px;
+  text-align: center;
+  text-decoration: underline;
+  verticl-align: middle;
+}
+
+.keyboard-overlay-learn-more-text a {
+  color: #fff;
+}
+
 .keyboard-overlay-key {
   -webkit-box-orient: vertical;
   border-radius: 4px;

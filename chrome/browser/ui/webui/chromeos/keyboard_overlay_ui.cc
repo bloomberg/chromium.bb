@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,13 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -31,6 +33,14 @@ using content::WebUIMessageHandler;
 
 namespace {
 
+const char kLearnMoreURL[] =
+#if defined(OFFICIAL_BUILD)
+    "chrome-extension://honijodknafkokifofgiaalefdiedpko/"
+    "main.html?answer=188743";
+#else
+    "http://support.google.com/chromeos/bin/answer.py?answer=183101";
+#endif
+
 struct ModifierToLabel {
   const ModifierKey modifier;
   const char* label;
@@ -46,6 +56,7 @@ struct I18nContentToMessage {
   const char* i18n_content;
   int message;
 } kI18nContentToMessage[] = {
+  { "keyboardOverlayLearnMore", IDS_KEYBOARD_OVERLAY_LEARN_MORE },
   { "keyboardOverlayTitle", IDS_KEYBOARD_OVERLAY_TITLE },
   { "keyboardOverlayInstructions", IDS_KEYBOARD_OVERLAY_INSTRUCTIONS },
   { "keyboardOverlayInstructionsHide", IDS_KEYBOARD_OVERLAY_INSTRUCTIONS_HIDE },
@@ -191,6 +202,7 @@ ChromeWebUIDataSource* CreateKeyboardOverlayUIHTMLSource() {
                                kI18nContentToMessage[i].message);
   }
 
+  source->AddString("keyboardOverlayLearnMoreURL", UTF8ToUTF16(kLearnMoreURL));
   source->set_json_path("strings.js");
   source->add_resource_path("keyboard_overlay.js", IDR_KEYBOARD_OVERLAY_JS);
   source->set_default_resource(IDR_KEYBOARD_OVERLAY_HTML);
@@ -219,6 +231,9 @@ class KeyboardOverlayHandler
   // during the initialization.
   void GetLabelMap(const ListValue* args);
 
+  // Called when the learn more link is clicked.
+  void OpenLearnMorePage(const ListValue* args);
+
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardOverlayHandler);
@@ -242,6 +257,9 @@ void KeyboardOverlayHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("getLabelMap",
       base::Bind(&KeyboardOverlayHandler::GetLabelMap,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("openLearnMorePage",
+      base::Bind(&KeyboardOverlayHandler::OpenLearnMorePage,
                  base::Unretained(this)));
 }
 
@@ -274,6 +292,13 @@ void KeyboardOverlayHandler::GetLabelMap(const ListValue* args) {
   }
 
   web_ui()->CallJavascriptFunction("initIdentifierMap", dict);
+}
+
+void KeyboardOverlayHandler::OpenLearnMorePage(const ListValue* args) {
+  Browser* browser = BrowserList::GetLastActive();
+  DCHECK(browser);
+  browser->AddSelectedTabWithURL(GURL(kLearnMoreURL),
+                                 content::PAGE_TRANSITION_LINK);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
