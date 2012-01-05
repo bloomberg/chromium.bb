@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chrome/browser/extensions/file_manager_util.h"
@@ -206,10 +206,8 @@ bool ConvertFileToFileSystemUrl(
 
 bool ConvertFileToRelativeFileSystemPath(
     Profile* profile, const FilePath& full_file_path, FilePath* virtual_path) {
-  fileapi::FileSystemPathManager* path_manager =
-      profile->GetFileSystemContext()->path_manager();
   fileapi::ExternalFileSystemMountPointProvider* provider =
-      path_manager->external_provider();
+      profile->GetFileSystemContext()->external_provider();
   if (!provider)
     return false;
 
@@ -350,4 +348,3 @@ bool TryViewingFile(const FilePath& full_path, bool enqueue) {
 }
 
 }  // namespace file_manager_util
-

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,10 @@ quota::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type);
 //   "http_www.example.host_80"
 std::string GetOriginIdentifierFromURL(const GURL& url);
 GURL GetOriginURLFromIdentifier(const std::string& origin_identifier);
+
+// Returns the string representation of the given filesystem |type|.
+// Returns an empty string if the |type| is invalid.
+std::string GetFileSystemTypeString(FileSystemType type);
 
 }  // namespace fileapi
 

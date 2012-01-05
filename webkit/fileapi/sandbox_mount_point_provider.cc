@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/file_system_options.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -30,10 +30,13 @@ using quota::QuotaManagerProxy;
 
 namespace {
 
-static const FilePath::CharType kOldFileSystemUniqueNamePrefix[] =
+const char kChromeScheme[] = "chrome";
+const char kExtensionScheme[] = "chrome-extension";
+
+const FilePath::CharType kOldFileSystemUniqueNamePrefix[] =
     FILE_PATH_LITERAL("chrome-");
-static const int kOldFileSystemUniqueLength = 16;
-static const unsigned kOldFileSystemUniqueDirectoryNameLength =
+const size_t kOldFileSystemUniqueLength = 16;
+const size_t kOldFileSystemUniqueDirectoryNameLength =
     kOldFileSystemUniqueLength + arraysize(kOldFileSystemUniqueNamePrefix) - 1;
 
 const char kOpenFileSystem[] = "FileSystem.OpenFileSystem";
@@ -47,30 +50,21 @@ enum FileSystemError {
 
 // Restricted names.
 // http://dev.w3.org/2009/dap/file-system/file-dir-sys.html#naming-restrictions
-static const char* const kRestrictedNames[] = {
-  ".", "..",
+const FilePath::CharType* const kRestrictedNames[] = {
+  FILE_PATH_LITERAL("."), FILE_PATH_LITERAL(".."),
 };
 
 // Restricted chars.
-static const FilePath::CharType kRestrictedChars[] = {
-  '/', '\\',
+const FilePath::CharType kRestrictedChars[] = {
+  FILE_PATH_LITERAL('/'), FILE_PATH_LITERAL('\\'),
 };
-
-inline std::string FilePathStringToASCII(
-    const FilePath::StringType& path_string) {
-#if defined(OS_WIN)
-  return WideToASCII(path_string);
-#elif defined(OS_POSIX)
-  return path_string;
-#endif
-}
 
 FilePath::StringType OldCreateUniqueDirectoryName(const GURL& origin_url) {
   // This can be anything but need to be unpredictable.
   static const FilePath::CharType letters[] = FILE_PATH_LITERAL(
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
   FilePath::StringType unique(kOldFileSystemUniqueNamePrefix);
-  for (int i = 0; i < kOldFileSystemUniqueLength; ++i)
+  for (size_t i = 0; i < kOldFileSystemUniqueLength; ++i)
     unique += letters[base::RandInt(0, arraysize(letters) - 2)];
   return unique;
 }
@@ -135,14 +129,13 @@ class OldSandboxOriginEnumerator
     if (current_.empty())
       return GURL();
     return fileapi::GetOriginURLFromIdentifier(
-        FilePathStringToASCII(current_.BaseName().value()));
+        current_.BaseName().MaybeAsASCII());
   }
 
   virtual bool HasFileSystemType(fileapi::FileSystemType type) const OVERRIDE {
     if (current_.empty())
       return false;
-    std::string directory =
-        fileapi::FileSystemPathManager::GetFileSystemTypeString(type);
+    std::string directory = GetFileSystemTypeString(type);
     DCHECK(!directory.empty());
     return file_util::DirectoryExists(current_.AppendASCII(directory));
   }
@@ -164,8 +157,7 @@ FilePath OldGetBaseDirectoryForOrigin(
 FilePath OldGetBaseDirectoryForOriginAndType(
     const FilePath& old_base_path,
     const GURL& origin_url, fileapi::FileSystemType type) {
-  std::string type_string =
-      fileapi::FileSystemPathManager::GetFileSystemTypeString(type);
+  std::string type_string = GetFileSystemTypeString(type);
   if (type_string.empty()) {
     NOTREACHED();
     return FilePath();
@@ -288,7 +280,7 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
       FileSystemType type,
       ObfuscatedFileUtil* file_util,
       const FilePath& old_base_path,
-      const FileSystemPathManager::GetRootPathCallback& callback)
+      const FileSystemMountPointProvider::GetRootPathCallback& callback)
       : file_message_loop_(file_message_loop),
         origin_message_loop_proxy_(
             base::MessageLoopProxy::current()),
@@ -337,8 +329,7 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
 
   void DispatchCallback(const FilePath& root_path) {
     std::string origin_identifier = GetOriginIdentifierFromURL(origin_url_);
-    std::string type_string =
-        FileSystemPathManager::GetFileSystemTypeString(type_);
+    std::string type_string = GetFileSystemTypeString(type_);
     DCHECK(!type_string.empty());
     std::string name = origin_identifier + ":" + type_string;
 
@@ -355,17 +346,17 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
   FileSystemType type_;
   scoped_refptr<ObfuscatedFileUtil> file_util_;
   FilePath old_base_path_;
-  FileSystemPathManager::GetRootPathCallback callback_;
+  FileSystemMountPointProvider::GetRootPathCallback callback_;
 };
 
 SandboxMountPointProvider::SandboxMountPointProvider(
-    FileSystemPathManager* path_manager,
     scoped_refptr<base::MessageLoopProxy> file_message_loop,
-    const FilePath& profile_path)
+    const FilePath& profile_path,
+    const FileSystemOptions& file_system_options)
     : FileSystemQuotaUtil(file_message_loop),
-      path_manager_(path_manager),
       file_message_loop_(file_message_loop),
       profile_path_(profile_path),
+      file_system_options_(file_system_options),
       sandbox_file_util_(
           new ObfuscatedFileUtil(
               profile_path.Append(kNewFileSystemDirectory),
@@ -382,16 +373,17 @@ bool SandboxMountPointProvider::IsAccessAllowed(const GURL& origin_url,
                                                 const FilePath& unused) {
   if (type != kFileSystemTypeTemporary && type != kFileSystemTypePersistent)
     return false;
-  // We essentially depend on quota to do our access controls.
-  return path_manager_->IsAllowedScheme(origin_url);
+  // We essentially depend on quota to do our access controls, so here
+  // we only check if the requested scheme is allowed or not.
+  return IsAllowedScheme(origin_url);
 }
 
 void SandboxMountPointProvider::ValidateFileSystemRootAndGetURL(
     const GURL& origin_url, fileapi::FileSystemType type, bool create,
-    const FileSystemPathManager::GetRootPathCallback& callback) {
+    const FileSystemMountPointProvider::GetRootPathCallback& callback) {
   FilePath origin_base_path;
 
-  if (path_manager_->is_incognito()) {
+  if (file_system_options_.is_incognito()) {
     // TODO(kinuko): return an isolated temporary directory.
     callback.Run(false, FilePath(), std::string());
     UMA_HISTOGRAM_ENUMERATION(kOpenFileSystem,
@@ -400,7 +392,7 @@ void SandboxMountPointProvider::ValidateFileSystemRootAndGetURL(
     return;
   }
 
-  if (!path_manager_->IsAllowedScheme(origin_url)) {
+  if (!IsAllowedScheme(origin_url)) {
     callback.Run(false, FilePath(), std::string());
     UMA_HISTOGRAM_ENUMERATION(kOpenFileSystem,
                               kInvalidScheme,
@@ -419,11 +411,11 @@ FilePath
 SandboxMountPointProvider::ValidateFileSystemRootAndGetPathOnFileThread(
     const GURL& origin_url, FileSystemType type, const FilePath& unused,
     bool create) {
-  if (path_manager_->is_incognito())
+  if (file_system_options_.is_incognito())
     // TODO(kinuko): return an isolated temporary directory.
     return FilePath();
 
-  if (!path_manager_->IsAllowedScheme(origin_url))
+  if (!IsAllowedScheme(origin_url))
     return FilePath();
 
   MigrateIfNeeded(sandbox_file_util_, old_base_path());
@@ -437,12 +429,9 @@ bool SandboxMountPointProvider::IsRestrictedFileName(const FilePath& filename)
   if (filename.value().empty())
     return false;
 
-  std::string filename_lower = StringToLowerASCII(
-      FilePathStringToASCII(filename.value()));
-
   for (size_t i = 0; i < arraysize(kRestrictedNames); ++i) {
     // Exact match.
-    if (filename_lower == kRestrictedNames[i])
+    if (filename.value() == kRestrictedNames[i])
       return true;
   }
 
@@ -675,6 +664,21 @@ FilePath SandboxMountPointProvider::OldCreateFileSystemRootPath(
     return FilePath();
 
   return root;
+}
+
+bool SandboxMountPointProvider::IsAllowedScheme(const GURL& url) const {
+  // Basically we only accept http or https. We allow file:// URLs
+  // only if --allow-file-access-from-files flag is given.
+  if (url.SchemeIs("http") || url.SchemeIs("https"))
+    return true;
+  for (size_t i = 0;
+       i < file_system_options_.additional_allowed_schemes().size();
+       ++i) {
+    if (url.SchemeIs(
+            file_system_options_.additional_allowed_schemes()[i].c_str()))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace fileapi

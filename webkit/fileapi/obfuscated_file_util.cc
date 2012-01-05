@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,6 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
@@ -993,8 +992,7 @@ ObfuscatedFileUtil::CreateOriginEnumerator() {
 
 bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
     const GURL& origin, FileSystemType type) {
-  std::string type_string =
-      FileSystemPathManager::GetFileSystemTypeString(type);
+  std::string type_string = GetFileSystemTypeString(type);
   if (type_string.empty()) {
     LOG(WARNING) << "Unknown filesystem type requested:" << type;
     return true;
@@ -1185,8 +1183,7 @@ FilePath ObfuscatedFileUtil::LocalPathToDataPath(
 // Still doesn't answer the quota issue, though.
 FileSystemDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
     const GURL& origin, FileSystemType type, bool create) {
-  std::string type_string =
-      FileSystemPathManager::GetFileSystemTypeString(type);
+  std::string type_string = GetFileSystemTypeString(type);
   if (type_string.empty()) {
     LOG(WARNING) << "Unknown filesystem type requested:" << type;
     return NULL;

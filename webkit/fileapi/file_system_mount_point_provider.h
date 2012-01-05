@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,17 +8,30 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/file_path.h"
-#include "googleurl/src/gurl.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_types.h"
 
+class GURL;
+
 namespace fileapi {
+
+class FileSystemFileUtil;
 
 // An interface to provide mount-point-specific path-related utilities
 // and specialized FileSystemFileUtil instance.
 class FileSystemMountPointProvider {
  public:
+  // Callback for GetFileSystemRootPath.
+  // If the request is accepted and the root filesystem for the origin exists
+  // the callback is called with success=true and valid root_path and name.
+  // If the request is accepted, |create| is specified for
+  // GetFileSystemRootPath, and the root directory does not exist, it creates
+  // a new one and calls back with success=true if the creation has succeeded.
+  typedef base::Callback<void(bool /* success */,
+                              const FilePath& /* root_path */,
+                              const std::string& /* name */)>
+      GetRootPathCallback;
   virtual ~FileSystemMountPointProvider() {}
 
   // Checks if access to |virtual_path| is allowed from |origin_url|.
@@ -33,7 +46,7 @@ class FileSystemMountPointProvider {
       const GURL& origin_url,
       FileSystemType type,
       bool create,
-      const FileSystemPathManager::GetRootPathCallback& callback) = 0;
+      const GetRootPathCallback& callback) = 0;
 
   // Like GetFileSystemRootPath, but synchronous, and can be called only while
   // running on the file thread.

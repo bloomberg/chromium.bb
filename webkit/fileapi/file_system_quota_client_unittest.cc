@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,9 +17,10 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/obfuscated_file_util.h"
-#include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/fileapi/quota_file_util.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/quota/quota_types.h"
 
 namespace fileapi {
@@ -32,13 +33,6 @@ const char kDummyURL3[] = "http://www.bleh";
 // Declared to shorten the variable names.
 const quota::StorageType kTemporary = quota::kStorageTypeTemporary;
 const quota::StorageType kPersistent = quota::kStorageTypePersistent;
-
-class MockFileSystemPathManager : public FileSystemPathManager {
- public:
-  explicit MockFileSystemPathManager(const FilePath& filesystem_path)
-      : FileSystemPathManager(base::MessageLoopProxy::current(),
-                              filesystem_path, NULL, false, true) {}
-};
 
 }  // namespace
 
@@ -57,8 +51,8 @@ class FileSystemQuotaClientTest : public testing::Test {
             base::MessageLoopProxy::current(),
             base::MessageLoopProxy::current(),
             NULL, NULL,
-            FilePath(), false /* is_incognito */, true /* allow_file_access */,
-            new MockFileSystemPathManager(data_dir_.path()));
+            data_dir_.path(),
+            CreateDisallowFileAccessOptions());
   }
 
   struct TestFile {
@@ -129,7 +123,7 @@ class FileSystemQuotaClientTest : public testing::Test {
                              quota::StorageType type) {
     // Note: this test assumes sandbox_provider impl is used for
     // temporary and persistent filesystem.
-    return file_system_context_->path_manager()->sandbox_provider()->
+    return file_system_context_->sandbox_provider()->
         GetBaseDirectoryForOriginAndType(
             GURL(origin_url), QuotaStorageTypeToFileSystemType(type), true);
   }
@@ -150,7 +144,7 @@ class FileSystemQuotaClientTest : public testing::Test {
   bool CreateFileSystemDirectory(const FilePath& path,
                                  const std::string& origin_url,
                                  quota::StorageType type) {
-    FileSystemFileUtil* file_util = file_system_context_->path_manager()->
+    FileSystemFileUtil* file_util = file_system_context_->
         GetFileUtil(QuotaStorageTypeToFileSystemType(type));
 
     scoped_ptr<FileSystemOperationContext> context(
@@ -170,7 +164,7 @@ class FileSystemQuotaClientTest : public testing::Test {
     if (path.empty())
       return false;
 
-    FileSystemFileUtil* file_util = file_system_context_->path_manager()->
+    FileSystemFileUtil* file_util = file_system_context_->
         sandbox_provider()->GetFileUtil();
 
     scoped_ptr<FileSystemOperationContext> context(

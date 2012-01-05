@@ -114,7 +114,6 @@
 #include "chrome/browser/extensions/extension_input_ime_api.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 #endif
 
 #if defined(OS_CHROMEOS) && defined(USE_VIRTUAL_KEYBOARD)
@@ -1117,9 +1116,8 @@ void ExtensionService::NotifyExtensionUnloaded(
 #if defined(OS_CHROMEOS)
     // Revoke external file access to
   if (profile_->GetFileSystemContext() &&
-      profile_->GetFileSystemContext()->path_manager() &&
-      profile_->GetFileSystemContext()->path_manager()->external_provider()) {
-    profile_->GetFileSystemContext()->path_manager()->external_provider()->
+      profile_->GetFileSystemContext()->external_provider()) {
+    profile_->GetFileSystemContext()->external_provider()->
         RevokeAccessForExtension(extension->id());
   }
 

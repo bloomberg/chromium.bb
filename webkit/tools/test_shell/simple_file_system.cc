@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,8 +21,8 @@
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/simple_file_writer.h"
 
@@ -128,9 +128,7 @@ SimpleFileSystem::SimpleFileSystem() {
         NULL /* special storage policy */,
         NULL /* quota manager */,
         file_system_dir_.path(),
-        false /* incognito */,
-        true /* allow_file_access */,
-        NULL);
+        fileapi::CreateAllowFileAccessOptions());
   } else {
     LOG(WARNING) << "Failed to create a temp dir for the filesystem."
                     "FileSystem feature will be disabled.";

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,8 @@
 #include "base/file_util_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 
@@ -292,7 +292,7 @@ FilePath LocalFileUtil::GetLocalPath(
     const GURL& origin_url,
     FileSystemType type,
     const FilePath& virtual_path) {
-  FilePath root = context->file_system_context()->path_manager()->
+  FilePath root = context->file_system_context()->GetMountPointProvider(type)->
       ValidateFileSystemRootAndGetPathOnFileThread(origin_url, type,
           virtual_path, false);
   if (root.empty())

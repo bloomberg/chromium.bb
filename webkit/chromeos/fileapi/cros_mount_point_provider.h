@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,9 @@ class FileAccessPermissions;
 class CrosMountPointProvider
     : public fileapi::ExternalFileSystemMountPointProvider {
  public:
+  typedef fileapi::FileSystemMountPointProvider::GetRootPathCallback
+      GetRootPathCallback;
+
   CrosMountPointProvider(
       scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy);
   virtual ~CrosMountPointProvider();
@@ -40,7 +43,7 @@ class CrosMountPointProvider
       const GURL& origin_url,
       fileapi::FileSystemType type,
       bool create,
-      const fileapi::FileSystemPathManager::GetRootPathCallback& callback)
+      const GetRootPathCallback& callback)
           OVERRIDE;
   virtual FilePath ValidateFileSystemRootAndGetPathOnFileThread(
       const GURL& origin_url,

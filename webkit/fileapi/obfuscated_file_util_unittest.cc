@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,9 +17,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
+#include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/obfuscated_file_util.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/quota_manager.h"
@@ -142,12 +142,15 @@ class ObfuscatedFileUtilTest : public testing::Test {
   void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
 
+    scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
+        new quota::MockSpecialStoragePolicy();
+
     quota_manager_ = new quota::QuotaManager(
         false /* is_incognito */,
         data_dir_.path(),
         base::MessageLoopProxy::current(),
         base::MessageLoopProxy::current(),
-        NULL /* special storage policy */);
+        storage_policy);
 
     // Every time we create a new helper, it creates another context, which
     // creates another path manager, another sandbox_mount_point_provider, and
@@ -155,18 +158,21 @@ class ObfuscatedFileUtilTest : public testing::Test {
     file_system_context_ = new FileSystemContext(
         base::MessageLoopProxy::current(),
         base::MessageLoopProxy::current(),
-        new quota::MockSpecialStoragePolicy(),
+        storage_policy,
         quota_manager_->proxy(),
         data_dir_.path(),
-        false /* incognito */,
-        true /* allow_file_access_from_files */,
-        NULL /* path_manager */);
+        CreateAllowFileAccessOptions());
 
     obfuscated_file_util_ = static_cast<ObfuscatedFileUtil*>(
-        file_system_context_->path_manager()->GetFileUtil(type_));
+        file_system_context_->GetFileUtil(type_));
 
     test_helper_.SetUp(file_system_context_.get(),
                        obfuscated_file_util_.get());
+  }
+
+  void TearDown() {
+    quota_manager_ = NULL;
+    test_helper_.TearDown();
   }
 
   FileSystemOperationContext* NewContext(FileSystemTestOriginHelper* helper) {

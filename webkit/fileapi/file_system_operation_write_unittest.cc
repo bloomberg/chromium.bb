@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -27,7 +27,6 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_util.h"
@@ -195,7 +194,6 @@ void FileSystemOperationWriteTest::SetUp() {
 
   quota_manager_ = new MockQuotaManager(base_dir, 1024);
   test_helper_.SetUp(base_dir,
-                     false /* incognito */,
                      false /* unlimited quota */,
                      quota_manager_->proxy(),
                      local_file_util_.get());

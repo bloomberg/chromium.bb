@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -160,6 +160,20 @@ GURL GetOriginURLFromIdentifier(const std::string& origin_identifier) {
       origin_identifier.find("file__") == 0)
     return GURL("file:///");
   return origin_url;
+}
+
+std::string GetFileSystemTypeString(FileSystemType type) {
+  switch (type) {
+    case kFileSystemTypeTemporary:
+      return fileapi::kTemporaryName;
+    case kFileSystemTypePersistent:
+      return fileapi::kPersistentName;
+    case kFileSystemTypeExternal:
+      return fileapi::kExternalName;
+    case kFileSystemTypeUnknown:
+    default:
+      return std::string();
+  }
 }
 
 }  // namespace fileapi

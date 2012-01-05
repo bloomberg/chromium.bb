@@ -118,6 +118,8 @@
         '<(DEPTH)/webkit/tools/test_shell/test_shell_webblobregistry_impl.h',
         '<(DEPTH)/webkit/tools/test_shell/test_shell_webmimeregistry_impl.cc',
         '<(DEPTH)/webkit/tools/test_shell/test_shell_webmimeregistry_impl.h',
+        '<(DEPTH)/webkit/fileapi/mock_file_system_options.cc',
+        '<(DEPTH)/webkit/fileapi/mock_file_system_options.h',
         'simple_database_system.cc',
         'simple_database_system.h',
       ],

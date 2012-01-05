@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,6 @@
 #include "net/base/registry_controlled_domain.h"
 #include "ui/base/ui_base_switches.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/glue/resource_type.h"
 
@@ -198,7 +197,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
     // This is for the filesystem sandbox.
     ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
         id(), resource_context_->file_system_context()->
-          path_manager()->sandbox_provider()->new_base_path(),
+          sandbox_provider()->new_base_path(),
         base::PLATFORM_FILE_OPEN |
         base::PLATFORM_FILE_CREATE |
         base::PLATFORM_FILE_OPEN_ALWAYS |
@@ -215,7 +214,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
     // sandbox.
     ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
         id(), resource_context_->file_system_context()->
-          path_manager()->sandbox_provider()->old_base_path(),
+          sandbox_provider()->old_base_path(),
         base::PLATFORM_FILE_READ | base::PLATFORM_FILE_WRITE |
             base::PLATFORM_FILE_WRITE_ATTRIBUTES |
             base::PLATFORM_FILE_ENUMERATE);
@@ -223,7 +222,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
     // we know we've taken care of it.
     ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
         id(), resource_context_->file_system_context()->
-          path_manager()->sandbox_provider()->renamed_old_base_path(),
+          sandbox_provider()->renamed_old_base_path(),
         base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_CREATE_ALWAYS |
             base::PLATFORM_FILE_WRITE);
   }

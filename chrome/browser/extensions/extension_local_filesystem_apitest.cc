@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 
 #if defined(OS_CHROMEOS)
 
@@ -21,10 +20,8 @@ class FileSystemExtensionApiTest : public ExtensionApiTest {
   // Sets up test environment
   void AddTmpMountPoint() {
     // Add tmp mount point.
-    fileapi::FileSystemPathManager* path_manager =
-        browser()->profile()->GetFileSystemContext()->path_manager();
     fileapi::ExternalFileSystemMountPointProvider* provider =
-        path_manager->external_provider();
+        browser()->profile()->GetFileSystemContext()->external_provider();
     provider->AddMountPoint(test_mount_point_);
   }
 

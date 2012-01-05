@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/chromeos/fileapi/file_access_permissions.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/native_file_util.h"
 #include "webkit/glue/webkit_glue.h"
@@ -83,7 +82,7 @@ void CrosMountPointProvider::ValidateFileSystemRootAndGetURL(
     const GURL& origin_url,
     fileapi::FileSystemType type,
     bool create,
-    const fileapi::FileSystemPathManager::GetRootPathCallback& callback) {
+    const GetRootPathCallback& callback) {
   DCHECK(type == fileapi::kFileSystemTypeExternal);
   std::string name(GetOriginIdentifierFromURL(origin_url));
   name += ':';

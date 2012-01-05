@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -32,7 +32,7 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 
@@ -60,15 +60,13 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     special_storage_policy_ = new quota::MockSpecialStoragePolicy;
     file_system_context_ =
         new FileSystemContext(
-            base::MessageLoopProxy::current(),
+            file_thread_proxy_,
             base::MessageLoopProxy::current(),
             special_storage_policy_, NULL,
-            FilePath(), false /* is_incognito */, true /* allow_file_access */,
-            new FileSystemPathManager(
-                    file_thread_proxy_, temp_dir_.path(),
-                    NULL, false, false));
+            temp_dir_.path(),
+            CreateAllowFileAccessOptions());
 
-    file_system_context_->path_manager()->ValidateFileSystemRootAndGetURL(
+    file_system_context_->sandbox_provider()->ValidateFileSystemRootAndGetURL(
         GURL("http://remote/"), kFileSystemTypeTemporary, true,  // create
         base::Bind(&FileSystemDirURLRequestJobTest::OnGetRootPath,
                    weak_factory_.GetWeakPtr()));
@@ -201,8 +199,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   }
 
   FileSystemFileUtil* file_util() {
-    return file_system_context_->path_manager()->sandbox_provider()->
-        GetFileUtil();
+    return file_system_context_->sandbox_provider()->GetFileUtil();
   }
 
   // Put the message loop at the top, so that it's the last thing deleted.

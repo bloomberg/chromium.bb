@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -302,7 +302,6 @@ void FileSystemOperationTest::SetUp() {
       base_dir, test_helper_.origin(), test_helper_.storage_type());
   quota_manager_proxy_ = new MockQuotaManagerProxy(quota_manager_.get());
   test_helper_.SetUp(base_dir,
-                     false /* incognito */,
                      false /* unlimited quota */,
                      quota_manager_proxy_.get(),
                      local_file_util_.get());

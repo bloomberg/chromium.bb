@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,6 +59,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_options.h"
 #include "webkit/quota/mock_quota_manager.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -124,6 +125,14 @@ class TestExtensionURLRequestContextGetter
 
 ProfileKeyedService* CreateTestDesktopNotificationService(Profile* profile) {
   return new DesktopNotificationService(profile, NULL);
+}
+
+fileapi::FileSystemOptions CreateTestingFileSystemOptions(bool is_incognito) {
+  return fileapi::FileSystemOptions(
+      is_incognito
+          ? fileapi::FileSystemOptions::PROFILE_MODE_INCOGNITO
+          : fileapi::FileSystemOptions::PROFILE_MODE_NORMAL,
+      std::vector<std::string>());
 }
 
 }  // namespace
@@ -610,9 +619,7 @@ fileapi::FileSystemContext* TestingProfile::GetFileSystemContext() {
       GetExtensionSpecialStoragePolicy(),
       NULL,
       GetPath(),
-      IsOffTheRecord(),
-      true,  // Allow file access from files.
-      NULL);
+      CreateTestingFileSystemOptions(IsOffTheRecord()));
   }
   return file_system_context_.get();
 }

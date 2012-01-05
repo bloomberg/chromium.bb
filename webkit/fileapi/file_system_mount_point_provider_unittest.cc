@@ -1,8 +1,6 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "webkit/fileapi/file_system_path_manager.h"
 
 #include <set>
 #include <string>
@@ -20,11 +18,18 @@
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 
+#if defined(OS_CHROMEOS)
+#include "webkit/chromeos/fileapi/cros_mount_point_provider.h"
+#endif
+
 namespace fileapi {
+
 namespace {
 
 // PS stands for path separator.
@@ -196,21 +201,21 @@ const struct IsRestrictedNameTest {
   { FILE_PATH_LITERAL(".b"), false, },
 };
 
-FilePath UTF8ToFilePath(const std::string& str) {
-  FilePath::StringType result;
-#if defined(OS_POSIX)
-  result = base::SysWideToNativeMB(UTF8ToWide(str));
-#elif defined(OS_WIN)
-  result = UTF8ToUTF16(str);
+FileSystemOptions CreateRootPathTestOptions() {
+  std::vector<std::string> additional_allowed_schemes;
+  additional_allowed_schemes.push_back("file");
+#if defined(OS_CHROMEOS)
+  additional_allowed_schemes.push_back("chrome-extension");
 #endif
-  return FilePath(result);
+  return FileSystemOptions(FileSystemOptions::PROFILE_MODE_NORMAL,
+                           additional_allowed_schemes);
 }
 
 }  // namespace
 
-class FileSystemPathManagerTest : public testing::Test {
+class FileSystemMountPointProviderTest : public testing::Test {
  public:
-  FileSystemPathManagerTest()
+  FileSystemMountPointProviderTest()
       : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   }
 
@@ -219,25 +224,28 @@ class FileSystemPathManagerTest : public testing::Test {
     root_path_callback_status_ = false;
     root_path_.clear();
     file_system_name_.clear();
+    special_storage_policy_ = new quota::MockSpecialStoragePolicy;
   }
 
  protected:
-  FileSystemPathManager* NewPathManager(
-      bool incognito,
-      bool allow_file_access) {
-    FileSystemPathManager* manager = new FileSystemPathManager(
+  void SetupNewContext(const FileSystemOptions& options) {
+    file_system_context_ = new FileSystemContext(
         base::MessageLoopProxy::current(),
+        base::MessageLoopProxy::current(),
+        special_storage_policy_,
+        NULL,
         data_dir_.path(),
-        scoped_refptr<quota::SpecialStoragePolicy>(
-            new quota::MockSpecialStoragePolicy),
-        incognito,
-        allow_file_access);
+        options);
 #if defined(OS_CHROMEOS)
     fileapi::ExternalFileSystemMountPointProvider* ext_provider =
-        manager->external_provider();
+        file_system_context_->external_provider();
     ext_provider->AddMountPoint(FilePath("/tmp/testing"));
 #endif
-    return manager;
+  }
+
+  FileSystemMountPointProvider* provider(FileSystemType type) {
+    DCHECK(file_system_context_);
+    return file_system_context_->GetMountPointProvider(type);
   }
 
   void OnGetRootPath(bool success,
@@ -248,14 +256,13 @@ class FileSystemPathManagerTest : public testing::Test {
     file_system_name_ = name;
   }
 
-  bool GetRootPath(FileSystemPathManager* manager,
-                   const GURL& origin_url,
+  bool GetRootPath(const GURL& origin_url,
                    fileapi::FileSystemType type,
                    bool create,
                    FilePath* root_path) {
-    manager->ValidateFileSystemRootAndGetURL(
+    provider(type)->ValidateFileSystemRootAndGetURL(
         origin_url, type, create,
-        base::Bind(&FileSystemPathManagerTest::OnGetRootPath,
+        base::Bind(&FileSystemMountPointProviderTest::OnGetRootPath,
                    weak_factory_.GetWeakPtr()));
     MessageLoop::current()->RunAllPending();
     if (root_path)
@@ -269,27 +276,30 @@ class FileSystemPathManagerTest : public testing::Test {
         SandboxMountPointProvider::kNewFileSystemDirectory);
   }
   FilePath external_file_system_path() {
-    return UTF8ToFilePath(std::string(fileapi::kExternalDir));
+    return FilePath::FromUTF8Unsafe(fileapi::kExternalDir);
   }
   FilePath external_file_path_root() {
-    return UTF8ToFilePath(std::string("/tmp"));
+    return FilePath::FromUTF8Unsafe("/tmp");
   }
 
  private:
   ScopedTempDir data_dir_;
-  base::WeakPtrFactory<FileSystemPathManagerTest> weak_factory_;
+  base::WeakPtrFactory<FileSystemMountPointProviderTest> weak_factory_;
 
   bool root_path_callback_status_;
   FilePath root_path_;
   std::string file_system_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileSystemPathManagerTest);
+  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<FileSystemContext> file_system_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileSystemMountPointProviderTest);
 };
 
-TEST_F(FileSystemPathManagerTest, GetRootPathCreateAndExamine) {
+TEST_F(FileSystemMountPointProviderTest, GetRootPathCreateAndExamine) {
   std::vector<FilePath> returned_root_path(
       ARRAYSIZE_UNSAFE(kRootPathTestCases));
-  scoped_ptr<FileSystemPathManager> manager(NewPathManager(false, false));
+  SetupNewContext(CreateRootPathTestOptions());
 
   // Create a new root directory.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathTestCases); ++i) {
@@ -297,8 +307,7 @@ TEST_F(FileSystemPathManagerTest, GetRootPathCreateAndExamine) {
                  << kRootPathTestCases[i].expected_path);
 
     FilePath root_path;
-    EXPECT_TRUE(GetRootPath(manager.get(),
-                            GURL(kRootPathTestCases[i].origin_url),
+    EXPECT_TRUE(GetRootPath(GURL(kRootPathTestCases[i].origin_url),
                             kRootPathTestCases[i].type,
                             true /* create */, &root_path));
 
@@ -324,8 +333,7 @@ TEST_F(FileSystemPathManagerTest, GetRootPathCreateAndExamine) {
                  << kRootPathTestCases[i].expected_path);
 
     FilePath root_path;
-    EXPECT_TRUE(GetRootPath(manager.get(),
-                            GURL(kRootPathTestCases[i].origin_url),
+    EXPECT_TRUE(GetRootPath(GURL(kRootPathTestCases[i].origin_url),
                             kRootPathTestCases[i].type,
                             false /* create */, &root_path));
     ASSERT_TRUE(returned_root_path.size() > i);
@@ -333,75 +341,70 @@ TEST_F(FileSystemPathManagerTest, GetRootPathCreateAndExamine) {
   }
 }
 
-TEST_F(FileSystemPathManagerTest, GetRootPathCreateAndExamineWithNewManager) {
+TEST_F(FileSystemMountPointProviderTest,
+       GetRootPathCreateAndExamineWithNewProvider) {
   std::vector<FilePath> returned_root_path(
       ARRAYSIZE_UNSAFE(kRootPathTestCases));
-  scoped_ptr<FileSystemPathManager> manager(NewPathManager(false, false));
+  SetupNewContext(CreateAllowFileAccessOptions());
 
   GURL origin_url("http://foo.com:1/");
 
   FilePath root_path1;
-  EXPECT_TRUE(GetRootPath(manager.get(), origin_url,
+  EXPECT_TRUE(GetRootPath(origin_url,
                           kFileSystemTypeTemporary, true, &root_path1));
 
-  manager.reset(NewPathManager(false, false));
+  SetupNewContext(CreateDisallowFileAccessOptions());
   FilePath root_path2;
-  EXPECT_TRUE(GetRootPath(manager.get(), origin_url,
+  EXPECT_TRUE(GetRootPath(origin_url,
                           kFileSystemTypeTemporary, false, &root_path2));
 
   EXPECT_EQ(root_path1.value(), root_path2.value());
 }
 
-TEST_F(FileSystemPathManagerTest, GetRootPathGetWithoutCreate) {
-  scoped_ptr<FileSystemPathManager> manager(NewPathManager(false, false));
+TEST_F(FileSystemMountPointProviderTest, GetRootPathGetWithoutCreate) {
+  SetupNewContext(CreateDisallowFileAccessOptions());
 
   // Try to get a root directory without creating.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPath (create=false) #" << i << " "
                  << kRootPathTestCases[i].expected_path);
-    EXPECT_FALSE(GetRootPath(manager.get(),
-                             GURL(kRootPathTestCases[i].origin_url),
+    EXPECT_FALSE(GetRootPath(GURL(kRootPathTestCases[i].origin_url),
                              kRootPathTestCases[i].type,
                              false /* create */, NULL));
   }
 }
 
-TEST_F(FileSystemPathManagerTest, GetRootPathInIncognito) {
-  scoped_ptr<FileSystemPathManager> manager(NewPathManager(
-      true /* incognito */, false));
+TEST_F(FileSystemMountPointProviderTest, GetRootPathInIncognito) {
+  SetupNewContext(CreateIncognitoFileSystemOptions());
 
   // Try to get a root directory.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPath (incognito) #" << i << " "
                  << kRootPathTestCases[i].expected_path);
-    EXPECT_FALSE(GetRootPath(manager.get(),
-                             GURL(kRootPathTestCases[i].origin_url),
+    EXPECT_FALSE(GetRootPath(GURL(kRootPathTestCases[i].origin_url),
                              kRootPathTestCases[i].type,
                              true /* create */, NULL));
   }
 }
 
-TEST_F(FileSystemPathManagerTest, GetRootPathFileURI) {
-  scoped_ptr<FileSystemPathManager> manager(NewPathManager(false, false));
+TEST_F(FileSystemMountPointProviderTest, GetRootPathFileURI) {
+  SetupNewContext(CreateDisallowFileAccessOptions());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathFileURITestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPathFileURI (disallow) #"
                  << i << " " << kRootPathFileURITestCases[i].expected_path);
-    EXPECT_FALSE(GetRootPath(manager.get(),
-                             GURL(kRootPathFileURITestCases[i].origin_url),
+    EXPECT_FALSE(GetRootPath(GURL(kRootPathFileURITestCases[i].origin_url),
                              kRootPathFileURITestCases[i].type,
                              true /* create */, NULL));
   }
 }
 
-TEST_F(FileSystemPathManagerTest, GetRootPathFileURIWithAllowFlag) {
-  scoped_ptr<FileSystemPathManager> manager(NewPathManager(
-      false, true /* allow_file_access_from_files */));
+TEST_F(FileSystemMountPointProviderTest, GetRootPathFileURIWithAllowFlag) {
+  SetupNewContext(CreateRootPathTestOptions());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathFileURITestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPathFileURI (allow) #"
                  << i << " " << kRootPathFileURITestCases[i].expected_path);
     FilePath root_path;
-    EXPECT_TRUE(GetRootPath(manager.get(),
-                            GURL(kRootPathFileURITestCases[i].origin_url),
+    EXPECT_TRUE(GetRootPath(GURL(kRootPathFileURITestCases[i].origin_url),
                             kRootPathFileURITestCases[i].type,
                             true /* create */, &root_path));
     if (kRootPathFileURITestCases[i].type != fileapi::kFileSystemTypeExternal) {
@@ -415,14 +418,14 @@ TEST_F(FileSystemPathManagerTest, GetRootPathFileURIWithAllowFlag) {
   }
 }
 
-TEST_F(FileSystemPathManagerTest, IsRestrictedName) {
-  scoped_ptr<FileSystemPathManager> manager(NewPathManager(false, false));
+TEST_F(FileSystemMountPointProviderTest, IsRestrictedName) {
+  SetupNewContext(CreateDisallowFileAccessOptions());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kIsRestrictedNameTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "IsRestrictedName #" << i << " "
                  << kIsRestrictedNameTestCases[i].name);
     FilePath name(kIsRestrictedNameTestCases[i].name);
     EXPECT_EQ(kIsRestrictedNameTestCases[i].expected_dangerous,
-              manager->IsRestrictedFileName(kFileSystemTypeTemporary, name));
+              provider(kFileSystemTypeTemporary)->IsRestrictedFileName(name));
   }
 }
 

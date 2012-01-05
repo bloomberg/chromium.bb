@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -37,7 +37,7 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 
@@ -83,12 +83,10 @@ class FileSystemURLRequestJobTest : public testing::Test {
             base::MessageLoopProxy::current(),
             base::MessageLoopProxy::current(),
             special_storage_policy_, NULL,
-            FilePath(), false /* is_incognito */, true /* allow_file_access */,
-            new FileSystemPathManager(
-                base::MessageLoopProxy::current(),
-                temp_dir_.path(), NULL, false, false));
+            temp_dir_.path(),
+            CreateDisallowFileAccessOptions());
 
-    file_system_context_->path_manager()->ValidateFileSystemRootAndGetURL(
+    file_system_context_->sandbox_provider()->ValidateFileSystemRootAndGetURL(
         GURL("http://remote/"), kFileSystemTypeTemporary, true,  // create
         base::Bind(&FileSystemURLRequestJobTest::OnGetRootPath,
                    weak_factory_.GetWeakPtr()));
@@ -144,7 +142,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
 
   void CreateDirectory(const base::StringPiece& dir_name) {
     FilePath path = FilePath().AppendASCII(dir_name);
-    FileSystemFileUtil* file_util = file_system_context_->path_manager()->
+    FileSystemFileUtil* file_util = file_system_context_->
         sandbox_provider()->GetFileUtil();
     FileSystemOperationContext context(file_system_context_, file_util);
     context.set_src_origin_url(GURL("http://remote"));
@@ -161,7 +159,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
   void WriteFile(const base::StringPiece& file_name,
                  const char* buf, int buf_size) {
     FilePath path = FilePath().AppendASCII(file_name);
-    FileSystemFileUtil* file_util = file_system_context_->path_manager()->
+    FileSystemFileUtil* file_util = file_system_context_->
         sandbox_provider()->GetFileUtil();
     FileSystemOperationContext context(file_system_context_, file_util);
     context.set_src_origin_url(GURL("http://remote"));

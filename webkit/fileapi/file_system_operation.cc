@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util_proxy.h"
+#include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -101,7 +101,14 @@ void FileSystemOperation::OpenFileSystem(
   // create an unpredictable directory name.  Without that, we could lazily
   // create the root later on the first filesystem write operation, and just
   // return GetFileSystemRootURI() here.
-  file_system_context()->path_manager()->ValidateFileSystemRootAndGetURL(
+  FileSystemMountPointProvider* mount_point_provider =
+      file_system_context()->GetMountPointProvider(type);
+  if (!mount_point_provider) {
+    DidGetRootPath(false, FilePath(), std::string());
+    delete this;
+    return;
+  }
+  mount_point_provider->ValidateFileSystemRootAndGetURL(
       origin_url, type, create,
       base::Bind(&FileSystemOperation::DidGetRootPath,
                  base::Owned(this)));
@@ -776,8 +783,9 @@ bool FileSystemOperation::VerifyFileSystemPathForWrite(
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
-  if (create && file_system_context()->path_manager()->IsRestrictedFileName(
-          *type, virtual_path->BaseName())) {
+  if (create &&
+      file_system_context()->GetMountPointProvider(*type)->IsRestrictedFileName(
+          virtual_path->BaseName())) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
@@ -794,13 +802,13 @@ bool FileSystemOperation::VerifyFileSystemPath(
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_INVALID_URL);
     return false;
   }
-  if (!file_system_context()->path_manager()->IsAccessAllowed(
+  if (!file_system_context()->GetMountPointProvider(*type)->IsAccessAllowed(
       *origin_url, *type, *virtual_path)) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
   DCHECK(file_util);
-  *file_util = file_system_context()->path_manager()->GetFileUtil(*type);
+  *file_util = file_system_context()->GetFileUtil(*type);
   DCHECK(*file_util);
 
   return true;

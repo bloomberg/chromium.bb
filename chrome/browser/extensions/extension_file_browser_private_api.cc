@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,6 @@
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 
@@ -383,10 +382,8 @@ class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher
       return false;
     }
 
-    fileapi::FileSystemPathManager* path_manager =
-        profile_->GetFileSystemContext()->path_manager();
     fileapi::ExternalFileSystemMountPointProvider* provider =
-        path_manager->external_provider();
+        profile_->GetFileSystemContext()->external_provider();
     if (!provider)
       return false;
 
@@ -465,8 +462,6 @@ void RequestLocalFileSystemFunction::RespondFailedOnUIThread(
 
 bool FileWatchBrowserFunctionBase::GetLocalFilePath(
     const GURL& file_url, FilePath* local_path, FilePath* virtual_path) {
-  fileapi::FileSystemPathManager* path_manager =
-      profile_->GetFileSystemContext()->path_manager();
   GURL file_origin_url;
   fileapi::FileSystemType type;
   if (!CrackFileSystemURL(file_url, &file_origin_url, &type,
@@ -476,8 +471,8 @@ bool FileWatchBrowserFunctionBase::GetLocalFilePath(
   if (type != fileapi::kFileSystemTypeExternal)
     return false;
 
-  FilePath root_path =
-      path_manager->ValidateFileSystemRootAndGetPathOnFileThread(
+  FilePath root_path = profile_->GetFileSystemContext()->external_provider()->
+      ValidateFileSystemRootAndGetPathOnFileThread(
           file_origin_url,
           fileapi::kFileSystemTypeExternal,
           *virtual_path,
@@ -745,11 +740,14 @@ class ExecuteTasksFileBrowserFunction::ExecuteTasksFileSystemCallbackDispatcher
     if (type != fileapi::kFileSystemTypeExternal)
       return false;
 
-    fileapi::FileSystemPathManager* path_manager =
-        profile_->GetFileSystemContext()->path_manager();
-    if (!path_manager->IsAccessAllowed(file_origin_url,
-                                       type,
-                                       virtual_path)) {
+    fileapi::ExternalFileSystemMountPointProvider* external_provider =
+        profile_->GetFileSystemContext()->external_provider();
+    if (!external_provider)
+      return false;
+
+    if (!external_provider->IsAccessAllowed(file_origin_url,
+                                            type,
+                                            virtual_path)) {
       return false;
     }
 
@@ -760,17 +758,12 @@ class ExecuteTasksFileBrowserFunction::ExecuteTasksFileSystemCallbackDispatcher
     }
 
     FilePath root_path =
-        path_manager->ValidateFileSystemRootAndGetPathOnFileThread(
+        external_provider->ValidateFileSystemRootAndGetPathOnFileThread(
           file_origin_url,
           fileapi::kFileSystemTypeExternal,
           virtual_path,
           false);     // create
     FilePath final_file_path = root_path.Append(virtual_path);
-
-    fileapi::ExternalFileSystemMountPointProvider* external_provider =
-        path_manager->external_provider();
-    if (!external_provider)
-      return false;
 
     // Check if this file system entry exists first.
     base::PlatformFileInfo file_info;
@@ -1012,10 +1005,16 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
 
   // FilePath(virtual_path) doesn't work on win, so limit this to ChromeOS.
 #if defined(OS_CHROMEOS)
-  GURL origin_url = source_url().GetOrigin();
-  fileapi::FileSystemPathManager* path_manager =
-      profile()->GetFileSystemContext()->path_manager();
+  fileapi::ExternalFileSystemMountPointProvider* provider =
+      profile_->GetFileSystemContext()->external_provider();
+  if (!provider) {
+    LOG(WARNING) << "External provider is not available";
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, selected_files));
+    return;
+  }
 
+  GURL origin_url = source_url().GetOrigin();
   size_t len = file_urls.size();
   selected_files.reserve(len);
   for (size_t i = 0; i < len; ++i) {
@@ -1031,7 +1030,7 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
       NOTREACHED();
       continue;
     }
-    FilePath root = path_manager->ValidateFileSystemRootAndGetPathOnFileThread(
+    FilePath root = provider->ValidateFileSystemRootAndGetPathOnFileThread(
         origin_url,
         fileapi::kFileSystemTypeExternal,
         FilePath(virtual_path),

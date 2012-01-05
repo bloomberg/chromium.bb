@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,6 @@
 #include "content/public/browser/notification_types.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 
 // Mock listener used by test below.
 class MockSelectFileDialogListener : public SelectFileDialog::Listener {
@@ -101,10 +100,8 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
 
   // Creates a file system mount point for a directory.
   void AddMountPoint(const FilePath& path) {
-    fileapi::FileSystemPathManager* path_manager =
-        browser()->profile()->GetFileSystemContext()->path_manager();
     fileapi::ExternalFileSystemMountPointProvider* provider =
-        path_manager->external_provider();
+        browser()->profile()->GetFileSystemContext()->external_provider();
     provider->AddMountPoint(path);
   }
 

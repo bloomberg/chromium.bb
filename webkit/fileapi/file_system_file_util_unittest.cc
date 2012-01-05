@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,7 +82,6 @@ class FileSystemFileUtilTest : public testing::Test {
         new ObfuscatedFileUtil(base_dir.path(), new NativeFileUtil()));
     FileSystemTestOriginHelper src_helper(src_origin, src_type);
     src_helper.SetUp(base_dir.path(),
-                     false,  // incognito
                      false,  // unlimited quota
                      NULL,  // quota::QuotaManagerProxy
                      file_util.get());

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/fileapi/file_system_options.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 
 namespace base {
@@ -36,6 +37,8 @@ class SandboxMountPointProvider
     : public FileSystemMountPointProvider,
       public FileSystemQuotaUtil {
  public:
+  typedef FileSystemMountPointProvider::GetRootPathCallback GetRootPathCallback;
+
   // Origin enumerator interface.
   // An instance of this interface is assumed to be called on the file thread.
   class OriginEnumerator {
@@ -58,9 +61,9 @@ class SandboxMountPointProvider
   static const FilePath::CharType kRenamedOldFileSystemDirectory[];
 
   SandboxMountPointProvider(
-      FileSystemPathManager* path_manager,
       scoped_refptr<base::MessageLoopProxy> file_message_loop,
-      const FilePath& profile_path);
+      const FilePath& profile_path,
+      const FileSystemOptions& file_system_options);
   virtual ~SandboxMountPointProvider();
 
   // FileSystemMountPointProvider overrides.
@@ -72,7 +75,7 @@ class SandboxMountPointProvider
       const GURL& origin_url,
       FileSystemType type,
       bool create,
-      const FileSystemPathManager::GetRootPathCallback& callback) OVERRIDE;
+      const GetRootPathCallback& callback) OVERRIDE;
   virtual FilePath ValidateFileSystemRootAndGetPathOnFileThread(
       const GURL& origin_url,
       FileSystemType type,
@@ -148,19 +151,21 @@ class SandboxMountPointProvider
   FilePath OldCreateFileSystemRootPath(
       const GURL& origin_url, FileSystemType type);
 
+  // Returns true if the given |url|'s scheme is allowed to access
+  // filesystem.
+  bool IsAllowedScheme(const GURL& url) const;
+
   class GetFileSystemRootPathTask;
 
   friend class FileSystemTestOriginHelper;
   friend class SandboxMountPointProviderMigrationTest;
   friend class SandboxMountPointProviderOriginEnumeratorTest;
 
-  // The path_manager_ isn't owned by this instance; this instance is owned by
-  // the path_manager_, and they have the same lifetime.
-  FileSystemPathManager* path_manager_;
-
   scoped_refptr<base::MessageLoopProxy> file_message_loop_;
 
   const FilePath profile_path_;
+
+  FileSystemOptions file_system_options_;
 
   scoped_refptr<ObfuscatedFileUtil> sandbox_file_util_;
 
