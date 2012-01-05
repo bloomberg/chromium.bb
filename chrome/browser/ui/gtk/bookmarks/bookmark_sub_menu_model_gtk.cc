@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,6 +148,12 @@ void BookmarkSubMenuModel::MenuWillShow() {
       return;
     model()->AddObserver(this);
   }
+  // We can't do anything further if the model isn't loaded yet.
+  // TODO(mdm): get notified when the load finishes and update the menu.
+  // Otherwise it will look like there are no bookmarks until the user closes
+  // the menu and opens it again.
+  if (!model()->IsLoaded())
+    return;
   // The node count includes the node itself, so 1 means empty.
   if (model()->bookmark_bar_node()->GetTotalNodeCount() > 1) {
     AddSeparator();
@@ -158,12 +164,16 @@ void BookmarkSubMenuModel::MenuWillShow() {
     PopulateMenu();
   }
   bookmark_end_ = GetItemCount();
+  // We want only one separator after the top-level bookmarks and before the
+  // other node and/or mobile node. Keep track of whether we've added it yet.
+  bool added_separator = false;
   if (model()->other_node()->GetTotalNodeCount() > 1) {
     AddSeparator();
+    added_separator = true;
     AddSubMenuForNode(model()->other_node());
   }
   if (model()->mobile_node()->GetTotalNodeCount() > 1) {
-    if (model()->other_node()->GetTotalNodeCount() == 1)
+    if (!added_separator)
       AddSeparator();
     AddSubMenuForNode(model()->mobile_node());
   }
