@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,14 +107,10 @@ void ConstrainedWindowMac::ShowConstrainedWindow() {
   // our tab becomes visible.
   NSWindow* browserWindow =
       wrapper_->web_contents()->GetView()->GetTopLevelNativeWindow();
-  NSWindowController* controller = [browserWindow windowController];
-  if (controller != nil) {
-    DCHECK([controller isKindOfClass:[BrowserWindowController class]]);
-    BrowserWindowController* browser_controller =
-        static_cast<BrowserWindowController*>(controller);
-    if ([browser_controller canAttachConstrainedWindow])
-      Realize(browser_controller);
-  }
+  BrowserWindowController* browser_controller =
+      [BrowserWindowController browserWindowControllerForWindow:browserWindow];
+  if ([browser_controller canAttachConstrainedWindow])
+    Realize(browser_controller);
 }
 
 void ConstrainedWindowMac::CloseConstrainedWindow() {
