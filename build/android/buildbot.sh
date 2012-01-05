@@ -36,7 +36,7 @@ SRC_ROOT=$(cd "$(dirname $0)/../.."; pwd)
 cd $SRC_ROOT
 
 echo "@@@BUILD_STEP Basic setup@@@"
-export ANDROID_SDK_ROOT=/usr/local/google/android-sdk-linux_x86
+export ANDROID_SDK_ROOT=/usr/local/google/android-sdk-linux
 export ANDROID_NDK_ROOT=/usr/local/google/android-ndk-r7
 for mandatory_directory in "${ANDROID_SDK_ROOT}" "${ANDROID_NDK_ROOT}" ; do
   if [[ ! -d "${mandatory_directory}" ]]; then
