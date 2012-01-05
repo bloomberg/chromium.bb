@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -354,6 +354,21 @@ void WizardController::RegisterPrefs(PrefService* local_state) {
   // Preferences::RegisterUserPrefs runs before this code in the future.
   if (local_state->FindPreference(prefs::kSpokenFeedbackEnabled) == NULL) {
     local_state->RegisterBooleanPref(prefs::kSpokenFeedbackEnabled,
+                                     false,
+                                     PrefService::UNSYNCABLE_PREF);
+  }
+  if (local_state->FindPreference(prefs::kHighContrastEnabled) == NULL) {
+    local_state->RegisterBooleanPref(prefs::kHighContrastEnabled,
+                                     false,
+                                     PrefService::UNSYNCABLE_PREF);
+  }
+  if (local_state->FindPreference(prefs::kScreenMagnifierEnabled) == NULL) {
+    local_state->RegisterBooleanPref(prefs::kScreenMagnifierEnabled,
+                                     false,
+                                     PrefService::UNSYNCABLE_PREF);
+  }
+  if (local_state->FindPreference(prefs::kVirtualKeyboardEnabled) == NULL) {
+    local_state->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled,
                                      false,
                                      PrefService::UNSYNCABLE_PREF);
   }

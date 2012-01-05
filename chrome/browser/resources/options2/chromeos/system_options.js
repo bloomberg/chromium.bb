@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,9 +68,21 @@ cr.define('options', function() {
       $('modifier-keys-button').onclick = function(event) {
         OptionsPage.navigateToPage('languageCustomizeModifierKeysOverlay');
       };
-      $('accesibility-check').onchange = function(event) {
-        chrome.send('accessibilityChange',
-                    [String($('accesibility-check').checked)]);
+      $('accessibility-spoken-feedback-check').onchange = function(event) {
+        chrome.send('spokenFeedbackChange',
+                    [$('accessibility-spoken-feedback-check').checked]);
+      };
+      $('accessibility-high-contrast-check').onchange = function(event) {
+        chrome.send('highContrastChange',
+                    [$('accessibility-high-contrast-check').checked]);
+      };
+      $('accessibility-screen-magnifier-check').onchange = function(event) {
+        chrome.send('screenMagnifierChange',
+                    [$('accessibility-screen-magnifier-check').checked]);
+      };
+      $('accessibility-virtual-keyboard-check').onchange = function(event) {
+        chrome.send('virtualKeyboardChange',
+                    [$('accessibility-virtual-keyboard-check').checked]);
       };
       initializeBrightnessButton_('brightness-decrease-button',
           'decreaseScreenBrightness');
@@ -111,10 +123,31 @@ cr.define('options', function() {
   //
 
   /**
-   * Set the initial state of the accessibility checkbox.
+   * Set the initial state of the spoken feedback checkbox.
    */
-  SystemOptions.SetAccessibilityCheckboxState = function(checked) {
-    $('accesibility-check').checked = checked;
+  SystemOptions.setSpokenFeedbackCheckboxState = function(checked) {
+    $('accessibility-spoken-feedback-check').checked = checked;
+  };
+
+  /**
+   * Set the initial state of the high contrast checkbox.
+   */
+  SystemOptions.setHighContrastCheckboxState = function(checked) {
+    $('accessibility-high-contrast-check').checked = checked;
+  };
+
+  /**
+   * Set the initial state of the screen magnifier checkbox.
+   */
+  SystemOptions.setScreenMagnifierCheckboxState = function(checked) {
+    $('accessibility-screen-magnifier-check').checked = checked;
+  };
+
+  /**
+   * Set the initial state of the virtual keyboard checkbox.
+   */
+  SystemOptions.setVirtualKeyboardCheckboxState = function(checked) {
+    $('accessibility-virtual-keyboard-check').checked = checked;
   };
 
   /**

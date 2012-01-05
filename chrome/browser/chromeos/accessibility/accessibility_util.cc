@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,6 +151,24 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
     extension_service->component_loader()->Remove(path);
     LOG(INFO) << "ChromeVox was Unloaded.";
   }
+}
+
+void EnableHighContrast(bool enabled) {
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetBoolean(prefs::kHighContrastEnabled, enabled);
+  pref_service->ScheduleSavePersistentPrefs();
+}
+
+void EnableScreenMagnifier(bool enabled) {
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetBoolean(prefs::kScreenMagnifierEnabled, enabled);
+  pref_service->ScheduleSavePersistentPrefs();
+}
+
+void EnableVirtualKeyboard(bool enabled) {
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetBoolean(prefs::kVirtualKeyboardEnabled, enabled);
+  pref_service->ScheduleSavePersistentPrefs();
 }
 
 void ToggleAccessibility(WebUI* login_web_ui) {

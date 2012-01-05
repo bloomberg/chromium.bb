@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,9 +114,18 @@ void SystemOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("accessibilityTitle",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY));
-  localized_strings->SetString("accessibility",
+  localized_strings->SetString("accessibilitySpokenFeedback",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION));
+  localized_strings->SetString("accessibilityHighContrast",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_ACCESSIBILITY_HIGH_CONTRAST_DESCRIPTION));
+  localized_strings->SetString("accessibilityScreenMagnifier",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_DESCRIPTION));
+  localized_strings->SetString("accessibilityVirtualKeyboard",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION));
 
   // TODO(pastarmovj): replace this with a call to the CrosSettings list
   // handling functionality to come.
@@ -128,10 +137,22 @@ void SystemOptionsHandler::GetLocalizedValues(
 
 void SystemOptionsHandler::Initialize() {
   PrefService* pref_service = g_browser_process->local_state();
-  bool acc_enabled = pref_service->GetBoolean(prefs::kSpokenFeedbackEnabled);
-  base::FundamentalValue checked(acc_enabled);
+  bool enabled = pref_service->GetBoolean(prefs::kSpokenFeedbackEnabled);
   web_ui()->CallJavascriptFunction(
-      "options.SystemOptions.SetAccessibilityCheckboxState", checked);
+      "options.SystemOptions.setSpokenFeedbackCheckboxState",
+      base::FundamentalValue(enabled));
+  enabled = pref_service->GetBoolean(prefs::kHighContrastEnabled);
+  web_ui()->CallJavascriptFunction(
+      "options.SystemOptions.setHighContrastCheckboxState",
+      base::FundamentalValue(enabled));
+  enabled = pref_service->GetBoolean(prefs::kScreenMagnifierEnabled);
+  web_ui()->CallJavascriptFunction(
+      "options.SystemOptions.setScreenMagnifierCheckboxState",
+      base::FundamentalValue(enabled));
+  enabled = pref_service->GetBoolean(prefs::kVirtualKeyboardEnabled);
+  web_ui()->CallJavascriptFunction(
+      "options.SystemOptions.setVirtualKeyboardCheckboxState",
+      base::FundamentalValue(enabled));
 
   chromeos::XInputHierarchyChangedEventListener::GetInstance()
       ->AddObserver(this);
@@ -167,14 +188,29 @@ void SystemOptionsHandler::MouseExists(bool* exists) {
 }
 
 void SystemOptionsHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("accessibilityChange",
-      base::Bind(&SystemOptionsHandler::AccessibilityChangeCallback,
+  web_ui()->RegisterMessageCallback(
+      "spokenFeedbackChange",
+      base::Bind(&SystemOptionsHandler::SpokenFeedbackChangeCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "highContrastChange",
+      base::Bind(&SystemOptionsHandler::HighContrastChangeCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "screenMagnifierChange",
+      base::Bind(&SystemOptionsHandler::ScreenMagnifierChangeCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "virtualKeyboardChange",
+      base::Bind(&SystemOptionsHandler::VirtualKeyboardChangeCallback,
                  base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback("decreaseScreenBrightness",
+  web_ui()->RegisterMessageCallback(
+      "decreaseScreenBrightness",
       base::Bind(&SystemOptionsHandler::DecreaseScreenBrightnessCallback,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("increaseScreenBrightness",
+  web_ui()->RegisterMessageCallback(
+      "increaseScreenBrightness",
       base::Bind(&SystemOptionsHandler::IncreaseScreenBrightnessCallback,
                  base::Unretained(this)));
 }
@@ -184,12 +220,34 @@ void SystemOptionsHandler::DeviceHierarchyChanged() {
   CheckTouchpadExists();
 }
 
-void SystemOptionsHandler::AccessibilityChangeCallback(const ListValue* args) {
-  std::string checked_str;
-  args->GetString(0, &checked_str);
-  bool accessibility_enabled = (checked_str == "true");
+void SystemOptionsHandler::SpokenFeedbackChangeCallback(const ListValue* args) {
+  bool enabled = false;
+  args->GetBoolean(0, &enabled);
 
-  chromeos::accessibility::EnableAccessibility(accessibility_enabled, NULL);
+  chromeos::accessibility::EnableAccessibility(enabled, NULL);
+}
+
+void SystemOptionsHandler::HighContrastChangeCallback(const ListValue* args) {
+  bool enabled = false;
+  args->GetBoolean(0, &enabled);
+
+  chromeos::accessibility::EnableHighContrast(enabled);
+}
+
+void SystemOptionsHandler::ScreenMagnifierChangeCallback(
+    const ListValue* args) {
+  bool enabled = false;
+  args->GetBoolean(0, &enabled);
+
+  chromeos::accessibility::EnableScreenMagnifier(enabled);
+}
+
+void SystemOptionsHandler::VirtualKeyboardChangeCallback(
+    const ListValue* args) {
+  bool enabled = false;
+  args->GetBoolean(0, &enabled);
+
+  chromeos::accessibility::EnableVirtualKeyboard(enabled);
 }
 
 void SystemOptionsHandler::DecreaseScreenBrightnessCallback(

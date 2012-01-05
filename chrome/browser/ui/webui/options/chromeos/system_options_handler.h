@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,10 +34,13 @@ class SystemOptionsHandler
   // DeviceHierarchyObserver implementation.
   virtual void DeviceHierarchyChanged() OVERRIDE;
 
-  // Called when the accessibility checkbox value is changed.
+  // Called when the accessibility checkbox values are changed.
   // |args| will contain the checkbox checked state as a string
   // ("true" or "false").
-  void AccessibilityChangeCallback(const base::ListValue* args);
+  void SpokenFeedbackChangeCallback(const base::ListValue* args);
+  void HighContrastChangeCallback(const base::ListValue* args);
+  void ScreenMagnifierChangeCallback(const base::ListValue* args);
+  void VirtualKeyboardChangeCallback(const base::ListValue* args);
 
   // Called when the System configuration screen is used to adjust
   // the screen brightness.

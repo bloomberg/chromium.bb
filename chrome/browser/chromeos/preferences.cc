@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,6 +58,21 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   // the pref here in case of Chrome/Linux with ChromeOS=1.
   if (prefs->FindPreference(prefs::kSpokenFeedbackEnabled) == NULL) {
     prefs->RegisterBooleanPref(prefs::kSpokenFeedbackEnabled,
+                               false,
+                               PrefService::UNSYNCABLE_PREF);
+  }
+  if (prefs->FindPreference(prefs::kHighContrastEnabled) == NULL) {
+    prefs->RegisterBooleanPref(prefs::kHighContrastEnabled,
+                               false,
+                               PrefService::UNSYNCABLE_PREF);
+  }
+  if (prefs->FindPreference(prefs::kScreenMagnifierEnabled) == NULL) {
+    prefs->RegisterBooleanPref(prefs::kScreenMagnifierEnabled,
+                               false,
+                               PrefService::UNSYNCABLE_PREF);
+  }
+  if (prefs->FindPreference(prefs::kVirtualKeyboardEnabled) == NULL) {
+    prefs->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled,
                                false,
                                PrefService::UNSYNCABLE_PREF);
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -609,6 +609,12 @@ const char kLanguagePreferredVirtualKeyboard[] =
 
 // A boolean pref which determines whether spoken feedback is enabled.
 const char kSpokenFeedbackEnabled[] = "settings.accessibility";
+// A boolean pref which determines whether high conrast is enabled.
+const char kHighContrastEnabled[] = "settings.a11y.high_contrast";
+// A boolean pref which determines whether screen magnifier is enabled.
+const char kScreenMagnifierEnabled[] = "settings.a11y.screen_magnifier";
+// A boolean pref which determines whether virtual keyboard is enabled.
+const char kVirtualKeyboardEnabled[] = "settings.a11y.virtual_keyboard";
 
 // A boolean pref which turns on Advanced Filesystem
 // (USB support, SD card, etc).
