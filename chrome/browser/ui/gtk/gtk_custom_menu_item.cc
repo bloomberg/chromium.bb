@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -261,7 +261,8 @@ static gboolean gtk_custom_menu_item_hbox_expose(GtkWidget* widget,
         gtk_widget_get_allocation(gtk_bin_get_child(GTK_BIN(current_button)),
                                   &child_alloc);
         int half_offset = widget->style->xthickness / 2;
-        gtk_paint_vline(widget->style, widget->window,
+        gtk_paint_vline(gtk_widget_get_style(widget),
+                        gtk_widget_get_window(widget),
                         gtk_widget_get_state(current_button),
                         &event->area, widget, "button",
                         child_alloc.y,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -308,8 +308,9 @@ class BrowserActionButton : public content::NotificationObserver,
       return FALSE;
 
     gfx::CanvasSkiaPaint canvas(event, false);
-    gfx::Rect bounding_rect(widget->allocation);
-    action->PaintBadge(&canvas, bounding_rect, tab_id);
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+    action->PaintBadge(&canvas, gfx::Rect(allocation), tab_id);
     return FALSE;
   }
 

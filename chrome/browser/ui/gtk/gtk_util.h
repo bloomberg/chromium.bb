@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -245,7 +245,7 @@ WindowOpenDisposition DispositionForCurrentButtonPressEvent();
 bool GrabAllInput(GtkWidget* widget);
 
 // Returns a rectangle that represents the widget's bounds. The rectangle it
-// returns is the same as widget->allocation, but anchored at (0, 0).
+// returns is the same as gtk_widget_get_allocation, but anchored at (0, 0).
 gfx::Rect WidgetBounds(GtkWidget* widget);
 
 // Update the timestamp for the given window. This is usually the time of the

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -376,15 +376,16 @@ void TestShell::TestFinished() {
 
 void TestShell::SizeTo(int width, int height) {
   GtkWidget* widget = m_webViewHost->view_handle();
-  if (widget->allocation.width == width &&
-      widget->allocation.height == height) {
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  if (allocation.width == width && allocation.height == height) {
     // Nothing to do.
     return;
   }
 
   gtk_widget_set_size_request(widget, width, height);
-  if (widget->allocation.width > width ||
-      widget->allocation.height > height) {
+  if (allocation.width > width || allocation.height > height) {
     // We've been sized smaller.  Shrink the window so it snaps back to the
     // appropriate size.
     gtk_window_resize(GTK_WINDOW(m_mainWnd), 1, 1);

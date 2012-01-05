@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -713,7 +713,8 @@ gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
 
     if (IsDangerous()) {
       // Draw a simple frame around the area when we're displaying the warning.
-      gtk_paint_shadow(widget->style, widget->window,
+      gtk_paint_shadow(gtk_widget_get_style(widget),
+                       gtk_widget_get_window(widget),
                        static_cast<GtkStateType>(widget->state),
                        static_cast<GtkShadowType>(GTK_SHADOW_OUT),
                        &e->area, widget, "frame",
@@ -736,7 +737,8 @@ gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
 
       GtkShadowType body_shadow =
           GTK_BUTTON(body_.get())->depressed ? GTK_SHADOW_IN : GTK_SHADOW_OUT;
-      gtk_paint_box(style, widget->window,
+      gtk_paint_box(style,
+                    gtk_widget_get_window(widget),
                     gtk_widget_get_state(body_.get()),
                     body_shadow,
                     &left_clip, widget, "button",
@@ -744,7 +746,8 @@ gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
 
       GtkShadowType menu_shadow =
           GTK_BUTTON(menu_button_)->depressed ? GTK_SHADOW_IN : GTK_SHADOW_OUT;
-      gtk_paint_box(style, widget->window,
+      gtk_paint_box(style,
+                    gtk_widget_get_window(widget),
                     gtk_widget_get_state(menu_button_),
                     menu_shadow,
                     &right_clip, widget, "button",
@@ -756,7 +759,8 @@ gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
       // the conservative side).
       GtkAllocation arrow_allocation;
       gtk_widget_get_allocation(arrow_, &arrow_allocation);
-      gtk_paint_vline(style, widget->window,
+      gtk_paint_vline(style,
+                      gtk_widget_get_window(widget),
                       gtk_widget_get_state(widget),
                       &e->area, widget, "button",
                       arrow_allocation.y,

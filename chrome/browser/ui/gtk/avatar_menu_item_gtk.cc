@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -205,7 +205,8 @@ gboolean AvatarMenuItemGtk::OnEventBoxExpose(GtkWidget* widget,
   if (gtk_widget_has_focus(widget)) {
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
-    gtk_paint_focus(widget->style, widget->window,
+    gtk_paint_focus(gtk_widget_get_style(widget),
+                    gtk_widget_get_window(widget),
                     gtk_widget_get_state(widget),
                     &event->area, widget, NULL,
                     0, 0,
