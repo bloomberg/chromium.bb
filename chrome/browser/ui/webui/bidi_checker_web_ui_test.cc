@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -176,13 +176,23 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, TestCrashesPage) {
 
 #if defined(OS_WIN) || defined(OS_LINUX)
 // http://crbug.com/104129
-#define TestDownloadsPageLTR FLAKY_TestDownloadsPage
+#define MAYBE_TestDownloadsPageLTR FLAKY_TestDownloadsPageLTR
+#else
+#define MAYBE_TestDownloadsPageLTR TestDownloadsPageLTR
 #endif
-IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR, TestDownloadsPageLTR) {
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       MAYBE_TestDownloadsPageLTR) {
   RunBidiCheckerOnPage(chrome::kChromeUIDownloadsURL);
 }
 
-IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, TestDownloadsPage) {
+#if defined(OS_LINUX)
+// http://crbug.com/109262
+#define MAYBE_TestDownloadsPageRTL FLAKY_TestDownloadsPageRTL
+#else
+#define MAYBE_TestDownloadsPageRTL TestDownloadsPageRTL
+#endif
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       MAYBE_TestDownloadsPageRTL) {
   RunBidiCheckerOnPage(chrome::kChromeUIDownloadsURL);
 }
 
