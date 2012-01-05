@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ class UI_EXPORT InputMethod {
   virtual ~InputMethod() {}
 
   // Sets the delegate used by this InputMethod instance. It should only be
-  // called by an object which manages the whole UI (e.g. aura::RootWindowHost).
+  // called by an object which manages the whole UI.
   virtual void SetDelegate(internal::InputMethodDelegate* delegate) = 0;
 
   // Initializes the InputMethod object. Pass true if the system toplevel window
