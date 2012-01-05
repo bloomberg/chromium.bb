@@ -347,6 +347,27 @@
          active?  -->
     <request name="set_fullscreen"/>
 
+    <!-- Popup surfaces.  Will switch an implicit grab into
+         owner-events mode, and grab will continue after the implicit
+         grab ends (button released).  Once the implicit grab is over,
+         the popup grab continues until the window is destroyed or a
+         mouse button is pressed in any other clients window.  A click
+         in any of the clients surfaces is reported as normal,
+         however, clicks in other clients surfaces will be discarded
+         and trigger the callback. 
+
+	 TODO: Grab keyboard too, maybe just terminate on any click
+	 inside or outside the surface?
+    -->
+    <request name="set_popup">
+      <arg name="input_device" type="object" interface="wl_input_device"/>
+      <arg name="time" type="uint"/>
+      <arg name="parent" type="object" interface="wl_shell_surface"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="flags" type="uint"/>
+    </request>
+
     <!-- The configure event asks the client to resize its surface.
          The size is a hint, in the sense that the client is free to
          ignore it if it doesn't resize, pick a smaller size (to
@@ -359,6 +380,11 @@
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </event>
+
+    <!-- The popup_done event is sent out when a popup grab is broken,
+         that is, when the users clicks a surface that doesn't belong
+         to the client owning the popup surface. -->
+    <event name="popup_done"/>
   </interface>
 
 
