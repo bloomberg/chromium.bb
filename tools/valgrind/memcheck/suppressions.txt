@@ -4566,24 +4566,6 @@
    fun:NPN_GetValue
 }
 {
-   bug_101335
-   Memcheck:Uninitialized
-   fun:_Z35SendExtensionWebRequestStatusToHostP17RenderProcessHost
-   fun:_ZN6chrome26ChromeContentBrowserClient31BrowserRenderProcessHostCreatedEP24BrowserRenderProcessHost
-   fun:_ZN24BrowserRenderProcessHost4InitEb
-   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEEi
-   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
-   ...
-   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
-   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
-   fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN24NavigationControllerImpl10ReloadTypeE
-   fun:_ZN11TabContents22NavigateToPendingEntryEN24NavigationControllerImpl10ReloadTypeE
-   fun:_ZN24NavigationControllerImpl22NavigateToPendingEntryENS_10ReloadTypeE
-   fun:_ZN24NavigationControllerImpl9LoadEntryEP15NavigationEntry
-   fun:_ZN24NavigationControllerImpl7LoadURLERK4GURLRKN7content8ReferrerENS3_14PageTransitionERKSs
-   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
-}
-{
    bug_101345
    Memcheck:Leak
    fun:_Znw*
