@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <!--
-Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Copyright (c) 2012 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
@@ -143,6 +143,16 @@ found in the LICENSE file.
     track.viewport = new TimelineViewport(testEl);
     track.viewport.setPanAndScale(0,
         track.clientWidth / (1.1 * cpu.maxTimestamp));
+  }
+
+  function testViewport() {
+    var testEl = getTestDiv('testViewport');
+
+    var track = tracing.TimelineViewportTrack();
+    testEl.appendChild(track);
+    track.viewport = new TimelineViewport(testEl);
+    track.viewport.setPanAndScale(0,
+        track.clientWidth / 1000);
   }
 
   function testBasicCounter() {

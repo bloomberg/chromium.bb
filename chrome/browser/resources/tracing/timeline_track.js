@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -590,6 +590,152 @@ cr.define('tracing', function() {
   };
 
   /**
+   * A track that displays the viewport size and scale.
+   * @constructor
+   * @extends {CanvasBasedTrack}
+   */
+
+  var TimelineViewportTrack = cr.ui.define(CanvasBasedTrack);
+
+  const logOf10 = Math.log(10);
+  function log10(x) {
+    return Math.log(x) / logOf10;;
+  }
+
+  TimelineViewportTrack.prototype = {
+
+    __proto__: CanvasBasedTrack.prototype,
+
+    decorate: function() {
+      this.classList.add('timeline-viewport-track');
+      this.strings_ = {};
+    },
+
+    redraw: function() {
+      var ctx = this.ctx_;
+      var canvasW = this.canvas_.width;
+      var canvasH = this.canvas_.height;
+
+      ctx.clearRect(0, 0, canvasW, canvasH);
+
+      // Culling parametrs.
+      var vp = this.viewport_;
+      var pixWidth = vp.xViewVectorToWorld(1);
+      var viewLWorld = vp.xViewToWorld(0);
+      var viewRWorld = vp.xViewToWorld(canvasW);
+
+      var idealMajorMarkDistancePix = 150;
+      var idealMajorMarkDistanceWorld =
+          vp.xViewVectorToWorld(idealMajorMarkDistancePix);
+
+      // The conservative guess is the nearest enclosing 0.1, 1, 10, 100, etc
+      var conservativeGuess =
+          Math.pow(10, Math.ceil(log10(idealMajorMarkDistanceWorld)));
+
+      // Once we have a conservative guess, consider things that evenly add up
+      // to the conservative guess, e.g. 0.5, 0.2, 0.1 Pick the one that still
+      // exceeds the ideal mark distance.
+      var divisors = [10, 5, 2, 1];
+      for (var i = 0; i < divisors.length; ++i) {
+        var tightenedGuess = conservativeGuess / divisors[i]
+        if (vp.xWorldVectorToView(tightenedGuess) < idealMajorMarkDistancePix)
+          continue;
+        majorMarkDistanceWorld = conservativeGuess / divisors[i-1];
+        break;
+      }
+      if (majorMarkDistanceWorld < 100) {
+        unit = 'ms';
+        unitDivisor = 1;
+      } else {
+        unit = 's';
+        unitDivisor = 1000;
+      }
+
+      var numTicksPerMajor = 5;
+      var minorMarkDistanceWorld = majorMarkDistanceWorld / numTicksPerMajor;
+      var minorMarkDistancePx = vp.xWorldVectorToView(minorMarkDistanceWorld);
+
+      var firstMajorMark =
+        Math.floor(viewLWorld / majorMarkDistanceWorld) *
+        majorMarkDistanceWorld;
+
+      var minorTickH = Math.floor(canvasH * 0.25);
+
+      ctx.fillStyle = 'rgb(0, 0, 0)';
+      ctx.strokeStyle = 'rgb(0, 0, 0)';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.font = '9px sans-serif';
+
+      // Each iteration of this loop draws one major mark
+      // and numTicksPerMajor minor ticks.
+      //
+      // Rendering can't be done in world space because canvas transforms
+      // affect line width. So, do the conversions manually.
+      for (var curX = firstMajorMark;
+           curX < viewRWorld;
+           curX += majorMarkDistanceWorld) {
+
+        var curXView = Math.floor(vp.xWorldToView(curX));
+
+        var unitValue = curX / unitDivisor;
+        var roundedUnitValue = Math.floor(unitValue * 100000) / 100000;
+        if (!this.strings_[roundedUnitValue])
+          this.strings_[roundedUnitValue] = roundedUnitValue + ' ' + unit;
+        ctx.fillText(this.strings_[roundedUnitValue], curXView + 2, 0);
+
+        ctx.beginPath();
+
+        // Major mark
+        ctx.moveTo(curXView, 0);
+        ctx.lineTo(curXView, canvasW);
+
+        // Minor marks
+        for (var i = 1; i < numTicksPerMajor; ++i) {
+          var xView = Math.floor(curXView + minorMarkDistancePx * i);
+          ctx.moveTo(xView, canvasH - minorTickH);
+          ctx.lineTo(xView, canvasH);
+        }
+
+        ctx.stroke();
+      }
+    },
+
+    /**
+     * Picks a slice, if any, at a given location.
+     * @param {number} wX X location to search at, in worldspace.
+     * @param {number} wY Y location to search at, in offset space.
+     *     offset space.
+     * @param {function():*} onHitCallback Callback to call with the slice,
+     *     if one is found.
+     * @return {boolean} true if a slice was found, otherwise false.
+     */
+    pick: function(wX, wY, onHitCallback) {
+      // Does nothing. There's nothing interesting to pick on the viewport
+      // track.
+    },
+
+    /**
+     * Finds slices intersecting the given interval.
+     * @param {number} loWX Lower X bound of the interval to search, in
+     *     worldspace.
+     * @param {number} hiWX Upper X bound of the interval to search, in
+     *     worldspace.
+     * @param {number} loY Lower Y bound of the interval to search, in
+     *     offset space.
+     * @param {number} hiY Upper Y bound of the interval to search, in
+     *     offset space.
+     * @param {function():*} onHitCallback Function to call for each slice
+     *     intersecting the interval.
+     */
+    pickRange: function(loWX, hiWX, loY, hiY, onHitCallback) {
+      // Does nothing. There's nothing interesting to pick on the viewport
+      // track.
+    }
+
+  };
+
+  /**
    * A track that displays a TimelineCounter object.
    * @constructor
    * @extends {CanvasBasedTrack}
@@ -738,6 +884,7 @@ cr.define('tracing', function() {
     TimelineCounterTrack: TimelineCounterTrack,
     TimelineSliceTrack: TimelineSliceTrack,
     TimelineThreadTrack: TimelineThreadTrack,
+    TimelineViewportTrack: TimelineViewportTrack,
     TimelineCpuTrack: TimelineCpuTrack
   };
 });
