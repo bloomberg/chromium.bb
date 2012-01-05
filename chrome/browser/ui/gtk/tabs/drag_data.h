@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 
-class TabContents;
 class TabContentsWrapper;
 class TabGtk;
 
@@ -67,7 +66,7 @@ class DragData {
   std::vector<TabGtk*> GetDraggedTabs() const;
 
   // Returns all the |contents_| fields of the tabs in |drag_data_|.
-  std::vector<TabContents*> GetDraggedTabsContents() const;
+  std::vector<content::WebContents*> GetDraggedTabsContents() const;
 
   // Returns the correct add type for the tab in |drag_data_[i]|. See
   // TabStripModel::AddTabTypes for available types.

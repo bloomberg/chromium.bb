@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/tabs/native_view_photobooth_win.h"
 
-#include "content/browser/tab_contents/tab_contents.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/point.h"

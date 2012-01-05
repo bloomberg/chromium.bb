@@ -78,7 +78,7 @@ void BookmarkAllTabsDialogBuilder::Show() {
 
   ExtensionDialog* dialog = ExtensionDialog::Show(
       url,
-      browser, tab->tab_contents(),
+      browser, tab->web_contents(),
       kDialogWidth, kDialogHeight,
       title,
       this );

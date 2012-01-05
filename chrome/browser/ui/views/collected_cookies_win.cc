@@ -17,9 +17,9 @@
 #include "chrome/browser/ui/views/cookie_info_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -494,7 +494,7 @@ void CollectedCookiesWin::AddContentException(views::TreeView* tree_view,
   // window, while NativeWidgetWin::SetBounds wants screen coordinates. Do the
   // translation here until http://crbug.com/52851 is fixed.
   POINT topleft = {bounds.x(), bounds.y()};
-  MapWindowPoints(HWND_DESKTOP, wrapper_->tab_contents()->GetNativeView(),
+  MapWindowPoints(HWND_DESKTOP, wrapper_->web_contents()->GetNativeView(),
                   &topleft, 1);
   gfx::Size size = GetWidget()->GetRootView()->GetPreferredSize();
   bounds.SetRect(topleft.x, topleft.y, size.width(), size.height());

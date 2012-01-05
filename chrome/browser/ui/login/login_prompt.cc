@@ -19,9 +19,9 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "net/base/auth.h"
 #include "net/base/net_util.h"
@@ -33,6 +33,7 @@
 
 using content::BrowserThread;
 using content::NavigationController;
+using content::WebContents;
 using webkit::forms::PasswordForm;
 
 class LoginHandlerImpl;
@@ -116,10 +117,10 @@ void LoginHandler::SetPasswordManager(PasswordManager* password_manager) {
   password_manager_ = password_manager;
 }
 
-TabContents* LoginHandler::GetTabContentsForLogin() const {
+WebContents* LoginHandler::GetWebContentsForLogin() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  return tab_util::GetTabContentsByID(render_process_host_id_,
+  return tab_util::GetWebContentsByID(render_process_host_id_,
                                       tab_contents_id_);
 }
 
@@ -225,7 +226,7 @@ void LoginHandler::Observe(int type,
   DCHECK(type == chrome::NOTIFICATION_AUTH_SUPPLIED ||
          type == chrome::NOTIFICATION_AUTH_CANCELLED);
 
-  TabContents* requesting_contents = GetTabContentsForLogin();
+  WebContents* requesting_contents = GetWebContentsForLogin();
   if (!requesting_contents)
     return;
 
@@ -281,7 +282,7 @@ void LoginHandler::NotifyAuthNeeded() {
       content::NotificationService::current();
   NavigationController* controller = NULL;
 
-  TabContents* requesting_contents = GetTabContentsForLogin();
+  WebContents* requesting_contents = GetWebContentsForLogin();
   if (requesting_contents)
     controller = &requesting_contents->GetController();
 
@@ -300,7 +301,7 @@ void LoginHandler::NotifyAuthCancelled() {
       content::NotificationService::current();
   NavigationController* controller = NULL;
 
-  TabContents* requesting_contents = GetTabContentsForLogin();
+  WebContents* requesting_contents = GetWebContentsForLogin();
   if (requesting_contents)
     controller = &requesting_contents->GetController();
 
@@ -316,7 +317,7 @@ void LoginHandler::NotifyAuthSupplied(const string16& username,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(WasAuthHandled());
 
-  TabContents* requesting_contents = GetTabContentsForLogin();
+  WebContents* requesting_contents = GetWebContentsForLogin();
   if (!requesting_contents)
     return;
 
@@ -438,7 +439,7 @@ void MakeInputForPasswordManager(
 void LoginDialogCallback(const GURL& request_url,
                          net::AuthChallengeInfo* auth_info,
                          LoginHandler* handler) {
-  TabContents* parent_contents = handler->GetTabContentsForLogin();
+  WebContents* parent_contents = handler->GetWebContentsForLogin();
   if (!parent_contents || handler->WasAuthHandled()) {
     // The request may have been cancelled, or it may be for a renderer
     // not hosted by a tab (e.g. an extension). Cancel just in case

@@ -19,12 +19,12 @@
 class Browser;
 class GURL;
 class SkBitmap;
-class TabContents;
 class TabContentsWrapper;
 class WebIntentPicker;
 class WebIntentPickerFactory;
 
 namespace content {
+class WebContents;
 class WebIntentsDispatcher;
 }
 
@@ -124,7 +124,7 @@ class WebIntentPickerController : public content::NotificationObserver,
 
   // Weak pointer to the tab servicing the intent. Remembered in order to
   // close it when a reply is sent.
-  TabContents* service_tab_;
+  content::WebContents* service_tab_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerController);
 };

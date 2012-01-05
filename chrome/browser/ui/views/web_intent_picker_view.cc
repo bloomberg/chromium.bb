@@ -28,6 +28,8 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
+using content::WebContents;
+
 namespace {
 
 // The space in pixels between the top-level groups in the dialog.
@@ -102,7 +104,7 @@ class WebIntentPickerView : public views::BubbleDelegateView,
   virtual void SetServiceIcon(size_t index, const SkBitmap& icon) OVERRIDE;
   virtual void SetDefaultServiceIcon(size_t index) OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual TabContents* SetInlineDisposition(const GURL& url) OVERRIDE;
+  virtual content::WebContents* SetInlineDisposition(const GURL& url) OVERRIDE;
 
  protected:
   // views::BubbleDelegateView overrides:
@@ -211,7 +213,7 @@ void WebIntentPickerView::Close() {
   GetWidget()->Close();
 }
 
-TabContents* WebIntentPickerView::SetInlineDisposition(const GURL& url) {
+WebContents* WebIntentPickerView::SetInlineDisposition(const GURL& url) {
   // TODO(gbillock): add support here.
   return NULL;
 }

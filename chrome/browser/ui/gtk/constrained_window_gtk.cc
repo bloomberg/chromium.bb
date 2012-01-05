@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 
@@ -126,7 +126,7 @@ void ConstrainedWindowGtk::FocusConstrainedWindow() {
   // TODO(estade): this define should not need to be here because this class
   // should not be used on linux/views.
 #if defined(TOOLKIT_GTK)
-    static_cast<TabContentsViewGtk*>(wrapper_->tab_contents()->GetView())->
+    static_cast<TabContentsViewGtk*>(wrapper_->web_contents()->GetView())->
         SetFocusedWidget(focus_widget);
 #endif
   }
@@ -136,11 +136,11 @@ ConstrainedWindowGtk::TabContentsViewType*
     ConstrainedWindowGtk::ContainingView() {
 #if defined(TOOLKIT_VIEWS)
   return static_cast<NativeTabContentsViewGtk*>(
-      static_cast<TabContentsViewViews*>(wrapper_->tab_contents()->GetView())->
+      static_cast<TabContentsViewViews*>(wrapper_->web_contents()->GetView())->
           native_tab_contents_view());
 #else
   return static_cast<TabContentsViewType*>(
-      static_cast<TabContentsViewGtk*>(wrapper_->tab_contents()->GetView())->
+      static_cast<TabContentsViewGtk*>(wrapper_->web_contents()->GetView())->
           wrapper());
 #endif
 }

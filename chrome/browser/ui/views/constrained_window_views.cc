@@ -17,8 +17,8 @@
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -557,7 +557,7 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   params.delegate = widget_delegate;
   params.native_widget = native_constrained_window_->AsNativeWidget();
   params.child = true;
-  params.parent = wrapper->tab_contents()->GetNativeView();
+  params.parent = wrapper->web_contents()->GetNativeView();
   Init(params);
 
   wrapper_->constrained_window_tab_helper()->AddConstrainedDialog(this);

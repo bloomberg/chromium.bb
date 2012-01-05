@@ -53,9 +53,9 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -1387,7 +1387,7 @@ gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           parent_->browser(), tab_contents, profile,
           content_setting_image_model_->get_content_settings_type()),
-      profile, tab_contents->tab_contents());
+      profile, tab_contents->web_contents());
   return TRUE;
 }
 

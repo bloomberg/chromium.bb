@@ -81,11 +81,11 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -963,7 +963,7 @@ void BrowserWindowGtk::UpdateReloadStopState(bool is_loading, bool force) {
 void BrowserWindowGtk::UpdateToolbar(TabContentsWrapper* contents,
                                      bool should_restore_state) {
   TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::UpdateToolbar");
-  toolbar_->UpdateTabContents(contents->tab_contents(), should_restore_state);
+  toolbar_->UpdateWebContents(contents->web_contents(), should_restore_state);
 }
 
 void BrowserWindowGtk::FocusToolbar() {
@@ -1278,8 +1278,8 @@ void BrowserWindowGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
                                         int index,
                                         bool user_gesture) {
   TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::ActiveTabChanged");
-  if (old_contents && !old_contents->tab_contents()->IsBeingDestroyed())
-    old_contents->tab_contents()->GetView()->StoreFocus();
+  if (old_contents && !old_contents->web_contents()->IsBeingDestroyed())
+    old_contents->web_contents()->GetView()->StoreFocus();
 
   // Update various elements that are interested in knowing the current
   // TabContents.
@@ -1287,11 +1287,11 @@ void BrowserWindowGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
   infobar_container_->ChangeTabContents(new_contents->infobar_tab_helper());
   contents_container_->SetTab(new_contents);
 
-  new_contents->tab_contents()->DidBecomeSelected();
+  new_contents->web_contents()->DidBecomeSelected();
   // TODO(estade): after we manage browser activation, add a check to make sure
   // we are the active browser before calling RestoreFocus().
   if (!browser_->tabstrip_model()->closing_all()) {
-    new_contents->tab_contents()->GetView()->RestoreFocus();
+    new_contents->web_contents()->GetView()->RestoreFocus();
     if (new_contents->find_tab_helper()->find_ui_active())
       browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();
   }
@@ -1477,7 +1477,7 @@ gboolean BrowserWindowGtk::OnConfigure(GtkWidget* widget,
 
   TabContentsWrapper* tab = GetDisplayedTab();
   if (tab) {
-    tab->tab_contents()->GetRenderViewHost()->NotifyMoveOrResizeStarted();
+    tab->web_contents()->GetRenderViewHost()->NotifyMoveOrResizeStarted();
   }
 
   if (bounds_.size() != bounds.size())

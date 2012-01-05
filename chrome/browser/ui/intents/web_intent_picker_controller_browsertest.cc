@@ -24,6 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/web_intent_service_data.h"
 
+using content::WebContents;
 using testing::_;
 using testing::DoAll;
 using testing::Return;
@@ -67,7 +68,7 @@ class WebIntentPickerMock : public WebIntentPicker {
 
   virtual void Close() {}
 
-  TabContents* SetInlineDisposition(const GURL& url) { return NULL; }
+  WebContents* SetInlineDisposition(const GURL& url) { return NULL; }
 
   int num_urls_;
   int num_default_icons_;
@@ -109,7 +110,7 @@ class IntentsDispatcherMock : public content::WebIntentsDispatcher {
     return intent_;
   }
 
-  virtual void DispatchIntent(TabContents* tab_contents) {
+  virtual void DispatchIntent(WebContents* tab_contents) {
     dispatched_ = true;
   }
 

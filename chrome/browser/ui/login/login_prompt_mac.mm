@@ -16,14 +16,15 @@
 #include "chrome/browser/ui/login/login_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
+using content::WebContents;
 using webkit::forms::PasswordForm;
 
 // ----------------------------------------------------------------------------
@@ -73,7 +74,7 @@ class LoginHandlerMac : public LoginHandler,
     // control).  However, that's OK since any UI interaction in those functions
     // will occur via an InvokeLater on the UI thread, which is guaranteed
     // to happen after this is called (since this was InvokeLater'd first).
-    TabContents* requesting_contents = GetTabContentsForLogin();
+    WebContents* requesting_contents = GetWebContentsForLogin();
     DCHECK(requesting_contents);
 
     TabContentsWrapper* wrapper =

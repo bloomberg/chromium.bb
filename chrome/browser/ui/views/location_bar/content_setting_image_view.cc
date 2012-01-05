@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/window.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -139,7 +139,7 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
           profile,
           content_setting_image_model_->get_content_settings_type()),
       profile,
-      tab_contents->tab_contents(),
+      tab_contents->web_contents(),
       this,
       views::BubbleBorder::TOP_RIGHT);
   browser::CreateViewsBubble(bubble);

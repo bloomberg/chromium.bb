@@ -12,7 +12,9 @@
 #include "googleurl/src/gurl.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 namespace views {
 class MessageBoxView;
@@ -21,7 +23,7 @@ class MessageBoxView;
 class ExternalProtocolDialog : public views::DialogDelegate {
  public:
   // RunExternalProtocolDialog calls this private constructor.
-  ExternalProtocolDialog(TabContents* tab_contents,
+  ExternalProtocolDialog(content::WebContents* web_contents,
                          const GURL& url,
                          const std::wstring& command);
 
@@ -49,8 +51,8 @@ class ExternalProtocolDialog : public views::DialogDelegate {
   // The message box view whose commands we handle.
   views::MessageBoxView* message_box_view_;
 
-  // The associated TabContents.
-  TabContents* tab_contents_;
+  // The associated WebContents.
+  content::WebContents* web_contents_;
 
   // URL of the external protocol request.
   GURL url_;

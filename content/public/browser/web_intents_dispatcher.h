@@ -8,16 +8,16 @@
 #include "base/callback.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
-class TabContents;
-
 namespace webkit_glue {
 struct WebIntentData;
 }
 
 namespace content {
 
+class WebContents;
+
 // This class is the coordinator for dispatching web intents and seeing that
-// return messages are sent to the correct invoking context. The TabContents
+// return messages are sent to the correct invoking context. TheWebContents
 // for the invoking context will create one of these for each intent and hand
 // ownership to the client WebContentsDelegate code. The WebContentsDelegate
 // code can then read the intent data, create UI to pick the service, and
@@ -31,7 +31,7 @@ class CONTENT_EXPORT WebIntentsDispatcher {
   virtual const webkit_glue::WebIntentData& GetIntent() = 0;
 
   // Attach the intent to a new context in which the service is loaded.
-  virtual void DispatchIntent(TabContents* tab_contents) = 0;
+  virtual void DispatchIntent(WebContents* web_contents) = 0;
 
   // Return a success or failure message to the source context which invoked
   // the intent.

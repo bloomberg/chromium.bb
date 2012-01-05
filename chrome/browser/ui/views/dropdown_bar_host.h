@@ -18,7 +18,10 @@
 class BrowserView;
 class DropdownBarHostDelegate;
 class DropdownBarView;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 namespace ui {
 class SlideAnimation;
@@ -145,7 +148,7 @@ class DropdownBarHost : public ui::AcceleratorTarget,
 
   // Returns a keyboard event suitable for forwarding.
   NativeWebKeyboardEvent GetKeyboardEvent(
-      const TabContents* contents,
+      const content::WebContents* contents,
       const views::KeyEvent& key_event);
 
   // Returns the animation for the dropdown.

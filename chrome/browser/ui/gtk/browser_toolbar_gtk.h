@@ -33,8 +33,11 @@ class GtkThemeService;
 class LocationBar;
 class LocationBarViewGtk;
 class ReloadButtonGtk;
-class TabContents;
 class ToolbarModel;
+
+namespace content {
+class WebContents;
+}
 
 // View class that displays the GTK version of the toolbar and routes gtk
 // events back to the Browser.
@@ -103,7 +106,8 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Message that we should react to a state change.
-  void UpdateTabContents(TabContents* contents, bool should_restore_state);
+  void UpdateWebContents(content::WebContents* contents,
+                         bool should_restore_state);
 
  private:
   // Connect/Disconnect signals for dragging a url onto the home button.

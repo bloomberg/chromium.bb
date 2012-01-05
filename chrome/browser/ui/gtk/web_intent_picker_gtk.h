@@ -41,7 +41,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
   virtual void SetServiceIcon(size_t index, const SkBitmap& icon) OVERRIDE;
   virtual void SetDefaultServiceIcon(size_t index) OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual TabContents* SetInlineDisposition(const GURL& url) OVERRIDE;
+  virtual content::WebContents* SetInlineDisposition(const GURL& url) OVERRIDE;
 
   // BubbleDelegateGtk implementation.
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;

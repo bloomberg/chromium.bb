@@ -925,7 +925,7 @@ void BrowserView::UpdateReloadStopState(bool is_loading, bool force) {
 
 void BrowserView::UpdateToolbar(TabContentsWrapper* contents,
                                 bool should_restore_state) {
-  toolbar_->Update(contents->tab_contents(), should_restore_state);
+  toolbar_->Update(contents->web_contents(), should_restore_state);
 }
 
 void BrowserView::FocusToolbar() {
@@ -1319,7 +1319,7 @@ void BrowserView::Paste() {
 void BrowserView::ShowInstant(TabContentsWrapper* preview) {
   if (!preview_container_)
     preview_container_ = new TabContentsContainer();
-  contents_->SetPreview(preview_container_, preview->tab_contents());
+  contents_->SetPreview(preview_container_, preview->web_contents());
   preview_container_->ChangeWebContents(preview->web_contents());
 }
 
@@ -1436,8 +1436,8 @@ void BrowserView::TabDeactivated(TabContentsWrapper* contents) {
   // We do not store the focus when closing the tab to work-around bug 4633.
   // Some reports seem to show that the focus manager and/or focused view can
   // be garbage at that point, it is not clear why.
-  if (!contents->tab_contents()->IsBeingDestroyed())
-    contents->tab_contents()->GetView()->StoreFocus();
+  if (!contents->web_contents()->IsBeingDestroyed())
+    contents->web_contents()->GetView()->StoreFocus();
 }
 
 void BrowserView::ActiveTabChanged(TabContentsWrapper* old_contents,
@@ -1454,7 +1454,7 @@ void BrowserView::TabReplacedAt(TabStripModel* tab_strip_model,
   if (index != browser_->tabstrip_model()->active_index())
     return;
 
-  if (contents_->preview_tab_contents() == new_contents->tab_contents()) {
+  if (contents_->preview_web_contents() == new_contents->web_contents()) {
     // If 'preview' is becoming active, swap the 'active' and 'preview' and
     // delete what was the active.
     contents_->MakePreviewContentsActiveContents();
@@ -2081,7 +2081,7 @@ bool BrowserView::MaybeShowBookmarkBar(TabContentsWrapper* contents) {
           browser_->bookmark_bar_state(),
           BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
     }
-    bookmark_bar_view_->SetPageNavigator(contents->tab_contents());
+    bookmark_bar_view_->SetPageNavigator(contents->web_contents());
     new_bookmark_bar_view = bookmark_bar_view_.get();
   }
   return UpdateChildViewAndLayout(new_bookmark_bar_view, &active_bookmark_bar_);
@@ -2599,7 +2599,7 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents) {
   // the TabContents window.
   DCHECK(new_contents);
   bool change_tab_contents =
-      contents_container_->web_contents() != new_contents->tab_contents();
+      contents_container_->web_contents() != new_contents->web_contents();
 
   // Update various elements that are interested in knowing the current
   // TabContents.
@@ -2625,12 +2625,12 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents) {
   //             am striving for parity now rather than cleanliness. This is
   //             required to make features like Duplicate Tab, Undo Close Tab,
   //             etc not result in sad tab.
-  new_contents->tab_contents()->DidBecomeSelected();
+  new_contents->web_contents()->DidBecomeSelected();
   if (BrowserList::GetLastActive() == browser_ &&
       !browser_->tabstrip_model()->closing_all() && GetWidget()->IsVisible()) {
     // We only restore focus if our window is visible, to avoid invoking blur
     // handlers when we are eventually shown.
-    new_contents->tab_contents()->GetView()->RestoreFocus();
+    new_contents->web_contents()->GetView()->RestoreFocus();
   }
 
   // Update all the UI bits.

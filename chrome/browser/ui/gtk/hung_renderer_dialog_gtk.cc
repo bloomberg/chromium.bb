@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -184,10 +184,10 @@ void HungRendererDialogGtk::ShowForWebContents(WebContents* hung_contents) {
 
   GtkTreeIter tree_iter;
   for (TabContentsIterator it; !it.done(); ++it) {
-    if (it->tab_contents()->GetRenderProcessHost() ==
+    if (it->web_contents()->GetRenderProcessHost() ==
         hung_contents->GetRenderProcessHost()) {
       gtk_list_store_append(model_, &tree_iter);
-      std::string title = UTF16ToUTF8(it->tab_contents()->GetTitle());
+      std::string title = UTF16ToUTF8(it->web_contents()->GetTitle());
       if (title.empty())
         title = UTF16ToUTF8(CoreTabHelper::GetDefaultTitle());
       SkBitmap favicon = it->favicon_tab_helper()->GetFavicon();

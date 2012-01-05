@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -245,9 +245,9 @@ void LoginHandlerHtml::BuildViewForPasswordManager(
     PasswordManager* manager, const string16& explanation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  TabContents* tab_contents = GetTabContentsForLogin();
+  WebContents* web_contents = GetWebContentsForLogin();
   TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
   Profile* profile = wrapper->profile();
   LoginHandlerSource::RegisterDataSource(profile);
   delegate_ = new LoginHandlerHtmlDelegate(this, explanation);

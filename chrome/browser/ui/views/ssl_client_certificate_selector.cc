@@ -11,8 +11,9 @@
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -228,8 +229,9 @@ void SSLClientCertificateSelector::ButtonPressed(
   if (sender == view_cert_button_) {
     net::X509Certificate* cert = GetSelectedCert();
     if (cert)
-      ShowCertificateViewer(wrapper_->tab_contents()->GetDialogRootWindow(),
-                            cert);
+      ShowCertificateViewer(
+          wrapper_->web_contents()->GetView()->GetTopLevelNativeWindow(),
+          cert);
   }
 }
 

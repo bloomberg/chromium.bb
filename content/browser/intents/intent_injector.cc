@@ -17,10 +17,10 @@
 
 using content::WebContents;
 
-IntentInjector::IntentInjector(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents),
+IntentInjector::IntentInjector(WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
       intents_dispatcher_(NULL) {
-  DCHECK(tab_contents);
+  DCHECK(web_contents);
 }
 
 IntentInjector::~IntentInjector() {

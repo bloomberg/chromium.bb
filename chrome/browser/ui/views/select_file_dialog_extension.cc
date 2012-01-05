@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "chrome/browser/ui/views/window.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -244,7 +243,7 @@ void SelectFileDialogExtension::SelectFileImpl(
       default_extension);
 
   ExtensionDialog* dialog = ExtensionDialog::Show(file_browser_url,
-      owner_browser, tab->tab_contents(),
+      owner_browser, tab->web_contents(),
       kFileManagerWidth, kFileManagerHeight, string16(),
       this /* ExtensionDialog::Observer */);
   if (!dialog) {

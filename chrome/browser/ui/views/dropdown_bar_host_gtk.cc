@@ -7,9 +7,10 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
+
+using content::WebContents;
 
 void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,
                                               bool no_redraw) {
@@ -18,7 +19,7 @@ void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,
 }
 
 NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
-     const TabContents* contents,
+     const WebContents* contents,
      const views::KeyEvent& key_event) {
   return NativeWebKeyboardEvent(key_event.gdk_event());
 }

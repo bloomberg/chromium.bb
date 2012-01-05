@@ -76,7 +76,7 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
                                     views::View* child) OVERRIDE {
     TabContentsContainer::ViewHierarchyChanged(is_add, parent, child);
     if (is_add && child == this) {
-      ChangeWebContents(html_tab_contents_->tab_contents());
+      ChangeWebContents(html_tab_contents_->web_contents());
     }
   }
 
@@ -116,7 +116,7 @@ ConstrainedHtmlDelegateViews::ConstrainedHtmlDelegateViews(
 
   // Set |this| as a property so the ConstrainedHtmlUI can retrieve it.
   ConstrainedHtmlUI::GetPropertyAccessor().SetProperty(
-      html_tab_contents_->tab_contents()->GetPropertyBag(), this);
+      html_tab_contents_->web_contents()->GetPropertyBag(), this);
   tab_contents->GetController().LoadURL(delegate->GetDialogContentURL(),
                                         content::Referrer(),
                                         content::PAGE_TRANSITION_START_PAGE,

@@ -16,12 +16,12 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/environment.h"
@@ -29,6 +29,7 @@
 
 using content::BrowserThread;
 using content::NavigationController;
+using content::WebContents;
 
 namespace {
 
@@ -296,16 +297,16 @@ namespace web_app {
 void GetShortcutInfoForTab(TabContentsWrapper* tab_contents_wrapper,
                            ShellIntegration::ShortcutInfo* info) {
   DCHECK(info);  // Must provide a valid info.
-  const TabContents* tab_contents = tab_contents_wrapper->tab_contents();
+  const WebContents* web_contents = tab_contents_wrapper->web_contents();
 
   const WebApplicationInfo& app_info =
       tab_contents_wrapper->extension_tab_helper()->web_app_info();
 
-  info->url = app_info.app_url.is_empty() ? tab_contents->GetURL() :
+  info->url = app_info.app_url.is_empty() ? web_contents->GetURL() :
                                             app_info.app_url;
   info->title = app_info.title.empty() ?
-      (tab_contents->GetTitle().empty() ? UTF8ToUTF16(info->url.spec()) :
-                                          tab_contents->GetTitle()) :
+      (web_contents->GetTitle().empty() ? UTF8ToUTF16(info->url.spec()) :
+                                          web_contents->GetTitle()) :
       app_info.title;
   info->description = app_info.description;
   info->favicon = tab_contents_wrapper->favicon_tab_helper()->GetFavicon();

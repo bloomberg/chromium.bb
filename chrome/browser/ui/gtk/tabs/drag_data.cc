@@ -7,7 +7,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/gtk/tabs/tab_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
 using content::WebContents;
@@ -39,7 +39,7 @@ DraggedTabData::~DraggedTabData() {
 }
 
 void DraggedTabData::ResetDelegate() {
-  contents_->tab_contents()->SetDelegate(original_delegate_);
+  contents_->web_contents()->SetDelegate(original_delegate_);
 }
 
 DragData::DragData(std::vector<DraggedTabData> drag_data, int source_tab_index)
@@ -63,11 +63,11 @@ std::vector<TabGtk*> DragData::GetDraggedTabs() const {
   return tabs;
 }
 
-std::vector<TabContents*> DragData::GetDraggedTabsContents() const {
-  std::vector<TabContents*> tabs_contents;
+std::vector<WebContents*> DragData::GetDraggedTabsContents() const {
+  std::vector<WebContents*> tabs_contents;
   for (size_t i = 0; i < drag_data_.size(); ++i) {
-    if (drag_data_[i].contents_->tab_contents())
-      tabs_contents.push_back(drag_data_[i].contents_->tab_contents());
+    if (drag_data_[i].contents_->web_contents())
+      tabs_contents.push_back(drag_data_[i].contents_->web_contents());
   }
   return tabs_contents;
 }

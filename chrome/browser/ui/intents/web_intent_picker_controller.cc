@@ -20,13 +20,14 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "content/browser/intents/intent_injector.h"
-#include "content/browser/tab_contents/tab_contents.h"
-#include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_intents_dispatcher.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "webkit/glue/web_intent_service_data.h"
 
 using content::NavigationController;
+using content::WebContents;
 
 namespace {
 
@@ -118,7 +119,7 @@ WebIntentPickerController::WebIntentPickerController(
           picker_(NULL),
           pending_async_count_(0),
           service_tab_(NULL) {
-  NavigationController* controller = &wrapper->tab_contents()->GetController();
+  NavigationController* controller = &wrapper->web_contents()->GetController();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                  content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
@@ -166,11 +167,11 @@ void WebIntentPickerController::OnServiceChosen(size_t index) {
 
   bool inline_disposition = service_data_[index].disposition ==
       webkit_glue::WebIntentServiceData::DISPOSITION_INLINE;
-  TabContents* new_tab_contents = NULL;
+  WebContents* new_web_contents = NULL;
   if (inline_disposition)
-    new_tab_contents = picker_->SetInlineDisposition(urls_[index]);
+    new_web_contents = picker_->SetInlineDisposition(urls_[index]);
 
-  if (new_tab_contents == NULL) {
+  if (new_web_contents == NULL) {
     // TODO(gbillock): This really only handles the 'window' disposition in a
     // quite prototype way. We need to flesh out what happens to the picker
     // during the lifetime of the service url context, and that may mean we
@@ -182,13 +183,13 @@ void WebIntentPickerController::OnServiceChosen(size_t index) {
     params.disposition = NEW_FOREGROUND_TAB;
     params.profile = wrapper_->profile();
     browser::Navigate(&params);
-    new_tab_contents = params.target_contents->tab_contents();
-    service_tab_ = new_tab_contents;
+    new_web_contents = params.target_contents->web_contents();
+    service_tab_ = new_web_contents;
 
     ClosePicker();
   }
 
-  intents_dispatcher_->DispatchIntent(new_tab_contents);
+  intents_dispatcher_->DispatchIntent(new_web_contents);
 }
 
 void WebIntentPickerController::OnCancelled() {

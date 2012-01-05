@@ -28,8 +28,8 @@ struct WebIntentData;
 // when that TabContents is closed.
 class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
  public:
-  // |tab_contents| must not be NULL.
-  explicit IntentInjector(TabContents* tab_contents);
+  // |web_contents| must not be NULL.
+  explicit IntentInjector(content::WebContents* web_contents);
   virtual ~IntentInjector();
 
   // content::WebContentsObserver implementation.

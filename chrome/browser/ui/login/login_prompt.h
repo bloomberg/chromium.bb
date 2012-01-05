@@ -52,8 +52,8 @@ class LoginHandler : public ResourceDispatcherHostLoginDelegate,
   void SetPasswordForm(const webkit::forms::PasswordForm& form);
   void SetPasswordManager(PasswordManager* password_manager);
 
-  // Returns the TabContents that needs authentication.
-  TabContents* GetTabContentsForLogin() const;
+  // Returns the WebContents that needs authentication.
+  content::WebContents* GetWebContentsForLogin() const;
 
   // Returns the RenderViewHostDelegate for the page that needs authentication.
   RenderViewHostDelegate* GetRenderViewHostDelegate() const;

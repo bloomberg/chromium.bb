@@ -43,8 +43,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -1080,8 +1080,8 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
   TabContentsWrapper* tab_contents = delegate_->GetTabContentsWrapper();
   DCHECK(tab_contents);
   drag_utils::SetURLAndDragImage(
-      tab_contents->tab_contents()->GetURL(),
-      tab_contents->tab_contents()->GetTitle(),
+      tab_contents->web_contents()->GetURL(),
+      tab_contents->web_contents()->GetTitle(),
       tab_contents->favicon_tab_helper()->GetFavicon(),
       data);
 }

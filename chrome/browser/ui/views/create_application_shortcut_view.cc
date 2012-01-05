@@ -21,8 +21,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -436,8 +436,8 @@ bool CreateUrlApplicationShortcutView::Accept() {
     return false;
 
   tab_contents_->extension_tab_helper()->SetAppIcon(shortcut_info_.favicon);
-  if (tab_contents_->tab_contents()->GetDelegate()) {
-    tab_contents_->tab_contents()->GetDelegate()->ConvertContentsToApplication(
+  if (tab_contents_->web_contents()->GetDelegate()) {
+    tab_contents_->web_contents()->GetDelegate()->ConvertContentsToApplication(
         tab_contents_->web_contents());
   }
   return true;

@@ -8,7 +8,9 @@
 
 #include "ui/views/view.h"
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 // ContentsContainer is responsible for managing the TabContents views.
 // ContentsContainer has up to two children: one for the currently active
@@ -27,9 +29,12 @@ class ContentsContainer : public views::View {
   void MakePreviewContentsActiveContents();
 
   // Sets the preview view. This does not delete the old.
-  void SetPreview(views::View* preview, TabContents* preview_tab_contents);
+  void SetPreview(views::View* preview,
+                  content::WebContents* preview_web_contents);
 
-  TabContents* preview_tab_contents() const { return preview_tab_contents_; }
+  content::WebContents* preview_web_contents() const {
+    return preview_web_contents_;
+  }
 
   // Sets the active top margin.
   void SetActiveTopMargin(int margin);
@@ -45,7 +50,7 @@ class ContentsContainer : public views::View {
  private:
   views::View* active_;
   views::View* preview_;
-  TabContents* preview_tab_contents_;
+  content::WebContents* preview_web_contents_;
 
   // The margin between the top and the active view. This is used to make the
   // preview overlap the bookmark bar on the new tab page.

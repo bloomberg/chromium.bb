@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 
+using content::WebContents;
+
 // static
 const char ContentsContainer::kViewClassName[] =
     "browser/ui/views/frame/ContentsContainer";
@@ -13,7 +15,7 @@ const char ContentsContainer::kViewClassName[] =
 ContentsContainer::ContentsContainer(views::View* active)
     : active_(active),
       preview_(NULL),
-      preview_tab_contents_(NULL),
+      preview_web_contents_(NULL),
       active_top_margin_(0) {
   AddChildView(active_);
 }
@@ -26,19 +28,19 @@ void ContentsContainer::MakePreviewContentsActiveContents() {
 
   active_ = preview_;
   preview_ = NULL;
-  preview_tab_contents_ = NULL;
+  preview_web_contents_ = NULL;
   Layout();
 }
 
 void ContentsContainer::SetPreview(views::View* preview,
-                                   TabContents* preview_tab_contents) {
+                                   WebContents* preview_web_contents) {
   if (preview == preview_)
     return;
 
   if (preview_)
     RemoveChildView(preview_);
   preview_ = preview;
-  preview_tab_contents_ = preview_tab_contents;
+  preview_web_contents_ = preview_web_contents;
   if (preview_)
     AddChildView(preview_);
 

@@ -28,6 +28,7 @@
 #include "webkit/glue/web_intent_service_data.h"
 
 using content::BrowserThread;
+using content::WebContents;
 using testing::_;
 using testing::AtMost;
 using testing::DoAll;
@@ -84,7 +85,7 @@ class WebIntentPickerMock : public WebIntentPicker {
   MOCK_METHOD0(Show, void(void));
   MOCK_METHOD0(Close, void(void));
 
-  TabContents* SetInlineDisposition(const GURL& url) { return NULL; }
+  WebContents* SetInlineDisposition(const GURL& url) { return NULL; }
 };
 
 class WebIntentPickerFactoryMock : public WebIntentPickerFactory {

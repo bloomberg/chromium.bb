@@ -171,7 +171,7 @@ void WebIntentPickerGtk::Close() {
   bubble_->Close();
   bubble_ = NULL;
   if (inline_disposition_tab_contents_.get())
-    inline_disposition_tab_contents_->tab_contents()->OnCloseStarted();
+    inline_disposition_tab_contents_->web_contents()->OnCloseStarted();
 }
 
 void WebIntentPickerGtk::BubbleClosing(BubbleGtk* bubble,
@@ -247,7 +247,7 @@ void RemoveAllHelper(GtkWidget* widget, gpointer data) {
   gtk_container_remove(GTK_CONTAINER(parent), widget);
 }
 
-TabContents* WebIntentPickerGtk::SetInlineDisposition(const GURL& url) {
+WebContents* WebIntentPickerGtk::SetInlineDisposition(const GURL& url) {
   TabContents* tab_contents = new TabContents(
       browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_tab_contents_.reset(new TabContentsWrapper(tab_contents));
@@ -256,7 +256,7 @@ TabContents* WebIntentPickerGtk::SetInlineDisposition(const GURL& url) {
   tab_contents_container_.reset(new TabContentsContainerGtk(NULL));
   tab_contents_container_->SetTab(inline_disposition_tab_contents_.get());
 
-  inline_disposition_tab_contents_->tab_contents()->GetController().LoadURL(
+  inline_disposition_tab_contents_->web_contents()->GetController().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_START_PAGE,
       std::string());
 
@@ -292,14 +292,14 @@ TabContents* WebIntentPickerGtk::SetInlineDisposition(const GURL& url) {
 
   // TODO(gbillock): This size calculation needs more thought.
   // Move up to WebIntentPicker?
-  gfx::Size tab_size = wrapper_->tab_contents()->GetView()->GetContainerSize();
+  gfx::Size tab_size = wrapper_->web_contents()->GetView()->GetContainerSize();
   int width = std::max(tab_size.width()/2, kMainContentWidth);
   int height = std::max(tab_size.height()/2, kMainContentWidth);
   gtk_widget_set_size_request(tab_contents_container_->widget(),
                               width, height);
   gtk_widget_show_all(contents_);
 
-  return inline_disposition_tab_contents_->tab_contents();
+  return inline_disposition_tab_contents_->web_contents();
 }
 
 GtkWidget* WebIntentPickerGtk::GetServiceButton(size_t index) {

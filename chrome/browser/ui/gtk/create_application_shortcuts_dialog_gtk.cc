@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -293,8 +293,8 @@ CreateWebApplicationShortcutsDialogGtk::CreateWebApplicationShortcutsDialogGtk(
 }
 
 void CreateWebApplicationShortcutsDialogGtk::OnCreatedShortcut() {
-  if (tab_contents_->tab_contents()->GetDelegate())
-    tab_contents_->tab_contents()->GetDelegate()->ConvertContentsToApplication(
+  if (tab_contents_->web_contents()->GetDelegate())
+    tab_contents_->web_contents()->GetDelegate()->ConvertContentsToApplication(
         tab_contents_->web_contents());
 }
 

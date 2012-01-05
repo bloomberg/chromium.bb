@@ -15,6 +15,8 @@
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "skia/ext/skia_utils_mac.h"
 
+using content::WebContents;
+
 // static
 WebIntentPicker* WebIntentPicker::Create(Browser* browser,
                                          TabContentsWrapper* wrapper,
@@ -73,7 +75,7 @@ void WebIntentPickerCocoa::SetDefaultServiceIcon(size_t index) {
 void WebIntentPickerCocoa::Close() {
 }
 
-TabContents* WebIntentPickerCocoa::SetInlineDisposition(const GURL& url) {
+WebContents* WebIntentPickerCocoa::SetInlineDisposition(const GURL& url) {
   return NULL;
 }
 

@@ -12,13 +12,15 @@
 #include "base/win/registry.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -38,11 +40,11 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
     // ShellExecute won't do anything. Don't bother warning the user.
     return;
   }
-  TabContents* tab_contents = tab_util::GetTabContentsByID(
+  WebContents* web_contents = tab_util::GetWebContentsByID(
       render_process_host_id, routing_id);
-  DCHECK(tab_contents);
+  DCHECK(web_contents);
   // Windowing system takes ownership.
-  new ExternalProtocolDialog(tab_contents, url, command);
+  new ExternalProtocolDialog(web_contents, url, command);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -120,10 +122,10 @@ const views::Widget* ExternalProtocolDialog::GetWidget() const {
 ///////////////////////////////////////////////////////////////////////////////
 // ExternalProtocolDialog, private:
 
-ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
+ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
                                                const GURL& url,
                                                const std::wstring& command)
-    : tab_contents_(tab_contents),
+    : web_contents_(web_contents),
       url_(url),
       creation_time_(base::TimeTicks::Now()) {
   const int kMaxUrlWithoutSchemeSize = 256;
@@ -154,8 +156,8 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
       l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT));
 
   HWND root_hwnd;
-  if (tab_contents_) {
-    root_hwnd = GetAncestor(tab_contents_->GetContentNativeView(), GA_ROOT);
+  if (web_contents_) {
+    root_hwnd = GetAncestor(web_contents_->GetContentNativeView(), GA_ROOT);
   } else {
     // Dialog is top level if we don't have a tab_contents associated with us.
     root_hwnd = NULL;

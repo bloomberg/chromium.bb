@@ -15,7 +15,10 @@ class Browser;
 class ExtensionDialogObserver;
 class ExtensionHost;
 class GURL;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // Modal dialog containing contents provided by an extension.
 // Dialog is automatically centered in the browser window and has fixed size.
@@ -28,10 +31,10 @@ class ExtensionDialog : public views::WidgetDelegate,
 
   // Create and show a dialog with |url| centered over the browser window.
   // |browser| is the browser to which the pop-up will be attached.
-  // |tab_contents| is the tab that spawned the dialog.
+  // |web_contents| is the tab that spawned the dialog.
   // |width| and |height| are the size of the dialog in pixels.
   static ExtensionDialog* Show(const GURL& url, Browser* browser,
-                               TabContents* tab_contents,
+                               content::WebContents* web_contents,
                                int width,
                                int height,
                                const string16& title,

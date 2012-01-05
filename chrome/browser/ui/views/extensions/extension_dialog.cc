@@ -21,6 +21,8 @@
 #include "googleurl/src/gurl.h"
 #include "ui/views/widget/widget.h"
 
+using content::WebContents;
+
 ExtensionDialog::ExtensionDialog(ExtensionHost* host,
                                  ExtensionDialogObserver* observer)
     : window_(NULL),
@@ -40,7 +42,7 @@ ExtensionDialog::~ExtensionDialog() {
 ExtensionDialog* ExtensionDialog::Show(
     const GURL& url,
     Browser* browser,
-    TabContents* tab_contents,
+    WebContents* web_contents,
     int width,
     int height,
     const string16& title,
@@ -49,7 +51,7 @@ ExtensionDialog* ExtensionDialog::Show(
   ExtensionHost* host = CreateExtensionHost(url, browser);
   if (!host)
     return NULL;
-  host->set_associated_web_contents(tab_contents);
+  host->set_associated_web_contents(web_contents);
 
   ExtensionDialog* dialog = new ExtensionDialog(host, observer);
   dialog->set_title(title);

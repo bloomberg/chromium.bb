@@ -11,7 +11,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/views/widget/widget.h"
 
 using content::WebContents;
@@ -61,7 +61,7 @@ void AppListWindow::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 
 bool AppListWindow::TakeFocus(bool reverse) {
   // Forward the focus back to web contents.
-  contents_->dom_contents()->tab_contents()->FocusThroughTabTraversal(reverse);
+  contents_->dom_contents()->web_contents()->FocusThroughTabTraversal(reverse);
   return true;
 }
 
@@ -96,7 +96,7 @@ void AppListWindow::Init(const gfx::Rect& bounds) {
   contents_ = new DOMView();
   contents_->Init(ProfileManager::GetDefaultProfile(), NULL);
 
-  TabContents* tab = contents_->dom_contents()->tab_contents();
+  WebContents* tab = contents_->dom_contents()->web_contents();
   tab_watcher_.reset(new TabFirstRenderWatcher(tab, this));
   tab->SetDelegate(this);
 

@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/property_bag.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversion_utils.h"
 #include "base/utf_string_conversions.h"
@@ -28,8 +29,8 @@
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -107,7 +108,7 @@ struct AutocompleteEditState {
 };
 
 // Returns a lazily initialized property bag accessor for saving our state in a
-// TabContents.
+// WebContents.
 base::PropertyAccessor<AutocompleteEditState>* GetStateAccessor() {
   CR_DEFINE_STATIC_LOCAL(
       base::PropertyAccessor<AutocompleteEditState>, state, ());

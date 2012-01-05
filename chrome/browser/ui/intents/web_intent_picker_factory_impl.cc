@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/intents/web_intent_picker_factory_impl.h"
 
+#include "base/logging.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
-#include "content/browser/tab_contents/tab_contents.h"
 
 WebIntentPickerFactoryImpl::WebIntentPickerFactoryImpl()
     : picker_(NULL) {

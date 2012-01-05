@@ -23,11 +23,13 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/backing_store_gtk.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/gtk/gtk_screen_utils.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_util.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -63,7 +65,7 @@ DraggedViewGtk::DraggedViewGtk(DragData* drag_data,
       attached_tab_size_(TabRendererGtk::GetMinimumSelectedSize()),
       contents_size_(contents_size),
       close_animation_(this) {
-  std::vector<TabContents*> data_sources(drag_data_->GetDraggedTabsContents());
+  std::vector<WebContents*> data_sources(drag_data_->GetDraggedTabsContents());
   for (size_t i = 0; i < data_sources.size(); i++) {
     renderers_.push_back(new TabRendererGtk(GtkThemeService::GetFrom(
         Profile::FromBrowserContext(data_sources[i]->GetBrowserContext()))));
@@ -72,9 +74,9 @@ DraggedViewGtk::DraggedViewGtk(DragData* drag_data,
   for (size_t i = 0; i < drag_data_->size(); i++) {
     TabContentsWrapper* wrapper =
         TabContentsWrapper::GetCurrentWrapperForContents(
-            drag_data_->get(i)->contents_->tab_contents());
+            drag_data_->get(i)->contents_->web_contents());
     renderers_[i]->UpdateData(
-        drag_data_->get(i)->contents_->tab_contents(),
+        drag_data_->get(i)->contents_->web_contents(),
         wrapper->extension_tab_helper()->is_app(),
         false); // loading_only
     renderers_[i]->set_is_active(

@@ -10,11 +10,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/window.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/events/event.h"
 #include "ui/views/widget/root_view.h"
@@ -252,14 +252,14 @@ void HtmlDialogView::InitDialog() {
   // Now Init the DOMView. This view runs in its own process to render the html.
   DOMView::Init(profile(), NULL);
 
-  TabContents* tab_contents = dom_contents_->tab_contents();
-  tab_contents->SetDelegate(this);
+  WebContents* web_contents = dom_contents_->web_contents();
+  web_contents->SetDelegate(this);
 
   // Set the delegate. This must be done before loading the page. See
   // the comment above HtmlDialogUI in its header file for why.
   HtmlDialogUI::GetPropertyAccessor().SetProperty(
-      tab_contents->GetPropertyBag(), this);
-  tab_watcher_.reset(new TabFirstRenderWatcher(tab_contents, this));
+      web_contents->GetPropertyBag(), this);
+  tab_watcher_.reset(new TabFirstRenderWatcher(web_contents, this));
 
   DOMView::LoadURL(GetDialogContentURL());
 }

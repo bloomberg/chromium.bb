@@ -12,9 +12,12 @@
 class Browser;
 class GURL;
 class SkBitmap;
-class TabContents;
 class TabContentsWrapper;
 class WebIntentPickerDelegate;
+
+namespace content {
+class WebContents;
+}
 
 // Base class for the web intent picker dialog.
 class WebIntentPicker {
@@ -40,7 +43,7 @@ class WebIntentPicker {
   virtual void Close() = 0;
 
   // Show the inline disposition UI for the given URL.
-  virtual TabContents* SetInlineDisposition(const GURL& url) = 0;
+  virtual content::WebContents* SetInlineDisposition(const GURL& url) = 0;
 
  protected:
   virtual ~WebIntentPicker() {}

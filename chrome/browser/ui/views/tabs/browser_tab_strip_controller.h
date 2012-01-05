@@ -18,8 +18,11 @@ class BaseTab;
 class Browser;
 class TabStrip;
 class TabStripSelectionModel;
-
 struct TabRendererData;
+
+namespace content {
+class WebContents;
+}
 
 // An implementation of TabStripController that sources data from the
 // TabContentsWrappers in a TabStripModel.
@@ -105,7 +108,7 @@ class BrowserTabStripController : public TabStripController,
   };
 
   // Sets the TabRendererData from the TabStripModel.
-  virtual void SetTabRendererDataFromModel(TabContents* contents,
+  virtual void SetTabRendererDataFromModel(content::WebContents* contents,
                                            int model_index,
                                            TabRendererData* data,
                                            TabStatus tab_status);
