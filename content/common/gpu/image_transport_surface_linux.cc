@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -530,7 +530,8 @@ void GLXImageTransportSurface::OnResize(gfx::Size size) {
   // Seems necessary to perform a swap after a resize
   // in order to resize the front and back buffers (Intel driver bug).
   // This doesn't always happen with scissoring enabled, so do it now.
-  if (gfx::g_GLX_MESA_copy_sub_buffer)
+  if (gfx::g_GLX_MESA_copy_sub_buffer &&
+      gfx::GLSurface::GetCurrent() == this)
     gfx::NativeViewGLSurfaceGLX::SwapBuffers();
   needs_resize_ = true;
 }

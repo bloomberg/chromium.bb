@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -362,6 +362,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
     int gpu_host_id) {
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+  current_surface_ = params.surface_id;
   UpdateExternalTexture();
 
   if (!window_->layer()->GetCompositor()) {
