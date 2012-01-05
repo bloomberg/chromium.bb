@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/webkitplatformsupport_impl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMimeRegistry.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMimeRegistry.h"
 
 class WebFileSystemImpl;
 
