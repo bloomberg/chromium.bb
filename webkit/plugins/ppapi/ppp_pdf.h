@@ -10,6 +10,7 @@
 #include "ppapi/c/pp_var.h"
 
 #define PPP_PDF_INTERFACE_1 "PPP_Pdf;1"
+#define PPP_PDF_INTERFACE PPP_PDF_INTERFACE_1
 
 struct PPP_Pdf_1 {
   // Returns an absolute URL if the position is over a link.
