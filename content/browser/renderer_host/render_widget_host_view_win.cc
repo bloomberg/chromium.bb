@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -328,9 +328,6 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
 RenderWidgetHostViewWin::~RenderWidgetHostViewWin() {
   UnlockMouse();
   ResetTooltip();
-
-  if (accelerated_surface_)
-    accelerated_surface_->Destroy();
 }
 
 void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
@@ -1937,7 +1934,8 @@ static LRESULT CALLBACK CompositorHostWindowProc(HWND hWnd, UINT message,
 void RenderWidgetHostViewWin::ScheduleComposite() {
   // If we have a previous frame then present it immediately. Otherwise request
   // a new frame be composited.
-  if (!accelerated_surface_.get() || !accelerated_surface_->Present()) {
+  if (!accelerated_surface_.get() ||
+      !accelerated_surface_->Present(compositor_host_window_)) {
     if (render_widget_host_)
       render_widget_host_->ScheduleComposite();
   }
@@ -2041,8 +2039,7 @@ void RenderWidgetHostViewWin::AcceleratedSurfaceBuffersSwapped(
     int gpu_host_id) {
   if (params.surface_id) {
     if (!accelerated_surface_.get() && compositor_host_window_) {
-      accelerated_surface_ = new AcceleratedSurface(compositor_host_window_);
-      accelerated_surface_->Initialize();
+      accelerated_surface_.reset(new AcceleratedSurface);
     }
 
     scoped_ptr<IPC::Message> message(
@@ -2053,6 +2050,7 @@ void RenderWidgetHostViewWin::AcceleratedSurfaceBuffersSwapped(
         base::Passed(&message));
 
     accelerated_surface_->AsyncPresentAndAcknowledge(
+        compositor_host_window_,
         params.size,
         params.surface_id,
         base::Bind(PostTaskOnIOThread,
