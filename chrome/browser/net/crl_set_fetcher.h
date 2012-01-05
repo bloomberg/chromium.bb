@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,11 +50,9 @@ class CRLSetFetcher : public ComponentInstaller,
   void DoInitialLoadFromDisk();
 
   // LoadFromDisk runs on the FILE thread and attempts to load a CRL set
-  // from |load_from|. If successful, it saves a copy of the CRLSet to
-  // |save_to|, unless |save_to| is empty.
+  // from |load_from|.
   void LoadFromDisk(FilePath load_from,
-                    FilePath save_to,
-                    scoped_refptr<net::CRLSet>* maybe_out_crl_set);
+                    scoped_refptr<net::CRLSet>* out_crl_set);
 
   // SetCRLSetIfNewer runs on the IO thread and installs a CRL set
   // as the global CRL set if it's newer than the existing one.
@@ -64,6 +62,10 @@ class CRLSetFetcher : public ComponentInstaller,
   void RegisterComponent(uint32 sequence_of_loaded_crl);
 
   ComponentUpdateService* cus_;
+
+  // We keep a pointer to the current CRLSet for use on the FILE thread when
+  // applying delta updates.
+  scoped_refptr<net::CRLSet> crl_set_;
 
   DISALLOW_COPY_AND_ASSIGN(CRLSetFetcher);
 };
