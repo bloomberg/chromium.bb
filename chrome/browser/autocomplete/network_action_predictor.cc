@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -411,6 +411,11 @@ double NetworkActionPredictor::CalculateConfidence(
     return 0.0;
 
   *is_in_db = true;
+  return CalculateConfidenceForDbEntry(iter);
+}
+
+double NetworkActionPredictor::CalculateConfidenceForDbEntry(
+    DBCacheMap::const_iterator iter) const {
   const DBCacheValue& value = iter->second;
   if (value.number_of_hits < kMinimumNumberOfHits)
     return 0.0;

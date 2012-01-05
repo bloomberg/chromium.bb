@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,6 +76,7 @@ class NetworkActionPredictor
 
  private:
   friend class NetworkActionPredictorTest;
+  friend class NetworkActionPredictorDOMHandler;
 
   struct TransitionalMatch {
     TransitionalMatch();
@@ -152,6 +153,9 @@ class NetworkActionPredictor
   double CalculateConfidence(const string16& user_text,
                              const AutocompleteMatch& match,
                              bool* is_in_db) const;
+
+  // Calculates the confidence for an entry in the DBCacheMap.
+  double CalculateConfidenceForDbEntry(DBCacheMap::const_iterator iter) const;
 
   // Adds a row to the database and caches.
   void AddRow(const DBCacheKey& key,

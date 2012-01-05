@@ -1,0 +1,65 @@
+/*
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+body {
+  margin: 20px;
+}
+
+h1 {
+  -webkit-padding-start: 75px;
+  font-size: 156%;
+  font-weight: bold;
+  margin: 0;
+  padding-bottom: 20px;
+  padding-top: 20px;
+}
+
+html[dir=rtl] h1 {
+  background-position: right;
+}
+
+#countBanner {
+  background-color: rgb(235, 239, 250);
+  border: 1px solid rgb(187, 187, 187);
+  border-radius: 2px;
+  font-size: 100%;
+  padding: 4px;
+}
+
+#databaseTable {
+  background-color: white;
+}
+
+#databaseTable thead tr {
+  background-color: rgb(235, 250, 239);
+}
+
+#databaseTable th {
+  background-color: white;
+  border-color: gray;
+  border-style: solid;
+  border-width: 1px;
+  padding: 3px;
+  white-space: nowrap;
+}
+
+#databaseTable td {
+  background-color: white;
+  border-color: lightgray;
+  border-style: solid;
+  border-width: 1px;
+  padding: 3px;
+}
+
+#databaseTable tbody > td:first-child {
+  white-space: nowrap;
+}
+
+#disabledMode h2 {
+  color: rgb(141, 51, 42);
+  font-size: 125%;
+}
+
