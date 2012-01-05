@@ -1609,8 +1609,10 @@ input_device_attach(struct wl_client *client,
 		weston_surface_damage_below(device->sprite);
 
 	if (!buffer_resource) {
-		destroy_surface(&device->sprite->surface.resource);
-		device->sprite = NULL;
+		if (device->sprite) {
+			destroy_surface(&device->sprite->surface.resource);
+			device->sprite = NULL;
+		}
 		return;
 	}
 
