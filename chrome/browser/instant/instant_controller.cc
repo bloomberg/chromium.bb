@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,8 +169,10 @@ bool InstantController::Update(TabContentsWrapper* tab_contents,
 
   const TemplateURL* template_url = match.template_url;
   DCHECK(template_url);  // ShouldUseInstant returns false if no turl.
-  if (!loader_.get())
-    loader_.reset(new InstantLoader(this, template_url->id()));
+  if (!loader_.get()) {
+    loader_.reset(new InstantLoader(this, template_url->id(),
+        InstantFieldTrial::GetGroupName(tab_contents->profile())));
+  }
 
   // In some rare cases (involving group policy), Instant can go from the field
   // trial to normal mode, with no intervening call to DestroyPreviewContents().
@@ -388,8 +390,10 @@ void InstantController::OnAutocompleteGotFocus(
 
   tab_contents_ = tab_contents;
 
-  if (!loader_.get())
-    loader_.reset(new InstantLoader(this, template_url->id()));
+  if (!loader_.get()) {
+    loader_.reset(new InstantLoader(this, template_url->id(),
+        InstantFieldTrial::GetGroupName(tab_contents->profile())));
+  }
   loader_->MaybeLoadInstantURL(tab_contents, template_url);
 }
 

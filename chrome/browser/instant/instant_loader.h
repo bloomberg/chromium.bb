@@ -1,10 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_INSTANT_INSTANT_LOADER_H_
 #define CHROME_BROWSER_INSTANT_INSTANT_LOADER_H_
 #pragma once
+
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -41,7 +43,11 @@ class InstantLoader : public content::NotificationObserver {
   static const char* const kInstantHeader;
   static const char* const kInstantHeaderValue;
 
-  InstantLoader(InstantLoaderDelegate* delegate, TemplateURLID id);
+  // |group| is an identifier suffixed to histograms to distinguish field trial
+  // statistics from regular operation; can be a blank string.
+  InstantLoader(InstantLoaderDelegate* delegate,
+                TemplateURLID id,
+                const std::string& group);
   virtual ~InstantLoader();
 
   // Invoked to load a URL. |tab_contents| is the TabContents the preview is
@@ -238,6 +244,9 @@ class InstantLoader : public content::NotificationObserver {
 
   // True if the page needs to be reloaded.
   bool needs_reload_;
+
+  // See description above constructor.
+  std::string group_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantLoader);
 };
