@@ -355,7 +355,6 @@ NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
       has_focus_(false),
       always_on_top_(false),
       is_double_buffered_(false),
-      should_handle_menu_key_release_(false),
       dragged_view_(NULL),
       painted_(false),
       has_pointer_grab_(false),
@@ -562,33 +561,7 @@ void NativeWidgetGtk::ActiveWindowChanged(GdkWindow* active_window) {
 bool NativeWidgetGtk::HandleKeyboardEvent(const KeyEvent& key) {
   if (!GetWidget()->GetFocusManager())
     return false;
-
-  const int key_code = key.key_code();
-  bool handled = false;
-
-  // Always reset |should_handle_menu_key_release_| unless we are handling a
-  // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
-  // be activated when handling a VKEY_MENU key release event which is preceded
-  // by an un-handled VKEY_MENU key press event.
-  if (key_code != ui::VKEY_MENU || key.type() != ui::ET_KEY_RELEASED)
-    should_handle_menu_key_release_ = false;
-
-  if (key.type() == ui::ET_KEY_PRESSED) {
-    // VKEY_MENU is triggered by key release event.
-    // FocusManager::OnKeyEvent() returns false when the key has been consumed.
-    if (key_code != ui::VKEY_MENU)
-      handled = !GetWidget()->GetFocusManager()->OnKeyEvent(key);
-    else
-      should_handle_menu_key_release_ = true;
-  } else if (key_code == ui::VKEY_MENU && should_handle_menu_key_release_ &&
-             (key.flags() & ~ui::EF_ALT_DOWN) == 0) {
-    // Trigger VKEY_MENU when only this key is pressed and released, and both
-    // press and release events are not handled by others.
-    ui::Accelerator accelerator(ui::VKEY_MENU, false, false, false);
-    handled = GetWidget()->GetFocusManager()->ProcessAccelerator(accelerator);
-  }
-
-  return handled;
+  return GetWidget()->GetFocusManager()->OnKeyEvent(key);
 }
 
 bool NativeWidgetGtk::SuppressFreezeUpdates() {
@@ -1606,18 +1579,22 @@ gboolean NativeWidgetGtk::OnScroll(GtkWidget* widget, GdkEventScroll* event) {
   return delegate_->OnMouseEvent(mouse_event);
 }
 
-gboolean NativeWidgetGtk::OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
+gboolean NativeWidgetGtk::OnFocusIn(GtkWidget* gtk_widget,
+                                    GdkEventFocus* event) {
   if (has_focus_)
     return false;  // This is the second focus-in event in a row, ignore it.
   has_focus_ = true;
 
-  should_handle_menu_key_release_ = false;
+  Widget* widget = GetWidget();
 
-  if (!GetWidget()->is_top_level())
+  if (widget->GetFocusManager())
+    widget->GetFocusManager()->ResetMenuKeyState();
+
+  if (!widget->is_top_level())
     return false;
 
   // Only top-level Widget should have an InputMethod instance.
-  InputMethod* input_method = GetWidget()->GetInputMethod();
+  InputMethod* input_method = widget->GetInputMethod();
   if (input_method)
     input_method->OnFocus();
 
@@ -1627,7 +1604,7 @@ gboolean NativeWidgetGtk::OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
     // Sets initial focus here. On X11/Gtk, window creation
     // is asynchronous and a focus request has to be made after a window
     // gets created.
-    GetWidget()->SetInitialFocus();
+    widget->SetInitialFocus();
   }
   return false;
 }
@@ -1772,12 +1749,8 @@ void NativeWidgetGtk::ScheduleDraw() {
 }
 
 void NativeWidgetGtk::DispatchKeyEventPostIME(const KeyEvent& key) {
-  // Always reset |should_handle_menu_key_release_| unless we are handling a
-  // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
-  // be activated when handling a VKEY_MENU key release event which is preceded
-  // by an unhandled VKEY_MENU key press event. See also HandleKeyboardEvent().
-  if (key.key_code() != ui::VKEY_MENU || key.type() != ui::ET_KEY_RELEASED)
-    should_handle_menu_key_release_ = false;
+  if (GetWidget()->GetFocusManager())
+    GetWidget()->GetFocusManager()->MaybeResetMenuKeyState(key);
 
   // Send the key event to View hierarchy first.
   bool handled = delegate_->OnKeyEvent(key);

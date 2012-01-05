@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,9 @@ FocusManager::FocusManager(Widget* widget)
       focused_view_(NULL),
       accelerator_manager_(new ui::AcceleratorManager),
       focus_change_reason_(kReasonDirectFocusChange),
+#if defined(USE_X11)
+      should_handle_menu_key_release_(false),
+#endif
       is_changing_focus_(false) {
   DCHECK(widget_);
   stored_focused_view_storage_id_ =
@@ -36,6 +39,41 @@ FocusManager::~FocusManager() {
 }
 
 bool FocusManager::OnKeyEvent(const KeyEvent& event) {
+  const int key_code = event.key_code();
+
+#if defined(USE_X11)
+  // TODO(ben): beng believes that this should be done in
+  // RootWindowHosLinux for aura/linux.
+
+  // Always reset |should_handle_menu_key_release_| unless we are handling a
+  // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
+  // be activated when handling a VKEY_MENU key release event which is preceded
+  // by an un-handled VKEY_MENU key press event.
+  if (key_code != ui::VKEY_MENU || event.type() != ui::ET_KEY_RELEASED)
+    should_handle_menu_key_release_ = false;
+
+  if (event.type() == ui::ET_KEY_PRESSED) {
+    // VKEY_MENU is triggered by key release event.
+    // FocusManager::OnKeyEvent() returns false when the key has been consumed.
+    if (key_code == ui::VKEY_MENU) {
+      should_handle_menu_key_release_ = true;
+      return false;
+    }
+    // Pass through to the reset of OnKeyEvent.
+  } else if (key_code == ui::VKEY_MENU && should_handle_menu_key_release_ &&
+             (event.flags() & ~ui::EF_ALT_DOWN) == 0) {
+    // Trigger VKEY_MENU when only this key is pressed and released, and both
+    // press and release events are not handled by others.
+    ui::Accelerator accelerator(ui::VKEY_MENU, false, false, false);
+    return ProcessAccelerator(accelerator);
+  } else {
+    return false;
+  }
+#else
+  if (event.type() != ui::ET_KEY_PRESSED)
+    return false;
+#endif
+
 #if defined(OS_WIN)
   // If the focused view wants to process the key event as is, let it be.
   // On Linux we always dispatch key events to the focused view first, so
@@ -64,7 +102,6 @@ bool FocusManager::OnKeyEvent(const KeyEvent& event) {
 #endif
 
   // Intercept arrow key messages to switch between grouped views.
-  ui::KeyboardCode key_code = event.key_code();
   if (focused_view_ && focused_view_->GetGroup() != -1 &&
       (key_code == ui::VKEY_UP || key_code == ui::VKEY_DOWN ||
        key_code == ui::VKEY_LEFT || key_code == ui::VKEY_RIGHT)) {
@@ -254,6 +291,10 @@ void FocusManager::ClearFocus() {
 }
 
 void FocusManager::StoreFocusedView() {
+#if defined(USE_X11)
+  // Forget menu key state when the window lost focus.
+  should_handle_menu_key_release_ = false;
+#endif
   ViewStorage* view_storage = ViewStorage::GetInstance();
   if (!view_storage) {
     // This should never happen but bug 981648 seems to indicate it could.
@@ -287,6 +328,9 @@ void FocusManager::StoreFocusedView() {
 }
 
 void FocusManager::RestoreFocusedView() {
+#if defined(USE_X11)
+  DCHECK(!should_handle_menu_key_release_);
+#endif
   ViewStorage* view_storage = ViewStorage::GetInstance();
   if (!view_storage) {
     // This should never happen but bug 981648 seems to indicate it could.
@@ -377,6 +421,23 @@ void FocusManager::UnregisterAccelerators(ui::AcceleratorTarget* target) {
 bool FocusManager::ProcessAccelerator(const ui::Accelerator& accelerator) {
   return accelerator_manager_->Process(accelerator);
 }
+
+void FocusManager::MaybeResetMenuKeyState(const KeyEvent& key) {
+#if defined(USE_X11)
+  // Always reset |should_handle_menu_key_release_| unless we are handling a
+  // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
+  // be activated when handling a VKEY_MENU key release event which is preceded
+  // by an unhandled VKEY_MENU key press event. See also HandleKeyboardEvent().
+  if (key.key_code() != ui::VKEY_MENU || key.type() != ui::ET_KEY_RELEASED)
+    should_handle_menu_key_release_ = false;
+#endif
+}
+
+#if defined(TOOLKIT_USES_GTK)
+void FocusManager::ResetMenuKeyState() {
+  should_handle_menu_key_release_ = false;
+}
+#endif
 
 ui::AcceleratorTarget* FocusManager::GetCurrentTargetForAccelerator(
     const ui::Accelerator& accelerator) const {

@@ -441,9 +441,6 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
   // This is false by default.
   bool is_double_buffered_;
 
-  // Indicates if we should handle the upcoming Alt key release event.
-  bool should_handle_menu_key_release_;
-
   // Valid for the lifetime of StartDragForViewFromMouseEvent, indicates the
   // view the drag started from.
   View* dragged_view_;

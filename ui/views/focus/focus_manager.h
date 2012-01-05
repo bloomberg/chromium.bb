@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -213,6 +213,15 @@ class VIEWS_EXPORT FocusManager {
   // Returns true if an accelerator was activated.
   bool ProcessAccelerator(const ui::Accelerator& accelerator);
 
+  // Resets menu key state if |event| is not menu key release.
+  // This is effective only on x11.
+  void MaybeResetMenuKeyState(const KeyEvent& key);
+
+#if defined(TOOLKIT_USES_GTK)
+  // Resets menu key state. TODO(oshima): Remove this when views/gtk is removed.
+  void ResetMenuKeyState();
+#endif
+
   // Called by a RootView when a view within its hierarchy is removed
   // from its parent. This will only be called by a RootView in a
   // hierarchy of Widgets that this FocusManager is attached to the
@@ -268,6 +277,11 @@ class VIEWS_EXPORT FocusManager {
 
   // The list of registered FocusChange listeners.
   ObserverList<FocusChangeListener, true> focus_change_listeners_;
+
+#if defined(USE_X11)
+  // Indicates if we should handle the upcoming Alt key release event.
+  bool should_handle_menu_key_release_;
+#endif
 
   // See description above getter.
   bool is_changing_focus_;

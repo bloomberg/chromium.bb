@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/views/handle_web_keyboard_event.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -131,7 +130,8 @@ WebContents* RegistrationScreen::OpenURLFromTab(WebContents* source,
 
 void RegistrationScreen::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  HandleWebKeyboardEvent(view()->GetWidget(), event);
+  unhandled_keyboard_handler_.HandleKeyboardEvent(event,
+                                                  view()->GetFocusManager());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

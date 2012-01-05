@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "build/build_config.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/message_loop.h"
@@ -77,6 +78,9 @@ namespace {
 // action we take.
 const int kActionDelayMs = 500;
 
+// Maxiumum time to wait until the focus is moved to expected view.
+const int kFocusChangeTimeoutMs = 500;
+
 const char kSimplePage[] = "files/focus/page_with_focus.html";
 const char kStealFocusPage[] = "files/focus/page_steals_focus.html";
 const char kTypicalPage[] = "files/focus/typical_page.html";
@@ -126,6 +130,19 @@ bool ChromeInForeground() {
 #endif
 }
 
+// Wait the focus change in message loop.
+void CheckFocus(Browser* browser, ViewID id, const base::Time& timeout) {
+  if (ui_test_utils::IsViewFocused(browser, id) ||
+      base::Time::Now() > timeout) {
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  } else {
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&CheckFocus, browser, id, timeout),
+        10);
+  }
+};
+
 class BrowserFocusTest : public InProcessBrowserTest {
  public:
   BrowserFocusTest() :
@@ -145,6 +162,17 @@ class BrowserFocusTest : public InProcessBrowserTest {
 
   void ClickOnView(ViewID vid) {
     ui_test_utils::ClickOnView(browser(), vid);
+  }
+
+  bool WaitForFocusChange(ViewID vid) {
+    const base::Time timeout = base::Time::Now() +
+        base::TimeDelta::FromMilliseconds(kFocusChangeTimeoutMs);
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&CheckFocus, browser(), vid, timeout),
+        100);
+    ui_test_utils::RunMessageLoop();
+    return IsViewFocused(vid);
   }
 
   ViewID location_bar_focus_view_id_;
@@ -760,16 +788,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
       browser(), ui::VKEY_F, true, false, false, false));
 #endif
 
-  // Ideally, we wouldn't sleep here and instead would intercept the
-  // RenderViewHostDelegate::HandleKeyboardEvent() callback.  To do that, we
-  // could create a RenderViewHostDelegate wrapper and hook-it up by either:
-  // - creating a factory used to create the delegate
-  // - making the test a private and overwriting the delegate member directly.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), kActionDelayMs);
-  ui_test_utils::RunMessageLoop();
-
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+  ASSERT_TRUE(WaitForFocusChange(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   browser()->FocusLocationBar();
   ASSERT_TRUE(IsViewFocused(location_bar_focus_view_id_));
@@ -797,11 +816,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
       browser(), ui::VKEY_F, true, false, false, false));
 #endif
 
-  // See remark above on why we wait.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), kActionDelayMs);
-  ui_test_utils::RunMessageLoop();
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+  ASSERT_TRUE(WaitForFocusChange(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 }
 
 // Makes sure the focus is in the right location when opening the different

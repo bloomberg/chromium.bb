@@ -122,7 +122,6 @@
 #include "ui/views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/views/accelerator_table.h"
-#include "chrome/browser/ui/views/handle_web_keyboard_event.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1285,13 +1284,8 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 }
 
 void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
-  // TODO(ben): figure out why are these two code paths so different
-#if defined(TOOLKIT_USES_GTK)
-  HandleWebKeyboardEvent(GetWidget(), event);
-#else
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
                                                         GetFocusManager());
-#endif
 }
 
 // TODO(devint): http://b/issue?id=1117225 Cut, Copy, and Paste are always

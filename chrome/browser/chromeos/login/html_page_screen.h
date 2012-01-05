@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/login/web_page_screen.h"
 #include "chrome/browser/chromeos/login/web_page_view.h"
+#include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 
 namespace chromeos {
 
@@ -77,6 +78,8 @@ class HTMLPageScreen : public ViewScreen<HTMLPageView>,
 
   // URL to navigate.
   std::string url_;
+
+  UnhandledKeyboardEventHandler unhandled_keyboard_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLPageScreen);
 };

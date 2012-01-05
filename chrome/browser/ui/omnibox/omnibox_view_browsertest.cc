@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1333,80 +1333,4 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, FLAKY_PasteReplacingAll) {
   // Inline autocomplete shouldn't be triggered.
   ASSERT_EQ(ASCIIToUTF16("abc"), omnibox_view->GetText());
 }
-#endif
-
-// TODO(beng): enable on windows once it actually works.
-// No need to run extra pure views tests on aura.
-#if defined(TOOLKIT_VIEWS) && !defined(OS_WIN) && !defined(USE_AURA)
-class OmniboxViewViewsTest : public OmniboxViewTest {
- public:
-  OmniboxViewViewsTest() {
-    views::Widget::SetPureViews(true);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
-                       FLAKY_BrowserAccelerators) {
-  BrowserAcceleratorsTest();
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, MAYBE_PopupAccelerators) {
-  PopupAcceleratorsTest();
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, BackspaceInKeywordMode) {
-  BackspaceInKeywordModeTest();
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, Escape) {
-  EscapeTest();
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, DesiredTLD) {
-  DesiredTLDTest();
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, AltEnter) {
-  AltEnterTest();
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, EnterToSearch) {
-  EnterToSearchTest();
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, EscapeToDefaultMatch) {
-  EscapeToDefaultMatchTest();
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, BasicTextOperations) {
-  BasicTextOperationsTest();
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, AcceptKeywordBySpace) {
-  AcceptKeywordBySpaceTest();
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
-                       NonSubstitutingKeywordTest) {
-  NonSubstitutingKeywordTest();
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, DeleteItem) {
-  DeleteItemTest();
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, TabMoveCursorToEnd) {
-  TabMoveCursorToEndTest();
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
-                       PersistKeywordModeOnTabSwitch) {
-  PersistKeywordModeOnTabSwitch();
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
-                       CtrlKeyPressedWithInlineAutocompleteTest) {
-  CtrlKeyPressedWithInlineAutocompleteTest();
-}
-
 #endif

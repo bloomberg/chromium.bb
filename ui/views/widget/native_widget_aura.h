@@ -174,11 +174,6 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   // Can we be made active?
   bool can_activate_;
 
-#if defined(USE_X11)
-  // Indicates if we should handle the upcoming Alt key release event.
-  bool should_handle_menu_key_release_;
-#endif
-
   gfx::NativeCursor cursor_;
 
   // The saved window state for exiting full screen state.
