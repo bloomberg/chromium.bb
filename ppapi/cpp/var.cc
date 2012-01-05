@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,8 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_Var>() {
-  return PPB_VAR_INTERFACE;
+template <> const char* interface_name<PPB_Var_1_1>() {
+  return PPB_VAR_INTERFACE_1_1;
 }
 template <> const char* interface_name<PPB_Var_1_0>() {
   return PPB_VAR_INTERFACE_1_0;
@@ -43,8 +43,8 @@ inline bool NeedsRefcounting(const PP_Var& var) {
 // it uses it to create a PP_Var for the given string. Otherwise it falls back
 // to PPB_Var version 1.0.
 PP_Var VarFromUtf8Helper(const char* utf8_str, uint32_t len) {
-  if (has_interface<PPB_Var>()) {
-    return get_interface<PPB_Var>()->VarFromUtf8(utf8_str, len);
+  if (has_interface<PPB_Var_1_1>()) {
+    return get_interface<PPB_Var_1_1>()->VarFromUtf8(utf8_str, len);
   } else if (has_interface<PPB_Var_1_0>()) {
     return get_interface<PPB_Var_1_0>()->VarFromUtf8(Module::Get()->pp_module(),
                                                      utf8_str,
