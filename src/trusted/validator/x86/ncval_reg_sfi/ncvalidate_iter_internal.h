@@ -45,6 +45,8 @@ struct NaClValidatorState {
   NaClOpKind base_register;
   /* Holds if the validation is still valid. */
   Bool validates_ok;
+  /* Holds if any stubouts have been performed. */
+  Bool did_stub_out;
   /* If >= 0, holds how many errors can be reported. If negative,
    * reports all errors.
    */

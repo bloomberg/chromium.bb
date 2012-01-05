@@ -30,6 +30,7 @@
 #include "native_client/src/trusted/validator/ncfileutil.h"
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter_internal.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter_detailed.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_jumps.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_opcode_histogram.h"
@@ -38,6 +39,7 @@
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode_verbose.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_detailed.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_internaltypes.h"
 #include "native_client/src/trusted/validator_x86/nc_read_segment.h"
 #include "native_client/src/trusted/validator_x86/ncdis_segments.h"
 
@@ -535,6 +537,10 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
   NaClValidateSegmentUsingTables(data->bytes, data->base, data->num_bytes,
                                  state, NaClGetDecoderTables());
   return_value = NaClValidatesOk(state);
+  if (state->did_stub_out) {
+    /* Used for golden file testing. */
+    printf("Some instructions were replaced with HLTs.\n");
+  }
   NaClValidatorStateDestroy(state);
   NaClReportSafety(return_value, "");
 #else
@@ -552,6 +558,10 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
 #endif
     NCValidateSegment(&data->bytes[0], data->base, data->num_bytes, vstate);
     return_value = (0 == NCValidateFinish(vstate)) ? TRUE : FALSE;
+    if (vstate->stats.didstubout) {
+      /* Used for golden file testing. */
+      printf("Some instructions were replaced with HLTs.\n");
+    }
     NaClReportSafety(return_value, "");
     if (NACL_FLAGS_stats_print) NCStatsPrint(vstate);
     NCValidateFreeState(&vstate);

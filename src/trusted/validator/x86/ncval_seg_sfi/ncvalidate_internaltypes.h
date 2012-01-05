@@ -33,7 +33,8 @@ typedef struct SummaryStats {
   uint32_t badprefix;
   uint32_t badinstlength;
   uint32_t internalerrors;
-  int sawfailure;          /* boolean */
+  int didstubout; /* boolean */
+  int sawfailure; /* boolean */
 } SummaryStats;
 
 /* We track instructions in a three-entry circular buffer,

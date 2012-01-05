@@ -94,13 +94,23 @@ static void ValidatePrintError(const NaClPcAddress addr, const char *msg,
   }
 }
 
+/* The low-level implementation for stubbing out an instruction. Always use
+ * this function to (ultimately) stub out instructions. This makes it possible
+ * to detect when the validator modifies the code.
+ */
+static void NCStubOutMem(struct NCValidatorState *vstate, void *ptr,
+                         size_t num) {
+  vstate->stats.didstubout = 1;
+  memset(ptr, kNaClFullStop, num);
+}
+
 void NCBadInstructionError(const struct NCDecoderInst *dinst,
                            const char *msg) {
   NCValidatorState* vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
   ValidatePrintError(dinst->vpc, msg, vstate);
   if (vstate->do_stub_out) {
-    memset(dinst->dstate->memory.mpc, kNaClFullStop,
-           dinst->dstate->memory.read_length);
+    NCStubOutMem(vstate, dinst->dstate->memory.mpc,
+                 dinst->dstate->memory.read_length);
   }
 }
 
@@ -239,6 +249,7 @@ static void NCStatsInit(struct NCValidatorState *vstate) {
   vstate->stats.internalerrors = 0;
   vstate->stats.badinstlength = 0;
   vstate->stats.badprefix = 0;
+  vstate->stats.didstubout = 0;
   vstate->stats.sawfailure = 0;
   InitOpcodeHisto(vstate);
 }
@@ -258,6 +269,9 @@ void NCStatsPrint(struct NCValidatorState *vstate) {
       vstate->stats.targetindirect,
       vstate->stats.instructions ?
       100.0 * vstate->stats.targetindirect/vstate->stats.instructions : 0);
+  if (vstate->stats.didstubout) {
+    (*reporter->printf)(reporter, "Some instructions were replaced with HLTs");
+  }
   (*reporter->printf)(reporter, "\nProblems:\n");
   (*reporter->printf)(reporter, "%d illegal instructions\n",
                    vstate->stats.illegalinst);
@@ -854,8 +868,10 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
       NCStatsInternalError(vstate);
       break;
   }
-  if (squashme) memset(dinst->dstate->memory.mpc, kNaClFullStop,
-                       dinst->dstate->memory.read_length);
+  if (squashme) {
+    NCStubOutMem(vstate, dinst->dstate->memory.mpc,
+                 dinst->dstate->memory.read_length);
+  }
   return TRUE;
 }
 

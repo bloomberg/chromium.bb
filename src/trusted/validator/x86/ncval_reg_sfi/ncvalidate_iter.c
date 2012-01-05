@@ -243,10 +243,19 @@ static INLINE int NaClRecordIfValidatorError(NaClValidatorState *state,
   return level;
 }
 
+/* The low-level implementation for stubbing out an instruction. Always use
+ * this function to (ultimately) stub out instructions. This makes it possible
+ * to detect when the validator modifies the code.
+ */
+void NCStubOutMem(NaClValidatorState *state, void *ptr, size_t num) {
+  state->did_stub_out = TRUE;
+  memset(ptr, kNaClFullStop, num);
+}
+
 /* Does stub out of instruction in validator state. */
-static void NaClStubOutInst(NaClInstState* inst) {
+static void NaClStubOutInst(NaClValidatorState *state, NaClInstState* inst) {
   NCRemainingMemory *memory = inst->bytes.memory;
-  memset(memory->mpc, kNaClFullStop, memory->read_length);
+  NCStubOutMem(state, memory->mpc, memory->read_length);
 }
 
 /* Does a printf using the error reporter of the state if defined.
@@ -377,7 +386,7 @@ void NaClValidatorInstMessage(int level,
     }
   }
   if (state->do_stub_out && (level <= LOG_ERROR)) {
-    NaClStubOutInst(inst);
+    NaClStubOutInst(state, inst);
   }
 }
 
@@ -401,7 +410,7 @@ void NaClValidatorTwoInstMessage(int level,
     NaClRecordErrorReported(state, level);
   }
   if (state->do_stub_out && (level <= LOG_ERROR)) {
-    NaClStubOutInst(inst2);
+    NaClStubOutInst(state, inst2);
   }
 }
 
@@ -455,6 +464,7 @@ NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
     }
     state->base_register = base_register;
     state->validates_ok = TRUE;
+    state->did_stub_out = FALSE;
     state->quit_after_error_count = NACL_FLAGS_max_reported_errors;
     state->error_reporter = &kNaClNullErrorReporter;
     state->print_opcode_histogram = NACL_FLAGS_opcode_histogram;

@@ -152,8 +152,8 @@ void NaClCpuCheck(struct NaClValidatorState* state,
     NACL_CHECK_FEATURE(f_LM, "LM", state, squash_me);
   }
   if (squash_me) {
-    /* Replace all bytes with the stop instruction. */
-    memset(NaClInstIterGetInstMemoryInline(iter), kNaClFullStop,
-           NaClInstStateLength(state->cur_inst_state));
+    /* Replace all bytes with the HLT instruction. */
+    NCStubOutMem(state, NaClInstIterGetInstMemoryInline(iter),
+                 NaClInstStateLength(state->cur_inst_state));
   }
 }

@@ -73,9 +73,6 @@ extern Bool NACL_FLAGS_validator_trace_inst_interals;
  */
 extern Bool NACL_FLAGS_ncval_annotate;
 
-/* Define the stop instruction. */
-extern const uint8_t kNaClFullStop;
-
 #ifdef NCVAL_TESTING
 /* Command line flag for printing out prefix/postfix conditions. */
 extern Bool NACL_FLAGS_print_validator_conditions;
@@ -232,6 +229,9 @@ Bool NaClValidatorStateGetDoStubOut(NaClValidatorState* state);
  */
 void NaClValidatorStateSetDoStubOut(NaClValidatorState* state,
                                     Bool new_value);
+
+/* Stub out "num" bytes starting at "ptr". */
+void NCStubOutMem(NaClValidatorState *state, void *ptr, size_t num);
 
 /* Validate a code segment.
  * Parameters:

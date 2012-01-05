@@ -1,3 +1,4 @@
+Some instructions were replaced with HLTs.
 STUBBED OUT as follows:
 0000000000000000: 00 c0                                        add %al, %al
 0000000000000002: f4                                           hlt

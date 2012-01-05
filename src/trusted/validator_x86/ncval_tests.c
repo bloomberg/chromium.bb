@@ -25,6 +25,9 @@
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_internaltypes.h"
 
+/* Define the set of CPU features to use while validating. */
+static CPUFeatures g_ncval_cpu_features;
+
 void Info(const char *fmt, ...)
 {
   va_list ap;
@@ -827,7 +830,8 @@ struct NCValTestCase NCValTests[] = {
     /* sawfailure= */ 0, /* illegalinst= */ 0,
     /* instructions= */ 4,
     /* vaddr= */ 0x80000000,
-    "0f 60 00 90 90 90 f4 \n"
+    "0f 60 00 \n" /* punpcklbw (%eax),%mm0 */
+    "90 90 90 f4 \n"
   },
   {
     "test 69",
@@ -1135,7 +1139,7 @@ static void DecodeHexString(const char *input, uint8_t **result_data,
   *result_size = output - buf;
 }
 
-static void TestValidator(struct NCValTestCase *vtest) {
+static void TestValidator(struct NCValTestCase *vtest, int didstubout) {
   struct NCValidatorState *vstate;
   uint8_t *byte0;
   size_t data_size;
@@ -1162,6 +1166,7 @@ static void TestValidator(struct NCValTestCase *vtest) {
     NCStatsPrint(vstate);
     if (vtest->sawfailure != rc) break;
     if (vtest->sawfailure ^ vstate->stats.sawfailure) break;
+    if (didstubout != vstate->stats.didstubout) break;
     if (vtest->instructions != vstate->stats.instructions) break;
     if (vtest->illegalinst != vstate->stats.illegalinst) break;
     Info("*** %s passed (%s)\n", vtest->name, vtest->description);
@@ -1190,14 +1195,36 @@ void test_fail_on_bad_alignment() {
   assert (vstate == NULL);
 }
 
+void test_stubout() {
+  /* Similar to test 68 */
+  struct NCValTestCase test = {
+    "test stubout",
+    "test stubout: NACLi_MMX",
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 1,
+    /* vaddr= */ 0x80000000,
+    "0f 60 00 f4 \n" /* punpcklbw (%eax),%mm0 */
+  };
+
+  /* If MMX instructions are not allowed, stubout will occur. */
+  g_ncval_cpu_features.f_MMX = FALSE;
+  TestValidator(&test, TRUE);
+  g_ncval_cpu_features.f_MMX = TRUE;
+}
+
 void ncvalidate_unittests() {
   size_t i;
 
+  /* Default to stubbing out nothing. */
+  NaClSetAllCPUFeatures(&g_ncval_cpu_features);
+  NCValidateSetCPUFeatures(&g_ncval_cpu_features);
+
   for (i = 0; i < NACL_ARRAY_SIZE(NCValTests); i++) {
-    TestValidator(&NCValTests[i]);
+    TestValidator(&NCValTests[i], FALSE);
   }
 
   test_fail_on_bad_alignment();
+  test_stubout();
 
   Info("\nAll tests passed.\n\n");
 }
@@ -1210,6 +1237,7 @@ int main() {
     fprintf(stderr, "Unable to create gio file for stdout!\n");
     return 1;
   }
+
   NaClLogModuleInitExtended(LOG_INFO, gout);
   ncvalidate_unittests();
   GioFileDtor(gout);
