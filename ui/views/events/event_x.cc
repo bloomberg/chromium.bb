@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,9 @@ uint16 KeyEvent::GetCharacter() const {
   DCHECK(native_event()->type == KeyPress ||
          native_event()->type == KeyRelease);
 
-  uint16 ch = ui::GetCharacterFromXEvent(native_event());
+  uint16 ch = 0;
+  if (!IsControlDown())
+    ch = ui::GetCharacterFromXEvent(native_event());
   return ch ? ch : ui::GetCharacterFromKeyCode(key_code_, flags());
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,41 @@ TEST(EventTest, NativeEvent) {
                               native_event.get());
   KeyEvent keyev(native_event.get(), false);
   EXPECT_TRUE(keyev.HasNativeEvent());
+}
+
+TEST(EventTest, GetCharacter) {
+  // Check if Control+Enter returns 10.
+  KeyEvent keyev1(ui::ET_KEY_PRESSED,
+                  ui::VKEY_RETURN,
+                  ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(10, keyev1.GetCharacter());
+  EXPECT_EQ(13, keyev1.GetUnmodifiedCharacter());
+  // Check if Enter returns 13.
+  KeyEvent keyev2(ui::ET_KEY_PRESSED,
+                  ui::VKEY_RETURN,
+                  0);
+  EXPECT_EQ(13, keyev2.GetCharacter());
+  EXPECT_EQ(13, keyev2.GetUnmodifiedCharacter());
+
+#if defined(USE_X11)
+  // For X11, test the functions with native_event() as well. crbug.com/107837
+  scoped_ptr<XEvent> native_event(new XEvent);
+
+  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED,
+                              ui::VKEY_RETURN,
+                              ui::EF_CONTROL_DOWN,
+                              native_event.get());
+  KeyEvent keyev3(native_event.get(), false);
+  EXPECT_EQ(10, keyev3.GetCharacter());
+  EXPECT_EQ(13, keyev3.GetUnmodifiedCharacter());
+
+  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED,
+                              ui::VKEY_RETURN,
+                              0,
+                              native_event.get());
+  KeyEvent keyev4(native_event.get(), false);
+  EXPECT_EQ(13, keyev4.GetCharacter());
+  EXPECT_EQ(13, keyev4.GetUnmodifiedCharacter());
 #endif
 }
 
