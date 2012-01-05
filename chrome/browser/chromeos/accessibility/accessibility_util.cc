@@ -156,19 +156,19 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
 void EnableHighContrast(bool enabled) {
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kHighContrastEnabled, enabled);
-  pref_service->ScheduleSavePersistentPrefs();
+  pref_service->CommitPendingWrite();
 }
 
 void EnableScreenMagnifier(bool enabled) {
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kScreenMagnifierEnabled, enabled);
-  pref_service->ScheduleSavePersistentPrefs();
+  pref_service->CommitPendingWrite();
 }
 
 void EnableVirtualKeyboard(bool enabled) {
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kVirtualKeyboardEnabled, enabled);
-  pref_service->ScheduleSavePersistentPrefs();
+  pref_service->CommitPendingWrite();
 }
 
 void ToggleAccessibility(WebUI* login_web_ui) {
