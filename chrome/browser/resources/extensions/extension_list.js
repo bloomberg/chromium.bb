@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,8 +109,17 @@ cr.define('options', function() {
       var description = node.querySelector('.extension-description');
       description.textContent = extension.description;
 
+      // The 'Show Browser Action' button.
+      if (extension.enable_show_button) {
+        var showButton = node.querySelector('.show-button');
+        showButton.addEventListener('click', function(e) {
+          chrome.send('extensionSettingsShowButton', [extension.id]);
+        });
+        showButton.hidden = false;
+      }
+
       // The 'allow in incognito' checkbox.
-      var incognito = node.querySelector('.incognito-checkbox');
+      var incognito = node.querySelector('.incognito-control');
       incognito.addEventListener('click', function(e) {
         var butterBar = node.querySelector('.butter-bar');
         var checked = e.target.checked;
@@ -121,15 +130,14 @@ cr.define('options', function() {
       incognito.querySelector('input').checked = extension.enabledIncognito;
 
       // The 'allow file:// access' checkbox.
-      var fileAccess = node.querySelector('.file-access-checkbox');
       if (extension.wantsFileAccess) {
+        var fileAccess = node.querySelector('.file-access-control');
         fileAccess.addEventListener('click', function(e) {
           chrome.send('extensionSettingsAllowFileAccess',
                       [extension.id, String(e.target.checked)]);
         });
         fileAccess.querySelector('input').checked = extension.allowFileAccess;
-      } else {
-        fileAccess.hidden = true;
+        fileAccess.hidden = false;
       }
 
       // The 'Options' checkbox.
@@ -140,20 +148,19 @@ cr.define('options', function() {
       });
 
       // The 'View in Web Store' checkbox.
-      var store = node.querySelector('.store-link');
-      if (extension.homepageUrl)
+      if (extension.homepageUrl) {
+        var store = node.querySelector('.store-link');
         store.href = extension.homepageUrl;
-      else
-        store.hidden = true;
+        store.hidden = false;
+      }
 
       // The 'Reload' checkbox.
-      var reload = node.querySelector('.reload-link');
       if (extension.allow_reload) {
+        var reload = node.querySelector('.reload-link');
         reload.addEventListener('click', function(e) {
           chrome.send('extensionSettingsReload', [extension.id]);
         });
-      } else {
-        reload.hidden = true;
+        reload.hidden = false;
       }
 
       if (!extension.terminated) {
@@ -187,6 +194,54 @@ cr.define('options', function() {
         chrome.send('extensionSettingsUninstall', [extension.id]);
       });
       node.querySelector('.enable-controls').appendChild(trash);
+
+      // Developer mode details.
+      if (this.data_.developerMode) {
+        // First we have the id.
+        var idLabel = node.querySelector('.extension-id');
+        idLabel.textContent = ' ' + extension.id;
+
+        // Then the path, if provided by unpacked extension.
+        if (extension.isUnpacked) {
+          var loadPath = node.querySelector('.load-path');
+          loadPath.hidden = false;
+          loadPath.querySelector('span:nth-of-type(2)').textContent =
+              ' ' + extension.path;
+        }
+
+        // Then the 'managed, cannot uninstall/disable' message.
+        if (!extension.mayDisable)
+          node.querySelector('.managed-message').hidden = false;
+
+        // Then active views.
+        if (extension.views.length > 0) {
+          var activeViews = node.querySelector('.active-views');
+          activeViews.hidden = false;
+          var link = activeViews.querySelector('a');
+
+          for (var i = 0; i < extension.views.length; ++i) {
+            var view = extension.views[i];
+
+            var label = view.path + (view.incognito ?
+                ' ' + localStrings.getString('viewIncognito') : '');
+            link.textContent = label;
+            link.addEventListener('click', function(e) {
+              // TODO(estade): remove conversion to string?
+              chrome.send('extensionSettingsInspect', [
+                String(view.renderProcessId),
+                String(view.renderViewId)
+              ]);
+            });
+
+            if (i < extension.views.length - 1) {
+              link = link.cloneNode(true);
+              activeViews.appendChild(link);
+            }
+          }
+        }
+
+        node.querySelector('.developer-extras').hidden = false;
+      }
 
       this.appendChild(node);
     },

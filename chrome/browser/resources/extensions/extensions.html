@@ -79,21 +79,40 @@
           <span class="extension-version"></span>
         </div>
         <div class="extension-description"></div>
+        <div class="developer-extras" hidden>
+          <div>
+            <span i18n-content="extensionSettingsExtensionId"></span>
+            <span class="extension-id"></span>
+          </div>
+          <div class="load-path" hidden>
+            <span i18n-content="extensionSettingsExtensionPath"></span>
+            <span></span>
+          </div>
+          <div class="managed-message"
+              i18n-content="extensionSettingsPolicyControlled" hidden>
+          </div>
+          <div class="active-views" hidden>
+            <span i18n-content="extensionSettingsInspectViews"></span>
+            <a href="#"></a>
+          </div>
+        </div>
         <div class="optional-controls">
-          <label class="incognito-checkbox">
+          <button class="show-button"
+              i18n-content="extensionSettingsShowButton" hidden ></button>
+          <label class="incognito-control">
             <input type="checkbox"></input>
             <span i18n-content="extensionSettingsEnableIncognito"></span>
           </label>
-          <label class="file-access-checkbox">
+          <label class="file-access-control" hidden>
             <input type="checkbox"></input>
             <span i18n-content="extensionSettingsAllowFileAccess"></span>
           </label>
           <a class="options-link" i18n-content="extensionSettingsOptions"
               href="#"></a>
-          <a class="store-link" i18n-content="extensionSettingsVisitWebsite">
-          </a>
+          <a class="store-link" i18n-content="extensionSettingsVisitWebsite"
+              hidden></a>
           <a class="reload-link" i18n-content="extensionSettingsReload"
-              href="#"></a>
+              href="#" hidden></a>
         </div>
         <div class="butter-bar"
             i18n-values=".innerHTML:extensionSettingsIncognitoWarning" hidden>
