@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
@@ -66,6 +67,41 @@ const char kDocsListScope[] = "https://docs.google.com/feeds/";
 const char kSpreadsheetsScope[] = "https://spreadsheets.google.com/feeds/";
 const char kUserContentScope[] = "https://docs.googleusercontent.com/";
 
+const char* GetExportFormatParam(DocumentExportFormat format) {
+  switch (format) {
+    case PNG:
+      return "png";
+    case HTML:
+      return "html";
+    case TXT:
+      return "txt";
+    case DOC:
+      return "doc";
+    case ODT:
+      return "odt";
+    case RTF:
+      return "rtf";
+    case ZIP:
+      return "zip";
+    case JPEG:
+      return "jpeg";
+    case SVG:
+      return "svg";
+    case PPT:
+      return "ppt";
+    case XLS:
+      return "xls";
+    case CSV:
+      return "csv";
+    case ODS:
+      return "ods";
+    case TSV:
+      return "tsv";
+    default:
+      return "pdf";
+  }
+}
+
 }  // namespace
 
 // OAuth2 authorization token retrieval operation.
@@ -95,7 +131,7 @@ template <typename T>
 class UrlFetchOperation : public content::URLFetcherDelegate {
  public:
   UrlFetchOperation(Profile* profile, const std::string& auth_token)
-      : profile_(profile), auth_token_(auth_token) {
+      : profile_(profile), auth_token_(auth_token), save_temp_file_(false) {
   }
 
   void Start(T callback) {
@@ -108,6 +144,10 @@ class UrlFetchOperation : public content::URLFetcherDelegate {
     // Always set flags to neither send nor save cookies.
     url_fetcher_->SetLoadFlags(
         net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
+    if (save_temp_file_) {
+      url_fetcher_->SaveResponseToTemporaryFile(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+    }
     url_fetcher_->SetExtraRequestHeaders(kGDataVersionHeader);
     url_fetcher_->SetExtraRequestHeaders(
         base::StringPrintf(kAuthorizationHeaderFormat, auth_token_.data()));
@@ -133,6 +173,7 @@ class UrlFetchOperation : public content::URLFetcherDelegate {
   T callback_;
   Profile* profile_;
   std::string auth_token_;
+  bool save_temp_file_;
   scoped_ptr<content::URLFetcher> url_fetcher_;
 };
 
@@ -142,25 +183,14 @@ class EntryActionOperation : public UrlFetchOperation<EntryActionCallback> {
  public:
   EntryActionOperation(Profile* profile,
                        const std::string& auth_token,
-                       const GURL& document_url,
-                       const std::string& etag)
+                       const GURL& document_url)
       : UrlFetchOperation<EntryActionCallback>(profile,
                                                auth_token),
-        document_url_(document_url),
-        etag_(etag) {
+        document_url_(document_url) {
   }
 
  protected:
   virtual ~EntryActionOperation() {}
-
-  // UrlFetchOperation<EntryActionCallback> overrides.
-  std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE {
-    std::vector<std::string> headers;
-    if (!etag_.empty())
-      headers.push_back(base::StringPrintf(kIfMatchHeaderFormat, etag_.data()));
-
-    return headers;
-  }
 
   GURL GetURL() const OVERRIDE { return document_url_; }
 
@@ -172,13 +202,12 @@ class EntryActionOperation : public UrlFetchOperation<EntryActionCallback> {
              << source->GetResponseHeaders()->raw_headers();
 
     if (!callback_.is_null())
-      callback_.Run(code, document_url_, etag_);
+      callback_.Run(code, document_url_);
 
     delete this;
   }
 
   GURL document_url_;
-  std::string etag_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EntryActionOperation);
@@ -276,13 +305,56 @@ GURL GetDocumentsOperation::GetURL() const {
   return GURL(base::StringPrintf(kGetDocumentListURL, kMaxDocumentsPerFeed));
 }
 
+// This class performs download of a given entry (document/file).
+class DownloadFileOperation : public UrlFetchOperation<DownloadActionCallback> {
+ public:
+  DownloadFileOperation(Profile* profile,
+                        const std::string& auth_token,
+                        const GURL& document_url)
+      : UrlFetchOperation<DownloadActionCallback>(profile, auth_token),
+        document_url_(document_url) {
+    // Make sure we download the content into a temp file.
+    save_temp_file_ = true;
+  }
+
+ protected:
+  virtual ~DownloadFileOperation() {}
+
+  GURL GetURL() const OVERRIDE { return document_url_; }
+
+  // content::URLFetcherDelegate overrides.
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE {
+    GDataErrorCode code =
+        static_cast<GDataErrorCode>(source->GetResponseCode());
+    DVLOG(1) << "Response headers:\n"
+             << source->GetResponseHeaders()->raw_headers();
+
+    // Take over the ownership of the the downloaded temp file.
+    FilePath temp_file;
+    if (code == HTTP_SUCCESS &&
+        !source->GetResponseAsFilePath(true,  // take_ownership
+                                       &temp_file)) {
+      code = GDATA_FILE_ERROR;
+    }
+
+    if (!callback_.is_null())
+      callback_.Run(code, document_url_, temp_file);
+
+    delete this;
+  }
+
+  GURL document_url_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DownloadFileOperation);
+};
+
 // Document list fetching operation.
 class DeleteDocumentOperation : public EntryActionOperation  {
  public:
   DeleteDocumentOperation(Profile* profile,
                           const std::string& auth_token,
-                          const GURL& document_url,
-                          const std::string& etag);
+                          const GURL& document_url);
   virtual ~DeleteDocumentOperation() {}
 
  private:
@@ -292,9 +364,8 @@ class DeleteDocumentOperation : public EntryActionOperation  {
 
 DeleteDocumentOperation::DeleteDocumentOperation(Profile* profile,
                                                  const std::string& auth_token,
-                                                 const GURL& document_url,
-                                                 const std::string& etag)
-    : EntryActionOperation(profile, auth_token, document_url, etag) {
+                                                 const GURL& document_url)
+    : EntryActionOperation(profile, auth_token, document_url) {
 }
 
 content::URLFetcher::RequestType
@@ -454,8 +525,71 @@ void DocumentsService::OnGetDocumentsCompleted(GetDataCallback callback,
     callback.Run(error, root_value.release());
 }
 
+void DocumentsService::DownloadDocument(const GURL& document_url,
+                                        DocumentExportFormat format,
+                                        DownloadActionCallback callback) {
+  DownloadFile(
+      chrome_browser_net::AppendQueryParameter(document_url,
+                                               "exportFormat",
+                                               GetExportFormatParam(format)),
+      callback);
+}
+
+void DocumentsService::DownloadFile(const GURL& document_url,
+                                    DownloadActionCallback callback) {
+  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  if (!HasOAuth2AuthToken()) {
+    // Fetch OAuth2 authetication token from the refresh token first.
+    StartAuthentication(
+        base::Bind(&DocumentsService::DownloadDocumentOnAuthRefresh,
+                   base::Unretained(this),
+                   callback,
+                   document_url));
+    return;
+  }
+  (new DownloadFileOperation(
+      profile_,
+      GetOAuth2AuthToken(),
+      document_url))->Start(
+          base::Bind(&DocumentsService::OnDownloadDocumentCompleted,
+          base::Unretained(this),
+          callback));
+}
+
+void DocumentsService::DownloadDocumentOnAuthRefresh(
+    DownloadActionCallback callback,
+    const GURL& document_url,
+    GDataErrorCode error,
+    const std::string& token) {
+  if (error != HTTP_SUCCESS) {
+    if (!callback.is_null())
+      callback.Run(error, document_url, FilePath());
+    return;
+  }
+  DCHECK(HasOAuth2RefreshToken());
+  DownloadFile(document_url, callback);
+}
+
+void DocumentsService::OnDownloadDocumentCompleted(
+    DownloadActionCallback callback,
+    GDataErrorCode error,
+    const GURL& document_url,
+    const FilePath& file_path) {
+  switch (error) {
+    case HTTP_UNAUTHORIZED:
+      auth_token_.clear();
+      // User authentication might have expired - rerun the request to force
+      // auth token refresh.
+      DownloadFile(document_url, callback);
+      return;
+    default:
+      break;
+  }
+  if (!callback.is_null())
+    callback.Run(error, document_url, file_path);
+}
+
 void DocumentsService::DeleteDocument(const GURL& document_url,
-                                      const std::string& etag,
                                       EntryActionCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
   if (!HasOAuth2AuthToken()) {
@@ -464,51 +598,48 @@ void DocumentsService::DeleteDocument(const GURL& document_url,
         base::Bind(&DocumentsService::DeleteDocumentOnAuthRefresh,
                    base::Unretained(this),
                    callback,
-                   document_url,
-                   etag));
+                   document_url));
     return;
   }
   (new DeleteDocumentOperation(
       profile_,
       GetOAuth2AuthToken(),
-      document_url,
-      etag))->Start(base::Bind(&DocumentsService::OnDeleteDocumentCompleted,
-                    base::Unretained(this),
-                    callback));
+      document_url))->Start(
+          base::Bind(&DocumentsService::OnDeleteDocumentCompleted,
+          base::Unretained(this),
+          callback));
 }
 
 void DocumentsService::DeleteDocumentOnAuthRefresh(
     EntryActionCallback callback,
     const GURL& document_url,
-    const std::string& etag,
     GDataErrorCode error,
     const std::string& token) {
   if (error != HTTP_SUCCESS) {
     if (!callback.is_null())
-      callback.Run(error, document_url, etag);
+      callback.Run(error, document_url);
     return;
   }
   DCHECK(HasOAuth2RefreshToken());
-  DeleteDocument(document_url, etag, callback);
+  DeleteDocument(document_url, callback);
 }
 
 void DocumentsService::OnDeleteDocumentCompleted(
     EntryActionCallback callback,
     GDataErrorCode error,
-    const GURL& document_url,
-    const std::string& etag) {
+    const GURL& document_url) {
   switch (error) {
-  case HTTP_UNAUTHORIZED:
-    auth_token_.clear();
-    // User authentication might have expired - rerun the request to force
-    // auth token refresh.
-    DeleteDocument(document_url, etag, callback);
-    return;
-  default:
-    break;
+    case HTTP_UNAUTHORIZED:
+      auth_token_.clear();
+      // User authentication might have expired - rerun the request to force
+      // auth token refresh.
+      DeleteDocument(document_url, callback);
+      return;
+    default:
+      break;
   }
   if (!callback.is_null())
-    callback.Run(error, document_url, etag);
+    callback.Run(error, document_url);
 }
 
 void DocumentsService::OnOAuth2RefreshTokenChanged() {
