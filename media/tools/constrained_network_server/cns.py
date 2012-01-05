@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -12,6 +12,7 @@ TODO(dalecurtis): Add some more docs here.
 
 """
 
+import mimetypes
 import optparse
 import os
 import signal
@@ -27,6 +28,8 @@ except ImportError:
          'and try again. On Linux: sudo apt-get install python-cherrypy3\n')
   sys.exit(1)
 
+# Add webm file types to mimetypes map since cherrypy's default type is text.
+mimetypes.types_map['.webm'] = 'video/webm'
 
 # Default port to serve the CNS on.
 _DEFAULT_SERVING_PORT = 9000
