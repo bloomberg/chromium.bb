@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,28 +72,16 @@ bool GpuChannelManager::Send(IPC::Message* msg) {
 }
 
 void GpuChannelManager::OnEstablishChannel(int renderer_id) {
-  scoped_refptr<GpuChannel> channel;
   IPC::ChannelHandle channel_handle;
-  content::GPUInfo gpu_info;
 
-  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
-  if (iter == gpu_channels_.end()) {
-    channel = new GpuChannel(this, watchdog_, renderer_id, false);
-  } else {
-    // TODO(xhwang): Added to investigate crbug.com/95732. Clean up after fixed.
-    CHECK(false);
-    channel = iter->second;
-  }
-
-  DCHECK(channel != NULL);
-
-  if (channel->Init(io_message_loop_, shutdown_event_))
+  scoped_refptr<GpuChannel> channel = new GpuChannel(this,
+                                                     watchdog_,
+                                                     renderer_id,
+                                                     false);
+  if (channel->Init(io_message_loop_, shutdown_event_)) {
     gpu_channels_[renderer_id] = channel;
-  else
-    channel = NULL;
-
-  if (channel.get()) {
     channel_handle.name = channel->GetChannelName();
+
 #if defined(OS_POSIX)
     // On POSIX, pass the renderer-side FD. Also mark it as auto-close so
     // that it gets closed after it has been sent.

@@ -144,6 +144,9 @@ class GpuChannel : public IPC::Channel::Listener,
   // The id of the renderer who is on the other side of the channel.
   int renderer_id_;
 
+  // Uniquely identifies the channel within this GPU process.
+  int channel_id_;
+
   // Handle to the renderer process that is on the other side of the channel.
   base::ProcessHandle renderer_process_;
 

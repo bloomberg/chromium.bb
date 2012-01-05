@@ -46,6 +46,10 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(gpu_channel_manager);
   DCHECK(renderer_id);
+
+  static int last_channel_id = 0;
+  channel_id_ = ++last_channel_id;
+
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
   disallowed_features_.multisampling =
@@ -396,12 +400,7 @@ void GpuChannel::OnCloseChannel() {
 
 bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
                       base::WaitableEvent* shutdown_event) {
-  // Check whether we're already initialized.
-  if (channel_.get()) {
-    // TODO(xhwang): Added to investigate crbug.com/95732. Clean up after fixed.
-    CHECK(false);
-    return true;
-  }
+  DCHECK(!channel_.get());
 
   // Map renderer ID to a (single) channel to that process.
   std::string channel_name = GetChannelName();
@@ -428,7 +427,7 @@ void GpuChannel::DidDestroyCommandBuffer(gfx::GpuPreference gpu_preference) {
 }
 
 std::string GpuChannel::GetChannelName() {
-  return StringPrintf("%d.r%d.gpu", base::GetCurrentProcId(), renderer_id_);
+  return StringPrintf("%d.r%d.gpu", base::GetCurrentProcId(), channel_id_);
 }
 
 #if defined(OS_POSIX)
