@@ -56,6 +56,14 @@ bool HandleCycleWindow(bool forward) {
   if (ash::Shell::GetInstance()->IsScreenLocked())
     return false;
 
+  // We don't have a launcher in Aura compact window mode.
+  // TODO(jamescook): Eliminate this check and rework this function to cycle
+  // through most-recently-used browser windows. We may need to always
+  // instantiate the launcher and hide its widget, or more likely we should
+  // provide an interface to access BrowserList. crbug.com/109193
+  if (!ash::Shell::GetInstance()->launcher())
+    return false;
+
   // Use the same order of the windows in LauncherModel to cycle windows.
   ash::LauncherModel* model =
       ash::Shell::GetInstance()->launcher()->model();
