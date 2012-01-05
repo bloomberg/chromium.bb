@@ -1799,8 +1799,20 @@ handle_configure(void *data, struct wl_shell_surface *shell_surface,
 	}
 }
 
+static void
+handle_popup_done(void *data, struct wl_shell_surface *shell_surface)
+{
+	struct window *window = data;
+
+	/* FIXME: Need more context in this event, at least the input
+	 * device.  Or just use wl_callback. */
+
+	window_destroy(window);
+}
+
 static const struct wl_shell_surface_listener shell_surface_listener = {
 	handle_configure,
+	handle_popup_done
 };
 
 void
@@ -2108,6 +2120,7 @@ window_create_transient(struct display *display, struct window *parent,
 struct menu {
 	struct window *window;
 	const char **entries;
+	uint32_t time;
 	int current;
 	int count;
 };
@@ -2159,7 +2172,7 @@ menu_button_handler(struct window *window,
 	struct menu *menu = data;
 
 	/* Either relase after press-drag-release or click-motion-click. */
-	if (state == 0 && 0 <= menu->current && menu->current < menu->count)
+	if (state == 0 && time - menu->time > 500)
 		window_destroy(window);
 }
 
@@ -2209,7 +2222,8 @@ menu_redraw_handler(struct window *window, void *data)
 }
 
 struct window *
-window_create_menu(struct display *display, struct window *parent,
+window_create_menu(struct display *display,
+		   struct input *input, uint32_t time, struct window *parent,
 		   int32_t x, int32_t y, const char **entries, int count)
 {
 	struct window *window;
@@ -2226,14 +2240,16 @@ window_create_menu(struct display *display, struct window *parent,
 	menu->window = window;
 	menu->entries = entries;
 	menu->count = count;
+	menu->time = time;
 	window->decoration = 0;
 	window->type = TYPE_MENU;
 	window->x = x;
 	window->y = y;
 
-	wl_shell_surface_set_transient(window->shell_surface,
-				  window->parent->shell_surface,
-				  window->x, window->y, 0);
+	wl_shell_surface_set_popup(window->shell_surface,
+				   input->input_device, time,
+				   window->parent->shell_surface,
+				   window->x, window->y, 0);
 
 	window_set_motion_handler(window, menu_motion_handler);
 	window_set_enter_handler(window, menu_enter_handler);

@@ -76,7 +76,8 @@ enum shell_surface_type {
 
 	SHELL_SURFACE_TOPLEVEL,
 	SHELL_SURFACE_TRANSIENT,
-	SHELL_SURFACE_FULLSCREEN
+	SHELL_SURFACE_FULLSCREEN,
+	SHELL_SURFACE_POPUP
 };
 
 struct shell_surface {
@@ -84,9 +85,17 @@ struct shell_surface {
 
 	struct weston_surface *surface;
 	struct wl_listener surface_destroy_listener;
+	struct shell_surface *parent;
 
 	enum shell_surface_type type;
 	int32_t saved_x, saved_y;
+
+	struct {
+		struct wl_grab grab;
+		uint32_t time;
+		int32_t x, y;
+		int32_t initial_up;
+	} popup;
 
 	struct weston_output *output;
 	struct wl_list link;
@@ -337,6 +346,7 @@ reset_shell_surface_type(struct shell_surface *surface)
 	case SHELL_SURFACE_NONE:
 	case SHELL_SURFACE_TOPLEVEL:
 	case SHELL_SURFACE_TRANSIENT:
+	case SHELL_SURFACE_POPUP:
 		break;
 	}
 
@@ -415,18 +425,127 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	shsurf->type = SHELL_SURFACE_FULLSCREEN;
 }
 
+static void
+popup_grab_focus(struct wl_grab *grab, uint32_t time,
+		 struct wl_surface *surface, int32_t x, int32_t y)
+{
+	struct wl_input_device *device = grab->input_device;
+	struct shell_surface *priv =
+		container_of(grab, struct shell_surface, popup.grab);
+	struct wl_client *client = priv->surface->surface.resource.client;
+
+	if (surface->resource.client == client) {
+		wl_input_device_set_pointer_focus(device, surface, time,
+						  device->x, device->y, x, y);
+		grab->focus = surface;
+	} else {
+		wl_input_device_set_pointer_focus(device, NULL,
+						  time, 0, 0, 0, 0);
+		grab->focus = NULL;
+	}
+}
+
+static void
+popup_grab_motion(struct wl_grab *grab,
+		  uint32_t time, int32_t x, int32_t y)
+{
+	struct wl_input_device *device = grab->input_device;
+	struct wl_resource *resource;
+
+	resource = grab->input_device->pointer_focus_resource;
+	if (resource)
+		wl_resource_post_event(resource, WL_INPUT_DEVICE_MOTION,
+				       time, device->x, device->y, x, y);
+}
+
+static void
+popup_grab_button(struct wl_grab *grab,
+		  uint32_t time, int32_t button, int32_t state)
+{
+	struct wl_resource *resource;
+	struct shell_surface *shsurf =
+		container_of(grab, struct shell_surface, popup.grab);
+
+	resource = grab->input_device->pointer_focus_resource;
+	if (resource) {
+		wl_resource_post_event(resource, WL_INPUT_DEVICE_BUTTON,
+				       time, button, state);
+	} else if (state == 0 &&
+		   (shsurf->popup.initial_up ||
+		    time - shsurf->popup.time > 500)) {
+		wl_resource_post_event(&shsurf->resource,
+				       WL_SHELL_SURFACE_POPUP_DONE);
+		wl_input_device_end_grab(grab->input_device, time);
+		shsurf->popup.grab.input_device = NULL;
+	}
+
+	if (state == 0)
+		shsurf->popup.initial_up = 1;
+}
+
+static const struct wl_grab_interface popup_grab_interface = {
+	popup_grab_focus,
+	popup_grab_motion,
+	popup_grab_button,
+};
+
+static void
+shell_map_popup(struct shell_surface *shsurf, uint32_t time)
+{
+	struct wl_input_device *device;
+	struct weston_surface *es = shsurf->surface;
+	struct weston_surface *parent = shsurf->parent->surface;
+
+	es->output = parent->output;
+
+	shsurf->popup.grab.interface = &popup_grab_interface;
+	device = es->compositor->input_device;
+
+	es->x = shsurf->parent->surface->x + shsurf->popup.x;
+	es->y = shsurf->parent->surface->y + shsurf->popup.y;
+
+	shsurf->popup.grab.input_device = device;
+	shsurf->popup.time = device->grab_time;
+	shsurf->popup.initial_up = 0;
+
+	wl_input_device_start_grab(shsurf->popup.grab.input_device,
+				   &shsurf->popup.grab, shsurf->popup.time);
+}
+
+static void
+shell_surface_set_popup(struct wl_client *client,
+			struct wl_resource *resource,
+			struct wl_resource *input_device_resource,
+			uint32_t time,
+			struct wl_resource *parent_resource,
+			int32_t x, int32_t y, uint32_t flags)
+{
+	struct shell_surface *shsurf = resource->data;
+	struct weston_surface *es = shsurf->surface;
+
+	weston_surface_damage(es);
+	shsurf->type = SHELL_SURFACE_POPUP;
+	shsurf->parent = parent_resource->data;
+	shsurf->popup.x = x;
+	shsurf->popup.y = y;
+}
+
 static const struct wl_shell_surface_interface shell_surface_implementation = {
 	shell_surface_move,
 	shell_surface_resize,
 	shell_surface_set_toplevel,
 	shell_surface_set_transient,
-	shell_surface_set_fullscreen
+	shell_surface_set_fullscreen,
+	shell_surface_set_popup
 };
 
 static void
 destroy_shell_surface(struct wl_resource *resource)
 {
 	struct shell_surface *shsurf = resource->data;
+
+	if (shsurf->popup.grab.input_device)
+		wl_input_device_end_grab(shsurf->popup.grab.input_device, 0);
 
 	/* in case cleaning up a dead client destroys shell_surface first */
 	if (shsurf->surface)
@@ -1066,9 +1185,25 @@ map(struct weston_shell *base,
 		}
 	}
 
-	if (do_configure)
-		weston_surface_configure(surface,
-				       surface->x, surface->y, width, height);
+	switch (surface_type) {
+	case SHELL_SURFACE_TOPLEVEL:
+		surface->x = 10 + random() % 400;
+		surface->y = 10 + random() % 400;
+		break;
+	case SHELL_SURFACE_POPUP:
+		shell_map_popup(shsurf, shsurf->popup.time);
+		break;
+	default:
+		break;
+	}
+
+	surface->width = width;
+	surface->height = height;
+	if (do_configure) {
+		weston_surface_configure(surface, surface->x, surface->y,
+					 width, height);
+		weston_compositor_repick(compositor);
+	}
 
 	switch (surface_type) {
 	case SHELL_SURFACE_TOPLEVEL:

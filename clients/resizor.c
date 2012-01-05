@@ -167,7 +167,7 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 }
 
 static void
-show_menu(struct resizor *resizor, struct input *input)
+show_menu(struct resizor *resizor, struct input *input, uint32_t time)
 {
 	int32_t x, y;
 	static const char *entries[] = {
@@ -176,7 +176,7 @@ show_menu(struct resizor *resizor, struct input *input)
 
 	input_get_position(input, &x, &y);
 	resizor->menu = window_create_menu(resizor->display,
-					   resizor->window,
+					   input, time, resizor->window,
 					   x - 10, y - 10, entries, 4);
 
 	window_schedule_redraw(resizor->menu);
@@ -192,7 +192,7 @@ button_handler(struct window *window,
 	switch (button) {
 	case BTN_RIGHT:
 		if (state)
-			show_menu(resizor, input);
+			show_menu(resizor, input, time);
 		break;
 	}
 }

@@ -128,19 +128,19 @@ sigchild_handler(int s)
 }
 
 static void
-show_menu(struct panel *panel, struct input *input)
+show_menu(struct panel *panel, struct input *input, uint32_t time)
 {
-	int32_t x, y, width = 200, height = 200;
-	struct display *display;
+	int32_t x, y;
+	static const char *entries[] = {
+		"Roy", "Pris", "Leon", "Zhora"
+	};
 
 	input_get_position(input, &x, &y);
-	display = window_get_display(panel->window);
-	panel->menu = window_create_transient(display, panel->window,
-					      x - 10, y - 10, width, height);
-	window_set_user_data(panel->menu, panel);
+	panel->menu = window_create_menu(window_get_display(panel->window),
+					 input, time, panel->window,
+					 x - 10, y - 10, entries, 4);
 
-	window_draw(panel->menu);
-	window_flush(panel->menu);
+	window_schedule_redraw(panel->menu);
 }
 
 static void
@@ -253,9 +253,7 @@ panel_button_handler(struct window *window,
 			panel_activate_item(panel, pi);
 	} else if (button == BTN_RIGHT) {
 		if (state)
-			show_menu(panel, input);
-		else
-			window_destroy(panel->menu);
+			show_menu(panel, input, time);
 	}
 }
 

@@ -203,7 +203,8 @@ struct window *
 window_create_transient(struct display *display, struct window *parent,
 			int32_t x, int32_t y, int32_t width, int32_t height);
 struct window *
-window_create_menu(struct display *display, struct window *parent,
+window_create_menu(struct display *display,
+		   struct input *input, uint32_t time, struct window *parent,
 		   int32_t x, int32_t y, const char **entries, int count);
 
 void
