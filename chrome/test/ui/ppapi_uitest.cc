@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -327,6 +327,9 @@ TEST_PPAPI_NACL_VIA_HTTP(MAYBE_CursorControl)
 // Times out on Linux. http://crbug.com/108859
 #if defined(OS_LINUX)
 #define MAYBE_InputEvent DISABLED_InputEvent
+#elif defined(OS_MACOSX)
+// Flaky on Mac. http://crbug.com/109258
+#define MAYBE_InputEvent FLAKY_InputEvent
 #else
 #define MAYBE_InputEvent InputEvent
 #endif
