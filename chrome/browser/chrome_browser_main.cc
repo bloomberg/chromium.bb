@@ -1159,7 +1159,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // This forces the TabCloseableStateWatcher to be created and, on chromeos,
   // register for the notifications it needs to track the closeable state of
   // tabs.
-  g_browser_process->tab_closeable_state_watcher();
+  browser_process_->tab_closeable_state_watcher();
 
   local_state_ = InitializeLocalState(parsed_command_line(),
                                       is_first_run_);
@@ -1167,13 +1167,13 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // If we're running tests (ui_task is non-null), then the ResourceBundle
   // has already been initialized.
   if (parameters().ui_task) {
-    g_browser_process->SetApplicationLocale("en-US");
+    browser_process_->SetApplicationLocale("en-US");
   } else {
     // Mac starts it earlier in |PreMainMessageLoopStart()| (because it is
     // needed when loading the MainMenu.nib and the language doesn't depend on
     // anything since it comes from Cocoa.
 #if defined(OS_MACOSX)
-    g_browser_process->SetApplicationLocale(l10n_util::GetLocaleOverride());
+    browser_process_->SetApplicationLocale(l10n_util::GetLocaleOverride());
 #else
     const std::string locale =
         local_state_->GetString(prefs::kApplicationLocale);
@@ -1187,7 +1187,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
       return chrome::RESULT_CODE_MISSING_DATA;
     }
     CHECK(!loaded_locale.empty()) << "Locale could not be found for " << locale;
-    g_browser_process->SetApplicationLocale(loaded_locale);
+    browser_process_->SetApplicationLocale(loaded_locale);
 
     FilePath resources_pack_path;
     PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
@@ -1489,7 +1489,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (is_first_run_) {
     // Warn the ProfileManager that an import process will run, possibly
     // locking the WebDataService directory of the next Profile created.
-    g_browser_process->profile_manager()->SetWillImport();
+    browser_process_->profile_manager()->SetWillImport();
   }
 
   profile_ = CreateProfile(parameters(), user_data_dir_, parsed_command_line());
@@ -1500,7 +1500,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // TODO(rlp): Do this on a separate thread. See http://crbug.com/99075.
   if (!BackgroundModeManager::IsBackgroundModePermanentlyDisabled(
       &parsed_command_line())) {
-    g_browser_process->profile_manager()->AutoloadProfiles();
+    browser_process_->profile_manager()->AutoloadProfiles();
   }
   // Post-profile init ---------------------------------------------------------
 
@@ -1581,7 +1581,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     }  // if (!first_run_ui_bypass_)
 
     Browser::SetNewHomePagePrefs(profile_->GetPrefs());
-    g_browser_process->profile_manager()->OnImportFinished(profile_);
+    browser_process_->profile_manager()->OnImportFinished(profile_);
   }  // if (is_first_run_)
 
 #if defined(OS_WIN)
@@ -1697,7 +1697,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   LanguageUsageMetrics::RecordAcceptLanguages(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   LanguageUsageMetrics::RecordApplicationLanguage(
-      g_browser_process->GetApplicationLocale());
+      browser_process_->GetApplicationLocale());
 
 #if defined(OS_WIN)
   fragmentation_checker::RecordFragmentationMetricForCurrentModule();
@@ -1750,7 +1750,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // used to measure startup time. TODO(stevenjb): Figure out what is actually
   // triggering the timer and call that explicitly in the approprate place.
   // http://crbug.com/105065.
-  g_browser_process->notification_ui_manager();
+  browser_process_->notification_ui_manager();
 
   if (parameters().ui_task) {
     // We are in test mode. Run one task and enter the main message loop.
@@ -1776,7 +1776,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       // when browser is not in persistent mode, so it's OK to let it ride on
       // the main thread. This needs to be done here because we don't want
       // to start the timer when Chrome is run inside a test harness.
-      g_browser_process->StartAutoupdateTimer();
+      browser_process_->StartAutoupdateTimer();
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -1922,7 +1922,7 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Stop all tasks that might run on WatchDogThread.
   ThreadWatcherList::StopWatchingAll();
 
-  g_browser_process->metrics_service()->Stop();
+  browser_process_->metrics_service()->Stop();
 
   restart_last_session_ = browser_shutdown::ShutdownPreThreadsStop();
   browser_process_->StartTearDown();
