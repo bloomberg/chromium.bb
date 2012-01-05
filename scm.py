@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -578,7 +578,11 @@ class SVN(object):
 
     # Use .text when the item is not optional.
     result['Path'] = entry.attrib['path']
-    result['Revision'] = int(entry.attrib['revision'])
+    rev = entry.attrib['revision']
+    try:
+      result['Revision'] = int(rev)
+    except ValueError:
+      result['Revision'] = None
     result['Node Kind'] = entry.attrib['kind']
     # Differs across versions.
     if result['Node Kind'] == 'dir':
