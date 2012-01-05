@@ -31,6 +31,7 @@ TEST(EventTest, NativeEvent) {
                               native_event.get());
   KeyEvent keyev(native_event.get(), false);
   EXPECT_TRUE(keyev.HasNativeEvent());
+#endif
 }
 
 TEST(EventTest, GetCharacter) {
