@@ -88,6 +88,8 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "instantConfirmTitle", IDS_INSTANT_OPT_IN_TITLE },
     { "instantConfirmMessage", IDS_INSTANT_OPT_IN_MESSAGE },
     { "defaultBrowserGroupName", IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME },
+    { "advancedGroupName", IDS_OPTIONS_ADVANCED_TAB_LABEL },
+    { "advancedOptionsButtonTitle", IDS_OPTIONS_ADVANCED_BUTTON_TITLE },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -110,6 +112,9 @@ void BrowserOptionsHandler::GetLocalizedValues(
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   localized_strings->SetString("autoLaunchText",
       l10n_util::GetStringFUTF16(IDS_AUTOLAUNCH_TEXT,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  localized_strings->SetString("advancedGroupDescription",
+      l10n_util::GetStringFUTF16(IDS_OPTIONS_ADVANCED_GROUP_DESCRIPTION,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 }
 

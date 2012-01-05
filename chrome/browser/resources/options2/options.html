@@ -121,11 +121,20 @@
            <include src="chromeos/internet_options.html">
            <include src="chromeos/accounts_options.html">
          </if>
-         <include src="advanced_options.html">
        </div>
        <div id="subpage-sheet-container-1"
            class="subpage-sheet-container transparent" hidden>
          <div id="subpage-sheet-1" class="subpage-sheet">
+           <button class="raw-button close-subpage custom-appearance"></button>
+           <div class="subpage-sheet-contents">
+             <include src="search_engine_manager.html">
+             <include src="advanced_options.html">
+           </div>
+         </div>
+       </div>
+       <div id="subpage-sheet-container-2"
+           class="subpage-sheet-container transparent" hidden>
+         <div id="subpage-sheet-2" class="subpage-sheet">
            <button class="raw-button close-subpage custom-appearance"></button>
            <div class="subpage-sheet-contents">
              <if expr="pp_ifdef('chromeos')">
@@ -141,13 +150,12 @@
              <include src="font_settings.html">
              <include src="language_options.html">
              <include src="password_manager.html">
-             <include src="search_engine_manager.html">
            </div>
          </div>
        </div>
-       <div id="subpage-sheet-container-2"
+       <div id="subpage-sheet-container-3"
            class="subpage-sheet-container transparent" hidden>
-         <div id="subpage-sheet-2" class="subpage-sheet">
+         <div id="subpage-sheet-3" class="subpage-sheet">
            <button class="raw-button close-subpage custom-appearance"></button>
            <div class="subpage-sheet-contents">
              <if expr="pp_ifdef('chromeos')">

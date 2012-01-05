@@ -67,6 +67,9 @@ function load() {
   OptionsPage.registerSubPage(SearchEngineManager.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('defaultSearchManageEnginesButton')]);
+  OptionsPage.registerSubPage(AdvancedOptions.getInstance(),
+                              BrowserOptions.getInstance(),
+                              [$('advancedOptionsButton')]);
   OptionsPage.register(PersonalOptions.getInstance());
   OptionsPage.registerSubPage(AutofillOptions.getInstance(),
                               PersonalOptions.getInstance(),
@@ -110,7 +113,6 @@ function load() {
     }
     OptionsPage.register(InternetOptions.getInstance());
   }
-  OptionsPage.register(AdvancedOptions.getInstance());
   OptionsPage.registerSubPage(ContentSettings.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('privacyContentSettingsButton')]);

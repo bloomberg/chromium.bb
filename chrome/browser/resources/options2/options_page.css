@@ -271,6 +271,11 @@ html[dir='rtl'] .action-area {
   z-index: 10;
 }
 
+#subpage-sheet-container-3 {
+  -webkit-padding-start: 120px;
+  z-index: 15;
+}
+
 .subpage-sheet {
   -webkit-box-shadow: #666 0px 2px 5px;
   background-color: white;

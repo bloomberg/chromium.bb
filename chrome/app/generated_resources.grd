@@ -8282,6 +8282,20 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> automatically when I start my computer
       </message>
 
+      <message name="IDS_OPTIONS_ADVANCED_GROUP_DESCRIPTION" desc="The text displayed to describe the 'Under the Hood' section">
+        Access advanced options in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_ADVANCED_BUTTON_TITLE" desc="The title of the advanced options button">
+          Open Under the hood
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_ADVANCED_BUTTON_TITLE" desc="In Title Case: The title of the advanced options button">
+          Open Under the Hood
+        </message>
+      </if>
+
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="In Title Case: The label of the 'Use Chrome as default' browser button">
           Make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> My Default Browser
