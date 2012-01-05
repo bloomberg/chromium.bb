@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
+class OverlayUserPrefStore;
 class PrefService;
 class Profile;
 struct WebPreferences;
@@ -23,6 +24,8 @@ class PrefsTabHelper : public content::WebContentsObserver,
   explicit PrefsTabHelper(content::WebContents* contents);
   virtual ~PrefsTabHelper();
 
+  static void InitIncognitoUserPrefStore(OverlayUserPrefStore* pref_store);
+  static void InitPerTabUserPrefStore(OverlayUserPrefStore* pref_store);
   static void RegisterUserPrefs(PrefService* prefs);
 
   PrefService* per_tab_prefs() { return per_tab_prefs_.get(); }

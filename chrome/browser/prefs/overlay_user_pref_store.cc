@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/incognito_user_pref_store.h"
+#include "chrome/browser/prefs/overlay_user_pref_store.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
@@ -123,11 +123,11 @@ void OverlayUserPrefStore::ReportValueChanged(const std::string& key) {
   FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
 }
 
-void OverlayUserPrefStore::RegisterOverlayProperty(const std::string& key) {
-  RegisterOverlayProperty(key, key);
+void OverlayUserPrefStore::RegisterOverlayPref(const std::string& key) {
+  RegisterOverlayPref(key, key);
 }
 
-void OverlayUserPrefStore::RegisterOverlayProperty(
+void OverlayUserPrefStore::RegisterOverlayPref(
     const std::string& overlay_key,
     const std::string& underlay_key) {
   DCHECK(!overlay_key.empty()) << "Overlay key is empty";

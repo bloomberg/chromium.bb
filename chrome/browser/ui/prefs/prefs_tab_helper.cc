@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/overlay_user_pref_store.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
@@ -363,6 +364,70 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
 }
 
 PrefsTabHelper::~PrefsTabHelper() {
+}
+
+// static
+void PrefsTabHelper::InitIncognitoUserPrefStore(
+    OverlayUserPrefStore* pref_store) {
+  // List of keys that cannot be changed in the user prefs file by the incognito
+  // profile.  All preferences that store information about the browsing history
+  // or behavior of the user should have this property.
+  pref_store->RegisterOverlayPref(prefs::kBrowserWindowPlacement);
+}
+
+// static
+void PrefsTabHelper::InitPerTabUserPrefStore(
+    OverlayUserPrefStore* pref_store) {
+  // List of keys that have per-tab and per-profile (Global) counterpart.
+  // Setting a per-profile preference affects all tabs sharing the profile,
+  // unless a tab has specified its own per-tab property value. Changing a
+  // per-profile preference on a per-tab pref store delegates to the underlying
+  // per-profile pref store.
+  pref_store->RegisterOverlayPref(
+      prefs::kWebKitJavascriptEnabled,
+      prefs::kWebKitGlobalJavascriptEnabled);
+  pref_store->RegisterOverlayPref(
+      prefs::kWebKitJavascriptCanOpenWindowsAutomatically,
+      prefs::kWebKitGlobalJavascriptCanOpenWindowsAutomatically);
+  pref_store->RegisterOverlayPref(
+      prefs::kWebKitLoadsImagesAutomatically,
+      prefs::kWebKitGlobalLoadsImagesAutomatically);
+  pref_store->RegisterOverlayPref(
+      prefs::kWebKitPluginsEnabled,
+      prefs::kWebKitGlobalPluginsEnabled);
+  pref_store->RegisterOverlayPref(
+      prefs::kDefaultCharset,
+      prefs::kGlobalDefaultCharset);
+  pref_store->RegisterOverlayPref(
+      prefs::kWebKitStandardFontFamily,
+      prefs::kWebKitGlobalStandardFontFamily);
+  pref_store->RegisterOverlayPref(
+      prefs::kWebKitFixedFontFamily,
+      prefs::kWebKitGlobalFixedFontFamily);
+  pref_store->RegisterOverlayPref(
+      prefs::kWebKitSerifFontFamily,
+      prefs::kWebKitGlobalSerifFontFamily);
+  pref_store->RegisterOverlayPref(
+      prefs::kWebKitSansSerifFontFamily,
+      prefs::kWebKitGlobalSansSerifFontFamily);
+  pref_store->RegisterOverlayPref(
+      prefs::kWebKitCursiveFontFamily,
+      prefs::kWebKitGlobalCursiveFontFamily);
+  pref_store->RegisterOverlayPref(
+      prefs::kWebKitFantasyFontFamily,
+      prefs::kWebKitGlobalFantasyFontFamily);
+  pref_store->RegisterOverlayPref(
+      prefs::kWebKitDefaultFontSize,
+      prefs::kWebKitGlobalDefaultFontSize);
+  pref_store->RegisterOverlayPref(
+      prefs::kWebKitDefaultFixedFontSize,
+      prefs::kWebKitGlobalDefaultFixedFontSize);
+  pref_store->RegisterOverlayPref(
+      prefs::kWebKitMinimumFontSize,
+      prefs::kWebKitGlobalMinimumFontSize);
+  pref_store->RegisterOverlayPref(
+      prefs::kWebKitMinimumLogicalFontSize,
+      prefs::kWebKitGlobalMinimumLogicalFontSize);
 }
 
 // static

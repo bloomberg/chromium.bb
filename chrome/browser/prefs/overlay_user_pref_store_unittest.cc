@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,8 +27,8 @@ class OverlayUserPrefStoreTest : public testing::Test {
   OverlayUserPrefStoreTest()
       : underlay_(new TestingPrefStore()),
         overlay_(new OverlayUserPrefStore(underlay_.get())) {
-    overlay_->RegisterOverlayProperty(overlay_key);
-    overlay_->RegisterOverlayProperty(mapped_overlay_key, mapped_underlay_key);
+    overlay_->RegisterOverlayPref(overlay_key);
+    overlay_->RegisterOverlayPref(mapped_overlay_key, mapped_underlay_key);
   }
 
   virtual ~OverlayUserPrefStoreTest() {}

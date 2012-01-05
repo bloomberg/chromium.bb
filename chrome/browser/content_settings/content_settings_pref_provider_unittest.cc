@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/default_pref_store.h"
-#include "chrome/browser/prefs/incognito_user_pref_store.h"
+#include "chrome/browser/prefs/overlay_user_pref_store.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
@@ -149,8 +149,8 @@ TEST_F(PrefProviderTest, Observer) {
 // of the OTR unintentionally: http://crbug.com/74466.
 TEST_F(PrefProviderTest, Incognito) {
   PersistentPrefStore* user_prefs = new TestingPrefStore();
-  IncognitoUserPrefStore* otr_user_prefs =
-      new IncognitoUserPrefStore(user_prefs);
+  OverlayUserPrefStore* otr_user_prefs =
+      new OverlayUserPrefStore(user_prefs);
 
   PrefServiceMockBuilder builder;
   PrefService* regular_prefs = builder.WithUserPrefs(user_prefs).Create();

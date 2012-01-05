@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,13 +24,14 @@
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/default_pref_store.h"
-#include "chrome/browser/prefs/incognito_user_pref_store.h"
-#include "chrome/browser/prefs/per_tab_user_pref_store.h"
+#include "chrome/browser/prefs/overlay_user_pref_store.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/common/json_pref_store.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -180,8 +181,9 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
 PrefService* PrefService::CreateIncognitoPrefService(
     PrefStore* incognito_extension_prefs) {
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
-  PersistentPrefStore* incognito_pref_store =
-      new IncognitoUserPrefStore(user_pref_store_.get());
+  OverlayUserPrefStore* incognito_pref_store =
+      new OverlayUserPrefStore(user_pref_store_.get());
+  PrefsTabHelper::InitIncognitoUserPrefStore(incognito_pref_store);
   return new PrefService(
       pref_notifier,
       pref_value_store_->CloneAndSpecialize(
@@ -203,8 +205,9 @@ PrefService* PrefService::CreateIncognitoPrefService(
 
 PrefService* PrefService::CreatePrefServiceWithPerTabPrefStore() {
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
-  PersistentPrefStore* per_tab_pref_store =
-      new PerTabUserPrefStore(user_pref_store_.get());
+  OverlayUserPrefStore* per_tab_pref_store =
+      new OverlayUserPrefStore(user_pref_store_.get());
+  PrefsTabHelper::InitPerTabUserPrefStore(per_tab_pref_store);
   DefaultPrefStore* default_store = new DefaultPrefStore();
   return new PrefService(
       pref_notifier,
