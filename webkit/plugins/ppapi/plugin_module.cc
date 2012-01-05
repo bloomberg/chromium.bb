@@ -353,7 +353,7 @@ const void* GetInterface(const char* name) {
 
 #ifdef ENABLE_FLAPPER_HACKS
   if (strcmp(name, PPB_FLASH_NETCONNECTOR_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Flash_NetConnector_Thunk();
+    return ::ppapi::thunk::GetPPB_Flash_NetConnector_0_2_Thunk();
 #endif  // ENABLE_FLAPPER_HACKS
 
   // Only support the testing interface when the command line switch is

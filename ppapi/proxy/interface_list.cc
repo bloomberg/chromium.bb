@@ -288,7 +288,7 @@ void InterfaceList::AddFlashInterfaces() {
 #ifdef ENABLE_FLAPPER_HACKS
   AddProxy(API_ID_PPB_FLASH_NETCONNECTOR,
            &ProxyFactory<PPB_Flash_NetConnector_Proxy>);
-  AddPPB(PPB_FLASH_NETCONNECTOR_INTERFACE_0_2, API_ID_PPB_FLASH_NETCONNECTOR,
+  AddPPB(PPB_FLASH_NETCONNECTOR_INTERFACE, API_ID_PPB_FLASH_NETCONNECTOR,
          thunk::GetPPB_Flash_NetConnector_0_2_Thunk());
 #endif
 }

@@ -68,7 +68,7 @@ const PPB_Flash_NetConnector g_ppb_flash_net_connector_thunk = {
 
 }  // namespace
 
-const PPB_Flash_NetConnector* GetPPB_Flash_NetConnector_Thunk() {
+const PPB_Flash_NetConnector* GetPPB_Flash_NetConnector_0_2_Thunk() {
   return &g_ppb_flash_net_connector_thunk;
 }
 
