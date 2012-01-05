@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSpellCheckClient.h"
 
 class RenderView;
-class SpellCheck;
+
+namespace chrome {
+class ChromeContentRendererClient;
+}
 
 namespace WebKit {
 class WebString;
@@ -28,7 +31,8 @@ class SpellCheckProvider : public content::RenderViewObserver,
  public:
   typedef IDMap<WebKit::WebTextCheckingCompletion> WebTextCheckCompletions;
 
-  SpellCheckProvider(content::RenderView* render_view, SpellCheck* spellcheck);
+  SpellCheckProvider(content::RenderView* render_view,
+                     chrome::ChromeContentRendererClient* render_client);
   virtual ~SpellCheckProvider();
 
   // Requests async spell and grammar checker to the platform text
@@ -48,8 +52,6 @@ class SpellCheckProvider : public content::RenderViewObserver,
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void FocusedNodeChanged(const WebKit::WebNode& node) OVERRIDE;
-
-  void SetSpellCheck(SpellCheck* spellcheck);
 
  private:
   // WebKit::WebSpellCheckClient implementation.
@@ -92,8 +94,9 @@ class SpellCheckProvider : public content::RenderViewObserver,
   // True if the browser is showing the spelling panel for us.
   bool spelling_panel_visible_;
 
-  // Spellcheck implementation for use. Weak reference.
-  SpellCheck* spellcheck_;
+  // The ChromeContentRendererClient used to access the SpellChecker.
+  // Weak reference.
+  chrome::ChromeContentRendererClient* chrome_content_renderer_client_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckProvider);
 };

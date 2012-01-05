@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,8 +141,7 @@ static void AppendParams(const std::vector<string16>& additional_names,
 
 namespace chrome {
 
-ChromeContentRendererClient::ChromeContentRendererClient()
-    : spellcheck_provider_(NULL) {
+ChromeContentRendererClient::ChromeContentRendererClient() {
   for (size_t i = 0; i < arraysize(kPredefinedAllowedSocketOrigins); ++i)
     allowed_socket_origins_.insert(kPredefinedAllowedSocketOrigins[i]);
 
@@ -242,7 +241,7 @@ void ChromeContentRendererClient::RenderViewCreated(
   new PageLoadHistograms(render_view, histogram_snapshots_.get());
   new PrintWebViewHelper(render_view);
   new SearchBox(render_view);
-  spellcheck_provider_ = new SpellCheckProvider(render_view, spellcheck_.get());
+  new SpellCheckProvider(render_view, this);
 #if defined(ENABLE_SAFE_BROWSING)
   safe_browsing::MalwareDOMDetails::Create(render_view);
 #endif
@@ -785,11 +784,8 @@ void ChromeContentRendererClient::OnPurgeMemory() {
   RenderThread* thread = RenderThread::Get();
   if (spellcheck_.get())
     thread->RemoveObserver(spellcheck_.get());
-  SpellCheck* new_spellcheck = new SpellCheck();
-  if (spellcheck_provider_)
-    spellcheck_provider_->SetSpellCheck(new_spellcheck);
-  spellcheck_.reset(new_spellcheck);
-  thread->AddObserver(new_spellcheck);
+  spellcheck_.reset(new SpellCheck());
+  thread->AddObserver(spellcheck_.get());
 }
 
 bool ChromeContentRendererClient::IsAdblockInstalled() {

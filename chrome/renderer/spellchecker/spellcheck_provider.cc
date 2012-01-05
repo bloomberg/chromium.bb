@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/spellcheck_messages.h"
+#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -21,15 +22,16 @@ using WebKit::WebTextCheckingCompletion;
 using WebKit::WebTextCheckingResult;
 using WebKit::WebVector;
 
-SpellCheckProvider::SpellCheckProvider(content::RenderView* render_view,
-                                       SpellCheck* spellcheck)
+SpellCheckProvider::SpellCheckProvider(
+    content::RenderView* render_view,
+    chrome::ChromeContentRendererClient* renderer_client)
     : content::RenderViewObserver(render_view),
 #if defined(OS_MACOSX)
       has_document_tag_(false),
 #endif
       document_tag_(0),
       spelling_panel_visible_(false),
-      spellcheck_(spellcheck) {
+      chrome_content_renderer_client_(renderer_client) {
   if (render_view)  // NULL in unit tests.
     render_view->GetWebView()->setSpellCheckClient(this);
 }
@@ -104,9 +106,9 @@ void SpellCheckProvider::spellCheck(
 
   string16 word(text);
   // Will be NULL during unit tests.
-  if (spellcheck_) {
+  if (chrome_content_renderer_client_) {
     std::vector<string16> suggestions;
-    spellcheck_->SpellCheckWord(
+    chrome_content_renderer_client_->spellcheck()->SpellCheckWord(
         word.c_str(), word.size(), document_tag_,
         &offset, &length, optional_suggestions ? & suggestions : NULL);
     if (optional_suggestions)
@@ -130,8 +132,10 @@ WebString SpellCheckProvider::autoCorrectWord(const WebString& word) {
   if (command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures)) {
     EnsureDocumentTag();
     // Will be NULL during unit tests.
-    if (spellcheck_)
-      return spellcheck_->GetAutoCorrectionWord(word, document_tag_);
+    if (chrome_content_renderer_client_) {
+      return chrome_content_renderer_client_->spellcheck()->
+          GetAutoCorrectionWord(word, document_tag_);
+    }
   }
   return string16();
 }
@@ -202,8 +206,4 @@ void SpellCheckProvider::EnsureDocumentTag() {
     has_document_tag_ = true;
   }
 #endif
-}
-
-void SpellCheckProvider::SetSpellCheck(SpellCheck* spellcheck) {
-  spellcheck_ = spellcheck;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,6 +121,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
   virtual bool AllowSocketAPI(const GURL& url) OVERRIDE;
 
+  SpellCheck* spellcheck() const { return spellcheck_.get(); }
+
  private:
   WebKit::WebPlugin* CreatePlugin(
       content::RenderView* render_view,
@@ -147,9 +149,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
   scoped_ptr<RendererNetPredictor> net_predictor_;
   scoped_ptr<SpellCheck> spellcheck_;
-  // The SpellCheckProvider is a RenderViewObserver, and handles its own
-  // destruction.
-  SpellCheckProvider* spellcheck_provider_;
   scoped_ptr<VisitedLinkSlave> visited_link_slave_;
   scoped_ptr<safe_browsing::PhishingClassifierFilter> phishing_classifier_;
 
