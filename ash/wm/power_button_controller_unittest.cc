@@ -272,5 +272,98 @@ TEST_F(PowerButtonControllerTest, CancelHideBackground) {
   EXPECT_FALSE(test_api_->hide_background_layer_timer_is_running());
 }
 
+// Test the basic operation of the lock button.
+TEST_F(PowerButtonControllerTest, LockButtonBasic) {
+  // The lock button shouldn't do anything if we aren't logged in.
+  controller_->OnLoginStateChange(false /*logged_in*/, false /*is_guest*/);
+  controller_->OnLockStateChange(false);
+  controller_->OnLockButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_FALSE(test_api_->lock_timer_is_running());
+  controller_->OnLockButtonEvent(false, base::TimeTicks::Now());
+  EXPECT_EQ(0, delegate_->num_lock_requests());
+
+  // Ditto for when we're logged in as a guest.
+  controller_->OnLoginStateChange(true /*logged_in*/, true /*is_guest*/);
+  controller_->OnLockButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_FALSE(test_api_->lock_timer_is_running());
+  controller_->OnLockButtonEvent(false, base::TimeTicks::Now());
+  EXPECT_EQ(0, delegate_->num_lock_requests());
+
+  // If we're logged in as a regular user, we should start the lock timer and
+  // the pre-lock animation.
+  controller_->OnLoginStateChange(true /*logged_in*/, false /*is_guest*/);
+  controller_->OnLockButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_TRUE(test_api_->lock_timer_is_running());
+  EXPECT_TRUE(
+      test_api_->ContainerGroupIsAnimated(
+          PowerButtonController::ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
+          PowerButtonController::ANIMATION_SLOW_CLOSE));
+  EXPECT_TRUE(test_api_->BackgroundLayerIsVisible());
+
+  // If the button is released immediately, we shouldn't lock the screen.
+  controller_->OnLockButtonEvent(false, base::TimeTicks::Now());
+  EXPECT_FALSE(test_api_->lock_timer_is_running());
+  EXPECT_TRUE(
+      test_api_->ContainerGroupIsAnimated(
+          PowerButtonController::ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
+          PowerButtonController::ANIMATION_UNDO_SLOW_CLOSE));
+  EXPECT_TRUE(test_api_->BackgroundLayerIsVisible());
+  EXPECT_TRUE(test_api_->hide_background_layer_timer_is_running());
+  test_api_->trigger_hide_background_layer_timeout();
+  EXPECT_FALSE(test_api_->BackgroundLayerIsVisible());
+  EXPECT_EQ(0, delegate_->num_lock_requests());
+
+  // Press the button again and let the lock timeout fire.  We should request
+  // that the screen be locked.
+  controller_->OnLockButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_TRUE(test_api_->lock_timer_is_running());
+  test_api_->trigger_lock_timeout();
+  EXPECT_EQ(1, delegate_->num_lock_requests());
+
+  // Pressing the lock button while we have a pending lock request shouldn't do
+  // anything.
+  controller_->OnLockButtonEvent(false, base::TimeTicks::Now());
+  controller_->OnLockButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_FALSE(test_api_->lock_timer_is_running());
+  controller_->OnLockButtonEvent(false, base::TimeTicks::Now());
+
+  // Pressing the button also shouldn't do anything after the screen is locked.
+  controller_->OnStartingLock();
+  controller_->OnLockStateChange(true);
+  controller_->OnLockButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_FALSE(test_api_->lock_timer_is_running());
+  controller_->OnLockButtonEvent(false, base::TimeTicks::Now());
+}
+
+// Test that the power button takes priority over the lock button.
+TEST_F(PowerButtonControllerTest, PowerButtonPreemptsLockButton) {
+  controller_->OnLoginStateChange(true /*logged_in*/, false /*is_guest*/);
+  controller_->OnLockStateChange(false);
+
+  // While the lock button is down, hold the power button.
+  controller_->OnLockButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_TRUE(test_api_->lock_timer_is_running());
+  controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_TRUE(test_api_->lock_timer_is_running());
+
+  // The lock timer shouldn't be stopped when the lock button is released.
+  controller_->OnLockButtonEvent(false, base::TimeTicks::Now());
+  EXPECT_TRUE(test_api_->lock_timer_is_running());
+  controller_->OnPowerButtonEvent(false, base::TimeTicks::Now());
+  EXPECT_FALSE(test_api_->lock_timer_is_running());
+
+  // Now press the power button first and then the lock button.
+  controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_TRUE(test_api_->lock_timer_is_running());
+  controller_->OnLockButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_TRUE(test_api_->lock_timer_is_running());
+
+  // Releasing the power button should stop the lock timer.
+  controller_->OnPowerButtonEvent(false, base::TimeTicks::Now());
+  EXPECT_FALSE(test_api_->lock_timer_is_running());
+  controller_->OnLockButtonEvent(false, base::TimeTicks::Now());
+  EXPECT_FALSE(test_api_->lock_timer_is_running());
+}
+
 }  // namespace test
 }  // namespace ash

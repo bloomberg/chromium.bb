@@ -376,17 +376,10 @@ void PowerButtonController::OnPowerButtonEvent(
     if (lock_fail_timer_.IsRunning())
       return;
 
-    if (logged_in_as_non_guest_ && !locked_) {
-      ShowBackgroundLayer();
-      StartAnimation(ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
-                     ANIMATION_SLOW_CLOSE);
-      lock_timer_.Stop();
-      lock_timer_.Start(FROM_HERE,
-                        base::TimeDelta::FromMilliseconds(kSlowCloseAnimMs),
-                        this, &PowerButtonController::OnLockTimeout);
-    } else {
+    if (logged_in_as_non_guest_ && !locked_)
+      StartLockTimer();
+    else
       StartShutdownTimer();
-    }
   } else {  // Button is up.
     if (lock_timer_.IsRunning() || shutdown_timer_.IsRunning())
       StartAnimation(
@@ -413,10 +406,30 @@ void PowerButtonController::OnLockButtonEvent(
     bool down, const base::TimeTicks& timestamp) {
   lock_button_down_ = down;
 
-  if (shutting_down_)
+  if (shutting_down_ || !logged_in_as_non_guest_)
     return;
 
-  NOTIMPLEMENTED();
+  // Bail if we're already locked or are in the process of locking.  Also give
+  // the power button precedence over the lock button (we don't expect both
+  // buttons to be present, so this is just making sure that we don't do
+  // something completely stupid if that assumption changes later).
+  if (locked_ || lock_fail_timer_.IsRunning() || power_button_down_)
+    return;
+
+  if (down) {
+    StartLockTimer();
+  } else {
+    if (lock_timer_.IsRunning()) {
+      StartAnimation(ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
+                     ANIMATION_UNDO_SLOW_CLOSE);
+      hide_background_layer_timer_.Stop();
+      hide_background_layer_timer_.Start(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kUndoSlowCloseAnimMs),
+          this, &PowerButtonController::HideBackgroundLayer);
+      lock_timer_.Stop();
+    }
+  }
 }
 
 void PowerButtonController::OnRootWindowResized(const gfx::Size& new_size) {
@@ -459,6 +472,16 @@ void PowerButtonController::OnShutdownTimeout() {
 void PowerButtonController::OnRealShutdownTimeout() {
   DCHECK(shutting_down_);
   delegate_->RequestShutdown();
+}
+
+void PowerButtonController::StartLockTimer() {
+  ShowBackgroundLayer();
+  StartAnimation(ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
+                 ANIMATION_SLOW_CLOSE);
+  lock_timer_.Stop();
+  lock_timer_.Start(FROM_HERE,
+                    base::TimeDelta::FromMilliseconds(kSlowCloseAnimMs),
+                    this, &PowerButtonController::OnLockTimeout);
 }
 
 void PowerButtonController::StartShutdownTimer() {

@@ -85,17 +85,29 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
       return controller_->hide_background_layer_timer_.IsRunning();
     }
 
-    void trigger_lock_timeout() { controller_->OnLockTimeout(); }
-    void trigger_lock_fail_timeout() { controller_->OnLockFailTimeout(); }
+    void trigger_lock_timeout() {
+      controller_->OnLockTimeout();
+      controller_->lock_timer_.Stop();
+    }
+    void trigger_lock_fail_timeout() {
+      controller_->OnLockFailTimeout();
+      controller_->lock_fail_timer_.Stop();
+    }
     void trigger_lock_to_shutdown_timeout() {
       controller_->OnLockToShutdownTimeout();
+      controller_->lock_to_shutdown_timer_.Stop();
     }
-    void trigger_shutdown_timeout() { controller_->OnShutdownTimeout(); }
+    void trigger_shutdown_timeout() {
+      controller_->OnShutdownTimeout();
+      controller_->shutdown_timer_.Stop();
+    }
     void trigger_real_shutdown_timeout() {
       controller_->OnRealShutdownTimeout();
+      controller_->real_shutdown_timer_.Stop();
     }
     void trigger_hide_background_layer_timeout() {
       controller_->HideBackgroundLayer();
+      controller_->hide_background_layer_timer_.Stop();
     }
 
     // Returns true if the given set of containers was last animated with
@@ -154,7 +166,8 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
   // Requests that the machine be shut down.
   void OnRealShutdownTimeout();
 
-  // Puts us into the pre-shutdown state.
+  // Puts us into the pre-lock or pre-shutdown state.
+  void StartLockTimer();
   void StartShutdownTimer();
 
   // Shows or hides |background_layer_|.  The show method creates and
