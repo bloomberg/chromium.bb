@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,7 +99,8 @@ TEST_F(ImportantFileWriterTest, DoScheduledWrite) {
   EXPECT_EQ("foo", GetFileContent(writer.path()));
 }
 
-TEST_F(ImportantFileWriterTest, BatchingWrites) {
+// Flaky - http://crbug.com/109292
+TEST_F(ImportantFileWriterTest, FLAKY_BatchingWrites) {
   ImportantFileWriter writer(file_,
                              base::MessageLoopProxy::current());
   writer.set_commit_interval(base::TimeDelta::FromMilliseconds(25));
