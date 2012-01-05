@@ -74,6 +74,7 @@ GrGLInterface* CreateCommandBufferSkiaGLBinding() {
   interface->fStencilOpSeparate = glStencilOpSeparate;
   interface->fTexImage2D = glTexImage2D;
   interface->fTexParameteri = glTexParameteri;
+  interface->fTexStorage2D = glTexStorage2DEXT;
   interface->fTexSubImage2D = glTexSubImage2D;
   interface->fUniform1f = glUniform1f;
   interface->fUniform1i = glUniform1i;

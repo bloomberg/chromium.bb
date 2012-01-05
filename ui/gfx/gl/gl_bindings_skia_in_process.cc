@@ -407,6 +407,11 @@ GLvoid StubGLTexParameteri(GLenum target, GLenum pname, GLint param) {
   glTexParameteri(target, pname, param);
 }
 
+GLvoid StubGLTexStorage2D(GLenum target, GLsizei levels, GLenum internalFormat,
+                          GLsizei width, GLsizei height) {
+  glTexStorage2DEXT(target, levels, internalFormat, width, height);
+}
+
 GLvoid StubGLTexSubImage2D(GLenum target, GLint level, GLint xoffset,
                            GLint yoffset, GLsizei width, GLsizei height,
                            GLenum format, GLenum type, const void* pixels) {
@@ -621,6 +626,7 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   interface->fTexImage2D = StubGLTexImage2D;
   interface->fTexParameteri = StubGLTexParameteri;
   interface->fTexSubImage2D = StubGLTexSubImage2D;
+  interface->fTexStorage2D = StubGLTexStorage2D;
   interface->fUniform1f = StubGLUniform1f;
   interface->fUniform1i = StubGLUniform1i;
   interface->fUniform1fv = StubGLUniform1fv;
