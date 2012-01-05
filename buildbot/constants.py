@@ -9,7 +9,7 @@ import os
 SOURCE_ROOT = os.path.join(os.path.dirname(__file__), '..', '..')
 CROSUTILS_LIB_DIR = os.path.join(SOURCE_ROOT, 'src/scripts/lib')
 
-REPO_URL = 'http://git.chromium.org/external/repo.git'
+REPO_URL = 'http://git.chromium.org/git/external/repo'
 
 GERRIT_PORT = '29418'
 GERRIT_INT_PORT = '29419'
@@ -21,11 +21,9 @@ GIT_HOST = 'git.chromium.org'
 GERRIT_SSH_URL = 'ssh://%s:%s' % (GERRIT_HOST, GERRIT_PORT)
 GERRIT_INT_SSH_URL = 'ssh://%s:%s' % (GERRIT_INT_HOST, GERRIT_INT_PORT)
 GERRIT_HTTP_URL = 'https://%s' % GERRIT_HOST
-GERRIT_HTTP_SUFFIX = '.git'
-GIT_HTTP_URL = 'http://%s' % GIT_HOST
-GIT_HTTP_SUFFIX = '.git'
+GIT_HTTP_URL = 'http://%s/git' % GIT_HOST
 
-MANIFEST_URL = GIT_HTTP_URL + '/chromiumos/manifest' + GIT_HTTP_SUFFIX
+MANIFEST_URL = GIT_HTTP_URL + '/chromiumos/manifest'
 MANIFEST_INT_URL = GERRIT_INT_SSH_URL + '/chromeos/manifest-internal'
 
 # TODO(sosa): Move to manifest-versions-external once its created

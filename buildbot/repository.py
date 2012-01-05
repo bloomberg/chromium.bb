@@ -157,7 +157,7 @@ class RepoRepository(object):
                               cwd=repo_path, print_cmd=False)
           print
 
-  def Sync(self, local_manifest=None, jobs=_DEFAULT_SYNC_JOBS):
+  def Sync(self, local_manifest=None, jobs=_DEFAULT_SYNC_JOBS, cleanup=True):
     """Sync/update the source.  Changes manifest if specified.
 
     local_manifest:  If set, checks out source to manifest.  DEFAULT_MANIFEST
@@ -178,7 +178,8 @@ class RepoRepository(object):
         cros_lib.RunCommand(['repo', 'selfupdate'],
                              cwd=self.directory)
 
-      configure_repo.FixBrokenExistingRepos(self.directory)
+      if cleanup:
+        configure_repo.FixBrokenExistingRepos(self.directory)
 
       cros_lib.OldRunCommand(['repo', '--time', 'sync', '--jobs', str(jobs)],
                              cwd=self.directory, num_retries=2)

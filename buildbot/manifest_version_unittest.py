@@ -17,6 +17,7 @@ if __name__ == '__main__':
   import constants
   sys.path.append(constants.SOURCE_ROOT)
 
+from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
@@ -80,15 +81,15 @@ class HelperMethodsTest(unittest.TestCase):
   def testPushGitChanges(self):
     """Tests if we can append to an authors file and push it using dryrun."""
     if not os.path.exists(GIT_DIR): os.makedirs(GIT_DIR)
-    cros_lib.RunCommand(
-        ('repo init -u http://git.chromium.org/chromiumos/manifest.git '
-         '--repo-url http://git.chromium.org/external/repo.git '
-         '-m minilayout.xml').split(), cwd=GIT_DIR, input='\n\ny\n')
+    init_cmd = ['repo', 'init', '-u', constants.MANIFEST_URL, '--repo-url',
+                constants.REPO_URL, '-m', 'minilayout.xml']
+    cros_lib.RunCommand(init_cmd, cwd=GIT_DIR, input='\n\ny\n')
     cros_lib.RunCommand(('repo sync --jobs 8').split(), cwd=GIT_DIR)
     git_dir = os.path.join(GIT_DIR, GIT_TEST_PATH)
-    cros_lib.RunCommand(
-        ('git config url.ssh://gerrit.chromium.org:29418.insteadof'
-         ' http://git.chromium.org').split(), cwd=git_dir)
+    cros_lib.RunCommand(['git',
+                         'config',
+                         'url.%s.insteadof' % constants.GERRIT_SSH_URL,
+                         constants.GIT_HTTP_URL], cwd=git_dir)
 
     manifest_version.PrepForChanges(git_dir, dry_run=True)
 
@@ -103,13 +104,14 @@ class HelperMethodsTest(unittest.TestCase):
   def testPushGitChangesWithRealPrep(self):
     """Another push test that tests push but on non-repo does it on a branch."""
     git_dir = tempfile.mktemp('manifest_dir')
-    cros_lib.RunCommand(
-        ['git', 'clone',
-         'http://git.chromium.org/chromiumos/manifest-versions.git', git_dir])
+    manifest_versions_url = cbuildbot_config.GetManifestVersionsRepoUrl(
+        internal_build=False, read_only=True)
+    cros_lib.RunCommand(['git', 'clone', manifest_versions_url, git_dir])
     try:
-      cros_lib.RunCommand(
-          ('git config url.ssh://gerrit.chromium.org:29418.insteadof'
-           ' http://git.chromium.org').split(), cwd=git_dir)
+      cros_lib.RunCommand(['git',
+                           'config',
+                           'url.%s.insteadof' % constants.GERRIT_SSH_URL,
+                           constants.GIT_HTTP_URL], cwd=git_dir)
 
       manifest_version.PrepForChanges(git_dir, dry_run=False)
 
@@ -333,7 +335,8 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
             self.build_name, FAKE_VERSION_STRING),
         dry_run=True).AndReturn(FAKE_VERSION_STRING_NEXT)
 
-    repository.RepoRepository.Sync('default')
+    # TODO(ferringb): Gut the cleanup=False added for 24709.
+    repository.RepoRepository.Sync('default', cleanup=False)
     repository.RepoRepository.ExportManifest(mox.IgnoreArg())
     repository.RepoRepository.IsManifestDifferent(mox.IgnoreArg()
        ).AndReturn(True)

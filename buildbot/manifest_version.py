@@ -69,6 +69,14 @@ def PrepForChanges(git_repo, dry_run):
   """
   _GitCleanDirectory(git_repo)
   try:
+    # TODO(ferringb): Rework this whole codepath- the level of syncs in use
+    # make this likely to be working accidentally rather than intentionally.
+    # See http://crosbug.com/24709 for details.
+    cros_lib.RunCommand(['git',
+                         'config',
+                         'url.%s.insteadof' % constants.GERRIT_SSH_URL,
+                         constants.GIT_HTTP_URL], cwd=git_repo)
+
     if repository.InARepoRepository(git_repo):
       cros_lib.RunCommand(['repo', 'abandon', PUSH_BRANCH, '.'],
                           cwd=git_repo, error_ok=True)
@@ -97,13 +105,6 @@ def PrepForChanges(git_repo, dry_run):
 
     cros_lib.RunCommand(['git', 'config', 'push.default', 'tracking'],
                         cwd=git_repo)
-
-    # TODO Test fix for chromium-os:16249
-    # repository.FixExternalRepoPushUrls(git_repo)
-    cros_lib.RunCommand(['git',
-                         'config',
-                         'url.ssh://gerrit.chromium.org:29418.insteadof',
-                         'http://git.chromium.org'], cwd=git_repo)
 
   except cros_lib.RunCommandError, e:
     err_msg = 'Failed to prep for edit in %s with %s' % (git_repo, e.message)
@@ -484,7 +485,9 @@ class BuildSpecsManager(object):
     Args:
       sync: Whether to sync the tree.
     """
-    if sync: self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST)
+    # TODO(ferringb): Gut cleanup=False hack- see http://crosbug.com/24709.
+    if sync: self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST,
+                                   cleanup=False)
     version_file_path = self.cros_source.GetRelativePath(constants.VERSION_FILE)
     return VersionInfo(version_file=version_file_path,
                        incr_type=self.incr_type)
@@ -515,7 +518,9 @@ class BuildSpecsManager(object):
                  self.build_name, version))
       version = version_info.IncrementVersion(message, dry_run=self.dry_run)
       logging.debug('Incremented version number to  %s', version)
-      self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST)
+      # TODO(ferringb): Gut cleanup=False hack- see http://crosbug.com/24709.
+      self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST,
+                            cleanup=False)
 
     spec_file = '%s.xml' % os.path.join(self.all_specs_dir, version)
     if not os.path.exists(os.path.dirname(spec_file)):

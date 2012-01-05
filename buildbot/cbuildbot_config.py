@@ -76,7 +76,7 @@ push_image -- Do we push a final release image to chromeos-images.
 upload_symbols -- Do we upload debug symbols.
 
 git_url -- git repository URL for our manifests.
-           External: http://git.chromium.org/chromiumos/manifest.git
+           External: http://git.chromium.org/git/chromiumos/manifest
            Internal:
                ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal
 
@@ -157,8 +157,7 @@ def GetManifestVersionsRepoUrl(internal_build, read_only=False):
               constants.MANIFEST_VERSIONS_INT_SUFFIX)
   else:
     if read_only:
-      return (constants.GIT_HTTP_URL + constants.MANIFEST_VERSIONS_SUFFIX +
-              constants.GIT_HTTP_SUFFIX)
+      return constants.GIT_HTTP_URL + constants.MANIFEST_VERSIONS_SUFFIX
     else:
       return constants.GERRIT_SSH_URL + constants.MANIFEST_VERSIONS_SUFFIX
 
