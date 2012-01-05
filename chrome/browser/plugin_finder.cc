@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,11 +18,24 @@
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
+// static
 PluginFinder* PluginFinder::GetInstance() {
   return Singleton<PluginFinder>::get();
 }
 
-PluginFinder::PluginFinder() {
+PluginFinder::PluginFinder() : plugin_list_(LoadPluginList()) {
+  if (!plugin_list_.get()) {
+    NOTREACHED();
+    plugin_list_.reset(new base::ListValue());
+  }
+}
+
+// static
+scoped_ptr<base::ListValue> PluginFinder::LoadPluginList() {
+  return scoped_ptr<base::ListValue>(LoadPluginListInternal()).Pass();
+}
+
+base::ListValue* PluginFinder::LoadPluginListInternal() {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   base::StringPiece json_resource(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -34,19 +47,20 @@ PluginFinder::PluginFinder() {
       allow_trailing_comma,
       NULL,
       &error_str));
-  DLOG_IF(ERROR, !value.get()) << error_str;
-  if (value->IsType(base::Value::TYPE_DICTIONARY)) {
-    base::DictionaryValue* dict =
-        static_cast<base::DictionaryValue*>(value.get());
-    base::ListValue* list = NULL;
-    bool success = dict->GetList("plugins", &list);
-    DCHECK(success);
-    plugin_list_.reset(list->DeepCopy());
+  if (!value.get()) {
+    DLOG(ERROR) << error_str;
+    return NULL;
   }
-  DCHECK(plugin_list_.get());
+  base::DictionaryValue* dict = NULL;
+  if (!value->GetAsDictionary(&dict))
+    return NULL;
+  base::ListValue* list = NULL;
+  if (!dict->GetList("plugins", &list))
+    return NULL;
+  return list->DeepCopy();
+#else
+  return new base::ListValue();
 #endif
-  if (!plugin_list_.get())
-    plugin_list_.reset(new base::ListValue());
 }
 
 PluginFinder::~PluginFinder() {
@@ -65,12 +79,11 @@ void PluginFinder::FindPlugin(
   }
   for (ListValue::const_iterator plugin_it = plugin_list_->begin();
        plugin_it != plugin_list_->end(); ++plugin_it) {
-    if (!(*plugin_it)->IsType(base::Value::TYPE_DICTIONARY)) {
+    const base::DictionaryValue* plugin = NULL;
+    if (!(*plugin_it)->GetAsDictionary(&plugin)) {
       NOTREACHED();
       continue;
     }
-    const base::DictionaryValue* plugin =
-        static_cast<const base::DictionaryValue*>(*plugin_it);
     std::string language_str;
     bool success = plugin->GetString("lang", &language_str);
     DCHECK(success);

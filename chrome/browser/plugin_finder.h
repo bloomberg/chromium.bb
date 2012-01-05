@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,10 @@ class PluginFinder {
 
   static PluginFinder* GetInstance();
 
+  // Loads the plug-in information from the browser resources and parses it.
+  // Returns NULL if the plug-in list couldn't be parsed.
+  static scoped_ptr<base::ListValue> LoadPluginList();
+
   // Finds a plug-in for the given MIME type and language (specified as an IETF
   // language tag, i.e. en-US) and calls one of the two passed in callbacks,
   // depending on whether a plug-in is found.
@@ -40,6 +44,8 @@ class PluginFinder {
 
   PluginFinder();
   ~PluginFinder();
+
+  static base::ListValue* LoadPluginListInternal();
 
   scoped_ptr<base::ListValue> plugin_list_;
   std::map<std::string, PluginInstaller*> installers_;

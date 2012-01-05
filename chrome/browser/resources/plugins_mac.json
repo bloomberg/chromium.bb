@@ -38,6 +38,7 @@
       "name": "Java(TM)",
       "identifier": "java-runtime-environment",
       "url": "http://java.com/en/download/apple_manual.jsp",
+      "help_url": "https://support.google.com/chrome/?p=plugin_java",
       "displayurl": true
     },
     {
@@ -50,7 +51,8 @@
       "lang": "en-US",
       "name": "RealPlayer",
       "identifier": "realplayer",
-      "url": "http://director.real.com/realplayer?type=rpsp_mac"
+      "url": "http://www.real.com/realplayer/download",
+      "help_url": "https://support.google.com/chrome/?p=plugin_real"
     },
     {
       "mime_types": [
@@ -61,6 +63,7 @@
       "name": "Adobe Flash Player",
       "identifier": "adobe-flash-player",
       "url": "http://get.adobe.com/flashplayer/",
+      "help_url": "https://support.google.com/chrome/?p=plugin_flash",
       "displayurl": true
     },
     {
@@ -71,6 +74,7 @@
       "name": "Adobe Shockwave Player",
       "identifier": "shockwave",
       "url": "http://www.adobe.com/shockwave/download/",
+      "help_url": "https://support.google.com/chrome/?p=plugin_shockwave",
       "displayurl": true
     },
     {
@@ -86,6 +90,7 @@
       "name": "Adobe Reader",
       "identifier": "adobe-reader",
       "url": "http://get.adobe.com/reader/",
+      "help_url": "https://support.google.com/chrome/?p=plugin_pdf",
       "displayurl": true
     },
     {
@@ -144,6 +149,7 @@
       "name": "QuickTime Player",
       "identifier": "apple-quicktime",
       "url": "http://www.apple.com/quicktime/download/",
+      "help_url": "https://support.google.com/chrome/?p=plugin_quicktime",
       "displayurl": true
     },
     {
@@ -162,7 +168,8 @@
       "lang": "en-US",
       "name": "Flip4Mac",
       "identifier": "flip4mac",
-      "url": "http://www.telestream.net/flip4mac-wmv/overview.htm",
+      "url": "http://www.microsoft.com/download/en/confirmation.aspx?id=9442",
+      "help_url": "https://support.google.com/chrome/?p=plugin_wmp",
       "displayurl": true
     },
     {
@@ -173,7 +180,19 @@
       "lang": "en-US",
       "name": "DivX Web Player",
       "identifier": "divx-player",
-      "url": "http://www.divx.com/en/downloads/divx/mac"
+      "url": "http://www.divx.com/en/downloads/divx/mac",
+      "help_url": "https://support.google.com/chrome/?p=plugin_divx"
+    },
+    {
+      "mime_types": [
+        "application/x-silverlight",
+        "application/x-silverlight-2"
+      ],
+      "lang": "en-US",
+      "name": "Silverlight",
+      "identifier": "silverlight",
+      "url": "http://go.microsoft.com/fwlink/?LinkID=149156",
+      "displayurl": true
     }
   ]
 }
