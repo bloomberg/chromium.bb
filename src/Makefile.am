@@ -21,6 +21,7 @@ libwayland_server_la_SOURCES =			\
 	wayland-protocol.c			\
 	wayland-server.c			\
 	wayland-shm.c				\
+	data-device.c				\
 	event-loop.c
 
 libwayland_client_la_LIBADD = $(FFI_LIBS) libwayland-util.la -lrt

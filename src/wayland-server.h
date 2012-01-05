@@ -162,6 +162,26 @@ struct wl_grab {
 	int32_t x, y;
 };
 
+struct wl_data_offer {
+	struct wl_resource resource;
+	struct wl_data_source *source;
+	struct wl_listener source_destroy_listener;
+};
+
+struct wl_data_source {
+	struct wl_resource resource;
+	struct wl_array mime_types;
+
+	const struct wl_data_offer_interface *offer_interface;
+	void (*cancel)(struct wl_data_source *source);
+};
+
+struct wl_selection_listener {
+	void (*func)(struct wl_selection_listener *listener,
+		     struct wl_input_device *device);
+	struct wl_list link;
+};
+
 struct wl_input_device {
 	struct wl_list resource_list;
 	struct wl_resource *pointer_focus_resource;
@@ -185,6 +205,18 @@ struct wl_input_device {
 	int32_t grab_x, grab_y;
 	uint32_t grab_button;
 	struct wl_listener grab_listener;
+
+	struct wl_list drag_resource_list;
+	struct wl_data_source *drag_data_source;
+	struct wl_surface *drag_focus;
+	struct wl_resource *drag_focus_resource;
+	struct wl_listener drag_focus_listener;
+	struct wl_grab drag_grab;
+
+	struct wl_data_source *selection_data_source;
+	struct wl_listener selection_data_source_listener;
+	struct wl_list selection_listener_list;
+
 };
 
 /*
@@ -243,12 +275,22 @@ void
 wl_input_device_set_keyboard_focus(struct wl_input_device *device,
 				   struct wl_surface *surface,
 				   uint32_t time);
+void
+wl_data_device_set_keyboard_focus(struct wl_input_device *device);
+int
+wl_data_device_manager_init(struct wl_display *display);
 
 void
 wl_input_device_end_grab(struct wl_input_device *device, uint32_t time);
 void
 wl_input_device_start_grab(struct wl_input_device *device,
 			   struct wl_grab *grab, uint32_t time);
+
+void
+wl_input_device_set_selection(struct wl_input_device *device,
+			      struct wl_data_source *source,
+			      uint32_t time);
+
 
 struct wl_shm;
 

@@ -477,6 +477,10 @@ wl_input_device_init(struct wl_input_device *device)
 	device->default_grab.input_device = device;
 	device->grab = &device->default_grab;
 
+	wl_list_init(&device->drag_resource_list);
+	device->selection_data_source = NULL;
+	wl_list_init(&device->selection_listener_list);
+
 	device->x = 100;
 	device->y = 100;
 }
