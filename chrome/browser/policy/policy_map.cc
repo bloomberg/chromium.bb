@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,13 @@ void PolicyMap::CopyFrom(const PolicyMap& other) {
   Clear();
   for (const_iterator i = other.begin(); i != other.end(); ++i) {
     Set(i->first, i->second->DeepCopy());
+  }
+}
+
+void PolicyMap::MergeFrom(const PolicyMap& other) {
+  for (const_iterator i = other.begin(); i != other.end(); ++i) {
+    if (!Get(i->first))
+      Set(i->first, i->second->DeepCopy());
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -15,20 +16,28 @@ namespace policy {
 
 struct PolicyErrorMap::PendingError {
   PendingError(ConfigurationPolicyType policy,
+               const std::string& subkey,
                int message_id,
-               const string16& replacement)
+               const std::string& replacement)
       : policy(policy),
+        subkey(subkey),
         message_id(message_id),
         has_replacement(true),
         replacement(replacement) {}
 
-  PendingError(ConfigurationPolicyType policy, int message_id)
-      : policy(policy), message_id(message_id), has_replacement(false) {}
+  PendingError(ConfigurationPolicyType policy,
+               const std::string& subkey,
+               int message_id)
+      : policy(policy),
+        subkey(subkey),
+        message_id(message_id),
+        has_replacement(false) {}
 
   ConfigurationPolicyType policy;
+  std::string subkey;
   int message_id;
   bool has_replacement;
-  string16 replacement;
+  std::string replacement;
 };
 
 PolicyErrorMap::PolicyErrorMap() {
@@ -42,13 +51,26 @@ bool PolicyErrorMap::IsReady() const {
 }
 
 void PolicyErrorMap::AddError(ConfigurationPolicyType policy, int message_id) {
-  AddError(PendingError(policy, message_id));
+  AddError(PendingError(policy, std::string(), message_id));
+}
+
+void PolicyErrorMap::AddError(ConfigurationPolicyType policy,
+                              const std::string& subkey,
+                              int message_id) {
+  AddError(PendingError(policy, subkey, message_id));
 }
 
 void PolicyErrorMap::AddError(ConfigurationPolicyType policy,
                               int message_id,
                               const std::string& replacement) {
-  AddError(PendingError(policy, message_id, ASCIIToUTF16(replacement)));
+  AddError(PendingError(policy, std::string(), message_id, replacement));
+}
+
+void PolicyErrorMap::AddError(ConfigurationPolicyType policy,
+                              const std::string& subkey,
+                              int message_id,
+                              const std::string& replacement) {
+  AddError(PendingError(policy, subkey, message_id, replacement));
 }
 
 string16 PolicyErrorMap::GetErrors(ConfigurationPolicyType policy) {
@@ -94,11 +116,21 @@ void PolicyErrorMap::AddError(const PendingError& error) {
 }
 
 void PolicyErrorMap::Convert(const PendingError& error) {
+  string16 submessage;
+  if (error.has_replacement) {
+    submessage = l10n_util::GetStringFUTF16(error.message_id,
+                                            ASCIIToUTF16(error.replacement));
+  } else {
+    submessage = l10n_util::GetStringUTF16(error.message_id);
+  }
   string16 message;
-  if (error.has_replacement)
-    message = l10n_util::GetStringFUTF16(error.message_id, error.replacement);
-  else
-    message = l10n_util::GetStringUTF16(error.message_id);
+  if (!error.subkey.empty()) {
+    message = l10n_util::GetStringFUTF16(IDS_POLICY_SUBKEY_ERROR,
+                                         ASCIIToUTF16(error.subkey),
+                                         submessage);
+  } else {
+    message = submessage;
+  }
   map_.insert(std::make_pair(error.policy, message));
 }
 

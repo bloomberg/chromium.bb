@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -133,9 +133,10 @@ class PolicyTemplateChecker(object):
     # Each policy must have a type.
     policy_type = self._CheckContains(policy, 'type', str)
     if policy_type not in ('group', 'main', 'string', 'int', 'list', 'int-enum',
-                           'string-enum'):
+                           'string-enum', 'dict'):
       self._Error('Policy type must be either of: group, main, string, int, '
-                  'list, int-enum, string-enum', 'policy', policy, policy_type)
+                  'list, int-enum, string-enum, dict',
+                  'policy', policy, policy_type)
       return  # Can't continue for unsupported type.
 
     # Each policy must have a caption message.
@@ -200,6 +201,8 @@ class PolicyTemplateChecker(object):
         value_type = int
       elif policy_type == 'list':
         value_type = list
+      elif policy_type == 'dict':
+        value_type = dict
       else:
         raise NotImplementedError('Unimplemented policy type: %s' % policy_type)
       self._CheckContains(policy, 'example_value', value_type)

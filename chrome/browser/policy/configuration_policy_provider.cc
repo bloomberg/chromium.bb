@@ -1,12 +1,25 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
 #include "chrome/browser/policy/policy_map.h"
+#include "policy/policy_constants.h"
 
 namespace policy {
+
+namespace {
+
+ConfigurationPolicyType kProxyPolicies[] = {
+  kPolicyProxyMode,
+  kPolicyProxyServerMode,
+  kPolicyProxyServer,
+  kPolicyProxyPacUrl,
+  kPolicyProxyBypassList,
+};
+
+}  // namespace
 
 ConfigurationPolicyProvider::Observer::~Observer() {}
 
@@ -33,7 +46,11 @@ bool ConfigurationPolicyProvider::Provide(PolicyMap* result) {
     return true;
   }
 #endif
-  return ProvideInternal(result);
+  if (ProvideInternal(result)) {
+    FixDeprecatedPolicies(result);
+    return true;
+  }
+  return false;
 }
 
 bool ConfigurationPolicyProvider::IsInitializationComplete() const {
@@ -43,6 +60,8 @@ bool ConfigurationPolicyProvider::IsInitializationComplete() const {
 #if !defined(OFFICIAL_BUILD)
 
 void ConfigurationPolicyProvider::OverridePolicies(PolicyMap* policies) {
+  if (policies)
+    FixDeprecatedPolicies(policies);
   override_policies_.reset(policies);
   NotifyPolicyUpdated();
 }
@@ -55,6 +74,26 @@ void ConfigurationPolicyProvider::NotifyPolicyUpdated() {
                     OnUpdatePolicy(this));
 }
 
+// static
+void ConfigurationPolicyProvider::FixDeprecatedPolicies(PolicyMap* policies) {
+  // Proxy settings have been configured by 5 policies that didn't mix well
+  // together, and maps of policies had to take this into account when merging
+  // policy sources. The proxy settings will eventually be configured by a
+  // single Dictionary policy when all providers have support for that. For
+  // now, the individual policies are mapped here to a single Dictionary policy
+  // that the rest of the policy machinery uses.
+  scoped_ptr<DictionaryValue> proxy_settings(new DictionaryValue);
+  for (size_t i = 0; i < arraysize(kProxyPolicies); ++i) {
+    const Value* value = policies->Get(kProxyPolicies[i]);
+    if (value) {
+      proxy_settings->Set(GetPolicyName(kProxyPolicies[i]), value->DeepCopy());
+      policies->Erase(kProxyPolicies[i]);
+    }
+  }
+  if (!proxy_settings->empty() && !policies->Get(kPolicyProxySettings))
+    policies->Set(kPolicyProxySettings, proxy_settings.release());
+}
+
 void ConfigurationPolicyProvider::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -62,8 +101,6 @@ void ConfigurationPolicyProvider::AddObserver(Observer* observer) {
 void ConfigurationPolicyProvider::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
-
-// Class ConfigurationPolicyObserverRegistrar.
 
 ConfigurationPolicyObserverRegistrar::ConfigurationPolicyObserverRegistrar()
   : provider_(NULL),

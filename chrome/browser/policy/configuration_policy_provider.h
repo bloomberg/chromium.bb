@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,6 +69,11 @@ class ConfigurationPolicyProvider {
   // values actually provided by |Provide| can be overridden using
   // |OverridePolicies|.
   virtual bool ProvideInternal(PolicyMap* result) = 0;
+
+  // Utility method that converts deprecated policies into their corresponding
+  // actual policies. Subclasses can use this to fix deprecated policies in
+  // PolicyMaps that they obtained from elsewhere.
+  static void FixDeprecatedPolicies(PolicyMap* policies);
 
   const PolicyDefinitionList* policy_definition_list() const {
     return policy_definition_list_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6029,9 +6029,10 @@ void TestingAutomationProvider::GetPolicyDefinitionList(
   // Value::Type to python type.
   std::map<Value::Type, std::string> types;
   types[Value::TYPE_BOOLEAN] = "bool";
+  types[Value::TYPE_DICTIONARY] = "dict";
   types[Value::TYPE_INTEGER] = "int";
-  types[Value::TYPE_STRING] = "str";
   types[Value::TYPE_LIST] = "list";
+  types[Value::TYPE_STRING] = "str";
 
   const policy::PolicyDefinitionList::Entry* entry;
   for (entry = list->begin; entry != list->end; ++entry) {

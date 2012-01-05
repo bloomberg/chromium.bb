@@ -58,64 +58,47 @@ class MockCloudPolicyCache : public CloudPolicyCacheBase {
 
 class CloudPolicyProviderTest : public testing::Test {
  protected:
-  void CreateCloudPolicyProvider(CloudPolicyCacheBase::PolicyLevel level) {
+  void CreateCloudPolicyProvider() {
     cloud_policy_provider_.reset(
         new CloudPolicyProviderImpl(
             &browser_policy_connector_,
             GetChromePolicyDefinitionList(),
-            level));
+            CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY));
   }
 
   // Appends the caches to a provider and then provides the policies to
-  // |policy_map_|.
+  // |result|.
   void RunCachesThroughProvider(MockCloudPolicyCache caches[], int n,
-                                CloudPolicyCacheBase::PolicyLevel level) {
+                                PolicyMap* result) {
     CloudPolicyProviderImpl provider(
         &browser_policy_connector_,
         GetChromePolicyDefinitionList(),
-        level);
+        CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY);
     for (int i = 0; i < n; i++) {
       provider.AppendCache(&caches[i]);
     }
-    policy_map_.reset(new PolicyMap());
-    provider.Provide(policy_map_.get());
-  }
-
-  // Checks a string policy in |policy_map_|.
-  void ExpectStringPolicy(const std::string& expected,
-                          ConfigurationPolicyType type) {
-    const Value* value = policy_map_->Get(type);
-    std::string string_value;
-    ASSERT_TRUE(value != NULL);
-    EXPECT_TRUE(value->GetAsString(&string_value));
-    EXPECT_EQ(expected, string_value);
-  }
-
-  // Checks a boolean policy in |policy_map_|.
-  void ExpectBoolPolicy(bool expected, ConfigurationPolicyType type) {
-    const Value* value = policy_map_->Get(type);
-    bool bool_value;
-    ASSERT_TRUE(value != NULL);
-    EXPECT_TRUE(value->GetAsBoolean(&bool_value));
-    EXPECT_EQ(expected, bool_value);
-  }
-
-  void ExpectNoPolicy(ConfigurationPolicyType type) {
-    EXPECT_TRUE(NULL == policy_map_->Get(type));
+    provider.Provide(result);
   }
 
   void CombineTwoPolicyMaps(const PolicyMap& base,
                             const PolicyMap& overlay,
                             PolicyMap* out_map) {
-    DCHECK(cloud_policy_provider_.get());
-    cloud_policy_provider_->CombineTwoPolicyMaps(base, overlay, out_map);
+    MockCloudPolicyCache caches[2];
+    caches[0].raw_mandatory_policy()->CopyFrom(base);
+    caches[0].set_initialized(true);
+    caches[1].raw_mandatory_policy()->CopyFrom(overlay);
+    caches[1].set_initialized(true);
+    RunCachesThroughProvider(caches, 2, out_map);
+  }
+
+  void FixDeprecatedPolicies(PolicyMap* policies) {
+    CloudPolicyProviderImpl::FixDeprecatedPolicies(policies);
   }
 
   scoped_ptr<CloudPolicyProviderImpl> cloud_policy_provider_;
 
  private:
   BrowserPolicyConnector browser_policy_connector_;
-  scoped_ptr<PolicyMap> policy_map_;
 };
 
 // Proxy setting distributed over multiple caches.
@@ -153,23 +136,35 @@ TEST_F(CloudPolicyProviderTest,
                                         Value::CreateStringValue("cache 5"));
   caches[5].set_initialized(true);
 
-  RunCachesThroughProvider(
-      caches, n, CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY);
+  PolicyMap policies;
+  RunCachesThroughProvider(caches, n, &policies);
 
   // Verify expectations.
-  ExpectStringPolicy("cache 1", kPolicyProxyMode);
-  ExpectNoPolicy(kPolicyProxyServerMode);
-  ExpectNoPolicy(kPolicyProxyServer);
-  ExpectNoPolicy(kPolicyProxyPacUrl);
-  ExpectBoolPolicy(true, kPolicyShowHomeButton);
-  ExpectBoolPolicy(true, kPolicyIncognitoEnabled);
-  ExpectBoolPolicy(true, kPolicyTranslateEnabled);
+  EXPECT_TRUE(policies.Get(kPolicyProxyMode) == NULL);
+  EXPECT_TRUE(policies.Get(kPolicyProxyServerMode) == NULL);
+  EXPECT_TRUE(policies.Get(kPolicyProxyServer) == NULL);
+  EXPECT_TRUE(policies.Get(kPolicyProxyPacUrl) == NULL);
+
+  const Value* value = policies.Get(kPolicyProxySettings);
+  ASSERT_TRUE(value != NULL);
+  ASSERT_TRUE(value->IsType(Value::TYPE_DICTIONARY));
+  const DictionaryValue* settings = static_cast<const DictionaryValue*>(value);
+  std::string mode;
+  EXPECT_TRUE(settings->GetString(GetPolicyName(kPolicyProxyMode), &mode));
+  EXPECT_EQ("cache 1", mode);
+
+  base::FundamentalValue expected(true);
+  EXPECT_TRUE(base::Value::Equals(&expected,
+                                  policies.Get(kPolicyShowHomeButton)));
+  EXPECT_TRUE(base::Value::Equals(&expected,
+                                  policies.Get(kPolicyIncognitoEnabled)));
+  EXPECT_TRUE(base::Value::Equals(&expected,
+                                  policies.Get(kPolicyTranslateEnabled)));
 }
 
 // Combining two PolicyMaps.
 TEST_F(CloudPolicyProviderTest, CombineTwoPolicyMapsSame) {
   PolicyMap A, B, C;
-  CreateCloudPolicyProvider(CloudPolicyCacheBase::POLICY_LEVEL_RECOMMENDED);
   A.Set(kPolicyHomepageLocation,
         Value::CreateStringValue("http://www.chromium.org"));
   B.Set(kPolicyHomepageLocation,
@@ -184,14 +179,12 @@ TEST_F(CloudPolicyProviderTest, CombineTwoPolicyMapsSame) {
 
 TEST_F(CloudPolicyProviderTest, CombineTwoPolicyMapsEmpty) {
   PolicyMap A, B, C;
-  CreateCloudPolicyProvider(CloudPolicyCacheBase::POLICY_LEVEL_RECOMMENDED);
   CombineTwoPolicyMaps(A, B, &C);
   EXPECT_TRUE(C.empty());
 }
 
 TEST_F(CloudPolicyProviderTest, CombineTwoPolicyMapsPartial) {
   PolicyMap A, B, C;
-  CreateCloudPolicyProvider(CloudPolicyCacheBase::POLICY_LEVEL_RECOMMENDED);
 
   A.Set(kPolicyHomepageLocation,
         Value::CreateStringValue("http://www.chromium.org"));
@@ -223,7 +216,6 @@ TEST_F(CloudPolicyProviderTest, CombineTwoPolicyMapsProxies) {
   const int a_value = 1;
   const int b_value = -1;
   PolicyMap A, B, C;
-  CreateCloudPolicyProvider(CloudPolicyCacheBase::POLICY_LEVEL_RECOMMENDED);
 
   A.Set(kPolicyProxyMode, Value::CreateIntegerValue(a_value));
 
@@ -234,12 +226,14 @@ TEST_F(CloudPolicyProviderTest, CombineTwoPolicyMapsProxies) {
 
   CombineTwoPolicyMaps(A, B, &C);
 
+  FixDeprecatedPolicies(&A);
+  FixDeprecatedPolicies(&B);
   EXPECT_TRUE(A.Equals(C));
   EXPECT_FALSE(B.Equals(C));
 }
 
 TEST_F(CloudPolicyProviderTest, RefreshPolicies) {
-  CreateCloudPolicyProvider(CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY);
+  CreateCloudPolicyProvider();
   MockCloudPolicyCache cache0;
   MockCloudPolicyCache cache1;
   MockCloudPolicyCache cache2;

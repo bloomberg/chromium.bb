@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,9 +71,6 @@ class ConfigurationPolicyPrefStore
 
   // Creates a ConfigurationPolicyPrefStore that reads recommended cloud policy.
   static ConfigurationPolicyPrefStore* CreateRecommendedCloudPolicyPrefStore();
-
-  // Returns true if the given policy is a proxy policy.
-  static bool IsProxyPolicy(ConfigurationPolicyType policy);
 
  private:
   // Refreshes policy information, rereading policy from the provider and

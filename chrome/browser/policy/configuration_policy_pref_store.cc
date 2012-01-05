@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,15 +120,6 @@ ConfigurationPolicyPrefStore::CreateRecommendedCloudPolicyPrefStore() {
   return new ConfigurationPolicyPrefStore(
       g_browser_process->browser_policy_connector()->
           GetRecommendedCloudProvider());
-}
-
-bool
-ConfigurationPolicyPrefStore::IsProxyPolicy(ConfigurationPolicyType policy) {
-  return policy == kPolicyProxyMode ||
-      policy == kPolicyProxyServerMode ||
-      policy == kPolicyProxyServer ||
-      policy == kPolicyProxyPacUrl ||
-      policy == kPolicyProxyBypassList;
 }
 
 void ConfigurationPolicyPrefStore::Refresh() {

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -21,6 +21,7 @@ CHROMIUM_MANDATORY_SUBKEY = 'SOFTWARE\\\\Policies\\\\Chromium'
 CHROMIUM_RECOMMENDED_SUBKEY = CHROMIUM_MANDATORY_SUBKEY + '\\\\Recommended'
 
 TYPE_MAP = {
+  'dict': 'TYPE_DICTIONARY',
   'int': 'TYPE_INTEGER',
   'int-enum': 'TYPE_INTEGER',
   'list': 'TYPE_LIST',
@@ -311,13 +312,16 @@ message PolicyOptions {
 '''
 
 
+# TODO(joaodasilva): introduce a message to represent dictionary values.
+# Mapping 'dict' to 'string' for now. http://crbug.com/108997
 PROTOBUF_TYPE = {
-  'main': 'bool',
-  'string': 'string',
-  'string-enum': 'string',
+  'dict': 'string',
   'int': 'int64',
   'int-enum': 'int64',
   'list': 'StringList',
+  'main': 'bool',
+  'string': 'string',
+  'string-enum': 'string',
 }
 
 
@@ -411,15 +415,18 @@ CPP_FOOT = '''}
 '''
 
 
-def _CreateValue(type):
+def _CreateValue(type, arg):
   if type == 'main':
-    return "Value::CreateBooleanValue"
+    return "Value::CreateBooleanValue(%s)" % arg
   elif type in ('int', 'int-enum'):
-    return "DecodeIntegerValue"
+    return "DecodeIntegerValue(%s)" % arg
   elif type in ('string', 'string-enum'):
-    return "Value::CreateStringValue"
+    return "Value::CreateStringValue(%s)" % arg
   elif type == 'list':
-    return "DecodeStringList"
+    return "DecodeStringList(%s)" % arg
+  elif type == 'dict':
+    # TODO(joaodasilva): decode 'dict' types. http://crbug.com/108997
+    return "new DictionaryValue()"
   else:
     raise NotImplementedError()
 
@@ -451,8 +458,9 @@ def _WritePolicyCode(file, policy):
              '        }\n'
              '      }\n'
              '      if (destination) {\n')
-  file.write('        Value* value = %s(%s.%s());\n' %
-             (_CreateValue(policy['type']), proto_name, membername))
+  file.write('        Value* value = %s;\n' %
+             (_CreateValue(policy['type'],
+                           '%s.%s()' % (proto_name, membername))))
   file.write('        destination->Set(kPolicy%s, value);\n' % policy['name'])
   file.write('      }\n'
              '    }\n'

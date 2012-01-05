@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,10 +34,24 @@ class PolicyErrorMap {
   // |message_id| in grit/generated_resources.h to the map.
   void AddError(ConfigurationPolicyType policy, int message_id);
 
+  // Adds an entry with key |policy|, subkey |subkey|, and the error message
+  // corresponding to |message_id| in grit/generated_resources.h to the map.
+  void AddError(ConfigurationPolicyType policy,
+                const std::string& subkey,
+                int message_id);
+
   // Adds an entry with key |policy| and the error message corresponding to
   // |message_id| in grit/generated_resources.h to the map and replaces the
   // placeholder within the error message with |replacement_string|.
   void AddError(ConfigurationPolicyType policy,
+                int message_id,
+                const std::string& replacement_string);
+
+  // Adds an entry with key |policy|, subkey |subkey| and the error message
+  // corresponding to |message_id| in grit/generated_resources.h to the map.
+  // Replaces the placeholder in the error message with |replacement_string|.
+  void AddError(ConfigurationPolicyType policy,
+                const std::string& subkey,
                 int message_id,
                 const std::string& replacement_string);
 

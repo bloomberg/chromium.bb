@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,10 @@ class PolicyMap {
 
   void Swap(PolicyMap* other);
   void CopyFrom(const PolicyMap& other);
+
+  // Similar to CopyFrom, but doesn't Clear() |this| before merging, and only
+  // merges keys that aren't already contained in |this|.
+  void MergeFrom(const PolicyMap& other);
 
   // Loads the values in |policies| into this PolicyMap, mapped to their
   // corresponding policy type. The policies to load, and their types, are

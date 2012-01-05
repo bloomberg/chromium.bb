@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,11 @@ class ConfigurationPolicyHandler {
   virtual void ApplyPolicySettings(const PolicyMap& policies,
                                    PrefValueMap* prefs) = 0;
 
-  // Converts sensitive policy values to others more appropriate for displaying.
+  // Modifies the values of some of the policies in |policies| so that they
+  // are more suitable to display to the user. This can be used to remove
+  // sensitive values such as passwords, or to pretty-print values.
+  // The base implementation just converts DictionaryValue policies to a
+  // StringValue representation.
   virtual void PrepareForDisplaying(PolicyMap* policies) const;
 
  private:

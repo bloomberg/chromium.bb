@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -120,6 +120,8 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
     'ProxyPacUrl': ('http://localhost:8080/proxy.pac', [],
                     [ 'win', 'mac', 'linux' ]),
     'ProxyBypassList': ('localhost', [], [ 'win', 'mac', 'linux' ]),
+    # Note: this policy is only used internally for now.
+    'ProxySettings': ({}, [], []),
     'EnableOriginBoundCerts': (False, []),
     'AuthSchemes': ('AuthSchemes', []),
     'DisableAuthNegotiateCnameLookup': (True, []),

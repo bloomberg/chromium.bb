@@ -4576,6 +4576,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POLICY_NOT_SPECIFIED_ERROR" desc="The text displayed in the status column when a policy value should have been specified but wasn't.">
         Must be specified.
       </message>
+      <message name="IDS_POLICY_SUBKEY_ERROR" desc="The text displayed in the status column for errors in a subkey of a policy.">
+        Key "<ph name="SUBKEY">$1<ex>ProxyMode</ex></ph>": <ph name="ERROR">$2<ex>Must be specified.</ex></ph>
+      </message>
       <message name="IDS_POLICY_INVALID_SEARCH_URL_ERROR" desc="The text displayed in the status column when a the URL given for DefaultSearchProviderSearchURL is invalid.">
         Invalid search URL.
       </message>

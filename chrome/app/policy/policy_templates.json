@@ -28,6 +28,8 @@
 #     items
 #   'main' - a boolean value
 #   'list' - a list of string values
+#   'dict' - a dictionary value, containing other values indexed by strings
+#     NOTE: This type is not supported yet. http://crbug.com/108992
 #
 # Policy group descriptions, policy captions and similar texts are localized
 # strings taken from the <message> nodes of the .grd file. Their name
@@ -98,12 +100,19 @@
 #   recommended policies templates. This only affects the template generation;
 #   all policies can be at the recommended level. The default is False.
 #
+#   The 'future' key is used to indicate that a policy isn't yet ready for
+#   usage. It defaults to False, and currently affects the generated policy
+#   templates and documentation. The policy definition list that Chrome sees
+#   will include policies marked with 'future'. If a WIP policy isn't meant to
+#   be seen by the policy providers either, the 'supported_on' key should be set
+#   to an empty list.
+#
 # IDs:
 #   Since a Protocol Buffer definition is generated from this file, unique and
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 115
+#   For your editing convenience: highest ID currently used: 116
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -916,6 +925,23 @@
           'label': '''Comma-separated list of proxy bypass rules''',
         },
       ],
+    },
+    {
+      # TODO(joaodasilva): Make this the default and deprecate the other proxy
+      # policies once all providers are ready to load 'dict' policies.
+      # This is currently an internal policy.
+      # http://crbug.com/108992, http://crbug.com/108996
+      'name': 'ProxySettings',
+      'type': 'dict',
+      'supported_on': ['chrome.*:18-', 'chrome_os:0.18-'],
+      'future': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': { "ProxyMode": "direct" },
+      'id': 116,
+      'caption': '''Proxy settings''',
+      'desc': '''Configures the proxy settings for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      This policy isn't ready for usage yet, please don't use it.''',
     },
     {
       'name': 'HTTPAuthentication',
@@ -2151,7 +2177,6 @@
       'type': 'string',
       'supported_on': ['chrome_os:0.16-'],
       'features': {'dynamic_refresh': True},
-      'future': False,
       'example_value': '{ "NetworkConfigurations": [ { "GUID": "{4b224dfd-6849-7a63-5e394343244ae9c9}", "Name": "my WiFi", "Type": "WiFi", "WiFi": { "SSID": "my WiFi", "HiddenSSID": false, "Security": "None", "AutoConnect": true } } ] }',
       'id': 107,
       'caption': '''User-level network configuration''',
@@ -2174,7 +2199,6 @@
       'type': 'main',
       'supported_on': ['chrome.*:17-'],
       'features': {'dynamic_refresh': True},
-      'future': False,
       'example_value': True,
       'id': 109,
       'caption': '''Enable submission of documents to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>''',
@@ -2189,7 +2213,6 @@
       'type': 'string',
       'supported_on': ['chrome.*:17-','chrome_os:0.17-'],
       'features': {'dynamic_refresh': True},
-      'future': False,
       'example_value': 'http://company-intranet/chromeapps',
       'id': 112,
       'caption': '''Enterprise web store URL''',
@@ -2202,7 +2225,6 @@
       'type': 'string',
       'supported_on': ['chrome.*:17-','chrome_os:0.17-'],
       'features': {'dynamic_refresh': True},
-      'future': False,
       'example_value': 'WidgCo Chrome Apps',
       'id': 113,
       'caption': '''Enterprise web store name''',

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,6 +110,9 @@ DictionaryValue* MacPreferencesPolicyProviderDelegate::Load() {
           if (valid_array)
             policy->Set(current->name, list_value.release());
         }
+        break;
+      case Value::TYPE_DICTIONARY:
+        // TODO(joaodasilva): http://crbug.com/108995
         break;
       default:
         NOTREACHED();
