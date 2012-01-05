@@ -752,7 +752,7 @@ void PrefService::UnregisterPreference(const char* path) {
   DCHECK(CalledOnValidThread());
 
   Preference p(this, path, Value::TYPE_NULL);
-  PreferenceSet::const_iterator it = prefs_.find(&p);
+  PreferenceSet::iterator it = prefs_.find(&p);
   if (it == prefs_.end()) {
     NOTREACHED() << "Trying to unregister an unregistered pref: " << path;
     return;
