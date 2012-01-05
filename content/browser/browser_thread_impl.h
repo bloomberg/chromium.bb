@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,13 +35,6 @@ class CONTENT_EXPORT BrowserThreadImpl
   // the API cleaner. Therefore make BrowserThread a friend class.
   friend class BrowserThread;
 
-  // TODO(brettw) remove this variant when Task->Closure migration is complete.
-  static bool PostTaskHelper(
-      BrowserThread::ID identifier,
-      const tracked_objects::Location& from_here,
-      Task* task,
-      int64 delay_ms,
-      bool nestable);
   static bool PostTaskHelper(
       BrowserThread::ID identifier,
       const tracked_objects::Location& from_here,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,47 +116,6 @@ BrowserThreadImpl::~BrowserThreadImpl() {
 bool BrowserThreadImpl::PostTaskHelper(
     BrowserThread::ID identifier,
     const tracked_objects::Location& from_here,
-    Task* task,
-    int64 delay_ms,
-    bool nestable) {
-  DCHECK(identifier >= 0 && identifier < ID_COUNT);
-  // Optimization: to avoid unnecessary locks, we listed the ID enumeration in
-  // order of lifetime.  So no need to lock if we know that the other thread
-  // outlives this one.
-  // Note: since the array is so small, ok to loop instead of creating a map,
-  // which would require a lock because std::map isn't thread safe, defeating
-  // the whole purpose of this optimization.
-  BrowserThread::ID current_thread;
-  bool guaranteed_to_outlive_target_thread =
-      GetCurrentThreadIdentifier(&current_thread) &&
-      current_thread <= identifier;
-
-  if (!guaranteed_to_outlive_target_thread)
-    g_lock.Get().Acquire();
-
-  MessageLoop* message_loop = g_browser_threads[identifier] ?
-      g_browser_threads[identifier]->message_loop() : NULL;
-  if (message_loop) {
-    if (nestable) {
-      message_loop->PostDelayedTask(from_here, task, delay_ms);
-    } else {
-      message_loop->PostNonNestableDelayedTask(from_here, task, delay_ms);
-    }
-  }
-
-  if (!guaranteed_to_outlive_target_thread)
-    g_lock.Get().Release();
-
-  if (!message_loop)
-    delete task;
-
-  return !!message_loop;
-}
-
-// static
-bool BrowserThreadImpl::PostTaskHelper(
-    BrowserThread::ID identifier,
-    const tracked_objects::Location& from_here,
     const base::Closure& task,
     int64 delay_ms,
     bool nestable) {
@@ -200,29 +159,6 @@ class BrowserThreadMessageLoopProxy : public base::MessageLoopProxy {
   }
 
   // MessageLoopProxy implementation.
-  virtual bool PostTask(const tracked_objects::Location& from_here,
-                        Task* task) {
-    return BrowserThread::PostTask(id_, from_here, task);
-  }
-
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               Task* task, int64 delay_ms) {
-    return BrowserThread::PostDelayedTask(id_, from_here, task, delay_ms);
-  }
-
-  virtual bool PostNonNestableTask(const tracked_objects::Location& from_here,
-                                   Task* task) {
-    return BrowserThread::PostNonNestableTask(id_, from_here, task);
-  }
-
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      Task* task,
-      int64 delay_ms) {
-    return BrowserThread::PostNonNestableDelayedTask(id_, from_here, task,
-                                                    delay_ms);
-  }
-
   virtual bool PostTask(const tracked_objects::Location& from_here,
                         const base::Closure& task) {
     return BrowserThread::PostTask(id_, from_here, task);
@@ -315,42 +251,6 @@ bool BrowserThread::PostNonNestableDelayedTask(
     ID identifier,
     const tracked_objects::Location& from_here,
     const base::Closure& task,
-    int64 delay_ms) {
-  return BrowserThreadImpl::PostTaskHelper(
-      identifier, from_here, task, delay_ms, false);
-}
-
-// static
-bool BrowserThread::PostTask(ID identifier,
-                             const tracked_objects::Location& from_here,
-                             Task* task) {
-  return BrowserThreadImpl::PostTaskHelper(
-      identifier, from_here, task, 0, true);
-}
-
-// static
-bool BrowserThread::PostDelayedTask(ID identifier,
-                                    const tracked_objects::Location& from_here,
-                                    Task* task,
-                                    int64 delay_ms) {
-  return BrowserThreadImpl::PostTaskHelper(
-      identifier, from_here, task, delay_ms, true);
-}
-
-// static
-bool BrowserThread::PostNonNestableTask(
-    ID identifier,
-    const tracked_objects::Location& from_here,
-    Task* task) {
-  return BrowserThreadImpl::PostTaskHelper(
-      identifier, from_here, task, 0, false);
-}
-
-// static
-bool BrowserThread::PostNonNestableDelayedTask(
-    ID identifier,
-    const tracked_objects::Location& from_here,
-    Task* task,
     int64 delay_ms) {
   return BrowserThreadImpl::PostTaskHelper(
       identifier, from_here, task, delay_ms, false);

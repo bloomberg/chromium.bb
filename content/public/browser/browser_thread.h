@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,23 +116,6 @@ class CONTENT_EXPORT BrowserThread {
       ID identifier,
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      int64 delay_ms);
-
-  // TODO(brettw) remove these when Task->Closure conversion is done.
-  static bool PostTask(ID identifier,
-                       const tracked_objects::Location& from_here,
-                       Task* task);
-  static bool PostDelayedTask(ID identifier,
-                              const tracked_objects::Location& from_here,
-                              Task* task,
-                              int64 delay_ms);
-  static bool PostNonNestableTask(ID identifier,
-                                  const tracked_objects::Location& from_here,
-                                  Task* task);
-  static bool PostNonNestableDelayedTask(
-      ID identifier,
-      const tracked_objects::Location& from_here,
-      Task* task,
       int64 delay_ms);
 
   static bool PostTaskAndReply(

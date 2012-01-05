@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,22 +31,7 @@ class PluginMessageLoopProxy : public base::MessageLoopProxy {
 
   void Detach();
 
-  // base::MessageLoopProxy interface.
-  virtual bool PostTask(
-      const tracked_objects::Location& from_here,
-      Task* task) OVERRIDE;
-  virtual bool PostDelayedTask(
-      const tracked_objects::Location& from_here,
-      Task* task,
-      int64 delay_ms) OVERRIDE;
-  virtual bool PostNonNestableTask(
-      const tracked_objects::Location& from_here,
-      Task* task) OVERRIDE;
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      Task* task,
-      int64 delay_ms) OVERRIDE;
-
+  // base::MessageLoopProxy implementation.
   virtual bool PostTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task) OVERRIDE;
@@ -67,7 +52,6 @@ class PluginMessageLoopProxy : public base::MessageLoopProxy {
  private:
   static void TaskSpringboard(void* data);
 
-  void RunTaskIf(Task* task);
   void RunClosureIf(const base::Closure& task);
 
   base::PlatformThreadId plugin_thread_id_;

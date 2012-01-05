@@ -350,10 +350,6 @@ class Session {
   Error* GetAppCacheStatus(int* status);
 
  private:
-  void RunSessionTask(Task* task);
-  void RunSessionTaskOnSessionThread(
-      Task* task,
-      base::WaitableEvent* done_event);
   void RunSessionTask(const base::Closure& task);
   void RunClosureOnSessionThread(
       const base::Closure& task,
