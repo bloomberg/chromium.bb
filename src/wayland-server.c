@@ -412,6 +412,58 @@ lose_keyboard_focus(struct wl_listener *listener,
 	device->keyboard_focus_resource = NULL;
 }
 
+static void
+default_grab_focus(struct wl_grab *grab, uint32_t time,
+		   struct wl_surface *surface, int32_t x, int32_t y)
+{
+	struct wl_input_device *device = grab->input_device;
+
+	if (device->button_count > 0)
+		return;
+
+	wl_input_device_set_pointer_focus(device, surface, time,
+					  device->x, device->y, x, y);
+}
+
+static void
+default_grab_motion(struct wl_grab *grab,
+		    uint32_t time, int32_t x, int32_t y)
+{
+	struct wl_input_device *device = grab->input_device;
+	struct wl_resource *resource;
+
+	resource = grab->input_device->pointer_focus_resource;
+	if (resource)
+		wl_resource_post_event(resource, WL_INPUT_DEVICE_MOTION,
+				       time, device->x, device->y, x, y);
+}
+
+static void
+default_grab_button(struct wl_grab *grab,
+		    uint32_t time, int32_t button, int32_t state)
+{
+	struct wl_input_device *device = grab->input_device;
+	struct wl_resource *resource;
+
+	if (device->button_count == 0 && state == 0)
+		wl_input_device_set_pointer_focus(device,
+						  device->current, time,
+						  device->x, device->y,
+						  device->current_x,
+						  device->current_y);
+
+	resource = device->pointer_focus_resource;
+	if (resource)
+		wl_resource_post_event(resource, WL_INPUT_DEVICE_BUTTON,
+				       time, button, state);
+}
+
+static const struct wl_grab_interface default_grab_interface = {
+	default_grab_focus,
+	default_grab_motion,
+	default_grab_button
+};
+
 WL_EXPORT void
 wl_input_device_init(struct wl_input_device *device)
 {
@@ -420,6 +472,10 @@ wl_input_device_init(struct wl_input_device *device)
 	wl_array_init(&device->keys);
 	device->pointer_focus_listener.func = lose_pointer_focus;
 	device->keyboard_focus_listener.func = lose_keyboard_focus;
+
+	device->default_grab.interface = &default_grab_interface;
+	device->default_grab.input_device = device;
+	device->grab = &device->default_grab;
 
 	device->x = 100;
 	device->y = 100;
