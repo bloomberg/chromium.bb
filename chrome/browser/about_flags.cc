@@ -503,6 +503,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE_AND_VALUE(switches::kJavaScriptFlags, "--harmony")
   },
+  {
+    "enable-restore-session-state",
+    IDS_FLAGS_ENABLE_RESTORE_SESSION_STATE_NAME,
+    IDS_FLAGS_ENABLE_RESTORE_SESSION_STATE_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableRestoreSessionState)
+  },
 };
 
 const Experiment* experiments = kExperiments;
