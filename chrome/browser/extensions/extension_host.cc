@@ -33,12 +33,14 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -131,7 +133,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
           extension_function_dispatcher_(profile_, this)),
       extension_host_type_(host_type),
       associated_web_contents_(NULL) {
-  host_contents_.reset(new TabContents(
+  host_contents_.reset(WebContents::Create(
       profile_, site_instance, MSG_ROUTING_NONE, NULL, NULL));
   content::WebContentsObserver::Observe(host_contents_.get());
   host_contents_->SetDelegate(this);

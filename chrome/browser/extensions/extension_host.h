@@ -73,7 +73,7 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   const Extension* extension() const { return extension_; }
   const std::string& extension_id() const { return extension_id_; }
-  TabContents* host_contents() const { return host_contents_.get(); }
+  content::WebContents* host_contents() const { return host_contents_.get(); }
   RenderViewHost* render_view_host() const;
   content::RenderProcessHost* render_process_host() const;
   bool did_stop_loading() const { return did_stop_loading_; }
@@ -195,7 +195,7 @@ class ExtensionHost : public content::WebContentsDelegate,
 #endif
 
   // The host for our HTML content.
-  scoped_ptr<TabContents> host_contents_;
+  scoped_ptr<content::WebContents> host_contents_;
 
   // Helpers that take care of extra functionality for our host contents.
   scoped_ptr<PrefsTabHelper> prefs_tab_helper_;
