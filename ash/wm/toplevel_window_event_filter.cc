@@ -290,7 +290,17 @@ bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
   gfx::Size size = GetSizeForDrag(bounds_change, target, &delta_x, &delta_y);
   gfx::Point origin = GetOriginForDrag(bounds_change, delta_x, delta_y);
 
-  target->SetBounds(gfx::Rect(origin, size));
+  gfx::Rect new_bounds(origin, size);
+  // Update bottom edge to stay in the work area when we are resizing
+  // by dragging the bottome edge or corners.
+  if (bounds_change & kBoundsChange_Resizes &&
+      origin.y() == target->bounds().y()) {
+    gfx::Rect work_area = gfx::Screen::GetMonitorWorkAreaNearestWindow(target);
+    if (new_bounds.bottom() > work_area.bottom())
+      new_bounds.Inset(0, 0, 0,
+                       new_bounds.bottom() - work_area.bottom());
+  }
+  target->SetBounds(new_bounds);
   return true;
 }
 

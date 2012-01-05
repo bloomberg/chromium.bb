@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -318,6 +318,49 @@ TEST_F(ToplevelWindowEventFilterTest, DoubleClickCaptionTogglesMaximize) {
   generator.DoubleClickLeftButton();
 
   EXPECT_FALSE(IsWindowMaximized(w1.get()));
+}
+
+TEST_F(ToplevelWindowEventFilterTest, BottomRightWorkArea) {
+  scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOMRIGHT));
+  gfx::Rect work_area =
+      gfx::Screen::GetMonitorWorkAreaNearestWindow(target.get());
+  gfx::Point position = target->bounds().origin();
+  // Drag further than work_area bottom.
+  DragFromCenterBy(target.get(), 100, work_area.height());
+  // Position should not have changed.
+  EXPECT_EQ(position, target->bounds().origin());
+  // Size should have increased by 100, work_area.height() - target->bounds.y()
+  EXPECT_EQ(gfx::Size(200, work_area.height() - target->bounds().y()),
+            target->bounds().size());
+}
+
+TEST_F(ToplevelWindowEventFilterTest, BottomLeftWorkArea) {
+  scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOMLEFT));
+  gfx::Rect work_area =
+      gfx::Screen::GetMonitorWorkAreaNearestWindow(target.get());
+  gfx::Point position = target->bounds().origin();
+  // Drag further than work_area bottom.
+  DragFromCenterBy(target.get(), -30, work_area.height());
+  // origin is now at 70, 100.
+  EXPECT_EQ(position.x() - 30, target->bounds().x());
+  EXPECT_EQ(position.y(), target->bounds().y());
+  // Size should have increased by 30, work_area.height() - target->bounds.y()
+  EXPECT_EQ(gfx::Size(130, work_area.height() - target->bounds().y()),
+            target->bounds().size());
+}
+
+TEST_F(ToplevelWindowEventFilterTest, BottomWorkArea) {
+  scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOM));
+  gfx::Rect work_area =
+      gfx::Screen::GetMonitorWorkAreaNearestWindow(target.get());
+  gfx::Point position = target->bounds().origin();
+  // Drag further than work_area bottom.
+  DragFromCenterBy(target.get(), 0, work_area.height());
+  // Position should not have changed.
+  EXPECT_EQ(position, target->bounds().origin());
+  // Size should have increased by 0, work_area.height() - target->bounds.y()
+  EXPECT_EQ(gfx::Size(100, work_area.height() - target->bounds().y()),
+            target->bounds().size());
 }
 
 }  // namespace test
