@@ -27,7 +27,6 @@ import gyp.system_test
 import gyp.xcode_emulation
 import os
 import re
-import shlex
 import sys
 
 generator_default_variables = {
@@ -762,12 +761,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     if self.is_mac_bundle:
       all_mac_bundle_resources = (
           spec.get('mac_bundle_resources', []) + extra_mac_bundle_resources)
-      if all_mac_bundle_resources:
-        self.WriteMacBundleResources(
-            all_mac_bundle_resources, mac_bundle_deps, spec)
-      info_plist = self.xcode_settings.GetPerTargetSetting('INFOPLIST_FILE')
-      if info_plist:
-        self.WriteMacInfoPlist(info_plist, mac_bundle_deps, spec)
+      self.WriteMacBundleResources(
+          all_mac_bundle_resources, mac_bundle_deps, spec)
+      self.WriteMacInfoPlist(mac_bundle_deps, spec)
 
     # Sources.
     all_sources = spec.get('sources', []) + extra_sources
@@ -1108,21 +1104,17 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       bundle_deps.append(output)
 
 
-  def WriteMacInfoPlist(self, info_plist, bundle_deps, spec):
+  def WriteMacInfoPlist(self, bundle_deps, spec):
     """Write Makefile code for bundle Info.plist files."""
-    assert ' ' not in info_plist, (
-      "Spaces in resource filenames not supported (%s)"  % info_plist)
-    info_plist = self.Absolutify(info_plist)
-    settings = self.xcode_settings
-
-    # If explicilty set to preprocess the plist, invoke the C preprocessor and
-    # specify any defines as -D flags.
-    if settings.GetPerTargetSetting('INFOPLIST_PREPROCESS', 'NO') == 'YES':
-      # Create an intermediate file based on the path.
+    info_plist, out, defines, extra_env = gyp.xcode_emulation.GetMacInfoPlist(
+        generator_default_variables['PRODUCT_DIR'], self.xcode_settings,
+        self.Absolutify)
+    if not info_plist:
+      return
+    if defines:
+      # Create an intermediate file to store preprocessed results.
       intermediate_plist = ('$(obj).$(TOOLSET)/$(TARGET)/' +
           os.path.basename(info_plist))
-      defines = shlex.split(settings.GetPerTargetSetting(
-          'INFOPLIST_PREPROCESSOR_DEFINITIONS', ''))
       self.WriteList(defines, intermediate_plist + ': INFOPLIST_DEFINES', '-D',
           quoter=EscapeCppDefine)
       self.WriteMakeRule([intermediate_plist], [info_plist],
@@ -1131,16 +1123,12 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
            # preprocessor do not affect the XML parser in mac_tool.
            '@plutil -convert xml1 $@ $@'])
       info_plist = intermediate_plist
-
-    path = generator_default_variables['PRODUCT_DIR']
-    dest_plist = os.path.join(path, settings.GetBundlePlistPath())
-    dest_plist = QuoteSpaces(dest_plist)
-    extra_settings = settings.GetPerTargetSettings()
-    # plists can contain envvars and substitute them into the file..
-    self.WriteXcodeEnv(dest_plist, spec, additional_settings=extra_settings)
-    self.WriteDoCmd([dest_plist], [info_plist], 'mac_tool,,,copy-info-plist',
+    out = QuoteSpaces(out)
+    # plists can contain envvars and substitute them into the file.
+    self.WriteXcodeEnv(out, spec, additional_settings=extra_env)
+    self.WriteDoCmd([out], [info_plist], 'mac_tool,,,copy-info-plist',
                     part_of_all=True)
-    bundle_deps.append(dest_plist)
+    bundle_deps.append(out)
 
 
   def WriteSources(self, configs, deps, sources,

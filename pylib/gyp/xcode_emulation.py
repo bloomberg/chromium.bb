@@ -8,6 +8,7 @@ other build systems, such as make and ninja.
 """
 
 import os.path
+import shlex
 
 class XcodeSettings(object):
   """A class that understands the gyp 'xcode_settings' object."""
@@ -316,14 +317,14 @@ class XcodeSettings(object):
     self.configname = None
     return cflags_objcc
 
-  def GetLdflags(self, configname, product_dir, map_gyp_to_build_path):
+  def GetLdflags(self, configname, product_dir, gyp_to_build_path):
     """Returns flags that need to be passed to the linker.
 
     Args:
         configname: The name of the configuration to get ld flags for.
         product_dir: The directory where products such static and dynamic
             libraries are placed. This is added to the library search path.
-        map_gyp_to_build_path: A function that converts paths relative to the
+        gyp_to_build_path: A function that converts paths relative to the
             current gyp file to paths relative to the build direcotry.
     """
     self.configname = configname
@@ -334,7 +335,7 @@ class XcodeSettings(object):
     # two cases.
     def MapGypPathWithPrefix(flag, prefix):
       if flag.startswith(prefix):
-        flag = prefix + map_gyp_to_build_path(flag[len(prefix):])
+        flag = prefix + gyp_to_build_path(flag[len(prefix):])
       return flag
     for ldflag in self._Settings().get('OTHER_LDFLAGS', []):
       # Required for ffmpeg (no idea why they don't use LIBRARY_SEARCH_PATHS,
@@ -364,7 +365,7 @@ class XcodeSettings(object):
 
     if 'ORDER_FILE' in self._Settings():
       ldflags.append('-Wl,-order_file ' +
-                     '-Wl,' + map_gyp_to_build_path(
+                     '-Wl,' + gyp_to_build_path(
                                   self._Settings()['ORDER_FILE']))
 
     # TODO: Do not hardcode arch. Supporting fat binaries will be annoying.
@@ -688,3 +689,50 @@ def GetMacBundleResources(product_dir, xcode_settings, resources):
       output = output[0:-3] + 'nib'
 
     yield output, res
+
+
+def GetMacInfoPlist(product_dir, xcode_settings, gyp_path_to_build_path):
+  """Returns (info_plist, dest_plist, defines, extra_env), where:
+  * |info_plist| is the sourc plist path, relative to the
+    build directory,
+  * |dest_plist| is the destination plist path, relative to the
+    build directory,
+  * |defines| is a list of preprocessor defines (empty if the plist
+    shouldn't be preprocessed,
+  * |extra_env| is a dict of env variables that should be exported when
+    invoking |mac_tool copy-info-plist|.
+
+  Only call this for mac bundle targets.
+
+  Args:
+      product_dir: Path to the directory containing the output bundle,
+          relative to the build directory.
+      xcode_settings: The XcodeSettings of the current target.
+      gyp_to_build_path: A function that converts paths relative to the
+          current gyp file to paths relative to the build direcotry.
+  """
+  info_plist = xcode_settings.GetPerTargetSetting('INFOPLIST_FILE')
+  if not info_plist:
+    return None, None, [], {}
+
+  # The make generator doesn't support it, so forbid it everywhere
+  # to keep the generators more interchangable.
+  assert ' ' not in info_plist, (
+    "Spaces in Info.plist filenames not supported (%s)"  % info_plist)
+
+  info_plist = gyp_path_to_build_path(info_plist)
+
+  # If explicitly set to preprocess the plist, invoke the C preprocessor and
+  # specify any defines as -D flags.
+  if xcode_settings.GetPerTargetSetting(
+      'INFOPLIST_PREPROCESS', default='NO') == 'YES':
+    # Create an intermediate file based on the path.
+    defines = shlex.split(xcode_settings.GetPerTargetSetting(
+        'INFOPLIST_PREPROCESSOR_DEFINITIONS', default=''))
+  else:
+    defines = []
+
+  dest_plist = os.path.join(product_dir, xcode_settings.GetBundlePlistPath())
+  extra_env = xcode_settings.GetPerTargetSettings()
+
+  return info_plist, dest_plist, defines, extra_env

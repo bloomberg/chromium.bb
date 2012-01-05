@@ -310,9 +310,9 @@ class NinjaWriter:
     if self.is_mac_bundle:
       mac_bundle_resources = spec.get('mac_bundle_resources', []) + \
                              extra_mac_bundle_resources
-      if mac_bundle_resources:
-        self.WriteMacBundleResources(
-            mac_bundle_resources, mac_bundle_deps, spec)
+      self.WriteMacBundleResources(
+          mac_bundle_resources, mac_bundle_deps, spec)
+      self.WriteMacInfoPlist(mac_bundle_deps, spec)
 
     return outputs
 
@@ -458,6 +458,26 @@ class NinjaWriter:
       self.ninja.build(output, 'mac_tool', res,
                        variables=[('mactool_cmd', 'copy-bundle-resource')])
       bundle_deps.append(output)
+
+  def WriteMacInfoPlist(self, bundle_deps, spec):
+    """Write build rules for bundle Info.plist files."""
+    info_plist, out, defines, extra_env = gyp.xcode_emulation.GetMacInfoPlist(
+        self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
+        self.xcode_settings, self.GypPathToNinja)
+    if not info_plist:
+      return
+    if defines:
+      # Create an intermediate file to store preprocessed results.
+      intermediate_plist = self.GypPathToUniqueOutput(
+          os.path.basename(info_plist))
+      defines = ' '.join(
+          [QuoteShellArgument(ninja_syntax.escape('-D' + d)) for d in defines])
+      info_plist = self.ninja.build(intermediate_plist, 'infoplist', info_plist,
+                                    variables=[('defines',defines)])
+    # TODO(thakis/jeremya): Environment variable support.
+    self.ninja.build(out, 'mac_tool', info_plist,
+                     variables=[('mactool_cmd', 'copy-info-plist')])
+    bundle_deps.append(out)
 
   def WriteSources(self, config_name, config, sources, predepends,
                    precompiled_header):
@@ -878,6 +898,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
       description='LINK $out',
       command=('$ld $ldflags -o $out '
                '$in $libs'))
+    master_ninja.rule(
+      'infoplist',
+      description='INFOPLIST $out',
+      command=('$cc -E -P -Wno-trigraphs -x c $defines $in -o $out && '
+               'plutil -convert xml1 $out $out'))
     master_ninja.rule(
       'mac_tool',
       description='MACTOOL $mactool_cmd $in',
