@@ -637,3 +637,54 @@ def MergeGlobalXcodeSettingsToSpec(global_dict, spec):
       new_settings = global_xcode_settings.copy()
       new_settings.update(config['xcode_settings'])
       config['xcode_settings'] = new_settings
+
+
+def IsMacBundle(flavor, spec):
+  """Returns if |spec| should be treated as a bundle.
+
+  Bundles are directories with a certain subdirectory structure, instead of
+  just a single file. Bundle rules do not produce a binary but also package
+  resources into that directory."""
+  is_mac_bundle = (int(spec.get('mac_bundle', 0)) != 0 and flavor == 'mac')
+  if is_mac_bundle:
+    assert spec['type'] != 'none', (
+        'mac_bundle targets cannot have type none (target "%s")' %
+        spec['target_name'])
+  return is_mac_bundle
+
+
+def GetMacBundleResources(product_dir, xcode_settings, resources):
+  """Yields (output, resource) pairs for every resource in |resources|.
+  Only call this for mac bundle targets.
+
+  Args:
+      product_dir: Path to the directory containing the output bundle,
+          relative to the build directory.
+      xcode_settings: The XcodeSettings of the current target.
+      resources: A list of bundle resources, relative to the build directory.
+  """
+  dest = os.path.join(product_dir,
+                      xcode_settings.GetBundleResourceFolder())
+  for res in resources:
+    output = dest
+
+    # The make generator doesn't support it, so forbid it everywhere
+    # to keep the generators more interchangable.
+    assert ' ' not in res, (
+      "Spaces in resource filenames not supported (%s)"  % res)
+
+    # Split into (path,file).
+    res_parts = os.path.split(res)
+
+    # Now split the path into (prefix,maybe.lproj).
+    lproj_parts = os.path.split(res_parts[0])
+    # If the resource lives in a .lproj bundle, add that to the destination.
+    if lproj_parts[1].endswith('.lproj'):
+      output = os.path.join(output, lproj_parts[1])
+
+    output = os.path.join(output, res_parts[1])
+    # Compiled XIB files are referred to by .nib.
+    if output.endswith('.xib'):
+      output = output[0:-3] + 'nib'
+
+    yield output, res

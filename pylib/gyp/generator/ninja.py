@@ -227,6 +227,7 @@ class NinjaWriter:
       print "See http://code.google.com/p/chromium/issues/detail?id=96629 ."
       spec['type'] = 'none'
 
+    self.is_mac_bundle = gyp.xcode_emulation.IsMacBundle(self.flavor, spec)
     if self.flavor == 'mac':
       self.xcode_settings = gyp.xcode_emulation.XcodeSettings(spec)
     else:
@@ -292,15 +293,26 @@ class NinjaWriter:
     """Write out the Actions, Rules, and Copies steps.  Return any outputs
     of these steps (or a stamp file if there are lots of outputs)."""
     outputs = []
+    extra_mac_bundle_resources = []
 
     if 'actions' in spec:
-      outputs += self.WriteActions(spec['actions'], extra_sources, prebuild)
+      outputs += self.WriteActions(spec['actions'], extra_sources, prebuild,
+                                   extra_mac_bundle_resources)
     if 'rules' in spec:
-      outputs += self.WriteRules(spec['rules'], extra_sources, prebuild)
+      outputs += self.WriteRules(spec['rules'], extra_sources, prebuild,
+                                 extra_mac_bundle_resources)
     if 'copies' in spec:
       outputs += self.WriteCopies(spec['copies'], prebuild)
 
     outputs = self.WriteCollapsedDependencies('actions_rules_copies', outputs)
+
+    mac_bundle_deps = []  # TODO(thakis): Use this.
+    if self.is_mac_bundle:
+      mac_bundle_resources = spec.get('mac_bundle_resources', []) + \
+                             extra_mac_bundle_resources
+      if mac_bundle_resources:
+        self.WriteMacBundleResources(
+            mac_bundle_resources, mac_bundle_deps, spec)
 
     return outputs
 
@@ -318,7 +330,8 @@ class NinjaWriter:
     else:
       return '%s %s: %s' % (verb, self.name, fallback)
 
-  def WriteActions(self, actions, extra_sources, prebuild):
+  def WriteActions(self, actions, extra_sources, prebuild,
+                   extra_mac_bundle_resources):
     all_outputs = []
     for action in actions:
       # First write out a rule for the action.
@@ -331,6 +344,8 @@ class NinjaWriter:
       inputs = [self.GypPathToNinja(i) for i in action['inputs']]
       if int(action.get('process_outputs_as_sources', False)):
         extra_sources += action['outputs']
+      if int(action.get('process_outputs_as_mac_bundle_resources', False)):
+        extra_mac_bundle_resources += action['outputs']
       outputs = [self.GypPathToNinja(o) for o in action['outputs']]
 
       # Then write out an edge using the rule.
@@ -342,7 +357,8 @@ class NinjaWriter:
 
     return all_outputs
 
-  def WriteRules(self, rules, extra_sources, prebuild):
+  def WriteRules(self, rules, extra_sources, prebuild,
+                 extra_mac_bundle_resources):
     all_outputs = []
     for rule in rules:
       # First write out a rule for the rule action.
@@ -380,6 +396,8 @@ class NinjaWriter:
 
         if int(rule.get('process_outputs_as_sources', False)):
           extra_sources += outputs
+        if int(rule.get('process_outputs_as_mac_bundle_resources', False)):
+          extra_mac_bundle_resources += outputs
 
         extra_bindings = []
         for var in needed_variables:
@@ -431,6 +449,15 @@ class NinjaWriter:
                                     order_only=prebuild)
 
     return outputs
+
+  def WriteMacBundleResources(self, resources, bundle_deps, spec):
+    """Writes ninja edges for 'mac_bundle_resources'."""
+    for output, res in gyp.xcode_emulation.GetMacBundleResources(
+        self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
+        self.xcode_settings, map(self.GypPathToNinja, resources)):
+      self.ninja.build(output, 'mac_tool', res,
+                       variables=[('mactool_cmd', 'copy-bundle-resource')])
+      bundle_deps.append(output)
 
   def WriteSources(self, config_name, config, sources, predepends,
                    precompiled_header):
@@ -781,6 +808,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     master_ninja.variable('ld', '$cxx')
   master_ninja.variable('cc_host', '$cc')
   master_ninja.variable('cxx_host', '$cxx')
+  if flavor == 'mac':
+    master_ninja.variable('mac_tool', os.path.join('.', 'gyp-mac-tool'))
   master_ninja.newline()
 
   master_ninja.rule(
@@ -849,6 +878,10 @@ def GenerateOutput(target_list, target_dicts, data, params):
       description='LINK $out',
       command=('$ld $ldflags -o $out '
                '$in $libs'))
+    master_ninja.rule(
+      'mac_tool',
+      description='MACTOOL $mactool_cmd $in',
+      command='$mac_tool $mactool_cmd $in $out')
   master_ninja.rule(
     'stamp',
     description='STAMP $out',

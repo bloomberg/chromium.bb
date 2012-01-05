@@ -707,16 +707,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       print "See http://code.google.com/p/chromium/issues/detail?id=96629 ."
       self.type = 'none'
 
-    # Bundles are directories with a certain subdirectory structure, instead of
-    # just a single file. Bundle rules do not produce a binary but also package
-    # resources into that directory.
-    self.is_mac_bundle = (int(spec.get('mac_bundle', 0)) != 0 and
-        self.flavor == 'mac')
-    if self.is_mac_bundle:
-      assert self.type != 'none', (
-          'mac_bundle targets cannot have type none (target "%s")' %
-          self.target)
-
+    self.is_mac_bundle = gyp.xcode_emulation.IsMacBundle(self.flavor, spec)
     if self.flavor == 'mac':
       self.xcode_settings = gyp.xcode_emulation.XcodeSettings(spec)
     else:
@@ -1104,32 +1095,15 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
   def WriteMacBundleResources(self, resources, bundle_deps, spec):
     """Writes Makefile code for 'mac_bundle_resources'."""
     self.WriteLn('### Generated for mac_bundle_resources')
-    variable = self.target + '_mac_bundle_resources'
-    path = generator_default_variables['PRODUCT_DIR']
-    dest = os.path.join(path, self.xcode_settings.GetBundleResourceFolder())
-    dest = QuoteSpaces(dest)
-    for res in resources:
-      output = dest
 
-      assert ' ' not in res, (
-        "Spaces in resource filenames not supported (%s)"  % res)
+    for output, res in gyp.xcode_emulation.GetMacBundleResources(
+        generator_default_variables['PRODUCT_DIR'], self.xcode_settings,
+        map(Sourceify, map(self.Absolutify, resources))):
+      # Spaces in resource paths is not supported, but spaces in the
+      # bundle name itself are. Escape them.
+      output = QuoteSpaces(output)
 
-      # Split into (path,file).
-      path = Sourceify(self.Absolutify(res))
-      path_parts = os.path.split(path)
-
-      # Now split the path into (prefix,maybe.lproj).
-      lproj_parts = os.path.split(path_parts[0])
-      # If the resource lives in a .lproj bundle, add that to the destination.
-      if lproj_parts[1].endswith('.lproj'):
-        output = os.path.join(output, lproj_parts[1])
-
-      output = Sourceify(self.Absolutify(os.path.join(output, path_parts[1])))
-      # Compiled XIB files are referred to by .nib.
-      if output.endswith('.xib'):
-        output = output[0:-3] + 'nib'
-
-      self.WriteDoCmd([output], [path], 'mac_tool,,,copy-bundle-resource',
+      self.WriteDoCmd([output], [res], 'mac_tool,,,copy-bundle-resource',
                       part_of_all=True)
       bundle_deps.append(output)
 
