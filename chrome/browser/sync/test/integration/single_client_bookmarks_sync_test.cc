@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,16 +25,22 @@ class SingleClientBookmarksSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientBookmarksSyncTest);
 };
 
-// This test is flaky; http://crbug.com/105902.
-IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, FLAKY_OfflineToOnline) {
+IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, OfflineToOnline) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   DisableNetwork(GetProfile(0));
   const BookmarkNode* node = AddFolder(0, L"title");
   SetTitle(0, node, L"new_title");
   ASSERT_FALSE(GetClient(0)->AwaitFullSyncCompletion("Offline state change."));
-  ASSERT_EQ(ProfileSyncService::Status::OFFLINE_UNSYNCED,
-            GetClient(0)->GetStatus().summary);
+  ProfileSyncService::Status status = GetClient(0)->GetStatus();
+
+  // Depending on when exactly the network change notification occurs the
+  // client could go to OFFLINE_UNSYNCED or OFFLINE. OFFLINE_UNSYNCED indicates
+  // client tried to sync a local change and could not connect to the server.
+  // OFFLINE indicates client received a network change notification of
+  // the disconnection even before it tried to sync.
+  ASSERT_TRUE(ProfileSyncService::Status::OFFLINE_UNSYNCED == status.summary ||
+              ProfileSyncService::Status::OFFLINE == status.summary);
 
   EnableNetwork(GetProfile(0));
   ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Commit changes."));
