@@ -97,8 +97,8 @@ void TabModalConfirmDialogWebUI::OnDialogClosed(
   if (!json_retval.empty()) {
     base::JSONReader reader;
     scoped_ptr<Value> value(reader.JsonToValue(json_retval, false, false));
-    DCHECK(value.get() && value->GetAsBoolean(&accepted))
-        << "Missing or unreadable response from dialog";
+    if (!value.get() || !value->GetAsBoolean(&accepted))
+      NOTREACHED() << "Missing or unreadable response from dialog";
   }
 
   delegate_->set_window(NULL);
