@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -432,7 +432,13 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
 
 // Tests scripts panel showing.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
+#if defined(OS_WIN)
+// http://crbug.com/109266
+#define MAYBE_TestShowScriptsTab FLAKY_TestShowScriptsTab
+#else
+#define MAYBE_TestShowScriptsTab TestShowScriptsTab
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
