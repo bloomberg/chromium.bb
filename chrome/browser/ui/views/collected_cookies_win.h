@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
-#include "ui/views/controls/tree/tree_view.h"
+#include "ui/views/controls/tree/tree_view_controller.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class ConstrainedWindow;
@@ -24,6 +24,7 @@ class TabContentsWrapper;
 namespace views {
 class Label;
 class TextButton;
+class TreeView;
 }
 
 // This is the Views implementation of the collected cookies dialog.

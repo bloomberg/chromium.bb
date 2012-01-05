@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,13 +20,14 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
-#include "ui/views/controls/tree/tree_view.h"
+#include "ui/views/controls/tree/tree_view_controller.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
 class Label;
 class Menu2;
 class TextButton;
+class TreeView;
 }
 
 class BookmarkEditorViewTest;
