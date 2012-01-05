@@ -35,7 +35,7 @@ cr.define('options', function() {
       $('packExtensionCommit').onclick = function(event) {
         var extensionPath = $('extensionRootDir').value;
         var privateKeyPath = $('extensionPrivateKey').value;
-        chrome.send('pack', [extensionPath, privateKeyPath, 0]);
+        chrome.send('pack', [extensionPath, privateKeyPath]);
       };
       $('browseExtensionDir').addEventListener('click',
           this.handleBrowseExtensionDir_.bind(this));

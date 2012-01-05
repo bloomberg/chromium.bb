@@ -4088,15 +4088,6 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_PRIVATE_KEY_NO_EXISTS" desc="Warning displayed in pack dialog when the private key for the extension does not exist.">
         Input value for private key must exist.
       </message>
-      <message name="IDS_EXTENSION_PACK_WARNING_TITLE" desc="Warning title message for pack extension">
-        Pack Extension Warning
-      </message>
-      <message name="IDS_EXTENSION_CRX_EXISTS" desc="Warning displayed in pack dialog when the crx file already exists.">
-        There is already a CRX file present with this name.  
-      </message>
-      <message name="IDS_EXTENSION_PROCEED_ANYWAY" desc="Button to continue with operation in extension packing">
-        Proceed anyway
-      </message>
       <message name="IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_READ" desc="Warning displayed in pack dialog when was not possible to read the private key of the extension.">
         Failed to read private key.
       </message>

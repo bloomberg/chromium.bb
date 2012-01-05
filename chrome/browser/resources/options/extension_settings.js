@@ -177,25 +177,6 @@ cr.define('options', function() {
     ExtensionsList.decorate(extensionList);
   }
 
-  // Indicate that warning |message| has occured for pack of |crx_path| and
-  // |pem_path| files.  Ask if user wants override the warning.  Send
-  // |overrideFlags| to repeated 'pack' call to accomplish the override.
-  ExtensionSettings.askToOverrideWarning
-      = function(message, crx_path, pem_path, overrideFlags) {
-    OptionsPage.closeOverlay();
-    AlertOverlay.show(
-      localStrings.getString('packExtensionWarningTitle'),
-      message,
-      localStrings.getString('packExtensionProceedAnyway'),
-      localStrings.getString('cancel'),
-      function() {
-        chrome.send('pack', [crx_path, pem_path, overrideFlags]);
-      },
-      function() {
-        OptionsPage.closeOverlay();
-      });
-  }
-
   // Export
   return {
     ExtensionSettings: ExtensionSettings

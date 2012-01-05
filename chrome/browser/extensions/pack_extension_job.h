@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,20 +12,19 @@
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "content/public/browser/browser_thread.h"
-#include "chrome/browser/extensions/extension_creator.h"
 
 
 // Manages packing an extension on the file thread and reporting the result
 // back to the UI.
 class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
  public:
+
   // Interface for people who want to use PackExtensionJob to implement.
   class Client {
    public:
     virtual void OnPackSuccess(const FilePath& crx_file,
                                const FilePath& key_file) = 0;
-    virtual void OnPackFailure(const std::string& message,
-                               ExtensionCreator::ErrorType error_type) = 0;
+    virtual void OnPackFailure(const std::string& message) = 0;
 
    protected:
     virtual ~Client() {}
@@ -33,8 +32,7 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
 
   PackExtensionJob(Client* client,
                    const FilePath& root_directory,
-                   const FilePath& key_file,
-                   int run_flags);
+                   const FilePath& key_file);
 
   // Starts the packing job.
   void Start();
@@ -57,8 +55,7 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
   // If |asynchronous_| is false, this is run on whichever thread calls it.
   void Run();
   void ReportSuccessOnClientThread();
-  void ReportFailureOnClientThread(const std::string& error,
-                                   ExtensionCreator::ErrorType error_type);
+  void ReportFailureOnClientThread(const std::string& error);
 
   content::BrowserThread::ID client_thread_id_;
   Client* client_;
@@ -67,7 +64,6 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
   FilePath crx_file_out_;
   FilePath key_file_out_;
   bool asynchronous_;
-  int run_flags_;  // Bitset of ExtensionCreator::RunFlags values
 
   DISALLOW_COPY_AND_ASSIGN(PackExtensionJob);
 };

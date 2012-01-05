@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_creator.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -40,10 +39,6 @@ void PackExtensionHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_PRIVATE_KEY_LABEL));
   localized_strings->SetString("packExtensionBrowseButton",
       l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_BROWSE));
-  localized_strings->SetString("packExtensionProceedAnyway",
-      l10n_util::GetStringUTF16(IDS_EXTENSION_PROCEED_ANYWAY));
-  localized_strings->SetString("packExtensionWarningTitle",
-      l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_WARNING_TITLE));
 }
 
 void PackExtensionHandler::RegisterMessages() {
@@ -63,36 +58,23 @@ void PackExtensionHandler::OnPackSuccess(const FilePath& crx_file,
       "PackExtensionOverlay.showSuccessMessage", arguments);
 }
 
-void PackExtensionHandler::OnPackFailure(const std::string& error,
-                                         ExtensionCreator::ErrorType type) {
-  if (type == ExtensionCreator::kCRXExists) {
-    web_ui()->CallJavascriptFunction(
-        "ExtensionSettings.askToOverrideWarning",
-        base::StringValue(error),
-        base::StringValue(extension_path_),
-        base::StringValue(private_key_path_),
-        base::FundamentalValue(ExtensionCreator::kOverwriteCRX));
-  } else {
-    ShowAlert(error);
-  }
+void PackExtensionHandler::OnPackFailure(const std::string& error) {
+  ShowAlert(error);
 }
 
 void PackExtensionHandler::HandlePackMessage(const ListValue* args) {
-  CHECK_EQ(3U, args->GetSize());
-
-  CHECK(args->GetString(0, &extension_path_));
-  CHECK(args->GetString(1, &private_key_path_));
-
-  double flags_double = 0.0;
-  CHECK(args->GetDouble(2, &flags_double));
-  int run_flags = static_cast<int>(flags_double);
+  std::string extension_path;
+  std::string private_key_path;
+  CHECK_EQ(2U, args->GetSize());
+  CHECK(args->GetString(0, &extension_path));
+  CHECK(args->GetString(1, &private_key_path));
 
   FilePath root_directory =
-      FilePath::FromWStringHack(UTF8ToWide(extension_path_));
-  FilePath key_file = FilePath::FromWStringHack(UTF8ToWide(private_key_path_));
+      FilePath::FromWStringHack(UTF8ToWide(extension_path));
+  FilePath key_file = FilePath::FromWStringHack(UTF8ToWide(private_key_path));
 
   if (root_directory.empty()) {
-    if (extension_path_.empty()) {
+    if (extension_path.empty()) {
       ShowAlert(l10n_util::GetStringUTF8(
           IDS_EXTENSION_PACK_DIALOG_ERROR_ROOT_REQUIRED));
     } else {
@@ -103,13 +85,13 @@ void PackExtensionHandler::HandlePackMessage(const ListValue* args) {
     return;
   }
 
-  if (!private_key_path_.empty() && key_file.empty()) {
+  if (!private_key_path.empty() && key_file.empty()) {
     ShowAlert(l10n_util::GetStringUTF8(
         IDS_EXTENSION_PACK_DIALOG_ERROR_KEY_INVALID));
     return;
   }
 
-  pack_job_ = new PackExtensionJob(this, root_directory, key_file, run_flags);
+  pack_job_ = new PackExtensionJob(this, root_directory, key_file);
   pack_job_->Start();
 }
 
