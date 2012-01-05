@@ -96,12 +96,6 @@ struct weston_output {
 	void (*destroy)(struct weston_output *output);
 };
 
-struct weston_selection_listener {
-	void (*func)(struct weston_selection_listener *listener,
-		     struct weston_input_device *device);
-	struct wl_list link;
-};
-
 struct weston_input_device {
 	struct wl_input_device input_device;
 	struct weston_compositor *compositor;
@@ -109,17 +103,6 @@ struct weston_input_device {
 	int32_t hotspot_x, hotspot_y;
 	struct wl_list link;
 	uint32_t modifier_state;
-
-	struct wl_list drag_resource_list;
-	struct weston_data_source *drag_data_source;
-	struct wl_surface *drag_focus;
-	struct wl_resource *drag_focus_resource;
-	struct wl_listener drag_focus_listener;
-	struct wl_grab drag_grab;
-
-	struct weston_data_source *selection_data_source;
-	struct wl_listener selection_data_source_listener;
-	struct wl_list selection_listener_list;
 
 	uint32_t num_tp;
 	struct wl_surface *touch_focus;
@@ -276,27 +259,6 @@ struct weston_surface {
 	struct wl_listener buffer_destroy_listener;
 };
 
-struct weston_data_offer {
-	struct wl_resource resource;
-	struct weston_data_source *source;
-	struct wl_listener source_destroy_listener;
-};
-
-struct weston_data_source {
-	struct wl_resource resource;
-	struct wl_array mime_types;
-
-	const struct wl_data_offer_interface *offer_interface;
-	void (*cancel)(struct weston_data_source *source);
-};
-
-void
-weston_data_source_unref(struct weston_data_source *source);
-
-void
-weston_input_device_set_selection(struct weston_input_device *device,
-				  struct weston_data_source *source,
-				  uint32_t time);
 void
 weston_device_repick(struct wl_input_device *device, uint32_t time);
 
@@ -467,11 +429,6 @@ weston_client_launch(struct weston_compositor *compositor,
 		     struct weston_process *proc,
 		     const char *path,
 		     weston_process_cleanup_func_t cleanup);
-
-int
-weston_data_device_manager_init(struct weston_compositor *compositor);
-void
-weston_data_device_set_keyboard_focus(struct weston_input_device *device);
 
 void
 weston_watch_process(struct weston_process *process);

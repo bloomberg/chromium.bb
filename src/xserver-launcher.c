@@ -81,7 +81,7 @@ struct weston_wm {
 	xcb_timestamp_t selection_timestamp;
 	int selection_property_set;
 	int flush_property_on_delete;
-	struct weston_selection_listener selection_listener;
+	struct wl_selection_listener selection_listener;
 
 	struct {
 		xcb_atom_t		 wm_protocols;
@@ -244,7 +244,7 @@ static void
 data_offer_receive(struct wl_client *client, struct wl_resource *resource,
 		   const char *mime_type, int32_t fd)
 {
-	struct weston_data_offer *offer = resource->data;
+	struct wl_data_offer *offer = resource->data;
 	struct weston_wm *wm = offer->source->resource.data;
 
 	if (strcmp(mime_type, "text/plain;charset=utf-8") == 0) {
@@ -278,15 +278,15 @@ static const struct wl_data_offer_interface data_offer_interface = {
 };
 
 static void
-data_source_cancel(struct weston_data_source *source)
+data_source_cancel(struct wl_data_source *source)
 {
 }
 
 static void
 weston_wm_get_selection_targets(struct weston_wm *wm)
 {
-	struct weston_data_source *source;
-	struct weston_input_device *device;
+	struct wl_data_source *source;
+	struct wl_input_device *device;
 	xcb_get_property_cookie_t cookie;
 	xcb_get_property_reply_t *reply;
 	xcb_atom_t *value;
@@ -329,10 +329,9 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 		}
 	}
 
-	device = (struct weston_input_device *)
-		wm->server->compositor->input_device;
-	weston_input_device_set_selection(device, source,
-					weston_compositor_get_time());
+	device = wm->server->compositor->input_device;
+	wl_input_device_set_selection(device, source,
+				      weston_compositor_get_time());
 
 	free(reply);
 }
@@ -448,12 +447,12 @@ weston_wm_get_incr_chunk(struct weston_wm *wm)
 }
 
 static void
-weston_wm_set_selection(struct weston_selection_listener *listener,
-			struct weston_input_device *device)
+weston_wm_set_selection(struct wl_selection_listener *listener,
+			struct wl_input_device *device)
 {
 	struct weston_wm *wm =
 		container_of(listener, struct weston_wm, selection_listener);
-	struct weston_data_source *source = device->selection_data_source;
+	struct wl_data_source *source = device->selection_data_source;
 	const char **p, **end;
 	int has_text_plain = 0;
 
@@ -835,8 +834,7 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 static void
 weston_wm_send_data(struct weston_wm *wm, xcb_atom_t target, const char *mime_type)
 {
-	struct weston_input_device *device = (struct weston_input_device *)
-		wm->server->compositor->input_device;
+	struct wl_input_device *device = wm->server->compositor->input_device;
 	int p[2];
 
 	if (pipe2(p, O_CLOEXEC | O_NONBLOCK) == -1) {
@@ -1188,7 +1186,7 @@ wxs_wm_get_resources(struct weston_wm *wm)
 static struct weston_wm *
 weston_wm_create(struct weston_xserver *wxs)
 {
-	struct weston_input_device *device;
+	struct wl_input_device *device;
 	struct weston_wm *wm;
 	struct wl_event_loop *loop;
 	xcb_screen_iterator_t s;
@@ -1272,7 +1270,7 @@ weston_wm_create(struct weston_xserver *wxs)
 
 	xcb_flush(wm->conn);
 
-	device = (struct weston_input_device *) wxs->compositor->input_device;
+	device = wxs->compositor->input_device;
 	wm->selection_listener.func = weston_wm_set_selection;
 	wl_list_insert(&device->selection_listener_list,
 		       &wm->selection_listener.link);

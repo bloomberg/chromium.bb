@@ -1227,7 +1227,7 @@ weston_surface_activate(struct weston_surface *surface,
 	weston_surface_raise(surface);
 	wl_input_device_set_keyboard_focus(&device->input_device,
 					   &surface->surface, time);
-	weston_data_device_set_keyboard_focus(device);
+	wl_data_device_set_keyboard_focus(&device->input_device);
 }
 
 WL_EXPORT void
@@ -1600,7 +1600,6 @@ weston_input_device_init(struct weston_input_device *device,
 			 struct weston_compositor *ec)
 {
 	wl_input_device_init(&device->input_device);
-	wl_list_init(&device->drag_resource_list);
 
 	wl_display_add_global(ec->wl_display, &wl_input_device_interface,
 			      device, bind_input_device);
@@ -1614,9 +1613,6 @@ weston_input_device_init(struct weston_input_device *device,
 	device->num_tp = 0;
 
 	wl_list_insert(ec->input_device_list.prev, &device->link);
-
-	device->selection_data_source = NULL;
-	wl_list_init(&device->selection_listener_list);
 }
 
 WL_EXPORT void
@@ -1947,7 +1943,7 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 
 	ec->screenshooter = screenshooter_create(ec);
 
-	weston_data_device_manager_init(ec);
+	wl_data_device_manager_init(ec->wl_display);
 
 	glActiveTexture(GL_TEXTURE0);
 
