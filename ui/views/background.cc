@@ -94,8 +94,13 @@ Background* Background::CreateSolidBackground(const SkColor& color) {
 
 //static
 Background* Background::CreateStandardPanelBackground() {
+  // TODO(beng): Should be in NativeTheme.
+#if defined(USE_AURA)
+  return CreateSolidBackground(SK_ColorWHITE);
+#else
   return CreateVerticalGradientBackground(SkColorSetRGB(246, 250, 255),
                                           SkColorSetRGB(219, 235, 255));
+#endif
 }
 
 //static

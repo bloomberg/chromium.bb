@@ -94,12 +94,16 @@ class ExamplesWindowContents : public views::WidgetDelegateView {
     views::GridLayout* layout = new views::GridLayout(this);
     SetLayoutManager(layout);
     views::ColumnSet* column_set = layout->AddColumnSet(0);
+    column_set->AddPaddingColumn(0, 5);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                           views::GridLayout::USE_PREF, 0, 0);
+    column_set->AddPaddingColumn(0, 5);
+    layout->AddPaddingRow(0, 5);
     layout->StartRow(1, 0);
     layout->AddView(tabbed_pane_);
     layout->StartRow(0 /* no expand */, 0);
     layout->AddView(status_label_);
+    layout->AddPaddingRow(0, 5);
 
     AddExamples();
   }

@@ -16,6 +16,14 @@
 
 namespace views {
 
+const SkColor kTabTitleColor_Inactive = SkColorSetRGB(0x66, 0x66, 0x66);
+const SkColor kTabTitleColor_Active = SkColorSetRGB(0x20, 0x20, 0x20);
+const SkColor kTabTitleColor_Pressed = SkColorSetRGB(0x33, 0x33, 0x33);
+const SkColor kTabTitleColor_Hovered = SkColorSetRGB(0x22, 0x22, 0x22);
+const SkColor kTabBorderColor = SkColorSetRGB(0xCC, 0xCC, 0xCC);
+const SkScalar kTabBorderThickness = 1.0f;
+const SkScalar kTabBorderRadius = 2.0f;
+
 class TabStrip;
 
 class Tab : public View {
@@ -23,7 +31,8 @@ class Tab : public View {
   Tab(TabStrip* tab_strip, const string16& title, View* contents)
       : tab_strip_(tab_strip),
         title_(title),
-        contents_(contents) {}
+        contents_(contents),
+        title_color_(kTabTitleColor_Inactive) {}
   virtual ~Tab() {}
 
   static int GetMinimumTabHeight() {
@@ -34,24 +43,69 @@ class Tab : public View {
     return static_cast<Tab*>(tab)->contents_;
   }
 
+  void OnSelectedStateChanged(bool selected);
+
   // Overridden from View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRect(GetTabColor(), GetLocalBounds());
-    canvas->DrawStringInt(title_, gfx::Font(), SK_ColorBLACK, GetLocalBounds());
-  }
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseCaptureLost() OVERRIDE;
+  virtual void OnMouseEntered(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    gfx::Size ps(gfx::Font().GetStringWidth(title_), GetMinimumTabHeight());
-    ps.Enlarge(10, 0);
+    const int kTabMinWidth = 54;
+    gfx::Size ps(GetTabTitleFont().GetStringWidth(title_),
+                 GetMinimumTabHeight());
+    ps.Enlarge(30, 10);
+    if (ps.width() < kTabMinWidth)
+      ps.set_width(kTabMinWidth);
     return ps;
   }
 
  private:
-  SkColor GetTabColor() const;
+  void PaintTabBorder(gfx::Canvas* canvas) {
+    SkPath path;
+    SkRect bounds = { 0, 0, SkIntToScalar(width()), SkIntToScalar(height()) };
+    SkScalar radii[8] = { kTabBorderRadius, kTabBorderRadius,
+                          kTabBorderRadius, kTabBorderRadius,
+                          0, 0,
+                          0, 0 };
+    path.addRoundRect(bounds, radii, SkPath::kCW_Direction);
+
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setColor(kTabBorderColor);
+    paint.setStrokeWidth(kTabBorderThickness * 2);
+
+    canvas->AsCanvasSkia()->sk_canvas()->drawPath(path, paint);
+  }
+
+  void PaintTabTitle(gfx::Canvas* canvas, bool selected) {
+    int text_width = GetTabTitleFont().GetStringWidth(title_);
+    int text_height = GetTabTitleFont().GetHeight();
+    int text_x = (width() - text_width) / 2;
+    int text_y = 5;
+    gfx::Rect text_rect(text_x, text_y, text_width, text_height);
+    canvas->DrawStringInt(title_, GetTabTitleFont(), title_color_, text_rect);
+  }
+
+  void SetTitleColor(SkColor color) {
+    title_color_ = color;
+    SchedulePaint();
+  }
+
+  const gfx::Font& GetTabTitleFont() {
+    static gfx::Font* title_font = NULL;
+    if (!title_font)
+      title_font = new gfx::Font(gfx::Font().DeriveFont(0, gfx::Font::BOLD));
+    return *title_font;
+  }
 
   TabStrip* tab_strip_;
   string16 title_;
   View* contents_;
+  SkColor title_color_;
 
   DISALLOW_COPY_AND_ASSIGN(Tab);
 };
@@ -68,9 +122,9 @@ class TabStrip : public View {
     if (tab == selected_tab_)
       return;
     if (selected_tab_)
-      selected_tab_->SchedulePaint();
+      static_cast<Tab*>(selected_tab_)->OnSelectedStateChanged(false);
     selected_tab_ = tab;
-    selected_tab_->SchedulePaint();
+    static_cast<Tab*>(selected_tab_)->OnSelectedStateChanged(true);
     owner_->TabSelectionChanged(tab);
   }
 
@@ -102,6 +156,15 @@ class TabStrip : public View {
       x = child_at(i)->bounds().right();
     }
   }
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    SkPaint paint;
+    paint.setColor(kTabBorderColor);
+    paint.setStrokeWidth(kTabBorderThickness);
+    SkScalar line_y = SkIntToScalar(height()) - kTabBorderThickness;
+    SkScalar line_width = SkIntToScalar(width());
+    canvas->AsCanvasSkia()->sk_canvas()->drawLine(0, line_y, line_width, line_y,
+                                                  paint);
+  }
 
  private:
   NativeTabbedPaneViews* owner_;
@@ -110,13 +173,39 @@ class TabStrip : public View {
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };
 
+void Tab::OnSelectedStateChanged(bool selected) {
+  SetTitleColor(selected ? kTabTitleColor_Active : kTabTitleColor_Inactive);
+}
+
+void Tab::OnPaint(gfx::Canvas* canvas) {
+  bool selected = tab_strip_->IsTabSelected(this);
+  if (selected)
+    PaintTabBorder(canvas);
+  PaintTabTitle(canvas, selected);
+}
+
 bool Tab::OnMousePressed(const MouseEvent& event) {
-  tab_strip_->SelectTab(this);
+  SetTitleColor(kTabTitleColor_Pressed);
   return true;
 }
 
-SkColor Tab::GetTabColor() const {
-  return tab_strip_->IsTabSelected(this) ? SK_ColorRED : SK_ColorBLUE;
+void Tab::OnMouseReleased(const MouseEvent& event) {
+  SetTitleColor(kTabTitleColor_Hovered);
+  tab_strip_->SelectTab(this);
+}
+
+void Tab::OnMouseCaptureLost() {
+  SetTitleColor(kTabTitleColor_Inactive);
+}
+
+void Tab::OnMouseEntered(const MouseEvent& event) {
+  SetTitleColor(tab_strip_->IsTabSelected(this) ? kTabTitleColor_Active :
+      kTabTitleColor_Hovered);
+}
+
+void Tab::OnMouseExited(const MouseEvent& event) {
+  SetTitleColor(tab_strip_->IsTabSelected(this) ? kTabTitleColor_Active :
+      kTabTitleColor_Inactive);
 }
 
 // Custom layout manager that takes care of sizing and displaying the tab pages.
@@ -217,7 +306,7 @@ void NativeTabbedPaneViews::AddTabAtIndex(int index,
 
   tab_strip_->AddChildViewAt(new Tab(tab_strip_, title, contents), index);
 
-  // Add native tab only if the native control is alreay created.
+  // Add native tab only if the native control is already created.
   if (content_window_) {
     View* content_root = content_window_->GetRootView();
     content_root->AddChildView(contents);
@@ -225,6 +314,8 @@ void NativeTabbedPaneViews::AddTabAtIndex(int index,
     // Switch to the newly added tab if requested;
     if (tab_strip_->child_count() == 1 && select_if_first_tab)
       tab_layout_manager_->SwitchToPage(content_root, contents);
+    if (!tab_strip_->selected_tab())
+      tab_strip_->SelectTab(tab_strip_->child_at(0));
   }
 }
 
@@ -319,7 +410,7 @@ void NativeTabbedPaneViews::InitControl() {
   content_window_->Init(params);
   content_window_->GetRootView()->SetLayoutManager(tab_layout_manager_);
   content_window_->GetRootView()->set_background(
-      Background::CreateSolidBackground(SK_ColorLTGRAY));
+      Background::CreateSolidBackground(SK_ColorWHITE));
   content_window_->SetFocusTraversableParentView(this);
   content_window_->SetFocusTraversableParent(
       GetWidget()->GetFocusTraversable());
