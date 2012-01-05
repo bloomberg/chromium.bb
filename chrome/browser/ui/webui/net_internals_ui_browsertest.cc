@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,9 @@
 #include "net/base/host_resolver_proc.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
+#include "net/http/http_network_session.h"
+#include "net/http/http_pipelined_host_capability.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,6 +78,30 @@ void AddCacheEntryOnIOThread(net::URLRequestContextGetter* context_getter,
              expires);
 }
 
+// Called on IO thread.  Adds an entry to the list of known HTTP pipelining
+// hosts.
+void AddDummyHttpPipelineFeedbackOnIOThread(
+    net::URLRequestContextGetter* context_getter,
+    const std::string& hostname,
+    int port,
+    net::HttpPipelinedHostCapability capability) {
+  ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  net::URLRequestContext* context = context_getter->GetURLRequestContext();
+  net::HttpNetworkSession* http_network_session =
+      context->http_transaction_factory()->GetSession();
+  net::HttpServerProperties* http_server_properties =
+      http_network_session->http_server_properties();
+  net::HostPortPair origin(hostname, port);
+  http_server_properties->SetPipelineCapability(origin, capability);
+}
+
+// Called on IO thread.  Adds an entry to the list of known HTTP pipelining
+// hosts.
+void EnableHttpPipeliningOnIOThread(bool enable) {
+  ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  net::HttpStreamFactory::set_http_pipelining_enabled(enable);
+}
+
 class NetInternalsTest : public WebUIBrowserTest {
  public:
   NetInternalsTest();
@@ -97,6 +124,12 @@ class NetInternalsTest : public WebUIBrowserTest {
         &replacement_path));
     GURL url_loader = test_server()->GetURL(replacement_path);
     return url_loader;
+  }
+
+  void EnableHttpPipelining(bool enable) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&EnableHttpPipeliningOnIOThread, enable));
   }
 
  private:
@@ -129,6 +162,10 @@ class NetInternalsTest : public WebUIBrowserTest {
 
     // Closes an incognito browser created with CreateIncognitoBrowser.
     void CloseIncognitoBrowser(const ListValue* list_value);
+
+    // Called on UI thread. Adds an entry to the list of known HTTP pipelining
+    // hosts.
+    void AddDummyHttpPipelineFeedback(const ListValue* list_value);
 
     Browser* browser() {
       return net_internals_test_->browser();
@@ -174,6 +211,8 @@ void NetInternalsTest::SetUpInProcessBrowserTestFixture() {
   // Add Javascript files needed for individual tests.
   AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/dns_view.js")));
   AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/hsts_view.js")));
+  AddLibrary(FilePath(FILE_PATH_LITERAL(
+      "net_internals/http_pipeline_view.js")));
   AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/log_util.js")));
   AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/log_view_painter.js")));
   AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/main.js")));
@@ -214,14 +253,18 @@ void NetInternalsTest::MessageHandler::RegisterMessages() {
       base::Bind(&NetInternalsTest::MessageHandler::AddCacheEntry,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("navigateToPrerender",
-       base::Bind(&NetInternalsTest::MessageHandler::NavigateToPrerender,
-                  base::Unretained(this)));
+      base::Bind(&NetInternalsTest::MessageHandler::NavigateToPrerender,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("createIncognitoBrowser",
-       base::Bind(&NetInternalsTest::MessageHandler::CreateIncognitoBrowser,
-                  base::Unretained(this)));
+      base::Bind(&NetInternalsTest::MessageHandler::CreateIncognitoBrowser,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("closeIncognitoBrowser",
-       base::Bind(&NetInternalsTest::MessageHandler::CloseIncognitoBrowser,
-                  base::Unretained(this)));
+      base::Bind(&NetInternalsTest::MessageHandler::CloseIncognitoBrowser,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("addDummyHttpPipelineFeedback",
+      base::Bind(
+          &NetInternalsTest::MessageHandler::AddDummyHttpPipelineFeedback,
+          base::Unretained(this)));
 }
 
 void NetInternalsTest::MessageHandler::OpenNewTab(
@@ -280,6 +323,31 @@ void NetInternalsTest::MessageHandler::CloseIncognitoBrowser(
   // Closing all a Browser's tabs will ultimately result in its destruction,
   // thought it may not have been destroyed yet.
   incognito_browser_ = NULL;
+}
+
+void NetInternalsTest::MessageHandler::AddDummyHttpPipelineFeedback(
+    const ListValue* list_value) {
+  std::string hostname;
+  double port;
+  std::string raw_capability;
+  net::HttpPipelinedHostCapability capability;
+  ASSERT_TRUE(list_value->GetString(0, &hostname));
+  ASSERT_TRUE(list_value->GetDouble(1, &port));
+  ASSERT_TRUE(list_value->GetString(2, &raw_capability));
+  if (raw_capability == "capable") {
+    capability = net::PIPELINE_CAPABLE;
+  } else if (raw_capability == "incapable") {
+    capability = net::PIPELINE_INCAPABLE;
+  } else {
+    FAIL() << "Unexpected capability string: " << raw_capability;
+  }
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&AddDummyHttpPipelineFeedbackOnIOThread,
+                 make_scoped_refptr(browser()->profile()->GetRequestContext()),
+                 hostname,
+                 static_cast<int>(port),
+                 capability));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -505,6 +573,29 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsHSTSViewAddOverwrite) {
 // Adds two different domains and then deletes them.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsHSTSViewAddTwice) {
   EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsHSTSViewAddTwice"));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// http_pipeline_view.js
+////////////////////////////////////////////////////////////////////////////////
+
+// Adds a capable pipelining host.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsHttpPipelineViewCapable) {
+  EnableHttpPipelining(true);
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsHttpPipelineViewCapable"));
+}
+
+// Adds a incapable pipelining host.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest,
+                       NetInternalsHttpPipelineViewIncapable) {
+  EnableHttpPipelining(true);
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsHttpPipelineViewIncapable"));
+}
+
+// Checks with pipelining disabled.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsHttpPipelineViewDisabled) {
+  EnableHttpPipelining(false);
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsHttpPipelineViewDisabled"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
