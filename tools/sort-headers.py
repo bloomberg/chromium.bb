@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -50,7 +50,14 @@ def IncludeCompareKey(line):
   if line.startswith('<unknwn.h>'):  # Must be before e.g. intshcut.h
     return '1'
 
-  return line
+  # C++ system headers should come after C system headers.
+  if line.startswith('<'):
+    if line.find('.h>') != -1:
+      return '2' + line
+    else:
+      return '3' + line
+
+  return '4' + line
 
 
 def IsInclude(line):
