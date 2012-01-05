@@ -545,6 +545,16 @@ evdev_add_devices(struct udev *udev, struct weston_input_device *input_base)
 		udev_device_unref(device);
 	}
 	udev_enumerate_unref(e);
+
+	if (wl_list_empty(&input->devices_list)) {
+		fprintf(stderr,
+			"warning: no input devices on entering Weston. "
+			"Possible causes:\n"
+			"\t- no permissions to read /dev/input/evdev*\n"
+			"\t- seats misconfigured "
+			"(Weston backend option 'seat', "
+			"udev device property ID_SEAT)\n");
+	}
 }
 
 static int
@@ -581,8 +591,10 @@ evdev_config_udev_monitor(struct udev *udev, struct evdev_input *master)
 	struct weston_compositor *c = master->base.compositor;
 
 	master->udev_monitor = udev_monitor_new_from_netlink(udev, "udev");
-	if (!master->udev_monitor)
+	if (!master->udev_monitor) {
+		fprintf(stderr, "udev: failed to create the udev monitor\n");
 		return 0;
+	}
 
 	udev_monitor_filter_add_match_subsystem_devtype(master->udev_monitor,
 			"input", NULL);
