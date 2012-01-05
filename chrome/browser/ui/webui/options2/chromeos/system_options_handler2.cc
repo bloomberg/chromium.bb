@@ -14,7 +14,6 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/cros_settings.h"
@@ -28,8 +27,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options2/chromeos/system_settings_provider2.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/pref_names.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -139,22 +139,26 @@ void SystemOptionsHandler::GetLocalizedValues(
 
 void SystemOptionsHandler::Initialize() {
   PrefService* pref_service = g_browser_process->local_state();
-  bool enabled = pref_service->GetBoolean(prefs::kSpokenFeedbackEnabled);
+  base::FundamentalValue spoken_feedback_enabled(
+      pref_service->GetBoolean(prefs::kSpokenFeedbackEnabled));
   web_ui()->CallJavascriptFunction(
       "options.SystemOptions.setSpokenFeedbackCheckboxState",
-      base::FundamentalValue(enabled));
-  enabled = pref_service->GetBoolean(prefs::kHighContrastEnabled);
+      spoken_feedback_enabled);
+  base::FundamentalValue high_contrast_enabled(
+      pref_service->GetBoolean(prefs::kHighContrastEnabled));
   web_ui()->CallJavascriptFunction(
       "options.SystemOptions.setHighContrastCheckboxState",
-      base::FundamentalValue(enabled));
-  enabled = pref_service->GetBoolean(prefs::kScreenMagnifierEnabled);
+      high_contrast_enabled);
+  base::FundamentalValue screen_magnifier_enabled(
+      pref_service->GetBoolean(prefs::kScreenMagnifierEnabled));
   web_ui()->CallJavascriptFunction(
       "options.SystemOptions.setScreenMagnifierCheckboxState",
-      base::FundamentalValue(enabled));
-  enabled = pref_service->GetBoolean(prefs::kVirtualKeyboardEnabled);
+      screen_magnifier_enabled);
+  base::FundamentalValue virtual_keyboard_enabled(
+      pref_service->GetBoolean(prefs::kVirtualKeyboardEnabled));
   web_ui()->CallJavascriptFunction(
       "options.SystemOptions.setVirtualKeyboardCheckboxState",
-      base::FundamentalValue(enabled));
+      virtual_keyboard_enabled);
 
   chromeos::XInputHierarchyChangedEventListener::GetInstance()
       ->AddObserver(this);
