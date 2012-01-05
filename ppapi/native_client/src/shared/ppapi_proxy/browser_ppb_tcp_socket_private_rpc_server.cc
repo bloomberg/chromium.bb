@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -61,7 +61,7 @@ void PpbTCPSocketPrivateRpcServer::PPB_TCPSocket_Private_Connect(
     NaClSrpcClosure* done,
     // input
     PP_Resource tcp_socket,
-    char* host,
+    const char* host,
     int32_t port,
     int32_t callback_id,
     // output
@@ -178,7 +178,7 @@ void PpbTCPSocketPrivateRpcServer::PPB_TCPSocket_Private_SSLHandshake(
     NaClSrpcClosure* done,
     // input
     PP_Resource tcp_socket,
-    char* server_name,
+    const char* server_name,
     int32_t server_port,
     int32_t callback_id,
     // output

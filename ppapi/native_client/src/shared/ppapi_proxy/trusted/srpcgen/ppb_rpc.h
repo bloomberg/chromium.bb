@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -25,13 +25,13 @@ class NaClFileRpcServer {
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Instance instance,
-      char* url,
+      const char* url,
       int32_t callback_id);
   static void GetFileDesc(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Instance instance,
-      char* url,
+      const char* url,
       NaClSrpcImcDescType* file_desc);
 
  private:
@@ -45,7 +45,7 @@ class PpbRpcServer {
   static void PPB_GetInterface(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      char* interface_name,
+      const char* interface_name,
       int32_t* exports_interface_name);
 
  private:
@@ -941,7 +941,7 @@ class PpbTCPSocketPrivateRpcServer {
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Resource tcp_socket,
-      char* host,
+      const char* host,
       int32_t port,
       int32_t callback_id,
       int32_t* pp_error);
@@ -968,7 +968,7 @@ class PpbTCPSocketPrivateRpcServer {
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Resource tcp_socket,
-      char* server_name,
+      const char* server_name,
       int32_t server_port,
       int32_t callback_id,
       int32_t* pp_error);

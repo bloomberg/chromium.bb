@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -24,12 +24,12 @@ class NaClFileRpcClient {
   static NaClSrpcError StreamAsFile(
       NaClSrpcChannel* channel,
       PP_Instance instance,
-      char* url,
+      const char* url,
       int32_t callback_id);
   static NaClSrpcError GetFileDesc(
       NaClSrpcChannel* channel,
       PP_Instance instance,
-      char* url,
+      const char* url,
       NaClSrpcImcDescType* file_desc);
 
  private:
@@ -42,7 +42,7 @@ class PpbRpcClient {
  public:
   static NaClSrpcError PPB_GetInterface(
       NaClSrpcChannel* channel,
-      char* interface_name,
+      const char* interface_name,
       int32_t* exports_interface_name);
 
  private:
@@ -819,7 +819,7 @@ class PpbTCPSocketPrivateRpcClient {
   static NaClSrpcError PPB_TCPSocket_Private_Connect(
       NaClSrpcChannel* channel,
       PP_Resource tcp_socket,
-      char* host,
+      const char* host,
       int32_t port,
       int32_t callback_id,
       int32_t* pp_error);
@@ -842,7 +842,7 @@ class PpbTCPSocketPrivateRpcClient {
   static NaClSrpcError PPB_TCPSocket_Private_SSLHandshake(
       NaClSrpcChannel* channel,
       PP_Resource tcp_socket,
-      char* server_name,
+      const char* server_name,
       int32_t server_port,
       int32_t callback_id,
       int32_t* pp_error);

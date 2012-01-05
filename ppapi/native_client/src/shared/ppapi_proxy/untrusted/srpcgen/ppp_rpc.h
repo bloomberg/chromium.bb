@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -42,7 +42,7 @@ class PppRpcServer {
       int32_t pid,
       PP_Module module,
       NaClSrpcImcDescType upcall_channel_desc,
-      char* service_description,
+      const char* service_description,
       int32_t* nacl_pid,
       int32_t* success);
   static void PPP_ShutdownModule(
@@ -51,7 +51,7 @@ class PppRpcServer {
   static void PPP_GetInterface(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      char* interface_name,
+      const char* interface_name,
       int32_t* exports_interface_name);
 
  private:

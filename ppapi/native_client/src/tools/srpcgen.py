@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,7 +25,7 @@ import sys
 import os
 
 COPYRIGHT_AND_AUTOGEN_COMMENT = """\
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -81,7 +81,7 @@ types = {'bool': ['b', 'bool', 'u.bval', ''],
          'PP_Instance': ['i', 'PP_Instance', 'u.ival', ''],
          'PP_Module': ['i', 'PP_Module', 'u.ival', ''],
          'PP_Resource': ['i', 'PP_Resource', 'u.ival', ''],
-         'string': ['s', 'char*', 'arrays.str', ''],
+         'string': ['s', 'const char*', 'arrays.str', ''],
         }
 
 def AddInclude(name):

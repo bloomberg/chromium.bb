@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@ using ppapi_proxy::GetBrowserInterface;
 
 void PpbRpcServer::PPB_GetInterface(NaClSrpcRpc* rpc,
                                     NaClSrpcClosure* done,
-                                    char* interface_name,
+                                    const char* interface_name,
                                     int32_t* exports_interface_name) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;

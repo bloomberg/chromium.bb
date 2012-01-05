@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -27,7 +27,7 @@
 NaClSrpcError NaClFileRpcClient::StreamAsFile(
     NaClSrpcChannel* channel,
     PP_Instance instance,
-    char* url,
+    const char* url,
     int32_t callback_id)  {
   VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
          ("%s: PPAPI calls are not supported off the main thread\n",
@@ -46,7 +46,7 @@ NaClSrpcError NaClFileRpcClient::StreamAsFile(
 NaClSrpcError NaClFileRpcClient::GetFileDesc(
     NaClSrpcChannel* channel,
     PP_Instance instance,
-    char* url,
+    const char* url,
     NaClSrpcImcDescType* file_desc)  {
   VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
          ("%s: PPAPI calls are not supported off the main thread\n",
@@ -64,7 +64,7 @@ NaClSrpcError NaClFileRpcClient::GetFileDesc(
 
 NaClSrpcError PpbRpcClient::PPB_GetInterface(
     NaClSrpcChannel* channel,
-    char* interface_name,
+    const char* interface_name,
     int32_t* exports_interface_name)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
@@ -2322,7 +2322,7 @@ NaClSrpcError PpbTCPSocketPrivateRpcClient::PPB_TCPSocket_Private_IsTCPSocket(
 NaClSrpcError PpbTCPSocketPrivateRpcClient::PPB_TCPSocket_Private_Connect(
     NaClSrpcChannel* channel,
     PP_Resource tcp_socket,
-    char* host,
+    const char* host,
     int32_t port,
     int32_t callback_id,
     int32_t* pp_error)  {
@@ -2404,7 +2404,7 @@ NaClSrpcError PpbTCPSocketPrivateRpcClient::PPB_TCPSocket_Private_GetRemoteAddre
 NaClSrpcError PpbTCPSocketPrivateRpcClient::PPB_TCPSocket_Private_SSLHandshake(
     NaClSrpcChannel* channel,
     PP_Resource tcp_socket,
-    char* server_name,
+    const char* server_name,
     int32_t server_port,
     int32_t callback_id,
     int32_t* pp_error)  {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -25,7 +25,7 @@ void NaClFileRpcServer::StreamAsFile(
     NaClSrpcClosure* done,
     // inputs
     PP_Instance instance,
-    char* url,
+    const char* url,
     int32_t callback_id) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
@@ -53,7 +53,7 @@ void NaClFileRpcServer::GetFileDesc(
     NaClSrpcClosure* done,
     // inputs
     PP_Instance instance,
-    char* url,
+    const char* url,
     // outputs
     NaClSrpcImcDescType* file_desc) {
   nacl::DescWrapperFactory factory;
