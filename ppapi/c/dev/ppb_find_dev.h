@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_find_dev.idl modified Tue Oct  4 08:34:10 2011. */
+/* From dev/ppb_find_dev.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_FIND_DEV_H_
 #define PPAPI_C_DEV_PPB_FIND_DEV_H_
@@ -26,7 +26,7 @@
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_Find_Dev {
+struct PPB_Find_Dev_0_3 {
   /**
    * Updates the number of find results for the current search term.  If
    * there are no matches 0 should be passed in.  Only when the plugin has
@@ -41,6 +41,8 @@ struct PPB_Find_Dev {
    */
   void (*SelectedFindResultChanged)(PP_Instance instance, int32_t index);
 };
+
+typedef struct PPB_Find_Dev_0_3 PPB_Find_Dev;
 /**
  * @}
  */

@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_messaging.idl modified Mon Aug 29 10:11:34 2011. */
+/* From ppb_messaging.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_PPB_MESSAGING_H_
 #define PPAPI_C_PPB_MESSAGING_H_
@@ -34,7 +34,7 @@
  * and is related to sending messages to JavaScript message event listeners on
  * the DOM element associated with specific module instance.
  */
-struct PPB_Messaging {
+struct PPB_Messaging_1_0 {
   /**
    * PostMessage() asynchronously invokes any listeners for message events on
    * the DOM element for the given module instance. A call to PostMessage()
@@ -93,6 +93,8 @@ struct PPB_Messaging {
    */
   void (*PostMessage)(PP_Instance instance, struct PP_Var message);
 };
+
+typedef struct PPB_Messaging_1_0 PPB_Messaging;
 /**
  * @}
  */

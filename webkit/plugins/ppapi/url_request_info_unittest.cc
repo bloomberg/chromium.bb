@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,7 +123,7 @@ WebFrame* URLRequestInfoTest::frame_;
 
 TEST_F(URLRequestInfoTest, GetInterface) {
   const PPB_URLRequestInfo* request_info =
-      ::ppapi::thunk::GetPPB_URLRequestInfo_Thunk();
+      ::ppapi::thunk::GetPPB_URLRequestInfo_1_0_Thunk();
   EXPECT_TRUE(request_info);
   EXPECT_TRUE(request_info->Create);
   EXPECT_TRUE(request_info->IsURLRequestInfo);
@@ -257,4 +257,3 @@ TEST_F(URLRequestInfoTest, SetHeaders) {
 
 }  // namespace ppapi
 }  // namespace webkit
-

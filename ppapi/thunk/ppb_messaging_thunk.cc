@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ const PPB_Messaging g_ppb_messaging_thunk = {
 
 }  // namespace
 
-const PPB_Messaging* GetPPB_Messaging_Thunk() {
+const PPB_Messaging_1_0* GetPPB_Messaging_1_0_Thunk() {
   return &g_ppb_messaging_thunk;
 }
 

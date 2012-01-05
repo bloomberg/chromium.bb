@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From trusted/ppb_buffer_trusted.idl modified Fri Jul 15 13:34:45 2011. */
+/* From trusted/ppb_buffer_trusted.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_TRUSTED_PPB_BUFFER_TRUSTED_H_
 #define PPAPI_C_TRUSTED_PPB_BUFFER_TRUSTED_H_
@@ -25,7 +25,7 @@
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_BufferTrusted {
+struct PPB_BufferTrusted_0_1 {
   /**
    * Returns the internal shared memory pointer associated with the given
    * Buffer resource.  Used for proxying.  Returns PP_OK on success, or
@@ -35,6 +35,8 @@ struct PPB_BufferTrusted {
    */
   int32_t (*GetSharedMemory)(PP_Resource buffer, int* handle);
 };
+
+typedef struct PPB_BufferTrusted_0_1 PPB_BufferTrusted;
 /**
  * @}
  */

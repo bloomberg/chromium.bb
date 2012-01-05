@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_font_dev.idl modified Wed Oct  5 19:40:26 2011. */
+/* From dev/ppb_font_dev.idl modified Tue Oct 11 10:01:39 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_FONT_DEV_H_
 #define PPAPI_C_DEV_PPB_FONT_DEV_H_
@@ -158,7 +158,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_TextRun_Dev, 24);
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_Font_Dev {
+struct PPB_Font_Dev_0_6 {
   /**
    * Returns a list of all available font families on the system. You can use
    * this list to decide whether to Create() a font.
@@ -252,6 +252,8 @@ struct PPB_Font_Dev {
                                      const struct PP_TextRun_Dev* text,
                                      uint32_t char_offset);
 };
+
+typedef struct PPB_Font_Dev_0_6 PPB_Font_Dev;
 /**
  * @}
  */

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,13 +103,13 @@ char* PPB_CharSet_Shared::UTF16ToCharSet(
 
   // ucnv_fromUChars returns size not including terminating null.
   char* encoded = static_cast<char*>(
-      thunk::GetPPB_Memory_Dev_Thunk()->MemAlloc(encoded_max_length + 1));
+      thunk::GetPPB_Memory_Dev_0_1_Thunk()->MemAlloc(encoded_max_length + 1));
   int actual_size = ucnv_fromUChars(converter, encoded,
       encoded_max_length, reinterpret_cast<const UChar*>(utf16), utf16_len,
       &status);
   ucnv_close(converter);
   if (!U_SUCCESS(status)) {
-    thunk::GetPPB_Memory_Dev_Thunk()->MemFree(encoded);
+    thunk::GetPPB_Memory_Dev_0_1_Thunk()->MemFree(encoded);
     return NULL;
   }
   encoded[actual_size] = 0;
@@ -141,7 +141,7 @@ uint16_t* PPB_CharSet_Shared::CharSetToUTF16(
     return NULL;
 
   uint16_t* ret_buf = static_cast<uint16_t*>(
-      thunk::GetPPB_Memory_Dev_Thunk()->MemAlloc(
+      thunk::GetPPB_Memory_Dev_0_1_Thunk()->MemAlloc(
           (output.size() + 1) * sizeof(uint16_t)));
   if (!ret_buf)
     return NULL;

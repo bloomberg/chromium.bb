@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,7 @@ const PPB_Fullscreen g_ppb_fullscreen_thunk = {
 
 }  // namespace
 
-const PPB_Fullscreen* GetPPB_Fullscreen_Thunk() {
+const PPB_Fullscreen_1_0* GetPPB_Fullscreen_1_0_Thunk() {
   return &g_ppb_fullscreen_thunk;
 }
 

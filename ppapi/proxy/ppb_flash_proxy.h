@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,11 +13,9 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_time.h"
+#include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/shared_impl/host_resource.h"
-
-struct PPB_Flash;
-struct PPB_Flash_11;
 
 namespace ppapi {
 
@@ -35,7 +33,7 @@ class PPB_Flash_Proxy : public InterfaceProxy {
 
   // Returns the corresponding version of the Flash interface pointer.
   static const PPB_Flash_11* GetInterface11();
-  static const PPB_Flash* GetInterface12();
+  static const PPB_Flash_12_0* GetInterface12_0();
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

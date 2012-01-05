@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -8,7 +8,8 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_INSTANCE_PRIVATE_INTERFACE "PPB_Instance_Private;0.1"
+#define PPB_INSTANCE_PRIVATE_INTERFACE_0_1 "PPB_Instance_Private;0.1"
+#define PPB_INSTANCE_PRIVATE_INTERFACE PPB_INSTANCE_PRIVATE_INTERFACE_0_1
 
 /**
  * @file
@@ -25,7 +26,7 @@
  * trusted plugin instances.
  *
  */
-struct PPB_Instance_Private {
+struct PPB_Instance_Private_0_1 {
   /**
    * GetWindowObject is a pointer to a function that determines
    * the DOM window containing this module instance.
@@ -66,9 +67,10 @@ struct PPB_Instance_Private {
                                  struct PP_Var script,
                                  struct PP_Var* exception);
 };
+
+typedef struct PPB_Instance_Private_0_1 PPB_Instance_Private;
 /**
  * @}
  */
 
 #endif  /* PPAPI_C_PRIVATE_PPB_INSTANCE_PRIVATE_H_ */
-

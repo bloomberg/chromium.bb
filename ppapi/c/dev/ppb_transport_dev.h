@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_transport_dev.idl modified Tue Oct  4 15:52:58 2011. */
+/* From dev/ppb_transport_dev.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_TRANSPORT_DEV_H_
 #define PPAPI_C_DEV_PPB_TRANSPORT_DEV_H_
@@ -111,7 +111,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TransportRelayMode, 4);
  * connect type, protocol
  * RTT
  */
-struct PPB_Transport_Dev {
+struct PPB_Transport_Dev_0_7 {
   /**
    * Creates a new transport object with the specified name using the
    * specified protocol.
@@ -176,6 +176,8 @@ struct PPB_Transport_Dev {
    */
   int32_t (*Close)(PP_Resource transport);
 };
+
+typedef struct PPB_Transport_Dev_0_7 PPB_Transport_Dev;
 /**
  * @}
  */

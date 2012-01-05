@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -32,14 +32,14 @@ struct MessageInfo {
   struct PP_Var message;
 };
 
-static struct PPB_Var* GetPPB_Var() {
-  return (struct PPB_Var*)(*get_browser_interface_func)(PPB_VAR_INTERFACE);
+static PPB_Var* GetPPB_Var() {
+  return (PPB_Var*)(*get_browser_interface_func)(PPB_VAR_INTERFACE);
 }
 
 static void SendOnMessageEventCallback(void* data, int32_t result) {
   struct MessageInfo* message_to_send = (struct MessageInfo*)data;
-  struct PPB_Messaging* ppb_messaging =
-      (struct PPB_Messaging*)(*get_browser_interface_func)(
+  PPB_Messaging* ppb_messaging =
+      (PPB_Messaging*)(*get_browser_interface_func)(
           PPB_MESSAGING_INTERFACE);
 
   UNREFERENCED_PARAMETER(result);
@@ -53,7 +53,7 @@ static void SendOnMessageEventCallback(void* data, int32_t result) {
    * dereference it.
    */
   if (message_to_send->message.type == PP_VARTYPE_STRING) {
-    struct PPB_Var* ppb_var = GetPPB_Var();
+    PPB_Var* ppb_var = GetPPB_Var();
     ppb_var->Release(message_to_send->message);
   }
   free(message_to_send);
@@ -63,14 +63,14 @@ static void SendOnMessageEventCallback(void* data, int32_t result) {
  * HandleMessage to ensure that this is all asynchronous.
  */
 void HandleMessage(PP_Instance instance, struct PP_Var message) {
-  struct PPB_Core* ppb_core =
-      (struct PPB_Core*)(*get_browser_interface_func)(PPB_CORE_INTERFACE);
+  PPB_Core* ppb_core =
+      (PPB_Core*)(*get_browser_interface_func)(PPB_CORE_INTERFACE);
   struct MessageInfo* message_to_send = malloc(sizeof(struct MessageInfo));
   message_to_send->instance = instance;
   message_to_send->message = message;
 
   if (message.type == PP_VARTYPE_STRING) {
-    struct PPB_Var* ppb_var = GetPPB_Var();
+    PPB_Var* ppb_var = GetPPB_Var();
     /* If the message is a string, add reference to go with the copy we did
      * above.
      */
@@ -131,7 +131,7 @@ PP_EXPORT void PPP_ShutdownModule() {
 PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
   if (0 == strncmp(PPP_INSTANCE_INTERFACE, interface_name,
                    strlen(PPP_INSTANCE_INTERFACE))) {
-    static struct PPP_Instance instance_interface = {
+    static PPP_Instance instance_interface = {
       DidCreate,
       DidDestroy,
       DidChangeView,
@@ -141,7 +141,7 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
     return &instance_interface;
   } else if (0 == strncmp(PPP_MESSAGING_INTERFACE, interface_name,
                           strlen(PPP_MESSAGING_INTERFACE))) {
-    static struct PPP_Messaging messaging_interface = {
+    static PPP_Messaging messaging_interface = {
       HandleMessage
     };
     return &messaging_interface;

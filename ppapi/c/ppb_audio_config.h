@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_audio_config.idl modified Mon Aug 29 10:11:34 2011. */
+/* From ppb_audio_config.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_PPB_AUDIO_CONFIG_H_
 #define PPAPI_C_PPB_AUDIO_CONFIG_H_
@@ -68,7 +68,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_AudioSampleRate, 4);
  * <a href="/chrome/nativeclient/docs/audio.html">Pepper
  * Audio API</a> for information on using this interface.
  */
-struct PPB_AudioConfig {
+struct PPB_AudioConfig_1_0 {
   /**
    * CreateStereo16bit() creates a 16 bit audio configuration resource. The
    * <code>sample_frame_count</code> should be the result of calling
@@ -168,6 +168,8 @@ struct PPB_AudioConfig {
    */
   uint32_t (*GetSampleFrameCount)(PP_Resource config);
 };
+
+typedef struct PPB_AudioConfig_1_0 PPB_AudioConfig;
 /**
  * @}
  */

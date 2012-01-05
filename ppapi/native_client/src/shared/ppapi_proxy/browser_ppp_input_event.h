@@ -1,6 +1,6 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_INPUT_EVENT_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_INPUT_EVENT_H_
@@ -12,8 +12,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/ppb_input_event.h"
-
-struct PPP_InputEvent;
+#include "ppapi/c/ppp_input_event.h"
 
 namespace ppapi_proxy {
 

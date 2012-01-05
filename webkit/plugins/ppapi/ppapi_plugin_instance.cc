@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -956,7 +956,7 @@ bool PluginInstance::LoadMessagingInterface() {
     checked_for_plugin_messaging_interface_ = true;
     plugin_messaging_interface_ =
         static_cast<const PPP_Messaging*>(module_->GetPluginInterface(
-            PPP_MESSAGING_INTERFACE_1_0));
+            PPP_MESSAGING_INTERFACE));
   }
   return !!plugin_messaging_interface_;
 }
@@ -974,8 +974,8 @@ bool PluginInstance::LoadMouseLockInterface() {
 bool PluginInstance::LoadPdfInterface() {
   if (!plugin_pdf_interface_) {
     plugin_pdf_interface_ =
-        static_cast<const PPP_Pdf*>(module_->GetPluginInterface(
-            PPP_PDF_INTERFACE));
+        static_cast<const PPP_Pdf_1*>(module_->GetPluginInterface(
+            PPP_PDF_INTERFACE_1));
   }
 
   return !!plugin_pdf_interface_;

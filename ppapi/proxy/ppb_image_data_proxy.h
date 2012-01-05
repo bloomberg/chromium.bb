@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,13 +13,13 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppb_image_data.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/ppb_image_data_shared.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 
-struct PPB_ImageData;
 class TransportDIB;
 
 namespace skia {

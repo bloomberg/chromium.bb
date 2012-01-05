@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_file_ref.idl modified Wed Aug 24 20:52:42 2011. */
+/* From ppb_file_ref.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_PPB_FILE_REF_H_
 #define PPAPI_C_PPB_FILE_REF_H_
@@ -36,7 +36,7 @@
  * a file system.  This struct contains a <code>PP_FileSystemType</code>
  * identifier and a file path string.
  */
-struct PPB_FileRef {
+struct PPB_FileRef_1_0 {
   /**
    * Create() creates a weak pointer to a file in the given file system. File
    * paths are POSIX style.
@@ -178,6 +178,8 @@ struct PPB_FileRef {
                     PP_Resource new_file_ref,
                     struct PP_CompletionCallback callback);
 };
+
+typedef struct PPB_FileRef_1_0 PPB_FileRef;
 /**
  * @}
  */

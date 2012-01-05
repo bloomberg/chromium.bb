@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,6 @@
 
 #include "ppapi/c/dev/ppb_transport_dev.h"
 #include "ppapi/tests/test_case.h"
-
-struct PPB_Transport_Dev;
 
 namespace pp {
 class Transport_Dev;

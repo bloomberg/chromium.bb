@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From trusted/ppb_file_io_trusted.idl modified Mon Jul 18 10:45:10 2011. */
+/* From trusted/ppb_file_io_trusted.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_TRUSTED_PPB_FILE_IO_TRUSTED_H_
 #define PPAPI_C_TRUSTED_PPB_FILE_IO_TRUSTED_H_
@@ -28,7 +28,7 @@
  * @{
  */
 /* Available only to trusted implementations. */
-struct PPB_FileIOTrusted {
+struct PPB_FileIOTrusted_0_4 {
   /**
    * Returns a file descriptor corresponding to the given FileIO object. On
    * Windows, returns a HANDLE; on all other platforms, returns a POSIX file
@@ -61,6 +61,8 @@ struct PPB_FileIOTrusted {
                            int64_t length,
                            struct PP_CompletionCallback callback);
 };
+
+typedef struct PPB_FileIOTrusted_0_4 PPB_FileIOTrusted;
 /**
  * @}
  */

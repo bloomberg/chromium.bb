@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash_udp_socket.idl modified Wed Nov  9 12:53:35 2011. */
+/* From private/ppb_flash_udp_socket.idl modified Thu Nov 10 10:21:43 2011. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_UDP_SOCKET_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_UDP_SOCKET_H_
@@ -29,7 +29,7 @@
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_Flash_UDPSocket {
+struct PPB_Flash_UDPSocket_0_1 {
   /**
    * Creates a UDP socket resource.
    */
@@ -68,6 +68,8 @@ struct PPB_Flash_UDPSocket {
   /* Cancels all pending reads and writes, and closes the socket. */
   void (*Close)(PP_Resource udp_socket);
 };
+
+typedef struct PPB_Flash_UDPSocket_0_1 PPB_Flash_UDPSocket;
 /**
  * @}
  */

@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -23,7 +23,7 @@
 //
 // This also allows each layer to be updated seperately to avoid excessive
 // compositing.
-struct PPB_LayerCompositor_Dev {
+struct PPB_LayerCompositor_Dev_0_2 {
   // Creates a video layer.
   PP_Resource (*Create)(PP_Instance instance);
 
@@ -74,5 +74,7 @@ struct PPB_LayerCompositor_Dev {
   int32_t (*SwapBuffers)(PP_Resource compositor,
                          struct PP_CompletionCallback callback);
 };
+
+typedef struct PPB_LayerCompositor_Dev_0_2 PPB_LayerCompositor_Dev;
 
 #endif  /* PPAPI_C_DEV_PPB_LAYER_COMPOSITOR_DEV_H_ */

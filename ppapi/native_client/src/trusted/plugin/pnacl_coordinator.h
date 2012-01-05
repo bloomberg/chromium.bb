@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,13 +23,13 @@
 #include "native_client/src/trusted/plugin/pnacl_resources.h"
 
 #include "ppapi/c/pp_file_info.h"
+#include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/file_system.h"
 
 struct NaClMutex;
-struct PPB_FileIOTrusted;
 
 namespace plugin {
 

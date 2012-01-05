@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -22,11 +22,11 @@
 
 PPB_GetInterface g_get_browser_interface = NULL;
 
-const struct PPB_Core* g_core_interface;
-const struct PPB_Graphics2D* g_graphics_2d_interface;
-const struct PPB_ImageData* g_image_data_interface;
-const struct PPB_Instance* g_instance_interface;
-const struct PPB_View* g_view_interface;
+const PPB_Core* g_core_interface;
+const PPB_Graphics2D* g_graphics_2d_interface;
+const PPB_ImageData* g_image_data_interface;
+const PPB_Instance* g_instance_interface;
+const PPB_View* g_view_interface;
 
 /* PPP_Instance implementation -----------------------------------------------*/
 
@@ -167,7 +167,7 @@ PP_Bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
   return PP_FALSE;
 }
 
-static struct PPP_Instance instance_interface = {
+static PPP_Instance instance_interface = {
   &Instance_DidCreate,
   &Instance_DidDestroy,
   &Instance_DidChangeView,
@@ -182,15 +182,15 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module module,
                                        PPB_GetInterface get_browser_interface) {
   g_get_browser_interface = get_browser_interface;
 
-  g_core_interface = (const struct PPB_Core*)
+  g_core_interface = (const PPB_Core*)
       get_browser_interface(PPB_CORE_INTERFACE);
-  g_instance_interface = (const struct PPB_Instance*)
+  g_instance_interface = (const PPB_Instance*)
       get_browser_interface(PPB_INSTANCE_INTERFACE);
-  g_image_data_interface = (const struct PPB_ImageData*)
+  g_image_data_interface = (const PPB_ImageData*)
       get_browser_interface(PPB_IMAGEDATA_INTERFACE);
-  g_graphics_2d_interface = (const struct PPB_Graphics2D*)
+  g_graphics_2d_interface = (const PPB_Graphics2D*)
       get_browser_interface(PPB_GRAPHICS_2D_INTERFACE);
-  g_view_interface = (const struct PPB_View*)
+  g_view_interface = (const PPB_View*)
       get_browser_interface(PPB_VIEW_INTERFACE);
   if (!g_core_interface || !g_instance_interface || !g_image_data_interface ||
       !g_graphics_2d_interface || !g_view_interface)
@@ -207,4 +207,3 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
     return &instance_interface;
   return NULL;
 }
-

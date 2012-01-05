@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,12 +7,11 @@
 
 #include <string>
 
+#include "ppapi/c/dev/ppb_var_array_buffer_dev.h"
+#include "ppapi/c/dev/ppb_websocket_dev.h"
+#include "ppapi/c/ppb_core.h"
+#include "ppapi/c/ppb_var.h"
 #include "ppapi/tests/test_case.h"
-
-struct PPB_Core;
-struct PPB_Var;
-struct PPB_VarArrayBuffer_Dev;
-struct PPB_WebSocket_Dev;
 
 class TestWebSocket : public TestCase {
  public:

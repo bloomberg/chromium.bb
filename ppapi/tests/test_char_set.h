@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "ppapi/c/dev/ppb_char_set_dev.h"
 #include "ppapi/tests/test_case.h"
-
-struct PPB_CharSet_Dev;
 
 class TestCharSet : public TestCase {
  public:
@@ -30,7 +29,7 @@ class TestCharSet : public TestCase {
   // stored in the given vector.
   std::vector<uint16_t> UTF8ToUTF16(const std::string& utf8);
 
-  const struct PPB_CharSet_Dev* char_set_interface_;
+  const PPB_CharSet_Dev* char_set_interface_;
 };
 
 #endif  // PPAPI_TESTS_TEST_CHAR_SET_H_

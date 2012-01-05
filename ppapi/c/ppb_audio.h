@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_audio.idl modified Mon Aug 29 10:11:34 2011. */
+/* From ppb_audio.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_PPB_AUDIO_H_
 #define PPAPI_C_PPB_AUDIO_H_
@@ -78,7 +78,7 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
  * ...audio_callback() will now be periodically invoked on a separate thread...
  * </code>
  */
-struct PPB_Audio {
+struct PPB_Audio_1_0 {
   /**
    * Create() creates an audio resource. No sound will be heard until
    * StartPlayback() is called. The callback is called with the buffer address
@@ -156,6 +156,8 @@ struct PPB_Audio {
    */
   PP_Bool (*StopPlayback)(PP_Resource audio);
 };
+
+typedef struct PPB_Audio_1_0 PPB_Audio;
 /**
  * @}
  */

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -150,11 +150,11 @@ class MyInstance : public pp::Instance {
     // Note: This is test code and is not normally needed for an application.
     PPB_GetInterface get_browser_interface =
         pp::Module::Get()->get_browser_interface();
-    const struct PPB_AudioConfig* audio_config_interface =
-        static_cast<const struct PPB_AudioConfig*>(
+    const PPB_AudioConfig* audio_config_interface =
+        static_cast<const PPB_AudioConfig*>(
         get_browser_interface(PPB_AUDIO_CONFIG_INTERFACE));
-    const struct PPB_Audio* audio_interface =
-        static_cast<const struct PPB_Audio*>(
+    const PPB_Audio* audio_interface =
+        static_cast<const PPB_Audio*>(
         get_browser_interface(PPB_AUDIO_INTERFACE));
     PP_Resource audio_config_resource = config_->pp_resource();
     PP_Resource audio_resource = audio_->pp_resource();

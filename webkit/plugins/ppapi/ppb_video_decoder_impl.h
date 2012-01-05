@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/dev/pp_video_dev.h"
+#include "ppapi/c/dev/ppp_video_decoder_dev.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/ppb_video_decoder_shared.h"
 #include "ppapi/shared_impl/resource.h"
@@ -19,8 +20,6 @@
 
 struct PP_PictureBuffer_Dev;
 struct PP_VideoBitstreamBuffer_Dev;
-struct PPB_VideoDecoder_Dev;
-struct PPP_VideoDecoder_Dev;
 
 namespace gpu {
 namespace gles2 {

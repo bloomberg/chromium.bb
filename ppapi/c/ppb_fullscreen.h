@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_fullscreen.idl modified Wed Dec 21 11:00:23 2011. */
+/* From ppb_fullscreen.idl modified Wed Dec 21 19:08:34 2011. */
 
 #ifndef PPAPI_C_PPB_FULLSCREEN_H_
 #define PPAPI_C_PPB_FULLSCREEN_H_
@@ -33,7 +33,7 @@
  * This interface provides a way of checking the current screen mode and
  * toggling fullscreen mode.
  */
-struct PPB_Fullscreen {
+struct PPB_Fullscreen_1_0 {
   /**
    * IsFullscreen() checks whether the module instance is currently in
    * fullscreen mode.
@@ -81,6 +81,8 @@ struct PPB_Fullscreen {
    */
   PP_Bool (*GetScreenSize)(PP_Instance instance, struct PP_Size* size);
 };
+
+typedef struct PPB_Fullscreen_1_0 PPB_Fullscreen;
 /**
  * @}
  */

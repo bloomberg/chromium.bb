@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash_fullscreen.idl modified Tue Nov 29 11:39:26 2011. */
+/* From private/ppb_flash_fullscreen.idl modified Wed Dec 14 18:08:00 2011. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_FULLSCREEN_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_FULLSCREEN_H_
@@ -27,7 +27,7 @@
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_FlashFullscreen {
+struct PPB_FlashFullscreen_0_1 {
   /**
    * Checks whether the plugin instance is currently in fullscreen mode.
    */
@@ -54,6 +54,8 @@ struct PPB_FlashFullscreen {
    */
   PP_Bool (*GetScreenSize)(PP_Instance instance, struct PP_Size* size);
 };
+
+typedef struct PPB_FlashFullscreen_0_1 PPB_FlashFullscreen;
 /**
  * @}
  */

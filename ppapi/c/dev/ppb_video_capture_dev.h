@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_video_capture_dev.idl modified Wed Oct  5 09:11:07 2011. */
+/* From dev/ppb_video_capture_dev.idl modified Tue Oct 11 10:01:39 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_VIDEO_CAPTURE_DEV_H_
 #define PPAPI_C_DEV_PPB_VIDEO_CAPTURE_DEV_H_
@@ -53,7 +53,7 @@
  * 4:2:0, one byte per pixel, tightly packed (width x height Y values, then
  * width/2 x height/2 U values, then width/2 x height/2 V values).
  */
-struct PPB_VideoCapture_Dev {
+struct PPB_VideoCapture_Dev_0_1 {
   /**
    * Creates a new VideoCapture.
    */
@@ -97,6 +97,8 @@ struct PPB_VideoCapture_Dev {
    */
   int32_t (*StopCapture)(PP_Resource video_capture);
 };
+
+typedef struct PPB_VideoCapture_Dev_0_1 PPB_VideoCapture_Dev;
 /**
  * @}
  */

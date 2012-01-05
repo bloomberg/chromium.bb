@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_url_response_info.idl modified Fri Nov 11 19:54:33 2011. */
+/* From ppb_url_response_info.idl modified Mon Nov 14 10:36:01 2011. */
 
 #ifndef PPAPI_C_PPB_URL_RESPONSE_INFO_H_
 #define PPAPI_C_PPB_URL_RESPONSE_INFO_H_
@@ -96,7 +96,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLResponseProperty, 4);
  * examining URL responses. Refer to <code>PPB_URLLoader</code> for further
  * information.
  */
-struct PPB_URLResponseInfo {
+struct PPB_URLResponseInfo_1_0 {
   /**
    * IsURLResponseInfo() determines if a response is a
    * <code>URLResponseInfo</code>.
@@ -139,6 +139,8 @@ struct PPB_URLResponseInfo {
    */
   PP_Resource (*GetBodyAsFileRef)(PP_Resource response);
 };
+
+typedef struct PPB_URLResponseInfo_1_0 PPB_URLResponseInfo;
 /**
  * @}
  */

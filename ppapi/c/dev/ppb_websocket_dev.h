@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_websocket_dev.idl modified Fri Dec 16 14:25:06 2011. */
+/* From dev/ppb_websocket_dev.idl modified Mon Dec 19 19:44:12 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_WEBSOCKET_DEV_H_
 #define PPAPI_C_DEV_PPB_WEBSOCKET_DEV_H_
@@ -84,7 +84,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_WebSocketMessageType_Dev, 4);
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_WebSocket_Dev {
+struct PPB_WebSocket_Dev_0_1 {
   /**
    * Create() creates a WebSocket instance.
    *
@@ -322,6 +322,8 @@ struct PPB_WebSocket_Dev {
    */
   struct PP_Var (*GetURL)(PP_Resource web_socket);
 };
+
+typedef struct PPB_WebSocket_Dev_0_1 PPB_WebSocket_Dev;
 /**
  * @}
  */

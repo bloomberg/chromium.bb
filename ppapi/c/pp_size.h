@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From pp_size.idl modified Sat Jul 16 16:50:26 2011. */
+/* From pp_size.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_PP_SIZE_H_
 #define PPAPI_C_PP_SIZE_H_

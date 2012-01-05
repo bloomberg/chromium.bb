@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ PP_Bool DidCreate(PP_Instance /*instance*/,
   return PP_FALSE;
 }
 
-const struct PPP_Instance instance_interface = {
+const PPP_Instance instance_interface = {
   DidCreate,
   // Normally one is not alowed to register NULLs for functions, but
   // since DidCreate is going to crash, these will never be called.

@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_graphics_2d.idl modified Wed Aug 24 20:51:38 2011. */
+/* From ppb_graphics_2d.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_PPB_GRAPHICS_2D_H_
 #define PPAPI_C_PPB_GRAPHICS_2D_H_
@@ -35,7 +35,7 @@
 /**
  * <code>PPB_Graphics2D</code> defines the interface for a 2D graphics context.
  */
-struct PPB_Graphics2D {
+struct PPB_Graphics2D_1_0 {
   /**
    * Create() creates a 2D graphics context. The returned graphics context will
    * not be bound to the module instance on creation (call BindGraphics() on
@@ -256,6 +256,8 @@ struct PPB_Graphics2D {
   int32_t (*Flush)(PP_Resource graphics_2d,
                    struct PP_CompletionCallback callback);
 };
+
+typedef struct PPB_Graphics2D_1_0 PPB_Graphics2D;
 /**
  * @}
  */

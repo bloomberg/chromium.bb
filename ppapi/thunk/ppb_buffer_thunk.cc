@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ const PPB_Buffer_Dev g_ppb_buffer_thunk = {
 
 }  // namespace
 
-const PPB_Buffer_Dev* GetPPB_Buffer_Dev_Thunk() {
+const PPB_Buffer_Dev_0_4* GetPPB_Buffer_Dev_0_4_Thunk() {
   return &g_ppb_buffer_thunk;
 }
 

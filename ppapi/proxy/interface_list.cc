@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,12 +165,12 @@ InterfaceList::InterfaceList() {
   // proxy and the impl and there's no obvious message routing.
   AddProxy(API_ID_RESOURCE_CREATION, &ResourceCreationProxy::Create);
   AddProxy(API_ID_PPP_CLASS, &PPP_Class_Proxy::Create);
-  AddPPB(PPB_CORE_INTERFACE, API_ID_PPB_CORE,
+  AddPPB(PPB_CORE_INTERFACE_1_0, API_ID_PPB_CORE,
          PPB_Core_Proxy::GetPPB_Core_Interface());
-  AddPPB(PPB_OPENGLES2_INTERFACE, API_ID_NONE,
+  AddPPB(PPB_OPENGLES2_INTERFACE_1_0, API_ID_NONE,
          PPB_OpenGLES2_Shared::GetInterface());
-  AddPPB(PPB_VAR_INTERFACE, API_ID_NONE,
-         PPB_Var_Shared::GetVarInterface());
+  AddPPB(PPB_VAR_INTERFACE_1_1, API_ID_NONE,
+         PPB_Var_Shared::GetVarInterface1_1());
   AddPPB(PPB_VAR_INTERFACE_1_0, API_ID_NONE,
          PPB_Var_Shared::GetVarInterface1_0());
 
@@ -257,14 +257,14 @@ void InterfaceList::AddFlashInterfaces() {
   AddPPB(PPB_FLASH_INTERFACE_11_0, API_ID_PPB_FLASH,
          PPB_Flash_Proxy::GetInterface11());
   AddPPB(PPB_FLASH_INTERFACE_12_0, API_ID_PPB_FLASH,
-         PPB_Flash_Proxy::GetInterface12());
+         PPB_Flash_Proxy::GetInterface12_0());
 
   AddProxy(API_ID_PPB_FLASH_CLIPBOARD,
            &ProxyFactory<PPB_Flash_Clipboard_Proxy>);
-  AddPPB(PPB_FLASH_CLIPBOARD_INTERFACE, API_ID_PPB_FLASH_CLIPBOARD,
-         thunk::GetPPB_Flash_Clipboard_Thunk());
+  AddPPB(PPB_FLASH_CLIPBOARD_INTERFACE_3_0, API_ID_PPB_FLASH_CLIPBOARD,
+         thunk::GetPPB_Flash_Clipboard_3_0_Thunk());
   AddPPB(PPB_FLASH_CLIPBOARD_INTERFACE_3_LEGACY, API_ID_PPB_FLASH_CLIPBOARD,
-         thunk::GetPPB_Flash_Clipboard_Thunk());
+         thunk::GetPPB_Flash_Clipboard_3_0_Thunk());
 
   AddProxy(API_ID_PPB_FLASH_FILE_FILEREF,
            &ProxyFactory<PPB_Flash_File_FileRef_Proxy>);
@@ -278,18 +278,18 @@ void InterfaceList::AddFlashInterfaces() {
          PPB_Flash_File_ModuleLocal_Proxy::GetInterface());
 
   AddProxy(API_ID_PPB_FLASH_MENU, &ProxyFactory<PPB_Flash_Menu_Proxy>);
-  AddPPB(PPB_FLASH_MENU_INTERFACE, API_ID_PPB_FLASH_MENU,
-         thunk::GetPPB_Flash_Menu_Thunk());
+  AddPPB(PPB_FLASH_MENU_INTERFACE_0_2, API_ID_PPB_FLASH_MENU,
+         thunk::GetPPB_Flash_Menu_0_2_Thunk());
 
-  // Only add PPB because proxy for the this API ID was already added.
-  AddPPB(PPB_FLASH_TCPSOCKET_INTERFACE, API_ID_PPB_TCPSOCKET_PRIVATE,
-         thunk::GetPPB_TCPSocket_Private_Thunk());
+  // Only add the interface; PPB_TCPSocket_Private provides the API ID's proxy.
+  AddPPB(PPB_FLASH_TCPSOCKET_INTERFACE_0_2, API_ID_PPB_TCPSOCKET_PRIVATE,
+         thunk::GetPPB_TCPSocket_Private_0_3_Thunk());
 
 #ifdef ENABLE_FLAPPER_HACKS
   AddProxy(API_ID_PPB_FLASH_NETCONNECTOR,
            &ProxyFactory<PPB_Flash_NetConnector_Proxy>);
-  AddPPB(PPB_FLASH_NETCONNECTOR_INTERFACE, API_ID_PPB_FLASH_NETCONNECTOR,
-         thunk::GetPPB_Flash_NetConnector_Thunk());
+  AddPPB(PPB_FLASH_NETCONNECTOR_INTERFACE_0_2, API_ID_PPB_FLASH_NETCONNECTOR,
+         thunk::GetPPB_Flash_NetConnector_0_2_Thunk());
 #endif
 }
 

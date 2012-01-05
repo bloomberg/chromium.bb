@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ const PPB_Find_Dev g_ppb_find_thunk = {
 
 }  // namespace
 
-const PPB_Find_Dev* GetPPB_Find_Dev_Thunk() {
+const PPB_Find_Dev_0_3* GetPPB_Find_Dev_0_3_Thunk() {
   return &g_ppb_find_thunk;
 }
 

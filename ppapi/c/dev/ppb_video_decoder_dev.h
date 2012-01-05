@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_video_decoder_dev.idl modified Tue Nov 29 11:27:39 2011. */
+/* From dev/ppb_video_decoder_dev.idl modified Wed Dec 14 18:08:00 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_VIDEO_DECODER_DEV_H_
 #define PPAPI_C_DEV_PPB_VIDEO_DECODER_DEV_H_
@@ -49,7 +49,7 @@
  * See PPP_VideoDecoder_Dev for the notifications the decoder may send the
  * plugin.
  */
-struct PPB_VideoDecoder_Dev {
+struct PPB_VideoDecoder_Dev_0_16 {
   /**
    * Creates & initializes a video decoder.
    *
@@ -157,6 +157,8 @@ struct PPB_VideoDecoder_Dev {
    */
   void (*Destroy)(PP_Resource video_decoder);
 };
+
+typedef struct PPB_VideoDecoder_Dev_0_16 PPB_VideoDecoder_Dev;
 /**
  * @}
  */

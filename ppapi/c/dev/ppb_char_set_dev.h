@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -35,7 +35,7 @@ enum PP_CharSet_ConversionError {
 };
 PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_CharSet_ConversionError, 4);
 
-struct PPB_CharSet_Dev {
+struct PPB_CharSet_Dev_0_4 {
   // Converts the UTF-16 string pointed to in |*utf16| to an 8-bit string in the
   // specified code page. |utf16_len| is measured in UTF-16 units, not bytes.
   // This value may not be NULL.
@@ -80,5 +80,6 @@ struct PPB_CharSet_Dev {
   struct PP_Var (*GetDefaultCharSet)(PP_Instance instance);
 };
 
-#endif  /* PPAPI_C_DEV_PPB_CHAR_SET_DEV_H_ */
+typedef struct PPB_CharSet_Dev_0_4 PPB_CharSet_Dev;
 
+#endif  /* PPAPI_C_DEV_PPB_CHAR_SET_DEV_H_ */

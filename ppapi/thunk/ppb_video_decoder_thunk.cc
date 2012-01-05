@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,7 +90,7 @@ const PPB_VideoDecoder_Dev g_ppb_videodecoder_thunk = {
 
 }  // namespace
 
-const PPB_VideoDecoder_Dev* GetPPB_VideoDecoder_Dev_Thunk() {
+const PPB_VideoDecoder_Dev_0_16* GetPPB_VideoDecoder_Dev_0_16_Thunk() {
   return &g_ppb_videodecoder_thunk;
 }
 

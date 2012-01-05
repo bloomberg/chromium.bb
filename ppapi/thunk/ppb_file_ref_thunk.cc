@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,11 +125,11 @@ const PPB_FileRefPrivate g_ppb_file_ref_private_thunk = {
 
 }  // namespace
 
-const PPB_FileRef* GetPPB_FileRef_Thunk() {
+const PPB_FileRef_1_0* GetPPB_FileRef_1_0_Thunk() {
   return &g_ppb_file_ref_thunk;
 }
 
-const PPB_FileRefPrivate* GetPPB_FileRefPrivate_Thunk() {
+const PPB_FileRefPrivate_0_1* GetPPB_FileRefPrivate_0_1_Thunk() {
   return &g_ppb_file_ref_private_thunk;
 }
 

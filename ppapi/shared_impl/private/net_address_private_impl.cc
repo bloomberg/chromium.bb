@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -281,8 +281,8 @@ const PPB_NetAddress_Private net_address_private_interface = {
 
 namespace thunk {
 
-PPAPI_THUNK_EXPORT const PPB_NetAddress_Private*
-GetPPB_NetAddress_Private_Thunk() {
+PPAPI_THUNK_EXPORT const PPB_NetAddress_Private_0_1*
+GetPPB_NetAddress_Private_0_1_Thunk() {
   return &net_address_private_interface;
 }
 

@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From pp_var.idl modified Fri Dec  2 16:45:08 2011. */
+/* From pp_var.idl modified Wed Dec 14 18:08:00 2011. */
 
 #ifndef PPAPI_C_PP_VAR_H_
 #define PPAPI_C_PP_VAR_H_

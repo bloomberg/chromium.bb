@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ void BrowserInterface::AddToConsole(pp::InstancePrivate* instance,
                                     const nacl::string& text) {
   pp::Module* module = pp::Module::Get();
   const PPB_Var* var_interface =
-      static_cast<const struct PPB_Var*>(
+      static_cast<const PPB_Var*>(
           module->GetBrowserInterface(PPB_VAR_INTERFACE));
   nacl::string prefix_string("NativeClient");
   PP_Var prefix =
@@ -54,7 +54,7 @@ void BrowserInterface::AddToConsole(pp::InstancePrivate* instance,
   PP_Var str = var_interface->VarFromUtf8(text.c_str(),
                                           static_cast<uint32_t>(text.size()));
   const PPB_Console_Dev* console_interface =
-      static_cast<const struct PPB_Console_Dev*>(
+      static_cast<const PPB_Console_Dev*>(
           module->GetBrowserInterface(PPB_CONSOLE_DEV_INTERFACE));
   console_interface->LogWithSource(instance->pp_instance(),
                                    PP_LOGLEVEL_LOG,

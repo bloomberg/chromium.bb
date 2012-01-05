@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,8 +53,8 @@ PPB_Instance_Proxy::~PPB_Instance_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfoPrivate() {
   static const Info info = {
-    ppapi::thunk::GetPPB_Instance_Private_Thunk(),
-    PPB_INSTANCE_PRIVATE_INTERFACE,
+    ppapi::thunk::GetPPB_Instance_Private_0_1_Thunk(),
+    PPB_INSTANCE_PRIVATE_INTERFACE_0_1,
     API_ID_NONE,  // 1_0 is the canonical one.
     false,
     &CreateInstanceProxy,

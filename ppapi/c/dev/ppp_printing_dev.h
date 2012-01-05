@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppp_printing_dev.idl modified Thu Nov 17 13:26:05 2011. */
+/* From dev/ppp_printing_dev.idl modified Fri Nov 18 15:58:00 2011. */
 
 #ifndef PPAPI_C_DEV_PPP_PRINTING_DEV_H_
 #define PPAPI_C_DEV_PPP_PRINTING_DEV_H_
@@ -80,7 +80,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PrintPageNumberRange_Dev, 8);
  * @addtogroup Interfaces
  * @{
  */
-struct PPP_Printing_Dev {
+struct PPP_Printing_Dev_0_5 {
   /**
    *  Returns a bit field representing the supported print output formats.  For
    *  example, if only Raster and PostScript are supported,
@@ -115,6 +115,8 @@ struct PPP_Printing_Dev {
    */
   PP_Bool (*IsScalingDisabled)(PP_Instance instance);
 };
+
+typedef struct PPP_Printing_Dev_0_5 PPP_Printing_Dev;
 /**
  * @}
  */

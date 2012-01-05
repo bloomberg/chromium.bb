@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/pp_video_capture_dev.idl modified Fri Nov 11 20:19:26 2011. */
+/* From dev/pp_video_capture_dev.idl modified Mon Nov 14 10:36:01 2011. */
 
 #ifndef PPAPI_C_DEV_PP_VIDEO_CAPTURE_DEV_H_
 #define PPAPI_C_DEV_PP_VIDEO_CAPTURE_DEV_H_

@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From private/ppb_udp_socket_private.idl modified Wed Nov  9 12:53:35 2011. */
+/* From private/ppb_udp_socket_private.idl modified Wed Nov 16 15:27:20 2011. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_UDP_SOCKET_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_UDP_SOCKET_PRIVATE_H_
@@ -29,7 +29,7 @@
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_UDPSocket_Private {
+struct PPB_UDPSocket_Private_0_2 {
   /**
    * Creates a UDP socket resource.
    */
@@ -68,6 +68,8 @@ struct PPB_UDPSocket_Private {
   /* Cancels all pending reads and writes, and closes the socket. */
   void (*Close)(PP_Resource udp_socket);
 };
+
+typedef struct PPB_UDPSocket_Private_0_2 PPB_UDPSocket_Private;
 /**
  * @}
  */

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@ const PPB_ImageDataTrusted g_ppb_image_data_trusted_thunk = {
 
 }  // namespace
 
-const PPB_ImageDataTrusted* GetPPB_ImageDataTrusted_Thunk() {
+const PPB_ImageDataTrusted_0_4* GetPPB_ImageDataTrusted_0_4_Thunk() {
   return &g_ppb_image_data_trusted_thunk;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,14 +75,14 @@ PP_Var CreateArrayBufferVar(uint32_t size_in_bytes) {
       size_in_bytes);
 }
 
-uint32_t ByteLength(struct PP_Var array) {
+uint32_t ByteLength(PP_Var array) {
   ArrayBufferVar* buffer = ArrayBufferVar::FromPPVar(array);
   if (!buffer)
     return 0;
   return buffer->ByteLength();
 }
 
-void* Map(struct PP_Var array) {
+void* Map(PP_Var array) {
   ArrayBufferVar* buffer = ArrayBufferVar::FromPPVar(array);
   if (!buffer)
     return NULL;
@@ -98,7 +98,7 @@ const PPB_VarArrayBuffer_Dev var_arraybuffer_interface = {
 }  // namespace
 
 // static
-const PPB_Var* PPB_Var_Shared::GetVarInterface() {
+const PPB_Var_1_1* PPB_Var_Shared::GetVarInterface1_1() {
   return &var_interface;
 }
 
@@ -113,4 +113,3 @@ const PPB_VarArrayBuffer_Dev* PPB_Var_Shared::GetVarArrayBufferInterface() {
 }
 
 }  // namespace ppapi
-

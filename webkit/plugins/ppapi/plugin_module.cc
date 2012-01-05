@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -296,58 +296,58 @@ const void* GetInterface(const char* name) {
 
   // Please keep alphabetized by interface macro name with "special" stuff at
   // the bottom.
-  if (strcmp(name, PPB_AUDIO_INPUT_TRUSTED_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_AudioInputTrusted_Thunk();
-  if (strcmp(name, PPB_AUDIO_TRUSTED_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_AudioTrusted_Thunk();
-  if (strcmp(name, PPB_BUFFER_TRUSTED_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_BufferTrusted_Thunk();
-  if (strcmp(name, PPB_CORE_INTERFACE) == 0)
+  if (strcmp(name, PPB_AUDIO_INPUT_TRUSTED_DEV_INTERFACE_0_1) == 0)
+    return ::ppapi::thunk::GetPPB_AudioInputTrusted_0_1_Thunk();
+  if (strcmp(name, PPB_AUDIO_TRUSTED_INTERFACE_0_6) == 0)
+    return ::ppapi::thunk::GetPPB_AudioTrusted_0_6_Thunk();
+  if (strcmp(name, PPB_BUFFER_TRUSTED_INTERFACE_0_1) == 0)
+    return ::ppapi::thunk::GetPPB_BufferTrusted_0_1_Thunk();
+  if (strcmp(name, PPB_CORE_INTERFACE_1_0) == 0)
     return &core_interface;
-  if (strcmp(name, PPB_FILECHOOSER_TRUSTED_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_FileChooser_Trusted_Thunk();
+  if (strcmp(name, PPB_FILECHOOSER_TRUSTED_INTERFACE_0_5) == 0)
+    return ::ppapi::thunk::GetPPB_FileChooser_Trusted_0_5_Thunk();
   if (strcmp(name, PPB_FLASH_INTERFACE_11_0) == 0)
     return PPB_Flash_Impl::GetInterface11();
   if (strcmp(name, PPB_FLASH_INTERFACE_12_0) == 0)
-    return PPB_Flash_Impl::GetInterface12();
-  if (strcmp(name, PPB_FLASH_CLIPBOARD_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Flash_Clipboard_Thunk();
+    return PPB_Flash_Impl::GetInterface12_0();
+  if (strcmp(name, PPB_FLASH_CLIPBOARD_INTERFACE_3_0) == 0)
+    return ::ppapi::thunk::GetPPB_Flash_Clipboard_3_0_Thunk();
   if (strcmp(name, PPB_FLASH_CLIPBOARD_INTERFACE_3_LEGACY) == 0)
-    return ::ppapi::thunk::GetPPB_Flash_Clipboard_Thunk();
+    return ::ppapi::thunk::GetPPB_Flash_Clipboard_3_0_Thunk();
   if (strcmp(name, PPB_FLASH_FILE_FILEREF_INTERFACE) == 0)
     return PPB_Flash_File_FileRef_Impl::GetInterface();
   if (strcmp(name, PPB_FLASH_FILE_MODULELOCAL_INTERFACE) == 0)
     return PPB_Flash_File_ModuleLocal_Impl::GetInterface();
-  if (strcmp(name, PPB_FLASH_MENU_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Flash_Menu_Thunk();
-  if (strcmp(name, PPB_FLASH_TCPSOCKET_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_TCPSocket_Private_Thunk();
-  if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Fullscreen_Thunk();
+  if (strcmp(name, PPB_FLASH_MENU_INTERFACE_0_2) == 0)
+    return ::ppapi::thunk::GetPPB_Flash_Menu_0_2_Thunk();
+  if (strcmp(name, PPB_FLASH_TCPSOCKET_INTERFACE_0_2) == 0)
+    return ::ppapi::thunk::GetPPB_TCPSocket_Private_0_3_Thunk();
+  if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE_0_5) == 0)
+    return ::ppapi::thunk::GetPPB_Fullscreen_1_0_Thunk();
   if (strcmp(name, PPB_GPU_BLACKLIST_INTERFACE) == 0)
     return PPB_GpuBlacklist_Private_Impl::GetInterface();
-  if (strcmp(name, PPB_GRAPHICS_3D_TRUSTED_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Graphics3DTrusted_Thunk();
-  if (strcmp(name, PPB_IMAGEDATA_TRUSTED_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_ImageDataTrusted_Thunk();
+  if (strcmp(name, PPB_GRAPHICS_3D_TRUSTED_INTERFACE_1_0) == 0)
+    return ::ppapi::thunk::GetPPB_Graphics3DTrusted_1_0_Thunk();
+  if (strcmp(name, PPB_IMAGEDATA_TRUSTED_INTERFACE_0_4) == 0)
+    return ::ppapi::thunk::GetPPB_ImageDataTrusted_0_4_Thunk();
   if (strcmp(name, PPB_INPUT_EVENT_INTERFACE_1_0) == 0)
-    return ::ppapi::thunk::GetPPB_InputEvent_Thunk();
-  if (strcmp(name, PPB_INSTANCE_PRIVATE_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Instance_Private_Thunk();
+    return ::ppapi::thunk::GetPPB_InputEvent_1_0_Thunk();
+  if (strcmp(name, PPB_INSTANCE_PRIVATE_INTERFACE_0_1) == 0)
+    return ::ppapi::thunk::GetPPB_Instance_Private_0_1_Thunk();
   if (strcmp(name, PPB_OPENGLES2_INTERFACE) == 0)
     return ::ppapi::PPB_OpenGLES2_Shared::GetInterface();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
     return PPB_Proxy_Impl::GetInterface();
   if (strcmp(name, PPB_UMA_PRIVATE_INTERFACE) == 0)
     return PPB_UMA_Private_Impl::GetInterface();
-  if (strcmp(name, PPB_URLLOADERTRUSTED_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_URLLoaderTrusted_Thunk();
+  if (strcmp(name, PPB_URLLOADERTRUSTED_INTERFACE_0_3) == 0)
+    return ::ppapi::thunk::GetPPB_URLLoaderTrusted_0_3_Thunk();
   if (strcmp(name, PPB_VAR_DEPRECATED_INTERFACE) == 0)
     return PPB_Var_Deprecated_Impl::GetVarDeprecatedInterface();
   if (strcmp(name, PPB_VAR_INTERFACE_1_0) == 0)
     return ::ppapi::PPB_Var_Shared::GetVarInterface1_0();
   if (strcmp(name, PPB_VAR_INTERFACE_1_1) == 0)
-    return ::ppapi::PPB_Var_Shared::GetVarInterface();
+    return ::ppapi::PPB_Var_Shared::GetVarInterface1_1();
   if (strcmp(name, PPB_VAR_ARRAY_BUFFER_DEV_INTERFACE) == 0)
     return ::ppapi::PPB_Var_Shared::GetVarArrayBufferInterface();
 

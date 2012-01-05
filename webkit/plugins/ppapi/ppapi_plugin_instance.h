@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,11 +17,19 @@
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
+#include "ppapi/c/dev/ppp_find_dev.h"
+#include "ppapi/c/dev/ppp_selection_dev.h"
+#include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_input_event.h"
+#include "ppapi/c/ppp_graphics_3d.h"
+#include "ppapi/c/ppp_input_event.h"
+#include "ppapi/c/ppp_messaging.h"
+#include "ppapi/c/ppp_mouse_lock.h"
+#include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/ppb_instance_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
@@ -32,18 +40,10 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/rect.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
+#include "webkit/plugins/ppapi/ppp_pdf.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 struct PP_Point;
-struct PPP_Find_Dev;
-struct PPP_Graphics3D;
-struct PPP_InputEvent;
-struct PPP_Instance_Private;
-struct PPP_Messaging;
-struct PPP_MouseLock;
-struct PPP_Pdf;
-struct PPP_Selection_Dev;
-struct PPP_Zoom_Dev;
 
 class SkBitmap;
 class TransportDIB;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ const PPB_Memory_Dev ppb_memory = {
 namespace thunk {
 
 // static
-PPAPI_SHARED_EXPORT const PPB_Memory_Dev* GetPPB_Memory_Dev_Thunk() {
+PPAPI_SHARED_EXPORT const PPB_Memory_Dev_0_1* GetPPB_Memory_Dev_0_1_Thunk() {
   return &ppb_memory;
 }
 

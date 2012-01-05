@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_file_io.idl modified Thu Dec  1 10:47:02 2011. */
+/* From ppb_file_io.idl modified Wed Dec 14 18:08:00 2011. */
 
 #ifndef PPAPI_C_PPB_FILE_IO_H_
 #define PPAPI_C_PPB_FILE_IO_H_
@@ -73,7 +73,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileOpenFlags, 4);
  * The <code>PPB_FileIO</code> struct is used to operate on a regular file
  * (PP_FileType_Regular).
  */
-struct PPB_FileIO {
+struct PPB_FileIO_1_0 {
   /**
    * Create() creates a new FileIO object.
    *
@@ -253,6 +253,8 @@ struct PPB_FileIO {
    */
   void (*Close)(PP_Resource file_io);
 };
+
+typedef struct PPB_FileIO_1_0 PPB_FileIO;
 /**
  * @}
  */

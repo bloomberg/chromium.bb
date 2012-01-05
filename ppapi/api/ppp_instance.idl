@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -231,10 +231,3 @@ interface PPP_Instance {
       [in] PP_Resource url_loader);
 
 };
-
-#inline c
-
-typedef struct PPP_Instance PPP_Instance_1_1;
-
-#endinl
-

@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From trusted/ppb_image_data_trusted.idl modified Sat Jul 16 16:51:03 2011. */
+/* From trusted/ppb_image_data_trusted.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_TRUSTED_PPB_IMAGE_DATA_TRUSTED_H_
 #define PPAPI_C_TRUSTED_PPB_IMAGE_DATA_TRUSTED_H_
@@ -26,7 +26,7 @@
  * @{
  */
 /** Trusted interface */
-struct PPB_ImageDataTrusted {
+struct PPB_ImageDataTrusted_0_4 {
   /**
    * Returns the internal shared memory pointer associated with the given
    * ImageData resource. Used for proxying. Returns PP_OK on success, or
@@ -38,6 +38,8 @@ struct PPB_ImageDataTrusted {
                              int* handle,
                              uint32_t* byte_count);
 };
+
+typedef struct PPB_ImageDataTrusted_0_4 PPB_ImageDataTrusted;
 /**
  * @}
  */

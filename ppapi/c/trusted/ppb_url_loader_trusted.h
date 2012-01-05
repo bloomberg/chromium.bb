@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From trusted/ppb_url_loader_trusted.idl modified Sat Jul 16 16:51:03 2011. */
+/* From trusted/ppb_url_loader_trusted.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_TRUSTED_PPB_URL_LOADER_TRUSTED_H_
 #define PPAPI_C_TRUSTED_PPB_URL_LOADER_TRUSTED_H_
@@ -45,7 +45,7 @@ typedef void (*PP_URLLoaderTrusted_StatusCallback)(
  * @{
  */
 /* Available only to trusted implementations. */
-struct PPB_URLLoaderTrusted {
+struct PPB_URLLoaderTrusted_0_3 {
   /**
    * Grant this URLLoader the capability to make unrestricted cross-origin
    * requests.
@@ -67,6 +67,8 @@ struct PPB_URLLoaderTrusted {
   void (*RegisterStatusCallback)(PP_Resource loader,
                                  PP_URLLoaderTrusted_StatusCallback cb);
 };
+
+typedef struct PPB_URLLoaderTrusted_0_3 PPB_URLLoaderTrusted;
 /**
  * @}
  */

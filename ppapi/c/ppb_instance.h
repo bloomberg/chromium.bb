@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_instance.idl modified Tue Aug 23 11:25:50 2011. */
+/* From ppb_instance.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_PPB_INSTANCE_H_
 #define PPAPI_C_PPB_INSTANCE_H_
@@ -35,7 +35,7 @@
  * The PPB_Instance interface contains pointers to functions
  * related to the module instance on a web page.
  */
-struct PPB_Instance {
+struct PPB_Instance_1_0 {
   /**
    * BindGraphics() binds the given graphics as the current display surface.
    * The contents of this device is what will be displayed in the instance's
@@ -78,6 +78,8 @@ struct PPB_Instance {
    */
   PP_Bool (*IsFullFrame)(PP_Instance instance);
 };
+
+typedef struct PPB_Instance_1_0 PPB_Instance;
 
 struct PPB_Instance_0_5 {
   struct PP_Var (*GetWindowObject)(PP_Instance instance);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,8 @@
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_resource.h"
 
-#define PPB_FLASH_MENU_INTERFACE "PPB_Flash_Menu;0.2"
+#define PPB_FLASH_MENU_INTERFACE_0_2 "PPB_Flash_Menu;0.2"
+#define PPB_FLASH_MENU_INTERFACE PPB_FLASH_MENU_INTERFACE_0_2
 
 struct PP_CompletionCallback;
 
@@ -37,7 +38,7 @@ struct PP_Flash_Menu {
   struct PP_Flash_MenuItem* items;
 };
 
-struct PPB_Flash_Menu {
+struct PPB_Flash_Menu_0_2 {
   PP_Resource (*Create)(PP_Instance instance_id,
                         const struct PP_Flash_Menu* menu_data);
   PP_Bool (*IsFlashMenu)(PP_Resource resource_id);
@@ -51,5 +52,7 @@ struct PPB_Flash_Menu {
                   int32_t* selected_id,
                   struct PP_CompletionCallback callback);
 };
+
+typedef struct PPB_Flash_Menu_0_2 PPB_Flash_Menu;
 
 #endif  // PPAPI_C_PRIVATE_PPB_FLASH_MENU_H_

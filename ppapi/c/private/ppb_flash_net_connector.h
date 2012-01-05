@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@
 
 #define PPB_FLASH_NETCONNECTOR_INTERFACE "PPB_Flash_NetConnector;0.2"
 
-struct PPB_Flash_NetConnector {
+struct PPB_Flash_NetConnector_0_2 {
   PP_Resource (*Create)(PP_Instance instance_id);
   PP_Bool (*IsFlashNetConnector)(PP_Resource resource_id);
 
@@ -39,5 +39,7 @@ struct PPB_Flash_NetConnector {
                                struct PP_NetAddress_Private* remote_addr_out,
                                struct PP_CompletionCallback callback);
 };
+
+typedef struct PPB_Flash_NetConnector_0_2 PPB_Flash_NetConnector;
 
 #endif  // PPAPI_C_PRIVATE_PPB_FLASH_NET_CONNECTOR_H_

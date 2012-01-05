@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppp_mouse_lock.idl modified Wed Nov  9 12:07:33 2011. */
+/* From ppp_mouse_lock.idl modified Wed Dec 21 19:08:34 2011. */
 
 #ifndef PPAPI_C_PPP_MOUSE_LOCK_H_
 #define PPAPI_C_PPP_MOUSE_LOCK_H_
@@ -31,7 +31,7 @@
  * The <code>PPP_MouseLock</code> interface contains a function that you must
  * implement to receive mouse lock events from the browser.
  */
-struct PPP_MouseLock {
+struct PPP_MouseLock_1_0 {
   /**
    * MouseLockLost() is called when the instance loses the mouse lock, such as
    * when the user presses the ESC key.
@@ -41,6 +41,8 @@ struct PPP_MouseLock {
    */
   void (*MouseLockLost)(PP_Instance instance);
 };
+
+typedef struct PPP_MouseLock_1_0 PPP_MouseLock;
 /**
  * @}
  */

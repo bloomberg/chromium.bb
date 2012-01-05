@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -32,7 +32,7 @@
 #define PPB_GRAPHICS_3D_INTERFACE_1_0 "PPB_Graphics3D;1.0"
 #define PPB_GRAPHICS_3D_INTERFACE PPB_GRAPHICS_3D_INTERFACE_1_0
 
-struct PPB_Graphics3D {
+struct PPB_Graphics3D_1_0 {
   /**
    * Retrieves the maximum supported value for the given attribute.
    *
@@ -217,5 +217,7 @@ struct PPB_Graphics3D {
   int32_t (*SwapBuffers)(PP_Resource context,
                          struct PP_CompletionCallback callback);
 };
+
+typedef struct PPB_Graphics3D_1_0 PPB_Graphics3D;
 
 #endif  /* PPAPI_C_PPB_GRAPHICS_3D_H_ */

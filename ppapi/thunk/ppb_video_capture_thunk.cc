@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,7 @@ const PPB_VideoCapture_Dev g_ppb_videocapture_thunk = {
 
 }  // namespace
 
-const PPB_VideoCapture_Dev* GetPPB_VideoCapture_Dev_Thunk() {
+const PPB_VideoCapture_Dev_0_1* GetPPB_VideoCapture_Dev_0_1_Thunk() {
   return &g_ppb_videocapture_thunk;
 }
 

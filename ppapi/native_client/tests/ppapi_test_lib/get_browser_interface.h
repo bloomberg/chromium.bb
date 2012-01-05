@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -8,36 +8,29 @@
 #ifndef NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_GET_BROWSER_INTERFACE_H
 #define NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_GET_BROWSER_INTERFACE_H
 
-// The definition of scrollbar depends on the interface version.
-// TODO(brettw) either move all interfaces to this method, or encode all
-// versions explicitly in all interfaces.
+#include "ppapi/c/ppb_core.h"
+#include "ppapi/c/ppb_file_io.h"
+#include "ppapi/c/ppb_file_ref.h"
+#include "ppapi/c/ppb_file_system.h"
+#include "ppapi/c/ppb_fullscreen.h"
+#include "ppapi/c/ppb_graphics_2d.h"
+#include "ppapi/c/ppb_graphics_3d.h"
+#include "ppapi/c/ppb_image_data.h"
+#include "ppapi/c/ppb_input_event.h"
+#include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_messaging.h"
+#include "ppapi/c/ppb_opengles2.h"
+#include "ppapi/c/ppb_url_loader.h"
+#include "ppapi/c/ppb_url_request_info.h"
+#include "ppapi/c/ppb_url_response_info.h"
+#include "ppapi/c/ppb_var.h"
+#include "ppapi/c/ppb_view.h"
+#include "ppapi/c/dev/ppb_cursor_control_dev.h"
+#include "ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
-
-struct PPB_Core;
-struct PPB_CursorControl_Dev;
-struct PPB_FileIO;
-struct PPB_FileRef;
-struct PPB_FileSystem;
-struct PPB_Font_Dev;
-struct PPB_Fullscreen;
-struct PPB_Graphics2D;
-struct PPB_Graphics3D;
-struct PPB_ImageData;
-struct PPB_InputEvent;
-struct PPB_Instance;
-struct PPB_KeyboardInputEvent;
-struct PPB_Memory_Dev;
-struct PPB_Messaging;
-struct PPB_MouseInputEvent;
-struct PPB_OpenGLES2;
-struct PPB_Testing_Dev;
-struct PPB_URLLoader;
-struct PPB_URLRequestInfo;
-struct PPB_URLResponseInfo;
-struct PPB_Var;
-struct PPB_View;
-struct PPB_WheelInputEvent;
-struct PPB_Widget_Dev;
+#include "ppapi/c/dev/ppb_testing_dev.h"
+#include "ppapi/c/dev/ppb_widget_dev.h"
 
 // Looks up the interface and returns its pointer or NULL.
 const void* GetBrowserInterface(const char* interface_name);

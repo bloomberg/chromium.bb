@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_url_util_dev.idl modified Wed Dec  7 17:25:52 2011. */
+/* From dev/ppb_url_util_dev.idl modified Fri Dec 16 17:34:59 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_URL_UTIL_DEV_H_
 #define PPAPI_C_DEV_PPB_URL_UTIL_DEV_H_
@@ -77,7 +77,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_URLComponents_Dev, 64);
  * except for the reference fragment (stuff after the '#') which will be
  * encoded as UTF-8.
  */
-struct PPB_URLUtil_Dev {
+struct PPB_URLUtil_Dev_0_6 {
   /*
    * Canonicalizes the given URL string according to the rules of the host
    * browser. If the URL is invalid or the var is not a string, this will
@@ -164,6 +164,8 @@ struct PPB_URLUtil_Dev {
       PP_Instance instance,
       struct PP_URLComponents_Dev* components);
 };
+
+typedef struct PPB_URLUtil_Dev_0_6 PPB_URLUtil_Dev;
 /**
  * @}
  */

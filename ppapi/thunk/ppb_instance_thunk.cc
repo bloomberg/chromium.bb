@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,10 +62,10 @@ const PPB_Instance_Private g_ppb_instance_private_thunk = {
 
 }  // namespace
 
-const PPB_Instance* GetPPB_Instance_Thunk() {
+const PPB_Instance_1_0* GetPPB_Instance_1_0_Thunk() {
   return &g_ppb_instance_thunk;
 }
-const PPB_Instance_Private* GetPPB_Instance_Private_Thunk() {
+const PPB_Instance_Private_0_1* GetPPB_Instance_Private_0_1_Thunk() {
   return &g_ppb_instance_private_thunk;
 }
 

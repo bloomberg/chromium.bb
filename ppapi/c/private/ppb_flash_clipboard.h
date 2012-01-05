@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash_clipboard.idl modified Wed Nov 23 12:39:42 2011. */
+/* From private/ppb_flash_clipboard.idl modified Wed Dec 14 18:08:00 2011. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_CLIPBOARD_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_CLIPBOARD_H_
@@ -72,7 +72,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Flash_Clipboard_Format, 4);
  *
  * TODO(viettrungluu): Support more formats (e.g., HTML)....
  */
-struct PPB_Flash_Clipboard {
+struct PPB_Flash_Clipboard_3_0 {
   /**
    * Checks whether a given data format is available from the given clipboard.
    * Returns true if the given format is available from the given clipboard.
@@ -94,6 +94,8 @@ struct PPB_Flash_Clipboard {
                             PP_Flash_Clipboard_Type clipboard_type,
                             struct PP_Var text);
 };
+
+typedef struct PPB_Flash_Clipboard_3_0 PPB_Flash_Clipboard;
 /**
  * @}
  */

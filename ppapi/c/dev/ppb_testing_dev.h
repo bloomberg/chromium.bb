@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_testing_dev.idl modified Fri Dec 16 16:08:07 2011. */
+/* From dev/ppb_testing_dev.idl modified Thu Dec 22 11:02:53 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_TESTING_DEV_H_
 #define PPAPI_C_DEV_PPB_TESTING_DEV_H_
@@ -35,7 +35,7 @@
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_Testing_Dev {
+struct PPB_Testing_Dev_0_91 {
   /**
    * Reads the bitmap data out of the backing store for the given
    * DeviceContext2D and into the given image. If the data was successfully
@@ -135,6 +135,8 @@ struct PPB_Testing_Dev {
    */
   uint32_t (*GetLiveVars)(struct PP_Var live_vars[], uint32_t array_size);
 };
+
+typedef struct PPB_Testing_Dev_0_91 PPB_Testing_Dev;
 
 struct PPB_Testing_Dev_0_7 {
   PP_Bool (*ReadImageData)(PP_Resource device_context_2d,

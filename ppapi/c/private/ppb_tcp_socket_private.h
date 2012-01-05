@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From private/ppb_tcp_socket_private.idl modified Wed Nov  9 12:53:35 2011. */
+/* From private/ppb_tcp_socket_private.idl modified Wed Nov 16 15:27:20 2011. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_TCP_SOCKET_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_TCP_SOCKET_PRIVATE_H_
@@ -33,7 +33,7 @@
  * The <code>PPB_TCPSocket_Private</code> interface provides TCP socket
  * operations.
  */
-struct PPB_TCPSocket_Private {
+struct PPB_TCPSocket_Private_0_3 {
   /**
    * Allocates a TCP socket resource.
    */
@@ -121,6 +121,8 @@ struct PPB_TCPSocket_Private {
    */
   void (*Disconnect)(PP_Resource tcp_socket);
 };
+
+typedef struct PPB_TCPSocket_Private_0_3 PPB_TCPSocket_Private;
 /**
  * @}
  */

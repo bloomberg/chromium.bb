@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_video_layer_dev.idl modified Tue Nov 29 11:43:36 2011. */
+/* From dev/ppb_video_layer_dev.idl modified Wed Dec 14 18:08:00 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_VIDEO_LAYER_DEV_H_
 #define PPAPI_C_DEV_PPB_VIDEO_LAYER_DEV_H_
@@ -83,7 +83,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VideoLayerMode_Dev, 4);
  * In this mode the content of the video layer is updated by a hardware video
  * decoder.
  */
-struct PPB_VideoLayer_Dev {
+struct PPB_VideoLayer_Dev_0_1 {
   /**
    * Creates a video layer.
    */
@@ -153,6 +153,8 @@ struct PPB_VideoLayer_Dev {
                            uint32_t no_of_planes,
                            const void* planes[]);
 };
+
+typedef struct PPB_VideoLayer_Dev_0_1 PPB_VideoLayer_Dev;
 /**
  * @}
  */

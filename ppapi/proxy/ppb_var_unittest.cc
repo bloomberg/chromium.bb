@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,7 @@ class PPB_VarTest : public PluginProxyTest {
  public:
   PPB_VarTest()
       : test_strings_(kNumStrings), vars_(kNumStrings),
-        ppb_var_(ppapi::PPB_Var_Shared::GetVarInterface()) {
+        ppb_var_(ppapi::PPB_Var_Shared::GetVarInterface1_1()) {
     // Set the value of test_strings_[i] to "i".
     for (size_t i = 0; i < kNumStrings; ++i)
       test_strings_[i] = base::IntToString(i);
@@ -102,7 +102,7 @@ class CreateVarThreadDelegate : public base::PlatformThread::Delegate {
   }
   virtual ~CreateVarThreadDelegate() {}
   virtual void ThreadMain() {
-    const PPB_Var* ppb_var = ppapi::PPB_Var_Shared::GetVarInterface();
+    const PPB_Var* ppb_var = ppapi::PPB_Var_Shared::GetVarInterface1_1();
     for (size_t i = 0; i < size_; ++i) {
       vars_out_[i] = ppb_var->VarFromUtf8(strings_in_[i].c_str(),
                                           strings_in_[i].length());
@@ -125,7 +125,7 @@ class ChangeRefVarThreadDelegate : public base::PlatformThread::Delegate {
   }
   virtual ~ChangeRefVarThreadDelegate() {}
   virtual void ThreadMain() {
-    const PPB_Var* ppb_var = ppapi::PPB_Var_Shared::GetVarInterface();
+    const PPB_Var* ppb_var = ppapi::PPB_Var_Shared::GetVarInterface1_1();
     // Increment and decrement the reference count for each var kRefsToAdd
     // times. Note that we always AddRef once before doing the matching Release,
     // to ensure that we never accidentally release the last reference.
@@ -153,7 +153,7 @@ class RemoveRefVarThreadDelegate : public base::PlatformThread::Delegate {
   }
   virtual ~RemoveRefVarThreadDelegate() {}
   virtual void ThreadMain() {
-    const PPB_Var* ppb_var = ppapi::PPB_Var_Shared::GetVarInterface();
+    const PPB_Var* ppb_var = ppapi::PPB_Var_Shared::GetVarInterface1_1();
     for (size_t i = 0; i < kNumStrings; ++i) {
       ppb_var->Release(vars_[i]);
     }
@@ -243,4 +243,3 @@ TEST_F(PPB_VarTest, DISABLED_Threads) {
 
 }  // namespace proxy
 }  // namespace ppapi
-

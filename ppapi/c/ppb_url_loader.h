@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_url_loader.idl modified Mon Aug 29 10:11:34 2011. */
+/* From ppb_url_loader.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_PPB_URL_LOADER_H_
 #define PPAPI_C_PPB_URL_LOADER_H_
@@ -48,7 +48,7 @@
  * - Then, access the downloaded file using the GetBodyAsFileRef() function of
  * the <code>URLResponseInfo</code> returned in step #4.
  */
-struct PPB_URLLoader {
+struct PPB_URLLoader_1_0 {
   /**
    * Create() creates a new <code>URLLoader</code> object. The
    * <code>URLLoader</code> is associated with a particular instance, so that
@@ -216,6 +216,8 @@ struct PPB_URLLoader {
    */
   void (*Close)(PP_Resource loader);
 };
+
+typedef struct PPB_URLLoader_1_0 PPB_URLLoader;
 /**
  * @}
  */

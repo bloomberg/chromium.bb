@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_image_data.idl modified Tue Nov  8 15:46:54 2011. */
+/* From ppb_image_data.idl modified Wed Dec 21 19:08:34 2011. */
 
 #ifndef PPAPI_C_PPB_IMAGE_DATA_H_
 #define PPAPI_C_PPB_IMAGE_DATA_H_
@@ -105,7 +105,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_ImageDataDesc, 16);
  * The <code>PPB_ImageData</code> interface contains pointers to several
  * functions for determining the browser's treatment of image data.
  */
-struct PPB_ImageData {
+struct PPB_ImageData_1_0 {
   /**
    * GetNativeImageDataFormat() returns the browser's preferred format for
    * image data. The browser uses this format internally for painting. Other
@@ -195,6 +195,8 @@ struct PPB_ImageData {
    */
   void (*Unmap)(PP_Resource image_data);
 };
+
+typedef struct PPB_ImageData_1_0 PPB_ImageData;
 /**
  * @}
  */

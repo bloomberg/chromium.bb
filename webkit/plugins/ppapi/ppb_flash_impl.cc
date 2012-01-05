@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -275,7 +275,7 @@ const PPB_Flash_11* PPB_Flash_Impl::GetInterface11() {
 }
 
 // static
-const PPB_Flash* PPB_Flash_Impl::GetInterface12() {
+const PPB_Flash_12_0* PPB_Flash_Impl::GetInterface12_0() {
   return &ppb_flash_12;
 }
 

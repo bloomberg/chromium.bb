@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppp_messaging.idl modified Mon Aug 29 10:11:34 2011. */
+/* From ppp_messaging.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_PPP_MESSAGING_H_
 #define PPAPI_C_PPP_MESSAGING_H_
@@ -35,7 +35,7 @@
  * that you must implement to handle postMessage events on the associated
  * DOM element.
  */
-struct PPP_Messaging {
+struct PPP_Messaging_1_0 {
   /**
    * HandleMessage() is a function that the browser calls when PostMessage()
    * is invoked on the DOM element for the module instance in JavaScript. Note
@@ -70,6 +70,8 @@ struct PPP_Messaging {
    */
   void (*HandleMessage)(PP_Instance instance, struct PP_Var message);
 };
+
+typedef struct PPP_Messaging_1_0 PPP_Messaging;
 /**
  * @}
  */

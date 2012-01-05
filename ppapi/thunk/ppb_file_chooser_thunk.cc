@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,11 +78,11 @@ const PPB_FileChooserTrusted g_ppb_file_chooser_trusted_thunk = {
 
 }  // namespace
 
-const PPB_FileChooser_Dev* GetPPB_FileChooser_Dev_Thunk() {
+const PPB_FileChooser_Dev_0_5* GetPPB_FileChooser_Dev_0_5_Thunk() {
   return &g_ppb_file_chooser_thunk;
 }
 
-const PPB_FileChooserTrusted* GetPPB_FileChooser_Trusted_Thunk() {
+const PPB_FileChooserTrusted_0_5* GetPPB_FileChooser_Trusted_0_5_Thunk() {
   return &g_ppb_file_chooser_trusted_thunk;
 }
 

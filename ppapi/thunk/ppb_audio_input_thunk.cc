@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,7 +66,7 @@ const PPB_AudioInput_Dev g_ppb_audioinput_thunk = {
 
 }  // namespace
 
-const PPB_AudioInput_Dev* GetPPB_AudioInput_Dev_Thunk() {
+const PPB_AudioInput_Dev_0_1* GetPPB_AudioInput_Dev_0_1_Thunk() {
   return &g_ppb_audioinput_thunk;
 }
 

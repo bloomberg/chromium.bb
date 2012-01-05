@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,7 +66,7 @@ const PPB_URLRequestInfo g_ppb_url_request_info_thunk = {
 
 }  // namespace
 
-const PPB_URLRequestInfo* GetPPB_URLRequestInfo_Thunk() {
+const PPB_URLRequestInfo_1_0* GetPPB_URLRequestInfo_1_0_Thunk() {
   return &g_ppb_url_request_info_thunk;
 }
 

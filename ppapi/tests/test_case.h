@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <string>
 
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/cpp/dev/scrollbar_dev.h"
 
 #if (defined __native_client__)
@@ -18,7 +19,6 @@
 #include "ppapi/cpp/private/var_private.h"
 #endif
 
-struct PPB_Testing_Dev;
 class TestingInstance;
 
 namespace pp {

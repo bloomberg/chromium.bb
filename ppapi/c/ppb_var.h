@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_var.idl modified Tue Dec  6 11:26:58 2011. */
+/* From ppb_var.idl modified Wed Dec 14 18:08:00 2011. */
 
 #ifndef PPAPI_C_PPB_VAR_H_
 #define PPAPI_C_PPB_VAR_H_
@@ -31,7 +31,7 @@
 /**
  * PPB_Var API
  */
-struct PPB_Var {
+struct PPB_Var_1_1 {
   /**
    * AddRef() adds a reference to the given var. If this is not a refcounted
    * object, this function will do nothing so you can always call it no matter
@@ -94,6 +94,8 @@ struct PPB_Var {
    */
   const char* (*VarToUtf8)(struct PP_Var var, uint32_t* len);
 };
+
+typedef struct PPB_Var_1_1 PPB_Var;
 
 struct PPB_Var_1_0 {
   void (*AddRef)(struct PP_Var var);

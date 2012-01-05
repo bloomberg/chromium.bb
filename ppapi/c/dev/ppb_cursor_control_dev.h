@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_cursor_control_dev.idl modified Thu Nov 17 14:24:28 2011. */
+/* From dev/ppb_cursor_control_dev.idl modified Fri Nov 18 15:58:00 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_CURSOR_CONTROL_DEV_H_
 #define PPAPI_C_DEV_PPB_CURSOR_CONTROL_DEV_H_
@@ -30,7 +30,7 @@
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_CursorControl_Dev {
+struct PPB_CursorControl_Dev_0_4 {
   /**
    * Set a cursor.  If "type" is PP_CURSORTYPE_CUSTOM, then "custom_image"
    * must be an ImageData resource containing the cursor and "hot_spot" must
@@ -75,6 +75,8 @@ struct PPB_CursorControl_Dev {
    */
   PP_Bool (*CanLockCursor)(PP_Instance instance);
 };
+
+typedef struct PPB_CursorControl_Dev_0_4 PPB_CursorControl_Dev;
 /**
  * @}
  */

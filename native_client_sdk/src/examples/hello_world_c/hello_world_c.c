@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Native Client Authors. All rights reserved.
+/* Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -32,8 +32,8 @@ static const char* const kFortyTwoMethodId = "fortyTwo";
 static const char kMessageArgumentSeparator = ':';
 static const char kNullTerminator = '\0';
 
-static struct PPB_Messaging* ppb_messaging_interface = NULL;
-static struct PPB_Var* ppb_var_interface = NULL;
+static PPB_Messaging* ppb_messaging_interface = NULL;
+static PPB_Var* ppb_var_interface = NULL;
 static PP_Module module_id = 0;
 
 
@@ -249,8 +249,8 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id,
                                        PPB_GetInterface get_browser) {
   module_id = a_module_id;
   ppb_messaging_interface =
-      (struct PPB_Messaging*)(get_browser(PPB_MESSAGING_INTERFACE));
-  ppb_var_interface = (struct PPB_Var*)(get_browser(PPB_VAR_INTERFACE));
+      (PPB_Messaging*)(get_browser(PPB_MESSAGING_INTERFACE));
+  ppb_var_interface = (PPB_Var*)(get_browser(PPB_VAR_INTERFACE));
 
   return PP_OK;
 }
@@ -263,7 +263,7 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id,
  */
 PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
   if (strcmp(interface_name, PPP_INSTANCE_INTERFACE) == 0) {
-    static struct PPP_Instance instance_interface = {
+    static PPP_Instance instance_interface = {
       &Instance_DidCreate,
       &Instance_DidDestroy,
       &Instance_DidChangeView,
@@ -272,7 +272,7 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
     };
     return &instance_interface;
   } else if (strcmp(interface_name, PPP_MESSAGING_INTERFACE) == 0) {
-    static struct PPP_Messaging messaging_interface = {
+    static PPP_Messaging messaging_interface = {
       &Messaging_HandleMessage
     };
     return &messaging_interface;

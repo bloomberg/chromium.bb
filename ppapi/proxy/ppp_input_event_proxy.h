@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,8 @@
 #define PPAPI_PROXY_PPP_INPUT_EVENT_PROXY_H_
 
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/ppp_input_event.h"
 #include "ppapi/proxy/interface_proxy.h"
-
-struct PPP_InputEvent;
 
 namespace ppapi {
 

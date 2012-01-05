@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_audio_input_dev.idl modified Wed Nov 23 09:26:09 2011. */
+/* From dev/ppb_audio_input_dev.idl modified Mon Nov 28 22:30:37 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_AUDIO_INPUT_DEV_H_
 #define PPAPI_C_DEV_PPB_AUDIO_INPUT_DEV_H_
@@ -48,7 +48,7 @@ typedef void (*PPB_AudioInput_Callback)(const void* sample_buffer,
  * The <code>PPB_AudioInput_Dev</code> interface contains pointers to several
  * functions for handling audio input resources.
  */
-struct PPB_AudioInput_Dev {
+struct PPB_AudioInput_Dev_0_1 {
   /**
    * Create is a pointer to a function that creates an audio input resource.
    * No sound will be captured until StartCapture() is called.
@@ -104,6 +104,8 @@ struct PPB_AudioInput_Dev {
    */
   PP_Bool (*StopCapture)(PP_Resource audio_input);
 };
+
+typedef struct PPB_AudioInput_Dev_0_1 PPB_AudioInput_Dev;
 /**
  * @}
  */

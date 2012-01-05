@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_mouse_lock.idl modified Mon Nov 28 10:59:14 2011. */
+/* From ppb_mouse_lock.idl modified Wed Dec 21 19:08:34 2011. */
 
 #ifndef PPAPI_C_PPB_MOUSE_LOCK_H_
 #define PPAPI_C_PPB_MOUSE_LOCK_H_
@@ -34,7 +34,7 @@
  * useful for certain classes of applications, especially first-person
  * perspective 3D applications and 3D modeling software.
  */
-struct PPB_MouseLock {
+struct PPB_MouseLock_1_0 {
   /**
    * LockMouse() requests the mouse to be locked. The browser will permit mouse
    * lock only while the tab is in fullscreen mode.
@@ -73,6 +73,8 @@ struct PPB_MouseLock {
    */
   void (*UnlockMouse)(PP_Instance instance);
 };
+
+typedef struct PPB_MouseLock_1_0 PPB_MouseLock;
 /**
  * @}
  */

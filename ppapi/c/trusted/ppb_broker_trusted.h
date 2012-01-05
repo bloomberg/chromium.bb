@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From trusted/ppb_broker_trusted.idl modified Sat Jul 16 16:51:03 2011. */
+/* From trusted/ppb_broker_trusted.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_TRUSTED_PPB_BROKER_TRUSTED_H_
 #define PPAPI_C_TRUSTED_PPB_BROKER_TRUSTED_H_
@@ -40,7 +40,7 @@
  * handle is closed. The handle should be closed before the resource is
  * released.
  */
-struct PPB_BrokerTrusted {
+struct PPB_BrokerTrusted_0_2 {
   /**
    * Returns a trusted broker resource.
    */
@@ -75,6 +75,8 @@ struct PPB_BrokerTrusted {
    */
   int32_t (*GetHandle)(PP_Resource broker, int32_t* handle);
 };
+
+typedef struct PPB_BrokerTrusted_0_2 PPB_BrokerTrusted;
 /**
  * @}
  */

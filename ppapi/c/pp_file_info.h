@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From pp_file_info.idl modified Fri Nov 11 19:56:09 2011. */
+/* From pp_file_info.idl modified Mon Nov 14 10:36:01 2011. */
 
 #ifndef PPAPI_C_PP_FILE_INFO_H_
 #define PPAPI_C_PP_FILE_INFO_H_

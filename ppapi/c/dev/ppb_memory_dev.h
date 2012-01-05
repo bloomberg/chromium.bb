@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_memory_dev.idl modified Thu Nov 17 09:45:57 2011. */
+/* From dev/ppb_memory_dev.idl modified Fri Nov 18 15:58:00 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_MEMORY_DEV_H_
 #define PPAPI_C_DEV_PPB_MEMORY_DEV_H_
@@ -30,7 +30,7 @@
  * management.
  *
  */
-struct PPB_Memory_Dev {
+struct PPB_Memory_Dev_0_1 {
   /**
    * MemAlloc is a pointer to a function that allocate memory.
    *
@@ -47,6 +47,8 @@ struct PPB_Memory_Dev {
    */
   void (*MemFree)(void* ptr);
 };
+
+typedef struct PPB_Memory_Dev_0_1 PPB_Memory_Dev;
 /**
  * @}
  */

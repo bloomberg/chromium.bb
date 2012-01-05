@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ const PPB_Zoom_Dev g_ppb_zoom_thunk = {
 
 }  // namespace
 
-const PPB_Zoom_Dev* GetPPB_Zoom_Dev_Thunk() {
+const PPB_Zoom_Dev_0_2* GetPPB_Zoom_Dev_0_2_Thunk() {
   return &g_ppb_zoom_thunk;
 }
 

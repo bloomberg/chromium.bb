@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_url_request_info.idl modified Fri Nov 11 19:53:07 2011. */
+/* From ppb_url_request_info.idl modified Mon Nov 14 10:36:01 2011. */
 
 #ifndef PPAPI_C_PPB_URL_REQUEST_INFO_H_
 #define PPAPI_C_PPB_URL_REQUEST_INFO_H_
@@ -162,7 +162,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLRequestProperty, 4);
  * <code>PPB_URLLoader</code>. Refer to <code>PPB_URLLoader</code> for further
  * information.
  */
-struct PPB_URLRequestInfo {
+struct PPB_URLRequestInfo_1_0 {
   /**
    * Create() creates a new <code>URLRequestInfo</code> object.
    *
@@ -247,6 +247,8 @@ struct PPB_URLRequestInfo {
                               int64_t number_of_bytes,
                               PP_Time expected_last_modified_time);
 };
+
+typedef struct PPB_URLRequestInfo_1_0 PPB_URLRequestInfo;
 /**
  * @}
  */

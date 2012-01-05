@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppp_video_decoder_dev.idl modified Wed Oct  5 15:59:17 2011. */
+/* From dev/ppp_video_decoder_dev.idl modified Tue Oct 11 10:01:39 2011. */
 
 #ifndef PPAPI_C_DEV_PPP_VIDEO_DECODER_DEV_H_
 #define PPAPI_C_DEV_PPP_VIDEO_DECODER_DEV_H_
@@ -35,7 +35,7 @@
  *
  * See PPB_VideoDecoder_Dev for general usage tips.
  */
-struct PPP_VideoDecoder_Dev {
+struct PPP_VideoDecoder_Dev_0_9 {
   /**
    * Callback function to provide buffers for the decoded output pictures. If
    * succeeds plugin must provide buffers through AssignPictureBuffers function
@@ -102,6 +102,8 @@ struct PPP_VideoDecoder_Dev {
                       PP_Resource decoder,
                       PP_VideoDecodeError_Dev error);
 };
+
+typedef struct PPP_VideoDecoder_Dev_0_9 PPP_VideoDecoder_Dev;
 /**
  * @}
  */

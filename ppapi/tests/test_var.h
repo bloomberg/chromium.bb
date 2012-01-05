@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,9 @@
 
 #include <string>
 
+#include "ppapi/c/ppb_var.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/tests/test_case.h"
-
-struct PPB_Var;
 
 class TestVar : public TestCase {
  public:
@@ -35,4 +34,3 @@ class TestVar : public TestCase {
 };
 
 #endif  // PPAPI_TEST_TEST_VAR_H_
-

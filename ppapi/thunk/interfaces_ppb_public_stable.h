@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,34 +46,35 @@ PROXIED_API(PPB_URLResponseInfo)
 //
 // The interface_struct is the typename of the struct corresponding to the
 // interface string.
-PROXIED_IFACE(PPB_Audio, PPB_AUDIO_INTERFACE_1_0, PPB_Audio)
+PROXIED_IFACE(PPB_Audio, PPB_AUDIO_INTERFACE_1_0, PPB_Audio_1_0)
 // This has no corresponding _Proxy object since it does no IPC.
-PROXIED_IFACE(NoAPIName, PPB_AUDIO_CONFIG_INTERFACE_1_0, PPB_AudioConfig)
+PROXIED_IFACE(NoAPIName, PPB_AUDIO_CONFIG_INTERFACE_1_0, PPB_AudioConfig_1_0)
 // Note: Core is special and is registered manually.
-PROXIED_IFACE(PPB_FileIO, PPB_FILEIO_INTERFACE_1_0, PPB_FileIO)
-PROXIED_IFACE(PPB_FileRef, PPB_FILEREF_INTERFACE_1_0, PPB_FileRef)
-PROXIED_IFACE(PPB_FileSystem, PPB_FILESYSTEM_INTERFACE_1_0, PPB_FileSystem)
-PROXIED_IFACE(PPB_Graphics2D, PPB_GRAPHICS_2D_INTERFACE_1_0, PPB_Graphics2D)
-PROXIED_IFACE(PPB_Graphics3D, PPB_GRAPHICS_3D_INTERFACE_1_0, PPB_Graphics3D)
-PROXIED_IFACE(PPB_ImageData, PPB_IMAGEDATA_INTERFACE_1_0, PPB_ImageData)
-PROXIED_IFACE(PPB_Instance, PPB_INSTANCE_INTERFACE_1_0, PPB_Instance)
-PROXIED_IFACE(NoAPIName, PPB_INPUT_EVENT_INTERFACE_1_0, PPB_InputEvent)
+PROXIED_IFACE(PPB_FileIO, PPB_FILEIO_INTERFACE_1_0, PPB_FileIO_1_0)
+PROXIED_IFACE(PPB_FileRef, PPB_FILEREF_INTERFACE_1_0, PPB_FileRef_1_0)
+PROXIED_IFACE(PPB_FileSystem, PPB_FILESYSTEM_INTERFACE_1_0, PPB_FileSystem_1_0)
+PROXIED_IFACE(PPB_Graphics2D, PPB_GRAPHICS_2D_INTERFACE_1_0, PPB_Graphics2D_1_0)
+PROXIED_IFACE(PPB_Graphics3D, PPB_GRAPHICS_3D_INTERFACE_1_0, PPB_Graphics3D_1_0)
+PROXIED_IFACE(PPB_ImageData, PPB_IMAGEDATA_INTERFACE_1_0, PPB_ImageData_1_0)
+PROXIED_IFACE(PPB_Instance, PPB_INSTANCE_INTERFACE_1_0, PPB_Instance_1_0)
+PROXIED_IFACE(NoAPIName, PPB_INPUT_EVENT_INTERFACE_1_0, PPB_InputEvent_1_0)
 PROXIED_IFACE(NoAPIName, PPB_KEYBOARD_INPUT_EVENT_INTERFACE_1_0,
-              PPB_KeyboardInputEvent)
+              PPB_KeyboardInputEvent_1_0)
 PROXIED_IFACE(NoAPIName, PPB_MOUSE_INPUT_EVENT_INTERFACE_1_0,
               PPB_MouseInputEvent_1_0)
 PROXIED_IFACE(NoAPIName, PPB_MOUSE_INPUT_EVENT_INTERFACE_1_1,
-              PPB_MouseInputEvent)
+              PPB_MouseInputEvent_1_1)
 PROXIED_IFACE(NoAPIName, PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0,
-              PPB_WheelInputEvent)
-PROXIED_IFACE(PPB_Instance, PPB_FULLSCREEN_INTERFACE_1_0, PPB_Fullscreen)
-PROXIED_IFACE(PPB_Instance, PPB_MESSAGING_INTERFACE_1_0, PPB_Messaging)
-PROXIED_IFACE(PPB_Instance, PPB_MOUSELOCK_INTERFACE_1_0, PPB_MouseLock)
-PROXIED_IFACE(PPB_URLLoader, PPB_URLLOADER_INTERFACE_1_0, PPB_URLLoader)
-PROXIED_IFACE(NoAPIName, PPB_URLREQUESTINFO_INTERFACE_1_0, PPB_URLRequestInfo)
+              PPB_WheelInputEvent_1_0)
+PROXIED_IFACE(PPB_Instance, PPB_FULLSCREEN_INTERFACE_1_0, PPB_Fullscreen_1_0)
+PROXIED_IFACE(PPB_Instance, PPB_MESSAGING_INTERFACE_1_0, PPB_Messaging_1_0)
+PROXIED_IFACE(PPB_Instance, PPB_MOUSELOCK_INTERFACE_1_0, PPB_MouseLock_1_0)
+PROXIED_IFACE(PPB_URLLoader, PPB_URLLOADER_INTERFACE_1_0, PPB_URLLoader_1_0)
+PROXIED_IFACE(NoAPIName, PPB_URLREQUESTINFO_INTERFACE_1_0,
+              PPB_URLRequestInfo_1_0)
 PROXIED_IFACE(PPB_URLResponseInfo, PPB_URLRESPONSEINFO_INTERFACE_1_0,
-              PPB_URLResponseInfo)
+              PPB_URLResponseInfo_1_0)
 // Note: PPB_Var is special and registered manually.
-PROXIED_IFACE(NoAPIName, PPB_VIEW_INTERFACE_1_0, PPB_View)
+PROXIED_IFACE(NoAPIName, PPB_VIEW_INTERFACE_1_0, PPB_View_1_0)
 
 #include "ppapi/thunk/interfaces_postamble.h"

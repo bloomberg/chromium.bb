@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_ime_input_event_dev.idl modified Wed Sep 21 12:31:56 2011. */
+/* From dev/ppb_ime_input_event_dev.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_IME_INPUT_EVENT_DEV_H_
 #define PPAPI_C_DEV_PPB_IME_INPUT_EVENT_DEV_H_
@@ -27,7 +27,7 @@
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_IMEInputEvent_Dev {
+struct PPB_IMEInputEvent_Dev_0_1 {
   /**
    * IsIMEInputEvent() determines if a resource is an IME event.
    *
@@ -100,6 +100,8 @@ struct PPB_IMEInputEvent_Dev {
    */
   void (*GetSelection)(PP_Resource ime_event, uint32_t* start, uint32_t* end);
 };
+
+typedef struct PPB_IMEInputEvent_Dev_0_1 PPB_IMEInputEvent_Dev;
 /**
  * @}
  */

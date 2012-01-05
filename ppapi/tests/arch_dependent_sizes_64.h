@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  *
@@ -16,7 +16,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLsizeiptr, 8);
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_CompletionCallback_Func, 8);
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLLoaderTrusted_StatusCallback, 8);
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_CompletionCallback, 24);
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PPB_VideoDecoder_Dev, 64);
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PPP_VideoDecoder_Dev, 40);
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PPB_VideoDecoder_Dev, 64);
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PPP_VideoDecoder_Dev, 40);
 
 #endif  /* PPAPI_TESTS_ARCH_DEPENDENT_SIZES_64_H_ */

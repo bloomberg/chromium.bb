@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash.idl modified Thu Dec 15 10:30:29 2011. */
+/* From private/ppb_flash.idl modified Mon Dec 19 19:43:03 2011. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_H_
@@ -38,7 +38,7 @@
  * The <code>PPB_Flash</code> interface contains pointers to various functions
  * that are only needed to support Pepper Flash.
  */
-struct PPB_Flash {
+struct PPB_Flash_12_0 {
   /**
    * Sets or clears the rendering hint that the given plugin instance is always
    * on top of page content. Somewhat more optimized painting can be used in
@@ -108,6 +108,8 @@ struct PPB_Flash {
    */
   void (*PreloadFontWin)(const void* logfontw);
 };
+
+typedef struct PPB_Flash_12_0 PPB_Flash;
 /**
  * @}
  */

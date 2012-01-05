@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,16 +8,12 @@
 #include <string>
 #include <vector>
 
+#include "ppapi/c/ppb_input_event.h"
+#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/tests/test_case.h"
-
-struct PPB_InputEvent;
-struct PPB_MouseInputEvent;
-struct PPB_WheelInputEvent;
-struct PPB_KeyboardInputEvent;
-struct PPB_Testing_Dev;
 
 class TestInputEvent : public TestCase {
  public:
@@ -45,10 +41,10 @@ class TestInputEvent : public TestCase {
 
   std::string TestEvents();
 
-  const struct PPB_InputEvent* input_event_interface_;
-  const struct PPB_MouseInputEvent* mouse_input_event_interface_;
-  const struct PPB_WheelInputEvent* wheel_input_event_interface_;
-  const struct PPB_KeyboardInputEvent* keyboard_input_event_interface_;
+  const PPB_InputEvent* input_event_interface_;
+  const PPB_MouseInputEvent* mouse_input_event_interface_;
+  const PPB_WheelInputEvent* wheel_input_event_interface_;
+  const PPB_KeyboardInputEvent* keyboard_input_event_interface_;
 
   pp::Rect view_rect_;
   pp::InputEvent expected_input_event_;
@@ -57,4 +53,3 @@ class TestInputEvent : public TestCase {
 };
 
 #endif  // PPAPI_TESTS_TEST_INPUT_EVENT_H_
-

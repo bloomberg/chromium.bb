@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppp_widget_dev.idl modified Fri Aug 26 17:59:12 2011. */
+/* From dev/ppp_widget_dev.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_DEV_PPP_WIDGET_DEV_H_
 #define PPAPI_C_DEV_PPP_WIDGET_DEV_H_
@@ -32,7 +32,7 @@
 /**
  * The interface for reusing browser widgets.
  */
-struct PPP_Widget_Dev {
+struct PPP_Widget_Dev_0_2 {
   /**
    * Informs the instance that the given rectangle needs to be repainted.
    */
@@ -40,6 +40,8 @@ struct PPP_Widget_Dev {
                      PP_Resource widget,
                      const struct PP_Rect* dirty_rect);
 };
+
+typedef struct PPP_Widget_Dev_0_2 PPP_Widget_Dev;
 /**
  * @}
  */

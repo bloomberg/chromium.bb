@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,8 +120,8 @@ PPB_FileSystem_Proxy::~PPB_FileSystem_Proxy() {
 
 const InterfaceProxy::Info* PPB_FileSystem_Proxy::GetInfo() {
   static const Info info = {
-    thunk::GetPPB_FileSystem_Thunk(),
-    PPB_FILESYSTEM_INTERFACE,
+    thunk::GetPPB_FileSystem_1_0_Thunk(),
+    PPB_FILESYSTEM_INTERFACE_1_0,
     API_ID_PPB_FILE_SYSTEM,
     false,
     &CreateFileSystemProxy,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/tests/test_case.h"
-
-struct PPB_BrokerTrusted;
 
 class TestBroker : public TestCase {
  public:
@@ -26,7 +25,7 @@ class TestBroker : public TestCase {
   std::string TestGetHandleFailure();
   std::string TestConnectAndPipe();
 
-  const struct PPB_BrokerTrusted* broker_interface_;
+  const PPB_BrokerTrusted* broker_interface_;
 };
 
 #endif  // PPAPI_TESTS_TEST_BROKER_H_

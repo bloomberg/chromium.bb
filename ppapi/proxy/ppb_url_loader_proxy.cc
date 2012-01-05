@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -388,8 +388,8 @@ PP_Resource PPB_URLLoader_Proxy::TrackPluginResource(
 // static
 const InterfaceProxy::Info* PPB_URLLoader_Proxy::GetTrustedInfo() {
   static const Info info = {
-    thunk::GetPPB_URLLoaderTrusted_Thunk(),
-    PPB_URLLOADERTRUSTED_INTERFACE,
+    thunk::GetPPB_URLLoaderTrusted_0_3_Thunk(),
+    PPB_URLLOADERTRUSTED_INTERFACE_0_3,
     API_ID_NONE,  // URL_LOADER is the canonical one.
     false,
     &CreateURLLoaderProxy

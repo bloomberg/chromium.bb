@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_file_chooser_dev.idl modified Fri Nov 11 20:18:10 2011. */
+/* From dev/ppb_file_chooser_dev.idl modified Mon Nov 14 10:36:01 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_FILE_CHOOSER_DEV_H_
 #define PPAPI_C_DEV_PPB_FILE_CHOOSER_DEV_H_
@@ -52,7 +52,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileChooserMode_Dev, 4);
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_FileChooser_Dev {
+struct PPB_FileChooser_Dev_0_5 {
   /**
    * This function creates a file chooser dialog resource.  The chooser is
    * associated with a particular instance, so that it may be positioned on the
@@ -115,6 +115,8 @@ struct PPB_FileChooser_Dev {
    */
   PP_Resource (*GetNextChosenFile)(PP_Resource chooser);
 };
+
+typedef struct PPB_FileChooser_Dev_0_5 PPB_FileChooser_Dev;
 /**
  * @}
  */

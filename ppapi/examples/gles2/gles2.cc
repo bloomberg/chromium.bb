@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -155,9 +155,9 @@ class GLES2DemoInstance : public pp::Instance,
   pp::CompletionCallbackFactory<GLES2DemoInstance> callback_factory_;
 
   // Unowned pointers.
-  const struct PPB_Console_Dev* console_if_;
-  const struct PPB_Core* core_if_;
-  const struct PPB_OpenGLES2* gles2_if_;
+  const PPB_Console_Dev* console_if_;
+  const PPB_Core* core_if_;
+  const PPB_OpenGLES2* gles2_if_;
 
   // Owned data.
   pp::Graphics3D* context_;
@@ -197,11 +197,11 @@ GLES2DemoInstance::GLES2DemoInstance(PP_Instance instance, pp::Module* module)
       swap_ticks_(0),
       callback_factory_(this),
       context_(NULL) {
-  assert((console_if_ = static_cast<const struct PPB_Console_Dev*>(
+  assert((console_if_ = static_cast<const PPB_Console_Dev*>(
       module->GetBrowserInterface(PPB_CONSOLE_DEV_INTERFACE))));
-  assert((core_if_ = static_cast<const struct PPB_Core*>(
+  assert((core_if_ = static_cast<const PPB_Core*>(
       module->GetBrowserInterface(PPB_CORE_INTERFACE))));
-  assert((gles2_if_ = static_cast<const struct PPB_OpenGLES2*>(
+  assert((gles2_if_ = static_cast<const PPB_OpenGLES2*>(
       module->GetBrowserInterface(PPB_OPENGLES2_INTERFACE))));
 }
 

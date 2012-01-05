@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppp_zoom_dev.idl modified Fri Aug 26 15:42:06 2011. */
+/* From dev/ppp_zoom_dev.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_DEV_PPP_ZOOM_DEV_H_
 #define PPAPI_C_DEV_PPP_ZOOM_DEV_H_
@@ -29,7 +29,7 @@
 /**
  * Zoom interface should only apply to those full-page "plugin-document".
  */
-struct PPP_Zoom_Dev {
+struct PPP_Zoom_Dev_0_3 {
   /**
    * Instruct plug-in to zoom according to the given factor and whether the zoom
    * only applies to text only.  The scale factor is the percentage divided by
@@ -37,6 +37,8 @@ struct PPP_Zoom_Dev {
    */
   void (*Zoom)(PP_Instance instance, double factor, PP_Bool text_only);
 };
+
+typedef struct PPP_Zoom_Dev_0_3 PPP_Zoom_Dev;
 /**
  * @}
  */

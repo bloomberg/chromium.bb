@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From pp_completion_callback.idl modified Thu Aug 11 14:45:09 2011. */
+/* From pp_completion_callback.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_PP_COMPLETION_CALLBACK_H_
 #define PPAPI_C_PP_COMPLETION_CALLBACK_H_

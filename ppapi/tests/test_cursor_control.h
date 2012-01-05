@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/tests/test_case.h"
-
-struct PPB_CursorControl_Dev;
 
 class TestCursorControl : public TestCase {
  public:
@@ -23,7 +22,7 @@ class TestCursorControl : public TestCase {
  private:
   std::string TestSetCursor();
 
-  const struct PPB_CursorControl_Dev* cursor_control_interface_;
+  const PPB_CursorControl_Dev* cursor_control_interface_;
 };
 
 #endif  // PPAPI_TESTS_TEST_CURSOR_CONTROL_H_

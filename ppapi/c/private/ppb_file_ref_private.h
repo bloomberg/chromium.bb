@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From private/ppb_file_ref_private.idl modified Mon Dec 12 14:04:17 2011. */
+/* From private/ppb_file_ref_private.idl modified Fri Dec 16 17:34:59 2011. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FILE_REF_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_FILE_REF_PRIVATE_H_
@@ -27,7 +27,7 @@
  * @{
  */
 /* PPB_FileRefPrivate interface */
-struct PPB_FileRefPrivate {
+struct PPB_FileRefPrivate_0_1 {
   /**
    * GetAbsolutePath() returns the absolute path of the file.
    *
@@ -38,6 +38,8 @@ struct PPB_FileRefPrivate {
    */
   struct PP_Var (*GetAbsolutePath)(PP_Resource file_ref);
 };
+
+typedef struct PPB_FileRefPrivate_0_1 PPB_FileRefPrivate;
 /**
  * @}
  */

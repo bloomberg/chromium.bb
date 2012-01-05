@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_core.idl modified Tue Aug 23 11:13:37 2011. */
+/* From ppb_core.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_PPB_CORE_H_
 #define PPAPI_C_PPB_CORE_H_
@@ -35,7 +35,7 @@
  * to memory management, time, and threads on the browser.
  *
  */
-struct PPB_Core {
+struct PPB_Core_1_0 {
   /**
    *
    * AddRefResource() adds a reference to a resource.
@@ -109,6 +109,8 @@ struct PPB_Core {
    */
   PP_Bool (*IsMainThread)();
 };
+
+typedef struct PPB_Core_1_0 PPB_Core;
 /**
  * @}
  */

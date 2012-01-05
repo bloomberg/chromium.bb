@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_buffer_dev.idl modified Fri Aug 26 13:58:06 2011. */
+/* From dev/ppb_buffer_dev.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_BUFFER_DEV_H_
 #define PPAPI_C_DEV_PPB_BUFFER_DEV_H_
@@ -27,7 +27,7 @@
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_Buffer_Dev {
+struct PPB_Buffer_Dev_0_4 {
   /**
    * Allocates a buffer of the given size in bytes. The return value will have
    * a non-zero ID on success, or zero on failure. Failure means the module
@@ -54,6 +54,8 @@ struct PPB_Buffer_Dev {
    */
   void (*Unmap)(PP_Resource resource);
 };
+
+typedef struct PPB_Buffer_Dev_0_4 PPB_Buffer_Dev;
 /**
  * @}
  */

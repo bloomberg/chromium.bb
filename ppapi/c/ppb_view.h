@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_view.idl modified Thu Dec 15 10:22:28 2011. */
+/* From ppb_view.idl modified Wed Jan  4 04:40:12 2012. */
 
 #ifndef PPAPI_C_PPB_VIEW_H_
 #define PPAPI_C_PPB_VIEW_H_
@@ -37,7 +37,7 @@
  * <code>PPB_View</code> objects so you will receive new view information via
  * <code>PPP_Instance.DidChangeView</code>.
  */
-struct PPB_View {
+struct PPB_View_1_0 {
   /**
    * <code>IsView()</code> determines if the given resource is a valid
    * <code>PPB_View</code> resource. Note that <code>PPB_ViewChanged</code>
@@ -146,6 +146,8 @@ struct PPB_View {
    */
   PP_Bool (*GetClipRect)(PP_Resource resource, struct PP_Rect* clip);
 };
+
+typedef struct PPB_View_1_0 PPB_View;
 /**
  * @}
  */

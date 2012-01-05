@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -331,7 +331,7 @@ const PPB_IMEInputEvent_Dev g_ppb_ime_input_event_thunk = {
 
 }  // namespace
 
-const PPB_InputEvent* GetPPB_InputEvent_Thunk() {
+const PPB_InputEvent_1_0* GetPPB_InputEvent_1_0_Thunk() {
   return &g_ppb_input_event_thunk;
 }
 
@@ -339,19 +339,19 @@ const PPB_MouseInputEvent_1_0* GetPPB_MouseInputEvent_1_0_Thunk() {
   return &g_ppb_mouse_input_event_1_0_thunk;
 }
 
-const PPB_MouseInputEvent* GetPPB_MouseInputEvent_Thunk() {
+const PPB_MouseInputEvent_1_1* GetPPB_MouseInputEvent_1_1_Thunk() {
   return &g_ppb_mouse_input_event_1_1_thunk;
 }
 
-const PPB_KeyboardInputEvent* GetPPB_KeyboardInputEvent_Thunk() {
+const PPB_KeyboardInputEvent_1_0* GetPPB_KeyboardInputEvent_1_0_Thunk() {
   return &g_ppb_keyboard_input_event_thunk;
 }
 
-const PPB_WheelInputEvent* GetPPB_WheelInputEvent_Thunk() {
+const PPB_WheelInputEvent_1_0* GetPPB_WheelInputEvent_1_0_Thunk() {
   return &g_ppb_wheel_input_event_thunk;
 }
 
-const PPB_IMEInputEvent_Dev* GetPPB_IMEInputEvent_Dev_Thunk() {
+const PPB_IMEInputEvent_Dev_0_1* GetPPB_IMEInputEvent_Dev_0_1_Thunk() {
   return &g_ppb_ime_input_event_thunk;
 }
 

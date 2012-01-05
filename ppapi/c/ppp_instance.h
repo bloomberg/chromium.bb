@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppp_instance.idl modified Thu Dec 15 10:30:21 2011. */
+/* From ppp_instance.idl modified Wed Jan  4 06:11:56 2012. */
 
 #ifndef PPAPI_C_PPP_INSTANCE_H_
 #define PPAPI_C_PPP_INSTANCE_H_
@@ -39,7 +39,7 @@
  * to handle events such as change of focus or input events (keyboard/mouse)
  * events.
  */
-struct PPP_Instance {
+struct PPP_Instance_1_1 {
   /**
    * DidCreate() is a creation handler that is called when a new instance is
    * created. This function is called for each instantiation on the page,
@@ -166,6 +166,8 @@ struct PPP_Instance {
   PP_Bool (*HandleDocumentLoad)(PP_Instance instance, PP_Resource url_loader);
 };
 
+typedef struct PPP_Instance_1_1 PPP_Instance;
+
 struct PPP_Instance_1_0 {
   PP_Bool (*DidCreate)(PP_Instance instance,
                        uint32_t argc,
@@ -181,9 +183,6 @@ struct PPP_Instance_1_0 {
 /**
  * @}
  */
-
-
-typedef struct PPP_Instance PPP_Instance_1_1;
 
 #endif  /* PPAPI_C_PPP_INSTANCE_H_ */
 

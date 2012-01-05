@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_text_input_dev.idl modified Tue Sep 27 14:34:33 2011. */
+/* From dev/ppb_text_input_dev.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_TEXT_INPUT_DEV_H_
 #define PPAPI_C_DEV_PPB_TEXT_INPUT_DEV_H_
@@ -66,7 +66,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TextInput_Type, 4);
  * to the browser about the text input status of plugins, and functions for
  * controlling input method editors (IMEs).
  */
-struct PPB_TextInput_Dev {
+struct PPB_TextInput_Dev_0_1 {
   /**
    * Informs the browser about the current text input mode of the plugin.
    * Typical use of this information in the browser is to properly
@@ -88,6 +88,8 @@ struct PPB_TextInput_Dev {
    */
   void (*CancelCompositionText)(PP_Instance instance);
 };
+
+typedef struct PPB_TextInput_Dev_0_1 PPB_TextInput_Dev;
 /**
  * @}
  */

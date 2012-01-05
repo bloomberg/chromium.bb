@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,10 +120,9 @@ const PPB_TCPSocket_Private g_ppb_tcp_socket_thunk = {
 
 }  // namespace
 
-const PPB_TCPSocket_Private* GetPPB_TCPSocket_Private_Thunk() {
+const PPB_TCPSocket_Private_0_3* GetPPB_TCPSocket_Private_0_3_Thunk() {
   return &g_ppb_tcp_socket_thunk;
 }
 
 }  // namespace thunk
 }  // namespace ppapi
-

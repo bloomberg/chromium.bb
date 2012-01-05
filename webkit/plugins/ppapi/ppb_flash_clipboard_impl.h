@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,6 @@
 #include "base/compiler_specific.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/thunk/ppb_flash_clipboard_api.h"
-
-struct PPB_Flash_Clipboard;
 
 namespace webkit {
 namespace ppapi {

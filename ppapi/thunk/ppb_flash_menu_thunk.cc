@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ const PPB_Flash_Menu g_ppb_flash_menu_thunk = {
 
 }  // namespace
 
-const PPB_Flash_Menu* GetPPB_Flash_Menu_Thunk() {
+const PPB_Flash_Menu_0_2* GetPPB_Flash_Menu_0_2_Thunk() {
   return &g_ppb_flash_menu_thunk;
 }
 

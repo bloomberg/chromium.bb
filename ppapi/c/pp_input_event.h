@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From pp_input_event.idl modified Thu Aug 11 14:47:50 2011. */
+/* From pp_input_event.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_PP_INPUT_EVENT_H_
 #define PPAPI_C_PP_INPUT_EVENT_H_

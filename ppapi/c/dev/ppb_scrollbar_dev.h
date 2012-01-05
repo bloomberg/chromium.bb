@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_scrollbar_dev.idl modified Tue Oct  4 08:53:30 2011. */
+/* From dev/ppb_scrollbar_dev.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_SCROLLBAR_DEV_H_
 #define PPAPI_C_DEV_PPB_SCROLLBAR_DEV_H_
@@ -49,7 +49,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_ScrollBy_Dev, 4);
  * The interface for a scrollbar.  A scrollbar is a widget, so the functions
  * in PPB_Widget can also be used with scrollbar objects.
  */
-struct PPB_Scrollbar_Dev {
+struct PPB_Scrollbar_Dev_0_5 {
   /**
    * Create a new scrollbar.  Returns 0 if the instance is invalid.
    */
@@ -96,6 +96,8 @@ struct PPB_Scrollbar_Dev {
                    PP_ScrollBy_Dev unit,
                    int32_t multiplier);
 };
+
+typedef struct PPB_Scrollbar_Dev_0_5 PPB_Scrollbar_Dev;
 /**
  * @}
  */

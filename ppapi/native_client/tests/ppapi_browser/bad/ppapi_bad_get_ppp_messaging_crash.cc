@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,7 @@ PP_Bool HandleDocumentLoad(PP_Instance /*instance*/, PP_Resource /*loader*/) {
   return PP_FALSE;
 }
 
-const struct PPP_Instance instance_interface = {
+const PPP_Instance instance_interface = {
   DidCreate,
   DidDestroy,
   DidChangeView,

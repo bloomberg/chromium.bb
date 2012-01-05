@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,7 +109,7 @@ const PPB_Transport_Dev g_ppb_transport_thunk = {
 
 }  // namespace
 
-const PPB_Transport_Dev* GetPPB_Transport_Dev_Thunk() {
+const PPB_Transport_Dev_0_7* GetPPB_Transport_Dev_0_7_Thunk() {
   return &g_ppb_transport_thunk;
 }
 

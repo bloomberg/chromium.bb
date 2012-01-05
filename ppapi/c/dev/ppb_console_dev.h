@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_console_dev.idl modified Fri Nov 11 20:17:52 2011. */
+/* From dev/ppb_console_dev.idl modified Mon Nov 14 10:36:01 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_CONSOLE_DEV_H_
 #define PPAPI_C_DEV_PPB_CONSOLE_DEV_H_
@@ -42,7 +42,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_LogLevel_Dev, 4);
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_Console_Dev {
+struct PPB_Console_Dev_0_1 {
   /**
    * Logs the given message to the JavaScript console associated with the
    * given plugin instance with the given logging level. The name of the plugin
@@ -65,6 +65,8 @@ struct PPB_Console_Dev {
                         struct PP_Var source,
                         struct PP_Var value);
 };
+
+typedef struct PPB_Console_Dev_0_1 PPB_Console_Dev;
 /**
  * @}
  */

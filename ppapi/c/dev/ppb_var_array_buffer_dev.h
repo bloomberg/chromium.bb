@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_var_array_buffer_dev.idl modified Fri Dec  2 16:17:08 2011. */
+/* From dev/ppb_var_array_buffer_dev.idl modified Wed Dec 14 18:08:00 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_VAR_ARRAY_BUFFER_DEV_H_
 #define PPAPI_C_DEV_PPB_VAR_ARRAY_BUFFER_DEV_H_
@@ -34,7 +34,7 @@
  * these Vars are not part of the embedding page's DOM, and can only be shared
  * with JavaScript via pp::Instance's PostMessage and HandleMessage functions.
  */
-struct PPB_VarArrayBuffer_Dev {
+struct PPB_VarArrayBuffer_Dev_0_1 {
   /**
    * Create a zero-initialized VarArrayBuffer.
    *
@@ -59,6 +59,8 @@ struct PPB_VarArrayBuffer_Dev {
    */
   void* (*Map)(struct PP_Var array);
 };
+
+typedef struct PPB_VarArrayBuffer_Dev_0_1 PPB_VarArrayBuffer_Dev;
 /**
  * @}
  */

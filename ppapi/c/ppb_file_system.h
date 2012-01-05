@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppb_file_system.idl modified Mon Aug 29 10:11:34 2011. */
+/* From ppb_file_system.idl modified Wed Oct  5 14:06:02 2011. */
 
 #ifndef PPAPI_C_PPB_FILE_SYSTEM_H_
 #define PPAPI_C_PPB_FILE_SYSTEM_H_
@@ -33,7 +33,7 @@
  * The <code>PPB_FileSystem</code> struct identifies the file system type
  * associated with a file.
  */
-struct PPB_FileSystem {
+struct PPB_FileSystem_1_0 {
   /** Create() creates a file system object of the given type.
    *
    * @param[in] instance A <code>PP_Instance</code> identifying the instance
@@ -87,6 +87,8 @@ struct PPB_FileSystem {
    */
   PP_FileSystemType (*GetType)(PP_Resource file_system);
 };
+
+typedef struct PPB_FileSystem_1_0 PPB_FileSystem;
 /**
  * @}
  */

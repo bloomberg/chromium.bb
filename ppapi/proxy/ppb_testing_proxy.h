@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,11 +8,11 @@
 #include "base/basictypes.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/shared_impl/host_resource.h"
 
 struct PP_Point;
-struct PPB_Testing_Dev;
 
 namespace ppapi {
 
