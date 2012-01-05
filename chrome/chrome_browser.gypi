@@ -836,8 +836,6 @@
         'browser/chromeos/view_ids.h',
         'browser/chromeos/views/copy_background.cc',
         'browser/chromeos/views/copy_background.h',
-        'browser/chromeos/views/dropdown_button.cc',
-        'browser/chromeos/views/dropdown_button.h',
         'browser/chromeos/volume_bubble.cc',
         'browser/chromeos/volume_bubble.h',
         'browser/chromeos/web_socket_proxy.cc',
