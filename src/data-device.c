@@ -179,14 +179,12 @@ destroy_drag_focus(struct wl_listener *listener,
 }
 
 static void
-drag_set_focus(struct weston_input_device *device,
-	       struct wl_surface *surface, uint32_t time,
-	       int32_t x, int32_t y)
+drag_grab_focus(struct wl_grab *grab, uint32_t time,
+		struct wl_surface *surface, int32_t x, int32_t y)
 {
+	struct weston_input_device *device =
+		container_of(grab, struct weston_input_device, drag_grab);
 	struct wl_resource *resource, *offer;
-
-	if (device->drag_focus == surface)
-		return;
 
 	if (device->drag_focus_resource) {
 		wl_resource_post_event(device->drag_focus_resource,
@@ -212,6 +210,7 @@ drag_set_focus(struct weston_input_device *device,
 		wl_list_insert(resource->destroy_listener_list.prev,
 			       &device->drag_focus_listener.link);
 		device->drag_focus_resource = resource;
+		grab->focus = surface;
 	}
 }
 
@@ -220,13 +219,9 @@ drag_grab_motion(struct wl_grab *grab,
 		 uint32_t time, int32_t x, int32_t y)
 {
 	struct weston_input_device *device =
-		container_of(grab, struct weston_input_device, grab);
-	struct weston_surface *es;
+		container_of(grab, struct weston_input_device, drag_grab);
 
-	es = pick_surface(&device->input_device, &x, &y);
-	drag_set_focus(device, &es->surface, time, x, y);
-
-	if (es && device->drag_focus_resource)
+	if (device->drag_focus_resource)
 		wl_resource_post_event(device->drag_focus_resource,
 				       WL_DATA_DEVICE_MOTION, time, x, y);
 }
@@ -235,26 +230,24 @@ static void
 drag_grab_button(struct wl_grab *grab,
 		 uint32_t time, int32_t button, int32_t state)
 {
-}
-
-static void
-drag_grab_end(struct wl_grab *grab, uint32_t time)
-{
 	struct weston_input_device *device =
-		container_of(grab, struct weston_input_device, grab);
+		container_of(grab, struct weston_input_device, drag_grab);
 
-	if (device->drag_focus_resource)
+	if (device->drag_focus_resource &&
+	    device->input_device.grab_button == button && state == 0)
 		wl_resource_post_event(device->drag_focus_resource,
 				       WL_DATA_DEVICE_DROP);
 
-	drag_set_focus(device, NULL, time, 0, 0);
-	device->drag_data_source = NULL;
+	if (device->input_device.button_count == 0 && state == 0) {
+		wl_input_device_end_grab(&device->input_device, time);
+		device->drag_data_source = NULL;
+	}
 }
 
 static const struct wl_grab_interface drag_grab_interface = {
+	drag_grab_focus,
 	drag_grab_motion,
 	drag_grab_button,
-	drag_grab_end
 };
 
 static void
@@ -263,26 +256,17 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		       struct wl_resource *surface_resource, uint32_t time)
 {
 	struct weston_input_device *device = resource->data;
-	struct weston_surface *surface = surface_resource->data;
-	struct weston_surface *target;
-	int32_t sx, sy;
 
 	/* FIXME: Check that client has implicit grab on the surface
 	 * that matches the given time. */
 
 	/* FIXME: Check that the data source type array isn't empty. */
 
-	if (wl_input_device_update_grab(&device->input_device, &device->grab,
-					&surface->surface, time) < 0)
-		return;
-
-	device->grab.interface = &drag_grab_interface;
+	device->drag_grab.interface = &drag_grab_interface;
 	device->drag_data_source = source_resource->data;
 
-	target = pick_surface(&device->input_device, &sx, &sy);
-	wl_input_device_set_pointer_focus(&device->input_device,
-					  NULL, time, 0, 0, 0, 0);
-	drag_set_focus(device, &target->surface, time, sx, sy);
+	wl_input_device_start_grab(&device->input_device,
+				   &device->drag_grab, time);
 }
 
 static void

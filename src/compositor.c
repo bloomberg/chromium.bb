@@ -307,6 +307,14 @@ weston_surface_configure(struct weston_surface *surface,
 		pixman_region32_init(&surface->opaque);
 }
 
+static void
+weston_surface_transform(struct weston_surface *surface,
+		       int32_t x, int32_t y, int32_t *sx, int32_t *sy)
+{
+	*sx = x - surface->x;
+	*sy = y - surface->y;
+}
+
 WL_EXPORT uint32_t
 weston_compositor_get_time(void)
 {
@@ -318,28 +326,42 @@ weston_compositor_get_time(void)
 }
 
 WL_EXPORT void
+weston_device_repick(struct wl_input_device *device, uint32_t time)
+{
+	struct weston_input_device *wd = (struct weston_input_device *) device;
+	const struct wl_grab_interface *interface;
+	struct weston_surface *surface, *focus;
+
+	surface = weston_compositor_pick_surface(wd->compositor,
+						 device->x, device->y,
+						 &device->current_x,
+						 &device->current_y);
+
+	if (&surface->surface != device->current) {
+		interface = device->grab->interface;
+		interface->focus(device->grab, time, &surface->surface,
+				 device->current_x, device->current_y);
+		device->current = &surface->surface;
+	}
+
+	focus = (struct weston_surface *) device->grab->focus;
+	if (focus)
+		weston_surface_transform(focus, device->x, device->y,
+					 &device->grab->x, &device->grab->y);
+}
+
+WL_EXPORT void
 weston_compositor_repick(struct weston_compositor *compositor)
 {
 	struct weston_input_device *device;
-	struct weston_surface *surface;
-	int32_t sx, sy;
 	uint32_t time;
 
 	if (!compositor->focus)
 		return;
 
 	time = weston_compositor_get_time();
-	wl_list_for_each(device, &compositor->input_device_list, link) {
-		if (device->input_device.grab)
-			continue;
-		surface = pick_surface(&device->input_device, &sx, &sy);
-		wl_input_device_set_pointer_focus(&device->input_device,
-						  &surface->surface,
-						  time,
-						  device->input_device.x,
-						  device->input_device.y,
-						  sx, sy);
-	}
+	wl_list_for_each(device, &compositor->input_device_list, link)
+		weston_device_repick(&device->input_device, time);
 }
 
 static void
@@ -1071,15 +1093,7 @@ const static struct wl_compositor_interface compositor_interface = {
 	compositor_create_surface,
 };
 
-static void
-weston_surface_transform(struct weston_surface *surface,
-		       int32_t x, int32_t y, int32_t *sx, int32_t *sy)
-{
-	*sx = x - surface->x;
-	*sy = y - surface->y;
-}
-
-static struct weston_surface *
+WL_EXPORT struct weston_surface *
 weston_compositor_pick_surface(struct weston_compositor *compositor,
 			       int32_t x, int32_t y, int32_t *sx, int32_t *sy)
 {
@@ -1097,56 +1111,56 @@ weston_compositor_pick_surface(struct weston_compositor *compositor,
 	return NULL;
 }
 
-WL_EXPORT struct weston_surface *
-pick_surface(struct wl_input_device *device, int32_t *sx, int32_t *sy)
+static void
+default_grab_focus(struct wl_grab *grab, uint32_t time,
+		   struct wl_surface *surface, int32_t x, int32_t y)
 {
-	struct weston_input_device *wd = (struct weston_input_device *) device;
+	struct wl_input_device *device = grab->input_device;
 
-	return weston_compositor_pick_surface(wd->compositor,
-					    device->x, device->y, sx, sy);
+	if (device->button_count > 0)
+		return;
+
+	wl_input_device_set_pointer_focus(device, surface, time,
+					  device->x, device->y, x, y);
 }
 
-
 static void
-implicit_grab_motion(struct wl_grab *grab,
-		     uint32_t time, int32_t x, int32_t y)
+default_grab_motion(struct wl_grab *grab,
+		    uint32_t time, int32_t x, int32_t y)
 {
-	struct weston_input_device *device =
-		(struct weston_input_device *) grab->input_device;
-	struct weston_surface *es =
-		(struct weston_surface *) device->input_device.pointer_focus;
-	int32_t sx, sy;
+	struct wl_input_device *device = grab->input_device;
 	struct wl_resource *resource;
 
 	resource = grab->input_device->pointer_focus_resource;
-	if (resource) {
-		weston_surface_transform(es, x, y, &sx, &sy);
+	if (resource)
 		wl_resource_post_event(resource, WL_INPUT_DEVICE_MOTION,
-				       time, x, y, sx, sy);
-	}
+				       time, device->x, device->y, x, y);
 }
 
 static void
-implicit_grab_button(struct wl_grab *grab,
-		     uint32_t time, int32_t button, int32_t state)
+default_grab_button(struct wl_grab *grab,
+		    uint32_t time, int32_t button, int32_t state)
 {
+	struct wl_input_device *device = grab->input_device;
 	struct wl_resource *resource;
 
-	resource = grab->input_device->pointer_focus_resource;
+	if (device->button_count == 0 && state == 0)
+		wl_input_device_set_pointer_focus(device,
+						  device->current, time,
+						  device->x, device->y,
+						  device->current_x,
+						  device->current_y);
+
+	resource = device->pointer_focus_resource;
 	if (resource)
 		wl_resource_post_event(resource, WL_INPUT_DEVICE_BUTTON,
 				       time, button, state);
 }
 
-static void
-implicit_grab_end(struct wl_grab *grab, uint32_t time)
-{
-}
-
-static const struct wl_grab_interface implicit_grab_interface = {
-	implicit_grab_motion,
-	implicit_grab_button,
-	implicit_grab_end
+static const struct wl_grab_interface default_grab_interface = {
+	default_grab_focus,
+	default_grab_motion,
+	default_grab_button
 };
 
 WL_EXPORT void
@@ -1199,12 +1213,10 @@ idle_handler(void *data)
 WL_EXPORT void
 notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 {
-	struct weston_surface *es;
 	struct weston_output *output;
 	const struct wl_grab_interface *interface;
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *ec = wd->compositor;
-	int32_t sx, sy;
 	int x_valid = 0, y_valid = 0;
 	int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
 
@@ -1245,19 +1257,10 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 	device->x = x;
 	device->y = y;
 
-	if (device->grab) {
-		interface = device->grab->interface;
-		interface->motion(device->grab, time, x, y);
-	} else {
-		es = pick_surface(device, &sx, &sy);
-		wl_input_device_set_pointer_focus(device,
-						  &es->surface,
-						  time, x, y, sx, sy);
-		if (device->pointer_focus_resource)
-			wl_resource_post_event(device->pointer_focus_resource,
-					       WL_INPUT_DEVICE_MOTION,
-					       time, x, y, sx, sy);
-	}
+	weston_device_repick(device, time);
+	interface = device->grab->interface;
+	interface->motion(device->grab, time,
+			  device->grab->x, device->grab->y);
 
 	if (wd->sprite) {
 		weston_surface_damage_below(wd->sprite);
@@ -1285,34 +1288,25 @@ notify_button(struct wl_input_device *device,
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *compositor = wd->compositor;
-	struct weston_surface *surface =
-		(struct weston_surface *) device->pointer_focus;
-	int32_t sx, sy;
 
-	if (state)
+	if (state) {
 		weston_compositor_idle_inhibit(compositor);
-	else
+		if (device->button_count == 0) {
+			device->grab_button = button;
+			device->grab_time = time;
+			device->grab_x = device->x;
+			device->grab_y = device->y;
+		}
+		device->button_count++;
+	} else {
 		weston_compositor_idle_release(compositor);
+		device->button_count--;
+	}
 
 	weston_compositor_run_binding(compositor, wd, time, 0, button, state);
 
-	if (state && surface && device->grab == NULL) {
-		wl_input_device_start_grab(device,
-					   &device->implicit_grab,
-					   button, time);
-	}
+	device->grab->interface->button(device->grab, time, button, state);
 
-	if (device->grab)
-		device->grab->interface->button(device->grab, time,
-						button, state);
-
-	if (!state && device->grab && device->grab_button == button) {
-		wl_input_device_end_grab(device, time);
-		surface = pick_surface(device, &sx, &sy);
-		wl_input_device_set_pointer_focus(device, &surface->surface,
-						  time, device->x, device->y,
-						  sx, sy);
-	}
 }
 
 static void
@@ -1387,22 +1381,15 @@ notify_pointer_focus(struct wl_input_device *device,
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *compositor = wd->compositor;
-	struct weston_surface *es;
-	int32_t sx, sy;
 
 	if (output) {
 		device->x = x;
 		device->y = y;
-		es = pick_surface(device, &sx, &sy);
-		wl_input_device_set_pointer_focus(device,
-						  &es->surface,
-						  time, x, y, sx, sy);
-
 		compositor->focus = 1;
+		weston_compositor_repick(compositor);
 	} else {
-		wl_input_device_set_pointer_focus(device, NULL,
-						  time, 0, 0, 0, 0);
 		compositor->focus = 0;
+		weston_compositor_repick(compositor);
 	}
 }
 
@@ -1678,7 +1665,9 @@ weston_input_device_init(struct weston_input_device *device,
 	device->modifier_state = 0;
 	device->num_tp = 0;
 
-	device->input_device.implicit_grab.interface = &implicit_grab_interface;
+	device->input_device.default_grab.interface = &default_grab_interface;
+	device->input_device.default_grab.input_device = &device->input_device;
+	device->input_device.grab = &device->input_device.default_grab;
 
 	wl_list_insert(ec->input_device_list.prev, &device->link);
 

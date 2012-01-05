@@ -115,10 +115,10 @@ struct weston_input_device {
 	struct wl_surface *drag_focus;
 	struct wl_resource *drag_focus_resource;
 	struct wl_listener drag_focus_listener;
+	struct wl_grab drag_grab;
 
 	struct weston_data_source *selection_data_source;
 	struct wl_listener selection_data_source_listener;
-	struct wl_grab grab;
 	struct wl_list selection_listener_list;
 
 	uint32_t num_tp;
@@ -297,6 +297,8 @@ void
 weston_input_device_set_selection(struct weston_input_device *device,
 				  struct weston_data_source *source,
 				  uint32_t time);
+void
+weston_device_repick(struct wl_input_device *device, uint32_t time);
 
 void
 weston_spring_init(struct weston_spring *spring,
@@ -339,6 +341,9 @@ void
 weston_output_finish_frame(struct weston_output *output, int msecs);
 void
 weston_output_damage(struct weston_output *output);
+struct weston_surface *
+weston_compositor_pick_surface(struct weston_compositor *compositor,
+			       int32_t x, int32_t y, int32_t *sx, int32_t *sy);
 void
 weston_compositor_repick(struct weston_compositor *compositor);
 void
@@ -396,9 +401,6 @@ void
 weston_surface_damage_rectangle(struct weston_surface *surface,
 				int32_t x, int32_t y,
 				int32_t width, int32_t height);
-
-struct weston_surface *
-pick_surface(struct wl_input_device *device, int32_t *sx, int32_t *sy);
 
 uint32_t
 weston_compositor_get_time(void);

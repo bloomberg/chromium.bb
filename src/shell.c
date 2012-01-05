@@ -126,37 +126,47 @@ shell_configuration(struct wl_shell *shell)
 }
 
 static void
+noop_grab_focus(struct wl_grab *grab, uint32_t time,
+		struct wl_surface *surface, int32_t x, int32_t y)
+{
+	grab->focus = NULL;
+}
+
+static void
 move_grab_motion(struct wl_grab *grab,
-		   uint32_t time, int32_t x, int32_t y)
+		 uint32_t time, int32_t x, int32_t y)
 {
 	struct weston_move_grab *move = (struct weston_move_grab *) grab;
+	struct wl_input_device *device = grab->input_device;
 	struct weston_surface *es = move->surface;
 
-	weston_surface_configure(es, x + move->dx, y + move->dy,
-			       es->width, es->height);
+	weston_surface_configure(es,
+				 device->x + move->dx,
+				 device->y + move->dy,
+				 es->width, es->height);
 }
 
 static void
 move_grab_button(struct wl_grab *grab,
 		 uint32_t time, int32_t button, int32_t state)
 {
-}
+	struct wl_input_device *device = grab->input_device;
 
-static void
-move_grab_end(struct wl_grab *grab, uint32_t time)
-{
-	free(grab);
+	if (device->button_count == 0 && state == 0) {
+		wl_input_device_end_grab(device, time);
+		free(grab);
+	}
 }
 
 static const struct wl_grab_interface move_grab_interface = {
+	noop_grab_focus,
 	move_grab_motion,
 	move_grab_button,
-	move_grab_end
 };
 
 static int
 weston_surface_move(struct weston_surface *es,
-		  struct weston_input_device *wd, uint32_t time)
+		    struct weston_input_device *wd, uint32_t time)
 {
 	struct weston_move_grab *move;
 
@@ -169,11 +179,7 @@ weston_surface_move(struct weston_surface *es,
 	move->dy = es->y - wd->input_device.grab_y;
 	move->surface = es;
 
-	if (wl_input_device_update_grab(&wd->input_device,
-					&move->grab, &es->surface, time) < 0) {
-		free(move);
-		return 0;
-	}
+	wl_input_device_start_grab(&wd->input_device, &move->grab, time);
 
 	wl_input_device_set_pointer_focus(&wd->input_device,
 					  NULL, time, 0, 0, 0, 0);
@@ -187,6 +193,11 @@ shell_surface_move(struct wl_client *client, struct wl_resource *resource,
 {
 	struct weston_input_device *wd = input_resource->data;
 	struct shell_surface *shsurf = resource->data;
+
+	if (wd->input_device.button_count == 0 ||
+	    wd->input_device.grab_time != time ||
+	    wd->input_device.pointer_focus != &shsurf->surface->surface)
+		return;
 
 	if (weston_surface_move(shsurf->surface, wd, time) < 0)
 		wl_resource_post_no_memory(resource);
@@ -208,17 +219,17 @@ resize_grab_motion(struct wl_grab *grab,
 	int32_t width, height;
 
 	if (resize->edges & WL_SHELL_SURFACE_RESIZE_LEFT) {
-		width = device->grab_x - x + resize->width;
+		width = device->grab_x - device->x + resize->width;
 	} else if (resize->edges & WL_SHELL_SURFACE_RESIZE_RIGHT) {
-		width = x - device->grab_x + resize->width;
+		width = device->x - device->grab_x + resize->width;
 	} else {
 		width = resize->width;
 	}
 
 	if (resize->edges & WL_SHELL_SURFACE_RESIZE_TOP) {
-		height = device->grab_y - y + resize->height;
+		height = device->grab_y - device->y + resize->height;
 	} else if (resize->edges & WL_SHELL_SURFACE_RESIZE_BOTTOM) {
-		height = y - device->grab_y + resize->height;
+		height = device->y - device->grab_y + resize->height;
 	} else {
 		height = resize->height;
 	}
@@ -232,18 +243,18 @@ static void
 resize_grab_button(struct wl_grab *grab,
 		   uint32_t time, int32_t button, int32_t state)
 {
-}
+	struct wl_input_device *device = grab->input_device;
 
-static void
-resize_grab_end(struct wl_grab *grab, uint32_t time)
-{
-	free(grab);
+	if (device->button_count == 0 && state == 0) {
+		wl_input_device_end_grab(device, time);
+		free(grab);
+	}
 }
 
 static const struct wl_grab_interface resize_grab_interface = {
+	noop_grab_focus,
 	resize_grab_motion,
 	resize_grab_button,
-	resize_grab_end
 };
 
 static int
@@ -272,9 +283,7 @@ weston_surface_resize(struct shell_surface *shsurf,
 	    (edges & 3) == 3 || (edges & 12) == 12)
 		goto err_out;
 
-	if (wl_input_device_update_grab(&wd->input_device,
-					&resize->grab, &es->surface, time) < 0)
-		goto err_out;
+	wl_input_device_start_grab(&wd->input_device, &resize->grab, time);
 
 	wl_input_device_set_pointer_focus(&wd->input_device,
 					  NULL, time, 0, 0, 0, 0);
@@ -295,6 +304,11 @@ shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
 	struct shell_surface *shsurf = resource->data;
 
 	/* FIXME: Reject if fullscreen */
+
+	if (wd->input_device.button_count == 0 ||
+	    wd->input_device.grab_time != time ||
+	    wd->input_device.pointer_focus != &shsurf->surface->surface)
+		return;
 
 	if (weston_surface_resize(shsurf, wd, time, edges) < 0)
 		wl_resource_post_no_memory(resource);
@@ -865,7 +879,7 @@ click_to_activate_binding(struct wl_input_device *device,
 	struct weston_surface *focus;
 
 	focus = (struct weston_surface *) device->pointer_focus;
-	if (state && focus && device->grab == NULL)
+	if (state && focus && device->grab == &device->default_grab)
 		activate(compositor->shell, focus, wd, time);
 }
 
