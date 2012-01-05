@@ -66,6 +66,7 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
                            public WebPageDelegate {
  public:
   explicit RegistrationScreen(ViewScreenDelegate* delegate);
+  virtual ~RegistrationScreen();
 
   // WebPageDelegate implementation:
   virtual void OnPageLoaded() OVERRIDE;

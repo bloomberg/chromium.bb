@@ -65,6 +65,9 @@ RegistrationScreen::RegistrationScreen(ViewScreenDelegate* delegate)
       &RegistrationScreen::Factory);
 }
 
+RegistrationScreen::~RegistrationScreen() {
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RegistrationScreen, ViewScreen implementation:
 void RegistrationScreen::CreateView() {
