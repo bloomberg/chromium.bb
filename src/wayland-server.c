@@ -488,6 +488,7 @@ wl_input_device_set_pointer_focus(struct wl_input_device *device,
 	device->pointer_focus_resource = resource;
 	device->pointer_focus = surface;
 	device->pointer_focus_time = time;
+	device->default_grab.focus = surface;
 }
 
 WL_EXPORT void
@@ -524,62 +525,29 @@ wl_input_device_set_keyboard_focus(struct wl_input_device *device,
 }
 
 WL_EXPORT void
+wl_input_device_start_grab(struct wl_input_device *device,
+			   struct wl_grab *grab, uint32_t time)
+{
+	const struct wl_grab_interface *interface;
+
+	device->grab = grab;
+	interface = device->grab->interface;
+	grab->input_device = device;
+
+	if (device->current)
+		interface->focus(device->grab, time, device->current,
+				 device->current_x, device->current_y);
+}
+
+WL_EXPORT void
 wl_input_device_end_grab(struct wl_input_device *device, uint32_t time)
 {
 	const struct wl_grab_interface *interface;
 
+	device->grab = &device->default_grab;
 	interface = device->grab->interface;
-	interface->end(device->grab, time);
-	device->grab = NULL;
-
-	wl_list_remove(&device->grab_listener.link);
-}
-
-static void
-lose_grab_surface(struct wl_listener *listener,
-		  struct wl_resource *resource, uint32_t time)
-{
-	struct wl_input_device *device =
-		container_of(listener,
-			     struct wl_input_device, grab_listener);
-
-	wl_input_device_end_grab(device, time);
-}
-
-WL_EXPORT void
-wl_input_device_start_grab(struct wl_input_device *device,
-			   struct wl_grab *grab,
-			   uint32_t button, uint32_t time)
-{
-	struct wl_surface *focus = device->pointer_focus;
-
-	device->grab = grab;
-	device->grab_button = button;
-	device->grab_time = time;
-	device->grab_x = device->x;
-	device->grab_y = device->y;
-
-	device->grab_listener.func = lose_grab_surface;
-	wl_list_insert(focus->resource.destroy_listener_list.prev,
-		       &device->grab_listener.link);
-
-	grab->input_device = device;
-}
-
-WL_EXPORT int
-wl_input_device_update_grab(struct wl_input_device *device,
-			    struct wl_grab *grab,
-			    struct wl_surface *surface, uint32_t time)
-{
-	if (device->grab != &device->implicit_grab ||
-	    device->grab_time != time ||
-	    device->pointer_focus != surface)
-		return -1;
-
-	device->grab = grab;
-	grab->input_device = device;
-
-	return 0;
+	interface->focus(device->grab, time, device->current,
+			 device->current_x, device->current_y);
 }
 
 static void

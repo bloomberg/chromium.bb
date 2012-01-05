@@ -147,16 +147,19 @@ struct wl_surface {
 
 struct wl_grab;
 struct wl_grab_interface {
+	void (*focus)(struct wl_grab *grab, uint32_t time,
+		      struct wl_surface *surface, int32_t x, int32_t y);
 	void (*motion)(struct wl_grab *grab,
 		       uint32_t time, int32_t x, int32_t y);
 	void (*button)(struct wl_grab *grab,
 		       uint32_t time, int32_t button, int32_t state);
-	void (*end)(struct wl_grab *grab, uint32_t time);
 };
 
 struct wl_grab {
 	const struct wl_grab_interface *interface;
 	struct wl_input_device *input_device;
+	struct wl_surface *focus;
+	int32_t x, y;
 };
 
 struct wl_input_device {
@@ -172,8 +175,12 @@ struct wl_input_device {
 	struct wl_listener keyboard_focus_listener;
 
 	int32_t x, y;
+	struct wl_surface *current;
+	int32_t current_x, current_y;
+
 	struct wl_grab *grab;
-	struct wl_grab implicit_grab;
+	struct wl_grab default_grab;
+	uint32_t button_count;
 	uint32_t grab_time;
 	int32_t grab_x, grab_y;
 	uint32_t grab_button;
@@ -241,12 +248,7 @@ void
 wl_input_device_end_grab(struct wl_input_device *device, uint32_t time);
 void
 wl_input_device_start_grab(struct wl_input_device *device,
-			   struct wl_grab *grab,
-			   uint32_t button, uint32_t time);
-int
-wl_input_device_update_grab(struct wl_input_device *device,
-			    struct wl_grab *grab,
-			    struct wl_surface *surface, uint32_t time);
+			   struct wl_grab *grab, uint32_t time);
 
 struct wl_shm;
 
