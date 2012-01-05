@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -29,6 +29,7 @@ import os
 import posixpath
 import re
 import SimpleHTTPServer
+import simplejson
 import SocketServer
 import sys
 import tempfile
@@ -66,6 +67,20 @@ class BasePerfTest(pyauto.PyUITest):
     if 'MAX_TIMEOUT_COUNT' in os.environ:
       self._max_timeout_count = int(os.environ['MAX_TIMEOUT_COUNT'])
     self._timeout_count = 0
+
+    # For users who want to see local perf graphs for Chrome when running the
+    # tests on their own machines.
+    self._local_perf_dir = None
+    if 'LOCAL_PERF_DIR' in os.environ:
+      self._local_perf_dir = os.environ['LOCAL_PERF_DIR']
+      if not os.path.exists(self._local_perf_dir):
+        self.fail('LOCAL_PERF_DIR environment variable specified as %s, '
+                  'but this directory does not exist.' % self._local_perf_dir)
+    # When outputting perf graph information on-the-fly for Chrome, this
+    # variable lets us know whether a perf measurement is for a new test
+    # execution, or the current test execution.
+    self._seen_graph_lines = {}
+
     pyauto.PyUITest.setUp(self)
 
   def _AppendTab(self, url):
@@ -113,8 +128,100 @@ class BasePerfTest(pyauto.PyUITest):
         std_dev = math.sqrt(sum(temp_vals) / (len(temp_vals) - 1))
     return avg, std_dev
 
+  def _OutputDataForStandaloneGraphing(self, graph_name, description, value,
+                                       units, units_x):
+    """Outputs perf measurement data to a local folder to be graphed.
+
+    This function only applies to Chrome desktop, and assumes that environment
+    variable 'LOCAL_PERF_DIR' has been specified and refers to a valid directory
+    on the local machine.
+
+    Args:
+      graph_name: A string name for the graph associated with this performance
+                  value.
+      description: A string description of the performance value.  Should not
+                   include spaces.
+      value: Either a single numeric value representing a performance
+             measurement, or else a list of (x, y) tuples representing one or
+             more long-running performance measurements, where 'x' is an x-axis
+             value (such as an iteration number) and 'y' is the corresponding
+             performance measurement.  If a list of tuples is given, then the
+             |units_x| argument must also be specified.
+      units: A string representing the units of the performance measurement(s).
+             Should not include spaces.
+      units_x: A string representing the units of the x-axis values associated
+               with the performance measurements, such as 'iteration' if the x
+               values are iteration numbers.  If this argument is specified,
+               then the |value| argument must be a list of (x, y) tuples.
+    """
+    # Update graphs.dat.
+    existing_graphs = []
+    graphs_file = os.path.join(self._local_perf_dir, 'graphs.dat')
+    if os.path.exists(graphs_file):
+      with open(graphs_file, 'r') as f:
+        existing_graphs = simplejson.loads(f.read())
+    is_new_graph = True
+    for graph in existing_graphs:
+      if graph['name'] == graph_name:
+        is_new_graph = False
+        break
+    if is_new_graph:
+      new_graph =  {
+        'name': graph_name,
+        'units': units,
+        'important': False,
+      }
+      if units_x:
+        new_graph['units_x'] = units_x
+      existing_graphs.append(new_graph)
+      with open(graphs_file, 'w') as f:
+        f.write(simplejson.dumps(existing_graphs))
+      os.chmod(graphs_file, 0755)
+
+    # Update data file for this particular graph.
+    data_file_name = graph_name + '-summary.dat'
+    existing_lines = []
+    data_file = os.path.join(self._local_perf_dir, data_file_name)
+    if os.path.exists(data_file):
+      with open(data_file, 'r') as f:
+        existing_lines = f.readlines()
+    existing_lines = map(lambda x: x.strip(), existing_lines)
+    if units_x:
+      points = []
+      for point in value:
+        points.append([str(point[0]), str(point[1])])
+      new_traces = {
+        description: points
+      }
+    else:
+      new_traces = {
+        description: [str(value), str(0.0)]
+      }
+    revision = 1
+    if existing_lines:
+      revision = int(eval(existing_lines[0])['rev']) + 1
+    new_line = {
+      'traces': new_traces,
+      'rev': revision
+    }
+
+    seen_key = graph_name + '|' + description
+    if seen_key in self._seen_graph_lines:
+      # Update results for the most recent revision.
+      new_line['rev'] = int(eval(existing_lines[0])['rev'])
+      existing_lines[0] = new_line
+    else:
+      # New results for a new revision.
+      existing_lines.insert(0, new_line)
+      self._seen_graph_lines[seen_key] = True
+
+    existing_lines = map(str, existing_lines)
+    with open(data_file, 'w') as f:
+      f.write('\n'.join(existing_lines))
+    os.chmod(data_file, 0755)
+
   def _OutputPerfGraphValue(self, description, value, units,
-                            graph_name='Default-Graph'):
+                            graph_name='Default-Graph', units_x=None):
     """Outputs a performance value to have it graphed on the performance bots.
 
     The output format differs, depending on whether the current platform is
@@ -131,13 +238,28 @@ class BasePerfTest(pyauto.PyUITest):
     Args:
       description: A string description of the performance value.  Should not
                    include spaces.
-      value: A numeric value representing a single performance measurement.
-      units: A string representing the units of the performance value.  Should
-             not include spaces.
+      value: Either a single numeric value representing a performance
+             measurement, or a list of (x, y) tuples representing one or
+             more long-running performance measurements, where 'x' is an x-axis
+             value (such as an iteration number) and 'y' is the corresponding
+             performance measurement.  If a list of tuples is given, the
+             |units_x| argument must also be specified.
+      units: A string representing the units of the performance measurement(s).
+             Should not include spaces.
       graph_name: A string name for the graph associated with this performance
                   value.  Only used on Chrome desktop.
-
+      units_x: A string representing the units of the x-axis values associated
+               with the performance measurements, such as 'iteration' if the x
+               values are iteration numbers.  If this argument is specified,
+               then the |value| argument must be a list of (x, y) tuples.
     """
+    if isinstance(value, list):
+      assert units_x
+    if units_x:
+      assert isinstance(value, list)
+
+    # TODO(dennisjeffrey): Support long-running performance measurements on
+    # ChromeOS: crosbug.com/21881.
     if self.IsChromeOS():
       perf_key = '%s_%s' % (units, description)
       if len(perf_key) > 30:
@@ -149,7 +271,19 @@ class BasePerfTest(pyauto.PyUITest):
                                       self._PERF_OUTPUT_MARKER_POST)
       sys.stdout.flush()
     else:
-      pyauto_utils.PrintPerfResult(graph_name, description, value, units)
+      if units_x:
+        # TODO(dennisjeffrey): Once changes to the Chrome graphing
+        # infrastructure are committed to support graphs for long-running perf
+        # tests (crosbug.com/21881), revise the output format in the following
+        # line if necessary.
+        pyauto_utils.PrintPerfResult(graph_name, description, value,
+                                     units + ' ' + units_x)
+      else:
+        pyauto_utils.PrintPerfResult(graph_name, description, value, units)
+
+      if self._local_perf_dir:
+        self._OutputDataForStandaloneGraphing(
+            graph_name, description, value, units, units_x)
 
   def _PrintSummaryResults(self, description, values, units,
                            graph_name='Default-Graph'):
@@ -1059,6 +1193,9 @@ class MemoryBloatTest(BasePerfTest):
     self._snapshot_results.append(snapshot[0])
     return elapsed_time
 
+  # TODO(dennisjeffrey): Remove this test once pyauto test
+  # perf_endure.ChromeEndureGmailTest.testGmailComposeDiscard starts running
+  # continuously.
   def GmailBloat(self):
     """Interact with Gmail while periodically taking v8 heap snapshots.
 
