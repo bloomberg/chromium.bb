@@ -19,6 +19,7 @@
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource_tracker.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
@@ -61,7 +62,7 @@ class FileChooser : public Resource,
                const char* suggested_file_name,
                const PP_CompletionCallback& callback);
 
-  PP_CompletionCallback current_show_callback_;
+  scoped_refptr<TrackedCallback> current_show_callback_;
 
   // All files returned by the current show callback that haven't yet been
   // given to the plugin. The plugin will repeatedly call us to get the next
@@ -72,21 +73,10 @@ class FileChooser : public Resource,
   DISALLOW_COPY_AND_ASSIGN(FileChooser);
 };
 
-FileChooser::FileChooser(const HostResource& resource)
-    : Resource(resource),
-      current_show_callback_(PP_MakeCompletionCallback(NULL, NULL)) {
+FileChooser::FileChooser(const HostResource& resource) : Resource(resource) {
 }
 
 FileChooser::~FileChooser() {
-  // Always need to fire completion callbacks to prevent a leak in the plugin.
-  if (current_show_callback_.func) {
-    // TODO(brettw) the callbacks at this level should be refactored with a
-    // more automatic tracking system like we have in the renderer.
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        current_show_callback_.func, current_show_callback_.user_data,
-        static_cast<int32_t>(PP_ERROR_ABORTED)));
-  }
-
   // Any existing files we haven't transferred ownership to the plugin need
   // to be freed.
   ResourceTracker* tracker = PpapiGlobals::Get()->GetResourceTracker();
@@ -118,10 +108,10 @@ int32_t FileChooser::Show(bool require_user_gesture,
   if (!callback.func)
     return PP_ERROR_BLOCKS_MAIN_THREAD;
 
-  if (current_show_callback_.func)
+  if (TrackedCallback::IsPending(current_show_callback_))
     return PP_ERROR_INPROGRESS;  // Can't show more than once.
 
-  current_show_callback_ = callback;
+  current_show_callback_ = new TrackedCallback(this, callback);
   PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBFileChooser_Show(
           API_ID_PPB_FILE_CHOOSER,
@@ -154,7 +144,7 @@ void FileChooser::ChooseComplete(
     file_queue_.push(PPB_FileRef_Proxy::DeserializeFileRef(chosen_files[i]));
 
   // Notify the plugin of the new data.
-  PP_RunAndClearCompletionCallback(&current_show_callback_, result_code);
+  TrackedCallback::ClearAndRun(&current_show_callback_, result_code);
   // DANGER: May delete |this|!
 }
 

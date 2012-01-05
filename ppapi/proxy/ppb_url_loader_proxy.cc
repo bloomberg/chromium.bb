@@ -24,6 +24,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_url_response_info_proxy.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_url_loader_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
@@ -136,7 +137,7 @@ class URLLoader : public Resource, public PPB_URLLoader_API {
 
   // Current completion callback for the current phase of loading. We have only
   // one thing (open, follow redirect, read, etc.) outstanding at once.
-  PP_CompletionCallback current_callback_;
+  scoped_refptr<TrackedCallback> current_callback_;
 
   // When an asynchronous read is pending, this will contain the buffer to put
   // the data. The current_callback_ will identify the read callback.
@@ -161,22 +162,12 @@ URLLoader::URLLoader(const HostResource& resource)
       total_bytes_to_be_sent_(-1),
       bytes_received_(-1),
       total_bytes_to_be_received_(-1),
-      current_callback_(PP_MakeCompletionCallback(NULL, NULL)),
       current_read_buffer_(NULL),
       current_read_buffer_size_(0),
       response_info_(0) {
 }
 
 URLLoader::~URLLoader() {
-  // Always need to fire completion callbacks to prevent a leak in the plugin.
-  if (current_callback_.func) {
-    // TODO(brettw) the callbacks at this level should be refactored with a
-    // more automatic tracking system like we have in the renderer.
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        current_callback_.func, current_callback_.user_data,
-        static_cast<int32_t>(PP_ERROR_ABORTED)));
-  }
-
   if (response_info_)
     PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(response_info_);
 }
@@ -191,12 +182,12 @@ int32_t URLLoader::Open(PP_Resource request_id,
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;
 
-  if (current_callback_.func)
+  if (TrackedCallback::IsPending(current_callback_))
     return PP_ERROR_INPROGRESS;
 
   if (!callback.func)
     return PP_ERROR_BLOCKS_MAIN_THREAD;
-  current_callback_ = callback;
+  current_callback_ = new TrackedCallback(this, callback);
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBURLLoader_Open(
       API_ID_PPB_URL_LOADER, host_resource(), enter.object()->GetData()));
@@ -204,12 +195,12 @@ int32_t URLLoader::Open(PP_Resource request_id,
 }
 
 int32_t URLLoader::FollowRedirect(PP_CompletionCallback callback) {
-  if (current_callback_.func)
+  if (TrackedCallback::IsPending(current_callback_))
     return PP_ERROR_INPROGRESS;
 
   if (!callback.func)
     return PP_ERROR_BLOCKS_MAIN_THREAD;
-  current_callback_ = callback;
+  current_callback_ = new TrackedCallback(this, callback);
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBURLLoader_FollowRedirect(
       API_ID_PPB_URL_LOADER, host_resource()));
@@ -263,7 +254,7 @@ int32_t URLLoader::ReadResponseBody(void* buffer,
                                     PP_CompletionCallback callback) {
   if (!buffer || bytes_to_read <= 0)
     return PP_ERROR_BADARGUMENT;  // Must specify an output buffer.
-  if (current_callback_.func)
+  if (TrackedCallback::IsPending(current_callback_))
     return PP_ERROR_INPROGRESS;  // Can only have one request pending.
 
   // Currently we don't support sync calls to read. We'll need to revisit
@@ -278,7 +269,7 @@ int32_t URLLoader::ReadResponseBody(void* buffer,
     return bytes_to_read;
   }
 
-  current_callback_ = callback;
+  current_callback_ = new TrackedCallback(this, callback);
   current_read_buffer_ = buffer;
   current_read_buffer_size_ = bytes_to_read;
 
@@ -288,12 +279,12 @@ int32_t URLLoader::ReadResponseBody(void* buffer,
 }
 
 int32_t URLLoader::FinishStreamingToFile(PP_CompletionCallback callback) {
-  if (current_callback_.func)
+  if (TrackedCallback::IsPending(current_callback_))
     return PP_ERROR_INPROGRESS;
 
   if (!callback.func)
     return PP_ERROR_BLOCKS_MAIN_THREAD;
-  current_callback_ = callback;
+  current_callback_ = new TrackedCallback(this, callback);
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBURLLoader_FinishStreamingToFile(
       API_ID_PPB_URL_LOADER, host_resource()));
@@ -326,7 +317,7 @@ void URLLoader::UpdateProgress(
 }
 
 void URLLoader::ReadResponseBodyAck(int32 result, const std::string& data) {
-  if (!current_callback_.func || !current_read_buffer_) {
+  if (!TrackedCallback::IsPending(current_callback_) || !current_read_buffer_) {
     NOTREACHED();
     return;
   }
@@ -345,13 +336,11 @@ void URLLoader::ReadResponseBodyAck(int32 result, const std::string& data) {
     result = bytes_to_return;
   }
 
-  // The plugin should be able to make a new request from their callback, so
-  // we have to clear our copy first.
-  PP_RunAndClearCompletionCallback(&current_callback_, result);
+  TrackedCallback::ClearAndRun(&current_callback_, result);
 }
 
 void URLLoader::CallbackComplete(int32_t result) {
-  PP_RunAndClearCompletionCallback(&current_callback_, result);
+  TrackedCallback::ClearAndRun(&current_callback_, result);
 }
 
 void URLLoader::PopBuffer(void* output_buffer, int32_t output_size) {

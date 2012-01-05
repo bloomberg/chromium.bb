@@ -14,6 +14,7 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_system_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
@@ -56,7 +57,7 @@ class FileSystem : public Resource, public PPB_FileSystem_API {
  private:
   PP_FileSystemType type_;
   bool called_open_;
-  PP_CompletionCallback current_open_callback_;
+  scoped_refptr<TrackedCallback> current_open_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystem);
 };
@@ -65,22 +66,10 @@ FileSystem::FileSystem(const HostResource& host_resource,
                        PP_FileSystemType type)
     : Resource(host_resource),
       type_(type),
-      called_open_(false),
-      current_open_callback_(PP_MakeCompletionCallback(NULL, NULL)) {
+      called_open_(false) {
 }
 
-// TODO(brettw) this logic is duplicated with some other resource objects
-// like FileChooser. It would be nice to look at all of the different resources
-// that need callback tracking and design something that they can all re-use.
 FileSystem::~FileSystem() {
-  // Ensure the callback is always fired.
-  if (current_open_callback_.func) {
-    // TODO(brettw) the callbacks at this level should be refactored with a
-    // more automatic tracking system like we have in the renderer.
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        current_open_callback_.func, current_open_callback_.user_data,
-        static_cast<int32_t>(PP_ERROR_ABORTED)));
-  }
 }
 
 PPB_FileSystem_API* FileSystem::AsPPB_FileSystem_API() {
@@ -89,12 +78,12 @@ PPB_FileSystem_API* FileSystem::AsPPB_FileSystem_API() {
 
 int32_t FileSystem::Open(int64_t expected_size,
                          PP_CompletionCallback callback) {
-  if (current_open_callback_.func)
+  if (TrackedCallback::IsPending(current_open_callback_))
     return PP_ERROR_INPROGRESS;
   if (called_open_)
     return PP_ERROR_FAILED;
 
-  current_open_callback_ = callback;
+  current_open_callback_ = new TrackedCallback(this, callback);
   called_open_ = true;
   PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBFileSystem_Open(
@@ -107,7 +96,7 @@ PP_FileSystemType FileSystem::GetType() {
 }
 
 void FileSystem::OpenComplete(int32_t result) {
-  PP_RunAndClearCompletionCallback(&current_open_callback_, result);
+  TrackedCallback::ClearAndRun(&current_open_callback_, result);
 }
 
 PPB_FileSystem_Proxy::PPB_FileSystem_Proxy(Dispatcher* dispatcher)

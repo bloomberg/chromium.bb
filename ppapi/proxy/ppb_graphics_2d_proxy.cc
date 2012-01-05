@@ -15,6 +15,7 @@
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "ppapi/thunk/thunk.h"
@@ -58,8 +59,8 @@ class Graphics2D : public Resource, public thunk::PPB_Graphics2D_API {
   PP_Bool is_always_opaque_;
 
   // In the plugin, this is the current callback set for Flushes. When the
-  // callback function pointer is non-NULL, we're waiting for a flush ACK.
-  PP_CompletionCallback current_flush_callback_;
+  // pointer is non-NULL, we're waiting for a flush ACK.
+  scoped_refptr<TrackedCallback> current_flush_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Graphics2D);
 };
@@ -69,8 +70,7 @@ Graphics2D::Graphics2D(const HostResource& host_resource,
                        PP_Bool is_always_opaque)
     : Resource(host_resource),
       size_(size),
-      is_always_opaque_(is_always_opaque),
-      current_flush_callback_(PP_BlockUntilComplete()) {
+      is_always_opaque_(is_always_opaque) {
 }
 
 Graphics2D::~Graphics2D() {
@@ -126,9 +126,9 @@ int32_t Graphics2D::Flush(PP_CompletionCallback callback) {
   if (!callback.func)
     return PP_ERROR_BLOCKS_MAIN_THREAD;
 
-  if (current_flush_callback_.func)
+  if (TrackedCallback::IsPending(current_flush_callback_))
     return PP_ERROR_INPROGRESS;  // Can't have >1 flush pending.
-  current_flush_callback_ = callback;
+  current_flush_callback_ = new TrackedCallback(this, callback);
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBGraphics2D_Flush(kApiID,
                                                              host_resource()));
@@ -136,7 +136,7 @@ int32_t Graphics2D::Flush(PP_CompletionCallback callback) {
 }
 
 void Graphics2D::FlushACK(int32_t result_code) {
-  PP_RunAndClearCompletionCallback(&current_flush_callback_, result_code);
+  TrackedCallback::ClearAndRun(&current_flush_callback_, result_code);
 }
 
 PPB_Graphics2D_Proxy::PPB_Graphics2D_Proxy(Dispatcher* dispatcher)

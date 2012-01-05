@@ -8,6 +8,7 @@
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_flash_menu_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
@@ -35,7 +36,7 @@ class FlashMenu : public PPB_Flash_Menu_API, public Resource {
   void ShowACK(int32_t selected_id, int32_t result);
 
  private:
-  PP_CompletionCallback callback_;
+  scoped_refptr<TrackedCallback> callback_;
   int32_t* selected_id_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(FlashMenu);
@@ -43,7 +44,6 @@ class FlashMenu : public PPB_Flash_Menu_API, public Resource {
 
 FlashMenu::FlashMenu(const HostResource& resource)
     : Resource(resource),
-      callback_(PP_BlockUntilComplete()),
       selected_id_ptr_(NULL) {
 }
 
@@ -57,11 +57,11 @@ PPB_Flash_Menu_API* FlashMenu::AsPPB_Flash_Menu_API() {
 int32_t FlashMenu::Show(const struct PP_Point* location,
                         int32_t* selected_id,
                         struct PP_CompletionCallback callback) {
-  if (callback_.func)
+  if (TrackedCallback::IsPending(callback_))
     return PP_ERROR_INPROGRESS;
 
   selected_id_ptr_ = selected_id;
-  callback_ = callback;
+  callback_ = new TrackedCallback(this, callback);
 
   PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBFlashMenu_Show(
@@ -71,7 +71,7 @@ int32_t FlashMenu::Show(const struct PP_Point* location,
 
 void FlashMenu::ShowACK(int32_t selected_id, int32_t result) {
   *selected_id_ptr_ = selected_id;
-  PP_RunAndClearCompletionCallback(&callback_, result);
+  TrackedCallback::ClearAndRun(&callback_, result);
 }
 
 PPB_Flash_Menu_Proxy::PPB_Flash_Menu_Proxy(Dispatcher* dispatcher)

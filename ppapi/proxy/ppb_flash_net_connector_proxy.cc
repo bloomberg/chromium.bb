@@ -13,6 +13,7 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_flash_net_connector_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
@@ -33,10 +34,6 @@ std::string NetAddressToString(const PP_NetAddress_Private& addr) {
 void StringToNetAddress(const std::string& str, PP_NetAddress_Private* addr) {
   addr->size = std::min(str.size(), sizeof(addr->data));
   memcpy(addr->data, str.data(), addr->size);
-}
-
-void AbortCallback(PP_CompletionCallback callback) {
-  PP_RunCompletionCallback(&callback, PP_ERROR_ABORTED);
 }
 
 class FlashNetConnector : public PPB_Flash_NetConnector_API,
@@ -75,7 +72,7 @@ class FlashNetConnector : public PPB_Flash_NetConnector_API,
                              PP_NetAddress_Private* remote_addr_out,
                              PP_CompletionCallback callback);
 
-  PP_CompletionCallback callback_;
+  scoped_refptr<TrackedCallback> callback_;
   PP_FileHandle* socket_out_;
   PP_NetAddress_Private* local_addr_out_;
   PP_NetAddress_Private* remote_addr_out_;
@@ -83,17 +80,12 @@ class FlashNetConnector : public PPB_Flash_NetConnector_API,
 
 FlashNetConnector::FlashNetConnector(const HostResource& resource)
     : Resource(resource),
-      callback_(PP_BlockUntilComplete()),
       socket_out_(NULL),
       local_addr_out_(NULL),
       remote_addr_out_(NULL) {
 }
 
 FlashNetConnector::~FlashNetConnector() {
-  if (callback_.func) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&AbortCallback, callback_));
-  }
 }
 
 PPB_Flash_NetConnector_API* FlashNetConnector::AsPPB_Flash_NetConnector_API() {
@@ -131,7 +123,7 @@ void FlashNetConnector::ConnectComplete(
     base::PlatformFile file,
     const std::string& local_addr_as_string,
     const std::string& remote_addr_as_string) {
-  if (!callback_.func) {
+  if (TrackedCallback::IsPending(callback_)) {
     base::ClosePlatformFile(file);
     return;
   }
@@ -140,7 +132,7 @@ void FlashNetConnector::ConnectComplete(
   StringToNetAddress(local_addr_as_string, local_addr_out_);
   StringToNetAddress(remote_addr_as_string, remote_addr_out_);
 
-  PP_RunAndClearCompletionCallback(&callback_, result);
+  TrackedCallback::ClearAndRun(&callback_, result);
 }
 
 int32_t FlashNetConnector::ConnectWithMessage(
@@ -150,13 +142,13 @@ int32_t FlashNetConnector::ConnectWithMessage(
     PP_NetAddress_Private* remote_addr_out,
     PP_CompletionCallback callback) {
   scoped_ptr<IPC::Message> msg_deletor(msg);
-  if (callback_.func != NULL)
+  if (TrackedCallback::IsPending(callback_))
     return PP_ERROR_INPROGRESS;  // Can only have one pending request.
 
   // Send the request, it will call us back via ConnectACK.
   PluginDispatcher::GetForResource(this)->Send(msg_deletor.release());
 
-  callback_ = callback;
+  callback_ = new TrackedCallback(this, callback);
   socket_out_ = socket_out;
   local_addr_out_ = local_addr_out;
   remote_addr_out_ = remote_addr_out;

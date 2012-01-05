@@ -11,6 +11,7 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/platform_file.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_broker_api.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/resource_creation_api.h"
@@ -41,7 +42,7 @@ class Broker : public PPB_Broker_API, public Resource {
 
  private:
   bool called_connect_;
-  PP_CompletionCallback current_connect_callback_;
+  scoped_refptr<TrackedCallback> current_connect_callback_;
 
   // The plugin module owns the handle.
   // The host side transfers ownership of the handle to the plugin side when it
@@ -52,22 +53,13 @@ class Broker : public PPB_Broker_API, public Resource {
   DISALLOW_COPY_AND_ASSIGN(Broker);
 };
 
-Broker::Broker(const HostResource& resource) : Resource(resource),
+Broker::Broker(const HostResource& resource)
+    : Resource(resource),
       called_connect_(false),
-      current_connect_callback_(PP_MakeCompletionCallback(NULL, NULL)),
       socket_handle_(base::kInvalidPlatformFileValue) {
 }
 
 Broker::~Broker() {
-  // Ensure the callback is always fired.
-  if (current_connect_callback_.func) {
-    // TODO(brettw) the callbacks at this level should be refactored with a
-    // more automatic tracking system like we have in the renderer.
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        current_connect_callback_.func, current_connect_callback_.user_data,
-        static_cast<int32_t>(PP_ERROR_ABORTED)));
-  }
-
   socket_handle_ = base::kInvalidPlatformFileValue;
 }
 
@@ -81,12 +73,12 @@ int32_t Broker::Connect(PP_CompletionCallback connect_callback) {
     return PP_ERROR_BLOCKS_MAIN_THREAD;
   }
 
-  if (current_connect_callback_.func)
+  if (TrackedCallback::IsPending(current_connect_callback_))
     return PP_ERROR_INPROGRESS;
   else if (called_connect_)
     return PP_ERROR_FAILED;
 
-  current_connect_callback_ = connect_callback;
+  current_connect_callback_ = new TrackedCallback(this, connect_callback);
   called_connect_ = true;
 
   bool success = PluginDispatcher::GetForResource(this)->Send(
@@ -115,12 +107,12 @@ void Broker::ConnectComplete(IPC::PlatformFileForTransit socket_handle,
         IPC::PlatformFileForTransitToPlatformFile(socket_handle));
   }
 
-  if (!current_connect_callback_.func) {
+  if (!TrackedCallback::IsPending(current_connect_callback_)) {
     // The handle might leak if the plugin never calls GetHandle().
     return;
   }
 
-  PP_RunAndClearCompletionCallback(&current_connect_callback_, result);
+  TrackedCallback::ClearAndRun(&current_connect_callback_, result);
 }
 
 PPB_Broker_Proxy::PPB_Broker_Proxy(Dispatcher* dispatcher)
