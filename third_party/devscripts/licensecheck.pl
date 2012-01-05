@@ -533,6 +533,10 @@ sub parselicense($) {
         $license = "MIT/X11 (BSD like) $license";
     }
 
+    if ($licensetext =~ /As a special exception, you may create a larger work that contains part or all of the Bison parser skeleton and distribute that work under terms of your choice/) {
+        $license = $license . "with Bison parser exception";
+    }
+
     $license = "UNKNOWN" if (!length($license));
 
     return $license;

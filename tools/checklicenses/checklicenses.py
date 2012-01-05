@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -52,6 +52,8 @@ WHITELISTED_LICENSES = [
     'BSL (v1.0)',
     # TODO(phajdan.jr): Make licensecheck not print the comma after 3.1.
     'BSL (v1.0) GPL (v3.1,)',
+    'GPL (v3 or later) with Bison parser exception',
+    'GPL with Bison parser exception',
     'ISC',
     'LGPL',
     'LGPL (v2)',
@@ -186,11 +188,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
-    'third_party/angle/src/compiler': [
-        # http://crbug.com/105232
-        'GPL',
-        'GPL (v3 or later)',
-    ],
     'third_party/ashmem/ashmem.h': [  # http://crbug.com/98116
         'UNKNOWN',
     ],
