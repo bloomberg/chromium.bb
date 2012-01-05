@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2011 The Chromium Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import os
 
@@ -29,79 +29,6 @@ if env.Bit('windows'):
     env.Append(
         CPPDEFINES = ['WIN32', '_WINDOWS'],
     )
-
-
-# The PPAPI RPCs are specified abstractly via .srpc files.
-# Once a .srpc file is added to the TrustedSrpc rules below, the low-level
-# server/client proxies and stubs can be generated automatically using
-#   scons --mode=opt-linux/mac/win srpcgen
-#   scons --mode=dbg-linux/mac/win sprcgen
-# The .cc files are written to ./ and .h files - to ./trusted/srpcgen/.
-# The generated files must be committed when changes are made to .srpc files.
-
-env.TrustedSrpc(is_client=True,
-                srpc_files=['completion_callback.srpc',
-                            'ppp.srpc',
-                            'ppp_audio.srpc',
-                            'ppp_find.srpc',
-                            'ppp_input_event.srpc',
-                            'ppp_instance.srpc',
-                            'ppp_messaging.srpc',
-                            'ppp_mouse_lock.srpc',
-                            'ppp_printing.srpc',
-                            'ppp_scrollbar.srpc',
-                            'ppp_selection.srpc',
-                            'ppp_widget.srpc',
-                            'ppp_zoom.srpc',
-                           ],
-                name='PppRpcs',
-                h_file='ppp_rpc.h',
-                cc_file='ppp_rpc_client.cc',
-                guard='GEN_PPAPI_PROXY_PPP_RPC_H_')
-
-env.TrustedSrpc(is_client=False,
-                srpc_files=['nacl_file.srpc',
-                            'ppb.srpc',
-                            'ppb_audio.srpc',
-                            'ppb_audio_config.srpc',
-                            'ppb_core.srpc',
-                            'ppb_cursor_control.srpc',
-                            'ppb_file_io.srpc',
-                            'ppb_file_ref.srpc',
-                            'ppb_file_system.srpc',
-                            'ppb_find.srpc',
-                            'ppb_font.srpc',
-                            'ppb_fullscreen.srpc',
-                            'ppb_graphics_2d.srpc',
-                            'ppb_graphics_3d.srpc',
-                            'ppb_image_data.srpc',
-                            'ppb_input_event.srpc',
-                            'ppb_instance.srpc',
-                            'ppb_messaging.srpc',
-                            'ppb_mouse_lock.srpc',
-                            'ppb_pdf.srpc',
-                            'ppb_scrollbar.srpc',
-                            'ppb_tcp_socket_private.srpc',
-                            'ppb_testing.srpc',
-                            'ppb_udp_socket_private.srpc',
-                            'ppb_url_loader.srpc',
-                            'ppb_url_request_info.srpc',
-                            'ppb_url_response_info.srpc',
-                            'ppb_widget.srpc',
-                            'ppb_zoom.srpc',
-                           ],
-                name='PpbRpcs',
-                h_file='ppb_rpc.h',
-                cc_file='ppb_rpc_server.cc',
-                guard='GEN_PPAPI_PROXY_PPB_RPC_H_')
-
-env.TrustedSrpc(is_client=False,
-                srpc_files=['upcall.srpc'],
-                name='PpbUpcalls',
-                h_file='upcall.h',
-                cc_file='upcall_server.cc',
-                guard='GEN_PPAPI_PROXY_UPCALL_H_')
-
 
 common_obj = env.DualObject(['utility.cc'])
 
@@ -158,22 +85,25 @@ env.DualLibrary('ppapi_browser',
                  'view_data.cc',
                  common_obj,])
 
-# Do a recursive diff of all files found in the first source directory against
-# all the checked in versions of the files
+
+# The PPAPI RPCs are specified abstractly via .srpc files.
+# Add new .srpc files to the appropriate list in run_srpcgen.py
+# and then run that script.
+# The .cc files are written to ./ and .h files to ./{un,}trusted/srpcgen/.
+# The generated files must be committed when changes are made to .srpc files.
+#
+# run_srpcgen.py --diff_mode verifies that these files are not out of date.
+
 node = env.CommandTest(
   'srpc_diff.out',
-  command=['${PYTHON}', '${SOURCE_ROOT}/native_client/tools/diff.py', '-arv',
-           '${TARGET_ROOT}/srpcgen/src',
-           '${SOURCE_ROOT}/ppapi/native_client/src'])
+  command=['${PYTHON}',
+           os.path.join('${SOURCE_ROOT}', 'ppapi', 'native_client',
+                        'src', 'shared', 'ppapi_proxy', 'run_srpcgen.py'),
+           '--diff_mode'])
 
-# Add a dependency on the 'srpcdif' alias for the previous command
-env.Depends(node, Alias('srpcdif'))
+env.Alias('srpcdif', node)
 
 # Create an alias for the command and add it to the standard small test.
 # This test verifies that the checked in SRPC generated files are
-# actually up to date.  We ignore ARM which generates false negatives.
-# This is okay, since all try/builds should reproduce the same result
-# this is a check on what is in source control, and generated files are
-# platform independent.
-if not env.Bit('target_arm'):
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpcgen_test')
+# actually up to date.
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpcgen_test')

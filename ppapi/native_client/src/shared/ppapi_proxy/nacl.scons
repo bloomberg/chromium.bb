@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,77 +17,6 @@ env.Append(CPPPATH=
 env.Append(CPPDEFINES=['XP_UNIX'])
 env.FilterOut(CCFLAGS=['-Wswitch-enum'])
 env.Append(CCFLAGS=['-Wno-long-long'])
-
-# The PPAPI RPCs are specified abstractly via .srpc files.
-# Once a .srpc file is added to the UntrustedSrpc rules below, the low-level
-# server/client proxies and stubs can be generated automatically using
-#   scons srpcgen
-# The .cc files are written to ./ and .h files - to ./untrusted/srpcgen/.
-# The generated files must be committed when changes are made to .srpc files.
-
-env.UntrustedSrpc(is_client=False,
-                  srpc_files=['completion_callback.srpc',
-                              'ppp.srpc',
-                              'ppp_audio.srpc',
-                              'ppp_find.srpc',
-                              'ppp_input_event.srpc',
-                              'ppp_instance.srpc',
-                              'ppp_messaging.srpc',
-                              'ppp_mouse_lock.srpc',
-                              'ppp_printing.srpc',
-                              'ppp_scrollbar.srpc',
-                              'ppp_selection.srpc',
-                              'ppp_widget.srpc',
-                              'ppp_zoom.srpc',
-                             ],
-                  name='PppRpcs',
-                  h_file='ppp_rpc.h',
-                  cc_file='ppp_rpc_server.cc',
-                  guard='GEN_PPAPI_PROXY_PPP_RPC_H_')
-
-env.UntrustedSrpc(is_client=True,
-                  srpc_files=['nacl_file.srpc',
-                              'ppb.srpc',
-                              'ppb_audio.srpc',
-                              'ppb_audio_config.srpc',
-                              'ppb_core.srpc',
-                              'ppb_cursor_control.srpc',
-                              'ppb_file_io.srpc',
-                              'ppb_file_ref.srpc',
-                              'ppb_file_system.srpc',
-                              'ppb_find.srpc',
-                              'ppb_font.srpc',
-                              'ppb_fullscreen.srpc',
-                              'ppb_graphics_2d.srpc',
-                              'ppb_graphics_3d.srpc',
-                              'ppb_image_data.srpc',
-                              'ppb_input_event.srpc',
-                              'ppb_instance.srpc',
-                              'ppb_messaging.srpc',
-                              'ppb_mouse_lock.srpc',
-                              'ppb_pdf.srpc',
-                              'ppb_scrollbar.srpc',
-                              'ppb_tcp_socket_private.srpc',
-                              'ppb_testing.srpc',
-                              'ppb_udp_socket_private.srpc',
-                              'ppb_url_loader.srpc',
-                              'ppb_url_request_info.srpc',
-                              'ppb_url_response_info.srpc',
-                              'ppb_widget.srpc',
-                              'ppb_zoom.srpc',
-                             ],
-                  name='PpbRpcs',
-                  h_file='ppb_rpc.h',
-                  cc_file='ppb_rpc_client.cc',
-                  guard='GEN_PPAPI_PROXY_PPB_RPC_H_',
-                  thread_check=True)
-
-env.UntrustedSrpc(is_client=True,
-                  srpc_files=['upcall.srpc'],
-                  name='PpbUpcalls',
-                  h_file='upcall.h',
-                  cc_file='upcall_client.cc',
-                  guard='GEN_PPAPI_PROXY_UPCALL_H_')
 
 command_buffer_common_srcs = [
     'command_buffer/common/cmd_buffer_common.cc',
