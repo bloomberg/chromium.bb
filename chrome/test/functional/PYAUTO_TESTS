@@ -286,8 +286,6 @@
       # crosbug.com/19556
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
       '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
-      # crosbug.com/24169
-      '-chromeos_volume.ChromeosVolume.testDefaultVolume',
       # FileBrowser test API as broken - crosbug.com/24257
       '-chromeos_file_browser.ChromeosFileBrowserTest.testCopyFolderInDialog',
       '-chromeos_file_browser.ChromeosFileBrowserTest.testCopyFolderInFullPage',
