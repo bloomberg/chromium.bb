@@ -4596,7 +4596,7 @@ void GLES2DecoderImpl::DoUniformMatrix2fv(
       location, "glUniformMatrix2fv", &type, &count)) {
     return;
   }
-  glUniformMatrix2fv (location, count, transpose, value);
+  glUniformMatrix2fv(location, count, transpose, value);
 }
 
 void GLES2DecoderImpl::DoUniformMatrix3fv(
@@ -4606,7 +4606,7 @@ void GLES2DecoderImpl::DoUniformMatrix3fv(
       location, "glUniformMatrix3fv", &type, &count)) {
     return;
   }
-  glUniformMatrix3fv (location, count, transpose, value);
+  glUniformMatrix3fv(location, count, transpose, value);
 }
 
 void GLES2DecoderImpl::DoUniformMatrix4fv(
@@ -4616,7 +4616,7 @@ void GLES2DecoderImpl::DoUniformMatrix4fv(
       location, "glUniformMatrix4fv", &type, &count)) {
     return;
   }
-  glUniformMatrix4fv (location, count, transpose, value);
+  glUniformMatrix4fv(location, count, transpose, value);
 }
 
 void GLES2DecoderImpl::DoUseProgram(GLuint program) {
@@ -6142,7 +6142,6 @@ error::Error GLES2DecoderImpl::HandleGetString(
         } else {
           str = feature_info_->extensions().c_str();
         }
-
       }
       break;
     default:
@@ -7686,6 +7685,8 @@ error::Error GLES2DecoderImpl::HandleCreateStreamTextureCHROMIUM(
   Result* result = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result));
 
+  if (!result)
+    return error::kOutOfBounds;
   *result = GL_ZERO;
   TextureManager::TextureInfo* info =
       texture_manager()->GetTextureInfo(client_id);
@@ -7989,7 +7990,6 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
     }
     info->SetImmutable(true);
   }
-
 }
 
 // Include the auto-generated part of this file. We split this because it means
