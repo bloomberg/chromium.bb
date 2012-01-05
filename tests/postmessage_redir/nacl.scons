@@ -26,12 +26,18 @@ for (ostr, thr, delay_us, envar) in [
   ('stdout', 'bg', '0', 'NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage'),
   ('stderr', 'bg', '0', 'NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage'),
   #  1 millisecond
+  ('stdout', 'fg', '1000', 'NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage'),
+  ('stderr', 'fg', '1000', 'NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage'),
   ('stdout', 'bg', '1000', 'NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage'),
   ('stderr', 'bg', '1000', 'NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage'),
   #  1 second
+  ('stdout', 'fg', '1000000', 'NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage'),
+  ('stderr', 'fg', '1000000', 'NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage'),
   ('stdout', 'bg', '1000000', 'NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage'),
   ('stderr', 'bg', '1000000', 'NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage'),
   #  5 seconds -- disabled so we don't make the bots slow...
+  # ('stdout', 'fg', '5000000', 'NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage'),
+  # ('stderr', 'fg', '5000000', 'NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage'),
   # ('stdout', 'bg', '5000000', 'NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage'),
   # ('stderr', 'bg', '5000000', 'NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage'),
   ]:

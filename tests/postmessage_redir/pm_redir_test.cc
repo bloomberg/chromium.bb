@@ -182,18 +182,13 @@ class MyModule : public pp::Module {
 };
 
 pp::Instance *MyModule::CreateInstance(PP_Instance pp_instance) {
-  MyInstance *instance = new MyInstance(pp_instance);
-  fprintf(stderr, "CreateInstance: returning instance %p\n",
-          reinterpret_cast<void *>(instance));
-
-  return instance;
+  return new MyInstance(pp_instance);
 }
 
 namespace pp {
 
 // Factory function for your specialization of the Module object.
 Module* CreateModule() {
-  fprintf(stderr, "CreateModule invoked\n"); fflush(NULL);
   return new MyModule();
 }
 
