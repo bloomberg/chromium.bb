@@ -4,16 +4,31 @@
 <meta charset="utf-8">
 <title i18n-content="pageTitle"></title>
 
+<link rel="stylesheet" href="chrome://resources/css/chrome_shared2.css">
+<link rel="stylesheet" href="chrome://resources/css/open_sans.css">
 <link rel="stylesheet" href="uber.css">
 
-<script src="chrome://chrome/uber.js"></script>
+<script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/util.js"></script>
+
+<script src="chrome://chrome/uber.js"></script>
 </head>
 
 <body>
 
-<iframe src="chrome://settings-frame/"></iframe>
-<iframe src="chrome://extensions-frame/"></iframe>
+<div id="navigation">
+  <h3>Chrome</h3>
+  <ol>
+    <li class="selected">Preferences</li>
+    <li>Extensions</li>
+  </ol>
+</div>
+
+<!-- The order of these must match the order of their nav controls. -->
+<div class="iframe-container selected">
+  <iframe src="chrome://settings-frame/"></iframe></div>
+<div class="iframe-container">
+  <iframe src="chrome://extensions-frame/"></iframe></div>
 
 </body>
 </html>

@@ -1,10 +1,59 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+body {
+  margin: 0;
+}
+
+#navigation h3 {
+  color: rgb(92, 97, 102);
+  font-size: 18px;
+  font-weight: normal;
+  margin-left: 20px;
+}
+
+#navigation ol {
+  list-style-type: none;
+  padding: 0;
+}
+
+#navigation li {
+  border-left: 6px solid white;
+  color: #999;
+  cursor: pointer;
+  line-height: 17px;
+  margin: 5px 0;
+  padding-left: 14px;
+  text-transform: uppercase;
+}
+
+#navigation li:hover {
+  color: #777;
+}
+
+#navigation li.selected {
+  border-left-color: rgb(78, 87, 100);
+  color: rgb(70, 78, 90);
+}
+
+.iframe-container {
+  background-color: white;
+  bottom: 0;
+  left: 155px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+}
+
+.iframe-container.selected {
+  z-index: 2;
+}
+
 iframe {
-  border: 1px solid red;
-  height: 500px;
-  margin-bottom: 50px;
+  border: none;
+  display: block;
+  height: 100%;
   width: 100%;
 }
