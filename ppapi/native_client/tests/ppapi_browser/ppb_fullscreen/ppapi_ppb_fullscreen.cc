@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_view.h"
 #include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/pp_errors.h"
@@ -217,25 +218,28 @@ const PPP_InputEvent ppp_input_event_interface = {
 // NOTE: The number of DidChangeView calls for <object> might be different.
 PP_Rect g_normal_position = PP_MakeRectFromXYWH(0, 0, 0, 0);
 void DidChangeView(PP_Instance instance,
-                   const struct PP_Rect* position,
-                   const struct PP_Rect* clip) {
+                   PP_Resource view) {
+  struct PP_Rect position;
+  struct PP_Rect clip;
+  CHECK(PPBView()->GetRect(view, &position));
+  CHECK(PPBView()->GetClipRect(view, &clip));
   printf("--- PPP_Instance::DidChangeView: fullscreen_pending=%d "
-         "position={ point=(%d,%d), size=%dx%d } "
-         "clip={ point=(%d,%d), size=%dx%d }\n",
+         "view position={ point=(%d,%d), size=%dx%d } "
+         "view clip={ point=(%d,%d), size=%dx%d }\n",
          g_fullscreen_pending,
-         position->point.x, position->point.y,
-         position->size.width, position->size.height,
-         clip->point.x, clip->point.y,
-         clip->size.width, clip->size.height);
+         position.point.x, position.point.y,
+         position.size.width, position.size.height,
+         clip.point.x, clip.point.y,
+         clip.size.width, clip.size.height);
   // Remember the original position on the first DidChangeView and paint
   // the plugin area.
   if (g_normal_position.size.width == 0 && g_normal_position.size.height == 0) {
-    g_normal_position = PP_MakeRectFromXYWH(position->point.x,
-                                            position->point.y,
-                                            position->size.width,
-                                            position->size.height);
+    g_normal_position = PP_MakeRectFromXYWH(position.point.x,
+                                            position.point.y,
+                                            position.size.width,
+                                            position.size.height);
     CHECK(PPBFullscreen()->GetScreenSize(pp_instance(), &g_screen_size));
-    CHECK(PaintPlugin(position->size, kOpaqueGreen, kNoTest));
+    CHECK(PaintPlugin(position.size, kOpaqueGreen, kNoTest));
   }
 
   const char* test = NULL;
@@ -244,7 +248,7 @@ void DidChangeView(PP_Instance instance,
     test = "TestSetFullscreenTrue";
     pixel_color = kOpaqueYellow;
     g_fullscreen_pending = false;
-    EXPECT(IsSizeEqual(position->size, g_screen_size));
+    EXPECT(IsSizeEqual(position.size, g_screen_size));
     // NOTE: we cannot reliably test for clip size being equal to the screen
     // because it might be affected by JS console, info bars, etc.
   } else if (g_normal_pending &&
@@ -252,13 +256,13 @@ void DidChangeView(PP_Instance instance,
     test = "TestSetFullscreenFalse";
     pixel_color = kSheerBlue;
     g_normal_pending = false;
-    EXPECT(IsRectEqual(*position, g_normal_position));
+    EXPECT(IsRectEqual(position, g_normal_position));
   }
   if (test != NULL) {
     // We should now be able to bind 2D and 3D devices.
     EXPECT(PPBGraphics2D()->IsGraphics2D(g_graphics2d) == PP_TRUE);
     EXPECT(PPBInstance()->BindGraphics(pp_instance(), g_graphics2d) == PP_TRUE);
-    EXPECT(PaintPlugin(position->size, pixel_color, test));
+    EXPECT(PaintPlugin(position.size, pixel_color, test));
   }
 }
 
