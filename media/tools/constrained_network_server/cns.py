@@ -297,8 +297,8 @@ def ParseArgs():
   except ValueError:
     parser.error('Invalid port range specified.')
 
-  # Normalize the path to remove any . or ..
-  options.www_root = os.path.normpath(options.www_root)
+  # Convert the path to an absolute to remove any . or ..
+  options.www_root = os.path.abspath(options.www_root)
 
   return options
 
