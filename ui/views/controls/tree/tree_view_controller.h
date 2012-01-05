@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/views/views_export.h"
 
 namespace ui {
 class TreeModelNode;
@@ -19,7 +20,7 @@ class TreeView;
 // TreeViewController ---------------------------------------------------------
 
 // Controller for the treeview.
-class TreeViewController {
+class VIEWS_EXPORT TreeViewController {
  public:
   // Notification that the selection of the tree view has changed. Use
   // GetSelectedNode to find the current selection.
