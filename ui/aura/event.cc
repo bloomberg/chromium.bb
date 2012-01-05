@@ -254,15 +254,14 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
   DCHECK(native_event()->type == KeyPress ||
          native_event()->type == KeyRelease);
 
-  XKeyEvent *key = &native_event()->xkey;
-
   static const unsigned int kIgnoredModifiers = ControlMask | LockMask |
       Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask;
 
-  // We can't use things like (key.state & ShiftMask), as it may mask out bits
-  // used by X11 internally.
-  key->state &= ~kIgnoredModifiers;
-  uint16 ch = ui::GetCharacterFromXEvent(native_event());
+  XKeyEvent copy = native_event()->xkey;  // bit-wise copy is safe.
+  // We can't use things like (native_event()->xkey.state & ShiftMask), as it
+  // may mask out bits used by X11 internally.
+  copy.state &= ~kIgnoredModifiers;
+  uint16 ch = ui::GetCharacterFromXEvent(reinterpret_cast<XEvent*>(&copy));
   return ch ? ch :
       ui::GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
 #else
