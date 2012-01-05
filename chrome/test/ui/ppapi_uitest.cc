@@ -10,9 +10,11 @@
 #include "content/common/pepper_plugin_registry.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/ui_test.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 #include "webkit/plugins/plugin_switches.h"
@@ -45,9 +47,10 @@ class PPAPITestBase : public UITest {
   }
 
   virtual std::string BuildQuery(const std::string& base,
-                                 const std::string& test_case)=0;
+                                 const std::string& test_case) = 0;
 
-  void RunTest(const std::string& test_case) {
+  // Returns the URL to load for file: tests.
+  GURL GetTestFileUrl(const std::string& test_case) {
     FilePath test_path;
     EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_path));
     test_path = test_path.Append(FILE_PATH_LITERAL("ppapi"));
@@ -57,11 +60,22 @@ class PPAPITestBase : public UITest {
     // Sanity check the file name.
     EXPECT_TRUE(file_util::PathExists(test_path));
 
+    GURL test_url = net::FilePathToFileURL(test_path);
+
     GURL::Replacements replacements;
     std::string query = BuildQuery("", test_case);
     replacements.SetQuery(query.c_str(), url_parse::Component(0, query.size()));
-    GURL test_url = net::FilePathToFileURL(test_path);
-    RunTestURL(test_url.ReplaceComponents(replacements));
+    return test_url.ReplaceComponents(replacements);
+  }
+
+  void RunTest(const std::string& test_case) {
+    scoped_refptr<TabProxy> tab = GetActiveTab();
+    EXPECT_TRUE(tab.get());
+    if (!tab.get())
+      return;
+    GURL url = GetTestFileUrl(test_case);
+    EXPECT_TRUE(tab->NavigateToURLBlockUntilNavigationsComplete(url, 1));
+    RunTestURL(tab, url);
   }
 
   void RunTestViaHTTP(const std::string& test_case) {
@@ -102,7 +116,11 @@ class PPAPITestBase : public UITest {
     net::TestServer test_server(net::TestServer::TYPE_HTTP, web_dir);
     ASSERT_TRUE(test_server.Start());
     std::string query = BuildQuery("files/test_case.html?", test_case);
-    RunTestURL(test_server.GetURL(query));
+
+    scoped_refptr<TabProxy> tab = GetActiveTab();
+    GURL url = test_server.GetURL(query);
+    EXPECT_TRUE(tab->NavigateToURLBlockUntilNavigationsComplete(url, 1));
+    RunTestURL(tab, url);
   }
 
   void RunTestWithWebSocketServer(const std::string& test_case) {
@@ -123,11 +141,11 @@ class PPAPITestBase : public UITest {
     return test_name;
   }
 
- private:
-  void RunTestURL(const GURL& test_url) {
-    scoped_refptr<TabProxy> tab(GetActiveTab());
+ protected:
+  // Runs the test for a tab given the tab that's already navigated to the
+  // given URL.
+  void RunTestURL(scoped_refptr<TabProxy> tab, const GURL& test_url) {
     ASSERT_TRUE(tab.get());
-    ASSERT_TRUE(tab->NavigateToURL(test_url));
 
     // The large timeout was causing the cycle time for the whole test suite
     // to be too long when a tiny bug caused all tests to timeout.
@@ -667,5 +685,62 @@ TEST_PPAPI_IN_PROCESS(Audio_Failures)
 TEST_PPAPI_OUT_OF_PROCESS(Audio_Creation)
 TEST_PPAPI_OUT_OF_PROCESS(Audio_DestroyNoStop)
 TEST_PPAPI_OUT_OF_PROCESS(Audio_Failures)
+
+TEST_PPAPI_IN_PROCESS(View_CreateVisible);
+TEST_PPAPI_OUT_OF_PROCESS(View_CreateVisible);
+TEST_PPAPI_NACL_VIA_HTTP(View_CreateVisible);
+// This test ensures that plugins created in a background tab have their
+// initial visibility set to false. We don't bother testing in-process for this
+// custom test since the out of process code also exercises in-process.
+TEST_F(OutOfProcessPPAPITest, View_CreateInvisible) {
+  // Make a second tab in the foreground.
+  scoped_refptr<TabProxy> tab(GetActiveTab());
+  ASSERT_TRUE(tab.get());
+  scoped_refptr<BrowserProxy> browser(tab->GetParentBrowser());
+  ASSERT_TRUE(browser.get());
+  GURL url = GetTestFileUrl("View_CreatedInvisible");
+  ASSERT_TRUE(browser->AppendBackgroundTab(url));
+
+  // Tab 1 will be the one we appended after the default tab 0.
+  RunTestURL(tab, url);
+}
+// This test messes with tab visibility so is custom.
+TEST_F(OutOfProcessPPAPITest, View_PageHideShow) {
+  GURL url = GetTestFileUrl("View_PageHideShow");
+  scoped_refptr<TabProxy> tab = GetActiveTab();
+  ASSERT_TRUE(tab.get());
+  ASSERT_TRUE(tab->NavigateToURLBlockUntilNavigationsComplete(url, 1));
+
+  // The plugin will be loaded in the foreground tab and will set the
+  // "created" cookie.
+  std::string true_str("TRUE");
+  std::string progress = WaitUntilCookieNonEmpty(tab.get(), url,
+      "TestPageHideShow:Created",
+      TestTimeouts::action_max_timeout_ms());
+  ASSERT_EQ(true_str, progress);
+
+  // Make a new tab to cause the original one to hide, this should trigger the
+  // next phase of the test.
+  scoped_refptr<BrowserProxy> browser(tab->GetParentBrowser());
+  ASSERT_TRUE(browser.get());
+  ASSERT_TRUE(browser->AppendTab(GURL(chrome::kAboutBlankURL)));
+
+  // Wait until the test acks that it got hidden.
+  progress = WaitUntilCookieNonEmpty(tab.get(), url, "TestPageHideShow:Hidden",
+      TestTimeouts::action_max_timeout_ms());
+  ASSERT_EQ(true_str, progress);
+
+  // Switch back to the test tab.
+  ASSERT_TRUE(browser->ActivateTab(0));
+
+  // Wait for the test completion event.
+  RunTestURL(tab, url);
+}
+TEST_PPAPI_IN_PROCESS(View_SizeChange);
+TEST_PPAPI_OUT_OF_PROCESS(View_SizeChange);
+TEST_PPAPI_NACL_VIA_HTTP(View_SizeChange);
+TEST_PPAPI_IN_PROCESS(View_ClipChange);
+TEST_PPAPI_OUT_OF_PROCESS(View_ClipChange);
+TEST_PPAPI_NACL_VIA_HTTP(View_ClipChange);
 
 #endif // ADDRESS_SANITIZER

@@ -28,7 +28,7 @@ class TestFullscreen : public TestCase {
   virtual bool Init();
   virtual void RunTests(const std::string& filter);
   virtual bool HandleInputEvent(const pp::InputEvent& event);
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
+  virtual void DidChangeView(const pp::View& view);
 
  private:
   std::string TestGetScreenSize();

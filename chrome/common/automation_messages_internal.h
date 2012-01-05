@@ -10,12 +10,12 @@
 //       any other purpose in these message types.
 
 // NOTE: All the new IPC messages should go at the end.
-//       The IPC message IDs need to match the reference builds.  Since we now
-//       define the IDs based on __LINE__, to allow these IPC messages to be
-//       used to control an old version of Chrome we need the message IDs to
-//       remain the same.  This means that you should not change the line number
-//       of any of the messages below.
-
+//       The test <--> browser IPC message IDs need to match the reference
+//       builds.  Since we now define the IDs based on __LINE__, to allow these
+//       IPC messages to be used to control an old version of Chrome we need
+//       the message IDs to remain the same.  This means that you should not
+//       change the line number of these types of messages. You can, however,
+//       change the browser <--> renderer messages.
 
 
 
@@ -1496,6 +1496,16 @@ IPC_SYNC_MESSAGE_CONTROL0_2(AutomationMsg_GetTracingOutput,
                             std::string /* trace_chunk */,
                             bool /* success */)
 
+// This message notifies the AutomationProvider to append a new tab to the
+// window with the given handle. The tab will be opened in the background
+// like it was middle-clicked.  The return value contains the index of
+// the new tab, or -1 if the request failed.
+// The second parameter is the url to be loaded in the new tab.
+IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_AppendBackgroundTab,
+                            int,
+                            GURL,
+                            int)
+
 // Browser -> renderer messages.
 
 // Requests a snapshot.
@@ -1520,7 +1530,7 @@ IPC_MESSAGE_ROUTED2(AutomationMsg_WillPerformClientRedirect,
 IPC_MESSAGE_ROUTED1(AutomationMsg_DidCompleteOrCancelClientRedirect,
                     int64 /* frame_id */)
 
-
 // YOUR NEW MESSAGE MIGHT NOT BELONG HERE.
 // This is the section for renderer -> browser automation messages. If it is
-// an automation <-> browser message, put it above this section.
+// an automation <-> browser message, put it above this section. The "no line
+// number change" applies only to the automation <-> browser messages.

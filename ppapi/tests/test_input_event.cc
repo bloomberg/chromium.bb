@@ -26,7 +26,8 @@ pp::Point GetCenter(const pp::Rect& rect) {
       rect.x() + rect.width() / 2,
       rect.y() + rect.height() / 2);
 }
-}
+
+}  // namespace
 
 void TestInputEvent::RunTests(const std::string& filter) {
   RUN_TEST(Events, filter);
@@ -243,9 +244,8 @@ void TestInputEvent::HandleMessage(const pp::Var& message_data) {
   }
 }
 
-void TestInputEvent::DidChangeView(const pp::Rect& position,
-                                   const pp::Rect& clip) {
-  view_rect_ = position;
+void TestInputEvent::DidChangeView(const pp::View& view) {
+  view_rect_ = view.GetRect();
 }
 
 std::string TestInputEvent::TestEvents() {

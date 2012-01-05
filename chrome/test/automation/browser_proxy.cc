@@ -70,6 +70,17 @@ bool BrowserProxy::AppendTab(const GURL& tab_url) {
   return append_tab_response >= 0;
 }
 
+bool BrowserProxy::AppendBackgroundTab(const GURL& tab_url) {
+  if (!is_valid())
+    return false;
+
+  int append_tab_response = -1;
+
+  sender_->Send(new AutomationMsg_AppendBackgroundTab(handle_, tab_url,
+                                                      &append_tab_response));
+  return append_tab_response >= 0;
+}
+
 bool BrowserProxy::GetActiveTabIndex(int* active_tab_index) const {
   if (!is_valid())
     return false;

@@ -87,6 +87,8 @@ class TestingAutomationProvider : public AutomationProvider,
   void CloseBrowserAsync(int browser_handle);
   void ActivateTab(int handle, int at_index, int* status);
   void AppendTab(int handle, const GURL& url, IPC::Message* reply_message);
+  void AppendBackgroundTab(int handle, const GURL& url,
+                           IPC::Message* reply_message);
   void GetActiveTabIndex(int handle, int* active_tab_index);
   void CloseTab(int tab_handle, bool wait_until_closed,
                 IPC::Message* reply_message);

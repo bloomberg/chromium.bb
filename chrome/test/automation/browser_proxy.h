@@ -51,6 +51,9 @@ class BrowserProxy : public AutomationResourceProxy {
   // Returns true if successful.
   bool AppendTab(const GURL& tab_url) WARN_UNUSED_RESULT;
 
+  // Appends a new tab in the background (as if middle-clicking).
+  bool AppendBackgroundTab(const GURL& tab_url) WARN_UNUSED_RESULT;
+
   // Gets the (zero-based) index of the currently active tab. Returns true if
   // successful.
   bool GetActiveTabIndex(int* active_tab_index) const WARN_UNUSED_RESULT;

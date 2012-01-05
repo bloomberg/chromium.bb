@@ -131,8 +131,9 @@ std::string TestFlashFullscreen::TestNormalToFullscreenToNormal() {
 // Transition to fullscreen is asynchornous ending at DidChangeView.
 // Transition to normal is synchronous in-process and asynchronous
 // out-of-process ending at DidChangeView.
-void TestFlashFullscreen::DidChangeView(const pp::Rect& position,
-                                   const pp::Rect& clip) {
+void TestFlashFullscreen::DidChangeView(const pp::View& view) {
+  pp::Rect position = view.GetRect();
+  pp::Rect clip = view.GetClipRect();
   if (fullscreen_pending_ && IsFullscreenView(position, clip, screen_size_)) {
     fullscreen_pending_ = false;
     pp::Module::Get()->core()->CallOnMainThread(0, fullscreen_callback_);

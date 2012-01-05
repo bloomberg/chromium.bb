@@ -11,6 +11,7 @@
 
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/view.h"
 #include "ppapi/tests/test_case.h"
 
 TestCaseFactory* TestCaseFactory::head_ = NULL;
@@ -83,8 +84,7 @@ void TestingInstance::HandleMessage(const pp::Var& message_data) {
     current_case_->HandleMessage(message_data);
 }
 
-void TestingInstance::DidChangeView(const pp::Rect& position,
-                                    const pp::Rect& clip) {
+void TestingInstance::DidChangeView(const pp::View& view) {
   if (!executed_tests_) {
     executed_tests_ = true;
     pp::Module::Get()->core()->CallOnMainThread(
@@ -92,7 +92,7 @@ void TestingInstance::DidChangeView(const pp::Rect& position,
         callback_factory_.NewCallback(&TestingInstance::ExecuteTests));
   }
   if (current_case_)
-    current_case_->DidChangeView(position, clip);
+    current_case_->DidChangeView(view);
 }
 
 bool TestingInstance::HandleInputEvent(const pp::InputEvent& event) {
@@ -104,6 +104,15 @@ bool TestingInstance::HandleInputEvent(const pp::InputEvent& event) {
 void TestingInstance::EvalScript(const std::string& script) {
   std::string message("TESTING_MESSAGE:EvalScript:");
   message.append(script);
+  PostMessage(pp::Var(message));
+}
+
+void TestingInstance::SetCookie(const std::string& name,
+                                const std::string& value) {
+  std::string message("TESTING_MESSAGE:SetCookie:");
+  message.append(name);
+  message.append("=");
+  message.append(value);
   PostMessage(pp::Var(message));
 }
 
@@ -228,15 +237,6 @@ void TestingInstance::ReportProgress(const std::string& progress_value) {
   cookie_name << "PPAPI_PROGRESS_" << progress_cookie_number_;
   SetCookie(cookie_name.str(), progress_value);
   progress_cookie_number_++;
-}
-
-void TestingInstance::SetCookie(const std::string& name,
-                                const std::string& value) {
-  std::string message("TESTING_MESSAGE:SetCookie:");
-  message.append(name);
-  message.append("=");
-  message.append(value);
-  PostMessage(pp::Var(message));
 }
 
 class Module : public pp::Module {

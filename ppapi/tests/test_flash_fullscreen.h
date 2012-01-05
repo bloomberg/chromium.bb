@@ -23,7 +23,7 @@ class TestFlashFullscreen : public TestCase {
   // TestCase implementation.
   virtual bool Init();
   virtual void RunTests(const std::string& filter);
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
+  virtual void DidChangeView(const pp::View& view);
 
  private:
   std::string TestGetScreenSize();

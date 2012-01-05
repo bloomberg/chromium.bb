@@ -312,6 +312,8 @@ bool TestingAutomationProvider::OnMessageReceived(
                         CloseBrowserAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_ActivateTab, ActivateTab)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_AppendTab, AppendTab)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_AppendBackgroundTab,
+                                    AppendBackgroundTab)
     IPC_MESSAGE_HANDLER(AutomationMsg_ActiveTabIndex, GetActiveTabIndex)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CloseTab, CloseTab)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetCookies, GetCookies)
@@ -555,6 +557,39 @@ void TestingAutomationProvider::AppendTab(int handle,
 
     AutomationMsg_AppendTab::WriteReplyParams(reply_message,
                                               append_tab_response);
+    Send(reply_message);
+  }
+}
+
+void TestingAutomationProvider::AppendBackgroundTab(
+    int handle,
+    const GURL& url,
+    IPC::Message* reply_message) {
+  int append_tab_response = -1;  // -1 is the error code
+  content::NotificationObserver* observer = NULL;
+
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    observer = new TabAppendedNotificationObserver(browser, this,
+                                                   reply_message);
+
+    browser::NavigateParams params(browser, url, content::PAGE_TRANSITION_LINK);
+    params.disposition = NEW_BACKGROUND_TAB;
+    browser::Navigate(&params);
+    TabContentsWrapper* contents = params.target_contents;
+    if (contents) {
+      append_tab_response = GetIndexForNavigationController(
+          &contents->web_contents()->GetController(), browser);
+    }
+  }
+
+  if (append_tab_response < 0) {
+    // Appending tab failed. Clean up and send failure response.
+    if (observer)
+      delete observer;
+
+    AutomationMsg_AppendBackgroundTab::WriteReplyParams(reply_message,
+                                                        append_tab_response);
     Send(reply_message);
   }
 }

@@ -12,6 +12,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/cpp/dev/scrollbar_dev.h"
+#include "ppapi/cpp/view.h"
 
 #if (defined __native_client__)
 #include "ppapi/cpp/var.h"
@@ -62,7 +63,7 @@ class TestCase {
   // A function that is invoked whenever DidChangeView is called on the
   // associated TestingInstance. Default implementation does nothing. TestCases
   // that want to handle view changes should override this method.
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
+  virtual void DidChangeView(const pp::View& view);
 
   // A function that is invoked whenever HandleInputEvent is called on the
   // associated TestingInstance. Default implementation returns false. TestCases

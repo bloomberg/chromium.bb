@@ -297,8 +297,10 @@ bool TestFullscreen::PaintPlugin(pp::Size size, ColorPremul color) {
 // fullscreen.
 //
 // NOTE: The number of DidChangeView calls for <object> might be different.
-void TestFullscreen::DidChangeView(const pp::Rect& position,
-                                   const pp::Rect& clip) {
+void TestFullscreen::DidChangeView(const pp::View& view) {
+  pp::Rect position = view.GetRect();
+  pp::Rect clip = view.GetClipRect();
+
   if (normal_position_.IsEmpty()) {
     normal_position_ = position;
     if (!PaintPlugin(position.size(), kSheerRed))

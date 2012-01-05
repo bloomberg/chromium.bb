@@ -20,9 +20,9 @@ class TestInputEvent : public TestCase {
   explicit TestInputEvent(TestingInstance* instance);
   ~TestInputEvent();
 
-  bool HandleInputEvent(const pp::InputEvent& input_event);
-  void HandleMessage(const pp::Var& message_data);
-  void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
+  virtual bool HandleInputEvent(const pp::InputEvent& input_event);
+  virtual void HandleMessage(const pp::Var& message_data);
+  virtual void DidChangeView(const pp::View& view);
 
   // TestCase implementation.
   virtual bool Init();

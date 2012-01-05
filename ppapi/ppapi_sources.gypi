@@ -301,6 +301,7 @@
       'tests/test_udp_socket_private_disallowed.cc',
       'tests/test_url_loader.cc',
       'tests/test_var.cc',
+      'tests/test_view.cc',
     ],
     #
     # Sources used in trusted tests.
@@ -372,6 +373,8 @@
       'tests/test_utils.h',
       'tests/test_var.cc',
       'tests/test_var.h',
+      'tests/test_view.cc',
+      'tests/test_view.h',
       'tests/test_video_decoder.cc',
       'tests/test_video_decoder.h',
       'tests/test_websocket.cc',
