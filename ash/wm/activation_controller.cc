@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@ aura::Window* GetContainer(int id) {
 bool SupportsChildActivation(aura::Window* window) {
   return window->id() == kShellWindowId_DefaultContainer ||
          window->id() == kShellWindowId_AlwaysOnTopContainer ||
+         window->id() == kShellWindowId_PanelContainer ||
          window->id() == kShellWindowId_ModalContainer ||
          window->id() == kShellWindowId_LockScreenContainer ||
          window->id() == kShellWindowId_LockModalContainer;
