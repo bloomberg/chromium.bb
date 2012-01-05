@@ -20,9 +20,9 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "googleurl/src/gurl.h"
 
@@ -30,6 +30,7 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
+using content::WebContents;
 
 @interface AnyResultValue : NSObject {
  @private
@@ -192,7 +193,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
   }
 
   NavigationEntry* entry =
-      tabContents_->tab_contents()->GetController().GetActiveEntry();
+      tabContents_->web_contents()->GetController().GetActiveEntry();
   if (!entry) {
     return nil;
   }
@@ -216,12 +217,12 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
   }
 
   NavigationEntry* entry =
-      tabContents_->tab_contents()->GetController().GetActiveEntry();
+      tabContents_->web_contents()->GetController().GetActiveEntry();
   if (!entry)
     return;
 
   const GURL& previousURL = entry->GetVirtualURL();
-  tabContents_->tab_contents()->OpenURL(OpenURLParams(
+  tabContents_->web_contents()->OpenURL(OpenURLParams(
       url,
       content::Referrer(previousURL, WebKit::WebReferrerPolicyDefault),
       CURRENT_TAB,
@@ -231,7 +232,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 
 - (NSString*)title {
   NavigationEntry* entry =
-      tabContents_->tab_contents()->GetController().GetActiveEntry();
+      tabContents_->web_contents()->GetController().GetActiveEntry();
   if (!entry)
     return nil;
 
@@ -244,12 +245,12 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (NSNumber*)loading {
-  BOOL loadingValue = tabContents_->tab_contents()->IsLoading() ? YES : NO;
+  BOOL loadingValue = tabContents_->web_contents()->IsLoading() ? YES : NO;
   return [NSNumber numberWithBool:loadingValue];
 }
 
 - (void)handlesUndoScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = tabContents_->tab_contents()->GetRenderViewHost();
+  RenderViewHost* view = tabContents_->web_contents()->GetRenderViewHost();
   if (!view) {
     NOTREACHED();
     return;
@@ -259,7 +260,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesRedoScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = tabContents_->tab_contents()->GetRenderViewHost();
+  RenderViewHost* view = tabContents_->web_contents()->GetRenderViewHost();
   if (!view) {
     NOTREACHED();
     return;
@@ -269,7 +270,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesCutScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = tabContents_->tab_contents()->GetRenderViewHost();
+  RenderViewHost* view = tabContents_->web_contents()->GetRenderViewHost();
   if (!view) {
     NOTREACHED();
     return;
@@ -279,7 +280,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesCopyScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = tabContents_->tab_contents()->GetRenderViewHost();
+  RenderViewHost* view = tabContents_->web_contents()->GetRenderViewHost();
   if (!view) {
     NOTREACHED();
     return;
@@ -289,7 +290,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesPasteScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = tabContents_->tab_contents()->GetRenderViewHost();
+  RenderViewHost* view = tabContents_->web_contents()->GetRenderViewHost();
   if (!view) {
     NOTREACHED();
     return;
@@ -299,7 +300,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (void)handlesSelectAllScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = tabContents_->tab_contents()->GetRenderViewHost();
+  RenderViewHost* view = tabContents_->web_contents()->GetRenderViewHost();
   if (!view) {
     NOTREACHED();
     return;
@@ -310,27 +311,27 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 
 - (void)handlesGoBackScriptCommand:(NSScriptCommand*)command {
   NavigationController& navigationController =
-      tabContents_->tab_contents()->GetController();
+      tabContents_->web_contents()->GetController();
   if (navigationController.CanGoBack())
     navigationController.GoBack();
 }
 
 - (void)handlesGoForwardScriptCommand:(NSScriptCommand*)command {
   NavigationController& navigationController =
-      tabContents_->tab_contents()->GetController();
+      tabContents_->web_contents()->GetController();
   if (navigationController.CanGoForward())
     navigationController.GoForward();
 }
 
 - (void)handlesReloadScriptCommand:(NSScriptCommand*)command {
   NavigationController& navigationController =
-      tabContents_->tab_contents()->GetController();
+      tabContents_->web_contents()->GetController();
   const bool checkForRepost = true;
   navigationController.Reload(checkForRepost);
 }
 
 - (void)handlesStopScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = tabContents_->tab_contents()->GetRenderViewHost();
+  RenderViewHost* view = tabContents_->web_contents()->GetRenderViewHost();
   if (!view) {
     // We tolerate Stop being called even before a view has been created.
     // So just log a warning instead of a NOTREACHED().
@@ -355,7 +356,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
   // Scripter has not specifed the location at which to save, so we prompt for
   // it.
   if (!fileURL) {
-    tabContents_->tab_contents()->OnSavePage();
+    tabContents_->web_contents()->OnSavePage();
     return;
   }
 
@@ -381,21 +382,21 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
     }
   }
 
-  tabContents_->tab_contents()->SavePage(mainFile,
+  tabContents_->web_contents()->SavePage(mainFile,
                                          directoryPath,
                                          savePackageType);
 }
 
 - (void)handlesCloseScriptCommand:(NSScriptCommand*)command {
-  TabContents* contents = tabContents_->tab_contents();
+  WebContents* contents = tabContents_->web_contents();
   contents->GetDelegate()->CloseContents(contents);
 }
 
 - (void)handlesViewSourceScriptCommand:(NSScriptCommand*)command {
   NavigationEntry* entry =
-      tabContents_->tab_contents()->GetController().GetLastCommittedEntry();
+      tabContents_->web_contents()->GetController().GetLastCommittedEntry();
   if (entry) {
-    tabContents_->tab_contents()->OpenURL(OpenURLParams(
+    tabContents_->web_contents()->OpenURL(OpenURLParams(
         GURL(chrome::kViewSourceScheme + std::string(":") +
              entry->GetURL().spec()),
         Referrer(),
@@ -406,7 +407,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
 }
 
 - (id)handlesExecuteJavascriptScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = tabContents_->tab_contents()->GetRenderViewHost();
+  RenderViewHost* view = tabContents_->web_contents()->GetRenderViewHost();
   if (!view) {
     NOTREACHED();
     return nil;

@@ -51,6 +51,7 @@
 #endif
 
 using content::UserMetricsAction;
+using content::WebContents;
 
 // static
 const char ToolbarView::kViewClassName[] = "browser/ui/views/ToolbarView";
@@ -219,7 +220,7 @@ void ToolbarView::Init() {
   }
 }
 
-void ToolbarView::Update(TabContents* tab, bool should_restore_state) {
+void ToolbarView::Update(WebContents* tab, bool should_restore_state) {
   if (location_bar_)
     location_bar_->Update(should_restore_state ? tab : NULL);
 

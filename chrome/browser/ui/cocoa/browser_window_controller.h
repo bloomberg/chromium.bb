@@ -49,6 +49,10 @@ class TabContents;
 @class TabStripView;
 @class ToolbarController;
 
+namespace content {
+class WebContents;
+}
+
 @interface BrowserWindowController :
   TabWindowController<NSUserInterfaceValidations,
                       BookmarkBarControllerDelegate,
@@ -210,7 +214,7 @@ class TabContents;
 // the specified |tab|.  If |shouldRestore| is true, we're switching
 // (back?) to this tab and should restore any previous location bar state
 // (such as user editing) as well.
-- (void)updateToolbarWithContents:(TabContents*)tab
+- (void)updateToolbarWithContents:(content::WebContents*)tab
                shouldRestoreState:(BOOL)shouldRestore;
 
 // Sets whether or not the current page in the frontmost tab is bookmarked.
@@ -311,7 +315,7 @@ class TabContents;
 - (NSPoint)bookmarkBubblePoint;
 
 // Shows or hides the Instant preview contents.
-- (void)showInstant:(TabContents*)previewContents;
+- (void)showInstant:(content::WebContents*)previewContents;
 - (void)hideInstant;
 - (void)commitInstant;
 

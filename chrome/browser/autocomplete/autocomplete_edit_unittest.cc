@@ -10,6 +10,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+using content::WebContents;
+
 namespace {
 
 class TestingOmniboxView : public OmniboxView {
@@ -18,8 +20,8 @@ class TestingOmniboxView : public OmniboxView {
 
   virtual AutocompleteEditModel* model() OVERRIDE { return NULL; }
   virtual const AutocompleteEditModel* model() const OVERRIDE { return NULL; }
-  virtual void SaveStateToTab(TabContents* tab) OVERRIDE {}
-  virtual void Update(const TabContents* tab_for_state_restoring) OVERRIDE {}
+  virtual void SaveStateToTab(WebContents* tab) OVERRIDE {}
+  virtual void Update(const WebContents* tab_for_state_restoring) OVERRIDE {}
   virtual void OpenMatch(const AutocompleteMatch& match,
                          WindowOpenDisposition disposition,
                          const GURL& alternate_nav_url,

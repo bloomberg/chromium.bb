@@ -458,7 +458,7 @@ const AutocompleteEditModel* OmniboxViewGtk::model() const {
   return model_.get();
 }
 
-void OmniboxViewGtk::SaveStateToTab(TabContents* tab) {
+void OmniboxViewGtk::SaveStateToTab(WebContents* tab) {
   DCHECK(tab);
   // If any text has been selected, register it as the PRIMARY selection so it
   // can still be pasted via middle-click after the text view is cleared.
@@ -471,7 +471,7 @@ void OmniboxViewGtk::SaveStateToTab(TabContents* tab) {
       AutocompleteEditState(model_state, ViewState(GetSelection())));
 }
 
-void OmniboxViewGtk::Update(const TabContents* contents) {
+void OmniboxViewGtk::Update(const WebContents* contents) {
   // NOTE: We're getting the URL text here from the ToolbarModel.
   bool visibly_changed_permanent_text =
       model_->UpdatePermanentText(toolbar_model_->GetText());

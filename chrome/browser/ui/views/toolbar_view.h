@@ -53,7 +53,7 @@ class ToolbarView : public views::AccessiblePaneView,
   // the specified |tab|.  If |should_restore_state| is true, we're switching
   // (back?) to this tab and should restore any previous location bar state
   // (such as user editing) as well.
-  void Update(TabContents* tab, bool should_restore_state);
+  void Update(content::WebContents* tab, bool should_restore_state);
 
   // Set focus to the toolbar with complete keyboard access, with the
   // focus initially set to the location bar. Focus will be restored

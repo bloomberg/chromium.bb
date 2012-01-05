@@ -451,7 +451,7 @@ GtkWidget* LocationBarViewGtk::GetPageActionWidget(
   return NULL;
 }
 
-void LocationBarViewGtk::Update(const TabContents* contents) {
+void LocationBarViewGtk::Update(const WebContents* contents) {
   UpdateStarIcon();
   UpdateSiteTypeArea();
   UpdateContentSettingsIcons();
@@ -701,7 +701,7 @@ void LocationBarViewGtk::InvalidatePageActions() {
   }
 }
 
-void LocationBarViewGtk::SaveStateToContents(TabContents* contents) {
+void LocationBarViewGtk::SaveStateToContents(WebContents* contents) {
   location_entry_->SaveStateToTab(contents);
 }
 

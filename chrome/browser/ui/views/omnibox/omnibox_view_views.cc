@@ -42,6 +42,8 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
 #endif
 
+using content::WebContents;
+
 namespace {
 
 // Textfield for autocomplete that intercepts events that are necessary
@@ -342,7 +344,7 @@ const AutocompleteEditModel* OmniboxViewViews::model() const {
   return model_.get();
 }
 
-void OmniboxViewViews::SaveStateToTab(TabContents* tab) {
+void OmniboxViewViews::SaveStateToTab(WebContents* tab) {
   DCHECK(tab);
 
   // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
@@ -354,7 +356,7 @@ void OmniboxViewViews::SaveStateToTab(TabContents* tab) {
       AutocompleteEditState(model_state, ViewState(selection)));
 }
 
-void OmniboxViewViews::Update(const TabContents* contents) {
+void OmniboxViewViews::Update(const WebContents* contents) {
   // NOTE: We're getting the URL text here from the ToolbarModel.
   bool visibly_changed_permanent_text =
       model_->UpdatePermanentText(toolbar_model_->GetText());

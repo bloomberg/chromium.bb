@@ -47,8 +47,8 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
@@ -204,12 +204,12 @@ void LocationBarViewMac::InvalidatePageActions() {
   }
 }
 
-void LocationBarViewMac::SaveStateToContents(TabContents* contents) {
+void LocationBarViewMac::SaveStateToContents(WebContents* contents) {
   // TODO(shess): Why SaveStateToContents vs SaveStateToTab?
   omnibox_view_->SaveStateToTab(contents);
 }
 
-void LocationBarViewMac::Update(const TabContents* contents,
+void LocationBarViewMac::Update(const WebContents* contents,
                                 bool should_restore_state) {
   bool star_enabled = IsStarEnabled();
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);

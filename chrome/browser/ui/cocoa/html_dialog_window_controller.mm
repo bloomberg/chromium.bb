@@ -294,15 +294,15 @@ void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
   contentsWrapper_.reset(new TabContentsWrapper(new TabContents(
       delegate_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
   [[self window]
-      setContentView:contentsWrapper_->tab_contents()->GetNativeView()];
-  contentsWrapper_->tab_contents()->SetDelegate(delegate_.get());
+      setContentView:contentsWrapper_->web_contents()->GetNativeView()];
+  contentsWrapper_->web_contents()->SetDelegate(delegate_.get());
 
   // This must be done before loading the page; see the comments in
   // HtmlDialogUI.
   HtmlDialogUI::GetPropertyAccessor().SetProperty(
-      contentsWrapper_->tab_contents()->GetPropertyBag(), delegate_.get());
+      contentsWrapper_->web_contents()->GetPropertyBag(), delegate_.get());
 
-  contentsWrapper_->tab_contents()->GetController().LoadURL(
+  contentsWrapper_->web_contents()->GetController().LoadURL(
       delegate_->GetDialogContentURL(),
       content::Referrer(),
       content::PAGE_TRANSITION_START_PAGE,

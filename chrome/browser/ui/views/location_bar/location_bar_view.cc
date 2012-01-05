@@ -300,7 +300,7 @@ void LocationBarView::SetAnimationOffset(int offset) {
   animation_offset_ = offset;
 }
 
-void LocationBarView::Update(const TabContents* tab_for_state_restoring) {
+void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   bool star_enabled = star_view_ && !model_->input_in_progress() &&
                       edit_bookmarks_enabled_.GetValue();
   browser_->command_updater()->UpdateCommandEnabled(
@@ -1151,7 +1151,7 @@ void LocationBarView::FocusSearch() {
   location_entry_->SetForcedQuery();
 }
 
-void LocationBarView::SaveStateToContents(TabContents* contents) {
+void LocationBarView::SaveStateToContents(WebContents* contents) {
   location_entry_->SaveStateToTab(contents);
 }
 

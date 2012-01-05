@@ -1146,7 +1146,7 @@ enum {
   return [tabStripController_ sheetController];
 }
 
-- (void)updateToolbarWithContents:(TabContents*)tab
+- (void)updateToolbarWithContents:(WebContents*)tab
                shouldRestoreState:(BOOL)shouldRestore {
   [toolbarController_ updateToolbarWithContents:tab
                              shouldRestoreState:shouldRestore];
@@ -1869,7 +1869,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   return fullscreenExitBubbleController_.get();
 }
 
-- (void)showInstant:(TabContents*)previewContents {
+- (void)showInstant:(WebContents*)previewContents {
   [previewableContentsController_ showPreview:previewContents];
   [self updateBookmarkBarVisibilityWithAnimation:NO];
 }

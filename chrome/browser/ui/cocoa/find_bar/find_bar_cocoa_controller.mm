@@ -19,8 +19,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #import "content/browser/find_pasteboard.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/public/browser/web_contents.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 const float kFindBarOpenDuration = 0.2;
@@ -234,7 +234,7 @@ const float kRightEdgeOffset = 25;
     // cmd-up/down if we ever decide to include |moveToBeginningOfDocument:| in
     // the list above.
     RenderViewHost* render_view_host =
-        contents->tab_contents()->GetRenderViewHost();
+        contents->web_contents()->GetRenderViewHost();
     render_view_host->ForwardKeyboardEvent(NativeWebKeyboardEvent(event));
     return YES;
   }
@@ -299,7 +299,7 @@ const float kRightEdgeOffset = 25;
         [focusTracker_ restoreFocusInWindow:[findBarView_ window]])) {
     // Fall back to giving focus to the tab contents.
     findBarBridge_->
-        GetFindBarController()->tab_contents()->tab_contents()->Focus();
+        GetFindBarController()->tab_contents()->web_contents()->Focus();
   }
   focusTracker_.reset(nil);
 }
@@ -468,7 +468,7 @@ const float kRightEdgeOffset = 25;
 
   // Get the size of the container.
   gfx::Rect container_rect(
-      contents->tab_contents()->GetView()->GetContainerSize());
+      contents->web_contents()->GetView()->GetContainerSize());
 
   // Position the FindBar on the top right corner.
   view_rect.set_x(

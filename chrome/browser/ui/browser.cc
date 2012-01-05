@@ -3293,7 +3293,7 @@ void Browser::TabDeactivated(TabContentsWrapper* contents) {
 
   // Save what the user's currently typing, so it can be restored when we
   // switch back to this tab.
-  window_->GetLocationBar()->SaveStateToContents(contents->tab_contents());
+  window_->GetLocationBar()->SaveStateToContents(contents->web_contents());
 }
 
 void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
@@ -5095,7 +5095,7 @@ void Browser::TabDetachedAtImpl(TabContentsWrapper* contents, int index,
     if (contents == GetSelectedTabContentsWrapper()) {
       LocationBar* location_bar = window()->GetLocationBar();
       if (location_bar)
-        location_bar->SaveStateToContents(contents->tab_contents());
+        location_bar->SaveStateToContents(contents->web_contents());
     }
 
     if (!tab_handler_->GetTabStripModel()->closing_all())

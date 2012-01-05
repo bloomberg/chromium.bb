@@ -45,7 +45,6 @@ class LocationIconView;
 class PageActionWithBadgeView;
 class SelectedKeywordView;
 class StarView;
-class TabContents;
 class TabContentsWrapper;
 class TemplateURLService;
 
@@ -134,7 +133,7 @@ class LocationBarView : public LocationBar,
   // Updates the location bar.  We also reset the bar's permanent text and
   // security style, and, if |tab_for_state_restoring| is non-NULL, also restore
   // saved state that the tab holds.
-  void Update(const TabContents* tab_for_state_restoring);
+  void Update(const content::WebContents* tab_for_state_restoring);
 
   Browser* browser() const { return browser_; }
 
@@ -255,7 +254,7 @@ class LocationBarView : public LocationBar,
   virtual void UpdateContentSettingsIcons() OVERRIDE;
   virtual void UpdatePageActions() OVERRIDE;
   virtual void InvalidatePageActions() OVERRIDE;
-  virtual void SaveStateToContents(TabContents* contents) OVERRIDE;
+  virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE;
   virtual void Revert() OVERRIDE;
   virtual const OmniboxView* location_entry() const OVERRIDE;
   virtual OmniboxView* location_entry() OVERRIDE;

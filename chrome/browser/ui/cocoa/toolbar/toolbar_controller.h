@@ -27,10 +27,13 @@ class LocationBarViewMac;
 @class MenuButton;
 class Profile;
 @class ReloadButton;
-class TabContents;
 @class ToolbarButton;
 class ToolbarModel;
 @class WrenchMenuController;
+
+namespace content {
+class WebContents;
+}
 
 namespace ToolbarControllerInternal {
 class NotificationBridge;
@@ -118,7 +121,7 @@ class NotificationBridge;
 // the specified |tab|.  If |shouldRestore| is true, we're switching
 // (back?) to this tab and should restore any previous location bar state
 // (such as user editing) as well.
-- (void)updateToolbarWithContents:(TabContents*)tabForRestoring
+- (void)updateToolbarWithContents:(content::WebContents*)tabForRestoring
                shouldRestoreState:(BOOL)shouldRestore;
 
 // Sets whether or not the current page in the frontmost tab is bookmarked.

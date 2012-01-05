@@ -25,7 +25,10 @@
 class AutocompleteEditModel;
 class CommandUpdater;
 class GURL;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 #if defined(TOOLKIT_VIEWS)
 
@@ -60,12 +63,12 @@ class OmniboxView {
 
   // For use when switching tabs, this saves the current state onto the tab so
   // that it can be restored during a later call to Update().
-  virtual void SaveStateToTab(TabContents* tab) = 0;
+  virtual void SaveStateToTab(content::WebContents* tab) = 0;
 
   // Called when any LocationBarView state changes. If
-  // |tab_for_state_restoring| is non-NULL, it points to a TabContents whose
+  // |tab_for_state_restoring| is non-NULL, it points to a WebContents whose
   // state we should restore.
-  virtual void Update(const TabContents* tab_for_state_restoring) = 0;
+  virtual void Update(const content::WebContents* tab_for_state_restoring) = 0;
 
   // Asks the browser to load the specified match's |destination_url|, which
   // is assumed to be one of the popup entries, using the supplied disposition

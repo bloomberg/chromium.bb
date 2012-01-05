@@ -8,7 +8,9 @@
 
 #import <Cocoa/Cocoa.h>
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 // PreviewableContentsController manages the display of up to two tab contents
 // views.  It is primarily for use with Instant results.  This class supports
@@ -27,14 +29,14 @@ class TabContents;
   IBOutlet NSView* activeContainer_;
 
   // The preview TabContents.  Will be NULL if no preview is currently showing.
-  TabContents* previewContents_;  // weak
+  content::WebContents* previewContents_;  // weak
 }
 
 @property(readonly, nonatomic) NSView* activeContainer;
 
 // Sets the current preview and installs its TabContentsView into the view
 // hierarchy.  Hides the active view.  |preview| must not be NULL.
-- (void)showPreview:(TabContents*)preview;
+- (void)showPreview:(content::WebContents*)preview;
 
 // Closes the current preview and shows the active view.
 - (void)hidePreview;

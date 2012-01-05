@@ -13,7 +13,6 @@
 #import "chrome/browser/ui/cocoa/web_intent_bubble_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "skia/ext/skia_utils_mac.h"
 
 // static

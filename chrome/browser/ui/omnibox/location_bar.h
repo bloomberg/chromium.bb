@@ -23,7 +23,10 @@
 class ExtensionAction;
 class LocationBarTesting;
 class OmniboxView;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 class LocationBar {
  public:
@@ -66,9 +69,9 @@ class LocationBar {
   // extension is unloaded or crashes.
   virtual void InvalidatePageActions() = 0;
 
-  // Saves the state of the location bar to the specified TabContents, so that
+  // Saves the state of the location bar to the specified WebContents, so that
   // it can be restored later. (Done when switching tabs).
-  virtual void SaveStateToContents(TabContents* contents) = 0;
+  virtual void SaveStateToContents(content::WebContents* contents) = 0;
 
   // Reverts the location bar.  The bar's permanent text will be shown.
   virtual void Revert() = 0;

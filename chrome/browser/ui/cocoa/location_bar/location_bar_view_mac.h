@@ -36,10 +36,6 @@ class SkBitmap;
 class StarDecoration;
 class ToolbarModel;
 
-namespace content {
-class WebContents;
-}
-
 // A C++ bridge class that represents the location bar UI element to
 // the portable code.  Wires up an OmniboxViewMac instance to
 // the location bar text field, which handles most of the work.
@@ -69,7 +65,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual void UpdateContentSettingsIcons() OVERRIDE;
   virtual void UpdatePageActions() OVERRIDE;
   virtual void InvalidatePageActions() OVERRIDE;
-  virtual void SaveStateToContents(TabContents* contents) OVERRIDE;
+  virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE;
   virtual void Revert() OVERRIDE;
   virtual const OmniboxView* location_entry() const OVERRIDE;
   virtual OmniboxView* location_entry() OVERRIDE;
@@ -101,7 +97,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   // Updates the location bar.  Resets the bar's permanent text and
   // security style, and if |should_restore_state| is true, restores
   // saved state from the tab (for tab switching).
-  void Update(const TabContents* tab, bool should_restore_state);
+  void Update(const content::WebContents* tab, bool should_restore_state);
 
   // Layout the various decorations which live in the field.
   void Layout();

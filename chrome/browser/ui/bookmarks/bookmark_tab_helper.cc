@@ -11,9 +11,9 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 
 namespace {
 
@@ -24,7 +24,7 @@ bool CanShowBookmarkBar(WebUI* ui) {
 }  // namespace
 
 BookmarkTabHelper::BookmarkTabHelper(TabContentsWrapper* tab_contents)
-    : content::WebContentsObserver(tab_contents->tab_contents()),
+    : content::WebContentsObserver(tab_contents->web_contents()),
       is_starred_(false),
       tab_contents_wrapper_(tab_contents),
       delegate_(NULL),

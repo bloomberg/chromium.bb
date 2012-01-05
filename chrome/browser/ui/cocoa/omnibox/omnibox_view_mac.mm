@@ -6,6 +6,7 @@
 
 #include <Carbon/Carbon.h>  // kVK_Return
 
+#include "base/property_bag.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -16,7 +17,7 @@
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -27,6 +28,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 #include "ui/gfx/rect.h"
+
+using content::WebContents;
 
 // Focus-handling between |field_| and |model_| is a bit subtle.
 // Other platforms detect change of focus, which is inconvenient
@@ -100,7 +103,7 @@ struct OmniboxViewMacState {
 };
 
 // Returns a lazily initialized property bag accessor for saving our
-// state in a TabContents.  When constructed |accessor| generates a
+// state in a WebContents.  When constructed |accessor| generates a
 // globally-unique id used to index into the per-tab PropertyBag used
 // to store the state data.
 base::PropertyAccessor<OmniboxViewMacState>* GetStateAccessor() {
@@ -110,11 +113,11 @@ base::PropertyAccessor<OmniboxViewMacState>* GetStateAccessor() {
 }
 
 // Accessors for storing and getting the state from the tab.
-void StoreStateToTab(TabContents* tab,
+void StoreStateToTab(WebContents* tab,
                      const OmniboxViewMacState& state) {
   GetStateAccessor()->SetProperty(tab->GetPropertyBag(), state);
 }
-const OmniboxViewMacState* GetStateFromTab(const TabContents* tab) {
+const OmniboxViewMacState* GetStateFromTab(const WebContents* tab) {
   return GetStateAccessor()->GetProperty(tab->GetPropertyBag());
 }
 
@@ -221,7 +224,7 @@ const AutocompleteEditModel* OmniboxViewMac::model() const {
   return model_.get();
 }
 
-void OmniboxViewMac::SaveStateToTab(TabContents* tab) {
+void OmniboxViewMac::SaveStateToTab(WebContents* tab) {
   DCHECK(tab);
 
   const bool hasFocus = [field_ currentEditor] ? true : false;
@@ -239,7 +242,7 @@ void OmniboxViewMac::SaveStateToTab(TabContents* tab) {
   StoreStateToTab(tab, state);
 }
 
-void OmniboxViewMac::Update(const TabContents* tab_for_state_restoring) {
+void OmniboxViewMac::Update(const WebContents* tab_for_state_restoring) {
   // TODO(shess): It seems like if the tab is non-NULL, then this code
   // shouldn't need to be called at all.  When coded that way, I find
   // that the field isn't always updated correctly.  Figure out why

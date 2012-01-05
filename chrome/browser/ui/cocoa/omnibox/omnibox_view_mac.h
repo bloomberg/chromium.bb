@@ -38,36 +38,28 @@ class OmniboxViewMac : public OmniboxView,
   // OmniboxView:
   virtual AutocompleteEditModel* model() OVERRIDE;
   virtual const AutocompleteEditModel* model() const OVERRIDE;
-
-  virtual void SaveStateToTab(TabContents* tab) OVERRIDE;
-  virtual void Update(const TabContents* tab_for_state_restoring) OVERRIDE;
-
+  virtual void SaveStateToTab(content::WebContents* tab) OVERRIDE;
+  virtual void Update(
+      const content::WebContents* tab_for_state_restoring) OVERRIDE;
   virtual void OpenMatch(const AutocompleteMatch& match,
                          WindowOpenDisposition disposition,
                          const GURL& alternate_nav_url,
                          size_t index,
                          const string16& keyword) OVERRIDE;
-
   virtual string16 GetText() const OVERRIDE;
-
   virtual bool IsEditingOrEmpty() const OVERRIDE;
   virtual int GetIcon() const OVERRIDE;
-
   virtual void SetUserText(const string16& text) OVERRIDE;
   virtual void SetUserText(const string16& text,
                            const string16& display_text,
                            bool update_popup) OVERRIDE;
-
   virtual void SetWindowTextAndCaretPos(const string16& text,
                                         size_t caret_pos) OVERRIDE;
-
   virtual void SetForcedQuery() OVERRIDE;
-
   virtual bool IsSelectAll() OVERRIDE;
   virtual bool DeleteAtEndPressed() OVERRIDE;
   virtual void GetSelectionBounds(string16::size_type* start,
                                   string16::size_type* end) const OVERRIDE;
-
   virtual void SelectAll(bool reversed) OVERRIDE;
   virtual void RevertAll() OVERRIDE;
   virtual void UpdatePopup() OVERRIDE;

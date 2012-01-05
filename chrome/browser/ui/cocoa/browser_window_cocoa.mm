@@ -333,7 +333,7 @@ void BrowserWindowCocoa::UpdateReloadStopState(bool is_loading, bool force) {
 
 void BrowserWindowCocoa::UpdateToolbar(TabContentsWrapper* contents,
                                        bool should_restore_state) {
-  [controller_ updateToolbarWithContents:contents->tab_contents()
+  [controller_ updateToolbarWithContents:contents->web_contents()
                       shouldRestoreState:should_restore_state ? YES : NO];
 }
 
@@ -544,7 +544,7 @@ bool BrowserWindowCocoa::InPresentationMode() {
 }
 
 void BrowserWindowCocoa::ShowInstant(TabContentsWrapper* preview) {
-  [controller_ showInstant:preview->tab_contents()];
+  [controller_ showInstant:preview->web_contents()];
 }
 
 void BrowserWindowCocoa::HideInstant() {

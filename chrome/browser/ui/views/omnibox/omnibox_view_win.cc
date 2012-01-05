@@ -60,6 +60,7 @@
 #pragma comment(lib, "riched20.lib")  // Needed for the richedit control.
 
 using content::UserMetricsAction;
+using content::WebContents;
 
 ///////////////////////////////////////////////////////////////////////////////
 // AutocompleteEditModel
@@ -546,7 +547,7 @@ gfx::Font OmniboxViewWin::GetFont() {
   return font_;
 }
 
-void OmniboxViewWin::SaveStateToTab(TabContents* tab) {
+void OmniboxViewWin::SaveStateToTab(WebContents* tab) {
   DCHECK(tab);
 
   const AutocompleteEditModel::State model_state(
@@ -560,7 +561,7 @@ void OmniboxViewWin::SaveStateToTab(TabContents* tab) {
           State(selection, saved_selection_for_focus_change_)));
 }
 
-void OmniboxViewWin::Update(const TabContents* tab_for_state_restoring) {
+void OmniboxViewWin::Update(const WebContents* tab_for_state_restoring) {
   const bool visibly_changed_permanent_text =
       model_->UpdatePermanentText(toolbar_model_->GetText());
 

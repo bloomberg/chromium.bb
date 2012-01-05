@@ -6,7 +6,9 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
+
+using content::WebContents;
 
 @implementation PreviewableContentsController
 
@@ -19,7 +21,7 @@
   return self;
 }
 
-- (void)showPreview:(TabContents*)preview {
+- (void)showPreview:(WebContents*)preview {
   DCHECK(preview);
 
   // Remove any old preview contents before showing the new one.

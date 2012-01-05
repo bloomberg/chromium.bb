@@ -97,19 +97,15 @@ class OmniboxViewViews
   // OmniboxView:
   virtual AutocompleteEditModel* model() OVERRIDE;
   virtual const AutocompleteEditModel* model() const OVERRIDE;
-
-  virtual void SaveStateToTab(TabContents* tab) OVERRIDE;
-
-  virtual void Update(const TabContents* tab_for_state_restoring) OVERRIDE;
-
+  virtual void SaveStateToTab(content::WebContents* tab) OVERRIDE;
+  virtual void Update(
+      const content::WebContents* tab_for_state_restoring) OVERRIDE;
   virtual void OpenMatch(const AutocompleteMatch& match,
                          WindowOpenDisposition disposition,
                          const GURL& alternate_nav_url,
                          size_t selected_line,
                          const string16& keyword) OVERRIDE;
-
   virtual string16 GetText() const OVERRIDE;
-
   virtual bool IsEditingOrEmpty() const OVERRIDE;
   virtual int GetIcon() const OVERRIDE;
   virtual void SetUserText(const string16& text) OVERRIDE;

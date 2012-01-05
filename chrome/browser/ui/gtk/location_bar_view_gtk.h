@@ -43,7 +43,6 @@ class ContentSettingBubbleGtk;
 class ExtensionAction;
 class GtkThemeService;
 class SkBitmap;
-class TabContents;
 class ToolbarModel;
 
 namespace content {
@@ -89,7 +88,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Updates the location bar.  We also reset the bar's permanent text and
   // security style, and, if |tab_for_state_restoring| is non-NULL, also
   // restore saved state that the tab holds.
-  void Update(const TabContents* tab_for_state_restoring);
+  void Update(const content::WebContents* tab_for_state_restoring);
 
   // Show the bookmark bubble.
   void ShowStarBubble(const GURL& url, bool newly_boomkarked);
@@ -125,7 +124,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual void UpdateContentSettingsIcons() OVERRIDE;
   virtual void UpdatePageActions() OVERRIDE;
   virtual void InvalidatePageActions() OVERRIDE;
-  virtual void SaveStateToContents(TabContents* contents) OVERRIDE;
+  virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE;
   virtual void Revert() OVERRIDE;
   virtual const OmniboxView* location_entry() const OVERRIDE;
   virtual OmniboxView* location_entry() OVERRIDE;
