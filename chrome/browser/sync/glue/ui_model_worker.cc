@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,7 +68,6 @@ UnrecoverableErrorInfo UIModelWorker::DoWorkAndWaitUntilDone(
     // The task is owned by the message loop as per usual.
     base::AutoLock lock(lock_);
     DCHECK(pending_work_.is_null());
-    UnrecoverableErrorInfo error_info;
     pending_work_ = base::Bind(&CallDoWorkAndSignalCallback, work, &work_done,
                                base::Unretained(this), &error_info);
     if (!BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, pending_work_)) {
