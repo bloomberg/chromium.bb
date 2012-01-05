@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1088,6 +1088,9 @@ const char kSyncThrowUnrecoverableError[]   = "sync-throw-unrecoverable-error";
 
 // Tries to connect to XMPP using SSLTCP first (for testing).
 const char kSyncTrySsltcpFirstForXmpp[]     = "sync-try-ssltcp-first-for-xmpp";
+
+// Enables tab dragging to create a real browser.
+const char kTabBrowserDragging[]            = "enable-tab-browser-dragging";
 
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";

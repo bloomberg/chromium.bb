@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -296,6 +296,7 @@ extern const char kSyncNotificationHost[];
 extern const char kSyncServiceURL[];
 extern const char kSyncThrowUnrecoverableError[];
 extern const char kSyncTrySsltcpFirstForXmpp[];
+extern const char kTabBrowserDragging[];
 extern const char kTestNaClSandbox[];
 extern const char kTestName[];
 extern const char kTestType[];

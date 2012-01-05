@@ -56,6 +56,7 @@
 #include "chrome/browser/ui/views/default_search_view.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
+#include "chrome/browser/ui/views/frame/browser_window_move_observer.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
@@ -333,7 +334,8 @@ BrowserView::BrowserView(Browser* browser)
       hung_window_detector_(&hung_plugin_action_),
       ticker_(0),
 #endif
-      force_location_bar_focus_(false) {
+      force_location_bar_focus_(false),
+      move_observer_(NULL) {
   browser_->tabstrip_model()->AddObserver(this);
 
   registrar_.Add(
@@ -1682,6 +1684,9 @@ void BrowserView::OnWidgetMove() {
     // things.
     return;
   }
+
+  if (move_observer_)
+    move_observer_->OnWidgetMoved();
 
   // Cancel any tabstrip animations, some of them may be invalidated by the
   // window being repositioned.
