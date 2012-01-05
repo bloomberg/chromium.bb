@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,6 +137,20 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingBlocked) {
   RunTest(url, EXPECT_NO_GPU_PROCESS);
 }
 
+class AcceleratedCompositingTest : public GpuFeatureTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    GpuFeatureTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(AcceleratedCompositingTest,
+                       AcceleratedCompositingDisabled) {
+  const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
+  RunTest(url, EXPECT_NO_GPU_PROCESS);
+}
+
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLAllowed) {
   GpuFeatureFlags flags = GpuDataManager::GetInstance()->GetGpuFeatureFlags();
   EXPECT_EQ(flags.flags(), 0u);
@@ -169,6 +183,19 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLBlocked) {
   RunTest(url, EXPECT_NO_GPU_PROCESS);
 }
 
+class WebGLTest : public GpuFeatureTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    GpuFeatureTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableExperimentalWebGL);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WebGLTest, WebGLDisabled) {
+  const FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
+  RunTest(url, EXPECT_NO_GPU_PROCESS);
+}
+
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
   GpuFeatureFlags flags = GpuDataManager::GetInstance()->GetGpuFeatureFlags();
   EXPECT_EQ(flags.flags(), 0u);
@@ -197,6 +224,19 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {
       flags.flags(),
       static_cast<uint32>(GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas));
 
+  const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
+  RunTest(url, EXPECT_NO_GPU_PROCESS);
+}
+
+class Canvas2DTest : public GpuFeatureTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    GpuFeatureTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(Canvas2DTest, Canvas2DDisabled) {
   const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
   RunTest(url, EXPECT_NO_GPU_PROCESS);
 }
