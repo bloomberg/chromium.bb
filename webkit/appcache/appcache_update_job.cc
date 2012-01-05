@@ -552,7 +552,7 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLFetcher* fetcher) {
 
     // TODO(michaeln): Check for <html manifest=xxx>
     // See http://code.google.com/p/chromium/issues/detail?id=97930
-    // if (entry.IsMaster() && !entry.IsExplicit())
+    // if (entry.IsMaster() && !(entry.IsExplicit() || fallback || intercept))
     //   if (!manifestAttribute) skip it
 
     // Foreign entries will be detected during cache selection.
@@ -564,7 +564,7 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLFetcher* fetcher) {
     VLOG(1) << "Request status: " << request->status().status()
             << " error: " << request->status().error()
             << " response code: " << response_code;
-    if (entry.IsExplicit() || entry.IsFallback()) {
+    if (entry.IsExplicit() || entry.IsFallback() || entry.IsIntercept()) {
       if (response_code == 304 && fetcher->existing_entry().has_response_id()) {
         // Keep the existing response.
         entry.set_response_id(fetcher->existing_entry().response_id());
@@ -976,9 +976,8 @@ bool AppCacheUpdateJob::ShouldSkipUrlFetch(const AppCacheEntry& entry) {
   // If the resource URL being processed was flagged as neither an
   // "explicit entry" nor or a "fallback entry", then the user agent
   // may skip this URL.
-  if (entry.IsExplicit() || entry.IsFallback()) {
+  if (entry.IsExplicit() || entry.IsFallback() || entry.IsIntercept())
     return false;
-  }
 
   // TODO(jennb): decide if entry should be skipped to expire it from cache
   return false;

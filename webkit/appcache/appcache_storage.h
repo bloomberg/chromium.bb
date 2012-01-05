@@ -60,12 +60,15 @@ class APPCACHE_EXPORT AppCacheStorage {
     virtual void OnResponseInfoLoaded(
         AppCacheResponseInfo* response_info, int64 response_id) {}
 
-    // If no response is found, entry.response_id() will be kNoResponseId.
+    // If no response is found, entry.response_id() and
+    // fallback_entry.response_id() will be kNoResponseId.
+    // If the response is the entry for an intercept or fallback
+    // namespace, the url of the namespece entry is returned.
     // If a response is found, the cache id and manifest url of the
     // containing cache and group are also returned.
     virtual void OnMainResponseFound(
         const GURL& url, const AppCacheEntry& entry,
-        const GURL& fallback_url, const AppCacheEntry& fallback_entry,
+        const GURL& namespace_entry_url, const AppCacheEntry& fallback_entry,
         int64 cache_id, int64 group_id, const GURL& mainfest_url) {}
   };
 

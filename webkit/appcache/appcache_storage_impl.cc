@@ -851,7 +851,7 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
   std::set<int64> cache_ids_in_use_;
   AppCacheEntry entry_;
   AppCacheEntry fallback_entry_;
-  GURL fallback_url_;
+  GURL namespace_entry_url_;
   int64 cache_id_;
   int64 group_id_;
   GURL manifest_url_;
@@ -1004,13 +1004,12 @@ FindMainResponseTask::FindFirstValidNamespace(
       manifest_url_ = group_record.manifest_url;
       group_id_ = group_record.group_id;
       cache_id_ = (*iter)->cache_id;
-      if ((*iter)->type == FALLBACK_NAMESPACE) {
-        fallback_url_ = (*iter)->target_url;
-        fallback_entry_ = AppCacheEntry(
-            entry_record.flags, entry_record.response_id);
-      } else {
+      namespace_entry_url_ = (*iter)->target_url;
+      if ((*iter)->type == FALLBACK_NAMESPACE)
+        fallback_entry_ = AppCacheEntry(entry_record.flags,
+                                        entry_record.response_id);
+      else
         entry_ = AppCacheEntry(entry_record.flags, entry_record.response_id);
-      }
       return true;  // We found one.
     }
   }
@@ -1019,7 +1018,7 @@ FindMainResponseTask::FindFirstValidNamespace(
 
 void AppCacheStorageImpl::FindMainResponseTask::RunCompleted() {
   storage_->CallOnMainResponseFound(
-      &delegates_, url_, entry_, fallback_url_, fallback_entry_,
+      &delegates_, url_, entry_, namespace_entry_url_, fallback_entry_,
       cache_id_, group_id_, manifest_url_);
 }
 
@@ -1453,12 +1452,12 @@ void AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse(
 void AppCacheStorageImpl::CallOnMainResponseFound(
     DelegateReferenceVector* delegates,
     const GURL& url, const AppCacheEntry& entry,
-    const GURL& fallback_url, const AppCacheEntry& fallback_entry,
+    const GURL& namespace_entry_url, const AppCacheEntry& fallback_entry,
     int64 cache_id, int64 group_id, const GURL& manifest_url) {
   FOR_EACH_DELEGATE(
       (*delegates),
       OnMainResponseFound(url, entry,
-                          fallback_url, fallback_entry,
+                          namespace_entry_url, fallback_entry,
                           cache_id, group_id, manifest_url));
 }
 
@@ -1479,9 +1478,11 @@ void AppCacheStorageImpl::FindResponseForSubRequest(
   }
 
   GURL fallback_namespace_not_used;
+  GURL intercept_namespace_not_used;
   cache->FindResponseForRequest(
-      url, found_entry, found_fallback_entry,
-      &fallback_namespace_not_used, found_network_namespace);
+      url, found_entry, &intercept_namespace_not_used,
+      found_fallback_entry, &fallback_namespace_not_used,
+      found_network_namespace);
 }
 
 void AppCacheStorageImpl::MarkEntryAsForeign(

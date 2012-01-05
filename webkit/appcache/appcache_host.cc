@@ -50,7 +50,8 @@ AppCacheHost::AppCacheHost(int host_id, AppCacheFrontend* frontend,
       pending_selected_cache_id_(kNoCacheId),
       frontend_(frontend), service_(service),
       pending_callback_param_(NULL),
-      main_resource_was_fallback_(false), main_resource_blocked_(false),
+      main_resource_was_namespace_entry_(false),
+      main_resource_blocked_(false),
       associated_cache_info_pending_(false) {
 }
 
@@ -160,7 +161,7 @@ void AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
                                       int64 cache_document_was_loaded_from) {
   // The document url is not the resource url in the fallback case.
   service_->storage()->MarkEntryAsForeign(
-      main_resource_was_fallback_ ? fallback_url_ : document_url,
+      main_resource_was_namespace_entry_ ? namespace_entry_url_ : document_url,
       cache_document_was_loaded_from);
   SelectCache(document_url, kNoCacheId, GURL());
 }
@@ -464,9 +465,10 @@ void AppCacheHost::LoadMainResourceCache(int64 cache_id) {
   service_->storage()->LoadCache(cache_id, this);
 }
 
-void AppCacheHost::NotifyMainResourceFallback(const GURL& fallback_url) {
-  main_resource_was_fallback_ = true;
-  fallback_url_ = fallback_url;
+void AppCacheHost::NotifyMainResourceIsNamespaceEntry(
+    const GURL& namespace_entry_url) {
+  main_resource_was_namespace_entry_ = true;
+  namespace_entry_url_ = namespace_entry_url;
 }
 
 void AppCacheHost::NotifyMainResourceBlocked(const GURL& manifest_url) {

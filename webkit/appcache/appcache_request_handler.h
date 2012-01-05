@@ -59,7 +59,8 @@ class APPCACHE_EXPORT AppCacheRequestHandler
   // deliver for the request we're handling.
   void DeliverAppCachedResponse(const AppCacheEntry& entry, int64 cache_id,
                                 int64 group_id, const GURL& manifest_url,
-                                bool is_fallback, const GURL& fallback_url);
+                                bool is_fallback,
+                                const GURL& namespace_entry_url);
   void DeliverNetworkResponse();
   void DeliverErrorResponse();
 
@@ -107,7 +108,7 @@ class APPCACHE_EXPORT AppCacheRequestHandler
   int64 found_cache_id_;
   AppCacheEntry found_entry_;
   AppCacheEntry found_fallback_entry_;
-  GURL found_fallback_url_;
+  GURL found_namespace_entry_url_;
   GURL found_manifest_url_;
   bool found_network_namespace_;
 

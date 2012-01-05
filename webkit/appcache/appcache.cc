@@ -79,11 +79,12 @@ const AppCacheEntry* AppCache::GetEntryWithResponseId(int64 response_id) {
   return NULL;
 }
 
-GURL AppCache::GetFallbackEntryUrl(const GURL& namespace_url) const {
-  size_t count = fallback_namespaces_.size();
+GURL AppCache::GetNamespaceEntryUrl(const NamespaceVector& namespaces,
+                                    const GURL& namespace_url) const {
+  size_t count = namespaces.size();
   for (size_t i = 0; i < count; ++i) {
-    if (fallback_namespaces_[i].namespace_url == namespace_url)
-      return fallback_namespaces_[i].target_url;
+    if (namespaces[i].namespace_url == namespace_url)
+      return namespaces[i].target_url;
   }
   NOTREACHED();
   return GURL();
@@ -219,8 +220,9 @@ void AppCache::ToDatabaseRecords(
 }
 
 bool AppCache::FindResponseForRequest(const GURL& url,
-    AppCacheEntry* found_entry, AppCacheEntry* found_fallback_entry,
-    GURL* found_fallback_namespace, bool* found_network_namespace) {
+    AppCacheEntry* found_entry, GURL* found_intercept_namespace,
+    AppCacheEntry* found_fallback_entry, GURL* found_fallback_namespace,
+    bool* found_network_namespace) {
   // Ignore fragments when looking up URL in the cache.
   GURL url_no_ref;
   if (url.has_ref()) {
@@ -249,6 +251,7 @@ bool AppCache::FindResponseForRequest(const GURL& url,
     entry = GetEntry(intercept_namespace->target_url);
     DCHECK(entry);
     *found_entry = *entry;
+    *found_intercept_namespace = intercept_namespace->namespace_url;
     return true;
   }
 

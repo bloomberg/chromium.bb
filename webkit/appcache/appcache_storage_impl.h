@@ -125,7 +125,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   void CallOnMainResponseFound(
       DelegateReferenceVector* delegates,
       const GURL& url, const AppCacheEntry& entry,
-      const GURL& fallback_url, const AppCacheEntry& fallback_entry,
+      const GURL& namespace_entry_url, const AppCacheEntry& fallback_entry,
       int64 cache_id, int64 group_id, const GURL& manifest_url);
 
   APPCACHE_EXPORT AppCacheDiskCache* disk_cache();

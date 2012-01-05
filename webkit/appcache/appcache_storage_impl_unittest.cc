@@ -95,13 +95,13 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     void OnMainResponseFound(const GURL& url, const AppCacheEntry& entry,
-                             const GURL& fallback_url,
+                             const GURL& namespace_entry_url,
                              const AppCacheEntry& fallback_entry,
                              int64 cache_id, int64 group_id,
                              const GURL& manifest_url) {
       found_url_ = url;
       found_entry_ = entry;
-      found_fallback_url_ = fallback_url;
+      found_namespace_entry_url_ = namespace_entry_url;
       found_fallback_entry_ = fallback_entry;
       found_cache_id_ = cache_id;
       found_group_id_ = group_id;
@@ -121,7 +121,7 @@ class AppCacheStorageImplTest : public testing::Test {
     bool obsoleted_success_;
     GURL found_url_;
     AppCacheEntry found_entry_;
-    GURL found_fallback_url_;
+    GURL found_namespace_entry_url_;
     AppCacheEntry found_fallback_entry_;
     int64 found_cache_id_;
     int64 found_group_id_;
@@ -807,7 +807,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(kNoCacheId, delegate()->found_cache_id_);
     EXPECT_EQ(kNoResponseId, delegate()->found_entry_.response_id());
     EXPECT_EQ(kNoResponseId, delegate()->found_fallback_entry_.response_id());
-    EXPECT_TRUE(delegate()->found_fallback_url_.is_empty());
+    EXPECT_TRUE(delegate()->found_namespace_entry_url_.is_empty());
     EXPECT_EQ(0, delegate()->found_entry_.types());
     EXPECT_EQ(0, delegate()->found_fallback_entry_.types());
     TestFinished();
@@ -926,7 +926,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(2, delegate()->found_group_id_);
     EXPECT_FALSE(delegate()->found_entry_.has_response_id());
     EXPECT_EQ(2, delegate()->found_fallback_entry_.response_id());
-    EXPECT_EQ(kEntryUrl2, delegate()->found_fallback_url_);
+    EXPECT_EQ(kEntryUrl2, delegate()->found_namespace_entry_url_);
     EXPECT_TRUE(delegate()->found_fallback_entry_.IsFallback());
     TestFinished();
   }
@@ -995,6 +995,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(2, delegate()->found_group_id_);
     EXPECT_EQ(2, delegate()->found_entry_.response_id());
     EXPECT_TRUE(delegate()->found_entry_.IsIntercept());
+    EXPECT_EQ(kEntryUrl2, delegate()->found_namespace_entry_url_);
     EXPECT_FALSE(delegate()->found_fallback_entry_.has_response_id());
     TestFinished();
   }
@@ -1125,7 +1126,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(3 + kFallbackEntryIdOffset,
               delegate()->found_fallback_entry_.response_id());
     EXPECT_TRUE(delegate()->found_fallback_entry_.IsFallback());
-    EXPECT_EQ(kEntryUrl2, delegate()->found_fallback_url_);
+    EXPECT_EQ(kEntryUrl2, delegate()->found_namespace_entry_url_);
 
     // Conduct another test preferring kManifestUrl2 that hits the fallback.
     delegate_.reset(new MockStorageDelegate(this));
@@ -1146,7 +1147,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(2 + kFallbackEntryIdOffset,
               delegate()->found_fallback_entry_.response_id());
     EXPECT_TRUE(delegate()->found_fallback_entry_.IsFallback());
-    EXPECT_EQ(kEntryUrl2, delegate()->found_fallback_url_);
+    EXPECT_EQ(kEntryUrl2, delegate()->found_namespace_entry_url_);
 
     TestFinished();
   }
@@ -1213,7 +1214,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(0, delegate()->found_group_id_);
     EXPECT_EQ(kNoResponseId, delegate()->found_entry_.response_id());
     EXPECT_EQ(kNoResponseId, delegate()->found_fallback_entry_.response_id());
-    EXPECT_TRUE(delegate()->found_fallback_url_.is_empty());
+    EXPECT_TRUE(delegate()->found_namespace_entry_url_.is_empty());
     EXPECT_EQ(0, delegate()->found_entry_.types());
     EXPECT_EQ(0, delegate()->found_fallback_entry_.types());
 

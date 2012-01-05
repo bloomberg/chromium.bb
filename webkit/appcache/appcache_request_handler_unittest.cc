@@ -361,8 +361,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     handler_->GetExtraResponseInfo(&cache_id, &manifest_url);
     EXPECT_EQ(1, cache_id);
     EXPECT_EQ(GURL("http://blah/manifest/"), manifest_url);
-    EXPECT_TRUE(host_->main_resource_was_fallback_);
-    EXPECT_EQ(GURL("http://blah/fallbackurl"), host_->fallback_url_);
+    EXPECT_TRUE(host_->main_resource_was_namespace_entry_);
+    EXPECT_EQ(GURL("http://blah/fallbackurl"), host_->namespace_entry_url_);
 
     EXPECT_EQ(GURL("http://blah/manifest/"),
               host_->preferred_manifest_url());

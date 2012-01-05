@@ -16,6 +16,7 @@ class AppCacheEntry {
  public:
 
   // An entry can be of more than one type so use a bitmask.
+  // Note: These bit values are stored on disk.
   enum Type {
     MASTER = 1 << 0,
     MANIFEST = 1 << 1,

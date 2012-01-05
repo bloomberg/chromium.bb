@@ -191,15 +191,20 @@ TEST(AppCacheTest, FindResponseForRequest) {
   bool found = false;
   AppCacheEntry entry;
   AppCacheEntry fallback_entry;
+  GURL intercept_namespace;
   GURL fallback_namespace;
   bool network_namespace = false;
 
   found = cache->FindResponseForRequest(GURL("http://blah/miss"),
-      &entry, &fallback_entry, &fallback_namespace, &network_namespace);
+      &entry, &intercept_namespace,
+      &fallback_entry, &fallback_namespace,
+      &network_namespace);
   EXPECT_FALSE(found);
 
   found = cache->FindResponseForRequest(kForeignExplicitEntryUrl,
-      &entry, &fallback_entry, &fallback_namespace, &network_namespace);
+      &entry, &intercept_namespace,
+      &fallback_entry, &fallback_namespace,
+      &network_namespace);
   EXPECT_TRUE(found);
   EXPECT_EQ(kForeignExplicitResponseId, entry.response_id());
   EXPECT_FALSE(fallback_entry.has_response_id());
@@ -208,7 +213,9 @@ TEST(AppCacheTest, FindResponseForRequest) {
   entry = AppCacheEntry();  // reset
 
   found = cache->FindResponseForRequest(kManifestUrl,
-      &entry, &fallback_entry, &fallback_namespace, &network_namespace);
+      &entry, &intercept_namespace,
+      &fallback_entry, &fallback_namespace,
+      &network_namespace);
   EXPECT_TRUE(found);
   EXPECT_EQ(kManifestResponseId, entry.response_id());
   EXPECT_FALSE(fallback_entry.has_response_id());
@@ -217,7 +224,9 @@ TEST(AppCacheTest, FindResponseForRequest) {
   entry = AppCacheEntry();  // reset
 
   found = cache->FindResponseForRequest(kInOnlineNamespaceUrl,
-      &entry, &fallback_entry, &fallback_namespace, &network_namespace);
+      &entry, &intercept_namespace,
+      &fallback_entry, &fallback_namespace,
+      &network_namespace);
   EXPECT_TRUE(found);
   EXPECT_FALSE(entry.has_response_id());
   EXPECT_FALSE(fallback_entry.has_response_id());
@@ -226,7 +235,9 @@ TEST(AppCacheTest, FindResponseForRequest) {
   network_namespace = false;  // reset
 
   found = cache->FindResponseForRequest(kExplicitInOnlineNamespaceUrl,
-      &entry, &fallback_entry, &fallback_namespace, &network_namespace);
+      &entry, &intercept_namespace,
+      &fallback_entry, &fallback_namespace,
+      &network_namespace);
   EXPECT_TRUE(found);
   EXPECT_EQ(kExplicitInOnlineNamespaceResponseId, entry.response_id());
   EXPECT_FALSE(fallback_entry.has_response_id());
@@ -235,7 +246,9 @@ TEST(AppCacheTest, FindResponseForRequest) {
   entry = AppCacheEntry();  // reset
 
   found = cache->FindResponseForRequest(kFallbackTestUrl1,
-      &entry, &fallback_entry, &fallback_namespace, &network_namespace);
+      &entry, &intercept_namespace,
+      &fallback_entry, &fallback_namespace,
+      &network_namespace);
   EXPECT_TRUE(found);
   EXPECT_FALSE(entry.has_response_id());
   EXPECT_EQ(kFallbackResponseId1, fallback_entry.response_id());
@@ -246,7 +259,9 @@ TEST(AppCacheTest, FindResponseForRequest) {
   fallback_entry = AppCacheEntry();  // reset
 
   found = cache->FindResponseForRequest(kFallbackTestUrl2,
-      &entry, &fallback_entry, &fallback_namespace, &network_namespace);
+      &entry, &intercept_namespace,
+      &fallback_entry, &fallback_namespace,
+      &network_namespace);
   EXPECT_TRUE(found);
   EXPECT_FALSE(entry.has_response_id());
   EXPECT_EQ(kFallbackResponseId2, fallback_entry.response_id());
@@ -257,7 +272,9 @@ TEST(AppCacheTest, FindResponseForRequest) {
   fallback_entry = AppCacheEntry();  // reset
 
   found = cache->FindResponseForRequest(kOnlineNamespaceWithinOtherNamespaces,
-      &entry, &fallback_entry, &fallback_namespace, &network_namespace);
+      &entry, &intercept_namespace,
+      &fallback_entry, &fallback_namespace,
+      &network_namespace);
   EXPECT_TRUE(found);
   EXPECT_FALSE(entry.has_response_id());
   EXPECT_FALSE(fallback_entry.has_response_id());
@@ -267,28 +284,42 @@ TEST(AppCacheTest, FindResponseForRequest) {
 
   found = cache->FindResponseForRequest(
       kOnlineNamespaceWithinOtherNamespaces.Resolve("online_resource"),
-      &entry, &fallback_entry, &fallback_namespace, &network_namespace);
+      &entry, &intercept_namespace,
+      &fallback_entry, &fallback_namespace,
+      &network_namespace);
   EXPECT_TRUE(found);
   EXPECT_FALSE(entry.has_response_id());
   EXPECT_FALSE(fallback_entry.has_response_id());
   EXPECT_TRUE(network_namespace);
 
+  fallback_namespace = GURL();
+
   found = cache->FindResponseForRequest(
       kInterceptNamespace.Resolve("intercept_me"),
-      &entry, &fallback_entry, &fallback_namespace, &network_namespace);
+      &entry, &intercept_namespace,
+      &fallback_entry, &fallback_namespace,
+      &network_namespace);
   EXPECT_TRUE(found);
   EXPECT_EQ(kInterceptResponseId, entry.response_id());
+  EXPECT_EQ(kInterceptNamespaceEntry,
+            cache->GetInterceptEntryUrl(intercept_namespace));
   EXPECT_FALSE(fallback_entry.has_response_id());
+  EXPECT_TRUE(fallback_namespace.is_empty());
   EXPECT_FALSE(network_namespace);
 
   entry = AppCacheEntry();  // reset
 
   found = cache->FindResponseForRequest(
       kInterceptNamespaceWithinFallback.Resolve("intercept_me"),
-      &entry, &fallback_entry, &fallback_namespace, &network_namespace);
+      &entry, &intercept_namespace,
+      &fallback_entry, &fallback_namespace,
+      &network_namespace);
   EXPECT_TRUE(found);
   EXPECT_EQ(kInterceptResponseId, entry.response_id());
+  EXPECT_EQ(kInterceptNamespaceEntry,
+            cache->GetInterceptEntryUrl(intercept_namespace));
   EXPECT_FALSE(fallback_entry.has_response_id());
+  EXPECT_TRUE(fallback_namespace.is_empty());
   EXPECT_FALSE(network_namespace);
 }
 

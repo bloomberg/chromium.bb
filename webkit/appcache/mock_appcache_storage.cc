@@ -121,9 +121,11 @@ void MockAppCacheStorage::FindResponseForSubRequest(
   }
 
   GURL fallback_namespace_not_used;
+  GURL intercept_namespace_not_used;
   cache->FindResponseForRequest(
-      url, found_entry, found_fallback_entry,
-      &fallback_namespace_not_used, found_network_namespace);
+      url, found_entry, &intercept_namespace_not_used,
+      found_fallback_entry,  &fallback_namespace_not_used,
+      found_network_namespace);
 }
 
 void MockAppCacheStorage::MarkEntryAsForeign(
@@ -232,7 +234,7 @@ void MockAppCacheStorage::ProcessStoreGroupAndNewestCache(
 namespace {
 
 struct FoundCandidate {
-  GURL url;
+  GURL namespace_entry_url;
   AppCacheEntry entry;
   int64 cache_id;
   int64 group_id;
@@ -243,6 +245,53 @@ struct FoundCandidate {
       : cache_id(kNoCacheId), group_id(0), is_cache_in_use(false) {}
 };
 
+void MaybeTakeNewNamespaceEntry(
+    NamespaceType namespace_type,
+    const AppCacheEntry &entry,
+    const GURL& namespace_url,
+    bool cache_is_in_use,
+    FoundCandidate* best_candidate,
+    GURL* best_candidate_namespace,
+    AppCache* cache,
+    AppCacheGroup* group) {
+  DCHECK(entry.has_response_id());
+
+  bool take_new_entry = true;
+
+  // Does the new candidate entry trump our current best candidate?
+  if (best_candidate->entry.has_response_id()) {
+    // Longer namespace prefix matches win.
+    size_t candidate_length =
+        namespace_url.spec().length();
+    size_t best_length =
+        best_candidate_namespace->spec().length();
+
+    if (candidate_length > best_length) {
+      take_new_entry = true;
+    } else if (candidate_length == best_length &&
+               cache_is_in_use && !best_candidate->is_cache_in_use) {
+      take_new_entry = true;
+    } else {
+      take_new_entry = false;
+    }
+  }
+
+  if (take_new_entry) {
+    if (namespace_type == FALLBACK_NAMESPACE) {
+      best_candidate->namespace_entry_url =
+          cache->GetFallbackEntryUrl(namespace_url);
+    } else {
+      best_candidate->namespace_entry_url =
+          cache->GetInterceptEntryUrl(namespace_url);
+    }
+    best_candidate->entry = entry;
+    best_candidate->cache_id = cache->cache_id();
+    best_candidate->group_id = group->group_id();
+    best_candidate->manifest_url = group->manifest_url();
+    best_candidate->is_cache_in_use = cache_is_in_use;
+    *best_candidate_namespace = namespace_url;
+  }
+}
 }  // namespace
 
 void MockAppCacheStorage::ProcessFindResponseForMainRequest(
@@ -273,6 +322,7 @@ void MockAppCacheStorage::ProcessFindResponseForMainRequest(
   // * take into account the cache associated with the document
   //   currently residing in the frame being navigated
   FoundCandidate found_candidate;
+  GURL found_intercept_candidate_namespace;
   FoundCandidate found_fallback_candidate;
   GURL found_fallback_candidate_namespace;
 
@@ -287,11 +337,12 @@ void MockAppCacheStorage::ProcessFindResponseForMainRequest(
 
     AppCacheEntry found_entry;
     AppCacheEntry found_fallback_entry;
+    GURL found_intercept_namespace;
     GURL found_fallback_namespace;
     bool ignore_found_network_namespace = false;
     bool found = cache->FindResponseForRequest(
-                            url, &found_entry, &found_fallback_entry,
-                            &found_fallback_namespace,
+                            url, &found_entry, &found_intercept_namespace,
+                            &found_fallback_entry, &found_fallback_namespace,
                             &ignore_found_network_namespace);
 
     // 6.11.1 Navigating across documents, Step 10.
@@ -307,8 +358,9 @@ void MockAppCacheStorage::ProcessFindResponseForMainRequest(
     // We have a bias for hits from caches that are in use.
     bool is_in_use = IsCacheStored(cache) && !cache->HasOneRef();
 
-    if (found_entry.has_response_id()) {
-      found_candidate.url = url;
+    if (found_entry.has_response_id() &&
+        found_intercept_namespace.is_empty()) {
+      found_candidate.namespace_entry_url = GURL();
       found_candidate.entry = found_entry;
       found_candidate.cache_id = cache->cache_id();
       found_candidate.group_id = group->group_id();
@@ -316,47 +368,28 @@ void MockAppCacheStorage::ProcessFindResponseForMainRequest(
       found_candidate.is_cache_in_use = is_in_use;
       if (is_in_use)
         break;  // We break out of the loop with this direct hit.
+    } else if (found_entry.has_response_id() &&
+               !found_intercept_namespace.is_empty()) {
+      MaybeTakeNewNamespaceEntry(
+          INTERCEPT_NAMESPACE,
+          found_entry, found_intercept_namespace, is_in_use,
+          &found_candidate, &found_intercept_candidate_namespace,
+          cache, group);
     } else {
       DCHECK(found_fallback_entry.has_response_id());
-
-      bool take_new_candidate = true;
-
-      // Does the newly found entry trump our current candidate?
-      if (found_fallback_candidate.entry.has_response_id()) {
-        // Longer namespace prefix matches win.
-        size_t found_length =
-            found_fallback_namespace.spec().length();
-        size_t candidate_length =
-            found_fallback_candidate_namespace.spec().length();
-
-        if (found_length > candidate_length) {
-          take_new_candidate = true;
-        } else if (found_length == candidate_length &&
-                   is_in_use && !found_fallback_candidate.is_cache_in_use) {
-          take_new_candidate = true;
-        } else {
-          take_new_candidate = false;
-        }
-      }
-
-      if (take_new_candidate) {
-        found_fallback_candidate.url =
-            cache->GetFallbackEntryUrl(found_fallback_namespace);
-        found_fallback_candidate.entry = found_fallback_entry;
-        found_fallback_candidate.cache_id = cache->cache_id();
-        found_fallback_candidate.group_id = group->group_id();
-        found_fallback_candidate.manifest_url = group->manifest_url();
-        found_fallback_candidate.is_cache_in_use = is_in_use;
-        found_fallback_candidate_namespace = found_fallback_namespace;
-      }
+      MaybeTakeNewNamespaceEntry(
+          FALLBACK_NAMESPACE,
+          found_fallback_entry, found_fallback_namespace, is_in_use,
+          &found_fallback_candidate, &found_fallback_candidate_namespace,
+          cache, group);
     }
   }
 
-  // Found a direct hit.
+  // Found a direct hit or an intercept namespace hit.
   if (found_candidate.entry.has_response_id()) {
     delegate_ref->delegate->OnMainResponseFound(
-        url, found_candidate.entry, GURL(), AppCacheEntry(),
-        found_candidate.cache_id, found_candidate.group_id,
+        url, found_candidate.entry, found_candidate.namespace_entry_url,
+        AppCacheEntry(),  found_candidate.cache_id, found_candidate.group_id,
         found_candidate.manifest_url);
     return;
   }
@@ -365,7 +398,7 @@ void MockAppCacheStorage::ProcessFindResponseForMainRequest(
   if (found_fallback_candidate.entry.has_response_id()) {
     delegate_ref->delegate->OnMainResponseFound(
         url, AppCacheEntry(),
-        found_fallback_candidate.url,
+        found_fallback_candidate.namespace_entry_url,
         found_fallback_candidate.entry,
         found_fallback_candidate.cache_id,
         found_fallback_candidate.group_id,

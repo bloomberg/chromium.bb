@@ -254,7 +254,7 @@ TEST_F(AppCacheHostTest, ForeignFallbackEntry) {
   cache->AddEntry(kFallbackURL, AppCacheEntry(AppCacheEntry::FALLBACK));
 
   AppCacheHost host(1, &mock_frontend_, &service_);
-  host.NotifyMainResourceFallback(kFallbackURL);
+  host.NotifyMainResourceIsNamespaceEntry(kFallbackURL);
   host.MarkAsForeignEntry(GURL("http://origin/missing_document"), kCacheId);
 
   // We should have received an OnCacheSelected msg for kNoCacheId.
