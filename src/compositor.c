@@ -2207,6 +2207,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	weston_compositor_wake(ec);
 	wl_display_run(display);
 
 	/* prevent further rendering while shutting down */
