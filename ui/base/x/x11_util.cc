@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -895,6 +895,13 @@ bool IsX11WindowFullScreen(XID window) {
   NOTIMPLEMENTED();
   return false;
 #endif
+}
+
+bool IsMotionEvent(XEvent* event) {
+  int type = event->type;
+  if (type == GenericEvent)
+    type = event->xgeneric.evtype;
+  return type == MotionNotify;
 }
 
 int GetMappedButton(int button) {

@@ -38,6 +38,10 @@
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget_delegate.h"
 
+#if defined(USE_AURA) && defined(USE_X11)
+#include "ui/base/x/x11_util.h"
+#endif
+
 using content::WebContents;
 
 namespace {
@@ -279,15 +283,16 @@ void PanelBrowserFrameView::MouseWatcher::DidProcessEvent(
       break;
   }
 }
-#elif defined(USE_AURA)
+#elif defined(USE_AURA) && defined(USE_X11)
 base::EventStatus PanelBrowserFrameView::MouseWatcher::WillProcessEvent(
-    const base::NativeEvent& event) {
+    XEvent* const& event) {
   return base::EVENT_CONTINUE;
 }
 
 void PanelBrowserFrameView::MouseWatcher::DidProcessEvent(
-    const base::NativeEvent& event) {
-  NOTIMPLEMENTED();
+    XEvent* const& event) {
+  if (ui::IsMotionEvent(event))
+    HandleGlobalMouseMoveEvent();
 }
 #elif defined(TOOLKIT_USES_GTK)
 void PanelBrowserFrameView::MouseWatcher::WillProcessEvent(GdkEvent* event) {
@@ -295,8 +300,9 @@ void PanelBrowserFrameView::MouseWatcher::WillProcessEvent(GdkEvent* event) {
 
 void PanelBrowserFrameView::MouseWatcher::DidProcessEvent(GdkEvent* event) {
   switch (event->type) {
-    case GDK_MOTION_NOTIFY:
+    case GDK_ENTER_NOTIFY:
     case GDK_LEAVE_NOTIFY:
+    case GDK_MOTION_NOTIFY:
       HandleGlobalMouseMoveEvent();
       break;
     default:
