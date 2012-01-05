@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,8 @@ namespace {
 
 // Hardcoded colors for use when there is no system theme (Aura, ChromeOS).
 const SkColor kDefaultDialogBackgroundColor = SkColorSetRGB(200, 200, 200);
+const SkColor kDefaultFocusedBorderColor= SkColorSetRGB(0x4D, 0x90, 0xFE);
+const SkColor kDefaultUnfocusedBorderColor = SkColorSetRGB(0xD9, 0xD9, 0xD9);
 const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
 
 // These are the default dimensions of radio buttons and checkboxes.
@@ -212,6 +214,10 @@ SkColor NativeThemeBase::GetSystemColor(ColorId color_id) const {
   switch (color_id) {
     case kColorId_DialogBackground:
       return kDefaultDialogBackgroundColor;
+    case kColorId_FocusedBorderColor:
+      return kDefaultFocusedBorderColor;
+    case kColorId_UnfocusedBorderColor:
+      return kDefaultUnfocusedBorderColor;
     default:
       NOTREACHED() << "Invalid color_id: " << color_id;
       break;
