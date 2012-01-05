@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include <set>
 
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -21,8 +20,6 @@
 #include "chrome/browser/ui/views/tabs/native_view_photobooth.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/common/chrome_switches.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -39,17 +36,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/events/event.h"
-#include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(USE_AURA)
-#include "ash/shell.h"
-#include "chrome/browser/ui/views/tabs/tab_drag_controller2.h"
-#endif
-
-#if defined(OS_WIN)
-#include "chrome/browser/ui/views/tabs/tab_drag_controller2.h"
-#endif
 
 #if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>  // NOLINT
@@ -337,7 +324,6 @@ DefaultTabDragController::~DefaultTabDragController() {
     instance_ = NULL;
 
   MessageLoopForUI::current()->RemoveObserver(this);
-
   // Need to delete the view here manually _before_ we reset the dragged
   // contents to NULL, otherwise if the view is animating to its destination
   // bounds, it won't be able to clean up properly since its cleanup routine
@@ -415,11 +401,6 @@ void DefaultTabDragController::Drag() {
     started_drag_ = true;
     SaveFocus();
     Attach(source_tabstrip_, gfx::Point());
-    // Redirect all mouse events to the TabStrip so that the tab that
-    // originated the drag can safely be deleted.
-    static_cast<views::internal::RootView*>(
-        source_tabstrip_->GetWidget()->GetRootView())->SetMouseHandler(
-        source_tabstrip_);
   }
 
   ContinueDragging();
@@ -1436,17 +1417,6 @@ bool DefaultTabDragController::AreTabsConsecutive() {
   return true;
 }
 
-#if defined(USE_AURA) || defined(OS_WIN)
-static bool ShouldCreateTabDragController2() {
-#if defined(USE_AURA)
-  return !ash::Shell::GetInstance()->IsWindowModeCompact();
-#else
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kTabBrowserDragging);
-#endif
-}
-#endif
-
 // static
 TabDragController* TabDragController::Create(
       TabStrip* source_tabstrip,
@@ -1455,14 +1425,6 @@ TabDragController* TabDragController::Create(
       const gfx::Point& mouse_offset,
       int source_tab_offset,
       const TabStripSelectionModel& initial_selection_model) {
-#if defined(USE_AURA) || defined(OS_WIN)
-  if (ShouldCreateTabDragController2()) {
-    TabDragController2* controller = new TabDragController2;
-    controller->Init(source_tabstrip, source_tab, tabs, mouse_offset,
-                     source_tab_offset, initial_selection_model);
-    return controller;
-  }
-#endif
   DefaultTabDragController* controller = new DefaultTabDragController;
   controller->Init(source_tabstrip, source_tab, tabs, mouse_offset,
                    source_tab_offset, initial_selection_model);
@@ -1471,21 +1433,6 @@ TabDragController* TabDragController::Create(
 
 // static
 bool TabDragController::IsAttachedTo(TabStrip* tab_strip) {
-#if defined(USE_AURA) || defined(OS_WIN)
-  return TabDragController2::IsActiveAndAttachedTo(tab_strip) ||
-      (instance_ && instance_->active() &&
-       instance_->attached_tabstrip() == tab_strip);
-#else
-  return (instance_ && instance_->active() &&
-          instance_->attached_tabstrip() == tab_strip);
-#endif
-}
-
-// static
-bool TabDragController::IsActive() {
-#if defined(USE_AURA) || defined(OS_WIN)
-  return TabDragController2::IsActive() || (instance_ && instance_->active());
-#else
-  return instance_ && instance_->active();
-#endif
+  return instance_ && instance_->active()&&
+      instance_->attached_tabstrip() == tab_strip;
 }

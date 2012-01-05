@@ -5052,12 +5052,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_DESCRIPTION" desc="Description for the flag to enable JavaScript Harmony features.">
         Enable web pages to use experimental JavaScript features.
       </message>
-      <message name="IDS_FLAGS_ENABLE_TAB_BROWSER_DRAGGING_NAME" desc="Title for the flag to enable detached tabs to create a real browser.">
-        Enable Tab Browser Dragging
-      </message>
-      <message name="IDS_FLAGS_ENABLE_TAB_BROWSER_DRAGGING_DESCRIPTION" desc="Description for the flag to enable detached tabs to create a real browser.">
-        Enable creating a browser window when dragging tabs.
-      </message>
       <message name="IDS_FLAGS_ENABLE_RESTORE_SESSION_STATE_NAME" desc="Title for the flag to enable restoring (more) session state after restarts and crashes.">
 	Better session restore
       </message>

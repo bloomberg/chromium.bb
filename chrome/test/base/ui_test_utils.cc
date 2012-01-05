@@ -692,23 +692,6 @@ bool SendKeyPressAndWait(const Browser* browser,
   return !testing::Test::HasFatalFailure();
 }
 
-bool SendMouseMoveSync(const gfx::Point& location) {
-  if (!ui_controls::SendMouseMoveNotifyWhenDone(location.x(), location.y(),
-                                                MessageLoop::QuitClosure())) {
-    return false;
-  }
-  RunMessageLoop();
-  return !testing::Test::HasFatalFailure();
-}
-
-bool SendMouseEventsSync(ui_controls::MouseButton type, int state) {
-  if (!ui_controls::SendMouseEventsNotifyWhenDone(
-          type, state, MessageLoop::QuitClosure())) {
-    return false;
-  }
-  RunMessageLoop();
-  return !testing::Test::HasFatalFailure();
-}
 
 TimedMessageLoopRunner::TimedMessageLoopRunner()
     : loop_(new MessageLoopForUI()),

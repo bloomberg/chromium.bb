@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,6 @@
 class BookmarkBarView;
 class Browser;
 class BrowserViewLayout;
-class BrowserWindowMoveObserver;
 class ContentsContainer;
 class DownloadShelfView;
 class EncodingMenuModel;
@@ -242,10 +241,6 @@ class BrowserView : public BrowserWindow,
   // Restores the focused view. This is also used to set the initial focus
   // when a new browser window is created.
   void RestoreFocus();
-
-  void set_move_observer(BrowserWindowMoveObserver* observer) {
-    move_observer_ = observer;
-  }
 
   // Overridden from BrowserWindow:
   virtual void Show() OVERRIDE;
@@ -749,8 +744,6 @@ class BrowserView : public BrowserWindow,
   bool force_location_bar_focus_;
 
   PendingFullscreenRequest fullscreen_request_;
-
-  BrowserWindowMoveObserver* move_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -870,10 +870,6 @@ enum NotificationType {
   // Sent when a bookmark's context menu is shown. Used to notify
   // tests that the context menu has been created and shown.
   NOTIFICATION_BOOKMARK_CONTEXT_MENU_SHOWN,
-
-  // Notification that the nested loop using during tab dragging has returned.
-  // Used for testing.
-  NOTIFICATION_TAB_DRAG_LOOP_DONE,
 #endif
 
   // Sent when the tab's closeable state has changed due to increase/decrease
