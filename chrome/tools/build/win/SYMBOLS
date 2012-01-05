@@ -12,3 +12,7 @@ gcp_portmon64.pdb
 virtual_driver_setup.pdb
 syzygy/chrome_dll.pdb
 syzygy/mini_installer.pdb
+npchrome_frame.pdb
+chrome_launcher.pdb
+chrome_frame_helper.pdb
+chrome_frame_helper_dll.pdb
