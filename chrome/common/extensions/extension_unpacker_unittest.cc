@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,14 @@ public:
   scoped_ptr<ExtensionUnpacker> unpacker_;
 };
 
-TEST_F(ExtensionUnpackerTest, EmptyDefaultLocale) {
+// Flaky on Windows, http://crbug.com/109238
+#if defined(OS_WINDOWS)
+#define MAYBE_EmptyDefaultLocale FLAKY_EmptyDefaultLocale
+#else
+#define MAYBE_EmptyDefaultLocale EmptyDefaultLocale
+#endif
+
+TEST_F(ExtensionUnpackerTest, MAYBE_EmptyDefaultLocale) {
   SetupUnpacker("empty_default_locale.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kInvalidDefaultLocale),
