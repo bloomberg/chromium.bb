@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -432,7 +432,7 @@ void FirstRunDialog::OnLearnMoreLinkClicked(GtkButton* button) {
 }
 
 void FirstRunDialog::FirstRunDone() {
-  FirstRun::SetShowWelcomePagePref();
+  first_run::SetShowWelcomePagePref();
 
   if (dialog_)
     gtk_widget_destroy(dialog_);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,47 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 
+namespace {
+
+// This class acts as an observer for the ImporterProgressObserver::ImportEnded
+// callback. When the import process is started, certain errors may cause
+// ImportEnded() to be called synchronously, but the typical case is that
+// ImportEnded() is called asynchronously. Thus we have to handle both cases.
+class ImportEndedObserver : public importer::ImporterProgressObserver {
+ public:
+  ImportEndedObserver() : ended_(false),
+                          should_quit_message_loop_(false) {}
+  virtual ~ImportEndedObserver() {}
+
+  // importer::ImporterProgressObserver:
+  virtual void ImportStarted() OVERRIDE {}
+  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE {}
+  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE {}
+  virtual void ImportEnded() OVERRIDE {
+    ended_ = true;
+    if (should_quit_message_loop_)
+      MessageLoop::current()->Quit();
+  }
+
+  void set_should_quit_message_loop() {
+    should_quit_message_loop_ = true;
+  }
+
+  bool ended() {
+    return ended_;
+  }
+
+ private:
+  // Set if the import has ended.
+  bool ended_;
+
+  // Set by the client (via set_should_quit_message_loop) if, when the import
+  // ends, this class should quit the message loop.
+  bool should_quit_message_loop_;
+};
+
+}  // namespace
+
 namespace first_run {
 
 namespace internal {
@@ -27,6 +68,34 @@ bool GetFirstRunSentinelFilePath(FilePath* path) {
     return false;
 
   *path = first_run_sentinel.AppendASCII(kSentinelFile);
+  return true;
+}
+
+bool ImportSettings(Profile* profile,
+                    scoped_refptr<ImporterHost> importer_host,
+                    scoped_refptr<ImporterList> importer_list,
+                    int items_to_import) {
+  const importer::SourceProfile& source_profile =
+      importer_list->GetSourceProfileAt(0);
+
+  // Ensure that importers aren't requested to import items that they do not
+  // support.
+  items_to_import &= source_profile.services_supported;
+
+  scoped_ptr<ImportEndedObserver> observer(new ImportEndedObserver);
+  importer_host->SetObserver(observer.get());
+  importer_host->StartImportSettings(source_profile,
+                                     profile,
+                                     items_to_import,
+                                     new ProfileWriter(profile),
+                                     true);
+  // If the import process has not errored out, block on it.
+  if (!observer->ended()) {
+    observer->set_should_quit_message_loop();
+    MessageLoop::current()->Run();
+  }
+
+  // Unfortunately there's no success/fail signal in ImporterHost.
   return true;
 }
 

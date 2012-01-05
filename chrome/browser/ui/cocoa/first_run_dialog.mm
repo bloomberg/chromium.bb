@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,9 +131,9 @@ void ShowFirstRun(Profile* profile) {
       TemplateURLServiceFactory::GetForProfile(profile);
   if (search_engines_model &&
       search_engines_model->GetDefaultSearchProvider()) {
-    FirstRun::SetShowFirstRunBubblePref(true);
+    first_run::SetShowFirstRunBubblePref(true);
   }
-  FirstRun::SetShowWelcomePagePref();
+  first_run::SetShowWelcomePagePref();
 }
 
 // True when the stats checkbox should be checked by default. This is only

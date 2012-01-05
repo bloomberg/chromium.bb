@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,7 @@
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_progress_dialog.h"
+#include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -135,6 +136,13 @@ bool CreateChromeQuickLaunchShortcut() {
       true);  // create if doesn't exist.
 }
 
+void PlatformSetup() {
+  CreateChromeDesktopShortcut();
+  // Windows 7 has deprecated the quick launch bar.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
+    CreateChromeQuickLaunchShortcut();
+}
+
 }  // namespace
 
 bool FirstRun::LaunchSetupWithParam(const std::string& param,
@@ -182,7 +190,7 @@ void FirstRun::DoDelayedInstallExtensions() {
 
 namespace {
 
-// This class is used by FirstRun::ImportSettings to determine when the import
+// This class is used by first_run::ImportSettings to determine when the import
 // process has ended and what was the result of the operation as reported by
 // the process exit code. This class executes in the context of the main chrome
 // process.
@@ -302,53 +310,13 @@ bool DecodeImportParams(const std::string& encoded,
 }  // namespace
 
 namespace first_run {
-
 namespace internal{
 
-bool GetFirstRunSentinelFilePath(FilePath* path) {
-  FilePath first_run_sentinel;
-
-  FilePath exe_path;
-  if (!PathService::Get(base::DIR_EXE, &exe_path))
-    return false;
-  if (InstallUtil::IsPerUserInstall(exe_path.value().c_str())) {
-    first_run_sentinel = exe_path;
-  } else {
-    if (!PathService::Get(chrome::DIR_USER_DATA, &first_run_sentinel))
-      return false;
-  }
-
-  *path = first_run_sentinel.AppendASCII(kSentinelFile);
-  return true;
-}
-
-}  // namespace internal
-
-}  // namespace first_run
-
-// static
-void FirstRun::PlatformSetup() {
-  CreateChromeDesktopShortcut();
-  // Windows 7 has deprecated the quick launch bar.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    CreateChromeQuickLaunchShortcut();
-}
-
-// static
-FilePath FirstRun::MasterPrefsPath() {
-  // The standard location of the master prefs is next to the chrome binary.
-  FilePath master_prefs;
-  if (!PathService::Get(base::DIR_EXE, &master_prefs))
-    return FilePath();
-  return master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
-}
-
-// static
-bool FirstRun::ImportSettings(Profile* profile,
-                              int importer_type,
-                              int items_to_import,
-                              const FilePath& import_bookmarks_path,
-                              bool skip_first_run_ui) {
+bool ImportSettingsWin(Profile* profile,
+                       int importer_type,
+                       int items_to_import,
+                       const FilePath& import_bookmarks_path,
+                       bool skip_first_run_ui) {
   const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
   CommandLine import_cmd(cmdline.GetProgram());
 
@@ -394,17 +362,82 @@ bool FirstRun::ImportSettings(Profile* profile,
   return (import_runner.exit_code() == content::RESULT_CODE_NORMAL_EXIT);
 }
 
-// static
-bool FirstRun::ImportSettings(Profile* profile,
-                              scoped_refptr<ImporterHost> importer_host,
-                              scoped_refptr<ImporterList> importer_list,
-                              int items_to_import) {
-  return ImportSettings(
+bool ImportSettings(Profile* profile,
+                    scoped_refptr<ImporterHost> importer_host,
+                    scoped_refptr<ImporterList> importer_list,
+                    int items_to_import) {
+  return internal::ImportSettingsWin(
       profile,
       importer_list->GetSourceProfileAt(0).importer_type,
       items_to_import,
       FilePath(),
       false);
+}
+
+bool GetFirstRunSentinelFilePath(FilePath* path) {
+  FilePath first_run_sentinel;
+
+  FilePath exe_path;
+  if (!PathService::Get(base::DIR_EXE, &exe_path))
+    return false;
+  if (InstallUtil::IsPerUserInstall(exe_path.value().c_str())) {
+    first_run_sentinel = exe_path;
+  } else {
+    if (!PathService::Get(chrome::DIR_USER_DATA, &first_run_sentinel))
+      return false;
+  }
+
+  *path = first_run_sentinel.AppendASCII(kSentinelFile);
+  return true;
+}
+
+}  // namespace internal
+}  // namespace first_run
+
+namespace first_run {
+
+void AutoImport(
+    Profile* profile,
+    bool homepage_defined,
+    int import_items,
+    int dont_import_items,
+    bool search_engine_experiment,
+    bool randomize_search_engine_experiment,
+    bool make_chrome_default,
+    ProcessSingleton* process_singleton) {
+#if !defined(USE_AURA)
+  // We need to avoid dispatching new tabs when we are importing because
+  // that will lead to data corruption or a crash. Because there is no UI for
+  // the import process, we pass NULL as the window to bring to the foreground
+  // when a CopyData message comes in; this causes the message to be silently
+  // discarded, which is the correct behavior during the import process.
+  process_singleton->Lock(NULL);
+
+  PlatformSetup();
+
+  scoped_refptr<ImporterHost> importer_host;
+  importer_host = new ImporterHost;
+
+  internal::AutoImportPlatformCommon(importer_host, profile, homepage_defined,
+                                     import_items, dont_import_items,
+                                     search_engine_experiment,
+                                     randomize_search_engine_experiment,
+                                     make_chrome_default);
+
+  process_singleton->Unlock();
+  CreateSentinel();
+#endif  // !defined(USE_AURA)
+}
+
+}  // namespace first_run
+
+// static
+FilePath FirstRun::MasterPrefsPath() {
+  // The standard location of the master prefs is next to the chrome binary.
+  FilePath master_prefs;
+  if (!PathService::Get(base::DIR_EXE, &master_prefs))
+    return FilePath();
+  return master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
 }
 
 #if !defined(USE_AURA)

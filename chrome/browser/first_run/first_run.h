@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,6 +48,42 @@ bool CreateSentinel();
 // sentinel file could not be removed.
 bool RemoveSentinel();
 
+// Sets the kShouldShowFirstRunBubble local state pref so that the browser
+// shows the bubble once the main message loop gets going (or refrains from
+// showing the bubble, if |show_bubble| is false). Returns false if the pref
+// could not be set. This function can be called multiple times, but only the
+// initial call will actually set the preference.
+bool SetShowFirstRunBubblePref(bool show_bubble);
+
+// Sets the kShouldUseMinimalFirstRunBubble local state pref so that the
+// browser shows the minimal first run bubble once the main message loop
+// gets going. Returns false if the pref could not be set.
+bool SetMinimalFirstRunBubblePref();
+
+// Sets the kShouldShowWelcomePage local state pref so that the browser
+// loads the welcome tab once the message loop gets going. Returns false
+// if the pref could not be set.
+bool SetShowWelcomePagePref();
+
+// Sets the kAutofillPersonalDataManagerFirstRun local state pref so that the
+// browser loads PersonalDataManager once the main message loop gets going.
+// Returns false if the pref could not be set.
+bool SetPersonalDataManagerFirstRunPref();
+
+// -- Platform-specific functions --
+
+// Automatically import history and home page (and search engine, if
+// ShouldShowSearchEngineDialog is true).
+void AutoImport(Profile* profile,
+                bool homepage_defined,
+                int import_items,
+                int dont_import_items,
+                bool search_engine_experiment,
+                bool randomize_search_engine_experiment,
+                bool make_chrome_default,
+                ProcessSingleton* process_singleton);
+
+
 }  // namespace first_run
 
 // This class contains the chrome first-run installation actions needed to
@@ -90,18 +126,6 @@ class FirstRun {
   // cmdline parameters.
   static int ImportNow(Profile* profile, const CommandLine& cmdline);
 
-  // Automatically import history and home page (and search engine, if
-  // ShouldShowSearchEngineDialog is true).
-  static void AutoImport(
-      Profile* profile,
-      bool homepage_defined,
-      int import_items,
-      int dont_import_items,
-      bool search_engine_experiment,
-      bool randomize_search_engine_experiment,
-      bool make_chrome_default,
-      ProcessSingleton* process_singleton);
-
   // The master preferences is a JSON file with the same entries as the
   // 'Default\Preferences' file. This function locates this file from a standard
   // location and processes it so it becomes the default preferences in the
@@ -118,51 +142,15 @@ class FirstRun {
   static bool ProcessMasterPreferences(const FilePath& user_data_dir,
                                        MasterPrefs* out_prefs);
 
-  // Sets the kShouldShowFirstRunBubble local state pref so that the browser
-  // shows the bubble once the main message loop gets going (or refrains from
-  // showing the bubble, if |show_bubble| is false). Returns false if the pref
-  // could not be set. This function can be called multiple times, but only the
-  // initial call will actually set the preference.
-  static bool SetShowFirstRunBubblePref(bool show_bubble);
-
   // Sets the kShouldUseOEMFirstRunBubble local state pref so that the
   // browser shows the OEM first run bubble once the main message loop
   // gets going. Returns false if the pref could not be set.
   static bool SetOEMFirstRunBubblePref();
 
-  // Sets the kShouldUseMinimalFirstRunBubble local state pref so that the
-  // browser shows the minimal first run bubble once the main message loop
-  // gets going. Returns false if the pref could not be set.
-  static bool SetMinimalFirstRunBubblePref();
-
-  // Sets the kShouldShowWelcomePage local state pref so that the browser
-  // loads the welcome tab once the message loop gets going. Returns false
-  // if the pref could not be set.
-  static bool SetShowWelcomePagePref();
-
-  // Sets the kAutofillPersonalDataManagerFirstRun local state pref so that the
-  // browser loads PersonalDataManager once the main message loop gets going.
-  // Returns false if the pref could not be set.
-  static bool SetPersonalDataManagerFirstRunPref();
-
   // Whether the search engine selection dialog should be shown on first run.
   static bool ShouldShowSearchEngineSelector(const TemplateURLService* model);
 
   // -- Platform-specific functions --
-
-  // Imports settings. This may be done in a separate process depending on the
-  // platform, but it will always block until done. The return value indicates
-  // success.
-  static bool ImportSettings(Profile* profile,
-                             scoped_refptr<ImporterHost> importer_host,
-                             scoped_refptr<ImporterList> importer_list,
-                             int items_to_import);
-
-  // Does platform specific setup. Called at the start of AutoImport.
-  static void PlatformSetup();
-
-  // Returns whether the first run should be "organic".
-  static bool IsOrganicFirstRun();
 
   // Returns the path for the master preferences file.
   static FilePath MasterPrefsPath();
@@ -195,15 +183,6 @@ class FirstRun {
   // Installs a task to do an extensions update check once the extensions system
   // is running.
   static void DoDelayedInstallExtensions();
-
-  // Imports settings in a separate process. It is the implementation of the
-  // public version.  |skip_first_run_ui| is true if no first run UI should
-  // appear (search engine dialog, Firefox import warning dialog).
-  static bool ImportSettings(Profile* profile,
-                             int importer_type,
-                             int items_to_import,
-                             const FilePath& import_path,
-                             bool skip_first_run_ui);
 
 #if !defined(USE_AURA)
   // Import browser items in this process. The browser and the items to

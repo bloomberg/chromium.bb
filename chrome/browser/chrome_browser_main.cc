@@ -1561,14 +1561,14 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // touches reads preferences.
   if (is_first_run_) {
     if (!first_run_ui_bypass_) {
-      FirstRun::AutoImport(profile_,
-                           master_prefs_->homepage_defined,
-                           master_prefs_->do_import_items,
-                           master_prefs_->dont_import_items,
-                           master_prefs_->run_search_engine_experiment,
-                           master_prefs_->randomize_search_engine_experiment,
-                           master_prefs_->make_chrome_default,
-                           process_singleton_.get());
+      first_run::AutoImport(profile_,
+                            master_prefs_->homepage_defined,
+                            master_prefs_->do_import_items,
+                            master_prefs_->dont_import_items,
+                            master_prefs_->run_search_engine_experiment,
+                            master_prefs_->randomize_search_engine_experiment,
+                            master_prefs_->make_chrome_default,
+                            process_singleton_.get());
 #if defined(OS_POSIX)
       // On Windows, the download is tagged with enable/disable stats so there
       // is no need for this code.

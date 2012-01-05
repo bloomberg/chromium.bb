@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,43 @@ extern const char* const kSentinelFile;
 // This function has a common implementation on OS_POSIX and a windows specific
 // implementation.
 bool GetFirstRunSentinelFilePath(FilePath* path);
+
+// This function has a common implementationin for all non-linux platforms, and
+// a linux specific implementation.
+bool IsOrganicFirstRun();
+
+// Imports settings. This may be done in a separate process depending on the
+// platform, but it will always block until done. The return value indicates
+// success.
+// This functions has a common implementation for OS_POSIX, and a
+// windows specific implementation.
+bool ImportSettings(Profile* profile,
+                    scoped_refptr<ImporterHost> importer_host,
+                    scoped_refptr<ImporterList> importer_list,
+                    int items_to_import);
+
+#if defined(OS_WIN)
+// TODO(jennyz): This fuction will be moved to first_run_win.cc anonymous
+// namespace once we refactor its calling code in first_run.cc later.
+bool ImportSettingsWin(Profile* profile,
+                       int importer_type,
+                       int items_to_import,
+                       const FilePath& import_bookmarks_path,
+                       bool skip_first_run_ui);
+#endif  // OS_WIN
+
+#if !defined(USE_AURA)
+// AutoImport code which is common to all platforms.
+void AutoImportPlatformCommon(
+    scoped_refptr<ImporterHost> importer_host,
+    Profile* profile,
+    bool homepage_defined,
+    int import_items,
+    int dont_import_items,
+    bool search_engine_experiment,
+    bool randomize_search_engine_experiment,
+    bool make_chrome_default);
+#endif  // !defined(USE_AURA)
 
 }  // namespace internal
 }  // namespace first_run
