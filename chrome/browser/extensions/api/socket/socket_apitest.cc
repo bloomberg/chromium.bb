@@ -1,11 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
+#include "chrome/browser/extensions/api/socket/socket_api.h"
+#include "chrome/browser/extensions/api/socket/test_echo_server_udp.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/api/socket/socket_api.h"
+#include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -14,7 +18,7 @@ using namespace extension_function_test_utils;
 
 namespace {
 
-class SocketApiTest : public InProcessBrowserTest {
+class SocketApiTest : public ExtensionApiTest {
  public:
   virtual void SetUpMyCommandLine() {
     DoCommandLineSetup();
@@ -62,7 +66,23 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateBad) {
                             NONE);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SocketExtension) {
+IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketExtension) {
   SocketApiTest::DoCommandLineSetup();
-  ASSERT_TRUE(RunExtensionTest("socket/api")) << message_;
+  scoped_refptr<extensions::TestEchoServerUDP> server =
+      new extensions::TestEchoServerUDP();
+
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  ASSERT_TRUE(StartTestServer());
+  ExtensionTestMessageListener listener("port_please", true);
+
+  int port = server->Start();
+  ASSERT_TRUE(port > 0);
+
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("socket/api")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  listener.Reply(port);
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

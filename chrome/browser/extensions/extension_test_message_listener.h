@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,6 +58,9 @@ class ExtensionTestMessageListener : public content::NotificationObserver {
   // Send the given message as a reply. It is only valid to call this after
   // WaitUntilSatisfied has returned true, and if will_reply is true.
   void Reply(const std::string& message);
+
+  // Convenience method that formats int as a string and sends it.
+  void Reply(int message);
 
   // Implements the content::NotificationObserver interface.
   virtual void Observe(int type,

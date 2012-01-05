@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,6 +95,18 @@ class SocketCloseFunction : public SocketApiFunction {
   int socket_id_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.close")
+};
+
+class SocketReadFunction : public SocketApiFunction {
+ protected:
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
+
+ private:
+  int socket_id_;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.read")
 };
 
 class SocketWriteFunction : public SocketApiFunction {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@ using content::BrowserThread;
 namespace extensions {
 
 const char kBytesWrittenKey[] = "bytesWritten";
+const char kMessageKey[] = "message";
 const char kSocketIdKey[] = "socketId";
 const char kUDPSocketType[] = "udp";
 
@@ -89,7 +90,6 @@ void SocketCreateFunction::Work() {
 
   result->SetInteger(kSocketIdKey, socket_id);
   result_.reset(result);
-
 }
 
 bool SocketCreateFunction::Respond() {
@@ -139,6 +139,23 @@ bool SocketCloseFunction::Respond() {
   return true;
 }
 
+bool SocketReadFunction::Prepare() {
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
+  return true;
+}
+
+void SocketReadFunction::Work() {
+  std::string message = controller()->ReadUdp(socket_id_);
+
+  DictionaryValue* result = new DictionaryValue();
+  result->SetString(kMessageKey, message);
+  result_.reset(result);
+}
+
+bool SocketReadFunction::Respond() {
+  return true;
+}
+
 bool SocketWriteFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &message_));
@@ -146,10 +163,10 @@ bool SocketWriteFunction::Prepare() {
 }
 
 void SocketWriteFunction::Work() {
-  int bytesWritten = controller()->WriteUdp(socket_id_, message_);
+  int bytes_written = controller()->WriteUdp(socket_id_, message_);
 
   DictionaryValue* result = new DictionaryValue();
-  result->SetInteger(kBytesWrittenKey, bytesWritten);
+  result->SetInteger(kBytesWrittenKey, bytes_written);
   result_.reset(result);
 }
 

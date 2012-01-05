@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,8 +53,8 @@ bool SocketController::DestroyUdp(int socket_id) {
 bool SocketController::CreateIPEndPoint(const std::string& address, int port,
                                         net::IPEndPoint* ip_end_point) {
   net::IPAddressNumber ip_number;
-  bool rv = net::ParseIPLiteralToNumber(address, &ip_number);
-  if (!rv)
+  bool result = net::ParseIPLiteralToNumber(address, &ip_number);
+  if (!result)
     return false;
   *ip_end_point = net::IPEndPoint(ip_number, port);
   return true;
@@ -77,11 +77,17 @@ void SocketController::CloseUdp(int socket_id) {
     socket->Close();
 }
 
+std::string SocketController::ReadUdp(int socket_id) {
+  Socket* socket = GetSocket(socket_id);
+  if (!socket)
+    return "";
+  return socket->Read();
+}
+
 int SocketController::WriteUdp(int socket_id, const std::string& message) {
   Socket* socket = GetSocket(socket_id);
-  if (!socket) {
+  if (!socket)
     return -1;
-  }
   return socket->Write(message);
 }
 

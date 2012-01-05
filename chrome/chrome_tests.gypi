@@ -2524,6 +2524,8 @@
         'browser/extensions/alert_apitest.cc',
         'browser/extensions/all_urls_apitest.cc',
         'browser/extensions/api/socket/socket_apitest.cc',
+        'browser/extensions/api/socket/test_echo_server_udp.cc',
+        'browser/extensions/api/socket/test_echo_server_udp.h',
         'browser/extensions/api/terminal/terminal_private_apitest.cc',
         'browser/extensions/app_background_page_apitest.cc',
         'browser/extensions/app_notification_browsertest.cc',

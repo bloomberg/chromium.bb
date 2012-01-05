@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,8 @@ class MockSocket : public net::UDPClientSocket {
                              NULL,
                              net::NetLog::Source()) {}
 
+  MOCK_METHOD3(Read, int(net::IOBuffer* buf, int buf_len,
+                         const net::CompletionCallback& callback));
   MOCK_METHOD3(Write, int(net::IOBuffer* buf, int buf_len,
                           const net::CompletionCallback& callback));
  private:
@@ -40,8 +42,22 @@ class MockSocketEventNotifier : public SocketEventNotifier {
   MockSocketEventNotifier() : SocketEventNotifier(NULL, NULL, std::string(),
                                                   0, GURL()) {}
 
-  MOCK_METHOD2(OnEvent, void(SocketEventType event_type, int result_code));
+  MOCK_METHOD2(OnReadComplete, void(int result_code,
+                                    const std::string& message));
+  MOCK_METHOD1(OnWriteComplete, void(int result_code));
 };
+
+TEST_F(SocketTest, TestSocketRead) {
+  MockSocket* udp_client_socket = new MockSocket();
+  SocketEventNotifier* notifier = new MockSocketEventNotifier();
+
+  scoped_ptr<Socket> socket(new Socket(udp_client_socket, notifier));
+
+  EXPECT_CALL(*udp_client_socket, Read(_, _, _))
+      .Times(1);
+
+  std::string message = socket->Read();
+}
 
 TEST_F(SocketTest, TestSocketWrite) {
   MockSocket* udp_client_socket = new MockSocket();
@@ -71,7 +87,7 @@ TEST_F(SocketTest, TestSocketBlockedWrite) {
 
   // Good. Original call came back unable to complete. Now pretend the socket
   // finished, and confirm that we passed the error back.
-  EXPECT_CALL(*notifier, OnEvent(SOCKET_EVENT_WRITE_COMPLETE, 42))
+  EXPECT_CALL(*notifier, OnWriteComplete(42))
       .Times(1);
   callback.Run(42);
 }

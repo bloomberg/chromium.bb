@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 
+#include "base/string_number_conversions.h"
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -36,6 +37,10 @@ void ExtensionTestMessageListener::Reply(const std::string& message) {
   function_->Reply(message);
   function_ = NULL;
   will_reply_ = false;
+}
+
+void ExtensionTestMessageListener::Reply(int message) {
+  Reply(base::IntToString(message));
 }
 
 void ExtensionTestMessageListener::Observe(

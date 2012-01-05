@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,10 +48,9 @@ class SocketController {
 
   // Connect, Close, Read, and Write map to the equivalent methods in
   // UDPClientSocket.
-  //
-  // TODO(miket): Implement Read.
   bool ConnectUdp(int socket_id, const std::string& address, int port);
   void CloseUdp(int socket_id);
+  std::string ReadUdp(int socket_id);
   int WriteUdp(int socket_id, const std::string& message);
 
   // Converts a string IP address and integer port into a format that

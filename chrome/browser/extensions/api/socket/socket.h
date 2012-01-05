@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/socket/socket_event_notifier.h"
+#include "net/base/io_buffer.h"
 #include "net/udp/datagram_client_socket.h"
 
 namespace net {
@@ -30,6 +31,8 @@ class Socket {
   virtual bool Connect(const net::IPEndPoint& ip_end_point);
   virtual void Close();
 
+  virtual std::string Read();
+
   // Returns the number of bytes successfully written, or a negative error
   // code. Note that ERR_IO_PENDING means that the operation blocked, in which
   // case |event_notifier| will eventually be called with the final result
@@ -41,7 +44,10 @@ class Socket {
   scoped_ptr<net::DatagramClientSocket> datagram_client_socket_;
   scoped_ptr<SocketEventNotifier> event_notifier_;
   bool is_connected_;
+  static const int kMaxRead = 1024;
+  scoped_refptr<net::IOBufferWithSize> read_buffer_;
 
+  void OnReadComplete(int result);
   void OnWriteComplete(int result);
 };
 

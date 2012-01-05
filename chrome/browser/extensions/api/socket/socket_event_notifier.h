@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/values.h"
 #include "googleurl/src/gurl.h"
 
 class ExtensionEventRouter;
@@ -15,11 +16,12 @@ class Profile;
 
 namespace events {
 extern const char kOnSocketEvent[];
-};  // namespace events
+};
 
 namespace extensions {
 
 enum SocketEventType {
+  SOCKET_EVENT_READ_COMPLETE,
   SOCKET_EVENT_WRITE_COMPLETE
 };
 
@@ -35,7 +37,8 @@ class SocketEventNotifier {
                       const GURL& src_url);
   virtual ~SocketEventNotifier();
 
-  virtual void OnEvent(SocketEventType event_type, int result_code);
+  virtual void OnReadComplete(int result_code, const std::string& message);
+  virtual void OnWriteComplete(int result_code);
 
   static std::string SocketEventTypeToString(SocketEventType event_type);
 
@@ -45,6 +48,9 @@ class SocketEventNotifier {
   std::string src_extension_id_;
   int src_id_;
   GURL src_url_;
+
+  void DispatchEvent(DictionaryValue* event);
+  DictionaryValue* CreateSocketEvent(SocketEventType event_type);
 
   DISALLOW_COPY_AND_ASSIGN(SocketEventNotifier);
 };

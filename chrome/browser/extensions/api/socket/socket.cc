@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,8 @@ Socket::Socket(net::DatagramClientSocket* datagram_client_socket,
                SocketEventNotifier* event_notifier)
     : datagram_client_socket_(datagram_client_socket),
       event_notifier_(event_notifier),
-      is_connected_(false) {}
+      is_connected_(false),
+      read_buffer_(new net::IOBufferWithSize(kMaxRead)) {}
 
 Socket::~Socket() {
   if (is_connected_) {
@@ -34,8 +35,25 @@ void Socket::Close() {
   datagram_client_socket_->Close();
 }
 
+void Socket::OnReadComplete(int result) {
+  std::string message;
+  if (result >= 0)
+    message = std::string(read_buffer_->data(), result);
+  event_notifier_->OnReadComplete(result, message);
+}
+
 void Socket::OnWriteComplete(int result) {
-  event_notifier_->OnEvent(SOCKET_EVENT_WRITE_COMPLETE, result);
+  event_notifier_->OnWriteComplete(result);
+}
+
+std::string Socket::Read() {
+  int result = datagram_client_socket_->Read(read_buffer_, kMaxRead,
+        base::Bind(&Socket::OnReadComplete, base::Unretained(this)));
+  if (result == net::ERR_IO_PENDING)
+    return "";
+  if (result < 0)
+    return "";
+  return std::string(read_buffer_->data(), result);
 }
 
 int Socket::Write(const std::string message) {
@@ -47,15 +65,14 @@ int Socket::Write(const std::string message) {
 
   int bytes_sent = 0;
   while (buffer->BytesRemaining()) {
-    int rv = datagram_client_socket_->Write(
+    int result = datagram_client_socket_->Write(
         buffer, buffer->BytesRemaining(),
         base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));
-    if (rv <= 0) {
+    if (result <= 0)
       // We pass all errors, including ERROR_IO_PENDING, back to the caller.
-      return bytes_sent > 0 ? bytes_sent : rv;
-    }
-    bytes_sent += rv;
-    buffer->DidConsume(rv);
+      return bytes_sent > 0 ? bytes_sent : result;
+    bytes_sent += result;
+    buffer->DidConsume(result);
   }
   return bytes_sent;
 }

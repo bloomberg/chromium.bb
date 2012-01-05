@@ -10,12 +10,17 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["writeComplete"],
-            "description": "A writeComplete event reports the result of a write that blocked."
+            "enum": ["writeComplete", "dataRead"],
+            "description": "A writeComplete event reports the result of a write that blocked. A dataRead event reports bytes that have arrived following a read call that blocked."
           },
           "resultCode": {
             "type": "integer",
             "description": "The result code, if the event type is writeComplete.",
+            "optional": true
+          },
+          "data": {
+            "type": "string",
+            "description": "The data, if the event type is dataRead.",
             "optional": true
           },
           "isFinalEvent": {
@@ -145,6 +150,36 @@
             "type": "integer",
             "description": "The socketId.",
 	    "minimum": 1
+          }
+        ]
+      },
+      {
+        "name": "read",
+        "type": "function",
+        "description": "Reads data from the connected socket.",
+        "parameters": [
+          {
+	    "name": "socketId",
+            "type": "integer",
+            "description": "The socketId.",
+	    "minimum": 1
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Delivers data that was available to be read without blocking.",
+            "parameters": [
+              {
+                "type": "object",
+                "name": "readInfo",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "description": "The data received. Warning: will probably become a blob or other appropriate binary-friendly type."
+                  }
+                }
+              }
+            ]
           }
         ]
       },
