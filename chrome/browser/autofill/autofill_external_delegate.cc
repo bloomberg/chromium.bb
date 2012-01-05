@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,10 @@ AutofillExternalDelegate::~AutofillExternalDelegate() {
 }
 
 AutofillExternalDelegate::AutofillExternalDelegate(
-    TabContentsWrapper* tab_contents_wrapper)
+    TabContentsWrapper* tab_contents_wrapper,
+    AutofillManager* autofill_manager)
     : tab_contents_wrapper_(tab_contents_wrapper),
+      autofill_manager_(autofill_manager),
       autofill_query_id_(0),
       display_warning_if_disabled_(false),
       has_shown_autofill_popup_for_current_edit_(false) {
@@ -41,7 +43,7 @@ void AutofillExternalDelegate::OnQuery(int query_id,
   display_warning_if_disabled_ = display_warning_if_disabled;
   autofill_query_id_ = query_id;
 
-  OnQueryPlatformSpecific(query_id, form, field);
+  OnQueryPlatformSpecific(query_id, form, field, bounds);
 }
 
 void AutofillExternalDelegate::DidEndTextFieldEditing() {
@@ -134,7 +136,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 // in an autofill_external_delegate_YOUROS.cc.  Currently there are
 // none, so all platforms use the default.
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(TOOLKIT_GTK)
 
 AutofillExternalDelegate* AutofillExternalDelegate::Create(
     TabContentsWrapper*, AutofillManager*) {

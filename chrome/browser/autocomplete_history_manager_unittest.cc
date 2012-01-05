@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,7 +142,7 @@ namespace {
 class MockAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
   explicit MockAutofillExternalDelegate(TabContentsWrapper* wrapper)
-      : AutofillExternalDelegate(wrapper) {}
+      : AutofillExternalDelegate(wrapper, NULL) {}
   virtual ~MockAutofillExternalDelegate() {}
 
   virtual void OnQuery(int query_id,
@@ -171,7 +171,8 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
   virtual void OnQueryPlatformSpecific(
       int query_id,
       const webkit::forms::FormData& form,
-      const webkit::forms::FormField& field) OVERRIDE {}
+      const webkit::forms::FormField& field,
+      const gfx::Rect& bounds) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillExternalDelegate);

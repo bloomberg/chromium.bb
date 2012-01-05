@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,8 @@ class AutofillExternalDelegate {
   void DidEndTextFieldEditing();
 
  protected:
-  explicit AutofillExternalDelegate(TabContentsWrapper* tab_contents_wrapper);
+  explicit AutofillExternalDelegate(TabContentsWrapper* tab_contents_wrapper,
+                                    AutofillManager* autofill_manager);
 
   // Displays the the Autofill results to the user with an external
   // Autofill popup that lives completely in the browser.  The suggestions
@@ -89,13 +90,14 @@ class AutofillExternalDelegate {
       int separator_index) = 0;
 
   // Handle instance specific OnQueryCode.
-  virtual void OnQueryPlatformSpecific(
-      int query_id,
-      const webkit::forms::FormData& form,
-      const webkit::forms::FormField& field) = 0;
+  virtual void OnQueryPlatformSpecific(int query_id,
+                                       const webkit::forms::FormData& form,
+                                       const webkit::forms::FormField& field,
+                                       const gfx::Rect& bounds) = 0;
 
  private:
   TabContentsWrapper* tab_contents_wrapper_;  // weak; owns me.
+  AutofillManager* autofill_manager_;  // weak.
 
   // The ID of the last request sent for form field Autofill.  Used to ignore
   // out of date responses.
