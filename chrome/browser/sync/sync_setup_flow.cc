@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,9 +41,16 @@ SyncSetupWizard::State GetStepForNonFatalError(ProfileSyncService* service) {
   // display the error appropriately (http://crbug.com/92722) instead of
   // navigating to a LOGIN state that is not supported on every platform.
   if (service->IsPassphraseRequired()) {
+#if defined(OS_CHROMEOS)
+    // On ChromeOS, we never want to request login information; this state
+    // always represents an invalid secondary passphrase.
+    // TODO(sync): correctly handle auth errors on ChromeOS: crosbug.com/24647.
+    return SyncSetupWizard::ENTER_PASSPHRASE;
+#else
     if (service->IsUsingSecondaryPassphrase())
       return SyncSetupWizard::ENTER_PASSPHRASE;
     return SyncSetupWizard::GetLoginState();
+#endif
   }
 
   const GoogleServiceAuthError& error = service->GetAuthError();
