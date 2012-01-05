@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -623,7 +623,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   // check at the beginning (overridden by Sync).
   if (is_default_search_hijacked &&
       default_search_provider_ == hijacked_default_search_provider) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoProtector)) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseProtector)) {
       // Protector is turned off: set the current default search to itself
       // to update the backup and sign it. Otherwise, change will be reported
       // every time when keywords are loaded until a search provider is added.

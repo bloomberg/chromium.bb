@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -262,7 +262,6 @@ extern const char kProfilingAtStart[];
 extern const char kProfilingFile[];
 extern const char kProfilingFlush[];
 extern const char kPromoServerURL[];
-extern const char kNoProtector[];
 extern const char kProxyAutoDetect[];
 extern const char kProxyBypassList[];
 extern const char kProxyPacUrl[];
@@ -306,6 +305,7 @@ extern const char kTouchOptimizedUI[];
 extern const char kTryChromeAgain[];
 extern const char kUninstall[];
 extern const char kUseMoreWebUI[];
+extern const char kUseProtector[];
 extern const char kUsePureViews[];
 extern const char kUseSpdy[];
 extern const char kIgnoreCertificateErrors[];

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -954,9 +954,6 @@ const char kProfilingFlush[]                = "profiling-flush";
 // Specifies a custom URL for fetching NTP promo data.
 const char kPromoServerURL[]                = "promo-server-url";
 
-// Disables the protector.
-const char kNoProtector[]                   = "no-protector";
-
 // Forces proxy auto-detection.
 const char kProxyAutoDetect[]               = "proxy-auto-detect";
 
@@ -1119,6 +1116,9 @@ const char kUninstall[]                     = "uninstall";
 // Uses WebUI versions of dialogs when available (rather than platform-native
 // implementations).
 const char kUseMoreWebUI[]                  = "use-more-webui";
+
+// Enables the protector.
+const char kUseProtector[]                   = "use-protector";
 
 // Uses a pure Views implementation when available (rather than platform-native
 // implementation such as GTK).
