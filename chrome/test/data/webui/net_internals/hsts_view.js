@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,7 +110,26 @@ CheckQueryResultTask.prototype = {
   checkSuccess_: function(result) {
     expectEquals(QueryResultType.SUCCESS, this.queryResultType_);
     expectEquals(this.subdomains_, result.subdomains);
-    expectEquals(this.publicKeyHashes_, result.public_key_hashes);
+
+    // |public_key_hashes| is an old synonym for what is now
+    // |preloaded_spki_hashes|. Look for both, and also for
+    // |dynamic_spki_hashes|.
+    if (typeof result.public_key_hashes === 'undefined')
+      result.public_key_hashes = '';
+    if (typeof result.preloaded_spki_hashes === 'undefined')
+      result.preloaded_spki_hashes = '';
+    if (typeof result.dynamic_spki_hashes === 'undefined')
+      result.dynamic_spki_hashes = '';
+
+    var hashes = [];
+    if (result.public_key_hashes)
+      hashes.push(result.public_key_hashes);
+    if (result.preloaded_spki_hashes)
+      hashes.push(result.preloaded_spki_hashes);
+    if (result.dynamic_spki_hashes)
+      hashes.push(result.dynamic_spki_hashes);
+
+    expectEquals(this.publicKeyHashes_, hashes.join(","));
 
     // Verify that the domain appears somewhere in the displayed text.
     outputText = $(HSTSView.QUERY_OUTPUT_DIV_ID).innerText;

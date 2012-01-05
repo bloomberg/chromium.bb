@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,6 +53,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/sys_addrinfo.h"
+#include "net/base/transport_security_state.h"
 #include "net/base/x509_cert_types.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
@@ -1005,6 +1006,21 @@ void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTests(
   connection_tester_->RunAllTests(url);
 }
 
+void SPKIHashesToString(const net::FingerprintVector& hashes,
+                        std::string* string) {
+  for (net::FingerprintVector::const_iterator
+       i = hashes.begin(); i != hashes.end(); ++i) {
+    base::StringPiece hash_str(reinterpret_cast<const char*>(i->data),
+                               arraysize(i->data));
+    std::string encoded;
+    base::Base64Encode(hash_str, &encoded);
+
+    if (i != hashes.begin())
+      *string += ",";
+    *string += "sha1/" + encoded;
+  }
+}
+
 void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
     const ListValue* list) {
   // |list| should be: [<domain to query>].
@@ -1030,20 +1046,17 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
         result->SetBoolean("subdomains", state.include_subdomains);
         result->SetBoolean("preloaded", state.preloaded);
         result->SetString("domain", state.domain);
+        result->SetDouble("expiry", state.expiry.ToDoubleT());
+        result->SetDouble("dynamic_spki_hashes_expiry",
+                          state.dynamic_spki_hashes_expiry.ToDoubleT());
 
-        std::vector<std::string> parts;
-        for (std::vector<net::SHA1Fingerprint>::const_iterator
-             i = state.public_key_hashes.begin();
-             i != state.public_key_hashes.end(); i++) {
-          std::string part = "sha1/";
-          std::string hash_str(reinterpret_cast<const char*>(i->data),
-                               sizeof(i->data));
-          std::string b64;
-          base::Base64Encode(hash_str, &b64);
-          part += b64;
-          parts.push_back(part);
-        }
-        result->SetString("public_key_hashes", JoinString(parts, ','));
+        std::string hashes;
+        SPKIHashesToString(state.preloaded_spki_hashes, &hashes);
+        result->SetString("preloaded_spki_hashes", hashes);
+
+        hashes.clear();
+        SPKIHashesToString(state.dynamic_spki_hashes, &hashes);
+        result->SetString("dynamic_spki_hashes", hashes);
       }
     }
   }
@@ -1074,7 +1087,6 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
   net::TransportSecurityState::DomainState state;
   state.expiry = state.created + base::TimeDelta::FromDays(1000);
   state.include_subdomains = include_subdomains;
-  state.public_key_hashes.clear();
   if (!hashes_str.empty()) {
     std::vector<std::string> type_and_b64s;
     base::SplitString(hashes_str, ',', &type_and_b64s);
@@ -1082,17 +1094,11 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
          i = type_and_b64s.begin(); i != type_and_b64s.end(); i++) {
       std::string type_and_b64;
       RemoveChars(*i, " \t\r\n", &type_and_b64);
-      if (type_and_b64.find("sha1/") != 0)
-        continue;
-      std::string b64 = type_and_b64.substr(5, type_and_b64.size() - 5);
-      std::string hash_str;
-      if (!base::Base64Decode(b64, &hash_str))
-        continue;
       net::SHA1Fingerprint hash;
-      if (hash_str.size() != sizeof(hash.data))
+      if (!net::TransportSecurityState::ParsePin(type_and_b64, &hash))
         continue;
-      memcpy(hash.data, hash_str.data(), sizeof(hash.data));
-      state.public_key_hashes.push_back(hash);
+
+      state.dynamic_spki_hashes.push_back(hash);
     }
   }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,8 @@
  * use HTTPS. See http://dev.chromium.org/sts
  *
  * This UI allows a user to query and update the browser's list of HSTS domains.
+ * It also allows users to query and update the browser's list of public key
+ * pins.
  */
 
 var HSTSView = (function() {
@@ -132,8 +134,25 @@ var HSTSView = (function() {
       addTextNode(this.queryOutputDiv_, ' pubkey_hashes:');
 
       t = addNode(this.queryOutputDiv_, 'tt');
-      t.textContent = result.public_key_hashes;
+      // |public_key_hashes| is an old synonym for what is now
+      // |preloaded_spki_hashes|. Look for both, and also for
+      // |dynamic_spki_hashes|.
+      if (typeof result.public_key_hashes === 'undefined')
+        result.public_key_hashes = '';
+      if (typeof result.preloaded_spki_hashes === 'undefined')
+        result.preloaded_spki_hashes = '';
+      if (typeof result.dynamic_spki_hashes === 'undefined')
+        result.dynamic_spki_hashes = '';
 
+      var hashes = [];
+      if (result.public_key_hashes)
+        hashes.push(result.public_key_hashes);
+      if (result.preloaded_spki_hashes)
+        hashes.push(result.preloaded_spki_hashes);
+      if (result.dynamic_spki_hashes)
+        hashes.push(result.dynamic_spki_hashes);
+
+      t.textContent = hashes.join(",");
       yellowFade(this.queryOutputDiv_);
     }
   };
