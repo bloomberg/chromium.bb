@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -238,7 +238,7 @@ def HashUrl(url):
 
 
 def SyncURL(url, filename=None, stamp_dir=None, min_time=None,
-            hash=None, verbose=False):
+            hash=None, keep=False, verbose=False):
   """Synchronize a destination file with a URL
 
   if the URL does not match the URL stamp, then we must re-download it.
@@ -259,8 +259,13 @@ def SyncURL(url, filename=None, stamp_dir=None, min_time=None,
 
   assert url and filename
 
-  # If the stamp_file matches the url, then it must be up to date
-  if stamp_dir and SourceIsCurrent(stamp_dir, url, min_time):
+  # If we are not keeping the tarball, or we already have it, we can
+  # skip downloading it for this reason.
+  tarball_ok = not keep or os.path.isfile(filename)
+
+  # If we don't need the tarball and the stamp_file matches the url, then
+  # we must be up to date.
+  if tarball_ok and stamp_dir and SourceIsCurrent(stamp_dir, url, min_time):
     if verbose:
       print '%s is already up to date.' % filename
     return False

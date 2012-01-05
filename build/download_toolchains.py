@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -98,7 +98,8 @@ def SyncFlavor(flavor, url, dst, hash, min_time, keep=False, force=False,
 
   # If we did not need to synchronize, then we are done
   if not download_utils.SyncURL(url, filepath, stamp_dir=stamp_dir,
-                                min_time=min_time, hash=hash, verbose=verbose):
+                                min_time=min_time, hash=hash,
+                                keep=keep, verbose=verbose):
     return False
 
   tar = cygtar.CygTar(filepath, 'r:*')
@@ -232,8 +233,8 @@ def Main(args):
       hash_value = None
 
     try:
-      if SyncFlavor(flavor, url, dst, hash_value, script_time,
-                    force=force, verbose=options.verbose):
+      if SyncFlavor(flavor, url, dst, hash_value, script_time, force=force,
+                    keep=options.keep, verbose=options.verbose):
         print flavor + ': updated to version ' + version + '.'
       else:
         print flavor + ': already up to date.'

@@ -112,7 +112,8 @@ hooks = [
     "action": ["python", "native_client/build/download_toolchains.py",
                "--x86-version", Var("x86_toolchain_version"),
                "--arm-trusted-version", Var("arm_trusted_toolchain_version"),
-               "--pnacl-version", Var("pnacl_toolchain_version")],
+               "--pnacl-version", Var("pnacl_toolchain_version"),
+               "--keep"],
   },
   {
     "pattern": ".",
