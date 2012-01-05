@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,16 +78,11 @@ void TextCheckingCallback(
     starting_at = range.location + range.length;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(&BrowserMessageFilter::Send),
-          destination,
-          new SpellCheckMsg_RespondTextCheck(route_id,
-                                             identifier,
-                                             document_tag,
-                                             check_results)));
+  destination->Send(
+      new SpellCheckMsg_RespondTextCheck(route_id,
+                                         identifier,
+                                         document_tag,
+                                         check_results));
 }
 
 // A private utility function to convert hunspell language codes to OS X
