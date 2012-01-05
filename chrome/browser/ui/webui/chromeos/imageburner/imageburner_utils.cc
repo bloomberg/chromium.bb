@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/download/download_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
 using content::DownloadItem;
@@ -446,7 +447,7 @@ void Downloader::OnFileStreamCreatedOnUIThread(const GURL& url,
         web_contents->GetURL(),
         web_contents->GetEncoding(),
         save_info,
-        static_cast<TabContents*>(web_contents));
+        web_contents);
   } else {
     DownloadStarted(false, url);
   }

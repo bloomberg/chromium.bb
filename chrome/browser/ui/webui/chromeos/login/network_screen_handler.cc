@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/status/input_method_menu.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/browser/webui/web_ui.h"
 #include "grit/chromium_strings.h"

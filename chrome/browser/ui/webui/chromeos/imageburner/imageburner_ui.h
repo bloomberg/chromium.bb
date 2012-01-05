@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_IMAGEBURNER_IMAGEBURNER_UI_H_
 
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
-#include "content/browser/tab_contents/tab_contents.h"
 
 class ImageBurnUI : public ChromeWebUI {
  public:

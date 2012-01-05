@@ -36,6 +36,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "content/test/notification_observer_mock.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,7 +58,7 @@ class DeleteTabContentsOnDestroyedObserver
         tab_to_delete_(tab_to_delete) {
     registrar_.Add(this,
                    content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                   content::Source<WebContents>(source->tab_contents()));
+                   content::Source<WebContents>(source->web_contents()));
   }
 
   virtual void Observe(int type,
@@ -159,12 +160,12 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
   }
 
   TabContentsWrapper* CreateTabContentsWithSharedRPH(
-      TabContents* tab_contents) {
+      WebContents* web_contents) {
     TabContentsWrapper* retval = Browser::TabContentsFactory(profile(),
-        tab_contents->GetRenderViewHost()->site_instance(), MSG_ROUTING_NONE,
+        web_contents->GetRenderViewHost()->site_instance(), MSG_ROUTING_NONE,
         NULL, NULL);
-    EXPECT_EQ(retval->tab_contents()->GetRenderProcessHost(),
-              tab_contents->GetRenderProcessHost());
+    EXPECT_EQ(retval->web_contents()->GetRenderProcessHost(),
+              web_contents->GetRenderProcessHost());
     return retval;
   }
 
@@ -188,12 +189,12 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
   }
 
   // Sets the id of the specified contents.
-  void SetID(TabContents* contents, int id) {
+  void SetID(WebContents* contents, int id) {
     GetIDAccessor()->SetProperty(contents->GetPropertyBag(), id);
   }
 
   // Returns the id of the specified contents.
-  int GetID(TabContents* contents) {
+  int GetID(WebContents* contents) {
     return *GetIDAccessor()->GetProperty(contents->GetPropertyBag());
   }
 
@@ -208,7 +209,7 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
         actual += " ";
 
       actual +=
-          base::IntToString(GetID(model.GetTabContentsAt(i)->tab_contents()));
+          base::IntToString(GetID(model.GetTabContentsAt(i)->web_contents()));
 
       if (model.IsAppTab(i))
         actual += "a";
@@ -239,7 +240,7 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
                                        const std::string& selected_tabs) {
     for (int i = 0; i < tab_count; ++i) {
       TabContentsWrapper* contents = CreateTabContents();
-      SetID(contents->tab_contents(), i);
+      SetID(contents->web_contents(), i);
       model->AppendTabContents(contents, true);
     }
     for (int i = 0; i < pinned_count; ++i)
@@ -586,9 +587,9 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_EQ(0, tabstrip.GetIndexOfTabContents(contents2));
     EXPECT_EQ(1, tabstrip.GetIndexOfTabContents(contents1));
     EXPECT_EQ(0, tabstrip.GetIndexOfController(
-                     &contents2->tab_contents()->GetController()));
+                     &contents2->web_contents()->GetController()));
     EXPECT_EQ(1, tabstrip.GetIndexOfController(
-                     &contents1->tab_contents()->GetController()));
+                     &contents1->web_contents()->GetController()));
   }
 
   // Test UpdateTabContentsStateAt
@@ -642,7 +643,7 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
 
   TabContentsWrapper* opener_contents = CreateTabContents();
   NavigationController* opener =
-      &opener_contents->tab_contents()->GetController();
+      &opener_contents->web_contents()->GetController();
   tabstrip.AppendTabContents(opener_contents, true);
   TabContentsWrapper* contents1 = CreateTabContents();
   TabContentsWrapper* contents2 = CreateTabContents();
@@ -680,7 +681,7 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
 
   // For a tab that has opened no other tabs, the return value should always be
   // -1...
-  NavigationController* o1 = &contents1->tab_contents()->GetController();
+  NavigationController* o1 = &contents1->web_contents()->GetController();
   EXPECT_EQ(-1, tabstrip.GetIndexOfNextTabContentsOpenedBy(o1, 3, false));
   EXPECT_EQ(-1, tabstrip.GetIndexOfLastTabContentsOpenedBy(o1, 3));
 
@@ -794,7 +795,7 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
 
   TabContentsWrapper* opener_contents = CreateTabContents();
   NavigationController* opener =
-      &opener_contents->tab_contents()->GetController();
+      &opener_contents->web_contents()->GetController();
   tabstrip.AppendTabContents(opener_contents, true);
 
   // Open some other random unrelated tab in the background to monkey with our
@@ -1737,10 +1738,10 @@ TEST_F(TabStripModelTest, FastShutdown) {
   {
     TabContentsWrapper* contents1 = CreateTabContents();
     TabContentsWrapper* contents2 =
-        CreateTabContentsWithSharedRPH(contents1->tab_contents());
+        CreateTabContentsWithSharedRPH(contents1->web_contents());
 
-    SetID(contents1->tab_contents(), 1);
-    SetID(contents2->tab_contents(), 2);
+    SetID(contents1->web_contents(), 1);
+    SetID(contents2->web_contents(), 2);
 
     tabstrip.AppendTabContents(contents1, true);
     tabstrip.AppendTabContents(contents2, true);
@@ -1752,7 +1753,7 @@ TEST_F(TabStripModelTest, FastShutdown) {
     tabstrip.CloseAllTabs();
     // On a mock RPH this checks whether we *attempted* fast shutdown.
     // A real RPH would reject our attempt since there is an unload handler.
-    EXPECT_TRUE(contents1->tab_contents()->
+    EXPECT_TRUE(contents1->web_contents()->
       GetRenderProcessHost()->FastShutdownStarted());
     EXPECT_EQ(2, tabstrip.count());
 
@@ -1766,16 +1767,16 @@ TEST_F(TabStripModelTest, FastShutdown) {
   {
     TabContentsWrapper* contents1 = CreateTabContents();
     TabContentsWrapper* contents2 =
-        CreateTabContentsWithSharedRPH(contents1->tab_contents());
+        CreateTabContentsWithSharedRPH(contents1->web_contents());
 
-    SetID(contents1->tab_contents(), 1);
-    SetID(contents2->tab_contents(), 2);
+    SetID(contents1->web_contents(), 1);
+    SetID(contents2->web_contents(), 2);
 
     tabstrip.AppendTabContents(contents1, true);
     tabstrip.AppendTabContents(contents2, true);
 
     tabstrip.CloseTabContentsAt(1, TabStripModel::CLOSE_NONE);
-    EXPECT_FALSE(contents1->tab_contents()->
+    EXPECT_FALSE(contents1->web_contents()->
         GetRenderProcessHost()->FastShutdownStarted());
     EXPECT_EQ(1, tabstrip.count());
 
@@ -1809,9 +1810,9 @@ TEST_F(TabStripModelTest, Apps) {
   contents2->extension_tab_helper()->SetExtensionApp(extension_app);
   TabContentsWrapper* contents3 = CreateTabContents();
 
-  SetID(contents1->tab_contents(), 1);
-  SetID(contents2->tab_contents(), 2);
-  SetID(contents3->tab_contents(), 3);
+  SetID(contents1->web_contents(), 1);
+  SetID(contents2->web_contents(), 2);
+  SetID(contents3->web_contents(), 3);
 
   // Note! The ordering of these tests is important, each subsequent test
   // builds on the state established in the previous. This is important if you
@@ -1925,9 +1926,9 @@ TEST_F(TabStripModelTest, Pinning) {
   TabContentsWrapper* contents2 = CreateTabContents();
   TabContentsWrapper* contents3 = CreateTabContents();
 
-  SetID(contents1->tab_contents(), 1);
-  SetID(contents2->tab_contents(), 2);
-  SetID(contents3->tab_contents(), 3);
+  SetID(contents1->web_contents(), 1);
+  SetID(contents2->web_contents(), 2);
+  SetID(contents3->web_contents(), 3);
 
   // Note! The ordering of these tests is important, each subsequent test
   // builds on the state established in the previous. This is important if you
@@ -2057,7 +2058,7 @@ TEST_F(TabStripModelTest, Pinning) {
   }
 
   TabContentsWrapper* contents4 = CreateTabContents();
-  SetID(contents4->tab_contents(), 4);
+  SetID(contents4->web_contents(), 4);
 
   // Insert "4" between "1" and "3". As "1" and "4" are pinned, "4" should end
   // up after them.

@@ -15,7 +15,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 
 typedef BrowserWithTestWindowTest BrowserListTest;
 
@@ -32,7 +32,7 @@ size_t CountAllTabs() {
 // Helper function to navigate to the print preview page.
 void NavigateToPrintUrl(TabContentsWrapper* tab, int page_id) {
   static_cast<TestRenderViewHost*>(
-      tab->tab_contents()->GetRenderViewHost())->SendNavigate(
+      tab->web_contents()->GetRenderViewHost())->SendNavigate(
           page_id, GURL(chrome::kChromeUIPrintURL));
 }
 

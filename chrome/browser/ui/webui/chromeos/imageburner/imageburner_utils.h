@@ -6,6 +6,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_IMAGEBURNER_IMAGEBURNER_UTILS_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_IMAGEBURNER_IMAGEBURNER_UTILS_H_
 
+#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -17,7 +18,6 @@
 #include "base/observer_list.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "googleurl/src/gurl.h"

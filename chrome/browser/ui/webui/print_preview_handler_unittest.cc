@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 
@@ -70,7 +70,7 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
     ASSERT_TRUE(preview_tab_);
 
     preview_ui_ =
-        static_cast<PrintPreviewUI*>(preview_tab_->tab_contents()->GetWebUI());
+        static_cast<PrintPreviewUI*>(preview_tab_->web_contents()->GetWebUI());
     ASSERT_TRUE(preview_ui_);
   }
 

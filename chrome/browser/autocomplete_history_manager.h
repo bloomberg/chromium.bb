@@ -27,7 +27,7 @@ class Profile;
 class AutocompleteHistoryManager : public content::WebContentsObserver,
                                    public WebDataServiceConsumer {
  public:
-  explicit AutocompleteHistoryManager(TabContents* tab_contents);
+  explicit AutocompleteHistoryManager(content::WebContents* web_contents);
   virtual ~AutocompleteHistoryManager();
 
   // content::WebContentsObserver implementation.
@@ -61,7 +61,7 @@ class AutocompleteHistoryManager : public content::WebContentsObserver,
                            TestTabContentsWithExternalDelegate);
 
   // For tests.
-  AutocompleteHistoryManager(TabContents* tab_contents,
+  AutocompleteHistoryManager(content::WebContents* web_contents,
                              Profile* profile,
                              WebDataService* wds);
 

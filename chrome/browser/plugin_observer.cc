@@ -23,8 +23,8 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -391,7 +391,7 @@ class PluginObserver::MissingPluginHost : public PluginInstallerObserver {
 };
 
 PluginObserver::PluginObserver(TabContentsWrapper* tab_contents)
-    : content::WebContentsObserver(tab_contents->tab_contents()),
+    : content::WebContentsObserver(tab_contents->web_contents()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       tab_contents_(tab_contents) {
 }

@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -11,7 +11,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/net/url_request_failed_dns_job.h"
 #include "content/browser/net/url_request_mock_http_job.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/test/test_navigation_observer.h"
 
 using content::BrowserThread;
@@ -83,7 +83,7 @@ class ErrorPageTest : public InProcessBrowserTest {
 
     TestNavigationObserver test_navigation_observer(
       content::Source<NavigationController>(
-            &browser()->GetSelectedTabContentsWrapper()->tab_contents()->
+            &browser()->GetSelectedTabContentsWrapper()->web_contents()->
                 GetController()),
         NULL,
         num_navigations);

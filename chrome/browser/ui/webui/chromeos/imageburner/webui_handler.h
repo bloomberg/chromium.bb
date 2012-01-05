@@ -17,13 +17,14 @@
 #include "chrome/browser/chromeos/disks/disk_mount_manager.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "googleurl/src/gurl.h"
 
-using content::BrowserThread;
+namespace content {
+class WebContents;
+}
 
 namespace imageburner {
 

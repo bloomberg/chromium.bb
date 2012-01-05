@@ -15,7 +15,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

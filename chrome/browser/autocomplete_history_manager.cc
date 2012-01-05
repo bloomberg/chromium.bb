@@ -16,10 +16,11 @@
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "webkit/forms/form_data.h"
 
 using base::StringPiece16;
+using content::WebContents;
 using webkit::forms::FormData;
 using webkit::forms::FormField;
 
@@ -107,12 +108,12 @@ bool IsTextField(const FormField& field) {
 }  // namespace
 
 AutocompleteHistoryManager::AutocompleteHistoryManager(
-    TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents),
+    WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
       pending_query_handle_(0),
       query_id_(0),
       external_delegate_(NULL) {
-  profile_ = Profile::FromBrowserContext(tab_contents->GetBrowserContext());
+  profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
   // May be NULL in unit tests.
   web_data_service_ = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
   autofill_enabled_.Init(prefs::kAutofillEnabled, profile_->GetPrefs(), NULL);
@@ -232,10 +233,10 @@ void AutocompleteHistoryManager::SetExternalDelegate(
 }
 
 AutocompleteHistoryManager::AutocompleteHistoryManager(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     Profile* profile,
     WebDataService* wds)
-    : content::WebContentsObserver(tab_contents),
+    : content::WebContentsObserver(web_contents),
       profile_(profile),
       web_data_service_(wds),
       pending_query_handle_(0),

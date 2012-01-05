@@ -135,6 +135,7 @@
 
 using content::AccessTokenStore;
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -883,7 +884,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
     bool overridable,
     const base::Callback<void(SSLCertErrorHandler*, bool)>& callback) {
   // If the tab is being prerendered, cancel the prerender and the request.
-  TabContents* tab = tab_util::GetTabContentsByID(
+  WebContents* tab = tab_util::GetWebContentsByID(
       handler->render_process_host_id(),
       handler->tab_contents_id());
   if (!tab) {
@@ -913,7 +914,7 @@ void ChromeContentBrowserClient::SelectClientCertificate(
     int render_process_id,
     int render_view_id,
     SSLClientAuthHandler* handler) {
-  TabContents* tab = tab_util::GetTabContentsByID(
+  WebContents* tab = tab_util::GetWebContentsByID(
       render_process_id, render_view_id);
   if (!tab) {
     NOTREACHED();
@@ -957,7 +958,7 @@ void ChromeContentBrowserClient::SelectClientCertificate(
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
   if (!wrapper) {
-    // If there is no TabContentsWrapper for the given TabContents then we can't
+    // If there is no TabContentsWrapper for the given WebContents then we can't
     // show the user a dialog to select a client certificate. So we simply
     // proceed with no client certificate.
     handler->CertificateSelected(NULL);
@@ -993,7 +994,7 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
       DesktopNotificationServiceFactory::GetForProfile(profile);
   service->RequestPermission(
       source_origin, render_process_id, render_view_id, callback_context,
-      tab_util::GetTabContentsByID(render_process_id, render_view_id));
+      tab_util::GetWebContentsByID(render_process_id, render_view_id));
 }
 
 WebKit::WebNotificationPresenter::Permission

@@ -19,10 +19,11 @@
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/process_type.h"
 #include "grit/chromium_strings.h"
@@ -36,6 +37,7 @@
 
 using content::BrowserThread;
 using content::NavigationEntry;
+using content::WebContents;
 
 // static
 std::string ProcessMemoryInformation::GetRendererTypeNameInEnglish(
@@ -230,7 +232,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
             }
           }
         }
-        TabContents* contents = host_delegate->GetAsTabContents();
+        WebContents* contents = host_delegate->GetAsWebContents();
         if (!contents) {
           if (extension_process_map->Contains(host->process()->GetID())) {
             const Extension* extension =
@@ -264,7 +266,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
           continue;
         }
 
-        // Since We have a TabContents and and the renderer type hasn't been
+        // Since We have a WebContents and and the renderer type hasn't been
         // set yet, it must be a normal tabbed renderer.
         if (process.renderer_type == ProcessMemoryInformation::RENDERER_UNKNOWN)
           process.renderer_type = ProcessMemoryInformation::RENDERER_NORMAL;

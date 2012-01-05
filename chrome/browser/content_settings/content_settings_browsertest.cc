@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "net/test/test_server.h"
 
 // Regression test for http://crbug.com/63649.
@@ -28,7 +28,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, RedirectLoopCookies) {
 
   TabContentsWrapper* tab_contents = browser()->GetSelectedTabContentsWrapper();
   ASSERT_EQ(UTF8ToUTF16(test_url.spec() + " failed to load"),
-            tab_contents->tab_contents()->GetTitle());
+            tab_contents->web_contents()->GetTitle());
 
   EXPECT_TRUE(tab_contents->content_settings()->IsContentBlocked(
       CONTENT_SETTINGS_TYPE_COOKIES));
@@ -43,7 +43,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, ContentSettingsBlockDataURLs) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   TabContentsWrapper* tab_contents = browser()->GetSelectedTabContentsWrapper();
-  ASSERT_EQ(UTF8ToUTF16("Data URL"), tab_contents->tab_contents()->GetTitle());
+  ASSERT_EQ(UTF8ToUTF16("Data URL"), tab_contents->web_contents()->GetTitle());
 
   EXPECT_TRUE(tab_contents->content_settings()->IsContentBlocked(
       CONTENT_SETTINGS_TYPE_JAVASCRIPT));

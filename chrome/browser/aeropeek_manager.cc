@@ -838,15 +838,15 @@ void AeroPeekManager::CreateAeroPeekWindowIfNecessary(TabContentsWrapper* tab,
                          this,
                          GetTabID(tab),
                          foreground,
-                         tab->tab_contents()->GetTitle(),
+                         tab->web_contents()->GetTitle(),
                          tab->favicon_tab_helper()->GetFavicon());
   tab_list_.push_back(window);
 }
 
-TabContents* AeroPeekManager::GetTabContents(int tab_id) const {
+WebContents* AeroPeekManager::GetWebContents(int tab_id) const {
   for (TabContentsIterator iterator; !iterator.done(); ++iterator) {
     if (GetTabID(*iterator) == tab_id)
-      return (*iterator)->tab_contents();
+      return (*iterator)->web_contents();
   }
   return NULL;
 }
@@ -936,9 +936,9 @@ void AeroPeekManager::TabChangedAt(TabContentsWrapper* contents,
   // Windows needs them (e.g. when a user hovers a taskbar icon) to avoid
   // hurting the rendering performance. (These functions just save the
   // information needed for handling update requests from Windows.)
-  window->SetTitle(contents->tab_contents()->GetTitle());
+  window->SetTitle(contents->web_contents()->GetTitle());
   window->SetFavicon(contents->favicon_tab_helper()->GetFavicon());
-  window->Update(contents->tab_contents()->IsLoading());
+  window->Update(contents->web_contents()->IsLoading());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -948,7 +948,7 @@ void AeroPeekManager::ActivateTab(int tab_id) {
   // Ask TabStrip to activate this tab.
   // We don't have to update thumbnails now since TabStrip will call
   // ActiveTabChanged() when it actually activates this tab.
-  WebContents* contents = GetTabContents(tab_id);
+  WebContents* contents = GetWebContents(tab_id);
   if (contents && contents->GetDelegate())
     contents->GetDelegate()->ActivateContents(contents);
 }
@@ -957,7 +957,7 @@ void AeroPeekManager::CloseTab(int tab_id) {
   // Ask TabStrip to close this tab.
   // TabStrip will call TabClosingAt() when it actually closes this tab. We
   // will delete the AeroPeekWindow object attached to this tab there.
-  TabContents* contents = GetTabContents(tab_id);
+  WebContents* contents = GetWebContents(tab_id);
   if (contents && contents->GetDelegate())
     contents->GetDelegate()->CloseContents(contents);
 }
@@ -971,7 +971,7 @@ bool AeroPeekManager::GetTabThumbnail(int tab_id, SkBitmap* thumbnail) {
 
   // Copy the thumbnail image and the favicon of this tab. We will resize the
   // images and send them to Windows.
-  TabContents* contents = GetTabContents(tab_id);
+  WebContents* contents = GetWebContents(tab_id);
   if (!contents)
     return false;
 
@@ -988,7 +988,7 @@ bool AeroPeekManager::GetTabPreview(int tab_id, SkBitmap* preview) {
 
   // Retrieve the BackingStore associated with the given tab and return its
   // SkPlatformCanvas.
-  TabContents* contents = GetTabContents(tab_id);
+  WebContents* contents = GetWebContents(tab_id);
   if (!contents)
     return false;
 

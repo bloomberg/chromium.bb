@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 

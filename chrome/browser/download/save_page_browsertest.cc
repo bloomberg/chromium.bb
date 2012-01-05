@@ -24,11 +24,11 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/net/url_request_mock_http_job.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;

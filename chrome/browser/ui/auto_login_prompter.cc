@@ -20,13 +20,13 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
@@ -101,13 +101,13 @@ void AutoLoginPrompter::ShowInfoBarUIThread(const std::string& account,
                                             int route_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  TabContents* tab_contents = tab_util::GetTabContentsByID(child_id, route_id);
-  if (!tab_contents)
+  WebContents* web_contents = tab_util::GetWebContentsByID(child_id, route_id);
+  if (!web_contents)
     return;
 
   // If auto-login is turned off, then simply return.
   Profile* profile =
-      Profile::FromBrowserContext(tab_contents->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (!profile->GetPrefs()->GetBoolean(prefs::kAutologinEnabled))
     return;
 
@@ -134,7 +134,7 @@ void AutoLoginPrompter::ShowInfoBarUIThread(const std::string& account,
   // finish loading.  If we don't, the info bar appears and then disappears
   // immediately.  Create an AutoLoginPrompter instance to listen for the
   // relevant notifications; it will delete itself.
-  new AutoLoginPrompter(tab_contents, username, args);
+  new AutoLoginPrompter(web_contents, username, args);
 }
 
 void AutoLoginPrompter::Observe(int type,

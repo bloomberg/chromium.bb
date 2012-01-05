@@ -20,7 +20,6 @@
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"

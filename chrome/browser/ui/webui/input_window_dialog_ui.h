@@ -8,12 +8,10 @@
 
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 
-class TabContents;
-
 // The WebUI for chrome://input-window-dialog
 class InputWindowDialogUI : public HtmlDialogUI {
  public:
-  explicit InputWindowDialogUI(TabContents* contents);
+  explicit InputWindowDialogUI(content::WebContents* contents);
   virtual ~InputWindowDialogUI();
 
  protected:

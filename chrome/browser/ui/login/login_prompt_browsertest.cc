@@ -15,9 +15,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 #include "content/test/test_browser_thread.h"
 #include "net/base/auth.h"
 #include "net/base/mock_host_resolver.h"
@@ -699,13 +699,13 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, SupplyRedundantAuths) {
     // Open different auth urls in each tab.
     WindowedAuthNeededObserver auth_needed_waiter_1(controller_1);
     WindowedAuthNeededObserver auth_needed_waiter_2(controller_2);
-    contents_1->tab_contents()->OpenURL(OpenURLParams(
+    contents_1->web_contents()->OpenURL(OpenURLParams(
         test_server()->GetURL("auth-basic/1"),
         content::Referrer(),
         CURRENT_TAB,
         content::PAGE_TRANSITION_TYPED,
         false));
-    contents_2->tab_contents()->OpenURL(OpenURLParams(
+    contents_2->web_contents()->OpenURL(OpenURLParams(
         test_server()->GetURL("auth-basic/2"),
         content::Referrer(),
         CURRENT_TAB,
@@ -767,13 +767,13 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, CancelRedundantAuths) {
     // Open different auth urls in each tab.
     WindowedAuthNeededObserver auth_needed_waiter_1(controller_1);
     WindowedAuthNeededObserver auth_needed_waiter_2(controller_2);
-    contents_1->tab_contents()->OpenURL(OpenURLParams(
+    contents_1->web_contents()->OpenURL(OpenURLParams(
         test_server()->GetURL("auth-basic/1"),
         content::Referrer(),
         CURRENT_TAB,
         content::PAGE_TRANSITION_TYPED,
         false));
-    contents_2->tab_contents()->OpenURL(OpenURLParams(
+    contents_2->web_contents()->OpenURL(OpenURLParams(
         test_server()->GetURL("auth-basic/2"),
         content::Referrer(),
         CURRENT_TAB,
@@ -834,13 +834,13 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
     WindowedAuthNeededObserver auth_needed_waiter(controller);
     WindowedAuthNeededObserver auth_needed_waiter_incognito(
         controller_incognito);
-    contents->tab_contents()->OpenURL(OpenURLParams(
+    contents->web_contents()->OpenURL(OpenURLParams(
         test_server()->GetURL("auth-basic/1"),
         content::Referrer(),
         CURRENT_TAB,
         content::PAGE_TRANSITION_TYPED,
         false));
-    contents_incognito->tab_contents()->OpenURL(OpenURLParams(
+    contents_incognito->web_contents()->OpenURL(OpenURLParams(
         test_server()->GetURL("auth-basic/2"),
         content::Referrer(),
         CURRENT_TAB,

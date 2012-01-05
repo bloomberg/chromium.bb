@@ -9,7 +9,6 @@
 #include "chrome/browser/automation/mock_tab_event_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -41,7 +40,7 @@ class AutomationTabHelperTest : public TabContentsWrapperTestHarness {
   }
 
   void TabContentsDestroyed() {
-    tab_helper()->WebContentsDestroyed(contents_wrapper()->tab_contents());
+    tab_helper()->WebContentsDestroyed(contents_wrapper()->web_contents());
   }
 
   void WillPerformClientRedirect(int64 frame_id) {

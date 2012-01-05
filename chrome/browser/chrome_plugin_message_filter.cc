@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_plugin_messages.h"
 #include "content/browser/plugin_process_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/browser_thread.h"
@@ -140,11 +139,11 @@ void ChromePluginMessageFilter::HandleMissingPluginStatus(
 #if defined(OS_WIN)
   RenderViewHost* host = RenderViewHost::FromID(render_process_id,
                                                 render_view_id);
-  if (!host || !host->delegate() || !host->delegate()->GetAsTabContents())
+  if (!host || !host->delegate() || !host->delegate()->GetAsWebContents())
     return;
 
   TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
-      host->delegate()->GetAsTabContents());
+      host->delegate()->GetAsWebContents());
   DCHECK(tcw);
   InfoBarTabHelper* infobar_helper = tcw->infobar_tab_helper();
 

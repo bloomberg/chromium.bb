@@ -12,7 +12,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -34,7 +33,7 @@ class PrintPreviewTabControllerBrowserTest : public InProcessBrowserTest {
 
 class TabDestroyedObserver : public content::WebContentsObserver {
  public:
-  explicit TabDestroyedObserver(TabContents* contents)
+  explicit TabDestroyedObserver(WebContents* contents)
       : content::WebContentsObserver(contents),
         tab_destroyed_(false) {
   }
@@ -80,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   EXPECT_EQ(1, browser()->tab_count());
   ASSERT_TRUE(preview_tab);
   ASSERT_NE(initiator_tab, preview_tab);
-  TabDestroyedObserver observer(preview_tab->tab_contents());
+  TabDestroyedObserver observer(preview_tab->web_contents());
 
   // Navigate in the initiator tab.
   GURL url(chrome::kChromeUINewTabURL);
@@ -128,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   EXPECT_EQ(1, browser()->tab_count());
   ASSERT_TRUE(preview_tab);
   ASSERT_NE(initiator_tab, preview_tab);
-  TabDestroyedObserver tab_destroyed_observer(preview_tab->tab_contents());
+  TabDestroyedObserver tab_destroyed_observer(preview_tab->web_contents());
 
   // Reload the initiator tab.
   ui_test_utils::WindowedNotificationObserver notification_observer(

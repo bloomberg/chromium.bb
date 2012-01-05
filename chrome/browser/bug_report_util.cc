@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
@@ -36,6 +36,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/notifications/system_notification.h"
 #endif
+
+using content::WebContents;
 
 namespace {
 
@@ -361,9 +363,9 @@ void BugReportUtil::SendReport(
 
 #if defined(ENABLE_SAFE_BROWSING)
 // static
-void BugReportUtil::ReportPhishing(TabContents* currentTab,
+void BugReportUtil::ReportPhishing(WebContents* current_tab,
                                    const std::string& phishing_url) {
-  currentTab->GetController().LoadURL(
+  current_tab->GetController().LoadURL(
       safe_browsing_util::GeneratePhishingReportUrl(
           kReportPhishingUrl, phishing_url,
           false /* not client-side detection */),

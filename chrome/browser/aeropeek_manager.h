@@ -13,13 +13,17 @@
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "ui/gfx/insets.h"
 
+class AeroPeekWindow;
+class SkBitmap;
+class TabContentsWrapper;
+
+namespace content {
+class WebContents;
+}
+
 namespace gfx {
 class Size;
 }
-class AeroPeekWindow;
-class SkBitmap;
-class TabContents;
-class TabContentsWrapper;
 
 // A class which defines interfaces called from AeroPeekWindow.
 // This class is used for dispatching an event received by a thumbnail window
@@ -160,14 +164,14 @@ class AeroPeekManager : public TabStripModelObserver,
                            const gfx::Size& source,
                            gfx::Size* output) const;
 
-  // Returns the TabContents object associated with the specified Tab ID only
+  // Returns the WebContents object associated with the specified Tab ID only
   // if it is alive.
   // Since Windows cannot send AeroPeek events directly to Chrome windows, we
   // use a place-holder window to receive AeroPeek events. So, when Windows
   // sends an AeroPeek event, the corresponding tab (and TabContents) may have
   // been deleted by Chrome. To prevent us from accessing deleted TabContents,
   // we need to check if the tab is still alive.
-  TabContents* GetTabContents(int tab_id) const;
+  content::WebContents* GetWebContents(int tab_id) const;
 
   // Returns the tab ID from the specified TabContentsWrapper.
   int GetTabID(TabContentsWrapper* contents) const;

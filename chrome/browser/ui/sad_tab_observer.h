@@ -30,7 +30,7 @@ class SadTabGtk;
 class SadTabObserver : public content::WebContentsObserver,
                        public content::NotificationObserver {
  public:
-  explicit SadTabObserver(TabContents* tab_contents);
+  explicit SadTabObserver(content::WebContents* web_contents);
   virtual ~SadTabObserver();
 
  private:

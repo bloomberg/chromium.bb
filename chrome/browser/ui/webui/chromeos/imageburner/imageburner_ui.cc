@@ -22,6 +22,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

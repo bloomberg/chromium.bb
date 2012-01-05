@@ -15,7 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "printing/print_job_constants.h"
 
 namespace {
@@ -57,7 +57,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
   EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
 
   PrintPreviewUI* preview_ui = reinterpret_cast<PrintPreviewUI*>(
-      preview_tab->tab_contents()->GetWebUI());
+      preview_tab->web_contents()->GetWebUI());
   ASSERT_TRUE(preview_ui != NULL);
 
   scoped_refptr<RefCountedBytes> data;
@@ -119,7 +119,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
   EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
 
   PrintPreviewUI* preview_ui = reinterpret_cast<PrintPreviewUI*>(
-      preview_tab->tab_contents()->GetWebUI());
+      preview_tab->web_contents()->GetWebUI());
   ASSERT_TRUE(preview_ui != NULL);
 
   scoped_refptr<RefCountedBytes> data;
@@ -188,7 +188,7 @@ TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
   EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
 
   PrintPreviewUI* preview_ui = reinterpret_cast<PrintPreviewUI*>(
-      preview_tab->tab_contents()->GetWebUI());
+      preview_tab->web_contents()->GetWebUI());
   ASSERT_TRUE(preview_ui != NULL);
 
   // Test with invalid |preview_ui_addr|.

@@ -136,12 +136,8 @@ ExternalTabContainer::~ExternalTabContainer() {
   Uninitialize();
 }
 
-TabContents* ExternalTabContainer::tab_contents() const {
-  return tab_contents_.get() ? tab_contents_->tab_contents() : NULL;
-}
-
 WebContents * ExternalTabContainer::web_contents() const {
-  return tab_contents();
+  return tab_contents_.get() ? tab_contents_->web_contents() : NULL;
 }
 
 bool ExternalTabContainer::Init(Profile* profile,
@@ -623,7 +619,7 @@ bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {
     return false;
   }
   external_context_menu_.reset(
-      new RenderViewContextMenuViews(tab_contents(), params));
+      new RenderViewContextMenuViews(web_contents(), params));
   external_context_menu_->SetExternal();
   external_context_menu_->Init();
   external_context_menu_->UpdateMenuItemStates();
@@ -1143,7 +1139,7 @@ void ExternalTabContainer::ServicePendingOpenURLRequests() {
   for (size_t index = 0; index < pending_open_url_requests_.size();
        ++index) {
     const OpenURLParams& url_request = pending_open_url_requests_[index];
-    OpenURLFromTab(tab_contents(), url_request);
+    OpenURLFromTab(web_contents(), url_request);
   }
   pending_open_url_requests_.clear();
 }

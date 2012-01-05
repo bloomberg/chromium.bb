@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 

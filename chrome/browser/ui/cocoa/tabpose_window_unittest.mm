@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TabposeWindowTest : public CocoaProfileTest {

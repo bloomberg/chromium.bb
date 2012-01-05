@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

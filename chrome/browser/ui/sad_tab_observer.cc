@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/sad_tab_observer.h"
 
 #include "chrome/browser/browser_shutdown.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
@@ -21,10 +21,10 @@
 
 using content::WebContents;
 
-SadTabObserver::SadTabObserver(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents) {
+SadTabObserver::SadTabObserver(WebContents* web_contents)
+    : content::WebContentsObserver(web_contents) {
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
-                 content::Source<WebContents>(tab_contents));
+                 content::Source<WebContents>(web_contents));
 }
 
 SadTabObserver::~SadTabObserver() {

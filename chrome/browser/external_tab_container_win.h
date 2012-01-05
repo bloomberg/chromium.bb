@@ -61,7 +61,6 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   ExternalTabContainer(AutomationProvider* automation,
                        AutomationResourceMessageFilter* filter);
 
-  TabContents* tab_contents() const;
   content::WebContents* web_contents() const;
   TabContentsWrapper* tab_contents_wrapper() { return tab_contents_.get(); }
 

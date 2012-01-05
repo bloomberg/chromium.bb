@@ -16,7 +16,7 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

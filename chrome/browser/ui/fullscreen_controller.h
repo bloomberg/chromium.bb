@@ -57,7 +57,7 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
 
   // Notifications.
   void LostMouseLock();
-  void OnTabClosing(TabContents* tab_contents);
+  void OnTabClosing(content::WebContents* web_contents);
   void OnTabDeactivated(TabContentsWrapper* contents);
   void OnAcceptFullscreenPermission(const GURL& url,
                                     FullscreenExitBubbleType bubble_type);

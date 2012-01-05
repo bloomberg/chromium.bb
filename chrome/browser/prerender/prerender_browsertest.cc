@@ -33,11 +33,11 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
@@ -557,7 +557,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   void NavigateToDestUrlAndWaitForPassTitle() {
     string16 expected_title = ASCIIToUTF16("PASS");
     ui_test_utils::TitleWatcher title_watcher(
-        GetPrerenderContents()->prerender_contents()->tab_contents(),
+        GetPrerenderContents()->prerender_contents()->web_contents(),
         expected_title);
     NavigateToDestURL();
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
@@ -761,14 +761,14 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // In the case of zero loads, need to wait for the page load to complete
     // before running any Javascript.
     scoped_ptr<ui_test_utils::WindowedNotificationObserver> page_load_observer;
-    TabContents* tab_contents =
-        GetPrerenderContents()->prerender_contents()->tab_contents();
+    WebContents* web_contents =
+        GetPrerenderContents()->prerender_contents()->web_contents();
     if (GetPrerenderContents()->number_of_loads() == 0) {
       page_load_observer.reset(
           new ui_test_utils::WindowedNotificationObserver(
               content::NOTIFICATION_LOAD_STOP,
               content::Source<NavigationController>(
-                  &tab_contents->GetController())));
+                  &web_contents->GetController())));
     }
 
     // ui_test_utils::NavigateToURL waits until DidStopLoading is called on
@@ -792,7 +792,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
       bool display_test_result = false;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-          tab_contents->GetRenderViewHost(), L"",
+          web_contents->GetRenderViewHost(), L"",
           L"window.domAutomationController.send(DidDisplayPass())",
           &display_test_result));
       EXPECT_TRUE(display_test_result);
@@ -1356,7 +1356,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
   // Navigate to about:crash and then wait for the renderer to crash.
   ASSERT_TRUE(GetPrerenderContents());
   ASSERT_TRUE(GetPrerenderContents()->prerender_contents());
-  GetPrerenderContents()->prerender_contents()->tab_contents()->GetController().
+  GetPrerenderContents()->prerender_contents()->web_contents()->GetController().
       LoadURL(
           GURL(chrome::kAboutCrashURL),
           content::Referrer(),
@@ -1750,7 +1750,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
   ui_test_utils::WindowedNotificationObserver favicon_update_watcher(
       chrome::NOTIFICATION_FAVICON_UPDATED,
       content::Source<WebContents>(prerender_contents->prerender_contents()->
-                          tab_contents()));
+                          web_contents()));
   NavigateToDestURL();
   favicon_update_watcher.Wait();
 }

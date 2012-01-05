@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"

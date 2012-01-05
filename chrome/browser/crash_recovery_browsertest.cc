@@ -8,9 +8,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

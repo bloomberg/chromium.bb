@@ -15,7 +15,6 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "googleurl/src/gurl.h"
@@ -26,6 +25,7 @@
 #include "webkit/quota/quota_types.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -133,9 +133,9 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
     return;
   }
 
-  TabContents* tab_contents =
-      tab_util::GetTabContentsByID(render_process_id, render_view_id);
-  if (!tab_contents) {
+  WebContents* web_contents =
+      tab_util::GetWebContentsByID(render_process_id, render_view_id);
+  if (!web_contents) {
     // The tab may have gone away or the request may not be from a tab.
     LOG(WARNING) << "Attempt to request quota tabless renderer: "
                  << render_process_id << "," << render_view_id;
@@ -144,7 +144,7 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
   }
 
   TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
   InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
   infobar_helper->AddInfoBar(new RequestQuotaInfoBarDelegate(
       infobar_helper, this, origin_url, requested_quota,

@@ -13,7 +13,6 @@
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

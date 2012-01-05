@@ -25,7 +25,10 @@
 #endif
 
 class Profile;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 class BugReportUtil {
  public:
@@ -77,7 +80,7 @@ class BugReportUtil {
 #endif
   );
   // Redirects the user to Google's phishing reporting page.
-  static void ReportPhishing(TabContents* currentTab,
+  static void ReportPhishing(content::WebContents* current_tab,
                              const std::string& phishing_url);
   // Maintains a single vector of bytes to store the last screenshot taken.
   static std::vector<unsigned char>* GetScreenshotPng();

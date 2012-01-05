@@ -28,7 +28,6 @@
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"

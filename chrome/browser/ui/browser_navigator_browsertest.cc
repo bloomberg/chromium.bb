@@ -21,10 +21,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 
 using content::WebContents;
 
@@ -664,7 +664,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
   // All platforms should respect size however provided width > 400 (Mac has a
   // minimum window width of 400).
   EXPECT_EQ(p.window_bounds.size(),
-            p.target_contents->tab_contents()->GetView()->GetContainerSize());
+            p.target_contents->web_contents()->GetView()->GetContainerSize());
 
   // We should have two windows, the new popup and the browser() provided by the
   // framework.
@@ -1015,7 +1015,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   GURL singleton_url(GetSettingsAdvancedURL());
   TabContentsWrapper* wrapper = browser()->AddSelectedTabWithURL(
       singleton_url, content::PAGE_TRANSITION_LINK);
-  TabContents* tab_contents = wrapper->tab_contents();
+  WebContents* web_contents = wrapper->web_contents();
 
   // We should have one browser with 2 tabs, the 2nd selected.
   EXPECT_EQ(1u, BrowserList::size());
@@ -1023,8 +1023,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(1, browser()->active_index());
 
   // Kill the singleton tab.
-  tab_contents->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
-  EXPECT_TRUE(tab_contents->IsCrashed());
+  web_contents->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+  EXPECT_TRUE(web_contents->IsCrashed());
 
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
@@ -1034,7 +1034,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   ui_test_utils::NavigateToURL(&p);
 
   // The tab should not be sad anymore.
-  EXPECT_FALSE(tab_contents->IsCrashed());
+  EXPECT_FALSE(web_contents->IsCrashed());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
