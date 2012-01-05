@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -250,8 +250,8 @@
     'panels': {
       'filepath': 'chrome/browser/ui/panels/.*',
     },
-    'accelerator_table_linux': {
-      'filepath': 'chrome/browser/ui/views/accelerator_table_linux.cc',
+    'accelerator_table': {
+      'filepath': 'chrome/browser/ui/views/accelerator_table.cc',
     },
     'downloads_ui': {
       'filepath': 'chrome/browser/resources/.*downloads\..*' \
@@ -410,8 +410,8 @@
                'jianli@chromium.org'],
     'importer': ['tfarina@chromium.org'],
     'views': ['tfarina@chromium.org'],
-    'accelerator_table_linux': ['mazda@chromium.org',
-                                'derat+watch@chromium.org'],
+    'accelerator_table': ['mazda@chromium.org',
+                          'derat+watch@chromium.org'],
     'downloads_ui': ['asanka@chromium.org', 'rdsmith@chromium.org'],
     'x11': ['derat+watch@chromium.org',
             'sadrul@chromium.org',
