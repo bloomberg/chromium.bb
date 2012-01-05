@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -138,11 +138,15 @@ int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,
   } else {
     // All other HTTP requests are untrusted.
     options.untrustedHTTP = true;
-    options.allowCredentials = request_data_.allow_credentials;
     if (request_data_.allow_cross_origin_requests) {
-      // Allow cross-origin requests with access control.
+      // Allow cross-origin requests with access control. The request specifies
+      // if credentials are to be sent.
+      options.allowCredentials = request_data_.allow_credentials;
       options.crossOriginRequestPolicy =
           WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
+    } else {
+      // Same-origin requests can always send credentials.
+      options.allowCredentials = true;
     }
   }
 
@@ -315,15 +319,11 @@ void PPB_URLLoader_Impl::didReceiveData(WebURLLoader* loader,
   UpdateStatus();
 
   buffer_.insert(buffer_.end(), data, data + data_length);
-  if (user_buffer_) {
-    RunCallback(FillUserBuffer());
-  } else {
-    DCHECK(!TrackedCallback::IsPending(pending_callback_));
-  }
 
   // To avoid letting the network stack download an entire stream all at once,
   // defer loading when we have enough buffer.
-  // Check the buffer size after potentially moving some to the user buffer.
+  // Check for this before we run the callback, even though that could move
+  // data out of the buffer. Doing anything after the callback is unsafe.
   DCHECK(request_data_.prefetch_buffer_lower_threshold <
          request_data_.prefetch_buffer_upper_threshold);
   if (!is_streaming_to_file_ &&
@@ -332,6 +332,12 @@ void PPB_URLLoader_Impl::didReceiveData(WebURLLoader* loader,
           request_data_.prefetch_buffer_upper_threshold))) {
     DVLOG(1) << "Suspending async load - buffer size: " << buffer_.size();
     SetDefersLoading(true);
+  }
+
+  if (user_buffer_) {
+    RunCallback(FillUserBuffer());
+  } else {
+    DCHECK(!TrackedCallback::IsPending(pending_callback_));
   }
 }
 
