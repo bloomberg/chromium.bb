@@ -2234,7 +2234,8 @@ void RenderWidgetHostViewWin::EnsureTooltip() {
   if (!::IsWindow(tooltip_hwnd_)) {
     message = TTM_ADDTOOL;
     tooltip_hwnd_ = CreateWindowEx(
-        WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
+        WS_EX_TRANSPARENT | WS_EX_TOPMOST |
+            l10n_util::GetExtendedTooltipStyles(),
         TOOLTIPS_CLASS, NULL, TTS_NOPREFIX, 0, 0, 0, 0, m_hWnd, NULL,
         NULL, NULL);
     if (!tooltip_hwnd_) {

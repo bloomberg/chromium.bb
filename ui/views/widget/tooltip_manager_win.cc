@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,7 +90,7 @@ bool TooltipManagerWin::Init() {
   DCHECK(!tooltip_hwnd_);
   // Create the tooltip control.
   tooltip_hwnd_ = CreateWindowEx(
-      WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
+      WS_EX_TRANSPARENT | WS_EX_TOPMOST | l10n_util::GetExtendedTooltipStyles(),
       TOOLTIPS_CLASS, NULL, TTS_NOPREFIX, 0, 0, 0, 0,
       GetParent(), NULL, NULL, NULL);
   if (!tooltip_hwnd_)
@@ -333,7 +333,7 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
   gfx::Point screen_point;
   focused_view->ConvertPointToScreen(focused_view, &screen_point);
   keyboard_tooltip_hwnd_ = CreateWindowEx(
-      WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
+      WS_EX_TRANSPARENT | WS_EX_TOPMOST | l10n_util::GetExtendedTooltipStyles(),
       TOOLTIPS_CLASS, NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
   if (!keyboard_tooltip_hwnd_)
     return;
