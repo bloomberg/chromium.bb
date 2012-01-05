@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@
 
 #if defined(USE_AURA)
 #include "ash/ash_switches.h"
+#include "ash/shell.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -68,8 +69,8 @@ void BrowserFrame::InitBrowserFrame() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(ash::switches::kAuraTranslucentFrames))
     params.transparent = true;
-  // Aura laptop mode fills the monitor with with its windows.
-  if (ash::switches::IsAuraWindowModeCompact() &&
+  // Aura compact mode fills the monitor with with its windows.
+  if (ash::Shell::GetInstance()->IsWindowModeCompact() &&
       browser_view_->IsBrowserTypeNormal()) {
     params.bounds = gfx::Screen::GetPrimaryMonitorBounds();
     params.show_state = ui::SHOW_STATE_MAXIMIZED;
@@ -77,11 +78,11 @@ void BrowserFrame::InitBrowserFrame() {
 #endif
   Init(params);
 
-  // On ChromeOS and Aura laptop mode we always want top-level windows
+  // On ChromeOS and Aura compact mode we always want top-level windows
   // to appear active.
   bool disable_inactive_rendering = false;
 #if defined(USE_AURA)
-  disable_inactive_rendering = ash::switches::IsAuraWindowModeCompact();
+  disable_inactive_rendering = ash::Shell::GetInstance()->IsWindowModeCompact();
 #elif defined(OS_CHROMEOS)
   disable_inactive_rendering = true;
 #endif
@@ -121,7 +122,7 @@ void BrowserFrame::TabStripDisplayModeChanged() {
 bool BrowserFrame::IsSingleWindowMode() const {
   bool single_window_mode = false;
 #if defined(USE_AURA)
-  single_window_mode = ash::switches::IsAuraWindowModeCompact();
+  single_window_mode = ash::Shell::GetInstance()->IsWindowModeCompact();
 #elif defined(OS_CHROMEOS)
   single_window_mode =
       chromeos::system::runtime_environment::IsRunningOnChromeOS();

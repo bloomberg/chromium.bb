@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -264,7 +264,7 @@ TEST_F(ShellTest, IsScreenLocked) {
   EXPECT_FALSE(Shell::GetInstance()->IsScreenLocked());
 }
 
-TEST_F(ShellTest, DefaultToCompactWindowMode) {
+TEST_F(ShellTest, ComputeWindowMode) {
   // We only change default window mode with full-screen host windows.
   AutoResetUseFullscreenHostWindow use_fullscreen_host_window(true);
 
@@ -272,21 +272,33 @@ TEST_F(ShellTest, DefaultToCompactWindowMode) {
   Shell* shell = Shell::GetInstance();
   gfx::Size monitor_size(1440, 900);
   CommandLine command_line(CommandLine::NO_PROGRAM);
-  EXPECT_FALSE(shell->DefaultToCompactWindowMode(monitor_size, &command_line));
+  EXPECT_EQ(Shell::NORMAL_MODE,
+            shell->ComputeWindowMode(monitor_size, &command_line));
 
   // Alex-sized screens need compact mode.
   monitor_size.SetSize(1280, 800);
-  EXPECT_TRUE(shell->DefaultToCompactWindowMode(monitor_size, &command_line));
+  EXPECT_EQ(Shell::COMPACT_MODE,
+            shell->ComputeWindowMode(monitor_size, &command_line));
 
   // ZGB-sized screens need compact mode.
   monitor_size.SetSize(1366, 768);
-  EXPECT_TRUE(shell->DefaultToCompactWindowMode(monitor_size, &command_line));
+  EXPECT_EQ(Shell::COMPACT_MODE,
+            shell->ComputeWindowMode(monitor_size, &command_line));
 
   // Even for a small screen, the user can force normal mode.
   monitor_size.SetSize(800, 600);
   command_line.AppendSwitchASCII(ash::switches::kAuraWindowMode,
                                  ash::switches::kAuraWindowModeNormal);
-  EXPECT_FALSE(shell->DefaultToCompactWindowMode(monitor_size, &command_line));
+  EXPECT_EQ(Shell::NORMAL_MODE,
+            shell->ComputeWindowMode(monitor_size, &command_line));
+
+  // Even for a large screen, the user can force compact mode.
+  monitor_size.SetSize(1920, 1080);
+  CommandLine command_line2(CommandLine::NO_PROGRAM);
+  command_line2.AppendSwitchASCII(ash::switches::kAuraWindowMode,
+                                 ash::switches::kAuraWindowModeCompact);
+  EXPECT_EQ(Shell::COMPACT_MODE,
+            shell->ComputeWindowMode(monitor_size, &command_line2));
 }
 
 }  // namespace ash

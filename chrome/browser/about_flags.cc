@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,10 +77,11 @@ const Experiment::Choice kPrerenderFromOmniboxChoices[] = {
 
 #if defined(USE_AURA)
 const Experiment::Choice kAuraWindowModeChoices[] = {
-  { IDS_FLAGS_AURA_WINDOW_MODE_NORMAL, "", "" },
+  { IDS_FLAGS_AURA_WINDOW_MODE_AUTOMATIC, "", "" },
+  { IDS_FLAGS_AURA_WINDOW_MODE_NORMAL,
+      ash::switches::kAuraWindowMode, ash::switches::kAuraWindowModeNormal },
   { IDS_FLAGS_AURA_WINDOW_MODE_COMPACT,
-      ash::switches::kAuraWindowMode,
-      ash::switches::kAuraWindowModeCompact }
+      ash::switches::kAuraWindowMode, ash::switches::kAuraWindowModeCompact }
 };
 #endif
 

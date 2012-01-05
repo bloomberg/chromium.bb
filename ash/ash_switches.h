@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,9 +19,6 @@ ASH_EXPORT extern const char kAuraWindowMode[];
 ASH_EXPORT extern const char kAuraWindowModeCompact[];
 ASH_EXPORT extern const char kAuraWindowModeNormal[];
 ASH_EXPORT extern const char kAuraWorkspaceManager[];
-
-// Utilities for testing multi-valued switches.
-ASH_EXPORT bool IsAuraWindowModeCompact();
 
 }  // namespace switches
 }  // namespace ash

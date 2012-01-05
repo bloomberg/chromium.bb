@@ -5019,6 +5019,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_AURA_WINDOW_MODE_DESCRIPTION" desc="Description for the flag to choose how windows are displayed.">
         Normal mode shows draggable windows.  Compact mode shows a single maximized window, useful for low-resolution devices such as laptops.
       </message>
+      <message name="IDS_FLAGS_AURA_WINDOW_MODE_AUTOMATIC" desc="Option name for automatic selection of window display mode.">
+        Automatic
+      </message>
       <message name="IDS_FLAGS_AURA_WINDOW_MODE_NORMAL" desc="Option name for normal window display mode.">
         Normal
       </message>

@@ -81,6 +81,9 @@ class ASH_EXPORT Shell {
   // Returns true if the screen is locked.
   bool IsScreenLocked() const;
 
+  // See enum WindowMode for details.
+  bool IsWindowModeCompact() const { return window_mode_ == COMPACT_MODE; }
+
   AcceleratorController* accelerator_controller() {
     return accelerator_controller_.get();
   }
@@ -102,19 +105,27 @@ class ASH_EXPORT Shell {
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ShellTest, DefaultToCompactWindowMode);
+  FRIEND_TEST_ALL_PREFIXES(ShellTest, ComputeWindowMode);
 
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
+
+  // In compact window mode we fill the screen with a single maximized window,
+  // similar to ChromeOS R17 and earlier.  In normal mode we have draggable
+  // windows.
+  enum WindowMode {
+    NORMAL_MODE,
+    COMPACT_MODE
+  };
 
   explicit Shell(ShellDelegate* delegate);
   virtual ~Shell();
 
   void Init();
 
-  // Returns true if the |monitor_size| is narrow and the user has not set
-  // an explicit window mode flag on the |command_line|.
-  bool DefaultToCompactWindowMode(const gfx::Size& monitor_size,
-                                  CommandLine* command_line) const;
+  // Returns the appropriate window mode to use based on the primary monitor's
+  // |monitor_size| and the user's |command_line|.
+  WindowMode ComputeWindowMode(const gfx::Size& monitor_size,
+                               CommandLine* command_line) const;
 
   void InitLayoutManagers(aura::RootWindow* root_window);
 
@@ -148,6 +159,9 @@ class ASH_EXPORT Shell {
   // An event filter that pre-handles global accelerators.
   scoped_ptr<internal::AcceleratorFilter> accelerator_filter_;
 
+  // The |window_mode_| never changes after the shell is initialized.
+  // Switching modes requires a restart.
+  WindowMode window_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

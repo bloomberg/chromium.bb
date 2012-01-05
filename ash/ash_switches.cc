@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,12 +33,6 @@ const char kAuraWindowModeNormal[] = "normal";
 
 // Use Aura-style workspace window dragging and sizing.
 const char kAuraWorkspaceManager[] = "aura-workspace-manager";
-
-bool IsAuraWindowModeCompact() {
-  std::string mode = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-    switches::kAuraWindowMode);
-  return mode == switches::kAuraWindowModeCompact;
-}
 
 }  // namespace switches
 }  // namespace ash

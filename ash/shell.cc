@@ -60,7 +60,8 @@ const int kCompactWindowModeWidthThreshold = 1366;
 // Creates each of the special window containers that holds windows of various
 // types in the shell UI. They are added to |containers| from back to front in
 // the z-index.
-void CreateSpecialContainers(aura::Window::Windows* containers) {
+void CreateSpecialContainers(aura::Window::Windows* containers,
+                             bool is_window_mode_compact) {
   aura::Window* background_container = new aura::Window(NULL);
   background_container->set_id(
       internal::kShellWindowId_DesktopBackgroundContainer);
@@ -68,7 +69,7 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
 
   aura::Window* default_container = new aura::Window(NULL);
   // Primary windows in compact mode don't allow drag, so don't use the filter.
-  if (!switches::IsAuraWindowModeCompact()) {
+  if (!is_window_mode_compact) {
     default_container->SetEventFilter(
         new ToplevelWindowEventFilter(default_container));
   }
@@ -133,7 +134,8 @@ Shell* Shell::instance_ = NULL;
 Shell::Shell(ShellDelegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       accelerator_controller_(new AcceleratorController),
-      delegate_(delegate) {
+      delegate_(delegate),
+      window_mode_(NORMAL_MODE) {
   aura::RootWindow::GetInstance()->SetEventFilter(
       new internal::RootWindowEventFilter);
 }
@@ -196,10 +198,7 @@ void Shell::Init() {
   // we create containers or layout managers.
   gfx::Size monitor_size = gfx::Screen::GetPrimaryMonitorSize();
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (DefaultToCompactWindowMode(monitor_size, command_line)) {
-    command_line->AppendSwitchASCII(switches::kAuraWindowMode,
-                                    switches::kAuraWindowModeCompact);
-  }
+  window_mode_ = ComputeWindowMode(monitor_size, command_line);
 
   aura::RootWindow* root_window = aura::RootWindow::GetInstance();
   root_window->SetCursor(aura::kCursorPointer);
@@ -207,7 +206,7 @@ void Shell::Init() {
   activation_controller_.reset(new internal::ActivationController);
 
   aura::Window::Windows containers;
-  CreateSpecialContainers(&containers);
+  CreateSpecialContainers(&containers, IsWindowModeCompact());
   aura::Window::Windows::const_iterator i;
   for (i = containers.begin(); i != containers.end(); ++i) {
     (*i)->Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
@@ -242,24 +241,30 @@ void Shell::Init() {
   power_button_controller_.reset(new PowerButtonController);
 }
 
-bool Shell::DefaultToCompactWindowMode(const gfx::Size& monitor_size,
-                                       CommandLine* command_line) const {
-  // Developers often run the Aura shell in a window on their desktop.
-  // Don't mess with their window mode.
+Shell::WindowMode Shell::ComputeWindowMode(const gfx::Size& monitor_size,
+                                           CommandLine* command_line) const {
+  // If user set the flag, use their desired behavior.
+  if (command_line->HasSwitch(switches::kAuraWindowMode)) {
+    std::string mode =
+        command_line->GetSwitchValueASCII(switches::kAuraWindowMode);
+    if (mode == switches::kAuraWindowModeNormal)
+      return NORMAL_MODE;
+    if (mode == switches::kAuraWindowModeCompact)
+      return COMPACT_MODE;
+  }
+
+  // Developers often run the Aura shell in small windows on their desktop.
+  // Prefer normal mode for them.
   if (!aura::RootWindow::use_fullscreen_host_window())
-    return false;
+    return NORMAL_MODE;
 
-  // If user set the flag, don't override their desired behavior.
-  if (command_line->HasSwitch(switches::kAuraWindowMode))
-    return false;
-
-  // If the screen is wide enough, we prefer multiple draggable windows.
+  // If the screen is narrow we prefer a single compact window display.
   // We explicitly don't care about height, since users don't generally stack
   // browser windows vertically.
-  if (monitor_size.width() > kCompactWindowModeWidthThreshold)
-    return false;
+  if (monitor_size.width() <= kCompactWindowModeWidthThreshold)
+    return COMPACT_MODE;
 
-  return true;
+  return NORMAL_MODE;
 }
 
 void Shell::InitLayoutManagers(aura::RootWindow* root_window) {
@@ -278,7 +283,7 @@ void Shell::InitLayoutManagers(aura::RootWindow* root_window) {
 
   // Compact mode has a simplified layout manager and doesn't use the launcher,
   // desktop background, shelf, etc.
-  if (switches::IsAuraWindowModeCompact()) {
+  if (IsWindowModeCompact()) {
     default_container->SetLayoutManager(
         new internal::CompactLayoutManager(status_widget));
     internal::CompactStatusAreaLayoutManager* status_area_layout_manager =
