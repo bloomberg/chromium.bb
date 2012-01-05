@@ -101,7 +101,12 @@ class COMPOSITOR_EXPORT CompositorCC
   virtual bool ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds) OVERRIDE;
 
   // WebLayerTreeViewClient implementation.
+  // TODO(jamesr): Remove this override once upstream declaration is removed and
+  // rolled into DEPS
   virtual void animateAndLayout(double frameBeginTime);
+
+  virtual void updateAnimations(double frameBeginTime);
+  virtual void layout();
   virtual void applyScrollAndScale(const WebKit::WebSize& scrollDelta,
                                    float scaleFactor);
   virtual void applyScrollDelta(const WebKit::WebSize&);

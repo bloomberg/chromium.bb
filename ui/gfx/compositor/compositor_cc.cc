@@ -241,6 +241,12 @@ bool CompositorCC::ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds) {
 void CompositorCC::animateAndLayout(double frameBeginTime) {
 }
 
+void CompositorCC::updateAnimations(double frameBeginTime) {
+}
+
+void CompositorCC::layout() {
+}
+
 void CompositorCC::applyScrollAndScale(const WebKit::WebSize& scrollDelta,
                                        float scaleFactor) {
 }
