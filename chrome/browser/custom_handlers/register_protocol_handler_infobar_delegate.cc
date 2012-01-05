@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,10 +29,9 @@ RegisterProtocolHandlerInfoBarDelegate::RegisterProtocolHandlerInfoBarDelegate(
 
 bool RegisterProtocolHandlerInfoBarDelegate::ShouldExpire(
     const content::LoadCommittedDetails& details) const {
-  // The user has submitted a form, causing the page to navigate elsewhere. We
-  // don't want the infobar to be expired at this point, because the user won't
-  // get a chance to answer the question.
-  return false;
+  // We expire the infobar on navigation because otherwise we can get multiple
+  // infobars stacked up.
+  return true;
 }
 
 InfoBarDelegate::Type
