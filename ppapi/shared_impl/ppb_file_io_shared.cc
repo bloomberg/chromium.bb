@@ -24,8 +24,6 @@ using thunk::PPB_FileRef_API;
 PPB_FileIO_Shared::CallbackEntry::CallbackEntry()
     : read_buffer(NULL),
       info(NULL) {
-  callback.func = NULL;
-  callback.user_data = NULL;
 }
 
 PPB_FileIO_Shared::CallbackEntry::CallbackEntry(const CallbackEntry& entry)
@@ -52,19 +50,6 @@ PPB_FileIO_Shared::PPB_FileIO_Shared(const HostResource& host_resource)
 }
 
 PPB_FileIO_Shared::~PPB_FileIO_Shared() {
-  // The callbacks list should have been cleared by LastPluginRefWasDeleted.
-  DCHECK(callbacks_.empty());
-}
-
-void PPB_FileIO_Shared::LastPluginRefWasDeleted() {
-  // Abort all pending callbacks. Do this by posting a task to avoid reentering
-  // the plugin's Release() call that probably deleted this object.
-  for (size_t i = 0; i < callbacks_.size(); i++) {
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        callbacks_[i].callback.func, callbacks_[i].callback.user_data,
-        static_cast<int32_t>(PP_ERROR_ABORTED)));
-  }
-  callbacks_.erase(callbacks_.begin(), callbacks_.end());
 }
 
 thunk::PPB_FileIO_API* PPB_FileIO_Shared::AsPPB_FileIO_API() {
@@ -217,7 +202,7 @@ void PPB_FileIO_Shared::RegisterCallback(OperationType op,
          (pending_op_ != OPERATION_EXCLUSIVE && pending_op_ == op));
 
   CallbackEntry entry;
-  entry.callback = callback;
+  entry.callback = new TrackedCallback(this, callback);
   entry.read_buffer = read_buffer;
   entry.info = info;
   callbacks_.push_back(entry);
@@ -233,7 +218,7 @@ void PPB_FileIO_Shared::RunAndRemoveFirstPendingCallback(int32_t result) {
   if (callbacks_.empty())
     pending_op_ = OPERATION_NONE;
 
-  PP_RunCompletionCallback(&front.callback, result);
+  front.callback->Run(result);
 }
 
 }  // namespace ppapi

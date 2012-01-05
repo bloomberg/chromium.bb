@@ -33,7 +33,7 @@ namespace webkit {
 namespace ppapi {
 
 PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PP_Instance instance)
-    : Resource(instance),
+    : PPB_VideoDecoder_Shared(instance),
       ppp_videodecoder_(NULL) {
   PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
   if (plugin_module) {
@@ -43,10 +43,6 @@ PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PP_Instance instance)
 }
 
 PPB_VideoDecoder_Impl::~PPB_VideoDecoder_Impl() {
-}
-
-PPB_VideoDecoder_API* PPB_VideoDecoder_Impl::AsPPB_VideoDecoder_API() {
-  return this;
 }
 
 // Convert PP_VideoDecoder_Profile to media::VideoDecodeAccelerator::Profile.

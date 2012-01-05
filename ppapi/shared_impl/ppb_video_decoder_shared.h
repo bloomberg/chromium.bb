@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_video_decoder_api.h"
 
 namespace gpu {
@@ -25,10 +26,15 @@ namespace ppapi {
 // Implements the logic to set and run callbacks for various video decoder
 // events. Both the proxy and the renderer implementation share this code.
 class PPAPI_SHARED_EXPORT PPB_VideoDecoder_Shared
-    : NON_EXPORTED_BASE(public thunk::PPB_VideoDecoder_API) {
+    : public Resource,
+      NON_EXPORTED_BASE(public thunk::PPB_VideoDecoder_API) {
  public:
-  PPB_VideoDecoder_Shared();
+  explicit PPB_VideoDecoder_Shared(PP_Instance instance);
+  explicit PPB_VideoDecoder_Shared(const HostResource& host_resource);
   virtual ~PPB_VideoDecoder_Shared();
+
+  // Resource overrides.
+  virtual thunk::PPB_VideoDecoder_API* AsPPB_VideoDecoder_API() OVERRIDE;
 
   // PPB_VideoDecoder_API implementation.
   virtual void Destroy() OVERRIDE;
@@ -53,10 +59,10 @@ class PPAPI_SHARED_EXPORT PPB_VideoDecoder_Shared
  private:
   // Key: bitstream_buffer_id, value: callback to run when bitstream decode is
   // done.
-  typedef std::map<int32, PP_CompletionCallback> CallbackById;
+  typedef std::map<int32, scoped_refptr<TrackedCallback> > CallbackById;
 
-  PP_CompletionCallback flush_callback_;
-  PP_CompletionCallback reset_callback_;
+  scoped_refptr<TrackedCallback> flush_callback_;
+  scoped_refptr<TrackedCallback> reset_callback_;
   CallbackById bitstream_buffer_callbacks_;
 
   // The resource ID of the underlying Graphics3D object being used.  Used only

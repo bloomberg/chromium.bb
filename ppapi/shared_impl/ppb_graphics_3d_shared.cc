@@ -11,9 +11,14 @@
 
 namespace ppapi {
 
-PPB_Graphics3D_Shared::PPB_Graphics3D_Shared()
-    : transfer_buffer_id_(-1),
-      swap_callback_(PP_BlockUntilComplete()) {
+PPB_Graphics3D_Shared::PPB_Graphics3D_Shared(PP_Instance instance)
+    : Resource(instance),
+      transfer_buffer_id_(-1) {
+}
+
+PPB_Graphics3D_Shared::PPB_Graphics3D_Shared(const HostResource& host_resource)
+    : Resource(host_resource),
+      transfer_buffer_id_(-1) {
 }
 
 PPB_Graphics3D_Shared::~PPB_Graphics3D_Shared() {
@@ -21,6 +26,10 @@ PPB_Graphics3D_Shared::~PPB_Graphics3D_Shared() {
   DCHECK_EQ(transfer_buffer_id_, -1);
   DCHECK(!gles2_helper_.get());
   DCHECK(!gles2_impl_.get());
+}
+
+thunk::PPB_Graphics3D_API* PPB_Graphics3D_Shared::AsPPB_Graphics3D_API() {
+  return this;
 }
 
 int32_t PPB_Graphics3D_Shared::GetAttribs(int32_t* attrib_list) {
@@ -59,7 +68,7 @@ int32_t PPB_Graphics3D_Shared::SwapBuffers(PP_CompletionCallback callback) {
     return PP_ERROR_INPROGRESS;
   }
 
-  swap_callback_ = callback;
+  swap_callback_ = new TrackedCallback(this, callback);
   return DoSwapBuffers();
 }
 
@@ -82,7 +91,11 @@ void PPB_Graphics3D_Shared::UnmapTexSubImage2DCHROMIUM(const void* mem) {
 
 void PPB_Graphics3D_Shared::SwapBuffersACK(int32_t pp_error) {
   DCHECK(HasPendingSwap());
-  PP_RunAndClearCompletionCallback(&swap_callback_, pp_error);
+  TrackedCallback::ClearAndRun(&swap_callback_, pp_error);
+}
+
+bool PPB_Graphics3D_Shared::HasPendingSwap() const {
+  return TrackedCallback::IsPending(swap_callback_);
 }
 
 bool PPB_Graphics3D_Shared::CreateGLES2Impl(int32 command_buffer_size,

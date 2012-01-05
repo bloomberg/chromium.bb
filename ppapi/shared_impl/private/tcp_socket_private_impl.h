@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_tcp_socket_private_api.h"
 
 namespace ppapi {
@@ -92,15 +93,15 @@ class PPAPI_SHARED_EXPORT TCPSocketPrivateImpl
 
   void Init(uint32 socket_id);
   bool IsConnected() const;
-  void PostAbortAndClearIfNecessary(PP_CompletionCallback* callback);
+  void PostAbortIfNecessary(scoped_refptr<TrackedCallback>* callback);
 
   uint32 socket_id_;
   ConnectionState connection_state_;
 
-  PP_CompletionCallback connect_callback_;
-  PP_CompletionCallback ssl_handshake_callback_;
-  PP_CompletionCallback read_callback_;
-  PP_CompletionCallback write_callback_;
+  scoped_refptr<TrackedCallback> connect_callback_;
+  scoped_refptr<TrackedCallback> ssl_handshake_callback_;
+  scoped_refptr<TrackedCallback> read_callback_;
+  scoped_refptr<TrackedCallback> write_callback_;
 
   char* read_buffer_;
   int32_t bytes_to_read_;

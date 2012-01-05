@@ -53,7 +53,7 @@ PP_Graphics3DTrustedState PPStateFromGPUState(
 }  // namespace.
 
 PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
-    : Resource(instance),
+    : PPB_Graphics3D_Shared(instance),
       bound_to_instance_(false),
       commit_pending_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -82,10 +82,6 @@ PP_Resource PPB_Graphics3D_Impl::CreateRaw(PP_Instance instance,
   if (!graphics_3d->InitRaw(share_context, attrib_list))
     return 0;
   return graphics_3d->GetReference();
-}
-
-PPB_Graphics3D_API* PPB_Graphics3D_Impl::AsPPB_Graphics3D_API() {
-  return this;
 }
 
 PP_Bool PPB_Graphics3D_Impl::InitCommandBuffer() {

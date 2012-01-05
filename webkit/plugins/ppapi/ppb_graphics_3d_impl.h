@@ -13,8 +13,7 @@
 namespace webkit {
 namespace ppapi {
 
-class PPB_Graphics3D_Impl : public ::ppapi::Resource,
-                            public ::ppapi::PPB_Graphics3D_Shared {
+class PPB_Graphics3D_Impl : public ::ppapi::PPB_Graphics3D_Shared {
  public:
   virtual ~PPB_Graphics3D_Impl();
 
@@ -24,9 +23,6 @@ class PPB_Graphics3D_Impl : public ::ppapi::Resource,
   static PP_Resource CreateRaw(PP_Instance instance,
                                PP_Resource share_context,
                                const int32_t* attrib_list);
-
-  // Resource override.
-  virtual ::ppapi::thunk::PPB_Graphics3D_API* AsPPB_Graphics3D_API() OVERRIDE;
 
   // PPB_Graphics3D_API trusted implementation.
   virtual PP_Bool InitCommandBuffer() OVERRIDE;

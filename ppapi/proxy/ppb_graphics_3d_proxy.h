@@ -23,17 +23,12 @@ class HostResource;
 
 namespace proxy {
 
-class Graphics3D : public Resource, public PPB_Graphics3D_Shared {
+class Graphics3D : public PPB_Graphics3D_Shared {
  public:
   explicit Graphics3D(const HostResource& resource);
   virtual ~Graphics3D();
 
   bool Init();
-
-  // Resource overrides.
-  virtual thunk::PPB_Graphics3D_API* AsPPB_Graphics3D_API() OVERRIDE {
-    return this;
-  }
 
   // Graphics3DTrusted API. These are not implemented in the proxy.
   virtual PP_Bool InitCommandBuffer() OVERRIDE;

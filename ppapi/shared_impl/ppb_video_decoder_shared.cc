@@ -12,14 +12,24 @@
 
 namespace ppapi {
 
-PPB_VideoDecoder_Shared::PPB_VideoDecoder_Shared()
-    : flush_callback_(PP_MakeCompletionCallback(NULL, NULL)),
-      reset_callback_(PP_MakeCompletionCallback(NULL, NULL)),
+PPB_VideoDecoder_Shared::PPB_VideoDecoder_Shared(PP_Instance instance)
+    : Resource(instance),
+      graphics_context_(0),
+      gles2_impl_(NULL) {
+}
+
+PPB_VideoDecoder_Shared::PPB_VideoDecoder_Shared(
+    const HostResource& host_resource)
+    : Resource(host_resource),
       graphics_context_(0),
       gles2_impl_(NULL) {
 }
 
 PPB_VideoDecoder_Shared::~PPB_VideoDecoder_Shared() {
+}
+
+thunk::PPB_VideoDecoder_API* PPB_VideoDecoder_Shared::AsPPB_VideoDecoder_API() {
+  return this;
 }
 
 void PPB_VideoDecoder_Shared::InitCommon(
@@ -40,34 +50,34 @@ void PPB_VideoDecoder_Shared::Destroy() {
 
 bool PPB_VideoDecoder_Shared::SetFlushCallback(PP_CompletionCallback callback) {
   CHECK(callback.func);
-  if (flush_callback_.func)
+  if (flush_callback_.get())
     return false;
-  flush_callback_ = callback;
+  flush_callback_ = new TrackedCallback(this, callback);
   return true;
 }
 
 bool PPB_VideoDecoder_Shared::SetResetCallback(PP_CompletionCallback callback) {
   CHECK(callback.func);
-  if (reset_callback_.func)
+  if (TrackedCallback::IsPending(reset_callback_))
     return false;
-  reset_callback_ = callback;
+  reset_callback_ = new TrackedCallback(this, callback);
   return true;
 }
 
 bool PPB_VideoDecoder_Shared::SetBitstreamBufferCallback(
-    int32 bitstream_buffer_id, PP_CompletionCallback callback) {
+    int32 bitstream_buffer_id,
+    PP_CompletionCallback callback) {
   return bitstream_buffer_callbacks_.insert(
-      std::make_pair(bitstream_buffer_id, callback)).second;
+      std::make_pair(bitstream_buffer_id,
+                     new TrackedCallback(this, callback))).second;
 }
 
 void PPB_VideoDecoder_Shared::RunFlushCallback(int32 result) {
-  DCHECK(flush_callback_.func);
-  PP_RunAndClearCompletionCallback(&flush_callback_, result);
+  TrackedCallback::ClearAndRun(&flush_callback_, result);
 }
 
 void PPB_VideoDecoder_Shared::RunResetCallback(int32 result) {
-  DCHECK(reset_callback_.func);
-  PP_RunAndClearCompletionCallback(&reset_callback_, result);
+  TrackedCallback::ClearAndRun(&reset_callback_, result);
 }
 
 void PPB_VideoDecoder_Shared::RunBitstreamBufferCallback(
@@ -75,9 +85,9 @@ void PPB_VideoDecoder_Shared::RunBitstreamBufferCallback(
   CallbackById::iterator it =
       bitstream_buffer_callbacks_.find(bitstream_buffer_id);
   DCHECK(it != bitstream_buffer_callbacks_.end());
-  PP_CompletionCallback cc = it->second;
+  scoped_refptr<TrackedCallback> cc = it->second;
   bitstream_buffer_callbacks_.erase(it);
-  PP_RunCompletionCallback(&cc, PP_OK);
+  cc->Run(PP_OK);
 }
 
 void PPB_VideoDecoder_Shared::FlushCommandBuffer() {

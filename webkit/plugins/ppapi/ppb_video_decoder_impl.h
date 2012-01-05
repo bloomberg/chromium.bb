@@ -31,8 +31,7 @@ class GLES2Implementation;
 namespace webkit {
 namespace ppapi {
 
-class PPB_VideoDecoder_Impl : public ::ppapi::Resource,
-                              public ::ppapi::PPB_VideoDecoder_Shared,
+class PPB_VideoDecoder_Impl : public ::ppapi::PPB_VideoDecoder_Shared,
                               public media::VideoDecodeAccelerator::Client {
  public:
   virtual ~PPB_VideoDecoder_Impl();
@@ -41,9 +40,6 @@ class PPB_VideoDecoder_Impl : public ::ppapi::Resource,
   static PP_Resource Create(PP_Instance instance,
                             PP_Resource graphics_context,
                             PP_VideoDecoder_Profile profile);
-
-  // Resource overrides.
-  virtual PPB_VideoDecoder_API* AsPPB_VideoDecoder_API() OVERRIDE;
 
   // PPB_VideoDecoder_API implementation.
   virtual int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,

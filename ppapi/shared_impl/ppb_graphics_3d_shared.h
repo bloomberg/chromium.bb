@@ -9,6 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
+#include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_graphics_3d_api.h"
 
 namespace gpu {
@@ -22,8 +24,12 @@ class GLES2Implementation;
 namespace ppapi {
 
 class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
-    : public thunk::PPB_Graphics3D_API {
+    : public Resource,
+      public thunk::PPB_Graphics3D_API {
  public:
+  // Resource overrides.
+  virtual thunk::PPB_Graphics3D_API* AsPPB_Graphics3D_API() OVERRIDE;
+
   // PPB_Graphics3D_API implementation.
   virtual int32_t GetAttribs(int32_t* attrib_list) OVERRIDE;
   virtual int32_t SetAttribs(int32_t* attrib_list) OVERRIDE;
@@ -49,13 +55,14 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
   void SwapBuffersACK(int32_t pp_error);
 
  protected:
-  PPB_Graphics3D_Shared();
+  PPB_Graphics3D_Shared(PP_Instance instance);
+  PPB_Graphics3D_Shared(const HostResource& host_resource);
   virtual ~PPB_Graphics3D_Shared();
 
   virtual gpu::CommandBuffer* GetCommandBuffer() = 0;
   virtual int32 DoSwapBuffers() = 0;
 
-  bool HasPendingSwap() { return swap_callback_.func != NULL; }
+  bool HasPendingSwap() const;
   bool CreateGLES2Impl(int32 command_buffer_size,
                        int32 transfer_buffer_size);
   void DestroyGLES2Impl();
@@ -66,7 +73,7 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
   scoped_ptr<gpu::gles2::GLES2Implementation> gles2_impl_;
 
   // Callback that needs to be executed when swap-buffers is completed.
-  PP_CompletionCallback swap_callback_;
+  scoped_refptr<TrackedCallback> swap_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Graphics3D_Shared);
 };

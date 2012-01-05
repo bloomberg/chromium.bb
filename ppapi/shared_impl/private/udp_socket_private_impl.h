@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_udp_socket_private_api.h"
 
 namespace ppapi {
@@ -68,16 +69,16 @@ class PPAPI_SHARED_EXPORT UDPSocketPrivateImpl
 
  protected:
   void Init(uint32 socket_id);
-  void PostAbortAndClearIfNecessary(PP_CompletionCallback* callback);
+  void PostAbortIfNecessary(scoped_refptr<TrackedCallback>* callback);
 
   uint32 socket_id_;
 
   bool bound_;
   bool closed_;
 
-  PP_CompletionCallback bind_callback_;
-  PP_CompletionCallback recvfrom_callback_;
-  PP_CompletionCallback sendto_callback_;
+  scoped_refptr<TrackedCallback> bind_callback_;
+  scoped_refptr<TrackedCallback> recvfrom_callback_;
+  scoped_refptr<TrackedCallback> sendto_callback_;
 
   char* read_buffer_;
   int32_t bytes_to_read_;

@@ -289,7 +289,7 @@ gpu::CommandBuffer::State GPUStateFromPPState(
 }  // namespace
 
 Graphics3D::Graphics3D(const HostResource& resource)
-    : Resource(resource) {
+    : PPB_Graphics3D_Shared(resource) {
 }
 
 Graphics3D::~Graphics3D() {

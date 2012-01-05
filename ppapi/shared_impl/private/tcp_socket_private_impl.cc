@@ -17,14 +17,6 @@
 
 namespace ppapi {
 
-namespace {
-
-void AbortCallback(PP_CompletionCallback callback) {
-  PP_RunCompletionCallback(&callback, PP_ERROR_ABORTED);
-}
-
-}  // namespace
-
 const int32_t TCPSocketPrivateImpl::kMaxReadSize = 1024 * 1024;
 const int32_t TCPSocketPrivateImpl::kMaxWriteSize = 1024 * 1024;
 
@@ -57,10 +49,10 @@ int32_t TCPSocketPrivateImpl::Connect(const char* host,
     return PP_ERROR_BLOCKS_MAIN_THREAD;
   if (connection_state_ != BEFORE_CONNECT)
     return PP_ERROR_FAILED;
-  if (connect_callback_.func)
+  if (TrackedCallback::IsPending(connect_callback_))
     return PP_ERROR_INPROGRESS;  // Can only have one pending request.
 
-  connect_callback_ = callback;
+  connect_callback_ = new TrackedCallback(this, callback);
   // Send the request, the browser will call us back via ConnectACK.
   SendConnect(host, port);
   return PP_OK_COMPLETIONPENDING;
@@ -75,10 +67,10 @@ int32_t TCPSocketPrivateImpl::ConnectWithNetAddress(
     return PP_ERROR_BLOCKS_MAIN_THREAD;
   if (connection_state_ != BEFORE_CONNECT)
     return PP_ERROR_FAILED;
-  if (connect_callback_.func)
+  if (TrackedCallback::IsPending(connect_callback_))
     return PP_ERROR_INPROGRESS;  // Can only have one pending request.
 
-  connect_callback_ = callback;
+  connect_callback_ = new TrackedCallback(this, callback);
   // Send the request, the browser will call us back via ConnectACK.
   SendConnectWithNetAddress(*addr);
   return PP_OK_COMPLETIONPENDING;
@@ -112,11 +104,12 @@ int32_t TCPSocketPrivateImpl::SSLHandshake(const char* server_name,
 
   if (connection_state_ != CONNECTED)
     return PP_ERROR_FAILED;
-  if (ssl_handshake_callback_.func || read_callback_.func ||
-      write_callback_.func)
+  if (TrackedCallback::IsPending(ssl_handshake_callback_) ||
+      TrackedCallback::IsPending(read_callback_) ||
+      TrackedCallback::IsPending(write_callback_))
     return PP_ERROR_INPROGRESS;
 
-  ssl_handshake_callback_ = callback;
+  ssl_handshake_callback_ = new TrackedCallback(this, callback);
 
   // Send the request, the browser will call us back via SSLHandshakeACK.
   SendSSLHandshake(server_name, server_port);
@@ -133,13 +126,14 @@ int32_t TCPSocketPrivateImpl::Read(char* buffer,
 
   if (!IsConnected())
     return PP_ERROR_FAILED;
-  if (read_callback_.func || ssl_handshake_callback_.func)
+  if (TrackedCallback::IsPending(read_callback_) ||
+      TrackedCallback::IsPending(ssl_handshake_callback_))
     return PP_ERROR_INPROGRESS;
   // TODO(dmichael): use some other strategy for determining if an
   // operation is in progress
   read_buffer_ = buffer;
   bytes_to_read_ = std::min(bytes_to_read, kMaxReadSize);
-  read_callback_ = callback;
+  read_callback_ = new TrackedCallback(this, callback);
 
   // Send the request, the browser will call us back via ReadACK.
   SendRead(bytes_to_read_);
@@ -156,13 +150,14 @@ int32_t TCPSocketPrivateImpl::Write(const char* buffer,
 
   if (!IsConnected())
     return PP_ERROR_FAILED;
-  if (write_callback_.func || ssl_handshake_callback_.func)
+  if (TrackedCallback::IsPending(write_callback_) ||
+      TrackedCallback::IsPending(ssl_handshake_callback_))
     return PP_ERROR_INPROGRESS;
 
   if (bytes_to_write > kMaxWriteSize)
     bytes_to_write = kMaxWriteSize;
 
-  write_callback_ = callback;
+  write_callback_ = new TrackedCallback(this, callback);
 
   // Send the request, the browser will call us back via WriteACK.
   SendWrite(std::string(buffer, bytes_to_write));
@@ -178,10 +173,10 @@ void TCPSocketPrivateImpl::Disconnect() {
   SendDisconnect();
   socket_id_ = 0;
 
-  PostAbortAndClearIfNecessary(&connect_callback_);
-  PostAbortAndClearIfNecessary(&ssl_handshake_callback_);
-  PostAbortAndClearIfNecessary(&read_callback_);
-  PostAbortAndClearIfNecessary(&write_callback_);
+  PostAbortIfNecessary(&connect_callback_);
+  PostAbortIfNecessary(&ssl_handshake_callback_);
+  PostAbortIfNecessary(&read_callback_);
+  PostAbortIfNecessary(&write_callback_);
   read_buffer_ = NULL;
   bytes_to_read_ = -1;
 }
@@ -190,7 +185,8 @@ void TCPSocketPrivateImpl::OnConnectCompleted(
     bool succeeded,
     const PP_NetAddress_Private& local_addr,
     const PP_NetAddress_Private& remote_addr) {
-  if (connection_state_ != BEFORE_CONNECT || !connect_callback_.func) {
+  if (connection_state_ != BEFORE_CONNECT ||
+      !TrackedCallback::IsPending(connect_callback_)) {
     NOTREACHED();
     return;
   }
@@ -200,28 +196,29 @@ void TCPSocketPrivateImpl::OnConnectCompleted(
     remote_addr_ = remote_addr;
     connection_state_ = CONNECTED;
   }
-  PP_RunAndClearCompletionCallback(&connect_callback_,
-                                   succeeded ? PP_OK : PP_ERROR_FAILED);
+  TrackedCallback::ClearAndRun(&connect_callback_,
+                               succeeded ? PP_OK : PP_ERROR_FAILED);
 }
 
 void TCPSocketPrivateImpl::OnSSLHandshakeCompleted(bool succeeded) {
-  if (connection_state_ != CONNECTED || !ssl_handshake_callback_.func) {
+  if (connection_state_ != CONNECTED ||
+      !TrackedCallback::IsPending(ssl_handshake_callback_)) {
     NOTREACHED();
     return;
   }
 
   if (succeeded) {
     connection_state_ = SSL_CONNECTED;
-    PP_RunAndClearCompletionCallback(&ssl_handshake_callback_, PP_OK);
+    TrackedCallback::ClearAndRun(&ssl_handshake_callback_, PP_OK);
   } else {
-    PP_RunAndClearCompletionCallback(&ssl_handshake_callback_, PP_ERROR_FAILED);
+    TrackedCallback::ClearAndRun(&ssl_handshake_callback_, PP_ERROR_FAILED);
     Disconnect();
   }
 }
 
 void TCPSocketPrivateImpl::OnReadCompleted(bool succeeded,
                                            const std::string& data) {
-  if (!read_callback_.func || !read_buffer_) {
+  if (!TrackedCallback::IsPending(read_callback_) || !read_buffer_) {
     NOTREACHED();
     return;
   }
@@ -234,7 +231,7 @@ void TCPSocketPrivateImpl::OnReadCompleted(bool succeeded,
   read_buffer_ = NULL;
   bytes_to_read_ = -1;
 
-  PP_RunAndClearCompletionCallback(
+  TrackedCallback::ClearAndRun(
       &read_callback_,
       succeeded ? static_cast<int32_t>(data.size()) :
                   static_cast<int32_t>(PP_ERROR_FAILED));
@@ -242,12 +239,13 @@ void TCPSocketPrivateImpl::OnReadCompleted(bool succeeded,
 
 void TCPSocketPrivateImpl::OnWriteCompleted(bool succeeded,
                                             int32_t bytes_written) {
-  if (!write_callback_.func || (succeeded && bytes_written < 0)) {
+  if (!TrackedCallback::IsPending(write_callback_) ||
+      (succeeded && bytes_written < 0)) {
     NOTREACHED();
     return;
   }
 
-  PP_RunAndClearCompletionCallback(
+  TrackedCallback::ClearAndRun(
       &write_callback_,
       succeeded ? bytes_written : static_cast<int32_t>(PP_ERROR_FAILED));
 }
@@ -256,10 +254,6 @@ void TCPSocketPrivateImpl::Init(uint32 socket_id) {
   DCHECK(socket_id != 0);
   socket_id_ = socket_id;
   connection_state_ = BEFORE_CONNECT;
-  connect_callback_ = PP_BlockUntilComplete();
-  ssl_handshake_callback_ = PP_BlockUntilComplete();
-  read_callback_ = PP_BlockUntilComplete();
-  write_callback_ = PP_BlockUntilComplete();
   read_buffer_ = NULL;
   bytes_to_read_ = -1;
 
@@ -275,15 +269,10 @@ bool TCPSocketPrivateImpl::IsConnected() const {
   return connection_state_ == CONNECTED || connection_state_ == SSL_CONNECTED;
 }
 
-void TCPSocketPrivateImpl::PostAbortAndClearIfNecessary(
-    PP_CompletionCallback* callback) {
-  DCHECK(callback);
-
-  if (callback->func) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(&AbortCallback, *callback));
-    *callback = PP_BlockUntilComplete();
-  }
+void TCPSocketPrivateImpl::PostAbortIfNecessary(
+    scoped_refptr<TrackedCallback>* callback) {
+  if (callback->get())
+    (*callback)->PostAbort();
 }
 
 }  // namespace ppapi

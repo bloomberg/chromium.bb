@@ -17,14 +17,6 @@
 
 namespace ppapi {
 
-namespace {
-
-void AbortCallback(PP_CompletionCallback callback) {
-  PP_RunCompletionCallback(&callback, PP_ERROR_ABORTED);
-}
-
-}  // namespace
-
 const int32_t UDPSocketPrivateImpl::kMaxReadSize = 1024 * 1024;
 const int32_t UDPSocketPrivateImpl::kMaxWriteSize = 1024 * 1024;
 
@@ -54,12 +46,12 @@ int32_t UDPSocketPrivateImpl::Bind(const PP_NetAddress_Private* addr,
     return PP_ERROR_BADARGUMENT;
   if (bound_ || closed_)
     return PP_ERROR_FAILED;
-  if (bind_callback_.func)
+  if (TrackedCallback::IsPending(bind_callback_))
     return PP_ERROR_INPROGRESS;
   // TODO(dmichael): use some other strategy for determining if an
   // operation is in progress
 
-  bind_callback_ = callback;
+  bind_callback_ = new TrackedCallback(this, callback);
 
   // Send the request, the browser will call us back via BindACK.
   SendBind(*addr);
@@ -73,12 +65,12 @@ int32_t UDPSocketPrivateImpl::RecvFrom(char* buffer,
     return PP_ERROR_BADARGUMENT;
   if (!bound_)
     return PP_ERROR_FAILED;
-  if (recvfrom_callback_.func)
+  if (TrackedCallback::IsPending(recvfrom_callback_))
     return PP_ERROR_INPROGRESS;
 
   read_buffer_ = buffer;
   bytes_to_read_ = std::min(num_bytes, kMaxReadSize);
-  recvfrom_callback_ = callback;
+  recvfrom_callback_ = new TrackedCallback(this, callback);
 
   // Send the request, the browser will call us back via RecvFromACK.
   SendRecvFrom(bytes_to_read_);
@@ -101,13 +93,13 @@ int32_t UDPSocketPrivateImpl::SendTo(const char* buffer,
     return PP_ERROR_BADARGUMENT;
   if (!bound_)
     return PP_ERROR_FAILED;
-  if (sendto_callback_.func)
+  if (TrackedCallback::IsPending(sendto_callback_))
     return PP_ERROR_INPROGRESS;
 
   if (num_bytes > kMaxWriteSize)
     num_bytes = kMaxWriteSize;
 
-  sendto_callback_ = callback;
+  sendto_callback_ = new TrackedCallback(this, callback);
 
   // Send the request, the browser will call us back via SendToACK.
   SendSendTo(std::string(buffer, num_bytes), *addr);
@@ -125,13 +117,13 @@ void UDPSocketPrivateImpl::Close() {
 
   socket_id_ = 0;
 
-  PostAbortAndClearIfNecessary(&bind_callback_);
-  PostAbortAndClearIfNecessary(&recvfrom_callback_);
-  PostAbortAndClearIfNecessary(&sendto_callback_);
+  PostAbortIfNecessary(&bind_callback_);
+  PostAbortIfNecessary(&recvfrom_callback_);
+  PostAbortIfNecessary(&sendto_callback_);
 }
 
 void UDPSocketPrivateImpl::OnBindCompleted(bool succeeded) {
-  if (!bind_callback_.func) {
+  if (!TrackedCallback::IsPending(bind_callback_)) {
     NOTREACHED();
     return;
   }
@@ -139,15 +131,15 @@ void UDPSocketPrivateImpl::OnBindCompleted(bool succeeded) {
   if (succeeded)
     bound_ = true;
 
-  PP_RunAndClearCompletionCallback(&bind_callback_,
-                                   succeeded ? PP_OK : PP_ERROR_FAILED);
+  TrackedCallback::ClearAndRun(&bind_callback_,
+                               succeeded ? PP_OK : PP_ERROR_FAILED);
 }
 
 void UDPSocketPrivateImpl::OnRecvFromCompleted(
     bool succeeded,
     const std::string& data,
     const PP_NetAddress_Private& addr) {
-  if (!recvfrom_callback_.func || !read_buffer_) {
+  if (!TrackedCallback::IsPending(recvfrom_callback_) || !read_buffer_) {
     NOTREACHED();
     return;
   }
@@ -161,21 +153,19 @@ void UDPSocketPrivateImpl::OnRecvFromCompleted(
   bytes_to_read_ = -1;
   recvfrom_addr_ = addr;
 
-  PP_RunAndClearCompletionCallback(
-      &recvfrom_callback_,
+  TrackedCallback::ClearAndRun(&recvfrom_callback_,
       succeeded ? static_cast<int32_t>(data.size()) :
       static_cast<int32_t>(PP_ERROR_FAILED));
 }
 
 void UDPSocketPrivateImpl::OnSendToCompleted(bool succeeded,
                                              int32_t bytes_written) {
-  if (!sendto_callback_.func) {
+  if (!TrackedCallback::IsPending(sendto_callback_)) {
     NOTREACHED();
     return;
   }
 
-  PP_RunAndClearCompletionCallback(
-      &sendto_callback_,
+  TrackedCallback::ClearAndRun(&sendto_callback_,
       succeeded ? bytes_written : static_cast<int32_t>(PP_ERROR_FAILED));
 }
 
@@ -184,9 +174,6 @@ void UDPSocketPrivateImpl::Init(uint32 socket_id) {
   socket_id_ = socket_id;
   bound_ = false;
   closed_ = false;
-  bind_callback_ = PP_BlockUntilComplete();
-  recvfrom_callback_ = PP_BlockUntilComplete();
-  sendto_callback_ = PP_BlockUntilComplete();
   read_buffer_ = NULL;
   bytes_to_read_ = -1;
 
@@ -195,15 +182,10 @@ void UDPSocketPrivateImpl::Init(uint32 socket_id) {
          arraysize(recvfrom_addr_.data) * sizeof(*recvfrom_addr_.data));
 }
 
-void UDPSocketPrivateImpl::PostAbortAndClearIfNecessary(
-    PP_CompletionCallback* callback) {
-  DCHECK(callback);
-
-  if (callback->func) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(&AbortCallback, *callback));
-    *callback = PP_BlockUntilComplete();
-  }
+void UDPSocketPrivateImpl::PostAbortIfNecessary(
+    scoped_refptr<TrackedCallback>* callback) {
+  if (callback->get())
+    (*callback)->PostAbort();
 }
 
 }  // namespace ppapi

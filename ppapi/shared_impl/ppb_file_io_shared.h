@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_file_io_api.h"
 
 namespace ppapi {
@@ -26,7 +27,6 @@ class PPAPI_SHARED_EXPORT PPB_FileIO_Shared : public Resource,
   ~PPB_FileIO_Shared();
 
   // Resource overrides.
-  virtual void LastPluginRefWasDeleted() OVERRIDE;
   virtual thunk::PPB_FileIO_API* AsPPB_FileIO_API() OVERRIDE;
 
   // PPB_FileIO_API implementation.
@@ -62,7 +62,7 @@ class PPAPI_SHARED_EXPORT PPB_FileIO_Shared : public Resource,
     CallbackEntry(const CallbackEntry& entry);
     ~CallbackEntry();
 
-    PP_CompletionCallback callback;
+    scoped_refptr<TrackedCallback> callback;
 
     // Pointer back to the caller's read buffer; only used by |Read()|, NULL
     // for non-read operations. Not owned.
