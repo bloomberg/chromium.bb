@@ -118,7 +118,7 @@ FirstRunState first_run_ = FIRST_RUN_UNKNOWN;
 
 // -- Platform-specific functions --
 
-#if !defined(OS_LINUX)
+#if !defined(OS_LINUX) && !defined(OS_BSD)
 bool IsOrganicFirstRun() {
   std::string brand;
   google_util::GetBrand(&brand);
