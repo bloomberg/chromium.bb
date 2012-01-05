@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -299,7 +299,9 @@ void CanvasSkia::SizeStringInt(const string16& text,
     // DrawText() can run extremely slowly (e.g. several seconds).  So in this
     // case, we turn character breaking off to get a more accurate "desired"
     // width and avoid the slowdown.
-    if (flags & (gfx::Canvas::MULTI_LINE | gfx::Canvas::CHARACTER_BREAK))
+    int multiline_charbreak =
+        gfx::Canvas::MULTI_LINE | gfx::Canvas::CHARACTER_BREAK;
+    if ((flags & multiline_charbreak) == multiline_charbreak)
       flags &= ~gfx::Canvas::CHARACTER_BREAK;
 
     // Weird undocumented behavior: if the width is 0, DoDrawText() won't
