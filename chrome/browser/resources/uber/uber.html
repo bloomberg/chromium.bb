@@ -17,18 +17,24 @@
 <body>
 
 <div id="navigation">
-  <h3>Chrome</h3>
+  <h3 i18n-content="shortProductName"></h3>
   <ol>
-    <li class="selected">Preferences</li>
-    <li>Extensions</li>
+    <li class="selected" i18n-content="settingsDisplayName"></li>
+    <li i18n-content="extensionsDisplayName"></li>
   </ol>
 </div>
 
-<!-- The order of these must match the order of their nav controls. -->
-<div class="iframe-container selected">
+<!-- The order of these must match the order of their nav controls.
+     The ID (e.g. "settings") doubles as the display pathname
+     (e.g. chrome://chrome/settings). -->
+<div class="iframe-container selected" i18n-values="id:settingsHost">
   <iframe src="chrome://settings-frame/"></iframe></div>
-<div class="iframe-container">
+<div class="iframe-container" i18n-values="id:extensionsHost">
   <iframe src="chrome://extensions-frame/"></iframe></div>
 
 </body>
+
+<script src="chrome://chrome/strings.js"></script>
+<script src="chrome://resources/js/i18n_template.js"></script>
+<script src="chrome://resources/js/i18n_process.js"></script>
 </html>

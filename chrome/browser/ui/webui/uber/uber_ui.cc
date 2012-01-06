@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
 
 #include "base/stl_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
@@ -14,6 +15,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/browser_resources.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 
 using content::WebContents;
 
@@ -26,6 +29,17 @@ ChromeWebUIDataSource* CreateUberHTMLSource() {
   source->set_json_path("strings.js");
   source->add_resource_path("uber.js", IDR_UBER_JS);
   source->set_default_resource(IDR_UBER_HTML);
+
+  source->AddLocalizedString("shortProductName", IDS_SHORT_PRODUCT_NAME);
+
+  source->AddString("settingsHost",
+                    ASCIIToUTF16(chrome::kChromeUISettingsHost));
+  source->AddLocalizedString("settingsDisplayName", IDS_SETTINGS_TITLE);
+  source->AddString("extensionsHost",
+                    ASCIIToUTF16(chrome::kChromeUIExtensionsHost));
+  source->AddLocalizedString("extensionsDisplayName",
+                             IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
+
   return source;
 }
 
