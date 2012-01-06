@@ -179,6 +179,11 @@ name=http://code.google.com/p/drmemory/issues/detail?id=52 c
 msvcrt.dll!_RTDynamicCast
 
 UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=52 bit-level fp in dbghelp
+instruction=test   0x*(%*) $0x??
+DBGHELP.dll!SymUnloadModule64
+
+UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=53
 ADVAPI32.dll!WmiMofEnumerateResourcesA
 ADVAPI32.dll!WmiMofEnumerateResourcesA
@@ -613,6 +618,21 @@ LEAK
 name=http://crbug.com/TODO n
 ...
 *!BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
+
+LEAK
+name=http://crbug.com/109278 video device COM leaks
+...
+*!media::VideoCaptureDevice::*
+
+LEAK
+name=http://crbug.com/109278 audio device COM leaks
+...
+*!GetInputDeviceNamesWin
+
+LEAK
+name=http://crbug.com/109281 TLS root isn't found by DrMemory
+...
+*!base::ThreadLocalStorage::Initialize
 
 ###############################################################
 # Benign issues in Chromium
