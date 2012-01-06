@@ -1,0 +1,24 @@
+# -*- python -*-
+# Copyright (c) 2012  The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+
+Import('env')
+
+srpc_message_libs = ['nonnacl_srpc',
+                     'nrd_xfer',
+                     'nacl_base',
+                     'imc',
+                     'platform',
+                     'gio']
+
+srpc_message_trusted_test_exe = env.ComponentProgram(
+    'srpc_message_trusted_test',
+    env.ComponentObject('srpc_message_trusted', 'srpc_message.c'),
+    EXTRA_LIBS=srpc_message_libs)
+node = env.CommandTest(
+    'srpc_message_trusted_test.out',
+    command=[srpc_message_trusted_test_exe, '1048576', '65536', '32'])
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_message_trusted_test')

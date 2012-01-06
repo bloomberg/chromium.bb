@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -28,10 +28,12 @@ EXTERN_C_BEGIN
 typedef int SRPC_IMC_DESC_TYPE;
 #define NACL_INVALID_DESCRIPTOR (-1)
 #define SRPC_DESC_MAX    IMC_USER_DESC_MAX
+#define SRPC_IOVEC_MAX   IMC_IOVEC_MAX
 #else
 typedef struct NaClDesc* SRPC_IMC_DESC_TYPE;
 #define NACL_INVALID_DESCRIPTOR NULL
 #define SRPC_DESC_MAX    NACL_ABI_IMC_USER_DESC_MAX
+#define SRPC_IOVEC_MAX   NACL_ABI_IMC_IOVEC_MAX
 #endif
 
 /* Initialize the logging facility. Returns 1 on success, 0 on failure. */
@@ -80,7 +82,7 @@ void NaClSrpcFormatArg(int detail_level,
 /*
  * Maximum sendmsg buffer size.
  */
-extern nacl_abi_size_t kNaClSrpcMaxImcSendmsgSize;
+extern nacl_abi_size_t NaClSrpcMaxImcSendmsgSize;
 
 
 EXTERN_C_END

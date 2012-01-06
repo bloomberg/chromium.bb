@@ -2411,6 +2411,7 @@ def MakeBaseTrustedEnv():
       'tests/ppapi_browser/ppb_file_system/build.scons',
       'tests/ppapi_tests/build.scons',  # Build PPAPI tests from Chrome as a .so
       'tests/python_version/build.scons',
+      'tests/srpc_message/build.scons',
       'tests/tools/build.scons',
       'tests/unittests/shared/srpc/build.scons',
       'tests/unittests/shared/imc/build.scons',

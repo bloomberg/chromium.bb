@@ -8,14 +8,19 @@ Import('env')
 ######################################################################
 # Simple RPC message fragmentation tests
 ######################################################################
-srpc_message_nexe = env.ComponentProgram('srpc_message', 'srpc_message.c',
-                                         EXTRA_LIBS=[
-                                             'srpc',
-                                             'platform',
-                                             'gio',
-                                             'm',
-                                             '${PTHREAD_LIBS}',
-                                             '${NONIRT_LIBS}'])
+srpc_message_untrusted_nexe = env.ComponentProgram(
+    'srpc_message_untrusted_test',
+    env.ComponentObject('srpc_message_untrusted', 'srpc_message.c'),
+    EXTRA_LIBS=[
+        'srpc',
+        'imc_syscalls',
+        'platform',
+        'gio',
+        'm',
+        '${PTHREAD_LIBS}',
+        '${NONIRT_LIBS}'])
 
-node = env.CommandSelLdrTestNacl('srpc_message_test.out', srpc_message_nexe)
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_message_test')
+node = env.CommandSelLdrTestNacl('srpc_message_untrusted_test.out',
+                                 srpc_message_untrusted_nexe,
+                                 args=['1048576', '65536', '32'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_message_untrusted_test')

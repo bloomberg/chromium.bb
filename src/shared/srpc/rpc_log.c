@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -18,6 +18,7 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_process.h"
 
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_timestamp.h"
@@ -60,6 +61,8 @@ void NaClSrpcLog(int detail_level, const char* fmt, ...) {
     char timestamp[128];
     int pid = GETPID();
     va_list ap;
+    unsigned tid = NaClThreadId();
+    const char* ts;
 #ifdef __native_client__
     const char* host_or_nacl = "NACL";
 #else
@@ -67,15 +70,19 @@ void NaClSrpcLog(int detail_level, const char* fmt, ...) {
 #endif
     va_start(ap, fmt);
     NaClXMutexLock(&log_mu);
+    ts = NaClTimeStampString(timestamp, sizeof timestamp);
     fprintf(stderr,
             "[SRPC:%s:%d,%"NACL_PRIu32":%s] ",
             host_or_nacl,
             pid,
-            NaClThreadId(),
-            NaClTimeStampString(timestamp, sizeof timestamp));
+            tid,
+            ts);
     vfprintf(stderr, fmt, ap);
     NaClXMutexUnlock(&log_mu);
     va_end(ap);
+  }
+  if (detail_level == NACL_SRPC_LOG_FATAL) {
+    NaClAbort();
   }
 }
 
