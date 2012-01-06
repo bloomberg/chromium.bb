@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -91,6 +91,8 @@ InterfaceMapElement interface_map[] = {
   { PPB_URLLOADER_INTERFACE, PluginURLLoader::GetInterface(), true },
   { PPB_URLREQUESTINFO_INTERFACE, PluginURLRequestInfo::GetInterface(), true },
   { PPB_URLRESPONSEINFO_INTERFACE, PluginURLResponseInfo::GetInterface(),
+    true },
+  { PPB_VAR_ARRAY_BUFFER_DEV_INTERFACE, PluginVar::GetArrayBufferInterface(),
     true },
   { PPB_VAR_INTERFACE, PluginVar::GetInterface(), true },
   { PPB_VAR_INTERFACE_1_0, PluginVar::GetInterface1_0(), true },

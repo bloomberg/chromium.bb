@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ppapi/tests/test_post_message.h"
 
 #include <algorithm>
+#include <sstream>
 
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_var.h"
@@ -250,56 +251,78 @@ std::string TestPostMessage::TestSendingArrayBuffer() {
   WaitForMessages();
   ASSERT_TRUE(ClearListeners());
 
-  // Create a 100-byte array buffer with test_data[i] == i.
-  pp::VarArrayBuffer_Dev test_data(100u);
-  ASSERT_NE(NULL, test_data.Map());
-  ASSERT_EQ(100u, test_data.ByteLength());
-  unsigned char* buff = static_cast<unsigned char*>(test_data.Map());
-  for (size_t i = 0; i < test_data.ByteLength(); ++i)
-    buff[i] = i;
+  // TODO(dmichael): Add testing of longer array buffers when crbug.com/106266
+  // is fixed.
+  uint32_t sizes[] = { 0, 100, 1000 };
+  for (size_t i = 0; i < sizeof(sizes)/sizeof(sizes[i]); ++i) {
+    std::ostringstream size_stream;
+    size_stream << sizes[i];
+    const std::string kSizeAsString(size_stream.str());
 
-  // Have the listener test some properties of the ArrayBuffer.
-  const char* const properties_to_check[] = {
-      "message_event.data.constructor.name === 'ArrayBuffer'",
-      "message_event.data.byteLength === 100",
-      "(new DataView(message_event.data)).getInt8(0) == 0",
-      "(new DataView(message_event.data)).getInt8(99) == 99",
-      NULL};
-  for (size_t i = 0; properties_to_check[i]; ++i) {
-    ASSERT_TRUE(AddEchoingListener(properties_to_check[i]));
+    // Create an appropriately sized array buffer with test_data[i] == i.
+    pp::VarArrayBuffer_Dev test_data(sizes[i]);
+    if (sizes[i] > 0)
+      ASSERT_NE(NULL, test_data.Map());
+    ASSERT_EQ(sizes[i], test_data.ByteLength());
+    unsigned char* buff = static_cast<unsigned char*>(test_data.Map());
+    const uint32_t kByteLength = test_data.ByteLength();
+    for (size_t j = 0; j < kByteLength; ++j)
+      buff[j] = static_cast<uint8_t>(j % 256u);
+
+    // Have the listener test some properties of the ArrayBuffer.
+    std::vector<std::string> properties_to_check;
+    properties_to_check.push_back(
+        "message_event.data.constructor.name === 'ArrayBuffer'");
+    properties_to_check.push_back(
+        std::string("message_event.data.byteLength === ") + kSizeAsString);
+    if (sizes[i] > 0) {
+      properties_to_check.push_back(
+          "(new DataView(message_event.data)).getUint8(0) == 0");
+      // Checks that the last element has the right value: (byteLength-1)%256.
+      std::string received_byte("(new DataView(message_event.data)).getUint8("
+                                "    message_event.data.byteLength-1)");
+      std::string expected_byte("(message_event.data.byteLength-1)%256");
+      properties_to_check.push_back(received_byte + " == " + expected_byte);
+    }
+    for (std::vector<std::string>::iterator iter = properties_to_check.begin();
+         iter != properties_to_check.end();
+         ++iter) {
+      ASSERT_TRUE(AddEchoingListener(*iter));
+      message_data_.clear();
+      instance_->PostMessage(test_data);
+      ASSERT_EQ(message_data_.size(), 0);
+      ASSERT_EQ(WaitForMessages(), 1);
+      ASSERT_TRUE(message_data_.back().is_bool());
+      if (!message_data_.back().AsBool())
+        return std::string("Failed: ") + *iter + ", size: " + kSizeAsString;
+      ASSERT_TRUE(message_data_.back().AsBool());
+      ASSERT_TRUE(ClearListeners());
+    }
+
+    // Set up the JavaScript message event listener to echo the data part of the
+    // message event back to us.
+    ASSERT_TRUE(AddEchoingListener("message_event.data"));
     message_data_.clear();
     instance_->PostMessage(test_data);
+    // PostMessage is asynchronous, so we should not receive a response yet.
     ASSERT_EQ(message_data_.size(), 0);
     ASSERT_EQ(WaitForMessages(), 1);
-    ASSERT_TRUE(message_data_.back().is_bool());
-    if (!message_data_.back().AsBool())
-      return std::string("Failed: ") + properties_to_check[i];
-    ASSERT_TRUE(message_data_.back().AsBool());
+    ASSERT_TRUE(message_data_.back().is_array_buffer());
+    pp::VarArrayBuffer_Dev received(message_data_.back());
+    message_data_.clear();
+    ASSERT_EQ(test_data.ByteLength(), received.ByteLength());
+    unsigned char* received_buff = static_cast<unsigned char*>(received.Map());
+    // The buffer should be copied, so this should be a distinct buffer. When
+    // 'transferrables' are implemented for PPAPI, we'll also want to test that
+    // we get the _same_ buffer back when it's transferred.
+    if (sizes[i] > 0)
+      ASSERT_NE(buff, received_buff);
+    for (size_t i = 0; i < test_data.ByteLength(); ++i)
+      ASSERT_EQ(buff[i], received_buff[i]);
+
+    message_data_.clear();
     ASSERT_TRUE(ClearListeners());
   }
-
-  // Set up the JavaScript message event listener to echo the data part of the
-  // message event back to us.
-  ASSERT_TRUE(AddEchoingListener("message_event.data"));
-  message_data_.clear();
-  instance_->PostMessage(test_data);
-  // PostMessage is asynchronous, so we should not receive a response yet.
-  ASSERT_EQ(message_data_.size(), 0);
-  ASSERT_EQ(WaitForMessages(), 1);
-  ASSERT_TRUE(message_data_.back().is_array_buffer());
-  pp::VarArrayBuffer_Dev received(message_data_.back());
-  message_data_.clear();
-  ASSERT_EQ(test_data.ByteLength(), received.ByteLength());
-  unsigned char* received_buff = static_cast<unsigned char*>(received.Map());
-  // The buffer should be copied, so this should be a distinct buffer. When
-  // 'transferrables' are implemented for PPAPI, we'll also want to test that
-  // we get the _same_ buffer back when it's transferred.
-  ASSERT_NE(buff, received_buff);
-  for (size_t i = 0; i < test_data.ByteLength(); ++i)
-    ASSERT_EQ(buff[i], received_buff[i]);
-
-  message_data_.clear();
-  ASSERT_TRUE(ClearListeners());
 
   PASS();
 }

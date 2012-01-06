@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,12 +54,8 @@ class ProxyVarCache {
 
  private:
   // Return whether or not a var type is cached.
-  // Note to implementers: be sure to add to this function when adding new
-  // cached types.
-  // TODO(dspringer): When all the complex var types are handled, this
-  // test can turn into something like var.type >= PP_VARTYPE_STRING.
   bool IsCachedType(const PP_Var& var) {
-    return var.type == PP_VARTYPE_STRING || var.type == PP_VARTYPE_OBJECT;
+    return var.type >= PP_VARTYPE_STRING;
   }
 
   // The cache of these objects.  The value is a shared pointer so that

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_GLOBALS_H_
 
 #include "ppapi/c/dev/ppb_memory_dev.h"
+#include "ppapi/c/dev/ppb_var_array_buffer_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/dev/ppp_scrollbar_dev.h"
@@ -53,6 +54,7 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 const PPB_Core* PPBCoreInterface();  // shared
 const PPB_Memory_Dev* PPBMemoryInterface();  // shared
 const PPB_Var* PPBVarInterface();  // shared
+const PPB_VarArrayBuffer_Dev* PPBVarArrayBufferInterface();  // shared
 
 // Support for getting PPP_ plugin interfaces.
 // Safe version CHECK's for NULL.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
-#include "ppapi/c/dev/ppb_var_deprecated.h"
+#include "ppapi/c/dev/ppb_var_array_buffer_dev.h"
 #include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/pp_instance.h"
@@ -125,6 +125,7 @@ const PPB_URLLoader* PPBURLLoaderInterface();
 const PPB_URLRequestInfo* PPBURLRequestInfoInterface();
 const PPB_URLResponseInfo* PPBURLResponseInfoInterface();
 const PPB_Var* PPBVarInterface();  // shared
+const PPB_VarArrayBuffer_Dev* PPBVarArrayBufferInterface();  // shared
 const PPB_View* PPBViewInterface();
 const PPB_WheelInputEvent* PPBWheelInputEventInterface();
 const PPB_Widget_Dev* PPBWidgetInterface();

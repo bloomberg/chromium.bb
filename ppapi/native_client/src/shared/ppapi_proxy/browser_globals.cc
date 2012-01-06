@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -308,6 +308,13 @@ const PPB_Var* PPBVarInterface() {
   static const PPB_Var* ppb =
       static_cast<const PPB_Var*>(
           GetBrowserInterfaceSafe(PPB_VAR_INTERFACE));
+  return ppb;
+}
+
+const PPB_VarArrayBuffer_Dev* PPBVarArrayBufferInterface() {
+  static const PPB_VarArrayBuffer_Dev* ppb =
+      static_cast<const PPB_VarArrayBuffer_Dev*>(
+          GetBrowserInterfaceSafe(PPB_VAR_ARRAY_BUFFER_DEV_INTERFACE));
   return ppb;
 }
 

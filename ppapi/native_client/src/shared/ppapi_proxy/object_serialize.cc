@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -42,7 +42,7 @@ struct SerializedFixed {
     bool boolean_value;
     // PP_VARTYPE_INT32 uses this.
     int32_t int32_value;
-    // PP_VARTYPE_STRING uses this.
+    // PP_VARTYPE_STRING and PP_VARTYPE_ARRAY_BUFFER use this.
     uint32_t string_length;
   } u;
   // The size of this structure should be 8 bytes on all platforms.
@@ -54,8 +54,7 @@ struct SerializedDouble {
   double double_value;
 };
 
-// The structure used for PP_VARTYPE_STRING.
-
+// The structure used for PP_VARTYPE_STRING and PP_VARTYPE_ARRAYBUFFER.
 struct SerializedString {
   struct SerializedFixed fixed;
   char string_bytes[kStringFixedBytes];
@@ -72,6 +71,10 @@ struct SerializedString {
 ASSERT_TYPE_SIZE(SerializedFixed, 8);
 ASSERT_TYPE_SIZE(SerializedDouble, 16);
 ASSERT_TYPE_SIZE(SerializedString, 16);
+// IMPORTANT NOTE: SerializePpVar below assumes these sizes are multiples of 8,
+// otherwise the reinterpret_casts could cause alignment issues. New SerializedX
+// types should also be multiples of 8 bytes, or the SerializePpVar function
+// must be updated to enforce appropriate alignment.
 
 //
 // We currently use offsetof to find the start of string storage.
@@ -93,7 +96,7 @@ bool AddWouldOverflow(size_t value1, size_t value2) {
   if (value1 > std::numeric_limits<size_t>::max() - value2) {
     return true;
   }
-  size_t sum = value1 + value2;
+  uint64_t sum = static_cast<uint64_t>(value1) + value2;
   return sum > std::numeric_limits<uint32_t>::max();
 }
 
@@ -118,8 +121,7 @@ uint32_t PpVarSize(const PP_Var& var) {
       uint32_t string_length;
       (void) PPBVarInterface()->VarToUtf8(var, &string_length);
       string_length = RoundedStringBytes(string_length);
-      if (std::numeric_limits<uint32_t>::max() == string_length ||
-          AddWouldOverflow(string_length,
+      if (AddWouldOverflow(string_length,
                            NACL_OFFSETOF(SerializedString, string_bytes))) {
         // Adding the length to the fixed portion would overflow.
         return 0;
@@ -128,10 +130,21 @@ uint32_t PpVarSize(const PP_Var& var) {
                                    + string_length);
       break;
     }
+    case PP_VARTYPE_ARRAY_BUFFER: {
+      uint32_t buffer_length = PPBVarArrayBufferInterface()->ByteLength(var);
+      buffer_length = RoundedStringBytes(buffer_length);
+      if (AddWouldOverflow(buffer_length,
+                           NACL_OFFSETOF(SerializedString, string_bytes))) {
+        // Adding the length to the fixed portion would overflow.
+        return 0;
+      }
+      return static_cast<uint32_t>(NACL_OFFSETOF(SerializedString, string_bytes)
+                                   + buffer_length);
+      break;
+    }
     case PP_VARTYPE_OBJECT:
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
-    case PP_VARTYPE_ARRAY_BUFFER:
       NACL_NOTREACHED();
       break;
   }
@@ -213,10 +226,24 @@ bool SerializePpVar(const PP_Var* vars,
             + RoundedStringBytes(string_length);
         break;
       }
+      case PP_VARTYPE_ARRAY_BUFFER: {
+        uint32_t buffer_length =
+            PPBVarArrayBufferInterface()->ByteLength(vars[i]);
+        SerializedString* ss = reinterpret_cast<SerializedString*>(p);
+        ss->fixed.u.string_length = buffer_length;
+        memcpy(reinterpret_cast<void*>(ss->string_bytes),
+               PPBVarArrayBufferInterface()->Map(vars[i]),
+               buffer_length);
+        // Fill padding bytes with zeros.
+        memset(reinterpret_cast<void*>(ss->string_bytes + buffer_length), 0,
+               RoundedStringBytes(buffer_length) - buffer_length);
+        element_size = NACL_OFFSETOF(SerializedString, string_bytes)
+            + RoundedStringBytes(buffer_length);
+        break;
+      }
       case PP_VARTYPE_OBJECT:
       case PP_VARTYPE_ARRAY:
       case PP_VARTYPE_DICTIONARY:
-      case PP_VARTYPE_ARRAY_BUFFER:
         NACL_NOTREACHED();
       default:
         return false;
@@ -239,7 +266,8 @@ uint32_t DeserializeStringSize(char* p, uint32_t length) {
     return std::numeric_limits<uint32_t>::max();
   }
   SerializedString* ss = reinterpret_cast<SerializedString*>(p);
-  if (PP_VARTYPE_STRING != ss->fixed.type) {
+  if (PP_VARTYPE_STRING != ss->fixed.type &&
+      PP_VARTYPE_ARRAY_BUFFER != ss->fixed.type) {
     return std::numeric_limits<uint32_t>::max();
   }
   uint32_t string_length = ss->fixed.u.string_length;
@@ -302,13 +330,18 @@ uint32_t DeserializePpVarSize(char* p,
         return std::numeric_limits<uint32_t>::max();
       }
       break;
+    case PP_VARTYPE_ARRAY_BUFFER:
+      expected_element_size = DeserializeStringSize(p, length);
+      if (std::numeric_limits<uint32_t>::max() == expected_element_size) {
+        return std::numeric_limits<uint32_t>::max();
+      }
+      break;
       // NB: No default case to trigger -Wswitch-enum, so changes to
       // PP_VarType w/o corresponding changes here will cause a
       // compile-time error.
     case PP_VARTYPE_OBJECT:
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
-    case PP_VARTYPE_ARRAY_BUFFER:
       NACL_NOTREACHED();
       break;
   }
@@ -336,6 +369,24 @@ bool DeserializeString(char* p,
   // 1.
   *var = PPBVarInterface()->VarFromUtf8(ss->string_bytes,
                                         string_length);
+  return true;
+}
+
+//
+// This should be invoked only if DeserializePpVarSize succeeds, i.e.,
+// there are enough bytes at p.
+//
+bool DeserializeArrayBuffer(char* p,
+                            PP_Var* var) {
+  SerializedString* ss = reinterpret_cast<SerializedString*>(p);
+  uint32_t buffer_length = ss->fixed.u.string_length;
+  // VarFromUtf8 creates a buffer of size string_length using the browser-side
+  // memory allocation function, and copies string_length bytes from
+  // ss->string_bytes in to that buffer.  The ref count of the returned var is
+  // 1.
+  *var = PPBVarArrayBufferInterface()->Create(buffer_length);
+  void* var_buffer = PPBVarArrayBufferInterface()->Map(*var);
+  memcpy(var_buffer, ss->string_bytes, buffer_length);
   return true;
 }
 
@@ -374,10 +425,14 @@ bool DeserializePpVar(char* bytes,
           return false;
         }
         break;
+      case PP_VARTYPE_ARRAY_BUFFER:
+        if (!DeserializeArrayBuffer(p, &vars[i])) {
+          return false;
+        }
+        break;
       case PP_VARTYPE_OBJECT:
       case PP_VARTYPE_ARRAY:
       case PP_VARTYPE_DICTIONARY:
-      case PP_VARTYPE_ARRAY_BUFFER:
         NACL_NOTREACHED();
       default:
         return false;

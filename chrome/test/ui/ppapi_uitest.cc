@@ -511,7 +511,7 @@ TEST_PPAPI_OUT_OF_PROCESS(PostMessage_NonMainThread)
 #endif
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendInInit)
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendingData)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_PostMessage_SendingArrayBuffer)
+TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendingArrayBuffer)
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_MessageEvent)
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_NoHandler)
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_ExtraParam)
