@@ -61,7 +61,6 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel, OnCloseChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_CreateViewCommandBuffer,
                         OnCreateViewCommandBuffer)
-    IPC_MESSAGE_HANDLER(GpuMsg_VisibilityChanged, OnVisibilityChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -105,11 +104,6 @@ void GpuChannelManager::OnCloseChannel(
       return;
     }
   }
-}
-
-void GpuChannelManager::OnVisibilityChanged(
-    int32 render_view_id, int32 renderer_id, bool visible) {
-  // TODO(amarinichev): this will be used for context eviction
 }
 
 void GpuChannelManager::OnCreateViewCommandBuffer(

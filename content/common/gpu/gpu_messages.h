@@ -143,11 +143,6 @@ IPC_MESSAGE_CONTROL1(GpuMsg_EstablishChannel,
 IPC_MESSAGE_CONTROL1(GpuMsg_CloseChannel,
                      IPC::ChannelHandle /* channel_handle */)
 
-IPC_MESSAGE_CONTROL3(GpuMsg_VisibilityChanged,
-                     int32, /*render_view_id */
-                     int32, /* renderer_id */
-                     bool /* is_visible */)
-
 // Tells the GPU process to create a new command buffer that renders directly
 // to a native view. A corresponding GpuCommandBufferStub is created.
 IPC_MESSAGE_CONTROL4(GpuMsg_CreateViewCommandBuffer,

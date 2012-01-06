@@ -265,11 +265,6 @@ void RenderWidgetHost::WasHidden() {
   // reduce its resource utilization.
   Send(new ViewMsg_WasHidden(routing_id_));
 
-  GpuProcessHost::SendOnIO(
-      0,
-      content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
-      new GpuMsg_VisibilityChanged(routing_id_, process()->GetID(), false));
-
   // Tell the RenderProcessHost we were hidden.
   process_->WidgetHidden();
 
@@ -300,11 +295,6 @@ void RenderWidgetHost::WasRestored() {
     needs_repainting = false;
   }
   Send(new ViewMsg_WasRestored(routing_id_, needs_repainting));
-
-  GpuProcessHost::SendOnIO(
-      0,
-      content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
-      new GpuMsg_VisibilityChanged(routing_id_, process()->GetID(), true));
 
   process_->WidgetRestored();
 
