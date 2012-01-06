@@ -18,7 +18,7 @@ vars = {
   # Be sure to update them when updating chrome_rev, above.
   "gtest_rev": "560",
   "gyp_rev": "1119",
-  "jsoncpp_revision": "246",
+  "jsoncpp_revision": "247",
   "lss_rev": "9",
 
   "lcov_rev": "54822",
