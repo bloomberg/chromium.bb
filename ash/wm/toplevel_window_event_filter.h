@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/window_move_client.h"
 #include "ui/aura/event_filter.h"
 #include "ash/ash_export.h"

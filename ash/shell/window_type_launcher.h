@@ -40,7 +40,6 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
@@ -66,7 +65,8 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   views::NativeTextButton* bubble_button_;
   views::NativeTextButton* lock_button_;
   views::NativeTextButton* widgets_button_;
-  views::NativeTextButton* modal_button_;
+  views::NativeTextButton* system_modal_button_;
+  views::NativeTextButton* window_modal_button_;
   views::NativeTextButton* transient_button_;
   views::NativeTextButton* examples_button_;
   scoped_ptr<views::MenuRunner> menu_runner_;

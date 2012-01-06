@@ -144,6 +144,8 @@
         'wm/toplevel_window_event_filter.h',
         'wm/window_frame.cc',
         'wm/window_frame.h',
+        'wm/window_modality_controller.cc',
+        'wm/window_modality_controller.h',
         'wm/window_properties.cc',
         'wm/window_properties.h',
         'wm/window_util.cc',
@@ -210,6 +212,7 @@
         'wm/shelf_layout_manager_unittest.cc',
         'wm/toplevel_layout_manager_unittest.cc',
         'wm/toplevel_window_event_filter_unittest.cc',
+        'wm/window_modality_controller_unittest.cc',
         'wm/workspace_controller_unittest.cc',
         'wm/workspace/workspace_manager_unittest.cc',
 

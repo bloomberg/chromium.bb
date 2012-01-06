@@ -44,6 +44,7 @@ class InputMethodEventFilter;
 class ShadowController;
 class StackingController;
 class TooltipController;
+class WindowModalityController;
 class WorkspaceController;
 }
 
@@ -146,6 +147,7 @@ class ASH_EXPORT Shell {
 
   scoped_ptr<internal::StackingController> stacking_controller_;
   scoped_ptr<internal::ActivationController> activation_controller_;
+  scoped_ptr<internal::WindowModalityController> window_modality_controller_;
   scoped_ptr<internal::DragDropController> drag_drop_controller_;
   scoped_ptr<internal::WorkspaceController> workspace_controller_;
   scoped_ptr<internal::ShadowController> shadow_controller_;

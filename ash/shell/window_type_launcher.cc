@@ -37,8 +37,9 @@ int g_color_index = 0;
 class ModalWindow : public views::WidgetDelegateView,
                     public views::ButtonListener {
  public:
-  ModalWindow()
-      : color_(g_colors[g_color_index]),
+  explicit ModalWindow(ui::ModalType modal_type)
+      : modal_type_(modal_type),
+        color_(g_colors[g_color_index]),
         ALLOW_THIS_IN_INITIALIZER_LIST(open_button_(
             new views::NativeTextButton(this, ASCIIToUTF16("Moar!")))) {
     ++g_color_index %= arraysize(g_colors);
@@ -47,9 +48,10 @@ class ModalWindow : public views::WidgetDelegateView,
   virtual ~ModalWindow() {
   }
 
-  static void OpenModalWindow(aura::Window* parent) {
+  static void OpenModalWindow(aura::Window* parent, ui::ModalType modal_type) {
     views::Widget* widget =
-        views::Widget::CreateWindowWithParent(new ModalWindow, parent);
+        views::Widget::CreateWindowWithParent(new ModalWindow(modal_type),
+                                              parent);
     widget->GetNativeView()->SetName("ModalWindow");
     widget->Show();
   }
@@ -80,17 +82,18 @@ class ModalWindow : public views::WidgetDelegateView,
     return ASCIIToUTF16("Modal Window");
   }
   virtual ui::ModalType GetModalType() const OVERRIDE {
-    return ui::MODAL_TYPE_WINDOW;
+    return modal_type_;
   }
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE {
     DCHECK(sender == open_button_);
-    OpenModalWindow(GetWidget()->GetNativeView());
+    OpenModalWindow(GetWidget()->GetNativeView(), modal_type_);
   }
 
  private:
+  ui::ModalType modal_type_;
   SkColor color_;
   views::NativeTextButton* open_button_;
 
@@ -143,7 +146,7 @@ class NonModalTransient : public views::WidgetDelegateView {
 void InitWindowTypeLauncher() {
   views::Widget* widget =
       views::Widget::CreateWindowWithBounds(new WindowTypeLauncher,
-                                            gfx::Rect(120, 150, 400, 300));
+                                            gfx::Rect(120, 150, 400, 400));
   widget->GetNativeView()->SetName("WindowTypeLauncher");
   ash::internal::SetShadowType(widget->GetNativeView(),
                                       ash::internal::SHADOW_TYPE_NONE);
@@ -164,9 +167,12 @@ WindowTypeLauncher::WindowTypeLauncher()
       ALLOW_THIS_IN_INITIALIZER_LIST(widgets_button_(
           new views::NativeTextButton(
               this, ASCIIToUTF16("Show Example Widgets")))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(modal_button_(
+      ALLOW_THIS_IN_INITIALIZER_LIST(system_modal_button_(
           new views::NativeTextButton(
-              this, ASCIIToUTF16("Open Modal Window")))),
+              this, ASCIIToUTF16("Open System Modal Window")))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(window_modal_button_(
+          new views::NativeTextButton(
+              this, ASCIIToUTF16("Open Window Modal Window")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(transient_button_(
           new views::NativeTextButton(
               this, ASCIIToUTF16("Open Non-Modal Transient Window")))),
@@ -178,7 +184,8 @@ WindowTypeLauncher::WindowTypeLauncher()
   AddChildView(bubble_button_);
   AddChildView(lock_button_);
   AddChildView(widgets_button_);
-  AddChildView(modal_button_);
+  AddChildView(system_modal_button_);
+  AddChildView(window_modal_button_);
   AddChildView(transient_button_);
   AddChildView(examples_button_);
   set_context_menu_controller(this);
@@ -219,24 +226,25 @@ void WindowTypeLauncher::Layout() {
       5, lock_button_->y() - widgets_ps.height() - 5,
       widgets_ps.width(), widgets_ps.height());
 
-  gfx::Size modal_ps = modal_button_->GetPreferredSize();
-  modal_button_->SetBounds(
-      5, widgets_button_->y() - modal_ps.height() - 5,
-      modal_ps.width(), modal_ps.height());
+  gfx::Size system_modal_ps = system_modal_button_->GetPreferredSize();
+  system_modal_button_->SetBounds(
+      5, widgets_button_->y() - system_modal_ps.height() - 5,
+      system_modal_ps.width(), system_modal_ps.height());
+
+  gfx::Size window_modal_ps = window_modal_button_->GetPreferredSize();
+  window_modal_button_->SetBounds(
+      5, system_modal_button_->y() - window_modal_ps.height() - 5,
+      window_modal_ps.width(), window_modal_ps.height());
 
   gfx::Size transient_ps = transient_button_->GetPreferredSize();
   transient_button_->SetBounds(
-      5, modal_button_->y() - transient_ps.height() - 5,
+      5, window_modal_button_->y() - transient_ps.height() - 5,
       transient_ps.width(), transient_ps.height());
 
   gfx::Size examples_ps = examples_button_->GetPreferredSize();
   examples_button_->SetBounds(
       5, transient_button_->y() - examples_ps.height() - 5,
       examples_ps.width(), examples_ps.height());
-}
-
-gfx::Size WindowTypeLauncher::GetPreferredSize() {
-  return gfx::Size(300, 500);
 }
 
 bool WindowTypeLauncher::OnMousePressed(const views::MouseEvent& event) {
@@ -274,8 +282,12 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
     CreateLockScreen();
   } else if (sender == widgets_button_) {
     CreateWidgetsWindow();
-  } else if (sender == modal_button_) {
-    ModalWindow::OpenModalWindow(GetWidget()->GetNativeView());
+  } else if (sender == system_modal_button_) {
+    ModalWindow::OpenModalWindow(GetWidget()->GetNativeView(),
+                                 ui::MODAL_TYPE_SYSTEM);
+  } else if (sender == window_modal_button_) {
+    ModalWindow::OpenModalWindow(GetWidget()->GetNativeView(),
+                                 ui::MODAL_TYPE_WINDOW);
   } else if (sender == transient_button_) {
     NonModalTransient::OpenNonModalTransient(GetWidget()->GetNativeView());
   } else if (sender == examples_button_) {

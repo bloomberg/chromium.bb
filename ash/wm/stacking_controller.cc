@@ -10,6 +10,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_types.h"
 
 namespace ash {
 namespace internal {
@@ -19,9 +20,9 @@ aura::Window* GetContainer(int id) {
   return Shell::GetInstance()->GetContainer(id);
 }
 
-bool IsWindowModal(aura::Window* window) {
+bool IsSystemModal(aura::Window* window) {
   return window->transient_parent() &&
-      window->GetIntProperty(aura::client::kModalKey);
+      window->GetIntProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM;
 }
 
 }  // namespace
@@ -47,7 +48,7 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* window) {
   switch (window->type()) {
     case aura::client::WINDOW_TYPE_NORMAL:
     case aura::client::WINDOW_TYPE_POPUP:
-      if (IsWindowModal(window))
+      if (IsSystemModal(window))
         return GetModalContainer(window);
       return always_on_top_controller_->GetContainer(window);
     case aura::client::WINDOW_TYPE_PANEL:
@@ -68,7 +69,7 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* window) {
 
 aura::Window* StackingController::GetModalContainer(
     aura::Window* window) const {
-  if (!IsWindowModal(window))
+  if (!IsSystemModal(window))
     return NULL;
 
   // If screen lock is not active, all modal windows are placed into the

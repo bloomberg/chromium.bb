@@ -6,12 +6,15 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/window_modality_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "ui/aura/client/activation_delegate.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/ui_base_types.h"
 
 namespace ash {
 namespace internal {
@@ -41,6 +44,20 @@ bool CanActivateWindow(aura::Window* window) {
       (!aura::client::GetActivationDelegate(window) ||
         aura::client::GetActivationDelegate(window)->ShouldActivate(NULL)) &&
       SupportsChildActivation(window->parent());
+}
+
+// When a modal window is activated, we bring its entire transient parent chain
+// to the front. This function must be called before the modal transient is
+// stacked at the top to ensure correct stacking order.
+void StackTransientParentsBelowModalWindow(aura::Window* window) {
+  if (window->GetIntProperty(aura::client::kModalKey) != ui::MODAL_TYPE_WINDOW)
+    return;
+
+  aura::Window* transient_parent = window->transient_parent();
+  while (transient_parent) {
+    transient_parent->parent()->StackChildAtTop(transient_parent);
+    transient_parent = transient_parent->transient_parent();
+  }
 }
 
 }  // namespace
@@ -80,6 +97,13 @@ aura::Window* ActivationController::GetActivatableWindow(aura::Window* window) {
 // ActivationController, aura::client::ActivationClient implementation:
 
 void ActivationController::ActivateWindow(aura::Window* window) {
+  aura::Window* window_modal_transient =
+      WindowModalityController::GetWindowModalTransient(window);
+  if (window_modal_transient) {
+    ActivateWindow(window_modal_transient);
+    return;
+  }
+
   // Prevent recursion when called from focus.
   if (updating_activation_)
     return;
@@ -107,6 +131,7 @@ void ActivationController::ActivateWindow(aura::Window* window) {
   if (old_active && aura::client::GetActivationDelegate(old_active))
     aura::client::GetActivationDelegate(old_active)->OnLostActive();
   if (window) {
+    StackTransientParentsBelowModalWindow(window);
     window->parent()->StackChildAtTop(window);
     if (aura::client::GetActivationDelegate(window))
       aura::client::GetActivationDelegate(window)->OnActivated();

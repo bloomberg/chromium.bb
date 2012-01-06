@@ -53,7 +53,7 @@ class TestWindow : public views::WidgetDelegateView {
     return this;
   }
   virtual ui::ModalType GetModalType() const OVERRIDE {
-    return modal_ ? ui::MODAL_TYPE_WINDOW : ui::MODAL_TYPE_NONE;
+    return modal_ ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_NONE;
   }
 
  private:

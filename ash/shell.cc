@@ -32,6 +32,7 @@
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/toplevel_layout_manager.h"
 #include "ash/wm/toplevel_window_event_filter.h"
+#include "ash/wm/window_modality_controller.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -142,6 +143,7 @@ Shell::Shell(ShellDelegate* delegate)
 
 Shell::~Shell() {
   RemoveRootWindowEventFilter(input_method_filter_.get());
+  RemoveRootWindowEventFilter(window_modality_controller_.get());
   RemoveRootWindowEventFilter(accelerator_filter_.get());
 
   // TooltipController needs a valid shell instance. We delete it before
@@ -229,6 +231,9 @@ void Shell::Init() {
   DCHECK(!GetRootWindowEventFilterCount());
   input_method_filter_.reset(new internal::InputMethodEventFilter);
   AddRootWindowEventFilter(input_method_filter_.get());
+
+  window_modality_controller_.reset(new internal::WindowModalityController);
+  AddRootWindowEventFilter(window_modality_controller_.get());
 
   accelerator_filter_.reset(new internal::AcceleratorFilter);
   AddRootWindowEventFilter(accelerator_filter_.get());
