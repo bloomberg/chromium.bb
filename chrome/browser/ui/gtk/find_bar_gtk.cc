@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -737,7 +737,7 @@ void FindBarGtk::OnParentSet(GtkWidget* widget, GtkObject* old_parent,
   if (!widget->parent)
     return;
 
-  g_signal_connect(widget->parent, "set-floating-position",
+  g_signal_connect(gtk_widget_get_parent(widget), "set-floating-position",
                    G_CALLBACK(OnSetFloatingPosition), find_bar);
 }
 
@@ -853,8 +853,9 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
                                                   mask_points.size(),
                                                   GDK_EVEN_ODD_RULE);
       // Reset the shape.
-      gdk_window_shape_combine_region(widget->window, NULL, 0, 0);
-      gdk_window_shape_combine_region(widget->window, mask_region, 0, 0);
+      GdkWindow* gdk_window = gtk_widget_get_window(widget);
+      gdk_window_shape_combine_region(gdk_window, NULL, 0, 0);
+      gdk_window_shape_combine_region(gdk_window, mask_region, 0, 0);
       gdk_region_destroy(mask_region);
 
       bar->container_width_ = allocation.width;
@@ -877,7 +878,8 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
     if (bar->container_width_ != allocation.width ||
         bar->container_height_ != allocation.height) {
       // Reset the shape.
-      gdk_window_shape_combine_region(widget->window, NULL, 0, 0);
+      gdk_window_shape_combine_region(gtk_widget_get_window(widget),
+                                      NULL, 0, 0);
       SetDialogShape(bar->container_);
 
       bar->container_width_ = allocation.width;

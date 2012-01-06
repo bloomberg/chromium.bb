@@ -218,7 +218,8 @@ static void gtk_custom_menu_item_expose_button(GtkWidget* hbox,
   int width = last_allocation.width + last_allocation.x - first_allocation.x;
   int height = last_allocation.height;
 
-  gtk_paint_box(hbox->style, hbox->window,
+  gtk_paint_box(gtk_widget_get_style(hbox),
+                gtk_widget_get_window(hbox),
                 gtk_widget_get_state(current_button),
                 GTK_SHADOW_OUT,
                 &current_allocation, hbox, "button",

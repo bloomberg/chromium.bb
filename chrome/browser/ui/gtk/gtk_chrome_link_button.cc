@@ -159,7 +159,7 @@ static void gtk_chrome_link_button_enter(GtkButton* button) {
 
 static void gtk_chrome_link_button_leave(GtkButton* button) {
   GtkWidget* widget = GTK_WIDGET(button);
-  gdk_window_set_cursor(widget->window, NULL);
+  gdk_window_set_cursor(gtk_widget_get_window(widget), NULL);
 }
 
 static void gtk_chrome_link_button_destroy(GtkObject* object) {

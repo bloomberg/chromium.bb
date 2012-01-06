@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,9 +165,12 @@ void TabContentsContainerGtk::DetachTab(TabContentsWrapper* tab) {
 
   // It is possible to detach an unrealized, unparented TabContents if you
   // slow things down enough in valgrind. Might happen in the real world, too.
-  if (widget && widget->parent) {
-    DCHECK_EQ(widget->parent, expanded_);
-    gtk_container_remove(GTK_CONTAINER(expanded_), widget);
+  if (widget) {
+    GtkWidget* parent = gtk_widget_get_parent(widget);
+    if (parent) {
+      DCHECK_EQ(parent, expanded_);
+      gtk_container_remove(GTK_CONTAINER(expanded_), widget);
+    }
   }
 }
 

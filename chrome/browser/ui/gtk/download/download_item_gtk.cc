@@ -715,7 +715,7 @@ gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
       // Draw a simple frame around the area when we're displaying the warning.
       gtk_paint_shadow(gtk_widget_get_style(widget),
                        gtk_widget_get_window(widget),
-                       static_cast<GtkStateType>(widget->state),
+                       gtk_widget_get_state(widget),
                        static_cast<GtkShadowType>(GTK_SHADOW_OUT),
                        &e->area, widget, "frame",
                        x, y, width, height);
@@ -727,7 +727,7 @@ gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
       // the button, we instruct GTK to draw the entire button...with a
       // doctored clip rectangle to the left part of the button sans
       // separator. We then repeat this for the right button.
-      GtkStyle* style = body_.get()->style;
+      GtkStyle* style = gtk_widget_get_style(body_.get());
 
       GtkAllocation left_clip;
       gtk_widget_get_allocation(body_.get(), &left_clip);

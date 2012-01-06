@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -690,7 +690,7 @@ void MenuGtk::WidgetMenuPositionFunc(GtkMenu* menu,
 
   gtk_widget_size_request(GTK_WIDGET(menu), &menu_req);
 
-  gdk_window_get_origin(widget->window, x, y);
+  gdk_window_get_origin(gtk_widget_get_window(widget), x, y);
   GdkScreen *screen = gtk_widget_get_screen(widget);
   gint monitor = gdk_screen_get_monitor_at_point(screen, *x, *y);
 
