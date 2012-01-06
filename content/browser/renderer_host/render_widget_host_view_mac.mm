@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1217,6 +1217,17 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   canBeKeyView_ = can;
 }
 
+- (BOOL)acceptsMouseEventsWhenInactive {
+  // Some types of windows (balloons, always-on-top panels) want to accept mouse
+  // clicks w/o the first click being treated as 'activation'. Same applies to
+  // mouse move events.
+  return [[self window] level] > NSNormalWindowLevel;
+}
+
+- (BOOL)acceptsFirstMouse:(NSEvent*)theEvent {
+  return [self acceptsMouseEventsWhenInactive];
+}
+
 - (void)setTakesFocusOnlyOnMouseDown:(BOOL)b {
   takesFocusOnlyOnMouseDown_ = b;
 }
@@ -1229,10 +1240,9 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   NSWindow* window = [self window];
   // If this is a background window, don't handle mouse movement events. This
   // is the expected behavior on the Mac as evidenced by other applications.
-  // Do this only if the window level is NSNormalWindowLevel, as this
-  // does not necessarily apply in other contexts (e.g. balloons).
   if ([theEvent type] == NSMouseMoved &&
-      [window level] == NSNormalWindowLevel && ![window isKeyWindow]) {
+      ![self acceptsMouseEventsWhenInactive] &&
+      ![window isKeyWindow]) {
     return YES;
   }
 
