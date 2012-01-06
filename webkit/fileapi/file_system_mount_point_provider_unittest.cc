@@ -361,7 +361,13 @@ TEST_F(FileSystemMountPointProviderTest,
   EXPECT_EQ(root_path1.value(), root_path2.value());
 }
 
-TEST_F(FileSystemMountPointProviderTest, GetRootPathGetWithoutCreate) {
+// http://crbug.com/109342
+#if defined(OS_CHROMEOS)
+#define MAYBE_GetRootPathGetWithoutCreate FAILS_GetRootPathGetWithoutCreate
+#else
+#define MAYBE_GetRootPathGetWithoutCreate GetRootPathGetWithoutCreate
+#endif
+TEST_F(FileSystemMountPointProviderTest, MAYBE_GetRootPathGetWithoutCreate) {
   SetupNewContext(CreateDisallowFileAccessOptions());
 
   // Try to get a root directory without creating.
@@ -374,7 +380,13 @@ TEST_F(FileSystemMountPointProviderTest, GetRootPathGetWithoutCreate) {
   }
 }
 
-TEST_F(FileSystemMountPointProviderTest, GetRootPathInIncognito) {
+// http://crbug.com/109342
+#if defined(OS_CHROMEOS)
+#define MAYBE_GetRootPathInIncognito FAILS_GetRootPathInIncognito
+#else
+#define MAYBE_GetRootPathInIncognito GetRootPathInIncognito
+#endif
+TEST_F(FileSystemMountPointProviderTest, MAYBE_GetRootPathInIncognito) {
   SetupNewContext(CreateIncognitoFileSystemOptions());
 
   // Try to get a root directory.
@@ -387,7 +399,13 @@ TEST_F(FileSystemMountPointProviderTest, GetRootPathInIncognito) {
   }
 }
 
-TEST_F(FileSystemMountPointProviderTest, GetRootPathFileURI) {
+// http://crbug.com/109342
+#if defined(OS_CHROMEOS)
+#define MAYBE_GetRootPathFileURI FAILS_GetRootPathFileURI
+#else
+#define MAYBE_GetRootPathFileURI GetRootPathFileURI
+#endif
+TEST_F(FileSystemMountPointProviderTest, MAYBE_GetRootPathFileURI) {
   SetupNewContext(CreateDisallowFileAccessOptions());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathFileURITestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPathFileURI (disallow) #"
@@ -398,7 +416,15 @@ TEST_F(FileSystemMountPointProviderTest, GetRootPathFileURI) {
   }
 }
 
-TEST_F(FileSystemMountPointProviderTest, GetRootPathFileURIWithAllowFlag) {
+// http://crbug.com/109342
+#if defined(OS_CHROMEOS)
+#define MAYBE_GetRootPathFileURIWithAllowFlag \
+    FAILS_GetRootPathFileURIWithAllowFlag
+#else
+#define MAYBE_GetRootPathFileURIWithAllowFlag GetRootPathFileURIWithAllowFlag
+#endif
+TEST_F(FileSystemMountPointProviderTest,
+       MAYBE_GetRootPathFileURIWithAllowFlag) {
   SetupNewContext(CreateRootPathTestOptions());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathFileURITestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPathFileURI (allow) #"
