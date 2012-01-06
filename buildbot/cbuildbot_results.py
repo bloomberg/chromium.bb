@@ -163,8 +163,7 @@ class _Results(object):
         out.write('%s FAILED BUT FORGIVEN %s (%s)\n' %
                    (edge, name, timestr))
       else:
-        if type(result) in (cros_lib.RunCommandException,
-                            cros_lib.RunCommandError):
+        if isinstance(result, cros_lib.RunCommandError):
           # If there was a RunCommand error, give just the command that
           # failed, not it's full argument list, since those are usually
           # too long.

@@ -4,8 +4,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import errno
+
 import os
+import errno
 import shutil
 import signal
 import subprocess
@@ -302,6 +303,56 @@ class TestRunCommand(unittest.TestCase):
     self.assertFalse(e1 == e_diff_code)
     self.assertTrue(e1 != e_diff_code)
 
+
+class TestRunCommandWithRetries(unittest.TestCase):
+
+  @cros_test_lib.tempdir_decorator
+  def testBasicRetry(self):
+    # pylint: disable=E1101
+    path = os.path.join(self.tempdir, 'script')
+    stop_path = os.path.join(self.tempdir, 'stop')
+    store_path = os.path.join(self.tempdir, 'store')
+    with open(path, 'w') as f:
+      f.write("import sys\n"
+              "val = int(open(%(store)r).read())\n"
+              "stop_val = int(open(%(stop)r).read())\n"
+              "open(%(store)r, 'w').write(str(val + 1))\n"
+              "print val\n"
+              "sys.exit(0 if val == stop_val else 1)\n" %
+              {'store': store_path, 'stop': stop_path})
+
+    os.chmod(path, 0755)
+
+    def _setup_counters(start, stop):
+      with open(store_path, 'w') as f:
+        f.write(str(start))
+
+      with open(stop_path, 'w') as f:
+        f.write(str(stop))
+
+
+    _setup_counters(0, 0)
+    command = ['python', path]
+    kwds = {'redirect_stdout': True, 'print_cmd': False}
+
+    self.assertEqual(cros_build_lib.RunCommand(command, **kwds).output, '0\n')
+
+    func = cros_build_lib.RunCommandWithRetries
+
+    _setup_counters(2, 2)
+    self.assertEqual(func(0, command, **kwds).output, '2\n')
+
+    _setup_counters(0, 2)
+    self.assertEqual(func(2, command, **kwds).output, '2\n')
+
+    _setup_counters(0, 1)
+    self.assertEqual(func(1, command, **kwds).output, '1\n')
+
+    _setup_counters(0, 3)
+    self.assertRaises(cros_build_lib.RunCommandError,
+                      func, 2, command, **kwds)
+
+
 class TestListFiles(unittest.TestCase):
 
   def setUp(self):
@@ -353,26 +404,6 @@ class TestListFiles(unittest.TestCase):
       cros_build_lib.ListFiles('/me/no/existe')
     except OSError, err:
       self.assertEqual(err.errno, errno.ENOENT)
-
-class TestOldRunCommand(unittest.TestCase):
-  """Tests related to OldRunCommand."""
-
-  def testExceptionEquality(self):
-    """Verify equality methods for RunCommandException"""
-    e1 = cros_build_lib.RunCommandException('Message 1', ['ls', 'arg'])
-    e2 = cros_build_lib.RunCommandException('Message 1', ['ls', 'arg'])
-    e_diff_msg = cros_build_lib.RunCommandException('Message 2', ['ls', 'arg'])
-    e_diff_cmd = cros_build_lib.RunCommandException('Message 1', ['ls', 'arg1'])
-
-    self.assertTrue(e1 == e2)
-    self.assertFalse(e1 != e2)
-
-    self.assertFalse(e1 == e_diff_msg)
-    self.assertTrue(e1 != e_diff_msg)
-
-    self.assertFalse(e1 == e_diff_cmd)
-    self.assertTrue(e1 != e_diff_cmd)
-
 
 class HelperMethodMoxTests(unittest.TestCase):
   """Tests for various helper methods using mox."""

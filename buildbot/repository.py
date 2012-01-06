@@ -181,8 +181,9 @@ class RepoRepository(object):
       if cleanup:
         configure_repo.FixBrokenExistingRepos(self.directory)
 
-      cros_lib.OldRunCommand(['repo', '--time', 'sync', '--jobs', str(jobs)],
-                             cwd=self.directory, num_retries=2)
+      cros_lib.RunCommandWithRetries(2, ['repo', '--time', 'sync',
+                                         '--jobs', str(jobs)],
+                                     cwd=self.directory)
 
       configure_repo.FixExternalRepoPushUrls(self.directory)
 

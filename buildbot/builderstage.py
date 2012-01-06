@@ -114,10 +114,10 @@ class BuilderStage(object):
       portageq = 'portageq-%s' % board
     else:
       portageq = 'portageq'
-    binhost = cros_lib.OldRunCommand(
+    binhost = cros_lib.RunCommand(
         [portageq, 'envvar', envvar], cwd=cwd, redirect_stdout=True,
         enter_chroot=True, error_ok=True)
-    return binhost.rstrip('\n')
+    return binhost.output.rstrip('\n')
 
   def _GetImportantBuildersForMaster(self, config):
     """Gets the important builds corresponding to this master builder.

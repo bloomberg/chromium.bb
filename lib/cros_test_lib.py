@@ -17,7 +17,7 @@ import unittest
 
 import mox
 
-import chromite.lib.terminal as terminal
+import terminal
 
 # pylint: disable=W0212,R0904,W0702
 

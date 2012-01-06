@@ -4,7 +4,6 @@
 
 """Common python commands used by various build scripts."""
 
-import inspect
 import os
 import re
 import signal
@@ -697,98 +696,33 @@ def GitPushWithRetry(branch, cwd, dryrun=False, retries=5):
     raise GitPushFailed('Failed to push change after %s retries' % retries)
 
 
-def GetCallerName():
-  """Returns the name of the calling module with __main__."""
-  top_frame = inspect.stack()[-1][0]
-  return os.path.basename(top_frame.f_code.co_filename)
-
-
-class RunCommandException(Exception):
-  """Raised when there is an error in OldRunCommand."""
-  def __init__(self, msg, cmd):
-    self.cmd = cmd
-    Exception.__init__(self, msg)
-    self.args = (msg, cmd)
-
-  def __eq__(self, other):
-    return (type(self) == type(other) and
-            str(self) == str(other) and
-            self.cmd == other.cmd)
-
-  def __ne__(self, other):
-    return not self.__eq__(other)
-
-
-def OldRunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
-                  exit_code=False, redirect_stdout=False, redirect_stderr=False,
-                  cwd=None, input=None, enter_chroot=False, num_retries=0):
-  """Legacy run shell command.
+def RunCommandWithRetries(max_retry, *args, **kwds):
+  """Wrapper for RunCommand that will retry a command
 
   Arguments:
-    cmd: cmd to run.  Should be input to subprocess.POpen.  If a string,
-      converted to an array using split().
-    print_cmd: prints the command before running it.
-    error_ok: does not raise an exception on error.
-    error_message: prints out this message when an error occurrs.
-    exit_code: returns the return code of the shell command.
-    redirect_stdout: returns the stdout.
-    redirect_stderr: holds stderr output until input is communicated.
-    cwd: the working directory to run this cmd.
-    input: input to pipe into this command through stdin.
-    enter_chroot: this command should be run from within the chroot.  If set,
-      cwd must point to the scripts directory.
-    num_retries: the number of retries to perform before dying
-
+    max_retry: A positive integer representing how many times to retry
+      the command before giving up.  Worst case, the command is invoked
+      (max_retry + 1) times before failing.
+    args: Positional args passed to RunCommand; see RunCommand for specifics.
+    kwds: Optional args passed to RunCommand; see RunCommand for specifics.
   Returns:
-    If exit_code is True, returns the return code of the shell command.
-    Else returns the output of the shell command.
-
+    A RunCommandResult object.
   Raises:
-    Exception:  Raises RunCommandException on error with optional error_message.
+    Exception:  Raises RunCommandError on error with optional error_message.
   """
-  # Set default for variables.
-  stdout = None
-  stderr = None
-  stdin = None
-  output = ''
+  try:
+    return RunCommand(*args, **kwds)
+  except RunCommandError:
+    # pylint: disable=W0612
+    for attempt in xrange(max_retry):
+      try:
+        return RunCommand(*args, **kwds)
+      except RunCommandError:
+        # We intentionally ignore any failures in later attempts since we'll
+        # throw the original failure if all retries fail.
+        pass
+    raise
 
-  # Modify defaults based on parameters.
-  if redirect_stdout:  stdout = subprocess.PIPE
-  if redirect_stderr:  stderr = subprocess.PIPE
-  if input:  stdin = subprocess.PIPE
-  if enter_chroot:
-    cmd = ['cros_sdk', '--'] + cmd
-
-  # Print out the command before running.
-  if print_cmd:
-    Info('PROGRAM(%s) -> RunCommand: %r in dir %s' %
-         (GetCallerName(), cmd, cwd))
-
-  for retry_count in range(num_retries + 1):
-    try:
-      proc = subprocess.Popen(cmd, cwd=cwd, stdin=stdin,
-                              stdout=stdout, stderr=stderr,
-                              close_fds=True)
-      (output, error) = proc.communicate(input)
-      if exit_code and retry_count == num_retries:
-        return proc.returncode
-
-      if proc.returncode == 0:
-        break
-
-      raise RunCommandException('Command "%r" failed.\n' % (cmd) +
-                                (error_message or error or output or ''),
-                                cmd)
-    except RunCommandException as e:
-      if not error_ok and retry_count == num_retries:
-        raise e
-      else:
-        Warning(str(e))
-        if print_cmd and retry_count < num_retries:
-          Info('PROGRAM(%s) -> RunCommand: retrying %r in dir %s' %
-               (GetCallerName(), cmd, cwd))
-
-  return output
 
 def GetInput(prompt):
   """Helper function to grab input from a user.   Makes testing easier."""

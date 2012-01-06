@@ -34,9 +34,6 @@ FAKE_VERSION_STRING = '1.2.3'
 FAKE_VERSION_STRING_NEXT = '1.2.4'
 CHROME_BRANCH = '13'
 
-# Dir to use to sync repo for git testing.
-GIT_DIR = '/tmp/repo_for_manifest_version_unittest'
-
 # Use the chromite repo to actually test git changes.
 GIT_TEST_PATH = 'chromite'
 

@@ -18,7 +18,7 @@ sys.path.append(constants.SOURCE_ROOT)
 import chromite.buildbot.cbuildbot_commands as commands
 import chromite.lib.cros_build_lib as cros_lib
 import chromite.buildbot.repository as repository
-
+from chromite.lib import cros_test_lib
 
 # pylint: disable=W0212,R0904
 class CBuildBotTest(mox.MoxTestBase):
@@ -26,7 +26,6 @@ class CBuildBotTest(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     # Always stub RunCommmand out as we use it in every method.
-    self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
     self.mox.StubOutWithMock(repository, 'FixExternalRepoPushUrls')
     self._test_repos = [['kernel', 'third_party/kernel/files'],
@@ -65,9 +64,11 @@ class CBuildBotTest(mox.MoxTestBase):
 
     cwd = self._work_dir + '/src/scripts'
 
-    cros_lib.OldRunCommand(
+    obj = cros_test_lib.EasyAttr(returncode=0)
+
+    cros_lib.RunCommand(
         mox.Func(lambda x: ItemsNotInList(['--quick', '--only_verify'], x)),
-        cwd=cwd, error_ok=True, exit_code=True)
+        cwd=cwd, error_ok=True, exit_code=True).AndReturn(obj)
 
     self.mox.ReplayAll()
     commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
@@ -77,8 +78,8 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
-    cros_lib.OldRunCommand(mox.In('--quick'), cwd=cwd, error_ok=True,
-                           exit_code=True)
+    cros_lib.RunCommand(mox.In('--quick'), cwd=cwd, error_ok=True,
+                        exit_code=True).AndReturn(obj)
 
     self.mox.ReplayAll()
     commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
@@ -88,9 +89,9 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
-    cros_lib.OldRunCommand(
+    cros_lib.RunCommand(
         mox.And(mox.In('--quick'), mox.In('--only_verify')),
-        cwd=cwd, error_ok=True, exit_code=True)
+        cwd=cwd, error_ok=True, exit_code=True).AndReturn(obj)
 
     self.mox.ReplayAll()
     commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
@@ -110,14 +111,11 @@ class CBuildBotTest(mox.MoxTestBase):
     # Convenience variables to make archive easier to understand.
     path_to_results = os.path.join(buildroot, 'chroot', test_results_dir)
 
-    cros_lib.OldRunCommand(['sudo', 'chmod', '-R', 'a+rw', path_to_results],
-                           print_cmd=False)
-    cros_lib.OldRunCommand(['tar',
-                            'czf',
-                            test_tarball,
-                            '--directory=%s' % path_to_results,
-                            '.'],
-                           print_cmd=False)
+    cros_lib.RunCommand(['sudo', 'chmod', '-R', 'a+rw', path_to_results],
+                        print_cmd=False)
+    cros_lib.RunCommand(['tar', 'czf', test_tarball,
+                         '--directory=%s' % path_to_results, '.'],
+                        print_cmd=False)
     shutil.rmtree(path_to_results)
     self.mox.ReplayAll()
     commands.ArchiveTestResults(buildroot, test_results_dir, '')
@@ -189,7 +187,7 @@ class CBuildBotTest(mox.MoxTestBase):
   def testUprevAllPackages(self):
     """Test if we get None in revisions.pfq indicating Full Builds."""
     drop_file = commands._PACKAGE_FILE % {'buildroot': self._buildroot}
-    cros_lib.OldRunCommand(
+    cros_lib.RunCommand(
         ['../../chromite/buildbot/cros_mark_as_stable', '--all',
          '--board=%s' % self._test_board,
          '--overlays=%s' % ':'.join(self._chroot_overlays),
@@ -210,7 +208,7 @@ class CBuildBotTest(mox.MoxTestBase):
     check = mox.And(mox.IsA(list),
                     mox.In('gs://chromeos-prebuilt'),
                     mox.In('binary'))
-    cros_lib.OldRunCommand(check, cwd=os.path.dirname(commands.__file__))
+    cros_lib.RunCommand(check, cwd=os.path.dirname(commands.__file__))
     self.mox.ReplayAll()
     commands.UploadPrebuilts(self._buildroot, self._test_board, 'public',
                              'binary', None, buildnumber)
@@ -222,7 +220,7 @@ class CBuildBotTest(mox.MoxTestBase):
     check = mox.And(mox.IsA(list),
                     mox.In('gs://chromeos-prebuilt'),
                     mox.In('binary'))
-    cros_lib.OldRunCommand(check, cwd=os.path.dirname(commands.__file__))
+    cros_lib.RunCommand(check, cwd=os.path.dirname(commands.__file__))
     self.mox.ReplayAll()
     commands.UploadPrebuilts(self._buildroot, self._test_board, 'private',
                              'binary', None, buildnumber)
@@ -234,7 +232,7 @@ class CBuildBotTest(mox.MoxTestBase):
     check = mox.And(mox.IsA(list),
                     mox.In('gs://chromeos-prebuilt'),
                     mox.In('chrome'))
-    cros_lib.OldRunCommand(check, cwd=os.path.dirname(commands.__file__))
+    cros_lib.RunCommand(check, cwd=os.path.dirname(commands.__file__))
     self.mox.ReplayAll()
     commands.UploadPrebuilts(self._buildroot, self._test_board, 'public',
                              'chrome', 'tot', buildnumber)

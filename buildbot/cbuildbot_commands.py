@@ -77,34 +77,34 @@ def _BuildRootGitCleanup(buildroot):
 
 def _CleanUpMountPoints(buildroot):
   """Cleans up any stale mount points from previous runs."""
-  mount_output = cros_lib.OldRunCommand(['mount'], redirect_stdout=True,
-                                        print_cmd=False)
+  mount_output = cros_lib.RunCommand(['mount'], redirect_stdout=True,
+                                     print_cmd=False)
   mount_pts_in_buildroot = cros_lib.RunCommand(
-      ['grep', buildroot], input=mount_output, redirect_stdout=True,
+      ['grep', buildroot], input=mount_output.output, redirect_stdout=True,
       error_code_ok=True, print_cmd=False)
 
   for mount_pt_str in mount_pts_in_buildroot.output.splitlines():
     mount_pt = mount_pt_str.rpartition(' type ')[0].partition(' on ')[2]
-    cros_lib.OldRunCommand(['sudo', 'umount', '-l', mount_pt], error_ok=True,
-                           print_cmd=False)
+    cros_lib.RunCommand(['sudo', 'umount', '-l', mount_pt], error_ok=True,
+                        print_cmd=False)
 
 
 def _GetVMConstants(buildroot):
   """Returns minimum (vdisk_size, statefulfs_size) recommended for VM's."""
   cwd = os.path.join(buildroot, 'src', 'scripts', 'lib')
   source_cmd = 'source %s/cros_vm_constants.sh' % cwd
-  vdisk_size = cros_lib.OldRunCommand([
+  vdisk_size = cros_lib.RunCommand([
       '/bin/bash', '-c', '%s && echo $MIN_VDISK_SIZE_FULL' % source_cmd],
-       redirect_stdout=True)
-  statefulfs_size = cros_lib.OldRunCommand([
+       redirect_stdout=True).output.strip()
+  statefulfs_size = cros_lib.RunCommand([
       '/bin/bash', '-c', '%s && echo $MIN_STATEFUL_FS_SIZE_FULL' % source_cmd],
-       redirect_stdout=True)
-  return (vdisk_size.strip(), statefulfs_size.strip())
+       redirect_stdout=True).output.strip()
+  return (vdisk_size, statefulfs_size)
 
 
 def _WipeOldOutput(buildroot):
   """Wipes out build output directories."""
-  cros_lib.OldRunCommand(['rm', '-rf', 'src/build/images'], cwd=buildroot)
+  cros_lib.RunCommand(['rm', '-rf', 'src/build/images'], cwd=buildroot)
 
 
 def GetInput(prompt):
@@ -288,7 +288,7 @@ def RunUnitTests(buildroot, board, full, nowithdebug):
             cros_lib.ReinterpretPathForChroot(_PACKAGE_FILE %
                                               {'buildroot': buildroot})]
 
-  cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=True)
+  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
 
 
 def RunChromeSuite(buildroot, board, image_dir, results_dir):
@@ -311,7 +311,7 @@ def RunChromeSuite(buildroot, board, image_dir, results_dir):
          'desktopui_BrowserTest.control.two',
          'desktopui_BrowserTest.control.three',
          'desktopui_PyAutoFunctionalTests.control.vm']
-  cros_lib.OldRunCommand(cmd, cwd=cwd, error_ok=True, enter_chroot=False)
+  cros_lib.RunCommand(cmd, cwd=cwd, error_ok=True, enter_chroot=False)
 
 
 def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
@@ -341,12 +341,13 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
     cmd.append('--nplus1_archive_dir=%s' % nplus1_archive_dir)
     cmd.append('--build_config=%s' % build_config)
 
-  code = cros_lib.OldRunCommand(cmd, cwd=cwd, error_ok=True, exit_code=True)
-  if code:
+  result = cros_lib.RunCommand(cmd, cwd=cwd, error_ok=True, exit_code=True)
+  if result.returncode:
     failed = open(results_dir_in_chroot + '/failed_test_command', 'w')
-    failed.write('%s exited with code %d' % (' '.join(cmd), code))
+    failed.write('%s exited with code %d' % (' '.join(cmd), result.returncode))
     failed.close()
-    raise TestException('** VMTests failed with code %d **' % code)
+    raise TestException('** VMTests failed with code %d **'
+      % result.returncode)
 
 
 def UpdateRemoteHW(buildroot, image_dir, remote_ip):
@@ -358,8 +359,8 @@ def UpdateRemoteHW(buildroot, image_dir, remote_ip):
          '--remote=%s' % remote_ip,
          '--image=%s' % test_image_path, ]
 
-  cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=False, error_ok=False,
-                         print_cmd=True)
+  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=False, error_ok=False,
+                      print_cmd=True)
 
 
 def RunRemoteTest(buildroot, board, remote_ip, test_name, args=None):
@@ -376,8 +377,8 @@ def RunRemoteTest(buildroot, board, remote_ip, test_name, args=None):
 
   cmd.append(test_name)
 
-  cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=True, error_ok=False,
-                         print_cmd=True)
+  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, error_ok=False,
+                      print_cmd=True)
 
 
 def ArchiveTestResults(buildroot, test_results_dir, prefix):
@@ -393,17 +394,14 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
   try:
     test_results_dir = test_results_dir.lstrip('/')
     results_path = os.path.join(buildroot, 'chroot', test_results_dir)
-    cros_lib.OldRunCommand(['sudo', 'chmod', '-R', 'a+rw', results_path],
-                           print_cmd=False)
+    cros_lib.RunCommand(['sudo', 'chmod', '-R', 'a+rw', results_path],
+                        print_cmd=False)
 
     test_tarball = os.path.join(buildroot, '%stest_results.tgz' % prefix)
     if os.path.exists(test_tarball): os.remove(test_tarball)
-    cros_lib.OldRunCommand(['tar',
-                            'czf',
-                            test_tarball,
-                            '--directory=%s' % results_path,
-                            '.'],
-                           print_cmd=False)
+    cros_lib.RunCommand(['tar', 'czf', test_tarball,
+                         '--directory=%s' % results_path,'.'],
+                        print_cmd=False)
     shutil.rmtree(results_path)
 
     return test_tarball
@@ -536,10 +534,10 @@ def MarkChromeAsStable(buildroot,
   else:
     chrome_atom = portage_atom_string.splitlines()[-1].split('=')[1]
     keywords_file = CHROME_KEYWORDS_FILE % {'board': board}
-    cros_lib.OldRunCommand(
+    cros_lib.RunCommand(
         ['sudo', 'mkdir', '-p', os.path.dirname(keywords_file)],
         enter_chroot=True, cwd=cwd)
-    cros_lib.OldRunCommand(
+    cros_lib.RunCommand(
         ['sudo', 'tee', keywords_file], input='=%s\n' % chrome_atom,
         enter_chroot=True, cwd=cwd)
     return chrome_atom
@@ -558,7 +556,7 @@ def UprevPackages(buildroot, board, overlays):
   cwd = os.path.join(buildroot, 'src', 'scripts')
   chroot_overlays = [
       cros_lib.ReinterpretPathForChroot(path) for path in overlays ]
-  cros_lib.OldRunCommand(
+  cros_lib.RunCommand(
       ['../../chromite/buildbot/cros_mark_as_stable', '--all',
        '--board=%s' % board,
        '--overlays=%s' % ':'.join(chroot_overlays),
@@ -579,7 +577,7 @@ def UprevPush(buildroot, board, overlays, dryrun):
     cmd.append('--dryrun')
 
   cmd.append('push')
-  cros_lib.OldRunCommand(cmd, cwd=cwd)
+  cros_lib.RunCommand(cmd, cwd=cwd)
 
 
 def AddPackagesForPrebuilt(filename):
@@ -703,7 +701,7 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
   if git_sync:
     cmd.extend(['--git-sync'])
   cmd.extend(extra_args)
-  cros_lib.OldRunCommand(cmd, cwd=cwd)
+  cros_lib.RunCommand(cmd, cwd=cwd)
 
 
 def GenerateBreakpadSymbols(buildroot, board):

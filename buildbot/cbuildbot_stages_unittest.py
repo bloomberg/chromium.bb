@@ -28,6 +28,7 @@ from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_test_lib
 
 
 # pylint: disable=E1120,W0212,R0904
@@ -100,12 +101,13 @@ class BuilderStageTest(AbstractStageTest):
 
   def testGetPortageEnvVar(self):
     """Basic test case for _GetPortageEnvVar function."""
-    self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
     envvar = 'EXAMPLE'
-    cros_lib.OldRunCommand(mox.And(mox.IsA(list), mox.In(envvar)),
-                           cwd='%s/src/scripts' % self.build_root,
-                           redirect_stdout=True, enter_chroot=True,
-                           error_ok=True).AndReturn('RESULT\n')
+    obj = cros_test_lib.EasyAttr(output='RESULT\n')
+    cros_lib.RunCommand(mox.And(mox.IsA(list), mox.In(envvar)),
+                        cwd='%s/src/scripts' % self.build_root,
+                        redirect_stdout=True, enter_chroot=True,
+                        error_ok=True).AndReturn(obj)
     self.mox.ReplayAll()
     stage = self.ConstructStage()
     board = self.build_config['board']
@@ -454,7 +456,6 @@ class VMTestStageTest(AbstractStageTest):
     self.build_config = config.config[self.bot_id].copy()
     self.build_config['vm_tests'] = constants.FULL_AU_TEST_TYPE
 
-    self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'RunTestSuite')
     self.mox.StubOutWithMock(commands, 'CreateTestRoot')
     self.mox.StubOutWithMock(tempfile, 'mkdtemp')
@@ -547,7 +548,6 @@ class HWTestStageTest(AbstractStageTest):
     self.build_config['hw_tests'] = [('test_Test',)]
     self.build_config['hw_tests_reimage'] = True
 
-    self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
     self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
@@ -571,7 +571,6 @@ class HWTestStageTest(AbstractStageTest):
     self.build_config['hw_tests'] = [('test_Test', 'abc',)]
     self.build_config['hw_tests_reimage'] = True
 
-    self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
     self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
@@ -595,7 +594,6 @@ class HWTestStageTest(AbstractStageTest):
     self.build_config['hw_tests'] = None
     self.build_config['hw_tests_reimage'] = True
 
-    self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
     self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
@@ -611,7 +609,6 @@ class HWTestStageTest(AbstractStageTest):
     self.build_config['hw_tests'] = [('test_Test',), ('test_Test2',)]
     self.build_config['hw_tests_reimage'] = True
 
-    self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
     self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
@@ -641,7 +638,6 @@ class HWTestStageTest(AbstractStageTest):
     self.build_config['hw_tests'] = [('test_Test',)]
     self.build_config['hw_tests_reimage'] = False
 
-    self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
     self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
@@ -663,7 +659,6 @@ class HWTestStageTest(AbstractStageTest):
     self.build_config['hw_tests_reimage'] = True
     self.build_config['remote_ip'] = self.options.remote_ip
 
-    self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
     self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
@@ -930,6 +925,21 @@ class BuildTargetStageTest(AbstractStageTest):
     self.RunStage()
     self.mox.VerifyAll()
 
+
+def _replace_archive_path(functor):
+  # If/when mox grows the ability to replace parts of a module selectively,
+  # use that and kill this.
+  # Till then, we just mutate the module and restore it on the way out.
+  def f(self):
+    original = stages.DEFAULT_ARCHIVE_PATH
+    try:
+      stages.DEFAULT_ARCHIVE_PATH = self.tempdir
+      return functor(self)
+    finally:
+      stages.DEFAULT_ARCHIVE_PATH = original
+  return cros_test_lib.tempdir_decorator(f)
+
+
 class ArchiveStageTest(AbstractStageTest):
 
   def setUp(self):
@@ -943,6 +953,7 @@ class ArchiveStageTest(AbstractStageTest):
   def ConstructStage(self):
     return stages.ArchiveStage(self.bot_id, self.options, self._build_config)
 
+  @_replace_archive_path
   def testArchive(self):
     """Simple did-it-run test."""
     self.mox.StubOutWithMock(stages.ArchiveStage, 'GetVersion')
@@ -1204,11 +1215,6 @@ class BuildStagesResultsTest(unittest.TestCase):
         cros_lib.RunCommandError(
             'Command "/bin/false /nosuchdir" failed.\n',
             ['/bin/false', '/nosuchdir'], error_code=2), time=4)
-    results_lib.Results.Record(
-        'FailOldRunCommand',
-        cros_lib.RunCommandException(
-            'Command "[\'/bin/false\', \'/nosuchdir\']" failed.\n',
-            ['/bin/false', '/nosuchdir']), time=5)
 
     results = StringIO.StringIO()
 
@@ -1225,8 +1231,6 @@ class BuildStagesResultsTest(unittest.TestCase):
         "** FAIL Fail (0:00:03) with Exception\n"
         "************************************************************\n"
         "** FAIL FailRunCommand (0:00:04) in /bin/false\n"
-        "************************************************************\n"
-        "** FAIL FailOldRunCommand (0:00:05) in /bin/false\n"
         "************************************************************\n")
 
     expectedLines = expectedResults.split('\n')
@@ -1255,12 +1259,6 @@ class BuildStagesResultsTest(unittest.TestCase):
             'Command "/bin/false /nosuchdir" failed.\n',
             ['/bin/false', '/nosuchdir'], error_code=2),
         'FailRunCommand msg', time=4)
-    results_lib.Results.Record(
-        'FailOldRunCommand',
-        cros_lib.RunCommandException(
-            'Command "[\'/bin/false\', \'/nosuchdir\']" failed.\n',
-            ['/bin/false', '/nosuchdir']),
-        'FailOldRunCommand msg', time=5)
 
     results = StringIO.StringIO()
 
@@ -1277,8 +1275,6 @@ class BuildStagesResultsTest(unittest.TestCase):
         "** FAIL Fail (0:00:03) with Exception\n"
         "************************************************************\n"
         "** FAIL FailRunCommand (0:00:04) in /bin/false\n"
-        "************************************************************\n"
-        "** FAIL FailOldRunCommand (0:00:05) in /bin/false\n"
         "************************************************************\n"
         "\n"
         "Build failed with:\n"
