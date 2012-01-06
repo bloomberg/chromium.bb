@@ -4894,6 +4894,8 @@
                 ['include', '^browser/ui/views/dropdown_bar_host_gtk.cc'],
                 ['include', '^browser/ui/views/dropdown_bar_view.cc'],
                 ['include', '^browser/ui/views/dropdown_bar_view.h'],
+                ['include', '^browser/ui/views/edit_search_engine_dialog.cc'],
+                ['include', '^browser/ui/views/edit_search_engine_dialog.h'],
                 ['include', '^browser/ui/views/event_utils.cc'],
                 ['include', '^browser/ui/views/event_utils.h'],
                 ['include', '^browser/ui/views/extensions/browser_action_drag_data.cc'],
@@ -5100,10 +5102,12 @@
                 ['exclude', '^browser/extensions/key_identifier_conversion_views.h'],
               ],
             }],
-            # This Views file has a GTK equivalent, so we cannot use both.
+            # These Views files have a GTK equivalent, so we cannot use both.
             ['toolkit_uses_gtk==1', {
               'sources/': [
                 ['exclude', '^browser/notifications/balloon_collection_views.cc'],
+                ['exclude', '^browser/ui/views/edit_search_engine_dialog.cc'],
+                ['exclude', '^browser/ui/views/edit_search_engine_dialog.h'],
               ],
             }],
             # These GTK files haven't been ported to views, while ChromeOS has

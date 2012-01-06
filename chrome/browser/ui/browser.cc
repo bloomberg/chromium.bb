@@ -4056,7 +4056,9 @@ void Browser::ConfirmSetDefaultSearchProvider(WebContents* web_contents,
 
 void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,
                                        Profile* profile) {
-#if defined(OS_CHROMEOS) || defined(USE_AURA)
+#if defined(USE_AURA)
+  window()->ConfirmAddSearchProvider(template_url, profile);
+#elif defined(OS_CHROMEOS)
   // Use a WebUI implementation of the dialog.
   browser::ConfirmAddSearchProvider(template_url, profile);
 #else

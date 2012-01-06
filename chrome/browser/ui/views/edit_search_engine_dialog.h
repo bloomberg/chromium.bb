@@ -11,8 +11,6 @@
 #define CHROME_BROWSER_UI_VIEWS_EDIT_SEARCH_ENGINE_DIALOG_H_
 #pragma once
 
-#include <windows.h>
-
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -53,10 +51,9 @@ class EditSearchEngineDialog : public views::TextfieldController,
   // Updates whether the user can accept the dialog as well as updating image
   // views showing whether value is valid.
   virtual void ContentsChanged(views::Textfield* sender,
-                               const std::wstring& new_contents);
+                               const string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const views::KeyEvent& key_event);
-
+                              const views::KeyEvent& key_event) OVERRIDE;
  private:
   void Init();
 
@@ -65,7 +62,7 @@ class EditSearchEngineDialog : public views::TextfieldController,
 
   // Creates a text field with the specified text. If |lowercase| is true, the
   // Textfield is configured to map all input to lower case.
-  views::Textfield* CreateTextfield(const std::wstring& text, bool lowercase);
+  views::Textfield* CreateTextfield(const string16& text, bool lowercase);
 
   // Invokes UpdateImageView for each of the images views.
   void UpdateImageViews();
@@ -76,9 +73,6 @@ class EditSearchEngineDialog : public views::TextfieldController,
   void UpdateImageView(views::ImageView* image_view,
                        bool is_valid,
                        int invalid_message_id);
-
-  // Used to parent window to. May be NULL or an invalid window.
-  HWND parent_;
 
   // View containing the buttons, text fields ...
   views::View* view_;

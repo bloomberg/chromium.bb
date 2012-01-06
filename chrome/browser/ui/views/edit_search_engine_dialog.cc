@@ -31,8 +31,8 @@ using views::Textfield;
 namespace {
 // Converts a URL as understood by TemplateURL to one appropriate for display
 // to the user.
-std::wstring GetDisplayURL(const TemplateURL& turl) {
-  return turl.url() ? turl.url()->DisplayURL() : std::wstring();
+string16 GetDisplayURL(const TemplateURL& turl) {
+  return turl.url() ? turl.url()->DisplayURL() : string16();
 }
 }  // namespace
 
@@ -109,7 +109,7 @@ views::View* EditSearchEngineDialog::GetContentsView() {
 }
 
 void EditSearchEngineDialog::ContentsChanged(Textfield* sender,
-                                             const std::wstring& new_contents) {
+                                             const string16& new_contents) {
   GetDialogClientView()->UpdateDialogButtons();
   UpdateImageViews();
 }
@@ -132,9 +132,9 @@ void EditSearchEngineDialog::Init() {
     // occasionally we need to update the URL of prepopulated TemplateURLs.
     url_tf_->SetReadOnly(controller_->template_url()->prepopulate_id() != 0);
   } else {
-    title_tf_ = CreateTextfield(std::wstring(), false);
-    keyword_tf_ = CreateTextfield(std::wstring(), true);
-    url_tf_ = CreateTextfield(std::wstring(), false);
+    title_tf_ = CreateTextfield(string16(), false);
+    keyword_tf_ = CreateTextfield(string16(), true);
+    url_tf_ = CreateTextfield(string16(), false);
   }
   title_iv_ = new ImageView();
   keyword_iv_ = new ImageView();
@@ -204,13 +204,14 @@ void EditSearchEngineDialog::Init() {
   // In order to fix this problem we transform the substring "%s" so that it
   // is displayed correctly when rendered in an RTL context.
   layout->StartRowWithPadding(0, 2, 0, unrelated_y);
-  std::wstring description = UTF16ToWide(l10n_util::GetStringUTF16(
-      IDS_SEARCH_ENGINES_EDITOR_URL_DESCRIPTION_LABEL));
+  string16 description = l10n_util::GetStringUTF16(
+      IDS_SEARCH_ENGINES_EDITOR_URL_DESCRIPTION_LABEL);
   if (base::i18n::IsRTL()) {
-    const std::wstring reversed_percent(L"s%");
-    std::wstring::size_type percent_index =
-        description.find(L"%s", static_cast<std::wstring::size_type>(0));
-    if (percent_index != std::wstring::npos)
+    const string16 reversed_percent(ASCIIToUTF16("s%"));
+    string16::size_type percent_index =
+        description.find(ASCIIToUTF16("%s"),
+                         static_cast<string16::size_type>(0));
+    if (percent_index != string16::npos)
       description.replace(percent_index,
                           reversed_percent.length(),
                           reversed_percent);
@@ -230,10 +231,17 @@ views::Label* EditSearchEngineDialog::CreateLabel(int message_id) {
   return label;
 }
 
-Textfield* EditSearchEngineDialog::CreateTextfield(const std::wstring& text,
+Textfield* EditSearchEngineDialog::CreateTextfield(const string16& text,
                                                    bool lowercase) {
   Textfield* text_field = new Textfield(
+#if defined(USE_AURA)
+      Textfield::STYLE_DEFAULT);
+  NOTIMPLEMENTED();   // TODO(beng): support lowercase mode in
+                      //             NativeTextfieldViews.
+                      //             http://crbug.com/109308
+#else
       lowercase ? Textfield::STYLE_LOWERCASE : Textfield::STYLE_DEFAULT);
+#endif
   text_field->SetText(text);
   text_field->SetController(this);
   return text_field;
