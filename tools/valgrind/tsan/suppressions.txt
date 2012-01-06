@@ -556,13 +556,16 @@
   fun:media::FFmpegVideoDecoder::Decode*
 }
 {
-   bug_95509
-   ThreadSanitizer:Race
-   fun:base::SyncSocket::Close
-   fun:AudioRendererImpl::OnStop
-   fun:media::AudioRendererBase::Stop
-   fun:media::CompositeFilter::CallFilter
-   fun:media::CompositeFilter::SerialCallback
+  bug_95509
+  ThreadSanitizer:Race
+  fun:base::SyncSocket::Close
+  fun:AudioDevice::AudioSocket::Close
+  fun:AudioDevice::ShutDownAudioThread
+  fun:AudioDevice::Stop
+  fun:AudioRendererImpl::OnStop
+  fun:media::AudioRendererBase::Stop
+  fun:media::CompositeFilter::CallFilter
+  fun:media::CompositeFilter::SerialCallback
 }
 {
   bug_100020
