@@ -11,6 +11,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/dialog_style.h"
@@ -25,6 +26,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -186,8 +188,14 @@ bool CloudPrintSigninDelegate::ShouldShowDialogTitle() const {
   return false;
 }
 
-void CreateCloudPrintSigninDialogImpl(WebContents* parent_tab) {
+void CreateCloudPrintSigninDialogImpl(int render_process_id,
+                                      int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  WebContents* parent_tab =
+      tab_util::GetWebContentsByID(render_process_id, render_view_id);
+  if (!parent_tab)
+    return;
   HtmlDialogUIDelegate* dialog_delegate =
       new CloudPrintSigninDelegate(parent_tab);
   BrowserList::GetLastActive()->BrowserShowHtmlDialog(dialog_delegate,
@@ -200,6 +208,8 @@ void CreateCloudPrintSigninDialog(WebContents* parent_tab) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&CreateCloudPrintSigninDialogImpl, parent_tab));
+      base::Bind(&CreateCloudPrintSigninDialogImpl,
+                 parent_tab->GetRenderProcessHost()->GetID(),
+                 parent_tab->GetRenderViewHost()->routing_id()));
 }
 }  // namespace cloud_print_signin_dialog
