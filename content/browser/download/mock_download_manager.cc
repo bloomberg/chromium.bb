@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,7 @@ void MockDownloadManager::StartDownload(int32 id) {
 void MockDownloadManager::UpdateDownload(int32 download_id,
                                          int64 bytes_so_far,
                                          int64 bytes_per_sec,
-                                         std::string hash_state) {
+                                         const std::string& hash_state) {
 }
 
 void MockDownloadManager::OnResponseCompleted(int32 download_id, int64 size,
@@ -68,7 +68,7 @@ void MockDownloadManager::CancelDownload(int32 download_id) {
 
 void MockDownloadManager::OnDownloadInterrupted(int32 download_id,
                                                 int64 size,
-                                                std::string hash_state,
+                                                const std::string& hash_state,
                                                 InterruptReason reason) {
 }
 

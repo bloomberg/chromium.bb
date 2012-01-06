@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -425,7 +425,7 @@ void DownloadManagerImpl::ContinueDownloadWithPath(
 void DownloadManagerImpl::UpdateDownload(int32 download_id,
                                          int64 bytes_so_far,
                                          int64 bytes_per_sec,
-                                         std::string hash_state) {
+                                         const std::string& hash_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadMap::iterator it = active_downloads_.find(download_id);
   if (it != active_downloads_.end()) {
@@ -624,7 +624,7 @@ void DownloadManagerImpl::DownloadCancelled(DownloadItem* download) {
 
 void DownloadManagerImpl::OnDownloadInterrupted(int32 download_id,
                                                 int64 size,
-                                                std::string hash_state,
+                                                const std::string& hash_state,
                                                 InterruptReason reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

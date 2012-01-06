@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -110,7 +110,7 @@ class CONTENT_EXPORT DownloadManager
   virtual void UpdateDownload(int32 download_id,
                               int64 bytes_so_far,
                               int64 bytes_per_sec,
-                              std::string hash_state) = 0;
+                              const std::string& hash_state) = 0;
 
   // |download_id| is the ID of the download.
   // |size| is the number of bytes that have been downloaded.
@@ -131,7 +131,7 @@ class CONTENT_EXPORT DownloadManager
   // |reason| is a download interrupt reason code.
   virtual void OnDownloadInterrupted(int32 download_id,
                                      int64 size,
-                                     std::string hash_state,
+                                     const std::string& hash_state,
                                      InterruptReason reason) = 0;
 
   // Called when the download is renamed to its final name.

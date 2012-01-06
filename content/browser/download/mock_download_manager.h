@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,13 +33,13 @@ class MockDownloadManager : public content::DownloadManager {
   virtual void UpdateDownload(int32 download_id,
                               int64 bytes_so_far,
                               int64 bytes_per_sec,
-                              std::string hash_state) OVERRIDE;
+                              const std::string& hash_state) OVERRIDE;
   virtual void OnResponseCompleted(int32 download_id, int64 size,
                                    const std::string& hash) OVERRIDE;
   virtual void CancelDownload(int32 download_id) OVERRIDE;
   virtual void OnDownloadInterrupted(int32 download_id,
                                      int64 size,
-                                     std::string hash_state,
+                                     const std::string& hash_state,
                                      InterruptReason reason) OVERRIDE;
   virtual void OnDownloadRenamedToFinalName(int download_id,
                                             const FilePath& full_path,
