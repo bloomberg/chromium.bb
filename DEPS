@@ -7,6 +7,7 @@ vars = {
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
   "webkit_revision": "104316",
   "chromium_git": "http://git.chromium.org/git",
+  "chromiumos_git": "http://git.chromium.org/chromiumos",
   "swig_revision": "69281",
   "nacl_revision": "7519",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
@@ -414,6 +415,12 @@ deps_os = {
 
     "src/third_party/WebKit/Tools/gdb":
       Var("webkit_trunk") + "/Tools/gdb@" + Var("webkit_revision"),
+
+    # For Chrome OS.
+    "src/third_party/cros":
+      Var("chromiumos_git") + "/platform/cros.git@c709d59a",
+    "src/third_party/cros_system_api":
+      Var("chromiumos_git") + "/platform/system_api.git@58d34158",
   },
 }
 
