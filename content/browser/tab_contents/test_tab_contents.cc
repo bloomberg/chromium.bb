@@ -18,6 +18,7 @@
 #include "webkit/forms/password_form.h"
 
 using content::NavigationEntry;
+using content::WebContents;
 
 TestTabContents::TestTabContents(content::BrowserContext* browser_context,
                                  SiteInstance* instance)
@@ -82,7 +83,7 @@ bool TestTabContents::CreateRenderViewForRenderManager(
   return true;
 }
 
-TabContents* TestTabContents::Clone() {
+WebContents* TestTabContents::Clone() {
   TabContents* tc = new TestTabContents(
       GetBrowserContext(),
       SiteInstance::CreateSiteInstance(GetBrowserContext()));

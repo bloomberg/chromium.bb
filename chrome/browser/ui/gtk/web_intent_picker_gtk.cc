@@ -26,11 +26,11 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -248,11 +248,11 @@ void RemoveAllHelper(GtkWidget* widget, gpointer data) {
 }
 
 WebContents* WebIntentPickerGtk::SetInlineDisposition(const GURL& url) {
-  TabContents* tab_contents = new TabContents(
+  WebContents* web_contents = WebContents::Create(
       browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
-  inline_disposition_tab_contents_.reset(new TabContentsWrapper(tab_contents));
+  inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
   inline_disposition_delegate_.reset(new InlineDispositionDelegate);
-  tab_contents->SetDelegate(inline_disposition_delegate_.get());
+  web_contents->SetDelegate(inline_disposition_delegate_.get());
   tab_contents_container_.reset(new TabContentsContainerGtk(NULL));
   tab_contents_container_->SetTab(inline_disposition_tab_contents_.get());
 

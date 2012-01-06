@@ -25,6 +25,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/bindings_policy.h"
@@ -244,7 +245,7 @@ void InterstitialPage::Hide() {
   NavigationEntry* entry = tab_->GetController().GetActiveEntry();
   if (!new_navigation_ && should_revert_tab_title_) {
     entry->SetTitle(original_tab_title_);
-    tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
+    tab_->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TITLE);
   }
 
   content::NotificationService::current()->Notify(
@@ -396,7 +397,7 @@ void InterstitialPage::UpdateTitle(RenderViewHost* render_view_host,
   // TODO(evan): make use of title_direction.
   // http://code.google.com/p/chromium/issues/detail?id=27094
   entry->SetTitle(title);
-  tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
+  tab_->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TITLE);
 }
 
 content::RendererPreferences InterstitialPage::GetRendererPrefs(

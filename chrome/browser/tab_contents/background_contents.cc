@@ -16,8 +16,8 @@
 #include "content/browser/browsing_instance.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/gfx/rect.h"
 
 using content::WebContents;
@@ -30,11 +30,11 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
       site_instance->browsing_instance()->browser_context());
 
   // TODO(rafaelw): Implement correct session storage.
-  tab_contents_.reset(new TabContents(
+  web_contents_.reset(WebContents::Create(
       profile_, site_instance, routing_id, NULL, NULL));
-  tab_contents_->SetViewType(chrome::VIEW_TYPE_BACKGROUND_CONTENTS);
-  tab_contents_->SetDelegate(this);
-  content::WebContentsObserver::Observe(tab_contents_.get());
+  web_contents_->SetViewType(chrome::VIEW_TYPE_BACKGROUND_CONTENTS);
+  web_contents_->SetDelegate(this);
+  content::WebContentsObserver::Observe(web_contents_.get());
 
   // Close ourselves when the application is shutting down.
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
@@ -54,7 +54,7 @@ BackgroundContents::BackgroundContents()
 }
 
 BackgroundContents::~BackgroundContents() {
-  if (!tab_contents_.get())   // Will be null for unit tests.
+  if (!web_contents_.get())   // Will be null for unit tests.
     return;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
@@ -62,12 +62,8 @@ BackgroundContents::~BackgroundContents() {
       content::Details<BackgroundContents>(this));
 }
 
-content::WebContents* BackgroundContents::web_contents() const {
-  return tab_contents_.get();
-}
-
 const GURL& BackgroundContents::GetURL() const {
-  return tab_contents_.get() ? tab_contents_->GetURL() : GURL::EmptyGURL();
+  return web_contents_.get() ? web_contents_->GetURL() : GURL::EmptyGURL();
 }
 
 void BackgroundContents::CloseContents(WebContents* source) {

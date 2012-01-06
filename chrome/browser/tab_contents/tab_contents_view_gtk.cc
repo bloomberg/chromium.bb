@@ -30,6 +30,7 @@
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
+using content::WebContents;
 
 namespace {
 
@@ -268,6 +269,10 @@ void TabContentsViewGtk::RemoveOverlayView() {
 
 void TabContentsViewGtk::SetFocusedWidget(GtkWidget* widget) {
   focus_store_.SetWidget(widget);
+}
+
+WebContents* TabContentsViewGtk::web_contents() {
+  return tab_contents_;
 }
 
 void TabContentsViewGtk::UpdateDragCursor(WebDragOperation operation) {

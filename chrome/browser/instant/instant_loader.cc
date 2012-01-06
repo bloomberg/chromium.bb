@@ -35,7 +35,6 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
@@ -47,6 +46,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "net/http/http_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1070,9 +1070,8 @@ void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
 }
 
 void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
-  TabContents* new_contents =
-      new TabContents(
-          tab_contents->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+  WebContents* new_contents = WebContents::Create(
+      tab_contents->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   preview_contents_.reset(new TabContentsWrapper(new_contents));
   AddPreviewUsageForHistogram(template_url_id_, PREVIEW_CREATED, group_);
   preview_tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));

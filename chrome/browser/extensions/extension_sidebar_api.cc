@@ -131,7 +131,8 @@ bool SidebarFunction::RunImpl() {
     return false;
 
   std::string content_id(GetExtension()->id());
-  return RunImpl(tab_contents->tab_contents(), content_id, *details);
+  return RunImpl(static_cast<TabContents*>(tab_contents->web_contents()),
+                 content_id, *details);
 }
 
 

@@ -20,12 +20,12 @@
 #include "chrome/browser/ui/views/tabs/native_view_photobooth.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/animation/animation.h"
@@ -381,14 +381,14 @@ void TabDragController2::InitTabDragData(BaseTab* tab,
   registrar_.Add(
       this,
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::Source<WebContents>(drag_data->contents->tab_contents()));
+      content::Source<WebContents>(drag_data->contents->web_contents()));
 
   // We need to be the delegate so we receive messages about stuff, otherwise
   // our dragged TabContents may be replaced and subsequently
   // collected/destroyed while the drag is in process, leading to nasty crashes.
   drag_data->original_delegate =
-      drag_data->contents->tab_contents()->GetDelegate();
-  drag_data->contents->tab_contents()->SetDelegate(this);
+      drag_data->contents->web_contents()->GetDelegate();
+  drag_data->contents->web_contents()->SetDelegate(this);
 }
 
 void TabDragController2::Drag() {
@@ -491,7 +491,7 @@ void TabDragController2::Observe(
   DCHECK_EQ(type, content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
   WebContents* destroyed_contents = content::Source<WebContents>(source).ptr();
   for (size_t i = 0; i < drag_data_.size(); ++i) {
-    if (drag_data_[i].contents->tab_contents() == destroyed_contents) {
+    if (drag_data_[i].contents->web_contents() == destroyed_contents) {
       // One of the tabs we're dragging has been destroyed. Cancel the drag.
       if (destroyed_contents->GetDelegate() == this)
         destroyed_contents->SetDelegate(NULL);
@@ -839,12 +839,12 @@ void TabDragController2::Attach(TabStrip* attached_tabstrip,
     // Remove ourselves as the delegate now that the dragged TabContents is
     // being inserted back into a Browser.
     for (size_t i = 0; i < drag_data_.size(); ++i) {
-      drag_data_[i].contents->tab_contents()->SetDelegate(NULL);
+      drag_data_[i].contents->web_contents()->SetDelegate(NULL);
       drag_data_[i].original_delegate = NULL;
     }
 
     // Return the TabContents' to normalcy.
-    source_dragged_contents()->tab_contents()->SetCapturingContents(false);
+    source_dragged_contents()->web_contents()->SetCapturingContents(false);
 
     // Inserting counts as a move. We don't want the tabs to jitter when the
     // user moves the tab immediately after attaching it.
@@ -899,7 +899,7 @@ void TabDragController2::Attach(TabStrip* attached_tabstrip,
 void TabDragController2::Detach() {
   // Prevent the TabContents' HWND from being hidden by any of the model
   // operations performed during the drag.
-  source_dragged_contents()->tab_contents()->SetCapturingContents(true);
+  source_dragged_contents()->web_contents()->SetCapturingContents(true);
 
   // Calculate the drag bounds.
   std::vector<gfx::Rect> drag_bounds;
@@ -922,7 +922,7 @@ void TabDragController2::Detach() {
     attached_model->DetachTabContentsAt(index);
 
     // Detaching resets the delegate, but we still want to be the delegate.
-    drag_data_[i].contents->tab_contents()->SetDelegate(this);
+    drag_data_[i].contents->web_contents()->SetDelegate(this);
 
     // Detaching may end up deleting the tab, drop references to it.
     drag_data_[i].attached_tab = NULL;
@@ -1274,8 +1274,8 @@ void TabDragController2::CompleteDrag() {
 void TabDragController2::ResetDelegates() {
   for (size_t i = 0; i < drag_data_.size(); ++i) {
     if (drag_data_[i].contents &&
-        drag_data_[i].contents->tab_contents()->GetDelegate() == this) {
-      drag_data_[i].contents->tab_contents()->SetDelegate(
+        drag_data_[i].contents->web_contents()->GetDelegate() == this) {
+      drag_data_[i].contents->web_contents()->SetDelegate(
           drag_data_[i].original_delegate);
     }
   }
@@ -1292,10 +1292,10 @@ void TabDragController2::CreateDraggedView(
   // TabContents.
   NativeViewPhotobooth* photobooth =
       NativeViewPhotobooth::Create(
-          source_dragged_contents()->tab_contents()->GetNativeView());
+          source_dragged_contents()->web_contents()->GetNativeView());
 
   gfx::Rect content_bounds;
-  source_dragged_contents()->tab_contents()->GetContainerBounds(
+  source_dragged_contents()->web_contents()->GetContainerBounds(
       &content_bounds);
 
   std::vector<views::View*> renderers;

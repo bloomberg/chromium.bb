@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
+#include "base/property_bag.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/browser_dialogs.h"
@@ -15,8 +16,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/size.h"
@@ -291,7 +292,7 @@ void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
 }
 
 - (void)loadDialogContents {
-  contentsWrapper_.reset(new TabContentsWrapper(new TabContents(
+  contentsWrapper_.reset(new TabContentsWrapper(WebContents::Create(
       delegate_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
   [[self window]
       setContentView:contentsWrapper_->web_contents()->GetNativeView()];

@@ -35,6 +35,7 @@
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/invalidate_type.h"
 #include "content/public/common/page_zoom.h"
 #include "grit/generated_resources.h"
 
@@ -599,7 +600,7 @@ HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
 
 void ChromeActiveDocument::OnNavigationStateChanged(
     int flags, const NavigationInfo& nav_info) {
-  // TODO(joshia): handle INVALIDATE_TAB,INVALIDATE_LOAD etc.
+  // TODO(joshia): handle INVALIDATE_TYPE_TAB,INVALIDATE_TYPE_LOAD etc.
   DVLOG(1) << __FUNCTION__
            << "\n Flags: " << flags
            << ", Url: " << nav_info.url
@@ -1384,13 +1385,13 @@ bool ChromeActiveDocument::IsNewNavigation(
   // the renderer(WebKit). Condition 1 below has to be true along with the
   // any of the other conditions below.
   // 1. The navigation notification flags passed in as the flags parameter
-  //    is not INVALIDATE_LOAD which indicates that the loading state of the
-  //    tab changed.
+  //    is not INVALIDATE_TYPE_LOAD which indicates that the loading state of
+  //    the tab changed.
   // 2. The navigation index is greater than 0 which means that a top level
   //    navigation was initiated on the current external tab.
   // 3. The navigation type has changed.
   // 4. The url or the referrer are different.
-  if (flags == TabContents::INVALIDATE_LOAD)
+  if (flags == content::INVALIDATE_TYPE_LOAD)
     return false;
 
   if (new_navigation_info.navigation_index <= 0)

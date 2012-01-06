@@ -1940,7 +1940,7 @@ TEST_F(NavigationControllerTest, CloneAndGoBack) {
   NavigateAndCommit(url1);
   NavigateAndCommit(url2);
 
-  scoped_ptr<TabContents> clone(controller().GetWebContents()->Clone());
+  scoped_ptr<WebContents> clone(controller().GetWebContents()->Clone());
 
   ASSERT_EQ(2, clone->GetController().GetEntryCount());
   EXPECT_TRUE(clone->GetController().NeedsReload());
@@ -1962,7 +1962,7 @@ TEST_F(NavigationControllerTest, CloneOmitsInterstitials) {
   interstitial_entry->set_page_type(content::PAGE_TYPE_INTERSTITIAL);
   controller().AddTransientEntry(interstitial_entry);
 
-  scoped_ptr<TabContents> clone(controller().GetWebContents()->Clone());
+  scoped_ptr<WebContents> clone(controller().GetWebContents()->Clone());
 
   ASSERT_EQ(2, clone->GetController().GetEntryCount());
 }

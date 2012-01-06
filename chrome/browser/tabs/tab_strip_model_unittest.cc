@@ -1455,8 +1455,8 @@ TEST_F(TabStripModelTest, AddTabContents_ForgetOpeners) {
 
 // Added for http://b/issue?id=958960
 TEST_F(TabStripModelTest, AppendContentsReselectionTest) {
-  TabContents* fake_destinations_tab =
-      new TabContents(profile(), NULL, 0, NULL, NULL);
+  WebContents* fake_destinations_tab =
+      WebContents::Create(profile(), NULL, 0, NULL, NULL);
   TabContentsWrapper wrapper(fake_destinations_tab);
   TabStripDummyDelegate delegate(&wrapper);
   TabStripModel tabstrip(&delegate, profile());

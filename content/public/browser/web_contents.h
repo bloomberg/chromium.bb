@@ -179,7 +179,7 @@ class WebContents : public PageNavigator {
   virtual bool IsBeingDestroyed() const  = 0;
 
   // Convenience method for notifying the delegate of a navigation state
-  // change. See WebContentsDelegate.
+  // change. See InvalidateType enum.
   virtual void NotifyNavigationStateChanged(unsigned changed_flags) = 0;
 
   // Invoked when the tab contents becomes selected. If you override, be sure
@@ -209,9 +209,9 @@ class WebContents : public PageNavigator {
   // Stop any pending navigation.
   virtual void Stop() = 0;
 
-  // Creates a new TabContents with the same state as this one. The returned
+  // Creates a new WebContents with the same state as this one. The returned
   // heap-allocated pointer is owned by the caller.
-  virtual TabContents* Clone() = 0;
+  virtual WebContents* Clone() = 0;
 
   // Shows the page info.
   virtual void ShowPageInfo(const GURL& url,

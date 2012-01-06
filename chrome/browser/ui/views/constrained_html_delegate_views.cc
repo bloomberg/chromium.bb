@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -109,15 +109,15 @@ ConstrainedHtmlDelegateViews::ConstrainedHtmlDelegateViews(
       closed_via_webui_(false),
       release_tab_on_close_(false) {
   CHECK(delegate);
-  TabContents* tab_contents =
-      new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
-  html_tab_contents_.reset(new TabContentsWrapper(tab_contents));
-  tab_contents->SetDelegate(this);
+  WebContents* web_contents =
+      WebContents::Create(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
+  html_tab_contents_.reset(new TabContentsWrapper(web_contents));
+  web_contents->SetDelegate(this);
 
   // Set |this| as a property so the ConstrainedHtmlUI can retrieve it.
   ConstrainedHtmlUI::GetPropertyAccessor().SetProperty(
       html_tab_contents_->web_contents()->GetPropertyBag(), this);
-  tab_contents->GetController().LoadURL(delegate->GetDialogContentURL(),
+  web_contents->GetController().LoadURL(delegate->GetDialogContentURL(),
                                         content::Referrer(),
                                         content::PAGE_TRANSITION_START_PAGE,
                                         std::string());

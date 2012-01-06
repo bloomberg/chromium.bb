@@ -78,8 +78,8 @@ class WebPageDomView : public DOMView {
 
  protected:
   // Overriden from DOMView:
-  virtual TabContents* CreateTabContents(Profile* profile,
-                                         SiteInstance* instance) = 0;
+  virtual content::WebContents* CreateWebContents(
+      Profile* profile, SiteInstance* instance) = 0;
   WebPageDelegate* page_delegate_;
 
  private:

@@ -16,11 +16,13 @@
 #include "googleurl/src/gurl.h"
 #include "ui/views/events/event.h"
 
+using content::WebContents;
+
 namespace chromeos {
 
 ///////////////////////////////////////////////////////////////////////////////
 // HTMLPageDomView
-TabContents* HTMLPageDomView::CreateTabContents(Profile* profile,
+WebContents* HTMLPageDomView::CreateWebContents(Profile* profile,
                                                 SiteInstance* instance) {
   return new WizardWebPageViewTabContents(profile,
                                           instance,

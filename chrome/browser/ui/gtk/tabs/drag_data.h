@@ -29,7 +29,7 @@ struct DraggedTabData {
                  bool mini);
   ~DraggedTabData();
 
-  // Resetting the delegate of |contents_->tab_contents()| to
+  // Resetting the delegate of |contents_->web_contents()| to
   // |original_delegate_|.
   void ResetDelegate();
 

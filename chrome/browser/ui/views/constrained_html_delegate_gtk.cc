@@ -4,16 +4,19 @@
 
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 
+#include "base/property_bag.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/native_widget_gtk.h"
+
+using content::WebContents;
 
 // ConstrainedHtmlDelegateGtk works with ConstrainedWindowGtk to present
 // a TabContents in a ContraintedHtmlUI.
@@ -45,7 +48,7 @@ class ConstrainedHtmlDelegateGtk : public views::NativeWidgetGtk,
     return GetNativeView();
   }
   virtual GtkWidget* GetFocusWidget() OVERRIDE {
-    return html_tab_contents_->tab_contents()->GetContentNativeView();
+    return html_tab_contents_->web_contents()->GetContentNativeView();
   }
   virtual void DeleteDelegate() OVERRIDE {
     if (!closed_via_webui_)
@@ -95,15 +98,15 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
       closed_via_webui_(false),
       release_tab_on_close_(false) {
   CHECK(delegate);
-  TabContents* tab_contents =
-      new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
-  html_tab_contents_.reset(new TabContentsWrapper(tab_contents));
-  tab_contents->SetDelegate(this);
+  WebContents* web_contents =
+      WebContents::Create(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
+  html_tab_contents_.reset(new TabContentsWrapper(web_contents));
+  web_contents->SetDelegate(this);
 
   // Set |this| as a property so the ConstrainedHtmlUI can retrieve it.
   ConstrainedHtmlUI::GetPropertyAccessor().SetProperty(
-      tab_contents->GetPropertyBag(), this);
-  tab_contents->GetController().LoadURL(delegate->GetDialogContentURL(),
+      web_contents->GetPropertyBag(), this);
+  web_contents->GetController().LoadURL(delegate->GetDialogContentURL(),
                                         content::Referrer(),
                                         content::PAGE_TRANSITION_START_PAGE,
                                         std::string());

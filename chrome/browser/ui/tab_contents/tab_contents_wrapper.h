@@ -76,7 +76,7 @@ class TabContentsWrapper : public content::WebContentsObserver {
  public:
   // Takes ownership of |contents|, which must be heap-allocated (as it lives
   // in a scoped_ptr) and can not be NULL.
-  explicit TabContentsWrapper(TabContents* contents);
+  explicit TabContentsWrapper(content::WebContents* contents);
   virtual ~TabContentsWrapper();
 
   // Create a TabContentsWrapper with the same state as this one. The returned
@@ -94,8 +94,7 @@ class TabContentsWrapper : public content::WebContentsObserver {
   static const TabContentsWrapper* GetCurrentWrapperForContents(
       const content::WebContents* contents);
 
-  // Returns the TabContents that this wraps.
-  TabContents* tab_contents() const { return tab_contents_.get(); }
+  // Returns the WebContents that this wraps.
   content::WebContents* web_contents() const;
 
   // Returns the Profile that is associated with this TabContentsWrapper.
@@ -193,7 +192,7 @@ class TabContentsWrapper : public content::WebContentsObserver {
  private:
   friend class PrefsTabHelperTest;
 
-  // Used to retrieve this object from |tab_contents_|, which is placed in
+  // Used to retrieve this object from |web_contents_|, which is placed in
   // its property bag to avoid adding additional interfaces.
   static base::PropertyAccessor<TabContentsWrapper*>* property_accessor();
 
@@ -264,10 +263,10 @@ class TabContentsWrapper : public content::WebContentsObserver {
   // If true, we're running the destructor.
   bool in_destructor_;
 
-  // The supporting objects need to outlive the TabContents dtor (as they may
+  // The supporting objects need to outlive the WebContents dtor (as they may
   // be called upon during its execution). As a result, this must come last
   // in the list.
-  scoped_ptr<TabContents> tab_contents_;
+  scoped_ptr<content::WebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsWrapper);
 };

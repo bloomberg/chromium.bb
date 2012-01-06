@@ -39,7 +39,7 @@ const char kRegistrationSkippedUrl[] = "cros://register/skipped";
 ///////////////////////////////////////////////////////////////////////////////
 // RegistrationDomView, protected:
 
-TabContents* RegistrationDomView::CreateTabContents(
+WebContents* RegistrationDomView::CreateWebContents(
     Profile* profile, SiteInstance* instance) {
   return new WizardWebPageViewTabContents(profile,
                                           instance,

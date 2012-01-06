@@ -53,17 +53,6 @@ class CONTENT_EXPORT TabContents
       public RenderViewHostManager::Delegate,
       public content::JavaScriptDialogDelegate {
  public:
-  // Flags passed to the WebContentsDelegate.NavigationStateChanged to tell it
-  // what has changed. Combine them to update more than one thing.
-  enum InvalidateTypes {
-    INVALIDATE_URL             = 1 << 0,  // The URL has changed.
-    INVALIDATE_TAB             = 1 << 1,  // The favicon, app icon, or crashed
-                                          // state changed.
-    INVALIDATE_LOAD            = 1 << 2,  // The loading state has changed.
-    INVALIDATE_PAGE_ACTIONS    = 1 << 3,  // Page action icons have changed.
-    INVALIDATE_TITLE           = 1 << 4,  // The title changed.
-  };
-
   // See WebContents::Create for a description of these parameters.
   TabContents(content::BrowserContext* browser_context,
               SiteInstance* site_instance,
@@ -166,7 +155,7 @@ class CONTENT_EXPORT TabContents
   virtual bool NeedToFireBeforeUnload() OVERRIDE;
   virtual RenderViewHostManager* GetRenderManagerForTesting() OVERRIDE;
   virtual void Stop() OVERRIDE;
-  virtual TabContents* Clone() OVERRIDE;
+  virtual content::WebContents* Clone() OVERRIDE;
   virtual void ShowPageInfo(const GURL& url,
                             const content::SSLStatus& ssl,
                             bool show_history) OVERRIDE;

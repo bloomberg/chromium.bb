@@ -13,11 +13,11 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/gfx/rect.h"
 
 using content::NavigationController;
@@ -91,7 +91,7 @@ void FindBarController::ChangeTabContents(TabContentsWrapper* contents) {
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
-                 content::Source<WebContents>(tab_contents_->tab_contents()));
+                 content::Source<WebContents>(tab_contents_->web_contents()));
   registrar_.Add(
       this,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -123,7 +123,7 @@ void FindBarController::Observe(int type,
     // Don't update for notifications from TabContentses other than the one we
     // are actively tracking.
     if (content::Source<WebContents>(source).ptr() ==
-        tab_contents_->tab_contents()) {
+        tab_contents_->web_contents()) {
       UpdateFindBarForCurrentResult();
       if (find_tab_helper->find_result().final_update() &&
           find_tab_helper->find_result().number_of_matches() == 0) {

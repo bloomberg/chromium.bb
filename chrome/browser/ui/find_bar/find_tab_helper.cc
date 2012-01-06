@@ -9,9 +9,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 
@@ -21,8 +21,8 @@ using content::WebContents;
 // static
 int FindTabHelper::find_request_id_counter_ = -1;
 
-FindTabHelper::FindTabHelper(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents),
+FindTabHelper::FindTabHelper(WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
       find_ui_active_(false),
       find_op_aborted_(false),
       current_find_request_id_(find_request_id_counter_++),

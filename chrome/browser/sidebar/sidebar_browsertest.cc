@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 
 using content::NavigationController;
+using content::WebContents;
 
 namespace {
 
@@ -53,26 +54,26 @@ class SidebarTest : public ExtensionBrowserTest {
   }
 
   void ShowSidebarForCurrentTab() {
-    ShowSidebar(browser()->GetSelectedTabContentsWrapper()->tab_contents());
+    ShowSidebar(browser()->GetSelectedTabContentsWrapper()->web_contents());
   }
 
   void ExpandSidebarForCurrentTab() {
-    ExpandSidebar(browser()->GetSelectedTabContentsWrapper()->tab_contents());
+    ExpandSidebar(browser()->GetSelectedTabContentsWrapper()->web_contents());
   }
 
   void CollapseSidebarForCurrentTab() {
-    CollapseSidebar(browser()->GetSelectedTabContentsWrapper()->tab_contents());
+    CollapseSidebar(browser()->GetSelectedTabContentsWrapper()->web_contents());
   }
 
   void HideSidebarForCurrentTab() {
-    HideSidebar(browser()->GetSelectedTabContentsWrapper()->tab_contents());
+    HideSidebar(browser()->GetSelectedTabContentsWrapper()->web_contents());
   }
 
   void NavigateSidebarForCurrentTabTo(const std::string& test_page) {
     GURL url = test_server()->GetURL(test_page);
 
-    TabContents* tab =
-        browser()->GetSelectedTabContentsWrapper()->tab_contents();
+    TabContents* tab = static_cast<TabContents*>(
+        browser()->GetSelectedTabContentsWrapper()->web_contents());
 
     SidebarManager* sidebar_manager = SidebarManager::GetInstance();
     SidebarContainer* sidebar_container =
@@ -87,34 +88,39 @@ class SidebarTest : public ExtensionBrowserTest {
     observer.Wait();
   }
 
-  void ShowSidebar(TabContents* tab) {
+  void ShowSidebar(WebContents* temp) {
+    TabContents* tab = static_cast<TabContents*>(temp);
     SidebarManager* sidebar_manager = SidebarManager::GetInstance();
     sidebar_manager->ShowSidebar(tab, content_id_);
   }
 
-  void ExpandSidebar(TabContents* tab) {
+  void ExpandSidebar(WebContents* temp) {
+    TabContents* tab = static_cast<TabContents*>(temp);
     SidebarManager* sidebar_manager = SidebarManager::GetInstance();
     sidebar_manager->ExpandSidebar(tab, content_id_);
-    if (browser()->GetSelectedTabContentsWrapper()->tab_contents() == tab)
+    if (browser()->GetSelectedTabContentsWrapper()->web_contents() == tab)
       EXPECT_GT(browser_view()->GetSidebarWidth(), 0);
   }
 
-  void CollapseSidebar(TabContents* tab) {
+  void CollapseSidebar(WebContents* temp) {
+    TabContents* tab = static_cast<TabContents*>(temp);
     SidebarManager* sidebar_manager = SidebarManager::GetInstance();
     sidebar_manager->CollapseSidebar(tab, content_id_);
-    if (browser()->GetSelectedTabContentsWrapper()->tab_contents() == tab)
+    if (browser()->GetSelectedTabContentsWrapper()->web_contents() == tab)
       EXPECT_EQ(0, browser_view()->GetSidebarWidth());
   }
 
-  void HideSidebar(TabContents* tab) {
+  void HideSidebar(WebContents* temp) {
+    TabContents* tab = static_cast<TabContents*>(temp);
     SidebarManager* sidebar_manager = SidebarManager::GetInstance();
     sidebar_manager->HideSidebar(tab, content_id_);
-    if (browser()->GetSelectedTabContentsWrapper()->tab_contents() == tab)
+    if (browser()->GetSelectedTabContentsWrapper()->web_contents() == tab)
       EXPECT_EQ(0, browser_view()->GetSidebarWidth());
   }
 
   TabContents* tab_contents(int i) {
-    return browser()->GetTabContentsWrapperAt(i)->tab_contents();
+    return static_cast<TabContents*>(
+        browser()->GetTabContentsWrapperAt(i)->web_contents());
   }
 
   BrowserView* browser_view() const {

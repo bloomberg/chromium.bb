@@ -53,7 +53,7 @@ class TestTabContents : public TabContents {
 
   // Returns a clone of this TestTabContents. The returned object is also a
   // TestTabContents. The caller owns the returned object.
-  virtual TabContents* Clone() OVERRIDE;
+  virtual content::WebContents* Clone() OVERRIDE;
 
   // Creates a pending navigation to the given URL with the default parameters
   // and then commits the load with a page ID one larger than any seen. This

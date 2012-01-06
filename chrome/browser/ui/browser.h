@@ -423,8 +423,8 @@ class Browser : public TabHandlerDelegate,
 
   // Add a new tab, given a TabContents. A TabContents appropriate to
   // display the last committed entry is created and returned.
-  TabContents* AddTab(TabContentsWrapper* tab_contents,
-                      content::PageTransition type);
+  content::WebContents* AddTab(TabContentsWrapper* tab_contents,
+                               content::PageTransition type);
 
   // Add a tab with its session history restored from the SessionRestore
   // system. If select is true, the tab is selected. |tab_index| gives the index
@@ -615,7 +615,7 @@ class Browser : public TabHandlerDelegate,
   void ShowDownloadsTab();
   void ShowExtensionsTab();
   void ShowAboutConflictsTab();
-  void ShowBrokenPageTab(TabContents* contents);
+  void ShowBrokenPageTab(content::WebContents* contents);
   void ShowOptionsTab(const std::string& sub_page);
   // Shows the Content Settings page for a given content type.
   void ShowContentSettingsPage(ContentSettingsType content_type);
@@ -662,8 +662,8 @@ class Browser : public TabHandlerDelegate,
   static void RegisterPrefs(PrefService* prefs);
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Helper function to run unload listeners on a TabContents.
-  static bool RunUnloadEventsHelper(TabContents* contents);
+  // Helper function to run unload listeners on a WebContents.
+  static bool RunUnloadEventsHelper(content::WebContents* contents);
 
   // Returns the Browser which contains the tab with the given
   // NavigationController, also filling in |index| (if valid) with the tab's
@@ -1151,7 +1151,7 @@ class Browser : public TabHandlerDelegate,
   void ProcessPendingUIUpdates();
 
   // Removes all entries from scheduled_updates_ whose source is contents.
-  void RemoveScheduledUpdatesFor(TabContents* contents);
+  void RemoveScheduledUpdatesFor(content::WebContents* contents);
 
   // Getters for UI ///////////////////////////////////////////////////////////
 
@@ -1238,7 +1238,8 @@ class Browser : public TabHandlerDelegate,
 
   // Depending on the disposition, return the current tab or a clone of the
   // current tab.
-  TabContents* GetOrCloneTabForDisposition(WindowOpenDisposition disposition);
+  content::WebContents* GetOrCloneTabForDisposition(
+      WindowOpenDisposition disposition);
 
   // Implementation of SupportsWindowFeature and CanSupportWindowFeature. If
   // |check_fullscreen| is true, the set of features reflect the actual state of

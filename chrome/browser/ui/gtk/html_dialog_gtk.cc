@@ -6,6 +6,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/property_bag.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -15,7 +16,7 @@
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
 using content::WebContents;
@@ -174,15 +175,15 @@ void HtmlDialogGtk::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 
 gfx::NativeWindow HtmlDialogGtk::InitDialog() {
   tab_.reset(new TabContentsWrapper(
-      new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
-  tab_->tab_contents()->SetDelegate(this);
+      WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
+  tab_->web_contents()->SetDelegate(this);
 
   // This must be done before loading the page; see the comments in
   // HtmlDialogUI.
   HtmlDialogUI::GetPropertyAccessor().SetProperty(
-      tab_->tab_contents()->GetPropertyBag(), this);
+      tab_->web_contents()->GetPropertyBag(), this);
 
-  tab_->tab_contents()->GetController().LoadURL(
+  tab_->web_contents()->GetController().LoadURL(
       GetDialogContentURL(),
       content::Referrer(),
       content::PAGE_TRANSITION_START_PAGE,

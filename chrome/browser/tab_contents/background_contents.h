@@ -43,8 +43,7 @@ class BackgroundContents : public content::WebContentsDelegate,
                      Delegate* delegate);
   virtual ~BackgroundContents();
 
-  // TODO(jam): move impl to header once this class only uses WebContents.
-  content::WebContents* web_contents() const;
+  content::WebContents* web_contents() const { return web_contents_.get(); }
   virtual const GURL& GetURL() const;
 
   // content::WebContentsDelegate implementation:
@@ -75,7 +74,7 @@ class BackgroundContents : public content::WebContentsDelegate,
   Delegate* delegate_;
 
   Profile* profile_;
-  scoped_ptr<TabContents> tab_contents_;
+  scoped_ptr<content::WebContents> web_contents_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundContents);

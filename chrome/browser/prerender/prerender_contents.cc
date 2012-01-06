@@ -27,9 +27,10 @@
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_request_details.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/gfx/rect.h"
 
@@ -236,8 +237,8 @@ void PrerenderContents::StartPrerendering(
   DCHECK(prerender_contents_.get() == NULL);
 
   prerendering_has_started_ = true;
-  TabContents* new_contents = new TabContents(profile_, NULL, MSG_ROUTING_NONE,
-                                              NULL, session_storage_namespace);
+  WebContents* new_contents = WebContents::Create(
+      profile_, NULL, MSG_ROUTING_NONE, NULL, session_storage_namespace);
   prerender_contents_.reset(new TabContentsWrapper(new_contents));
   content::WebContentsObserver::Observe(new_contents);
 
@@ -287,14 +288,14 @@ void PrerenderContents::StartPrerendering(
   if (starting_page_id_ < 0)
     starting_page_id_ = 0;
   starting_page_id_ += kPrerenderPageIdOffset;
-  prerender_contents_->tab_contents()->GetController().SetMaxRestoredPageID(
+  prerender_contents_->web_contents()->GetController().SetMaxRestoredPageID(
       starting_page_id_);
 
   tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
   new_contents->SetDelegate(tab_contents_delegate_.get());
 
   // Set the size of the prerender TabContents.
-  prerender_contents_->tab_contents()->GetView()->SizeContents(
+  prerender_contents_->web_contents()->GetView()->SizeContents(
       tab_bounds.size());
 
   // Register as an observer of the RenderViewHost so we get messages.
@@ -463,7 +464,7 @@ void PrerenderContents::Observe(int type,
         // size, is also sets itself to be visible, which would then break the
         // visibility API.
         new_render_view_host->WasResized();
-        prerender_contents_->tab_contents()->HideContents();
+        prerender_contents_->web_contents()->HideContents();
       }
       break;
     }
@@ -654,7 +655,7 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
 }
 
 TabContentsWrapper* PrerenderContents::ReleasePrerenderContents() {
-  prerender_contents_->tab_contents()->SetDelegate(NULL);
+  prerender_contents_->web_contents()->SetDelegate(NULL);
   render_view_host_observer_.reset();
   content::WebContentsObserver::Observe(NULL);
   return prerender_contents_.release();
@@ -663,7 +664,7 @@ TabContentsWrapper* PrerenderContents::ReleasePrerenderContents() {
 WebContents* PrerenderContents::GetWebContents() {
   if (!prerender_contents_.get())
     return NULL;
-  return prerender_contents_->tab_contents();
+  return prerender_contents_->web_contents();
 }
 
 RenderViewHost* PrerenderContents::render_view_host_mutable() {
@@ -673,7 +674,7 @@ RenderViewHost* PrerenderContents::render_view_host_mutable() {
 const RenderViewHost* PrerenderContents::render_view_host() const {
   if (!prerender_contents_.get())
     return NULL;
-  return prerender_contents_->tab_contents()->GetRenderViewHost();
+  return prerender_contents_->web_contents()->GetRenderViewHost();
 }
 
 void PrerenderContents::CommitHistory(TabContentsWrapper* tab) {

@@ -15,10 +15,12 @@
 #import "chrome/browser/ui/cocoa/infobars/translate_infobar_base.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #import "content/browser/site_instance.h"
-#import "content/browser/tab_contents/tab_contents.h"
+#import "content/public/browser/web_contents.h"
 #import "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/platform_test.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -73,7 +75,7 @@ class TranslationInfoBarTest : public CocoaProfileTest {
   // the test.
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
-    tab_contents_.reset(new TabContentsWrapper(new TabContents(
+    tab_contents_.reset(new TabContentsWrapper(WebContents::Create(
        profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
     CreateInfoBar();
   }

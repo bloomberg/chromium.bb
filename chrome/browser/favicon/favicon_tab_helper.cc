@@ -14,6 +14,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -149,7 +150,7 @@ void FaviconTabHelper::NotifyFaviconUpdated() {
       chrome::NOTIFICATION_FAVICON_UPDATED,
       content::Source<WebContents>(web_contents()),
       content::NotificationService::NoDetails());
-  web_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
+  web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
 }
 
 void FaviconTabHelper::NavigateToPendingEntry(

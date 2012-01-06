@@ -32,6 +32,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 // ClosedDelegateTracker ------------------------------------------------------
 
@@ -102,11 +103,11 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
     return contents()->GetRenderProcessHost()->GetID();
   }
   int process_id_for_tab(int tab) {
-    return extra_tabs_[tab]->tab_contents()->GetRenderProcessHost()->GetID();
+    return extra_tabs_[tab]->web_contents()->GetRenderProcessHost()->GetID();
   }
   int render_id() { return contents()->GetRenderViewHost()->routing_id(); }
   int render_id_for_tab(int tab) {
-    return extra_tabs_[tab]->tab_contents()->GetRenderViewHost()->routing_id();
+    return extra_tabs_[tab]->web_contents()->GetRenderViewHost()->routing_id();
   }
   int bridge_id() const { return 42; }  // Not relevant at this level.
   InfoBarTabHelper* infobar_tab_helper() {
@@ -192,7 +193,7 @@ void GeolocationPermissionContextTests::CheckPermissionMessageSentForTab(
     int bridge_id,
     bool allowed) {
   CheckPermissionMessageSentInternal(static_cast<MockRenderProcessHost*>(
-      extra_tabs_[tab]->tab_contents()->GetRenderProcessHost()),
+      extra_tabs_[tab]->web_contents()->GetRenderProcessHost()),
       bridge_id, allowed);
 }
 
@@ -207,8 +208,8 @@ void GeolocationPermissionContextTests::CheckPermissionMessageSentInternal(
 }
 
 void GeolocationPermissionContextTests::AddNewTab(const GURL& url) {
-  TabContents* new_tab =
-      new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+  WebContents* new_tab =
+      WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   new_tab->GetController().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   static_cast<TestRenderViewHost*>(new_tab->GetRenderManagerForTesting()->

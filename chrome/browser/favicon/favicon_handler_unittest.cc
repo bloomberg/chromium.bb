@@ -6,6 +6,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/favicon_status.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -148,7 +149,7 @@ class TestFaviconHandlerDelegate : public FaviconHandlerDelegate {
   }
 
   virtual void NotifyFaviconUpdated() {
-    tab_contents_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
+    tab_contents_->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
   }
 
  private:

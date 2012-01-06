@@ -16,9 +16,11 @@
 #include "chrome/browser/ui/cocoa/infobars/mock_link_infobar_delegate.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#import "content/browser/tab_contents/tab_contents.h"
+#import "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using content::WebContents;
 
 @interface InfoBarController (ExposedForTesting)
 - (NSString*)labelString;
@@ -97,8 +99,8 @@ class LinkInfoBarControllerTest : public CocoaProfileTest,
  public:
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
-    tab_contents_.reset(new TabContentsWrapper(new TabContents(profile(), NULL,
-        MSG_ROUTING_NONE, NULL, NULL)));
+    tab_contents_.reset(new TabContentsWrapper(WebContents::Create(
+        profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
     tab_contents_->infobar_tab_helper()->set_infobars_enabled(false);
 
     delegate_ = new MockLinkInfoBarDelegate(this);
@@ -141,8 +143,8 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
  public:
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
-    tab_contents_.reset(new TabContentsWrapper(new TabContents(profile(), NULL,
-        MSG_ROUTING_NONE, NULL, NULL)));
+    tab_contents_.reset(new TabContentsWrapper(WebContents::Create(
+        profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
     tab_contents_->infobar_tab_helper()->set_infobars_enabled(false);
 
     delegate_ = new MockConfirmInfoBarDelegate(this);

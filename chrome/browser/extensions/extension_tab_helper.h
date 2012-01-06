@@ -88,7 +88,7 @@ class ExtensionTabHelper
   }
 
   // Sets a non-extension app icon associated with TabContents and fires an
-  // INVALIDATE_TITLE navigation state change to trigger repaint of title.
+  // INVALIDATE_TYPE_TITLE navigation state change to trigger repaint of title.
   void SetAppIcon(const SkBitmap& app_icon);
 
  private:

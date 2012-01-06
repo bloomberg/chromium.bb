@@ -13,7 +13,7 @@
 // Per-tab find manager. Handles dealing with the life cycle of find sessions.
 class FindTabHelper : public content::WebContentsObserver {
  public:
-  explicit FindTabHelper(TabContents* tab_contents);
+  explicit FindTabHelper(content::WebContents* web_contents);
   virtual ~FindTabHelper();
 
   // Starts the Find operation by calling StartFinding on the Tab. This function

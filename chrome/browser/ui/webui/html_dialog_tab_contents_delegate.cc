@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 
 using content::OpenURLParams;
 using content::WebContents;
@@ -50,7 +50,7 @@ WebContents* HtmlDialogTabContentsDelegate::OpenURLFromTab(
     nav_params.user_gesture = true;
     browser::Navigate(&nav_params);
     return nav_params.target_contents ?
-        nav_params.target_contents->tab_contents() : NULL;
+        nav_params.target_contents->web_contents() : NULL;
   }
   return NULL;
 }
@@ -64,8 +64,7 @@ void HtmlDialogTabContentsDelegate::AddNewContents(
     // to find a browser matching params.profile or create a new one.
     Browser* browser = NULL;
 
-    TabContentsWrapper* wrapper = new TabContentsWrapper(
-        static_cast<TabContents*>(new_contents));
+    TabContentsWrapper* wrapper = new TabContentsWrapper(new_contents);
     browser::NavigateParams params(browser, wrapper);
     params.profile = profile_;
     // TODO(pinkerton): no way to get a wrapper for this.

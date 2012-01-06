@@ -35,7 +35,6 @@
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/load_notification_details.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
@@ -44,6 +43,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
 #include "grit/generated_resources.h"
 
@@ -104,7 +104,7 @@ bool DevToolsWindow::IsDevToolsWindow(RenderViewHost* window_rvh) {
   DevToolsWindowList& instances = g_instances.Get();
   for (DevToolsWindowList::iterator it = instances.begin();
        it != instances.end(); ++it) {
-    if ((*it)->tab_contents_->tab_contents()->GetRenderViewHost() == window_rvh)
+    if ((*it)->tab_contents_->web_contents()->GetRenderViewHost() == window_rvh)
       return true;
   }
   return false;
@@ -171,9 +171,9 @@ DevToolsWindow* DevToolsWindow::Create(
   // Create TabContents with devtools.
   TabContentsWrapper* tab_contents =
       Browser::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
-  tab_contents->tab_contents()->GetRenderViewHost()->AllowBindings(
+  tab_contents->web_contents()->GetRenderViewHost()->AllowBindings(
       content::BINDINGS_POLICY_WEB_UI);
-  tab_contents->tab_contents()->GetController().LoadURL(
+  tab_contents->web_contents()->GetController().LoadURL(
       GetDevToolsUrl(profile, docked, shared_worker_frontend),
       content::Referrer(),
       content::PAGE_TRANSITION_START_PAGE,
@@ -199,7 +199,7 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
   g_instances.Get().push_back(this);
   // Wipe out page icon so that the default application icon is used.
   NavigationEntry* entry =
-      tab_contents_->tab_contents()->GetController().GetActiveEntry();
+      tab_contents_->web_contents()->GetController().GetActiveEntry();
   entry->GetFavicon().bitmap = SkBitmap();
   entry->GetFavicon().valid = true;
 
@@ -221,7 +221,7 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
           ThemeServiceFactory::GetForProfile(profile_)));
   // There is no inspected_rvh in case of shared workers.
   if (inspected_rvh) {
-    TabContents* tab = inspected_rvh->delegate()->GetAsTabContents();
+    WebContents* tab = inspected_rvh->delegate()->GetAsWebContents();
     if (tab)
       inspected_tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab);
   }
@@ -276,13 +276,13 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
         FindInspectedBrowserAndTabIndex(&inspected_browser,
                                         &inspected_tab_index)) {
       BrowserWindow* inspected_window = inspected_browser->window();
-      tab_contents_->tab_contents()->SetDelegate(this);
+      tab_contents_->web_contents()->SetDelegate(this);
       std::string dock_side =
           profile_->GetPrefs()->GetString(prefs::kDevToolsDockSide);
       inspected_window->SetDevToolsDockSide(dock_side == kDockSideRight ?
           DEVTOOLS_DOCK_SIDE_RIGHT : DEVTOOLS_DOCK_SIDE_BOTTOM);
       inspected_window->UpdateDevTools();
-      tab_contents_->tab_contents()->GetView()->SetInitialFocus();
+      tab_contents_->web_contents()->GetView()->SetInitialFocus();
       inspected_window->Show();
       TabStripModel* tabstrip_model = inspected_browser->tabstrip_model();
       tabstrip_model->ActivateTabAt(inspected_tab_index, true);
@@ -305,7 +305,7 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
 
   if (should_show_window) {
     browser_->window()->Show();
-    tab_contents_->tab_contents()->GetView()->SetInitialFocus();
+    tab_contents_->web_contents()->GetView()->SetInitialFocus();
   }
 
   ScheduleAction(action);
@@ -346,7 +346,7 @@ void DevToolsWindow::RequestSetDocked(bool docked) {
 }
 
 RenderViewHost* DevToolsWindow::GetRenderViewHost() {
-  return tab_contents_->tab_contents()->GetRenderViewHost();
+  return tab_contents_->web_contents()->GetRenderViewHost();
 }
 
 void DevToolsWindow::CreateDevToolsBrowser() {
@@ -385,7 +385,7 @@ bool DevToolsWindow::FindInspectedBrowserAndTabIndex(Browser** browser,
     return false;
 
   const NavigationController& controller =
-      inspected_tab_->tab_contents()->GetController();
+      inspected_tab_->web_contents()->GetController();
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end(); ++it) {
     int tab_index = (*it)->GetIndexOfController(&controller);
@@ -415,7 +415,7 @@ bool DevToolsWindow::IsInspectedBrowserPopupOrPanel() {
 }
 
 void DevToolsWindow::UpdateFrontendAttachedState() {
-  tab_contents_->tab_contents()->GetRenderViewHost()->
+  tab_contents_->web_contents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(
           string16(),
           docked_ ? ASCIIToUTF16("WebInspector.setAttachedWindow(true);")
@@ -460,7 +460,7 @@ WebContents* DevToolsWindow::OpenURLFromTab(WebContents* source,
     OpenURLParams forward_params = params;
     forward_params.disposition = NEW_FOREGROUND_TAB;
     forward_params.transition = content::PAGE_TRANSITION_LINK;
-    return inspected_tab_->tab_contents()->OpenURL(forward_params);
+    return inspected_tab_->web_contents()->OpenURL(forward_params);
   }
   return NULL;
 }
@@ -471,7 +471,7 @@ void DevToolsWindow::CallClientFunction(const string16& function_name,
   base::JSONWriter::Write(&arg, false, &json);
   string16 javascript = function_name + char16('(') + UTF8ToUTF16(json) +
       ASCIIToUTF16(");");
-  tab_contents_->tab_contents()->GetRenderViewHost()->
+  tab_contents_->web_contents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), javascript);
 }
 
@@ -509,13 +509,13 @@ void DevToolsWindow::DoAction() {
   // TODO: these messages should be pushed through the WebKit API instead.
   switch (action_on_load_) {
     case DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE:
-      tab_contents_->tab_contents()->GetRenderViewHost()->
+      tab_contents_->web_contents()->GetRenderViewHost()->
           ExecuteJavascriptInWebFrame(
               string16(),
               ASCIIToUTF16("WebInspector.showConsole();"));
       break;
     case DEVTOOLS_TOGGLE_ACTION_INSPECT:
-      tab_contents_->tab_contents()->GetRenderViewHost()->
+      tab_contents_->web_contents()->GetRenderViewHost()->
           ExecuteJavascriptInWebFrame(
               string16(),
               ASCIIToUTF16("WebInspector.toggleSearchingForNode();"));
@@ -578,7 +578,7 @@ void DevToolsWindow::UpdateTheme() {
       "WebInspector.setToolbarColors(\"%s\", \"%s\")",
       SkColorToRGBAString(color_toolbar).c_str(),
       SkColorToRGBAString(color_tab_text).c_str());
-  tab_contents_->tab_contents()->GetRenderViewHost()->
+  tab_contents_->web_contents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(command));
 }
 
@@ -588,7 +588,7 @@ void DevToolsWindow::AddNewContents(WebContents* source,
                                     const gfx::Rect& initial_pos,
                                     bool user_gesture) {
   if (inspected_tab_) {
-    inspected_tab_->tab_contents()->GetDelegate()->AddNewContents(
+    inspected_tab_->web_contents()->GetDelegate()->AddNewContents(
         source, new_contents, disposition, initial_pos, user_gesture);
   }
 }
@@ -677,7 +677,7 @@ void DevToolsWindow::ActivateWindow() {
   } else {
     BrowserWindow* inspected_window = GetInspectedBrowserWindow();
     if (inspected_window)
-      tab_contents_->tab_contents()->GetView()->Focus();
+      tab_contents_->web_contents()->GetView()->Focus();
   }
 }
 
@@ -724,8 +724,8 @@ void DevToolsWindow::SaveToFile(const std::string& suggested_file_name,
 }
 
 content::JavaScriptDialogCreator* DevToolsWindow::GetJavaScriptDialogCreator() {
-  if (inspected_tab_ && inspected_tab_->tab_contents()->GetDelegate()) {
-    return inspected_tab_->tab_contents()->GetDelegate()->
+  if (inspected_tab_ && inspected_tab_->web_contents()->GetDelegate()) {
+    return inspected_tab_->web_contents()->GetDelegate()->
         GetJavaScriptDialogCreator();
   }
   return content::WebContentsDelegate::GetJavaScriptDialogCreator();

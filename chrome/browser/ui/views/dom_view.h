@@ -17,7 +17,6 @@
 
 class Profile;
 class SiteInstance;
-class TabContents;
 
 class DOMView : public views::NativeViewHost {
  public:
@@ -57,8 +56,8 @@ class DOMView : public views::NativeViewHost {
 
   // Returns new allocated TabContents instance, caller is responsible deleting.
   // Override in derived classes to replace TabContents with derivative.
-  virtual TabContents* CreateTabContents(Profile* profile,
-                                         SiteInstance* instance);
+  virtual content::WebContents* CreateTabContents(
+      Profile* profile, SiteInstance* instance);
 
   scoped_ptr<TabContentsWrapper> dom_contents_;
 

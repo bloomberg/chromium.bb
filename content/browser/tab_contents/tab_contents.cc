@@ -39,6 +39,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -552,7 +553,7 @@ void TabContents::SetIsCrashed(base::TerminationStatus status, int error_code) {
 
   crashed_status_ = status;
   crashed_error_code_ = error_code;
-  NotifyNavigationStateChanged(INVALIDATE_TAB);
+  NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
 }
 
 base::TerminationStatus TabContents::GetCrashedStatus() const {
@@ -639,7 +640,7 @@ void TabContents::Stop() {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, StopNavigation());
 }
 
-TabContents* TabContents::Clone() {
+WebContents* TabContents::Clone() {
   // We create a new SiteInstance so that the new tab won't share processes
   // with the old one. This can be changed in the future if we need it to share
   // processes for some reason.
@@ -1435,7 +1436,7 @@ void TabContents::SetIsLoading(bool is_loading,
 
   if (delegate_)
     delegate_->LoadingStateChanged(this);
-  NotifyNavigationStateChanged(INVALIDATE_LOAD);
+  NotifyNavigationStateChanged(content::INVALIDATE_TYPE_LOAD);
 
   int type = is_loading ? content::NOTIFICATION_LOAD_START :
       content::NOTIFICATION_LOAD_STOP;
@@ -1794,7 +1795,7 @@ void TabContents::UpdateTitle(RenderViewHost* rvh,
 
   // Broadcast notifications when the UI should be updated.
   if (entry == controller_.GetEntryAtOffset(0))
-    NotifyNavigationStateChanged(INVALIDATE_TITLE);
+    NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TITLE);
 }
 
 void TabContents::UpdateEncoding(RenderViewHost* render_view_host,
@@ -1884,7 +1885,7 @@ void TabContents::DidCancelLoading() {
   controller_.DiscardNonCommittedEntries();
 
   // Update the URL display.
-  NotifyNavigationStateChanged(TabContents::INVALIDATE_URL);
+  NotifyNavigationStateChanged(content::INVALIDATE_TYPE_URL);
 }
 
 void TabContents::DidChangeLoadProgress(double progress) {
@@ -2120,8 +2121,10 @@ void TabContents::LoadStateChanged(const GURL& url,
           GetBrowserContext()));
   if (load_state_.state == net::LOAD_STATE_READING_RESPONSE)
     SetNotWaitingForResponse();
-  if (IsLoading())
-    NotifyNavigationStateChanged(INVALIDATE_LOAD | INVALIDATE_TAB);
+  if (IsLoading()) {
+    NotifyNavigationStateChanged(
+        content::INVALIDATE_TYPE_LOAD | content::INVALIDATE_TYPE_TAB);
+  }
 }
 
 void TabContents::WorkerCrashed() {

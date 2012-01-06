@@ -19,14 +19,15 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 
 using content::WebContents;
 
 ExtensionTabHelper::ExtensionTabHelper(TabContentsWrapper* wrapper)
-    : content::WebContentsObserver(wrapper->tab_contents()),
+    : content::WebContentsObserver(wrapper->web_contents()),
       delegate_(NULL),
       extension_app_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -44,7 +45,7 @@ void ExtensionTabHelper::CopyStateFrom(const ExtensionTabHelper& source) {
 
 void ExtensionTabHelper::PageActionStateChanged() {
   web_contents()->NotifyNavigationStateChanged(
-      TabContents::INVALIDATE_PAGE_ACTIONS);
+      content::INVALIDATE_TYPE_PAGE_ACTIONS);
 }
 
 void ExtensionTabHelper::GetApplicationInfo(int32 page_id) {
@@ -171,7 +172,7 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
   ExtensionService* extension_service = profile->GetExtensionService();
   extensions::ProcessMap* process_map = extension_service->process_map();
   content::RenderProcessHost* process =
-      tab_contents_wrapper()->tab_contents()->GetRenderProcessHost();
+      tab_contents_wrapper()->web_contents()->GetRenderProcessHost();
   const Extension* extension =
       extension_service->GetInstalledApp(requestor_url);
   bool allowed =
@@ -246,7 +247,7 @@ void ExtensionTabHelper::UpdateExtensionAppIcon(const Extension* extension) {
 
 void ExtensionTabHelper::SetAppIcon(const SkBitmap& app_icon) {
   extension_app_icon_ = app_icon;
-  web_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
+  web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TITLE);
 }
 
 void ExtensionTabHelper::OnImageLoaded(SkBitmap* image,
@@ -254,7 +255,7 @@ void ExtensionTabHelper::OnImageLoaded(SkBitmap* image,
                                        int index) {
   if (image) {
     extension_app_icon_ = *image;
-    web_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
+    web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
   }
 }
 
@@ -262,7 +263,7 @@ Browser* ExtensionTabHelper::GetBrowser() {
   content::WebContents* contents = web_contents();
   TabContentsIterator tab_iterator;
   for (; !tab_iterator.done(); ++tab_iterator) {
-    if (contents == (*tab_iterator)->tab_contents())
+    if (contents == (*tab_iterator)->web_contents())
       return tab_iterator.browser();
   }
 

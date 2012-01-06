@@ -34,7 +34,6 @@
 #include "content/browser/browsing_instance.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -526,8 +525,7 @@ void ExtensionHost::AddNewContents(WebContents* source,
       Profile::FromBrowserContext(new_contents->GetBrowserContext());
   Browser* browser = BrowserList::FindTabbedBrowser(
       profile, false);  // Match incognito exactly.
-  TabContentsWrapper* wrapper = new TabContentsWrapper(
-      static_cast<TabContents*>(new_contents));
+  TabContentsWrapper* wrapper = new TabContentsWrapper(new_contents);
   browser::NavigateParams params(browser, wrapper);
 
   // The extension_app_id parameter ends up as app_name in the Browser

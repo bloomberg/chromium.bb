@@ -45,7 +45,7 @@
 #include "chrome/browser/ui/sync/tab_contents_wrapper_synced_tab_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 
 using content::WebContents;
 
@@ -59,10 +59,10 @@ static base::LazyInstance<base::PropertyAccessor<TabContentsWrapper*> >
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsWrapper, public:
 
-TabContentsWrapper::TabContentsWrapper(TabContents* contents)
+TabContentsWrapper::TabContentsWrapper(WebContents* contents)
     : content::WebContentsObserver(contents),
       in_destructor_(false),
-      tab_contents_(contents) {
+      web_contents_(contents) {
   DCHECK(contents);
   DCHECK(!GetCurrentWrapperForContents(contents));
 
@@ -127,7 +127,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   // Start the in-browser thumbnailing if the feature is enabled.
   if (switches::IsInBrowserThumbnailingEnabled()) {
     thumbnail_generation_observer_.reset(new ThumbnailGenerator);
-    thumbnail_generation_observer_->StartThumbnailing(tab_contents_.get());
+    thumbnail_generation_observer_->StartThumbnailing(web_contents_.get());
   }
 }
 
@@ -145,7 +145,7 @@ base::PropertyAccessor<TabContentsWrapper*>*
 }
 
 TabContentsWrapper* TabContentsWrapper::Clone() {
-  TabContents* new_contents = web_contents()->Clone();
+  WebContents* new_contents = web_contents()->Clone();
   TabContentsWrapper* new_wrapper = new TabContentsWrapper(new_contents);
 
   // TODO(avi): Can we generalize this so that knowledge of the functionings of
@@ -174,7 +174,7 @@ const TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
 }
 
 WebContents* TabContentsWrapper::web_contents() const {
-  return tab_contents_.get();
+  return web_contents_.get();
 }
 
 Profile* TabContentsWrapper::profile() const {

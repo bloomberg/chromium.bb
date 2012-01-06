@@ -43,6 +43,7 @@ class TabContentsViewGtk : public TabContentsView {
   TabContentsViewWrapperGtk* wrapper() const { return view_wrapper_.get(); }
   TabContents* tab_contents() { return tab_contents_; }
   GtkWidget* expanded_container() { return expanded_.get(); }
+  content::WebContents* web_contents();
 
   // Allows our embeder to intercept incoming drag messages.
   void SetDragDestDelegate(content::WebDragDestDelegate* delegate);

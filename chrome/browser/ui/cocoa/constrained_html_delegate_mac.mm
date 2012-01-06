@@ -7,13 +7,16 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
+#include "base/property_bag.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/gfx/size.h"
+
+using content::WebContents;
 
 class ConstrainedHtmlDelegateMac :
     public ConstrainedWindowMacDelegateCustomSheet,
@@ -95,22 +98,22 @@ ConstrainedHtmlDelegateMac::ConstrainedHtmlDelegateMac(
     constrained_window_(NULL),
     closed_via_webui_(false),
     release_tab_on_close_(false) {
-  TabContents* tab_contents =
-    new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
-  tab_.reset(new TabContentsWrapper(tab_contents));
-  tab_contents->SetDelegate(this);
+  WebContents* web_contents = WebContents::Create(
+      profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
+  tab_.reset(new TabContentsWrapper(web_contents));
+  web_contents->SetDelegate(this);
 
   // Set |this| as a property on the tab contents so that the ConstrainedHtmlUI
   // can get a reference to |this|.
   ConstrainedHtmlUI::GetPropertyAccessor().SetProperty(
-      tab_contents->GetPropertyBag(), this);
+      web_contents->GetPropertyBag(), this);
 
-  tab_contents->GetController().LoadURL(delegate->GetDialogContentURL(),
+  web_contents->GetController().LoadURL(delegate->GetDialogContentURL(),
                                         content::Referrer(),
                                         content::PAGE_TRANSITION_START_PAGE,
                                         std::string());
 
-  // Create NSWindow to hold tab_contents in the constrained sheet:
+  // Create NSWindow to hold web_contents in the constrained sheet:
   gfx::Size size;
   delegate->GetDialogSize(&size);
   NSRect frame = NSMakeRect(0, 0, size.width(), size.height());
@@ -124,7 +127,7 @@ ConstrainedHtmlDelegateMac::ConstrainedHtmlDelegateMac(
                                     backing:NSBackingStoreBuffered
                                       defer:YES]);
 
-  [window.get() setContentView:tab_contents->GetNativeView()];
+  [window.get() setContentView:web_contents->GetNativeView()];
 
   // Set the custom sheet to point to the new window.
   ConstrainedWindowMacDelegateCustomSheet::init(

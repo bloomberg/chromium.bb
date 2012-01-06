@@ -26,8 +26,8 @@ class HTMLPageDomView : public WebPageDomView {
 
  protected:
   // Overriden from DOMView:
-  virtual TabContents* CreateTabContents(Profile* profile,
-                                         SiteInstance* instance) OVERRIDE;
+  virtual content::WebContents* CreateWebContents(
+      Profile* profile, SiteInstance* instance) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HTMLPageDomView);

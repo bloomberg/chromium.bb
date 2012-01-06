@@ -13,7 +13,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
 using content::WebContents;
@@ -23,7 +23,7 @@ namespace {
 class ConstrainedHtmlDialogBrowserTestObserver
     : public content::WebContentsObserver {
  public:
-  explicit ConstrainedHtmlDialogBrowserTestObserver(TabContents* contents)
+  explicit ConstrainedHtmlDialogBrowserTestObserver(WebContents* contents)
       : content::WebContentsObserver(contents),
         tab_destroyed_(false) {
   }
@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedHtmlDialogBrowserTest,
   ASSERT_TRUE(new_tab.get());
   ASSERT_EQ(1U, GetConstrainedWindowCount(wrapper));
 
-  ConstrainedHtmlDialogBrowserTestObserver observer(new_tab->tab_contents());
+  ConstrainedHtmlDialogBrowserTestObserver observer(new_tab->web_contents());
   html_ui_delegate->ReleaseTabContentsOnDialogClose();
   html_ui_delegate->OnDialogCloseFromWebUI();
 

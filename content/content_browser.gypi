@@ -50,6 +50,7 @@
     'public/browser/favicon_status.cc',
     'public/browser/favicon_status.h',
     'public/browser/global_request_id.h',
+    'public/browser/invalidate_type.h',
     'public/browser/native_web_keyboard_event.h',
     'public/browser/navigation_controller.h',
     'public/browser/navigation_details.cc',

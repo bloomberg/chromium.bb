@@ -17,7 +17,7 @@ TabContentsWrapperTestHarness::~TabContentsWrapperTestHarness() {
 
 TestTabContents* TabContentsWrapperTestHarness::contents() {
   return contents_wrapper_.get() ?
-      static_cast<TestTabContents*>(contents_wrapper_->tab_contents()) : NULL;
+      static_cast<TestTabContents*>(contents_wrapper_->web_contents()) : NULL;
 }
 
 TabContentsWrapper* TabContentsWrapperTestHarness::contents_wrapper() {

@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -213,11 +212,11 @@ TabContentsWrapper* TabStripModel::DiscardTabContentsAt(int index) {
   DCHECK(ContainsIndex(index));
   TabContentsWrapper* null_contents =
       new TabContentsWrapper(
-          new TabContents(profile(),
-                          NULL /* site_instance */,
-                          MSG_ROUTING_NONE,
-                          NULL /* base_tab_contents */,
-                          NULL /* session_storage_namespace */));
+          WebContents::Create(profile(),
+                              NULL /* site_instance */,
+                              MSG_ROUTING_NONE,
+                              NULL /* base_tab_contents */,
+                              NULL /* session_storage_namespace */));
   TabContentsWrapper* old_contents = GetContentsAt(index);
   NavigationEntry* old_nav_entry =
       old_contents->web_contents()->GetController().GetActiveEntry();

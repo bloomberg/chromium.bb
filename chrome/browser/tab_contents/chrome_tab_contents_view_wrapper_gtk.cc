@@ -12,7 +12,8 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "content/browser/tab_contents/interstitial_page.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/gtk/gtk_floating_container.h"
 
 ChromeTabContentsViewWrapperGtk::ChromeTabContentsViewWrapperGtk()
@@ -105,7 +106,7 @@ void ChromeTabContentsViewWrapperGtk::ShowContextMenu(
   if (params.custom_context.render_widget_id !=
       webkit_glue::CustomContextMenuContext::kCurrentRenderWidget) {
     IPC::Channel::Listener* listener =
-        view_->tab_contents()->GetRenderProcessHost()->GetListenerByID(
+        view_->web_contents()->GetRenderProcessHost()->GetListenerByID(
             params.custom_context.render_widget_id);
     if (!listener) {
       NOTREACHED();
@@ -113,7 +114,7 @@ void ChromeTabContentsViewWrapperGtk::ShowContextMenu(
     }
     view = static_cast<RenderWidgetHost*>(listener)->view();
   } else {
-    view = view_->tab_contents()->GetRenderWidgetHostView();
+    view = view_->web_contents()->GetRenderWidgetHostView();
   }
   RenderWidgetHostViewGtk* view_gtk =
       static_cast<RenderWidgetHostViewGtk*>(view);
@@ -121,7 +122,7 @@ void ChromeTabContentsViewWrapperGtk::ShowContextMenu(
     return;
 
   context_menu_.reset(new RenderViewContextMenuGtk(
-      view_->tab_contents(), params, view_gtk->last_mouse_down() ?
+      view_->web_contents(), params, view_gtk->last_mouse_down() ?
       view_gtk->last_mouse_down()->time : GDK_CURRENT_TIME));
   context_menu_->Init();
 

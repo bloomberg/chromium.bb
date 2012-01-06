@@ -20,6 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 using content::OpenURLParams;
 using content::Referrer;
@@ -49,10 +50,12 @@ class ViewIDTest : public InProcessBrowserTest {
     // Make sure sidebar is created to test VIEW_ID_SIDE_BAR_CONTAINER.
     const char sidebar_content_id[] = "test_content_id";
     SidebarManager::GetInstance()->ShowSidebar(
-        browser()->GetSelectedTabContentsWrapper()->tab_contents(),
+        static_cast<TabContents*>(
+            browser()->GetSelectedTabContentsWrapper()->web_contents()),
         sidebar_content_id);
     SidebarManager::GetInstance()->ExpandSidebar(
-        browser()->GetSelectedTabContentsWrapper()->tab_contents(),
+        static_cast<TabContents*>(
+            browser()->GetSelectedTabContentsWrapper()->web_contents()),
         sidebar_content_id);
 
     // Make sure docked devtools is created to test VIEW_ID_DEV_TOOLS_DOCKED

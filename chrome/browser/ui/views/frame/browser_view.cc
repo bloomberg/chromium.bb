@@ -2102,7 +2102,8 @@ void BrowserView::UpdateSidebarForContents(TabContentsWrapper* tab_contents) {
   TabContents* sidebar_contents = NULL;
   if (tab_contents) {
     SidebarContainer* client_host = SidebarManager::GetInstance()->
-        GetActiveSidebarContainerFor(tab_contents->tab_contents());
+        GetActiveSidebarContainerFor(
+            static_cast<TabContents*>(tab_contents->web_contents()));
     if (client_host)
       sidebar_contents = client_host->sidebar_contents();
   }

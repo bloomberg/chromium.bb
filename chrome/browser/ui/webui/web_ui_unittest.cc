@@ -16,6 +16,7 @@
 
 using content::BrowserThread;
 using content::NavigationController;
+using content::WebContents;
 
 class WebUITest : public TabContentsWrapperTestHarness {
  public:
@@ -26,7 +27,7 @@ class WebUITest : public TabContentsWrapperTestHarness {
   // ID that we should use is passed as a parameter. We'll use the next two
   // values. This must be increasing for the life of the tests.
   static void DoNavigationTest(TabContentsWrapper* wrapper, int page_id) {
-    TabContents* contents = wrapper->tab_contents();
+    WebContents* contents = wrapper->web_contents();
     NavigationController* controller = &contents->GetController();
 
     // Start a pending load.

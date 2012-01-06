@@ -20,6 +20,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -615,7 +616,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
       if (pending_entry_) {
         DiscardNonCommittedEntries();
         tab_contents_->NotifyNavigationStateChanged(
-            TabContents::INVALIDATE_URL);
+            content::INVALIDATE_TYPE_URL);
       }
       return false;
     default:

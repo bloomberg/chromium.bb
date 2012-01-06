@@ -11,11 +11,12 @@
 #include "content/test/test_browser_thread.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 class TestPrefsTabHelper : public PrefsTabHelper {
  public:
-  explicit TestPrefsTabHelper(TabContents* tab_contents)
-      : PrefsTabHelper(tab_contents),
+  explicit TestPrefsTabHelper(WebContents* web_contents)
+      : PrefsTabHelper(web_contents),
         was_update_web_preferences_called_(false) {
   }
   virtual ~TestPrefsTabHelper() { }
@@ -51,7 +52,7 @@ class PrefsTabHelperTest : public TabContentsWrapperTestHarness {
 
   TestPrefsTabHelper* CreateTestPrefsTabHelper() {
     TestPrefsTabHelper* test_prefs_helper =
-        new TestPrefsTabHelper(contents_wrapper()->tab_contents());
+        new TestPrefsTabHelper(contents_wrapper()->web_contents());
     contents_wrapper()->prefs_tab_helper_.reset(test_prefs_helper);
     return test_prefs_helper;
   }
