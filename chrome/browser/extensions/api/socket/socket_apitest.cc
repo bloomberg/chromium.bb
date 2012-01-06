@@ -66,7 +66,14 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateBad) {
                             NONE);
 }
 
-IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketExtension) {
+// Failing on Vista.
+// http://code.google.com/p/chromium/issues/detail?id=109337
+#if defined(OS_WIN)
+#define MAYBE_SocketExtension FLAKY_SocketExtension
+#else
+#define MAYBE_SocketExtension SocketExtension
+#endif
+IN_PROC_BROWSER_TEST_F(SocketApiTest, MAYBE_SocketExtension) {
   SocketApiTest::DoCommandLineSetup();
   scoped_refptr<extensions::TestEchoServerUDP> server =
       new extensions::TestEchoServerUDP();
