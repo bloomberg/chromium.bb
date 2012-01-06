@@ -988,6 +988,8 @@ surface_attach(struct wl_client *client,
 	struct weston_shell *shell = es->compositor->shell;
 	struct wl_buffer *buffer = buffer_resource->data;
 
+	weston_surface_damage_below(es);
+
 	if (es->buffer) {
 		weston_buffer_post_release(es->buffer);
 		wl_list_remove(&es->buffer_destroy_listener.link);
