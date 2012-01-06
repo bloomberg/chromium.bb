@@ -87,7 +87,7 @@ TEST(NtLoader, OwnsCriticalSection) {
 
   base::win::ScopedHandle event(::CreateEvent(NULL, FALSE, FALSE, NULL));
   other.message_loop()->PostTask(
-      FROM_HERE, base::IgnoreReturn<BOOL>(base::Bind(::SetEvent, event.Get())));
+      FROM_HERE, base::Bind(base::IgnoreResult(::SetEvent), event.Get()));
 
   ASSERT_EQ(WAIT_OBJECT_0, ::WaitForSingleObject(event.Get(), INFINITE));
 

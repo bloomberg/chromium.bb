@@ -849,8 +849,8 @@ void RenderMessageFilter::AsyncOpenFileOnFileThread(const FilePath& path,
   IPC::Message* reply = new ViewMsg_AsyncOpenFile_ACK(
       routing_id, error_code, file_for_transit, message_id);
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, base::IgnoreReturn<bool>(base::Bind(
-          &RenderMessageFilter::Send, this, reply)));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(base::IgnoreResult(&RenderMessageFilter::Send), this, reply));
 }
 
 void RenderMessageFilter::OnMediaLogEvent(const media::MediaLogEvent& event) {

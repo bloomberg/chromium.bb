@@ -154,7 +154,7 @@ static const int kCreateSessionServiceDelayMS = 500;
 
 // Helper method needed because PostTask cannot currently take a Callback
 // function with non-void return type.
-// TODO(jhawkins): Remove once IgnoreReturn is fixed.
+// TODO(jhawkins): Remove once IgnoreResult is fixed.
 void CreateDirectoryNoResult(const FilePath& path) {
   file_util::CreateDirectory(path);
 }

@@ -151,8 +151,8 @@ bool UtilityProcessHost::StartProcess() {
 bool UtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
   BrowserThread::PostTask(
       client_thread_id_, FROM_HERE,
-      base::IgnoreReturn<bool>(
-          base::Bind(&Client::OnMessageReceived, client_.get(), message)));
+      base::Bind(base::IgnoreResult(&Client::OnMessageReceived),
+                 client_.get(), message));
   return true;
 }
 

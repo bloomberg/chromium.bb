@@ -67,8 +67,7 @@ class ProfileManager : public ::ProfileManagerWithoutInit {
     // This is safe while all file operations are done on the FILE thread.
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        base::IgnoreReturn<bool>(base::Bind(&file_util::CreateDirectory,
-                                            path)));
+        base::Bind(base::IgnoreResult(&file_util::CreateDirectory), path));
 
     return new TestingProfile(path, this);
   }

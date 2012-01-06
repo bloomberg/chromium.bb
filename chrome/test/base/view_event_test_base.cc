@@ -170,7 +170,7 @@ void ViewEventTestBase::ScheduleMouseMoveInBackground(int x, int y) {
   }
   dnd_thread_->message_loop()->PostDelayedTask(
       FROM_HERE,
-      base::IgnoreReturn<bool>(base::Bind(&ui_controls::SendMouseMove, x, y)),
+      base::Bind(base::IgnoreResult(&ui_controls::SendMouseMove), x, y),
       kMouseMoveDelayMS);
 }
 

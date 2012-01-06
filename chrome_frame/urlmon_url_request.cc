@@ -1106,8 +1106,8 @@ void UrlmonUrlRequestManager::ReadRequest(int request_id, int bytes_to_read) {
     request = LookupRequest(request_id, &background_request_map_);
     if (request) {
       background_thread_->message_loop()->PostTask(
-          FROM_HERE, base::IgnoreReturn<bool>(base::Bind(
-              &UrlmonUrlRequest::Read, request.get(), bytes_to_read)));
+          FROM_HERE, base::Bind(base::IgnoreResult(&UrlmonUrlRequest::Read),
+                                request.get(), bytes_to_read));
     }
   }
   if (!request)
@@ -1418,4 +1418,3 @@ void UrlmonUrlRequestManager::ResourceFetcherThread::Init() {
 void UrlmonUrlRequestManager::ResourceFetcherThread::CleanUp() {
   CoUninitialize();
 }
-

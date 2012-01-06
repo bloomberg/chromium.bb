@@ -31,8 +31,8 @@ bool AudioMessageFilter::Send(IPC::Message* message) {
     // safe.
     ChildProcess::current()->io_message_loop()->PostTask(
         FROM_HERE,
-        base::IgnoreReturn<bool>(base::Bind(&AudioMessageFilter::Send,
-                                            this, message)));
+        base::Bind(base::IgnoreResult(&AudioMessageFilter::Send), this,
+                   message));
     return true;
   }
 

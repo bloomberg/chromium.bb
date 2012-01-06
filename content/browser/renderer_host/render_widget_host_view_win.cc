@@ -609,8 +609,8 @@ void RenderWidgetHostViewWin::CleanupCompositorWindow() {
   BrowserThread::PostDelayedTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::IgnoreReturn<BOOL>(
-          base::Bind(&::DestroyWindow, compositor_host_window_)),
+      base::Bind(base::IgnoreResult(&::DestroyWindow),
+                 compositor_host_window_),
       kDestroyCompositorHostWindowDelay);
 
   compositor_host_window_ = NULL;

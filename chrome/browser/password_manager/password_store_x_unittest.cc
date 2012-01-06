@@ -619,16 +619,16 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   for (VectorOfForms::iterator it = expected_autofillable.begin();
        it != expected_autofillable.end(); ++it) {
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-                            base::IgnoreReturn<bool>(base::Bind(
-                                &LoginDatabase::AddLogin,
-                                base::Unretained(login_db), **it)));
+                            base::Bind(
+                                base::IgnoreResult(&LoginDatabase::AddLogin),
+                                base::Unretained(login_db), **it));
   }
   for (VectorOfForms::iterator it = expected_blacklisted.begin();
        it != expected_blacklisted.end(); ++it) {
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-                            base::IgnoreReturn<bool>(base::Bind(
-                                &LoginDatabase::AddLogin,
-                                base::Unretained(login_db), **it)));
+                            base::Bind(
+                                base::IgnoreResult(&LoginDatabase::AddLogin),
+                                base::Unretained(login_db), **it));
   }
 
   // Schedule another task on the DB thread to notify us that it's safe to

@@ -989,9 +989,11 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
   }
 
   PostTask(
-      FROM_HERE, base::IgnoreReturn<bool>(base::Bind(
-          &ChromeFrameAutomationClient::ProcessUrlRequestMessage,
-          base::Unretained(this), tab, msg, true)));
+      FROM_HERE,
+      base::Bind(
+          base::IgnoreResult(
+              &ChromeFrameAutomationClient::ProcessUrlRequestMessage),
+          base::Unretained(this), tab, msg, true));
   return true;
 }
 

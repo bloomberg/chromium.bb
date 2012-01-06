@@ -340,8 +340,8 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        base::IgnoreReturn<bool>(
-            base::Bind(&base::ThreadRestrictions::SetIOAllowed, true)));
+        base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
+                   true));
 
 #if defined(OS_MACOSX)
     MessageLoop::current()->PostTask(

@@ -276,12 +276,11 @@ void PepperMessageFilter::ConnectTcpOnWorkerThread(int routing_id,
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::IgnoreReturn<bool>(
-          base::Bind(
-              &PepperMessageFilter::Send, this,
-              new PepperMsg_ConnectTcpACK(
-                  routing_id, request_id,
-                  socket_for_transit, local_addr, remote_addr))));
+      base::Bind(
+          base::IgnoreResult(&PepperMessageFilter::Send), this,
+          new PepperMsg_ConnectTcpACK(
+              routing_id, request_id,
+              socket_for_transit, local_addr, remote_addr)));
 }
 
 // TODO(vluu): Eliminate duplication between this and
@@ -302,12 +301,11 @@ void PepperMessageFilter::ConnectTcpAddressOnWorkerThread(
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::IgnoreReturn<bool>(
-          base::Bind(
-              &PepperMessageFilter::Send, this,
-              new PepperMsg_ConnectTcpACK(
-                  routing_id, request_id,
-                  socket_for_transit, local_addr, remote_addr))));
+      base::Bind(
+          base::IgnoreResult(&PepperMessageFilter::Send), this,
+          new PepperMsg_ConnectTcpACK(
+              routing_id, request_id,
+              socket_for_transit, local_addr, remote_addr)));
 }
 
 #endif  // ENABLE_FLAPPER_HACKS

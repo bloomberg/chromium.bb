@@ -53,12 +53,12 @@ void AutomationProvider::WindowSimulateDrag(
     // Create a nested stack of tasks to run.
     base::Closure drag_response_cb = base::Bind(
         &SendWindowDragResponse, make_scoped_refptr(this), reply_message);
-    base::Closure move_chain_cb = base::IgnoreReturn<bool>(
-        base::Bind(&ui_controls::SendMouseEventsNotifyWhenDone,
-                   ui_controls::LEFT, ui_controls::UP, drag_response_cb));
-    move_chain_cb = base::IgnoreReturn<bool>(
-        base::Bind(&ui_controls::SendMouseEventsNotifyWhenDone,
-                   ui_controls::LEFT, ui_controls::UP, move_chain_cb));
+    base::Closure move_chain_cb = base::Bind(
+        base::IgnoreResult(&ui_controls::SendMouseEventsNotifyWhenDone),
+        ui_controls::LEFT, ui_controls::UP, drag_response_cb);
+    move_chain_cb = base::Bind(
+        base::IgnoreResult(&ui_controls::SendMouseEventsNotifyWhenDone),
+        ui_controls::LEFT, ui_controls::UP, move_chain_cb);
     for (size_t i = drag_path.size() - 1; i > 0; --i) {
       // Smooth out the mouse movements by adding intermediate points. This
       // better simulates a real user drag.
@@ -67,16 +67,16 @@ void AutomationProvider::WindowSimulateDrag(
       int half_step_x = (dest_x + drag_path[i - 1].x() + x) / 2;
       int half_step_y = (dest_y + drag_path[i - 1].y() + y) / 2;
 
-      move_chain_cb = base::IgnoreReturn<bool>(
-          base::Bind(&ui_controls::SendMouseMoveNotifyWhenDone, dest_x, dest_y,
-                     move_chain_cb));
-      move_chain_cb = base::IgnoreReturn<bool>(
-          base::Bind(&ui_controls::SendMouseMoveNotifyWhenDone, half_step_x,
-                         half_step_y, move_chain_cb));
+      move_chain_cb = base::Bind(
+          base::IgnoreResult(&ui_controls::SendMouseMoveNotifyWhenDone),
+          dest_x, dest_y, move_chain_cb);
+      move_chain_cb = base::Bind(
+          base::IgnoreResult(&ui_controls::SendMouseMoveNotifyWhenDone),
+          half_step_x, half_step_y, move_chain_cb);
     }
-    move_chain_cb = base::IgnoreReturn<bool>(
-        base::Bind(&ui_controls::SendMouseEventsNotifyWhenDone,
-                   ui_controls::LEFT, ui_controls::DOWN, move_chain_cb));
+    move_chain_cb = base::Bind(
+        base::IgnoreResult(&ui_controls::SendMouseEventsNotifyWhenDone),
+        ui_controls::LEFT, ui_controls::DOWN, move_chain_cb);
 
     ui_controls::SendMouseMoveNotifyWhenDone(x + drag_path[0].x(),
                                              y + drag_path[0].y(),

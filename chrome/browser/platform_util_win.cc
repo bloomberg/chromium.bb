@@ -125,9 +125,9 @@ void ShowItemInFolder(const FilePath& full_path) {
 
 void OpenItem(const FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::IgnoreReturn<bool>(base::Bind(&ui::win::OpenItemViaShell,
-                                          full_path)));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(base::IgnoreResult(&ui::win::OpenItemViaShell), full_path));
 }
 
 void OpenExternal(const GURL& url) {

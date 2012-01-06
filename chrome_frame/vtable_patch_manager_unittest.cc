@@ -221,14 +221,13 @@ TEST_F(VtablePatchManagerTest, ThreadSafePatching) {
   // Instruct the background thread to patch factory_.
   background.message_loop()->PostTask(
       FROM_HERE,
-      base::IgnoreReturn<HRESULT>(
-          base::Bind(&vtable_patch::PatchInterfaceMethods, &factory_,
-                     &IClassFactory_PatchInfo[0])));
+      base::Bind(base::IgnoreResult(&vtable_patch::PatchInterfaceMethods),
+                 &factory_, &IClassFactory_PatchInfo[0]));
 
   // And subsequently to signal the event. Neither of these actions should
   // occur until we've released the patch lock.
   background.message_loop()->PostTask(
-      FROM_HERE, base::IgnoreReturn<BOOL>(base::Bind(::SetEvent, event.Get())));
+      FROM_HERE, base::Bind(base::IgnoreResult(::SetEvent), event.Get()));
 
   // Wait for a little while, to give the background thread time to process.
   // We expect this wait to time out, as the background thread should end up
@@ -263,14 +262,13 @@ TEST_F(VtablePatchManagerTest, ThreadSafePatching) {
   // Instruct the background thread to unpatch.
   background.message_loop()->PostTask(
       FROM_HERE,
-      base::IgnoreReturn<HRESULT>(
-          base::Bind(&vtable_patch::UnpatchInterfaceMethods,
-                     &IClassFactory_PatchInfo[0])));
+      base::Bind(base::IgnoreResult(&vtable_patch::UnpatchInterfaceMethods),
+                 &IClassFactory_PatchInfo[0]));
 
   // And subsequently to signal the event. Neither of these actions should
   // occur until we've released the patch lock.
   background.message_loop()->PostTask(
-      FROM_HERE, base::IgnoreReturn<BOOL>(base::Bind(::SetEvent, event.Get())));
+      FROM_HERE, base::Bind(base::IgnoreResult(::SetEvent), event.Get()));
 
   // Wait for a little while, to give the background thread time to process.
   // We expect this wait to time out, as the background thread should end up

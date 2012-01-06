@@ -53,8 +53,8 @@ bool BrowserMessageFilter::Send(IPC::Message* message) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        base::IgnoreReturn<bool>(
-            base::Bind(&BrowserMessageFilter::Send, this, message)));
+        base::Bind(base::IgnoreResult(&BrowserMessageFilter::Send), this,
+                   message));
     return true;
   }
 
@@ -80,8 +80,8 @@ bool BrowserMessageFilter::OnMessageReceived(const IPC::Message& message) {
 
   BrowserThread::PostTask(
       thread, FROM_HERE,
-      base::IgnoreReturn<bool>(
-          base::Bind(&BrowserMessageFilter::DispatchMessage, this, message)));
+      base::Bind(base::IgnoreResult(&BrowserMessageFilter::DispatchMessage),
+                 this, message));
   return true;
 }
 

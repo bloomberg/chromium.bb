@@ -1136,9 +1136,8 @@ class ServerSendAfterClose : public Worker {
 
   bool SendDummy() {
     ListenerThread()->message_loop()->PostTask(
-        FROM_HERE, base::IgnoreReturn<bool>(
-            base::Bind(&ServerSendAfterClose::Send, this,
-                       new SyncChannelTestMsg_NoArgs)));
+        FROM_HERE, base::Bind(base::IgnoreResult(&ServerSendAfterClose::Send),
+                              this, new SyncChannelTestMsg_NoArgs));
     return true;
   }
 

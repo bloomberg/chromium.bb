@@ -122,9 +122,9 @@ struct MockCFProxyTraits : public CFProxyTraits {
     ASSERT_TRUE(ipc_loop != NULL);
     ipc_loop->PostDelayedTask(
         FROM_HERE,
-        base::IgnoreReturn<bool>(
-            base::Bind(&IPC::Channel::Listener::OnMessageReceived,
-                       base::Unretained(listener), m)),
+        base::Bind(
+            base::IgnoreResult(&IPC::Channel::Listener::OnMessageReceived),
+            base::Unretained(listener), m),
         t.InMilliseconds());
   }
 
@@ -360,8 +360,8 @@ TEST(SyncMsgSender, Deserialize) {
   // Execute replies in a worker thread.
   ipc.message_loop()->PostTask(
       FROM_HERE,
-      base::IgnoreReturn<bool>(base::Bind(&SyncMsgSender::OnReplyReceived,
-                                          base::Unretained(&queue), r.get())));
+      base::Bind(base::IgnoreResult(&SyncMsgSender::OnReplyReceived),
+                 base::Unretained(&queue), r.get()));
   ipc.Stop();
 
   // Expect that tab 6 has been associated with the delegate.

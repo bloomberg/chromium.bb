@@ -267,8 +267,9 @@ class SimpleBackendProxy
       status_result_ = appcache::UNCACHED;
       event_.Reset();
       system_->io_message_loop()->PostTask(
-          FROM_HERE, base::IgnoreReturn<appcache::Status>(
-              base::Bind(&SimpleBackendProxy::GetStatus, this, host_id)));
+          FROM_HERE,
+              base::Bind(base::IgnoreResult(&SimpleBackendProxy::GetStatus),
+                         this, host_id));
       event_.Wait();
     } else if (system_->is_io_thread()) {
       system_->backend_impl_->GetStatusWithCallback(
@@ -284,8 +285,9 @@ class SimpleBackendProxy
       bool_result_ = false;
       event_.Reset();
       system_->io_message_loop()->PostTask(
-          FROM_HERE, base::IgnoreReturn<bool>(
-              base::Bind(&SimpleBackendProxy::StartUpdate, this, host_id)));
+          FROM_HERE,
+          base::Bind(base::IgnoreResult(&SimpleBackendProxy::StartUpdate),
+                     this, host_id));
       event_.Wait();
     } else if (system_->is_io_thread()) {
       system_->backend_impl_->StartUpdateWithCallback(
@@ -301,8 +303,9 @@ class SimpleBackendProxy
       bool_result_ = false;
       event_.Reset();
       system_->io_message_loop()->PostTask(
-          FROM_HERE, base::IgnoreReturn<bool>(
-              base::Bind(&SimpleBackendProxy::SwapCache, this, host_id)));
+          FROM_HERE,
+          base::Bind(base::IgnoreResult(&SimpleBackendProxy::SwapCache),
+                     this, host_id));
       event_.Wait();
     } else if (system_->is_io_thread()) {
       system_->backend_impl_->SwapCacheWithCallback(

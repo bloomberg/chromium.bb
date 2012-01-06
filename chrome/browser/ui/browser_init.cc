@@ -333,8 +333,7 @@ bool DefaultBrowserInfoBarDelegate::Accept() {
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::IgnoreReturn<bool>(
-          base::Bind(&ShellIntegration::SetAsDefaultBrowser)));
+      base::Bind(base::IgnoreResult(&ShellIntegration::SetAsDefaultBrowser)));
   return true;
 }
 
@@ -1449,16 +1448,16 @@ void BrowserInit::LaunchWithProfile::CheckDefaultBrowser(Profile* profile) {
         prefs::kDefaultBrowserSettingEnabled)) {
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          base::IgnoreReturn<bool>(
-              base::Bind(&ShellIntegration::SetAsDefaultBrowser)));
+          base::Bind(
+              base::IgnoreResult(&ShellIntegration::SetAsDefaultBrowser)));
     } else {
       // TODO(pastarmovj): We can't really do anything meaningful here yet but
       // just prevent showing the infobar.
     }
     return;
   }
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, base::Bind(&CheckDefaultBrowserCallback));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&CheckDefaultBrowserCallback));
 }
 
 bool BrowserInit::LaunchWithProfile::CheckIfAutoLaunched(Profile* profile) {

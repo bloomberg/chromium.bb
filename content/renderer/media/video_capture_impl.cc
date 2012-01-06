@@ -431,8 +431,8 @@ void VideoCaptureImpl::Send(IPC::Message* message) {
       ChildProcess::current()->io_message_loop_proxy();
 
   io_message_loop_proxy->PostTask(FROM_HERE,
-      base::IgnoreReturn<bool>(base::Bind(&VideoCaptureMessageFilter::Send,
-                                          message_filter_.get(), message)));
+      base::Bind(base::IgnoreResult(&VideoCaptureMessageFilter::Send),
+                 message_filter_.get(), message));
 }
 
 bool VideoCaptureImpl::ClientHasDIB() {

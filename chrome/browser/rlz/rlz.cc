@@ -399,8 +399,8 @@ bool RLZTracker::ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point) {
   string16* not_used = NULL;
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::IgnoreReturn<bool>(
-          base::Bind(&RLZTracker::GetAccessPointRlz, point, not_used)));
+      base::Bind(base::IgnoreResult(&RLZTracker::GetAccessPointRlz), point,
+                 not_used));
   return true;
 }
 

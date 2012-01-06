@@ -73,8 +73,9 @@ bool ShortcutsBackend::AddShortcut(
   if (no_db_access_)
     return true;
   return BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE, base::IgnoreReturn<bool>(
-          base::Bind(&ShortcutsDatabase::AddShortcut, db_.get(), shortcut)));
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&ShortcutsDatabase::AddShortcut),
+                 db_.get(), shortcut));
 }
 
 bool ShortcutsBackend::UpdateShortcut(
@@ -92,8 +93,9 @@ bool ShortcutsBackend::UpdateShortcut(
   if (no_db_access_)
     return true;
   return BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE, base::IgnoreReturn<bool>(
-          base::Bind(&ShortcutsDatabase::UpdateShortcut, db_.get(), shortcut)));
+      BrowserThread::DB, FROM_HERE,
+          base::Bind(base::IgnoreResult(&ShortcutsDatabase::UpdateShortcut),
+                     db_.get(), shortcut));
 }
 
 bool ShortcutsBackend::DeleteShortcutsWithIds(
@@ -113,9 +115,10 @@ bool ShortcutsBackend::DeleteShortcutsWithIds(
   if (no_db_access_)
     return true;
   return BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE, base::IgnoreReturn<bool>(
-          base::Bind(&ShortcutsDatabase::DeleteShortcutsWithIds, db_.get(),
-                     shortcut_ids)));
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(
+          base::IgnoreResult(&ShortcutsDatabase::DeleteShortcutsWithIds),
+          db_.get(), shortcut_ids));
 }
 
 bool ShortcutsBackend::DeleteShortcutsWithUrl(const GURL& shortcut_url) {
@@ -138,9 +141,10 @@ bool ShortcutsBackend::DeleteShortcutsWithUrl(const GURL& shortcut_url) {
   if (no_db_access_)
     return true;
   return BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE, base::IgnoreReturn<bool>(
-          base::Bind(&ShortcutsDatabase::DeleteShortcutsWithUrl, db_.get(),
-                     shortcut_url.spec())));
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(
+          base::IgnoreResult(&ShortcutsDatabase::DeleteShortcutsWithUrl),
+          db_.get(), shortcut_url.spec()));
 }
 
 bool ShortcutsBackend::DeleteAllShortcuts() {
@@ -153,8 +157,10 @@ bool ShortcutsBackend::DeleteAllShortcuts() {
   if (no_db_access_)
     return true;
   return BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE, base::IgnoreReturn<bool>(
-          base::Bind(&ShortcutsDatabase::DeleteAllShortcuts, db_.get())));
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(
+          base::IgnoreResult(&ShortcutsDatabase::DeleteAllShortcuts),
+          db_.get()));
 }
 
 void ShortcutsBackend::InitInternal() {

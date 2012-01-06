@@ -657,9 +657,9 @@ bool SafeBrowsingService::MakeDatabaseAvailable() {
   DCHECK(enabled_);
   if (DatabaseAvailable())
     return true;
-  safe_browsing_thread_->message_loop()->PostTask(FROM_HERE,
-      base::IgnoreReturn<SafeBrowsingDatabase*>(
-          base::Bind(&SafeBrowsingService::GetDatabase, this)));
+  safe_browsing_thread_->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&SafeBrowsingService::GetDatabase), this));
   return false;
 }
 

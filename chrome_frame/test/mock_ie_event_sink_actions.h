@@ -50,8 +50,8 @@ ACTION_P(CloseBrowserMock, mock) {
 ACTION_P3(DelayCloseBrowserMock, loop, delay, mock) {
   loop->PostDelayedTask(
       FROM_HERE,
-      base::IgnoreReturn<HRESULT>(
-          base::Bind(&IEEventSink::CloseWebBrowser, mock->event_sink())),
+      base::Bind(base::IgnoreResult(&IEEventSink::CloseWebBrowser),
+                 mock->event_sink()),
       delay);
 }
 

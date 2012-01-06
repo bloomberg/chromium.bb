@@ -562,10 +562,11 @@ bool ExternalTabContainer::CanDownload(WebContents* source, int request_id) {
 
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::IgnoreReturn<bool>(base::Bind(
-              &AutomationResourceMessageFilter::SendDownloadRequestToHost,
-              automation_resource_message_filter_.get(), 0, tab_handle_,
-              request_id)));
+          base::Bind(
+             base::IgnoreResult(
+                 &AutomationResourceMessageFilter::SendDownloadRequestToHost),
+             automation_resource_message_filter_.get(), 0, tab_handle_,
+             request_id));
     }
   } else {
     DLOG(WARNING) << "Downloads are only supported with host browser network "
