@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -235,7 +235,9 @@ int CoalescePendingXIMotionEvents(const XEvent* xev, XEvent* last_event) {
 
 // We emulate Windows' WM_KEYDOWN and WM_CHAR messages.  WM_CHAR events are only
 // generated for certain keys; see
-// http://msdn.microsoft.com/en-us/library/windows/desktop/ms646268.aspx.
+// http://msdn.microsoft.com/en-us/library/windows/desktop/ms646268.aspx.  Per
+// discussion on http://crbug.com/108480, char events should furthermore not be
+// generated for Tab, Escape, and Backspace.
 bool ShouldSendCharEventForKeyboardCode(ui::KeyboardCode keycode) {
   if ((keycode >= ui::VKEY_0 && keycode <= ui::VKEY_9) ||
       (keycode >= ui::VKEY_A && keycode <= ui::VKEY_Z) ||
@@ -244,11 +246,8 @@ bool ShouldSendCharEventForKeyboardCode(ui::KeyboardCode keycode) {
   }
 
   switch (keycode) {
-    case ui::VKEY_BACK:
     case ui::VKEY_RETURN:
-    case ui::VKEY_ESCAPE:
     case ui::VKEY_SPACE:
-    case ui::VKEY_TAB:
     // In addition to the keys listed at MSDN, we include other
     // graphic-character and numpad keys.
     case ui::VKEY_MULTIPLY:

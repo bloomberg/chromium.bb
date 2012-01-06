@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "ui/aura/event.h"
 #include "ui/views/focus/focus_manager.h"
 
 UnhandledKeyboardEventHandler::UnhandledKeyboardEventHandler() {
@@ -19,10 +18,7 @@ void UnhandledKeyboardEventHandler::HandleKeyboardEvent(
     NOTREACHED();
     return;
   }
-  // A false char event may be sent to the renderer if the key
-  // event changed the focus. See crbug.com/108480.
-  if (event.os_event && !event.skip_in_browser &&
-      !static_cast<aura::KeyEvent*>(event.os_event)->is_char()) {
+  if (event.os_event && !event.skip_in_browser) {
     views::KeyEvent views_event(event.os_event);
     focus_manager->OnKeyEvent(views_event);
   }
