@@ -57,6 +57,7 @@
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
+#include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/history/history_extension_api.h"
@@ -384,7 +385,6 @@ ExtensionService::ExtensionService(Profile* profile,
       toolbar_model_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       menu_manager_(profile),
       app_notification_manager_(new AppNotificationManager(profile)),
-      permissions_manager_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       apps_promo_(profile->GetPrefs()),
       event_routers_initialized_(false),
       extension_warnings_(profile),
@@ -905,33 +905,15 @@ void ExtensionService::DisableExtension(const std::string& extension_id) {
   extension_warnings_.ClearWarnings(warnings);
 }
 
-void ExtensionService::GrantPermissions(const Extension* extension) {
-  CHECK(extension);
-
-  // We only maintain the granted permissions prefs for extensions that can't
-  // silently increase their permissions.
-  if (extension->CanSilentlyIncreasePermissions())
-    return;
-
-  extension_prefs_->AddGrantedPermissions(extension->id(),
-                                          extension->GetActivePermissions());
-}
-
 void ExtensionService::GrantPermissionsAndEnableExtension(
     const Extension* extension) {
   CHECK(extension);
   RecordPermissionMessagesHistogram(
       extension, "Extensions.Permissions_ReEnable");
-  GrantPermissions(extension);
+  extensions::PermissionsUpdater perms_updater(profile());
+  perms_updater.GrantActivePermissions(extension);
   extension_prefs_->SetDidExtensionEscalatePermissions(extension, false);
   EnableExtension(extension->id());
-}
-
-void ExtensionService::UpdateActivePermissions(
-    const Extension* extension,
-    const ExtensionPermissionSet* permissions) {
-  extension_prefs()->SetActivePermissions(extension->id(), permissions);
-  extension->SetActivePermissions(permissions);
 }
 
 // static
@@ -2054,7 +2036,8 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
     adjusted_active = ExtensionPermissionSet::CreateUnion(
             extension->required_permission_set(), adjusted_active.get());
 
-    UpdateActivePermissions(extension, adjusted_active);
+    extensions::PermissionsUpdater perms_updater(profile());
+    perms_updater.UpdateActivePermissions(extension, adjusted_active);
   }
 
   // We keep track of all permissions the user has granted each extension.

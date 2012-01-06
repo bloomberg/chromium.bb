@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
-#include "chrome/browser/extensions/extension_permissions_api.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
@@ -349,17 +348,9 @@ class ExtensionService
   virtual void DisableExtension(const std::string& extension_id);
 
   // Updates the |extension|'s granted permissions lists to include all
-  // permissions in the |extension|'s manifest.
-  void GrantPermissions(const Extension* extension);
-
-  // Updates the |extension|'s granted permissions lists to include all
   // permissions in the |extension|'s manifest and re-enables the
   // extension.
   void GrantPermissionsAndEnableExtension(const Extension* extension);
-
-  // Sets the |extension|'s active permissions to |permissions|.
-  void UpdateActivePermissions(const Extension* extension,
-                               const ExtensionPermissionSet* permissions);
 
   // Check for updates (or potentially new extensions from external providers)
   void CheckForExternalUpdates();
@@ -474,10 +465,6 @@ class ExtensionService
 
   AppNotificationManager* app_notification_manager() {
     return app_notification_manager_.get();
-  }
-
-  ExtensionPermissionsManager* permissions_manager() {
-    return &permissions_manager_;
   }
 
   ExtensionBrowserEventRouter* browser_event_router() {
@@ -795,9 +782,6 @@ class ExtensionService
 
   // Keeps track of app notifications.
   scoped_refptr<AppNotificationManager> app_notification_manager_;
-
-  // Keeps track of extension permissions.
-  ExtensionPermissionsManager permissions_manager_;
 
   // Keeps track of favicon-sized omnibox icons for extensions.
   ExtensionIconManager omnibox_icon_manager_;

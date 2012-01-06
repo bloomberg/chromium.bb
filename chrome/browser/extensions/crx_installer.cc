@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -44,6 +45,7 @@
 
 using content::BrowserThread;
 using content::UserMetricsAction;
+using extensions::PermissionsUpdater;
 
 namespace {
 
@@ -582,8 +584,10 @@ void CrxInstaller::ReportSuccessFromUIThread() {
   // the install (client_ is non NULL), or we are allowed to install this
   // silently. We only track granted permissions for INTERNAL extensions.
   if ((client_ || allow_silent_install_) &&
-      extension_->location() == Extension::INTERNAL)
-    frontend_weak_->GrantPermissions(extension_);
+      extension_->location() == Extension::INTERNAL) {
+    PermissionsUpdater perms_updater(profile());
+    perms_updater.GrantActivePermissions(extension_);
+  }
 
   // Tell the frontend about the installation and hand off ownership of
   // extension_ to it.
