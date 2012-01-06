@@ -46,9 +46,9 @@ public:
   scoped_ptr<ExtensionUnpacker> unpacker_;
 };
 
-// Flaky on Windows, http://crbug.com/109238
-#if defined(OS_WINDOWS)
-#define MAYBE_EmptyDefaultLocale FLAKY_EmptyDefaultLocale
+// Crashes intermittently on Windows, see http://crbug.com/109238
+#if defined(OS_WIN)
+#define MAYBE_EmptyDefaultLocale DISABLED_EmptyDefaultLocale
 #else
 #define MAYBE_EmptyDefaultLocale EmptyDefaultLocale
 #endif
