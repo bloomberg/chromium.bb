@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1058,7 +1058,8 @@ cr.define('cr.ui', function() {
 
       // Store all the item sizes into the cache in advance, to prevent
       // interleave measuring with mutating dom.
-      this.ensureAllItemSizesInCache();
+      if (!this.fixedHeight_)
+        this.ensureAllItemSizesInCache();
 
       // We cache the list items since creating the DOM nodes is the most
       // expensive part of redrawing.
@@ -1122,8 +1123,10 @@ cr.define('cr.ui', function() {
 
       // Mesurings must be placed after adding all the elements, to prevent
       // performance reducing.
-      for (var y = firstIndex; y < lastIndex; y++)
-        this.cachedItemSizes_[y] = measureItem(this, newCachedItems[y]);
+      if (!this.fixedHeight_) {
+        for (var y = firstIndex; y < lastIndex; y++)
+          this.cachedItemSizes_[y] = measureItem(this, newCachedItems[y]);
+      }
 
       // Measure again in case the item height has changed due to a page zoom.
       //
