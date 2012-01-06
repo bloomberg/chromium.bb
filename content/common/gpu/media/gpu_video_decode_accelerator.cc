@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -174,17 +174,21 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
   for (uint32 i = 0; i < buffer_ids.size(); ++i) {
     gpu::gles2::TextureManager::TextureInfo* info =
         texture_manager->GetTextureInfo(texture_ids[i]);
-    if (!info ||
-        !texture_manager->ClearRenderableLevels(command_decoder, info)) {
-      // TODO(fischman): send an error for invalid textures.
-      DLOG(DFATAL) << "Failed to Clear texture!";
+    if (!info) {
+      DLOG(FATAL) << "Failed to find texture id " << texture_ids[i];
+      NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
+      return;
+    }
+    if (!texture_manager->ClearRenderableLevels(command_decoder, info)) {
+      DLOG(FATAL) << "Failed to Clear texture id " << texture_ids[i];
+      NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
       return;
     }
     uint32 service_texture_id;
     if (!command_decoder->GetServiceTextureId(
             texture_ids[i], &service_texture_id)) {
-      // TODO(vrk): Send an error for invalid GLES buffers.
-      DLOG(DFATAL) << "Failed to translate texture!";
+      DLOG(FATAL) << "Failed to translate texture!";
+      NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
       return;
     }
     buffers.push_back(media::PictureBuffer(

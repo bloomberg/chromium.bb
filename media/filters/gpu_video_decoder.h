@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,6 +96,11 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Indicate the picturebuffer can be reused by the decoder.
   void ReusePictureBuffer(int64 picture_buffer_id);
 
+  void RecordBufferTimeData(
+      const BitstreamBuffer& bitstream_buffer, const Buffer& buffer);
+  void GetBufferTimeData(
+      int32 id, base::TimeDelta* timestamp, base::TimeDelta* duration);
+
   // A shared memory segment and its allocated size.
   struct SHMBuffer {
     SHMBuffer(base::SharedMemory* m, size_t s);
@@ -111,12 +116,15 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Return a shared-memory segment to the available pool.
   void PutSHM(SHMBuffer* shm_buffer);
 
-  PtsStream pts_stream_;
   StatisticsCallback statistics_callback_;
 
   // TODO(scherkus): I think this should be calculated by VideoRenderers based
   // on information provided by VideoDecoders (i.e., aspect ratio).
   gfx::Size natural_size_;
+
+  // Frame duration specified in the video stream's configuration, or 0 if not
+  // present.
+  base::TimeDelta config_frame_duration_;
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
   scoped_refptr<DemuxerStream> demuxer_stream_;
@@ -155,6 +163,15 @@ class MEDIA_EXPORT GpuVideoDecoder
   };
   std::map<int32, BufferPair> bitstream_buffers_in_decoder_;
   std::map<int32, PictureBuffer> picture_buffers_in_decoder_;
+
+  struct BufferTimeData {
+    BufferTimeData(int32 bbid, base::TimeDelta ts, base::TimeDelta dur);
+    ~BufferTimeData();
+    int32 bitstream_buffer_id;
+    base::TimeDelta timestamp;
+    base::TimeDelta duration;
+  };
+  std::list<BufferTimeData> input_buffer_time_data_;
 
   // picture_buffer_id and the frame wrapping the corresponding Picture, for
   // frames that have been decoded but haven't been requested by a Read() yet.

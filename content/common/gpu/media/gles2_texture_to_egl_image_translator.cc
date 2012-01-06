@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,8 @@ EGLImageKHR Gles2TextureToEglImageTranslator::TranslateToEglImage(
       EGL_GL_TEXTURE_2D_KHR,
       reinterpret_cast<EGLClientBuffer>(texture),
       &attrib);
-  CHECK(hEglImage) << eglGetError();
+  CHECK(hEglImage) << "Failed to eglCreateImageKHR for " << texture
+                   << ", error: 0x" << std::hex << eglGetError();
   return hEglImage;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,13 @@ GpuVideoDecoder::BufferPair::BufferPair(
 
 GpuVideoDecoder::BufferPair::~BufferPair() {}
 
+GpuVideoDecoder::BufferTimeData::BufferTimeData(
+    int32 bbid, base::TimeDelta ts, base::TimeDelta dur)
+    : bitstream_buffer_id(bbid), timestamp(ts), duration(dur) {
+}
+
+GpuVideoDecoder::BufferTimeData::~BufferTimeData() {}
+
 GpuVideoDecoder::GpuVideoDecoder(
     MessageLoop* message_loop,
     Factories* factories)
@@ -45,8 +52,14 @@ GpuVideoDecoder::GpuVideoDecoder(
 }
 
 GpuVideoDecoder::~GpuVideoDecoder() {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(!vda_);  // Stop should have been already called.
-  STLDeleteElements(&available_shm_segments_);
+  DCHECK(pending_read_cb_.is_null());
+  for (size_t i = 0; i < available_shm_segments_.size(); ++i) {
+    available_shm_segments_[i]->shm->Close();
+    delete available_shm_segments_[i];
+  }
+  available_shm_segments_.clear();
   for (std::map<int32, BufferPair>::iterator it =
            bitstream_buffers_in_decoder_.begin();
        it != bitstream_buffers_in_decoder_.end(); ++it) {
@@ -76,7 +89,6 @@ void GpuVideoDecoder::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
         &GpuVideoDecoder::Seek, this, time, cb));
     return;
   }
-  pts_stream_.Seek(time);
   cb.Run(PIPELINE_OK);
 }
 
@@ -90,14 +102,11 @@ void GpuVideoDecoder::Pause(const base::Closure& callback)  {
 }
 
 void GpuVideoDecoder::Flush(const base::Closure& callback)  {
-  if (MessageLoop::current() != message_loop_) {
+  if (MessageLoop::current() != message_loop_ || flush_in_progress_) {
     message_loop_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Flush, this, callback));
     return;
   }
-  // Pipeline should have quiesced (via Pause() to all filters) before calling
-  // us, so there should be nothing pending.
-  DCHECK(pending_read_cb_.is_null());
 
   // Throw away any already-decoded frames.
   ready_video_frames_.clear();
@@ -107,8 +116,8 @@ void GpuVideoDecoder::Flush(const base::Closure& callback)  {
     return;
   }
   DCHECK(pending_flush_cb_.is_null());
+  DCHECK(!callback.is_null());
   pending_flush_cb_ = callback;
-  pts_stream_.Flush();
   vda_->Reset();
 }
 
@@ -148,8 +157,8 @@ void GpuVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
 
   demuxer_stream_->EnableBitstreamConverter();
 
-  pts_stream_.Initialize(GetFrameDuration(config));
   natural_size_ = config.natural_size();
+  config_frame_duration_ = GetFrameDuration(config);
 
   callback.Run(PIPELINE_OK);
 }
@@ -166,6 +175,7 @@ void GpuVideoDecoder::Read(const ReadCB& callback) {
     return;
   }
 
+  DCHECK(pending_flush_cb_.is_null());
   DCHECK(pending_read_cb_.is_null());
   pending_read_cb_ = callback;
 
@@ -183,6 +193,7 @@ void GpuVideoDecoder::RequestBufferDecode(const scoped_refptr<Buffer>& buffer) {
         &GpuVideoDecoder::RequestBufferDecode, this, buffer));
     return;
   }
+
   demuxer_read_in_progress_ = false;
 
   if (!vda_) {
@@ -206,10 +217,45 @@ void GpuVideoDecoder::RequestBufferDecode(const scoped_refptr<Buffer>& buffer) {
   bool inserted = bitstream_buffers_in_decoder_.insert(std::make_pair(
       bitstream_buffer.id(), BufferPair(shm_buffer, buffer))).second;
   DCHECK(inserted);
-  pts_stream_.EnqueuePts(buffer.get());
+  RecordBufferTimeData(bitstream_buffer, *buffer);
 
   vda_->Decode(bitstream_buffer);
 }
+
+void GpuVideoDecoder::RecordBufferTimeData(
+    const BitstreamBuffer& bitstream_buffer, const Buffer& buffer) {
+  base::TimeDelta duration = buffer.GetDuration();
+  if (duration == base::TimeDelta())
+    duration = config_frame_duration_;
+  input_buffer_time_data_.push_front(BufferTimeData(
+      bitstream_buffer.id(), buffer.GetTimestamp(), duration));
+  // Why this value?  Because why not.  avformat.h:MAX_REORDER_DELAY is 16, but
+  // that's too small for some pathological B-frame test videos.  The cost of
+  // using too-high a value is low (192 bits per extra slot).
+  static const size_t kMaxInputBufferTimeDataSize = 128;
+  // Pop from the back of the list, because that's the oldest and least likely
+  // to be useful in the future data.
+  if (input_buffer_time_data_.size() > kMaxInputBufferTimeDataSize)
+    input_buffer_time_data_.pop_back();
+}
+
+void GpuVideoDecoder::GetBufferTimeData(
+    int32 id, base::TimeDelta* timestamp, base::TimeDelta* duration) {
+  // If all else fails later, at least we can set a default duration if there
+  // was one in the config.
+  *duration = config_frame_duration_;
+  for (std::list<BufferTimeData>::const_iterator it =
+           input_buffer_time_data_.begin(); it != input_buffer_time_data_.end();
+       ++it) {
+    if (it->bitstream_buffer_id != id)
+      continue;
+    *timestamp = it->timestamp;
+    *duration = it->duration;
+    return;
+  }
+  NOTREACHED() << "Missing bitstreambuffer id: " << id;
+}
+
 
 const gfx::Size& GpuVideoDecoder::natural_size() {
   return natural_size_;
@@ -296,41 +342,32 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   // Update frame's timestamp.
   base::TimeDelta timestamp;
   base::TimeDelta duration;
-  std::map<int32, BufferPair>::const_iterator buf_it =
-      bitstream_buffers_in_decoder_.find(picture.bitstream_buffer_id());
-  if (buf_it != bitstream_buffers_in_decoder_.end()) {
-    // Sufficiently out-of-order decoding could have already called
-    // NotifyEndOfBitstreamBuffer on this buffer, but that's ok since we only
-    // need the buffer's time info for best-effort PTS updating.
-    timestamp = buf_it->second.buffer->GetTimestamp();
-    duration = buf_it->second.buffer->GetDuration();
-  }
+  GetBufferTimeData(picture.bitstream_buffer_id(), &timestamp, &duration);
 
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
       pb.texture_id(), pb.size().width(),
       pb.size().height(), timestamp, duration,
       base::Bind(&GpuVideoDecoder::ReusePictureBuffer, this,
                  picture.picture_buffer_id())));
-  pts_stream_.UpdatePtsAndDuration(frame.get());
-  frame->SetTimestamp(pts_stream_.current_pts());
-  frame->SetDuration(pts_stream_.current_duration());
 
   // Deliver the frame.
   DeliverFrame(frame);
 }
 
 void GpuVideoDecoder::DeliverFrame(const scoped_refptr<VideoFrame>& frame) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  message_loop_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::DeliverFrameOutOfLine, this, frame));
 }
 
 void GpuVideoDecoder::DeliverFrameOutOfLine(
     const scoped_refptr<VideoFrame>& frame) {
-  if (pending_read_cb_.is_null()) {
-    ready_video_frames_.push_back(frame);
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  if (!pending_read_cb_.is_null()) {
+    ResetAndRunCB(&pending_read_cb_, frame);
     return;
   }
-  ResetAndRunCB(&pending_read_cb_, frame);
+  if (pending_flush_cb_.is_null())
+    ready_video_frames_.push_back(frame);
 }
 
 void GpuVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
@@ -386,6 +423,7 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
     NOTREACHED() << "Missing bitstream buffer: " << id;
     return;
   }
+
   PutSHM(it->second.shm_buffer);
   const scoped_refptr<Buffer>& buffer = it->second.buffer;
   if (buffer->GetDataSize()) {
@@ -395,7 +433,7 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
   }
   bitstream_buffers_in_decoder_.erase(it);
 
-  if (!pending_read_cb_.is_null()) {
+  if (!pending_read_cb_.is_null() && pending_flush_cb_.is_null()) {
     DCHECK(ready_video_frames_.empty());
     EnsureDemuxOrDecode();
   }
@@ -427,8 +465,12 @@ void GpuVideoDecoder::NotifyResetDone() {
         &GpuVideoDecoder::NotifyResetDone, this));
     return;
   }
-  // Throw away any already-decoded frames that have come in during the reset.
-  ready_video_frames_.clear();
+  DCHECK(ready_video_frames_.empty());
+
+  // This needs to happen after vda_->Reset() is done to ensure pictures
+  // delivered during the reset can find their time data.
+  input_buffer_time_data_.clear();
+
   ResetAndRunCB(&pending_flush_cb_);
 }
 
