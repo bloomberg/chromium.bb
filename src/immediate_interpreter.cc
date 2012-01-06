@@ -159,7 +159,14 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       scroll_stationary_finger_max_distance_(
           prop_reg, "Scroll Stationary Finger Max Distance", 1.0),
       bottom_zone_size_(prop_reg, "Bottom Zone Size", 10.0),
-      button_evaluation_timeout_(prop_reg, "Button Evaluation Timeout", 0.03) {
+      button_evaluation_timeout_(prop_reg, "Button Evaluation Timeout", 0.03),
+      keyboard_touched_timeval_high_(prop_reg, "Keyboard Touched Timeval High",
+                                     0),
+      keyboard_touched_timeval_low_(prop_reg, "Keyboard Touched Timeval Low",
+                                    0, this),
+      keyboard_touched_(0.0),
+      keyboard_palm_prevent_timeout_(prop_reg, "Keyboard Palm Prevent Timeout",
+                                     0.5) {
   memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
@@ -424,6 +431,19 @@ void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
        it != thumb_.end(); ++it) {
     pointing_.erase((*it).first);
   }
+}
+
+bool ImmediateInterpreter::KeyboardRecentlyUsed(stime_t now) const {
+  // For tests, values of 0 mean keyboard not used recently.
+  if (keyboard_touched_ == 0.0)
+    return false;
+  // Sanity check. If keyboard_touched_ is more than 10 seconds away from now,
+  // ignore it.
+  if (fabsf(now - keyboard_touched_) > 10) {
+    return false;
+  }
+
+  return keyboard_touched_ + keyboard_palm_prevent_timeout_.val_ > now;
 }
 
 namespace {
@@ -731,8 +751,8 @@ void ImmediateInterpreter::UpdateTapState(
   Log("TTC State: %s", TapToClickStateName(tap_to_click_state_));
   if (!hwstate)
     Log("This is a timer callback");
-  if (phys_button_down) {
-    Log("Physical button down. Going to Idle state");
+  if (phys_button_down || KeyboardRecentlyUsed(now)) {
+    Log("Physical button down or keyboard recently used. Going to Idle state");
     SetTapToClickState(kTtcIdle, now);
     return;
   }
@@ -1052,6 +1072,16 @@ void ImmediateInterpreter::FillResultGesture(
     }
     default:
       result_.type = kGestureTypeNull;
+  }
+}
+
+void ImmediateInterpreter::IntWasWritten(IntProperty* prop) {
+  if (prop == &keyboard_touched_timeval_low_) {
+    struct timeval tv = {
+      keyboard_touched_timeval_high_.val_,
+      keyboard_touched_timeval_low_.val_
+    };
+    keyboard_touched_ = StimeFromTimeval(&tv);
   }
 }
 

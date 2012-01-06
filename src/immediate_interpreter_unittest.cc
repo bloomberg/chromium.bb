@@ -1000,6 +1000,75 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
   }
 }
 
+// Does two tap gestures, one with keyboard interference.
+TEST(ImmediateInterpreterTest, TapToClickKeyboardTest) {
+  scoped_ptr<ImmediateInterpreter> ii;
+
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    200,  // right edge
+    200,  // bottom edge
+    1.0,  // pixels/TP width
+    1.0,  // pixels/TP height
+    1.0,  // screen DPI x
+    1.0,  // screen DPI y
+    5,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  FingerState fs = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    0, 0, 0, 0, 50, 0, 4, 4, 91
+  };
+  HardwareState hwstates[] = {
+    // Simple 1-finger tap
+    { 0.01, 0, 1, 1, &fs },
+    { 0.02, 0, 0, 0, NULL },
+    { 0.30, 0, 0, 0, NULL }
+  };
+
+  enum {
+    kWithoutKeyboard = 0,
+    kWithKeyboard,
+    kMaxTests
+  };
+  for (size_t test = 0; test != kMaxTests; test++) {
+    ii.reset(new ImmediateInterpreter(NULL));
+    ii->SetHardwareProperties(hwprops);
+    ii->tap_enable_.val_ = 1;
+
+    if (test == kWithKeyboard)
+      ii->keyboard_touched_ = 0.001;
+
+    unsigned down = 0;
+    unsigned up = 0;
+    for (size_t i = 0; i < arraysize(hwstates); i++) {
+      down = 0;
+      up = 0;
+      stime_t timeout = -1.0;
+      set<short, kMaxGesturingFingers> gs =
+          hwstates[i].finger_cnt == 1 ? MkSet(91) : MkSet();
+      ii->UpdateTapState(
+          &hwstates[i],
+          gs,
+          false,  // same fingers
+          hwstates[i].timestamp,
+          &down,
+          &up,
+          &timeout);
+    }
+    EXPECT_EQ(down, up);
+    if (test == kWithoutKeyboard)
+      EXPECT_EQ(GESTURES_BUTTON_LEFT, down);
+    else
+      EXPECT_EQ(0, down);
+  }
+}
+
 TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
   scoped_ptr<ImmediateInterpreter> ii;
 

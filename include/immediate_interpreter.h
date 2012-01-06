@@ -52,6 +52,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, GetGesturingFingersTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickStateMachineTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickEnableTest);
+  FRIEND_TEST(ImmediateInterpreterTest, TapToClickKeyboardTest);
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest);
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainTest);
  public:
@@ -140,6 +141,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Updates thumb_ below.
   void UpdateThumbState(const HardwareState& hwstate);
 
+  // Returns true iff the keyboard has been recently used.
+  bool KeyboardRecentlyUsed(stime_t now) const;
+
   // Gets the finger or fingers we should consider for gestures.
   // Currently, it fetches the (up to) two fingers closest to the keyboard
   // that are not palms. There is one exception: for t5r2 pads with > 2
@@ -207,6 +211,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Computes the resulting gesture, storing it in result_.
   void FillResultGesture(const HardwareState& hwstate,
                          const set<short, kMaxGesturingFingers>& fingers);
+
+  virtual void IntWasWritten(IntProperty* prop);
 
   HardwareState prev_state_;
   set<short, kMaxGesturingFingers> prev_gs_fingers_;
@@ -316,6 +322,19 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty bottom_zone_size_;
   // Time [s] to evaluate number of fingers for a click
   DoubleProperty button_evaluation_timeout_;
+  // Timeval of time when keyboard was last touched. After the low one is set,
+  // the two are converted into an stime_t and stored in keyboard_touched_.
+  IntProperty keyboard_touched_timeval_high_;  // seconds
+  IntProperty keyboard_touched_timeval_low_;  // microseconds
+  stime_t keyboard_touched_;
+  // During this timeout, which is time [s] since the keyboard has been used,
+  // we are extra aggressive in palm detection. If this time is > 10s apart
+  // from now (either before or after), it's disregarded. We disregard old
+  // values b/c they no longer apply. Because of delays in other interpreters
+  // (LooaheadInterpreter), it's possible to get "future" keyboard used times.
+  // We wouldn't want a single bad future value to stop all tap-to-click, so
+  // we sanity check.
+  DoubleProperty keyboard_palm_prevent_timeout_;
 };
 
 }  // namespace gestures
