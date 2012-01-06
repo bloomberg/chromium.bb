@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -302,8 +302,10 @@ WebPlugin* CreateWebPlugin(WebFrame* frame,
       frame, new_params, plugins.front().path);
 }
 
-WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
-                                          WebMediaPlayerClient* client) {
+WebKit::WebMediaPlayer* CreateMediaPlayer(
+    WebFrame* frame,
+    WebMediaPlayerClient* client,
+    webkit_media::MediaStreamClient* media_stream_client) {
 #if defined(OS_ANDROID)
   // TODO: Implement the WebMediaPlayer that will be used for Android.
   return NULL;
@@ -320,13 +322,19 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
           base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
           collection.release(),
           message_loop_factory.release(),
-          NULL,
+          media_stream_client,
           new media::MediaLog()));
   if (!result->Initialize(frame, false)) {
     return NULL;
   }
   return result.release();
 #endif
+}
+
+WebKit::WebMediaPlayer* CreateMediaPlayer(
+    WebFrame* frame,
+    WebMediaPlayerClient* client) {
+  return CreateMediaPlayer(frame, client, NULL);
 }
 
 WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
@@ -342,7 +350,7 @@ WebKit::WebString GetWebKitRootDir() {
 }
 
 void SetUpGLBindings(GLBindingPreferences bindingPref) {
-  switch(bindingPref) {
+  switch (bindingPref) {
     case GL_BINDING_DEFAULT:
       gfx::GLSurface::InitializeOneOff();
       break;
@@ -512,16 +520,16 @@ WebURL LocalFileToDataURL(const WebURL& fileUrl) {
 // by webkit layout tests.
 class ScopedTempDirectoryInternal : public ScopedTempDirectory {
  public:
-   virtual bool CreateUniqueTempDir() {
-     return tempDirectory_.CreateUniqueTempDir();
-   }
+  virtual bool CreateUniqueTempDir() {
+    return tempDirectory_.CreateUniqueTempDir();
+  }
 
-   virtual std::string path() const {
-     return tempDirectory_.path().MaybeAsASCII();
-   }
+  virtual std::string path() const {
+    return tempDirectory_.path().MaybeAsASCII();
+  }
 
  private:
-   ScopedTempDir tempDirectory_;
+  ScopedTempDir tempDirectory_;
 };
 
 ScopedTempDirectory* CreateScopedTempDirectory() {
@@ -559,8 +567,9 @@ std::string MakeURLErrorDescription(const WebKit::WebURLError& error) {
       code = -1004;  // NSURLErrorCannotConnectToHost
       break;
     }
-  } else
+  } else {
     DLOG(WARNING) << "Unknown error domain";
+  }
 
   return base::StringPrintf("<NSError domain %s, code %d, failing URL \"%s\">",
       domain.c_str(), code, error.unreachableURL.spec().data());

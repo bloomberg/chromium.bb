@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,10 @@ struct WebPluginParams;
 struct WebURLError;
 }
 
+namespace webkit_media {
+class MediaStreamClient;
+}
+
 // This package provides functions used by DumpRenderTree/chromium.
 // DumpRenderTree/chromium uses some code in webkit/ of Chromium. In
 // order to minimize the dependency from WebKit to Chromium, the
@@ -63,8 +67,15 @@ WebKit::WebPlugin* CreateWebPlugin(WebKit::WebFrame* frame,
                                    const WebKit::WebPluginParams& params);
 
 // This is used by WebFrameClient::createMediaPlayer().
-WebKit::WebMediaPlayer* CreateMediaPlayer(WebKit::WebFrame* frame,
-                                          WebKit::WebMediaPlayerClient* client);
+WebKit::WebMediaPlayer* CreateMediaPlayer(
+    WebKit::WebFrame* frame,
+    WebKit::WebMediaPlayerClient* client,
+    webkit_media::MediaStreamClient* media_stream_client);
+
+// This is used by WebFrameClient::createMediaPlayer().
+WebKit::WebMediaPlayer* CreateMediaPlayer(
+    WebKit::WebFrame* frame,
+    WebKit::WebMediaPlayerClient* client);
 
 // This is used by WebFrameClient::createApplicationCacheHost().
 WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(

@@ -44,6 +44,8 @@
         'platform_support_linux.cc',
         'platform_support_mac.mm',
         'platform_support_win.cc',
+        'test_media_stream_client.cc',
+        'test_media_stream_client.h',
         'test_webkit_platform_support.cc',
         'test_webkit_platform_support.h',
         'test_webmessageportchannel.cc',
