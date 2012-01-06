@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,12 +31,16 @@
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/spellchecker/internal/spellcheck_internal.h"
-#else
-// Use a dummy URL and a key on Chromium to avoid build breaks until the
-// Spelling API is released. These dummy parameters just cause a timeout and
-// show 'no suggestions found'.
+#endif
+
+// Use the public URL to the Spelling service on Chromium. Unfortunately, this
+// service is an experimental service and returns an error without a key.
+#ifndef SPELLING_SERVICE_KEY
 #define SPELLING_SERVICE_KEY
-#define SPELLING_SERVICE_URL "http://127.0.0.1/rpc"
+#endif
+
+#ifndef SPELLING_SERVICE_URL
+#define SPELLING_SERVICE_URL "https://www.googleapis.com/rpc"
 #endif
 
 using content::BrowserThread;
