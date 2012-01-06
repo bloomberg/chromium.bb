@@ -43,6 +43,8 @@ struct weston_vector {
 void
 weston_matrix_init(struct weston_matrix *matrix);
 void
+weston_matrix_multiply(struct weston_matrix *m, const struct weston_matrix *n);
+void
 weston_matrix_scale(struct weston_matrix *matrix, GLfloat x, GLfloat y, GLfloat z);
 void
 weston_matrix_translate(struct weston_matrix *matrix,
@@ -53,6 +55,7 @@ weston_matrix_transform(struct weston_matrix *matrix, struct weston_vector *v);
 struct weston_transform {
 	struct weston_matrix matrix;
 	struct weston_matrix inverse;
+	struct wl_list link;
 };
 
 struct weston_surface;
@@ -234,12 +237,19 @@ struct weston_surface {
 	int32_t pitch;
 	struct wl_list link;
 	struct wl_list buffer_link;
-	struct weston_transform *transform;
 	struct weston_shader *shader;
 	GLfloat color[4];
 	uint32_t alpha;
 	uint32_t visual;
 	int overlapped;
+
+	struct {
+		struct wl_list list;
+		int dirty;
+
+		struct weston_transform cached;
+		int enabled;
+	} transform;
 
 	/*
 	 * Which output to vsync this surface to.

@@ -205,7 +205,8 @@ weston_surface_create(struct weston_compositor *compositor,
 
 	surface->buffer_destroy_listener.func = surface_handle_buffer_destroy;
 
-	surface->transform = NULL;
+	wl_list_init(&surface->transform.list);
+	surface->transform.dirty = 1;
 
 	return surface;
 }
@@ -504,7 +505,9 @@ transform_vertex(struct weston_surface *surface,
 	t.f[2] = 0.0;
 	t.f[3] = 1.0;
 
-	weston_matrix_transform(&surface->transform->matrix, &t);
+	weston_matrix_transform(&surface->transform.cached.matrix, &t);
+
+	/* XXX: assumes last row of matrix is [0 0 * 1] */
 
 	r[ 0] = t.f[0];
 	r[ 1] = t.f[1];
@@ -536,6 +539,34 @@ texture_transformed_surface(struct weston_surface *es)
 	p[5] = 3;
 
 	return 1;
+}
+
+static void
+weston_surface_update_transform(struct weston_surface *surface)
+{
+	struct weston_matrix *matrix = &surface->transform.cached.matrix;
+	struct weston_matrix *inverse = &surface->transform.cached.inverse;
+	struct weston_transform *tform;
+
+	if (!surface->transform.dirty)
+		return;
+
+	surface->transform.dirty = 0;
+
+	if (wl_list_empty(&surface->transform.list)) {
+		surface->transform.enabled = 0;
+		return;
+	}
+
+	surface->transform.enabled = 1;
+
+	weston_matrix_init(matrix);
+	wl_list_for_each(tform, &surface->transform.list, link)
+		weston_matrix_multiply(matrix, &tform->matrix);
+
+	weston_matrix_init(inverse);
+	wl_list_for_each_reverse(tform, &surface->transform.list, link)
+		weston_matrix_multiply(inverse, &tform->inverse);
 }
 
 WL_EXPORT void
@@ -584,12 +615,13 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 		ec->current_alpha = es->alpha;
 	}
 
-	if (es->transform == NULL) {
-		filter = GL_NEAREST;
-		n = texture_region(es, &repaint);
-	} else {
+	weston_surface_update_transform(es);
+	if (es->transform.enabled) {
 		filter = GL_LINEAR;
 		n = texture_transformed_surface(es);
+	} else {
+		filter = GL_NEAREST;
+		n = texture_region(es, &repaint);
 	}
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);

@@ -37,7 +37,7 @@ weston_matrix_init(struct weston_matrix *matrix)
 	memcpy(matrix, &identity, sizeof identity);
 }
 
-static void
+WL_EXPORT void
 weston_matrix_multiply(struct weston_matrix *m, const struct weston_matrix *n)
 {
 	struct weston_matrix tmp;
@@ -162,7 +162,8 @@ weston_zoom_destroy(struct weston_zoom *zoom)
 {
 	wl_list_remove(&zoom->animation.link);
 	wl_list_remove(&zoom->listener.link);
-	zoom->surface->transform = NULL;
+	wl_list_remove(&zoom->transform.link);
+	zoom->surface->transform.dirty = 1;
 	if (zoom->done)
 		zoom->done(zoom, zoom->data);
 	free(zoom);
@@ -212,6 +213,8 @@ weston_zoom_frame(struct weston_animation *animation,
 	weston_matrix_init(&zoom->transform.inverse);
 	weston_matrix_scale(&zoom->transform.inverse, scale, scale, scale);
 
+	zoom->surface->transform.dirty = 1;
+
 	weston_compositor_damage_all(es->compositor);
 }
 
@@ -230,7 +233,7 @@ weston_zoom_run(struct weston_surface *surface, GLfloat start, GLfloat stop,
 	zoom->data = data;
 	zoom->start = start;
 	zoom->stop = stop;
-	surface->transform = &zoom->transform;
+	wl_list_insert(&surface->transform.list, &zoom->transform.link);
 	weston_spring_init(&zoom->spring, 200.0, 0.0, 1.0);
 	zoom->spring.friction = 700;
 	zoom->spring.timestamp = weston_compositor_get_time();
