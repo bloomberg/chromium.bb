@@ -18,10 +18,6 @@ class ChromeWebUI : public WebUI {
   // Returns the profile for this WebUI.
   Profile* GetProfile() const;
 
-  // Returns true if the bookmark bar can be displayed over this webui,
-  // detached from the location bar.
-  virtual bool CanShowBookmarkBar() const;
-
   // Overridden from WebUI:
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
 

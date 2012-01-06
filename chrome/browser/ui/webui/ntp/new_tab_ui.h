@@ -28,11 +28,6 @@ class NewTabUI : public ChromeWebUI,
   explicit NewTabUI(content::WebContents* manager);
   virtual ~NewTabUI();
 
-  // Override WebUI methods so we can hook up the paint timer to the render
-  // view host.
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewReused(RenderViewHost* render_view_host) OVERRIDE;
-
   static void RegisterUserPrefs(PrefService* prefs);
 
   // Adds "url", "title", and "direction" keys on incoming dictionary, setting
@@ -41,8 +36,20 @@ class NewTabUI : public ChromeWebUI,
                                       const string16& title,
                                       const GURL& gurl);
 
+  // Returns a pointer to a NewTabUI if the WebUI object is a new tab page.
+  static NewTabUI* FromWebUI(WebUI* ui);
+
   // The current preference version.
   static int current_pref_version() { return current_pref_version_; }
+
+  // Override WebUI methods so we can hook up the paint timer to the render
+  // view host.
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewReused(RenderViewHost* render_view_host) OVERRIDE;
+
+  // Returns true if the bookmark bar can be displayed over this webui, detached
+  // from the location bar.
+  bool CanShowBookmarkBar() const;
 
   class NewTabHTMLSource : public ChromeURLDataManager::DataSource {
    public:
@@ -79,10 +86,6 @@ class NewTabUI : public ChromeWebUI,
 
   void StartTimingPaint(RenderViewHost* render_view_host);
   void PaintTimeout();
-
-  // Overridden from ChromeWebUI. Determines if the bookmarks bar can be shown
-  // detached from the location bar.
-  virtual bool CanShowBookmarkBar() const OVERRIDE;
 
   content::NotificationRegistrar registrar_;
 

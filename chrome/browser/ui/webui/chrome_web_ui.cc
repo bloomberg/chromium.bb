@@ -34,10 +34,6 @@ Profile* ChromeWebUI::GetProfile() const {
   return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 }
 
-bool ChromeWebUI::CanShowBookmarkBar() const {
-  return false;
-}
-
 void ChromeWebUI::RenderViewCreated(RenderViewHost* render_view_host) {
   WebUI::RenderViewCreated(render_view_host);
 

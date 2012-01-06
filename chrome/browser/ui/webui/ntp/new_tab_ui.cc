@@ -6,10 +6,13 @@
 
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
@@ -64,6 +67,8 @@ const int kTimeoutMs = 2000;
 const char kRTLHtmlTextDirection[] = "rtl";
 const char kLTRHtmlTextDirection[] = "ltr";
 
+static base::LazyInstance<std::set<const WebUI*> > g_live_new_tabs;
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -71,6 +76,7 @@ const char kLTRHtmlTextDirection[] = "ltr";
 
 NewTabUI::NewTabUI(WebContents* contents)
     : ChromeWebUI(contents) {
+  g_live_new_tabs.Pointer()->insert(this);
   // Override some options on the Web UI.
   hide_favicon_ = true;
 
@@ -119,6 +125,7 @@ NewTabUI::NewTabUI(WebContents* contents)
 }
 
 NewTabUI::~NewTabUI() {
+  g_live_new_tabs.Pointer()->erase(this);
 }
 
 // The timer callback.  If enough time has elapsed since the last paint
@@ -155,6 +162,14 @@ void NewTabUI::StartTimingPaint(RenderViewHost* render_view_host) {
 
 }
 
+bool NewTabUI::CanShowBookmarkBar() const {
+  PrefService* prefs = GetProfile()->GetPrefs();
+  bool disabled_by_policy =
+      prefs->IsManagedPreference(prefs::kShowBookmarkBar) &&
+      !prefs->GetBoolean(prefs::kShowBookmarkBar);
+  return browser_defaults::bookmarks_enabled && !disabled_by_policy;
+}
+
 void NewTabUI::RenderViewCreated(RenderViewHost* render_view_host) {
   StartTimingPaint(render_view_host);
   ChromeWebUI::RenderViewCreated(render_view_host);
@@ -163,14 +178,6 @@ void NewTabUI::RenderViewCreated(RenderViewHost* render_view_host) {
 void NewTabUI::RenderViewReused(RenderViewHost* render_view_host) {
   StartTimingPaint(render_view_host);
   ChromeWebUI::RenderViewReused(render_view_host);
-}
-
-bool NewTabUI::CanShowBookmarkBar() const {
-  PrefService* prefs = GetProfile()->GetPrefs();
-  bool disabled_by_policy =
-      prefs->IsManagedPreference(prefs::kShowBookmarkBar) &&
-      !prefs->GetBoolean(prefs::kShowBookmarkBar);
-  return browser_defaults::bookmarks_enabled && !disabled_by_policy;
 }
 
 void NewTabUI::Observe(int type,
@@ -243,6 +250,13 @@ void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
   }
   dictionary->SetString("title", title_to_set);
   dictionary->SetString("direction", direction);
+}
+
+// static
+NewTabUI* NewTabUI::FromWebUI(WebUI* ui) {
+  if (!g_live_new_tabs.Pointer()->count(ui))
+    return NULL;
+  return static_cast<NewTabUI*>(ui);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

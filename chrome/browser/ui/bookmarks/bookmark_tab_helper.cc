@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
@@ -18,7 +19,10 @@
 namespace {
 
 bool CanShowBookmarkBar(WebUI* ui) {
-  return ui && static_cast<ChromeWebUI*>(ui)->CanShowBookmarkBar();
+  if (!ui)
+    return false;
+  NewTabUI* new_tab = NewTabUI::FromWebUI(ui);
+  return new_tab && new_tab->CanShowBookmarkBar();
 }
 
 }  // namespace
