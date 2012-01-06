@@ -60,7 +60,15 @@ TEST_F(ExtensionUnpackerTest, MAYBE_EmptyDefaultLocale) {
             unpacker_->error_message());
 }
 
-TEST_F(ExtensionUnpackerTest, HasDefaultLocaleMissingLocalesFolder) {
+// Crashes intermittently on Vista, see http://crbug.com/109385
+#if defined(OS_WIN)
+#define MAYBE_HasDefaultLocaleMissingLocalesFolder \
+  DISABLED_HasDefaultLocaleMissingLocalesFolder
+#else
+#define MAYBE_HasDefaultLocaleMissingLocalesFolder \
+  HasDefaultLocaleMissingLocalesFolder
+#endif
+TEST_F(ExtensionUnpackerTest, MAYBE_HasDefaultLocaleMissingLocalesFolder) {
   SetupUnpacker("has_default_missing_locales.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kLocalesTreeMissing),
