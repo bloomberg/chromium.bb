@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,9 +33,9 @@ const char kFileSystemsKey[] = "fileSystems";
 const char kFormDataKey[] = "formData";
 const char kHistoryKey[] = "history";
 const char kIndexedDBKey[] = "indexedDB";
-const char kPluginDataKey[] = "pluginData";
 const char kLocalStorageKey[] = "localStorage";
 const char kPasswordsKey[] = "passwords";
+const char kPluginDataKey[] = "pluginData";
 const char kWebSQLKey[] = "webSQL";
 
 // Errors!
@@ -72,21 +72,24 @@ int ParseRemovalMask(base::DictionaryValue* value) {
     GetRemovalMask |= BrowsingDataRemover::REMOVE_COOKIES;
   if (DataRemovalRequested(value, extension_clear_api_constants::kDownloadsKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_DOWNLOADS;
-  if (DataRemovalRequested(value, extension_clear_api_constants::kPasswordsKey))
+  if (DataRemovalRequested(value,
+                           extension_clear_api_constants::kFileSystemsKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_FILE_SYSTEMS;
   if (DataRemovalRequested(value, extension_clear_api_constants::kFormDataKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_FORM_DATA;
   if (DataRemovalRequested(value, extension_clear_api_constants::kHistoryKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_HISTORY;
-  if (DataRemovalRequested(value, extension_clear_api_constants::kPasswordsKey))
+  if (DataRemovalRequested(value, extension_clear_api_constants::kIndexedDBKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_INDEXEDDB;
-  if (DataRemovalRequested(value, extension_clear_api_constants::kPasswordsKey))
+  if (DataRemovalRequested(value,
+                           extension_clear_api_constants::kLocalStorageKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_LOCAL_STORAGE;
   if (DataRemovalRequested(value, extension_clear_api_constants::kPasswordsKey))
-    GetRemovalMask |= BrowsingDataRemover::REMOVE_PLUGIN_DATA;
-  if (DataRemovalRequested(value, extension_clear_api_constants::kPasswordsKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_PASSWORDS;
-  if (DataRemovalRequested(value, extension_clear_api_constants::kPasswordsKey))
+  if (DataRemovalRequested(value,
+                           extension_clear_api_constants::kPluginDataKey))
+    GetRemovalMask |= BrowsingDataRemover::REMOVE_PLUGIN_DATA;
+  if (DataRemovalRequested(value, extension_clear_api_constants::kWebSQLKey))
     GetRemovalMask |= BrowsingDataRemover::REMOVE_WEBSQL;
 
   return GetRemovalMask;

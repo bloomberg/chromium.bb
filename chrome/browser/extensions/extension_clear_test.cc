@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,6 +48,10 @@ class ExtensionClearTest : public InProcessBrowserTest,
                    content::Source<Profile>(browser()->profile()));
   }
 
+  virtual void TearDownOnMainThread() {
+    registrar_.RemoveAll();
+  }
+
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -59,8 +63,14 @@ class ExtensionClearTest : public InProcessBrowserTest,
     called_with_details_.reset(new BrowsingDataRemover::NotificationDetails(
         *content::Details<BrowsingDataRemover::NotificationDetails>(
             details).ptr()));
+  }
 
-    registrar_.RemoveAll();
+  void RunClearBrowsingDataFunctionAndCompareMask(const std::string& key,
+                                                  int expected_mask) {
+    SCOPED_TRACE(key);
+    EXPECT_EQ(NULL, RunFunctionAndReturnResult(new ClearBrowsingDataFunction(),
+        std::string("[1, {\"") + key + "\": true}]", browser()));
+    EXPECT_EQ(expected_mask, GetRemovalMask());
   }
 
  private:
@@ -97,4 +107,30 @@ IN_PROC_BROWSER_TEST_F(ExtensionClearTest, ClearBrowsingDataEverything) {
       BrowsingDataRemover::REMOVE_PASSWORDS) &
       // We can't remove plugin data inside a test profile.
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionClearTest, ClearBrowsingDataMask) {
+  RunClearBrowsingDataFunctionAndCompareMask(
+      "appcache", BrowsingDataRemover::REMOVE_APPCACHE);
+  RunClearBrowsingDataFunctionAndCompareMask(
+      "cache", BrowsingDataRemover::REMOVE_CACHE);
+  RunClearBrowsingDataFunctionAndCompareMask(
+      "cookies", BrowsingDataRemover::REMOVE_COOKIES);
+  RunClearBrowsingDataFunctionAndCompareMask(
+      "downloads", BrowsingDataRemover::REMOVE_DOWNLOADS);
+  RunClearBrowsingDataFunctionAndCompareMask(
+      "fileSystems", BrowsingDataRemover::REMOVE_FILE_SYSTEMS);
+  RunClearBrowsingDataFunctionAndCompareMask(
+      "formData", BrowsingDataRemover::REMOVE_FORM_DATA);
+  RunClearBrowsingDataFunctionAndCompareMask(
+      "history", BrowsingDataRemover::REMOVE_HISTORY);
+  RunClearBrowsingDataFunctionAndCompareMask(
+      "indexedDB", BrowsingDataRemover::REMOVE_INDEXEDDB);
+  RunClearBrowsingDataFunctionAndCompareMask(
+      "localStorage", BrowsingDataRemover::REMOVE_LOCAL_STORAGE);
+  RunClearBrowsingDataFunctionAndCompareMask(
+      "passwords", BrowsingDataRemover::REMOVE_PASSWORDS);
+  // We can't remove plugin data inside a test profile.
+  RunClearBrowsingDataFunctionAndCompareMask(
+      "webSQL", BrowsingDataRemover::REMOVE_WEBSQL);
 }
