@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,7 +172,7 @@ ExtensionAPIPermission::~ExtensionAPIPermission() {}
 void ExtensionAPIPermission::RegisterAllPermissions(
     ExtensionPermissionsInfo* info) {
 
-  // Register hosted app permissions.
+  // Register permissions for all extension types.
   info->RegisterPermission(
       kBackground, "background", 0,
       ExtensionPermissionMessage::kNone, kFlagSupportsOptional, kTypeAll);
@@ -182,10 +182,6 @@ void ExtensionAPIPermission::RegisterAllPermissions(
   info->RegisterPermission(
       kClipboardWrite, "clipboardWrite",  0,
       ExtensionPermissionMessage::kNone, kFlagSupportsOptional, kTypeAll);
-  info->RegisterPermission(
-      kChromePrivate, "chromePrivate", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone,
-      kTypeAll - kTypePlatformApp);
   info->RegisterPermission(
       kExperimental, "experimental", 0,
       ExtensionPermissionMessage::kNone, kFlagNone, kTypeAll);
@@ -199,16 +195,21 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kUnlimitedStorage, "unlimitedStorage", 0,
       ExtensionPermissionMessage::kNone, kFlagNone, kTypeAll);
 
-  // Hosted app and private permissions.
+  // Register hosted app permissions that are also private.
+  info->RegisterPermission(
+      kChromePrivate, "chromePrivate", 0,
+      ExtensionPermissionMessage::kNone, kFlagNone,
+      kTypeAll - kTypePlatformApp);
   info->RegisterPermission(
       kChromeAuthPrivate, "chromeAuthPrivate", 0,
       ExtensionPermissionMessage::kNone, kFlagComponentOnly,
       kTypeAll - kTypePlatformApp);
   info->RegisterPermission(
       kWebstorePrivate, "webstorePrivate", 0,
-      ExtensionPermissionMessage::kNone, kFlagComponentOnly, kTypeAll);
+      ExtensionPermissionMessage::kNone, kFlagComponentOnly,
+      kTypeAll - kTypePlatformApp);
 
-  // Register hosted / packaged app permissions.
+  // Register hosted and packaged app permissions.
   info->RegisterPermission(
       kAppNotifications, "appNotifications", 0,
       ExtensionPermissionMessage::kNone, kFlagSupportsOptional,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -178,6 +178,7 @@ TEST(ExtensionAPIPermissionTest, PlatformAppPermissions) {
   blacklist.insert(ExtensionAPIPermission::kWebRequest);
   blacklist.insert(ExtensionAPIPermission::kWebRequestBlocking);
   blacklist.insert(ExtensionAPIPermission::kWebSocketProxyPrivate);
+  blacklist.insert(ExtensionAPIPermission::kWebstorePrivate);
 
   ExtensionAPIPermissionSet perms = info->GetAll();
   size_t count = 0;
