@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Google Inc. All rights reserved.
+# Copyright (c) 2012 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -414,10 +414,6 @@ class TestGypNinja(TestGypBase):
   build_tool_list = ['ninja']
   ALL = 'all'
   DEFAULT = 'all'
-
-  # The default library prefix is computed from TestCommon.lib_prefix,
-  # but ninja uses no prefix for static libraries.
-  lib_ = ''
 
   def run_gyp(self, gyp_file, *args, **kw):
     # We must pass the desired configuration as a parameter.

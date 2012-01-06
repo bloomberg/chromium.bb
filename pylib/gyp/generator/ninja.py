@@ -16,7 +16,7 @@ import gyp.ninja_syntax as ninja_syntax
 generator_default_variables = {
   'EXECUTABLE_PREFIX': '',
   'EXECUTABLE_SUFFIX': '',
-  'STATIC_LIB_PREFIX': '',
+  'STATIC_LIB_PREFIX': 'lib',
   'STATIC_LIB_SUFFIX': '.a',
   'SHARED_LIB_PREFIX': 'lib',
 
@@ -253,8 +253,9 @@ class NinjaWriter:
     # compile any sources, so compute a list of predependencies for sources
     # while we do it.
     extra_sources = []
-    sources_depends = self.WriteActionsRulesCopies(spec, extra_sources,
-                                                   actions_depends)
+    mac_bundle_depends = []
+    sources_depends = self.WriteActionsRulesCopies(
+        spec, extra_sources, actions_depends, mac_bundle_depends)
 
     # If we have actions/rules/copies, we depend directly on those, but
     # otherwise we depend on dependent target's actions/rules/copies etc.
@@ -277,19 +278,21 @@ class NinjaWriter:
 
     # The final output of our target depends on the last output of the
     # above steps.
-    output = None
+    output = output_binary = None
     final_deps = link_deps or sources_depends or actions_depends
     if final_deps:
-      output = self.WriteTarget(spec, config_name, config, final_deps,
-                                order_only=actions_depends)
+      output, output_binary = self.WriteTarget(
+          spec, config_name, config, final_deps, mac_bundle_depends,
+          order_only=actions_depends)
       if self.name != output and self.toolset == 'target':
         # Write a short name to build this target.  This benefits both the
         # "build chrome" case as well as the gyp tests, which expect to be
         # able to run actions and build libraries by their short name.
         self.ninja.build(self.name, 'phony', output)
-    return output, compile_depends
+    return output, output_binary, compile_depends
 
-  def WriteActionsRulesCopies(self, spec, extra_sources, prebuild):
+  def WriteActionsRulesCopies(self, spec, extra_sources, prebuild,
+                              mac_bundle_depends):
     """Write out the Actions, Rules, and Copies steps.  Return any outputs
     of these steps (or a stamp file if there are lots of outputs)."""
     outputs = []
@@ -306,13 +309,12 @@ class NinjaWriter:
 
     outputs = self.WriteCollapsedDependencies('actions_rules_copies', outputs)
 
-    mac_bundle_deps = []  # TODO(thakis): Use this.
     if self.is_mac_bundle:
       mac_bundle_resources = spec.get('mac_bundle_resources', []) + \
                              extra_mac_bundle_resources
       self.WriteMacBundleResources(
-          mac_bundle_resources, mac_bundle_deps, spec)
-      self.WriteMacInfoPlist(mac_bundle_deps, spec)
+          mac_bundle_resources, mac_bundle_depends, spec)
+      self.WriteMacInfoPlist(mac_bundle_depends, spec)
 
     return outputs
 
@@ -450,16 +452,16 @@ class NinjaWriter:
 
     return outputs
 
-  def WriteMacBundleResources(self, resources, bundle_deps, spec):
+  def WriteMacBundleResources(self, resources, bundle_depends, spec):
     """Writes ninja edges for 'mac_bundle_resources'."""
     for output, res in gyp.xcode_emulation.GetMacBundleResources(
         self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
         self.xcode_settings, map(self.GypPathToNinja, resources)):
       self.ninja.build(output, 'mac_tool', res,
                        variables=[('mactool_cmd', 'copy-bundle-resource')])
-      bundle_deps.append(output)
+      bundle_depends.append(output)
 
-  def WriteMacInfoPlist(self, bundle_deps, spec):
+  def WriteMacInfoPlist(self, bundle_depends, spec):
     """Write build rules for bundle Info.plist files."""
     info_plist, out, defines, extra_env = gyp.xcode_emulation.GetMacInfoPlist(
         self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
@@ -477,7 +479,7 @@ class NinjaWriter:
     # TODO(thakis/jeremya): Environment variable support.
     self.ninja.build(out, 'mac_tool', info_plist,
                      variables=[('mactool_cmd', 'copy-info-plist')])
-    bundle_deps.append(out)
+    bundle_depends.append(out)
 
   def WriteSources(self, config_name, config, sources, predepends,
                    precompiled_header):
@@ -570,16 +572,22 @@ class NinjaWriter:
       cmd = { 'c': 'cc', 'cc': 'cxx', 'm': 'objc', 'mm': 'objcxx', }.get(lang)
       self.ninja.build(gch, cmd, input, variables=[(var_name, lang_flag)])
 
-  def WriteTarget(self, spec, config_name, config, final_deps, order_only):
+  def WriteTarget(self, spec, config_name, config, final_deps,
+                  mac_bundle_depends, order_only):
     if spec['type'] == 'none':
       # This target doesn't have any explicit final output, but is instead
       # used for its effects before the final output (e.g. copies steps).
       # Reuse the existing output if it's easy.
       if len(final_deps) == 1:
-        return final_deps[0]
+        return final_deps[0], final_deps[0]
       # Otherwise, fall through to writing out a stamp file.
 
-    output = self.ComputeOutput(spec)
+    if self.is_mac_bundle:
+      output = self.ComputeMacBundleOutput(spec)
+      output_binary = self.ComputeMacBundleBinaryOutput(spec)
+      mac_bundle_depends.append(output_binary)
+    else:
+      output = output_binary = self.ComputeOutput(spec)
 
     output_uses_linker = spec['type'] in ('executable', 'loadable_module',
                                           'shared_library')
@@ -632,14 +640,35 @@ class NinjaWriter:
 
     extra_bindings = []
     if command in ('solink', 'solink_module'):
-      extra_bindings.append(('soname', os.path.split(output)[1]))
+      extra_bindings.append(('soname', os.path.split(output_binary)[1]))
 
-    self.ninja.build(output, command, final_deps,
+    self.ninja.build(output_binary, command, final_deps,
                      implicit=list(implicit_deps),
                      order_only=order_only,
                      variables=extra_bindings)
 
-    return output
+    if self.is_mac_bundle:
+      if spec['type'] in ('shared_library', 'loadable_module'):
+        variables = [('version', self.xcode_settings.GetFrameworkVersion())]
+        self.ninja.build(output, 'package_framework', mac_bundle_depends,
+                         variables=variables)
+      else:
+        self.ninja.build(output, 'stamp', mac_bundle_depends)
+
+    return output, output_binary
+
+  def ComputeMacBundleOutput(self, spec):
+    """Return the 'output' (full output path) to a bundle output directory."""
+    assert self.is_mac_bundle
+    path = self.ExpandSpecial(generator_default_variables['PRODUCT_DIR'])
+    return os.path.join(path, self.xcode_settings.GetWrapperName())
+
+  def ComputeMacBundleBinaryOutput(self, spec):
+    """Return the 'output' (full output path) to the binary in a bundle."""
+    assert self.is_mac_bundle
+    path = self.ExpandSpecial(generator_default_variables['PRODUCT_DIR'])
+    return os.path.join(path, self.xcode_settings.GetExecutablePath())
+
 
   def ComputeOutputFileName(self, spec):
     """Compute the filename of the final output for the current target."""
@@ -649,6 +678,7 @@ class NinjaWriter:
     DEFAULT_PREFIX = {
       'loadable_module': 'lib',
       'shared_library': 'lib',
+      'static_library': 'lib',
       }
     prefix = spec.get('product_prefix', DEFAULT_PREFIX.get(spec['type'], ''))
 
@@ -659,10 +689,6 @@ class NinjaWriter:
       'loadable_module': 'so',
       'shared_library': 'so',
       }
-    # TODO(thakis/jeremya): Remove once the mac path name computation is done
-    # by XcodeSettings.
-    if self.flavor == 'mac':
-      DEFAULT_EXTENSION['shared_library'] = 'dylib'
     extension = spec.get('product_extension',
                          DEFAULT_EXTENSION.get(spec['type'], ''))
     if extension:
@@ -689,7 +715,13 @@ class NinjaWriter:
   def ComputeOutput(self, spec):
     """Compute the path for the final output of the spec."""
 
-    filename = self.ComputeOutputFileName(spec)
+    assert not self.is_mac_bundle
+
+    if self.flavor == 'mac' and spec['type'] in (
+        'static_library', 'executable', 'shared_library', 'loadable_module'):
+      filename = self.xcode_settings.GetExecutablePath()
+    else:
+      filename = self.ComputeOutputFileName(spec)
 
     if 'product_dir' in spec:
       path = os.path.join(spec['product_dir'], filename)
@@ -705,9 +737,8 @@ class NinjaWriter:
       if self.toolset != 'target':
         libdir = 'lib/%s' % self.toolset
       return os.path.join(libdir, filename)
-    # TODO(thakis/jeremya): Remove once the mac path name computation is done
-    # by XcodeSettings.
     elif spec['type'] == 'static_library' and self.flavor == 'mac':
+      # Static libraries go into the output root on mac, too.
       return filename
     else:
       return self.GypPathToUniqueOutput(filename, qualified=False)
@@ -907,6 +938,10 @@ def GenerateOutput(target_list, target_dicts, data, params):
       'mac_tool',
       description='MACTOOL $mactool_cmd $in',
       command='$mac_tool $mactool_cmd $in $out')
+    master_ninja.rule(
+      'package_framework',
+      description='PACKAGE FRAMEWORK $out',
+      command='$mac_tool package-framework $out $version; touch $out')
   master_ninja.rule(
     'stamp',
     description='STAMP $out',
@@ -950,11 +985,18 @@ def GenerateOutput(target_list, target_dicts, data, params):
     if flavor == 'mac':
       gyp.xcode_emulation.MergeGlobalXcodeSettingsToSpec(data[build_file], spec)
 
-    output, compile_depends = writer.WriteSpec(spec, config_name)
+    output, output_binary, compile_depends = writer.WriteSpec(spec, config_name)
     if output:
       linkable = spec['type'] in ('static_library', 'shared_library')
-      target_outputs[qualified_target] = (output, compile_depends, linkable)
+      # target_outputs is used for two things:
+      # 1. If a target depends on another target, it looks at that target's
+      #    |linkable|, and if true, links the first element in this tuple.
+      # 2. For compile dependencies.
+      # For bundles, the binary in the bundle is the right answer.
+      target_outputs[qualified_target] = (
+          output_binary, compile_depends, linkable)
 
+      # But for all_outputs, the bundle is the interesting bit.
       if qualified_target in all_targets:
         all_outputs.add(output)
 
