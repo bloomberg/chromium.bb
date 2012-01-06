@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@ FileSystemDispatcher::~FileSystemDispatcher() {
 bool FileSystemDispatcher::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(FileSystemDispatcher, msg)
-    IPC_MESSAGE_HANDLER(FileSystemMsg_OpenComplete, OnOpenComplete)
+    IPC_MESSAGE_HANDLER(FileSystemMsg_DidOpenFileSystem, OnDidOpenFileSystem)
     IPC_MESSAGE_HANDLER(FileSystemMsg_DidSucceed, OnDidSucceed)
     IPC_MESSAGE_HANDLER(FileSystemMsg_DidReadDirectory, OnDidReadDirectory)
     IPC_MESSAGE_HANDLER(FileSystemMsg_DidReadMetadata, OnDidReadMetadata)
@@ -230,16 +230,14 @@ bool FileSystemDispatcher::OpenFile(
   return true;
 }
 
-void FileSystemDispatcher::OnOpenComplete(
-    int request_id, bool accepted, const std::string& name,
-    const GURL& root) {
+void FileSystemDispatcher::OnDidOpenFileSystem(int request_id,
+                                               const std::string& name,
+                                               const GURL& root) {
+  DCHECK(root.is_valid());
   fileapi::FileSystemCallbackDispatcher* dispatcher =
       dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);
-  if (accepted)
-    dispatcher->DidOpenFileSystem(name, root);
-  else
-    dispatcher->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
+  dispatcher->DidOpenFileSystem(name, root);
   dispatchers_.Remove(request_id);
 }
 

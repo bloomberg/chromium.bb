@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,9 +65,9 @@ class BrowserFileSystemCallbackDispatcher
 
   virtual void DidOpenFileSystem(const std::string& name,
                                  const GURL& root) {
+    DCHECK(root.is_valid());
     dispatcher_host_->Send(
-        new FileSystemMsg_OpenComplete(
-            request_id_, root.is_valid(), name, root));
+        new FileSystemMsg_DidOpenFileSystem(request_id_, name, root));
   }
 
   virtual void DidFail(base::PlatformFileError error_code) {

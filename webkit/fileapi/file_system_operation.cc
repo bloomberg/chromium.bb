@@ -605,8 +605,11 @@ void FileSystemOperation::DidGetRootPath(
     result = GetFileSystemRootURI(
         operation_context_.src_origin_url(),
         operation_context_.src_type());
+    DCHECK(result.is_valid());
+    dispatcher_->DidOpenFileSystem(name, result);
+  } else {
+    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
   }
-  dispatcher_->DidOpenFileSystem(name, result);
 }
 
 void FileSystemOperation::DidEnsureFileExistsExclusive(

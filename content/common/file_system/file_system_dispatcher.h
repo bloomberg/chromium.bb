@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CONTENT_COMMON_FILE_SYSTEM_FILE_SYSTEM_DISPATCHER_H_
 #define CONTENT_COMMON_FILE_SYSTEM_FILE_SYSTEM_DISPATCHER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -84,11 +85,9 @@ class FileSystemDispatcher : public IPC::Channel::Listener {
                 fileapi::FileSystemCallbackDispatcher* dispatcher);
  private:
   // Message handlers.
-  void OnOpenComplete(
-      int request_id,
-      bool accepted,
-      const std::string& name,
-      const GURL& root);
+  void OnDidOpenFileSystem(int request_id,
+                           const std::string& name,
+                           const GURL& root);
   void OnDidSucceed(int request_id);
   void OnDidReadMetadata(int request_id,
                          const base::PlatformFileInfo& file_info,
