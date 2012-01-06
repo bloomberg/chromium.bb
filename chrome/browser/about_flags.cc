@@ -470,7 +470,7 @@ const Experiment kExperiments[] = {
     "enable-gamepad",
     IDS_FLAGS_ENABLE_GAMEPAD_NAME,
     IDS_FLAGS_ENABLE_GAMEPAD_DESCRIPTION,
-    kOsAll,
+    kOsMac | kOsWin,
     SINGLE_VALUE_TYPE(switches::kEnableGamepad)
   },
 #if defined(USE_AURA)
