@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -662,7 +662,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return self.EvalDataFrom(private_file)
 
   def WaitUntil(self, function, timeout=-1, retry_sleep=0.25, args=[],
-                expect_retval=None):
+                expect_retval=None, debug=True):
     """Poll on a condition until timeout.
 
     Waits until the |function| evalues to |expect_retval| or until |timeout|
@@ -695,6 +695,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                      exit criteria. In case this is None (the default),
                      |function|'s return value is checked for truth,
                      so 'non-empty-string' should match with True
+      debug: if True, displays debug info at each retry.
 
     Returns:
       True, if returning when |function| evaluated to True
@@ -708,9 +709,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       retval = function(*args)
       if (expect_retval is None and retval) or expect_retval == retval:
         return True
-      logging.debug('WaitUntil(%s) still waiting. '
-                    'Expecting %s. Last returned %s.' % (
-                    function, expect_retval, retval))
+      if debug:
+        logging.debug('WaitUntil(%s) still waiting. '
+                      'Expecting %s. Last returned %s.' % (
+                      function, expect_retval, retval))
       time.sleep(retry_sleep)
     return False
 
