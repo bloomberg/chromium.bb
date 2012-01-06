@@ -6219,7 +6219,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Handlers
       </message>
       <message name="IDS_HANDLERS_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing sites to register themselves as handlers for protocols.">
-        Allow sites to ask to become default handlers for protocols
+        Allow sites to ask to become default handlers for protocols (recommended)
       </message>
       <message name="IDS_HANDLERS_DONOTALLOW_RADIO" desc="A radio button in the Content Settings dialog for preventing sites from registering themselves as handlers for protocols.">
         Do not allow any site to handle protocols
