@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -246,9 +246,9 @@ void PpapiThread::OnMsgCreateChannel(base::ProcessHandle host_process_handle,
   if (!library_.is_valid() ||  // Plugin couldn't be loaded.
       !SetupRendererChannel(host_process_handle, renderer_id,
                             &channel_handle)) {
-    // Add CHECK to investigate the root cause of crbug.com/103957.  Will remove
-    // after the bug is fixed.
-    CHECK(library_.is_valid());
+    // TODO(xhwang): Add CHECK to investigate the root cause of
+    // crbug.com/103957.  Will remove after the bug is fixed.
+    CHECK(!is_broker_ || library_.is_valid());
     Send(new PpapiHostMsg_ChannelCreated(IPC::ChannelHandle()));
     return;
   }
