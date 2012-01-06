@@ -13,9 +13,6 @@ class ChromeWebUI : public WebUI {
   explicit ChromeWebUI(content::WebContents* contents);
   virtual ~ChromeWebUI();
 
-  // Overridden from WebUI:
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
-
   // IsMoreWebUI returns a command line flag that tracks whether to use
   // available WebUI implementations of native dialogs.
   static bool IsMoreWebUI();

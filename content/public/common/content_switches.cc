@@ -480,6 +480,9 @@ const char kSkipGpuDataLoading[]            = "skip-gpu-data-loading";
 // Runs the security test for the renderer sandbox.
 const char kTestSandbox[]                   = "test-sandbox";
 
+// Enables UI changes that make it easier to use with a touchscreen.
+const char kTouchOptimizedUI[]              = "touch-optimized-ui";
+
 // Causes TRACE_EVENT flags to be recorded from startup. Optionally, can
 // specify the specific trace categories to include (e.g.
 // --trace-startup=base,net) otherwise, all events are recorded. Setting this

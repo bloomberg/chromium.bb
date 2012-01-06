@@ -1103,9 +1103,6 @@ const char kTestingChannelID[]              = "testing-channel";
 const char kTestingFixedHttpPort[]          = "testing-fixed-http-port";
 const char kTestingFixedHttpsPort[]         = "testing-fixed-https-port";
 
-// Enables UI changes that make it easier to use with a touchscreen.
-const char kTouchOptimizedUI[]              = "touch-optimized-ui";
-
 // Experimental. Shows a dialog asking the user to try chrome. This flag is to
 // be used only by the upgrade process.
 const char kTryChromeAgain[]                = "try-chrome-again";

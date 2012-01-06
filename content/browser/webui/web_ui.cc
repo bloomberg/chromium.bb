@@ -4,6 +4,7 @@
 
 #include "content/browser/webui/web_ui.h"
 
+#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
@@ -16,6 +17,7 @@
 #include "content/browser/webui/generic_handler.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/content_switches.h"
 
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -95,6 +97,13 @@ void WebUI::RenderViewCreated(RenderViewHost* render_view_host) {
 #elif defined(TOOLKIT_GTK)
   render_view_host->SetWebUIProperty("toolkit", "GTK");
 #endif  // defined(TOOLKIT_VIEWS)
+
+  // Let the WebUI know that we're looking for UI that's optimized for touch
+  // input.
+  // TODO(rbyers) Figure out the right model for enabling touch-optimized UI
+  // (http://crbug.com/105380).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTouchOptimizedUI))
+    render_view_host->SetWebUIProperty("touchOptimized", "true");
 }
 
 void WebUI::CallJavascriptFunction(const std::string& function_name) {

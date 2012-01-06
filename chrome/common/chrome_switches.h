@@ -301,7 +301,6 @@ extern const char kTestType[];
 extern const char kTestingChannelID[];
 extern const char kTestingFixedHttpPort[];
 extern const char kTestingFixedHttpsPort[];
-extern const char kTouchOptimizedUI[];
 extern const char kTryChromeAgain[];
 extern const char kUninstall[];
 extern const char kUseMoreWebUI[];
