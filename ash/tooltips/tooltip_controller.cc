@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -259,6 +259,14 @@ bool TooltipController::PreHandleMouseEvent(aura::Window* target,
 ui::TouchStatus TooltipController::PreHandleTouchEvent(
     aura::Window* target,
     aura::TouchEvent* event) {
+  // TODO(varunjain): need to properly implement tooltips for
+  // touch events.
+  // Hide the tooltip for touch events.
+  if (tooltip_->IsVisible())
+    tooltip_->Hide();
+  if (tooltip_window_)
+    tooltip_window_->RemoveObserver(this);
+  tooltip_window_ = NULL;
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
