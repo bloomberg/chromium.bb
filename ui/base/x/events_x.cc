@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -391,6 +391,15 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
 
+#if defined(USE_XI2_MT)
+      // Touch event valuators aren't coordinates.
+      // Return the |event_x|/|event_y| directly as event's position.
+      if (xievent->evtype == XI_TouchBegin ||
+          xievent->evtype == XI_TouchUpdate ||
+          xievent->evtype == XI_TouchEnd)
+        return gfx::Point(static_cast<int>(xievent->event_x),
+                          static_cast<int>(xievent->event_y));
+#endif
       // Read the position from the valuators, because the location reported in
       // event_x/event_y seems to be different (and doesn't match for events
       // coming from slave device and master device) from the values in the
