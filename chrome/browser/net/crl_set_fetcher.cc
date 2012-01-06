@@ -163,7 +163,7 @@ bool CRLSetFetcher::Install(base::DictionaryValue* manifest,
 
   bool is_delta;
   if (!net::CRLSet::GetIsDeltaUpdate(crl_set_bytes, &is_delta)) {
-    LOG(WARNING) << "IsDeltaUpdate failed on CRL set from update CRX";
+    LOG(WARNING) << "GetIsDeltaUpdate failed on CRL set from update CRX";
     return false;
   }
 
@@ -176,7 +176,7 @@ bool CRLSetFetcher::Install(base::DictionaryValue* manifest,
                               crl_set_bytes.size())) {
       LOG(WARNING) << "Failed to save new CRL set to disk";
       // We don't return false here because we can still use this CRL set. When
-      // we restart we might revert to an older version, then then we'll
+      // we restart we might revert to an older version, then we'll
       // advertise the older version to Omaha and everything will still work.
     }
   } else {
@@ -192,7 +192,7 @@ bool CRLSetFetcher::Install(base::DictionaryValue* manifest,
                               new_crl_set_bytes.size())) {
       LOG(WARNING) << "Failed to save new CRL set to disk";
       // We don't return false here because we can still use this CRL set. When
-      // we restart we might revert to an older version, then then we'll
+      // we restart we might revert to an older version, then we'll
       // advertise the older version to Omaha and everything will still work.
     }
     crl_set_ = new_crl_set;
