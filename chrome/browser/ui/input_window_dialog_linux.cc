@@ -24,7 +24,7 @@ InputWindowDialog* InputWindowDialog::Create(
                                     delegate,
                                     type);
 #else
-  if (ChromeWebUI::IsMoreWebUI()) {
+  if (chrome_web_ui::IsMoreWebUI()) {
     return new InputWindowDialogWebUI(window_title,
                                       label_contents_pairs,
                                       delegate,

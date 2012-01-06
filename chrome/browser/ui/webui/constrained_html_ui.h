@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CONSTRAINED_HTML_UI_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 class ConstrainedWindow;
 class HtmlDialogUIDelegate;
@@ -47,7 +47,7 @@ class ConstrainedHtmlUIDelegate {
 //
 // Since ConstrainedWindow requires platform-specific delegate
 // implementations, this class is just a factory stub.
-class ConstrainedHtmlUI : public ChromeWebUI {
+class ConstrainedHtmlUI : public WebUI {
  public:
   explicit ConstrainedHtmlUI(content::WebContents* contents);
   virtual ~ConstrainedHtmlUI();

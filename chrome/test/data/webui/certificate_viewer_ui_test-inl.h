@@ -28,7 +28,7 @@ class CertificateViewerUITest : public WebUIBrowserTest {
 
 void CertificateViewerUITest::ShowCertificateViewer() {
   // Enable more WebUI to use WebUI certificate viewer.
-  ChromeWebUI::OverrideMoreWebUI(true);
+  chrome_web_ui::OverrideMoreWebUI(true);
 
   scoped_refptr<net::X509Certificate> google_cert(
       net::X509Certificate::CreateFromBytes(

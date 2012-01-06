@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_UI_WEBUI_CONFLICTS_UI_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 #if defined(OS_WIN)
 
 class RefCountedMemory;
 
 // The Web UI handler for about:conflicts.
-class ConflictsUI : public ChromeWebUI {
+class ConflictsUI : public WebUI {
  public:
   explicit ConflictsUI(content::WebContents* contents);
 

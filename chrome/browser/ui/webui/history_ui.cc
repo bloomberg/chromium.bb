@@ -423,7 +423,7 @@ void BrowsingHistoryHandler::Observe(
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-HistoryUI::HistoryUI(WebContents* contents) : ChromeWebUI(contents) {
+HistoryUI::HistoryUI(WebContents* contents) : WebUI(contents) {
   AddMessageHandler(new BrowsingHistoryHandler());
 
   HistoryUIHTMLSource* html_source = new HistoryUIHTMLSource();

@@ -37,7 +37,7 @@ ChromeWebUIDataSource* CreateQuotaInternalsHTMLSource() {
 }  // namespace
 
 QuotaInternalsUI::QuotaInternalsUI(WebContents* contents)
-    : ChromeWebUI(contents) {
+    : WebUI(contents) {
   AddMessageHandler(new quota_internals::QuotaInternalsHandler);
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(

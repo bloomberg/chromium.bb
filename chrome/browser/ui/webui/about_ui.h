@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 class Profile;
 class TabContents;
@@ -43,7 +43,7 @@ class AboutUIHTMLSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(AboutUIHTMLSource);
 };
 
-class AboutUI : public ChromeWebUI {
+class AboutUI : public WebUI {
  public:
   explicit AboutUI(content::WebContents* contents, const std::string& host);
   virtual ~AboutUI() {}

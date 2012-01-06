@@ -84,7 +84,7 @@ ChromeWebUIDataSource* CreateDownloadsUIHTMLSource() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-DownloadsUI::DownloadsUI(WebContents* contents) : ChromeWebUI(contents) {
+DownloadsUI::DownloadsUI(WebContents* contents) : WebUI(contents) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   DownloadManager* dlm =
       DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager();

@@ -1379,7 +1379,7 @@ std::string AboutUIHTMLSource::GetMimeType(const std::string& path) const {
 }
 
 AboutUI::AboutUI(WebContents* contents, const std::string& name)
-    : ChromeWebUI(contents) {
+    : WebUI(contents) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   ChromeURLDataManager::DataSource* source =
       new AboutUIHTMLSource(name, profile);

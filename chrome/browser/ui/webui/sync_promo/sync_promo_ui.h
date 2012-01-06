@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_UI_WEBUI_SYNC_PROMO_SYNC_PROMO_UI_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 class Profile;
 class PrefService;
 
 // The Web UI handler for chrome://syncpromo.
-class SyncPromoUI : public ChromeWebUI {
+class SyncPromoUI : public WebUI {
  public:
   // Constructs a SyncPromoUI. |contents| is the WebContents that this WebUI is
   // associated with. |contents| may not be NULL.

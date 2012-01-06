@@ -12,7 +12,7 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -78,7 +78,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryHandler);
 };
 
-class HistoryUI : public ChromeWebUI {
+class HistoryUI : public WebUI {
  public:
   explicit HistoryUI(content::WebContents* contents);
 

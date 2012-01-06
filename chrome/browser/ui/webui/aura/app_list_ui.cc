@@ -120,7 +120,7 @@ void AppListHandler::HandleAppsLoaded(const base::ListValue* args) {
 }  // namespace
 
 AppListUI::AppListUI(WebContents* contents)
-    : ChromeWebUI(contents),
+    : WebUI(contents),
       delegate_(NULL) {
   AddMessageHandler(new AppListHandler);
 

@@ -1637,7 +1637,7 @@ Value* NetInternalsUI::GetConstants() {
   return constants_dict;
 }
 
-NetInternalsUI::NetInternalsUI(WebContents* contents) : ChromeWebUI(contents) {
+NetInternalsUI::NetInternalsUI(WebContents* contents) : WebUI(contents) {
   AddMessageHandler(new NetInternalsMessageHandler());
 
   // Set up the chrome://net-internals/ source.

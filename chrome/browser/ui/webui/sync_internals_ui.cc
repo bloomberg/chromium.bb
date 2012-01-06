@@ -73,7 +73,7 @@ ProfileSyncService* GetProfileSyncService(Profile* profile) {
 }  // namespace
 
 SyncInternalsUI::SyncInternalsUI(WebContents* contents)
-    : ChromeWebUI(contents),
+    : WebUI(contents),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // TODO(akalin): Fix.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());

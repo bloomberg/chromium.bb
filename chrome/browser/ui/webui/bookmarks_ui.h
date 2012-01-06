@@ -9,7 +9,7 @@
 #include <string>
 
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 class RefCountedMemory;
 
@@ -31,7 +31,7 @@ class BookmarksUIHTMLSource : public ChromeURLDataManager::DataSource {
 
 // This class is used to hook up chrome://bookmarks/ which in turn gets
 // overridden by an extension.
-class BookmarksUI : public ChromeWebUI {
+class BookmarksUI : public WebUI {
  public:
   explicit BookmarksUI(content::WebContents* contents);
 

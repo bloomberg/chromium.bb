@@ -401,7 +401,7 @@ void BrowserWindowCocoa::ShowTaskManager() {
   TaskManagerDialog::Show();
 #else
   // Uses WebUI TaskManager when swiches is set. It is beta feature.
-  if (ChromeWebUI::IsMoreWebUI()) {
+  if (chrome_web_ui::IsMoreWebUI()) {
     TaskManagerDialog::Show();
   } else {
     TaskManagerMac::Show(false);
@@ -414,7 +414,7 @@ void BrowserWindowCocoa::ShowBackgroundPages() {
   TaskManagerDialog::ShowBackgroundPages();
 #else
   // Uses WebUI TaskManager when swiches is set. It is beta feature.
-  if (ChromeWebUI::IsMoreWebUI()) {
+  if (chrome_web_ui::IsMoreWebUI()) {
     TaskManagerDialog::ShowBackgroundPages();
   } else {
     TaskManagerMac::Show(true);

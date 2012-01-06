@@ -10,17 +10,17 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
-// The ChromeWebUI class for the uber page (chrome://chrome). It manages the
-// UI for the uber page (navigation bar and so forth) as well as ChromeWebUI
-// objects for pages that appear in the uber page.
-class UberUI : public ChromeWebUI {
+// The WebUI class for the uber page (chrome://chrome). It manages the UI for
+// the uber page (navigation bar and so forth) as well as WebUI objects for
+// pages that appear in the uber page.
+class UberUI : public WebUI {
  public:
   explicit UberUI(content::WebContents* contents);
   virtual ~UberUI();
 
-  // ChromeWebUI implementation.
+  // WebUI implementation.
   virtual void OnWebUISend(const GURL& source_url,
                            const std::string& message,
                            const ListValue& args) OVERRIDE;
@@ -32,7 +32,7 @@ class UberUI : public ChromeWebUI {
 
  private:
   // A map from URL origin to WebUI instance.
-  typedef std::map<std::string, ChromeWebUI*> SubpageMap;
+  typedef std::map<std::string, WebUI*> SubpageMap;
 
   // Creates and stores a WebUI for the given URL.
   void RegisterSubpage(const std::string& page_url);

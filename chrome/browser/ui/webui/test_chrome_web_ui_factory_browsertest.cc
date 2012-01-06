@@ -19,7 +19,7 @@ namespace {
 
 // Returns a new WebUI object for the TabContents from |arg0|.
 ACTION(ReturnNewWebUI) {
-  return new ChromeWebUI(arg0);
+  return new WebUI(arg0);
 }
 
 // Mock the TestChromeWebUIFactory::WebUIProvider to prove that we are called as

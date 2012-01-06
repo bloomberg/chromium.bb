@@ -9,10 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 // The C++ back-end for the chrome://profiler webui page.
-class ProfilerUI : public ChromeWebUI {
+class ProfilerUI : public WebUI {
  public:
   explicit ProfilerUI(content::WebContents* contents);
   virtual ~ProfilerUI();

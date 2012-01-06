@@ -7,9 +7,9 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
-class WorkersUI : public ChromeWebUI {
+class WorkersUI : public WebUI {
  public:
   explicit WorkersUI(content::WebContents* contents);
   virtual ~WorkersUI();

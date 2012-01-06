@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_WEBUI_CRASHES_UI_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 class RefCountedMemory;
 
-class CrashesUI : public ChromeWebUI {
+class CrashesUI : public WebUI {
  public:
   explicit CrashesUI(content::WebContents* contents);
 

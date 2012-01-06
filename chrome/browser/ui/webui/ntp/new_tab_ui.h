@@ -13,7 +13,7 @@
 #include "base/timer.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -22,7 +22,7 @@ class PrefService;
 class Profile;
 
 // The TabContents used for the New Tab page.
-class NewTabUI : public ChromeWebUI,
+class NewTabUI : public WebUI,
                  public content::NotificationObserver {
  public:
   explicit NewTabUI(content::WebContents* manager);

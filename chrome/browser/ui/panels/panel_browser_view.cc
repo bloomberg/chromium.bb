@@ -285,7 +285,7 @@ void PanelBrowserView::ShowTaskManagerForPanel() {
   TaskManagerDialog::Show();
 #else
   // Uses WebUI TaskManager when swiches is set. It is beta feature.
-  if (ChromeWebUI::IsMoreWebUI()) {
+  if (chrome_web_ui::IsMoreWebUI()) {
     TaskManagerDialog::Show();
   } else {
     ShowTaskManager();

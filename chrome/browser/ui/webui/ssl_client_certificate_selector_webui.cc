@@ -18,6 +18,7 @@
 #include "chrome/browser/ssl_client_certificate_selector.h"
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 #include "chrome/common/net/x509_certificate_model.h"
@@ -302,7 +303,7 @@ void ShowSSLClientCertificateSelector(
   // TODO(rbyers): Remove the IsMoreWebUI check and (ideally) all #ifdefs onnce
   // we can select exactly one version of this dialog to use for each platform
   // at build time.  http://crbug.com/102775
-  if (ChromeWebUI::IsMoreWebUI())
+  if (chrome_web_ui::IsMoreWebUI())
     SSLClientCertificateSelectorWebUI::ShowDialog(wrapper,
                                                   cert_request_info,
                                                   delegate);

@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_UI_WEBUI_NET_INTERNALS_UI_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 namespace base {
 class Value;
 }
 
-class NetInternalsUI : public ChromeWebUI {
+class NetInternalsUI : public WebUI {
  public:
   explicit NetInternalsUI(content::WebContents* contents);
 

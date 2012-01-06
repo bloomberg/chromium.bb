@@ -374,7 +374,7 @@ void PluginsDOMHandler::PluginsLoaded(const std::vector<PluginGroup>& groups) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-PluginsUI::PluginsUI(WebContents* contents) : ChromeWebUI(contents) {
+PluginsUI::PluginsUI(WebContents* contents) : WebUI(contents) {
   AddMessageHandler(new PluginsDOMHandler());
 
   // Set up the chrome://plugins/ source.

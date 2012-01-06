@@ -105,7 +105,7 @@ bool GetValueForKeyInQuery(const GURL& url, const std::string& search_key,
 
 }  // namespace
 
-SyncPromoUI::SyncPromoUI(WebContents* contents) : ChromeWebUI(contents) {
+SyncPromoUI::SyncPromoUI(WebContents* contents) : WebUI(contents) {
   should_hide_url_ = true;
 
   SyncPromoHandler* handler = new SyncPromoHandler(

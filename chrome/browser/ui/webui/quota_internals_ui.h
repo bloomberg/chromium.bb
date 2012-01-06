@@ -6,11 +6,9 @@
 #define CHROME_BROWSER_UI_WEBUI_QUOTA_INTERNALS_UI_H_
 #pragma once
 
-#include <string>
+#include "content/browser/webui/web_ui.h"
 
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
-
-class QuotaInternalsUI : public ChromeWebUI {
+class QuotaInternalsUI : public WebUI {
  public:
   explicit QuotaInternalsUI(content::WebContents* contents);
   virtual ~QuotaInternalsUI() {}

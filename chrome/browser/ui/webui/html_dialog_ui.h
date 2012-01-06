@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
 
@@ -94,7 +94,7 @@ class HtmlDialogUIDelegate {
 // there and call it back. This is a bit of a hack to allow the dialog to pass
 // its delegate to the Web UI without having nasty accessors on the WebContents.
 // The correct design using RVH directly would avoid all of this.
-class HtmlDialogUI : public ChromeWebUI {
+class HtmlDialogUI : public WebUI {
  public:
   struct HtmlDialogParams {
     // The URL for the content that will be loaded in the dialog.

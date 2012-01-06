@@ -6,39 +6,27 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/browser/renderer_host/render_view_host.h"
-#include "content/public/browser/web_contents.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/widget/widget.h"
 #endif
 
-using content::WebContents;
-
-namespace {
+namespace chrome_web_ui {
 
 // If true, overrides IsMoreWebUI flag.
-bool override_more_webui_ = false;
+static bool g_override_more_webui = false;
 
-}  // namespace
-
-ChromeWebUI::ChromeWebUI(WebContents* contents)
-    : WebUI(contents) {
-}
-
-ChromeWebUI::~ChromeWebUI() {
-}
-
-// static
-bool ChromeWebUI::IsMoreWebUI() {
+bool IsMoreWebUI() {
   bool more_webui = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseMoreWebUI) || override_more_webui_;
+      switches::kUseMoreWebUI) || g_override_more_webui;
 #if defined(TOOLKIT_VIEWS)
   more_webui |= views::Widget::IsPureViews();
 #endif
   return more_webui;
 }
 
-void ChromeWebUI::OverrideMoreWebUI(bool use_more_webui) {
-  override_more_webui_ = use_more_webui;
+void OverrideMoreWebUI(bool use_more_webui) {
+  g_override_more_webui = use_more_webui;
 }
+
+}  // namespace chrome_web_ui

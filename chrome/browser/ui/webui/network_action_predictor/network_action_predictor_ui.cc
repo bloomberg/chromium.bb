@@ -26,7 +26,7 @@ ChromeWebUIDataSource* CreateNetworkActionPredictorUIHTMLSource() {
 
 NetworkActionPredictorUI::NetworkActionPredictorUI(
     content::WebContents* contents)
-    : ChromeWebUI(contents) {
+    : WebUI(contents) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   AddMessageHandler(new NetworkActionPredictorDOMHandler(profile));
   profile->GetChromeURLDataManager()->AddDataSource(

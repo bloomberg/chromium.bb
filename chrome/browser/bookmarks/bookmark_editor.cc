@@ -59,7 +59,7 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_window,
 #else
   // TODO(flackr): Implement NEW_FOLDER type with non-empty |details.urls| in
   // WebUI and remove the type check.
-  if ((ChromeWebUI::IsMoreWebUI() &&
+  if ((chrome_web_ui::IsMoreWebUI() &&
        (details.type != EditDetails::NEW_FOLDER || details.urls.empty())) ||
       (details.type == EditDetails::EXISTING_NODE &&
        details.existing_node->is_folder()) ||
@@ -81,7 +81,7 @@ void BookmarkEditor::ShowBookmarkAllTabsDialog(Browser* browser) {
   browser::ShowBookmarkAllTabsDialog(profile);
 #elif defined(TOOLKIT_VIEWS) || defined(OS_WIN)
   Profile* profile = browser->profile();
-  if (ChromeWebUI::IsMoreWebUI())
+  if (chrome_web_ui::IsMoreWebUI())
     browser::ShowBookmarkAllTabsDialog(profile);
   else
     BookmarkEditor::ShowNativeBookmarkAllTabsDialog(browser);

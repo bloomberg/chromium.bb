@@ -45,7 +45,7 @@ ChromeWebUIDataSource* CreateUberHTMLSource() {
 
 }  // namespace
 
-UberUI::UberUI(WebContents* contents) : ChromeWebUI(contents) {
+UberUI::UberUI(WebContents* contents) : WebUI(contents) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   profile->GetChromeURLDataManager()->AddDataSource(CreateUberHTMLSource());
 
@@ -58,9 +58,8 @@ UberUI::~UberUI() {
 }
 
 void UberUI::RegisterSubpage(const std::string& page_url) {
-  ChromeWebUI* web_ui = static_cast<ChromeWebUI*>(
-      ChromeWebUIFactory::GetInstance()->CreateWebUIForURL(
-          static_cast<TabContents*>(web_contents_), GURL(page_url)));
+  WebUI* web_ui = ChromeWebUIFactory::GetInstance()->CreateWebUIForURL(
+          static_cast<TabContents*>(web_contents_), GURL(page_url));
 
   web_ui->set_frame_xpath("//iframe[@src='" + page_url + "']");
   sub_uis_[page_url] = web_ui;
@@ -72,7 +71,7 @@ void UberUI::RenderViewCreated(RenderViewHost* render_view_host) {
     iter->second->RenderViewCreated(render_view_host);
   }
 
-  ChromeWebUI::RenderViewCreated(render_view_host);
+  WebUI::RenderViewCreated(render_view_host);
 }
 
 void UberUI::RenderViewReused(RenderViewHost* render_view_host) {
@@ -81,7 +80,7 @@ void UberUI::RenderViewReused(RenderViewHost* render_view_host) {
     iter->second->RenderViewReused(render_view_host);
   }
 
-  ChromeWebUI::RenderViewReused(render_view_host);
+  WebUI::RenderViewReused(render_view_host);
 }
 
 void UberUI::DidBecomeActiveForReusedRenderView() {
@@ -90,7 +89,7 @@ void UberUI::DidBecomeActiveForReusedRenderView() {
     iter->second->DidBecomeActiveForReusedRenderView();
   }
 
-  ChromeWebUI::DidBecomeActiveForReusedRenderView();
+  WebUI::DidBecomeActiveForReusedRenderView();
 }
 
 void UberUI::OnWebUISend(const GURL& source_url,
@@ -101,7 +100,7 @@ void UberUI::OnWebUISend(const GURL& source_url,
   if (subpage == sub_uis_.end()) {
     // The message was sent from the uber page itself.
     DCHECK_EQ(std::string(chrome::kChromeUIUberHost), source_url.host());
-    ChromeWebUI::OnWebUISend(source_url, message, args);
+    WebUI::OnWebUISend(source_url, message, args);
   } else {
     // The message was sent from a subpage.
     subpage->second->OnWebUISend(source_url, message, args);

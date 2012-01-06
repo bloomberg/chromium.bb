@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_UI_WEBUI_FLAGS_UI_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 class PrefService;
 class RefCountedMemory;
 
-class FlagsUI : public ChromeWebUI {
+class FlagsUI : public WebUI {
  public:
   explicit FlagsUI(content::WebContents* contents);
 

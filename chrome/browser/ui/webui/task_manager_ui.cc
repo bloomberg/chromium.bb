@@ -77,7 +77,7 @@ ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-TaskManagerUI::TaskManagerUI(WebContents* contents) : ChromeWebUI(contents) {
+TaskManagerUI::TaskManagerUI(WebContents* contents) : WebUI(contents) {
   AddMessageHandler(new TaskManagerHandler(TaskManager::GetInstance()));
 
   // Set up the chrome://taskmanager/ source.

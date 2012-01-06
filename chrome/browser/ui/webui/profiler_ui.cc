@@ -144,7 +144,7 @@ void ProfilerMessageHandler::OnResetData(const ListValue* list) {
 
 }  // namespace
 
-ProfilerUI::ProfilerUI(WebContents* contents) : ChromeWebUI(contents) {
+ProfilerUI::ProfilerUI(WebContents* contents) : WebUI(contents) {
   ui_weak_ptr_factory_.reset(new base::WeakPtrFactory<ProfilerUI>(this));
   ui_weak_ptr_ = ui_weak_ptr_factory_->GetWeakPtr();
 

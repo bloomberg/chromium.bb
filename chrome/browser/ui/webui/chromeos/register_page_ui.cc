@@ -294,7 +294,7 @@ void RegisterPageHandler::SendUserInfo() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-RegisterPageUI::RegisterPageUI(WebContents* contents) : ChromeWebUI(contents) {
+RegisterPageUI::RegisterPageUI(WebContents* contents) : WebUI(contents) {
   RegisterPageHandler* handler = new RegisterPageHandler();
   AddMessageHandler(handler);
   RegisterPageUIHTMLSource* html_source = new RegisterPageUIHTMLSource();

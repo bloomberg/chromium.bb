@@ -241,9 +241,9 @@ class MockWebUIProvider : public TestChromeWebUIFactory::WebUIProvider {
  public:
   MockWebUIProvider() {}
 
-  // Returns a new ChromeWebUI
+  // Returns a new WebUI
   WebUI* NewWebUI(WebContents* web_contents, const GURL& url) OVERRIDE {
-    return new ChromeWebUI(web_contents);
+    return new WebUI(web_contents);
   }
 };
 

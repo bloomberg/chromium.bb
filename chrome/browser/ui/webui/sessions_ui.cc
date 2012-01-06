@@ -257,7 +257,7 @@ void SessionsDOMHandler::UpdateUI() {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-SessionsUI::SessionsUI(WebContents* contents) : ChromeWebUI(contents) {
+SessionsUI::SessionsUI(WebContents* contents) : WebUI(contents) {
   AddMessageHandler(new SessionsDOMHandler());
 
   // Set up the chrome://sessions/ source.

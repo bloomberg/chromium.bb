@@ -645,7 +645,7 @@ bool WebUIHandler::CheckNetwork() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-ImageBurnUI::ImageBurnUI(WebContents* contents) : ChromeWebUI(contents) {
+ImageBurnUI::ImageBurnUI(WebContents* contents) : WebUI(contents) {
   imageburner::WebUIHandler* handler = new imageburner::WebUIHandler(contents);
   AddMessageHandler(handler);
 

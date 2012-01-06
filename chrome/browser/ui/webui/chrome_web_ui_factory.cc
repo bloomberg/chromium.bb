@@ -88,24 +88,24 @@ namespace {
 
 // A function for creating a new WebUI. The caller owns the return value, which
 // may be NULL (for example, if the URL refers to an non-existent extension).
-typedef ChromeWebUI* (*WebUIFactoryFunction)(TabContents* tab_contents,
-                                             const GURL& url);
+typedef WebUI* (*WebUIFactoryFunction)(TabContents* tab_contents,
+                                       const GURL& url);
 
 // Template for defining WebUIFactoryFunction.
 template<class T>
-ChromeWebUI* NewWebUI(TabContents* contents, const GURL& url) {
+WebUI* NewWebUI(TabContents* contents, const GURL& url) {
   return new T(contents);
 }
 
 // Special case for extensions.
 template<>
-ChromeWebUI* NewWebUI<ExtensionWebUI>(TabContents* contents, const GURL& url) {
+WebUI* NewWebUI<ExtensionWebUI>(TabContents* contents, const GURL& url) {
   return new ExtensionWebUI(contents, url);
 }
 
 // Special case for older about: handlers.
 template<>
-ChromeWebUI* NewWebUI<AboutUI>(TabContents* contents, const GURL& url) {
+WebUI* NewWebUI<AboutUI>(TabContents* contents, const GURL& url) {
   return new AboutUI(contents, url.host());
 }
 

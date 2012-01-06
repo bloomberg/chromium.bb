@@ -265,7 +265,7 @@ InputWindowDialog* InputWindowDialog::Create(
     const LabelContentsPairs& label_contents_pairs,
     Delegate* delegate,
     ButtonType type) {
-  if (ChromeWebUI::IsMoreWebUI()) {
+  if (chrome_web_ui::IsMoreWebUI()) {
     return new InputWindowDialogWebUI(window_title,
                                       label_contents_pairs,
                                       delegate,

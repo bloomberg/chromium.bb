@@ -159,7 +159,7 @@ void ConflictsDOMHandler::Observe(int type,
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-ConflictsUI::ConflictsUI(WebContents* contents) : ChromeWebUI(contents) {
+ConflictsUI::ConflictsUI(WebContents* contents) : WebUI(contents) {
   content::RecordAction(UserMetricsAction("ViewAboutConflicts"));
   AddMessageHandler(new ConflictsDOMHandler());
 

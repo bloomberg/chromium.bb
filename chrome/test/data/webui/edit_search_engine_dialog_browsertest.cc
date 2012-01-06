@@ -42,7 +42,7 @@ EditSearchEngineDialogUITest::~EditSearchEngineDialogUITest() {}
 
 void EditSearchEngineDialogUITest::ShowSearchEngineDialog() {
   // Force the flag so that we will use the WebUI version of the Dialog.
-  ChromeWebUI::OverrideMoreWebUI(true);
+  chrome_web_ui::OverrideMoreWebUI(true);
 
   // The TestHtmlDialogObserver will catch our dialog when it gets created.
   TestHtmlDialogObserver dialog_observer(this);

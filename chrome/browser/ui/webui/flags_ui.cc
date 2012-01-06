@@ -159,7 +159,7 @@ void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-FlagsUI::FlagsUI(WebContents* contents) : ChromeWebUI(contents) {
+FlagsUI::FlagsUI(WebContents* contents) : WebUI(contents) {
   AddMessageHandler(new FlagsDOMHandler());
 
   // Set up the about:flags source.

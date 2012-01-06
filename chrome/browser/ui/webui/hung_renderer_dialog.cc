@@ -18,11 +18,11 @@
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
@@ -46,7 +46,7 @@ void ShowHungRendererDialog(WebContents* contents) {
 #else
   // TODO(rbyers): Remove IsMoreWebUI check once we decide for sure which
   // platforms will use the WebUI version of this dialog.
-  if (ChromeWebUI::IsMoreWebUI())
+  if (chrome_web_ui::IsMoreWebUI())
     HungRendererDialog::ShowHungRendererDialog(contents);
   else
     ShowNativeHungRendererDialog(contents);
@@ -57,7 +57,7 @@ void HideHungRendererDialog(WebContents* contents) {
 #if defined(OS_CHROMEOS) || defined(USE_AURA)
   HungRendererDialog::HideHungRendererDialog(contents);
 #else
-  if (ChromeWebUI::IsMoreWebUI())
+  if (chrome_web_ui::IsMoreWebUI())
     HungRendererDialog::HideHungRendererDialog(contents);
   else
     HideNativeHungRendererDialog(contents);

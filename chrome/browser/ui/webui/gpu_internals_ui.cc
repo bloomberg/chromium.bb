@@ -239,7 +239,7 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-GpuInternalsUI::GpuInternalsUI(WebContents* contents) : ChromeWebUI(contents) {
+GpuInternalsUI::GpuInternalsUI(WebContents* contents) : WebUI(contents) {
   AddMessageHandler(new GpuMessageHandler());
 
   // Set up the chrome://gpu-internals/ source.

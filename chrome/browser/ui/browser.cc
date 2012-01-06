@@ -4062,7 +4062,7 @@ void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,
   // TODO(rbyers): Remove the IsMoreWebUI check and (ideally) all #ifdefs once
   // we can select exactly one version of this dialog to use for each platform
   // at build time.
-  if (ChromeWebUI::IsMoreWebUI())
+  if (chrome_web_ui::IsMoreWebUI())
     browser::ConfirmAddSearchProvider(template_url, profile);
   else
     // Platform-specific implementation of the dialog.

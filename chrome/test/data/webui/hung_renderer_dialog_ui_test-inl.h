@@ -9,7 +9,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_html_dialog_observer.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
@@ -26,7 +25,7 @@ class HungRendererDialogUITest : public WebUIBrowserTest {
 
 void HungRendererDialogUITest::ShowHungRendererDialogInternal() {
   // Force the flag so that we will use the WebUI version of the Dialog.
-  ChromeWebUI::OverrideMoreWebUI(true);
+  chrome_web_ui::OverrideMoreWebUI(true);
 
   // Choose which tab contents to report as hung.  In this case, the default
   // tab contents will be about:blank.

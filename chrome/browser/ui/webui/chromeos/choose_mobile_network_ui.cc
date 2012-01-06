@@ -211,7 +211,7 @@ void ChooseMobileNetworkHandler::HandlePageReady(const ListValue* args) {
 }  // namespace
 
 ChooseMobileNetworkUI::ChooseMobileNetworkUI(WebContents* contents)
-    : ChromeWebUI(contents) {
+    : WebUI(contents) {
   ChooseMobileNetworkHandler* handler = new ChooseMobileNetworkHandler();
   AddMessageHandler(handler);
   // Set up the "chrome://choose-mobile-network" source.

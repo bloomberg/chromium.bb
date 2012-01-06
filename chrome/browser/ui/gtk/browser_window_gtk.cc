@@ -1028,7 +1028,7 @@ void BrowserWindowGtk::ShowTaskManager() {
   TaskManagerDialog::Show();
 #else
   // Uses WebUI TaskManager when swiches is set. It is beta feature.
-  if (ChromeWebUI::IsMoreWebUI()) {
+  if (chrome_web_ui::IsMoreWebUI()) {
     TaskManagerDialog::Show();
   } else {
     TaskManagerGtk::Show(false);
@@ -1041,7 +1041,7 @@ void BrowserWindowGtk::ShowBackgroundPages() {
   TaskManagerDialog::ShowBackgroundPages();
 #else
   // Uses WebUI TaskManager when swiches is set. It is beta feature.
-  if (ChromeWebUI::IsMoreWebUI()) {
+  if (chrome_web_ui::IsMoreWebUI()) {
     TaskManagerDialog::ShowBackgroundPages();
   } else {
     TaskManagerGtk::Show(true);

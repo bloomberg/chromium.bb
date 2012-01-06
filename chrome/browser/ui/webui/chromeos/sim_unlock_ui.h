@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_SIM_UNLOCK_UI_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 namespace chromeos {
 
@@ -14,7 +14,7 @@ namespace chromeos {
 // in Chrome OS for specific tasks:
 // - Unlock SIM card (enter PIN/PUK codes).
 // - Display "SIM card is blocked" message when there're no PUK tries left.
-class SimUnlockUI : public ChromeWebUI {
+class SimUnlockUI : public WebUI {
  public:
   explicit SimUnlockUI(content::WebContents* contents);
 

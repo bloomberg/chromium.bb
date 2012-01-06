@@ -6,23 +6,16 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROME_WEB_UI_H_
 #pragma once
 
-#include "content/browser/webui/web_ui.h"
+namespace chrome_web_ui {
 
-class ChromeWebUI : public WebUI {
- public:
-  explicit ChromeWebUI(content::WebContents* contents);
-  virtual ~ChromeWebUI();
+// IsMoreWebUI returns a command line flag that tracks whether to use
+// available WebUI implementations of native dialogs.
+bool IsMoreWebUI();
 
-  // IsMoreWebUI returns a command line flag that tracks whether to use
-  // available WebUI implementations of native dialogs.
-  static bool IsMoreWebUI();
+// Override the argument setting for more WebUI. If true this enables more
+// WebUI.
+void OverrideMoreWebUI(bool use_more_webui);
 
-  // Override the argument setting for more WebUI. If true this enables more
-  // WebUI.
-  static void OverrideMoreWebUI(bool use_more_webui);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeWebUI);
-};
+}  // namespace chrome_web_ui
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROME_WEB_UI_H_

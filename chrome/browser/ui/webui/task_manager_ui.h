@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_WEBUI_TASK_MANAGER_UI_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
-class TaskManagerUI : public ChromeWebUI {
+class TaskManagerUI : public WebUI {
  public:
   explicit TaskManagerUI(content::WebContents* contents);
 

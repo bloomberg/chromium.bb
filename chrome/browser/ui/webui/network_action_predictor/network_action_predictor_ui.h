@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_WEBUI_NETWORK_ACTION_PREDICTOR_NETWORK_ACTION_PREDICTOR_UI_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
-class NetworkActionPredictorUI : public ChromeWebUI {
+class NetworkActionPredictorUI : public WebUI {
  public:
   explicit NetworkActionPredictorUI(content::WebContents* contents);
 

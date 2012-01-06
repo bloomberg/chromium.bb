@@ -51,7 +51,7 @@ void ShowCertificateViewer(gfx::NativeWindow parent,
   // TODO(rbyers): Decide whether to replace the GTK certificate viewier on
   // Linux with the WebUI version, and (either way) remove this IsMoreWebUI
   // check.
-  if (ChromeWebUI::IsMoreWebUI())
+  if (chrome_web_ui::IsMoreWebUI())
     CertificateViewerDialog::ShowDialog(parent, cert);
   else
     ShowNativeCertificateViewer(parent, cert);

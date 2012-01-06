@@ -172,7 +172,7 @@ void SystemInfoHandler::RegisterMessages() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-SystemInfoUI::SystemInfoUI(WebContents* contents) : ChromeWebUI(contents) {
+SystemInfoUI::SystemInfoUI(WebContents* contents) : WebUI(contents) {
   SystemInfoHandler* handler = new SystemInfoHandler();
   AddMessageHandler(handler);
   SystemInfoUIHTMLSource* html_source = new SystemInfoUIHTMLSource();
