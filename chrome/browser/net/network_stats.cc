@@ -14,6 +14,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/tuple.h"
+#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -540,19 +541,23 @@ void CollectNetworkStats(const std::string& network_stats_server,
 
   if (!trial.get()) {
     // Set up a field trial to collect network stats for UDP and TCP.
-    base::FieldTrial::Probability kDivisor = 1000;
+    const base::FieldTrial::Probability kDivisor = 1000;
 
     // Enable the connectivity testing for 0.5% of the users.
-    base::FieldTrial::Probability kProbabilityPerGroup = 5;
+    base::FieldTrial::Probability probability_per_group = 5;
 
-    // After October 30, 2011 builds, it will always be in default group
+    chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+    if (channel == chrome::VersionInfo::CHANNEL_CANARY)
+      probability_per_group = kDivisor;
+
+    // After October 30, 2012 builds, it will always be in default group
     // (disable_network_stats).
     trial = new base::FieldTrial("NetworkConnectivity", kDivisor,
-                                 "disable_network_stats", 2011, 10, 30);
+                                 "disable_network_stats", 2012, 10, 30);
 
     // Add option to collect_stats for NetworkConnectivity.
     int collect_stats_group = trial->AppendGroup("collect_stats",
-                                                 kProbabilityPerGroup);
+                                                 probability_per_group);
     if (trial->group() == collect_stats_group)
       collect_stats = true;
   }
