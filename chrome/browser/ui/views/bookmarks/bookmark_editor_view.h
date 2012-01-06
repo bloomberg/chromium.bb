@@ -84,7 +84,7 @@ class BookmarkEditorView : public BookmarkEditor,
   // views::DialogDelegateView:
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
-  virtual bool IsModal() const OVERRIDE;
+  virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual bool CanResize() const  OVERRIDE;
   virtual string16 GetWindowTitle() const  OVERRIDE;
   virtual bool Accept() OVERRIDE;

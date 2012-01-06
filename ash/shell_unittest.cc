@@ -65,8 +65,8 @@ class ModalWindow : public views::WidgetDelegateView {
   virtual string16 GetWindowTitle() const OVERRIDE {
     return ASCIIToUTF16("Modal Window");
   }
-  virtual bool IsModal() const OVERRIDE {
-    return true;
+  virtual ui::ModalType GetModalType() const OVERRIDE {
+    return ui::MODAL_TYPE_WINDOW;
   }
 
  private:

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ class ExtensionDialog : public views::WidgetDelegate,
 
   // views::WidgetDelegate overrides.
   virtual bool CanResize() const OVERRIDE;
-  virtual bool IsModal() const OVERRIDE;
+  virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;

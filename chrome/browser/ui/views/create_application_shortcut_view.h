@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
-  virtual bool IsModal() const OVERRIDE;
+  virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;

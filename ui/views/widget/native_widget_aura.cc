@@ -356,8 +356,9 @@ void NativeWidgetAura::SetAccessibleState(ui::AccessibilityTypes::State state) {
   //NOTIMPLEMENTED();
 }
 
-void NativeWidgetAura::BecomeModal() {
-  window_->SetIntProperty(aura::client::kModalKey, 1);
+void NativeWidgetAura::InitModalType(ui::ModalType modal_type) {
+  if (modal_type != ui::MODAL_TYPE_NONE)
+    window_->SetIntProperty(aura::client::kModalKey, modal_type);
 }
 
 gfx::Rect NativeWidgetAura::GetWindowScreenBounds() const {

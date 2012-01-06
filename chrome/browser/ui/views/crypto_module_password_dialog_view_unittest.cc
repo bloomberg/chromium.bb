@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include <string>
@@ -39,7 +39,7 @@ TEST_F(CryptoModulePasswordDialogViewTest, TestAccept) {
                  base::Unretained(this)));
   CreateDialogCrypto(cb);
   EXPECT_EQ(dialog_->password_entry_, dialog_->GetInitiallyFocusedView());
-  EXPECT_TRUE(dialog_->IsModal());
+  EXPECT_TRUE(dialog_->GetModalType() != ui::MODAL_TYPE_NONE);
   const std::string kPassword = "diAl0g";
   dialog_->password_entry_->SetText(UTF8ToUTF16(kPassword));
   EXPECT_TRUE(dialog_->Accept());

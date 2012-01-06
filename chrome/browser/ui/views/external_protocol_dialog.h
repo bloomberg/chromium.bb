@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,9 +43,6 @@ class ExternalProtocolDialog : public views::DialogDelegate {
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
-
-  // views::WidgetDelegate methods:
-  virtual bool IsModal() const OVERRIDE { return false; }
 
  private:
   // The message box view whose commands we handle.

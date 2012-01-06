@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,8 +120,8 @@ string16 ImportProgressDialogView::GetDialogButtonLabel(
   return l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_CANCEL);
 }
 
-bool ImportProgressDialogView::IsModal() const {
-  return parent_window_ != NULL;
+ui::ModalType ImportProgressDialogView::GetModalType() const {
+  return parent_window_ ? ui::MODAL_TYPE_WINDOW : ui::MODAL_TYPE_NONE;
 }
 
 string16 ImportProgressDialogView::GetWindowTitle() const {

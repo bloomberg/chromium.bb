@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,7 +80,7 @@ class ContentView : public views::DialogDelegateView,
   virtual bool Cancel() OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual bool IsModal() const OVERRIDE;
+  virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
 
   // views::TextfieldController:
@@ -166,8 +166,8 @@ string16 ContentView::GetWindowTitle() const {
   return delegate_->window_title();
 }
 
-bool ContentView::IsModal() const {
-  return true;
+ui::ModalType ContentView::GetModalType() const {
+  return ui::MODAL_TYPE_WINDOW;
 }
 
 views::View* ContentView::GetContentsView() {

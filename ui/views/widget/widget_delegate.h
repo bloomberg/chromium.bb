@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,9 +62,9 @@ class VIEWS_EXPORT WidgetDelegate {
   // Returns true if the window can be activated.
   virtual bool CanActivate() const;
 
-  // Returns true if the dialog should be displayed modally to the window that
-  // opened it. Only windows with WindowType == DIALOG can be modal.
-  virtual bool IsModal() const;
+  // Returns the modal type that applies to the widget. Default is
+  // ui::MODAL_TYPE_NONE (not modal).
+  virtual ui::ModalType GetModalType() const;
 
   virtual ui::AccessibilityTypes::Role GetAccessibleWindowRole() const;
 

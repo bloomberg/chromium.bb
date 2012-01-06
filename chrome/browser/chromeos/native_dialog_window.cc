@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,10 @@ class NativeDialogHost : public views::DialogDelegateView {
   virtual int GetDialogButtons() const OVERRIDE { return 0; }
   virtual string16 GetWindowTitle() const OVERRIDE { return title_; }
   virtual views::View* GetContentsView() OVERRIDE { return this; }
-  virtual bool IsModal() const OVERRIDE { return flags_ & DIALOG_FLAG_MODAL; }
+  virtual ui::ModalType GetModalType() const OVERRIDE {
+    return flags_ & DIALOG_FLAG_MODAL ? ui::MODAL_TYPE_WINDOW :
+        ui::MODAL_TYPE_NONE;
+  }
   virtual void WindowClosing() OVERRIDE;
 
  protected:

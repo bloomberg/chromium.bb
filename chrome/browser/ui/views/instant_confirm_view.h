@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@ class InstantConfirmView : public views::DialogDelegateView,
   virtual views::View* GetContentsView() OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual bool IsModal() const OVERRIDE;
+  virtual ui::ModalType GetModalType() const OVERRIDE;
 
   // views::LinkListener overrides:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;

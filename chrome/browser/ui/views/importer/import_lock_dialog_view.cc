@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,10 +74,6 @@ string16 ImportLockDialogView::GetDialogButtonLabel(
   else if (button == ui::DIALOG_BUTTON_CANCEL)
     return l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_CANCEL);
   return string16();
-}
-
-bool ImportLockDialogView::IsModal() const {
-  return false;
 }
 
 string16 ImportLockDialogView::GetWindowTitle() const {

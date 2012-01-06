@@ -1524,10 +1524,6 @@ bool BrowserView::CanActivate() const {
   return !ActivateAppModalDialog();
 }
 
-bool BrowserView::IsModal() const {
-  return false;
-}
-
 string16 BrowserView::GetWindowTitle() const {
   return browser_->GetWindowTitleForCurrentTab();
 }

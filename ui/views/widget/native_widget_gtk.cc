@@ -981,7 +981,9 @@ void NativeWidgetGtk::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
 void NativeWidgetGtk::SetAccessibleState(ui::AccessibilityTypes::State state) {
 }
 
-void NativeWidgetGtk::BecomeModal() {
+void NativeWidgetGtk::InitModalType(ui::ModalType modal_type) {
+  if (modal_type == ui::MODAL_TYPE_NONE)
+    return;
   gtk_window_set_modal(GetNativeWindow(), true);
 }
 

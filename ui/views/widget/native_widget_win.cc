@@ -772,7 +772,9 @@ void NativeWidgetWin::SetAccessibleState(ui::AccessibilityTypes::State state) {
   }
 }
 
-void NativeWidgetWin::BecomeModal() {
+void NativeWidgetWin::InitModalType(ui::ModalType modal_type) {
+  if (modal_type == ui::MODAL_TYPE_NONE)
+    return;
   // We implement modality by crawling up the hierarchy of windows starting
   // at the owner, disabling all of them so that they don't receive input
   // messages.

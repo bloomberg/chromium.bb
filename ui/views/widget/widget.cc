@@ -854,7 +854,7 @@ gfx::Rect Widget::GetWorkAreaBoundsInScreen() const {
 // Widget, NativeWidgetDelegate implementation:
 
 bool Widget::IsModal() const {
-  return widget_delegate_->IsModal();
+  return widget_delegate_->GetModalType() != ui::MODAL_TYPE_NONE;
 }
 
 bool Widget::IsDialogBox() const {
@@ -915,8 +915,7 @@ void Widget::OnNativeWidgetCreated() {
   native_widget_->SetAccessibleState(
       widget_delegate_->GetAccessibleWindowState());
 
-  if (widget_delegate_->IsModal())
-    native_widget_->BecomeModal();
+  native_widget_->InitModalType(widget_delegate_->GetModalType());
 }
 
 void Widget::OnNativeWidgetDestroying() {

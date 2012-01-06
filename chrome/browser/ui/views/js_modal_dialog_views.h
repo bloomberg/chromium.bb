@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,7 @@ class JSModalDialogViews : public NativeAppModalDialog,
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
-  virtual bool IsModal() const OVERRIDE;
+  virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual void OnClose() OVERRIDE;

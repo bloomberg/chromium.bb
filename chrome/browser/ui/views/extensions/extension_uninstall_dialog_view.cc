@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,9 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
   virtual bool Cancel() OVERRIDE;
 
   // views::WidgetDelegate:
-  virtual bool IsModal() const OVERRIDE { return true; }
+  virtual ui::ModalType GetModalType() const OVERRIDE {
+    return ui::MODAL_TYPE_NONE;
+  }
   virtual views::View* GetContentsView() OVERRIDE { return this; }
   virtual string16 GetWindowTitle() const OVERRIDE;
 

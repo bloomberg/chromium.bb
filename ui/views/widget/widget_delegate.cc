@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,8 +53,8 @@ bool WidgetDelegate::CanActivate() const {
   return true;
 }
 
-bool WidgetDelegate::IsModal() const {
-  return false;
+ui::ModalType WidgetDelegate::GetModalType() const {
+  return ui::MODAL_TYPE_NONE;
 }
 
 ui::AccessibilityTypes::Role WidgetDelegate::GetAccessibleWindowRole() const {

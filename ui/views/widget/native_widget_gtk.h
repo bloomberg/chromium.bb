@@ -182,7 +182,7 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
   virtual void SetAccessibleName(const string16& name) OVERRIDE;
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) OVERRIDE;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
-  virtual void BecomeModal() OVERRIDE;
+  virtual void InitModalType(ui::ModalType modal_type) OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;

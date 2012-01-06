@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/string16.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/widget/native_widget.h"
@@ -158,8 +159,10 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) = 0;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) = 0;
 
-  // Makes the NativeWindow modal.
-  virtual void BecomeModal() = 0;
+  // Initializes the modal type of the window to |modal_type|. Called from
+  // NativeWidgetDelegate::OnNativeWidgetCreated() before the widget is
+  // initially parented.
+  virtual void InitModalType(ui::ModalType modal_type) = 0;
 
   // See method documentation in Widget.
   virtual gfx::Rect GetWindowScreenBounds() const = 0;

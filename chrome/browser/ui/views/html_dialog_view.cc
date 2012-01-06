@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,10 +101,10 @@ bool HtmlDialogView::CanResize() const {
   return true;
 }
 
-bool HtmlDialogView::IsModal() const {
-  if (delegate_)
-    return delegate_->IsDialogModal();
-  return false;
+ui::ModalType HtmlDialogView::GetModalType() const {
+  if (delegate_ && delegate_->IsDialogModal())
+    return ui::MODAL_TYPE_WINDOW;
+  return ui::MODAL_TYPE_NONE;
 }
 
 string16 HtmlDialogView::GetWindowTitle() const {
@@ -145,7 +145,7 @@ const views::Widget* HtmlDialogView::GetWidget() const {
 // HtmlDialogUIDelegate implementation:
 
 bool HtmlDialogView::IsDialogModal() const {
-  return IsModal();
+  return GetModalType() != ui::MODAL_TYPE_NONE;
 }
 
 string16 HtmlDialogView::GetDialogTitle() const {

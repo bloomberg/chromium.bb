@@ -105,8 +105,8 @@ bool BookmarkEditorView::IsDialogButtonEnabled(ui::DialogButton button) const {
   return true;
 }
 
-bool BookmarkEditorView::IsModal() const {
-  return true;
+ui::ModalType BookmarkEditorView::GetModalType() const {
+  return ui::MODAL_TYPE_WINDOW;
 }
 
 bool BookmarkEditorView::CanResize() const {
