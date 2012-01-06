@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <X11/Xlib.h>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 
 class MessageLoop;
 
@@ -15,12 +16,15 @@ namespace media {
 class VideoFrame;
 }
 
-class X11VideoRenderer {
+class X11VideoRenderer : public base::RefCountedThreadSafe<X11VideoRenderer> {
  public:
   X11VideoRenderer(Display* display, Window window);
-  ~X11VideoRenderer();
 
   void Paint(media::VideoFrame* video_frame);
+
+ protected:
+  friend class base::RefCountedThreadSafe<X11VideoRenderer>;
+  ~X11VideoRenderer();
 
  private:
   // Initializes X11 rendering for the given dimensions.

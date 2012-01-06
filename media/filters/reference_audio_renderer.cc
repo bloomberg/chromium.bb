@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "base/bind.h"
+#include "base/synchronization/waitable_event.h"
 
 namespace media {
 
@@ -19,8 +20,12 @@ ReferenceAudioRenderer::ReferenceAudioRenderer(AudioManager* audio_manager)
 
 ReferenceAudioRenderer::~ReferenceAudioRenderer() {
   // Close down the audio device.
-  if (controller_)
-    controller_->Close(base::Bind(&ReferenceAudioRenderer::OnClose, this));
+  if (controller_) {
+      base::WaitableEvent closed_event(true, false);
+      controller_->Close(base::Bind(&base::WaitableEvent::Signal,
+                                    base::Unretained(&closed_event)));
+      closed_event.Wait();
+  }
 }
 
 void ReferenceAudioRenderer::SetPlaybackRate(float rate) {
@@ -91,10 +96,6 @@ bool ReferenceAudioRenderer::OnInitialize(int bits_per_channel,
 void ReferenceAudioRenderer::OnStop() {
   if (controller_)
     controller_->Pause();
-}
-
-void ReferenceAudioRenderer::OnClose() {
-  NOTIMPLEMENTED();
 }
 
 }  // namespace media

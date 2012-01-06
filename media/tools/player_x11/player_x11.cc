@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -271,16 +271,13 @@ int main(int argc, char** argv) {
   thread.reset(new base::Thread("PipelineThread"));
   thread->Start();
 
-  // Create both our renderers but only bind the one we plan on using.
-  X11VideoRenderer x11_renderer(g_display, g_window);
-  GlVideoRenderer gl_renderer(g_display, g_window);
   PaintCB paint_cb;
   if (use_gl) {
     paint_cb = base::Bind(
-        &GlVideoRenderer::Paint, base::Unretained(&gl_renderer));
+        &GlVideoRenderer::Paint, new GlVideoRenderer(g_display, g_window));
   } else {
     paint_cb = base::Bind(
-        &X11VideoRenderer::Paint, base::Unretained(&x11_renderer));
+        &X11VideoRenderer::Paint, new X11VideoRenderer(g_display, g_window));
   }
 
   if (InitPipeline(thread->message_loop(), filename.c_str(),
@@ -303,6 +300,11 @@ int main(int argc, char** argv) {
   message_loop_factory.reset();
 
   thread->Stop();
+
+  // Release callback which releases video renderer. Do this before cleaning up
+  // X below since the video renderer has some X cleanup duties as well.
+  paint_cb.Reset();
+
   XDestroyWindow(g_display, g_window);
   XCloseDisplay(g_display);
   g_audio_manager = NULL;
