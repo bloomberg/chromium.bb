@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -613,9 +613,9 @@ bool GoogleChromeDistribution::GetExperimentDetails(
   std::wstring brand;
 
   if (!GoogleUpdateSettings::GetLanguage(&locale))
-    locale = L"en-US";
+    locale = ASCIIToWide("en-US");
   if (!GoogleUpdateSettings::GetBrand(&brand))
-    return false;
+    brand = ASCIIToWide("");  // Could still be viable for catch-all rules.
 
   for (int i = 0; i < arraysize(kExperimentFlavors); ++i) {
     // A maximum of four flavors is supported at the moment.
